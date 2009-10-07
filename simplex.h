@@ -92,12 +92,14 @@ public:
   vector<Integer> read_multiplicators() const;    // returns multiplicators
   vector<int> read_new_face() const;    // returns new face
   int read_new_face_size() const;    // returns new face size
-  Matrix read_support_hyperplanes() const;  // returns  the support hyperplanes
+  Matrix read_support_hyperplanes() const;  // returns the support hyperplanes
   Matrix read_hilbert_basis()const; //read the Hilbert basis
   list< vector<Integer> > read_homogeneous_elements()const; //read the Hilbert basis
   const list< vector<Integer> >& acces_hilbert_basis()const; //read the Hilbert basis
   vector<Integer> read_h_vector() const; //returns the h-vector
   Integer read_hilbert_basis_size() const; //returns the size of the Hilbert basis
+
+	void clear(); //  resets status to "key initialized" to save memory
 
 //---------------------------------------------------------------------------
 //							Algoritms

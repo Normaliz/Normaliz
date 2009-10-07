@@ -67,7 +67,7 @@ public:
   void write(int row, const vector<Integer>& data); //write  a row
   void write(int row, const vector<int>& data); //write  a row
   void write(int row, int col, Integer data);  // write data at (row,col)
-  void print(const string& in) const;         //  to be modified, just for tests
+  void print(const string& name, const string& suffix="in") const;         //  writes matrix into name.suffix
   void read() const;                 // to be modified, just for tests
   vector<Integer> read(int row) const;                   // read a row
   Integer read (int row, int col) const;         // read data at (row,col)
@@ -75,8 +75,8 @@ public:
   int nr_of_columns() const;                   // returns nc
   void random();     // generates a pseudo random matrix for tests
   Matrix submatrix(const vector<int>& rows) const;  //returns a submatrix with rows
-									  //coresponding to indices given by
-									//the entries of  rows
+									  //corresponding to indices given by
+									//the entries of rows, Numbering from 1 to n, not 0 to n-1 !
   vector<Integer> diagonale() const;     //returns the diagonale of this
 								  //this should be a quadratic matrix
   int maximal_decimal_length() const;    //return the maximal number of decimals

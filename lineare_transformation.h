@@ -30,7 +30,7 @@
 // Left=U; Center=the diagonal form of M; Right=V;
 // Right_Inv=the inverse of V; rk=rank of M.
 // We recommend using the non-member function Transformation, which also test
-// posible arithmetic overflows
+// for possible arithmetic overflows
 //---------------------------------------------------------------------------
 
 #ifndef LINEARE_TRANSFORMATION_H

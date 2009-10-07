@@ -1,11 +1,21 @@
 #
 # Makefile for normaliz
 #
-CXX = g++
-CXXFLAGS = -O3 -Wall -Wno-sign-compare
+MAKEFLAGS += -j
 
-N32FLAGS = -Dnorm32 -static
-N64FLAGS = -Dnorm64 -static
+CXX = g++
+CXXFLAGS += -pipe -march=core2 -funroll-loops -fopenmp
+#CXXFLAGS += -g  #for debugging
+#CXXFLAGS += -pg #for profiler
+
+#CXX = icc
+#CXXFLAGS += -openmp -parallel
+#CXXFLAGS += -openmp-report1 -par-report1
+
+CXXFLAGS += -O3 -Wall -Wno-sign-compare
+
+N32FLAGS = -Dnorm32
+N64FLAGS = -Dnorm64
 NBIGFLAGS = -Dnormbig
 GMPFLAGS = -lgmpxx -lgmp
 
@@ -42,3 +52,7 @@ normbig: Normaliz.cpp $(NBIGOBJ)
 clean:
 	-rm -rf obj64 obj32 objBig
 	-rm -f norm32 norm64 normbig
+
+semigraphoids: semigraphoids.cpp $(N64OBJ)
+	$(CXX) $(CXXFLAGS) $(N64FLAGS) semigraphoids.cpp obj64/matrix.o obj64/integer.o obj64/vector_operations.o -o semigraphoids
+	
