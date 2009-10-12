@@ -4,8 +4,8 @@
 CXX = g++
 CXXFLAGS = -O3 -Wall -Wno-sign-compare
 
-N32FLAGS = -Dnorm32 -static
-N64FLAGS = -Dnorm64 -static
+N32FLAGS = -Dnorm32 #-static
+N64FLAGS = -Dnorm64 #-static
 NBIGFLAGS = -Dnormbig
 GMPFLAGS = -lgmpxx -lgmp
 
@@ -36,7 +36,7 @@ objBig/%.o: %.cpp $(HEADERS)
 	@mkdir -p objBig
 	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) -c $< -o $@
 normbig: Normaliz.cpp $(NBIGOBJ)
-	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) $(GMPFLAGS) Normaliz.cpp $(NBIGOBJ) -o normbig
+	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) Normaliz.cpp $(NBIGOBJ) $(GMPFLAGS) -o normbig
 
 
 clean:
