@@ -122,8 +122,10 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			if ((*ii)[k]==0) {
 				nr_zero_i++;
 				if ((*ii)[size]>0) {
+//					#pragma omp atomic
 					Zero_Positive[k]=true;
 				} else if ((*ii)[size]<0) {
+//					#pragma omp atomic
 					Zero_Negative[k]=true;
 				}
 			}
@@ -260,7 +262,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	#pragma omp parallel private(i,j,k,jj)
 	{
 	vector< int > subfacet(dim-2);
-	jj =Negative_Subfacet_Multi.begin();
+	jj = Negative_Subfacet_Multi.begin();
 	int jjpos=0;
 	map < vector< int >, int > ::iterator last_inserted=Negative_Subfacet.begin(); // used to speedup insertion into the new map
 	bool found;
@@ -1450,7 +1452,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		cout<<"\n************************************************************\n";
 		cout<<"computing Hilbert basis ..."<<endl;
 	}
-	vector<Integer> scalar_product;
+
 	set < vector<Integer> > Candidates,Candidates_with_Scalar_Product;
 	list <vector <Integer> >  HB;
 	set <vector <Integer> >::iterator c;
@@ -1505,7 +1507,10 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		int listsize=Candidates.size();
 		if(optimize_speed==false){   //scalar products computed twice
 			//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
-//			#pragma omp parallel for firstprivate(c,cpos) private(scalar_product,norm) schedule(dynamic)
+			#pragma omp parallel firstprivate(c,cpos) private(norm)
+			{
+			vector<Integer> scalar_product;
+			#pragma omp for schedule(dynamic)
 			for (int j=0; j<listsize; j++) {
 				for(;j > cpos; cpos++, c++) ;
 				for(;j < cpos; cpos--, c--) ;
@@ -1518,17 +1523,18 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 				vector <Integer> new_element(1);
 				new_element[0]=norm;
 				new_element=v_merge(new_element,(*c));
-//				#pragma omp critical(CANDI_SP)
+				#pragma omp critical(CANDI_SP)
 				Candidates_with_Scalar_Product.insert(new_element);
 				if (verbose==true) {
-//					#pragma omp critical(CANDI_SP) 
+					#pragma omp critical(CANDI_SP) 
 					{
-					if (Candidates_with_Scalar_Product.size()%100==0) {
+					if (Candidates_with_Scalar_Product.size()%5000==0) {
 						cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
 					}
 					} //END critcal
 				}
-			} //END parallel for
+			} //END for
+			} //END parallel
 			if (verbose) {
 				cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
 			}
@@ -1540,7 +1546,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 				c=Candidates_with_Scalar_Product.begin();
 				if (verbose==true) {
 					global_reduction_counter++;
-					if (global_reduction_counter%10000==0) {
+					if (global_reduction_counter%5000==0) {
 						cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
 					}
 				}
@@ -1569,7 +1575,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 				Candidates_with_Scalar_Product.insert(new_element);
 				if (verbose==true) {
 //					#pragma omp critical(CANDI_SP)
-					if (Candidates_with_Scalar_Product.size()%20000==0) {
+					if (Candidates_with_Scalar_Product.size()%10000==0) {
 						cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
 					}
 				}
@@ -2467,7 +2473,7 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		Full_Cone subcone(Generators.submatrix(*it));
 		subcone.support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
 //		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
-		//Triangulierung vom subcone zum ganzen Kegel (this) hinzuf�gen
+		//Triangulierung vom subcone zum ganzen Kegel (this) hinzufügen
 		list< vector<int> >::const_iterator sub_it  = subcone.Triangulation.begin();
 		list< vector<int> >::const_iterator sub_end = subcone.Triangulation.end();
 		//TODO indizes anpassen und der triangulierung zuf�gen

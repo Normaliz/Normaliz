@@ -4,7 +4,7 @@
 MAKEFLAGS += -j
 
 CXX = g++
-CXXFLAGS += -pipe -march=core2 -funroll-loops -fopenmp
+CXXFLAGS += -pipe -funroll-loops -fopenmp #-march=core2
 #CXXFLAGS += -g  #for debugging
 #CXXFLAGS += -pg #for profiler
 
@@ -46,7 +46,7 @@ objBig/%.o: %.cpp $(HEADERS)
 	@mkdir -p objBig
 	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) -c $< -o $@
 normbig: Normaliz.cpp $(NBIGOBJ)
-	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) $(GMPFLAGS) Normaliz.cpp $(NBIGOBJ) -o normbig
+	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) Normaliz.cpp $(NBIGOBJ) $(GMPFLAGS) -o normbig
 
 
 clean:
