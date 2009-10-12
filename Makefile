@@ -4,9 +4,9 @@
 CXX = g++
 CXXFLAGS = -O3 -Wall -Wno-sign-compare
 
-N32FLAGS = -Dnorm32 #-static
-N64FLAGS = -Dnorm64 #-static
-NBIGFLAGS = -Dnormbig
+N32FLAGS = -Dnorm32 -static
+N64FLAGS = -Dnorm64 -static
+NBIGFLAGS = -Dnormbig -static
 GMPFLAGS = -lgmpxx -lgmp
 
 SOURCES = full_cone.cpp integer.cpp lineare_transformation.cpp list_operations.cpp matrix.cpp mode.cpp Normaliz.cpp output.cpp simplex.cpp vector_operations.cpp
