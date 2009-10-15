@@ -1499,7 +1499,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 	multiplicity = mult;
 	s=Support_Hyperplanes.size();
 	if (Triangulation.size()>1 || compressed_test) { // global reduction
-		//TODO Triangulierung loeschen wenn später nicht gebraucht!!! temporäre Teständerung
+		//TODO Triangulierung nur loeschen wenn später nicht gebraucht!!! temporäre Teständerung
 		cout<<"deleting Triangulation: ";
 		Triangulation.clear();
 		cout<<"done"<<endl;			
@@ -1507,15 +1507,23 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		if(verbose) {
 			cout<<"computing degree function: ";
 		}
-		// add hyperplanes to get a degree function
-		//TODO use Linear_From in homogeneous case
+
 		vector<Integer> degree_function(dim,0);
-		//vector<Integer>& hyperplane;
-		for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); h++) {
-			for (i=0; i<dim; i++) {
-				degree_function[i]+=(*h)[i];
+		if(homogeneous==true){ //use Linear_From in homogeneous case
+			if(verbose) {
+				cout<<" using homogenous linear form, ";
 			}
-		}//TODO parallel addition in each thread and final addition at the end
+			for (i=0; i<dim; i++) {
+				degree_function[i] = Linear_Form[i];
+			}
+		} else { // add hyperplanes to get a degree function
+			//vector<Integer>& hyperplane;
+			for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); h++) {
+				for (i=0; i<dim; i++) {
+					degree_function[i]+=(*h)[i];
+				}
+			} //TODO parallel addition in each thread and final addition at the end
+		}
 		if(verbose) {
 			cout<<"done"<<endl;
 		}
@@ -1547,6 +1555,8 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
 		}
 		Candidates.clear();
+		
+		// do global reduction
 		c=Candidates_with_Scalar_Product.begin();
 		while(c != Candidates_with_Scalar_Product.end()) {
 			reduce_and_insert((*c));
@@ -1562,21 +1572,18 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		if (verbose) {
 			 cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
 		}
-	
 	}
 	else { // cone is simplicial, herefore no global reduction is necessary
 		if (verbose) {
 			cout<<"Cone is simplicial, no global reduction necessary."<<endl;
 		}
-		for (c = Candidates.begin(); c != Candidates.end(); c++) { //TODO überflüssig, da eh im nächsten schritt entfernt wird
-			vector <Integer> new_element(1+dim,0); //TODO UEBERPRUEFEN!!!
-			new_element=v_merge(new_element,(*c));
-			Hilbert_Basis.push_back(new_element);
+		for (c = Candidates.begin(); c != Candidates.end(); c++) {
+			Hilbert_Basis.push_back(*c);
 		}
 		Candidates.clear();
 	}
 
-	l_cut_front(Hilbert_Basis,dim);
+	l_cut_front(Hilbert_Basis,dim); // take only the last dim entries of the vectors
 	if(homogeneous==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
