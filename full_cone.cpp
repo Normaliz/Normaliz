@@ -1234,7 +1234,7 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 							#pragma omp critical
 							{
 								nr_non_compressed++;
-								max_heigth=min(max_heigth,(int)scalar_product);
+								max_heigth=min(max_heigth, (int)explicit_cast_to_long(scalar_product));
 							}
 						}
 					}
@@ -1463,12 +1463,11 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Candidates.insert(Generators.read(i));
 	}
 	multiplicity=0;
-	long long mult=0;  //TODO not exact for normbig
 	list< vector<int> >::iterator l=Triangulation.begin();
 	int lpos=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
-	#pragma omp parallel for private(volume,HB,h) firstprivate(lpos,l) reduction(+:mult) schedule(dynamic)
+	#pragma omp parallel for private(volume,HB,h) firstprivate(lpos,l) schedule(dynamic)
 	for (int k=0; k<listsize; k++) {
 		for(;k > lpos; lpos++, l++) ;
 		for(;k < lpos; lpos--, l--) ;
@@ -1476,7 +1475,8 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Simplex S=Simplex(*l);
 		S.hilbert_basis_interior(Generators);
 		volume=S.read_volume();
-		mult += volume;
+		#pragma omp critical(MULT)
+		multiplicity += volume;
 		HB=S.acces_hilbert_basis();
 		for (h = HB.begin(); h != HB.end(); h++) {
 			#pragma omp critical(CANDI)
@@ -1496,7 +1496,6 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 	}
 
-	multiplicity = mult;
 	s=Support_Hyperplanes.size();
 	if (Triangulation.size()>1 || compressed_test) { // global reduction
 		//TODO Triangulierung nur loeschen wenn später nicht gebraucht!!! temporäre Teständerung
