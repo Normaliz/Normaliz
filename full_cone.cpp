@@ -63,7 +63,7 @@ struct v_compare_shelling {
 //private
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive,const vector<Integer>& negative){
+void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive, const vector<Integer>& negative){
 	int k;
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	Integer used_for_tests;
@@ -92,25 +92,27 @@ void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive,
 
 
 void Full_Cone::transform_values(const int& size, const vector <int> & test_key){
-
 	//to see if posible to replace the funtion .end with constant iterator since push-back is performed.
 
-	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
-	register int i,j,k,t,nr_zero_i,nr_zero_i_and_j,sub=dim-3;
-	
-	bool tv_verbose = verbose && Support_Hyperplanes.size()>10000;  //verbose in this method call
-	
 	// preparing the computations
-	list < vector<Integer> > l_Positive_Simplex,l_Positive_Non_Simplex;
-	list < vector<Integer> > l_Negative_Simplex,l_Negative_Non_Simplex;
-	list < vector<Integer> > l_Neutral_Simplex, l_Neutral_Non_Simplex;
+	list < vector<Integer>* > Positive_Simplex,Positive_Non_Simplex;
+	list < vector<Integer>* > Negative_Simplex,Negative_Non_Simplex;
+	list < vector<Integer>* > Neutral_Simplex, Neutral_Non_Simplex;
+	int sub=dim-3;
+	
+	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
+	register int j,k,t,nr_zero_i,nr_zero_i_and_j;
+	
+	bool tv_verbose = verbose ;//&& Support_Hyperplanes.size()>10000;  //verbose in this method call
+	
+	
 	vector <bool> Zero_Positive(hyp_size,false),Zero_Negative(hyp_size,false);
 	list < vector<Integer> > Non_Simplex;
 	bool simplex;
 
 //	if (tv_verbose) cout<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl;
 	int ipos=0;
-	list< vector<Integer> >::const_iterator ii = Support_Hyperplanes.begin();
+	list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
 	int listsize=Support_Hyperplanes.size();
 	//for (ii =Support_Hyperplanes.begin();ii!= Support_Hyperplanes.end();ii++){
 //	#pragma omp parallel for private(simplex, nr_zero_i, k) firstprivate(ipos, ii) schedule(dynamic)
@@ -137,28 +139,28 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		if ((*ii)[size]==0) {
 			if (simplex) {
 //				#pragma omp critical(NeutS)
-				l_Neutral_Simplex.push_back((*ii));
+				Neutral_Simplex.push_back(&(*ii));
 			}	else {
 //				#pragma omp critical(NeutNS)
-				l_Neutral_Non_Simplex.push_back((*ii));
+				Neutral_Non_Simplex.push_back(&(*ii));
 			}
 		} else 
 		if ((*ii)[size]>0) {
 			if (simplex) {
 //				#pragma omp critical(PosS)
-				l_Positive_Simplex.push_back((*ii));
+				Positive_Simplex.push_back(&(*ii));
 			} else {
 //				#pragma omp critical(PosNS)
-				l_Positive_Non_Simplex.push_back((*ii));
+				Positive_Non_Simplex.push_back(&(*ii));
 			}
 		} else 
 		if ((*ii)[size]<0) {
 			if (simplex) {
 //				#pragma omp critical(NegS)
-				l_Negative_Simplex.push_back((*ii));
+				Negative_Simplex.push_back(&(*ii));
 			} else {
 //				#pragma omp critical(NegNS)
-				l_Negative_Non_Simplex.push_back((*ii));
+				Negative_Non_Simplex.push_back(&(*ii));
 			}
 		}
 	}
@@ -168,50 +170,13 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		if (Zero_Positive[k]&&Zero_Negative[k])
 			Zero_PN[k]=true;
 
-//	if (tv_verbose) cout<<"transform_values: copy to vector"<<endl;
-	vector < vector<Integer> > Positive_Simplex(l_Positive_Simplex.size());
-	vector < vector<Integer> > Positive_Non_Simplex(l_Positive_Non_Simplex.size());
-	vector < vector<Integer> > Negative_Simplex(l_Negative_Simplex.size());
-	vector < vector<Integer> > Negative_Non_Simplex(l_Negative_Non_Simplex.size());
-	vector < vector<Integer> > Neutral_Simplex(l_Neutral_Simplex.size());
-	vector < vector<Integer> > Neutral_Non_Simplex(l_Neutral_Non_Simplex.size());
-
-	for (k = 0; k < Positive_Simplex.size(); k++) {
-		Positive_Simplex[k]=l_Positive_Simplex.front();
-		l_Positive_Simplex.pop_front();
-	}
-
-	for (k = 0; k < Positive_Non_Simplex.size(); k++) {
-		Positive_Non_Simplex[k]=l_Positive_Non_Simplex.front();
-		l_Positive_Non_Simplex.pop_front();
-	}
-
-	for (k = 0; k < Negative_Simplex.size(); k++) {
-		Negative_Simplex[k]=l_Negative_Simplex.front();
-		l_Negative_Simplex.pop_front();
-	}
-
-	for (k = 0; k < Negative_Non_Simplex.size(); k++) {
-		Negative_Non_Simplex[k]=l_Negative_Non_Simplex.front();
-		l_Negative_Non_Simplex.pop_front();
-	}
-
-	for (k = 0; k < Neutral_Simplex.size(); k++) {
-		Neutral_Simplex[k]=l_Neutral_Simplex.front();
-		l_Neutral_Simplex.pop_front();
-	}
-
-	for (k = 0; k < Neutral_Non_Simplex.size(); k++) {
-		Neutral_Non_Simplex[k]=l_Neutral_Non_Simplex.front();
-		l_Neutral_Non_Simplex.pop_front();
-	}
 	if (tv_verbose) cout<<"PS "<<Positive_Simplex.size()<<" P "<<Positive_Non_Simplex.size()<<" NS "<<Negative_Simplex.size()<<" N "<<Negative_Non_Simplex.size()<<" ZS "<<Neutral_Simplex.size()<<" Z "<<Neutral_Non_Simplex.size()<<endl;
 	 
 	/*
 	   possible improvement using the fact that in the lifted version all
 	   hyperplanes hyp[dim-1]!=0 are simplicies???
 	 */
-	#pragma omp parallel sections private(i,j,k,nr_zero_i) 
+	#pragma omp parallel sections private(j,k,nr_zero_i) 
 	{
 	#pragma omp section
 	{
@@ -219,12 +184,14 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	if (tv_verbose) cout<<"transform_values: fill multimap with subfacets of NS"<<endl<<flush;
 	vector< int > zero_i(nr_gen);
 	vector< int > subfacet(dim-2);
-	multimap < vector< int >, int > Negative_Subfacet_Multi;
-
-	for (i=0; i<Negative_Simplex.size();i++){
+	multimap < vector<int>, vector<Integer>* > Negative_Subfacet_Multi;
+	list < vector<Integer>* >::iterator it;
+	
+	for (it=Negative_Simplex.begin(); it!=Negative_Simplex.end(); it++){
+		
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
-			if (Zero_PN[k]&& (Negative_Simplex[i][k]==0)){
+			if (Zero_PN[k] && (**it)[k]==0) {
 				zero_i[nr_zero_i]=k;
 				nr_zero_i++;
 			}
@@ -233,11 +200,11 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			for (k = 0; k <dim-2; k++) {
 				subfacet[k]=zero_i[k];
 			}
-			Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
+			Negative_Subfacet_Multi.insert(pair<vector< int >, vector<Integer>*>(subfacet,(*it)));
 			if (nr_zero_i==dim-1){
 				for (k = dim-2; k >0; k--) {
 					subfacet[k-1]=zero_i[k];
-					Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
+					Negative_Subfacet_Multi.insert(pair<vector< int >, vector<Integer>*>(subfacet,(*it)));
 				}
 			}
 		}
@@ -246,8 +213,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: go over multimap of size "<< Negative_Subfacet_Multi.size() <<endl;
-	multimap < vector< int >, int > ::iterator jj;
-	multimap < vector< int >, int > ::iterator del;
+	multimap < vector< int >, vector<Integer>* > ::iterator jj;
+	multimap < vector< int >, vector<Integer>* > ::iterator del;
 	jj =Negative_Subfacet_Multi.begin();
 	while (jj!= Negative_Subfacet_Multi.end()) {
 		del=jj;
@@ -260,14 +227,15 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		}
 	}
 	int Negative_Subfacet_Multi_Size=Negative_Subfacet_Multi.size();
-	map < vector< int >, int > Negative_Subfacet;
-	#pragma omp parallel private(i,j,k,jj)
+	map < vector< int >, vector<Integer>* > Negative_Subfacet;
+	#pragma omp parallel private(j,k,jj,it)
 	{
 	vector< int > subfacet(dim-2);
 	jj = Negative_Subfacet_Multi.begin();
 	int jjpos=0;
-	map < vector< int >, int > ::iterator last_inserted=Negative_Subfacet.begin(); // used to speedup insertion into the new map
+	map < vector< int >, vector<Integer>* > ::iterator last_inserted=Negative_Subfacet.begin(); // used to speedup insertion into the new map
 	bool found;
+		
 	#pragma omp for schedule(dynamic)
 //	while (jj!= Negative_Subfacet_Multi.end()) {
 	for (int j=0; j<Negative_Subfacet_Multi_Size; j++) {
@@ -276,9 +244,9 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 		subfacet=(*jj).first;
 		found=false; 
-		for (i = 0; i <Neutral_Simplex.size(); i++) {
+		for (it = Neutral_Simplex.begin(); it != Neutral_Simplex.end(); it++) {
 			for (k = 0; k < dim-2; k++)
-				if(Neutral_Simplex[i][subfacet[k]]!=0)
+				if((**it)[subfacet[k]]!=0)
 					break;
 			if (k==dim-2) {
 				found=true;
@@ -286,9 +254,9 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			}
 		}
 		if (!found) {
-			for (i = 0; i <Neutral_Non_Simplex.size(); i++) {
+			for (it = Neutral_Non_Simplex.begin(); it != Neutral_Non_Simplex.end(); it++) {
 				for (k = 0; k < dim-2; k++)
-					if(Neutral_Non_Simplex[i][subfacet[k]]!=0)
+					if((**it)[subfacet[k]]!=0)
 						break;
 				if (k==dim-2) {
 					found=true;
@@ -296,9 +264,9 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 				}
 			}
 			if(!found) {
-				for (i = 0; i <Negative_Non_Simplex.size(); i++) {
+				for (it = Negative_Non_Simplex.begin(); it != Negative_Non_Simplex.end(); it++) {
 					for (k = 0; k < dim-2; k++)
-						if(Negative_Non_Simplex[i][subfacet[k]]!=0)
+						if((**it)[subfacet[k]]!=0)
 								break;
 					if (k==dim-2) {
 						found=true;
@@ -323,11 +291,11 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: PS vs NS"<<endl;
 	
-	map < vector< int >, int > ::iterator jj_map;
-	for (i =0; i<Positive_Simplex.size(); i++){ //Positive Simplex vs.Negative Simplex
+	map < vector< int >, vector<Integer>* > ::iterator jj_map;
+	for (it = Positive_Simplex.begin(); it != Positive_Simplex.end(); it++){ //Positive Simplex vs.Negative Simplex
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
-			if (Zero_PN[k] && Positive_Simplex[i][k]==0) {
+			if (Zero_PN[k] && (**it)[k]==0) {
 				zero_i[nr_zero_i]=k; //contains the indices where *i is 0
 				nr_zero_i++;
 			}
@@ -338,7 +306,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			}
 			jj_map=Negative_Subfacet.find(subfacet);
 			if (jj_map!=Negative_Subfacet.end()) {
-				add_hyperplane(size,Positive_Simplex[i],Negative_Simplex[(*jj_map).second]);
+				add_hyperplane(size,**it,*((*jj_map).second));
 				Negative_Subfacet.erase(jj_map);
 			}
 			if (nr_zero_i==dim-1){
@@ -346,7 +314,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 					subfacet[k-1]=zero_i[k];
 					jj_map=Negative_Subfacet.find(subfacet);
 					if (jj_map!=Negative_Subfacet.end()) {
-						add_hyperplane(size,Positive_Simplex[i],Negative_Simplex[(*jj_map).second]);
+						add_hyperplane(size,**it,*((*jj_map).second));
 						Negative_Subfacet.erase(jj_map);
 					}
 				}
@@ -358,12 +326,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	if (tv_verbose) cout<<"transform_values: NS vs P"<<endl;
 	for (jj_map = Negative_Subfacet.begin();jj_map != Negative_Subfacet.end() ; jj_map++) { //Negative_simplex vs. Positive_Non_Simplex
 		subfacet=(*jj_map).first;
-		for (i = 0; i <Positive_Non_Simplex.size(); i++) {
+		for (it = Positive_Non_Simplex.begin(); it != Positive_Non_Simplex.end(); it++) {
 			for (k = 0; k <dim-2; k++)
-				if (Positive_Non_Simplex[i][subfacet[k]]!=0)
+				if ((**it)[subfacet[k]]!=0)
 					break;
 			if (k==dim-2) {
-				add_hyperplane(size,Positive_Non_Simplex[i],Negative_Simplex[(*jj_map).second]);
+				add_hyperplane(size,**it,*((*jj_map).second));
 				break;
 			}
 		}
@@ -379,24 +347,30 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	int PosSsize=Positive_Simplex.size();
 	#pragma omp parallel private(k,j,nr_zero_i,nr_zero_i_and_j)
 	{
+	list < vector<Integer>* >::iterator it=Positive_Simplex.begin();
+	int itpos=0;
 	vector< int > zero_i(nr_gen);
 	#pragma omp for schedule(dynamic)
 	for (int i =0; i<PosSsize; i++){ //Positive Simplex vs.Negative Non Simplex
+		for(;i > itpos; itpos++, it++) ;
+		for(;i < itpos; itpos--, it--) ;
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
-			if (Zero_PN[k] && Positive_Simplex[i][k]==0) {
+			if (Zero_PN[k] && (**it)[k]==0) {
 				zero_i[nr_zero_i]=k; //contains the indices where i is 0
 				nr_zero_i++;
 			}
 		}
 		if (nr_zero_i>sub) {
-			for (j=0; j<Negative_Non_Simplex.size(); j++){
+			list < vector<Integer>* >::iterator jt;
+			for (jt=Negative_Non_Simplex.begin(); jt!=Negative_Non_Simplex.end(); jt++){
 				nr_zero_i_and_j=0;
-				for (k = 0; k < nr_zero_i; k++)
-					if (Negative_Non_Simplex[j][zero_i[k]]==0)
+				for (k = 0; k < nr_zero_i; k++) {
+					if ((**jt)[zero_i[k]]==0)
 						nr_zero_i_and_j++;
-				if(nr_zero_i_and_j==dim-2){
-					add_hyperplane(size,Positive_Simplex[i],Negative_Non_Simplex[j]);
+				}
+				if(nr_zero_i_and_j==dim-2) {
+					add_hyperplane(size,(**it),(**jt));
 					if (nr_zero_i==dim-2) {
 						break;
 					}
@@ -425,22 +399,26 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	bool exactly_two;
 	vector< int > zero_i(nr_gen);
 	vector< int > zero_i_and_j(nr_gen);
+	list < vector<Integer>* >::iterator it=Positive_Non_Simplex.begin();
+	int itpos=0;
 	#pragma omp for schedule(dynamic)
 	for (int i =0; i<PosNSsize; i++){ //Positive Non Simplex vs.Negative Non Simplex
+		for(;i > itpos; itpos++, it++) ;
+		for(;i < itpos; itpos--, it--) ;
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
-			if (Zero_PN[k] && Positive_Non_Simplex[i][k]==0) {
+			if (Zero_PN[k] && (**it)[k]==0) {
 				zero_i[nr_zero_i]=k; //contains the indices where i is 0
 				nr_zero_i++;
 			}
 		}
 		if (nr_zero_i>sub) {
-			for (j=0; j<Negative_Non_Simplex.size(); j++){
+			list < vector<Integer>* >::iterator jt;
+			for (j=0, jt=Negative_Non_Simplex.begin(); jt!=Negative_Non_Simplex.end(); jt++, j++){
 				nr_zero_i_and_j=0;
 				for (k = 0; k < nr_zero_i; k++){
-					if (Negative_Non_Simplex[j][zero_i[k]]==0){
-						zero_i_and_j[nr_zero_i_and_j]=zero_i[k]; //contains the indices where
-						//both *i and *j are 0
+					if ((**jt)[zero_i[k]]==0){
+						zero_i_and_j[nr_zero_i_and_j]=zero_i[k]; //contains the indices where both *i and *j are 0
 						nr_zero_i_and_j++;
 					}
 				}
@@ -455,11 +433,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 							exactly_two=false;
 						}
 					}
-					else{
-						for (t=0;t<PosNSsize;t++){
+					else {
+						list < vector<Integer>* >::iterator tt=Positive_Non_Simplex.begin();
+						for (t=0; t<PosNSsize; t++, tt++){
 							if (t!=i) {
 								k=0;
-								while((k<nr_zero_i_and_j)&&(Positive_Non_Simplex[t][zero_i_and_j[k]]==0))
+								while((k<nr_zero_i_and_j)&&((**tt)[zero_i_and_j[k]]==0))
 									k++;
 								if (k==nr_zero_i_and_j) {
 									exactly_two=false;
@@ -468,10 +447,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 							}
 						}
 						if (exactly_two) {
-							for (t=0;t<Negative_Non_Simplex.size();t++){
+							tt=Negative_Non_Simplex.begin();
+							int t_size=Negative_Non_Simplex.size();
+							for (t=0; t<t_size; t++, tt++){
 								if (t!=j) {
 									k=0;
-									while((k<nr_zero_i_and_j)&&(Negative_Non_Simplex[t][zero_i_and_j[k]]==0))
+									while((k<nr_zero_i_and_j)&&((**tt)[zero_i_and_j[k]]==0))
 										k++;
 									if (k==nr_zero_i_and_j) {
 										exactly_two=false;
@@ -480,10 +461,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 								}
 							}
 							if (exactly_two) {
-								for (t=0;t<Neutral_Non_Simplex.size();t++){
-									if (t!=i) {
+								tt=Neutral_Non_Simplex.begin();
+								t_size=Neutral_Non_Simplex.size();
+								for (t=0; t<t_size; t++, tt++){
+									if (t!=i) { //TODO seltsam
 										k=0;
-										while((k<nr_zero_i_and_j)&&(Neutral_Non_Simplex[t][zero_i_and_j[k]]==0))
+										while( (k<nr_zero_i_and_j) && ((**tt)[zero_i_and_j[k]]==0) )
 											k++;
 										if (k==nr_zero_i_and_j) {
 											exactly_two=false;
@@ -495,7 +478,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 						}
 					}
 					if (exactly_two) {  //intersection of i and j is a subfacet
-						add_hyperplane(size,Positive_Non_Simplex[i],Negative_Non_Simplex[j]);
+						add_hyperplane(size,**it,**jt);
 					}
 				}
 			}
@@ -1572,7 +1555,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			 cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
 		}
 	}
-	else { // cone is simplicial, herefore no global reduction is necessary
+	else { // cone is simplicial, therefore no global reduction is necessary
 		if (verbose) {
 			cout<<"Cone is simplicial, no global reduction necessary."<<endl;
 		}
@@ -2418,7 +2401,7 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	int nested=omp_get_nested();
 	omp_set_nested(0);
 
-	int verbose_step=100;
+	int verbose_step=10000;
 	if (verbose) {
 		while (listsize > verbose_step/5 && verbose_step >= 100) {
 			verbose_step/=10;
@@ -2434,10 +2417,9 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		Full_Cone subcone(Generators.submatrix(*it));
 		subcone.support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
 //		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
-		//Triangulierung vom subcone zum ganzen Kegel (this) hinzufügen
 		list< vector<int> >::const_iterator sub_it  = subcone.Triangulation.begin();
 		list< vector<int> >::const_iterator sub_end = subcone.Triangulation.end();
-		//TODO indizes anpassen und der triangulierung zuf�gen
+		// adjust indices and add to Triangulation
 		while (sub_it!=sub_end) {
 			vector<int> simplex(dim,0);
 			for (int j=0; j<dim; j++) {
