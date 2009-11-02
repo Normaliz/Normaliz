@@ -36,7 +36,6 @@ using namespace std;
 #include "list_operations.h"
 
 //---------------------------------------------------------------------------
-
 extern bool test_arithmetic_overflow;
 extern int overflow_test_modulus;
 extern int lifting_bound;
@@ -99,7 +98,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	register int i,j,k,t,nr_zero_i,nr_zero_i_and_j,sub=dim-3;
 	
 	bool tv_verbose = verbose && Support_Hyperplanes.size()>9000;  //verbose in this method call
-	
+		
 	// preparing the computations
 	list < vector<Integer>* > l_Positive_Simplex,l_Positive_Non_Simplex;
 	list < vector<Integer>* > l_Negative_Simplex,l_Negative_Non_Simplex;
@@ -259,6 +258,9 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			Negative_Subfacet_Multi.erase(del);
 		}
 	}
+	#pragma omp critical(VERBOSE)
+	if (tv_verbose) cout<<"transform_values: singlemap size "<<Negative_Subfacet_Multi.size()<<endl;
+	
 	int Negative_Subfacet_Multi_Size=Negative_Subfacet_Multi.size();
 	map < vector< int >, int > Negative_Subfacet;
 	#pragma omp parallel private(i,j,k,jj)
@@ -487,14 +489,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 							if (exactly_two) {
 								for (t=0;t<Neutral_Non_Simplex.size();t++){
 									hp_t=(Neutral_Non_Simplex[t]);
-									if (t!=i) {
-										k=0;
-										while((k<nr_zero_i_and_j)&&((*hp_t)[zero_i_and_j[k]]==0))
-											k++;
-										if (k==nr_zero_i_and_j) {
-											exactly_two=false;
-											break;
-										}
+									k=0;
+									while((k<nr_zero_i_and_j)&&((*hp_t)[zero_i_and_j[k]]==0))
+										k++;
+									if (k==nr_zero_i_and_j) {
+										exactly_two=false;
+										break;
 									}
 								}
 							}
@@ -1507,7 +1507,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		//TODO Triangulierung nur loeschen wenn später nicht gebraucht!!! temporäre Teständerung
 		cout<<"deleting Triangulation: ";
 		Triangulation.clear();
-		cout<<"done"<<endl;			
+		cout<<"done "<<endl;			
 
 		if(verbose) {
 			cout<<"computing degree function: ";
@@ -1559,7 +1559,9 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		if (verbose) {
 			cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
 		}
+		cout<<"delete candidates ";
 		Candidates.clear();
+		cout<<"done "<<endl;
 		
 		// do global reduction
 		c=Candidates_with_Scalar_Product.begin();
@@ -1588,7 +1590,9 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Candidates.clear();
 	}
 
+	cout<<"delete scalar products of Hilbert Basis: "; cin>>status;
 	l_cut_front(Hilbert_Basis,dim); // take only the last dim entries of the vectors
+	cout<<"done "; cin>>status;
 	if(homogeneous==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
