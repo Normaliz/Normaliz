@@ -429,8 +429,10 @@ void Output::cone() const{
 		if (status=="normal"||status=="hilbert basis polynomial") {
 			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();  //TODO nicht kopieren!
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
-			Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
-			write_matrix_typ(V);
+			if(typ) {
+				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
+				write_matrix_typ(V);
+			}
 			Hilbert_Basis_Full_Cone=Hilbert_Basis_Full_Cone.multiplication(Diagonal);
 			Hilbert_Basis=Hilbert_Basis_Full_Cone.multiplication(Change_Inv);
 			write_matrix_gen(Hilbert_Basis);
