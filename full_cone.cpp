@@ -1590,9 +1590,9 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Candidates.clear();
 	}
 
-	cout<<"delete scalar products of Hilbert Basis: "; cin>>status;
+	cout<<"delete scalar products of Hilbert Basis: "; // cin>>status;
 	l_cut_front(Hilbert_Basis,dim); // take only the last dim entries of the vectors
-	cout<<"done "; cin>>status;
+	cout<<"done "<<endl; // cin>>status;
 	if(homogeneous==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
