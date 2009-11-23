@@ -1237,10 +1237,12 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 								#pragma omp critical(NON_COMP)
 								non_compressed.push_back(piece);
 							}
-							#pragma omp critical
-							{
-								nr_non_compressed++;
-								max_heigth=min(max_heigth, (int)explicit_cast_to_long(scalar_product));
+							if (verbose) {
+								#pragma omp critical
+								{
+									nr_non_compressed++;
+									max_heigth=max(max_heigth, (int)explicit_cast_to_long(scalar_product));
+								}
 							}
 						}
 					}
