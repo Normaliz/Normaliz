@@ -1506,11 +1506,6 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 
 	s=Support_Hyperplanes.size();
 	if (Triangulation.size()>1 || compressed_test) { // global reduction
-		//TODO Triangulierung nur loeschen wenn später nicht gebraucht!!! temporäre Teständerung
-		cout<<"deleting Triangulation: ";
-		Triangulation.clear();
-		cout<<"done "<<endl;			
-
 		if(verbose) {
 			cout<<"computing degree function: ";
 		}
