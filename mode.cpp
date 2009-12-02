@@ -70,7 +70,7 @@ void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 	rank=Basis_Change.get_rank();
 	if (rank==0) {
 		cerr<<"error: Input matrix has rank 0. Plese check input data."<<endl;
-		global_error_handling();
+		//global_error_handling();
 	}
 	Matrix V=Basis_Change.get_right();
 	Matrix V_Inv=Basis_Change.get_right_inv();
@@ -107,7 +107,7 @@ void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 	rank=Basis_Change.get_rank();
 	if (rank==0) {
 		cerr<<"error: Input matrix has rank 0. Please check input data."<<endl;
-		global_error_handling();
+		//global_error_handling();
 	}
 	Matrix V=Basis_Change.get_right();
 	Matrix V_Inv=Basis_Change.get_right_inv();
@@ -164,7 +164,7 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 	int rank=Basis_Change.get_rank();
 	if (rank==0) {
 		cerr<<"error: Input matrix has rank 0. Plese check input data."<<endl;
-		global_error_handling();
+		//global_error_handling();
 	}
 	Matrix V=Basis_Change.get_right();
 	Matrix V_Inv=Basis_Change.get_right_inv();
@@ -245,7 +245,7 @@ void run_mode_4( string& computation_type,const Matrix& Input, Output& Out){
 		cerr<<"error: Rank is not maximal. In mode 4 the input matrix must be of maximal rank.";
 		global_error_handling();
 	}
-	if(computation_type!="dual"){
+	if(computation_type!="dual"){		//Linear transformation ???
 		Full_Cone Help(Input);
 		Help.support_hyperplanes();
 		Matrix Generators=Help.read_support_hyperplanes();
@@ -253,7 +253,7 @@ void run_mode_4( string& computation_type,const Matrix& Input, Output& Out){
 			Matrix Trivial_Solution(1,Input.nr_of_columns(),0);
 			Generators=Trivial_Solution;
 			cerr<<"warning: The only solution of the system is 0.";
-			global_error_handling();
+			//global_error_handling();
 		}
 		run_mode_0( computation_type ,Generators, Out);
 	}

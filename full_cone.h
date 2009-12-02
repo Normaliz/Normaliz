@@ -143,6 +143,7 @@ public:
   void hilbert_basis_dual(); //computes the Hilbert basis with the dual algorithm
 
 	bool check_compressed(); //checks if the cone is compressed
+	void support_hyperplanes_dynamic();
 //---------------------------------------------------------------------------
 //						Error msg
 //---------------------------------------------------------------------------
