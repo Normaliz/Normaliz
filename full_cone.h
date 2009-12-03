@@ -40,7 +40,7 @@ class Full_Cone{
   Matrix Generators;
   vector<bool> Extreme_Rays;
   list< vector<Integer> > Support_Hyperplanes;
-  list< vector<int> > Triangulation;
+  list< Simplex > Triangulation;
   list< vector<Integer> > Hilbert_Basis;
   list< vector<Integer> > Homogeneous_Elements;
   vector<Integer> H_Vector;

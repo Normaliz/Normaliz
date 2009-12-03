@@ -530,7 +530,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 void Full_Cone::add_simplex(const int& new_generator,const int& size,const vector<int>& col, const vector<int>& col_inv){
 	list< vector<Integer> >::const_iterator i=Support_Hyperplanes.begin();
-	list< vector<int> >::const_iterator j;
+	list< Simplex >::const_iterator j;
 	int nr_zero_i, nr_nonzero_i, not_in_i=0, l, k, s, Triangulation_size=Triangulation.size();
 	vector<int> key(dim);
 
@@ -558,13 +558,14 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 					}
 				}
 				key[dim-1]=new_generator+1;
+				Simplex simp(key);
 				#pragma omp critical(TRIANG)
-				Triangulation.push_back(key);
+				Triangulation.push_back(simp);
 			}
 			else {
 				j =Triangulation.begin();
 				for (s=0; s<Triangulation_size; s++){
-					key=(*j);
+					key=(*j).read_key();
 					nr_nonzero_i=0;
 					k=0;
 					do{
@@ -576,8 +577,9 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 					} while((k<dim)&&(nr_nonzero_i<2));
 					if (nr_nonzero_i<=1){
 						key[not_in_i]=new_generator+1;
+						Simplex simp(key);
 						#pragma omp critical(TRIANG)
-						Triangulation.push_back(key);
+						Triangulation.push_back(simp);
 					}
 					j++;
 				}
@@ -813,14 +815,14 @@ void Full_Cone::find_new_face(){
 	}
 	int i;
 	vector<int> facet(dim-1),key;
-	list< vector<int> >::iterator l;
+	list< Simplex >::iterator l;
 	list< int > help;
 	list< int >::const_iterator m;
 	set< vector<int> > Facets;
 	set< vector<int> >::iterator del;
 	for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
 		help.clear();
-		key=(*l);
+		key=(*l).read_key();
 		for (i = 0; i <dim-1; i++) {
 			facet[i]=key[i];
 		}
@@ -847,8 +849,7 @@ void Full_Cone::find_new_face(){
 			new_face[i]=(*m);
 			i++;
 		}
-	//TODO Hier wird eine Simplexliste ben�tigt?
-	//		(*l).write_new_face(new_face);
+		(*l).write_new_face(new_face);
 	}
 	if (verbose==true) {
 		cout<<"done."<<endl; 
@@ -890,7 +891,7 @@ Full_Cone::Full_Cone(Matrix M){
 	Extreme_Rays=Help2;
 	list< vector<Integer> >  Help3;
 	Support_Hyperplanes=Help3;
-	list< vector<int> >  Help4;
+	list< Simplex >  Help4;
 	Triangulation=Help4;
 	list< vector<Integer> >  Help5;
 	Hilbert_Basis=Help5;
@@ -1046,9 +1047,9 @@ Matrix Full_Cone::read_triangulation()const{
 	Matrix M(s,dim);
 	vector<int> key(dim);
 	int i=1;
-	list< vector<int> >::const_iterator l;
+	list< Simplex >::const_iterator l;
 	for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
-		key=(*l);
+		key=(*l).read_key();
 		sort(key.begin(),key.end());
 		M.write(i,key);
 		i++;
@@ -1063,14 +1064,14 @@ Matrix Full_Cone::read_triangulation_volume()const{
 	Matrix M(s,dim+1);
 	vector<int> key(dim);
 	int k,i=1;
-	list< vector<int> >::const_iterator l;
+	list< Simplex >::const_iterator l;
 	for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
-		key=(*l);
+		key=(*l).read_key();
 		sort(key.begin(),key.end());
 		for (k = 0; k <dim; k++) {
 			M.write(i,k+1,key[k]);
 		}
-		M.write(i,dim+1,0); //TODO OHOH(*l).read_volume());
+		M.write(i,dim+1,(*l).read_volume());
 		i++;
 	}
 	return M;
@@ -1232,8 +1233,8 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 					if (scalar_product<0) {
 						new_generator=true;
 						if (compressed_test && scalar_product<-1) { //found non-compressed piece
-							//TODO kegel bilden (erzeuger in der hyperebene und der neue erzeuger)
-							vector<int> piece;  //TODO not optimal
+							// make new subcone (gens in hyperplane + new gen)
+							vector<int> piece;
 							for (int g=dim; g<size; g++) {
 								if ((*l)[g]==0) {
 									piece.push_back(test_key[g]);
@@ -1241,8 +1242,9 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 							}
 							piece.push_back(i+1);
 							if (piece.size()==dim) { //simplicial case
+								Simplex simp(piece);
 								#pragma omp critical(TRIANG)
-								Triangulation.push_back(piece);
+								Triangulation.push_back(simp);
 								#pragma omp critical
 								nr_non_compressed_simp++;
 							}
@@ -1254,7 +1256,7 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 								#pragma omp critical
 								{
 									nr_non_compressed++;
-									max_heigth=max(max_heigth, (int)explicit_cast_to_long(scalar_product));
+									max_heigth=min(max_heigth, (int)explicit_cast_to_long(scalar_product));
 								}
 							}
 						}
@@ -1586,12 +1588,12 @@ void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
 	int counter=0;
 	Integer volume;
 	multiplicity=0;
-	list< vector<int> >::iterator l;
+	list< Simplex >::iterator l;
 	for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
-		Simplex S=Simplex(*l);
+		Simplex S=(*l);
 		S.initialize(Generators);
 		volume=S.read_volume();
-		//TODO OHOH (*l).write_volume(volume);
+		(*l).write_volume(volume);
 		multiplicity=multiplicity+volume;
 		if (verbose==true) {
 			counter++;
@@ -1632,7 +1634,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Candidates.insert(Generators.read(i));
 	}
 	multiplicity=0;
-	list< vector<int> >::iterator l=Triangulation.begin();
+	list< Simplex >::iterator l=Triangulation.begin();
 	int lpos=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
@@ -1641,7 +1643,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		for(;k > lpos; lpos++, l++) ;
 		for(;k < lpos; lpos--, l--) ;
 
-		Simplex S=Simplex(*l);
+		Simplex S=(*l);
 		S.hilbert_basis_interior(Generators);
 		volume=S.read_volume();
 		#pragma omp critical(MULT)
@@ -1957,13 +1959,13 @@ void Full_Cone::hilbert_polynomial(){
 			Homogeneous_Elements.push_back(Generators.read(i));
 		}
 		list< vector<Integer> > HE;
-		list< vector<int> >::iterator l;
+		list< Simplex >::iterator l;
 		for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
-			Simplex S=Simplex(*l);
+			Simplex S=(*l);
 			H_Vector[S.read_new_face_size()]++;
 			S.h_vector(Generators,Linear_Form);
 			volume=S.read_volume();
-			//TODO OHOH (*l).write_volume(volume);
+			(*l).write_volume(volume);
 			multiplicity=multiplicity+volume;
 			HE=S.read_homogeneous_elements();
 			Homogeneous_Elements.merge(HE);
@@ -2010,13 +2012,13 @@ void Full_Cone::hilbert_basis_polynomial(){
 			Homogeneous_Elements.push_back(Generators.read(i));
 		}
 		multiplicity=0;
-		list< vector<int> >::iterator l;
+		list< Simplex >::iterator l;
 		for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
-			Simplex S=Simplex(*l);
+			Simplex S=(*l);
 			H_Vector[S.read_new_face_size()]++;
 			S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
 			volume=S.read_volume();
-			//TODO OHOH (*l).write_volume(volume);
+			(*l).write_volume(volume);
 			multiplicity=multiplicity+volume;
 			HE=S.read_homogeneous_elements();
 			Homogeneous_Elements.merge(HE);
@@ -2118,11 +2120,11 @@ Integer Full_Cone::primary_multiplicity() const{
 		}
 	}
 	list< vector<Integer> >::const_iterator h;
-	list< vector<int> >::const_iterator t;
+	list< Simplex >::const_iterator t;
 	for (h =Support_Hyperplanes.begin(); h != Support_Hyperplanes.end(); h++){
 		if ((*h)[dim-1]!=0) {
 			for (t =Triangulation.begin(); t!=Triangulation.end(); t++){
-				key=(*t);
+				key=(*t).read_key();
 				for (i = 0; i <dim; i++) {
 					k=0;
 					for (j = 0; j < dim; j++) {
@@ -2610,17 +2612,19 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		for(;i > itpos; itpos++, it++) ;
 		for(;i < itpos; itpos--, it--) ;
 //		v_read(*it); cout<<" subcone "<<i+1;
-		//Triangulierung des subcones bestimmen
+		//compute triangulations of subcones
 		Full_Cone subcone(Generators.submatrix(*it));
 		subcone.support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
 //		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
-		list< vector<int> >::const_iterator sub_it  = subcone.Triangulation.begin();
-		list< vector<int> >::const_iterator sub_end = subcone.Triangulation.end();
+		list< Simplex >::const_iterator sub_it  = subcone.Triangulation.begin();
+		list< Simplex >::const_iterator sub_end = subcone.Triangulation.end();
+		vector<int> key;
 		// adjust indices and add to Triangulation
 		while (sub_it!=sub_end) {
 			vector<int> simplex(dim,0);
+			key=(*sub_it).read_key();
 			for (int j=0; j<dim; j++) {
-				simplex[j]=(*it)[(*sub_it)[j]-1];
+				simplex[j]=(*it)[key[j]-1];
 			}
 			#pragma omp critical(TRIANG)
 			Triangulation.push_back(simplex);
