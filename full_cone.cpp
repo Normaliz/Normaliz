@@ -603,7 +603,9 @@ void Full_Cone::reduce_and_insert(const vector< Integer >& new_element){
 		vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
 		list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-			if ( new_element[0]>=2*(*j)[0] ) {//otherwise new_element is not reducible since the norm is to small
+			if ( new_element[0]<2*(*j)[0] ) {
+				break; //new_element is not reducible since the norm is too small, goes into HB
+			} else {
 				if ((*j)[c]<=scalar_product[c-1]){
 					for (i = 1; i < s; i++) {
 						if ((*j)[i]>scalar_product[i-1]){
@@ -1646,6 +1648,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Simplex S=(*l);
 		S.hilbert_basis_interior(Generators);
 		volume=S.read_volume();
+		(*l).write_volume(volume);
 		#pragma omp critical(MULT)
 		multiplicity += volume;
 		HB=S.acces_hilbert_basis();
@@ -1657,7 +1660,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			#pragma omp critical(VERBOSE)
 			{
 				counter++;
-				if (counter%2000==0) {
+				if (counter%100==0) {
 					cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 				}
 			}
@@ -2585,6 +2588,8 @@ bool Full_Cone::check_compressed() {
 	return is_compressed;
 }
 
+//---------------------------------------------------------------------------
+
 void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	int listsize=non_compressed.size();
 	if (verbose) {
@@ -2597,8 +2602,8 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	//override global values for recursion
 	bool verbose_bak = verbose;
 	verbose=false;
-	int nested=omp_get_nested();
-	omp_set_nested(0);
+//	int nested=omp_get_nested();
+//	omp_set_nested(0);
 
 	int verbose_step=10000;
 	if (verbose) {
@@ -2642,6 +2647,6 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 
 	//restore global values
 	verbose=verbose_bak;
-	omp_set_nested(nested);
+//	omp_set_nested(nested);
 }
 
