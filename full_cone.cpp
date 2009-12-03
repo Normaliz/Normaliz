@@ -1290,152 +1290,152 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplanes_dynamic(){
-if (verbose==true) {
-cout<<"\n************************************************************\n";
-cout<<"computing support hyperplanes ..."<<endl;
-}
-int i,j,k;
-bool simplicial;
-set<Integer> test_simplicial;
-Integer scalar_product, scalar_product_small;
-//intialization of the list of support hyperplanes
-vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-Simplex S(Generators);
-vector<int> key=S.read_key();
-vector<bool> in_triang(nr_gen,false);
-vector <int> test_key(hyp_size);
-for (i = 0; i < dim; i++) {
-	 in_triang[key[i]-1]=true;
-}
-Matrix G=S.read_generators();
-G=G.transpose();
-Matrix H=S.read_support_hyperplanes();
-Matrix P=H.multiplication(G);
-for (i = 1; i <=dim; i++) {
-	 L=H.read(i);
-	 R=P.read(i);
-	 for (j = 0; j < dim; j++) {
-	 hyperplane[j]=L[j];
-	 hyperplane[j+dim]=R[j];
-	 test_key[j+dim]=key[j];
-}
-Support_Hyperplanes.push_back(hyperplane);
-}
-//computation of support hyperplanes
-if (test_arithmetic_overflow==true) {  // does arithmetic tests
-int size=2*dim;
-bool new_generator;
-for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-for (i = 0; i < nr_gen; i++) {
-if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-new_generator=false;
-simplicial=true;
-list< vector<Integer> >::iterator l;
-for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-L=Generators.read(i+1);
-scalar_product=v_scalar_product(L,(*l));
-scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
-if ((*l)[dim-1]!=0) {
-if (scalar_product_small % (*l)[dim-1]==0) { 
-test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
-}
-}
-if (v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-		error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
-}
-
-(*l)[size]=scalar_product;
-if (scalar_product<0) {
-   new_generator=true;
-}
-if (scalar_product==0) {
-   simplicial=false;
-}
-}
-if (simplicial==false) {
-	k=0;
-	while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
-		 L[dim-1]--;
-		 k--;
+	if (verbose==true) {
+		cout<<"\n************************************************************\n";
+		cout<<"computing support hyperplanes ..."<<endl;
 	}
-	Generators.write(i+1,dim,L[dim-1]);
-	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-		(*l)[size]=(*l)[size]+k* (*l)[dim-1];
+	int i,j,k;
+	bool simplicial;
+	set<Integer> test_simplicial;
+	Integer scalar_product, scalar_product_small;
+	//intialization of the list of support hyperplanes
+	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
+	Simplex S(Generators);
+	vector<int> key=S.read_key();
+	vector<bool> in_triang(nr_gen,false);
+	vector <int> test_key(hyp_size);
+	for (i = 0; i < dim; i++) {
+		 in_triang[key[i]-1]=true;
 	}
-    
-}
-if (new_generator) {
-	in_triang[i]=true;
-	test_key[size]=i+1;
-	transform_values(size,test_key);
-	size++;
-}
-if (verbose==true) {
-cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
-}
-}
-}
-}
-}
-else  {                      // no arithmetic tests
-int size=2*dim;
-bool new_generator;
-for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-for (i = 0; i < nr_gen; i++) {
-if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-new_generator=false;
-simplicial=true;
-list< vector<Integer> >::iterator l;
-for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-L=Generators.read(i+1);
-scalar_product=v_scalar_product(L,(*l));
-scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
-if ((*l)[dim-1]!=0) {
-if (scalar_product_small % (*l)[dim-1]==0) {
-test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
-}
-}
-(*l)[size]=scalar_product;
-if (scalar_product<0) {
-   new_generator=true;
-}
-if (scalar_product==0) {
-   simplicial=false;
-}
-}
-if (simplicial==false) {
-	k=0;
-	while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
-		 L[dim-1]--;
-		 k--;
+	Matrix G=S.read_generators();
+	G=G.transpose();
+	Matrix H=S.read_support_hyperplanes();
+	Matrix P=H.multiplication(G);
+	for (i = 1; i <=dim; i++) {
+		 L=H.read(i);
+		 R=P.read(i);
+		 for (j = 0; j < dim; j++) {
+			 hyperplane[j]=L[j];
+			 hyperplane[j+dim]=R[j];
+			 test_key[j+dim]=key[j];
+		}
+	Support_Hyperplanes.push_back(hyperplane);
 	}
-	Generators.write(i+1,dim,L[dim-1]);
-	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-		(*l)[size]=(*l)[size]+k* (*l)[dim-1];
+	//computation of support hyperplanes
+	if (test_arithmetic_overflow==true) {  // does arithmetic tests
+		int size=2*dim;
+		bool new_generator;
+		for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
+			for (i = 0; i < nr_gen; i++) {
+				if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
+					new_generator=false;
+					simplicial=true;
+					list< vector<Integer> >::iterator l;
+					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+						L=Generators.read(i+1);
+						scalar_product=v_scalar_product(L,(*l));
+						scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
+						if ((*l)[dim-1]!=0) {
+							if (scalar_product_small % (*l)[dim-1]==0) { 
+								test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
+							}
+						}
+						if (v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
+								error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+						}
+						
+						(*l)[size]=scalar_product;
+						if (scalar_product<0) {
+						   new_generator=true;
+						}
+						if (scalar_product==0) {
+						   simplicial=false;
+						}
+					}
+					if (simplicial==false) {
+						k=0;
+						while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
+							 L[dim-1]--;
+							 k--;
+						}
+						Generators.write(i+1,dim,L[dim-1]);
+						for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+							(*l)[size]=(*l)[size]+k* (*l)[dim-1];
+						}
+					    
+					}
+					if (new_generator) {
+						in_triang[i]=true;
+						test_key[size]=i+1;
+						transform_values(size,test_key);
+						size++;
+					}
+					if (verbose==true) {
+						cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
+					}
+				}
+			}
+		}
 	}
-    
-}
-if (new_generator) {
-	in_triang[i]=true;
-	test_key[size]=i+1;
-	transform_values(size,test_key);
-	size++;
-}
-if (verbose==true) {
-cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
-}
-}
-}
-}
-}
-
-l_cut(Support_Hyperplanes,dim);
-Matrix SH=read_support_hyperplanes();
-if (SH.rank()!=dim) {
-	   error("error: Not pointed cone detected. This program is limited to pointed cones only.");
-}
-status="support hyperplanes";
-extreme_rays();
+	else  {                      // no arithmetic tests
+		int size=2*dim;
+		bool new_generator;
+		for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
+			for (i = 0; i < nr_gen; i++) {
+				if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
+					new_generator=false;
+					simplicial=true;
+					list< vector<Integer> >::iterator l;
+					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+						L=Generators.read(i+1);
+						scalar_product=v_scalar_product(L,(*l));
+						scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
+						if ((*l)[dim-1]!=0) {
+							if (scalar_product_small % (*l)[dim-1]==0) {
+								test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
+							}
+						}
+						(*l)[size]=scalar_product;
+						if (scalar_product<0) {
+						   new_generator=true;
+						}
+						if (scalar_product==0) {
+						   simplicial=false;
+						}
+					}
+					if (simplicial==false) {
+						k=0;
+						while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
+							 L[dim-1]--;
+							 k--;
+						}
+						Generators.write(i+1,dim,L[dim-1]);
+						for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+							(*l)[size]=(*l)[size]+k* (*l)[dim-1];
+						}
+					    
+					}
+					if (new_generator) {
+						in_triang[i]=true;
+						test_key[size]=i+1;
+						transform_values(size,test_key);
+						size++;
+					}
+					if (verbose==true) {
+						cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
+					}
+				}
+			}
+		}
+	}
+	
+	l_cut(Support_Hyperplanes,dim);
+	Matrix SH=read_support_hyperplanes();
+	if (SH.rank()!=dim) {
+		   error("error: Not pointed cone detected. This program is limited to pointed cones only.");
+	}
+	status="support hyperplanes";
+	extreme_rays();
 }
 
 //---------------------------------------------------------------------------
@@ -1827,742 +1827,741 @@ void Full_Cone::line_shelling(){  //try shelling with a line of direction (0,0 .
 	}
 }
 
-	//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-	void Full_Cone::triangulation_lift(){
-		if (status!="support hyperplanes") {
-			error("error: Status support hyperplanes needed before using Full_Cone::triangulation_lift.");
-			return;
-		}
-		int i,j,counter=0,nr_extreme_rays=0;
-		for (i = 0; i < nr_gen; i++) {
-			if (Extreme_Rays[i]==true) {
-				nr_extreme_rays++;
-			}
-		}
-		vector<int> Extreme(nr_extreme_rays);
-		for (i = 0; i < nr_gen; i++) {
-			if (Extreme_Rays[i]==true) {
-				Extreme[counter]=i+1;
-				counter++;
-			}
-		}
-		Matrix Extreme_Generators=Generators.submatrix(Extreme);
-		if (Extreme_Generators.nr_of_columns()==Extreme_Generators.nr_of_rows()) {
-			Simplex S(Extreme);
-			Triangulation.push_back(S.read_key()); 
-		}
-		else {
-			Full_Cone Lifted;
-			lift(Lifted,Extreme_Generators);
-			if (Lifted.read_status()!="support hyperplanes") {
-				error("error: Status support hyperplanes for the lifted cone needed when using Full_Cone::triangulation_lift.");
-				return;
-			}
-			Lifted.line_shelling();
-			if (verbose==true) {
-				cout<<"computing triangulation ..."<<endl;
-			}
-			vector<int> key(dim);
-			vector<Integer> v;
-			list < vector<Integer> >::const_iterator l;
-			for (l = Lifted.Support_Hyperplanes.begin(); l != Lifted.Support_Hyperplanes.end(); l++) {
-				v=Lifted.Generators.MxV((*l));
-				counter=0;
-				for (j = 0; j < nr_extreme_rays; j++) {
-					if (v[j]==0) {
-						key[counter]=Extreme[j];
-						counter++;
-					}
-				}
-				//Simplex S(key);
-				Triangulation.push_back(key);
-			}
-		}
-		if (verbose==true) {
-			cout<<"computed triangulation has "<<Triangulation.size()<<" simplices"<<endl;
+void Full_Cone::triangulation_lift(){
+	if (status!="support hyperplanes") {
+		error("error: Status support hyperplanes needed before using Full_Cone::triangulation_lift.");
+		return;
+	}
+	int i,j,counter=0,nr_extreme_rays=0;
+	for (i = 0; i < nr_gen; i++) {
+		if (Extreme_Rays[i]==true) {
+			nr_extreme_rays++;
 		}
 	}
-
-	//---------------------------------------------------------------------------
-
-	vector<Integer> Full_Cone::compute_e_vector(){
-		int i,j;
-		vector <Integer> E_Vector(dim,0);
-		vector <Integer> Q=H_Vector;
-		Q.push_back(0);
-		for (i = 0; i <dim; i++) {
-			for (j = 0; j <dim; j++) {
-				E_Vector[i]+=Q[j];
-			}
-			E_Vector[i]/=permutations(1,i);
-			for (j = 1; j <=dim; j++) {
-				Q[j-1]=j*Q[j];
-			}
-		}
-		return E_Vector;
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::compute_polynomial(){
-		int i,j;
-		Integer mult_factor, factorial=permutations(1,dim);
-		vector <Integer> E_Vector=compute_e_vector();
-		vector <Integer> C(dim,0);
-		C[0]=1;
-		for (i = 0; i <dim; i++) {
-			mult_factor=permutations(i,dim);
-			if (((dim-1-i)%2)==0) {
-				for (j = 0; j <dim; j++) {
-					Hilbert_Polynomial[2*j]+=mult_factor*E_Vector[dim-1-i]*C[j];
-				}
-			}
-			else {
-				for (j = 0; j <dim; j++) {
-					Hilbert_Polynomial[2*j]-=mult_factor*E_Vector[dim-1-i]*C[j];
-				}
-			}
-			for (j = dim-1; 0 <j; j--) {
-				C[j]=(i+1)*C[j]+C[j-1];
-			}
-			C[0]=permutations(1,i+1);
-		}
-		for (i = 0; i <dim; i++) {
-			mult_factor=gcd(Hilbert_Polynomial[2*i],factorial);
-			Hilbert_Polynomial[2*i]/= mult_factor;
-			Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
-		}
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::hilbert_polynomial(){
-		if (homogeneous==false) {
-			hilbert_basis();
-		}
-		else{
-			if(dim>0){            //correction nedded to include the 0 cone;
-			support_hyperplanes();
-			triangulation_lift();
-			find_new_face();
-			if (verbose==true) {
-				cout<<"\n************************************************************\n";
-				cout<<"computing Hilbert polynomial ..."<<endl;
-			}
-			int counter=0;
-			Integer volume;
-			multiplicity=0;
-			for (int i = 1; i <=nr_gen; i++) {
-				Homogeneous_Elements.push_back(Generators.read(i));
-			}
-			list< vector<Integer> > HE;
-			list< vector<int> >::iterator l;
-			for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
-				Simplex S=Simplex(*l);
-				H_Vector[S.read_new_face_size()]++;
-				S.h_vector(Generators,Linear_Form);
-				volume=S.read_volume();
-				//TODO OHOH (*l).write_volume(volume);
-				multiplicity=multiplicity+volume;
-				HE=S.read_homogeneous_elements();
-				Homogeneous_Elements.merge(HE);
-				H_Vector=v_add(H_Vector,S.read_h_vector());
-				if (verbose==true) {
-					counter++;
-					if (counter%100==0) {
-						cout<<"simplex="<<counter<<endl;
-					}
-				}
-			}
-			compute_polynomial();
-			Homogeneous_Elements.sort();
-			Homogeneous_Elements.unique();
-			} // end if (dim>0)
-			status="hilbert polynomial";
-		}
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::hilbert_basis_polynomial(){
-		if (homogeneous==false) {
-			hilbert_basis();
-		}
-		else{
-			if(dim>0){            //correction nedded to include the 0 cone;
-			support_hyperplanes();
-			triangulation_lift();
-			find_new_face();
-			if (verbose==true) {
-				cout<<"\n************************************************************\n";
-				cout<<"computing Hilbert basis and polynomial ..."<<endl;
-			}
-			int counter=0,i,s,global_reduction_counter=0;
-			Integer volume, norm;
-			vector<Integer> scalar_product;
-			set < vector<Integer> > Candidates,Candidates_with_Scalar_Product;
-			list <vector <Integer> >  HB,HE;
-			set <vector <Integer> >::iterator c;
-			list <vector <Integer> >::const_iterator h;
-			for (i = 1; i <=nr_gen; i++) {
-				Candidates.insert(Generators.read(i));
-				Homogeneous_Elements.push_back(Generators.read(i));
-			}
-			multiplicity=0;
-			list< vector<int> >::iterator l;
-			for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
-				Simplex S=Simplex(*l);
-				H_Vector[S.read_new_face_size()]++;
-				S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
-				volume=S.read_volume();
-				//TODO OHOH (*l).write_volume(volume);
-				multiplicity=multiplicity+volume;
-				HE=S.read_homogeneous_elements();
-				Homogeneous_Elements.merge(HE);
-				H_Vector=v_add(H_Vector,S.read_h_vector());
-				HB=S.acces_hilbert_basis();
-				for (h = HB.begin(); h != HB.end(); h++) {
-					Candidates.insert((*h));
-				}
-				if (verbose==true) {
-					counter++;
-					if (counter%100==0) {
-						cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
-					}
-				}
-			}
-			s=Support_Hyperplanes.size();
-			if(optimize_speed==false){   //scalar products computed twice
-				for (c = Candidates.begin(); c != Candidates.end(); c++) {
-					scalar_product=l_multiplication(Support_Hyperplanes,(*c));
-					norm=0;
-					for (i = 0; i < s; i++) {
-						norm=norm+scalar_product[i];
-					}
-					vector <Integer> new_element(1);
-					new_element[0]=norm;
-					new_element=v_merge(new_element,(*c));
-					Candidates_with_Scalar_Product.insert(new_element);
-					if (verbose==true) {
-						if (Candidates_with_Scalar_Product.size()%20000==0) {
-							cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-						}
-					}
-				}
-				Candidates.clear();
-				c=Candidates_with_Scalar_Product.begin();
-				while(c != Candidates_with_Scalar_Product.end()) {
-					reduce_and_insert((*c));
-					Candidates_with_Scalar_Product.erase(c);
-					c=Candidates_with_Scalar_Product.begin();
-					if (verbose==true) {
-						global_reduction_counter++;
-						if (global_reduction_counter%10000==0) {
-							cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
-						}
-					}
-				}
-			}
-			else{   //scalar products saved in memory
-				for (c = Candidates.begin(); c != Candidates.end(); c++) {
-					scalar_product=l_multiplication(Support_Hyperplanes,(*c));
-					norm=0;
-					for (i = 0; i < s; i++) {
-						norm=norm+scalar_product[i];
-					}
-					vector <Integer> new_element(1);
-					new_element[0]=norm;
-					new_element=v_merge(new_element,scalar_product);
-					new_element=v_merge(new_element,(*c));
-					Candidates_with_Scalar_Product.insert(new_element);
-					if (verbose==true) {
-						if (Candidates_with_Scalar_Product.size()%20000==0) {
-							cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-						}
-					}
-				}
-				Candidates.clear();
-				c=Candidates_with_Scalar_Product.begin();
-				while(c != Candidates_with_Scalar_Product.end()) {
-					reduce_and_insert_speed((*c));
-					Candidates_with_Scalar_Product.erase(c);
-					c=Candidates_with_Scalar_Product.begin();
-					if (verbose==true) {
-						global_reduction_counter++;
-						if (global_reduction_counter%10000==0) {
-							cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
-						}
-					}
-				}
-			}
-			l_cut_front(Hilbert_Basis,dim);
-			compute_polynomial();
-			Homogeneous_Elements.sort();
-			Homogeneous_Elements.unique();
-			} // end if (dim>0)
-			status="hilbert basis polynomial";
-		}
-	}
-
-	//---------------------------------------------------------------------------
-
-	Integer Full_Cone::primary_multiplicity() const{
-		int i,j,k;
-		Integer primary_multiplicity=0;
-		vector <int> key,new_key(dim-1);
-		Matrix Projection(nr_gen,dim-1);
-		for (i = 1; i <= nr_gen; i++) {
-			for (j = 1; j <= dim-1; j++) {
-				Projection.write(i,j,Generators.read(i,j));
-			}
-		}
-		list< vector<Integer> >::const_iterator h;
-		list< vector<int> >::const_iterator t;
-		for (h =Support_Hyperplanes.begin(); h != Support_Hyperplanes.end(); h++){
-			if ((*h)[dim-1]!=0) {
-				for (t =Triangulation.begin(); t!=Triangulation.end(); t++){
-					key=(*t);
-					for (i = 0; i <dim; i++) {
-						k=0;
-						for (j = 0; j < dim; j++) {
-							if (j!=i && Generators.read(key[j],dim)==1) {
-								if (v_scalar_product(Generators.read(key[j]),(*h))==0) {
-									k++;
-								}
-
-							}
-							if (k==dim-1) {
-								for (j = 0; j <i; j++) {
-									new_key[j]=key[j];
-								}
-								for (j = i; j <dim-1; j++) {
-									new_key[j]=key[j+1];
-								}
-								Simplex S(new_key,Projection);
-								primary_multiplicity+=S.read_volume();
-							}
-						}
-
-					}
-
-				}
-			}
-
-		}
-		return primary_multiplicity;
-	}
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
-		if (verbose==true) {
-			cout<<"adding hyperplane "<<hyp_counter<<" ..."<<endl;
-		}
-		int i,sign;
-		bool  not_done;
-		list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
-		Integer orientation, scalar_product,diff,factor;
-		vector <Integer> hyperplane=Generators.read(hyp_counter);
-		list< vector<Integer> >::iterator h;
-		if (lifting==true) {
-			orientation=v_scalar_product(hyperplane,halfspace);
-			if(orientation<0){
-				orientation=-orientation;
-				v_scalar_multiplication(halfspace,-1); //transforming into the generator of the positive halfspace
-			}
-			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) { //reduction  modulo  the generator of the positive halfspace
-				scalar_product=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
-				sign=1;
-				if (scalar_product<0) {
-					scalar_product=-scalar_product;
-					sign=-1;
-				}
-				factor=scalar_product/orientation;
-				for (i = 0; i < dim; i++) {
-					(*h)[nr_gen+3+i]=(*h)[nr_gen+3+i]-sign*factor*halfspace[i];
-				}
-			}
-			//adding the generators of the halfspace to negative and positive
-			vector <Integer> hyp_element(hyp_size+3,0);
-			for (i = 0; i < dim; i++) {
-				hyp_element[nr_gen+3+i]= halfspace[i];
-			}
-			hyp_element[hyp_counter]=orientation;
-			hyp_element[0]=orientation;
-			if (orientation==0){ //never
-				Neutral_Ired.push_back(hyp_element);
-			}
-			else{
-				Positive_Ired.push_back(hyp_element);
-				v_scalar_multiplication(hyp_element,-1);
-				hyp_element[hyp_counter]=orientation;
-				hyp_element[0]=orientation;
-				Negative_Ired.push_back(hyp_element);
-			}
-		}
-		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) { //dividing into negative and positive
-			(*h)[hyp_counter]=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
-			if ((*h)[hyp_counter]>0) {
-				(*h)[nr_gen+1]=1;     // generation
-				(*h)[nr_gen+2]=0;     //not sum
-				(*h)[0]+=(*h)[hyp_counter];
-				Positive_Ired.push_back((*h));
-			}
-			if ((*h)[hyp_counter]<0) {
-				(*h)[hyp_counter]=-(*h)[hyp_counter];
-				(*h)[nr_gen+1]=1;
-				(*h)[nr_gen+2]=0;
-				(*h)[0]+=(*h)[hyp_counter];
-				Negative_Ired.push_back((*h));
-			}
-			if ((*h)[hyp_counter]==0) {
-				(*h)[nr_gen+1]=0;
-				(*h)[nr_gen+2]=0;
-				Neutral_Ired.push_back((*h));
-			}
-		}
-		Neutral_Ired.sort();
-		Positive_Ired.sort();
-		Negative_Ired.sort();
-		//long int counter=0;
-		list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Positive,Negative,Neutral,Pos,Neg,Neu;
-		list < vector<Integer> >::const_iterator p,n;
-		list < vector <Integer> >::iterator c;
-		not_done=true;
-		while(not_done){
-			not_done=false;
-			Positive=Positive_Ired; //copies
-			Negative=Negative_Ired; //the copies will be unordered in the proces
-			Neutral=Neutral_Ired;
-			New_Positive.clear();
-			New_Negative.clear();
-			New_Neutral.clear();
-			//generating new elements
-			for (p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
-				for (n = Negative_Ired.begin(); n != Negative_Ired.end(); n++){
-					if ((*p)[nr_gen+1]<=1&&(*n)[nr_gen+1]<=1&&((*p)[nr_gen+1]!=0||(*n)[nr_gen+1]!=0)) {
-						if (((*p)[nr_gen+2]!=0&&(*p)[nr_gen+2]<=(*n)[hyp_counter])||((*n)[nr_gen+2]!=0&&(*n)[nr_gen+2]<=(*p)[hyp_counter]))
-							continue;
-						//	counter++;
-						diff=(*p)[hyp_counter]-(*n)[hyp_counter];
-						vector <Integer> new_candidate=v_add((*p),(*n));
-
-						if (diff>0) {
-							new_candidate[hyp_counter]=diff;
-							new_candidate[0]-=2*(*n)[hyp_counter];
-							if (reduce(Positive,new_candidate,hyp_counter)==true) {
-								continue;
-							}
-							if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
-								continue;
-							}    
-							new_candidate[nr_gen+1]=2;
-							new_candidate[nr_gen+2]=(*p)[hyp_counter];
-							New_Positive.push_back(new_candidate);
-						}
-						if (diff<0) {
-							new_candidate[hyp_counter]=-diff;
-							new_candidate[0]-=2*(*p)[hyp_counter];
-							if (reduce(Negative,new_candidate,hyp_counter)==true) {
-								continue;
-							}
-							if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
-								continue;
-							}
-							new_candidate[nr_gen+1]=2;
-							new_candidate[nr_gen+2]=(*n)[hyp_counter];
-							New_Negative.push_back(new_candidate);
-						}
-						if (diff==0) {
-							new_candidate[hyp_counter]=0;
-							new_candidate[0]-=2*(*p)[hyp_counter];
-							if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
-								continue;
-							}
-							new_candidate[nr_gen+1]=0;
-							new_candidate[nr_gen+2]=0;
-							New_Neutral.push_back(new_candidate);
-						}
-						/*	if (counter==10000000) {
-							counter=0;
-							New_Neutral.sort();
-							New_Positive.sort();
-							New_Negative.sort();
-							reduce(Neutral,New_Neutral,hyp_counter-1);
-							reduce(Neutral,New_Positive,hyp_counter-1);
-							reduce(Neutral,New_Negative,hyp_counter-1);
-							reduce(Positive,New_Positive,hyp_counter);
-							reduce(Negative,New_Negative,hyp_counter);
-							Neu.merge(New_Neutral);
-							Pos.merge(New_Positive);
-							Neg.merge(New_Negative);
-							New_Neutral.clear();
-							New_Positive.clear();
-							New_Negative.clear();
-							}     */
-					}
-				}
-			}
-			//end generation of new elements
-			//reducing the new vectors agains them self
-			//Neutral_Ired=Neutral;
-			//Positive_Ired=Positive;
-			//Negative_Ired=Negative;
-			New_Neutral.sort();
-			New_Positive.sort();
-			New_Negative.sort();
-			/*reduce(Neutral,New_Neutral,hyp_counter-1);
-			  reduce(Neutral,New_Positive,hyp_counter-1);
-			  reduce(Neutral,New_Negative,hyp_counter-1);
-			  New_Positive.sort();
-			  New_Negative.sort();
-			  reduce(Positive,New_Positive,hyp_counter);
-			  reduce(Negative,New_Negative,hyp_counter);
-			  New_Neutral.sort();
-			  New_Positive.sort();
-			  New_Negative.sort();
-			  New_Neutral.merge(Neu);
-			  New_Positive.merge(Pos);
-			  New_Negative.merge(Neg);*/
-			Hilbert_Basis.clear();
-			for(c=New_Neutral.begin();c != New_Neutral.end();c++) {
-				reduce_and_insert((*c),hyp_counter-1);
-			}
-			New_Neutral=Hilbert_Basis;
-			Hilbert_Basis.clear();
-			for(c=New_Positive.begin();c != New_Positive.end();c++) {
-				reduce_and_insert((*c),hyp_counter);
-			}
-			New_Positive=Hilbert_Basis;
-			Hilbert_Basis.clear();
-			for(c=New_Negative.begin();c != New_Negative.end();c++) {
-				reduce_and_insert((*c),hyp_counter);
-			}
-			New_Negative=Hilbert_Basis;
-			if (New_Neutral.size()!=0) {
-				New_Positive.sort();
-				reduce(New_Neutral,New_Positive, hyp_counter-1);
-				New_Negative.sort();
-				reduce(New_Neutral,New_Negative, hyp_counter-1);
-				reduce(New_Neutral,Neutral_Ired, hyp_counter-1);
-				reduce(New_Neutral,Positive_Ired, hyp_counter-1);
-				reduce(New_Neutral,Negative_Ired, hyp_counter-1);   
-				Neutral_Ired.merge(New_Neutral);
-			}
-			if (New_Positive.size()!=0) {
-				not_done=true;
-				reduce(New_Positive,Positive_Ired, hyp_counter);
-				Positive_Ired.merge(New_Positive);
-			}
-			if (New_Negative.size()!=0) {
-				not_done=true;
-				reduce(New_Negative,Negative_Ired, hyp_counter);
-				Negative_Ired.merge(New_Negative);
-			}
-			for (c = Positive_Ired.begin(); c != Positive_Ired.end(); c++){
-				if((*c)[nr_gen+1]>0) {
-					(*c)[nr_gen+1]--;
-				}
-			}
-			for (c = Negative_Ired.begin(); c != Negative_Ired.end(); c++){
-				if((*c)[nr_gen+1]>0) {
-					(*c)[nr_gen+1]--;
-				}
-			}
-		}
-		//still posible to have double elements in the Hilbert basis, coming from different generations
-
-		set< vector<Integer> > Help;
-		set< vector<Integer> >::iterator d;
-		for (c = Positive_Ired.begin(); c != Positive_Ired.end(); c++) {
-			(*c)[nr_gen+1]=0;
-			(*c)[nr_gen+2]=0;
-			Help.insert(*c);
-		}
-		for (c = Neutral_Ired.begin(); c != Neutral_Ired.end(); c++) {
-			(*c)[nr_gen+1]=0;
-			(*c)[nr_gen+2]=0;
-			Help.insert(*c);
-		}
-		Hilbert_Basis.clear();
-		d=Help.begin();
-		while(d != Help.end()) {
-			Hilbert_Basis.push_back(*d);
-			Help.erase(d);
-			d=Help.begin();
-		}
-		if (verbose==true) {
-			cout<<"Hilbert basis size="<<Hilbert_Basis.size()<<endl;
-		}
-	}
-
-	//---------------------------------------------------------------------------
-
-	Matrix Full_Cone::add_hyperplane(const int& hyp_counter, const Matrix& Basis_Max_Subspace){
-		int i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
-		vector <Integer> scalar_product,hyperplane=Generators.read(hyp_counter),halfspace;
-		bool lifting=false;
-		Matrix New_Basis_Max_Subspace=Basis_Max_Subspace;
-		if (rank_subspace!=0) {
-			scalar_product=Basis_Max_Subspace.MxV(hyperplane);
-			for (i = 0; i <rank_subspace; i++) 
-				if (scalar_product[i]!=0)
-					break;
-			if (i!=rank_subspace) {    // the new hyperplane is not contained in the maximal subspace
-				lifting=true;
-				//computing new maximal subspace
-				Matrix M(1,rank_subspace);
-				M.write(1,scalar_product);
-				Lineare_Transformation LT=Transformation(M);
-				Matrix Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
-				Lifted_Basis_Factor_Space_over_Ker_and_Ker=Lifted_Basis_Factor_Space_over_Ker_and_Ker.transpose();
-				Matrix  Ker(rank_subspace-1,rank_subspace);
-				for (j = 1; j <= rank_subspace-1; j++) {
-					Ker.write(j, Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(j+1));
-				}
-				New_Basis_Max_Subspace=Ker.multiplication(Basis_Max_Subspace);
-				halfspace=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(1));
-			}
-		}
-		add_hyperplane(hyp_counter, lifting, halfspace);
-		return New_Basis_Max_Subspace;
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::extreme_rays_reduction(){
-		list < vector <Integer> >::iterator c;
-		int i,k;
-		for (c=Hilbert_Basis.begin();c!=Hilbert_Basis.end();c++){
-			k=0;
-			for (i = 1; i <= nr_gen; i++) {
-				if ((*c)[i]!=0) {
-					(*c)[i]=1;
-					k++;
-				}
-
-			}
-			(*c)[0]=k;       //if (k>=dim-1) improuves speed much here
-		}
-		Hilbert_Basis.sort();
-		for (c=Hilbert_Basis.begin();c!=Hilbert_Basis.end();c++){
-			reduce_and_insert_extreme((*c));
-		}
-		l_cut_front(Support_Hyperplanes,dim);
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::extreme_rays_rank(){
-		list < vector <Integer> >::iterator c;
-		list <int> zero_list;
-		int i,j,k;
-		for (c=Hilbert_Basis.begin();c!=Hilbert_Basis.end();c++){
-			zero_list.clear();
-			for (i = 1; i <= nr_gen; i++) {
-				if ((*c)[i]==0) {
-					zero_list.push_back(i);
-				}
-			}
-			k=zero_list.size();
-			if (k>=dim-1) {
-				vector <int> zero_vector(k);
-				for (j = 0; j < k; j++) {
-					zero_vector[j]=zero_list.front();
-					zero_list.pop_front();
-				}
-				Matrix Test=Generators.submatrix(zero_vector);
-				if (Test.rank()>=dim-1) {
-					Support_Hyperplanes.push_back((*c));
-				}
-			}
-		}
-		l_cut_front(Support_Hyperplanes,dim);
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::hilbert_basis_dual(){
-	if(dim>0){            //correction nedded to include the 0 cone;
-		if (verbose==true) {
-			cout<<"\n************************************************************\n";
-			cout<<"computing Hilbert basis ..."<<endl;
-		}
-		int hyp_counter;      // current hyperplane
-		Matrix Basis_Max_Subspace(dim);      //identity matrix
-		for (hyp_counter = 1; hyp_counter <= nr_gen; hyp_counter++) {
-			Basis_Max_Subspace=add_hyperplane(hyp_counter,Basis_Max_Subspace);
-		}
-		extreme_rays_rank();
-		l_cut_front(Hilbert_Basis,dim);
-		Matrix M=read_support_hyperplanes();
-		if(dim>0){            //correction nedded to include the 0 cone;
-			Linear_Form=M.homogeneous(homogeneous);
-			if(homogeneous==true){
-				list < vector <Integer> >::const_iterator h;
-				for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
-					if (v_scalar_product((*h),Linear_Form)==1) {
-						Homogeneous_Elements.push_back((*h));
-					}
-				}
-			}
-		} else {
-			homogeneous=true;
-			vector<Integer> Help(dim);
-			Linear_Form=Help;
-		}
-		} // end if (dim>0)
-		status="dual";
-	}
-
-	//---------------------------------------------------------------------------
-
-	void Full_Cone::error(string s) const{
-		cerr <<"\nFull Cone "<< s<<"\n";
-		global_error_handling();
-	}
-
-	//---------------------------------------------------------------------------
-
-	void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
-		if (verbose==true) {
-			cout<<"start lifting the cone ...";
-		}
-		int i,j,counter=0,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
-		Matrix New_Generators(nr_extreme_gen,dim+1);
-		for (i = 1; i <= nr_extreme_gen; i++) {
-			for (j = 1; j <= dim; j++) {
-				New_Generators.write(i,j,Extreme_Generators.read(i,j));
-			}
-		}
-		// try 10 times a random lifting
-		time_t t;
-		srand((unsigned) time(&t));
-		while(counter<10){
-			for (i = 1; i <= nr_extreme_gen; i++){
-				j=rand();
-				j=j%lifting_bound;
-				New_Generators.write(i,dim+1,j+1);
-			}
-			if (New_Generators.rank()==dim+1) {
-				Full_Cone Help(New_Generators);
-				Lifted=Help;
-				if (Lifted.low_part_simplicial()==true) {
-					if (verbose==true) {
-						cout<<"lifting done."<<endl;
-					}
-					return;
-				}
-			}
-
+	vector<int> Extreme(nr_extreme_rays);
+	for (i = 0; i < nr_gen; i++) {
+		if (Extreme_Rays[i]==true) {
+			Extreme[counter]=i+1;
 			counter++;
 		}
-		cerr<<"error: Random lifting has failed in Full_Cone::lift.";
-		global_error_handling();
 	}
+	Matrix Extreme_Generators=Generators.submatrix(Extreme);
+	if (Extreme_Generators.nr_of_columns()==Extreme_Generators.nr_of_rows()) {
+		Simplex S(Extreme);
+		Triangulation.push_back(S.read_key()); 
+	}
+	else {
+		Full_Cone Lifted;
+		lift(Lifted,Extreme_Generators);
+		if (Lifted.read_status()!="support hyperplanes") {
+			error("error: Status support hyperplanes for the lifted cone needed when using Full_Cone::triangulation_lift.");
+			return;
+		}
+		Lifted.line_shelling();
+		if (verbose==true) {
+			cout<<"computing triangulation ..."<<endl;
+		}
+		vector<int> key(dim);
+		vector<Integer> v;
+		list < vector<Integer> >::const_iterator l;
+		for (l = Lifted.Support_Hyperplanes.begin(); l != Lifted.Support_Hyperplanes.end(); l++) {
+			v=Lifted.Generators.MxV((*l));
+			counter=0;
+			for (j = 0; j < nr_extreme_rays; j++) {
+				if (v[j]==0) {
+					key[counter]=Extreme[j];
+					counter++;
+				}
+			}
+			//Simplex S(key);
+			Triangulation.push_back(key);
+		}
+	}
+	if (verbose==true) {
+		cout<<"computed triangulation has "<<Triangulation.size()<<" simplices"<<endl;
+	}
+}
 
-	//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
+vector<Integer> Full_Cone::compute_e_vector(){
+	int i,j;
+	vector <Integer> E_Vector(dim,0);
+	vector <Integer> Q=H_Vector;
+	Q.push_back(0);
+	for (i = 0; i <dim; i++) {
+		for (j = 0; j <dim; j++) {
+			E_Vector[i]+=Q[j];
+		}
+		E_Vector[i]/=permutations(1,i);
+		for (j = 1; j <=dim; j++) {
+			Q[j-1]=j*Q[j];
+		}
+	}
+	return E_Vector;
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::compute_polynomial(){
+	int i,j;
+	Integer mult_factor, factorial=permutations(1,dim);
+	vector <Integer> E_Vector=compute_e_vector();
+	vector <Integer> C(dim,0);
+	C[0]=1;
+	for (i = 0; i <dim; i++) {
+		mult_factor=permutations(i,dim);
+		if (((dim-1-i)%2)==0) {
+			for (j = 0; j <dim; j++) {
+				Hilbert_Polynomial[2*j]+=mult_factor*E_Vector[dim-1-i]*C[j];
+			}
+		}
+		else {
+			for (j = 0; j <dim; j++) {
+				Hilbert_Polynomial[2*j]-=mult_factor*E_Vector[dim-1-i]*C[j];
+			}
+		}
+		for (j = dim-1; 0 <j; j--) {
+			C[j]=(i+1)*C[j]+C[j-1];
+		}
+		C[0]=permutations(1,i+1);
+	}
+	for (i = 0; i <dim; i++) {
+		mult_factor=gcd(Hilbert_Polynomial[2*i],factorial);
+		Hilbert_Polynomial[2*i]/= mult_factor;
+		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::hilbert_polynomial(){
+	if (homogeneous==false) {
+		hilbert_basis();
+	}
+	else{
+		if(dim>0){            //correction nedded to include the 0 cone;
+		support_hyperplanes();
+		triangulation_lift();
+		find_new_face();
+		if (verbose==true) {
+			cout<<"\n************************************************************\n";
+			cout<<"computing Hilbert polynomial ..."<<endl;
+		}
+		int counter=0;
+		Integer volume;
+		multiplicity=0;
+		for (int i = 1; i <=nr_gen; i++) {
+			Homogeneous_Elements.push_back(Generators.read(i));
+		}
+		list< vector<Integer> > HE;
+		list< vector<int> >::iterator l;
+		for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
+			Simplex S=Simplex(*l);
+			H_Vector[S.read_new_face_size()]++;
+			S.h_vector(Generators,Linear_Form);
+			volume=S.read_volume();
+			//TODO OHOH (*l).write_volume(volume);
+			multiplicity=multiplicity+volume;
+			HE=S.read_homogeneous_elements();
+			Homogeneous_Elements.merge(HE);
+			H_Vector=v_add(H_Vector,S.read_h_vector());
+			if (verbose==true) {
+				counter++;
+				if (counter%100==0) {
+					cout<<"simplex="<<counter<<endl;
+				}
+			}
+		}
+		compute_polynomial();
+		Homogeneous_Elements.sort();
+		Homogeneous_Elements.unique();
+		} // end if (dim>0)
+		status="hilbert polynomial";
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::hilbert_basis_polynomial(){
+	if (homogeneous==false) {
+		hilbert_basis();
+	}
+	else{
+		if(dim>0){            //correction nedded to include the 0 cone;
+		support_hyperplanes();
+		triangulation_lift();
+		find_new_face();
+		if (verbose==true) {
+			cout<<"\n************************************************************\n";
+			cout<<"computing Hilbert basis and polynomial ..."<<endl;
+		}
+		int counter=0,i,s,global_reduction_counter=0;
+		Integer volume, norm;
+		vector<Integer> scalar_product;
+		set < vector<Integer> > Candidates,Candidates_with_Scalar_Product;
+		list <vector <Integer> >  HB,HE;
+		set <vector <Integer> >::iterator c;
+		list <vector <Integer> >::const_iterator h;
+		for (i = 1; i <=nr_gen; i++) {
+			Candidates.insert(Generators.read(i));
+			Homogeneous_Elements.push_back(Generators.read(i));
+		}
+		multiplicity=0;
+		list< vector<int> >::iterator l;
+		for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
+			Simplex S=Simplex(*l);
+			H_Vector[S.read_new_face_size()]++;
+			S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
+			volume=S.read_volume();
+			//TODO OHOH (*l).write_volume(volume);
+			multiplicity=multiplicity+volume;
+			HE=S.read_homogeneous_elements();
+			Homogeneous_Elements.merge(HE);
+			H_Vector=v_add(H_Vector,S.read_h_vector());
+			HB=S.acces_hilbert_basis();
+			for (h = HB.begin(); h != HB.end(); h++) {
+				Candidates.insert((*h));
+			}
+			if (verbose==true) {
+				counter++;
+				if (counter%100==0) {
+					cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
+				}
+			}
+		}
+		s=Support_Hyperplanes.size();
+		if(optimize_speed==false){   //scalar products computed twice
+			for (c = Candidates.begin(); c != Candidates.end(); c++) {
+				scalar_product=l_multiplication(Support_Hyperplanes,(*c));
+				norm=0;
+				for (i = 0; i < s; i++) {
+					norm=norm+scalar_product[i];
+				}
+				vector <Integer> new_element(1);
+				new_element[0]=norm;
+				new_element=v_merge(new_element,(*c));
+				Candidates_with_Scalar_Product.insert(new_element);
+				if (verbose==true) {
+					if (Candidates_with_Scalar_Product.size()%20000==0) {
+						cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
+					}
+				}
+			}
+			Candidates.clear();
+			c=Candidates_with_Scalar_Product.begin();
+			while(c != Candidates_with_Scalar_Product.end()) {
+				reduce_and_insert((*c));
+				Candidates_with_Scalar_Product.erase(c);
+				c=Candidates_with_Scalar_Product.begin();
+				if (verbose==true) {
+					global_reduction_counter++;
+					if (global_reduction_counter%10000==0) {
+						cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
+					}
+				}
+			}
+		}
+		else{   //scalar products saved in memory
+			for (c = Candidates.begin(); c != Candidates.end(); c++) {
+				scalar_product=l_multiplication(Support_Hyperplanes,(*c));
+				norm=0;
+				for (i = 0; i < s; i++) {
+					norm=norm+scalar_product[i];
+				}
+				vector <Integer> new_element(1);
+				new_element[0]=norm;
+				new_element=v_merge(new_element,scalar_product);
+				new_element=v_merge(new_element,(*c));
+				Candidates_with_Scalar_Product.insert(new_element);
+				if (verbose==true) {
+					if (Candidates_with_Scalar_Product.size()%20000==0) {
+						cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
+					}
+				}
+			}
+			Candidates.clear();
+			c=Candidates_with_Scalar_Product.begin();
+			while(c != Candidates_with_Scalar_Product.end()) {
+				reduce_and_insert_speed((*c));
+				Candidates_with_Scalar_Product.erase(c);
+				c=Candidates_with_Scalar_Product.begin();
+				if (verbose==true) {
+					global_reduction_counter++;
+					if (global_reduction_counter%10000==0) {
+						cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
+					}
+				}
+			}
+		}
+		l_cut_front(Hilbert_Basis,dim);
+		compute_polynomial();
+		Homogeneous_Elements.sort();
+		Homogeneous_Elements.unique();
+		} // end if (dim>0)
+		status="hilbert basis polynomial";
+	}
+}
+
+//---------------------------------------------------------------------------
+
+Integer Full_Cone::primary_multiplicity() const{
+	int i,j,k;
+	Integer primary_multiplicity=0;
+	vector <int> key,new_key(dim-1);
+	Matrix Projection(nr_gen,dim-1);
+	for (i = 1; i <= nr_gen; i++) {
+		for (j = 1; j <= dim-1; j++) {
+			Projection.write(i,j,Generators.read(i,j));
+		}
+	}
+	list< vector<Integer> >::const_iterator h;
+	list< vector<int> >::const_iterator t;
+	for (h =Support_Hyperplanes.begin(); h != Support_Hyperplanes.end(); h++){
+		if ((*h)[dim-1]!=0) {
+			for (t =Triangulation.begin(); t!=Triangulation.end(); t++){
+				key=(*t);
+				for (i = 0; i <dim; i++) {
+					k=0;
+					for (j = 0; j < dim; j++) {
+						if (j!=i && Generators.read(key[j],dim)==1) {
+							if (v_scalar_product(Generators.read(key[j]),(*h))==0) {
+								k++;
+							}
+
+						}
+						if (k==dim-1) {
+							for (j = 0; j <i; j++) {
+								new_key[j]=key[j];
+							}
+							for (j = i; j <dim-1; j++) {
+								new_key[j]=key[j+1];
+							}
+							Simplex S(new_key,Projection);
+							primary_multiplicity+=S.read_volume();
+						}
+					}
+
+				}
+
+			}
+		}
+
+	}
+	return primary_multiplicity;
+}
+//---------------------------------------------------------------------------
+
+void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
+	if (verbose==true) {
+		cout<<"adding hyperplane "<<hyp_counter<<" ..."<<endl;
+	}
+	int i,sign;
+	bool  not_done;
+	list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
+	Integer orientation, scalar_product,diff,factor;
+	vector <Integer> hyperplane=Generators.read(hyp_counter);
+	list< vector<Integer> >::iterator h;
+	if (lifting==true) {
+		orientation=v_scalar_product(hyperplane,halfspace);
+		if(orientation<0){
+			orientation=-orientation;
+			v_scalar_multiplication(halfspace,-1); //transforming into the generator of the positive halfspace
+		}
+		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) { //reduction  modulo  the generator of the positive halfspace
+			scalar_product=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
+			sign=1;
+			if (scalar_product<0) {
+				scalar_product=-scalar_product;
+				sign=-1;
+			}
+			factor=scalar_product/orientation;
+			for (i = 0; i < dim; i++) {
+				(*h)[nr_gen+3+i]=(*h)[nr_gen+3+i]-sign*factor*halfspace[i];
+			}
+		}
+		//adding the generators of the halfspace to negative and positive
+		vector <Integer> hyp_element(hyp_size+3,0);
+		for (i = 0; i < dim; i++) {
+			hyp_element[nr_gen+3+i]= halfspace[i];
+		}
+		hyp_element[hyp_counter]=orientation;
+		hyp_element[0]=orientation;
+		if (orientation==0){ //never
+			Neutral_Ired.push_back(hyp_element);
+		}
+		else{
+			Positive_Ired.push_back(hyp_element);
+			v_scalar_multiplication(hyp_element,-1);
+			hyp_element[hyp_counter]=orientation;
+			hyp_element[0]=orientation;
+			Negative_Ired.push_back(hyp_element);
+		}
+	}
+	for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) { //dividing into negative and positive
+		(*h)[hyp_counter]=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
+		if ((*h)[hyp_counter]>0) {
+			(*h)[nr_gen+1]=1;     // generation
+			(*h)[nr_gen+2]=0;     //not sum
+			(*h)[0]+=(*h)[hyp_counter];
+			Positive_Ired.push_back((*h));
+		}
+		if ((*h)[hyp_counter]<0) {
+			(*h)[hyp_counter]=-(*h)[hyp_counter];
+			(*h)[nr_gen+1]=1;
+			(*h)[nr_gen+2]=0;
+			(*h)[0]+=(*h)[hyp_counter];
+			Negative_Ired.push_back((*h));
+		}
+		if ((*h)[hyp_counter]==0) {
+			(*h)[nr_gen+1]=0;
+			(*h)[nr_gen+2]=0;
+			Neutral_Ired.push_back((*h));
+		}
+	}
+	Neutral_Ired.sort();
+	Positive_Ired.sort();
+	Negative_Ired.sort();
+	//long int counter=0;
+	list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Positive,Negative,Neutral,Pos,Neg,Neu;
+	list < vector<Integer> >::const_iterator p,n;
+	list < vector <Integer> >::iterator c;
+	not_done=true;
+	while(not_done){
+		not_done=false;
+		Positive=Positive_Ired; //copies
+		Negative=Negative_Ired; //the copies will be unordered in the proces
+		Neutral=Neutral_Ired;
+		New_Positive.clear();
+		New_Negative.clear();
+		New_Neutral.clear();
+		//generating new elements
+		for (p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
+			for (n = Negative_Ired.begin(); n != Negative_Ired.end(); n++){
+				if ((*p)[nr_gen+1]<=1&&(*n)[nr_gen+1]<=1&&((*p)[nr_gen+1]!=0||(*n)[nr_gen+1]!=0)) {
+					if (((*p)[nr_gen+2]!=0&&(*p)[nr_gen+2]<=(*n)[hyp_counter])||((*n)[nr_gen+2]!=0&&(*n)[nr_gen+2]<=(*p)[hyp_counter]))
+						continue;
+					//	counter++;
+					diff=(*p)[hyp_counter]-(*n)[hyp_counter];
+					vector <Integer> new_candidate=v_add((*p),(*n));
+
+					if (diff>0) {
+						new_candidate[hyp_counter]=diff;
+						new_candidate[0]-=2*(*n)[hyp_counter];
+						if (reduce(Positive,new_candidate,hyp_counter)==true) {
+							continue;
+						}
+						if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
+							continue;
+						}    
+						new_candidate[nr_gen+1]=2;
+						new_candidate[nr_gen+2]=(*p)[hyp_counter];
+						New_Positive.push_back(new_candidate);
+					}
+					if (diff<0) {
+						new_candidate[hyp_counter]=-diff;
+						new_candidate[0]-=2*(*p)[hyp_counter];
+						if (reduce(Negative,new_candidate,hyp_counter)==true) {
+							continue;
+						}
+						if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
+							continue;
+						}
+						new_candidate[nr_gen+1]=2;
+						new_candidate[nr_gen+2]=(*n)[hyp_counter];
+						New_Negative.push_back(new_candidate);
+					}
+					if (diff==0) {
+						new_candidate[hyp_counter]=0;
+						new_candidate[0]-=2*(*p)[hyp_counter];
+						if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
+							continue;
+						}
+						new_candidate[nr_gen+1]=0;
+						new_candidate[nr_gen+2]=0;
+						New_Neutral.push_back(new_candidate);
+					}
+					/*	if (counter==10000000) {
+						counter=0;
+						New_Neutral.sort();
+						New_Positive.sort();
+						New_Negative.sort();
+						reduce(Neutral,New_Neutral,hyp_counter-1);
+						reduce(Neutral,New_Positive,hyp_counter-1);
+						reduce(Neutral,New_Negative,hyp_counter-1);
+						reduce(Positive,New_Positive,hyp_counter);
+						reduce(Negative,New_Negative,hyp_counter);
+						Neu.merge(New_Neutral);
+						Pos.merge(New_Positive);
+						Neg.merge(New_Negative);
+						New_Neutral.clear();
+						New_Positive.clear();
+						New_Negative.clear();
+						}     */
+				}
+			}
+		}
+		//end generation of new elements
+		//reducing the new vectors agains them self
+		//Neutral_Ired=Neutral;
+		//Positive_Ired=Positive;
+		//Negative_Ired=Negative;
+		New_Neutral.sort();
+		New_Positive.sort();
+		New_Negative.sort();
+		/*reduce(Neutral,New_Neutral,hyp_counter-1);
+		  reduce(Neutral,New_Positive,hyp_counter-1);
+		  reduce(Neutral,New_Negative,hyp_counter-1);
+		  New_Positive.sort();
+		  New_Negative.sort();
+		  reduce(Positive,New_Positive,hyp_counter);
+		  reduce(Negative,New_Negative,hyp_counter);
+		  New_Neutral.sort();
+		  New_Positive.sort();
+		  New_Negative.sort();
+		  New_Neutral.merge(Neu);
+		  New_Positive.merge(Pos);
+		  New_Negative.merge(Neg);*/
+		Hilbert_Basis.clear();
+		for(c=New_Neutral.begin();c != New_Neutral.end();c++) {
+			reduce_and_insert((*c),hyp_counter-1);
+		}
+		New_Neutral=Hilbert_Basis;
+		Hilbert_Basis.clear();
+		for(c=New_Positive.begin();c != New_Positive.end();c++) {
+			reduce_and_insert((*c),hyp_counter);
+		}
+		New_Positive=Hilbert_Basis;
+		Hilbert_Basis.clear();
+		for(c=New_Negative.begin();c != New_Negative.end();c++) {
+			reduce_and_insert((*c),hyp_counter);
+		}
+		New_Negative=Hilbert_Basis;
+		if (New_Neutral.size()!=0) {
+			New_Positive.sort();
+			reduce(New_Neutral,New_Positive, hyp_counter-1);
+			New_Negative.sort();
+			reduce(New_Neutral,New_Negative, hyp_counter-1);
+			reduce(New_Neutral,Neutral_Ired, hyp_counter-1);
+			reduce(New_Neutral,Positive_Ired, hyp_counter-1);
+			reduce(New_Neutral,Negative_Ired, hyp_counter-1);   
+			Neutral_Ired.merge(New_Neutral);
+		}
+		if (New_Positive.size()!=0) {
+			not_done=true;
+			reduce(New_Positive,Positive_Ired, hyp_counter);
+			Positive_Ired.merge(New_Positive);
+		}
+		if (New_Negative.size()!=0) {
+			not_done=true;
+			reduce(New_Negative,Negative_Ired, hyp_counter);
+			Negative_Ired.merge(New_Negative);
+		}
+		for (c = Positive_Ired.begin(); c != Positive_Ired.end(); c++){
+			if((*c)[nr_gen+1]>0) {
+				(*c)[nr_gen+1]--;
+			}
+		}
+		for (c = Negative_Ired.begin(); c != Negative_Ired.end(); c++){
+			if((*c)[nr_gen+1]>0) {
+				(*c)[nr_gen+1]--;
+			}
+		}
+	}
+	//still posible to have double elements in the Hilbert basis, coming from different generations
+
+	set< vector<Integer> > Help;
+	set< vector<Integer> >::iterator d;
+	for (c = Positive_Ired.begin(); c != Positive_Ired.end(); c++) {
+		(*c)[nr_gen+1]=0;
+		(*c)[nr_gen+2]=0;
+		Help.insert(*c);
+	}
+	for (c = Neutral_Ired.begin(); c != Neutral_Ired.end(); c++) {
+		(*c)[nr_gen+1]=0;
+		(*c)[nr_gen+2]=0;
+		Help.insert(*c);
+	}
+	Hilbert_Basis.clear();
+	d=Help.begin();
+	while(d != Help.end()) {
+		Hilbert_Basis.push_back(*d);
+		Help.erase(d);
+		d=Help.begin();
+	}
+	if (verbose==true) {
+		cout<<"Hilbert basis size="<<Hilbert_Basis.size()<<endl;
+	}
+}
+
+//---------------------------------------------------------------------------
+
+Matrix Full_Cone::add_hyperplane(const int& hyp_counter, const Matrix& Basis_Max_Subspace){
+	int i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
+	vector <Integer> scalar_product,hyperplane=Generators.read(hyp_counter),halfspace;
+	bool lifting=false;
+	Matrix New_Basis_Max_Subspace=Basis_Max_Subspace;
+	if (rank_subspace!=0) {
+		scalar_product=Basis_Max_Subspace.MxV(hyperplane);
+		for (i = 0; i <rank_subspace; i++) 
+			if (scalar_product[i]!=0)
+				break;
+		if (i!=rank_subspace) {    // the new hyperplane is not contained in the maximal subspace
+			lifting=true;
+			//computing new maximal subspace
+			Matrix M(1,rank_subspace);
+			M.write(1,scalar_product);
+			Lineare_Transformation LT=Transformation(M);
+			Matrix Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
+			Lifted_Basis_Factor_Space_over_Ker_and_Ker=Lifted_Basis_Factor_Space_over_Ker_and_Ker.transpose();
+			Matrix  Ker(rank_subspace-1,rank_subspace);
+			for (j = 1; j <= rank_subspace-1; j++) {
+				Ker.write(j, Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(j+1));
+			}
+			New_Basis_Max_Subspace=Ker.multiplication(Basis_Max_Subspace);
+			halfspace=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(1));
+		}
+	}
+	add_hyperplane(hyp_counter, lifting, halfspace);
+	return New_Basis_Max_Subspace;
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::extreme_rays_reduction(){
+	list < vector <Integer> >::iterator c;
+	int i,k;
+	for (c=Hilbert_Basis.begin();c!=Hilbert_Basis.end();c++){
+		k=0;
+		for (i = 1; i <= nr_gen; i++) {
+			if ((*c)[i]!=0) {
+				(*c)[i]=1;
+				k++;
+			}
+
+		}
+		(*c)[0]=k;       //if (k>=dim-1) improuves speed much here
+	}
+	Hilbert_Basis.sort();
+	for (c=Hilbert_Basis.begin();c!=Hilbert_Basis.end();c++){
+		reduce_and_insert_extreme((*c));
+	}
+	l_cut_front(Support_Hyperplanes,dim);
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::extreme_rays_rank(){
+	list < vector <Integer> >::iterator c;
+	list <int> zero_list;
+	int i,j,k;
+	for (c=Hilbert_Basis.begin();c!=Hilbert_Basis.end();c++){
+		zero_list.clear();
+		for (i = 1; i <= nr_gen; i++) {
+			if ((*c)[i]==0) {
+				zero_list.push_back(i);
+			}
+		}
+		k=zero_list.size();
+		if (k>=dim-1) {
+			vector <int> zero_vector(k);
+			for (j = 0; j < k; j++) {
+				zero_vector[j]=zero_list.front();
+				zero_list.pop_front();
+			}
+			Matrix Test=Generators.submatrix(zero_vector);
+			if (Test.rank()>=dim-1) {
+				Support_Hyperplanes.push_back((*c));
+			}
+		}
+	}
+	l_cut_front(Support_Hyperplanes,dim);
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::hilbert_basis_dual(){
+if(dim>0){            //correction nedded to include the 0 cone;
+	if (verbose==true) {
+		cout<<"\n************************************************************\n";
+		cout<<"computing Hilbert basis ..."<<endl;
+	}
+	int hyp_counter;      // current hyperplane
+	Matrix Basis_Max_Subspace(dim);      //identity matrix
+	for (hyp_counter = 1; hyp_counter <= nr_gen; hyp_counter++) {
+		Basis_Max_Subspace=add_hyperplane(hyp_counter,Basis_Max_Subspace);
+	}
+	extreme_rays_rank();
+	l_cut_front(Hilbert_Basis,dim);
+	Matrix M=read_support_hyperplanes();
+	if(dim>0){            //correction nedded to include the 0 cone;
+		Linear_Form=M.homogeneous(homogeneous);
+		if(homogeneous==true){
+			list < vector <Integer> >::const_iterator h;
+			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
+				if (v_scalar_product((*h),Linear_Form)==1) {
+					Homogeneous_Elements.push_back((*h));
+				}
+			}
+		}
+	} else {
+		homogeneous=true;
+		vector<Integer> Help(dim);
+		Linear_Form=Help;
+	}
+	} // end if (dim>0)
+	status="dual";
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::error(string s) const{
+	cerr <<"\nFull Cone "<< s<<"\n";
+	global_error_handling();
+}
+
+//---------------------------------------------------------------------------
+
+void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
+	if (verbose==true) {
+		cout<<"start lifting the cone ...";
+	}
+	int i,j,counter=0,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
+	Matrix New_Generators(nr_extreme_gen,dim+1);
+	for (i = 1; i <= nr_extreme_gen; i++) {
+		for (j = 1; j <= dim; j++) {
+			New_Generators.write(i,j,Extreme_Generators.read(i,j));
+		}
+	}
+	// try 10 times a random lifting
+	time_t t;
+	srand((unsigned) time(&t));
+	while(counter<10){
+		for (i = 1; i <= nr_extreme_gen; i++){
+			j=rand();
+			j=j%lifting_bound;
+			New_Generators.write(i,dim+1,j+1);
+		}
+		if (New_Generators.rank()==dim+1) {
+			Full_Cone Help(New_Generators);
+			Lifted=Help;
+			if (Lifted.low_part_simplicial()==true) {
+				if (verbose==true) {
+					cout<<"lifting done."<<endl;
+				}
+				return;
+			}
+		}
+
+		counter++;
+	}
+	cerr<<"error: Random lifting has failed in Full_Cone::lift.";
+	global_error_handling();
+}
+
+//---------------------------------------------------------------------------
 
 bool Full_Cone::check_compressed() {
 	//TODO check for "status"
