@@ -22,9 +22,11 @@
 
 #include <set>
 #include <list>
+#include <omp.h>
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
+
 
 class Full_Cone{
   int dim;
@@ -32,17 +34,17 @@ class Full_Cone{
   int hyp_size;
   string status;
   bool homogeneous;
+  bool compressed_test;
   vector<Integer> Linear_Form;
   Integer multiplicity;
   Matrix Generators;
   vector<bool> Extreme_Rays;
   list< vector<Integer> > Support_Hyperplanes;
-  list< Simplex > Triangulation;
+  list< vector<int> > Triangulation;
   list< vector<Integer> > Hilbert_Basis;
   list< vector<Integer> > Homogeneous_Elements;
   vector<Integer> H_Vector;
   vector<Integer> Hilbert_Polynomial;
-
 
   
 //---------------------------------------------------------------------------
@@ -74,7 +76,9 @@ class Full_Cone{
   //select extreme rays  by reduction
   //used for the dual algoritm
   void find_new_face(); // to be used with a sheling in order to add to each simples the maximal new face
+	void process_non_compressed(list< vector<int> > &non_compressed); //compute triangulations of the not compressed, not simplicial pieces and add them to Triangulation
 
+  void only_hilbert_basis(const bool compressed_test=false); // computes only the Hilbert basis, support hyperplanes and triangulation must be computed in advance
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
@@ -90,7 +94,7 @@ public:
 //						Data acces
 //---------------------------------------------------------------------------
 
-  void read() const;                   // to be modified, just for tests
+  void print() const;                   // to be modified, just for tests
   int read_dimension()const;         //returns dimension
   int read_nr_generators()const;    //returns the number of generators
   int read_hyp_size()const;         //returns hyp_size
@@ -103,6 +107,7 @@ public:
   vector<bool>  read_extreme_rays()const;     //read the extreme rays
   Matrix read_support_hyperplanes()const; //read the support hyperplanes of the facets
   Matrix read_triangulation()const;      //read the triangulation
+//  Matrix get_triangulation_list()const;      //read the triangulation
   Matrix read_triangulation_volume()const;      //read the triangulation and the volume
   //of each simplex , the volume is saved on the last column
   //the vectors coresponding to the generators of each simplex are sorted 
@@ -116,10 +121,10 @@ public:
 //---------------------------------------------------------------------------
 
   void extreme_rays(); //computes the extrem rays , the support hyperplanes must be known
-  void support_hyperplanes(); //computes the support hyperplanes
+  void support_hyperplanes(const bool compressed_test=false); //computes the support hyperplanes
   void support_hyperplanes_triangulation();//computes the support hyperplanes and triangulation
   void support_hyperplanes_triangulation_multiplicity();//computes the multiplicity
-  void hilbert_basis(); // computes the Hilbert basis
+  void hilbert_basis(const bool compressed_test=false); // computes the Hilbert basis
   bool low_part_simplicial(); //computes the support hyperplanes and test if the lower part cone is simplicial
   void line_shelling(); //orders the lower part of the lifted cone after a line shelling
   void triangulation_lift(); //computed the triangulation by lifting
@@ -137,6 +142,8 @@ public:
   void extreme_rays_rank(); //computes the extrem rays using rank test, used for the dual algorithm
   void hilbert_basis_dual(); //computes the Hilbert basis with the dual algorithm
 
+	bool check_compressed(); //checks if the cone is compressed
+	void support_hyperplanes_dynamic();
 //---------------------------------------------------------------------------
 //						Error msg
 //---------------------------------------------------------------------------

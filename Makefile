@@ -2,7 +2,8 @@
 # Makefile for normaliz
 #
 CXX = g++
-CXXFLAGS = -O3 -Wall -Wno-sign-compare
+CXXFLAGS += -O3 -Wall -Wno-sign-compare
+CXXFLAGS += -pipe -funroll-loops -fopenmp
 
 N32FLAGS = -Dnorm32 -static
 N64FLAGS = -Dnorm64 -static
@@ -18,7 +19,6 @@ NBIGOBJ = $(subst obj64,objBig,$(N64OBJ))
 
 
 all: norm32 norm64 normbig
-
 
 obj64/%.o: %.cpp $(HEADERS)
 	@mkdir -p obj64
@@ -37,7 +37,6 @@ objBig/%.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) -c $< -o $@
 normbig: Normaliz.cpp $(NBIGOBJ)
 	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) Normaliz.cpp $(NBIGOBJ) $(GMPFLAGS) -o normbig
-
 
 clean:
 	-rm -rf obj64 obj32 objBig

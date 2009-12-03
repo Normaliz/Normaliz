@@ -1,21 +1,21 @@
 /*
-* Normaliz 2.2
-* Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim
-* With contributions by Christof Soeger
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
+ * Normaliz 2.2
+ * Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim
+ * With contributions by Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 #include <stdlib.h>
 #include <vector>
@@ -43,7 +43,8 @@ void printHelp(char* command) {
 	cout << "  -?\tprint this help text and exit"<<endl;
 	cout << "  -s\tcomputation type: support_hyperplanes"<<endl;
 	cout << "  -v\tcomputation type: triangulation"<<endl;
-	cout << "  -n\tcomputation type: normal"<<endl;
+	cout << "  -n\tcomputation type: normal (using a triangulation)"<<endl;
+	cout << "  -N\tcomputation type: normal using a subdivison in simplicial or compressed subcones"<<endl;
 	cout << "  -p\tcomputation type: hilbert_polynomial"<<endl;
 	cout << "  -h\tcomputation type: hilbert_basis_polynomial"<<endl;
 	cout << "  -d\tcomputation type: dual"<<endl;
@@ -67,8 +68,8 @@ int main(int argc, char* argv[])
 	//the type given in the command line overrides the type set by the setup file
 	string output_name;         //name of the output file(s) saved here
 	Output Out;                //all the information relevant for output is collected
-							  //in this object
-	
+	//in this object
+
 	// read commandline options 
 	bool read_setup=true;
 	bool filename_set=false;
@@ -82,121 +83,121 @@ int main(int argc, char* argv[])
 			filename_set=true;
 		}
 	}
-	
-	
+
+
 	//determine whether the config file should be ignored
 	for (i = 0; i <option.size(); i++) {
 		if (option[i]=='i') {
 			read_setup=false;
 		}
 	}
-	
-	
+
+
 	//read config file
-	
+
 	if (read_setup==true) {
-	ifstream setup("normaliz.cfg");
-	if (setup.is_open()==false) {
-		if (verbose) {
-			cout << "normaliz.cfg not found. Using default values and command line parameters."<<endl;
+		ifstream setup("normaliz.cfg");
+		if (setup.is_open()==false) {
+			if (verbose) {
+				cout << "normaliz.cfg not found. Using default values and command line parameters."<<endl;
+			}
+		}
+		else{
+			string buf;
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set test_arihmetic_overflow
+				test_arithmetic_overflow=true;
+			while (buf!="=")
+				setup>>buf;
+			setup>>overflow_test_modulus;             //set overflow_test_modulus
+			setup>>buf;
+			while (buf!="=")
+				setup>>buf;
+			setup>>lifting_bound;   //set lifting_bound 
+			setup>>buf;
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set control data
+				verbose=true;
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set save memory / don't optimization for speed
+				optimize_speed=false;
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
+				cerr<<"warning: Unknown \"Run mode type\" in file normaliz.cfg. May be a bad format of the file."<<endl;
+				cerr<<"Running \"Run mode type\" = normal ..."<<endl;
+			}
+			else                     //set computation_type
+				computation_type=buf;
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set out flag
+				Out.set_write_out(true);
+			else
+				Out.set_write_out(false);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set inv flag
+				Out.set_write_inv(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set ext flag
+				Out.set_write_ext(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set esp flag
+				Out.set_write_esp(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set typ flag
+				Out.set_write_typ(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set egn flag
+				Out.set_write_egn(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set gen flag
+				Out.set_write_gen(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set sup flag
+				Out.set_write_sup(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set tri flag
+				Out.set_write_tri(true);
+			while (buf!="=")
+				setup>>buf;
+			setup>>buf;
+			if (buf=="YES")           //set ht1 flag
+				Out.set_write_ht1(true);
+			if (setup.fail()!= false ){
+				cerr << "warning: Failed to read file setup.txt. May be a bad format of the file."<<endl;
+				cerr << "The program will run in normal mode."<<endl;
+			}
+			setup.close();
 		}
 	}
-	else{
-	string buf;
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set test_arihmetic_overflow
-		test_arithmetic_overflow=true;
-	while (buf!="=")
-		setup>>buf;
-	setup>>overflow_test_modulus;             //set overflow_test_modulus
-	setup>>buf;
-	while (buf!="=")
-		setup>>buf;
-	setup>>lifting_bound;   //set lifting_bound 
-	setup>>buf;
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set control data
-		verbose=true;
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set save memory / don't optimization for speed
-		optimize_speed=false;
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
-		cerr<<"warning: Unknown \"Run mode type\" in file normaliz.cfg. May be a bad format of the file."<<endl;
-		cerr<<"Running \"Run mode type\" = normal ..."<<endl;
-	}
-	else                     //set computation_type
-		computation_type=buf;
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set out flag
-		Out.set_write_out(true);
-	else
-		Out.set_write_out(false);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set inv flag
-		Out.set_write_inv(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set ext flag
-		Out.set_write_ext(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set esp flag
-		Out.set_write_esp(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set typ flag
-		Out.set_write_typ(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set egn flag
-		Out.set_write_egn(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set gen flag
-		Out.set_write_gen(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set sup flag
-		Out.set_write_sup(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set tri flag
-		Out.set_write_tri(true);
-	while (buf!="=")
-		setup>>buf;
-	setup>>buf;
-	if (buf=="YES")           //set ht1 flag
-		Out.set_write_ht1(true);
-	if (setup.fail()!= false ){
-		cerr << "warning: Failed to read file setup.txt. May be a bad format of the file."<<endl;
-		cerr << "The program will run in normal mode."<<endl;
-	}
-	setup.close();
-	}
-	}
-	
+
 	//Analyzing the command line options
-	
+
 	for (i = 1; i <option.size(); i++) {
 		switch (option[i]) {
 			case '-':
@@ -219,6 +220,9 @@ int main(int argc, char* argv[])
 				break;
 			case 'n':
 				computation_type="normal";
+				break;
+			case 'N':
+				computation_type="normal_compressed";
 				break;
 			case 'p':
 				computation_type="hilbert_polynomial";
@@ -244,23 +248,23 @@ int main(int argc, char* argv[])
 				break;
 		}
 	}
-	
-	
-	//if the program works with the indefinite precision arithmetic, no arithmetic test are performed
-	#ifdef normbig
+
+
+	//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
+#ifdef normbig
 	test_arithmetic_overflow=false;
-	#endif
-	
-	
-	
+#endif
+
+
+
 	//Read Input
-	
+
 	if (!filename_set) {
 		cout<<"Normaliz 2.2"<<endl
-		    <<"Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim"<<endl
-		    <<"With contributions by Christof Soeger"<<endl
-		    <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software, and you are welcome to redistribute it under certain conditions; See COPYING for details."
-		    <<endl<<endl;
+			<<"Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim"<<endl
+			<<"With contributions by Christof Soeger"<<endl
+			<<"This program comes with ABSOLUTELY NO WARRANTY; This is free software, and you are welcome to redistribute it under certain conditions; See COPYING for details."
+			<<endl<<endl;
 		cout<<"Enter the input file name or -? for help: ";
 		cin >>output_name;
 		if (output_name == "-?") {
@@ -303,7 +307,7 @@ int main(int argc, char* argv[])
 			M.write(i,j,number);
 		}
 	}
-	
+
 	in>>mode_string;
 	if (mode_string=="0"||mode_string=="integral_closure") {
 		mode=0;
@@ -326,7 +330,7 @@ int main(int argc, char* argv[])
 		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
 		mode=0;
 	}
-	
+
 	if (in.fail()!= false ) {
 		cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file."<<endl;
 		if (!filename_set) {
@@ -338,14 +342,14 @@ int main(int argc, char* argv[])
 	in.close();
 	Out.set_name(output_name);
 	//cout<<"test="<<test_arithmetic_overflow;
-	
+
 	//main computations and output
 	if (verbose) {
 		cout<<"\n************************************************************\n";
 		cout<<"Running in mode "<<mode<<" and computation type "<<computation_type<<"."<<endl;
 	}
 	make_main_computation(mode, computation_type, M, Out);
-	
+
 	//exit
 	if (!filename_set) {
 		cout<< "\nProgram finished. Type something and press enter to exit.\n";

@@ -1,21 +1,21 @@
 /*
-* Normaliz 2.2
-* Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim
-* With contributions by Christof Soeger
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
+ * Normaliz 2.2
+ * Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim
+ * With contributions by Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 //---------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ Lineare_Transformation::  Lineare_Transformation(const Matrix& M){
 	Right=Help3;
 	Right_Inv=Help3;
 }
- 
+
 //---------------------------------------------------------------------------
 
 Lineare_Transformation::Lineare_Transformation(const Lineare_Transformation& LT){
@@ -76,7 +76,7 @@ Lineare_Transformation::Lineare_Transformation(const Lineare_Transformation& LT)
 //---------------------------------------------------------------------------
 
 Lineare_Transformation::~Lineare_Transformation(){
-//automatic destructor
+	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
@@ -124,13 +124,13 @@ Matrix Lineare_Transformation::get_left() const{
 Matrix Lineare_Transformation::get_center()const{
 	return Center;
 }
- 
+
 //---------------------------------------------------------------------------
 
 Matrix Lineare_Transformation::get_right() const{
 	return Right;
 }
- 
+
 //---------------------------------------------------------------------------
 
 Matrix Lineare_Transformation::get_right_inv() const{
@@ -225,8 +225,8 @@ bool Lineare_Transformation::test_transformation(const Matrix& M,const int& m) c
 	Matrix N=Right.multiplication(Right_Inv, m);
 	Matrix I(nc);
 	if ((Center.equal(M2,m)!=true)||(I.equal(N,m)!=true)) {
-		 error("error: Lineare_Transformation::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation.");
-		 return false;
+		error("error: Lineare_Transformation::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation.");
+		return false;
 	}
 	return true;
 }
