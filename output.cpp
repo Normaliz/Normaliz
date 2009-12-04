@@ -410,15 +410,11 @@ void Output::cone() const{
 	Matrix Change_Inv=Basis_Change.get_right_inv();
 	Matrix Support_Hyperplanes_Full_Cone=Result.read_support_hyperplanes();   //TODO nicht kopieren!
 
-	//TODO ausgabe der urspr�nglichen erzeuger nach der transformation
-	Result.read_generators().print(name,"emb-cone-gen"); //TODO testing only
-
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
 	if (status!="support hyperplanes"&&tri){           			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
 		write_matrix_tri(T);
 	}
-
 
 	if (out==true) {  //printing .out file
 		string name_open=name+".out"; 							 //preparing output files
@@ -497,7 +493,7 @@ void Output::cone() const{
 		for (i = 1; i <= rank; i++) {
 			index_reduce*=Diagonal.read(i,i);
 		}
-		out<<"(original) semigroup is of index "<<index/index_reduce<<" = "<<index<<"/"<<index_reduce<<endl;
+		out<<"(original) semigroup is of index "<<index/index_reduce<<endl;
 		out<<endl;
 
 		Change=Change.transpose();  // preparing the matrix for transformationen on the dual space
