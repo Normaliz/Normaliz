@@ -59,8 +59,12 @@ class Full_Cone{
   void reduce_and_insert_speed(const vector< Integer >& new_element);
   //adds a new element to the Hilbert basis
   //faster as above, provided enough memory is available
+  
+   //retuns true if new_element is reducible versus the elements in Ired
+  bool is_reducible(list< vector< Integer > >& Ired, const vector< Integer >& new_element);
+  
   bool reduce ( list < vector < Integer > > &  Ired , const vector< Integer >& new_element , const int& size );
-  //retuns true if new element is reducible versus the elements in Ired
+  //retuns true if new_element is reducible versus the elements in Ired
   // used for dual algorithm
   void reduce (list < vector < Integer > > & Ired, list < vector< Integer > >& Red, const int& size );
  //reduce Red versus Ired
