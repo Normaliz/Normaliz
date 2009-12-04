@@ -106,15 +106,12 @@ void  l_cut(list<  vector<Integer> >& l, int size){
 
 
 void  l_cut_front(list<  vector<Integer> >& l, int size){
-	int s,k;
 	list< vector<Integer> >::iterator i;
-	for (i =l.begin(); i != l.end(); i++) {
-		s=(*i).size()-size;
-		for (k = 0; k < size; k++) {
-			(*i)[k]=(*i)[s+k];
-			//			swap((*i)[k],(*i)[s+k]);  //TODO lieber nicht swap???  einfach (*i)[k]=(*i)[s+k]
-		}
-		(*i).resize(size);
+	vector<Integer> tmp;
+	for (i =l.begin(); i != l.end(); ) {
+		tmp=v_cut_front(*i, size);
+		i=l.erase(i);  //important to decrease memory consumption
+		l.insert(i,tmp);
 	}
 }
 
