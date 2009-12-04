@@ -508,6 +508,17 @@ bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, 
 	}
 	return true;
 }
+//---------------------------------------------------------------------------
+
+vector<Integer> v_cut_front(const vector<Integer>& v, int size){
+	int s,k;
+	vector<Integer> tmp(size);
+	s=v.size()-size;
+	for (k = 0; k < size; k++) {
+		tmp[k]=v[s+k];
+	}
+	return tmp;
+}
 
 //---------------------------------------------------------------------------
 

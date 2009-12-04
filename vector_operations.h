@@ -54,6 +54,9 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b);
 vector<int> v_complement(const int& a, const vector<int>& v);
 //returns a vector containg all the elements of v, less v[a]
 
+//returns a new vector with the last size entries of v
+vector<Integer> v_cut_front(const vector<Integer>& v, int size);
+
 //---------------------------------------------------------------------------
 //							abs, gcd and lcm
 //---------------------------------------------------------------------------
