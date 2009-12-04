@@ -595,7 +595,7 @@ bool Full_Cone::is_reducible(list< vector< Integer > >& Ired, const vector< Inte
 	int s=Support_Hyperplanes.size();
 	vector <Integer> candidate=v_cut_front(new_element,dim);
 	vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
-	list< vector<Integer> >::const_iterator j;
+	list< vector<Integer> >::iterator j;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
 		for (i = 1; i <= s; i++) {
 			if ((*j)[i]>scalar_product[i-1]){
@@ -603,6 +603,9 @@ bool Full_Cone::is_reducible(list< vector< Integer > >& Ired, const vector< Inte
 			}
 		}
 		if (i==s+1) {
+			//found a "reducer" and move it to the front
+			Ired.push_front(*j);
+			Ired.erase(j);
 			return true;
 		}
 	}
@@ -1751,7 +1754,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		list< vector<Integer> > HBtmp(0);
 		int norm_crit;
 		while( !Candidates_with_Scalar_Product.empty() ) {
-			cout<<"begin loop"<<HBtmp.size()<<endl<<flush;
+			cout<<"begin loop"<<endl<<flush;
 			//use norm criterion to find irreducible elements
 			c=Candidates_with_Scalar_Product.begin();
 			norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
@@ -1791,7 +1794,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 					c++; cpos++;
 				}					
 			}
-			cout<<"alle reduziert"<<HBtmp.size()<<endl<<flush;
+			cout<<"alle reduziert"<<endl<<flush;
 
 			// delete reducible candidates
 /*			c=Candidates_with_Scalar_Product.begin();
