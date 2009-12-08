@@ -1652,9 +1652,11 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		cout<<"computing Hilbert basis ..."<<endl;
 	}
 
-	set < vector<Integer> > Candidates,Candidates_with_Scalar_Product;
+	set < vector<Integer> > Candidates;
+	list < vector<Integer> > Candidates_with_Scalar_Product;
 	list <vector <Integer> >  HB;
-	set <vector <Integer> >::iterator c;
+	set <vector <Integer> >::iterator cit;
+	list <vector <Integer> >::iterator c;
 	list <vector <Integer> >::const_iterator h;
 	for (i = 1; i <=nr_gen; i++) {
 		Candidates.insert(Generators.read(i));
@@ -1720,41 +1722,46 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			cout<<"done"<<endl;
 		}
 
-		c = Candidates.begin();
+		cit = Candidates.begin();
 		int cpos = 0;
 		int listsize=Candidates.size();
 		
-		//go over candidates: do single scalar product and sort
+		if(verbose) {
+			cout<<"Compute norm of the candidates, ";
+		}
+		//go over candidates: do single scalar product
 		//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
 		vector<Integer> scalar_product;
 		for (int j=0; j<listsize; j++) {
-			for(;j > cpos; cpos++, c++) ;
-			for(;j < cpos; cpos--, c--) ;
+			for(;j > cpos; cpos++, cit++) ;
+			for(;j < cpos; cpos--, cit--) ;
 
-			norm=v_scalar_product(degree_function,(*c));
+			norm=v_scalar_product(degree_function,(*cit));
 
 			vector <Integer> new_element(1);
 			new_element[0]=norm;
-			new_element=v_merge(new_element,(*c));
-			Candidates_with_Scalar_Product.insert(new_element);
-			if (verbose==true) {
-				if (Candidates_with_Scalar_Product.size()%10000==0) {
-					cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-				}
-			}
+			new_element=v_merge(new_element,(*cit));
+			Candidates_with_Scalar_Product.push_back(new_element);
+//			if (verbose==true) {
+//				if (Candidates_with_Scalar_Product.size()%10000==0) {
+//					cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
+//				}
+//			}
 		}
+		Candidates.clear();         //delete old set
+		if(verbose) {
+			cout<<"sort the list, ";
+		}
+		Candidates_with_Scalar_Product.sort();
 		if (verbose) {
 			cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
 		}
-		if (verbose) cout<<"delete candidates ";
-		Candidates.clear();
-		if (verbose) cout<<"done "<<endl;
 		
 		// do global reduction
 		list< vector<Integer> > HBtmp(0);
 		int norm_crit;
 		while( !Candidates_with_Scalar_Product.empty() ) {
-			cout<<"begin loop"<<endl<<flush;
+			cout<<"new loop run"<<endl<<flush;
 			//use norm criterion to find irreducible elements
 			c=Candidates_with_Scalar_Product.begin();
 			norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
@@ -1768,17 +1775,16 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 				new_HB_element=v_merge(new_HB_element,candidate);
 				HBtmp.push_back(new_HB_element);
 				Hilbert_Basis.push_back(candidate); // already of the final type 
-				Candidates_with_Scalar_Product.erase(c);
-				c=Candidates_with_Scalar_Product.begin(); //TODO can be done by c=...erase() if Candi is a list<>
+				c=Candidates_with_Scalar_Product.erase(c);
 			}
 			int csize=Candidates_with_Scalar_Product.size();
 			if (verbose) {
-				cout<<Hilbert_Basis.size()<< " Hilbert Basis elements of norm <="<<norm_crit-1<<" and "<<csize<<" candidates left"<<endl;
+				cout<<Hilbert_Basis.size()<< " Hilbert Basis elements of norm <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
 			}
 
 			// reduce candidates against HBtmp
 			c=Candidates_with_Scalar_Product.begin();
-			set <vector <Integer> >::iterator cdel;
+			list <vector <Integer> >::iterator cdel;
 /*			int cpos=0;
 			for (int k =0; k<csize; k++) {
 				for(;k > cpos; cpos++, c++) ;
@@ -1813,8 +1819,8 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		if (verbose) {
 			cout<<"Cone is simplicial, no global reduction necessary."<<endl;
 		}
-		for (c = Candidates.begin(); c != Candidates.end(); c++) {
-			Hilbert_Basis.push_back(v_cut_front(*c,dim));
+		for (cit = Candidates.begin(); cit != Candidates.end(); cit++) {
+			Hilbert_Basis.push_back(v_cut_front(*cit,dim));
 		}
 		Candidates.clear();
 	}

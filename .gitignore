@@ -1,4 +1,4 @@
-norm32
-norm64
-normbig
+norm32*
+norm64*
+normbig*
 obj*
