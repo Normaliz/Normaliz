@@ -1760,12 +1760,19 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		// do global reduction
 		list< vector<Integer> > HBtmp(0);
 		int norm_crit;
-		while( !Candidates_with_Scalar_Product.empty() ) {
+		while ( !Candidates_with_Scalar_Product.empty() ) {
 			cout<<"new loop run"<<endl<<flush;
 			//use norm criterion to find irreducible elements
 			c=Candidates_with_Scalar_Product.begin();
 			norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
-			while(c != Candidates_with_Scalar_Product.end() && (*c)[0]<norm_crit) {
+			if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
+				while ( !Candidates_with_Scalar_Product.empty()) {
+					Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
+					c=Candidates_with_Scalar_Product.erase(c);
+				}
+				break;
+			}
+			while ( (*c)[0] < norm_crit ) { //can't go over the end because of the previous if
 				// push to HBtmp with scalar products
 				vector <Integer> candidate=v_cut_front(*c,dim);
 				vector <Integer> scalar_products=l_multiplication(Support_Hyperplanes,candidate);
