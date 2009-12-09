@@ -1795,34 +1795,27 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 
 			// reduce candidates against HBtmp
 			c=Candidates_with_Scalar_Product.begin();
-			list <vector <Integer> >::iterator cdel;
-/*			int cpos=0;
+			int cpos=0;
+
 			for (int k =0; k<csize; k++) {
 				for(;k > cpos; cpos++, c++) ;
 				for(;k < cpos; cpos--, c--) ;
-*/
-			while(c != Candidates_with_Scalar_Product.end()) {				
+
 				if( is_reducible(HBtmp, *c) ) {
-				//	(*c)[0]=-1;	//mark as reducible  DOES NOT WORK????
-					cdel=c;
-					c++; cpos++;
-					Candidates_with_Scalar_Product.erase(cdel);
-				} else {
-					c++; cpos++;
+					(*c)[0]=-1;	//mark as reducible
 				}					
 			}
 			cout<<"alle reduziert"<<endl<<flush;
 
 			// delete reducible candidates
-/*			c=Candidates_with_Scalar_Product.begin();
+			c=Candidates_with_Scalar_Product.begin();
 			while(c != Candidates_with_Scalar_Product.end()) {
 				if((*c)[0]==-1) {
-					Candidates_with_Scalar_Product.erase(c);
-					c=Candidates_with_Scalar_Product.begin();
+					c=Candidates_with_Scalar_Product.erase(c);
 				} else {
 					c++;
 				}
-			}*/
+			}
 			HBtmp.clear();
 		}
 	}
