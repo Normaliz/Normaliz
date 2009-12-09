@@ -1766,6 +1766,10 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			c=Candidates_with_Scalar_Product.begin();
 			norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
 			if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
+				if (verbose) {
+					cout<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
+					cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1;
+				}
 				while ( !Candidates_with_Scalar_Product.empty()) {
 					Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
 					c=Candidates_with_Scalar_Product.erase(c);
