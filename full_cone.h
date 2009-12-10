@@ -61,7 +61,8 @@ class Full_Cone{
   //faster as above, provided enough memory is available
   
    //retuns true if new_element is reducible versus the elements in Ired
-  bool is_reducible(list< vector< Integer > >& Ired, const vector< Integer >& new_element);
+  bool is_reducible(list< vector<Integer> >& Ired, const vector<Integer>& new_element);
+  bool is_reducible(list< vector<Integer>* >& Ired, const vector<Integer>& new_element);
   
   bool reduce ( list < vector < Integer > > &  Ired , const vector< Integer >& new_element , const int& size );
   //retuns true if new_element is reducible versus the elements in Ired

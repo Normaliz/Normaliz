@@ -590,7 +590,7 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::is_reducible(list< vector< Integer > >& Ired, const vector< Integer >& new_element){
+bool Full_Cone::is_reducible(list< vector<Integer> >& Ired, const vector< Integer >& new_element){
 	register int i;
 	int s=Support_Hyperplanes.size();
 	vector <Integer> candidate=v_cut_front(new_element,dim);
@@ -599,6 +599,32 @@ bool Full_Cone::is_reducible(list< vector< Integer > >& Ired, const vector< Inte
 	for (j =Ired.begin(); j != Ired.end(); j++) {
 		for (i = 1; i <= s; i++) {
 			if ((*j)[i]>scalar_product[i-1]){
+				break;
+			}
+		}
+		if (i==s+1) {
+			//found a "reducer" and move it to the front
+			Ired.push_front(*j);
+			Ired.erase(j);
+			return true;
+		}
+	}
+	return false;
+}
+
+//---------------------------------------------------------------------------
+
+bool Full_Cone::is_reducible(list< vector<Integer>* >& Ired, const vector< Integer >& new_element){
+	register int i;
+	int s=Support_Hyperplanes.size();
+	vector <Integer> candidate=v_cut_front(new_element,dim);
+	vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
+	list< vector<Integer>* >::iterator j;
+//	vector<Integer> reducer;
+	for (j =Ired.begin(); j != Ired.end(); j++) {
+//		reducer=(**j);
+		for (i = 1; i <= s; i++) {
+			if ((**j)[i]>scalar_product[i-1]){
 				break;
 			}
 		}
@@ -1719,7 +1745,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			} //TODO parallel addition in each thread and final addition at the end
 		}
 		if(verbose) {
-			cout<<"done"<<endl;
+			cout<<"done"<<endl<<flush;
 		}
 
 		cit = Candidates.begin();
@@ -1727,7 +1753,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		int listsize=Candidates.size();
 		
 		if(verbose) {
-			cout<<"Compute norm of the candidates, ";
+			cout<<"Compute norm of the candidates, "<<flush;
 		}
 		//go over candidates: do single scalar product
 		//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
@@ -1750,7 +1776,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		}
 		Candidates.clear();         //delete old set
 		if(verbose) {
-			cout<<"sort the list, ";
+			cout<<"sort the list, "<<flush;
 		}
 		Candidates_with_Scalar_Product.sort();
 		if (verbose) {
@@ -1768,7 +1794,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
 				if (verbose) {
 					cout<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
-					cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1;
+					cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1<<endl;
 				}
 				while ( !Candidates_with_Scalar_Product.empty()) {
 					Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
@@ -1794,17 +1820,33 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			}
 
 			// reduce candidates against HBtmp
-			c=Candidates_with_Scalar_Product.begin();
-			int cpos=0;
+//			#pragma omp parallel private(c,cpos)
+//			{
+			int k;
+			
+			list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
+			// fill pointer list
+			c=HBtmp.begin();
+			while (c!=HBtmp.end()) {
+				HBpointers.push_back(&(*(c++)));
+			}
 
-			for (int k =0; k<csize; k++) {
+//			list< vector<Integer> > HBcopy(HBtmp);
+
+			c=Candidates_with_Scalar_Product.begin();
+			cpos=0;
+//			#pragma omp for schedule(dynamic)
+			for (k=0; k<csize; k++) {
 				for(;k > cpos; cpos++, c++) ;
 				for(;k < cpos; cpos--, c--) ;
-
-				if( is_reducible(HBtmp, *c) ) {
+				if (verbose && k%10000==0) {
+					cout<<k<<" / "<<csize<<endl;
+				}
+				if ( is_reducible(HBtmp, *c) ) {
 					(*c)[0]=-1;	//mark as reducible
-				}					
+				}
 			}
+//			} //end parallel
 			cout<<"alle reduziert"<<endl<<flush;
 
 			// delete reducible candidates
@@ -1829,9 +1871,9 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 		Candidates.clear();
 	}
 
-	cout<<"delete scalar products of Hilbert Basis: "; // cin>>status;
-	l_cut_front(Hilbert_Basis,dim); // take only the last dim entries of the vectors
-	cout<<"done "<<endl; // cin>>status;
+//	cout<<"delete scalar products of Hilbert Basis: "; // cin>>status;
+//	l_cut_front(Hilbert_Basis,dim); // take only the last dim entries of the vectors
+//	cout<<"done "<<endl; // cin>>status;
 	if(homogeneous==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
