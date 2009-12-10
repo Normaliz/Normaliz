@@ -620,11 +620,11 @@ bool Full_Cone::is_reducible(list< vector<Integer>* >& Ired, const vector< Integ
 	vector <Integer> candidate=v_cut_front(new_element,dim);
 	vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
 	list< vector<Integer>* >::iterator j;
-//	vector<Integer> reducer;
+	vector<Integer> *reducer;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
-//		reducer=(**j);
+		reducer=(*j);
 		for (i = 1; i <= s; i++) {
-			if ((**j)[i]>scalar_product[i-1]){
+			if ((*reducer)[i]>scalar_product[i-1]){
 				break;
 			}
 		}
@@ -1820,34 +1820,34 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			}
 
 			// reduce candidates against HBtmp
-//			#pragma omp parallel private(c,cpos)
-//			{
-			int k;
-			
-			list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
 			// fill pointer list
+			list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
 			c=HBtmp.begin();
 			while (c!=HBtmp.end()) {
 				HBpointers.push_back(&(*(c++)));
 			}
 
-//			list< vector<Integer> > HBcopy(HBtmp);
+			#pragma omp parallel private(c,cpos) firstprivate(HBpointers)
+			{
+			
+		//	list< vector<Integer>* > HBcopy(HBpointers); //one copy for each thread
 
 			c=Candidates_with_Scalar_Product.begin();
 			cpos=0;
-//			#pragma omp for schedule(dynamic)
-			for (k=0; k<csize; k++) {
+			#pragma omp for schedule(dynamic)
+			for (int k=0; k<csize; k++) {
 				for(;k > cpos; cpos++, c++) ;
 				for(;k < cpos; cpos--, c--) ;
 				if (verbose && k%10000==0) {
-					cout<<k<<" / "<<csize<<endl;
+					cout<<k<<" / "<<csize<<endl<<flush;
 				}
-				if ( is_reducible(HBtmp, *c) ) {
+				
+				if ( is_reducible(HBpointers, *c) ) {
 					(*c)[0]=-1;	//mark as reducible
 				}
 			}
-//			} //end parallel
-			cout<<"alle reduziert"<<endl<<flush;
+			} //end parallel
+			cout<<csize<<" / "<<csize<<endl<<flush;
 
 			// delete reducible candidates
 			c=Candidates_with_Scalar_Product.begin();
@@ -2720,8 +2720,8 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	//override global values for recursion
 	bool verbose_bak = verbose;
 	verbose=false;
-//	int nested=omp_get_nested();
-//	omp_set_nested(0);
+	int nested=omp_get_nested();
+	omp_set_nested(0);
 
 	int verbose_step=10000;
 	if (verbose) {
@@ -2765,6 +2765,6 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 
 	//restore global values
 	verbose=verbose_bak;
-//	omp_set_nested(nested);
+	omp_set_nested(nested);
 }
 
