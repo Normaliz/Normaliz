@@ -2724,8 +2724,8 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	omp_set_nested(0);
 
 	int verbose_step=10000;
-	if (verbose) {
-		while (listsize > verbose_step/5 && verbose_step >= 100) {
+	if (verbose_bak) {
+		while (listsize < verbose_step/5 && verbose_step >= 100) {
 			verbose_step/=10;
 		}
 	}
