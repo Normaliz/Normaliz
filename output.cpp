@@ -425,7 +425,7 @@ void Output::cone() const{
 		if (status=="normal"||status=="hilbert basis polynomial") {
 			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();  //TODO nicht kopieren!
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
-			if(typ) {
+			if (typ) {
 				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
@@ -928,8 +928,10 @@ void Output::rees(const bool primary) const{
 		if (status=="normal"||status=="hilbert basis polynomial") {
 			Hilbert_Basis=Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis);
-			Matrix V=Hilbert_Basis.multiplication(Support_Hyperplanes.transpose());
-			write_matrix_typ(V);
+			if(typ) {
+				Matrix V=Hilbert_Basis.multiplication(Support_Hyperplanes.transpose());
+				write_matrix_typ(V);
+			}
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
 			nc=Hilbert_Basis.nr_of_columns();

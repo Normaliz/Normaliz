@@ -1712,7 +1712,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 			#pragma omp critical(VERBOSE)
 			{
 				counter++;
-				if (counter%100==0) {
+				if (counter%1000==0) {
 					cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 				}
 			}
@@ -2725,9 +2725,10 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 
 	int verbose_step=10000;
 	if (verbose_bak) {
-		while (listsize < verbose_step/5 && verbose_step >= 100) {
+		while (listsize/5 < verbose_step && verbose_step >= 100) {
 			verbose_step/=10;
 		}
+		cout<<"verbose_step="<<verbose_step<<endl;
 	}
 
 	#pragma omp parallel for firstprivate(itpos,it) schedule(dynamic)
