@@ -916,7 +916,6 @@ Full_Cone::Full_Cone(){
 	dim=0;
 	nr_gen=0;
 	hyp_size=0;
-	compressed_test=false;
 	status="non initialized";
 }
 
@@ -929,28 +928,21 @@ Full_Cone::Full_Cone(Matrix M){
 	}
 	nr_gen=M.nr_of_rows();
 	hyp_size=dim+nr_gen;
-	compressed_test=false;
-	status="initialized, before computations";
+	Generators = M;
+	Generators.make_prime();
 	if(dim>0){            //correction nedded to include the 0 cone;
-		Linear_Form=M.homogeneous(homogeneous);
+		Linear_Form = Generators.homogeneous(homogeneous);
 	} else {
-		homogeneous=true;
+		homogeneous = true;
 	}
-	multiplicity=0;
-	Matrix Help1(M);
-	Generators=Help1;
-	vector<bool>   Help2(nr_gen,false);
-	Extreme_Rays=Help2;
-	list< vector<Integer> >  Help3;
-	Support_Hyperplanes=Help3;
-	list< Simplex >  Help4;
-	Triangulation=Help4;
-	list< vector<Integer> >  Help5;
-	Hilbert_Basis=Help5;
-	list< vector<Integer> >  Help6;
-	Homogeneous_Elements=Help6;
-	vector<Integer> Help7(dim);
+	multiplicity = 0;
+	Extreme_Rays = vector<bool>(nr_gen,false);
+	Support_Hyperplanes = list< vector<Integer> >();
+	Triangulation = list< Simplex >();
+	Hilbert_Basis =  list< vector<Integer> >();
+	Homogeneous_Elements = list< vector<Integer> >();
 	if(dim>0){            //correction nedded to include the 0 cone;
+		vector<Integer> Help7(dim);
 		H_Vector=Help7;
 		vector<Integer> Help8(2*dim);
 		Hilbert_Polynomial=Help8;
@@ -961,6 +953,7 @@ Full_Cone::Full_Cone(Matrix M){
 		Hilbert_Polynomial=Help8;
 		Hilbert_Polynomial[0]=0;
 	}
+	status="initialized, before computations";
 }
 
 //---------------------------------------------------------------------------
@@ -970,7 +963,6 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 	nr_gen=C.nr_gen;
 	hyp_size=C.hyp_size;
 	status=C.status;
-	compressed_test=C.compressed_test;
 	homogeneous=C.homogeneous;
 	Linear_Form=C.Linear_Form;
 	multiplicity=C.multiplicity;
@@ -1666,10 +1658,10 @@ void Full_Cone::hilbert_basis(const bool compressed_test){
 	} else {
 		support_hyperplanes_triangulation();
 	}
-	only_hilbert_basis(compressed_test);
+	only_hilbert_basis();
 }
 //---------------------------------------------------------------------------
-void Full_Cone::only_hilbert_basis(const bool compressed_test){
+void Full_Cone::only_hilbert_basis(){
 	if(dim>0){            //correction nedded to include the 0 cone;
 	int counter=0,i,s;
 	Integer norm, volume;
@@ -1723,7 +1715,7 @@ void Full_Cone::only_hilbert_basis(const bool compressed_test){
 	}
 
 	s=Support_Hyperplanes.size();
-	if (Triangulation.size()>1 || compressed_test) { // global reduction
+	if (nr_gen != dim) { // global reduction
 		if(verbose) {
 			cout<<"computing degree function: ";
 		}

@@ -34,7 +34,6 @@ class Full_Cone{
   int hyp_size;
   string status;
   bool homogeneous;
-  bool compressed_test;
   vector<Integer> Linear_Form;
   Integer multiplicity;
   Matrix Generators;
@@ -83,7 +82,7 @@ class Full_Cone{
   void find_new_face(); // to be used with a sheling in order to add to each simples the maximal new face
 	void process_non_compressed(list< vector<int> > &non_compressed); //compute triangulations of the not compressed, not simplicial pieces and add them to Triangulation
 
-  void only_hilbert_basis(const bool compressed_test=false); // computes only the Hilbert basis, support hyperplanes and triangulation must be computed in advance
+  void only_hilbert_basis(); // computes only the Hilbert basis, support hyperplanes and triangulation must be computed in advance
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
