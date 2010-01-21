@@ -1760,11 +1760,6 @@ void Full_Cone::only_hilbert_basis(){
 			new_element[0]=norm;
 			new_element=v_merge(new_element,(*cit));
 			Candidates_with_Scalar_Product.push_back(new_element);
-//			if (verbose==true) {
-//				if (Candidates_with_Scalar_Product.size()%10000==0) {
-//					cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-//				}
-//			}
 		}
 		Candidates.clear();         //delete old set
 		if(verbose) {
@@ -2353,7 +2348,17 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 		New_Negative.clear();
 		New_Neutral.clear();
 		//generating new elements
-		for (p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
+		cout<<"+"<<flush;
+//		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
+		int ppos=0;
+		p = Positive_Ired.begin();
+		int psize=Positive_Ired.size();
+		bool is_reducible;
+		#pragma omp parallel for default(none) firstprivate(ppos,p) private(n,diff,is_reducible) shared(Positive_Ired,Negative_Ired,Neutral_Ired) shared(psize,New_Positive,New_Negative,New_Neutral,Positive,Negative,Neutral) schedule(dynamic)
+		for(i = 0; i<psize; i++){
+			for(;i > ppos; ppos++, p++) ;
+			for(;i < ppos; ppos--, p--) ;
+
 			for (n = Negative_Ired.begin(); n != Negative_Ired.end(); n++){
 				if ((*p)[nr_gen+1]<=1&&(*n)[nr_gen+1]<=1&&((*p)[nr_gen+1]!=0||(*n)[nr_gen+1]!=0)) {
 					if (((*p)[nr_gen+2]!=0&&(*p)[nr_gen+2]<=(*n)[hyp_counter])||((*n)[nr_gen+2]!=0&&(*n)[nr_gen+2]<=(*p)[hyp_counter]))
@@ -2365,37 +2370,50 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 					if (diff>0) {
 						new_candidate[hyp_counter]=diff;
 						new_candidate[0]-=2*(*n)[hyp_counter];
-						if (reduce(Positive,new_candidate,hyp_counter)==true) {
+						#pragma omp critical(POSITIVE)
+						is_reducible=reduce(Positive,new_candidate,hyp_counter);
+						if (is_reducible) {
 							continue;
 						}
-						if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
+						#pragma omp critical(NEUTRAL)
+						is_reducible=reduce(Neutral,new_candidate,hyp_counter-1);
+						if (is_reducible) {
 							continue;
 						}    
 						new_candidate[nr_gen+1]=2;
 						new_candidate[nr_gen+2]=(*p)[hyp_counter];
+						#pragma omp critical(NEW_POSITIVE)
 						New_Positive.push_back(new_candidate);
 					}
 					if (diff<0) {
 						new_candidate[hyp_counter]=-diff;
 						new_candidate[0]-=2*(*p)[hyp_counter];
-						if (reduce(Negative,new_candidate,hyp_counter)==true) {
+						#pragma omp critical(NEGATIVE)
+						is_reducible=reduce(Negative,new_candidate,hyp_counter);
+						if (is_reducible) {
 							continue;
 						}
-						if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
+						#pragma omp critical(NEUTRAL)
+						is_reducible=reduce(Neutral,new_candidate,hyp_counter-1);
+						if (is_reducible) {
 							continue;
-						}
+						}    
 						new_candidate[nr_gen+1]=2;
 						new_candidate[nr_gen+2]=(*n)[hyp_counter];
+						#pragma omp critical(NEW_NEGATIVE)
 						New_Negative.push_back(new_candidate);
 					}
 					if (diff==0) {
 						new_candidate[hyp_counter]=0;
 						new_candidate[0]-=2*(*p)[hyp_counter];
-						if (reduce(Neutral,new_candidate,hyp_counter-1)==true) {
+						#pragma omp critical(NEUTRAL)
+						is_reducible=reduce(Neutral,new_candidate,hyp_counter-1);
+						if (is_reducible) {
 							continue;
 						}
 						new_candidate[nr_gen+1]=0;
 						new_candidate[nr_gen+2]=0;
+						#pragma omp critical(NEW_NEUTRAL)
 						New_Neutral.push_back(new_candidate);
 					}
 					/*	if (counter==10000000) {
@@ -2419,6 +2437,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 			}
 		}
 		//end generation of new elements
+		cout<<"-"<<flush;
 		//reducing the new vectors agains them self
 		//Neutral_Ired=Neutral;
 		//Positive_Ired=Positive;

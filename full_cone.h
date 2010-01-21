@@ -146,7 +146,7 @@ public:
   void extreme_rays_rank(); //computes the extrem rays using rank test, used for the dual algorithm
   void hilbert_basis_dual(); //computes the Hilbert basis with the dual algorithm
 
-	bool check_compressed(); //checks if the cone is compressed
+	bool check_compressed(); //checks if the cone is compressed, support hyperplanes must be computed
 	void support_hyperplanes_dynamic();
 //---------------------------------------------------------------------------
 //						Error msg
