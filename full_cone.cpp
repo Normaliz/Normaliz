@@ -716,6 +716,34 @@ void Full_Cone::reduce_and_insert_speed(const vector< Integer >& new_element){
 
 //---------------------------------------------------------------------------
 
+bool Full_Cone::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const int& size){
+	register int i,c=1;
+	list< vector<Integer>* >::iterator j;
+	vector<Integer> *reducer;
+	for (j =Ired.begin(); j != Ired.end(); j++) {
+		reducer=(*j);
+		if (new_element[0]<=(*reducer)[0])
+			continue;
+		if ((*reducer)[c]<=new_element[c]){
+			for (i = 1; i <=size ; i++) {
+				if ((*reducer)[i]>new_element[i]){
+					c=i;
+					break;
+				}
+			}
+			if (i==size+1) {
+				Ired.push_front(*j);
+				Ired.erase(j);
+				return true;
+			}
+		}
+		//new_element is reducible
+	}
+	return false;
+}
+
+//---------------------------------------------------------------------------
+
 bool Full_Cone::reduce( list< vector< Integer > >& Ired, const vector< Integer >& new_element, const int& size){
 	register int i,c=1;
 	list< vector<Integer> >::iterator j;
@@ -2347,13 +2375,23 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 		//generating new elements
 		cout<<"+"<<flush;
 //		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
+		list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
+		list < vector<Integer> >::iterator it;
+		it=Positive_Ired.begin();
+		while (it!=Positive_Ired.end()) {
+			Positive.push_back(&(*(it++)));
+		}
+		it=Negative_Ired.begin();
+		while (it!=Negative_Ired.end()) {
+			Negative.push_back(&(*(it++)));
+		}
+		it=Neutral_Ired.begin();
+		while (it!=Neutral_Ired.end()) {
+			Neutral.push_back(&(*(it++)));
+		}
 		int psize=Positive_Ired.size();
-		#pragma omp parallel default(none) private(p,n,diff) shared(Positive_Ired,Negative_Ired,Neutral_Ired) shared(psize,New_Positive,New_Negative,New_Neutral) 
+		#pragma omp parallel private(p,n,diff) firstprivate(Positive,Negative,Neutral)
 		{
-		list < vector <Integer> > Positive,Negative,Neutral;
-		Positive=Positive_Ired; //copies
-		Negative=Negative_Ired; //the copies will be unordered in the proces
-		Neutral=Neutral_Ired;
 		int ppos=0;
 		p = Positive_Ired.begin();
 		#pragma omp for schedule(dynamic)
