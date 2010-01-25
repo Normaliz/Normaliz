@@ -2335,26 +2335,28 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 	Positive_Ired.sort();
 	Negative_Ired.sort();
 	//long int counter=0;
-	list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Positive,Negative,Neutral,Pos,Neg,Neu;
+	list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Pos,Neg,Neu;
 	list < vector<Integer> >::const_iterator p,n;
 	list < vector <Integer> >::iterator c;
 	not_done=true;
 	while(not_done){
 		not_done=false;
-		Positive=Positive_Ired; //copies
-		Negative=Negative_Ired; //the copies will be unordered in the proces
-		Neutral=Neutral_Ired;
 		New_Positive.clear();
 		New_Negative.clear();
 		New_Neutral.clear();
 		//generating new elements
 		cout<<"+"<<flush;
 //		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
+		int psize=Positive_Ired.size();
+		#pragma omp parallel default(none) private(p,n,diff) shared(Positive_Ired,Negative_Ired,Neutral_Ired) shared(psize,New_Positive,New_Negative,New_Neutral) 
+		{
+		list < vector <Integer> > Positive,Negative,Neutral;
+		Positive=Positive_Ired; //copies
+		Negative=Negative_Ired; //the copies will be unordered in the proces
+		Neutral=Neutral_Ired;
 		int ppos=0;
 		p = Positive_Ired.begin();
-		int psize=Positive_Ired.size();
-		bool is_reducible;
-		#pragma omp parallel for default(none) firstprivate(ppos,p) private(n,diff,is_reducible) shared(Positive_Ired,Negative_Ired,Neutral_Ired) shared(psize,New_Positive,New_Negative,New_Neutral,Positive,Negative,Neutral) schedule(dynamic)
+		#pragma omp for schedule(dynamic)
 		for(i = 0; i<psize; i++){
 			for(;i > ppos; ppos++, p++) ;
 			for(;i < ppos; ppos--, p--) ;
@@ -2370,14 +2372,10 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 					if (diff>0) {
 						new_candidate[hyp_counter]=diff;
 						new_candidate[0]-=2*(*n)[hyp_counter];
-						#pragma omp critical(POSITIVE)
-						is_reducible=reduce(Positive,new_candidate,hyp_counter);
-						if (is_reducible) {
+						if(reduce(Positive,new_candidate,hyp_counter)) {
 							continue;
 						}
-						#pragma omp critical(NEUTRAL)
-						is_reducible=reduce(Neutral,new_candidate,hyp_counter-1);
-						if (is_reducible) {
+						if(reduce(Neutral,new_candidate,hyp_counter-1)) {
 							continue;
 						}    
 						new_candidate[nr_gen+1]=2;
@@ -2388,14 +2386,10 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 					if (diff<0) {
 						new_candidate[hyp_counter]=-diff;
 						new_candidate[0]-=2*(*p)[hyp_counter];
-						#pragma omp critical(NEGATIVE)
-						is_reducible=reduce(Negative,new_candidate,hyp_counter);
-						if (is_reducible) {
+						if(reduce(Negative,new_candidate,hyp_counter)) {
 							continue;
 						}
-						#pragma omp critical(NEUTRAL)
-						is_reducible=reduce(Neutral,new_candidate,hyp_counter-1);
-						if (is_reducible) {
+						if(reduce(Neutral,new_candidate,hyp_counter-1)) {
 							continue;
 						}    
 						new_candidate[nr_gen+1]=2;
@@ -2406,9 +2400,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 					if (diff==0) {
 						new_candidate[hyp_counter]=0;
 						new_candidate[0]-=2*(*p)[hyp_counter];
-						#pragma omp critical(NEUTRAL)
-						is_reducible=reduce(Neutral,new_candidate,hyp_counter-1);
-						if (is_reducible) {
+						if(reduce(Neutral,new_candidate,hyp_counter-1)) {
 							continue;
 						}
 						new_candidate[nr_gen+1]=0;
@@ -2437,14 +2429,18 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 			}
 		}
 		//end generation of new elements
+		#pragma omp single nowait
+		New_Neutral.sort();
+		#pragma omp single nowait
+		New_Positive.sort();
+		#pragma omp single nowait
+		New_Negative.sort();
+		} //END PARALLEL
 		cout<<"-"<<flush;
 		//reducing the new vectors agains them self
 		//Neutral_Ired=Neutral;
 		//Positive_Ired=Positive;
 		//Negative_Ired=Negative;
-		New_Neutral.sort();
-		New_Positive.sort();
-		New_Negative.sort();
 		/*reduce(Neutral,New_Neutral,hyp_counter-1);
 		  reduce(Neutral,New_Positive,hyp_counter-1);
 		  reduce(Neutral,New_Negative,hyp_counter-1);
