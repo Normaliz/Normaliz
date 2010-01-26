@@ -1744,29 +1744,7 @@ void Full_Cone::only_hilbert_basis(){
 
 	s=Support_Hyperplanes.size();
 	if (nr_gen != dim) { // global reduction
-		if(verbose) {
-			cout<<"computing degree function: ";
-		}
-
-		vector<Integer> degree_function(dim,0);
-		if(homogeneous==true){ //use Linear_From in homogeneous case
-			if(verbose) {
-				cout<<" using homogenous linear form, ";
-			}
-			for (i=0; i<dim; i++) {
-				degree_function[i] = Linear_Form[i];
-			}
-		} else { // add hyperplanes to get a degree function
-			//vector<Integer>& hyperplane;
-			for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); h++) {
-				for (i=0; i<dim; i++) {
-					degree_function[i]+=(*h)[i];
-				}
-			} //TODO parallel addition in each thread and final addition at the end
-		}
-		if(verbose) {
-			cout<<"done"<<endl<<flush;
-		}
+		vector<Integer> degree_function=compute_degree_function();
 
 		cit = Candidates.begin();
 		int cpos = 0;
@@ -1886,9 +1864,6 @@ void Full_Cone::only_hilbert_basis(){
 		Candidates.clear();
 	}
 
-//	cout<<"delete scalar products of Hilbert Basis: "; // cin>>status;
-//	l_cut_front(Hilbert_Basis,dim); // take only the last dim entries of the vectors
-//	cout<<"done "<<endl; // cin>>status;
 	if(homogeneous==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
@@ -1898,6 +1873,35 @@ void Full_Cone::only_hilbert_basis(){
 	}
 	} // end if (dim>0)
 	status="normal";
+}
+
+//---------------------------------------------------------------------------
+
+vector<Integer> Full_Cone::compute_degree_function() const {
+	if(verbose) {
+		cout<<"computing degree function: ";
+	}
+	int i;	
+	vector<Integer> degree_function(dim,0);
+	if(homogeneous==true){ //use Linear_From in homogeneous case
+		if(verbose) {
+			cout<<" using homogenous linear form, ";
+		}
+		for (i=0; i<dim; i++) {
+			degree_function[i] = Linear_Form[i];
+		}
+	} else { // add hyperplanes to get a degree function
+		 list< vector<Integer> >::const_iterator h;
+		for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); h++) {
+			for (i=0; i<dim; i++) {
+				degree_function[i]+=(*h)[i];
+			}
+		} //TODO parallel addition in each thread and final addition at the end
+	}
+	if(verbose) {
+		cout<<"done"<<endl<<flush;
+	}
+	return degree_function;
 }
 
 //---------------------------------------------------------------------------
