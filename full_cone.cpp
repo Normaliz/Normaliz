@@ -958,7 +958,7 @@ Full_Cone::Full_Cone(Matrix M){
 	hyp_size=dim+nr_gen;
 	Generators = M;
 	Generators.make_prime();
-	if(dim>0){            //correction nedded to include the 0 cone;
+	if(dim>0){            //correction needed to include the 0 cone;
 		Linear_Form = Generators.homogeneous(homogeneous);
 	} else {
 		homogeneous = true;
@@ -969,7 +969,7 @@ Full_Cone::Full_Cone(Matrix M){
 	Triangulation = list< Simplex >();
 	Hilbert_Basis =  list< vector<Integer> >();
 	Homogeneous_Elements = list< vector<Integer> >();
-	if(dim>0){            //correction nedded to include the 0 cone;
+	if(dim>0){            //correction needed to include the 0 cone;
 		vector<Integer> Help7(dim);
 		H_Vector=Help7;
 		vector<Integer> Help8(2*dim);
@@ -1235,7 +1235,7 @@ void Full_Cone::extreme_rays(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplanes(const bool compressed_test) {
-	if(dim>0){            //correction nedded to include the 0 cone;
+	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing support hyperplanes ..."<<endl;
@@ -1515,7 +1515,7 @@ void Full_Cone::support_hyperplanes_dynamic(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplanes_triangulation(){
-	if(dim>0){            //correction nedded to include the 0 cone;
+	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing support hyperplanes and triangulation ..."<<endl;
@@ -1651,7 +1651,7 @@ void Full_Cone::support_hyperplanes_triangulation(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
-	if(dim>0){            //correction nedded to include the 0 cone;
+	if(dim>0){            //correction needed to include the 0 cone;
 	support_hyperplanes_triangulation();
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -1690,20 +1690,19 @@ void Full_Cone::hilbert_basis(const bool compressed_test){
 }
 //---------------------------------------------------------------------------
 void Full_Cone::only_hilbert_basis(){
-	if(dim>0){            //correction nedded to include the 0 cone;
-	int counter=0,i,s;
-	Integer norm, volume;
+	if(dim>0){            //correction needed to include the 0 cone;
+	int counter=0,i;
+	Integer volume;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing Hilbert basis ..."<<endl;
 	}
 
-	set < vector<Integer> > Candidates;
-	list < vector<Integer> > Candidates_with_Scalar_Product;
-	list <vector <Integer> >  HB;
-	set <vector <Integer> >::iterator cit;
-	list <vector <Integer> >::iterator c;
-	list <vector <Integer> >::const_iterator h;
+	// local hilbert basis
+	set <vector<Integer> > Candidates;
+	set <vector<Integer> >::iterator cit;
+	list <vector<Integer> > HB;
+	list <vector<Integer> >::const_iterator h;
 	for (i = 1; i <=nr_gen; i++) {
 		Candidates.insert(Generators.read(i));
 	}
@@ -1742,127 +1741,7 @@ void Full_Cone::only_hilbert_basis(){
 		cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 	}
 
-	s=Support_Hyperplanes.size();
-	if (nr_gen != dim) { // global reduction
-		vector<Integer> degree_function=compute_degree_function();
-
-		cit = Candidates.begin();
-		int cpos = 0;
-		int listsize=Candidates.size();
-		
-		if(verbose) {
-			cout<<"Compute norm of the candidates, "<<flush;
-		}
-		//go over candidates: do single scalar product
-		//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
-		vector<Integer> scalar_product;
-		for (int j=0; j<listsize; j++) {
-			for(;j > cpos; cpos++, cit++) ;
-			for(;j < cpos; cpos--, cit--) ;
-
-			norm=v_scalar_product(degree_function,(*cit));
-
-			vector <Integer> new_element(1);
-			new_element[0]=norm;
-			new_element=v_merge(new_element,(*cit));
-			Candidates_with_Scalar_Product.push_back(new_element);
-		}
-		Candidates.clear();         //delete old set
-		if(verbose) {
-			cout<<"sort the list, "<<flush;
-		}
-		Candidates_with_Scalar_Product.sort();
-		if (verbose) {
-			cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-		}
-		
-		// do global reduction
-		list< vector<Integer> > HBtmp(0);
-		int norm_crit;
-		while ( !Candidates_with_Scalar_Product.empty() ) {
-			cout<<"new loop run"<<endl<<flush;
-			//use norm criterion to find irreducible elements
-			c=Candidates_with_Scalar_Product.begin();
-			norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
-			if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
-				if (verbose) {
-					cout<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
-					cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1<<endl;
-				}
-				while ( !Candidates_with_Scalar_Product.empty()) {
-					Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
-					c=Candidates_with_Scalar_Product.erase(c);
-				}
-				break;
-			}
-			while ( (*c)[0] < norm_crit ) { //can't go over the end because of the previous if
-				// push to HBtmp with scalar products
-				vector <Integer> candidate=v_cut_front(*c,dim);
-				vector <Integer> scalar_products=l_multiplication(Support_Hyperplanes,candidate);
-				vector <Integer> new_HB_element(1);
-				new_HB_element[0]=(*c)[0];
-				new_HB_element=v_merge(new_HB_element,scalar_products);
-				new_HB_element=v_merge(new_HB_element,candidate);
-				HBtmp.push_back(new_HB_element);
-				Hilbert_Basis.push_back(candidate); // already of the final type 
-				c=Candidates_with_Scalar_Product.erase(c);
-			}
-			int csize=Candidates_with_Scalar_Product.size();
-			if (verbose) {
-				cout<<Hilbert_Basis.size()<< " Hilbert Basis elements of norm <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
-			}
-
-			// reduce candidates against HBtmp
-			// fill pointer list
-			list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
-			c=HBtmp.begin();
-			while (c!=HBtmp.end()) {
-				HBpointers.push_back(&(*(c++)));
-			}
-
-			#pragma omp parallel private(c,cpos) firstprivate(HBpointers)
-			{
-			
-		//	list< vector<Integer>* > HBcopy(HBpointers); //one copy for each thread
-
-			c=Candidates_with_Scalar_Product.begin();
-			cpos=0;
-			#pragma omp for schedule(dynamic)
-			for (int k=0; k<csize; k++) {
-				for(;k > cpos; cpos++, c++) ;
-				for(;k < cpos; cpos--, c--) ;
-				if (verbose && k%10000==0) {
-					cout<<k<<" / "<<csize<<endl<<flush;
-				}
-				
-				if ( is_reducible(HBpointers, *c) ) {
-					(*c)[0]=-1;	//mark as reducible
-				}
-			}
-			} //end parallel
-			cout<<csize<<" / "<<csize<<endl<<flush;
-
-			// delete reducible candidates
-			c=Candidates_with_Scalar_Product.begin();
-			while(c != Candidates_with_Scalar_Product.end()) {
-				if((*c)[0]==-1) {
-					c=Candidates_with_Scalar_Product.erase(c);
-				} else {
-					c++;
-				}
-			}
-			HBtmp.clear();
-		}
-	}
-	else { // cone is simplicial, therefore no global reduction is necessary
-		if (verbose) {
-			cout<<"Cone is simplicial, no global reduction necessary."<<endl;
-		}
-		for (cit = Candidates.begin(); cit != Candidates.end(); cit++) {
-			Hilbert_Basis.push_back(v_cut_front(*cit,dim));
-		}
-		Candidates.clear();
-	}
+	global_reduction(Candidates);
 
 	if(homogeneous==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {
@@ -1874,6 +1753,140 @@ void Full_Cone::only_hilbert_basis(){
 	} // end if (dim>0)
 	status="normal";
 }
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
+	Integer norm;
+	
+	list <vector<Integer> > Candidates_with_Scalar_Product;
+	list <vector<Integer> > HB;
+	list <vector<Integer> >::iterator c;
+	list <vector<Integer> >::const_iterator h;
+	set <vector<Integer> >::iterator cit;
+
+	if (nr_gen == dim) { // cone is simplicial, therefore no global reduction is necessary
+		if (verbose) {
+			cout<<"Cone is simplicial, no global reduction necessary."<<endl;
+		}
+		for (cit = Candidates.begin(); cit != Candidates.end(); cit++) {
+			Hilbert_Basis.push_back(v_cut_front(*cit,dim));
+		}
+		Candidates.clear();
+		return;
+	}
+
+	vector<Integer> degree_function=compute_degree_function();
+
+	cit = Candidates.begin();
+	int cpos = 0;
+	int listsize=Candidates.size();
+	
+	if(verbose) {
+		cout<<"Compute norm of the candidates, "<<flush;
+	}
+	//go over candidates: do single scalar product
+	//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
+	vector<Integer> scalar_product;
+	for (int j=0; j<listsize; j++) {
+		for(;j > cpos; cpos++, cit++) ;
+		for(;j < cpos; cpos--, cit--) ;
+
+		norm=v_scalar_product(degree_function,(*cit));
+
+		vector <Integer> new_element(1);
+		new_element[0]=norm;
+		new_element=v_merge(new_element,(*cit));
+		Candidates_with_Scalar_Product.push_back(new_element);
+	}
+	Candidates.clear();         //delete old set
+	if(verbose) {
+		cout<<"sort the list, "<<flush;
+	}
+	Candidates_with_Scalar_Product.sort();
+	if (verbose) {
+		cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
+	}
+	
+	// do global reduction
+	list< vector<Integer> > HBtmp(0);
+	int norm_crit;
+	while ( !Candidates_with_Scalar_Product.empty() ) {
+		cout<<"new loop run"<<endl<<flush;
+		//use norm criterion to find irreducible elements
+		c=Candidates_with_Scalar_Product.begin();
+		norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
+		if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
+			if (verbose) {
+				cout<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
+				cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1<<endl;
+			}
+			while ( !Candidates_with_Scalar_Product.empty()) {
+				Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
+				c=Candidates_with_Scalar_Product.erase(c);
+			}
+			break;
+		}
+		while ( (*c)[0] < norm_crit ) { //can't go over the end because of the previous if
+			// push to HBtmp with scalar products
+			vector <Integer> candidate=v_cut_front(*c,dim);
+			vector <Integer> scalar_products=l_multiplication(Support_Hyperplanes,candidate);
+			vector <Integer> new_HB_element(1);
+			new_HB_element[0]=(*c)[0];
+			new_HB_element=v_merge(new_HB_element,scalar_products);
+			new_HB_element=v_merge(new_HB_element,candidate);
+			HBtmp.push_back(new_HB_element);
+			Hilbert_Basis.push_back(candidate); // already of the final type 
+			c=Candidates_with_Scalar_Product.erase(c);
+		}
+		int csize=Candidates_with_Scalar_Product.size();
+		if (verbose) {
+			cout<<Hilbert_Basis.size()<< " Hilbert Basis elements of norm <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
+		}
+
+		// reduce candidates against HBtmp
+		// fill pointer list
+		list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
+		c=HBtmp.begin();
+		while (c!=HBtmp.end()) {
+			HBpointers.push_back(&(*(c++)));
+		}
+
+		#pragma omp parallel private(c,cpos) firstprivate(HBpointers)
+		{
+		
+	//	list< vector<Integer>* > HBcopy(HBpointers); //one copy for each thread
+
+		c=Candidates_with_Scalar_Product.begin();
+		cpos=0;
+		#pragma omp for schedule(dynamic)
+		for (int k=0; k<csize; k++) {
+			for(;k > cpos; cpos++, c++) ;
+			for(;k < cpos; cpos--, c--) ;
+			if (verbose && k%10000==0) {
+				cout<<k<<" / "<<csize<<endl<<flush;
+			}
+			
+			if ( is_reducible(HBpointers, *c) ) {
+				(*c)[0]=-1;	//mark as reducible
+			}
+		}
+		} //end parallel
+		cout<<csize<<" / "<<csize<<endl<<flush;
+
+		// delete reducible candidates
+		c=Candidates_with_Scalar_Product.begin();
+		while(c != Candidates_with_Scalar_Product.end()) {
+			if((*c)[0]==-1) {
+				c=Candidates_with_Scalar_Product.erase(c);
+			} else {
+				c++;
+			}
+		}
+		HBtmp.clear();
+	}
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -1891,7 +1904,7 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 			degree_function[i] = Linear_Form[i];
 		}
 	} else { // add hyperplanes to get a degree function
-		 list< vector<Integer> >::const_iterator h;
+		list< vector<Integer> >::const_iterator h;
 		for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); h++) {
 			for (i=0; i<dim; i++) {
 				degree_function[i]+=(*h)[i];
@@ -1992,7 +2005,7 @@ void Full_Cone::triangulation_lift(){
 	Matrix Extreme_Generators=Generators.submatrix(Extreme);
 	if (Extreme_Generators.nr_of_columns()==Extreme_Generators.nr_of_rows()) {
 		Simplex S(Extreme);
-		Triangulation.push_back(S.read_key()); 
+		Triangulation.push_back(S); 
 	}
 	else {
 		Full_Cone Lifted;
@@ -2017,8 +2030,8 @@ void Full_Cone::triangulation_lift(){
 					counter++;
 				}
 			}
-			//Simplex S(key);
-			Triangulation.push_back(key);
+			Simplex S(key);
+			Triangulation.push_back(S);
 		}
 	}
 	if (verbose==true) {
@@ -2084,7 +2097,7 @@ void Full_Cone::hilbert_polynomial(){
 		hilbert_basis();
 	}
 	else{
-		if(dim>0){            //correction nedded to include the 0 cone;
+		if(dim>0){            //correction needed to include the 0 cone;
 		support_hyperplanes();
 		triangulation_lift();
 		find_new_face();
@@ -2132,7 +2145,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 		hilbert_basis();
 	}
 	else{
-		if(dim>0){            //correction nedded to include the 0 cone;
+		if(dim>0){            //correction needed to include the 0 cone;
 		support_hyperplanes();
 		triangulation_lift();
 		find_new_face();
@@ -2140,13 +2153,13 @@ void Full_Cone::hilbert_basis_polynomial(){
 			cout<<"\n************************************************************\n";
 			cout<<"computing Hilbert basis and polynomial ..."<<endl;
 		}
-		int counter=0,i,s,global_reduction_counter=0;
-		Integer volume, norm;
+		int counter=0,i;
+		Integer volume;
 		vector<Integer> scalar_product;
-		set < vector<Integer> > Candidates,Candidates_with_Scalar_Product;
-		list <vector <Integer> >  HB,HE;
-		set <vector <Integer> >::iterator c;
-		list <vector <Integer> >::const_iterator h;
+		set <vector<Integer> > Candidates;
+		list <vector<Integer> >  HB,HE;
+		set <vector<Integer> >::iterator c;
+		list <vector<Integer> >::const_iterator h;
 		for (i = 1; i <=nr_gen; i++) {
 			Candidates.insert(Generators.read(i));
 			Homogeneous_Elements.push_back(Generators.read(i));
@@ -2174,71 +2187,9 @@ void Full_Cone::hilbert_basis_polynomial(){
 				}
 			}
 		}
-		s=Support_Hyperplanes.size();
-		if(optimize_speed==false){   //scalar products computed twice
-			for (c = Candidates.begin(); c != Candidates.end(); c++) {
-				scalar_product=l_multiplication(Support_Hyperplanes,(*c));
-				norm=0;
-				for (i = 0; i < s; i++) {
-					norm=norm+scalar_product[i];
-				}
-				vector <Integer> new_element(1);
-				new_element[0]=norm;
-				new_element=v_merge(new_element,(*c));
-				Candidates_with_Scalar_Product.insert(new_element);
-				if (verbose==true) {
-					if (Candidates_with_Scalar_Product.size()%20000==0) {
-						cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-					}
-				}
-			}
-			Candidates.clear();
-			c=Candidates_with_Scalar_Product.begin();
-			while(c != Candidates_with_Scalar_Product.end()) {
-				reduce_and_insert((*c));
-				Candidates_with_Scalar_Product.erase(c);
-				c=Candidates_with_Scalar_Product.begin();
-				if (verbose==true) {
-					global_reduction_counter++;
-					if (global_reduction_counter%10000==0) {
-						cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
-					}
-				}
-			}
-		}
-		else{   //scalar products saved in memory
-			for (c = Candidates.begin(); c != Candidates.end(); c++) {
-				scalar_product=l_multiplication(Support_Hyperplanes,(*c));
-				norm=0;
-				for (i = 0; i < s; i++) {
-					norm=norm+scalar_product[i];
-				}
-				vector <Integer> new_element(1);
-				new_element[0]=norm;
-				new_element=v_merge(new_element,scalar_product);
-				new_element=v_merge(new_element,(*c));
-				Candidates_with_Scalar_Product.insert(new_element);
-				if (verbose==true) {
-					if (Candidates_with_Scalar_Product.size()%20000==0) {
-						cout<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
-					}
-				}
-			}
-			Candidates.clear();
-			c=Candidates_with_Scalar_Product.begin();
-			while(c != Candidates_with_Scalar_Product.end()) {
-				reduce_and_insert_speed((*c));
-				Candidates_with_Scalar_Product.erase(c);
-				c=Candidates_with_Scalar_Product.begin();
-				if (verbose==true) {
-					global_reduction_counter++;
-					if (global_reduction_counter%10000==0) {
-						cout<<"Hilbert Basis size="<<Hilbert_Basis.size()<<" and "<<global_reduction_counter <<" candidate vectors globally reduced."<<endl;
-					}
-				}
-			}
-		}
-		l_cut_front(Hilbert_Basis,dim);
+		
+		global_reduction(Candidates);
+		
 		compute_polynomial();
 		Homogeneous_Elements.sort();
 		Homogeneous_Elements.unique();
@@ -2655,7 +2606,7 @@ void Full_Cone::extreme_rays_rank(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::hilbert_basis_dual(){
-if(dim>0){            //correction nedded to include the 0 cone;
+if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing Hilbert basis ..."<<endl;
@@ -2668,7 +2619,7 @@ if(dim>0){            //correction nedded to include the 0 cone;
 	extreme_rays_rank();
 	l_cut_front(Hilbert_Basis,dim);
 	Matrix M=read_support_hyperplanes();
-	if(dim>0){            //correction nedded to include the 0 cone;
+	if(dim>0){            //correction needed to include the 0 cone;
 		Linear_Form=M.homogeneous(homogeneous);
 		if(homogeneous==true){
 			list < vector <Integer> >::const_iterator h;

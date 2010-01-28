@@ -84,6 +84,7 @@ class Full_Cone{
 	void process_non_compressed(list< vector<int> > &non_compressed); //compute triangulations of the not compressed, not simplicial pieces and add them to Triangulation
 
   void only_hilbert_basis(); // computes only the Hilbert basis, support hyperplanes and triangulation must be computed in advance
+  void global_reduction(set < vector<Integer> >& Candidates); //does the global reduction of the candidates
   vector<Integer> compute_degree_function() const;  //computes a degree function, s.t. every generator has value >0
 //---------------------------------------------------------------------------
 public:
