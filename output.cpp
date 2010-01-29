@@ -493,6 +493,7 @@ void Output::cone() const{
 		for (i = 1; i <= rank; i++) {
 			index_reduce*=Diagonal.read(i,i);
 		}
+		index_reduce=Iabs(index_reduce);
 		out<<"(original) semigroup is of index "<<index/index_reduce<<endl;
 		out<<endl;
 
@@ -612,6 +613,7 @@ void Output::cone() const{
 		for (i = 1; i <= rank; i++) {
 			index_reduce*=Diagonal.read(i,i);
 		}
+		index_reduce=Iabs(index_reduce);
 		inv<<"integer index = "<<index/index_reduce<<endl;
 		inv<<"integer number_support_hyperplanes = "<<Support_Hyperplanes_Full_Cone.nr_of_rows()<<endl;
 		Change=Basis_Change.get_right();

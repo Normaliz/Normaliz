@@ -1810,7 +1810,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 	
 	// do global reduction
 	list< vector<Integer> > HBtmp(0);
-	int norm_crit;
+	Integer norm_crit;
 	while ( !Candidates_with_Scalar_Product.empty() ) {
 		cout<<"new loop run"<<endl<<flush;
 		//use norm criterion to find irreducible elements
