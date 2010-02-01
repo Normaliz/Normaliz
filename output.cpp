@@ -402,7 +402,6 @@ void Output::write_matrix_ht1(const Matrix& M) const{
 void Output::cone() const{
 	int i,j,k,nr,nc,rank=Basis_Change.get_rank(),max_decimal_length;    //read local data
 	Integer buf;
-	cout<<"Entering Output::cone()"<<endl;
 	string status=Result.read_status();
 	Matrix Generators=Basis_Change.get_left();
 	Matrix Diagonal=Basis_Change.get_center();

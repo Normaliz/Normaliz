@@ -1812,7 +1812,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 	list< vector<Integer> > HBtmp(0);
 	Integer norm_crit;
 	while ( !Candidates_with_Scalar_Product.empty() ) {
-		cout<<"new loop run"<<endl<<flush;
+		if (verbose) cout<<"new reduction round"<<endl<<flush;
 		//use norm criterion to find irreducible elements
 		c=Candidates_with_Scalar_Product.begin();
 		norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
@@ -1872,7 +1872,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 			}
 		}
 		} //end parallel
-		cout<<csize<<" / "<<csize<<endl<<flush;
+		if (verbose) cout<<csize<<" / "<<csize<<endl<<flush;
 
 		// delete reducible candidates
 		c=Candidates_with_Scalar_Product.begin();
