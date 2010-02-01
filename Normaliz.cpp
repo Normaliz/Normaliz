@@ -44,7 +44,7 @@ void printHelp(char* command) {
 	cout << "  -s\tcomputation type: support_hyperplanes"<<endl;
 	cout << "  -v\tcomputation type: triangulation"<<endl;
 	cout << "  -n\tcomputation type: normal (using a triangulation)"<<endl;
-	cout << "  -N\tcomputation type: normal using a subdivison in simplicial or compressed subcones"<<endl;
+	cout << "  -N\tcomputation type: normal using a partial triangulation"<<endl;
 	cout << "  -p\tcomputation type: hilbert_polynomial"<<endl;
 	cout << "  -h\tcomputation type: hilbert_basis_polynomial"<<endl;
 	cout << "  -d\tcomputation type: dual"<<endl;
@@ -274,9 +274,9 @@ int main(int argc, char* argv[])
 	}
 	string name_in=output_name+".in";
 	const char* file_in=name_in.c_str();
-	ifstream in;
-	in.open(file_in,ifstream::in);
-	if (in.is_open()==false) {
+	ifstream in, in2;
+	in2.open(file_in,ifstream::in);
+	if (in2.is_open()==false) {
 		//check if user added ".in" and ignore it in this case
 		string suffix (".in");
 		size_t found = output_name.rfind(suffix);
@@ -286,14 +286,17 @@ int main(int argc, char* argv[])
 			file_in=name_in.c_str();
 			in.open(file_in,ifstream::in);
 		}
-		if (in.is_open()==false) {
-			cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
-			if (!filename_set) {
-				cout<< "Type something and press enter to exit."<<endl;
-				cin >> c;
-			}
-			return 1;
+	} else {
+		in2.close();
+		in.open(file_in,ifstream::in);
+	}
+	if (in.is_open()==false) {
+		cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
+		if (!filename_set) {
+			cout<< "Type something and press enter to exit."<<endl;
+			cin >> c;
 		}
+		return 1;
 	}
 	string mode_string;
 	int nr_rows,nr_columns, mode;
