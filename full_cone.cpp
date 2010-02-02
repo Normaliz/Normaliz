@@ -1272,7 +1272,7 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 		for (i=dim; i<size; i++) {
 			if (hyperplane[i]>1) {
 				Triangulation.push_back(key);
-					break;
+				break;
 			}
 		}
 	}
@@ -1393,111 +1393,58 @@ void Full_Cone::support_hyperplanes_dynamic(){
 			 hyperplane[j+dim]=R[j];
 			 test_key[j+dim]=key[j];
 		}
-	Support_Hyperplanes.push_back(hyperplane);
+		Support_Hyperplanes.push_back(hyperplane);
 	}
 	//computation of support hyperplanes
-	if (test_arithmetic_overflow==true) {  // does arithmetic tests
-		int size=2*dim;
-		bool new_generator;
-		for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-			for (i = 0; i < nr_gen; i++) {
-				if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-					new_generator=false;
-					simplicial=true;
-					list< vector<Integer> >::iterator l;
-					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-						L=Generators.read(i+1);
-						scalar_product=v_scalar_product(L,(*l));
-						scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
-						if ((*l)[dim-1]!=0) {
-							if (scalar_product_small % (*l)[dim-1]==0) { 
-								test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
-							}
-						}
-						if (v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-								error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
-						}
-						
-						(*l)[size]=scalar_product;
-						if (scalar_product<0) {
-						   new_generator=true;
-						}
-						if (scalar_product==0) {
-						   simplicial=false;
+	int size=2*dim;
+	bool new_generator;
+	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
+		for (i = 0; i < nr_gen; i++) {
+			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
+				new_generator=false;
+				simplicial=true;
+				list< vector<Integer> >::iterator l;
+				for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+					L=Generators.read(i+1);
+					scalar_product=v_scalar_product(L,(*l));
+					scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
+					if ((*l)[dim-1]!=0) {
+						if (scalar_product_small % (*l)[dim-1]==0) { 
+							test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
 						}
 					}
-					if (simplicial==false) {
-						k=0;
-						while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
-							 L[dim-1]--;
-							 k--;
-						}
-						Generators.write(i+1,dim,L[dim-1]);
-						for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-							(*l)[size]=(*l)[size]+k* (*l)[dim-1];
-						}
-					    
+					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
+							error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
 					}
-					if (new_generator) {
-						in_triang[i]=true;
-						test_key[size]=i+1;
-						transform_values(size,test_key);
-						size++;
+					
+					(*l)[size]=scalar_product;
+					if (scalar_product<0) {
+					   new_generator=true;
 					}
-					if (verbose==true) {
-						cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
+					if (scalar_product==0) {
+					   simplicial=false;
 					}
 				}
-			}
-		}
-	}
-	else  {                      // no arithmetic tests
-		int size=2*dim;
-		bool new_generator;
-		for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-			for (i = 0; i < nr_gen; i++) {
-				if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-					new_generator=false;
-					simplicial=true;
-					list< vector<Integer> >::iterator l;
+				if (simplicial==false) {
+					k=0;
+					while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
+						 L[dim-1]--;
+						 k--;
+					}
+					Generators.write(i+1,dim,L[dim-1]);
 					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-						L=Generators.read(i+1);
-						scalar_product=v_scalar_product(L,(*l));
-						scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
-						if ((*l)[dim-1]!=0) {
-							if (scalar_product_small % (*l)[dim-1]==0) {
-								test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
-							}
-						}
-						(*l)[size]=scalar_product;
-						if (scalar_product<0) {
-						   new_generator=true;
-						}
-						if (scalar_product==0) {
-						   simplicial=false;
-						}
+						(*l)[size]=(*l)[size]+k* (*l)[dim-1];
 					}
-					if (simplicial==false) {
-						k=0;
-						while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
-							 L[dim-1]--;
-							 k--;
-						}
-						Generators.write(i+1,dim,L[dim-1]);
-						for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-							(*l)[size]=(*l)[size]+k* (*l)[dim-1];
-						}
-					    
-					}
-					if (new_generator) {
-						in_triang[i]=true;
-						test_key[size]=i+1;
-						transform_values(size,test_key);
-						size++;
-					}
-					if (verbose==true) {
-						cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
-					}
+				    
+				}
+				if (new_generator) {
+					in_triang[i]=true;
+					test_key[size]=i+1;
+					transform_values(size,test_key);
+					size++;
+				}
+				if (verbose==true) {
+					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
 				}
 			}
 		}
@@ -1552,89 +1499,48 @@ void Full_Cone::support_hyperplanes_triangulation(){
 		Support_Hyperplanes.push_back(hyperplane);
 	}
 	//computation of support hyperplanes and triangulation
-	if (test_arithmetic_overflow==true) {  // does arithmetic tests
-		int size=2*dim;
-		Integer scalar_product;
-		bool new_generator;
-		for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-			for (i = 0; i < nr_gen; i++) {
-				if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-					new_generator=false;
-					list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
-					int lpos=0;
-					int listsize=Support_Hyperplanes.size();
-					//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-					#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
-					for (int k=0; k<listsize; k++) {
-						for(;k > lpos; lpos++, l++) ;
-						for(;k < lpos; lpos--, l--) ;
+	int size=2*dim;
+	Integer scalar_product;
+	bool new_generator;
+	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
+		for (i = 0; i < nr_gen; i++) {
+			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
+				new_generator=false;
+				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
+				int lpos=0;
+				int listsize=Support_Hyperplanes.size();
+				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
+				for (int k=0; k<listsize; k++) {
+					for(;k > lpos; lpos++, l++) ;
+					for(;k < lpos; lpos--, l--) ;
 
-						L=Generators.read(i+1);
-						scalar_product=v_scalar_product(L,(*l));
-						if (v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-							error("error: Arithmetic failure in Full_cone::support_hyperplanes_triangulation. Possible arithmetic overflow.\n");
-						}
-						(*l)[size]=scalar_product;
-						if (scalar_product<0) {
-							new_generator=true;
-						}
+					L=Generators.read(i+1);
+					scalar_product=v_scalar_product(L,(*l));
+					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
+						error("error: Arithmetic failure in Full_cone::support_hyperplanes_triangulation. Possible arithmetic overflow.\n");
 					}
-					if (new_generator) {
-						in_triang[i]=true;
-						test_key[size]=i+1;
-						add_simplex(i,size,col,col_inv);
-						transform_values(size,test_key);
-						col[i]=size;
-						col_inv[size-dim]=i;
-						size++;
+					(*l)[size]=scalar_product;
+					if (scalar_product<0) {
+						new_generator=true;
 					}
-					if (verbose==true) {
-						cout<<"generator="<< i+1 <<", "<<Support_Hyperplanes.size()<<" hyperplanes..."<<" and "<<Triangulation.size()<<" simplicies"<<endl;
-					}
+				}
+				if (new_generator) {
+					in_triang[i]=true;
+					test_key[size]=i+1;
+					add_simplex(i,size,col,col_inv);
+					transform_values(size,test_key);
+					col[i]=size;
+					col_inv[size-dim]=i;
+					size++;
+				}
+				if (verbose==true) {
+					cout<<"generator="<< i+1 <<", "<<Support_Hyperplanes.size()<<" hyperplanes..."<<" and "<<Triangulation.size()<<" simplicies"<<endl;
 				}
 			}
 		}
 	}
-	else  {                    // no arithmetic tests
-		int size=2*dim;
-		Integer scalar_product;
-		bool new_generator;
-		for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-			for (i = 0; i < nr_gen; i++) {
-				if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-					new_generator=false;
-					list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
-					int lpos=0;
-	            int listsize=Support_Hyperplanes.size();
-					// for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-					#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
-					for (int k=0; k<listsize; k++) {
-						for(;k > lpos; lpos++, l++) ;
-						for(;k < lpos; lpos--, l--) ;
-						
-						L=Generators.read(i+1);
-						scalar_product=v_scalar_product(L,(*l));
-						(*l)[size]=scalar_product;
-						if (scalar_product<0) {
-							new_generator=true;
-						}
-					}
-					if (new_generator) {
-						in_triang[i]=true;
-						test_key[size]=i+1;
-						add_simplex(i,size,col,col_inv);
-						transform_values(size,test_key);
-						col[i]=size;
-						col_inv[size-dim]=i;
-						size++;
-					}
-					if (verbose==true) {
-						cout<<"generator="<< i+1 <<", "<<Support_Hyperplanes.size()<<" hyperplanes and " <<Triangulation.size()<<" simplicies"<<endl;
-					}
-				}
-			}
-		}
-	}
+	
 	if (verbose) {
 		cout<<Support_Hyperplanes.size()<<" hyperplanes and " <<Triangulation.size()<<" simplicies"<<endl;
 	}
@@ -1660,17 +1566,28 @@ void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
 	int counter=0;
 	Integer volume;
 	multiplicity=0;
-	list< Simplex >::iterator l;
-	for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
+	list< Simplex >::iterator l=Triangulation.begin();
+	int lpos=0;
+	int listsize=Triangulation.size();
+	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
+	#pragma omp parallel for private(volume) firstprivate(lpos,l) schedule(dynamic)
+	for (int k=0; k<listsize; k++) {
+		for(;k > lpos; lpos++, l++) ;
+		for(;k < lpos; lpos--, l--) ;
+
 		Simplex S=(*l);
 		S.initialize(Generators);
 		volume=S.read_volume();
 		(*l).write_volume(volume);
+		#pragma omp critical(MULT)
 		multiplicity=multiplicity+volume;
 		if (verbose==true) {
-			counter++;
-			if (counter%1000==0) {
-				cout<<"simplex="<<counter<<endl;
+			#pragma omp critical(VERBOSE)
+			{
+				counter++;
+				if (counter%1000==0) {
+					cout<<"simplex="<<counter<<endl;
+				}
 			}
 		}
 	}
