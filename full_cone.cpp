@@ -2029,21 +2029,35 @@ void Full_Cone::hilbert_polynomial(){
 			Homogeneous_Elements.push_back(Generators.read(i));
 		}
 		list< vector<Integer> > HE;
-		list< Simplex >::iterator l;
-		for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
+		list< Simplex >::iterator l=Triangulation.begin();
+		int lpos=0;
+		int listsize=Triangulation.size();
+		//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
+		#pragma omp parallel for private(volume,HE) firstprivate(lpos,l) schedule(dynamic)
+		for (int k=0; k<listsize; k++) {
+			for(;k > lpos; lpos++, l++) ;
+			for(;k < lpos; lpos--, l--) ;
+
 			Simplex S=(*l);
+			#pragma omp critical(H_VECTOR)
 			H_Vector[S.read_new_face_size()]++;
 			S.h_vector(Generators,Linear_Form);
 			volume=S.read_volume();
 			(*l).write_volume(volume);
-			multiplicity=multiplicity+volume;
+			#pragma omp critical(MULT)
+			multiplicity+=volume;
 			HE=S.read_homogeneous_elements();
+			#pragma omp critical(HOMOGENEOUS)
 			Homogeneous_Elements.merge(HE);
+			#pragma omp critical(H_VECTOR)
 			H_Vector=v_add(H_Vector,S.read_h_vector());
 			if (verbose==true) {
-				counter++;
-				if (counter%100==0) {
-					cout<<"simplex="<<counter<<endl;
+				#pragma omp critical(VERBOSE)
+				{
+					counter++;
+					if (counter%100==0) {
+						cout<<"simplex="<<counter<<endl;
+					}
 				}
 			}
 		}
