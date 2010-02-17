@@ -982,6 +982,7 @@ Full_Cone::Full_Cone(Matrix M){
 		Hilbert_Polynomial[0]=0;
 	}
 	status="initialized, before computations";
+	//Generators.print("bla.egn");
 }
 
 //---------------------------------------------------------------------------
@@ -1736,7 +1737,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 		if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
 			if (verbose) {
 				cout<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
-				cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1<<endl;
+				cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1<<", done"<<endl;
 			}
 			while ( !Candidates_with_Scalar_Product.empty()) {
 				Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
