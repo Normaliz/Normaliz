@@ -57,6 +57,8 @@ vector<int> v_complement(const int& a, const vector<int>& v);
 //returns a new vector with the last size entries of v
 vector<Integer> v_cut_front(const vector<Integer>& v, int size);
 
+vector<int> v_non_zero_pos(vector<Integer> v); //returns a key vector containing the positions of non-zero entrys of v (counting from 1 to v.size())
+
 //---------------------------------------------------------------------------
 //							abs, gcd and lcm
 //---------------------------------------------------------------------------

@@ -954,11 +954,17 @@ Full_Cone::Full_Cone(Matrix M){
 	if (dim!=M.rank()) {
 		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.");	
 	}
-	nr_gen=M.nr_of_rows();
-	hyp_size=dim+nr_gen;
 	Generators = M;
-	Generators.make_prime();
-	if(dim>0){            //correction needed to include the 0 cone;
+	nr_gen=Generators.nr_of_rows();
+	vector<Integer> gcds = Generators.make_prime();
+	vector<int> key=v_non_zero_pos(gcds);
+	v_read(key);
+	if (key.size() < nr_gen) {
+		Generators=Generators.submatrix(key);
+		nr_gen=Generators.nr_of_rows();
+	}
+	hyp_size=dim+nr_gen;
+	if (dim>0) {            //correction needed to include the 0 cone;
 		Linear_Form = Generators.homogeneous(homogeneous);
 	} else {
 		homogeneous = true;
@@ -982,7 +988,7 @@ Full_Cone::Full_Cone(Matrix M){
 		Hilbert_Polynomial[0]=0;
 	}
 	status="initialized, before computations";
-	//Generators.print("bla.egn");
+	Generators.print("bla.egn");
 }
 
 //---------------------------------------------------------------------------
@@ -1349,10 +1355,6 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 	}	
 	
 	l_cut(Support_Hyperplanes,dim);
-	Matrix SH=read_support_hyperplanes();
-	if (SH.rank()!=dim) {
-		error("error: Not pointed cone detected. This program is limited to pointed cones only.");
-	}
 	if(compressed_test) {
 		//compute triangulations of the not compressed, not simplicial pieces and add them to this.Triangulation
 		process_non_compressed(non_compressed);
@@ -1452,10 +1454,6 @@ void Full_Cone::support_hyperplanes_dynamic(){
 	}
 	
 	l_cut(Support_Hyperplanes,dim);
-	Matrix SH=read_support_hyperplanes();
-	if (SH.rank()!=dim) {
-		   error("error: Not pointed cone detected. This program is limited to pointed cones only.");
-	}
 	status="support hyperplanes";
 	extreme_rays();
 }
@@ -1546,10 +1544,6 @@ void Full_Cone::support_hyperplanes_triangulation(){
 		cout<<Support_Hyperplanes.size()<<" hyperplanes and " <<Triangulation.size()<<" simplicies"<<endl;
 	}
 	l_cut(Support_Hyperplanes,dim);
-	Matrix SH=read_support_hyperplanes();
-	if (SH.rank()!=dim) {
-		error("error: Not pointed cone detected. This program is limited to pointed cones only.");
-	}
 	} // end if (dim>0)
 	status="support hyperplanes";
 	extreme_rays();
@@ -1603,6 +1597,10 @@ void Full_Cone::hilbert_basis(const bool compressed_test){
 		support_hyperplanes(true);
 	} else {
 		support_hyperplanes_triangulation();
+	}
+	Matrix SH=read_support_hyperplanes();
+	if (SH.rank()!=dim) {
+		error("error: Not pointed cone detected. This program is limited to pointed cones only.");
 	}
 	only_hilbert_basis();
 }

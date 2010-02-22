@@ -278,7 +278,6 @@ vector<Integer> v_make_prime(const vector<Integer>& v){
 	int i,j=v.size();
 	vector<Integer> w(j,0);
 	if (j==0) {
-		v_error("error: Bad argument passed to v_make_prime.");
 		return w;
 	}
 	else{
@@ -301,7 +300,7 @@ vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
 	int i,j=v.size();
 	vector<Integer> w(j,0);
 	if (j==0) {
-		v_error("error: Bad argument passed to v_make_prime.");
+		g=0;
 		return w;
 	}
 	else{
@@ -316,6 +315,20 @@ vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
 		}
 		return w;
 	}
+}
+
+//---------------------------------------------------------------------------
+
+vector<int> v_non_zero_pos(vector<Integer> v){
+	vector<int> key;
+	int size=v.size();
+	key.reserve(size);
+	for (int i = 0; i <size; i++) {
+		if (v[i]!=0) {
+			key.push_back(i+1);
+		}
+	}
+	return key;
 }
 
 //---------------------------------------------------------------------------
