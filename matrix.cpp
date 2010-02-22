@@ -472,7 +472,7 @@ vector<Integer> Matrix::MxV(const vector<Integer>& v) const{
 
 vector<Integer> Matrix::VxM(const vector<Integer>& v) const{
 	if ((nr!=v.size())) {
-		error("error: Bad argument passed to Matrix::MxV.");
+		error("error: Bad argument passed to Matrix::VxM.");
 		vector<Integer> w;
 		return w;
 	}
@@ -522,7 +522,7 @@ void Matrix::exchange_columns(const int& col1, const int& col2){
 
 void Matrix::reduce_row (int corner) {
 	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix::reduce_rows.");
+		error("error: Bad argument passed to Matrix::reduce_row.");
 	}
 	else{
 		register int i,j;
@@ -542,7 +542,7 @@ void Matrix::reduce_row (int corner) {
 
 void Matrix::reduce_row (int corner, Matrix& Left) {
 	if ((corner>nr)||(corner>nc)||(Left.nr!=nr)) {
-		error("error: Bad argument passed to Matrix::reduce_rows.");
+		error("error: Bad argument passed to Matrix::reduce_row.");
 	}
 	else {
 		int i,j;
@@ -585,7 +585,7 @@ void Matrix::reduce_column (int corner) {
 
 void Matrix::reduce_column (int corner, Matrix& Right, Matrix& Right_Inv) {
 	if ((corner>nr)||(corner>nc)||(Right.nr!=nc)||(Right.nc!=nc)||(Right_Inv.nr!=nc)||(Right_Inv.nc!=nc)) {
-		error("error: Bad argument passed to Matrix::reduce_rows.");
+		error("error: Bad argument passed to Matrix::reduce_columen.");
 	}
 	else {
 		int i,j;
@@ -805,7 +805,7 @@ Matrix Matrix::solve(Matrix Right_side, Integer& det) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	if ((nr!=nc)||(nc!=dim)) {
-		error("error: Bad argument passed to Matrix::solve_triangular_system.");
+		error("error: Bad argument passed to Matrix::solve(Matrix, Integer).");
 		Matrix Solution;
 		return Solution;
 	}
@@ -855,7 +855,7 @@ Matrix Matrix::solve(Matrix Right_side, vector< Integer >& diagonal, Integer& de
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	if ((nr!=nc)||(nc!=dim)||(dim!=diagonal.size())) {
-		error("error: Bad argument passed to Matrix::solve_triangular_system.");
+		error("error: Bad argument passed to Matrix::solve(Matrix, vector, Integer).");
 		Matrix Solution;
 		return Solution;
 	}
@@ -905,7 +905,7 @@ Matrix Matrix::solve(Matrix Right_side, vector< Integer >& diagonal, Integer& de
 
 Matrix Matrix::invert(vector< Integer >& diagonal, Integer& det) const{
 	if ((nr!=nc)||(nr!=diagonal.size())) {
-		error("error: Bad argument passed to Matrix::solve_triangular_system.");
+		error("error: Bad argument passed to Matrix::invert.");
 		Matrix Solution;
 		return Solution;
 	}
