@@ -958,7 +958,6 @@ Full_Cone::Full_Cone(Matrix M){
 	nr_gen=Generators.nr_of_rows();
 	vector<Integer> gcds = Generators.make_prime();
 	vector<int> key=v_non_zero_pos(gcds);
-	v_read(key);
 	if (key.size() < nr_gen) {
 		Generators=Generators.submatrix(key);
 		nr_gen=Generators.nr_of_rows();
@@ -2550,6 +2549,8 @@ if(dim>0){            //correction needed to include the 0 cone;
 	l_cut_front(Hilbert_Basis,dim);
 	Matrix M=read_support_hyperplanes();
 	if(dim>0){            //correction needed to include the 0 cone;
+	//TODO hier gibt es probleme sobald der Kegel nicht volldimensional ist
+	//	M.read(); cout<<flush;
 		Linear_Form=M.homogeneous(homogeneous);
 		if(homogeneous==true){
 			list < vector <Integer> >::const_iterator h;
