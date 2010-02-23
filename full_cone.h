@@ -22,7 +22,6 @@
 
 #include <set>
 #include <list>
-#include <omp.h>
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"

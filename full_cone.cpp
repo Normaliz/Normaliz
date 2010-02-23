@@ -210,9 +210,9 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	   possible improvement using the fact that in the lifted version all
 	   hyperplanes hyp[dim-1]!=0 are simplicies???
 	 */
-	#pragma omp parallel sections private(i,j,k,nr_zero_i) 
+//	#pragma omp parallel sections private(i,j,k,nr_zero_i) 
 	{
-	#pragma omp section
+//	#pragma omp section
 	{
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: fill multimap with subfacets of NS"<<endl<<flush;
@@ -374,7 +374,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	if (tv_verbose) cout<<"transform_values: multimap and NS vs ... done"<<endl;
 	} //END section
 
-	#pragma omp section
+//	#pragma omp section
 	{
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: PS vs N"<<endl;
@@ -412,7 +412,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	} //END section
 
 	
-	#pragma omp section
+//	#pragma omp section
 	{
 	bool rangtest=false;
 	if (Positive_Non_Simplex.size()+Negative_Non_Simplex.size()+Neutral_Non_Simplex.size()>dim*dim*dim/6) {
@@ -2648,11 +2648,9 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	int itpos=0;
 	list< vector<int> >::const_iterator it=non_compressed.begin();
 
-	//override global values for recursion
+	//override global verbose value for recursion
 	bool verbose_bak = verbose;
 	verbose=false;
-	int nested=omp_get_nested();
-	omp_set_nested(0);
 
 	int verbose_step=10000;
 	if (verbose_bak) {
@@ -2695,8 +2693,7 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		cout<<listsize<<" subcones done, found "<<Triangulation.size()<<" simplices"<<endl;
 	}
 
-	//restore global values
+	//restore global verbose value
 	verbose=verbose_bak;
-	omp_set_nested(nested);
 }
 
