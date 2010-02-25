@@ -407,7 +407,7 @@ void Output::cone() const{
 	Matrix Diagonal=Basis_Change.get_center();
 	Matrix Change=Basis_Change.get_right();
 	Matrix Change_Inv=Basis_Change.get_right_inv();
-	Matrix Support_Hyperplanes_Full_Cone=Result.read_support_hyperplanes();   //TODO nicht kopieren!
+	Matrix Support_Hyperplanes_Full_Cone=Result.read_support_hyperplanes();
 
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
 	if (status!="support hyperplanes"&&tri){           			 //write triangulation
@@ -422,7 +422,7 @@ void Output::cone() const{
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
 		if (status=="normal"||status=="hilbert basis polynomial") {
-			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();  //TODO nicht kopieren!
+			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
 				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());

@@ -19,17 +19,14 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <fstream>
-#include <iostream>
-#include <string>
-#include <algorithm>
 using namespace std;
 
 //---------------------------------------------------------------------------
 
 #include "matrix.h"
 #include "vector_operations.h"
+#include "lineare_transformation.h"
 
 //---------------------------------------------------------------------------
 
@@ -979,6 +976,47 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 	return Linear_Form;
 }
 
+vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
+	// prepare basis change
+	Lineare_Transformation Basis_Change = Transformation(*this);
+	int rank=Basis_Change.get_rank();
+	if (rank == 0) { //return zero-vector as linear form
+		homogeneous=true;
+		return vector<Integer>(nc,0);
+	}
+	if (rank == nc) { // basis change not necessary
+		return (*this).homogeneous(homogeneous);
+	}
+	Matrix V=Basis_Change.get_right();
+	Matrix Change_To_Full_Emb(nc,rank);
+	int i,j;
+	for (i = 1; i <=nc; i++) {
+		for (j = 1; j <= rank; j++) {
+			Change_To_Full_Emb.write(i,j,V.read(i,j));
+		}
+	}
+	
+	//apply basis change
+	Matrix Full_Cone_Generators = (*this).multiplication(Change_To_Full_Emb);
+	//compute linear form
+	vector<Integer> Linear_Form = Full_Cone_Generators.homogeneous(homogeneous);
+	if (homogeneous) {
+		//lift linear form back
+		Change_To_Full_Emb = Change_To_Full_Emb.transpose();  // preparing the matrix for transformationen on the dual space
+		vector<Integer> v;
+		Integer index=Basis_Change.get_index();
+		Integer m=index;
+		for (i = 1; i <= rank; i++) {
+			v=Change_To_Full_Emb.read(i);
+			v_scalar_multiplication(v,m);
+			Change_To_Full_Emb.write(i,v);
+		}
+	
+		Linear_Form=Change_To_Full_Emb.VxM(Linear_Form);
+		Linear_Form=v_make_prime(Linear_Form);
+	}
+	return Linear_Form;
+}
 //---------------------------------------------------------------------------
 
 bool Matrix::test_solve(const Matrix& Solution, const Matrix& Right_side,

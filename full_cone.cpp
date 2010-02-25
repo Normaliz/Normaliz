@@ -2549,9 +2549,7 @@ if(dim>0){            //correction needed to include the 0 cone;
 	l_cut_front(Hilbert_Basis,dim);
 	Matrix M=read_support_hyperplanes();
 	if(dim>0){            //correction needed to include the 0 cone;
-	//TODO hier gibt es probleme sobald der Kegel nicht volldimensional ist
-	//	M.read(); cout<<flush;
-		Linear_Form=M.homogeneous(homogeneous);
+		Linear_Form=M.homogeneous_low_dim(homogeneous);
 		if(homogeneous==true){
 			list < vector <Integer> >::const_iterator h;
 			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); h++) {

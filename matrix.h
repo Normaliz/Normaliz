@@ -185,7 +185,10 @@ public:
   vector<Integer> homogeneous (bool& homogeneous) const;// solves the system
   //this*Solution=(1,1,...). this should be a   m x n , m>=n,
   //matrix of maxinal rank. The existence of solution  is marked in homogeneous
-
+  
+  vector<Integer> homogeneous_low_dim (bool& homogeneous) const;
+  //same as homogeneous but also works with not maximal rank
+  //uses a linear transformation to get a full rank matrix
 //---------------------------------------------------------------------------
 //								Tests
 //---------------------------------------------------------------------------
