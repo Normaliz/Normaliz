@@ -42,7 +42,9 @@ void printHelp(char* command) {
 	cout << "options:"<<endl;
 	cout << "  -?\tprint this help text and exit"<<endl;
 	cout << "  -s\tcomputation type: support_hyperplanes"<<endl;
+	cout << "  -S\tcomputation type: support_hyperplanesvia pyramids"<<endl;
 	cout << "  -v\tcomputation type: triangulation"<<endl;
+	cout << "  -V\tcomputation type: triangulation via pyramids"<<endl;
 	cout << "  -n\tcomputation type: normal (using a triangulation)"<<endl;
 	cout << "  -N\tcomputation type: normal using a partial triangulation"<<endl;
 	cout << "  -p\tcomputation type: hilbert_polynomial"<<endl;
@@ -215,8 +217,14 @@ int main(int argc, char* argv[])
 			case 's':
 				computation_type="support_hyperplanes";
 				break;
+			case 'S':
+				computation_type="support_hyperplanes_pyramid";
+				break;
 			case 'v':
 				computation_type="triangulation";
+				break;
+			case 'V':
+				computation_type="triangulation_pyramid";
 				break;
 			case 'n':
 				computation_type="normal";

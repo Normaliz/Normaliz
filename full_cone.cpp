@@ -1364,6 +1364,145 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 }
 
 //---------------------------------------------------------------------------
+void Full_Cone::support_hyperplanes_pyramid() {
+	if(dim>0){            //correction needed to include the 0 cone;
+	if (verbose==true) {
+		cout<<"\n************************************************************\n";
+		cout<<"computing support hyperplanes ..."<<endl;
+	}
+	int i,j;
+	//intialization of the list of support hyperplanes
+	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
+	Simplex S(Generators);
+	vector<int> key=S.read_key();
+	vector<bool> in_triang(nr_gen,false);
+	vector<int> test_key(hyp_size);
+	for (i = 0; i < dim; i++) {
+		in_triang[key[i]-1]=true;
+	}
+	Matrix G=S.read_generators();
+	G=G.transpose();
+	Matrix H=S.read_support_hyperplanes();
+	Matrix P=H.multiplication(G);
+	for (i = 1; i <=dim; i++) {
+		L=H.read(i);
+		R=P.read(i);
+		for (j = 0; j < dim; j++) {
+			hyperplane[j]=L[j];
+			hyperplane[j+dim]=R[j];
+			test_key[j+dim]=key[j];
+		}
+		Support_Hyperplanes.push_back(hyperplane);
+	}
+
+	
+	int size=2*dim;
+	int g;
+	bool verbose_bak=verbose;
+	verbose=false;
+	
+	//computation of support hyperplanes
+	Integer scalar_product;
+	bool new_generator;
+	int nr_non_compressed=0, nr_non_compressed_simp=0, max_heigth=0;
+	list< vector<int> > non_compressed;
+	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
+		for (i = 0; i < nr_gen; i++) {
+			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
+				new_generator=false;
+				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
+				int lpos=0;
+				int listsize=Support_Hyperplanes.size();
+				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+				#pragma omp parallel for private(L,scalar_product,g) firstprivate(lpos,l) schedule(dynamic)
+				for (int k=0; k<listsize; k++) {
+					for(;k > lpos; lpos++, l++) ;
+					for(;k < lpos; lpos--, l--) ;
+
+					L=Generators.read(i+1);
+					scalar_product=v_scalar_product(L,(*l));
+					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
+						error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+					}
+
+					(*l)[size]=scalar_product;
+					if (scalar_product<0) {
+						new_generator=true;
+						vector<int> piece;
+						for (g=dim; g<size; g++) {
+							if ((*l)[g]==0) {
+								piece.push_back(test_key[g]);
+							}
+						}
+						piece.push_back(i+1);
+						//TODO add a shortcut in the simplizial case
+						//compute support hyperplanes of the subcone
+						Full_Cone subcone(Generators.submatrix(piece));
+						subcone.support_hyperplanes();
+						list< vector<Integer> >::const_iterator sub_it  = subcone.Support_Hyperplanes.begin();
+						list< vector<Integer> >::const_iterator sub_end = subcone.Support_Hyperplanes.end();
+						vector<Integer> scalar_prods=vector<Integer>(nr_gen);
+						// add support hyperplanes when needed
+						while (sub_it!=sub_end) {
+							//check if all old generators are in the key or >0
+							for (g=dim; g<size; g++) {
+								if (in_triang[test_key[g]-1] && (*l)[g]!=0) { //old gen && not in key 
+									//compute scalar product
+									scalar_product=v_scalar_product(Generators.read(test_key[g]),(*sub_it));
+									if (scalar_product <= 0) {
+										break;		//hyperplane is no new support hyperplane
+									}
+									scalar_prods[g-dim]=scalar_product;
+								}
+							}
+							if (g == size) {
+								//compute remaining scalar products
+								for (g=dim; g<size; g++) {
+									if (in_triang[test_key[g]-1] && (*l)[g]==0) { //old gen && in key 
+										//compute scalar product
+										scalar_product=v_scalar_product(Generators.read(test_key[g]),(*sub_it));
+										scalar_prods[g-dim]=scalar_product;
+									}
+								}
+								//scalar product for the new generator
+								scalar_product=v_scalar_product(L,(*sub_it));
+								scalar_prods[size-dim]=scalar_product;
+								vector<Integer> hyperplane=v_merge((*sub_it),scalar_prods);
+								#pragma omp critical(HYPERPLANE)
+								Support_Hyperplanes.push_back(hyperplane);
+							}
+							sub_it++;
+						}
+					}
+				}
+				if (new_generator) {
+					in_triang[i]=true;
+					//remove negative hyperplanes
+					list< vector<Integer> >::iterator l;
+					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); ){
+						if ((*l)[size]<0) {
+							l=Support_Hyperplanes.erase(l);
+						}
+						else
+							l++;
+					}
+					test_key[size]=i+1;
+					size++;
+				}
+				if (verbose_bak==true) {
+					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... "<<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth<<endl;
+				}
+			}
+		}
+	}	
+	verbose=verbose_bak;
+	l_cut(Support_Hyperplanes,dim);
+	} // end if (dim>0)
+	status="support hyperplanes";
+	extreme_rays();
+}
+
+//---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplanes_dynamic(){
 	if (verbose==true) {
