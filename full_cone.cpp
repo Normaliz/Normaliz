@@ -1364,6 +1364,7 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 }
 
 //---------------------------------------------------------------------------
+
 void Full_Cone::support_hyperplanes_pyramid() {
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
@@ -1434,13 +1435,26 @@ void Full_Cone::support_hyperplanes_pyramid() {
 							}
 						}
 						piece.push_back(i+1);
-						//TODO add a shortcut in the simplizial case
-						//compute support hyperplanes of the subcone
-						Full_Cone subcone(Generators.submatrix(piece));
-						subcone.support_hyperplanes();
-						list< vector<Integer> >::const_iterator sub_it  = subcone.Support_Hyperplanes.begin();
-						list< vector<Integer> >::const_iterator sub_end = subcone.Support_Hyperplanes.end();
+						
+						list< vector<Integer> > subconeSH;
+						//a shortcut in the simplizial case
+						if (piece.size() == dim) {
+							vector<Integer> hyperplane(hyp_size,0); // initialized with 0
+							Simplex S(piece,Generators);
+							Matrix H=S.read_support_hyperplanes();
+							for (int k=1; k<=dim; k++) {
+								subconeSH.push_back(H.read(k));
+							}
+						} else {
+							//compute support hyperplanes of the subcone
+							Full_Cone subcone(Generators.submatrix(piece));
+							subcone.support_hyperplanes();
+							subconeSH=subcone.Support_Hyperplanes;
+						}
+						list< vector<Integer> >::const_iterator sub_it  = subconeSH.begin();
+						list< vector<Integer> >::const_iterator sub_end = subconeSH.end();
 						vector<Integer> scalar_prods=vector<Integer>(nr_gen);
+						
 						// add support hyperplanes when needed
 						while (sub_it!=sub_end) {
 							//check if all old generators are in the key or >0
@@ -1467,7 +1481,7 @@ void Full_Cone::support_hyperplanes_pyramid() {
 								scalar_product=v_scalar_product(L,(*sub_it));
 								scalar_prods[size-dim]=scalar_product;
 								vector<Integer> hyperplane=v_merge((*sub_it),scalar_prods);
-								#pragma omp critical(HYPERPLANE)
+								#pragma omp critical(HYPERPLANE_P)
 								Support_Hyperplanes.push_back(hyperplane);
 							}
 							sub_it++;

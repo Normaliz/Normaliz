@@ -20,7 +20,7 @@ NBIGOBJ = $(subst obj64,objBig,$(N64OBJ))
 
 all: norm32 norm64 normbig
 
-obj64/%.o: %.cpp $(HEADERS)
+obj64/%.o: %.cpp %.h #$(HEADERS)
 	@mkdir -p obj64
 	$(CXX) $(CXXFLAGS) $(N64FLAGS) -c $< -o $@
 norm64: Normaliz.cpp $(N64OBJ)

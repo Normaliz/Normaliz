@@ -151,7 +151,7 @@ public:
 
   int rank() const; //returns rank, nondestructiv
 
-  int rank_destructiv(); //returns rank, nondestructiv
+  int rank_destructiv(); //returns rank, destructiv
 
   vector<int> max_rank_submatrix() const; //returns a vector with entries the
   //indices of the rows of this forming a submatrix of maximal rank
