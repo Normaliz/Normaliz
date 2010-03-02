@@ -1404,7 +1404,6 @@ void Full_Cone::support_hyperplanes_pyramid() {
 	//computation of support hyperplanes
 	Integer scalar_product;
 	bool new_generator;
-	int nr_non_compressed=0, nr_non_compressed_simp=0, max_heigth=0;
 	list< vector<int> > non_compressed;
 	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
 		for (i = 0; i < nr_gen; i++) {
@@ -1490,7 +1489,7 @@ void Full_Cone::support_hyperplanes_pyramid() {
 					size++;
 				}
 				if (verbose_bak==true) {
-					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... "<<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth<<endl;
+					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... "<<endl;
 				}
 			}
 		}
