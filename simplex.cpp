@@ -85,15 +85,35 @@ Simplex::Simplex(const vector<int>& k){
 Simplex::Simplex(const Matrix& Map){
 	dim=Map.nr_of_columns();
 	key=Map.max_rank_submatrix_lex(dim);
-	initialize(Map);
+	Generators=Map.submatrix(key);
+	vector< Integer > help(dim);
+	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+	//overflow performed
+	volume=Iabs(volume);
+	diagonal=v_abs(help);
+	Support_Hyperplanes=Support_Hyperplanes.transpose();
+	multiplicators=Support_Hyperplanes.make_prime();
+	list< vector<Integer> >  Help;
+	Hilbert_Basis=Help;
+	status="initialized";
 }
 
 //---------------------------------------------------------------------------
 
 Simplex::Simplex(const vector<int>& k, const Matrix& Map){
 	key=k;
+	Generators=Map.submatrix(k);
 	dim=k.size();
-	initialize(Map);
+	vector< Integer > help(dim);
+	Support_Hyperplanes=Invert(Generators, help, volume);  //test for arithmetic
+	//overflow performed
+	volume=Iabs(volume);
+	diagonal=v_abs(help);
+	Support_Hyperplanes=Support_Hyperplanes.transpose();
+	multiplicators=Support_Hyperplanes.make_prime();
+	list< vector<Integer> >  Help;
+	Hilbert_Basis=Help;
+	status="initialized";
 }
 
 //---------------------------------------------------------------------------
@@ -285,7 +305,8 @@ void Simplex::initialize(const Matrix& Map){
 		diagonal=v_abs(help);
 		Support_Hyperplanes=Support_Hyperplanes.transpose();
 		multiplicators=Support_Hyperplanes.make_prime();
-		Hilbert_Basis=list< vector<Integer> >();
+		list< vector<Integer> >  Help;
+		Hilbert_Basis=Help;
 		status="initialized";
 	}
 }
@@ -366,7 +387,17 @@ void Simplex::hilbert_basis_interior(const Matrix& Map){
 			return;
 		}
 		if (status=="key initialized") {
-			initialize(Map);
+			Generators=Map.submatrix(key);
+			vector< Integer > help(dim);
+			Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+			//overflow performed
+			volume=Iabs(volume);
+			diagonal=v_abs(help);
+			Support_Hyperplanes=Support_Hyperplanes.transpose();
+			multiplicators=Support_Hyperplanes.make_prime();
+			list< vector<Integer> >  Help;
+			Hilbert_Basis=Help;
+			status="initialized";
 			hilbert_basis_interior();
 			return;
 		}
@@ -475,10 +506,21 @@ void Simplex::hilbert_basis_interior_h_vector(const Matrix& Map, const vector<In
 		return;
 	}
 	else {
-		initialize(Map);
-		Homogeneous_Elements=list< vector<Integer> >();
-		H_Vector = vector<Integer>(dim,0);
-		
+		Generators=Map.submatrix(key);
+		vector< Integer > help(dim);
+		Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+		//overflow performed
+		volume=Iabs(volume);
+		diagonal=v_abs(help);
+		Support_Hyperplanes=Support_Hyperplanes.transpose();
+		multiplicators=Support_Hyperplanes.make_prime();
+		list< vector<Integer> >  Help;
+		Hilbert_Basis=Help;
+		list< vector<Integer> >  Help1;
+		Homogeneous_Elements=Help1;
+		vector<Integer> Help2(dim,0);
+		H_Vector=Help2;
+		status="initialized";
 		int i,j;
 		for (i = 0; i <New_Face.size(); i++) {
 			for ( j = 0; j <dim; j++) {
@@ -566,10 +608,19 @@ void Simplex::h_vector(const Matrix& Map, const vector<Integer>& Form){
 		return;
 	}
 	else {
-		initialize(Map);
-		Homogeneous_Elements=list< vector<Integer> >();
-		H_Vector = vector<Integer>(dim,0);
-		
+		Generators=Map.submatrix(key);
+		vector< Integer > help(dim);
+		Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+		//overflow performed
+		volume=Iabs(volume);
+		diagonal=v_abs(help);
+		Support_Hyperplanes=Support_Hyperplanes.transpose();
+		multiplicators=Support_Hyperplanes.make_prime();
+		list< vector<Integer> >  Help1;
+		Homogeneous_Elements=Help1;
+		vector<Integer> Help2(dim,0);
+		H_Vector=Help2;
+		status="initialized";
 		int i,j;
 		for (i = 0; i <New_Face.size(); i++) {
 			for ( j = 0; j <dim; j++) {

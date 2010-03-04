@@ -1536,6 +1536,9 @@ void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
 	}	
 	verbose=verbose_bak;
 	l_cut(Support_Hyperplanes,dim);
+	if (do_triang) {
+		compute_multiplicity();
+	}
 	} // end if (dim>0)
 	status="support hyperplanes";
 	extreme_rays();
@@ -1729,8 +1732,12 @@ void Full_Cone::support_hyperplanes_triangulation(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
-	if(dim>0){            //correction needed to include the 0 cone;
 	support_hyperplanes_triangulation();
+	compute_multiplicity();
+}
+
+void Full_Cone::compute_multiplicity(){
+	//TODO check for status
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing multiplicity ..."<<endl;
@@ -1763,7 +1770,6 @@ void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
 			}
 		}
 	}
-	} // end if (dim>0)
 	status="triangulation";
 }
 

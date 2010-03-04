@@ -130,7 +130,8 @@ public:
   void support_hyperplanes(bool do_partial_triang=false); //computes the support hyperplanes
   void support_hyperplanes_pyramid(bool do_triang=false);  //computes the support hyperplanes via pyramids
   void support_hyperplanes_triangulation();//computes the support hyperplanes and triangulation
-  void support_hyperplanes_triangulation_multiplicity();//computes the multiplicity
+  void support_hyperplanes_triangulation_multiplicity();//calls support_hyperplanes_triangulation and computes the multiplicity
+  void compute_multiplicity();//computes only the multiplicity
   void hilbert_basis(const bool compressed_test=false); // computes the Hilbert basis
   bool low_part_simplicial(); //computes the support hyperplanes and test if the lower part cone is simplicial
   void line_shelling(); //orders the lower part of the lifted cone after a line shelling
