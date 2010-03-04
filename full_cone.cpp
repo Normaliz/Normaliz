@@ -1347,7 +1347,9 @@ void Full_Cone::support_hyperplanes(const bool compressed_test) {
 					size++;
 				}
 				if (verbose==true) {
-					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... "<<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth<<endl;
+					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... ";
+					if (compressed_test) cout <<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth;
+					cout<<endl;
 				}
 			}
 		}
