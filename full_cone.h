@@ -127,8 +127,8 @@ public:
 //---------------------------------------------------------------------------
 
   void extreme_rays(); //computes the extrem rays , the support hyperplanes must be known
-  void support_hyperplanes(const bool compressed_test=false); //computes the support hyperplanes
-  void support_hyperplanes_pyramid();  //computes the support hyperplanes via pyramids
+  void support_hyperplanes(bool do_partial_triang=false); //computes the support hyperplanes
+  void support_hyperplanes_pyramid(bool do_triang=false);  //computes the support hyperplanes via pyramids
   void support_hyperplanes_triangulation();//computes the support hyperplanes and triangulation
   void support_hyperplanes_triangulation_multiplicity();//computes the multiplicity
   void hilbert_basis(const bool compressed_test=false); // computes the Hilbert basis

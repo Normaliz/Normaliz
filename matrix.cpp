@@ -72,11 +72,10 @@ Matrix::Matrix(){
 Matrix::Matrix(int dim){
 	nr=dim;
 	nc=dim;
-	vector< vector<Integer> > Help(dim, vector<Integer>(dim));
+	elements = vector< vector<Integer> >(dim, vector<Integer>(dim));
 	for (int i = 0; i < dim; i++) {
-		Help[i][i]=1;
+		elements[i][i]=1;
 	}
-	elements=Help;
 }
 
 //---------------------------------------------------------------------------
@@ -84,8 +83,7 @@ Matrix::Matrix(int dim){
 Matrix::Matrix(int row, int col){
 	nr=row;
 	nc=col;
-	vector< vector<Integer> > Help(row, vector<Integer>(col));
-	elements=Help;
+	elements = vector< vector<Integer> >(row, vector<Integer>(col));
 }
 
 //---------------------------------------------------------------------------
@@ -93,8 +91,7 @@ Matrix::Matrix(int row, int col){
 Matrix::Matrix(int row, int col, Integer value){
 	nr=row;
 	nc=col;
-	vector< vector<Integer> > Help(row, vector<Integer>(col,value));
-	elements=Help;
+	elements = vector< vector<Integer> > (row, vector<Integer>(col,value));
 }
 
 //---------------------------------------------------------------------------
