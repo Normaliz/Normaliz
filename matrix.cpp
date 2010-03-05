@@ -617,6 +617,7 @@ vector<int> Matrix::pivot(int corner){
 						help=Iabs(elements[i][j]);
 						v[0]=i+1;
 						v[1]=j+1;
+						if (help == 1) return v;
 					}
 				}
 			}

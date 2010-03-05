@@ -954,6 +954,7 @@ Full_Cone::Full_Cone(Matrix M){
 	}
 	Generators = M;
 	nr_gen=Generators.nr_of_rows();
+	//make the generators coprime and remove 0 rows
 	vector<Integer> gcds = Generators.make_prime();
 	vector<int> key=v_non_zero_pos(gcds);
 	if (key.size() < nr_gen) {
@@ -1311,12 +1312,13 @@ void Full_Cone::support_hyperplanes(bool compressed_test) {
 						if (compressed_test && scalar_product<-1) { //found non-compressed pyramid
 							// make new subcone (gens in hyperplane + new gen)
 							vector<int> pyramid;
+							pyramid.reserve(size-dim+1);
+							pyramid.push_back(i+1);
 							for (int g=dim; g<size; g++) {
 								if ((*l)[g]==0) {
 									pyramid.push_back(test_key[g]);
 								}
 							}
-							pyramid.push_back(i+1);
 							if (pyramid.size()==dim) { //simplicial case
 								Simplex simp(pyramid);
 								#pragma omp critical(TRIANG)
@@ -1430,12 +1432,13 @@ void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
 					if (scalar_product<0) {
 						new_generator=true;
 						vector<int> pyramid;
+						pyramid.reserve(size-dim+1);
+						pyramid.push_back(i+1);
 						for (g=dim; g<size; g++) {
 							if ((*l)[g]==0) {
 								pyramid.push_back(test_key[g]);
 							}
 						}
-						pyramid.push_back(i+1);
 						
 						list< vector<Integer> > subconeSH;
 						//a shortcut in the simplizial case
