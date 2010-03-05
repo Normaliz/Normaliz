@@ -381,7 +381,6 @@ Full_Cone make_computations(const string& computation_type, const Matrix& Full_C
 	}
 	if (computation_type=="triangulation_pyramid"){
 		C.support_hyperplanes_pyramid(true);
-		C.compute_multiplicity();
 	}
 	if (computation_type=="hilbert_polynomial"){
 		C.hilbert_polynomial();

@@ -1736,6 +1736,8 @@ void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
 	compute_multiplicity();
 }
 
+//---------------------------------------------------------------------------
+
 void Full_Cone::compute_multiplicity(){
 	//TODO check for status
 	if (verbose==true) {
@@ -1743,13 +1745,16 @@ void Full_Cone::compute_multiplicity(){
 		cout<<"computing multiplicity ..."<<endl;
 	}
 	int counter=0;
-	Integer volume;
 	multiplicity=0;
-	list< Simplex >::iterator l=Triangulation.begin();
-	int lpos=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
-	#pragma omp parallel for private(volume) firstprivate(lpos,l) schedule(dynamic)
+	#pragma omp parallel 
+	{	
+	Integer volume;
+	Integer mult=0;
+	list< Simplex >::iterator l=Triangulation.begin();
+	int lpos=0;
+	#pragma omp for schedule(dynamic)
 	for (int k=0; k<listsize; ++k) {
 		for(;k > lpos; ++lpos, ++l) ;
 		for(;k < lpos; --lpos, --l) ;
@@ -1758,18 +1763,20 @@ void Full_Cone::compute_multiplicity(){
 		S.initialize(Generators);
 		volume=S.read_volume();
 		(*l).write_volume(volume);
-		#pragma omp critical(MULT)
-		multiplicity=multiplicity+volume;
+		mult+=volume;
 		if (verbose==true) {
 			#pragma omp critical(VERBOSE)
 			{
 				counter++;
-				if (counter%1000==0) {
+				if (counter%10000==0) {
 					cout<<"simplex="<<counter<<endl;
 				}
 			}
 		}
 	}
+	#pragma omp critical(MULT)
+	multiplicity+=mult;
+	} //END parallel
 	status="triangulation";
 }
 
