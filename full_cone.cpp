@@ -1239,7 +1239,19 @@ void Full_Cone::extreme_rays(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes(bool compressed_test) {
+void Full_Cone::support_hyperplanes() {
+	compute_support_hyperplanes();
+	extreme_rays();
+}
+
+void Full_Cone::support_hyperplanes_partial_triang() {
+	compute_support_hyperplanes(true);
+	extreme_rays();
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::compute_support_hyperplanes(bool compressed_test) {
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -1362,7 +1374,6 @@ void Full_Cone::support_hyperplanes(bool compressed_test) {
 	}
 	} // end if (dim>0)
 	status="support hyperplanes";
-	extreme_rays();
 }
 
 //---------------------------------------------------------------------------
@@ -1476,7 +1487,7 @@ void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
 								}
 							}
 							else {
-								subcone.support_hyperplanes();
+								subcone.compute_support_hyperplanes();
 							}
 							subconeSH=subcone.Support_Hyperplanes;
 						}
@@ -1787,7 +1798,7 @@ void Full_Cone::compute_multiplicity(){
 void Full_Cone::hilbert_basis(const bool compressed_test){
 	if(compressed_test) {
 		//Hilbert Basis aus den nicht komprimierten Kegeln der Triangulierung bestimmen, status nacher "normal" aber keine Triangulierung!
-		support_hyperplanes(true);
+		support_hyperplanes_partial_triang();
 	} else {
 		support_hyperplanes_triangulation();
 	}

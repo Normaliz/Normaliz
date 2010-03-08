@@ -85,6 +85,9 @@ class Full_Cone{
   void only_hilbert_basis(); // computes only the Hilbert basis, support hyperplanes and triangulation must be computed in advance
   void global_reduction(set < vector<Integer> >& Candidates); //does the global reduction of the candidates
   vector<Integer> compute_degree_function() const;  //computes a degree function, s.t. every generator has value >0
+  void compute_support_hyperplanes(bool do_partial_trian=false);
+  void support_hyperplanes_partial_triang();
+
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
@@ -127,7 +130,7 @@ public:
 //---------------------------------------------------------------------------
 
   void extreme_rays(); //computes the extrem rays , the support hyperplanes must be known
-  void support_hyperplanes(bool do_partial_triang=false); //computes the support hyperplanes
+  void support_hyperplanes(); //computes the support hyperplanes
   void support_hyperplanes_pyramid(bool do_triang=false);  //computes the support hyperplanes via pyramids
   void support_hyperplanes_triangulation();//computes the support hyperplanes and triangulation
   void support_hyperplanes_triangulation_multiplicity();//calls support_hyperplanes_triangulation and computes the multiplicity
