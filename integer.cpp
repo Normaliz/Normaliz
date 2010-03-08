@@ -33,27 +33,7 @@
 
 //---------------------------------------------------------------------------
 
-#ifdef norm32
-long explicit_cast_to_long(const Integer & i) {
-	return i;
-}
-#endif
-
-#ifdef norm64
-long explicit_cast_to_long(const Integer & i) {
-	return i;
-}
-#endif
-
-#ifdef normbig
-long explicit_cast_to_long(const Integer & i){
-	return i.get_si();
-}
-#endif
-
-
-//---------------------------------------------------------------------------
-
+/* inline now
 Integer Iabs(const Integer& a){
 	if (a>=0) {
 		return a;
@@ -61,6 +41,7 @@ Integer Iabs(const Integer& a){
 	else
 		return -a;
 }
+*/
 
 //---------------------------------------------------------------------------
 

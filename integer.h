@@ -51,12 +51,12 @@
 
 //---------------------------------------------------------------------------
 
-	long explicit_cast_to_long(const Integer & i); 
+inline long explicit_cast_to_long(const Integer & i); 
 
 //---------------------------------------------------------------------------
 //                     Basic functions
 //---------------------------------------------------------------------------
-Integer Iabs(const Integer& a); // returns the absolute value of a
+inline Integer Iabs(const Integer& a); // returns the absolute value of a
 Integer gcd(const Integer& a, const Integer& b);  //returns gcd of a and b
 										//if one is 0 returns the nonzero one
 Integer lcm(const Integer& a, const Integer& b);  //returns lcm of a and b
@@ -69,6 +69,8 @@ int decimal_length(Integer a);  //return the number of decimals
 								//needed to write the Integer a
 Integer permutations(const int& a, const int& b); //returns b!/a!
 
+//---------------------------------------------------------------------------
+#include "integer.icc"
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

@@ -82,6 +82,9 @@ public:
   int maximal_decimal_length() const;    //return the maximal number of decimals
 									  //needed to write an entry
 
+	inline const Integer& get_elem(int row, int col) const {
+		return elements[row-1][col-1];
+	}
 //---------------------------------------------------------------------------
 //					Basic matrices operations
 //---------------------------------------------------------------------------

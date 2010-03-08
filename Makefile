@@ -2,8 +2,9 @@
 # Makefile for normaliz
 #
 CXX = g++
-CXXFLAGS += -O3 -Wall -Wno-sign-compare
-CXXFLAGS += -pipe -funroll-loops -fopenmp
+CXXFLAGS += -Wall -Wno-sign-compare
+CXXFLAGS += -O3 -funroll-loops -pipe
+CXXFLAGS += -fopenmp
 
 N32FLAGS = -Dnorm32 -static
 N64FLAGS = -Dnorm64 -static
@@ -41,3 +42,5 @@ normbig: Normaliz.cpp $(NBIGOBJ)
 clean:
 	-rm -rf obj64 obj32 objBig
 	-rm -f norm32 norm64 normbig
+
+.PHONY : clean all

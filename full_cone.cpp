@@ -1209,7 +1209,7 @@ void Full_Cone::extreme_rays(){
 	for (i = 1; i <=nr_gen; i++) {
 		k=0;
 		for (j = 1; j <=nc; j++) {
-			if (Val.read(i,j)==0) {
+			if (Val.get_elem(i,j)==0) {
 				Zero[k]=j;
 				k++;
 			}
@@ -1222,7 +1222,7 @@ void Full_Cone::extreme_rays(){
 				if (i!=j && Extreme_Rays[j-1]!=false) { // not compare with itself or a known nonextreme ray
 					l=0;
 					for (t = 0; t < k; t++) {
-						if (Val.read(j,Zero[t])==0) {
+						if (Val.get_elem(j,Zero[t])==0) {
 							l++;
 						}
 						if (l>=k) {
