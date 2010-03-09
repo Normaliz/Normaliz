@@ -88,6 +88,7 @@ class Full_Cone{
   void compute_support_hyperplanes(bool do_partial_trian=false);
   void support_hyperplanes_partial_triang();
 
+  Full_Cone(Matrix M, int i);  // constructor for recursivly generated subcones
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------

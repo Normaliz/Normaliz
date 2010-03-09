@@ -971,19 +971,15 @@ Full_Cone::Full_Cone(Matrix M){
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
 	Triangulation = list< Simplex >();
-	Hilbert_Basis =  list< vector<Integer> >();
+	Hilbert_Basis = list< vector<Integer> >();
 	Homogeneous_Elements = list< vector<Integer> >();
 	if(dim>0){            //correction needed to include the 0 cone;
-		vector<Integer> Help7(dim);
-		H_Vector=Help7;
-		vector<Integer> Help8(2*dim);
-		Hilbert_Polynomial=Help8;
+		H_Vector = vector<Integer>(dim);
+		Hilbert_Polynomial = vector<Integer>(2*dim);
 	} else {
-		vector<Integer> Help7(1,1);
-		H_Vector=Help7;
-		vector<Integer> Help8(2,1);
-		Hilbert_Polynomial=Help8;
-		Hilbert_Polynomial[0]=0;
+		H_Vector = vector<Integer>(1,1);
+		Hilbert_Polynomial = vector<Integer>(2,1);
+		Hilbert_Polynomial[0] = 0;
 	}
 	status="initialized, before computations";
 	Generators.print("bla.egn");
@@ -1007,6 +1003,24 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 	Homogeneous_Elements=C.Homogeneous_Elements;
 	H_Vector=C.H_Vector;
 	Hilbert_Polynomial=C.Hilbert_Polynomial;
+}
+
+//---------------------------------------------------------------------------
+
+/* constructor for recursivly generated subcones */
+Full_Cone::Full_Cone(Matrix M, int i) {  
+	dim = M.nr_of_columns();
+	Generators = M;
+	nr_gen = Generators.nr_of_rows();
+	hyp_size = dim+nr_gen;
+	multiplicity = 0;
+	Extreme_Rays = vector<bool>(nr_gen,false);
+	Support_Hyperplanes = list< vector<Integer> >();
+	Triangulation = list< Simplex >();
+	Hilbert_Basis = list< vector<Integer> >();
+	Homogeneous_Elements = list< vector<Integer> >();
+	H_Vector = vector<Integer>(dim);
+	status="initialized, before computations";
 }
 
 //---------------------------------------------------------------------------
@@ -1466,7 +1480,7 @@ void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
 							}
 						} else {
 							//compute support hyperplanes of the subcone
-							Full_Cone subcone(Generators.submatrix(pyramid));
+							Full_Cone subcone(Generators.submatrix(pyramid),1);
 							if (do_triang) {
 								//TODO use test to decide which function is called in recursion
 								subcone.support_hyperplanes_triangulation();

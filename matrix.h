@@ -44,7 +44,7 @@ class Matrix {
   //v will be a vector with entries the indices of the first rows in lexicographic
   //order of this forming a submatrix of maximal rank.
   //v shoud be a vector of size 0 by call!!!
-
+  
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
