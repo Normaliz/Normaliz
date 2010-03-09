@@ -1433,7 +1433,6 @@ void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
 	//computation of support hyperplanes
 	Integer scalar_product;
 	bool new_generator;
-	list< vector<int> > non_compressed;
 	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
 		for (i = 0; i < nr_gen; i++) {
 			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
@@ -2883,7 +2882,7 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		for(;i < itpos; --itpos, --it) ;
 //		v_read(*it); cout<<" subcone "<<i+1;
 		//compute triangulations of subcones
-		Full_Cone subcone(Generators.submatrix(*it));
+		Full_Cone subcone(Generators.submatrix(*it),1);
 		subcone.support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
 //		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
 		list< Simplex >::const_iterator sub_it  = subcone.Triangulation.begin();
