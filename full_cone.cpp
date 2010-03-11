@@ -1662,7 +1662,7 @@ void Full_Cone::support_hyperplanes_dynamic(){
 	
 	l_cut(Support_Hyperplanes,dim);
 	status="support hyperplanes";
-	extreme_rays();
+//	extreme_rays();
 }
 
 //---------------------------------------------------------------------------
@@ -2059,7 +2059,7 @@ bool Full_Cone::low_part_simplicial(){
 	list< vector<Integer> >::iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end();){
 		if ((*l)[dim-1]>0) {         // consider just the lower facets
-			val=Generators.MxV((*l));
+/*			val=Generators.MxV((*l));
 			counter=0;
 			for (i = 0; i < nr_gen; i++) {
 				if (val[i]==0) {
@@ -2069,9 +2069,7 @@ bool Full_Cone::low_part_simplicial(){
 			if (counter!=dim-1) {   // more then dim vertices in one lower facet, the facet is not simplicial
 				return false;
 			}
-			++l;
-			if (l == Support_Hyperplanes.end()) {
-			}
+*/			++l;
 		}
 		else {                     //delete the upper facets
 			l=Support_Hyperplanes.erase(l);  //only this should remain, other test not needed anymore
@@ -2313,6 +2311,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 		}
 		multiplicity=0;
 		list< Simplex >::iterator l;
+		//TODO parallel possible?
 		for (l =Triangulation.begin(); l!=Triangulation.end(); ++l){
 			Simplex S=(*l);
 			H_Vector[S.read_new_face_size()]++;
@@ -2329,7 +2328,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 			}
 			if (verbose==true) {
 				counter++;
-				if (counter%100==0) {
+				if (counter%500==0) {
 					cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 				}
 			}
@@ -2815,7 +2814,7 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 			New_Generators.write(i,dim+1,j+1);
 		}
 		if (New_Generators.rank()==dim+1) {
-			Full_Cone Help(New_Generators);
+			Full_Cone Help(New_Generators,1);
 			Lifted=Help;
 			if (Lifted.low_part_simplicial()==true) {
 				if (verbose==true) {

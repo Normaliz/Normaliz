@@ -44,7 +44,8 @@ class Full_Cone{
   vector<Integer> H_Vector;
   vector<Integer> Hilbert_Polynomial;
 
-  
+  friend void lift(Full_Cone&, Matrix); // to use private routines and constructor
+
 //---------------------------------------------------------------------------
 //			Private routines, used in the public routines
 //---------------------------------------------------------------------------
