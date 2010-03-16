@@ -107,7 +107,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	list < vector<Integer> > Non_Simplex;
 	bool simplex;
 
-//	if (tv_verbose) cout<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl;
+	if (tv_verbose) cout<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl<<flush;
 	int ipos=0;
 	list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
 	int listsize=Support_Hyperplanes.size();
@@ -204,7 +204,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		Neutral_Non_Simplex[k]=l_Neutral_Non_Simplex.front();
 		l_Neutral_Non_Simplex.pop_front();
 	}
-	if (tv_verbose) cout<<"PS "<<Positive_Simplex.size()<<" P "<<Positive_Non_Simplex.size()<<" NS "<<Negative_Simplex.size()<<" N "<<Negative_Non_Simplex.size()<<" ZS "<<Neutral_Simplex.size()<<" Z "<<Neutral_Non_Simplex.size()<<endl;
+	if (tv_verbose) cout<<"PS "<<Positive_Simplex.size()<<" P "<<Positive_Non_Simplex.size()<<" NS "<<Negative_Simplex.size()<<" N "<<Negative_Non_Simplex.size()<<" ZS "<<Neutral_Simplex.size()<<" Z "<<Neutral_Non_Simplex.size()<<endl<<flush;
 	 
 	/*
 	   possible improvement using the fact that in the lifted version all
@@ -216,10 +216,14 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	{
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: fill multimap with subfacets of NS"<<endl<<flush;
-	vector< int > zero_i(nr_gen);
-	vector< int > subfacet(dim-2);
 	multimap < vector< int >, int > Negative_Subfacet_Multi;
 
+	
+	#pragma omp parallel private(i,k,nr_zero_i)
+	{
+	vector< int > zero_i(nr_gen);
+	vector< int > subfacet(dim-2);
+	#pragma omp for schedule(dynamic)
 	for (i=0; i<Negative_Simplex.size();i++){
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
@@ -232,19 +236,21 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			for (k = 0; k <dim-2; k++) {
 				subfacet[k]=zero_i[k];
 			}
+			#pragma omp critical(MULTISET)
 			Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
 			if (nr_zero_i==dim-1){
 				for (k = dim-2; k >0; k--) {
 					subfacet[k-1]=zero_i[k];
+					#pragma omp critical(MULTISET)
 					Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
 				}
 			}
 		}
 	}
-
+	}
 
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: go over multimap of size "<< Negative_Subfacet_Multi.size() <<endl;
+	if (tv_verbose) cout<<"transform_values: go over multimap of size "<< Negative_Subfacet_Multi.size() <<endl<<flush;
 	multimap < vector< int >, int > ::iterator jj;
 	multimap < vector< int >, int > ::iterator del;
 	jj =Negative_Subfacet_Multi.begin();
@@ -257,7 +263,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		}
 	}
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: singlemap size "<<Negative_Subfacet_Multi.size()<<endl;
+	if (tv_verbose) cout<<"transform_values: singlemap size "<<Negative_Subfacet_Multi.size()<<endl<<flush;
 	
 	int Negative_Subfacet_Multi_Size=Negative_Subfacet_Multi.size();
 	map < vector< int >, int > Negative_Subfacet;
@@ -316,13 +322,15 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	}//END parallel
 	
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: reduced map size "<<Negative_Subfacet.size()<<endl;
+	if (tv_verbose) cout<<"transform_values: reduced map size "<<Negative_Subfacet.size()<<endl<<flush;
 	Negative_Subfacet_Multi.clear();
 	//making computations
 
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: PS vs NS"<<endl;
+	if (tv_verbose) cout<<"transform_values: PS vs NS"<<endl<<flush;
 	
+	vector< int > zero_i(nr_gen);
+	vector< int > subfacet(dim-2);
 	map < vector< int >, int > ::iterator jj_map;
 	for (i =0; i<Positive_Simplex.size(); i++){ //Positive Simplex vs.Negative Simplex
 		nr_zero_i=0;
@@ -355,7 +363,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	}
 
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: NS vs P"<<endl;
+	if (tv_verbose) cout<<"transform_values: NS vs P"<<endl<<flush;
 	for (jj_map = Negative_Subfacet.begin();jj_map != Negative_Subfacet.end() ; ++jj_map) { //Negative_simplex vs. Positive_Non_Simplex
 		subfacet=(*jj_map).first;
 		for (i = 0; i <Positive_Non_Simplex.size(); i++) {
@@ -369,13 +377,13 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		}
 	}
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: multimap and NS vs ... done"<<endl;
+	if (tv_verbose) cout<<"transform_values: multimap and NS vs ... done"<<endl<<flush;
 	} //END section
 
 //	#pragma omp section
 	{
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: PS vs N"<<endl;
+	if (tv_verbose) cout<<"transform_values: PS vs N"<<endl<<flush;
 	int PosSsize=Positive_Simplex.size();
 	#pragma omp parallel private(k,j,nr_zero_i,nr_zero_i_and_j)
 	{
@@ -406,7 +414,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	}
 	} //END parallel
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: PS vs N done"<<endl;
+	if (tv_verbose) cout<<"transform_values: PS vs N done"<<endl<<flush;
 	} //END section
 
 	
@@ -418,7 +426,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	}
 
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: P vs N"<<endl;
+	if (tv_verbose) cout<<"transform_values: P vs N"<<endl<<flush;
 	int PosNSsize=Positive_Non_Simplex.size();
 	#pragma omp parallel private(k,j,t,nr_zero_i,nr_zero_i_and_j)
 	{
@@ -507,12 +515,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	}
 	} //END parallel
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: P vs N done"<<endl;
+	if (tv_verbose) cout<<"transform_values: P vs N done"<<endl<<flush;
 	} //END section	
 	} //END sections
 	
 	//removing the negative hyperplanes
-	if (tv_verbose) cout<<"transform_values: remove negative hyperplanes"<<endl;
+	if (tv_verbose) cout<<"transform_values: remove negative hyperplanes"<<endl<<flush;
 	list< vector<Integer> >::iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); ){
 		if ((*l)[size]<0) {
@@ -1624,7 +1632,7 @@ void Full_Cone::support_hyperplanes_dynamic(){
 						}
 					}
 					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-							error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+							error("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
 					}
 					
 					(*l)[size]=scalar_product;
@@ -1662,12 +1670,11 @@ void Full_Cone::support_hyperplanes_dynamic(){
 	
 	l_cut(Support_Hyperplanes,dim);
 	status="support hyperplanes";
-//	extreme_rays();
 }
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes_triangulation(){
+void Full_Cone::compute_support_hyperplanes_triangulation(){
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -1753,6 +1760,12 @@ void Full_Cone::support_hyperplanes_triangulation(){
 	l_cut(Support_Hyperplanes,dim);
 	} // end if (dim>0)
 	status="support hyperplanes";
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::support_hyperplanes_triangulation() {
+	compute_support_hyperplanes_triangulation();
 	extreme_rays();
 }
 
@@ -2018,6 +2031,10 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 		}
 		HBtmp.clear();
 	}
+
+	if (verbose) {
+		cout<<Hilbert_Basis.size()<< " Hilbert Basis elements"<<endl;
+	}
 }
 
 
@@ -2055,7 +2072,7 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 bool Full_Cone::low_part_simplicial(){
 	support_hyperplanes_dynamic();		//change needed for dynamic lifting
 	vector<Integer> val;
-	int i,counter;
+	//int i,counter;
 	list< vector<Integer> >::iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end();){
 		if ((*l)[dim-1]>0) {         // consider just the lower facets
@@ -2259,7 +2276,7 @@ void Full_Cone::hilbert_polynomial(){
 			volume=S.read_volume();
 			(*l).write_volume(volume);
 			#pragma omp critical(MULT)
-			multiplicity+=volume;
+			multiplicity += volume;
 			HE=S.read_homogeneous_elements();
 			#pragma omp critical(HOMOGENEOUS)
 			Homogeneous_Elements.merge(HE);
@@ -2269,7 +2286,7 @@ void Full_Cone::hilbert_polynomial(){
 				#pragma omp critical(VERBOSE)
 				{
 					counter++;
-					if (counter%100==0) {
+					if (counter%1000==0) {
 						cout<<"simplex="<<counter<<endl;
 					}
 				}
@@ -2310,35 +2327,48 @@ void Full_Cone::hilbert_basis_polynomial(){
 			Homogeneous_Elements.push_back(Generators.read(i));
 		}
 		multiplicity=0;
-		list< Simplex >::iterator l;
-		//TODO parallel possible?
-		for (l =Triangulation.begin(); l!=Triangulation.end(); ++l){
+		list< Simplex >::iterator l=Triangulation.begin();
+		int lpos=0;
+		int listsize=Triangulation.size();
+		//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
+		#pragma omp parallel for private(volume,HE,HB) firstprivate(lpos,l) schedule(dynamic)
+		for (int k=0; k<listsize; ++k) {
+			for(;k > lpos; ++lpos, ++l) ;
+			for(;k < lpos; --lpos, --l) ;
+			
 			Simplex S=(*l);
+			#pragma omp critical(H_VECTOR)
 			H_Vector[S.read_new_face_size()]++;
 			S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
 			volume=S.read_volume();
 			(*l).write_volume(volume);
-			multiplicity=multiplicity+volume;
+			#pragma omp critical(MULT)
+			multiplicity += volume;
 			HE=S.read_homogeneous_elements();
+			#pragma omp critical(HOMOGENEOUS)
 			Homogeneous_Elements.merge(HE);
+			#pragma omp critical(H_VECTOR)
 			H_Vector=v_add(H_Vector,S.read_h_vector());
 			HB=S.acces_hilbert_basis();
-			for (h = HB.begin(); h != HB.end(); ++h) {
-				Candidates.insert((*h));
-			}
+			#pragma omp critical(CANDI)
+			Candidates.insert(HB.begin(),HB.end());
+			
 			if (verbose==true) {
+				#pragma omp critical(VERBOSE)
+				{
 				counter++;
 				if (counter%500==0) {
 					cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 				}
+				}
 			}
 		}
 		
-		global_reduction(Candidates);
-		
-		compute_polynomial();
 		Homogeneous_Elements.sort();
 		Homogeneous_Elements.unique();
+		
+		global_reduction(Candidates);
+		compute_polynomial();
 		} // end if (dim>0)
 		status="hilbert basis polynomial";
 	}
@@ -2814,8 +2844,7 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 			New_Generators.write(i,dim+1,j+1);
 		}
 		if (New_Generators.rank()==dim+1) {
-			Full_Cone Help(New_Generators,1);
-			Lifted=Help;
+			Lifted =	Full_Cone(New_Generators,1);
 			if (Lifted.low_part_simplicial()==true) {
 				if (verbose==true) {
 					cout<<"lifting done."<<endl;

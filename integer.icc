@@ -23,7 +23,7 @@
 /**
  * inline functions for integer.h
  * 
- * To be included from integer.h!
+ * To be included from integer.h
  */
 
 //---------------------------------------------------------------------------
@@ -49,7 +49,10 @@ inline long explicit_cast_to_long(const Integer & i){
 
 // returns the absolute value of i 
 inline Integer Iabs(const Integer& i) {
-	return (i >= 0) ? i : -i;
+	if (i>=0)
+		return i;
+	else
+	   return -i;
 }
 
 //---------------------------------------------------------------------------

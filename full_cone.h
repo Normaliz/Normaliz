@@ -87,6 +87,7 @@ class Full_Cone{
   void global_reduction(set < vector<Integer> >& Candidates); //does the global reduction of the candidates
   vector<Integer> compute_degree_function() const;  //computes a degree function, s.t. every generator has value >0
   void compute_support_hyperplanes(bool do_partial_trian=false);
+  void compute_support_hyperplanes_triangulation();
   void support_hyperplanes_partial_triang();
 
   Full_Cone(Matrix M, int i);  // constructor for recursivly generated subcones
