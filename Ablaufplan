@@ -11,9 +11,9 @@ hvector
 hilbert_polynomial
 
 is_pointed
-is_ht1_generated       | schlechte namen
-is_ht1_triangulated(?) |
-is_ht1_extreme_rays    | 
+is_ht1_generated       
+is_ht1_extreme_rays    
+is_ht1_hilbert_basis
 
 Zu jedem der vorherigen Punkte, ob es bereits berechnet wurde/durch Eingabe vorhanden ist. Das sollte den status string ersetzen. 
 
@@ -33,9 +33,8 @@ compute_support_hyperplanes_partial_triangulation     (Ähnlich wie eine Pyramide
 compute_multiplicity
 compute_ht1_elements          | 
 compute_ht1_elements_hvector  |  berechnen auch jeweils
-compute_candidates            |  die Multiplizität
-compute_candidates_hvector    |  candidates beinhaltet auch immer ht1 elements
-compute_hilbert_basis   = global_reduction
+compute_hilbert_basis         |  die Multiplizität
+compute_hilbert_basis_hvector |  hilbert_basis beinhaltet auch immer ht1 elements
 compute_polynomial
 
 Die _pyramid Funktionen wenden auf oberster Ebene nur eine Unterteilung in Pyramiden an und rufen für diese die "normalen" Funktionen auf. Das kann aber später noch um eine Steuerung per Parameter oder eine Automatik erweitert werden.
@@ -62,32 +61,32 @@ triangulation:
   compute_extreme_rays
   check_generators_ht1
   check_extreme_rays_ht1
-  is_ht1_generated (oder triangulated)
-   |-- nein -> Ende  (oder wenn is_ht1_extreme_rays dann mit denen neu triangulieren? Dazu könnte man sie einfach umsortieren)
+  is_ht1_generated 
+   |-- nein -> is_ht1_extreme_rays --> ja: neu triangulieren
+	                                |->nein: ENDE
   compute_multiplicity
   
 
-normal:
+triangulation_hilbert_basis:
   compute_support_hyperplanes_triangulation
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
   check_generators_ht1
   check_extreme_rays_ht1
-  is_ht1_generated (oder triangulated)
-   |-- nein -> compute_candidates               | Unterscheidung evtl
-	|--  ja  -> compute_candidates_multiplicity  | nicht nötig
+  is_ht1_generated
   compute_hilbert_basis
+  | global_reduction
 
-normal_partial_triangulation:
+hilbert_basis:
   compute_support_hyperplanes_partial_triangulation
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
   check_generators_ht1
   check_extreme_rays_ht1
-  compute_candidates
   compute_hilbert_basis
+  | global_reduction
 
 heigth_1_elements:
   compute_support_hyperplanes_partial_triangulation  (oder volle?)
@@ -96,7 +95,7 @@ heigth_1_elements:
   compute_extreme_rays
   check_generators_ht1
   check_extreme_rays_ht1
-  compute_ht1_elements_multiplicity
+  compute_ht1_elements
 
 hilbert_basis_polynomial:
   compute_support_hyperplanes
@@ -111,8 +110,8 @@ hilbert_basis_polynomial:
   | | low_part_simplicial               //check and erase upper facets 
   | line_shelling 
   find_new_face
-  compute_candidates_hvector
-  compute_hilbert_basis
+  compute_hilbert_basis_hvector
+  | global_reduction
   compute_hilbert_polynomial
 
 
@@ -129,7 +128,7 @@ hilbert_polynomial:
   | | low_part_simplicial               //check and erase upper facets 
   | line_shelling 
   find_new_face
-  compute_hvector
+  compute_ht1_elements_hvector
   compute_hilbert_polynomial
 
 
@@ -142,4 +141,7 @@ Hilfsoperationen:
 transform_values
 add_hyperplane
 reduce_and_insert   Verschiedene Ausführungen
+
+global_reduction
+
 und viele andere

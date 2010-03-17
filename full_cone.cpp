@@ -219,11 +219,11 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	multimap < vector< int >, int > Negative_Subfacet_Multi;
 
 	
-	#pragma omp parallel private(i,k,nr_zero_i)
+//	#pragma omp parallel private(i,k,nr_zero_i)
 	{
 	vector< int > zero_i(nr_gen);
 	vector< int > subfacet(dim-2);
-	#pragma omp for schedule(dynamic)
+//	#pragma omp for schedule(dynamic)
 	for (i=0; i<Negative_Simplex.size();i++){
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
@@ -236,12 +236,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			for (k = 0; k <dim-2; k++) {
 				subfacet[k]=zero_i[k];
 			}
-			#pragma omp critical(MULTISET)
+//			#pragma omp critical(MULTISET)
 			Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
 			if (nr_zero_i==dim-1){
 				for (k = dim-2; k >0; k--) {
 					subfacet[k-1]=zero_i[k];
-					#pragma omp critical(MULTISET)
+//					#pragma omp critical(MULTISET)
 					Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
 				}
 			}
