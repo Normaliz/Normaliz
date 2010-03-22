@@ -1281,6 +1281,48 @@ void Full_Cone::ht1_elements(){
 	status="normal"; //ACHTUNG! status normal, aber keine komplette Triangulierung
 }
 
+void Full_Cone::hilbert_basis_polynomial(){
+    check_ht1_generated();
+	if ( !is_ht1_generated ) {
+		hilbert_basis();
+	} else {
+		if(dim>0) {            //correction needed to include the 0 cone;
+			compute_support_hyperplanes();
+		    check_pointed();
+		    if(!is_pointed) return;
+		    compute_extreme_rays();
+		    check_ht1_extreme_rays();
+
+			triangulation_lift();
+			find_new_face();
+			compute_hilbert_basis_polynomial();
+			compute_polynomial();
+		} // end if (dim>0)
+		status="hilbert basis polynomial";
+	}
+}
+
+void Full_Cone::hilbert_polynomial(){
+    check_ht1_generated();
+	if ( !is_ht1_generated ) {
+		hilbert_basis();
+	} else {
+		if(dim>0) {            //correction needed to include the 0 cone;
+			compute_support_hyperplanes();
+		    check_pointed();
+		    if(!is_pointed) return;
+		    compute_extreme_rays();
+		    check_ht1_extreme_rays();
+
+			triangulation_lift();
+			find_new_face();
+			compute_hilbert_polynomial();
+			compute_polynomial();
+		} // end if (dim>0)
+		status="hilbert basis polynomial";
+	}
+}
+
 //---------------------------------------------------------------------------
 // compute methods (private)
 //---------------------------------------------------------------------------
@@ -1905,7 +1947,7 @@ void Full_Cone::compute_ht1_elements() {
 	{
 	Integer volume;
 	Integer mult=0;
-	list <vector<Integer> > HB;
+	list <vector<Integer> > HE;
 	list <vector<Integer> >::const_iterator h;
 
 	list< Simplex >::iterator l=Triangulation.begin();
@@ -1922,8 +1964,8 @@ void Full_Cone::compute_ht1_elements() {
 		mult+=volume;
 
 		S.ht1_elements(Linear_Form);
-		HB=S.acces_hilbert_basis();
-		for (h = HB.begin(); h != HB.end(); ++h) {
+		HE=S.read_homogeneous_elements();
+		for (h = HE.begin(); h != HE.end(); ++h) {
 			#pragma omp critical(HT1ELEMENTS)
 			Homogeneous_Elements.push_back((*h));
 		}
@@ -1935,7 +1977,8 @@ void Full_Cone::compute_ht1_elements() {
 	#pragma omp critical(MULT)
 	multiplicity+=mult;
 	} //END parallel
-	status="triangulation";
+	Homogeneous_Elements.sort();
+	Homogeneous_Elements.unique();
 }
 
 //---------------------------------------------------------------------------
@@ -2345,77 +2388,57 @@ void Full_Cone::compute_polynomial(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::hilbert_polynomial(){
-	if (is_ht1_generated==false) {
-		hilbert_basis();
+void Full_Cone::compute_hilbert_polynomial(){
+	if (verbose==true) {
+		cout<<"\n************************************************************\n";
+		cout<<"computing Hilbert polynomial ..."<<endl;
 	}
-	else{
-		if(dim>0){            //correction needed to include the 0 cone;
-		support_hyperplanes();
-		triangulation_lift();
-		find_new_face();
-		if (verbose==true) {
-			cout<<"\n************************************************************\n";
-			cout<<"computing Hilbert polynomial ..."<<endl;
-		}
-		int counter=0;
-		Integer volume;
-		multiplicity=0;
-		for (int i = 1; i <=nr_gen; i++) {
-			Homogeneous_Elements.push_back(Generators.read(i));
-		}
-		list< vector<Integer> > HE;
-		list< Simplex >::iterator l=Triangulation.begin();
-		int lpos=0;
-		int listsize=Triangulation.size();
-		//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
-		#pragma omp parallel for private(volume,HE) firstprivate(lpos,l) schedule(dynamic)
-		for (int k=0; k<listsize; ++k) {
-			for(;k > lpos; ++lpos, ++l) ;
-			for(;k < lpos; --lpos, --l) ;
+	int counter=0;
+	Integer volume;
+	multiplicity=0;
+	for (int i = 1; i <=nr_gen; i++) {
+		Homogeneous_Elements.push_back(Generators.read(i));
+	}
+	list< vector<Integer> > HE;
+	list< Simplex >::iterator l=Triangulation.begin();
+	int lpos=0;
+	int listsize=Triangulation.size();
+	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
+	#pragma omp parallel for private(volume,HE) firstprivate(lpos,l) schedule(dynamic)
+	for (int k=0; k<listsize; ++k) {
+		for(;k > lpos; ++lpos, ++l) ;
+		for(;k < lpos; --lpos, --l) ;
 
-			Simplex S=(*l);
-			#pragma omp critical(H_VECTOR)
-			H_Vector[S.read_new_face_size()]++;
-			S.h_vector(Generators,Linear_Form);
-			volume=S.read_volume();
-			(*l).write_volume(volume);
-			#pragma omp critical(MULT)
-			multiplicity += volume;
-			HE=S.read_homogeneous_elements();
-			#pragma omp critical(HOMOGENEOUS)
-			Homogeneous_Elements.merge(HE);
-			#pragma omp critical(H_VECTOR)
-			H_Vector=v_add(H_Vector,S.read_h_vector());
-			if (verbose==true) {
-				#pragma omp critical(VERBOSE)
-				{
-					counter++;
-					if (counter%1000==0) {
-						cout<<"simplex="<<counter<<endl;
-					}
+		Simplex S=(*l);
+		#pragma omp critical(H_VECTOR)
+		H_Vector[S.read_new_face_size()]++;
+		S.h_vector(Generators,Linear_Form);
+		volume=S.read_volume();
+		(*l).write_volume(volume);
+		#pragma omp critical(MULT)
+		multiplicity += volume;
+		HE=S.read_homogeneous_elements();
+		#pragma omp critical(HOMOGENEOUS)
+		Homogeneous_Elements.merge(HE);
+		#pragma omp critical(H_VECTOR)
+		H_Vector=v_add(H_Vector,S.read_h_vector());
+		if (verbose==true) {
+			#pragma omp critical(VERBOSE)
+			{
+				counter++;
+				if (counter%1000==0) {
+					cout<<"simplex="<<counter<<endl;
 				}
 			}
 		}
-		compute_polynomial();
-		Homogeneous_Elements.sort();
-		Homogeneous_Elements.unique();
-		} // end if (dim>0)
-		status="hilbert polynomial";
 	}
+	Homogeneous_Elements.sort();
+	Homogeneous_Elements.unique();
 }
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::hilbert_basis_polynomial(){
-	if (is_ht1_generated==false) {
-		hilbert_basis();
-	}
-	else{
-		if(dim>0){            //correction needed to include the 0 cone;
-		support_hyperplanes();
-		triangulation_lift();
-		find_new_face();
+void Full_Cone::compute_hilbert_basis_polynomial(){
 		if (verbose==true) {
 			cout<<"\n************************************************************\n";
 			cout<<"computing Hilbert basis and polynomial ..."<<endl;
@@ -2473,10 +2496,6 @@ void Full_Cone::hilbert_basis_polynomial(){
 		Homogeneous_Elements.unique();
 		
 		global_reduction(Candidates);
-		compute_polynomial();
-		} // end if (dim>0)
-		status="hilbert basis polynomial";
-	}
 }
 
 //---------------------------------------------------------------------------

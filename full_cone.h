@@ -103,6 +103,8 @@ class Full_Cone {
 	void compute_extreme_rays();
 	void compute_hilbert_basis();
 	void compute_ht1_elements();
+	void compute_hilbert_polynomial();
+	void compute_hilbert_basis_polynomial();
 
 	void check_pointed();
     void check_ht1_generated();
