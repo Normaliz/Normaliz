@@ -406,6 +406,71 @@ void Simplex::hilbert_basis_interior(const Matrix& Map){
 
 //---------------------------------------------------------------------------
 
+void Simplex::ht1_elements(const vector<Integer>& Form){
+	if (status!="initialized") {
+		error("error: Bad Simplex passed to Simplex::hilbert_basis");
+		return;
+	}
+	else{
+
+		//transformation
+
+		int i,k,last;
+		vector < Integer > norm(1);
+		vector<Integer> point(dim,0);
+		set < vector<Integer> > Candidates;
+		set <vector <Integer> >::iterator c;
+		//generating vector e=b_1*u_1+...+b_n*u_n (see documentation)
+		while (1) {
+			last=-1;
+			for (i = 0; i < dim; i++) {
+				if (point[i]<diagonal[i]-1) {
+					last=i;
+				}
+			}
+			if (last==-1) {
+				break;
+			}
+			point[last]++;
+			for (i = last+1; i <dim; i++) {
+				point[i]=0;
+			}
+			vector<Integer> new_element=Support_Hyperplanes.MxV(point);
+			for (k = 0; k < dim; k++) {
+				new_element[k]= new_element[k]*multiplicators[k];
+			}
+			v_reduction_modulo(new_element,volume);
+
+			//TODO ht1 check here?
+			Candidates.insert(new_element);
+
+		}
+		c=Candidates.begin();
+		while(c != Candidates.end()) {
+			vector <Integer> j=Generators.VxM(*c);
+			v_scalar_division(j,volume);
+			if (v_scalar_product(j,Form)==1) {
+				Hilbert_Basis.push_back(j);
+			}
+			Candidates.erase(c);
+			c=Candidates.begin();
+		}
+
+		//inverse transformation
+		//some test for arithmetic overflow may be implemented here
+
+		l_cut_front(Hilbert_Basis,dim);
+		list< vector<Integer> >::iterator j;
+		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
+			*j=Generators.VxM(*j);
+			v_scalar_division(*j,volume);
+		}
+		status="ht1 elements calculated.";
+	}
+}
+
+//---------------------------------------------------------------------------
+
 void Simplex::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
 	if (status!="initialized") {
 		error("error: Bad Simplex passed to Simplex::hilbert_basis_interior_h_vector");

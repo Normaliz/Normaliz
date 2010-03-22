@@ -45,8 +45,9 @@ void printHelp(char* command) {
 	cout << "  -S\tcomputation type: support_hyperplanesvia pyramids"<<endl;
 	cout << "  -v\tcomputation type: triangulation"<<endl;
 	cout << "  -V\tcomputation type: triangulation via pyramids"<<endl;
-	cout << "  -n\tcomputation type: normal (using a triangulation)"<<endl;
-	cout << "  -N\tcomputation type: normal using a partial triangulation"<<endl;
+	cout << "  -n\tcomputation type: triangulation_hilbert_basis (old type normal)"<<endl;
+	cout << "  -N\tcomputation type: hilbert_basis (using a partial triangulation)"<<endl;
+	cout << "  -1\tcomputation type: ht1_elements"<<endl;
 	cout << "  -p\tcomputation type: hilbert_polynomial"<<endl;
 	cout << "  -h\tcomputation type: hilbert_basis_polynomial"<<endl;
 	cout << "  -d\tcomputation type: dual"<<endl;
@@ -227,10 +228,13 @@ int main(int argc, char* argv[])
 				computation_type="triangulation_pyramid";
 				break;
 			case 'n':
-				computation_type="normal";
+				computation_type="triangulation_hilbert_basis";
 				break;
 			case 'N':
-				computation_type="normal_compressed";
+				computation_type="hilbert_basis";
+				break;
+			case '1':
+				computation_type="ht1_elements";
 				break;
 			case 'p':
 				computation_type="hilbert_polynomial";

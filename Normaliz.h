@@ -52,7 +52,7 @@ int overflow_test_modulus=10403;
 // used as a determine the maximal size of the random numbers used to lift the cone
 // the bigger it is, the bigger the probability that the lifting will be succesfull
 // however a very big number  may lead to arithmethic overflow
-int lifting_bound=9000;
+int lifting_bound=9;
 
 // used to turn on and off the display of a progres report
 // designed for users who run complex examples

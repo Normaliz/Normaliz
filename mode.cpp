@@ -364,11 +364,11 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 Full_Cone make_computations(const string& computation_type, const Matrix& Full_Cone_Generators){
 	Full_Cone C(Full_Cone_Generators);
-	if (computation_type=="normal"){
-		C.hilbert_basis();
+	if (computation_type=="triangulation_hilbert_basis"){
+		C.triangulation_hilbert_basis();
 	}
-	if (computation_type=="normal_compressed"){
-		C.hilbert_basis(true);
+	if (computation_type=="hilbert_basis"){
+		C.hilbert_basis();
 	}
 	if (computation_type=="support_hyperplanes"){
 		C.support_hyperplanes();
@@ -377,10 +377,13 @@ Full_Cone make_computations(const string& computation_type, const Matrix& Full_C
 		C.support_hyperplanes_pyramid();
 	}
 	if (computation_type=="triangulation"){
-		C.support_hyperplanes_triangulation_multiplicity();
+		C.support_hyperplanes_triangulation();
 	}
 	if (computation_type=="triangulation_pyramid"){
-		C.support_hyperplanes_pyramid(true);
+		C.support_hyperplanes_triangulation_pyramid();
+	}
+	if (computation_type=="ht1_elements"){
+		C.ht1_elements();
 	}
 	if (computation_type=="hilbert_polynomial"){
 		C.hilbert_polynomial();

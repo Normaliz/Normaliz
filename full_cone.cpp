@@ -92,7 +92,7 @@ void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive,
 
 void Full_Cone::transform_values(const int& size, const vector <int> & test_key){
 
-	//to see if posible to replace the funtion .end with constant iterator since push-back is performed.
+	//to see if possible to replace the function .end with constant iterator since push-back is performed.
 
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	register int i,j,k,t,nr_zero_i,nr_zero_i_and_j,sub=dim-3;
@@ -708,7 +708,7 @@ void Full_Cone::reduce_and_insert_speed(const vector< Integer >& new_element){
 						}
 					}
 					if (i==s) { 				//new_element is not in the Hilbert Basis
-						Hilbert_Basis.push_front(*j); //put j to the front, it is a promissing candidate to reduce with
+						Hilbert_Basis.push_front(*j); //put j to the front, it is a promising candidate to reduce with
 						Hilbert_Basis.erase(j);
 						return;
 					}
@@ -970,11 +970,6 @@ Full_Cone::Full_Cone(Matrix M){
 		nr_gen=Generators.nr_of_rows();
 	}
 	hyp_size=dim+nr_gen;
-	if (dim>0) {            //correction needed to include the 0 cone;
-		Linear_Form = Generators.homogeneous(homogeneous);
-	} else {
-		homogeneous = true;
-	}
 	multiplicity = 0;
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
@@ -990,7 +985,7 @@ Full_Cone::Full_Cone(Matrix M){
 		Hilbert_Polynomial[0] = 0;
 	}
 	status="initialized, before computations";
-	Generators.print("bla.egn");
+	//Generators.print("bla.egn");
 }
 
 //---------------------------------------------------------------------------
@@ -1000,7 +995,9 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 	nr_gen=C.nr_gen;
 	hyp_size=C.hyp_size;
 	status=C.status;
-	homogeneous=C.homogeneous;
+	is_pointed=C.is_pointed;
+	is_ht1_generated=C.is_ht1_generated;
+	is_ht1_extreme_rays=C.is_ht1_extreme_rays;
 	Linear_Form=C.Linear_Form;
 	multiplicity=C.multiplicity;
 	Generators=C.Generators;
@@ -1015,7 +1012,7 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 
 //---------------------------------------------------------------------------
 
-/* constructor for recursivly generated subcones */
+/* constructor for recursively generated subcones */
 Full_Cone::Full_Cone(Matrix M, int i) {  
 	dim = M.nr_of_columns();
 	Generators = M;
@@ -1044,7 +1041,7 @@ void Full_Cone::print()const{
 	cout<<"\nnr_gen="<<nr_gen<<".\n";
 	cout<<"\nhyp_size="<<hyp_size<<".\n";
 	cout<<"\nStatus is "<<status<<".\n";
-	cout<<"\nHomogeneous is "<<homogeneous<<".\n";
+	cout<<"\nHomogeneous is "<<is_ht1_generated<<".\n";
 	cout<<"\nLinear_Form is:\n";
 	v_read(Linear_Form);
 	cout<<"\nMultiplicity is "<<multiplicity<<".\n";
@@ -1093,7 +1090,7 @@ string Full_Cone::read_status()const{
 //---------------------------------------------------------------------------
 
 bool Full_Cone::read_homogeneous()const{
-	return homogeneous;
+	return is_ht1_generated;
 }
 
 //---------------------------------------------------------------------------
@@ -1216,9 +1213,79 @@ vector<Integer> Full_Cone::read_hilbert_polynomial() const{
 	return Hilbert_Polynomial;
 }
 
+
+//---------------------------------------------------------------------------
+// control methods (public)
 //---------------------------------------------------------------------------
 
-void Full_Cone::extreme_rays(){
+void Full_Cone::support_hyperplane_common() {
+    status = "support hyperplanes";
+    check_pointed();
+    if(!is_pointed) return;
+    compute_extreme_rays();
+    check_ht1_generated();
+    check_ht1_extreme_rays();
+}
+
+void Full_Cone::support_hyperplanes() {
+	compute_support_hyperplanes();
+	support_hyperplane_common();
+}
+
+void Full_Cone::support_hyperplanes_pyramid() {
+	compute_support_hyperplanes_pyramid();
+	support_hyperplane_common();
+}
+
+void Full_Cone::support_hyperplanes_partial_triangulation() {
+	compute_support_hyperplanes(true);
+	support_hyperplane_common();
+	//process_non_compressed(non_compressed); //in the method again (nicht gut)
+}
+
+void Full_Cone::support_hyperplanes_triangulation() {
+	compute_support_hyperplanes_triangulation();
+	support_hyperplane_common();
+    if(!is_pointed) return;
+	compute_multiplicity();
+	status="triangulation";
+}
+
+void Full_Cone::support_hyperplanes_triangulation_pyramid() {
+	compute_support_hyperplanes_pyramid(true);
+	support_hyperplane_common();
+    if(!is_pointed) return;
+	compute_multiplicity();
+	status="triangulation";
+}
+
+void Full_Cone::triangulation_hilbert_basis(){
+	compute_support_hyperplanes_triangulation();
+	support_hyperplane_common();
+    if(!is_pointed) return;
+	compute_hilbert_basis();
+	status="normal";
+}
+
+void Full_Cone::hilbert_basis(){
+	support_hyperplanes_partial_triangulation();
+	if(!is_pointed) return;
+	compute_hilbert_basis();
+	status="normal"; //ACHTUNG! status normal, aber keine komplette Triangulierung
+}
+
+void Full_Cone::ht1_elements(){
+	support_hyperplanes_partial_triangulation();
+	if(!is_pointed) return;
+	compute_ht1_elements();
+	status="normal"; //ACHTUNG! status normal, aber keine komplette Triangulierung
+}
+
+//---------------------------------------------------------------------------
+// compute methods (private)
+//---------------------------------------------------------------------------
+
+void Full_Cone::compute_extreme_rays(){
 	int i,j,k,l,t;
 	Matrix SH=read_support_hyperplanes();
 	SH=SH.transpose();
@@ -1261,26 +1328,14 @@ void Full_Cone::extreme_rays(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes() {
-	compute_support_hyperplanes();
-	extreme_rays();
-}
-
-void Full_Cone::support_hyperplanes_partial_triang() {
-	compute_support_hyperplanes(true);
-	extreme_rays();
-}
-
-//---------------------------------------------------------------------------
-
-void Full_Cone::compute_support_hyperplanes(bool compressed_test) {
+void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation) {
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing support hyperplanes ..."<<endl;
 	}
 	int i,j;
-	//intialization of the list of support hyperplanes
+	//Initialization of the list of support hyperplanes
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
 	Simplex S(Generators);
 	vector<int> key=S.read_key();
@@ -1307,7 +1362,7 @@ void Full_Cone::compute_support_hyperplanes(bool compressed_test) {
 	
 	int size=2*dim;
 	//test if the first simplex is compressed
-	if(compressed_test){
+	if(do_partial_triangulation){
 		for (i=dim; i<size; i++) {
 			if (hyperplane[i]>1) {
 				Triangulation.push_back(key);
@@ -1343,7 +1398,7 @@ void Full_Cone::compute_support_hyperplanes(bool compressed_test) {
 					(*l)[size]=scalar_product;
 					if (scalar_product<0) {
 						new_generator=true;
-						if (compressed_test && scalar_product<-1) { //found non-compressed pyramid
+						if (do_partial_triangulation && scalar_product<-1) { //found non-compressed pyramid
 							// make new subcone (gens in hyperplane + new gen)
 							vector<int> pyramid;
 							pyramid.reserve(size-dim+1);
@@ -1382,7 +1437,7 @@ void Full_Cone::compute_support_hyperplanes(bool compressed_test) {
 				}
 				if (verbose==true) {
 					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... ";
-					if (compressed_test) cout <<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth;
+					if (do_partial_triangulation) cout <<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth;
 					cout<<endl;
 				}
 			}
@@ -1390,158 +1445,150 @@ void Full_Cone::compute_support_hyperplanes(bool compressed_test) {
 	}	
 	
 	l_cut(Support_Hyperplanes,dim);
-	if(compressed_test) {
-		//compute triangulations of the not compressed, not simplicial pyramids and add them to this.Triangulation
-		process_non_compressed(non_compressed);
-	}
+	if(do_partial_triangulation) process_non_compressed(non_compressed);
 	} // end if (dim>0)
 	status="support hyperplanes";
 }
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
-	if(dim>0){            //correction needed to include the 0 cone;
-	if (verbose==true) {
-		cout<<"\n************************************************************\n";
-		cout<<"computing support hyperplanes ..."<<endl;
+void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
+	if (verbose == true) {
+		cout << "\n************************************************************\n";
+		cout << "computing support hyperplanes ";
+		if (do_triang) cout << "and triangulation";
+		cout << "..." << endl;
 	}
-	int i,j;
-	//intialization of the list of support hyperplanes
-	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
+
+	compute_support_hyperplanes_pyramid(do_triang);
+	int i, j;
+	vector<Integer> hyperplane(hyp_size, 0), L, R;
 	Simplex S(Generators);
-	vector<int> key=S.read_key();
-	if (do_triang) Triangulation.push_back(key);
-	vector<bool> in_triang(nr_gen,false);
+	vector<int> key = S.read_key();
+	if (do_triang)
+		Triangulation.push_back(key);
+
+	vector<bool> in_triang(nr_gen, false);
 	vector<int> test_key(hyp_size);
 	for (i = 0; i < dim; i++) {
-		in_triang[key[i]-1]=true;
+		in_triang[key[i]-1] = true;
 	}
-	Matrix G=S.read_generators();
-	G=G.transpose();
-	Matrix H=S.read_support_hyperplanes();
-	Matrix P=H.multiplication(G);
-	for (i = 1; i <=dim; i++) {
-		L=H.read(i);
-		R=P.read(i);
+	Matrix G = S.read_generators();
+	G = G.transpose();
+	Matrix H = S.read_support_hyperplanes();
+	Matrix P = H.multiplication(G);
+	for (i = 1; i <= dim; i++) {
+		L = H.read(i);
+		R = P.read(i);
 		for (j = 0; j < dim; j++) {
-			hyperplane[j]=L[j];
-			hyperplane[j+dim]=R[j];
-			test_key[j+dim]=key[j];
+			hyperplane[j] = L[j];
+			hyperplane[j + dim] = R[j];
+			test_key[j + dim] = key[j];
 		}
 		Support_Hyperplanes.push_back(hyperplane);
 	}
 
-	
-	int size=2*dim;
+	int size = 2 * dim;
 	int g;
-	bool verbose_bak=verbose;
-	verbose=false;
-	
-	//computation of support hyperplanes
+	bool verbose_bak = verbose;
+	verbose = false;
 	Integer scalar_product;
 	bool new_generator;
 	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
 		for (i = 0; i < nr_gen; i++) {
-			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-				new_generator=false;
-				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
-				int lpos=0;
-				int listsize=Support_Hyperplanes.size();
-				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+			if ((in_triang[i] == false) && ((j == 1) || (Extreme_Rays[i] == true))) {
+				new_generator = false;
+				list<vector<Integer> >::iterator l = Support_Hyperplanes.begin();
+				int lpos = 0;
+				int listsize = Support_Hyperplanes.size();
+				//      for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
 				#pragma omp parallel for private(L,scalar_product,g) firstprivate(lpos,l) schedule(dynamic)
-				for (int k=0; k<listsize; ++k) {
-					for(;k > lpos; ++lpos, ++l) ;
-					for(;k < lpos; --lpos, --l) ;
+				for (int k = 0; k < listsize; ++k) {
+					for (; k > lpos; ++lpos, ++l) ;
+					for (; k < lpos; --lpos, --l) ;
 
-					L=Generators.read(i+1);
-					scalar_product=v_scalar_product(L,(*l));
+					L = Generators.read(i + 1);
+					scalar_product = v_scalar_product(L, (*l));
 					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
 						error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
 					}
-
-					(*l)[size]=scalar_product;
-					if (scalar_product<0) {
-						new_generator=true;
+					(*l)[size] = scalar_product;
+					if (scalar_product < 0) {
+						new_generator = true;
 						vector<int> pyramid;
-						pyramid.reserve(size-dim+1);
-						pyramid.push_back(i+1);
-						for (g=dim; g<size; g++) {
-							if ((*l)[g]==0) {
+						pyramid.reserve(size - dim + 1);
+						pyramid.push_back(i + 1);
+						for (g = dim; g < size; g++) {
+							if ((*l)[g] == 0) {
 								pyramid.push_back(test_key[g]);
 							}
 						}
-						
-						list< vector<Integer> > subconeSH;
-						//a shortcut in the simplizial case
-						if (pyramid.size() == dim) {
-							vector<Integer> hyperplane(hyp_size,0); // initialized with 0
-							Simplex S(pyramid,Generators);
-							Matrix H=S.read_support_hyperplanes();
-							for (int k=1; k<=dim; k++) {
+
+						list<vector<Integer> > subconeSH;
+						if (pyramid.size() == dim) {   //do simplical subcones directly
+							vector<Integer> hyperplane(hyp_size, 0);
+							Simplex S(pyramid, Generators);
+							Matrix H = S.read_support_hyperplanes();
+							for (int k = 1; k <= dim; k++) {
 								subconeSH.push_back(H.read(k));
 							}
 							if (do_triang) {
 								#pragma omp critical(TRIANG_P)
 								Triangulation.push_back(S);
 							}
-						} else {
-							//compute support hyperplanes of the subcone
-							Full_Cone subcone(Generators.submatrix(pyramid),1);
+						} else {   //compute support hyperplanes of the subcone
+							Full_Cone subcone(Generators.submatrix(pyramid), 1);
 							if (do_triang) {
 								//TODO use test to decide which function is called in recursion
-								subcone.support_hyperplanes_triangulation();
-
-								list< Simplex >::const_iterator sub_it  = subcone.Triangulation.begin();
-								list< Simplex >::const_iterator sub_end = subcone.Triangulation.end();
+								subcone.compute_support_hyperplanes_triangulation();
+								list<Simplex>::const_iterator sub_it = subcone.Triangulation.begin();
+								list<Simplex>::const_iterator sub_end = subcone.Triangulation.end();
 								vector<int> subkey;
-								// adjust indices and add to Triangulation
-								while (sub_it!=sub_end) {
-									vector<int> simplex(dim,0);
-									subkey=(*sub_it).read_key();
-									for (int j=0; j<dim; j++) {
-										simplex[j]=pyramid[subkey[j]-1];
+								 // adjust indices and add to Triangulation
+								while (sub_it != sub_end) {
+									vector<int> simplex(dim, 0);
+									subkey = (*sub_it).read_key();
+									for (int j = 0; j < dim; j++) {
+										simplex[j] = pyramid[subkey[j] - 1];
 									}
 									#pragma omp critical(TRIANG_P)
 									Triangulation.push_back(simplex);
 									++sub_it;
 								}
-							}
-							else {
+
+							} else {
 								subcone.compute_support_hyperplanes();
 							}
-							subconeSH=subcone.Support_Hyperplanes;
+							subconeSH = subcone.Support_Hyperplanes;
 						}
-						list< vector<Integer> >::const_iterator sub_it  = subconeSH.begin();
-						list< vector<Integer> >::const_iterator sub_end = subconeSH.end();
-						vector<Integer> scalar_prods=vector<Integer>(nr_gen);
-						
+
+						list<vector<Integer> >::const_iterator sub_it = subconeSH.begin();
+						list<vector<Integer> >::const_iterator sub_end = subconeSH.end();
+						vector<Integer> scalar_prods = vector<Integer> (nr_gen);
 						// add support hyperplanes when needed
-						while (sub_it!=sub_end) {
+						while (sub_it != sub_end) {
 							//check if all old generators are in the key or >0
-							for (g=dim; g<size; g++) {
-								if (in_triang[test_key[g]-1] && (*l)[g]!=0) { //old gen && not in key 
-									//compute scalar product
-									scalar_product=v_scalar_product(Generators.read(test_key[g]),(*sub_it));
-									if (scalar_product <= 0) {
-										break;		//hyperplane is no new support hyperplane
+							for (g = dim; g < size; g++) {
+								if (in_triang[test_key[g] - 1] && (*l)[g] != 0) {  //old gen && not in key
+									scalar_product = v_scalar_product(Generators.read(test_key[g]), (*sub_it));
+									if (scalar_product <= 0) {	 //hyperplane is no new support hyperplane
+										break;
 									}
-									scalar_prods[g-dim]=scalar_product;
+									scalar_prods[g-dim] = scalar_product;
 								}
 							}
-							if (g == size) {
-								//compute remaining scalar products
-								for (g=dim; g<size; g++) {
-									if (in_triang[test_key[g]-1] && (*l)[g]==0) { //old gen && in key 
-										//compute scalar product
-										scalar_product=v_scalar_product(Generators.read(test_key[g]),(*sub_it));
-										scalar_prods[g-dim]=scalar_product;
+
+							if (g == size) {  //compute remaining scalar products
+								for (g = dim; g < size; g++) {
+									if (in_triang[test_key[g]-1] && (*l)[g]==0) {  //old gen && in key
+										scalar_product = v_scalar_product(Generators.read(test_key[g]),(*sub_it));
+										scalar_prods[g-dim] = scalar_product;
 									}
 								}
-								//scalar product for the new generator
-								scalar_product=v_scalar_product(L,(*sub_it));
-								scalar_prods[size-dim]=scalar_product;
-								vector<Integer> hyperplane=v_merge((*sub_it),scalar_prods);
+
+								scalar_product = v_scalar_product(L, (*sub_it));
+								scalar_prods[size - dim] = scalar_product;
+								vector<Integer> hyperplane = v_merge((*sub_it), scalar_prods);
 								#pragma omp critical(HYPERPLANE_P)
 								Support_Hyperplanes.push_back(hyperplane);
 							}
@@ -1549,35 +1596,35 @@ void Full_Cone::support_hyperplanes_pyramid(bool do_triang) {
 						}
 					}
 				}
+
 				if (new_generator) {
-					in_triang[i]=true;
+					in_triang[i] = true;
+					list<vector<Integer> >::iterator l;
 					//remove negative hyperplanes
-					list< vector<Integer> >::iterator l;
-					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); ){
-						if ((*l)[size]<0) {
-							l=Support_Hyperplanes.erase(l);
-						}
-						else
+					for (l = Support_Hyperplanes.begin(); l != Support_Hyperplanes.end();) {
+						if ((*l)[size] < 0) {
+							l = Support_Hyperplanes.erase(l);
+						} else
 							l++;
 					}
-					test_key[size]=i+1;
+					test_key[size] = i + 1;
 					size++;
 				}
-				if (verbose_bak==true) {
-					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... "<<endl;
+
+				if (verbose_bak == true) {
+					cout << "generator=" << i + 1 << " and " << Support_Hyperplanes.size() << " hyperplanes... "<< endl;
 				}
 			}
+
 		}
-	}	
-	verbose=verbose_bak;
-	l_cut(Support_Hyperplanes,dim);
-	if (do_triang) {
-		compute_multiplicity();
+
 	}
-	} // end if (dim>0)
-	status="support hyperplanes";
-	extreme_rays();
+
+	verbose = verbose_bak;
+	l_cut(Support_Hyperplanes, dim);
 }
+
+
 
 //---------------------------------------------------------------------------
 
@@ -1764,27 +1811,47 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes_triangulation() {
-	compute_support_hyperplanes_triangulation();
-	extreme_rays();
+void Full_Cone::check_pointed()
+{
+    Matrix SH = read_support_hyperplanes();
+    is_pointed = (SH.rank() == dim);
 }
 
-//---------------------------------------------------------------------------
+void Full_Cone::check_ht1_generated()
+{
+    if(dim > 0) {
+        Linear_Form = Generators.homogeneous(is_ht1_generated);
+    } else {
+        is_ht1_generated = true;
+    }
+}
 
-void Full_Cone::support_hyperplanes_triangulation_multiplicity(){
-	support_hyperplanes_triangulation();
-	compute_multiplicity();
+void Full_Cone::check_ht1_extreme_rays()
+{
+	if (is_ht1_generated) {
+		is_ht1_extreme_rays=true;
+		return;
+	}
+    if(dim > 0) {
+    	vector<int> key;
+    	for (int i=0; i<nr_gen; i++) {
+    		if (Extreme_Rays[i])
+    			key.push_back(i+1);
+    	}
+    	Matrix Extreme=Generators.submatrix(key);
+        Linear_Form = Extreme.homogeneous(is_ht1_generated);
+    } else {
+        is_ht1_extreme_rays = true;
+    }
 }
 
 //---------------------------------------------------------------------------
 
 void Full_Cone::compute_multiplicity(){
-	//TODO check for status
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing multiplicity ..."<<endl;
 	}
-	int counter=0;
 	multiplicity=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
@@ -1804,14 +1871,8 @@ void Full_Cone::compute_multiplicity(){
 		volume=S.read_volume();
 		(*l).write_volume(volume);
 		mult+=volume;
-		if (verbose==true) {
-			#pragma omp critical(VERBOSE)
-			{
-				counter++;
-				if (counter%10000==0) {
-					cout<<"simplex="<<counter<<endl;
-				}
-			}
+		if (verbose==true && (k+1)%10000==0) {
+			cout<<"simplex="<<k+1<<endl;
 		}
 	}
 	#pragma omp critical(MULT)
@@ -1821,21 +1882,65 @@ void Full_Cone::compute_multiplicity(){
 }
 
 //---------------------------------------------------------------------------
-void Full_Cone::hilbert_basis(const bool compressed_test){
-	if(compressed_test) {
-		//Hilbert Basis aus den nicht komprimierten Kegeln der Triangulierung bestimmen, status nacher "normal" aber keine Triangulierung!
-		support_hyperplanes_partial_triang();
-	} else {
-		support_hyperplanes_triangulation();
+
+void Full_Cone::compute_ht1_elements() {
+	if(!is_ht1_extreme_rays)
+		return;
+	if (verbose==true) {
+		cout<<"\n************************************************************\n";
+		cout<<"computing height 1 elements..."<<endl;
 	}
-	Matrix SH=read_support_hyperplanes();
-	if (SH.rank()!=dim) {
-		error("error: Not pointed cone detected. This program is limited to pointed cones only.");
+
+	vector<Integer> generator;
+	for (int i = 0; i <nr_gen; i++) {
+		generator = Generators.read(i+1);
+		if (is_ht1_generated || Extreme_Rays[i] || v_scalar_product(generator,Linear_Form)==1)
+			Homogeneous_Elements.push_back(generator);
 	}
-	only_hilbert_basis();
+
+	multiplicity=0;
+	int listsize=Triangulation.size();
+	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
+	#pragma omp parallel
+	{
+	Integer volume;
+	Integer mult=0;
+	list <vector<Integer> > HB;
+	list <vector<Integer> >::const_iterator h;
+
+	list< Simplex >::iterator l=Triangulation.begin();
+	int lpos=0;
+	#pragma omp for schedule(dynamic)
+	for (int k=0; k<listsize; ++k) {
+		for(;k > lpos; ++lpos, ++l) ;
+		for(;k < lpos; --lpos, --l) ;
+
+		Simplex S=(*l);
+		S.initialize(Generators);
+		volume=S.read_volume();
+		(*l).write_volume(volume);
+		mult+=volume;
+
+		S.ht1_elements(Linear_Form);
+		HB=S.acces_hilbert_basis();
+		for (h = HB.begin(); h != HB.end(); ++h) {
+			#pragma omp critical(HT1ELEMENTS)
+			Homogeneous_Elements.push_back((*h));
+		}
+
+		if (verbose==true && (k+1)%5000==0) {
+			cout<<"simplex="<<k+1<<endl;
+		}
+	}
+	#pragma omp critical(MULT)
+	multiplicity+=mult;
+	} //END parallel
+	status="triangulation";
 }
+
 //---------------------------------------------------------------------------
-void Full_Cone::only_hilbert_basis(){
+
+void Full_Cone::compute_hilbert_basis(){
 	if(dim>0){            //correction needed to include the 0 cone;
 	int counter=0,i;
 	Integer volume;
@@ -1889,7 +1994,7 @@ void Full_Cone::only_hilbert_basis(){
 
 	global_reduction(Candidates);
 
-	if(homogeneous==true){
+	if(is_ht1_generated==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
 				Homogeneous_Elements.push_back((*h));
@@ -2046,7 +2151,7 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 	}
 	int i;	
 	vector<Integer> degree_function(dim,0);
-	if(homogeneous==true){ //use Linear_From in homogeneous case
+	if(is_ht1_generated==true){ //use Linear_From in homogeneous case
 		if(verbose) {
 			cout<<" using homogenous linear form, ";
 		}
@@ -2241,7 +2346,7 @@ void Full_Cone::compute_polynomial(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::hilbert_polynomial(){
-	if (homogeneous==false) {
+	if (is_ht1_generated==false) {
 		hilbert_basis();
 	}
 	else{
@@ -2303,7 +2408,7 @@ void Full_Cone::hilbert_polynomial(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::hilbert_basis_polynomial(){
-	if (homogeneous==false) {
+	if (is_ht1_generated==false) {
 		hilbert_basis();
 	}
 	else{
@@ -2796,8 +2901,8 @@ if(dim>0){            //correction needed to include the 0 cone;
 	l_cut_front(Hilbert_Basis,dim);
 	Matrix M=read_support_hyperplanes();
 	if(dim>0){            //correction needed to include the 0 cone;
-		Linear_Form=M.homogeneous_low_dim(homogeneous);
-		if(homogeneous==true){
+		Linear_Form=M.homogeneous_low_dim(is_ht1_generated);
+		if(is_ht1_generated==true){
 			list < vector <Integer> >::const_iterator h;
 			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 				if (v_scalar_product((*h),Linear_Form)==1) {
@@ -2806,7 +2911,7 @@ if(dim>0){            //correction needed to include the 0 cone;
 			}
 		}
 	} else {
-		homogeneous=true;
+		is_ht1_generated=true;
 		vector<Integer> Help(dim);
 		Linear_Form=Help;
 	}
@@ -2911,7 +3016,7 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 //		v_read(*it); cout<<" subcone "<<i+1;
 		//compute triangulations of subcones
 		Full_Cone subcone(Generators.submatrix(*it),1);
-		subcone.support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
+		subcone.compute_support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
 //		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
 		list< Simplex >::const_iterator sub_it  = subcone.Triangulation.begin();
 		list< Simplex >::const_iterator sub_end = subcone.Triangulation.end();

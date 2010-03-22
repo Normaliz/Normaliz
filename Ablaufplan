@@ -23,21 +23,22 @@ Einzeloperationen die ein FullCone kann:
 
 compute_support_hyperplanes
 compute_support_hyperplanes_pyramid
+compute_support_hyperplanes_triangulation
+compute_support_hyperplanes_triangulation_pyramid
+compute_support_hyperplanes_partial_triangulation     (ï¿½hnlich wie eine Pyramiden Methode)
+
 check_pointed
 compute_extreme_rays
 check_generators_ht1
 check_extreme_rays_ht1
-compute_support_hyperplanes_triangulation
-compute_support_hyperplanes_triangulation_pyramid
-compute_support_hyperplanes_partial_triangulation     (Ähnlich wie eine Pyramiden Methode)
+
 compute_multiplicity
-compute_ht1_elements          | 
-compute_ht1_elements_hvector  |  berechnen auch jeweils
-compute_hilbert_basis         |  die Multiplizität
+compute_ht1_elements          |  berechnen auch jeweils
+compute_hilbert_basis         |  die Multiplizitï¿½t
 compute_hilbert_basis_hvector |  hilbert_basis beinhaltet auch immer ht1 elements
 compute_polynomial
 
-Die _pyramid Funktionen wenden auf oberster Ebene nur eine Unterteilung in Pyramiden an und rufen für diese die "normalen" Funktionen auf. Das kann aber später noch um eine Steuerung per Parameter oder eine Automatik erweitert werden.
+Die _pyramid Funktionen wenden auf oberster Ebene nur eine Unterteilung in Pyramiden an und rufen fï¿½r diese die "normalen" Funktionen auf. Das kann aber spï¿½ter noch um eine Steuerung per Parameter oder eine Automatik erweitert werden.
 
 
 Im Constructor:
@@ -67,7 +68,7 @@ triangulation:
   compute_multiplicity
   
 
-triangulation_hilbert_basis:
+triangulation_hilbert_basis:  (alter normal)
   compute_support_hyperplanes_triangulation
   check_pointed
    |-- nein -> Ende
@@ -140,7 +141,7 @@ Hilfsoperationen:
 
 transform_values
 add_hyperplane
-reduce_and_insert   Verschiedene Ausführungen
+reduce_and_insert   Verschiedene Ausfï¿½hrungen
 
 global_reduction
 
