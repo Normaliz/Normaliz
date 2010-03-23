@@ -2321,7 +2321,7 @@ void Full_Cone::triangulation_lift(){
 			v=Lifted.Generators.MxV((*l));
 			counter=0;
 			for (j = 0; j < nr_extreme_rays; j++) {
-				if (v[j]==0) {
+				if (v[j+1]==0) {  //j+1 because of the extra unit vector
 					key[counter]=Extreme[j];
 					counter++;
 				}
@@ -2931,8 +2931,7 @@ if(dim>0){            //correction needed to include the 0 cone;
 		}
 	} else {
 		is_ht1_generated=true;
-		vector<Integer> Help(dim);
-		Linear_Form=Help;
+		Linear_Form=vector<Integer>(dim);
 	}
 	} // end if (dim>0)
 	status="dual";
@@ -2952,10 +2951,12 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 		cout<<"start lifting the cone ...";
 	}
 	int i,j,counter=0,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
-	Matrix New_Generators(nr_extreme_gen,dim+1);
+	// add an extra dimension, and the (0,...,0,1) vector
+	Matrix New_Generators(nr_extreme_gen+1,dim+1);
+	New_Generators.write(1, dim+1, 1);
 	for (i = 1; i <= nr_extreme_gen; i++) {
 		for (j = 1; j <= dim; j++) {
-			New_Generators.write(i,j,Extreme_Generators.read(i,j));
+			New_Generators.write(i+1,j,Extreme_Generators.read(i,j));
 		}
 	}
 	// try 10 times a random lifting
@@ -2965,10 +2966,10 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 		for (i = 1; i <= nr_extreme_gen; i++){
 			j=rand();
 			j=j%lifting_bound;
-			New_Generators.write(i,dim+1,j+1);
+			New_Generators.write(i+1,dim+1,j+1);
 		}
 		if (New_Generators.rank()==dim+1) {
-			Lifted =	Full_Cone(New_Generators,1);
+			Lifted = Full_Cone(New_Generators,1);
 			if (Lifted.low_part_simplicial()==true) {
 				if (verbose==true) {
 					cout<<"lifting done."<<endl;
