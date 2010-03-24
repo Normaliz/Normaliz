@@ -542,12 +542,11 @@ void Simplex::ht1_elements(const vector<Integer>& Form){
 		error("error: Bad Simplex passed to Simplex::ht1_elements");
 		return;
 	}
-	else{
+	else {
 
 		//computing ht1 elements of the simplex
-		int i,k,last,h;
-		int counter;
-		Integer to_int,hom;
+		int i,k,last;
+		Integer hom;
 		vector<Integer> point(dim,0);
 		vector<Integer> Help(dim);
 		while (1){
