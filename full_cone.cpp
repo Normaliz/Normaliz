@@ -2793,7 +2793,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 			}
 		}
 	}
-	//still posible to have double elements in the Hilbert basis, coming from different generations
+	//still possible to have double elements in the Hilbert basis, coming from different generations
 
 	set< vector<Integer> > Help;
 	set< vector<Integer> >::iterator d;
@@ -2918,9 +2918,10 @@ if(dim>0){            //correction needed to include the 0 cone;
 	}
 	extreme_rays_rank();
 	l_cut_front(Hilbert_Basis,dim);
-	Matrix M=read_support_hyperplanes();
 	if(dim>0){            //correction needed to include the 0 cone;
+		Matrix M=read_support_hyperplanes();
 		Linear_Form=M.homogeneous_low_dim(is_ht1_generated);
+		is_ht1_extreme_rays=is_ht1_generated;
 		if(is_ht1_generated==true){
 			list < vector <Integer> >::const_iterator h;
 			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
@@ -2931,6 +2932,7 @@ if(dim>0){            //correction needed to include the 0 cone;
 		}
 	} else {
 		is_ht1_generated=true;
+		is_ht1_extreme_rays=true;
 		Linear_Form=vector<Integer>(dim);
 	}
 	} // end if (dim>0)

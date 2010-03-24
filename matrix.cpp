@@ -976,8 +976,7 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 
 vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 	// prepare basis change
-	Lineare_Transformation Basis_Change = Transformation(*this);
-	int rank=Basis_Change.get_rank();
+	int rank=(*this).rank();
 	if (rank == 0) { //return zero-vector as linear form
 		homogeneous=true;
 		return vector<Integer>(nc,0);
@@ -985,6 +984,8 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 	if (rank == nc) { // basis change not necessary
 		return (*this).homogeneous(homogeneous);
 	}
+	Lineare_Transformation Basis_Change = Transformation(*this);
+	rank=Basis_Change.get_rank();
 	Matrix V=Basis_Change.get_right();
 	Matrix Change_To_Full_Emb(nc,rank);
 	int i,j;
