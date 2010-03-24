@@ -2650,7 +2650,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 		int ppos=0;
 		p = Positive_Ired.begin();
 		#pragma omp for schedule(dynamic)
-		for(i = 0; i<psize; --i){
+		for(i = 0; i<psize; ++i){
 			for(;i > ppos; ++ppos, ++p) ;
 			for(;i < ppos; --ppos, --p) ;
 
