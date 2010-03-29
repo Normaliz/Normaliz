@@ -1735,8 +1735,8 @@ void Full_Cone::support_hyperplanes_dynamic(){
 				if (simplicial==false) {
 					k=0;
 					while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
-						 L[dim-1]--;
-						 k--;
+						 L[dim-1]++;
+						 k++;
 					}
 					Generators.write(i+1,dim,L[dim-1]);
 					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
@@ -2792,6 +2792,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 				(*c)[nr_gen+1]--;
 			}
 		}
+		cout<<not_done;
 	}
 	//still possible to have double elements in the Hilbert basis, coming from different generations
 
@@ -2952,37 +2953,25 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 	if (verbose==true) {
 		cout<<"start lifting the cone ...";
 	}
-	int i,j,counter=0,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
+	int i,j,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
 	// add an extra dimension, and the (0,...,0,1) vector
 	Matrix New_Generators(nr_extreme_gen+1,dim+1);
-	New_Generators.write(1, dim+1, 1);
+	New_Generators.write(1, dim+1, 1);  // (0,...,0,1)
 	for (i = 1; i <= nr_extreme_gen; i++) {
 		for (j = 1; j <= dim; j++) {
 			New_Generators.write(i+1,j,Extreme_Generators.read(i,j));
 		}
 	}
-	// try 10 times a random lifting
-	time_t t;
-	srand((unsigned) time(&t));
-	while(counter<10){
-		for (i = 1; i <= nr_extreme_gen; i++){
-			j=rand();
-			j=j%lifting_bound;
-			New_Generators.write(i+1,dim+1,j+1);
-		}
-		if (New_Generators.rank()==dim+1) {
-			Lifted = Full_Cone(New_Generators,1);
-			if (Lifted.low_part_simplicial()==true) {
-				if (verbose==true) {
-					cout<<"lifting done."<<endl;
-				}
-				return;
-			}
-		}
 
-		counter++;
+	Lifted = Full_Cone(New_Generators,1);
+	if (Lifted.low_part_simplicial()==true) {
+		if (verbose==true) {
+			cout<<"lifting done."<<endl;
+		}
+		return;
 	}
-	cerr<<"error: Random lifting has failed in Full_Cone::lift.";
+
+	cerr<<"error: Dynamic Lifting has failed in Full_Cone::lift.";
 	global_error_handling();
 }
 
