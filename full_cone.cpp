@@ -897,7 +897,7 @@ void Full_Cone::reduce_and_insert_extreme( const vector< Integer >& new_element)
 
 void Full_Cone::find_new_face(){
 	if (verbose==true) {
-		cout<<"computing new faces using the shelling ..."<<endl;
+		cout<<"computing new faces using the shelling ..."<<endl<<flush;
 	}
 	int i;
 	vector<int> facet(dim-1),key;
@@ -905,29 +905,25 @@ void Full_Cone::find_new_face(){
 	list< int > help;
 	list< int >::const_iterator m;
 	set< vector<int> > Facets;
-	set< vector<int> >::iterator del;
+	pair<set< vector<int> >::iterator, bool> ret;
 	for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
 		help.clear();
 		key=(*l).read_key();
 		for (i = 0; i <dim-1; i++) {
 			facet[i]=key[i];
 		}
-		del=Facets.find(facet);
-		if (del!=Facets.end()) {
+		ret = Facets.insert(facet);
+		if (!ret.second) { // facet was in the set before
 			help.push_back(key[dim-1]);
-			Facets.erase(del);
+			Facets.erase(ret.first);
 		}
-		else
-			Facets.insert(facet);
 		for (i = dim-1; i >0; i--) {
 			facet[i-1]=key[i];
-			del=Facets.find(facet);
-			if (del!=Facets.end()) {
+			ret=Facets.insert(facet);
+			if (!ret.second) {  // facet was in the set before
 				help.push_back(key[i-1]);
-				Facets.erase(del);
+				Facets.erase(ret.first);
 			}
-			else
-				Facets.insert(facet);
 		}
 		i=0;
 		vector< int > new_face(help.size());
@@ -938,7 +934,7 @@ void Full_Cone::find_new_face(){
 		(*l).write_new_face(new_face);
 	}
 	if (verbose==true) {
-		cout<<"done."<<endl; 
+		cout<<"done."<<endl<<flush; 
 	}
 }
 
@@ -2441,7 +2437,7 @@ void Full_Cone::compute_hilbert_polynomial(){
 void Full_Cone::compute_hilbert_basis_polynomial(){
 		if (verbose==true) {
 			cout<<"\n************************************************************\n";
-			cout<<"computing Hilbert basis and polynomial ..."<<endl;
+			cout<<"computing Hilbert basis and polynomial ..."<<endl<<flush;
 		}
 		int counter=0,i;
 		Integer volume;
