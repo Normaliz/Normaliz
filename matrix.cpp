@@ -975,7 +975,6 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 }
 
 vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
-	// prepare basis change
 	int rank=(*this).rank();
 	if (rank == 0) { //return zero-vector as linear form
 		homogeneous=true;
@@ -984,7 +983,11 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 	if (rank == nc) { // basis change not necessary
 		return (*this).homogeneous(homogeneous);
 	}
-	Lineare_Transformation Basis_Change = Transformation(*this);
+
+	// prepare basis change
+	vector <int> key = max_rank_submatrix_lex(rank);
+	Matrix full_rank_matrix = submatrix(key);  // has maximal number of linear independent lines
+	Lineare_Transformation Basis_Change = Transformation(full_rank_matrix);
 	rank=Basis_Change.get_rank();
 	Matrix V=Basis_Change.get_right();
 	Matrix Change_To_Full_Emb(nc,rank);
@@ -996,23 +999,35 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 	}
 	
 	//apply basis change
-	Matrix Full_Cone_Generators = (*this).multiplication(Change_To_Full_Emb);
+	Matrix Full_Cone_Generators = full_rank_matrix.multiplication(Change_To_Full_Emb);
 	//compute linear form
 	vector<Integer> Linear_Form = Full_Cone_Generators.homogeneous(homogeneous);
 	if (homogeneous) {
 		//lift linear form back
-		Change_To_Full_Emb = Change_To_Full_Emb.transpose();  // preparing the matrix for transformationen on the dual space
+		Change_To_Full_Emb = Change_To_Full_Emb.transpose();  // preparing the matrix for transformation on the dual space
 		vector<Integer> v;
 		Integer index=Basis_Change.get_index();
-		Integer m=index;
+		if (index != 1) { 
+			homogeneous = false;
+			return Linear_Form;
+		}
+	/*	Integer m=index;
 		for (i = 1; i <= rank; i++) {
-			v=Change_To_Full_Emb.read(i);
+			v=Change_To_Full_Emb.read(i); 
 			v_scalar_multiplication(v,m);
 			Change_To_Full_Emb.write(i,v);
 		}
-	
+	*/
 		Linear_Form=Change_To_Full_Emb.VxM(Linear_Form);
 		Linear_Form=v_make_prime(Linear_Form);
+
+		//check if all rows are in height 1
+		for (i=0; i<nr; i++) {
+			if (v_scalar_product(read(i+1),Linear_Form) != 1) {
+				homogeneous=false;
+				return Linear_Form;
+			}
+		}
 	}
 	return Linear_Form;
 }
