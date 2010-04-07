@@ -1216,11 +1216,11 @@ vector<Integer> Full_Cone::read_hilbert_polynomial() const{
 
 void Full_Cone::support_hyperplane_common() {
     status = "support hyperplanes";
-    check_pointed();
+	 check_pointed();
     if(!is_pointed) return;
     compute_extreme_rays();
-    check_ht1_generated();
     check_ht1_extreme_rays();
+    if(is_ht1_extreme_rays) check_ht1_generated();
 }
 
 void Full_Cone::support_hyperplanes() {
@@ -1278,17 +1278,17 @@ void Full_Cone::ht1_elements(){
 }
 
 void Full_Cone::hilbert_basis_polynomial(){
-    check_ht1_generated();
-	if ( !is_ht1_generated ) {
+	compute_support_hyperplanes();
+	check_pointed();
+	if(!is_pointed) return;
+	compute_extreme_rays();
+	
+	check_ht1_extreme_rays();
+	if ( !is_ht1_extreme_rays ) {
 		hilbert_basis();
 	} else {
+		check_ht1_generated();
 		if(dim>0) {            //correction needed to include the 0 cone;
-			compute_support_hyperplanes();
-		    check_pointed();
-		    if(!is_pointed) return;
-		    compute_extreme_rays();
-		    check_ht1_extreme_rays();
-
 			triangulation_lift();
 			find_new_face();
 			compute_hilbert_basis_polynomial();
@@ -1299,17 +1299,17 @@ void Full_Cone::hilbert_basis_polynomial(){
 }
 
 void Full_Cone::hilbert_polynomial(){
-    check_ht1_generated();
-	if ( !is_ht1_generated ) {
+	compute_support_hyperplanes();
+	check_pointed();
+	if(!is_pointed) return;
+	compute_extreme_rays();
+	
+	check_ht1_extreme_rays();
+	if ( !is_ht1_extreme_rays ) {
 		hilbert_basis();
 	} else {
+		check_ht1_generated();
 		if(dim>0) {            //correction needed to include the 0 cone;
-			compute_support_hyperplanes();
-		    check_pointed();
-		    if(!is_pointed) return;
-		    compute_extreme_rays();
-		    check_ht1_extreme_rays();
-
 			triangulation_lift();
 			find_new_face();
 			compute_hilbert_polynomial();
@@ -1849,38 +1849,39 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::check_pointed()
-{
-    Matrix SH = read_support_hyperplanes();
-    is_pointed = (SH.rank() == dim);
+void Full_Cone::check_pointed() {
+	Matrix SH = read_support_hyperplanes();
+	is_pointed = (SH.rank() == dim);
 }
 
 void Full_Cone::check_ht1_generated()
-{
-    if(dim > 0) {
-        Linear_Form = Generators.homogeneous(is_ht1_generated);
-    } else {
-        is_ht1_generated = true;
-    }
+{	
+	if (is_ht1_extreme_rays) {
+		is_ht1_generated = true;
+	 	for (int i = 0; i < nr_gen; i++) {
+			if (v_scalar_product(Generators.read(i), Linear_Form) != 1) {
+				is_ht1_generated = false;
+				return ;
+			}
+		}
+	} else {
+		Linear_Form = Generators.homogeneous(is_ht1_generated);
+	}
 }
 
-void Full_Cone::check_ht1_extreme_rays()
-{
+void Full_Cone::check_ht1_extreme_rays() {
 	if (is_ht1_generated) {
 		is_ht1_extreme_rays=true;
-		return;
+		return ;
 	}
-    if(dim > 0) {
-    	vector<int> key;
-    	for (int i=0; i<nr_gen; i++) {
-    		if (Extreme_Rays[i])
-    			key.push_back(i+1);
-    	}
-    	Matrix Extreme=Generators.submatrix(key);
-        Linear_Form = Extreme.homogeneous(is_ht1_generated);
-    } else {
-        is_ht1_extreme_rays = true;
-    }
+	vector<int> key;
+	for (int i = 0; i < nr_gen; i++) {
+		if (Extreme_Rays[i])
+			key.push_back(i+1);
+	}
+	Matrix Extreme=Generators.submatrix(key);
+	
+	Linear_Form = Extreme.homogeneous(is_ht1_generated);
 }
 
 //---------------------------------------------------------------------------

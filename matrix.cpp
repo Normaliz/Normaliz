@@ -950,13 +950,19 @@ Matrix Matrix::invert(vector< Integer >& diagonal, Integer& det) const{
 //---------------------------------------------------------------------------
 
 vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
+	if (nc == 0 || nr == 0) { //return zero-vector as linear form
+		homogeneous=true;
+		return vector<Integer>(nc,0);
+	}
 	int i;
 	Integer det,buffer;
 	vector<int>  rows=max_rank_submatrix_lex();
 	Matrix Left_Side=submatrix(rows);
 	Matrix Right_Side(nc,1,1);
+	cout << "homo1" <<flush;
 	Matrix Solution=Solve(Left_Side, Right_Side, det);
 	det=Iabs(det);
+	cout << "homo2 " <<det <<flush;
 	vector<Integer> Linear_Form(nc);
 	for (i = 0; i <nc; i++) {
 		buffer=Solution.read(i+1,1);
@@ -1011,13 +1017,6 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 			homogeneous = false;
 			return Linear_Form;
 		}
-	/*	Integer m=index;
-		for (i = 1; i <= rank; i++) {
-			v=Change_To_Full_Emb.read(i); 
-			v_scalar_multiplication(v,m);
-			Change_To_Full_Emb.write(i,v);
-		}
-	*/
 		Linear_Form=Change_To_Full_Emb.VxM(Linear_Form);
 		Linear_Form=v_make_prime(Linear_Form);
 

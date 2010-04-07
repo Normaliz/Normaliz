@@ -69,7 +69,7 @@ void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 	Lineare_Transformation Basis_Change=Transformation(Input);
 	rank=Basis_Change.get_rank();
 	if (rank==0) {
-		cerr<<"error: Input matrix has rank 0. Plese check input data."<<endl;
+		cerr<<"warning: Input matrix has rank 0. Please check input data."<<endl;
 		//global_error_handling();
 	}
 	Matrix V=Basis_Change.get_right();
@@ -106,7 +106,7 @@ void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 	Lineare_Transformation Basis_Change=Transformation(Input);
 	rank=Basis_Change.get_rank();
 	if (rank==0) {
-		cerr<<"error: Input matrix has rank 0. Please check input data."<<endl;
+		cerr<<"warning: Input matrix has rank 0. Please check input data."<<endl;
 		//global_error_handling();
 	}
 	Matrix V=Basis_Change.get_right();
@@ -163,7 +163,7 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 	Lineare_Transformation Basis_Change=Transformation(Generators);
 	int rank=Basis_Change.get_rank();
 	if (rank==0) {
-		cerr<<"error: Input matrix has rank 0. Plese check input data."<<endl;
+		cerr<<"warning: Input matrix has rank 0. Please check input data."<<endl;
 		//global_error_handling();
 	}
 	Matrix V=Basis_Change.get_right();

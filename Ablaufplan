@@ -51,8 +51,8 @@ support_hyperplanes:
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+  check_generators_ht1
 
 
 triangulation:
@@ -60,8 +60,8 @@ triangulation:
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+  check_generators_ht1
   is_ht1_generated 
    |-- nein -> is_ht1_extreme_rays --> ja: neu triangulieren
 	                                |->nein: ENDE
@@ -73,8 +73,8 @@ triangulation_hilbert_basis:  (alter normal)
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+  check_generators_ht1
   is_ht1_generated
   compute_hilbert_basis
   | global_reduction
@@ -84,8 +84,8 @@ hilbert_basis:
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+  check_generators_ht1
   compute_hilbert_basis
   | global_reduction
 
@@ -94,8 +94,8 @@ heigth_1_elements:
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+  check_generators_ht1
   compute_ht1_elements
 
 hilbert_basis_polynomial:
@@ -103,8 +103,9 @@ hilbert_basis_polynomial:
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+   |-- nein -> hilbert_basis, Ende
+  check_generators_ht1
   triangulation_lift
   | lift
   | | compute_support_hyperplanes_dynamic
@@ -121,8 +122,9 @@ hilbert_polynomial:
   check_pointed
    |-- nein -> Ende
   compute_extreme_rays
-  check_generators_ht1
   check_extreme_rays_ht1
+   |-- nein -> hilbert_basis, ENDE
+  check_generators_ht1
   triangulation_lift
   | lift
   | | compute_support_hyperplanes_dynamic
