@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 {
 	int i,j;       //used for iterations
 	char c;
-	string computation_type="normal";
+	string computation_type="triangulation_hilbert_basis";
 	//4  types available, "support_hyperplanes", "triangulation", "normal" and "hilbert_polynomial"
 	//it is set by the setup file or by the options "s", "v", "n", "p", "h" and "d" in the command line
 	//the type given in the command line overrides the type set by the setup file
@@ -139,6 +139,9 @@ int main(int argc, char* argv[])
 			}
 			else                     //set computation_type
 				computation_type=buf;
+			if (computation_type="normal") {
+				computation_type="triangulation_hilbert_basis"
+			}
 			while (buf!="=")
 				setup>>buf;
 			setup>>buf;

@@ -959,10 +959,8 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 	vector<int>  rows=max_rank_submatrix_lex();
 	Matrix Left_Side=submatrix(rows);
 	Matrix Right_Side(nc,1,1);
-	cout << "homo1" <<flush;
 	Matrix Solution=Solve(Left_Side, Right_Side, det);
 	det=Iabs(det);
-	cout << "homo2 " <<det <<flush;
 	vector<Integer> Linear_Form(nc);
 	for (i = 0; i <nc; i++) {
 		buffer=Solution.read(i+1,1);
