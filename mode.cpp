@@ -41,8 +41,8 @@ extern void  global_error_handling();
 
 //---------------------------------------------------------------------------
 
-void make_main_computation(const int& mode,  string& computation_type,const Matrix& Input, Output& Out){
-	if (mode<0 || mode>5) {
+void make_main_computation(const int& mode, string& computation_type,const Matrix& Input, const int nr_equations, Output& Out){
+	if (mode<0 || mode>6) {
 		cerr<<"warning: Unknown mode "<<mode<<". The program will run in mode 0."<<endl;
 		run_mode_0(computation_type,Input, Out);
 		return;
@@ -52,8 +52,9 @@ void make_main_computation(const int& mode,  string& computation_type,const Matr
 		case 1: run_mode_1(computation_type,Input, Out);break;
 		case 2: run_mode_2(computation_type,Input, Out);break;
 		case 3: run_mode_3(computation_type,Input, Out);break;
-		case 4: run_mode_4(computation_type,Input, Out);break;
+		case 4: run_mode_4(computation_type,Input, nr_equations, Out);break;
 		case 5: run_mode_5(computation_type,Input, Out);break;
+		case 6: run_mode_6(computation_type,Input, Out);break;
 	}
 }
 
@@ -240,60 +241,38 @@ void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 
 //---------------------------------------------------------------------------
 
-void run_mode_4( string& computation_type,const Matrix& Input, Output& Out){
-	if (Input.rank()!=Input.nr_of_columns() ) {
-		cerr<<"error: Rank is not maximal. In mode 4 the input matrix must be of maximal rank.";
-		global_error_handling();
+void run_mode_4( string& computation_type,const Matrix& Input, const int& nr_equations, Output& Out){
+	int i;
+	int dim=Input.nr_of_columns();
+	Matrix Equations(nr_equations, dim);
+	int nr_inequalities=Input.nr_of_rows()-nr_equations;
+	Matrix Inequalities(nr_inequalities, dim);
+	for(i=1;i<=nr_inequalities;i++){
+		Inequalities.write(i,Input.read(i));
 	}
-	if(computation_type!="dual"){		//Linear transformation ???
-		Full_Cone Help(Input);
-		Help.support_hyperplanes();
-		Matrix Generators=Help.read_support_hyperplanes();
-		if (Generators.nr_of_rows()==0) {
-			Matrix Trivial_Solution(1,Input.nr_of_columns(),0);
-			Generators=Trivial_Solution;
-			cerr<<"warning: The only solution of the system is 0.";
-			//global_error_handling();
-		}
-		run_mode_0( computation_type ,Generators, Out);
+	for(i=1;i<=nr_equations;i++){
+		Equations.write(i,Input.read(i+nr_inequalities));
 	}
-	if(computation_type=="dual"){
-		int i,j, dim=Input.nr_of_columns();
-		Integer norm;
-		vector< Integer > hyperplane;
-		multimap <Integer , vector <Integer> >  Help;
-		multimap <Integer , vector <Integer> >::const_iterator ii;
-		for (i = 1; i <= Input.nr_of_rows() ; i++) {
-			hyperplane=Input.read(i);
-			norm=0;
-			for (j = 0; j <dim; j++) {
-				norm+=Iabs(hyperplane[j]);
-			}
-			Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
-		}
-		Matrix Input_Ordered(Input.nr_of_rows(),dim);
-		i=1;
-		for (ii=Help.begin(); ii != Help.end(); ii++) {
-			Input_Ordered.write(i,(*ii).second);
-			i++;
-		}
-		Full_Cone Result(Input_Ordered); //in the mode dual the support hyperplanes are the generators
-		//and as support hyperplanes we recover the generators
-		Result.hilbert_basis_dual();
-		Out.set_result(Result);
-		Matrix I(dim); //identity matrix
-		Lineare_Transformation Diagonalization=Transformation(I);
-		Out.set_basis_change(Diagonalization);
-		Out.dual();
-	}
+	run_mode_equ_inequ(computation_type,Equations,Inequalities,Out);
+	
 }
 
 //---------------------------------------------------------------------------
 
 void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
+	int dim=Input.nr_of_columns();
+	Matrix Inequalities(dim);
+	run_mode_equ_inequ(computation_type,Input,Inequalities,Out);    
+}
+
+//---------------------------------------------------------------------------
+
+void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const Matrix& Inequalities, Output& Out){
 	if(computation_type!="dual"){
-		int i,j,dim=Input.nr_of_columns();
-		Lineare_Transformation Diagonalization=Transformation(Input);
+		int i,j,dim=Equations.nr_of_columns();
+		Equations.read();
+		cout << endl<< endl;
+		Lineare_Transformation Diagonalization=Transformation(Equations);
 		int rank=Diagonalization.get_rank();
 		Matrix Help=Diagonalization.get_right();
 		Matrix Ker_Basis_Transpose(dim,dim-rank);
@@ -302,22 +281,28 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 				Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
 			}
 		}
-		Full_Cone Help_Cone(Ker_Basis_Transpose);
-		Help_Cone.support_hyperplanes();
-		Matrix Support_Hyperplanes=Help_Cone.read_support_hyperplanes();
+		Matrix Inequ_on_Ker=Inequalities.multiplication(Ker_Basis_Transpose);
+		Ker_Basis_Transpose.read();
+		cout << endl<< endl;
+		Inequ_on_Ker.read();
+		cout << endl<< endl;
+		Full_Cone Dual_Cone(Inequ_on_Ker);
+		Dual_Cone.support_hyperplanes();
+		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
 		Matrix Ker_Basis=Ker_Basis_Transpose.transpose();
-		Matrix Generators=Support_Hyperplanes.multiplication(Ker_Basis);
-		if (Generators.nr_of_rows()==0) {
+		Matrix Generators=Extreme_Rays.multiplication(Ker_Basis);
+		/* if (Generators.nr_of_rows()==0) {
 			Matrix Trivial_Solution(1,dim,0);
 			Generators=Trivial_Solution;
 			cerr<<"warning: The only solution of the system is 0.";
 			global_error_handling();
-		}
+		} */
+		Generators.read();
 		run_mode_0( computation_type ,Generators, Out);
 	}
 	if(computation_type=="dual"){
-		int i,j,dim=Input.nr_of_columns();
-		Lineare_Transformation Diagonalization=Transformation(Input);
+		int i,j,dim=Equations.nr_of_columns();
+		Lineare_Transformation Diagonalization=Transformation(Equations);
 		int rank=Diagonalization.get_rank();
 		Matrix H=Diagonalization.get_right();
 		Matrix H_Inv=Diagonalization.get_right_inv();
@@ -332,7 +317,7 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 		Diagonalization.set_right(Ker_Basis_Transpose.transpose());
 		Diagonalization.set_right_inv(Ker_Basis_Transpose_Inv.transpose());
 		Out.set_basis_change(Diagonalization);
-		Matrix M=Ker_Basis_Transpose;
+		Matrix M=Inequalities.multiplication(Ker_Basis_Transpose);
 		dim=M.nr_of_columns();
 		Integer norm;
 		vector< Integer > hyperplane;
@@ -346,18 +331,49 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 			}
 			Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
 		}
-		Matrix Input_Ordered(M.nr_of_rows(),dim);
+		Matrix Equations_Ordered(M.nr_of_rows(),dim);
 		i=1;
 		for (ii=Help.begin(); ii != Help.end(); ii++) {
-			Input_Ordered.write(i,(*ii).second);
+			Equations_Ordered.write(i,(*ii).second);
 			i++;
 		}
-		Full_Cone Result(Input_Ordered); //in the mode dual the support hyperplanes are the generators
+		Full_Cone Result(Equations_Ordered); //in the mode dual the support hyperplanes are the generators
 		//and as support hyperplanes we recover the generators
 		Result.hilbert_basis_dual();
 		Out.set_result(Result);
 		Out.dual();
 	}
+}
+
+//---------------------------------------------------------------------------
+
+void run_mode_6( string& computation_type,const Matrix& Binomials, Output& Out){
+	if (computation_type=="dual") {
+		cerr<<"Run mode type = dual not implemented in mode 6."<<endl;
+		cerr<<"The program terminates."<<endl;
+		global_error_handling();
+	}
+
+	int i,j, nr_of_monoid_generators=Binomials.nr_of_columns();
+	Binomials.read();
+	cout << endl<< endl;
+	Lineare_Transformation Diagonalization=Transformation(Binomials);
+	int rank=Diagonalization.get_rank();
+	Matrix Help=Diagonalization.get_right();
+	Matrix Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
+	for (i = 1; i <= nr_of_monoid_generators; i++) {
+		for (j = rank+1; j <= nr_of_monoid_generators; j++) {
+			Generators.write(i,j-rank,Help.read(i,j));
+		}
+	}
+	Full_Cone C(Generators);
+	C.support_hyperplanes();
+	Matrix Supp_Hyp=C.read_support_hyperplanes();
+	Matrix Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
+	Matrix Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
+	Positive_Embedded_Generators.read(); 
+	cout << endl<< endl;   
+	run_mode_1( computation_type, Positive_Embedded_Generators, Out);
 }
 
 //---------------------------------------------------------------------------

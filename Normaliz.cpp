@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 			while (buf!="=")
 				setup>>buf;
 			setup>>buf;
-			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
+			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="triangulation_hilbert_basis" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
 				cerr<<"warning: Unknown \"Run mode type\" in file normaliz.cfg. May be a bad format of the file."<<endl;
 				cerr<<"Running \"Run mode type\" = normal ..."<<endl;
 			}
@@ -315,6 +315,7 @@ int main(int argc, char* argv[])
 	}
 	string mode_string;
 	int nr_rows,nr_columns, mode;
+	int nr_equations=0;
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
@@ -344,6 +345,9 @@ int main(int argc, char* argv[])
 	} else
 	if (mode_string=="5"||mode_string=="equations") {
 		mode=5;
+	} else
+	if (mode_string=="6"||mode_string=="lattice_ideal") {
+		mode=6;
 	} else {
 		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
 		mode=0;
@@ -357,6 +361,9 @@ int main(int argc, char* argv[])
 		}
 		return 1;
 	}
+	if (mode==4 && in.good()) {
+		in >> nr_equations;
+	}
 	in.close();
 	Out.set_name(output_name);
 	//cout<<"test="<<test_arithmetic_overflow;
@@ -366,7 +373,7 @@ int main(int argc, char* argv[])
 		cout<<"\n************************************************************\n";
 		cout<<"Running in mode "<<mode<<" and computation type "<<computation_type<<"."<<endl;
 	}
-	make_main_computation(mode, computation_type, M, Out);
+	make_main_computation(mode, computation_type, M, nr_equations, Out);
 
 	//exit
 	if (!filename_set) {
