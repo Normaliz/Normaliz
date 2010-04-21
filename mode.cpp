@@ -366,7 +366,14 @@ void run_mode_6( string& computation_type,const Matrix& Binomials, Output& Out){
 			Generators.write(i,j-rank,Help.read(i,j));
 		}
 	}
-	run_mode_0( computation_type ,Generators, Out);
+	Full_Cone C(Generators);
+	C.support_hyperplanes();
+	Matrix Supp_Hyp=C.read_support_hyperplanes();
+	Matrix Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
+	Matrix Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
+	Positive_Embedded_Generators.read(); 
+	cout << endl<< endl;   
+	run_mode_1( computation_type, Positive_Embedded_Generators, Out);
 }
 
 //---------------------------------------------------------------------------
