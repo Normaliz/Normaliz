@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 			while (buf!="=")
 				setup>>buf;
 			setup>>buf;
-			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
+			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="triangulation_hilbert_basis" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
 				cerr<<"warning: Unknown \"Run mode type\" in file normaliz.cfg. May be a bad format of the file."<<endl;
 				cerr<<"Running \"Run mode type\" = normal ..."<<endl;
 			}
@@ -342,6 +342,9 @@ int main(int argc, char* argv[])
 	} else
 	if (mode_string=="5"||mode_string=="equations") {
 		mode=5;
+	} else
+	if (mode_string=="6"||mode_string=="lattice_ideal") {
+		mode=6;
 	} else {
 		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
 		mode=0;

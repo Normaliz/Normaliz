@@ -36,6 +36,7 @@ void run_mode_3( string& run_mode_type,const Matrix& Input, Output& Out);
 void run_mode_4( string& run_mode_type,const Matrix& Input, const int& nr_equations, Output& Out);
 void run_mode_5( string& run_mode_type,const Matrix& Input, Output& Out);
 void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const Matrix& Inequalities, Output& Out);
+void run_mode_6( string& computation_type,const Matrix& Binomials, Output& Out);
 
 //---------------------------------------------------------------------------
 //                          Run_mode_type selection

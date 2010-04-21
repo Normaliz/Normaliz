@@ -42,7 +42,7 @@ extern void  global_error_handling();
 //---------------------------------------------------------------------------
 
 void make_main_computation(const int& mode, string& computation_type,const Matrix& Input, const int nr_equations, Output& Out){
-	if (mode<0 || mode>5) {
+	if (mode<0 || mode>6) {
 		cerr<<"warning: Unknown mode "<<mode<<". The program will run in mode 0."<<endl;
 		run_mode_0(computation_type,Input, Out);
 		return;
@@ -54,6 +54,7 @@ void make_main_computation(const int& mode, string& computation_type,const Matri
 		case 3: run_mode_3(computation_type,Input, Out);break;
 		case 4: run_mode_4(computation_type,Input, nr_equations, Out);break;
 		case 5: run_mode_5(computation_type,Input, Out);break;
+		case 6: run_mode_6(computation_type,Input, Out);break;
 	}
 }
 
@@ -342,6 +343,30 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Out.set_result(Result);
 		Out.dual();
 	}
+}
+
+//---------------------------------------------------------------------------
+
+void run_mode_6( string& computation_type,const Matrix& Binomials, Output& Out){
+	if (computation_type=="dual") {
+		cerr<<"Run mode type = dual not implemented in mode 6."<<endl;
+		cerr<<"The program terminates."<<endl;
+		global_error_handling();
+	}
+
+	int i,j, nr_of_monoid_generators=Binomials.nr_of_columns();
+	Binomials.read();
+	cout << endl<< endl;
+	Lineare_Transformation Diagonalization=Transformation(Binomials);
+	int rank=Diagonalization.get_rank();
+	Matrix Help=Diagonalization.get_right();
+	Matrix Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
+	for (i = 1; i <= nr_of_monoid_generators; i++) {
+		for (j = rank+1; j <= nr_of_monoid_generators; j++) {
+			Generators.write(i,j-rank,Help.read(i,j));
+		}
+	}
+	run_mode_0( computation_type ,Generators, Out);
 }
 
 //---------------------------------------------------------------------------
