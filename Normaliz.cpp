@@ -312,6 +312,7 @@ int main(int argc, char* argv[])
 	}
 	string mode_string;
 	int nr_rows,nr_columns, mode;
+	int nr_equations=0;
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
@@ -354,6 +355,9 @@ int main(int argc, char* argv[])
 		}
 		return 1;
 	}
+	if (mode==4 && in.good()) {
+		in >> nr_equations;
+	}
 	in.close();
 	Out.set_name(output_name);
 	//cout<<"test="<<test_arithmetic_overflow;
@@ -363,7 +367,7 @@ int main(int argc, char* argv[])
 		cout<<"\n************************************************************\n";
 		cout<<"Running in mode "<<mode<<" and computation type "<<computation_type<<"."<<endl;
 	}
-	make_main_computation(mode, computation_type, M, Out);
+	make_main_computation(mode, computation_type, M, nr_equations, Out);
 
 	//exit
 	if (!filename_set) {
