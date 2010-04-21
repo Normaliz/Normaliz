@@ -133,14 +133,15 @@ int main(int argc, char* argv[])
 			while (buf!="=")
 				setup>>buf;
 			setup>>buf;
-			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="triangulation_hilbert_basis" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
-				cerr<<"warning: Unknown \"Run mode type\" in file normaliz.cfg. May be a bad format of the file."<<endl;
-				cerr<<"Running \"Run mode type\" = normal ..."<<endl;
+			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="triangulation_hilbert_basis" &&  buf!="hilbert_basis" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
+				cerr<<"warning: Unknown \"Computation type \" in file normaliz.cfg. May be a bad format of the file."<<endl;
+				cerr<<"Running \"Computation type\" = triangulation_hilbert_basis ..."<<endl;
+				computation_type="triangulation_hilbert_basis";
 			}
 			else                     //set computation_type
 				computation_type=buf;
-			if (computation_type="normal") {
-				computation_type="triangulation_hilbert_basis"
+			if (computation_type=="normal") {
+				computation_type="triangulation_hilbert_basis";
 			}
 			while (buf!="=")
 				setup>>buf;
