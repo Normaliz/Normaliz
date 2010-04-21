@@ -981,6 +981,7 @@ Full_Cone::Full_Cone(Matrix M){
 		H_Vector = vector<Integer>(dim);
 		Hilbert_Polynomial = vector<Integer>(2*dim);
 	} else {
+		multiplicity = 1;
 		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
@@ -1091,7 +1092,7 @@ string Full_Cone::read_status()const{
 //---------------------------------------------------------------------------
 
 bool Full_Cone::read_homogeneous()const{
-	return is_ht1_generated;
+	return is_ht1_extreme_rays;
 }
 
 //---------------------------------------------------------------------------
@@ -1284,6 +1285,7 @@ void Full_Cone::ht1_elements(){
 
 void Full_Cone::hilbert_basis_polynomial(){
 	compute_support_hyperplanes();
+   status = "support hyperplanes";
 	check_pointed();
 	if(!is_pointed) return;
 	compute_extreme_rays();
@@ -1291,7 +1293,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 	check_ht1_extreme_rays();
 	if ( !is_ht1_extreme_rays ) {
 		cout << "************************************************************" << endl;
-		cout << "extreme rays not in heigth 1, using comutation type hilbert_basis" << endl;
+		cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
 		hilbert_basis();
 	} else {
 		check_ht1_generated();
@@ -1300,7 +1302,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 			find_new_face();
 			compute_hilbert_basis_polynomial();
 			compute_polynomial();
-		} // end if (dim>0)
+		}
 		status="hilbert basis polynomial";
 	}
 }
@@ -1314,7 +1316,7 @@ void Full_Cone::hilbert_polynomial(){
 	check_ht1_extreme_rays();
 	if ( !is_ht1_extreme_rays ) {
 		cout << "************************************************************" << endl;
-		cout << "extreme rays not in heigth 1, using comutation type hilbert_basis" << endl;
+		cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
 		hilbert_basis();
 	} else {
 		check_ht1_generated();
@@ -1323,8 +1325,8 @@ void Full_Cone::hilbert_polynomial(){
 			find_new_face();
 			compute_hilbert_polynomial();
 			compute_polynomial();
-		} // end if (dim>0)
-		status="hilbert basis polynomial";
+		}
+		status="hilbert polynomial";
 	}
 }
 
@@ -2455,8 +2457,11 @@ void Full_Cone::compute_hilbert_basis_polynomial(){
 		set <vector<Integer> >::iterator c;
 		list <vector<Integer> >::const_iterator h;
 		for (i = 1; i <=nr_gen; i++) {
-			Candidates.insert(Generators.read(i));
-			Homogeneous_Elements.push_back(Generators.read(i));
+			vector<Integer> Generator = Generators.read(i);
+			Candidates.insert(Generator);
+			if (is_ht1_generated || v_scalar_product(Generator, Linear_Form)==1) { 
+				Homogeneous_Elements.push_back(Generator);
+			}
 		}
 		multiplicity=0;
 		list< Simplex >::iterator l=Triangulation.begin();
