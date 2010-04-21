@@ -970,6 +970,8 @@ Full_Cone::Full_Cone(Matrix M){
 	}
 	hyp_size=dim+nr_gen;
 	multiplicity = 0;
+	is_ht1_extreme_rays = false;
+	is_ht1_generated = false;
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
 	Triangulation = list< Simplex >();
@@ -1861,8 +1863,7 @@ void Full_Cone::check_pointed() {
 	is_pointed = (SH.rank() == dim);
 }
 
-void Full_Cone::check_ht1_generated()
-{	
+void Full_Cone::check_ht1_generated() {
 	if (is_ht1_extreme_rays) {
 		is_ht1_generated = true;
 	 	for (int i = 0; i < nr_gen; i++) {
@@ -1887,7 +1888,6 @@ void Full_Cone::check_ht1_extreme_rays() {
 			key.push_back(i+1);
 	}
 	Matrix Extreme=Generators.submatrix(key);
-	
 	Linear_Form = Extreme.homogeneous(is_ht1_extreme_rays);
 }
 
