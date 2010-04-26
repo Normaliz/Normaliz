@@ -41,20 +41,22 @@ extern void  global_error_handling();
 
 //---------------------------------------------------------------------------
 
-void make_main_computation(const int& mode, string& computation_type,const Matrix& Input, const int nr_equations, Output& Out){
-	if (mode<0 || mode>6) {
+void make_main_computation(const int& mode, string& computation_type,const Matrix& Input, Output& Out){
+	if ((mode<0 || mode>6) && mode!=10) {
 		cerr<<"warning: Unknown mode "<<mode<<". The program will run in mode 0."<<endl;
 		run_mode_0(computation_type,Input, Out);
 		return;
 	}
+	int dim=Input.nr_of_columns();
 	switch (mode){
 		case 0: run_mode_0(computation_type,Input, Out);break;
 		case 1: run_mode_1(computation_type,Input, Out);break;
 		case 2: run_mode_2(computation_type,Input, Out);break;
 		case 3: run_mode_3(computation_type,Input, Out);break;
-		case 4: run_mode_4(computation_type,Input, nr_equations, Out);break;
-		case 5: run_mode_5(computation_type,Input, Out);break;
-		case 6: run_mode_6(computation_type,Input, Out);break;
+		case 4: run_mode_456(computation_type, Matrix(0,dim), Matrix(0,dim), Input, Out);break;
+		case 5: run_mode_456(computation_type, Matrix(0,dim), Input, Matrix(0,dim), Out);break;
+		case 6: run_mode_456(computation_type, Input, Matrix(0,dim), Matrix(0,dim), Out);break;
+		case 10: run_mode_10(computation_type,Input, Out);break;
 	}
 }
 
@@ -267,11 +269,30 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 //---------------------------------------------------------------------------
 
+void run_mode_456(string& computation_type, const Matrix& Congruences, const Matrix& Equations,  Matrix Inequalities, Output& Out) {
+	
+	cout << "Congruences";
+	Congruences.read();
+	cout << endl << "Equations";
+	Equations.read();
+	cout << endl << "Inequalities";
+	Inequalities.read();
+	cout << endl;
+	
+	//TODO handle Congruences
+	
+	if (Inequalities.nr_of_rows() == 0) {
+		Inequalities = Matrix(Equations.nr_of_columns()); 
+	}
+		
+	run_mode_equ_inequ(computation_type, Equations, Inequalities, Out);
+}
+
+//---------------------------------------------------------------------------
+
 void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const Matrix& Inequalities, Output& Out){
 	if(computation_type!="dual"){
 		int i,j,dim=Equations.nr_of_columns();
-		Equations.read();
-		cout << endl<< endl;
 		Lineare_Transformation Diagonalization=Transformation(Equations);
 		int rank=Diagonalization.get_rank();
 		Matrix Help=Diagonalization.get_right();
@@ -282,10 +303,13 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 			}
 		}
 		Matrix Inequ_on_Ker=Inequalities.multiplication(Ker_Basis_Transpose);
+
+/*		cout << "Ker_Basis_Transpose"
 		Ker_Basis_Transpose.read();
-		cout << endl<< endl;
+		cout << endl<< "Ineq_on_ker";
 		Inequ_on_Ker.read();
 		cout << endl<< endl;
+*/
 		Full_Cone Dual_Cone(Inequ_on_Ker);
 		Dual_Cone.support_hyperplanes();
 		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
@@ -297,7 +321,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 			cerr<<"warning: The only solution of the system is 0.";
 			global_error_handling();
 		} */
-		Generators.read();
+//		Generators.read();
 		run_mode_0( computation_type ,Generators, Out);
 	}
 	if(computation_type=="dual"){
@@ -347,7 +371,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 
 //---------------------------------------------------------------------------
 
-void run_mode_6( string& computation_type,const Matrix& Binomials, Output& Out){
+void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out){
 	if (computation_type=="dual") {
 		cerr<<"Run mode type = dual not implemented in mode 6."<<endl;
 		cerr<<"The program terminates."<<endl;

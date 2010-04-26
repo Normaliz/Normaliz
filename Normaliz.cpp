@@ -316,7 +316,6 @@ int main(int argc, char* argv[])
 	}
 	string mode_string;
 	int nr_rows,nr_columns, mode;
-	int nr_equations=0;
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
@@ -347,14 +346,17 @@ int main(int argc, char* argv[])
 	if (mode_string=="5"||mode_string=="equations") {
 		mode=5;
 	} else
-	if (mode_string=="6"||mode_string=="lattice_ideal") {
+	if (mode_string=="6"||mode_string=="congruences") {
 		mode=6;
+	} else
+	if (mode_string=="10"||mode_string=="lattice_ideal") {
+		mode=10;
 	} else {
 		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
 		mode=0;
 	}
 
-	if (in.fail()!= false ) {
+	if ( in.fail() ) {
 		cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file."<<endl;
 		if (!filename_set) {
 			cout<< "Type something and press enter to exit."<<endl;
@@ -362,19 +364,103 @@ int main(int argc, char* argv[])
 		}
 		return 1;
 	}
-	if (mode==4 && in.good()) {
-		in >> nr_equations;
-	}
-	in.close();
-	Out.set_name(output_name);
-	//cout<<"test="<<test_arithmetic_overflow;
 
-	//main computations and output
-	if (verbose) {
-		cout<<"\n************************************************************\n";
-		cout<<"Running in mode "<<mode<<" and computation type "<<computation_type<<"."<<endl;
+	Out.set_name(output_name);
+	
+	if (mode >= 4 && mode <= 6) { //equations, inequalities, congruences
+		int nc = nr_columns;
+		if (mode == 6) {
+			nc--;  //the congruence matrix has one extra column
+		}
+		Matrix Inequalities(0,nc), Equations(0,nc), Congruences(0,nc+1);
+		switch(mode) {
+			case 4: Inequalities = M;
+			        break;
+			case 5: Equations = M;
+			        break;
+			case 6: Congruences = M;
+			        break;
+			default: cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
+			         return 10;
+		}
+		while (in.good()) {
+			in >> nr_rows;
+			in >> nr_columns;
+			if (in.eof())
+				break;  //not enough data to read on
+			M = Matrix(nr_rows,nr_columns);
+			for(i=1; i<=nr_rows; i++){
+				for(j=1; j<=nr_columns; j++) {
+					in >> number;
+					M.write(i,j,number);
+				}
+			}
+
+			in>>mode_string;
+			if ( in.fail() ) {
+				cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file?"<<endl;
+				if (!filename_set) {
+					cout<< "Type something and press enter to exit."<<endl;
+					cin >> c;
+				}
+				return 1;
+			}
+
+			if	 (mode_string=="4"||mode_string=="hyperplanes") {
+				mode=4;
+				if(nr_columns!=nc) {
+					cerr<<"Number of columns not matching. Check input file!";
+					return 1;
+				}
+			} else
+			if (mode_string=="5"||mode_string=="equations") {
+				mode=5;
+				if(nr_columns!=nc) {
+					cerr<<"Number of columns not matching. Check input file!";
+					return 1;
+				}
+			} else
+			if (mode_string=="6"||mode_string=="congruences") {
+				mode=6;
+				if(nr_columns!=nc+1) {
+					cerr<<"Number of columns not matching. Check input file!";
+					return 1;
+				}
+			} else {
+				cerr<<"Illegal mode \""<<mode_string<<"\" at this position."<<endl;
+				return 1;
+			}
+			
+			switch(mode) {
+				case 4: Inequalities.append(M);
+				        break;
+				case 5: Equations.append(M);
+				        break;
+				case 6: Congruences.append(M);
+				        break;
+				default: cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
+				         return 10;
+			}
+		
+		}
+		
+		in.close();
+		if (verbose) {
+			cout<<"\n************************************************************\n";
+			cout<<"Running in mode "<<456<<" and computation type "<<computation_type<<"."<<endl;
+		}
+		run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
+	} 
+	else { // all other modes
+		in.close();
+		//main computations and output
+		if (verbose) {
+			cout<<"\n************************************************************\n";
+			cout<<"Running in mode "<<mode<<" and computation type "<<computation_type<<"."<<endl;
+		}
+		make_main_computation(mode, computation_type, M, Out);
 	}
-	make_main_computation(mode, computation_type, M, nr_equations, Out);
+
 
 	//exit
 	if (!filename_set) {

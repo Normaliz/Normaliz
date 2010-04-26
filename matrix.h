@@ -82,6 +82,9 @@ public:
   int maximal_decimal_length() const;    //return the maximal number of decimals
 									  //needed to write an entry
 
+	void append(const Matrix& M); // appends the rows of M to this
+
+
 	inline const Integer& get_elem(int row, int col) const {
 		return elements[row-1][col-1];
 	}

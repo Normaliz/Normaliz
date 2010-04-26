@@ -285,6 +285,19 @@ int Matrix::maximal_decimal_length() const{
 
 //---------------------------------------------------------------------------
 
+void Matrix::append(const Matrix& M) {
+	if (nc != M.nc) {
+		error("error: Bad argument passed to Matrix::append.");
+	}
+	elements.reserve(nr+M.nr);
+	for (int i=0; i<M.nr; i++) {
+		elements.push_back(M.elements[i]);
+	}
+	nr += M.nr;
+}
+
+//---------------------------------------------------------------------------
+
 Matrix Matrix::add(const Matrix& A) const{
 	if ((nr!= A.nr)||(nc!=A.nc)) {
 		error("error: Bad argument passed to Matrix::add.");
@@ -990,8 +1003,8 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 
 	// prepare basis change
 	vector <int> key = max_rank_submatrix_lex(rank);
-	Matrix full_rank_matrix = submatrix(key);  // has maximal number of linear independent lines
-	Lineare_Transformation Basis_Change = Transformation(full_rank_matrix);
+	Matrix Full_Rank_Matrix = submatrix(key);  // has maximal number of linear independent lines
+	Lineare_Transformation Basis_Change = Transformation(Full_Rank_Matrix);
 	rank=Basis_Change.get_rank();
 	Matrix V=Basis_Change.get_right();
 	Matrix Change_To_Full_Emb(nc,rank);
@@ -1003,7 +1016,7 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 	}
 	
 	//apply basis change
-	Matrix Full_Cone_Generators = full_rank_matrix.multiplication(Change_To_Full_Emb);
+	Matrix Full_Cone_Generators = Full_Rank_Matrix.multiplication(Change_To_Full_Emb);
 	//compute linear form
 	vector<Integer> Linear_Form = Full_Cone_Generators.homogeneous(homogeneous);
 	if (homogeneous) {

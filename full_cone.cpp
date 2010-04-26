@@ -1294,6 +1294,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 	if ( !is_ht1_extreme_rays ) {
 		cout << "************************************************************" << endl;
 		cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+		Support_Hyperplanes.clear();
 		hilbert_basis();
 	} else {
 		check_ht1_generated();
