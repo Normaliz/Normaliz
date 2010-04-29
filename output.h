@@ -23,6 +23,7 @@
 
 #include "full_cone.h"
 #include "lineare_transformation.h"
+#include "sublattice_representation.h"
 
 
 //---------------------------------------------------------------------------
@@ -39,7 +40,8 @@ class Output {
   bool tri;
   bool ht1;
   Full_Cone Result;
-  Lineare_Transformation Basis_Change;
+  Sublattice_Representation Basis_Change;
+  bool BC_set;
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
@@ -69,7 +71,8 @@ public:
   void set_write_extra_files();         	    //sets some flags to true
   void set_write_all_files();          		    //sets all flags to true
   void set_result(const Full_Cone& C);         //sets Result
-  void set_basis_change(const Lineare_Transformation& BC); // sets Basis_Change
+  void set_basis_change(const Sublattice_Representation& SR); // sets Basis_Change
+  
   void write_matrix_ext(const Matrix& M) const; //writes M to file name.ext
   void write_matrix_ext_1(const Matrix& M) const; //writes M with a column of 1 added to file name.ext
   void write_matrix_esp(const Matrix& M) const; //writes M to file name.esp

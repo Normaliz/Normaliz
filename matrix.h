@@ -107,6 +107,7 @@ public:
   void scalar_division(const Integer& scalar);
   //this=this div scalar, all the elements of this must be divisible with the scalar
   void reduction_modulo(const Integer& modulo);     //this=this mod scalar
+  Integer matrix_gcd() const; //returns the gcd of all elements
   vector<Integer> make_prime();         //each row of this is reduced by its gcd
 	//return a vector containing the gcd of the rows
 

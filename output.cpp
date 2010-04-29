@@ -53,6 +53,7 @@ Output::Output(){
 	sup=false;
 	tri=false;
 	ht1=false;
+	BC_set=false;
 }
 
 //---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ Output::Output(const Output& Out){
 	ht1=Out.ht1;
 	Result=Out.Result;
 	Basis_Change=Out.Basis_Change;
+	BC_set=Out.BC_set;
 }
 
 //---------------------------------------------------------------------------
@@ -96,7 +98,7 @@ void Output::read() const{
 	cout<<"\nResult is:\n";
 	Result.print();
 	cout<<"\nBasis Change is:\n";
-	Basis_Change.read();
+//	Basis_Change.print();
 }
 
 //---------------------------------------------------------------------------
@@ -204,8 +206,13 @@ void Output::set_result(const Full_Cone& C){
 
 //---------------------------------------------------------------------------
 
-void Output::set_basis_change(const Lineare_Transformation& BC){
-	Basis_Change=BC;
+void Output::set_basis_change(const Sublattice_Representation& BC){
+	if (BC_set) {
+		Basis_Change.compose(BC);		
+	} else {
+		Basis_Change=BC;
+		BC_set=true;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -402,12 +409,9 @@ void Output::write_matrix_ht1(const Matrix& M) const{
 void Output::cone() const{
 	int i,j,k,nr,nc,rank=Basis_Change.get_rank(),max_decimal_length;    //read local data
 	Integer buf;
-	string status=Result.read_status();
-	Matrix Generators=Basis_Change.get_left();
-	Matrix Diagonal=Basis_Change.get_center();
-	Matrix Change=Basis_Change.get_right();
-	Matrix Change_Inv=Basis_Change.get_right_inv();
-	Matrix Support_Hyperplanes_Full_Cone=Result.read_support_hyperplanes();
+	string status = Result.read_status();
+	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
+	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
 
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
 	if (status!="support hyperplanes"&&tri){           			 //write triangulation
@@ -422,14 +426,13 @@ void Output::cone() const{
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
 		if (status=="normal"||status=="hilbert basis polynomial") {
-			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
+			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
 				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
-			Hilbert_Basis_Full_Cone=Hilbert_Basis_Full_Cone.multiplication(Diagonal);
-			Hilbert_Basis=Hilbert_Basis_Full_Cone.multiplication(Change_Inv);
+			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
 			nc=Hilbert_Basis.nr_of_columns();
@@ -481,34 +484,18 @@ void Output::cone() const{
 		}
 		out<<endl;
 
-		if (rank==Change_Inv.nr_of_columns()){                   //write rank and index
+		if (rank == Basis_Change.get_dim()){                   //write rank and index
 			out<<"(original) semigroup has rank "<<rank<<" (maximal)"<<endl;
 		}
 		else {
 			out<<"(original) semigroup has rank "<<rank<<endl;
 		}
-		Integer index=Basis_Change.get_index();
-		Integer index_reduce=1;          //makes a difference between modes, in mode 1 index is 1 by default 
-		for (i = 1; i <= rank; i++) {
-			index_reduce*=Diagonal.read(i,i);
-		}
-		index_reduce=Iabs(index_reduce);
-		out<<"(original) semigroup is of index "<<index/index_reduce<<endl;
+		Integer index = Basis_Change.get_index();
+		out<<"(original) semigroup is of index "<<index<<endl;
 		out<<endl;
 
-		Change=Change.transpose();  // preparing the matrix for transformationen on the dual space
-		vector<Integer> v;
-		Integer m;
-		for (i = 1; i <= rank; i++) {
-			m=index/Diagonal.read(i,i);
-			v=Change.read(i);
-			v_scalar_multiplication(v,m);
-			Change.write(i,v);
-		}
-
-		if (rank==Change_Inv.nr_of_columns()) {                  //write the support hyperplanes
-			Matrix Support_Hyperplanes=Support_Hyperplanes_Full_Cone.multiplication(Change);
-			Support_Hyperplanes.make_prime();
+		if (rank == Basis_Change.get_dim()) {       //write the support hyperplanes
+			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
 			write_matrix_sup(Support_Hyperplanes);
 			nr=Support_Hyperplanes.nr_of_rows();
 			nc=Support_Hyperplanes.nr_of_columns();
@@ -535,9 +522,8 @@ void Output::cone() const{
 		}
 		else {
 			if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
-				Matrix Hom=Result.read_homogeneous_elements();
-				Hom=Hom.multiplication(Diagonal);
-				Hom=Hom.multiplication(Change_Inv);
+				Matrix Hom = Result.read_homogeneous_elements();
+				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
 				nc=Hom.nr_of_columns();
@@ -556,8 +542,7 @@ void Output::cone() const{
 				out<<endl;
 			}
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form=Change.VxM(Linear_Form);
-			Linear_Form=v_make_prime(Linear_Form);
+			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
 			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
@@ -608,23 +593,8 @@ void Output::cone() const{
 		inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
 		inv<<"integer rank = "<<rank<<endl;
 		Integer index=Basis_Change.get_index();
-		Integer index_reduce=1;          //makes a diference between modes, in mode 1 index is 1 by default
-		for (i = 1; i <= rank; i++) {
-			index_reduce*=Diagonal.read(i,i);
-		}
-		index_reduce=Iabs(index_reduce);
-		inv<<"integer index = "<<index/index_reduce<<endl;
+		inv<<"integer index = "<<index<<endl;
 		inv<<"integer number_support_hyperplanes = "<<Support_Hyperplanes_Full_Cone.nr_of_rows()<<endl;
-		Change=Basis_Change.get_right();
-		Change=Change.transpose();  // preparing the matrix for transformationen on the dual space
-		vector<Integer> v;
-		Integer m;
-		for (i = 1; i <= rank; i++) {
-			m=index/Diagonal.read(i,i);
-			v=Change.read(i);
-			v_scalar_multiplication(v,m);
-			Change.write(i,v);
-		}
 
 		if (Result.read_homogeneous()==false) {
 			inv<<"boolean homogeneous = "<<"false"<<endl;
@@ -636,9 +606,8 @@ void Output::cone() const{
 				nr=Hom.nr_of_rows();
 				inv<<"integer height_1_elements = "<<nr<<endl;
 			}
-			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form=Change.VxM(Linear_Form);
-			Linear_Form=v_make_prime(Linear_Form);
+			vector<Integer> Linear_Form = Result.read_linear_form();
+			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
 			inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
 			for (i = 0; i < Linear_Form.size(); i++) {
 				inv<<Linear_Form[i]<<" ";
@@ -676,10 +645,8 @@ void Output::polytop()const{
 	int i,j,k,nr,nc,rank=Basis_Change.get_rank(),max_decimal_length;    //read local data
 	Integer buf;
 	string status=Result.read_status();
-	Matrix Generators=Basis_Change.get_left();
-	Matrix Change=Basis_Change.get_right();
-	Matrix Change_Inv=Basis_Change.get_right_inv();
-	Matrix Support_Hyperplanes_Full_Cone=Result.read_support_hyperplanes();
+	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
+	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();	
 
 	if (esp) {
 		write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
@@ -704,7 +671,7 @@ void Output::polytop()const{
 				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
-			Hilbert_Basis=Hilbert_Basis_Full_Cone.multiplication(Change_Inv);
+			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
 			nc=Hilbert_Basis.nr_of_columns();
@@ -724,7 +691,7 @@ void Output::polytop()const{
 		}
 		if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
 			Matrix Lattice_Points=Result.read_homogeneous_elements();
-			Lattice_Points=Lattice_Points.multiplication(Change_Inv);
+			Lattice_Points = Basis_Change.from_sublattice(Lattice_Points);
 			nr=Lattice_Points.nr_of_rows();
 			nc=Lattice_Points.nr_of_columns();
 			max_decimal_length=Lattice_Points.maximal_decimal_length();
@@ -758,10 +725,10 @@ void Output::polytop()const{
 			}
 		}
 		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
-		write_matrix_ext_1(Extreme_Rays);
+		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme points of polytope:"<<endl;
 		nr=Extreme_Rays.nr_of_rows();
-		nc=Extreme_Rays.nr_of_columns();
+		nc=Extreme_Rays.nr_of_columns()-1;			//CAUTION -1 to suppress the extra coordinate
 		max_decimal_length=Extreme_Rays.maximal_decimal_length();
 		for (i = 1; i <=nr; i++) {
 			for (j = 1; j <=nc; j++) {
@@ -775,10 +742,8 @@ void Output::polytop()const{
 		}
 		out<<endl;
 
-		Change=Change.transpose();  // preparing the matrix for transformationen on the dual space
-		if (rank==Change_Inv.nr_of_columns()) {                  //write the support hyperplanes
-			Matrix Support_Hyperplanes=Support_Hyperplanes_Full_Cone.multiplication(Change);
-			Support_Hyperplanes.make_prime();
+		if (rank == Basis_Change.get_dim()) {                  //write the support hyperplanes
+			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
 			write_matrix_sup(Support_Hyperplanes);
 			nr=Support_Hyperplanes.nr_of_rows();
 			nc=Support_Hyperplanes.nr_of_columns();
@@ -807,7 +772,7 @@ void Output::polytop()const{
 		}
 		if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
 			Matrix Hom=Result.read_homogeneous_elements();
-			Hom=Hom.multiplication(Change_Inv);
+			Hom = Basis_Change.from_sublattice(Hom);
 			write_matrix_ht1(Hom);
 		}
 		if (status!="support hyperplanes"){
@@ -856,9 +821,7 @@ void Output::polytop()const{
 		inv<<"integer rank = "<<rank<<endl;
 		inv<<"integer index = "<<1<<endl;
 		inv<<"integer number_support_hyperplanes = "<<Support_Hyperplanes_Full_Cone.nr_of_rows()<<endl;
-		Change=Basis_Change.get_right();
-		Change=Change.transpose();  // preparing the matrix for transformationen on the dual space
-
+		
 		if (Result.read_homogeneous()==false) {
 			inv<<"boolean homogeneous = "<<"false"<<endl;
 		}
@@ -870,8 +833,7 @@ void Output::polytop()const{
 				inv<<"integer height_1_elements = "<<nr<<endl;
 			}
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form=Change.VxM(Linear_Form);
-			Linear_Form=v_make_prime(Linear_Form);
+			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
 			inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
 			for (i = 0; i < Linear_Form.size(); i++) {
 				inv<<Linear_Form[i]<<" ";
@@ -1165,20 +1127,16 @@ void Output::rees(const bool primary) const{
 void Output::dual()const{
 	int i,j,k,nr,nc,rank,max_decimal_length;    //read local data
 	Integer buf;
-	rank=Result.read_dimension();
-	Matrix Change=Basis_Change.get_right();
+	rank = Result.read_dimension();
 	Matrix Extreme_Rays=Result.read_support_hyperplanes(); // in the dual mode the support hyperplanes are the generators
-	Extreme_Rays=Extreme_Rays.multiplication(Change);
+	Extreme_Rays = Basis_Change.to_sublattice(Extreme_Rays); //.multiplication(Change)); //TODO
 	write_matrix_ext(Extreme_Rays);
 	Matrix Support_Hyperplanes=Result.read_generators();  // in the dual mode the extrem rays are the support hyperplanes
 	write_matrix_esp(Support_Hyperplanes);         //write the suport hyperplanes of the full dimensional cone
 	Matrix Hilbert_Basis=Result.read_hilbert_basis();
 	write_matrix_egn(Hilbert_Basis);
-	Hilbert_Basis=Hilbert_Basis.multiplication(Change);
+	Hilbert_Basis = Basis_Change.to_sublattice(Hilbert_Basis); //.multiplication(Change); //TODO
 	write_matrix_gen(Hilbert_Basis);
-
-
-
 
 	if (out==true ) {//printing .out file
 		string name_open=name+".out"; 							 //preparing output files
@@ -1226,7 +1184,7 @@ void Output::dual()const{
 		}
 		else {
 			Matrix Hom=Result.read_homogeneous_elements();
-			Hom=Hom.multiplication(Change);
+			Hom = Basis_Change.to_sublattice(Hom); //.multiplication(Change);
 			write_matrix_ht1(Hom);
 			nr=Hom.nr_of_rows();
 			nc=Hom.nr_of_columns();
@@ -1244,9 +1202,7 @@ void Output::dual()const{
 			}
 			out<<endl;
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			Matrix Change_Inv=Basis_Change.get_right_inv();
-			Change_Inv=Change_Inv.transpose();
-			Linear_Form=Change_Inv.VxM(Linear_Form);
+			Linear_Form = Basis_Change.to_sublattice_dual(Linear_Form);
 			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
@@ -1276,9 +1232,7 @@ void Output::dual()const{
 			nr=Hom.nr_of_rows();
 			inv<<"integer height_1_elements = "<<nr<<endl;
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			Matrix Change_Inv=Basis_Change.get_right_inv();
-			Change_Inv=Change_Inv.transpose();
-			Linear_Form=Change_Inv.VxM(Linear_Form);
+			Linear_Form = Basis_Change.to_sublattice_dual(Linear_Form);
 			inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
 			for (i = 0; i < Linear_Form.size(); i++) {
 				inv<<Linear_Form[i]<<" ";

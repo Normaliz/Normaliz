@@ -450,7 +450,19 @@ void Matrix::reduction_modulo(const Integer& modulo){
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::make_prime(){
+Integer Matrix::matrix_gcd() const{
+	Integer g=0,h;
+	for (int i = 0; i <nr; i++) {
+		h = v_gcd(elements[i]);
+		g = gcd(g, h);
+		if (g==1) return g;
+	}
+	return g;
+}
+
+//---------------------------------------------------------------------------
+
+vector<Integer> Matrix::make_prime() {
 	vector<Integer> g(nr);
 	for (int i = 0; i <nr; i++) {
 		elements[i]=v_make_prime(elements[i],g[i]);

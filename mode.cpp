@@ -34,6 +34,7 @@ using namespace std;
 #include "vector_operations.h"
 #include "simplex.h"
 #include "lineare_transformation.h"
+#include "sublattice_representation.h"
 
 //---------------------------------------------------------------------------
 
@@ -65,33 +66,13 @@ void make_main_computation(const int& mode, string& computation_type,const Matri
 void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
 		cerr<<"computation type = dual not implemented in mode 0."<<endl;
-		cerr<<"The program will run in normal mode."<<endl;
-		computation_type="normal";
+		cerr<<"The program will run in hilbert_basis mode."<<endl;
+		computation_type="hilbert_basis";
 	}
-	int i,j,rank;
-	Lineare_Transformation Basis_Change=Transformation(Input);
-	rank=Basis_Change.get_rank();
-	if (rank==0) {
-		cerr<<"warning: Input matrix has rank 0. Please check input data."<<endl;
-		//global_error_handling();
-	}
-	Matrix V=Basis_Change.get_right();
-	Matrix V_Inv=Basis_Change.get_right_inv();
-	Matrix Change_To_Full_Emb(Input.nr_of_columns(),rank);
-	Matrix Change_To_Full_Emb_Inv(rank,Input.nr_of_columns());
-	for (i = 1; i <=Input.nr_of_columns() ; i++) {
-		for (j = 1; j <= rank; j++) {
-			Change_To_Full_Emb.write(i,j,V.read(i,j));
-			Change_To_Full_Emb_Inv.write(j,i,V_Inv.read(j,i));
-		}
-	}
-	Matrix Diagonal(rank);
-	Basis_Change.set_left(Input);
-	Basis_Change.set_center(Diagonal);
-	Basis_Change.set_right(Change_To_Full_Emb);
-	Basis_Change.set_right_inv(Change_To_Full_Emb_Inv);
-	Matrix Full_Cone_Generators=Input.multiplication(Change_To_Full_Emb);
-	Full_Cone Result=make_computations(computation_type, Full_Cone_Generators);
+	Sublattice_Representation Basis_Change(Input,true);
+	Matrix Full_Cone_Generators = Basis_Change.to_sublattice(Input);
+	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
+
 	Out.set_result(Result);
 	Out.set_basis_change(Basis_Change);
 	Out.cone();
@@ -102,45 +83,13 @@ void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
 		cerr<<"Computation type = dual not implemented in mode 1."<<endl;
-		cerr<<"The program will run in Computation type normal."<<endl;
-		computation_type="normal";
+		cerr<<"The program will run in Computation type hilbert_basis."<<endl;
+		computation_type="hilbert_basis";
 	}
-	int i,j,rank;
-	Lineare_Transformation Basis_Change=Transformation(Input);
-	rank=Basis_Change.get_rank();
-	if (rank==0) {
-		cerr<<"warning: Input matrix has rank 0. Please check input data."<<endl;
-		//global_error_handling();
-	}
-	Matrix V=Basis_Change.get_right();
-	Matrix V_Inv=Basis_Change.get_right_inv();
-	Matrix Change_To_Full_Emb(Input.nr_of_columns(),rank);
-	Matrix Change_To_Full_Emb_Inv(rank,Input.nr_of_columns());
-	for (i = 1; i <=Input.nr_of_columns() ; i++) {
-		for (j = 1; j <= rank; j++) {
-			Change_To_Full_Emb.write(i,j,V.read(i,j));
-			Change_To_Full_Emb_Inv.write(j,i,V_Inv.read(j,i));
-		}
-	}
-	Matrix D=Basis_Change.get_center();
-	Matrix Diagonal(rank);
-	for (i = 1; i <= rank; i++) {
-		Diagonal.write(i,i,D.read(i,i));
-	}
-	Basis_Change.set_left(Input);
-	Basis_Change.set_center(Diagonal);
-	Basis_Change.set_right(Change_To_Full_Emb);
-	Basis_Change.set_right_inv(Change_To_Full_Emb_Inv);
-	Matrix Full_Cone_Generators=Input.multiplication(Change_To_Full_Emb);
-	Full_Cone_Generators=Full_Cone_Generators.transpose();
-	vector<Integer> v;
-	for (i = 1; i <= rank; i++) {
-		v=Full_Cone_Generators.read(i);
-		v_scalar_division(v,Diagonal.read(i,i));
-		Full_Cone_Generators.write(i,v);
-	}
-	Full_Cone_Generators=Full_Cone_Generators.transpose();
-	Full_Cone Result=make_computations(computation_type, Full_Cone_Generators);
+	Sublattice_Representation Basis_Change(Input,false);
+	Matrix Full_Cone_Generators = Basis_Change.to_sublattice(Input);
+	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
+
 	Out.set_result(Result);
 	Out.set_basis_change(Basis_Change);
 	Out.cone();
@@ -151,8 +100,8 @@ void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
 		cerr<<"Run mode type = dual not implemented in mode 2."<<endl;
-		cerr<<"The program will run in normal mode."<<endl;
-		computation_type="normal";
+		cerr<<"The program will run in hilbert_basis mode."<<endl;
+		computation_type="hilbert_basis";
 	}
 	int i,j,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
 	Integer number;
@@ -163,29 +112,11 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 			Generators.write(i,j,number);
 		}
 	}
-	Lineare_Transformation Basis_Change=Transformation(Generators);
-	int rank=Basis_Change.get_rank();
-	if (rank==0) {
-		cerr<<"warning: Input matrix has rank 0. Please check input data."<<endl;
-		//global_error_handling();
-	}
-	Matrix V=Basis_Change.get_right();
-	Matrix V_Inv=Basis_Change.get_right_inv();
-	Matrix Change_To_Full_Emb(Generators.nr_of_columns(),rank);
-	Matrix Change_To_Full_Emb_Inv(rank,Generators.nr_of_columns());
-	for (i = 1; i <=Generators.nr_of_columns() ; i++) {
-		for (j = 1; j <= rank; j++) {
-			Change_To_Full_Emb.write(i,j,V.read(i,j));
-			Change_To_Full_Emb_Inv.write(j,i,V_Inv.read(j,i));
-		}
-	}
-	Matrix Diagonal(rank);
-	Basis_Change.set_left(Input);
-	Basis_Change.set_center(Diagonal);
-	Basis_Change.set_right(Change_To_Full_Emb);
-	Basis_Change.set_right_inv(Change_To_Full_Emb_Inv);
-	Matrix Full_Cone_Generators=Generators.multiplication(Change_To_Full_Emb);
-	Full_Cone Result=make_computations(computation_type, Full_Cone_Generators);
+
+	Sublattice_Representation Basis_Change(Generators,true);
+	Matrix Full_Cone_Generators = Basis_Change.to_sublattice(Generators);
+	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
+
 	Out.set_result(Result);
 	Out.set_basis_change(Basis_Change);
 	Out.polytop();
@@ -196,8 +127,8 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
 		cerr<<"Run mode type = dual not implemented in mode 3."<<endl;
-		cerr<<"The program will run in normal mode."<<endl;
-		computation_type="normal";
+		cerr<<"The program will run in hilbert_basis mode."<<endl;
+		computation_type="hilbert_basis";
 	}
 	int i,j,k,l,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
 	bool primary=true;
@@ -308,8 +239,8 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Ker_Basis_Transpose.read();
 		cout << endl<< "Ineq_on_ker";
 		Inequ_on_Ker.read();
-		cout << endl<< endl;
-*/
+		cout << endl<< endl; */
+
 		Full_Cone Dual_Cone(Inequ_on_Ker);
 		Dual_Cone.support_hyperplanes();
 		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
@@ -340,7 +271,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		}
 		Diagonalization.set_right(Ker_Basis_Transpose.transpose());
 		Diagonalization.set_right_inv(Ker_Basis_Transpose_Inv.transpose());
-		Out.set_basis_change(Diagonalization);
+		Out.set_basis_change(Sublattice_Representation(Diagonalization,true));
 		Matrix M=Inequalities.multiplication(Ker_Basis_Transpose);
 		dim=M.nr_of_columns();
 		Integer norm;
