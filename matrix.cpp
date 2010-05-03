@@ -205,7 +205,8 @@ vector<Integer> Matrix::read(int row) const{
 
 Integer Matrix::read (int row, int col) const{
 	if ((row>nr) || (col>nc)) {
-		error("error: Bad argument passed to Matrix::read.");
+	//	cout <<row<<" "<<nr<<" "<<col<<" "<<nc<<endl;
+		error("error: Bad argument passed to Matrix::read(int row, int col).");
 		return 0;
 	}
 	else

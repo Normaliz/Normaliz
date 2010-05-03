@@ -85,10 +85,11 @@ public:
 
 	Matrix to_sublattice (const Matrix& M) const;
 	Matrix from_sublattice (const Matrix& M) const;
-
 	Matrix to_sublattice_dual (const Matrix& M) const;
 	Matrix from_sublattice_dual (const Matrix& M) const;
 
+	vector<Integer> to_sublattice (const vector<Integer>& V) const;
+	vector<Integer> from_sublattice (const vector<Integer>& V) const;
 	vector<Integer> to_sublattice_dual (const vector<Integer>& M) const;
 	vector<Integer> from_sublattice_dual (const vector<Integer>& V) const;
 

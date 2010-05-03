@@ -139,6 +139,12 @@ Matrix Lineare_Transformation::get_right_inv() const{
 
 //---------------------------------------------------------------------------
 
+void Lineare_Transformation::set_rank(const int rank) {
+	rk = rank;
+}
+
+//---------------------------------------------------------------------------
+
 void Lineare_Transformation::set_left(const Matrix& M){
 	Left=M;
 }

@@ -202,13 +202,13 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_456(string& computation_type, const Matrix& Congruences, const Matrix& Equations,  Matrix Inequalities, Output& Out) {
 	
-	cout << "Congruences";
+	cout << "Congruences:";
 	Congruences.read();
-	cout << endl << "Equations";
+	cout << endl << endl << "Equations:";
 	Equations.read();
-	cout << endl << "Inequalities";
+	cout << endl << endl<< "Inequalities:";
 	Inequalities.read();
-	cout << endl;
+	cout << endl << endl;
 	
 	//TODO handle Congruences
 	
@@ -235,9 +235,9 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		}
 		Matrix Inequ_on_Ker=Inequalities.multiplication(Ker_Basis_Transpose);
 
-/*		cout << "Ker_Basis_Transpose"
+/*		cout << "Ker_Basis_Transpose:";
 		Ker_Basis_Transpose.read();
-		cout << endl<< "Ineq_on_ker";
+		cout << endl<< "Ineq_on_ker:";
 		Inequ_on_Ker.read();
 		cout << endl<< endl; */
 
@@ -269,8 +269,9 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 				Ker_Basis_Transpose_Inv.write(j-rank,i,H_Inv.read(j,i));
 			}
 		}
-		Diagonalization.set_right(Ker_Basis_Transpose.transpose());
-		Diagonalization.set_right_inv(Ker_Basis_Transpose_Inv.transpose());
+		Diagonalization.set_rank(dim-rank);
+		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
+		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
 		Out.set_basis_change(Sublattice_Representation(Diagonalization,true));
 		Matrix M=Inequalities.multiplication(Ker_Basis_Transpose);
 		dim=M.nr_of_columns();

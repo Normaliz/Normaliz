@@ -1129,13 +1129,13 @@ void Output::dual()const{
 	Integer buf;
 	rank = Result.read_dimension();
 	Matrix Extreme_Rays=Result.read_support_hyperplanes(); // in the dual mode the support hyperplanes are the generators
-	Extreme_Rays = Basis_Change.to_sublattice(Extreme_Rays); //.multiplication(Change)); //TODO
+	Extreme_Rays = Basis_Change.from_sublattice(Extreme_Rays);
 	write_matrix_ext(Extreme_Rays);
 	Matrix Support_Hyperplanes=Result.read_generators();  // in the dual mode the extrem rays are the support hyperplanes
 	write_matrix_esp(Support_Hyperplanes);         //write the suport hyperplanes of the full dimensional cone
 	Matrix Hilbert_Basis=Result.read_hilbert_basis();
 	write_matrix_egn(Hilbert_Basis);
-	Hilbert_Basis = Basis_Change.to_sublattice(Hilbert_Basis); //.multiplication(Change); //TODO
+	Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis);
 	write_matrix_gen(Hilbert_Basis);
 
 	if (out==true ) {//printing .out file
@@ -1184,7 +1184,7 @@ void Output::dual()const{
 		}
 		else {
 			Matrix Hom=Result.read_homogeneous_elements();
-			Hom = Basis_Change.to_sublattice(Hom); //.multiplication(Change);
+			Hom = Basis_Change.from_sublattice(Hom);
 			write_matrix_ht1(Hom);
 			nr=Hom.nr_of_rows();
 			nc=Hom.nr_of_columns();
@@ -1202,7 +1202,7 @@ void Output::dual()const{
 			}
 			out<<endl;
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form = Basis_Change.to_sublattice_dual(Linear_Form);
+			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
 			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
@@ -1232,7 +1232,7 @@ void Output::dual()const{
 			nr=Hom.nr_of_rows();
 			inv<<"integer height_1_elements = "<<nr<<endl;
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form = Basis_Change.to_sublattice_dual(Linear_Form);
+			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
 			inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
 			for (i = 0; i < Linear_Form.size(); i++) {
 				inv<<Linear_Form[i]<<" ";

@@ -74,6 +74,7 @@ public:
   Matrix get_center() const;          //read center matrix
   Matrix get_right() const;          //read right matrix
   Matrix get_right_inv() const;     //read the inverse of the right matrix
+  void set_rank(const int rank);
   void set_left(const Matrix& M);             //write left matrix
   void set_center(const Matrix& M);          //write center matrix
   void set_right(const Matrix& M);          //write right matrix

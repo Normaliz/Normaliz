@@ -76,13 +76,14 @@ void Sublattice_Representation::initialize(const Lineare_Transformation& Basis_C
 	Matrix R_Inv = Basis_Change.get_right();
 
 	dim = R.nr_of_columns();
+	cout << "dim = "<<dim<<"    rank = "<<rank<<endl;
 	A = Matrix(rank, dim);
 	B = Matrix(dim, rank);
 	c = 1;
 	index = 1;
 
-	for (i = 1; i <= dim; i++) {
-		for (j = 1; j <= rank; j++) {
+	for (i = 1; i <= rank; i++) {
+		for (j = 1; j <= dim; j++) {
 			A.write(i,j, R.read(i,j));
 			B.write(j,i, R_Inv.read(j,i));
 		}
@@ -181,6 +182,18 @@ Matrix Sublattice_Representation::to_sublattice_dual (const Matrix& M) const {
 Matrix Sublattice_Representation::from_sublattice_dual (const Matrix& M) const {
 	Matrix N = M.multiplication(B.transpose());
 	N.make_prime();
+	return N;
+}
+
+
+vector<Integer> Sublattice_Representation::to_sublattice (const vector<Integer>& V) const {
+	vector<Integer> N = B.VxM(V);
+	if (c!=1) v_scalar_division(N,c);
+	return N;
+}
+
+vector<Integer> Sublattice_Representation::from_sublattice (const vector<Integer>& V) const {
+	vector<Integer> N = A.VxM(V);
 	return N;
 }
 
