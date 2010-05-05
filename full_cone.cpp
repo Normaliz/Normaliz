@@ -2638,7 +2638,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 		New_Negative.clear();
 		New_Neutral.clear();
 		//generating new elements
-		cout<<"+"<<flush;
+//		cout<<"+"<<flush;
 //		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
 		list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
 		list < vector<Integer> >::iterator it;
@@ -2739,7 +2739,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 		#pragma omp single nowait
 		New_Negative.sort();
 		} //END PARALLEL
-		cout<<"-"<<flush;
+//		cout<<"-"<<flush;
 		//reducing the new vectors agains them self
 		//Neutral_Ired=Neutral;
 		//Positive_Ired=Positive;
@@ -2802,7 +2802,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 				(*c)[nr_gen+1]--;
 			}
 		}
-		cout<<not_done;
+//		cout<<not_done;
 	}
 	//still possible to have double elements in the Hilbert basis, coming from different generations
 

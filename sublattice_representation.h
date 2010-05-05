@@ -104,7 +104,7 @@ public:
 	int get_rank() const;
 
 	/* returns the index of the sublattice */
-	int get_index() const;
+	Integer get_index() const;
 
 	Matrix get_A() const;
 	

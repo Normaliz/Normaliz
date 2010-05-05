@@ -202,14 +202,14 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_456(string& computation_type, const Matrix& Congruences, const Matrix& Equations,  Matrix Inequalities, Output& Out) {
 	
-	cout << "Congruences:";
+/*	cout << "Congruences:";
 	Congruences.read();
 	cout << endl << endl << "Equations:";
 	Equations.read();
 	cout << endl << endl<< "Inequalities:";
 	Inequalities.read();
 	cout << endl << endl;
-	
+*/	
 	//TODO handle Congruences
 	
 	if (Inequalities.nr_of_rows() == 0) {
@@ -272,6 +272,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Diagonalization.set_rank(dim-rank);
 		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
 		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
+		Diagonalization.set_center(Matrix(dim-rank));
 		Out.set_basis_change(Sublattice_Representation(Diagonalization,true));
 		Matrix M=Inequalities.multiplication(Ker_Basis_Transpose);
 		dim=M.nr_of_columns();
