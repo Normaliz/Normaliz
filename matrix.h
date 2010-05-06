@@ -68,6 +68,7 @@ public:
   void write(int row, const vector<int>& data); //write  a row
   void write(int row, int col, Integer data);  // write data at (row,col)
   void print(const string& name, const string& suffix="in") const;         //  writes matrix into name.suffix
+  void pretty_print(ostream& out) const;  // writes matrix in a nice format to the stream
   void read() const;                 // to be modified, just for tests
   vector<Integer> read(int row) const;                   // read a row
   Integer read (int row, int col) const;         // read data at (row,col)
@@ -83,7 +84,7 @@ public:
 									  //needed to write an entry
 
 	void append(const Matrix& M); // appends the rows of M to this
-
+	void cut_columns(int c); // remove columns, only the first c columns will survive
 
 	inline const Integer& get_elem(int row, int col) const {
 		return elements[row-1][col-1];

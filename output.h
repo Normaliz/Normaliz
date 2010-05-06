@@ -74,7 +74,6 @@ public:
   void set_basis_change(const Sublattice_Representation& SR); // sets Basis_Change
   
   void write_matrix_ext(const Matrix& M) const; //writes M to file name.ext
-  void write_matrix_ext_1(const Matrix& M) const; //writes M with a column of 1 added to file name.ext
   void write_matrix_esp(const Matrix& M) const; //writes M to file name.esp
   void write_matrix_typ(const Matrix& M) const; //writes M to file name.typ
   void write_matrix_egn(const Matrix& M) const; //writes M to file name.egn

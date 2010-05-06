@@ -219,41 +219,7 @@ void Output::set_basis_change(const Sublattice_Representation& BC){
 
 void Output::write_matrix_ext(const Matrix& M) const{
 	if (ext==true) {
-		string file_name=name+".ext";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
-	}
-}
-
-
-
-void Output::write_matrix_ext_1(const Matrix& M) const{
-	if (ext==true) {
-		string file_name=name+".ext";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<"1 "<<endl;
-		}
-		out.close();
+		M.print(name,"ext");
 	}
 }
 
@@ -261,20 +227,7 @@ void Output::write_matrix_ext_1(const Matrix& M) const{
 
 void Output::write_matrix_esp(const Matrix& M) const{
 	if (esp==true) {
-		string file_name=name+".esp";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"esp");
 	}
 }
 
@@ -282,20 +235,7 @@ void Output::write_matrix_esp(const Matrix& M) const{
 
 void Output::write_matrix_typ(const Matrix& M) const{
 	if (typ==true) {
-		string file_name=name+".typ";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"typ");
 	}
 }
 
@@ -303,20 +243,7 @@ void Output::write_matrix_typ(const Matrix& M) const{
 
 void Output::write_matrix_egn(const Matrix& M) const {
 	if (egn==true) {
-		string file_name=name+".egn";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"egn");
 	}
 }
 
@@ -324,20 +251,7 @@ void Output::write_matrix_egn(const Matrix& M) const {
 
 void Output::write_matrix_gen(const Matrix& M) const {
 	if (gen==true) {
-		string file_name=name+".gen";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"gen");
 	}
 }
 
@@ -345,20 +259,7 @@ void Output::write_matrix_gen(const Matrix& M) const {
 
 void Output::write_matrix_sup(const Matrix& M) const{
 	if (sup==true) {
-		string file_name=name+".sup";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"sup");
 	}
 }
 
@@ -366,20 +267,7 @@ void Output::write_matrix_sup(const Matrix& M) const{
 
 void Output::write_matrix_tri(const Matrix& M) const{
 	if (tri==true) {
-		string file_name=name+".tri";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"tri");
 	}
 }
 
@@ -387,28 +275,14 @@ void Output::write_matrix_tri(const Matrix& M) const{
 
 void Output::write_matrix_ht1(const Matrix& M) const{
 	if (ht1==true) {
-		string file_name=name+".ht1";
-		const char* file=file_name.c_str();
-		ofstream out(file);
-		int i,j;
-		int	nr=M.nr_of_rows();
-		int	nc=M.nr_of_columns();
-		out<<nr<<endl<<nc<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				out<<M.read(i,j)<<" ";
-			}
-			out<<endl;
-		}
-		out.close();
+		M.print(name,"ht1");
 	}
 }
 
 //---------------------------------------------------------------------------
 
 void Output::cone() const{
-	int i,j,k,nr,nc,rank=Basis_Change.get_rank(),max_decimal_length;    //read local data
-	Integer buf;
+	int i,j,nr,rank=Basis_Change.get_rank();    //read local data
 	string status = Result.read_status();
 	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
 	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
@@ -435,20 +309,8 @@ void Output::cone() const{
 			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
-			nc=Hilbert_Basis.nr_of_columns();
-			max_decimal_length=Hilbert_Basis.maximal_decimal_length();
 			out<<nr<<" generators of integral closure:"<<endl;
-			for (i = 1; i <= nr; i++) {
-				for (j = 1; j <= nc; j++) {
-					buf = Hilbert_Basis.read(i,j);
-					for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-						out<<" ";
-					}
-					out<<buf;
-				}
-				out<<endl;
-			}
-			out<<endl;
+			Hilbert_Basis.pretty_print(out);
 		}
 
 		vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();          //write extreme rays
@@ -469,20 +331,7 @@ void Output::cone() const{
 		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
-		nr=Extreme_Rays.nr_of_rows();
-		nc=Extreme_Rays.nr_of_columns();
-		max_decimal_length=Extreme_Rays.maximal_decimal_length();
-		for (i = 1; i <=nr; i++) {
-			for (j = 1; j <=nc; j++) {
-				buf = Extreme_Rays.read(i,j);
-				for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-					out<<" ";
-				}
-				out<<buf;
-			}
-			out<<endl;
-		}
-		out<<endl;
+		Extreme_Rays.pretty_print(out);
 
 		if (rank == Basis_Change.get_dim()){                   //write rank and index
 			out<<"(original) semigroup has rank "<<rank<<" (maximal)"<<endl;
@@ -497,21 +346,8 @@ void Output::cone() const{
 		if (rank == Basis_Change.get_dim()) {       //write the support hyperplanes
 			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
 			write_matrix_sup(Support_Hyperplanes);
-			nr=Support_Hyperplanes.nr_of_rows();
-			nc=Support_Hyperplanes.nr_of_columns();
-			max_decimal_length=Support_Hyperplanes.maximal_decimal_length();
-			out<<nr<<" support hyperplanes:"<<endl;
-			for (i = 1; i <= nr; i++) {
-				for (j = 1; j <= nc; j++) {
-					buf = Support_Hyperplanes.read(i,j);
-					for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-						out<<" ";
-					}
-					out<<buf;
-				}
-				out<<endl;
-			}
-			out<<endl;
+			out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
+			Support_Hyperplanes.pretty_print(out);
 		}
 		else {
 			out<<Support_Hyperplanes_Full_Cone.nr_of_rows() <<" support hyperplanes"<<endl<<endl;
@@ -526,20 +362,8 @@ void Output::cone() const{
 				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
-				nc=Hom.nr_of_columns();
-				max_decimal_length=Hom.maximal_decimal_length();
 				out<<nr<<" height 1 generators of integral closure:"<<endl;
-				for (i = 1; i <= nr; i++) {
-					for (j = 1; j <= nc; j++) {
-						buf = Hom.read(i,j);
-						for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-							out<<" ";
-						}
-						out<<buf;
-					}
-					out<<endl;
-				}
-				out<<endl;
+				Hom.pretty_print(out);
 			}
 			vector<Integer> Linear_Form=Result.read_linear_form();
 			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
@@ -674,39 +498,15 @@ void Output::polytop()const{
 			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
-			nc=Hilbert_Basis.nr_of_columns();
-			max_decimal_length=Hilbert_Basis.maximal_decimal_length();
 			out<<nr<<" generators of Ehrhart ring:"<<endl;
-			for (i = 1; i <= nr; i++) {
-				for (j = 1; j <= nc; j++) {
-					buf = Hilbert_Basis.read(i,j);
-					for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-						out<<" ";
-					}
-					out<<buf;
-				}
-				out<<endl;
-			}
-			out<<endl;
+			Hilbert_Basis.pretty_print(out);
 		}
 		if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
 			Matrix Lattice_Points=Result.read_homogeneous_elements();
 			Lattice_Points = Basis_Change.from_sublattice(Lattice_Points);
-			nr=Lattice_Points.nr_of_rows();
-			nc=Lattice_Points.nr_of_columns();
-			max_decimal_length=Lattice_Points.maximal_decimal_length();
-			out<<nr<<" lattice points in polytope:"<<endl;
-			for (i = 1; i <= nr; i++) {
-				for (j = 1; j < nc; j++) {
-					buf = Lattice_Points.read(i,j);
-					for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-						out<<" ";
-					}
-					out<<buf;
-				}
-				out<<endl;
-			}
-			out<<endl;
+			Lattice_Points.cut_columns(Lattice_Points.nr_of_columns()-1); //remove extra coordinate
+			out<<Lattice_Points.nr_of_rows()<<" lattice points in polytope:"<<endl;
+			Lattice_Points.pretty_print(out);
 		}
 
 		vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();          //write extreme rays
@@ -727,20 +527,8 @@ void Output::polytop()const{
 		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme points of polytope:"<<endl;
-		nr=Extreme_Rays.nr_of_rows();
-		nc=Extreme_Rays.nr_of_columns()-1;			//CAUTION -1 to suppress the extra coordinate
-		max_decimal_length=Extreme_Rays.maximal_decimal_length();
-		for (i = 1; i <=nr; i++) {
-			for (j = 1; j <=nc; j++) {
-				buf = Extreme_Rays.read(i,j);
-				for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-					out<<" ";
-				}
-				out<<buf;
-			}
-			out<<endl;
-		}
-		out<<endl;
+		Extreme_Rays.cut_columns(Extreme_Rays.nr_of_columns()-1);		//remove extra coordinate
+		Extreme_Rays.pretty_print(out);
 
 		if (rank == Basis_Change.get_dim()) {                  //write the support hyperplanes
 			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
@@ -934,20 +722,7 @@ void Output::rees(const bool primary) const{
 		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
-		nr=Extreme_Rays.nr_of_rows();
-		nc=Extreme_Rays.nr_of_columns();
-		max_decimal_length=Extreme_Rays.maximal_decimal_length();
-		for (i = 1; i <=nr; i++) {
-			for (j = 1; j <=nc; j++) {
-				buf = Extreme_Rays.read(i,j);
-				for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-					out<<" ";
-				}
-				out<<buf;
-			}
-			out<<endl;
-		}
-		out<<endl;
+		Extreme_Rays.pretty_print(out);
 
 		if (status=="normal"||status=="hilbert basis polynomial") {
 			nr=Hilbert_Basis.nr_of_rows();
@@ -971,20 +746,8 @@ void Output::rees(const bool primary) const{
 
 		write_matrix_sup(Support_Hyperplanes);    //write the support hyperplanes
 		nr=Support_Hyperplanes.nr_of_rows();
-		nc=Support_Hyperplanes.nr_of_columns();
-		max_decimal_length=Support_Hyperplanes.maximal_decimal_length();
-		out<<nr<<" support hyperplanes:"<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				buf = Support_Hyperplanes.read(i,j);
-				for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-					out<<" ";
-				}
-				out<<buf;
-			}
-			out<<endl;
-		}
-		out<<endl;
+		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
+		Support_Hyperplanes.pretty_print(out);
 
 		if (Result.read_homogeneous()==false) {
 			out<<"(original) semigroup is not homogeneous"<<endl;
@@ -994,20 +757,8 @@ void Output::rees(const bool primary) const{
 				Matrix Hom=Result.read_homogeneous_elements();
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
-				nc=Hom.nr_of_columns();
-				max_decimal_length=Hom.maximal_decimal_length();
 				out<<nr<<" height 1 generators of integral closure of the Rees algebra:"<<endl;
-				for (i = 1; i <= nr; i++) {
-					for (j = 1; j <= nc; j++) {
-						buf = Hom.read(i,j);
-						for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-							out<<" ";
-						}
-						out<<buf;
-					}
-					out<<endl;
-				}
-				out<<endl;
+				Hom.pretty_print(out);
 			}
 			vector<Integer> Linear_Form=Result.read_linear_form();
 			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
@@ -1125,8 +876,7 @@ void Output::rees(const bool primary) const{
 //--------------------------------------------------------------------------------
 
 void Output::dual()const{
-	int i,j,k,nr,nc,rank,max_decimal_length;    //read local data
-	Integer buf;
+	int i,nr,rank;    //read local data
 	rank = Result.read_dimension();
 	Matrix Extreme_Rays=Result.read_support_hyperplanes(); // in the dual mode the support hyperplanes are the generators
 	Extreme_Rays = Basis_Change.from_sublattice(Extreme_Rays);
@@ -1145,36 +895,12 @@ void Output::dual()const{
 
 
 		nr=Hilbert_Basis.nr_of_rows();
-		nc=Hilbert_Basis.nr_of_columns();
-		max_decimal_length=Hilbert_Basis.maximal_decimal_length();
 		out<<nr<<" generators of integral closure:"<<endl;
-		for (i = 1; i <= nr; i++) {
-			for (j = 1; j <= nc; j++) {
-				buf = Hilbert_Basis.read(i,j);
-				for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-					out<<" ";
-				}
-				out<<buf;
-			}
-			out<<endl;
-		}
-		out<<endl;
+		Hilbert_Basis.pretty_print(out);
 
 		nr=Extreme_Rays.nr_of_rows();
-		nc=Extreme_Rays.nr_of_columns();
 		out<<nr<<" extreme rays:"<<endl;
-		max_decimal_length=Extreme_Rays.maximal_decimal_length();
-		for (i = 1; i <=nr; i++) {
-			for (j = 1; j <=nc; j++) {
-				buf = Extreme_Rays.read(i,j);
-				for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-					out<<" ";
-				}
-				out<<buf;
-			}
-			out<<endl;
-		}
-		out<<endl;
+		Extreme_Rays.pretty_print(out);
 
 		//write rank
 		out<<"(original) semigroup has rank "<<rank<<endl<<endl;
@@ -1186,21 +912,9 @@ void Output::dual()const{
 			Matrix Hom=Result.read_homogeneous_elements();
 			Hom = Basis_Change.from_sublattice(Hom);
 			write_matrix_ht1(Hom);
-			nr=Hom.nr_of_rows();
-			nc=Hom.nr_of_columns();
-			max_decimal_length=Hom.maximal_decimal_length();
-			out<<nr<<" height 1 generators of integral closure:"<<endl;
-			for (i = 1; i <= nr; i++) {
-				for (j = 1; j <= nc; j++) {
-					buf = Hom.read(i,j);
-					for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
-						out<<" ";
-					}
-					out<<buf;
-				}
-				out<<endl;
-			}
-			out<<endl;
+			out<<Hom.nr_of_rows()<<" height 1 generators of integral closure:"<<endl;
+			Hom.pretty_print(out);
+
 			vector<Integer> Linear_Form=Result.read_linear_form();
 			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
 			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;

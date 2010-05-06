@@ -178,6 +178,22 @@ void Matrix::print(const string& name,const string& suffix) const{
 
 //---------------------------------------------------------------------------
 
+void Matrix::pretty_print(ostream& out) const{
+	int i,j,k;
+	int max_length = maximal_decimal_length();
+	for (i = 0; i < nr; i++) {
+		for (j = 0; j < nc; j++) {
+			 for (k= 0; k <= max_length - decimal_length(elements[i][j]); k++) {
+				out<<" ";
+			}
+			out<<elements[i][j];
+		}
+		out<<endl;
+	}
+	out<<endl;
+}
+//---------------------------------------------------------------------------
+
 
 void Matrix::read() const{      //to overload for files
 	int i,j;
@@ -295,6 +311,18 @@ void Matrix::append(const Matrix& M) {
 		elements.push_back(M.elements[i]);
 	}
 	nr += M.nr;
+}
+
+//---------------------------------------------------------------------------
+
+void Matrix::cut_columns(int c) { 
+	if (c > nc || c < 0) {
+		error("error: Bad argument passed to Matrix::cut_columns.");
+	}
+	for (int i=0; i<nr; i++) {
+		elements[i].resize(c);
+	}
+	nc = c;
 }
 
 //---------------------------------------------------------------------------
