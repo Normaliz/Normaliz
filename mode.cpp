@@ -200,18 +200,64 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 //---------------------------------------------------------------------------
 
-void run_mode_456(string& computation_type, const Matrix& Congruences, const Matrix& Equations,  Matrix Inequalities, Output& Out) {
+void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Equations,  Matrix Inequalities, Output& Out) {
 	
-/*	cout << "Congruences:";
+	cout << "Congruences:";
 	Congruences.read();
 	cout << endl << endl << "Equations:";
 	Equations.read();
 	cout << endl << endl<< "Inequalities:";
 	Inequalities.read();
 	cout << endl << endl;
-*/	
-	//TODO handle Congruences
-	
+
+	// handle Congurences
+	int nr_cong = Congruences.nr_of_rows();
+	if (nr_cong > 0) {
+		int i,j;
+		int dim =  Congruences.nr_of_columns() -1;
+		
+		//add slack variables
+		Matrix Cong_Slack(nr_cong, dim+nr_cong);
+		for (i = 1; i <= nr_cong; i++) {
+			for (j = 1; j <= dim; j++) {
+				Cong_Slack.write(i,j,Congruences.read(i,j));
+			}
+			Cong_Slack.write(i,dim+i,Congruences.read(i,dim+1));
+		}
+
+		cout << "Cong_Slack:";
+		Cong_Slack.read();
+		cout <<endl<<endl;
+		
+		//compute kernel
+		Lineare_Transformation Diagonalization = Transformation(Cong_Slack);
+		int rank = Diagonalization.get_rank();
+		Matrix H = Diagonalization.get_right();
+		Matrix H_Inv = Diagonalization.get_right_inv();
+H.read(); cout<<endl<<endl;
+		Matrix Ker_Basis_Transpose(dim, dim+nr_cong-rank);
+		Matrix Ker_Basis_Transpose_Inv(dim+nr_cong-rank, dim);
+		for (i = 1; i <= dim; i++) {
+			for (j = rank+1; j <= dim+nr_cong; j++) {
+				Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
+				Ker_Basis_Transpose_Inv.write(j-rank,i,H_Inv.read(j,i));
+			}
+		}
+Ker_Basis_Transpose.read();
+		Diagonalization.set_rank(dim+nr_cong-rank);
+		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
+		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
+	Diagonalization.get_center().read();
+		Diagonalization.set_center(Matrix(dim+nr_cong-rank));
+		Sublattice_Representation Basis_Change(Diagonalization,false);
+		Out.set_basis_change(Basis_Change);
+
+		Equations = Equations.multiplication(Ker_Basis_Transpose);
+		Inequalities = Inequalities.multiplication(Ker_Basis_Transpose);
+
+	}
+
+	// use positive orthant if no inequalities are given
 	if (Inequalities.nr_of_rows() == 0) {
 		Inequalities = Matrix(Equations.nr_of_columns()); 
 	}
