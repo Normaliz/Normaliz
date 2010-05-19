@@ -97,7 +97,7 @@ public:
   list< vector<Integer> > read_homogeneous_elements()const; //read the homogeneous elements
   const list< vector<Integer> >& acces_hilbert_basis()const; //read the Hilbert basis
   vector<Integer> read_h_vector() const; //returns the h-vector
-  Integer read_hilbert_basis_size() const; //returns the size of the Hilbert basis
+  int read_hilbert_basis_size() const; //returns the size of the Hilbert basis
 
 	void clear(); //  resets status to "key initialized" to save memory
 

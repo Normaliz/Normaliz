@@ -279,7 +279,7 @@ vector<Integer> Simplex::read_h_vector() const{
 
 //---------------------------------------------------------------------------
 
-Integer Simplex::read_hilbert_basis_size() const{
+int Simplex::read_hilbert_basis_size() const{
 	return Hilbert_Basis.size();
 }
 
