@@ -112,7 +112,8 @@ public:
 	
 	Integer get_c() const;
 	
-
+	/* returns the congruences defining the sublattice */
+	Matrix get_congruences() const;
 
 };
 //---------------------------------------------------------------------------

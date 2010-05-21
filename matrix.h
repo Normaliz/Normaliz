@@ -84,6 +84,7 @@ public:
 									  //needed to write an entry
 
 	void append(const Matrix& M); // appends the rows of M to this
+	void append(const vector<Integer>& v); // append the row v to this
 	void cut_columns(int c); // remove columns, only the first c columns will survive
 
 	inline const Integer& get_elem(int row, int col) const {

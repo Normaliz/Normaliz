@@ -315,6 +315,17 @@ void Matrix::append(const Matrix& M) {
 
 //---------------------------------------------------------------------------
 
+
+void Matrix::append(const vector<Integer>& V) {
+	if (nc != V.size()) {
+		error("error: Bad argument passed to Matrix::append.");
+	}
+	elements.push_back(V);
+	nr++;
+}
+
+//---------------------------------------------------------------------------
+
 void Matrix::cut_columns(int c) { 
 	if (c > nc || c < 0) {
 		error("error: Bad argument passed to Matrix::cut_columns.");

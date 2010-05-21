@@ -151,10 +151,11 @@ void Sublattice_Representation::compose(const Sublattice_Representation& SR) {
 	B = B.multiplication(SR.B);
 	c = c * SR.c;
 	
-	//check if a factor can be extraced from B
+	//check if a factor can be extraced from B  TODO necessary?
 	Integer g = B.matrix_gcd();
 	g = gcd(g,c);  //TODO necessary??
 	if (g > 1) {
+		cout << "**** found a gcd "<<g<<endl;
 		c /= g;
 		B.scalar_division(g);
 	}
@@ -253,3 +254,32 @@ Integer Sublattice_Representation::get_c() const {
 }
 
 //---------------------------------------------------------------------------
+
+/* returns the congruences defining the sublattice */
+Matrix Sublattice_Representation::get_congruences() const {
+	if ( c == 1 ) { // no congruences then
+		return Matrix(0,dim+1);
+	}
+
+	// Cong is B transposed and with an extra column for the modul m
+	Matrix Cong = B;
+	Cong.append(Matrix(1,rank));
+	Cong = Cong.transpose();
+
+	vector<Integer> gcds = Cong.make_prime();
+	Integer m; //the modul
+	Matrix Cong2(0,dim+1); //only the relavant congruences
+	vector<Integer> new_row;
+	for (int j=1; j<=rank; j++) {
+		m = c/gcds[j-1];
+		if ( m != 1 ) {
+			new_row = Cong.read(j);
+			v_reduction_modulo(new_row,m);
+			new_row[dim] = m;
+			new_row = v_make_prime(new_row);
+			if (new_row[dim] != 1);
+			Cong2.append(new_row);
+		}
+	}
+	return Cong2;
+}

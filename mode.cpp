@@ -234,24 +234,21 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		int rank = Diagonalization.get_rank();
 		Matrix H = Diagonalization.get_right();
 		Matrix H_Inv = Diagonalization.get_right_inv();
-H.read(); cout<<endl<<endl;
 		Matrix Ker_Basis_Transpose(dim, dim+nr_cong-rank);
-		Matrix Ker_Basis_Transpose_Inv(dim+nr_cong-rank, dim);
+//		Matrix Ker_Basis_Transpose_Inv(dim+nr_cong-rank, dim);
 		for (i = 1; i <= dim; i++) {
 			for (j = rank+1; j <= dim+nr_cong; j++) {
 				Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
-				Ker_Basis_Transpose_Inv.write(j-rank,i,H_Inv.read(j,i));
+//				Ker_Basis_Transpose_Inv.write(j-rank,i,H_Inv.read(j,i));
 			}
 		}
-Ker_Basis_Transpose.read();
-		Diagonalization.set_rank(dim+nr_cong-rank);
-		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
-		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
-	Diagonalization.get_center().read();
-		Diagonalization.set_center(Matrix(dim+nr_cong-rank));
-		Sublattice_Representation Basis_Change(Diagonalization,false);
-		Out.set_basis_change(Basis_Change);
 
+		//TODO now a new linear transformation is computed, necessary??
+Ker_Basis_Transpose.transpose().read();
+		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
+cout<<"\ncong:";
+Basis_Change.get_congruences().read();
+		Out.set_basis_change(Basis_Change);
 		Equations = Equations.multiplication(Ker_Basis_Transpose);
 		Inequalities = Inequalities.multiplication(Ker_Basis_Transpose);
 
