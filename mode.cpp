@@ -210,11 +210,25 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 	Inequalities.read();
 	cout << endl << endl;
 
-	// handle Congurences
+	int dim = 0;
 	int nr_cong = Congruences.nr_of_rows();
+	if (nr_cong > 0) {	
+		dim = Congruences.nr_of_columns() -1;
+		if (Equations.nr_of_rows() > 0 &&  Equations.nr_of_columns() != dim) {
+			cerr << "Error: dimensions of input matricies do not match!";
+			global_error_handling();
+		}
+	} else {
+		dim = Equations.nr_of_columns();
+	}
+	// use positive orthant if no inequalities are given
+	if (Inequalities.nr_of_rows() == 0) {
+		Inequalities = Matrix(Equations.nr_of_columns()); 
+	}
+		
+	// handle Congurences
 	if (nr_cong > 0) {
 		int i,j;
-		int dim =  Congruences.nr_of_columns() -1;
 		
 		//add slack variables
 		Matrix Cong_Slack(nr_cong, dim+nr_cong);
@@ -254,11 +268,6 @@ Basis_Change.get_congruences().read();
 
 	}
 
-	// use positive orthant if no inequalities are given
-	if (Inequalities.nr_of_rows() == 0) {
-		Inequalities = Matrix(Equations.nr_of_columns()); 
-	}
-		
 	run_mode_equ_inequ(computation_type, Equations, Inequalities, Out);
 }
 
