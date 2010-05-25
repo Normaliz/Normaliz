@@ -27,11 +27,6 @@
  */
 
 //---------------------------------------------------------------------------
-#ifdef norm32
-inline long explicit_cast_to_long(const Integer & i) {
-	return i;
-}
-#endif
 
 #ifdef norm64
 inline long explicit_cast_to_long(const Integer & i) {

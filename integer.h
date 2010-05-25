@@ -27,17 +27,10 @@
 //---------------------------------------------------------------------------
 
 //default: norm64
-#ifndef norm32
 #ifndef normbig
 #ifndef norm64
 	#define norm64
 #endif
-#endif
-#endif
-
-
-#ifdef norm32
-	typedef  long Integer;
 #endif
 
 #ifdef norm64
