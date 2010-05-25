@@ -461,6 +461,9 @@ void Matrix::scalar_multiplication(const Integer& scalar){
 
 void Matrix::scalar_division(const Integer& scalar){
 	int i,j;
+	if(scalar == 0) {
+		error("error:  Bad argument passed to Matrix::scalar_division. (div by zero)");
+	}
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
 			if (elements[i][j]%scalar!=0) {

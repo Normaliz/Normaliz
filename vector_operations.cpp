@@ -241,11 +241,11 @@ Integer v_gcd(const vector<Integer>& v){
 
 Integer v_lcm(const vector<Integer>& v){
 	int i,size=v.size();
-	Integer g=0;;
+	Integer g=1;
 	for (i = 0; i < size; i++) {
 		g=lcm(g,v[i]);
-		if (g==1) {
-			return 1;
+		if (g==0) {
+			return 0;
 		}
 	}
 	return g;
