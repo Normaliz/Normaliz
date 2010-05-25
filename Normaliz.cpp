@@ -55,8 +55,8 @@ void printHelp(char* command) {
 	cout << "  -a\tall output files are written"<<endl;
 	cout << "  -e\tperform tests for arithmetic errors"<<endl;
 	cout << "  -c\tverbose (prints control data)"<<endl;
-	cout << "  -m\tsave memory"<<endl;
-	cout << "  -i\tthe config file normaliz.cfg will be ignored"<<endl;
+	cout << "  -m\tsave memory (currently has no effect)"<<endl;
+	cout << "  -i\tobsolete option"<<endl;
 }
 
 //---------------------------------------------------------------------------
@@ -74,7 +74,6 @@ int main(int argc, char* argv[])
 	//in this object
 
 	// read commandline options 
-	bool read_setup=true;
 	bool filename_set=false;
 	string option;            //all options concatenated (including -)
 	for (i = 1; i <argc; i++) {
@@ -88,120 +87,6 @@ int main(int argc, char* argv[])
 	}
 
 
-	//determine whether the config file should be ignored
-	for (i = 0; i <option.size(); i++) {
-		if (option[i]=='i') {
-			read_setup=false;
-		}
-	}
-
-
-	//read config file
-
-	if (read_setup==true) {
-		ifstream setup("normaliz.cfg");
-		if (setup.is_open()==false) {
-			if (verbose) {
-				cout << "normaliz.cfg not found. Using default values and command line parameters."<<endl;
-			}
-		}
-		else{
-			string buf;
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set test_arihmetic_overflow
-				test_arithmetic_overflow=true;
-			while (buf!="=")
-				setup>>buf;
-			setup>>overflow_test_modulus;             //set overflow_test_modulus
-			setup>>buf;
-			while (buf!="=")
-				setup>>buf;
-			setup>>lifting_bound;   //set lifting_bound 
-			setup>>buf;
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set control data
-				verbose=true;
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set save memory / don't optimization for speed
-				optimize_speed=false;
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf!="support_hyperplanes" && buf!="triangulation" && buf!="normal" && buf!="triangulation_hilbert_basis" &&  buf!="hilbert_basis" && buf!="hilbert_polynomial"&& buf!="hilbert_basis_polynomial"&& buf!="dual") {
-				cerr<<"warning: Unknown \"Computation type \" in file normaliz.cfg. May be a bad format of the file."<<endl;
-				cerr<<"Running \"Computation type\" = triangulation_hilbert_basis ..."<<endl;
-				computation_type="triangulation_hilbert_basis";
-			}
-			else                     //set computation_type
-				computation_type=buf;
-			if (computation_type=="normal") {
-				computation_type="triangulation_hilbert_basis";
-			}
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set out flag
-				Out.set_write_out(true);
-			else
-				Out.set_write_out(false);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set inv flag
-				Out.set_write_inv(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set ext flag
-				Out.set_write_ext(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set esp flag
-				Out.set_write_esp(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set typ flag
-				Out.set_write_typ(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set egn flag
-				Out.set_write_egn(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set gen flag
-				Out.set_write_gen(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set sup flag
-				Out.set_write_sup(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set tri flag
-				Out.set_write_tri(true);
-			while (buf!="=")
-				setup>>buf;
-			setup>>buf;
-			if (buf=="YES")           //set ht1 flag
-				Out.set_write_ht1(true);
-			if (setup.fail()!= false ){
-				cerr << "warning: Failed to read file setup.txt. May be a bad format of the file."<<endl;
-				cerr << "The program will run in normal mode."<<endl;
-			}
-			setup.close();
-		}
-	}
 
 	//Analyzing the command line options
 
