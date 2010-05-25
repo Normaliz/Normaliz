@@ -215,16 +215,10 @@ vector<int> v_complement(const int& a, const vector<int>& v){
 //---------------------------------------------------------------------------
 
 vector<Integer> v_abs(const vector<Integer>& v){
-	int i,j=v.size();
-	vector<Integer> w(j,0);
-	if (j==0) {
-		v_error("error: Bad argument passed to v_abs.\n");
-		return w;
-	}
-	else{
-		for (i = 0; i < j; i++) {
-			w[i]=Iabs(v[i]);
-		}
+	int i, size=v.size();
+	vector<Integer> w(size,0);
+	for (i = 0; i < size; i++) {
+		w[i]=Iabs(v[i]);
 	}
 	return w;
 }
@@ -232,89 +226,63 @@ vector<Integer> v_abs(const vector<Integer>& v){
 //---------------------------------------------------------------------------
 
 Integer v_gcd(const vector<Integer>& v){
-	int i,j=v.size();
-	if (j==0) {
-		v_error("error: Bad argument passed to v_gcd.");
-		return 0;
-	}
-	else{
-		if (v[0]==1) {
+	int i, size=v.size();
+	Integer g=0;
+	for (i = 0; i < size; i++) {
+		g=gcd(g,v[i]);
+		if (g==1) {
 			return 1;
 		}
-		Integer g=v[0];
-		for (i = 1; i < j; i++) {
-			g=gcd(g,v[i]);
-			if (g==1) {
-				return 1;
-			}
-		}
-		return g;
 	}
+	return g;
 }
 
 //---------------------------------------------------------------------------
 
 Integer v_lcm(const vector<Integer>& v){
-	int i,j=v.size();
-	if (j==0) {
-		v_error("error: Bad argument passed to v_lcm.");
-		return 0;
-	}
-	else{
-		Integer g=v[0];
-		for (i = 1; i < j; i++) {
-			g=lcm(g,v[i]);
-			if (g==0) {
-				return 0;
-			}
+	int i,size=v.size();
+	Integer g=0;;
+	for (i = 0; i < size; i++) {
+		g=lcm(g,v[i]);
+		if (g==1) {
+			return 1;
 		}
-		return g;
 	}
+	return g;
 }
 
 //---------------------------------------------------------------------------
 
 vector<Integer> v_make_prime(const vector<Integer>& v){
-	int i,j=v.size();
-	vector<Integer> w(j,0);
-	if (j==0) {
+	int i, size=v.size();
+	vector<Integer> w(size,0);
+	Integer g=v_gcd(v);
+	if (g==0) {
 		return w;
 	}
-	else{
-		Integer g=v_gcd(v);
-		if (g==0) {
-			return w;
+	else {
+		for (i = 0; i < size; i++) {
+			w[i]=v[i]/g;
 		}
-		else {
-			for (i = 0; i < j; i++) {
-				w[i]=v[i]/g;
-			}
-		}
-		return w;
 	}
+	return w;
 }
 
 //---------------------------------------------------------------------------
 
 vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
-	int i,j=v.size();
-	vector<Integer> w(j,0);
-	if (j==0) {
-		g=0;
+	int i, size=v.size();
+	vector<Integer> w(size,0);
+	g=v_gcd(v);
+	if (g==0) {
 		return w;
 	}
-	else{
-		g=v_gcd(v);
-		if (g==0) {
-			return w;
+	else {
+		for (i = 0; i < size; i++) {
+			w[i]=v[i]/g;
 		}
-		else {
-			for (i = 0; i < j; i++) {
-				w[i]=v[i]/g;
-			}
-		}
-		return w;
 	}
+	return w;
 }
 
 //---------------------------------------------------------------------------
@@ -334,16 +302,16 @@ vector<int> v_non_zero_pos(vector<Integer> v){
 //---------------------------------------------------------------------------
 
 void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
-	int i,j=v.size();
-	for (i = 0; i <j; i++) {
+	int i,size=v.size();
+	for (i = 0; i <size; i++) {
 		v[i]=v[i]*scalar;
 	}
 }
 
 vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Integer& scalar){
-	int i,j=v.size();
-	vector<Integer> w(j);
-	for (i = 0; i <j; i++) {
+	int i,size=v.size();
+	vector<Integer> w(size);
+	for (i = 0; i <size; i++) {
 		w[i]=v[i]*scalar;
 	}
 	return w;
@@ -352,8 +320,8 @@ vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Inte
 //---------------------------------------------------------------------------
 
 void v_scalar_division(vector<Integer>& v, const Integer& scalar){
-	int i,j=v.size();
-	for (i = 0; i <j; i++) {
+	int i,size=v.size();
+	for (i = 0; i <size; i++) {
 		if (v[i]%scalar!=0) {
 			v_error("error: Bad argument passed to vector_operations::v_scalar_division.");
 			return;
@@ -367,8 +335,8 @@ void v_scalar_division(vector<Integer>& v, const Integer& scalar){
 //---------------------------------------------------------------------------
 
 void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
-	int i,j=v.size();
-	for (i = 0; i <j; i++) {
+	int i,size=v.size();
+	for (i = 0; i <size; i++) {
 		v[i]=v[i]%modulo;
 		if (v[i]<0) {
 			v[i]=v[i]+modulo;
