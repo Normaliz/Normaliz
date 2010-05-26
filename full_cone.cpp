@@ -1503,14 +1503,13 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 //---------------------------------------------------------------------------
 
 void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
-	if (verbose == true) {
+	if (verbose) {
 		cout << "\n************************************************************\n";
 		cout << "computing support hyperplanes ";
-		if (do_triang) cout << "and triangulation";
-		cout << "..." << endl;
+		if (do_triang) cout << "and triangulation ";
+		cout << "(pyramid)..." << endl;
 	}
 
-	compute_support_hyperplanes_pyramid(do_triang);
 	int i, j;
 	vector<Integer> hyperplane(hyp_size, 0), L, R;
 	Simplex S(Generators);
