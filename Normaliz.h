@@ -37,8 +37,8 @@
 //---------------------------------------------------------------------------
 // global variables
 
-//used for turn on and off the tests for arithmetic overflow
-//the run time may double when the tests are performed
+// used for turn on and off the tests for arithmetic overflow
+// the run time may double when the tests are performed
 bool test_arithmetic_overflow=false;
 
 // used for testing possible arithmetic overflow at key points
@@ -47,15 +47,15 @@ bool test_arithmetic_overflow=false;
 // a matrix which procuses overflow over int but not over long long is
 //    22222   33337
 //    55559   77773
-int overflow_test_modulus=10403;
+int overflow_test_modulus=15401;
 
-// used to turn on and off the display of a progres report
+// used to turn on and off the display of a progress report
 // designed for users who run complex examples
 // it is activated by setup or by the option 'c' in the command line
 bool verbose=false;
 
 // used to turn on and off speed optimization
-// depend on how much RAM memory is available on the system
+// depend on how much RAM is available on the system
 bool optimize_speed=true;
 
 

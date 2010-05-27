@@ -283,7 +283,6 @@ void Output::write_matrix_ht1(const Matrix& M) const{
 
 void Output::cone() const{
 	int i,j,nr,rank=Basis_Change.get_rank();    //read local data
-	string status = Result.read_status();
 	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
 	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
 
@@ -293,7 +292,7 @@ void Output::cone() const{
 	cout<<endl;
 
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
-	if (status!="support hyperplanes"&&tri){           			 //write triangulation
+	if (tri && Result.isComputed(ConeProperty::SupportHyperplanes)) { 			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
 		write_matrix_tri(T);
 	}
@@ -304,7 +303,7 @@ void Output::cone() const{
 		ofstream out(file);
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
@@ -362,7 +361,7 @@ void Output::cone() const{
 			out<<"(original) semigroup is not homogeneous"<<endl;
 		}
 		else {
-			if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if ( Result.isComputed(ConeProperty::Ht1Elements) ) {
 				Matrix Hom = Result.read_homogeneous_elements();
 				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
@@ -377,11 +376,11 @@ void Output::cone() const{
 				out<<Linear_Form[i]<<" ";
 			}
 			out<<endl<<endl;
-			if (status!="support hyperplanes"){
+			if (Result.isComputed(ConeProperty::Triangulation)){
 				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
 			out<<endl;
-			if (status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				out<<"h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
@@ -406,7 +405,7 @@ void Output::cone() const{
 		ofstream inv(file);
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
 			nr=Hilbert_Basis_Full_Cone.nr_of_rows();
 			inv<<"integer hilbert_basis_elements = "<<nr<<endl;
@@ -430,7 +429,7 @@ void Output::cone() const{
 		}
 		else {
 			inv<<"boolean homogeneous = "<<"true"<<endl;
-			if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::Ht1Elements)) {
 				Matrix Hom=Result.read_homogeneous_elements();
 				nr=Hom.nr_of_rows();
 				inv<<"integer height_1_elements = "<<nr<<endl;
@@ -442,10 +441,10 @@ void Output::cone() const{
 				inv<<Linear_Form[i]<<" ";
 			}
 			inv<<endl;
-			if (status!="support hyperplanes"){
+			if (Result.isComputed(ConeProperty::Triangulation)){
 				inv<<"integer multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
-			if (status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
@@ -473,14 +472,13 @@ void Output::cone() const{
 void Output::polytop()const{
 	int i,j,k,nr,nc,rank=Basis_Change.get_rank(),max_decimal_length;    //read local data
 	Integer buf;
-	string status=Result.read_status();
 	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
 	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();	
 
 	if (esp) {
 		write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
 	}
-	if (tri && status!="support hyperplanes"){       			 //write triangulation
+	if (tri && Result.isComputed(ConeProperty::Triangulation)){      			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
 		write_matrix_tri(T);
 	}
@@ -493,7 +491,7 @@ void Output::polytop()const{
 		ofstream out(file);
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
@@ -506,7 +504,7 @@ void Output::polytop()const{
 			out<<nr<<" generators of Ehrhart ring:"<<endl;
 			Hilbert_Basis.pretty_print(out);
 		}
-		if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::Ht1Elements)) {
 			Matrix Lattice_Points=Result.read_homogeneous_elements();
 			Lattice_Points = Basis_Change.from_sublattice(Lattice_Points);
 			Lattice_Points.cut_columns(Lattice_Points.nr_of_columns()-1); //remove extra coordinate
@@ -563,16 +561,16 @@ void Output::polytop()const{
 			}
 			out<<endl;
 		}
-		if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::Ht1Elements)) {
 			Matrix Hom=Result.read_homogeneous_elements();
 			Hom = Basis_Change.from_sublattice(Hom);
 			write_matrix_ht1(Hom);
 		}
-		if (status!="support hyperplanes"){
+		if (Result.isComputed(ConeProperty::Triangulation)) {
 			out<<"normalized volume = "<<Result.read_multiplicity()<<endl;
 		}
 		out<<endl;
-		if (status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 			vector<Integer> h_vector=Result.read_h_vector();
 			out<<"h-vector = ";
 			for (i = 0; i < h_vector.size(); i++) {
@@ -590,14 +588,13 @@ void Output::polytop()const{
 
 
 
-
 	if (inv==true) {//printing .inv file
 		string name_open=name+".inv"; 							 //preparing output files
 		const char* file=name_open.c_str();
 		ofstream inv(file);
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
 			nr=Hilbert_Basis_Full_Cone.nr_of_rows();
 			inv<<"integer hilbert_basis_elements = "<<nr<<endl;
@@ -620,7 +617,7 @@ void Output::polytop()const{
 		}
 		else {
 			inv<<"boolean homogeneous = "<<"true"<<endl;
-			if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::Ht1Elements)) {
 				Matrix Hom=Result.read_homogeneous_elements();
 				nr=Hom.nr_of_rows();
 				inv<<"integer height_1_elements = "<<nr<<endl;
@@ -632,10 +629,10 @@ void Output::polytop()const{
 				inv<<Linear_Form[i]<<" ";
 			}
 			inv<<endl;
-			if (status!="support hyperplanes"){
+			if (Result.isComputed(ConeProperty::Triangulation)){
 				inv<<"integer multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
-			if (status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
@@ -663,13 +660,12 @@ void Output::polytop()const{
 void Output::rees(const bool primary) const{
 	int i,j,k,nr,nc,max_decimal_length;    //read local data
 	Integer buf;
-	string status=Result.read_status();
 	Matrix Generators=Result.read_generators();
 	Matrix Support_Hyperplanes=Result.read_support_hyperplanes();
 	int nr_generators_ideal=0;
 
 	write_matrix_esp(Support_Hyperplanes);         //write the suport hyperplanes of the full dimensional cone
-	if (status!="support hyperplanes"&&tri){      			 //write triangulation
+	if (tri && Result.isComputed(ConeProperty::Triangulation)){      			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
 		write_matrix_tri(T);
 	}
@@ -681,7 +677,7 @@ void Output::rees(const bool primary) const{
 		ofstream out(file);
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Hilbert_Basis=Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis);
 			if(typ) {
@@ -729,7 +725,7 @@ void Output::rees(const bool primary) const{
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
 		Extreme_Rays.pretty_print(out);
 
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			nr=Hilbert_Basis.nr_of_rows();
 			nc=Hilbert_Basis.nr_of_columns();
 			max_decimal_length=Hilbert_Basis.maximal_decimal_length();
@@ -758,7 +754,7 @@ void Output::rees(const bool primary) const{
 			out<<"(original) semigroup is not homogeneous"<<endl;
 		}
 		else {
-			if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::Ht1Elements)) {
 				Matrix Hom=Result.read_homogeneous_elements();
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
@@ -771,11 +767,11 @@ void Output::rees(const bool primary) const{
 				out<<Linear_Form[i]<<" ";
 			}
 			out<<endl<<endl;
-			if (status!="support hyperplanes"){
+			if (Result.isComputed(ConeProperty::Triangulation)) {
 				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
 			out<<endl;
-			if (status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				out<<"h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
@@ -808,7 +804,7 @@ void Output::rees(const bool primary) const{
 		ofstream inv(file);
 
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
-		if (status=="normal"||status=="hilbert basis polynomial") {
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
 			nr=Hilbert_Basis_Full_Cone.nr_of_rows();
 			inv<<"integer hilbert_basis_elements = "<<nr<<endl;
@@ -833,7 +829,7 @@ void Output::rees(const bool primary) const{
 		}
 		else {
 			inv<<"boolean homogeneous = "<<"true"<<endl;
-			if (status=="normal"||status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::Ht1Elements)) {
 				Matrix Hom=Result.read_homogeneous_elements();
 				nr=Hom.nr_of_rows();
 				inv<<"integer height_1_elements = "<<nr<<endl;
@@ -844,10 +840,10 @@ void Output::rees(const bool primary) const{
 				inv<<Linear_Form[i]<<" ";
 			}
 			inv<<endl;
-			if (status!="support hyperplanes"){
+			if (Result.isComputed(ConeProperty::Triangulation)){
 				inv<<"integer multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
-			if (status=="hilbert polynomial"||status=="hilbert basis polynomial") {
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {

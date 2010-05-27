@@ -22,19 +22,39 @@
 
 #include <set>
 #include <list>
+#include <bitset>
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
 
+/* An enumeration of things, that can be computed for a cone.
+ * The namespace prevents interferring with other names.
+ */
+namespace ConeProperty {
+	enum Enum {
+		Generators,
+		ExtremeRays,
+		SupportHyperplanes,
+		Triangulation,
+		HilbertBasis,
+		Ht1Elements,
+		HilbertPolynomial,
+		IsPointed,
+		IsHt1Generated,
+		IsHt1ExtremeRays,
+		EnumSize // this has to be the last entry, to get the number of entries in the enum
+	};
+}
 
 class Full_Cone {
 	int dim;
 	int nr_gen;
 	int hyp_size;
-	string status;
+	
 	bool is_pointed;
 	bool is_ht1_generated;
 	bool is_ht1_extreme_rays;
+	bitset<ConeProperty::EnumSize> is_Computed;
 	vector<Integer> Linear_Form;
 	Integer multiplicity;
 	Matrix Generators;
@@ -99,7 +119,7 @@ class Full_Cone {
 	void compute_support_hyperplanes_triangulation();
 	void support_hyperplanes_partial_triangulation();
 	void compute_support_hyperplanes_pyramid(const bool do_triang = false);
-    void support_hyperplane_common();
+	void support_hyperplane_common();
 	void compute_extreme_rays();
 	void compute_hilbert_basis();
 	void compute_ht1_elements();
@@ -107,9 +127,8 @@ class Full_Cone {
 	void compute_hilbert_basis_polynomial();
 
 	void check_pointed();
-    void check_ht1_generated();
-    void check_ht1_extreme_rays();
-
+	void check_ht1_generated();
+	void check_ht1_extreme_rays();
 
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
 	void add_hyperplane(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
@@ -153,7 +172,6 @@ public:
 	int read_dimension() const;        //returns dimension
 	int read_nr_generators() const;    //returns the number of generators
 	int read_hyp_size() const;         //returns hyp_size
-	string read_status() const;        //returns status, may be: "non initialized", ...
 	bool read_homogeneous() const;     //returns homogeneous
 	vector<Integer> read_linear_form() const; //returns the linear form
 	Integer read_multiplicity() const; //returns multiplicity
@@ -169,6 +187,8 @@ public:
 	Matrix read_homogeneous_elements() const;
 	vector<Integer> read_h_vector() const;
 	vector<Integer> read_hilbert_polynomial() const;
+	
+	bool isComputed(ConeProperty::Enum prop) const; 
 
 
 /*---------------------------------------------------------------------------

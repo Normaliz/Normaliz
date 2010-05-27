@@ -949,7 +949,6 @@ Full_Cone::Full_Cone(){
 	dim=0;
 	nr_gen=0;
 	hyp_size=0;
-	status="non initialized";
 }
 
 //---------------------------------------------------------------------------
@@ -970,6 +969,7 @@ Full_Cone::Full_Cone(Matrix M){
 	}
 	hyp_size=dim+nr_gen;
 	multiplicity = 0;
+	is_Computed =  bitset<ConeProperty::EnumSize>();
 	is_ht1_extreme_rays = false;
 	is_ht1_generated = false;
 	Extreme_Rays = vector<bool>(nr_gen,false);
@@ -986,7 +986,6 @@ Full_Cone::Full_Cone(Matrix M){
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 	}
-	status="initialized, before computations";
 	//Generators.print("bla.egn");
 }
 
@@ -996,7 +995,7 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 	dim=C.dim;
 	nr_gen=C.nr_gen;
 	hyp_size=C.hyp_size;
-	status=C.status;
+	is_Computed = C.is_Computed;
 	is_pointed=C.is_pointed;
 	is_ht1_generated=C.is_ht1_generated;
 	is_ht1_extreme_rays=C.is_ht1_extreme_rays;
@@ -1021,13 +1020,13 @@ Full_Cone::Full_Cone(Matrix M, int i) {
 	nr_gen = Generators.nr_of_rows();
 	hyp_size = dim+nr_gen;
 	multiplicity = 0;
+	is_Computed =  bitset<ConeProperty::EnumSize>();
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
 	Triangulation = list< Simplex >();
 	Hilbert_Basis = list< vector<Integer> >();
 	Homogeneous_Elements = list< vector<Integer> >();
 	H_Vector = vector<Integer>(dim);
-	status="initialized, before computations";
 }
 
 //---------------------------------------------------------------------------
@@ -1042,7 +1041,6 @@ void Full_Cone::print()const{
 	cout<<"\ndim="<<dim<<".\n";
 	cout<<"\nnr_gen="<<nr_gen<<".\n";
 	cout<<"\nhyp_size="<<hyp_size<<".\n";
-	cout<<"\nStatus is "<<status<<".\n";
 	cout<<"\nHomogeneous is "<<is_ht1_generated<<".\n";
 	cout<<"\nLinear_Form is:\n";
 	v_read(Linear_Form);
@@ -1067,6 +1065,12 @@ void Full_Cone::print()const{
 
 //---------------------------------------------------------------------------
 
+bool Full_Cone::isComputed(ConeProperty::Enum prop) const{
+	return is_Computed[prop];
+}
+
+//---------------------------------------------------------------------------
+
 int Full_Cone::read_dimension()const{
 	return dim;
 }
@@ -1081,12 +1085,6 @@ int Full_Cone::read_nr_generators()const{
 
 int Full_Cone::read_hyp_size()const{
 	return hyp_size;
-}
-
-//---------------------------------------------------------------------------
-
-string Full_Cone::read_status()const{
-	return status;
 }
 
 //---------------------------------------------------------------------------
@@ -1133,11 +1131,6 @@ Matrix Full_Cone::read_support_hyperplanes()const{
 	return M;
 }
 
-//---------------------------------------------------------------------------
-
-//list< vector<int> > Full_Cone::get_triangulation_list() const {
-//	return Triangulation;
-//}
 //---------------------------------------------------------------------------
 
 Matrix Full_Cone::read_triangulation()const{
@@ -1221,7 +1214,6 @@ vector<Integer> Full_Cone::read_hilbert_polynomial() const{
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplane_common() {
-    status = "support hyperplanes";
 	 check_pointed();
     if(!is_pointed) return;
     compute_extreme_rays();
@@ -1242,15 +1234,14 @@ void Full_Cone::support_hyperplanes_pyramid() {
 void Full_Cone::support_hyperplanes_partial_triangulation() {
 	compute_support_hyperplanes(true);
 	support_hyperplane_common();
-	//process_non_compressed(non_compressed); //in the method again (nicht gut)
+	//process_non_compressed(non_compressed); //TODO in the method again (nicht gut)
 }
 
 void Full_Cone::support_hyperplanes_triangulation() {
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
-    if(!is_pointed) return;
+	if(!is_pointed) return;
 	compute_multiplicity();
-	status="triangulation";
 }
 
 void Full_Cone::support_hyperplanes_triangulation_pyramid() {
@@ -1258,7 +1249,6 @@ void Full_Cone::support_hyperplanes_triangulation_pyramid() {
 	support_hyperplane_common();
     if(!is_pointed) return;
 	compute_multiplicity();
-	status="triangulation";
 }
 
 void Full_Cone::triangulation_hilbert_basis(){
@@ -1266,35 +1256,34 @@ void Full_Cone::triangulation_hilbert_basis(){
 	support_hyperplane_common();
     if(!is_pointed) return;
 	compute_hilbert_basis();
-	status="normal";
 }
 
 void Full_Cone::hilbert_basis(){
 	support_hyperplanes_partial_triangulation();
 	if(!is_pointed) return;
 	compute_hilbert_basis();
-	status="normal"; //ACHTUNG! status normal, aber keine komplette Triangulierung
 }
 
 void Full_Cone::ht1_elements(){
 	support_hyperplanes_partial_triangulation();
 	if(!is_pointed) return;
 	compute_ht1_elements();
-	status="normal"; //ACHTUNG! status normal, aber keine komplette Triangulierung
 }
 
 void Full_Cone::hilbert_basis_polynomial(){
 	compute_support_hyperplanes();
-   status = "support hyperplanes";
 	check_pointed();
 	if(!is_pointed) return;
 	compute_extreme_rays();
 	
 	check_ht1_extreme_rays();
 	if ( !is_ht1_extreme_rays ) {
-		cout << "************************************************************" << endl;
-		cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+		if (verbose) {
+			cout << "************************************************************" << endl;
+			cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+		}
 		Support_Hyperplanes.clear();
+		is_Computed.set(ConeProperty::SupportHyperplanes,false);
 		hilbert_basis();
 	} else {
 		check_ht1_generated();
@@ -1304,7 +1293,6 @@ void Full_Cone::hilbert_basis_polynomial(){
 			compute_hilbert_basis_polynomial();
 			compute_polynomial();
 		}
-		status="hilbert basis polynomial";
 	}
 }
 
@@ -1316,8 +1304,12 @@ void Full_Cone::hilbert_polynomial(){
 	
 	check_ht1_extreme_rays();
 	if ( !is_ht1_extreme_rays ) {
-		cout << "************************************************************" << endl;
-		cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+		if (verbose) {
+			cout << "************************************************************" << endl;
+			cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+		}
+		Support_Hyperplanes.clear();
+		is_Computed.set(ConeProperty::SupportHyperplanes,false);
 		hilbert_basis();
 	} else {
 		check_ht1_generated();
@@ -1327,7 +1319,6 @@ void Full_Cone::hilbert_polynomial(){
 			compute_hilbert_polynomial();
 			compute_polynomial();
 		}
-		status="hilbert polynomial";
 	}
 }
 
@@ -1374,6 +1365,7 @@ void Full_Cone::compute_extreme_rays(){
 
 		}
 	}
+	is_Computed.set(ConeProperty::ExtremeRays);
 }
 
 //---------------------------------------------------------------------------
@@ -1497,7 +1489,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	l_cut(Support_Hyperplanes,dim);
 	if(do_partial_triangulation) process_non_compressed(non_compressed);
 	} // end if (dim>0)
-	status="support hyperplanes";
+	is_Computed.set(ConeProperty::SupportHyperplanes);
 }
 
 //---------------------------------------------------------------------------
@@ -1671,6 +1663,8 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 
 	verbose = verbose_bak;
 	l_cut(Support_Hyperplanes, dim);
+	is_Computed.set(ConeProperty::SupportHyperplanes);
+	is_Computed.set(ConeProperty::Triangulation, do_triang);
 }
 
 
@@ -1765,7 +1759,7 @@ void Full_Cone::support_hyperplanes_dynamic(){
 	}
 	
 	l_cut(Support_Hyperplanes,dim);
-	status="support hyperplanes";
+	is_Computed.set(ConeProperty::SupportHyperplanes);
 }
 
 //---------------------------------------------------------------------------
@@ -1855,7 +1849,8 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 	}
 	l_cut(Support_Hyperplanes,dim);
 	} // end if (dim>0)
-	status="support hyperplanes";
+	is_Computed.set(ConeProperty::SupportHyperplanes);
+	is_Computed.set(ConeProperty::Triangulation);
 }
 
 //---------------------------------------------------------------------------
@@ -1863,6 +1858,7 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 void Full_Cone::check_pointed() {
 	Matrix SH = read_support_hyperplanes();
 	is_pointed = (SH.rank() == dim);
+	is_Computed.set(ConeProperty::IsPointed);
 }
 
 void Full_Cone::check_ht1_generated() {
@@ -1877,6 +1873,8 @@ void Full_Cone::check_ht1_generated() {
 	} else {
 		Linear_Form = Generators.homogeneous(is_ht1_generated);
 	}
+	is_Computed.set(ConeProperty::IsHt1Generated);
+
 }
 
 void Full_Cone::check_ht1_extreme_rays() {
@@ -1891,6 +1889,7 @@ void Full_Cone::check_ht1_extreme_rays() {
 	}
 	Matrix Extreme=Generators.submatrix(key);
 	Linear_Form = Extreme.homogeneous(is_ht1_extreme_rays);
+	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 }
 
 //---------------------------------------------------------------------------
@@ -1926,7 +1925,6 @@ void Full_Cone::compute_multiplicity(){
 	#pragma omp critical(MULT)
 	multiplicity+=mult;
 	} //END parallel
-	status="triangulation";
 }
 
 //---------------------------------------------------------------------------
@@ -1985,6 +1983,7 @@ void Full_Cone::compute_ht1_elements() {
 	} //END parallel
 	Homogeneous_Elements.sort();
 	Homogeneous_Elements.unique();
+	is_Computed.set(ConeProperty::Ht1Elements);
 }
 
 //---------------------------------------------------------------------------
@@ -2049,9 +2048,10 @@ void Full_Cone::compute_hilbert_basis(){
 				Homogeneous_Elements.push_back((*h));
 			}
 		}
+		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	} // end if (dim>0)
-	status="normal";
+	is_Computed.set(ConeProperty::HilbertBasis);
 }
 
 //---------------------------------------------------------------------------
@@ -2287,7 +2287,7 @@ void Full_Cone::line_shelling(){  //try shelling with a line of direction (0,0 .
 //---------------------------------------------------------------------------
 
 void Full_Cone::triangulation_lift(){
-	if (status!="support hyperplanes") {
+	if ( ! is_Computed.test(ConeProperty::SupportHyperplanes) ) {
 		error("error: Status support hyperplanes needed before using Full_Cone::triangulation_lift.");
 		return;
 	}
@@ -2312,7 +2312,7 @@ void Full_Cone::triangulation_lift(){
 	else {
 		Full_Cone Lifted;
 		lift(Lifted,Extreme_Generators);
-		if (Lifted.read_status()!="support hyperplanes") {
+		if ( !Lifted.isComputed(ConeProperty::SupportHyperplanes) ) {
 			error("error: Status support hyperplanes for the lifted cone needed when using Full_Cone::triangulation_lift.");
 			return;
 		}
@@ -2339,6 +2339,7 @@ void Full_Cone::triangulation_lift(){
 	if (verbose==true) {
 		cout<<"computed triangulation has "<<Triangulation.size()<<" simplices"<<endl;
 	}
+	is_Computed.set(ConeProperty::Triangulation);
 }
 
 //---------------------------------------------------------------------------
@@ -2440,71 +2441,76 @@ void Full_Cone::compute_hilbert_polynomial(){
 	}
 	Homogeneous_Elements.sort();
 	Homogeneous_Elements.unique();
+	is_Computed.set(ConeProperty::Ht1Elements);
+	is_Computed.set(ConeProperty::HilbertPolynomial);
 }
 
 //---------------------------------------------------------------------------
 
 void Full_Cone::compute_hilbert_basis_polynomial(){
+	if (verbose==true) {
+		cout<<"\n************************************************************\n";
+		cout<<"computing Hilbert basis and polynomial ..."<<endl<<flush;
+	}
+	int counter=0,i;
+	Integer volume;
+	vector<Integer> scalar_product;
+	set <vector<Integer> > Candidates;
+	list <vector<Integer> >  HB,HE;
+	set <vector<Integer> >::iterator c;
+	list <vector<Integer> >::const_iterator h;
+	for (i = 1; i <=nr_gen; i++) {
+		vector<Integer> Generator = Generators.read(i);
+		Candidates.insert(Generator);
+		if (is_ht1_generated || v_scalar_product(Generator, Linear_Form)==1) { 
+			Homogeneous_Elements.push_back(Generator);
+		}
+	}
+	multiplicity=0;
+	list< Simplex >::iterator l=Triangulation.begin();
+	int lpos=0;
+	int listsize=Triangulation.size();
+	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
+	#pragma omp parallel for private(volume,HE,HB) firstprivate(lpos,l) schedule(dynamic)
+	for (int k=0; k<listsize; ++k) {
+		for(;k > lpos; ++lpos, ++l) ;
+		for(;k < lpos; --lpos, --l) ;
+		
+		Simplex S=(*l);
+		#pragma omp critical(H_VECTOR)
+		H_Vector[S.read_new_face_size()]++;
+		S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
+		volume=S.read_volume();
+		(*l).write_volume(volume);
+		#pragma omp critical(MULT)
+		multiplicity += volume;
+		HE=S.read_homogeneous_elements();
+		#pragma omp critical(HOMOGENEOUS)
+		Homogeneous_Elements.merge(HE);
+		#pragma omp critical(H_VECTOR)
+		H_Vector=v_add(H_Vector,S.read_h_vector());
+		HB=S.acces_hilbert_basis();
+		#pragma omp critical(CANDI)
+		Candidates.insert(HB.begin(),HB.end());
+		
 		if (verbose==true) {
-			cout<<"\n************************************************************\n";
-			cout<<"computing Hilbert basis and polynomial ..."<<endl<<flush;
-		}
-		int counter=0,i;
-		Integer volume;
-		vector<Integer> scalar_product;
-		set <vector<Integer> > Candidates;
-		list <vector<Integer> >  HB,HE;
-		set <vector<Integer> >::iterator c;
-		list <vector<Integer> >::const_iterator h;
-		for (i = 1; i <=nr_gen; i++) {
-			vector<Integer> Generator = Generators.read(i);
-			Candidates.insert(Generator);
-			if (is_ht1_generated || v_scalar_product(Generator, Linear_Form)==1) { 
-				Homogeneous_Elements.push_back(Generator);
-			}
-		}
-		multiplicity=0;
-		list< Simplex >::iterator l=Triangulation.begin();
-		int lpos=0;
-		int listsize=Triangulation.size();
-		//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
-		#pragma omp parallel for private(volume,HE,HB) firstprivate(lpos,l) schedule(dynamic)
-		for (int k=0; k<listsize; ++k) {
-			for(;k > lpos; ++lpos, ++l) ;
-			for(;k < lpos; --lpos, --l) ;
-			
-			Simplex S=(*l);
-			#pragma omp critical(H_VECTOR)
-			H_Vector[S.read_new_face_size()]++;
-			S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
-			volume=S.read_volume();
-			(*l).write_volume(volume);
-			#pragma omp critical(MULT)
-			multiplicity += volume;
-			HE=S.read_homogeneous_elements();
-			#pragma omp critical(HOMOGENEOUS)
-			Homogeneous_Elements.merge(HE);
-			#pragma omp critical(H_VECTOR)
-			H_Vector=v_add(H_Vector,S.read_h_vector());
-			HB=S.acces_hilbert_basis();
-			#pragma omp critical(CANDI)
-			Candidates.insert(HB.begin(),HB.end());
-			
-			if (verbose==true) {
-				#pragma omp critical(VERBOSE)
-				{
+			#pragma omp critical(VERBOSE)
+			{
 				counter++;
 				if (counter%500==0) {
 					cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 				}
-				}
 			}
 		}
+	}
 		
-		Homogeneous_Elements.sort();
-		Homogeneous_Elements.unique();
+	Homogeneous_Elements.sort();
+	Homogeneous_Elements.unique();
+	is_Computed.set(ConeProperty::Ht1Elements);
+	is_Computed.set(ConeProperty::HilbertBasis);
+	is_Computed.set(ConeProperty::HilbertPolynomial);
 		
-		global_reduction(Candidates);
+	global_reduction(Candidates);
 }
 
 //---------------------------------------------------------------------------
@@ -2881,6 +2887,7 @@ void Full_Cone::extreme_rays_reduction(){
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
 		reduce_and_insert_extreme((*c));
 	}
+	is_Computed.set(ConeProperty::ExtremeRays);
 	l_cut_front(Support_Hyperplanes,dim);
 }
 
@@ -2910,6 +2917,7 @@ void Full_Cone::extreme_rays_rank(){
 			}
 		}
 	}
+	is_Computed.set(ConeProperty::ExtremeRays);
 	l_cut_front(Support_Hyperplanes,dim);
 }
 
@@ -2932,21 +2940,23 @@ if(dim>0){            //correction needed to include the 0 cone;
 		Matrix M=read_support_hyperplanes();
 		Linear_Form=M.homogeneous_low_dim(is_ht1_generated);
 		is_ht1_extreme_rays=is_ht1_generated;
-		if(is_ht1_generated==true){
+		if (is_ht1_generated) {
 			list < vector <Integer> >::const_iterator h;
 			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 				if (v_scalar_product((*h),Linear_Form)==1) {
 					Homogeneous_Elements.push_back((*h));
 				}
 			}
+			is_Computed.set(ConeProperty::Ht1Elements);
 		}
 	} else {
 		is_ht1_generated=true;
 		is_ht1_extreme_rays=true;
 		Linear_Form=vector<Integer>(dim);
+		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	} // end if (dim>0)
-	status="dual";
+	is_Computed.set(ConeProperty::HilbertBasis);
 }
 
 //---------------------------------------------------------------------------
@@ -2959,7 +2969,7 @@ void Full_Cone::error(string s) const{
 //---------------------------------------------------------------------------
 
 void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
-	if (verbose==true) {
+	if (verbose) {
 		cout<<"start lifting the cone ...";
 	}
 	int i,j,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
@@ -2974,7 +2984,7 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 
 	Lifted = Full_Cone(New_Generators,1);
 	if (Lifted.low_part_simplicial()==true) {
-		if (verbose==true) {
+		if (verbose) {
 			cout<<"lifting done."<<endl;
 		}
 		return;
