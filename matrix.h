@@ -67,7 +67,8 @@ public:
   void write(int row, const vector<Integer>& data); //write  a row
   void write(int row, const vector<int>& data); //write  a row
   void write(int row, int col, Integer data);  // write data at (row,col)
-  void print(const string& name, const string& suffix="in") const;         //  writes matrix into name.suffix
+  void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
+  void print(ostream& out) const;          // writes matrix to the stream
   void pretty_print(ostream& out) const;  // writes matrix in a nice format to the stream
   void read() const;                 // to be modified, just for tests
   vector<Integer> read(int row) const;                   // read a row

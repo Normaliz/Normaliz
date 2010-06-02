@@ -162,9 +162,16 @@ void Matrix::write(int row, int col, Integer data){
 //---------------------------------------------------------------------------
 
 void Matrix::print(const string& name,const string& suffix) const{
-	string file_name=name+"."+suffix;
-	const char* file=file_name.c_str();
+	string file_name = name+"."+suffix;
+	const char* file = file_name.c_str();
 	ofstream out(file);
+	print(out);
+	out.close();
+}
+
+//---------------------------------------------------------------------------
+
+void Matrix::print(ostream& out) const{
 	int i,j;
 	out<<nr<<endl<<nc<<endl;
 	for (i = 0; i < nr; i++) {
@@ -173,7 +180,6 @@ void Matrix::print(const string& name,const string& suffix) const{
 		}
 		out<<endl;
 	}
-	out.close();
 }
 
 //---------------------------------------------------------------------------
@@ -183,7 +189,7 @@ void Matrix::pretty_print(ostream& out) const{
 	int max_length = maximal_decimal_length();
 	for (i = 0; i < nr; i++) {
 		for (j = 0; j < nc; j++) {
-			 for (k= 0; k <= max_length - decimal_length(elements[i][j]); k++) {
+			for (k= 0; k <= max_length - decimal_length(elements[i][j]); k++) {
 				out<<" ";
 			}
 			out<<elements[i][j];
