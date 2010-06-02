@@ -202,14 +202,14 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Equations,  Matrix Inequalities, Output& Out) {
 	
-	cout << "Congruences:";
+/*	cout << "Congruences:";
 	Congruences.read();
 	cout << endl << endl << "Equations:";
 	Equations.read();
 	cout << endl << endl<< "Inequalities:";
 	Inequalities.read();
 	cout << endl << endl;
-
+*/
 	int dim = 0;
 	int nr_cong = Congruences.nr_of_rows();
 	if (nr_cong > 0) {	
@@ -239,10 +239,10 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 			Cong_Slack.write(i,dim+i,Congruences.read(i,dim+1));
 		}
 
-		cout << "Cong_Slack:";
+/*		cout << "Cong_Slack:";
 		Cong_Slack.read();
 		cout <<endl<<endl;
-		
+*/		
 		//compute kernel
 		Lineare_Transformation Diagonalization = Transformation(Cong_Slack);
 		int rank = Diagonalization.get_rank();
@@ -258,10 +258,10 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		}
 
 		//TODO now a new linear transformation is computed, necessary??
-Ker_Basis_Transpose.transpose().read();
+//Ker_Basis_Transpose.transpose().read();
 		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
-cout<<"\ncong:";
-Basis_Change.get_congruences().read();
+//cout<<"\ncong:";
+//Basis_Change.get_congruences().read();
 		Out.set_basis_change(Basis_Change);
 		Equations = Equations.multiplication(Ker_Basis_Transpose);
 		Inequalities = Inequalities.multiplication(Ker_Basis_Transpose);

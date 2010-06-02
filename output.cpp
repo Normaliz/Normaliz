@@ -337,6 +337,7 @@ void Output::cone() const{
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
 		Extreme_Rays.pretty_print(out);
 
+
 		if (rank == Basis_Change.get_dim()){                   //write rank and index
 			out<<"(original) semigroup has rank "<<rank<<" (maximal)"<<endl;
 		}
@@ -347,16 +348,29 @@ void Output::cone() const{
 		out<<"(original) semigroup is of index "<<index<<endl;
 		out<<endl;
 
-		if (rank == Basis_Change.get_dim()) {       //write the support hyperplanes
-			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
-			write_matrix_sup(Support_Hyperplanes);
-			out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
-			Support_Hyperplanes.pretty_print(out);
-		}
-		else {
-			out<<Support_Hyperplanes_Full_Cone.nr_of_rows() <<" support hyperplanes"<<endl<<endl;
-		}
+		//write constrains (support hyperplanes, congruences, equations)
+		Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
+		Support_Hyperplanes.pretty_print(out);
+		
+		Matrix Congruences = Basis_Change.get_congruences();
+		int nr_of_cong = Congruences.nr_of_rows();
+		out << nr_of_cong <<" congruences:" <<endl;
+		Congruences.pretty_print(out);
 
+		//TODO equations
+
+		if(sup) {
+			string cst_string=name+".cst";
+			const char* cst_file = name_open.c_str();
+			ofstream cst_out(cst_file);
+			Support_Hyperplanes.print(cst_out);
+			cst_out<<"inequalities"<<endl;
+			Congruences.print(cst_out);
+			cst_out<<"congruences";
+
+			cst_out.close();
+		}	
 		if (Result.read_homogeneous()==false) {
 			out<<"(original) semigroup is not homogeneous"<<endl;
 		}
