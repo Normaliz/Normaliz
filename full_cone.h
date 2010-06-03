@@ -131,9 +131,9 @@ class Full_Cone {
 	void check_ht1_extreme_rays();
 
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
-	void add_hyperplane(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
+	void cut_with_halfspace_hilbert_basis(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
-	Matrix add_hyperplane(const int & hyp_counter, const Matrix & Basis_Max_Subspace);
+	Matrix cut_with_halfspace(const int & hyp_counter, const Matrix & Basis_Max_Subspace);
 
 	void compute_multiplicity();
 	bool low_part_simplicial();

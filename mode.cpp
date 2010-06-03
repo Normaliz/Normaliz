@@ -74,7 +74,7 @@ void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
 
 	Out.set_result(Result);
-	Out.set_basis_change(Basis_Change);
+	Out.compose_basis_change(Basis_Change);
 	Out.cone();
 }
 
@@ -91,7 +91,7 @@ void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
 
 	Out.set_result(Result);
-	Out.set_basis_change(Basis_Change);
+	Out.compose_basis_change(Basis_Change);
 	Out.cone();
 }
 
@@ -118,7 +118,7 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
 
 	Out.set_result(Result);
-	Out.set_basis_change(Basis_Change);
+	Out.compose_basis_change(Basis_Change);
 	Out.polytop();
 }
 
@@ -262,7 +262,7 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
 //cout<<"\ncong:";
 //Basis_Change.get_congruences().read();
-		Out.set_basis_change(Basis_Change);
+		Out.compose_basis_change(Basis_Change);
 		Equations = Equations.multiplication(Ker_Basis_Transpose);
 		Inequalities = Inequalities.multiplication(Ker_Basis_Transpose);
 
@@ -325,7 +325,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
 		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
 		Diagonalization.set_center(Matrix(dim-rank));
-		Out.set_basis_change(Sublattice_Representation(Diagonalization,true));
+		Out.compose_basis_change(Sublattice_Representation(Diagonalization,true));
 		Matrix M=Inequalities.multiplication(Ker_Basis_Transpose);
 		dim=M.nr_of_columns();
 		Integer norm;

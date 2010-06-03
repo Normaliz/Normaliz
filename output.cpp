@@ -206,7 +206,7 @@ void Output::set_result(const Full_Cone& C){
 
 //---------------------------------------------------------------------------
 
-void Output::set_basis_change(const Sublattice_Representation& BC){
+void Output::compose_basis_change(const Sublattice_Representation& BC){
 	if (BC_set) {
 		Basis_Change.compose(BC);		
 	} else {

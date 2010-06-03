@@ -148,3 +148,18 @@ reduce_and_insert   Verschiedene Ausf�hrungen
 global_reduction
 
 und viele andere
+
+
+
+
+
+
+
+der DUALE modus:
+ hilbert_basis_dual
+ | for each hyperplane
+ | | cut_with_halfspace
+ | | cut_with_halfspace_hilbert_basis
+ | extreme_rays_rank
+ | homogeneuos_low_dim
+ | extract homogeneous elements

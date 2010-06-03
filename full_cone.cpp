@@ -2562,9 +2562,9 @@ Integer Full_Cone::primary_multiplicity() const{
 }
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
+void Full_Cone::cut_with_halfspace_hilbert_basis(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
 	if (verbose==true) {
-		cout<<"adding hyperplane "<<hyp_counter<<" ..."<<endl;
+		cout<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
 	}
 	int i,sign;
 	bool  not_done;
@@ -2837,7 +2837,7 @@ void Full_Cone::add_hyperplane(const int& hyp_counter, const bool& lifting, vect
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::add_hyperplane(const int& hyp_counter, const Matrix& Basis_Max_Subspace){
+Matrix Full_Cone::cut_with_halfspace(const int& hyp_counter, const Matrix& Basis_Max_Subspace){
 	int i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
 	vector <Integer> scalar_product,hyperplane=Generators.read(hyp_counter),halfspace;
 	bool lifting=false;
@@ -2863,7 +2863,7 @@ Matrix Full_Cone::add_hyperplane(const int& hyp_counter, const Matrix& Basis_Max
 			halfspace=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(1));
 		}
 	}
-	add_hyperplane(hyp_counter, lifting, halfspace);
+	cut_with_halfspace_hilbert_basis(hyp_counter, lifting, halfspace);
 	return New_Basis_Max_Subspace;
 }
 
@@ -2932,7 +2932,7 @@ if(dim>0){            //correction needed to include the 0 cone;
 	int hyp_counter;      // current hyperplane
 	Matrix Basis_Max_Subspace(dim);      //identity matrix
 	for (hyp_counter = 1; hyp_counter <= nr_gen; hyp_counter++) {
-		Basis_Max_Subspace=add_hyperplane(hyp_counter,Basis_Max_Subspace);
+		Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
 	}
 	extreme_rays_rank();
 	l_cut_front(Hilbert_Basis,dim);

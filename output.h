@@ -71,7 +71,7 @@ public:
   void set_write_extra_files();         	    //sets some flags to true
   void set_write_all_files();          		    //sets all flags to true
   void set_result(const Full_Cone& C);         //sets Result
-  void set_basis_change(const Sublattice_Representation& SR); // sets Basis_Change
+  void compose_basis_change(const Sublattice_Representation& SR); // composes Basis_Change
   
   void write_matrix_ext(const Matrix& M) const; //writes M to file name.ext
   void write_matrix_esp(const Matrix& M) const; //writes M to file name.esp
