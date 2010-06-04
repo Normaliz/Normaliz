@@ -362,8 +362,8 @@ void Output::cone() const{
 		//TODO equations
 
 		if(sup) {
-			string cst_string=name+".cst";
-			const char* cst_file = name_open.c_str();
+			string cst_string = name+".cst";
+			const char* cst_file = cst_string.c_str();
 			ofstream cst_out(cst_file);
 			Support_Hyperplanes.print(cst_out);
 			cst_out<<"inequalities"<<endl;
