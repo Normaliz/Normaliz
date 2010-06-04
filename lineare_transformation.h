@@ -43,7 +43,6 @@ class Lineare_Transformation {
   int rk;
   string status;
   Integer index;
-  Matrix Left;
   Matrix Center;
   Matrix Right;
   Matrix Right_Inv;
@@ -70,12 +69,10 @@ public:
 							//  "initialized, before transformation"
 						   //  "initialized, after transformation"
   Integer get_index() const;
-  Matrix get_left() const;             //read left matrix
   Matrix get_center() const;          //read center matrix
   Matrix get_right() const;          //read right matrix
   Matrix get_right_inv() const;     //read the inverse of the right matrix
   void set_rank(const int rank);
-  void set_left(const Matrix& M);             //write left matrix
   void set_center(const Matrix& M);          //write center matrix
   void set_right(const Matrix& M);          //write right matrix
   void set_right_inv(const Matrix& M);     //write the inverse of the right matrix

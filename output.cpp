@@ -286,11 +286,11 @@ void Output::cone() const{
 	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
 	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
 
-	cout<<endl<<"congruences";
+/*	cout<<endl<<"congruences";
 	Matrix Cong = Basis_Change.get_congruences();
 	Cong.read();
 	cout<<endl;
-
+*/
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
 	if (tri && Result.isComputed(ConeProperty::SupportHyperplanes)) { 			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
@@ -355,9 +355,10 @@ void Output::cone() const{
 		
 		Matrix Congruences = Basis_Change.get_congruences();
 		int nr_of_cong = Congruences.nr_of_rows();
-		out << nr_of_cong <<" congruences:" <<endl;
-		Congruences.pretty_print(out);
-
+		if (nr_of_cong > 0) {
+			out << nr_of_cong <<" congruences:" <<endl;
+			Congruences.pretty_print(out);
+		}
 		//TODO equations
 
 		if(sup) {

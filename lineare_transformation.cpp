@@ -55,7 +55,6 @@ Lineare_Transformation::  Lineare_Transformation(const Matrix& M){
 	Matrix Help2(M);
 	Matrix Help3(M.nr_of_columns());
 	Matrix Help4(M.nr_of_columns());
-	Left=Help1;
 	Center=Help2;
 	Right=Help3;
 	Right_Inv=Help3;
@@ -67,7 +66,6 @@ Lineare_Transformation::Lineare_Transformation(const Lineare_Transformation& LT)
 	rk=LT.rk;
 	status=LT.status;
 	index=LT.index;
-	Left=LT.Left;
 	Center=LT.Center;
 	Right=LT.Right;
 	Right_Inv=LT.Right_Inv;
@@ -85,8 +83,6 @@ void Lineare_Transformation::read() const{
 	cout<<"\nRank="<<rk<<"\n";
 	cout<<"\nStatus is "<<status<<".\n";
 	cout<<"\nIndex="<<index<<"\n";
-	cout<<"\nLeft matrix is:\n";
-	Left.read();
 	cout<<"\nCenter matrix is:\n";
 	Center.read();
 	cout<<"\nRight matrix is:\n";
@@ -115,12 +111,6 @@ Integer Lineare_Transformation::get_index() const{
 
 //---------------------------------------------------------------------------
 
-Matrix Lineare_Transformation::get_left() const{
-	return Left;
-}
-
-//---------------------------------------------------------------------------
-
 Matrix Lineare_Transformation::get_center()const{
 	return Center;
 }
@@ -145,12 +135,6 @@ void Lineare_Transformation::set_rank(const int rank) {
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::set_left(const Matrix& M){
-	Left=M;
-}
-
-//---------------------------------------------------------------------------
-
 void Lineare_Transformation::set_center(const Matrix& M){
 	Center=M;
 }
@@ -170,7 +154,6 @@ void Lineare_Transformation::set_right_inv(const Matrix& M){
 //---------------------------------------------------------------------------
 
 void Lineare_Transformation::exchange_rows(int row1, int row2){
-	Left.exchange_rows(row1,row2);
 	Center.exchange_rows(row1,row2);
 }
 
@@ -185,7 +168,7 @@ void Lineare_Transformation::exchange_columns(int col1, int col2){
 //---------------------------------------------------------------------------
 
 void Lineare_Transformation::reduce_row(int corner){
-	Center.reduce_row(corner, Left);
+	Center.reduce_row(corner);
 }
 
 //---------------------------------------------------------------------------
@@ -226,11 +209,9 @@ void Lineare_Transformation::transformation(){
 
 bool Lineare_Transformation::test_transformation(const Matrix& M,const int& m) const{
 	int nc=Center.nr_of_columns();
-	Matrix M1=Left.multiplication(M, m);
-	Matrix M2=M1.multiplication(Right, m);
 	Matrix N=Right.multiplication(Right_Inv, m);
 	Matrix I(nc);
-	if ((Center.equal(M2,m)!=true)||(I.equal(N,m)!=true)) {
+	if (!I.equal(N,m)) {
 		error("error: Lineare_Transformation::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation.");
 		return false;
 	}
