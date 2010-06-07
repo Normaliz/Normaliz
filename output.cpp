@@ -355,7 +355,7 @@ void Output::cone() const{
 		
 		//equations 
 		Lineare_Transformation NewLT = Transformation(Extreme_Rays);
-		Matrix Help = NewLT.get_right();
+		Matrix Help = NewLT.get_right().transpose();
 		int dim = Extreme_Rays.nr_of_columns();
 		Matrix Equations(dim-rank,dim);
 		for (i = 1+rank; i <= dim; i++) {

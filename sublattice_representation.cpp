@@ -265,7 +265,6 @@ Matrix Sublattice_Representation::get_congruences() const {
 	Matrix Cong = B;
 	Cong.append(Matrix(1,rank));
 	Cong = Cong.transpose();
-
 	vector<Integer> gcds = Cong.make_prime();
 	Integer m; //the modul
 	Integer rowgcd;
@@ -278,9 +277,13 @@ Matrix Sublattice_Representation::get_congruences() const {
 			v_reduction_modulo(new_row,m);  
 			//new_row cannot be divisible by a factor of m
 			//so make_prime divides by an invertible element
-			new_row = v_make_prime(new_row);  
+			new_row = v_make_prime(new_row,rowgcd);  
 			//TODO test entfernen
-			if(gcd(m,rowgcd) != 1) {cerr<<"congruencendenkfehler"<<endl; exit(-100);}
+			if(gcd(m,rowgcd) != 1) {
+				cerr<<"congruencendenkfehler"<<endl;
+				cerr<<"m= "<<m<<"   rowgcd= "<< rowgcd<<endl;
+				exit(-100);
+			}
 			new_row[dim] = m;
 			Cong2.append(new_row);
 		}
