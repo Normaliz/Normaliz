@@ -247,7 +247,7 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		Lineare_Transformation Diagonalization = Transformation(Cong_Slack);
 		int rank = Diagonalization.get_rank();
 		Matrix H = Diagonalization.get_right();
-		Matrix H_Inv = Diagonalization.get_right_inv();
+//		Matrix H_Inv = Diagonalization.get_right_inv();
 		Matrix Ker_Basis_Transpose(dim, dim+nr_cong-rank);
 //		Matrix Ker_Basis_Transpose_Inv(dim+nr_cong-rank, dim);
 		for (i = 1; i <= dim; i++) {

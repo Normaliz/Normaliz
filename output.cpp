@@ -353,22 +353,35 @@ void Output::cone() const{
 		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
 		Support_Hyperplanes.pretty_print(out);
 		
+		//equations 
+		Matrix Equations = Basis_Change.get_equations();
+		int nr_of_equ = Equations.nr_of_rows();
+		if (nr_of_equ > 0) {
+			out << nr_of_equ <<" equations:" <<endl;
+			Equations.pretty_print(out);
+		}
+
+
+		//congruences
 		Matrix Congruences = Basis_Change.get_congruences();
 		int nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
 			Congruences.pretty_print(out);
 		}
-		//TODO equations
+
 
 		if(sup) {
 			string cst_string = name+".cst";
 			const char* cst_file = cst_string.c_str();
 			ofstream cst_out(cst_file);
+
 			Support_Hyperplanes.print(cst_out);
 			cst_out<<"inequalities"<<endl;
+			Equations.print(cst_out);
+			cst_out<<"equations"<<endl;
 			Congruences.print(cst_out);
-			cst_out<<"congruences";
+			cst_out<<"congruences"<<endl;
 
 			cst_out.close();
 		}	
