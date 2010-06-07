@@ -354,7 +354,14 @@ void Output::cone() const{
 		Support_Hyperplanes.pretty_print(out);
 		
 		//equations 
-		Matrix Equations = Basis_Change.get_equations();
+		Lineare_Transformation NewLT = Transformation(Extreme_Rays);
+		Matrix Help = NewLT.get_right();
+		int dim = Extreme_Rays.nr_of_columns();
+		Matrix Equations(dim-rank,dim);
+		for (i = 1+rank; i <= dim; i++) {
+			Equations.write(i-rank,Help.read(i));
+		}
+
 		int nr_of_equ = Equations.nr_of_rows();
 		if (nr_of_equ > 0) {
 			out << nr_of_equ <<" equations:" <<endl;
