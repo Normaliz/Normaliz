@@ -357,7 +357,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 
 void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out){
 	if (computation_type=="dual") {
-		cerr<<"Run mode type = dual not implemented in mode 6."<<endl;
+		cerr<<"Run mode type = dual not implemented in mode 10."<<endl;
 		cerr<<"The program terminates."<<endl;
 		global_error_handling();
 	}

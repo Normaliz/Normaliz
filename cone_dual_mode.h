@@ -34,11 +34,9 @@ public:
 	
 	bool is_pointed;
 	bool is_ht1_extreme_rays;
-	vector<Integer> Linear_Form;
 	Matrix Generators;
 	list<vector<Integer> > Support_Hyperplanes;
 	list<vector<Integer> > Hilbert_Basis;
-	list<vector<Integer> > Homogeneous_Elements;
 
 /* ---------------------------------------------------------------------------
  *				Private routines, used in the public routines
@@ -85,13 +83,9 @@ public:
 	void print() const;                //to be modified, just for tests
 	int read_dimension() const;        //returns dimension
 	int read_nr_generators() const;    //returns the number of generators
-	bool read_homogeneous() const;     //returns homogeneous
-	vector<Integer> read_linear_form() const; //returns the linear form
 	Matrix read_generators() const;
-	vector<bool> read_extreme_rays() const;
 	Matrix read_support_hyperplanes() const;
 	Matrix read_hilbert_basis() const;
-	Matrix read_homogeneous_elements() const;
 
 
 

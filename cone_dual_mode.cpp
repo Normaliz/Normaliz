@@ -222,11 +222,8 @@ Cone_Dual_Mode::Cone_Dual_Mode(Matrix M){
 		nr_gen=Generators.nr_of_rows();
 	}
 	hyp_size=dim+nr_gen;
-	is_ht1_extreme_rays = false;
 	Support_Hyperplanes = list< vector<Integer> >();
 	Hilbert_Basis = list< vector<Integer> >();
-	Homogeneous_Elements = list< vector<Integer> >();
-	//Generators.print("bla.egn");
 }
 
 //---------------------------------------------------------------------------
@@ -235,13 +232,9 @@ Cone_Dual_Mode::Cone_Dual_Mode(const Cone_Dual_Mode& C){
 	dim=C.dim;
 	nr_gen=C.nr_gen;
 	hyp_size=C.hyp_size;
-	is_pointed=C.is_pointed;
-	is_ht1_extreme_rays=C.is_ht1_extreme_rays;
-	Linear_Form=C.Linear_Form;
 	Generators=C.Generators;
 	Support_Hyperplanes=C.Support_Hyperplanes;
 	Hilbert_Basis=C.Hilbert_Basis;
-	Homogeneous_Elements=C.Homogeneous_Elements;
 }
 
 //---------------------------------------------------------------------------
@@ -253,20 +246,15 @@ Cone_Dual_Mode::~Cone_Dual_Mode(){
 //---------------------------------------------------------------------------
 
 void Cone_Dual_Mode::print()const{
-	cout<<"\ndim="<<dim<<".\n";
-	cout<<"\nnr_gen="<<nr_gen<<".\n";
-	cout<<"\nhyp_size="<<hyp_size<<".\n";
-	cout<<"\nHomogeneous is "<<is_ht1_extreme_rays<<".\n";
-	cout<<"\nLinear_Form is:\n";
-	v_read(Linear_Form);
-	cout<<"\nGenerators are:\n";
-	Generators.read();
-	cout<<"\nSupport Hyperplanes are:\n";
-	l_read(Support_Hyperplanes);
-	cout<<"\nHilbert Basis is:\n";
-	l_read(Hilbert_Basis);
-	cout<<"\nHomogeneous elements are:\n";
-	l_read(Homogeneous_Elements);
+	cout<<"dim="<<dim<<".\n";
+	cout<<"nr_gen="<<nr_gen<<".\n";
+	cout<<"hyp_size="<<hyp_size<<".\n";
+	cout<<"Generators are:\n";
+	Generators.read();cout<<endl;
+	cout<<"Support Hyperplanes are:\n";
+	l_read(Support_Hyperplanes);cout<<endl;
+	cout<<"Hilbert Basis is:\n";
+	l_read(Hilbert_Basis);cout<<endl;
 }
 
 //---------------------------------------------------------------------------
@@ -279,18 +267,6 @@ int Cone_Dual_Mode::read_dimension()const{
 
 int Cone_Dual_Mode::read_nr_generators()const{
 	return nr_gen;
-}
-
-//---------------------------------------------------------------------------
-
-bool Cone_Dual_Mode::read_homogeneous()const{
-	return is_ht1_extreme_rays;
-}
-
-//---------------------------------------------------------------------------
-
-vector<Integer> Cone_Dual_Mode::read_linear_form() const{
-	return Linear_Form;
 }
 
 //---------------------------------------------------------------------------
@@ -321,20 +297,6 @@ Matrix Cone_Dual_Mode::read_hilbert_basis()const{
 	int i=1;
 	list< vector<Integer> >::const_iterator l;
 	for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
-		M.write(i,(*l));
-		i++;
-	}
-	return M;
-}
-
-//---------------------------------------------------------------------------
-
-Matrix Cone_Dual_Mode::read_homogeneous_elements()const{
-	int s= Homogeneous_Elements.size();
-	Matrix M(s,dim);
-	int i=1;
-	list< vector<Integer> >::const_iterator l;
-	for (l =Homogeneous_Elements.begin(); l != Homogeneous_Elements.end(); l++) {
 		M.write(i,(*l));
 		i++;
 	}
