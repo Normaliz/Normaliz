@@ -26,13 +26,14 @@
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
+#include "cone_dual_mode.h"
 
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interferring with other names.
  */
 namespace ConeProperty {
 	enum Enum {
-		Generators,
+//		Generators,
 		ExtremeRays,
 		SupportHyperplanes,
 		Triangulation,
@@ -130,11 +131,6 @@ class Full_Cone {
 	void check_ht1_generated();
 	void check_ht1_extreme_rays();
 
-	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
-	void cut_with_halfspace_hilbert_basis(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
-	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
-	Matrix cut_with_halfspace(const int & hyp_counter, const Matrix & Basis_Max_Subspace);
-
 	void compute_multiplicity();
 	bool low_part_simplicial();
 	void line_shelling();
@@ -144,11 +140,6 @@ class Full_Cone {
 	/* computes the Hilbert polynomial using the h-vector */
 	void compute_polynomial();
 
-
-	/* computes the extreme rays using reduction, used for the dual algorithm */
-	void extreme_rays_reduction();
-	/* computes the extreme rays using rank test, used for the dual algorithm */
-	void extreme_rays_rank();
 	/* support hyperplanes computation for a dynamic lifting
 	 * adjusts the lifting if necessary, used in dual algorithm */
 	void support_hyperplanes_dynamic();
@@ -161,6 +152,7 @@ class Full_Cone {
 public:
 	Full_Cone();
 	Full_Cone(Matrix M);            //main constructor
+	Full_Cone(const Cone_Dual_Mode &C);
 	Full_Cone(const Full_Cone & C); //copy constructor
 	~Full_Cone();                   //destructor
 
@@ -171,7 +163,6 @@ public:
 	void print() const;                //to be modified, just for tests
 	int read_dimension() const;        //returns dimension
 	int read_nr_generators() const;    //returns the number of generators
-	int read_hyp_size() const;         //returns hyp_size
 	bool read_homogeneous() const;     //returns homogeneous
 	vector<Integer> read_linear_form() const; //returns the linear form
 	Integer read_multiplicity() const; //returns multiplicity
@@ -204,11 +195,12 @@ public:
 	void hilbert_polynomial();
 	void hilbert_basis_polynomial();
 	void ht1_elements();
-	/* computes the Hilbert basis with the dual algorithm */
-	void hilbert_basis_dual();
 	/* computes the multiplicity of the ideal in case of a Rees algebra
 	 * (not the same as the multiplicity of the semigroup) */
 	Integer primary_multiplicity() const;
+
+	/* completes the computation when a Cone_Dual_Mode is given */
+	void dual_mode();
 
 	/* checks if the cone is compressed, support hyperplanes must be computed */
 	bool check_compressed();

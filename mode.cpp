@@ -35,6 +35,8 @@ using namespace std;
 #include "simplex.h"
 #include "lineare_transformation.h"
 #include "sublattice_representation.h"
+#include "full_cone.h"
+#include "cone_dual_mode.h"
 
 //---------------------------------------------------------------------------
 
@@ -287,12 +289,6 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		}
 		Matrix Inequ_on_Ker=Inequalities.multiplication(Ker_Basis_Transpose);
 
-/*		cout << "Ker_Basis_Transpose:";
-		Ker_Basis_Transpose.read();
-		cout << endl<< "Ineq_on_ker:";
-		Inequ_on_Ker.read();
-		cout << endl<< endl; */
-
 		Full_Cone Dual_Cone(Inequ_on_Ker);
 		Dual_Cone.support_hyperplanes();
 		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
@@ -346,9 +342,12 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 			Equations_Ordered.write(i,(*ii).second);
 			i++;
 		}
-		Full_Cone Result(Equations_Ordered); //in the mode dual the support hyperplanes are the generators
-		//and as support hyperplanes we recover the generators
-		Result.hilbert_basis_dual();
+		Cone_Dual_Mode Cone1(Equations_Ordered);
+		Cone1.hilbert_basis_dual();
+		//Cone1 zu einem Full_Cone machen
+		//TODO Lineare Transformation
+		Full_Cone Result(Cone1);
+		Result.dual_mode();
 		Out.set_result(Result);
 		Out.dual();
 	}

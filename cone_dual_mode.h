@@ -1,0 +1,110 @@
+/*
+* Normaliz 2.2
+* Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim
+* With contributions by Christof Soeger
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
+
+#ifndef CONE_DUAL_MODE_H
+#define CONE_DUAL_MODE_H
+
+#include <set>
+#include <list>
+#include "integer.h"
+#include "matrix.h"
+
+
+class Cone_Dual_Mode {
+public:
+	int dim;
+	int nr_gen;
+	int hyp_size;
+	
+	bool is_pointed;
+	bool is_ht1_extreme_rays;
+	vector<Integer> Linear_Form;
+	Matrix Generators;
+	list<vector<Integer> > Support_Hyperplanes;
+	list<vector<Integer> > Hilbert_Basis;
+	list<vector<Integer> > Homogeneous_Elements;
+
+/* ---------------------------------------------------------------------------
+ *				Private routines, used in the public routines
+ * ---------------------------------------------------------------------------
+ */
+
+	/* Returns true if new_element is reducible versus the elements in Ired
+	 * used for dual algorithm */
+	bool reduce(list<vector<Integer> > & Ired, const vector<Integer> & new_element, const int & size);
+	bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const int & size);
+
+	/* reduce Red versus Ired */
+	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const int & size);
+
+	/* adds a new element irreducible to the Hilbert basis
+	 * the new elements must come from a  structure sorted by total degree
+	 * used for dual algorithm */
+	void reduce_and_insert(const vector<Integer> & new_element, const int & size);
+	/* select extreme rays  by reduction
+	 * used for the dual algorithm */
+	void reduce_and_insert_extreme(const vector<Integer> & new_element);
+
+	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
+	void cut_with_halfspace_hilbert_basis(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
+	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
+	Matrix cut_with_halfspace(const int & hyp_counter, const Matrix & Basis_Max_Subspace);
+
+	/* computes the extreme rays using reduction, used for the dual algorithm */
+	void extreme_rays_reduction();
+	/* computes the extreme rays using rank test, used for the dual algorithm */
+	void extreme_rays_rank();
+
+
+
+	Cone_Dual_Mode();
+	Cone_Dual_Mode(Matrix M);            //main constructor
+	Cone_Dual_Mode(const Cone_Dual_Mode & C); //copy constructor
+	~Cone_Dual_Mode();                   //destructor
+
+/*---------------------------------------------------------------------------
+ *						Data access
+ *---------------------------------------------------------------------------
+ */
+	void print() const;                //to be modified, just for tests
+	int read_dimension() const;        //returns dimension
+	int read_nr_generators() const;    //returns the number of generators
+	bool read_homogeneous() const;     //returns homogeneous
+	vector<Integer> read_linear_form() const; //returns the linear form
+	Matrix read_generators() const;
+	vector<bool> read_extreme_rays() const;
+	Matrix read_support_hyperplanes() const;
+	Matrix read_hilbert_basis() const;
+	Matrix read_homogeneous_elements() const;
+
+
+
+/*---------------------------------------------------------------------------
+ *				Computation Methods
+ *---------------------------------------------------------------------------
+ */
+	void hilbert_basis_dual();
+
+	void error(string s) const;
+};
+//class end *****************************************************************
+
+//---------------------------------------------------------------------------
+#endif
+//---------------------------------------------------------------------------

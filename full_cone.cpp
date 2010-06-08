@@ -970,6 +970,7 @@ Full_Cone::Full_Cone(Matrix M){
 	hyp_size=dim+nr_gen;
 	multiplicity = 0;
 	is_Computed =  bitset<ConeProperty::EnumSize>();
+	is_pointed = false;
 	is_ht1_extreme_rays = false;
 	is_ht1_generated = false;
 	Extreme_Rays = vector<bool>(nr_gen,false);
@@ -986,7 +987,44 @@ Full_Cone::Full_Cone(Matrix M){
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 	}
-	//Generators.print("bla.egn");
+}
+
+//---------------------------------------------------------------------------
+
+Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
+
+	dim = C.dim;
+	Generators = C.read_support_hyperplanes();
+	nr_gen = Generators.nr_of_rows();
+
+	hyp_size = dim+nr_gen;
+	multiplicity = 0;
+	is_Computed =  bitset<ConeProperty::EnumSize>();
+	is_pointed = true;
+	is_Computed.set(ConeProperty::IsPointed);
+	is_ht1_extreme_rays = false;
+	is_ht1_generated = false;
+	Extreme_Rays = vector<bool>(nr_gen,true); //all generators are extreme rays
+	is_Computed.set(ConeProperty::ExtremeRays);
+	Matrix SH = C.Generators;
+	Support_Hyperplanes = list< vector<Integer> >();
+	for (int i=1; i<= SH.nr_of_rows(); i++) {
+		Support_Hyperplanes.push_back(SH.read(i));
+	}
+	is_Computed.set(ConeProperty::SupportHyperplanes);
+	Triangulation = list< Simplex >();
+	Hilbert_Basis = C.Hilbert_Basis;
+	is_Computed.set(ConeProperty::HilbertBasis);
+	Homogeneous_Elements = list< vector<Integer> >();
+	if(dim>0){            //correction needed to include the 0 cone;
+		H_Vector = vector<Integer>(dim);
+		Hilbert_Polynomial = vector<Integer>(2*dim);
+	} else {
+		multiplicity = 1;
+		H_Vector = vector<Integer>(1,1);
+		Hilbert_Polynomial = vector<Integer>(2,1);
+		Hilbert_Polynomial[0] = 0;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -1079,12 +1117,6 @@ int Full_Cone::read_dimension()const{
 
 int Full_Cone::read_nr_generators()const{
 	return nr_gen;
-}
-
-//---------------------------------------------------------------------------
-
-int Full_Cone::read_hyp_size()const{
-	return hyp_size;
 }
 
 //---------------------------------------------------------------------------
@@ -1319,6 +1351,30 @@ void Full_Cone::hilbert_polynomial(){
 			compute_hilbert_polynomial();
 			compute_polynomial();
 		}
+	}
+}
+
+void Full_Cone::dual_mode() {
+	if(dim>0) {            //correction needed to include the 0 cone;
+		Linear_Form = Generators.homogeneous(is_ht1_extreme_rays);
+		is_ht1_generated = is_ht1_extreme_rays;
+		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+		is_Computed.set(ConeProperty::IsHt1Generated);
+
+		if (is_ht1_extreme_rays) {
+			list < vector <Integer> >::const_iterator h;
+			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
+				if (v_scalar_product((*h),Linear_Form)==1) {
+					Homogeneous_Elements.push_back((*h));
+				}
+			}
+			is_Computed.set(ConeProperty::Ht1Elements);
+		}
+	} else {
+		is_ht1_extreme_rays = is_ht1_generated = true;
+		Linear_Form=vector<Integer>(dim);
+		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+		is_Computed.set(ConeProperty::IsHt1Generated);
 	}
 }
 
@@ -2560,405 +2616,6 @@ Integer Full_Cone::primary_multiplicity() const{
 	}
 	return primary_multiplicity;
 }
-//---------------------------------------------------------------------------
-
-void Full_Cone::cut_with_halfspace_hilbert_basis(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
-	if (verbose==true) {
-		cout<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
-	}
-	int i,sign;
-	bool  not_done;
-	list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
-	Integer orientation, scalar_product,diff,factor;
-	vector <Integer> hyperplane=Generators.read(hyp_counter);
-	list< vector<Integer> >::iterator h;
-	if (lifting==true) {
-		orientation=v_scalar_product(hyperplane,halfspace);
-		if(orientation<0){
-			orientation=-orientation;
-			v_scalar_multiplication(halfspace,-1); //transforming into the generator of the positive halfspace
-		}
-		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //reduction  modulo  the generator of the positive halfspace
-			scalar_product=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
-			sign=1;
-			if (scalar_product<0) {
-				scalar_product=-scalar_product;
-				sign=-1;
-			}
-			factor=scalar_product/orientation;
-			for (i = 0; i < dim; i++) {
-				(*h)[nr_gen+3+i]=(*h)[nr_gen+3+i]-sign*factor*halfspace[i];
-			}
-		}
-		//adding the generators of the halfspace to negative and positive
-		vector <Integer> hyp_element(hyp_size+3,0);
-		for (i = 0; i < dim; i++) {
-			hyp_element[nr_gen+3+i]= halfspace[i];
-		}
-		hyp_element[hyp_counter]=orientation;
-		hyp_element[0]=orientation;
-		if (orientation==0){ //never
-			Neutral_Ired.push_back(hyp_element);
-		}
-		else{
-			Positive_Ired.push_back(hyp_element);
-			v_scalar_multiplication(hyp_element,-1);
-			hyp_element[hyp_counter]=orientation;
-			hyp_element[0]=orientation;
-			Negative_Ired.push_back(hyp_element);
-		}
-	}
-	for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //dividing into negative and positive
-		(*h)[hyp_counter]=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
-		if ((*h)[hyp_counter]>0) {
-			(*h)[nr_gen+1]=1;     // generation
-			(*h)[nr_gen+2]=0;     //not sum
-			(*h)[0]+=(*h)[hyp_counter];
-			Positive_Ired.push_back((*h));
-		}
-		if ((*h)[hyp_counter]<0) {
-			(*h)[hyp_counter]=-(*h)[hyp_counter];
-			(*h)[nr_gen+1]=1;
-			(*h)[nr_gen+2]=0;
-			(*h)[0]+=(*h)[hyp_counter];
-			Negative_Ired.push_back((*h));
-		}
-		if ((*h)[hyp_counter]==0) {
-			(*h)[nr_gen+1]=0;
-			(*h)[nr_gen+2]=0;
-			Neutral_Ired.push_back((*h));
-		}
-	}
-	Neutral_Ired.sort();
-	Positive_Ired.sort();
-	Negative_Ired.sort();
-	//long int counter=0;
-	list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Pos,Neg,Neu;
-	list < vector<Integer> >::const_iterator p,n;
-	list < vector <Integer> >::iterator c;
-	not_done=true;
-	while(not_done){
-		not_done=false;
-		New_Positive.clear();
-		New_Negative.clear();
-		New_Neutral.clear();
-		//generating new elements
-//		cout<<"+"<<flush;
-//		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
-		list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
-		list < vector<Integer> >::iterator it;
-		it=Positive_Ired.begin();
-		while (it!=Positive_Ired.end()) {
-			Positive.push_back(&(*(it++)));
-		}
-		it=Negative_Ired.begin();
-		while (it!=Negative_Ired.end()) {
-			Negative.push_back(&(*(it++)));
-		}
-		it=Neutral_Ired.begin();
-		while (it!=Neutral_Ired.end()) {
-			Neutral.push_back(&(*(it++)));
-		}
-		int psize=Positive_Ired.size();
-		#pragma omp parallel private(p,n,diff) firstprivate(Positive,Negative,Neutral)
-		{
-		int ppos=0;
-		p = Positive_Ired.begin();
-		#pragma omp for schedule(dynamic)
-		for(i = 0; i<psize; ++i){
-			for(;i > ppos; ++ppos, ++p) ;
-			for(;i < ppos; --ppos, --p) ;
-
-			for (n = Negative_Ired.begin(); n != Negative_Ired.end(); ++n){
-				if ((*p)[nr_gen+1]<=1&&(*n)[nr_gen+1]<=1&&((*p)[nr_gen+1]!=0||(*n)[nr_gen+1]!=0)) {
-					if (((*p)[nr_gen+2]!=0&&(*p)[nr_gen+2]<=(*n)[hyp_counter])||((*n)[nr_gen+2]!=0&&(*n)[nr_gen+2]<=(*p)[hyp_counter]))
-						continue;
-					//	counter++;
-					diff=(*p)[hyp_counter]-(*n)[hyp_counter];
-					vector <Integer> new_candidate=v_add((*p),(*n));
-
-					if (diff>0) {
-						new_candidate[hyp_counter]=diff;
-						new_candidate[0]-=2*(*n)[hyp_counter];
-						if(reduce(Positive,new_candidate,hyp_counter)) {
-							continue;
-						}
-						if(reduce(Neutral,new_candidate,hyp_counter-1)) {
-							continue;
-						}    
-						new_candidate[nr_gen+1]=2;
-						new_candidate[nr_gen+2]=(*p)[hyp_counter];
-						#pragma omp critical(NEW_POSITIVE)
-						New_Positive.push_back(new_candidate);
-					}
-					if (diff<0) {
-						new_candidate[hyp_counter]=-diff;
-						new_candidate[0]-=2*(*p)[hyp_counter];
-						if(reduce(Negative,new_candidate,hyp_counter)) {
-							continue;
-						}
-						if(reduce(Neutral,new_candidate,hyp_counter-1)) {
-							continue;
-						}    
-						new_candidate[nr_gen+1]=2;
-						new_candidate[nr_gen+2]=(*n)[hyp_counter];
-						#pragma omp critical(NEW_NEGATIVE)
-						New_Negative.push_back(new_candidate);
-					}
-					if (diff==0) {
-						new_candidate[hyp_counter]=0;
-						new_candidate[0]-=2*(*p)[hyp_counter];
-						if(reduce(Neutral,new_candidate,hyp_counter-1)) {
-							continue;
-						}
-						new_candidate[nr_gen+1]=0;
-						new_candidate[nr_gen+2]=0;
-						#pragma omp critical(NEW_NEUTRAL)
-						New_Neutral.push_back(new_candidate);
-					}
-					/*	if (counter==10000000) {
-						counter=0;
-						New_Neutral.sort();
-						New_Positive.sort();
-						New_Negative.sort();
-						reduce(Neutral,New_Neutral,hyp_counter-1);
-						reduce(Neutral,New_Positive,hyp_counter-1);
-						reduce(Neutral,New_Negative,hyp_counter-1);
-						reduce(Positive,New_Positive,hyp_counter);
-						reduce(Negative,New_Negative,hyp_counter);
-						Neu.merge(New_Neutral);
-						Pos.merge(New_Positive);
-						Neg.merge(New_Negative);
-						New_Neutral.clear();
-						New_Positive.clear();
-						New_Negative.clear();
-						}     */
-				}
-			}
-		}
-		//end generation of new elements
-		#pragma omp single nowait
-		New_Neutral.sort();
-		#pragma omp single nowait
-		New_Positive.sort();
-		#pragma omp single nowait
-		New_Negative.sort();
-		} //END PARALLEL
-//		cout<<"-"<<flush;
-		//reducing the new vectors agains them self
-		//Neutral_Ired=Neutral;
-		//Positive_Ired=Positive;
-		//Negative_Ired=Negative;
-		/*reduce(Neutral,New_Neutral,hyp_counter-1);
-		  reduce(Neutral,New_Positive,hyp_counter-1);
-		  reduce(Neutral,New_Negative,hyp_counter-1);
-		  New_Positive.sort();
-		  New_Negative.sort();
-		  reduce(Positive,New_Positive,hyp_counter);
-		  reduce(Negative,New_Negative,hyp_counter);
-		  New_Neutral.sort();
-		  New_Positive.sort();
-		  New_Negative.sort();
-		  New_Neutral.merge(Neu);
-		  New_Positive.merge(Pos);
-		  New_Negative.merge(Neg);*/
-		Hilbert_Basis.clear();
-		for (c=New_Neutral.begin(); c != New_Neutral.end(); ++c) {
-			reduce_and_insert((*c),hyp_counter-1);
-		}
-		New_Neutral=Hilbert_Basis;
-		Hilbert_Basis.clear();
-		for (c=New_Positive.begin(); c != New_Positive.end(); ++c) {
-			reduce_and_insert((*c),hyp_counter);
-		}
-		New_Positive=Hilbert_Basis;
-		Hilbert_Basis.clear();
-		for (c=New_Negative.begin(); c != New_Negative.end(); ++c) {
-			reduce_and_insert((*c),hyp_counter);
-		}
-		New_Negative=Hilbert_Basis;
-		if (New_Neutral.size()!=0) {
-			New_Positive.sort();
-			reduce(New_Neutral,New_Positive, hyp_counter-1);
-			New_Negative.sort();
-			reduce(New_Neutral,New_Negative, hyp_counter-1);
-			reduce(New_Neutral,Neutral_Ired, hyp_counter-1);
-			reduce(New_Neutral,Positive_Ired, hyp_counter-1);
-			reduce(New_Neutral,Negative_Ired, hyp_counter-1);   
-			Neutral_Ired.merge(New_Neutral);
-		}
-		if (New_Positive.size()!=0) {
-			not_done=true;
-			reduce(New_Positive,Positive_Ired, hyp_counter);
-			Positive_Ired.merge(New_Positive);
-		}
-		if (New_Negative.size()!=0) {
-			not_done=true;
-			reduce(New_Negative,Negative_Ired, hyp_counter);
-			Negative_Ired.merge(New_Negative);
-		}
-		for (c = Positive_Ired.begin(); c != Positive_Ired.end(); ++c){
-			if((*c)[nr_gen+1]>0) {
-				(*c)[nr_gen+1]--;
-			}
-		}
-		for (c = Negative_Ired.begin(); c != Negative_Ired.end(); ++c){
-			if((*c)[nr_gen+1]>0) {
-				(*c)[nr_gen+1]--;
-			}
-		}
-//		cout<<not_done;
-	}
-	//still possible to have double elements in the Hilbert basis, coming from different generations
-
-	set< vector<Integer> > Help;
-	set< vector<Integer> >::iterator d;
-	for (c = Positive_Ired.begin(); c != Positive_Ired.end(); ++c) {
-		(*c)[nr_gen+1]=0;
-		(*c)[nr_gen+2]=0;
-		Help.insert(*c);
-	}
-	for (c = Neutral_Ired.begin(); c != Neutral_Ired.end(); ++c) {
-		(*c)[nr_gen+1]=0;
-		(*c)[nr_gen+2]=0;
-		Help.insert(*c);
-	}
-	Hilbert_Basis.clear();
-	d=Help.begin();
-	while(d != Help.end()) {
-		Hilbert_Basis.push_back(*d);
-		Help.erase(d);
-		d=Help.begin();
-	}
-	if (verbose==true) {
-		cout<<"Hilbert basis size="<<Hilbert_Basis.size()<<endl;
-	}
-}
-
-//---------------------------------------------------------------------------
-
-Matrix Full_Cone::cut_with_halfspace(const int& hyp_counter, const Matrix& Basis_Max_Subspace){
-	int i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
-	vector <Integer> scalar_product,hyperplane=Generators.read(hyp_counter),halfspace;
-	bool lifting=false;
-	Matrix New_Basis_Max_Subspace=Basis_Max_Subspace;
-	if (rank_subspace!=0) {
-		scalar_product=Basis_Max_Subspace.MxV(hyperplane);
-		for (i = 0; i <rank_subspace; i++) 
-			if (scalar_product[i]!=0)
-				break;
-		if (i!=rank_subspace) {    // the new hyperplane is not contained in the maximal subspace
-			lifting=true;
-			//computing new maximal subspace
-			Matrix M(1,rank_subspace);
-			M.write(1,scalar_product);
-			Lineare_Transformation LT=Transformation(M);
-			Matrix Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
-			Lifted_Basis_Factor_Space_over_Ker_and_Ker=Lifted_Basis_Factor_Space_over_Ker_and_Ker.transpose();
-			Matrix  Ker(rank_subspace-1,rank_subspace);
-			for (j = 1; j <= rank_subspace-1; j++) {
-				Ker.write(j, Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(j+1));
-			}
-			New_Basis_Max_Subspace=Ker.multiplication(Basis_Max_Subspace);
-			halfspace=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(1));
-		}
-	}
-	cut_with_halfspace_hilbert_basis(hyp_counter, lifting, halfspace);
-	return New_Basis_Max_Subspace;
-}
-
-//---------------------------------------------------------------------------
-
-void Full_Cone::extreme_rays_reduction(){
-	list < vector <Integer> >::iterator c;
-	int i,k;
-	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
-		k=0;
-		for (i = 1; i <= nr_gen; i++) {
-			if ((*c)[i]!=0) {
-				(*c)[i]=1;
-				k++;
-			}
-
-		}
-		(*c)[0]=k;       //if (k>=dim-1) improuves speed much here
-	}
-	Hilbert_Basis.sort();
-	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
-		reduce_and_insert_extreme((*c));
-	}
-	is_Computed.set(ConeProperty::ExtremeRays);
-	l_cut_front(Support_Hyperplanes,dim);
-}
-
-//---------------------------------------------------------------------------
-
-void Full_Cone::extreme_rays_rank(){
-	list < vector <Integer> >::iterator c;
-	list <int> zero_list;
-	int i,j,k;
-	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
-		zero_list.clear();
-		for (i = 1; i <= nr_gen; i++) {
-			if ((*c)[i]==0) {
-				zero_list.push_back(i);
-			}
-		}
-		k=zero_list.size();
-		if (k>=dim-1) {
-			vector <int> zero_vector(k);
-			for (j = 0; j < k; j++) {
-				zero_vector[j]=zero_list.front();
-				zero_list.pop_front();
-			}
-			Matrix Test=Generators.submatrix(zero_vector);
-			if (Test.rank()>=dim-1) {
-				Support_Hyperplanes.push_back((*c));
-			}
-		}
-	}
-	is_Computed.set(ConeProperty::ExtremeRays);
-	l_cut_front(Support_Hyperplanes,dim);
-}
-
-//---------------------------------------------------------------------------
-
-void Full_Cone::hilbert_basis_dual(){
-if(dim>0){            //correction needed to include the 0 cone;
-	if (verbose==true) {
-		cout<<"\n************************************************************\n";
-		cout<<"computing Hilbert basis ..."<<endl;
-	}
-	int hyp_counter;      // current hyperplane
-	Matrix Basis_Max_Subspace(dim);      //identity matrix
-	for (hyp_counter = 1; hyp_counter <= nr_gen; hyp_counter++) {
-		Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
-	}
-	extreme_rays_rank();
-	l_cut_front(Hilbert_Basis,dim);
-	if(dim>0){            //correction needed to include the 0 cone;
-		Matrix M=read_support_hyperplanes();
-		Linear_Form=M.homogeneous_low_dim(is_ht1_generated);
-		is_ht1_extreme_rays=is_ht1_generated;
-		if (is_ht1_generated) {
-			list < vector <Integer> >::const_iterator h;
-			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
-				if (v_scalar_product((*h),Linear_Form)==1) {
-					Homogeneous_Elements.push_back((*h));
-				}
-			}
-			is_Computed.set(ConeProperty::Ht1Elements);
-		}
-	} else {
-		is_ht1_generated=true;
-		is_ht1_extreme_rays=true;
-		Linear_Form=vector<Integer>(dim);
-		is_Computed.set(ConeProperty::Ht1Elements);
-	}
-	} // end if (dim>0)
-	is_Computed.set(ConeProperty::HilbertBasis);
-}
-
 //---------------------------------------------------------------------------
 
 void Full_Cone::error(string s) const{
