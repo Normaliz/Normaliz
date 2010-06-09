@@ -89,7 +89,6 @@ public:
   void cone()const;
   void polytop()const;
   void rees(const bool primary)const;
-  void dual()const;
 
 //---------------------------------------------------------------------------
 //							Error msg

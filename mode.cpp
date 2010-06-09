@@ -349,7 +349,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Full_Cone Result(Cone1);
 		Result.dual_mode();
 		Out.set_result(Result);
-		Out.dual();
+		Out.cone();
 	}
 }
 

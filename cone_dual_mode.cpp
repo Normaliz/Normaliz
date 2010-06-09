@@ -668,7 +668,7 @@ if(dim>0){            //correction needed to include the 0 cone;
 //---------------------------------------------------------------------------
 
 void Cone_Dual_Mode::error(string s) const{
-	cerr <<"\nFull Cone "<< s<<"\n";
+	cerr <<"\nCone_Dual_Mode: "<< s<<"\n";
 	global_error_handling();
 }
 

@@ -384,7 +384,7 @@ void Output::cone() const{
 			ofstream cst_out(cst_file);
 
 			Support_Hyperplanes.print(cst_out);
-			cst_out<<"inequalities"<<endl;
+			cst_out<<"hyperplanes"<<endl;
 			Equations.print(cst_out);
 			cst_out<<"equations"<<endl;
 			Congruences.print(cst_out);
@@ -908,91 +908,6 @@ void Output::rees(const bool primary) const{
 		inv.close();
 	}  
 }
-
-//--------------------------------------------------------------------------------
-
-void Output::dual()const{
-	int i,nr,rank;    //read local data
-	rank = Result.read_dimension();
-	Matrix Extreme_Rays=Result.read_support_hyperplanes(); // in the dual mode the support hyperplanes are the generators
-	Extreme_Rays = Basis_Change.from_sublattice(Extreme_Rays);
-	write_matrix_ext(Extreme_Rays);
-	Matrix Support_Hyperplanes=Result.read_generators();  // in the dual mode the extrem rays are the support hyperplanes
-	write_matrix_esp(Support_Hyperplanes);         //write the suport hyperplanes of the full dimensional cone
-	Matrix Hilbert_Basis=Result.read_hilbert_basis();
-	write_matrix_egn(Hilbert_Basis);
-	Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis);
-	write_matrix_gen(Hilbert_Basis);
-
-	if (out==true ) {//printing .out file
-		string name_open=name+".out"; 							 //preparing output files
-		const char* file=name_open.c_str();
-		ofstream out(file);
-
-
-		nr=Hilbert_Basis.nr_of_rows();
-		out<<nr<<" generators of integral closure:"<<endl;
-		Hilbert_Basis.pretty_print(out);
-
-		nr=Extreme_Rays.nr_of_rows();
-		out<<nr<<" extreme rays:"<<endl;
-		Extreme_Rays.pretty_print(out);
-
-		//write rank
-		out<<"(original) semigroup has rank "<<rank<<endl<<endl;
-
-		if (Result.read_homogeneous()==false) {
-			out<<"(original) semigroup is not homogeneous"<<endl;
-		}
-		else {
-			Matrix Hom=Result.read_homogeneous_elements();
-			Hom = Basis_Change.from_sublattice(Hom);
-			write_matrix_ht1(Hom);
-			out<<Hom.nr_of_rows()<<" height 1 generators of integral closure:"<<endl;
-			Hom.pretty_print(out);
-
-			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
-			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
-			for (i = 0; i < Linear_Form.size(); i++) {
-				out<<Linear_Form[i]<<" ";
-			}
-			out<<endl<<endl;
-		}
-
-		out.close();
-	}
-	if (inv==true) {//printing .inv file
-		string name_open=name+".inv"; 							 //preparing output files
-		const char* file=name_open.c_str();
-		ofstream inv(file);
-
-		//write Hilbert Basis
-		inv<<"integer hilbert_basis_elements = "<<Hilbert_Basis.nr_of_rows()<<endl;
-		//write extreme rays
-		inv<<"integer number_extreme_rays = "<<Extreme_Rays.nr_of_rows()<<endl;
-		inv<<"integer rank = "<<rank<<endl;
-
-		if (Result.read_homogeneous()==false) {
-			inv<<"boolean homogeneous = "<<"false"<<endl;
-		}
-		else {
-			inv<<"boolean homogeneous = "<<"true"<<endl;
-			Matrix Hom=Result.read_homogeneous_elements();
-			nr=Hom.nr_of_rows();
-			inv<<"integer height_1_elements = "<<nr<<endl;
-			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
-			inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
-			for (i = 0; i < Linear_Form.size(); i++) {
-				inv<<Linear_Form[i]<<" ";
-			}
-			inv<<endl;
-		}
-		inv.close();
-	}
-}
-
 
 //---------------------------------------------------------------------------
 
