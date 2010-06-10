@@ -29,13 +29,13 @@
 class Cone_Dual_Mode {
 public:
 	int dim;
-	int nr_gen;
+	int nr_sh;
 	int hyp_size;
 	
 	bool is_pointed;
 	bool is_ht1_extreme_rays;
-	Matrix Generators;
-	list<vector<Integer> > Support_Hyperplanes;
+	Matrix SupportHyperplanes;
+	list<vector<Integer> > Generators;
 	list<vector<Integer> > Hilbert_Basis;
 
 /* ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ public:
 	/* computes the extreme rays using rank test, used for the dual algorithm */
 	void extreme_rays_rank();
 
-
+	void relevant_support_hyperplanes();
 
 	Cone_Dual_Mode();
 	Cone_Dual_Mode(Matrix M);            //main constructor
@@ -81,10 +81,8 @@ public:
  *---------------------------------------------------------------------------
  */
 	void print() const;                //to be modified, just for tests
-	int read_dimension() const;        //returns dimension
-	int read_nr_generators() const;    //returns the number of generators
-	Matrix read_generators() const;
-	Matrix read_support_hyperplanes() const;
+	Matrix get_support_hyperplanes() const;
+	Matrix get_generators() const;
 	Matrix read_hilbert_basis() const;
 
 

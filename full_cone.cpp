@@ -38,7 +38,6 @@ using namespace std;
 //---------------------------------------------------------------------------
 extern bool test_arithmetic_overflow;
 extern int overflow_test_modulus;
-extern int lifting_bound;
 extern bool verbose;
 extern bool optimize_speed;
 extern void global_error_handling();
@@ -725,60 +724,6 @@ void Full_Cone::reduce_and_insert_speed(const vector< Integer >& new_element){
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const int& size){
-	register int i,c=1;
-	list< vector<Integer>* >::iterator j;
-	vector<Integer> *reducer;
-	for (j =Ired.begin(); j != Ired.end(); j++) {
-		reducer=(*j);
-		if (new_element[0]<=(*reducer)[0])
-			continue;
-		if ((*reducer)[c]<=new_element[c]){
-			for (i = 1; i <=size ; i++) {
-				if ((*reducer)[i]>new_element[i]){
-					c=i;
-					break;
-				}
-			}
-			if (i==size+1) {
-				Ired.push_front(*j);
-				Ired.erase(j);
-				return true;
-			}
-		}
-		//new_element is reducible
-	}
-	return false;
-}
-
-//---------------------------------------------------------------------------
-
-bool Full_Cone::reduce( list< vector< Integer > >& Ired, const vector< Integer >& new_element, const int& size){
-	register int i,c=1;
-	list< vector<Integer> >::iterator j;
-	for (j =Ired.begin(); j != Ired.end(); j++) {
-		if (new_element[0]<=(*j)[0])
-			continue;
-		if ((*j)[c]<=new_element[c]){
-			for (i = 1; i <=size ; i++) {
-				if ((*j)[i]>new_element[i]){
-					c=i;
-					break;
-				}
-			}
-			if (i==size+1) {
-				Ired.push_front(*j);
-				Ired.erase(j);
-				return true;
-			}
-		}
-		//new_element is reducible
-	}
-	return false;
-}
-
-//---------------------------------------------------------------------------
-
 void Full_Cone::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
 	Ired.sort();
 	register int i,c=1;
@@ -818,39 +763,6 @@ void Full_Cone::reduce( list< vector< Integer > >& Ired, list< vector< Integer >
 	Red.pop_back();
 }
 
-
-
-
-//---------------------------------------------------------------------------
-
-void Full_Cone::reduce_and_insert(const vector< Integer >& new_element, const int& size){
-	register int i,c=1;
-	list< vector<Integer> >::iterator j;
-	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-		if (new_element[0]<2*(*j)[0]) {
-			break; //new_element is not reducible;
-		}
-		else  {
-
-			if ((*j)[c]<=new_element[c]){
-				for (i = 1; i <= size; i++) {
-					if ((*j)[i]>new_element[i]){
-						c=i;
-						break;
-					}
-				}
-				if (i==size+1) {
-					Hilbert_Basis.push_front(*j);
-					Hilbert_Basis.erase(j);
-					return;
-				}
-			}
-			//new_element is not in the Hilbert Basis
-		}
-	}
-	Hilbert_Basis.push_back(new_element);
-}
-
 //---------------------------------------------------------------------------
 
 void Full_Cone::reduce_and_insert(const Matrix& New_Elements){
@@ -867,33 +779,6 @@ void Full_Cone::reduce_and_insert(const list< vector<Integer> >& New_Elements){
 	for (l =New_Elements.begin(); l != New_Elements.end(); l++) {
 		reduce_and_insert(*l);
 	}
-}
-
-//---------------------------------------------------------------------------
-
-
-void Full_Cone::reduce_and_insert_extreme( const vector< Integer >& new_element){
-	register int i,c=1;
-	list< vector<Integer> >::iterator j;
-	for (j =Support_Hyperplanes.begin(); j != Support_Hyperplanes.end(); j++) {
-		if (new_element[0]<=(*j)[0])
-			continue;
-		if ((*j)[c]<=new_element[c]){
-			for (i = 1; i <=nr_gen ; i++) {
-				if ((*j)[i]>new_element[i]){
-					c=i;
-					break;
-				}
-			}
-			if (i==nr_gen+1) {
-				Support_Hyperplanes.push_front(*j);
-				Support_Hyperplanes.erase(j);
-				return; //new element is not an extreme ray
-			}
-		}
-		//new_element is reducible
-	}
-	Support_Hyperplanes.push_back(new_element);
 }
 
 //---------------------------------------------------------------------------
@@ -994,7 +879,7 @@ Full_Cone::Full_Cone(Matrix M){
 Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 
 	dim = C.dim;
-	Generators = C.read_support_hyperplanes();
+	Generators = C.get_generators();
 	nr_gen = Generators.nr_of_rows();
 
 	hyp_size = dim+nr_gen;
@@ -1006,7 +891,7 @@ Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 	is_ht1_generated = false;
 	Extreme_Rays = vector<bool>(nr_gen,true); //all generators are extreme rays
 	is_Computed.set(ConeProperty::ExtremeRays);
-	Matrix SH = C.Generators;
+	Matrix SH = C.SupportHyperplanes;
 	Support_Hyperplanes = list< vector<Integer> >();
 	for (int i=1; i<= SH.nr_of_rows(); i++) {
 		Support_Hyperplanes.push_back(SH.read(i));
@@ -1024,6 +909,7 @@ Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
+		is_Computed.set(ConeProperty::HilbertPolynomial);
 	}
 }
 

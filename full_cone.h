@@ -87,25 +87,14 @@ class Full_Cone {
 	bool is_reducible(list<vector<Integer> > & Ired, const vector<Integer> & new_element);
 	bool is_reducible(list<vector<Integer> *> & Ired, const vector<Integer> & new_element);
 
-	/* Returns true if new_element is reducible versus the elements in Ired
-	 * used for dual algorithm */
-	bool reduce(list<vector<Integer> > & Ired, const vector<Integer> & new_element, const int & size);
-	bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const int & size);
-
 	/* reduce Red versus Ired */
 	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const int & size);
 
-	/* adds a new element irreducible to the Hilbert basis
-	 * the new elements must come from a  structure sorted by total degree
-	 * used for dual algorithm */
-	void reduce_and_insert(const vector<Integer> & new_element, const int & size);
 	/* adds a matrix with new elements to the Hilbert basis */
 	void reduce_and_insert(const Matrix & New_Elements);
 	/* adds a list with new elements to the Hilbert basis */
 	void reduce_and_insert(const list<vector<Integer> > & New_Elements);
-	/* select extreme rays  by reduction
-	 * used for the dual algorithm */
-	void reduce_and_insert_extreme(const vector<Integer> & new_element);
+
 
 	/* to be used with a shelling in order to add to each simples the maximal new face */
 	void find_new_face();
