@@ -204,14 +204,7 @@ void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Equations,  Matrix Inequalities, Output& Out) {
 	
-/*	cout << "Congruences:";
-	Congruences.read();
-	cout << endl << endl << "Equations:";
-	Equations.read();
-	cout << endl << endl<< "Inequalities:";
-	Inequalities.read();
-	cout << endl << endl;
-*/
+
 	int dim = 0;
 	int nr_cong = Congruences.nr_of_rows();
 	if (nr_cong > 0) {	
@@ -241,29 +234,19 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 			Cong_Slack.write(i,dim+i,Congruences.read(i,dim+1));
 		}
 
-/*		cout << "Cong_Slack:";
-		Cong_Slack.read();
-		cout <<endl<<endl;
-*/		
 		//compute kernel
 		Lineare_Transformation Diagonalization = Transformation(Cong_Slack);
 		int rank = Diagonalization.get_rank();
 		Matrix H = Diagonalization.get_right();
-//		Matrix H_Inv = Diagonalization.get_right_inv();
 		Matrix Ker_Basis_Transpose(dim, dim+nr_cong-rank);
-//		Matrix Ker_Basis_Transpose_Inv(dim+nr_cong-rank, dim);
 		for (i = 1; i <= dim; i++) {
 			for (j = rank+1; j <= dim+nr_cong; j++) {
 				Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
-//				Ker_Basis_Transpose_Inv.write(j-rank,i,H_Inv.read(j,i));
 			}
 		}
 
 		//TODO now a new linear transformation is computed, necessary??
-//Ker_Basis_Transpose.transpose().read();
 		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
-//cout<<"\ncong:";
-//Basis_Change.get_congruences().read();
 		Out.compose_basis_change(Basis_Change);
 		Equations = Equations.multiplication(Ker_Basis_Transpose);
 		Inequalities = Inequalities.multiplication(Ker_Basis_Transpose);
@@ -276,10 +259,11 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 //---------------------------------------------------------------------------
 
 void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const Matrix& Inequalities, Output& Out){
+	int i,j,dim=Equations.nr_of_columns();
+	Lineare_Transformation Diagonalization=Transformation(Equations);
+	int rank=Diagonalization.get_rank();
+
 	if(computation_type!="dual"){
-		int i,j,dim=Equations.nr_of_columns();
-		Lineare_Transformation Diagonalization=Transformation(Equations);
-		int rank=Diagonalization.get_rank();
 		Matrix Help=Diagonalization.get_right();
 		Matrix Ker_Basis_Transpose(dim,dim-rank);
 		for (i = 1; i <= dim; i++) {
@@ -294,19 +278,9 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
 		Matrix Ker_Basis=Ker_Basis_Transpose.transpose();
 		Matrix Generators=Extreme_Rays.multiplication(Ker_Basis);
-		/* if (Generators.nr_of_rows()==0) {
-			Matrix Trivial_Solution(1,dim,0);
-			Generators=Trivial_Solution;
-			cerr<<"warning: The only solution of the system is 0.";
-			global_error_handling();
-		} */
-//		Generators.read();
 		run_mode_0( computation_type ,Generators, Out);
 	}
 	if(computation_type=="dual"){
-		int i,j,dim=Equations.nr_of_columns();
-		Lineare_Transformation Diagonalization=Transformation(Equations);
-		int rank=Diagonalization.get_rank();
 		Matrix H=Diagonalization.get_right();
 		Matrix H_Inv=Diagonalization.get_right_inv();
 		Matrix Ker_Basis_Transpose(dim,dim-rank);
@@ -345,7 +319,11 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Cone_Dual_Mode Cone1(Equations_Ordered);
 		Cone1.hilbert_basis_dual();
 		//Cone1 zu einem Full_Cone machen
-		//TODO Lineare Transformation
+		Sublattice_Representation SR(Cone1.get_generators(),true);
+		if ( SR.get_rank() < rank ) {
+			Cone1.to_sublattice(SR);
+			Out.compose_basis_change(SR);
+		}
 		Full_Cone Result(Cone1);
 		Result.dual_mode();
 		Out.set_result(Result);

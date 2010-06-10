@@ -679,6 +679,29 @@ void Cone_Dual_Mode::relevant_support_hyperplanes(){
 
 //---------------------------------------------------------------------------
 
+void Cone_Dual_Mode::to_sublattice(Sublattice_Representation SR) {
+	if (SR.get_dim() != dim) {
+		error("to_sublattice: dimensions do not match!");
+	}
+	dim = SR.get_rank();
+	hyp_size = dim+nr_sh;
+	SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
+	list<vector<Integer> >::iterator it;
+	vector<Integer> tmp;
+	for (it = Generators.begin(); it != Generators.end(); ) {
+		tmp =  SR.to_sublattice(*it);
+		it = Generators.erase(it);
+		Generators.insert(it,tmp);
+	}
+	for (it = Hilbert_Basis.begin(); it != Hilbert_Basis.end(); ) {
+		tmp =  SR.to_sublattice(*it);
+		it = Hilbert_Basis.erase(it);
+		Hilbert_Basis.insert(it,tmp);
+	}
+}
+
+//---------------------------------------------------------------------------
+
 void Cone_Dual_Mode::error(string s) const{
 	cerr <<"\nCone_Dual_Mode: "<< s<<"\n";
 	global_error_handling();

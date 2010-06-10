@@ -24,7 +24,7 @@
 #include <list>
 #include "integer.h"
 #include "matrix.h"
-
+#include "sublattice_representation.h"
 
 class Cone_Dual_Mode {
 public:
@@ -32,8 +32,6 @@ public:
 	int nr_sh;
 	int hyp_size;
 	
-	bool is_pointed;
-	bool is_ht1_extreme_rays;
 	Matrix SupportHyperplanes;
 	list<vector<Integer> > Generators;
 	list<vector<Integer> > Hilbert_Basis;
@@ -92,6 +90,9 @@ public:
  *---------------------------------------------------------------------------
  */
 	void hilbert_basis_dual();
+
+	/* transforms all data to the sublattice */
+	void to_sublattice(Sublattice_Representation SR);
 
 	void error(string s) const;
 };
