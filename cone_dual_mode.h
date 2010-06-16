@@ -33,7 +33,8 @@ public:
 	int hyp_size;
 	
 	Matrix SupportHyperplanes;
-	list<vector<Integer> > Generators;
+	Matrix Generators;
+	list<vector<Integer> > GeneratorList; //only temporarily used
 	list<vector<Integer> > Hilbert_Basis;
 
 /* ---------------------------------------------------------------------------

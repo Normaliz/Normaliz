@@ -1242,6 +1242,10 @@ void Full_Cone::hilbert_polynomial(){
 
 void Full_Cone::dual_mode() {
 	if(dim>0) {            //correction needed to include the 0 cone;
+		Support_Hyperplanes.sort();
+		Support_Hyperplanes.unique();
+		Support_Hyperplanes.remove(vector<Integer>(dim,0));
+
 		Linear_Form = Generators.homogeneous(is_ht1_extreme_rays);
 		is_ht1_generated = is_ht1_extreme_rays;
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
@@ -2054,7 +2058,6 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 	list< vector<Integer> > HBtmp(0);
 	Integer norm_crit;
 	while ( !Candidates_with_Scalar_Product.empty() ) {
-		if (verbose) cout<<"new reduction round"<<endl<<flush;
 		//use norm criterion to find irreducible elements
 		c=Candidates_with_Scalar_Product.begin();
 		norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
@@ -2105,7 +2108,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 		for (int k=0; k<csize; ++k) {
 			for(;k > cpos; ++cpos, ++c) ;
 			for(;k < cpos; --cpos, --c) ;
-			if (verbose && k%10000==0) {
+			if (verbose && k%10000==0 && k!=0) {
 				cout<<k<<" / "<<csize<<endl<<flush;
 			}
 			
@@ -2114,7 +2117,6 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 			}
 		}
 		} //end parallel
-		if (verbose) cout<<csize<<" / "<<csize<<endl<<flush;
 
 		// delete reducible candidates
 		c=Candidates_with_Scalar_Product.begin();

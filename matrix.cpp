@@ -131,7 +131,7 @@ void Matrix::write(){      //to overload for files
 
 void Matrix::write(int row, const vector<Integer>& data){
 	if ((row<1)||(row>nr)|| (nc!=data.size())) {
-		error("error:Bad argument passed to Matrix::write.");
+		error("error:Bad argument passed to Matrix::write(int, const vector<Integer>&).");
 	}
 	else
 		elements[row-1]=data;
@@ -153,7 +153,7 @@ void Matrix::write(int row, const vector<int>& data){
 
 void Matrix::write(int row, int col, Integer data){
 	if ((row<1)||(row>nr) || (col<1)||(col>nc)) {
-		error("error:Bad argument passed to Matrix::write.");
+		error("error:Bad argument passed to Matrix::write(int, int, Integer).");
 	}
 	else
 		elements[row-1][col-1]=data;

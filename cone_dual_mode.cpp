@@ -172,7 +172,7 @@ void Cone_Dual_Mode::reduce_and_insert(const vector< Integer >& new_element, con
 void Cone_Dual_Mode::reduce_and_insert_extreme( const vector< Integer >& new_element){
 	register int i,c=1;
 	list< vector<Integer> >::iterator j;
-	for (j =Generators.begin(); j != Generators.end(); j++) {
+	for (j =GeneratorList.begin(); j != GeneratorList.end(); j++) {
 		if (new_element[0]<=(*j)[0])
 			continue;
 		if ((*j)[c]<=new_element[c]){
@@ -183,14 +183,14 @@ void Cone_Dual_Mode::reduce_and_insert_extreme( const vector< Integer >& new_ele
 				}
 			}
 			if (i==nr_sh+1) {
-				Generators.push_front(*j);
-				Generators.erase(j);
+				GeneratorList.push_front(*j);
+				GeneratorList.erase(j);
 				return; //new element is not an extreme ray
 			}
 		}
 		//new_element is reducible
 	}
-	Generators.push_back(new_element);
+	GeneratorList.push_back(new_element);
 }
 
 //---------------------------------------------------------------------------
@@ -220,7 +220,7 @@ Cone_Dual_Mode::Cone_Dual_Mode(Matrix M){
 		nr_sh=SupportHyperplanes.nr_of_rows();
 	}
 	hyp_size=dim+nr_sh;
-	Generators = list< vector<Integer> >();
+	GeneratorList = list< vector<Integer> >();
 	Hilbert_Basis = list< vector<Integer> >();
 }
 
@@ -231,7 +231,7 @@ Cone_Dual_Mode::Cone_Dual_Mode(const Cone_Dual_Mode& C){
 	nr_sh=C.nr_sh;
 	hyp_size=C.hyp_size;
 	SupportHyperplanes=C.SupportHyperplanes;
-	Generators=C.Generators;
+	GeneratorList=C.GeneratorList;
 	Hilbert_Basis=C.Hilbert_Basis;
 }
 
@@ -247,8 +247,8 @@ void Cone_Dual_Mode::print()const{
 	cout<<"dim="<<dim<<".\n";
 	cout<<"nr_sh="<<nr_sh<<".\n";
 	cout<<"hyp_size="<<hyp_size<<".\n";
-	cout<<"Generators are:\n";
-	l_read(Generators);cout<<endl;
+	cout<<"GeneratorList are:\n";
+	l_read(GeneratorList);cout<<endl;
 	cout<<"Support Hyperplanes are:\n";
 	SupportHyperplanes.read();cout<<endl;
 	cout<<"Hilbert Basis is:\n";
@@ -264,15 +264,7 @@ Matrix Cone_Dual_Mode::get_support_hyperplanes() const {
 //---------------------------------------------------------------------------
 
 Matrix Cone_Dual_Mode::get_generators()const{
-	int s= Generators.size();
-	Matrix M(s,dim);
-	int i=1;
-	list< vector<Integer> >::const_iterator l;
-	for (l =Generators.begin(); l != Generators.end(); l++) {
-		M.write(i,(*l));
-		i++;
-	}
-	return M;
+	return Generators;
 }
 
 //---------------------------------------------------------------------------
@@ -599,7 +591,13 @@ void Cone_Dual_Mode::extreme_rays_reduction(){
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
 		reduce_and_insert_extreme((*c));
 	}
-	l_cut_front(Generators,dim);
+	int s = GeneratorList.size();
+	Generators = Matrix(s,dim);
+
+	list< vector<Integer> >::const_iterator l;
+	for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
+		Generators.write( i, v_cut_front(*l, dim) );
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -624,11 +622,18 @@ void Cone_Dual_Mode::extreme_rays_rank(){
 			}
 			Matrix Test=SupportHyperplanes.submatrix(zero_vector);
 			if (Test.rank()>=dim-1) {
-				Generators.push_back((*c));
+				GeneratorList.push_back((*c));
 			}
 		}
 	}
-//	l_cut_front(Generators,dim);
+	int s = GeneratorList.size();
+	Generators = Matrix(s,dim);
+   
+   list< vector<Integer> >::const_iterator l;
+   for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
+     	Generators.write( i, v_cut_front(*l, dim) );
+	}
+
 }
 
 //---------------------------------------------------------------------------
@@ -648,7 +653,7 @@ void Cone_Dual_Mode::hilbert_basis_dual(){
 		l_cut_front(Hilbert_Basis,dim);
 
 		relevant_support_hyperplanes();
-		l_cut_front(Generators,dim);
+		GeneratorList.clear();
 	}
 }
 
@@ -660,17 +665,19 @@ void Cone_Dual_Mode::relevant_support_hyperplanes(){
 	vector <int> relevant_sh;
 	relevant_sh.reserve(nr_sh);
 	int i,k;
+	
+	int realdim = Generators.rank();
 
 	for (i = 1; i <= nr_sh; ++i) {
 		Matrix Test(0,dim);
 		k = 0;
-		for (gen_it = Generators.begin(); gen_it != Generators.end(); ++gen_it) {
+		for (gen_it = GeneratorList.begin(); gen_it != GeneratorList.end(); ++gen_it) {
 			if ((*gen_it)[i]==0) {
 				Test.append( v_cut_front(*gen_it,dim) );
 				k++;
 			}
 		}
-		if (k >= dim-1 && Test.rank()>=dim-1) {
+		if (k >= realdim-1 && Test.rank()>=realdim-1) {
 				relevant_sh.push_back(i);
 		}
 	}
@@ -688,13 +695,11 @@ void Cone_Dual_Mode::to_sublattice(Sublattice_Representation SR) {
 	SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
 	list<vector<Integer> >::iterator it;
 	vector<Integer> tmp;
-	for (it = Generators.begin(); it != Generators.end(); ) {
-		tmp =  SR.to_sublattice(*it);
-		it = Generators.erase(it);
-		Generators.insert(it,tmp);
-	}
+	
+	Generators = SR.to_sublattice(Generators);
+
 	for (it = Hilbert_Basis.begin(); it != Hilbert_Basis.end(); ) {
-		tmp =  SR.to_sublattice(*it);
+		tmp = SR.to_sublattice(*it);
 		it = Hilbert_Basis.erase(it);
 		Hilbert_Basis.insert(it,tmp);
 	}
