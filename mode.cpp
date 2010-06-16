@@ -46,7 +46,7 @@ extern void  global_error_handling();
 
 void make_main_computation(const int& mode, string& computation_type,const Matrix& Input, Output& Out){
 	if ((mode<0 || mode>6) && mode!=10) {
-		cerr<<"warning: Unknown mode "<<mode<<". The program will run in mode 0."<<endl;
+		cerr<<"warning: Unknown computation mode "<<mode<<". The program will run in computation mode 0."<<endl;
 		run_mode_0(computation_type,Input, Out);
 		return;
 	}
@@ -67,7 +67,7 @@ void make_main_computation(const int& mode, string& computation_type,const Matri
 
 void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
-		cerr<<"computation type = dual not implemented in mode 0."<<endl;
+		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
 		cerr<<"The program will run in hilbert_basis mode."<<endl;
 		computation_type="hilbert_basis";
 	}
@@ -84,8 +84,8 @@ void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
-		cerr<<"Computation type = dual not implemented in mode 1."<<endl;
-		cerr<<"The program will run in Computation type hilbert_basis."<<endl;
+		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
+		cerr<<"The program will run in computation mode hilbert_basis."<<endl;
 		computation_type="hilbert_basis";
 	}
 	Sublattice_Representation Basis_Change(Input,false);
@@ -101,8 +101,8 @@ void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
-		cerr<<"Run mode type = dual not implemented in mode 2."<<endl;
-		cerr<<"The program will run in hilbert_basis mode."<<endl;
+		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
+		cerr<<"The program will run in computation mode hilbert_basis."<<endl;
 		computation_type="hilbert_basis";
 	}
 	int i,j,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
@@ -128,8 +128,8 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 
 void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 	if (computation_type=="dual") {
-		cerr<<"Run mode type = dual not implemented in mode 3."<<endl;
-		cerr<<"The program will run in hilbert_basis mode."<<endl;
+		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
+		cerr<<"The program will run in computation mode hilbert_basis."<<endl;
 		computation_type="hilbert_basis";
 	}
 	int i,j,k,l,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
@@ -335,14 +335,12 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 
 void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out){
 	if (computation_type=="dual") {
-		cerr<<"Run mode type = dual not implemented in mode 10."<<endl;
+		cerr<<"Computation mode \"dual\" not implemented for input type 10."<<endl;
 		cerr<<"The program terminates."<<endl;
 		global_error_handling();
 	}
 
 	int i,j, nr_of_monoid_generators=Binomials.nr_of_columns();
-	Binomials.read();
-	cout << endl<< endl;
 	Lineare_Transformation Diagonalization=Transformation(Binomials);
 	int rank=Diagonalization.get_rank();
 	Matrix Help=Diagonalization.get_right();
@@ -357,8 +355,6 @@ void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out)
 	Matrix Supp_Hyp=C.read_support_hyperplanes();
 	Matrix Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
 	Matrix Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
-	Positive_Embedded_Generators.read(); 
-	cout << endl<< endl;   
 	run_mode_1( computation_type, Positive_Embedded_Generators, Out);
 }
 

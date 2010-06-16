@@ -41,16 +41,16 @@ void printHelp(char* command) {
 	cout << "  runs normaliz on PROJECT.in"<<endl;
 	cout << "options:"<<endl;
 	cout << "  -?\tprint this help text and exit"<<endl;
-	cout << "  -s\tcomputation type: support_hyperplanes"<<endl;
-	cout << "  -S\tcomputation type: support_hyperplanesvia pyramids"<<endl;
-	cout << "  -v\tcomputation type: triangulation"<<endl;
-	cout << "  -V\tcomputation type: triangulation via pyramids"<<endl;
-	cout << "  -n\tcomputation type: triangulation_hilbert_basis (old type normal)"<<endl;
-	cout << "  -N\tcomputation type: hilbert_basis (using a partial triangulation)"<<endl;
-	cout << "  -1\tcomputation type: ht1_elements"<<endl;
-	cout << "  -p\tcomputation type: hilbert_polynomial"<<endl;
-	cout << "  -h\tcomputation type: hilbert_basis_polynomial"<<endl;
-	cout << "  -d\tcomputation type: dual"<<endl;
+	cout << "  -s\tcomputation mode: support_hyperplanes"<<endl;
+	cout << "  -S\tcomputation mode: support_hyperplanesvia pyramids"<<endl;
+	cout << "  -v\tcomputation mode: triangulation"<<endl;
+	cout << "  -V\tcomputation mode: triangulation via pyramids"<<endl;
+	cout << "  -n\tcomputation mode: triangulation_hilbert_basis (old type normal)"<<endl;
+	cout << "  -N\tcomputation mode: hilbert_basis (using a partial triangulation)"<<endl;
+	cout << "  -1\tcomputation mode: ht1_elements"<<endl;
+	cout << "  -p\tcomputation mode: hilbert_polynomial"<<endl;
+	cout << "  -h\tcomputation mode: hilbert_basis_polynomial"<<endl;
+	cout << "  -d\tcomputation mode: dual"<<endl;
 	cout << "  -f\tthe files .out .gen .inv .typ .sup are written"<<endl;
 	cout << "  -a\tall output files are written"<<endl;
 	cout << "  -e\tperform tests for arithmetic errors"<<endl;
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 					return 1;
 				}
 			} else {
-				cerr<<"Illegal mode \""<<mode_string<<"\" at this position."<<endl;
+				cerr<<"Illegal input type \""<<mode_string<<"\" at this position."<<endl;
 				return 1;
 			}
 			
@@ -332,7 +332,7 @@ int main(int argc, char* argv[])
 		in.close();
 		if (verbose) {
 			cout<<"\n************************************************************\n";
-			cout<<"Running in mode "<<456<<" and computation type "<<computation_type<<"."<<endl;
+			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
 		}
 		run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
 	} 
@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
 		//main computations and output
 		if (verbose) {
 			cout<<"\n************************************************************\n";
-			cout<<"Running in mode "<<mode<<" and computation type "<<computation_type<<"."<<endl;
+			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
 		}
 		make_main_computation(mode, computation_type, M, Out);
 	}

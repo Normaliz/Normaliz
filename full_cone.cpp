@@ -96,7 +96,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	register int i,j,k,t,nr_zero_i,nr_zero_i_and_j,sub=dim-3;
 	
-	bool tv_verbose = verbose && Support_Hyperplanes.size()>10000;  //verbose in this method call
+	const bool tv_verbose = false; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
 		
 	// preparing the computations
 	list < vector<Integer>* > l_Positive_Simplex,l_Positive_Non_Simplex;
@@ -785,7 +785,7 @@ void Full_Cone::reduce_and_insert(const list< vector<Integer> >& New_Elements){
 
 void Full_Cone::find_new_face(){
 	if (verbose==true) {
-		cout<<"computing new faces using the shelling ..."<<endl<<flush;
+		cout<<"combinatorial evaluation of the shelling ..."<<endl<<flush;
 	}
 	int i;
 	vector<int> facet(dim-1),key;
@@ -1198,7 +1198,7 @@ void Full_Cone::hilbert_basis_polynomial(){
 	if ( !is_ht1_extreme_rays ) {
 		if (verbose) {
 			cout << "************************************************************" << endl;
-			cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+			cout << "extreme rays not in height 1, using computation type hilbert_basis" << endl;
 		}
 		Support_Hyperplanes.clear();
 		is_Computed.set(ConeProperty::SupportHyperplanes,false);
@@ -1224,7 +1224,7 @@ void Full_Cone::hilbert_polynomial(){
 	if ( !is_ht1_extreme_rays ) {
 		if (verbose) {
 			cout << "************************************************************" << endl;
-			cout << "extreme rays not in heigth 1, using computation type hilbert_basis" << endl;
+			cout << "extreme rays not in height 1, using computation type hilbert_basis" << endl;
 		}
 		Support_Hyperplanes.clear();
 		is_Computed.set(ConeProperty::SupportHyperplanes,false);
@@ -1362,7 +1362,6 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	//computation of support hyperplanes
 	Integer scalar_product;
 	bool new_generator;
-	int nr_non_compressed=0, nr_non_compressed_simp=0, max_heigth=0;
 	list< vector<int> > non_compressed;
 	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
 		for (i = 0; i < nr_gen; i++) {
@@ -1400,19 +1399,10 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 								Simplex simp(pyramid);
 								#pragma omp critical(TRIANG)
 								Triangulation.push_back(simp);
-								#pragma omp critical
-								nr_non_compressed_simp++;
 							}
 							else {
 								#pragma omp critical(NON_COMP)
 								non_compressed.push_back(pyramid);
-							}
-							if (verbose) {
-								#pragma omp critical
-								{
-									nr_non_compressed++;
-									max_heigth=min(max_heigth, (int)explicit_cast_to_long(scalar_product));
-								}
 							}
 						}
 					}
@@ -1425,7 +1415,6 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 				}
 				if (verbose==true) {
 					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... ";
-					if (do_partial_triangulation) cout <<nr_non_compressed<<" "<<nr_non_compressed_simp<<" "<<max_heigth;
 					cout<<endl;
 				}
 			}
@@ -1433,7 +1422,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	}	
 	
 	l_cut(Support_Hyperplanes,dim);
-	if(do_partial_triangulation) process_non_compressed(non_compressed);
+	if(do_partial_triangulation && non_compressed.size()>0) process_non_compressed(non_compressed);
 	} // end if (dim>0)
 	is_Computed.set(ConeProperty::SupportHyperplanes);
 }
@@ -2029,7 +2018,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 	int listsize=Candidates.size();
 	
 	if(verbose) {
-		cout<<"Compute norm of the candidates, "<<flush;
+		cout<<"Computing the degrees of the candidates, "<<flush;
 	}
 	//go over candidates: do single scalar product
 	//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
@@ -2047,7 +2036,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 	}
 	Candidates.clear();         //delete old set
 	if(verbose) {
-		cout<<"sort the list, "<<flush;
+		cout<<"sorting the list, "<<flush;
 	}
 	Candidates_with_Scalar_Product.sort();
 	if (verbose) {
@@ -2064,7 +2053,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 		if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
 			if (verbose) {
 				cout<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
-				cout<<" Hilbert Basis elements of norm <= "<<norm_crit-1<<", done"<<endl;
+				cout<<" Hilbert Basis elements of degree <= "<<norm_crit-1<<", done"<<endl;
 			}
 			while ( !Candidates_with_Scalar_Product.empty()) {
 				Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
@@ -2086,7 +2075,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 		}
 		int csize=Candidates_with_Scalar_Product.size();
 		if (verbose) {
-			cout<<Hilbert_Basis.size()<< " Hilbert Basis elements of norm <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
+			cout<<Hilbert_Basis.size()<< " Hilbert Basis elements of degree <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
 		}
 
 		// reduce candidates against HBtmp
@@ -2145,11 +2134,11 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 	int i;	
 	vector<Integer> degree_function(dim,0);
 	if(is_ht1_generated==true){ //use Linear_From in homogeneous case
-		if(verbose) {
-			cout<<" using homogenous linear form, ";
-		}
 		for (i=0; i<dim; i++) {
 			degree_function[i] = Linear_Form[i];
+		}
+		if(verbose) {
+			cout<<" using homogenous linear form."<<endl<<flush;
 		}
 	} else { // add hyperplanes to get a degree function
 		list< vector<Integer> >::const_iterator h;
@@ -2158,9 +2147,9 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 				degree_function[i]+=(*h)[i];
 			}
 		} //TODO parallel addition in each thread and final addition at the end
-	}
-	if(verbose) {
-		cout<<"done"<<endl<<flush;
+		if(verbose) {
+			cout<<"done."<<endl<<flush;
+		}
 	}
 	return degree_function;
 }
@@ -2581,7 +2570,6 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		while (listsize/5 < verbose_step && verbose_step >= 100) {
 			verbose_step/=10;
 		}
-		cout<<"verbose_step="<<verbose_step<<endl;
 	}
 
 	#pragma omp parallel for firstprivate(itpos,it) schedule(dynamic)
@@ -2610,11 +2598,11 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 			++sub_it;
 		}
 		if (verbose_bak && (i+1)%verbose_step==0) {
-			cout<<i+1<<" subcones done, found "<<Triangulation.size()<<" simplices"<<endl;
+			cout<<i+1<<" subcones done, found "<<Triangulation.size()<<" simplices"<<endl<<flush;
 		}
 	}
 	if (verbose_bak) {
-		cout<<listsize<<" subcones done, found "<<Triangulation.size()<<" simplices"<<endl;
+		cout<<listsize<<" subcones done, found "<<Triangulation.size()<<" simplices"<<endl<<flush;
 	}
 
 	//restore global verbose value
