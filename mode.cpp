@@ -40,7 +40,8 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 
-extern void  global_error_handling();
+extern void global_error_handling();
+extern bool verbose;
 
 //---------------------------------------------------------------------------
 
@@ -274,6 +275,9 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Matrix Inequ_on_Ker=Inequalities.multiplication(Ker_Basis_Transpose);
 
 		Full_Cone Dual_Cone(Inequ_on_Ker);
+		if (verbose) {
+			cout <<endl<< "Computing extrem rays as support hyperplanes of the dual cone:";
+		}
 		Dual_Cone.support_hyperplanes();
 		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
 		Matrix Ker_Basis=Ker_Basis_Transpose.transpose();

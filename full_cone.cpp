@@ -858,6 +858,8 @@ Full_Cone::Full_Cone(Matrix M){
 	is_pointed = false;
 	is_ht1_extreme_rays = false;
 	is_ht1_generated = false;
+	is_ht1_hilbert_basis = false;
+	is_integrally_closed = false;
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
 	Triangulation = list< Simplex >();
@@ -889,6 +891,8 @@ Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 	is_Computed.set(ConeProperty::IsPointed);
 	is_ht1_extreme_rays = false;
 	is_ht1_generated = false;
+	is_ht1_hilbert_basis = false;
+	is_integrally_closed = false;
 	Extreme_Rays = vector<bool>(nr_gen,true); //all generators are extreme rays
 	is_Computed.set(ConeProperty::ExtremeRays);
 	Matrix SH = C.SupportHyperplanes;
@@ -909,6 +913,7 @@ Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
+		is_Computed.set(ConeProperty::HVector);
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 	}
 }
@@ -923,6 +928,8 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 	is_pointed=C.is_pointed;
 	is_ht1_generated=C.is_ht1_generated;
 	is_ht1_extreme_rays=C.is_ht1_extreme_rays;
+	is_ht1_hilbert_basis = C.is_ht1_hilbert_basis;
+	is_integrally_closed = C.is_integrally_closed;
 	Linear_Form=C.Linear_Form;
 	multiplicity=C.multiplicity;
 	Generators=C.Generators;
@@ -1007,8 +1014,16 @@ int Full_Cone::read_nr_generators()const{
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::read_homogeneous()const{
+bool Full_Cone::read_homogeneous() const{
 	return is_ht1_extreme_rays;
+}
+
+bool Full_Cone::isHt1HilbertBasis() const{
+	return is_ht1_hilbert_basis;
+}
+
+bool Full_Cone::isIntegrallyClosed() const{
+	return is_integrally_closed;
 }
 
 //---------------------------------------------------------------------------
@@ -1159,27 +1174,43 @@ void Full_Cone::support_hyperplanes_triangulation() {
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
 	if(!is_pointed) return;
+	if (is_ht1_extreme_rays && !is_ht1_generated) {
+		if (verbose) {
+			cout << "not all generators have height 1, but extreme rays have"<<endl
+			     << "making a new triangulation with only extreme rays" <<endl;
+			v_read(Extreme_Rays);
+		}
+		Support_Hyperplanes.clear();
+		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		Triangulation.clear();
+		is_Computed.set(ConeProperty::Triangulation,false);
+		compute_support_hyperplanes_triangulation();
+	}
 	compute_multiplicity();
 }
 
 void Full_Cone::support_hyperplanes_triangulation_pyramid() {
 	compute_support_hyperplanes_pyramid(true);
 	support_hyperplane_common();
-    if(!is_pointed) return;
+   if(!is_pointed) return;
 	compute_multiplicity();
 }
 
 void Full_Cone::triangulation_hilbert_basis(){
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
-    if(!is_pointed) return;
+   if(!is_pointed) return;
 	compute_hilbert_basis();
+	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	check_integrally_closed();
 }
 
 void Full_Cone::hilbert_basis(){
 	support_hyperplanes_partial_triangulation();
 	if(!is_pointed) return;
 	compute_hilbert_basis();
+	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	check_integrally_closed();
 }
 
 void Full_Cone::ht1_elements(){
@@ -1212,6 +1243,8 @@ void Full_Cone::hilbert_basis_polynomial(){
 			compute_polynomial();
 		}
 	}
+	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	check_integrally_closed();
 }
 
 void Full_Cone::hilbert_polynomial(){
@@ -1241,11 +1274,11 @@ void Full_Cone::hilbert_polynomial(){
 }
 
 void Full_Cone::dual_mode() {
-	if(dim>0) {            //correction needed to include the 0 cone;
 		Support_Hyperplanes.sort();
 		Support_Hyperplanes.unique();
 		Support_Hyperplanes.remove(vector<Integer>(dim,0));
 
+	if(dim>0) {            //correction needed to include the 0 cone;
 		Linear_Form = Generators.homogeneous(is_ht1_extreme_rays);
 		is_ht1_generated = is_ht1_extreme_rays;
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
@@ -1266,6 +1299,8 @@ void Full_Cone::dual_mode() {
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::IsHt1Generated);
 	}
+	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	check_integrally_closed();
 }
 
 //---------------------------------------------------------------------------
@@ -1332,6 +1367,8 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	for (i = 0; i < dim; i++) {
 		in_triang[key[i]-1]=true;
 	}
+	bool first_simplex_compressed = do_partial_triangulation;
+
 	Matrix G=S.read_generators();
 	G=G.transpose();
 	Matrix H=S.read_support_hyperplanes();
@@ -1343,6 +1380,8 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 			hyperplane[j]=L[j];
 			hyperplane[j+dim]=R[j];
 			test_key[j+dim]=key[j];
+			if (first_simplex_compressed && hyperplane[i]>1)
+				first_simplex_compressed = false;
 		}
 		Support_Hyperplanes.push_back(hyperplane);
 	}
@@ -1350,13 +1389,13 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	
 	int size=2*dim;
 	//test if the first simplex is compressed
-	if(do_partial_triangulation){
-		for (i=dim; i<size; i++) {
-			if (hyperplane[i]>1) {
+	if(do_partial_triangulation && !first_simplex_compressed){
+//		for (i=dim; i<size; i++) {
+//			if (hyperplane[i]>1) {
 				Triangulation.push_back(key);
-				break;
-			}
-		}
+//				break;
+//			}
+//		}
 	}
 
 	//computation of support hyperplanes
@@ -1825,6 +1864,52 @@ void Full_Cone::check_ht1_extreme_rays() {
 	Matrix Extreme=Generators.submatrix(key);
 	Linear_Form = Extreme.homogeneous(is_ht1_extreme_rays);
 	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+}
+
+void Full_Cone::check_ht1_hilbert_basis() {
+	if ( !is_Computed.test(ConeProperty::IsHt1ExtremeRays) || !is_Computed.test(ConeProperty::HilbertBasis)) {
+		cerr << "Warning: unsatisfied preconditions in check_ht1_hilbert_basis()!" <<endl;
+		return;
+	}
+	
+	if (is_Computed.test(ConeProperty::Ht1Elements)) {
+		is_ht1_hilbert_basis = (Homogeneous_Elements.size() == Hilbert_Basis.size());
+	} else {
+		is_ht1_hilbert_basis = true;
+		list< vector<Integer> >::iterator h;
+		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
+			if (v_scalar_product((*h),Linear_Form)!=1) {
+				is_ht1_hilbert_basis = false;
+				break;
+			}
+		}
+	}
+	is_Computed.set(ConeProperty::IsHt1HilbertBasis);
+}
+
+void Full_Cone::check_integrally_closed() {
+	if ( !is_Computed.test(ConeProperty::HilbertBasis)) {
+		cerr << "Warning: unsatisfied preconditions in check_integrally_closed()!" <<endl;
+		return;
+	}
+	is_integrally_closed = false;
+	if (Hilbert_Basis.size() <= nr_gen) {
+		is_integrally_closed = true;
+		list< vector<Integer> >::iterator h;
+		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
+			is_integrally_closed = false;
+			for (int i=1; i<= nr_gen; i++) {
+				if ((*h) == Generators.read(i)) {
+					is_integrally_closed = true;
+					break;
+				}
+			}
+			if (!is_integrally_closed) {
+				break;
+			}
+		}
+	}
+	is_Computed.set(ConeProperty::IsIntegrallyClosed);
 }
 
 //---------------------------------------------------------------------------
@@ -2297,6 +2382,12 @@ vector<Integer> Full_Cone::compute_e_vector(){
 //---------------------------------------------------------------------------
 
 void Full_Cone::compute_polynomial(){
+#ifndef normbig
+	if (dim > 21) {
+		cerr << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
+		return;
+	}
+#endif
 	int i,j;
 	Integer mult_factor, factorial=permutations(1,dim);
 	vector <Integer> E_Vector=compute_e_vector();
@@ -2324,6 +2415,7 @@ void Full_Cone::compute_polynomial(){
 		Hilbert_Polynomial[2*i]/= mult_factor;
 		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
 	}
+	is_Computed.set(ConeProperty::HilbertPolynomial);
 }
 
 //---------------------------------------------------------------------------
@@ -2375,7 +2467,7 @@ void Full_Cone::compute_hilbert_polynomial(){
 	Homogeneous_Elements.sort();
 	Homogeneous_Elements.unique();
 	is_Computed.set(ConeProperty::Ht1Elements);
-	is_Computed.set(ConeProperty::HilbertPolynomial);
+	is_Computed.set(ConeProperty::HVector);
 }
 
 //---------------------------------------------------------------------------
@@ -2441,7 +2533,7 @@ void Full_Cone::compute_hilbert_basis_polynomial(){
 	Homogeneous_Elements.unique();
 	is_Computed.set(ConeProperty::Ht1Elements);
 	is_Computed.set(ConeProperty::HilbertBasis);
-	is_Computed.set(ConeProperty::HilbertPolynomial);
+	is_Computed.set(ConeProperty::HVector);
 		
 	global_reduction(Candidates);
 }

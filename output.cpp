@@ -292,7 +292,7 @@ void Output::cone() const{
 	cout<<endl;
 */
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
-	if (tri && Result.isComputed(ConeProperty::SupportHyperplanes)) { 			 //write triangulation
+	if (tri && Result.isComputed(ConeProperty::Triangulation)) { 			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
 		write_matrix_tri(T);
 	}
@@ -415,13 +415,15 @@ void Output::cone() const{
 				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
 			out<<endl;
-			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+			if (Result.isComputed(ConeProperty::HVector)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				out<<"h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
 				}
 				out<<endl<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
 				out<<"Hilbert polynomial : ";
 				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
@@ -479,20 +481,22 @@ void Output::cone() const{
 			if (Result.isComputed(ConeProperty::Triangulation)){
 				inv<<"integer multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
-			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+			if (Result.isComputed(ConeProperty::HVector)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					inv<<h_vector[i]<<" ";
 				}
 				inv<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				Integer factorial=1;
 				for (i = 2; i <rank; i++) {
 					factorial*=i;
 				}
 				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
-				inv<<"vector "<<h_vector.size()<<" hilbert_polynomial = ";
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
+				inv<<"vector "<<hilbert_polynomial.size()/2<<" hilbert_polynomial = ";
+				for (i = 0; i < hilbert_polynomial.size(); i+=2) {
 					inv<<hilbert_polynomial[i]*(factorial /hilbert_polynomial[i+1])<<" ";
 				}
 				inv<<endl;
@@ -605,13 +609,15 @@ void Output::polytop()const{
 			out<<"normalized volume = "<<Result.read_multiplicity()<<endl;
 		}
 		out<<endl;
-		if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+		if (Result.isComputed(ConeProperty::HVector)) {
 			vector<Integer> h_vector=Result.read_h_vector();
 			out<<"h-vector = ";
 			for (i = 0; i < h_vector.size(); i++) {
 				out<<h_vector[i]<<" ";
 			}
 			out<<endl<<endl;
+		}
+		if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 			vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
 			out<<"Ehrhart polynomial : ";
 			for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
@@ -667,19 +673,21 @@ void Output::polytop()const{
 			if (Result.isComputed(ConeProperty::Triangulation)){
 				inv<<"integer multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
-			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+			if (Result.isComputed(ConeProperty::HVector)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					inv<<h_vector[i]<<" ";
 				}
 				inv<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				Integer factorial=1;
 				for (i = 2; i <rank; i++) {
 					factorial*=i;
 				}
 				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
-				inv<<"vector "<<h_vector.size()<<" hilbert_polynomial = ";
+				inv<<"vector "<<hilbert_polynomial.size()/2<<" hilbert_polynomial = ";
 				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
 					inv<<hilbert_polynomial[i]*(factorial /hilbert_polynomial[i+1])<<" ";
 				}
@@ -786,7 +794,7 @@ void Output::rees(const bool primary) const{
 		Support_Hyperplanes.pretty_print(out);
 
 		if (Result.read_homogeneous()==false) {
-			out<<"(original) semigroup is not homogeneous"<<endl;
+			out<<"(original) semigroup is not homogeneous"<<endl<<endl;
 		}
 		else {
 			if (Result.isComputed(ConeProperty::Ht1Elements)) {
@@ -806,20 +814,22 @@ void Output::rees(const bool primary) const{
 				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
 			out<<endl;
-			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+			if (Result.isComputed(ConeProperty::HVector)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				out<<"h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
 				}
 				out<<endl<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
 				out<<"Hilbert polynomial : ";
 				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
 					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
 				}
 			}
-			out<<endl;
+			out<<endl<<endl;
 		}
 		if (primary) {
 			out<<"ideal is primary to the ideal generated by the indeterminates"<<endl;
@@ -878,19 +888,21 @@ void Output::rees(const bool primary) const{
 			if (Result.isComputed(ConeProperty::Triangulation)){
 				inv<<"integer multiplicity = "<<Result.read_multiplicity()<<endl;
 			}
-			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+			if (Result.isComputed(ConeProperty::HVector)) {
 				vector<Integer> h_vector=Result.read_h_vector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					inv<<h_vector[i]<<" ";
 				}
 				inv<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				Integer factorial=1;
 				for (i = 2; i <rank; i++) {
 					factorial*=i;
 				}
 				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
-				inv<<"vector "<<h_vector.size()<<" hilbert_polynomial = ";
+				inv<<"vector "<<hilbert_polynomial.size()/2<<" hilbert_polynomial = ";
 				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
 					inv<<hilbert_polynomial[i]*(factorial /hilbert_polynomial[i+1])<<" ";
 				}

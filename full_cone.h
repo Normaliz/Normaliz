@@ -39,10 +39,13 @@ namespace ConeProperty {
 		Triangulation,
 		HilbertBasis,
 		Ht1Elements,
+		HVector,
 		HilbertPolynomial,
 		IsPointed,
 		IsHt1Generated,
 		IsHt1ExtremeRays,
+		IsHt1HilbertBasis,
+		IsIntegrallyClosed,
 		EnumSize // this has to be the last entry, to get the number of entries in the enum
 	};
 }
@@ -55,6 +58,8 @@ class Full_Cone {
 	bool is_pointed;
 	bool is_ht1_generated;
 	bool is_ht1_extreme_rays;
+	bool is_ht1_hilbert_basis;
+	bool is_integrally_closed;
 	bitset<ConeProperty::EnumSize> is_Computed;
 	vector<Integer> Linear_Form;
 	Integer multiplicity;
@@ -119,6 +124,8 @@ class Full_Cone {
 	void check_pointed();
 	void check_ht1_generated();
 	void check_ht1_extreme_rays();
+	void check_ht1_hilbert_basis();
+	void check_integrally_closed();
 
 	void compute_multiplicity();
 	bool low_part_simplicial();
@@ -153,6 +160,8 @@ public:
 	int read_dimension() const;        //returns dimension
 	int read_nr_generators() const;    //returns the number of generators
 	bool read_homogeneous() const;     //returns homogeneous
+	bool isHt1HilbertBasis() const;
+	bool isIntegrallyClosed() const;
 	vector<Integer> read_linear_form() const; //returns the linear form
 	Integer read_multiplicity() const; //returns multiplicity
 	Matrix read_generators() const;
