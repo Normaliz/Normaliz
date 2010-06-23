@@ -341,9 +341,9 @@ void Output::cone() const{
 
 		if (Result.isComputed(ConeProperty::ExtremeRays)) {
 			if (Result.isIntegrallyClosed()) {
-				out << "monoid is integrally closed"<<endl;
+				out << "original monoid is integrally closed"<<endl;
 			} else {
-				out << "monoid is not integrally closed"<<endl;
+				out << "original monoid is not integrally closed"<<endl;
 			}
 		}
 		out << endl;

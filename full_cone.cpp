@@ -1151,7 +1151,7 @@ void Full_Cone::support_hyperplane_common() {
     if(!is_pointed) return;
     compute_extreme_rays();
     check_ht1_extreme_rays();
-    if(is_ht1_extreme_rays) check_ht1_generated();
+    check_ht1_generated();
 }
 
 void Full_Cone::support_hyperplanes() {
@@ -1193,6 +1193,18 @@ void Full_Cone::support_hyperplanes_triangulation_pyramid() {
 	compute_support_hyperplanes_pyramid(true);
 	support_hyperplane_common();
    if(!is_pointed) return;
+	if (is_ht1_extreme_rays && !is_ht1_generated) {
+		if (verbose) {
+			cout << "not all generators have height 1, but extreme rays have"<<endl
+			     << "making a new triangulation with only extreme rays" <<endl;
+			v_read(Extreme_Rays);
+		}
+		Support_Hyperplanes.clear();
+		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		Triangulation.clear();
+		is_Computed.set(ConeProperty::Triangulation,false);
+		compute_support_hyperplanes_pyramid(true);
+	}
 	compute_multiplicity();
 }
 
@@ -1200,6 +1212,18 @@ void Full_Cone::triangulation_hilbert_basis(){
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
    if(!is_pointed) return;
+	if (is_ht1_extreme_rays && !is_ht1_generated) {
+		if (verbose) {
+			cout << "not all generators have height 1, but extreme rays have"<<endl
+			     << "making a new triangulation with only extreme rays" <<endl;
+			v_read(Extreme_Rays);
+		}
+		Support_Hyperplanes.clear();
+		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		Triangulation.clear();
+		is_Computed.set(ConeProperty::Triangulation,false);
+		compute_support_hyperplanes_triangulation();
+	}
 	compute_hilbert_basis();
 	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
 	check_integrally_closed();
@@ -1360,7 +1384,12 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	int i,j;
 	//Initialization of the list of support hyperplanes
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S(Generators);
+	Simplex S;
+	if (is_Computed.test(ConeProperty::ExtremeRays)) {
+		S = Simplex(Generators.submatrix(Extreme_Rays));
+	} else {
+		S = Simplex(Generators);
+	}
 	vector<int> key=S.read_key();
 	vector<bool> in_triang(nr_gen,false);
 	vector<int> test_key(hyp_size);
@@ -1478,10 +1507,16 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 
 	int i, j;
 	vector<Integer> hyperplane(hyp_size, 0), L, R;
-	Simplex S(Generators);
+	Simplex S;
+	if (is_Computed.test(ConeProperty::ExtremeRays)) {
+		S = Simplex(Generators.submatrix(Extreme_Rays));
+	} else {
+		S = Simplex(Generators);
+	}
 	vector<int> key = S.read_key();
-	if (do_triang)
+	if (do_triang) {
 		Triangulation.push_back(key);
+	}
 
 	vector<bool> in_triang(nr_gen, false);
 	vector<int> test_key(hyp_size);
@@ -1747,7 +1782,12 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 	int i,j;
 	//intialization of the lists of support hyperplanes and triangulation
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S(Generators);
+	Simplex S;
+	if (is_Computed.test(ConeProperty::ExtremeRays)) {
+		S = Simplex(Generators.submatrix(Extreme_Rays));
+	} else {
+		S = Simplex(Generators);
+	}
 	Triangulation.push_back(S);
 	vector<int> key=S.read_key();
 	vector<bool> in_triang(nr_gen,false);
