@@ -42,6 +42,7 @@ class Output {
   Full_Cone Result;
   Sublattice_Representation Basis_Change;
   bool BC_set;
+  Matrix Original_Generators;
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
@@ -70,17 +71,19 @@ public:
   void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
   void set_write_extra_files();         	    //sets some flags to true
   void set_write_all_files();          		    //sets all flags to true
+
   void set_result(const Full_Cone& C);         //sets Result
   void compose_basis_change(const Sublattice_Representation& SR); // composes Basis_Change
+  void set_original_generators(Matrix OG);
   
   void write_matrix_ext(const Matrix& M) const; //writes M to file name.ext
   void write_matrix_esp(const Matrix& M) const; //writes M to file name.esp
   void write_matrix_typ(const Matrix& M) const; //writes M to file name.typ
   void write_matrix_egn(const Matrix& M) const; //writes M to file name.egn
   void write_matrix_gen(const Matrix& M) const; //writes M to file name.gen
-  void write_matrix_sup(const Matrix& M) const; //writes M to file name.supwrite_out
+  void write_matrix_sup(const Matrix& M) const; //writes M to file name.sup
   void write_matrix_tri(const Matrix& M) const; //writes M to file name.tri
-  void write_matrix_ht1(const Matrix& M) const; //writes M to file name.tri
+  void write_matrix_ht1(const Matrix& M) const; //writes M to file name.ht1
 
 //---------------------------------------------------------------------------
 //                         Output Algorithms

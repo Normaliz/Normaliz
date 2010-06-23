@@ -54,6 +54,7 @@ Output::Output(){
 	tri=false;
 	ht1=false;
 	BC_set=false;
+	Original_Generators = Matrix(0);
 }
 
 //---------------------------------------------------------------------------
@@ -73,6 +74,7 @@ Output::Output(const Output& Out){
 	Result=Out.Result;
 	Basis_Change=Out.Basis_Change;
 	BC_set=Out.BC_set;
+	Original_Generators = Out.Original_Generators;
 }
 
 //---------------------------------------------------------------------------
@@ -217,6 +219,12 @@ void Output::compose_basis_change(const Sublattice_Representation& BC){
 
 //---------------------------------------------------------------------------
 
+void Output::set_original_generators(Matrix OG) {
+	Original_Generators = OG;
+}
+
+//---------------------------------------------------------------------------
+
 void Output::write_matrix_ext(const Matrix& M) const{
 	if (ext==true) {
 		M.print(name,"ext");
@@ -286,11 +294,6 @@ void Output::cone() const{
 	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
 	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
 
-/*	cout<<endl<<"congruences";
-	Matrix Cong = Basis_Change.get_congruences();
-	Cong.read();
-	cout<<endl;
-*/
 	write_matrix_esp(Support_Hyperplanes_Full_Cone);         //write the suport hyperplanes of the full dimensional cone
 	if (tri && Result.isComputed(ConeProperty::Triangulation)) { 			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
@@ -302,6 +305,82 @@ void Output::cone() const{
 		const char* file=name_open.c_str();
 		ofstream out(file);
 
+		// write "header" of the .out file
+		int nr_orig_gens = Original_Generators.nr_of_rows();
+		if (nr_orig_gens > 0) {
+			out << nr_orig_gens <<" original generators"<<endl;
+		}
+		if (Result.isComputed(ConeProperty::HilbertBasis)) {
+			out << Result.read_hilbert_basis().nr_of_rows() <<" Hilbert basis elements"<<endl;
+		}
+		if (Result.isComputed(ConeProperty::Ht1Elements)) {
+			out << Result.read_homogeneous_elements().nr_of_rows() <<" height 1 Hilbert basis elements"<<endl;
+		}
+		if (Result.isComputed(ConeProperty::ExtremeRays)) {
+			vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();
+			int nr_ex_rays=0;
+			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
+				if (Ex_Rays_Marked[i]==true) {
+					nr_ex_rays++;
+				}
+			}
+			out << nr_ex_rays <<" extreme rays"<<endl;
+		}
+		if (Result.isComputed(ConeProperty::SupportHyperplanes)) {
+			out << Result.read_support_hyperplanes().nr_of_rows() <<" support hyperplanes"<<endl;
+		}
+		out<<endl;
+		if (rank == Basis_Change.get_dim()){                   //write rank and index
+			out<<"rank "<<rank<<" (maximal)"<<endl;
+		}
+		else {
+			out<<"rank "<<rank<<endl;
+		}
+		out<<"index "<< Basis_Change.get_index() <<endl;
+		out << endl;
+
+		
+		if (Result.read_homogeneous()==false) {
+			out<<"extreme rays are not homogeneous"<<endl;
+		} else {
+			vector<Integer> Linear_Form=Result.read_linear_form();
+			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
+			out<<"extreme rays are homogeneous via the linear form:"<<endl;
+			for (i = 0; i < Linear_Form.size(); i++) {
+				out<<Linear_Form[i]<<" ";
+			}
+			out<<endl<<endl;
+			if (Result.isComputed(ConeProperty::Triangulation)){
+				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
+				out<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HVector)) {
+				vector<Integer> h_vector=Result.read_h_vector();
+				out<<"h-vector = ";
+				for (i = 0; i < h_vector.size(); i++) {
+					out<<h_vector[i]<<" ";
+				}
+				out<<endl<<endl;
+			}
+			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
+				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
+				out<<"Hilbert polynomial : ";
+				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
+					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+				}
+				out << endl<< endl;
+			}
+		}
+
+
+		out << "***********************************************************************"
+			 << endl << endl;
+
+
+		if (nr_orig_gens > 0) {
+			out << nr_orig_gens <<" original generators:"<<endl;
+			Original_Generators.pretty_print(out);
+		}
 		Matrix Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
@@ -313,7 +392,7 @@ void Output::cone() const{
 			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
-			out<<nr<<" generators of integral closure:"<<endl;
+			out<<nr<<" Hilbert basis elements:"<<endl;
 			Hilbert_Basis.pretty_print(out);
 		}
 
@@ -337,16 +416,6 @@ void Output::cone() const{
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
 		Extreme_Rays.pretty_print(out);
 
-
-		if (rank == Basis_Change.get_dim()){                   //write rank and index
-			out<<"(original) semigroup has rank "<<rank<<" (maximal)"<<endl;
-		}
-		else {
-			out<<"(original) semigroup has rank "<<rank<<endl;
-		}
-		Integer index = Basis_Change.get_index();
-		out<<"(original) semigroup is of index "<<index<<endl;
-		out<<endl;
 
 		//write constrains (support hyperplanes, congruences, equations)
 		Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
@@ -392,43 +461,16 @@ void Output::cone() const{
 
 			cst_out.close();
 		}	
-		if (Result.read_homogeneous()==false) {
-			out<<"(original) semigroup is not homogeneous"<<endl;
-		}
-		else {
+		
+		
+		if (Result.read_homogeneous()) {
 			if ( Result.isComputed(ConeProperty::Ht1Elements) ) {
 				Matrix Hom = Result.read_homogeneous_elements();
 				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
-				out<<nr<<" height 1 generators of integral closure:"<<endl;
+				out<<nr<<" height 1 Hilbert basis elements:"<<endl;
 				Hom.pretty_print(out);
-			}
-			vector<Integer> Linear_Form=Result.read_linear_form();
-			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
-			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
-			for (i = 0; i < Linear_Form.size(); i++) {
-				out<<Linear_Form[i]<<" ";
-			}
-			out<<endl<<endl;
-			if (Result.isComputed(ConeProperty::Triangulation)){
-				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
-			}
-			out<<endl;
-			if (Result.isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result.read_h_vector();
-				out<<"h-vector = ";
-				for (i = 0; i < h_vector.size(); i++) {
-					out<<h_vector[i]<<" ";
-				}
-				out<<endl<<endl;
-			}
-			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
-				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
-				out<<"Hilbert polynomial : ";
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
-				}
 			}
 		}
 		out.close();
@@ -794,7 +836,7 @@ void Output::rees(const bool primary) const{
 		Support_Hyperplanes.pretty_print(out);
 
 		if (Result.read_homogeneous()==false) {
-			out<<"(original) semigroup is not homogeneous"<<endl<<endl;
+			out<<"extreme rays are not homogeneous"<<endl<<endl;
 		}
 		else {
 			if (Result.isComputed(ConeProperty::Ht1Elements)) {
@@ -805,7 +847,7 @@ void Output::rees(const bool primary) const{
 				Hom.pretty_print(out);
 			}
 			vector<Integer> Linear_Form=Result.read_linear_form();
-			out<<"(original) semigroup is homogeneous via the linear form:"<<endl;
+			out<<"extreme rays are homogeneous via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
 			}
