@@ -279,6 +279,25 @@ Matrix Matrix::submatrix(const vector<int>& rows) const{
 
 //---------------------------------------------------------------------------
 
+Matrix Matrix::submatrix(const vector<bool>& rows) const{
+	int size=0;
+	for (int i = 0; i <rows.size(); i++) {
+		if (rows[i]) {
+			size++;
+		}
+	}
+	Matrix M(size, nc);
+	int j = 0;
+	for (int i = 0; i < nr; i++) {
+		if (rows[i]) {
+			M.elements[j++] = elements[i];
+		}
+	}
+	return M;
+}
+
+//---------------------------------------------------------------------------
+
 vector<Integer> Matrix::diagonale() const{
 	if (nr!= nc) {
 		error("error: Bad argument passed to Matrix::diagonale.");

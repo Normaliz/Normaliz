@@ -79,6 +79,7 @@ public:
   Matrix submatrix(const vector<int>& rows) const;  //returns a submatrix with rows
 									  //corresponding to indices given by
 									//the entries of rows, Numbering from 1 to n, not 0 to n-1 !
+  Matrix submatrix(const vector<bool>& rows) const;
   vector<Integer> diagonale() const;     //returns the diagonale of this
 								  //this should be a quadratic matrix
   int maximal_decimal_length() const;    //return the maximal number of decimals
