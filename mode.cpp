@@ -278,7 +278,7 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Matrix Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
 
 		if (verbose) {
-			cout <<endl<< "Computing extrem rays as support hyperplanes of the dual cone:";
+			cout <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
 		}
 		Full_Cone Dual_Cone(Inequ_on_Ker);
 		Dual_Cone.support_hyperplanes();

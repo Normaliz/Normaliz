@@ -298,6 +298,7 @@ void Output::cone() const{
 	if (tri && Result.isComputed(ConeProperty::Triangulation)) { 			 //write triangulation
 		Matrix T=Result.read_triangulation_volume();
 		write_matrix_tri(T);
+		Generators.print(name,"tgn");
 	}
 
 	if (out==true) {  //printing .out file
@@ -337,11 +338,18 @@ void Output::cone() const{
 			out<<"rank "<<rank<<endl;
 		}
 		out<<"index "<< Basis_Change.get_index() <<endl;
-		out << endl;
 
+		if (Result.isComputed(ConeProperty::ExtremeRays)) {
+			if (Result.isIntegrallyClosed()) {
+				out << "monoid is integrally closed"<<endl;
+			} else {
+				out << "monoid is not integrally closed"<<endl;
+			}
+		}
+		out << endl;
 		
 		if (Result.read_homogeneous()==false) {
-			out<<"extreme rays are not homogeneous"<<endl;
+			out<<"extreme rays are not homogeneous"<<endl<<endl;
 		} else {
 			vector<Integer> Linear_Form=Result.read_linear_form();
 			Linear_Form = Basis_Change.from_sublattice_dual(Linear_Form);
@@ -350,13 +358,21 @@ void Output::cone() const{
 				out<<Linear_Form[i]<<" ";
 			}
 			out<<endl<<endl;
+			if (Result.isComputed(ConeProperty::IsHt1HilbertBasis)) {
+				if (Result.isHt1HilbertBasis()) {
+					out << "Hilbert basis elements are homogeneous" << endl;
+				} else {
+					out << "Hilbert basis elements are not homogeneous" << endl;
+				}
+			}
+			out<<endl;
 			if (Result.isComputed(ConeProperty::Triangulation)){
-				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
+				out<<"multiplicity "<<Result.read_multiplicity()<<endl;
 				out<<endl;
 			}
 			if (Result.isComputed(ConeProperty::HVector)) {
 				vector<Integer> h_vector=Result.read_h_vector();
-				out<<"h-vector = ";
+				out<<"h-vector:"<<endl;
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
 				}
@@ -364,7 +380,7 @@ void Output::cone() const{
 			}
 			if (Result.isComputed(ConeProperty::HilbertPolynomial)) {
 				vector<Integer> hilbert_polynomial=Result.read_hilbert_polynomial();
-				out<<"Hilbert polynomial : ";
+				out<<"Hilbert polynomial:"<<endl;
 				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
 					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
 				}

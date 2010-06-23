@@ -841,7 +841,7 @@ Full_Cone::Full_Cone(){
 Full_Cone::Full_Cone(Matrix M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.");	
+		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.\nProbable reason: Cone not full dimensional!");	
 	}
 	Generators = M;
 	nr_gen=Generators.nr_of_rows();

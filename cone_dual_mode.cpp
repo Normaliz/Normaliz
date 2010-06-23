@@ -208,7 +208,7 @@ Cone_Dual_Mode::Cone_Dual_Mode(){
 Cone_Dual_Mode::Cone_Dual_Mode(Matrix M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Cone_Dual_Mode.");
+		error("error: Matrix with rank = number of columns needed in the constructor of the object Cone_Dual_Mode.\nProbable reason: The Cone is not pointed!");
 	}
 	SupportHyperplanes = M;
 	nr_sh=SupportHyperplanes.nr_of_rows();
