@@ -214,8 +214,10 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 			cerr << "Error: dimensions of input matricies do not match!";
 			global_error_handling();
 		}
-	} else {
+	} else if (Equations.nr_of_rows() > 0) {
 		dim = Equations.nr_of_columns();
+	} else if (Inequalities.nr_of_rows() > 0) {
+		dim = Inequalities.nr_of_columns();
 	}
 	// use positive orthant if no inequalities are given
 	if (Inequalities.nr_of_rows() == 0) {
@@ -249,9 +251,8 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		//TODO now a new linear transformation is computed, necessary??
 		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
 		Out.compose_basis_change(Basis_Change);
-		Equations = Equations.multiplication(Ker_Basis_Transpose);
-		Inequalities = Inequalities.multiplication(Ker_Basis_Transpose);
-
+		Equations = Basis_Change.to_sublattice_dual(Equations);
+		Inequalities = Basis_Change.to_sublattice_dual(Inequalities);
 	}
 
 	run_mode_equ_inequ(computation_type, Equations, Inequalities, Out);
@@ -272,17 +273,17 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 				Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
 			}
 		}
-		Matrix Inequ_on_Ker=Inequalities.multiplication(Ker_Basis_Transpose);
+		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
+		Out.compose_basis_change(Basis_Change);
+		Matrix Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
 
-		Full_Cone Dual_Cone(Inequ_on_Ker);
 		if (verbose) {
 			cout <<endl<< "Computing extrem rays as support hyperplanes of the dual cone:";
 		}
+		Full_Cone Dual_Cone(Inequ_on_Ker);
 		Dual_Cone.support_hyperplanes();
 		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
-		Matrix Ker_Basis=Ker_Basis_Transpose.transpose();
-		Matrix Generators=Extreme_Rays.multiplication(Ker_Basis);
-		run_mode_0( computation_type ,Generators, Out);
+		run_mode_0(computation_type, Extreme_Rays, Out);
 	}
 	if(computation_type=="dual"){
 		Matrix H=Diagonalization.get_right();
@@ -359,6 +360,7 @@ void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out)
 	Matrix Supp_Hyp=C.read_support_hyperplanes();
 	Matrix Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
 	Matrix Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
+	Out.set_original_generators(Positive_Embedded_Generators);
 	run_mode_1( computation_type, Positive_Embedded_Generators, Out);
 }
 
