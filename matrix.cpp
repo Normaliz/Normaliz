@@ -1,7 +1,6 @@
 /*
- * Normaliz 2.2
- * Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim
- * With contributions by Christof Soeger
+ * Normaliz 2.5
+ * Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Söger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -227,7 +226,6 @@ vector<Integer> Matrix::read(int row) const{
 
 Integer Matrix::read (int row, int col) const{
 	if ((row>nr) || (col>nc)) {
-	//	cout <<row<<" "<<nr<<" "<<col<<" "<<nc<<endl;
 		error("error: Bad argument passed to Matrix::read(int row, int col).");
 		return 0;
 	}
@@ -1165,7 +1163,7 @@ Matrix Solve(const Matrix& Left_side, const Matrix& Right_side,Integer& det){
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_solve(S,Right_side,det,overflow_test_modulus);
 		if (testing==false) {
-			cout<<"\nSolving the linear system of equations has failed.\n";
+			cerr<<"\nSolving the linear system of equations has failed.\n";
 			global_error_handling();
 		}
 	}
@@ -1179,7 +1177,7 @@ Matrix Invert(const Matrix& Left_side,  vector< Integer >& diagonal ,Integer& de
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_invert(S,det,overflow_test_modulus);
 		if (testing==false) {
-			cout<<"\nInverting the matrix has failed.\n";
+			cerr<<"\nInverting the matrix has failed.\n";
 			global_error_handling();
 		}
 	}
