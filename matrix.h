@@ -20,6 +20,7 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 //---------------------------------------------------------------------------
+#include <assert.h>
 #include <stdlib.h>
 #include <vector>
 #include <iostream>

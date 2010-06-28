@@ -21,6 +21,8 @@
 #define NORMALIZ_H
 //---------------------------------------------------------------------------
 
+#include <assert.h>
+
 #include "integer.h"
 #include "vector_operations.h"
 #include "matrix.h"

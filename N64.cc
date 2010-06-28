@@ -31,6 +31,7 @@
 #include "lineare_transformation.cpp"
 #include "sublattice_representation.cpp"
 #include "full_cone.cpp"
+#include "cone_dual_mode.cpp"
 #include "output.cpp"
 #include "mode.cpp" 
 

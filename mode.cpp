@@ -171,6 +171,7 @@ void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 	}
 	Full_Cone Result=make_computations(computation_type, Full_Cone_Generators);
 	Out.set_result(Result);
+	Out.compose_basis_change(Sublattice_Representation(Result.read_dimension()));	
 	Out.rees(primary);
 }
 

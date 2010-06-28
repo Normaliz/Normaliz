@@ -69,6 +69,7 @@ Matrix::Matrix(){
 //---------------------------------------------------------------------------
 
 Matrix::Matrix(int dim){
+	assert(dim>=0);
 	nr=dim;
 	nc=dim;
 	elements = vector< vector<Integer> >(dim, vector<Integer>(dim));
@@ -80,6 +81,8 @@ Matrix::Matrix(int dim){
 //---------------------------------------------------------------------------
 
 Matrix::Matrix(int row, int col){
+	assert(row>=0);
+	assert(col>=0);
 	nr=row;
 	nc=col;
 	elements = vector< vector<Integer> >(row, vector<Integer>(col));
@@ -88,6 +91,8 @@ Matrix::Matrix(int row, int col){
 //---------------------------------------------------------------------------
 
 Matrix::Matrix(int row, int col, Integer value){
+	assert(row>=0);
+	assert(col>=0);
 	nr=row;
 	nc=col;
 	elements = vector< vector<Integer> > (row, vector<Integer>(col,value));
@@ -129,33 +134,34 @@ void Matrix::write(){      //to overload for files
 //---------------------------------------------------------------------------
 
 void Matrix::write(int row, const vector<Integer>& data){
-	if ((row<1)||(row>nr)|| (nc!=data.size())) {
-		error("error:Bad argument passed to Matrix::write(int, const vector<Integer>&).");
-	}
-	else
-		elements[row-1]=data;
+	assert(row >= 1);
+	assert(row <= nr); 
+	assert(nc == data.size());
+	
+	elements[row-1]=data;
 }
 
 //---------------------------------------------------------------------------
 
 void Matrix::write(int row, const vector<int>& data){
-	if ((row<1)||(row>nr)|| (nc!=data.size())) {
-		error("error:Bad argument passed to Matrix::write.");
+	assert(row >= 1);
+	assert(row <= nr); 
+	assert(nc == data.size());
+
+	for (int i = 0; i <nc ; i++) {
+		elements[row-1][i]=data[i];
 	}
-	else
-		for (int i = 0; i <nc ; i++) {
-			elements[row-1][i]=data[i];
-		}
 }
 
 //---------------------------------------------------------------------------
 
 void Matrix::write(int row, int col, Integer data){
-	if ((row<1)||(row>nr) || (col<1)||(col>nc)) {
-		error("error:Bad argument passed to Matrix::write(int, int, Integer).");
-	}
-	else
-		elements[row-1][col-1]=data;
+	assert(row >= 1);
+	assert(row <= nr); 
+	assert(col >= 1);
+	assert(col <= nc); 
+
+	elements[row-1][col-1]=data;
 }
 
 //---------------------------------------------------------------------------
@@ -213,24 +219,21 @@ void Matrix::read() const{      //to overload for files
 //---------------------------------------------------------------------------
 
 vector<Integer> Matrix::read(int row) const{
-	if (row<1||row>nr)  {
-		error("error: Bad argument passed to Matrix::read.");
-		vector<Integer> v(0);
-		return v;
-	}
-	else
-		return elements[row-1];
+	assert(row >= 1);
+	assert(row <= nr); 
+
+	return elements[row-1];
 }
 
 //---------------------------------------------------------------------------
 
 Integer Matrix::read (int row, int col) const{
-	if ((row>nr) || (col>nc)) {
-		error("error: Bad argument passed to Matrix::read(int row, int col).");
-		return 0;
-	}
-	else
-		return elements[row-1][col-1];
+	assert(row >= 1);
+	assert(row <= nr); 
+	assert(col >= 1);
+	assert(col <= nc); 
+
+	return elements[row-1][col-1];
 }
 
 //---------------------------------------------------------------------------
@@ -362,68 +365,54 @@ void Matrix::cut_columns(int c) {
 //---------------------------------------------------------------------------
 
 Matrix Matrix::add(const Matrix& A) const{
-	if ((nr!= A.nr)||(nc!=A.nc)) {
-		error("error: Bad argument passed to Matrix::add.");
-		Matrix M;
-		return M;
-	}
-	else  {
-		Matrix B(nr,nc);
-		int i,j;
-		for(i=0; i<nr;i++){
-			for(j=0; j<nc; j++){
-				B.elements[i][j]=elements[i][j]+A.elements[i][j];
-			}
+	assert (nr == A.nr);
+	assert (nc == A.nc);
+	
+	Matrix B(nr,nc);
+	int i,j;
+	for(i=0; i<nr;i++){
+		for(j=0; j<nc; j++){
+			B.elements[i][j]=elements[i][j]+A.elements[i][j];
 		}
-		return B;
 	}
+	return B;
 }
 
 //---------------------------------------------------------------------------
 
 Matrix Matrix::multiplication(const Matrix& A) const{
-	if ((nc!=A.nr)) {
-		error("error: Bad argument passed to Matrix::multiplication.");
-		Matrix M;
-		return M;
-	}
-	else  {
-		Matrix B(nr,A.nc,0);  //initialized with 0
-		int i,j,k;
-		for(i=0; i<B.nr;i++){
-			for(j=0; j<B.nc; j++){
-				for(k=0; k<nc; k++){
-					B.elements[i][j]=B.elements[i][j]+elements[i][k]*A.elements[k][j];
-				}
+	assert (nc == A.nr);
+
+	Matrix B(nr,A.nc,0);  //initialized with 0
+	int i,j,k;
+	for(i=0; i<B.nr;i++){
+		for(j=0; j<B.nc; j++){
+			for(k=0; k<nc; k++){
+				B.elements[i][j]=B.elements[i][j]+elements[i][k]*A.elements[k][j];
 			}
 		}
-		return B;
 	}
+	return B;
 }
 
 //---------------------------------------------------------------------------
 
 Matrix Matrix::multiplication(const Matrix& A, int m) const{
-	if ((nc!=A.nr)) {
-		error("error: Bad argument passed to Matrix::multiplication.");
-		Matrix M;
-		return M;
-	}
-	else  {
-		Matrix B(nr,A.nc,0);  //initialized with 0
-		int i,j,k;
-		for(i=0; i<B.nr;i++){
-			for(j=0; j<B.nc; j++){
+	assert (nc == A.nr);
+
+	Matrix B(nr,A.nc,0);  //initialized with 0
+	int i,j,k;
+	for(i=0; i<B.nr;i++){
+		for(j=0; j<B.nc; j++){
 				for(k=0; k<nc; k++){
-					B.elements[i][j]=(B.elements[i][j]+elements[i][k]*A.elements[k][j])%m;
-					if (B.elements[i][j]<0) {
-						B.elements[i][j]=B.elements[i][j]+m;
-					}
+				B.elements[i][j]=(B.elements[i][j]+elements[i][k]*A.elements[k][j])%m;
+				if (B.elements[i][j]<0) {
+					B.elements[i][j]=B.elements[i][j]+m;
 				}
 			}
 		}
-		return B;
 	}
+	return B;
 }
 
 //---------------------------------------------------------------------------

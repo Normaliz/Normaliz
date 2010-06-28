@@ -85,6 +85,8 @@ public:
   void write_matrix_tri(const Matrix& M) const; //writes M to file name.tri
   void write_matrix_ht1(const Matrix& M) const; //writes M to file name.ht1
 
+  void write_inv_file() const;
+
 //---------------------------------------------------------------------------
 //                         Output Algorithms
 //---------------------------------------------------------------------------

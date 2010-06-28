@@ -160,9 +160,8 @@ int main(int argc, char* argv[])
 	//Read Input
 
 	if (!filename_set) {
-		cout<<"Normaliz 2.2"<<endl
-			<<"Copyright (C) 2007,2008,2009  Winfried Bruns, Bogdan Ichim"<<endl
-			<<"With contributions by Christof Soeger"<<endl
+		cout<<"Normaliz 2.5"<<endl
+			<<"Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Söger"<<endl
 			<<"This program comes with ABSOLUTELY NO WARRANTY; This is free software, and you are welcome to redistribute it under certain conditions; See COPYING for details."
 			<<endl<<endl;
 		cout<<"Enter the input file name or -? for help: ";
