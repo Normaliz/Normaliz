@@ -407,12 +407,12 @@ void Output::cone() const{
 		}
 		out<<endl;
 		if (rank == Basis_Change.get_dim()){                   //write rank and index
-			out<<"rank "<<rank<<" (maximal)"<<endl;
+			out<<"rank = "<<rank<<" (maximal)"<<endl;
 		}
 		else {
-			out<<"rank "<<rank<<endl;
+			out<<"rank = "<<rank<<endl;
 		}
-		out<<"index "<< Basis_Change.get_index() <<endl;
+		out<<"index = "<< Basis_Change.get_index() <<endl;
 
 		if (Result.isComputed(ConeProperty::ExtremeRays)) {
 			if (Result.isIntegrallyClosed()) {
@@ -442,7 +442,7 @@ void Output::cone() const{
 			}
 			out<<endl;
 			if (Result.isComputed(ConeProperty::Triangulation)){
-				out<<"multiplicity "<<Result.read_multiplicity()<<endl;
+				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
 				out<<endl;
 			}
 			if (Result.isComputed(ConeProperty::HVector)) {
@@ -629,7 +629,7 @@ void Output::polytop() const{
 		
 		if (Result.read_homogeneous()) {
 			if (Result.isComputed(ConeProperty::Triangulation)){
-				out<<"normalized volume " << Result.read_multiplicity()<<endl;
+				out<<"normalized volume = " << Result.read_multiplicity()<<endl;
 				out<<endl;
 			}
 			if (Result.isComputed(ConeProperty::HVector)) {
@@ -721,7 +721,7 @@ void Output::polytop() const{
 				}
 				out<<buf;
 			}
-			out<<" >= ";
+			out<<" >=";
 			buf = - Support_Hyperplanes.read(i,j);
 			for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
 				out<<" ";
@@ -736,7 +736,6 @@ void Output::polytop() const{
 		Lineare_Transformation NewLT = Transformation(Extreme_Rays);
 		Matrix Help = NewLT.get_right().transpose();
 		Matrix Equations(dim-rank,dim);
-		cout<<dim<<rank;
 		for (i = 1+rank; i <= dim; i++) {
 			Equations.write(i-rank,Help.read(i));
 		}
@@ -828,7 +827,8 @@ void Output::rees(const bool primary) const{
 		}
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Hilbert_Basis = Basis_Change.from_sublattice(Result.read_hilbert_basis());
-			out << Hilbert_Basis.nr_of_rows() <<" generators of integral closure of the Rees algebra"<<endl;
+			nr = Hilbert_Basis.nr_of_rows();
+			out << nr <<" generators of integral closure of the Rees algebra"<<endl;
 			for (i = 1; i <= nr; i++) {
 				if (Hilbert_Basis.read(i,dim)==1) {
 					nr_generators_ideal++;
@@ -836,9 +836,6 @@ void Output::rees(const bool primary) const{
 				}
 			}
 			out << nr_generators_ideal <<" generators of integral closure of the ideal"<<endl;
-		}
-		if (Result.isComputed(ConeProperty::Ht1Elements)) {
-			out << Result.read_homogeneous_elements().nr_of_rows() <<" height 1 generators of integral closure of the Rees algebra"<<endl;
 		}
 		if (Result.isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();
@@ -855,12 +852,12 @@ void Output::rees(const bool primary) const{
 		}
 		out<<endl;
 		if (rank == Basis_Change.get_dim()){                   //write rank and index
-			out<<"rank "<<rank<<" (maximal)"<<endl;
+			out<<"rank = "<<rank<<" (maximal)"<<endl;
 		}
 		else {
-			out<<"rank "<<rank<<endl;
+			out<<"rank = "<<rank<<endl;
 		}
-		out<<"index "<< Basis_Change.get_index() <<endl;
+		out<<"index = "<< Basis_Change.get_index() <<endl;
 
 		if (Result.isComputed(ConeProperty::ExtremeRays)) {
 			if (Result.isIntegrallyClosed()) {
@@ -890,7 +887,7 @@ void Output::rees(const bool primary) const{
 			}
 			out<<endl;
 			if (Result.isComputed(ConeProperty::Triangulation)){
-				out<<"multiplicity "<<Result.read_multiplicity()<<endl;
+				out<<"multiplicity = "<<Result.read_multiplicity()<<endl;
 				out<<endl;
 			}
 			if (Result.isComputed(ConeProperty::HVector)) {
@@ -936,15 +933,15 @@ void Output::rees(const bool primary) const{
 				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
-			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
-			out<<nr<<" generators of integral closure of the Rees algebra elements:"<<endl;
+			out<<nr<<" generators of integral closure of the Rees algebra:"<<endl;
 			Hilbert_Basis.pretty_print(out);
 			
 			out << nr_generators_ideal <<" generators of integral closure of the ideal:"<<endl;
 			Matrix Ideal_Gens = Hilbert_Basis.submatrix(ideal_gen_key);
 			Ideal_Gens.cut_columns(dim-1);
+			Ideal_Gens.pretty_print(out);
 		}
 
 		vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();          //write extreme rays
@@ -1019,9 +1016,6 @@ void Output::rees(const bool primary) const{
 				Matrix Hom = Result.read_homogeneous_elements();
 				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
-				nr=Hom.nr_of_rows();
-				out<<nr<<" height 1 generators of integral closure of the Rees algebra:"<<endl;
-				Hom.pretty_print(out);
 			}
 		}
 		out.close();

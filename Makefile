@@ -4,8 +4,8 @@
 CXX = g++
 CXXFLAGS += -Wall -Wno-sign-compare
 CXXFLAGS += -O3 -funroll-loops -pipe
-CXXFLAGS += -fopenmp
-
+#CXXFLAGS += -fopenmp
+CXXFLAGS += -Wno-unknown-pragmas
 N64FLAGS = -Dnorm64 -static
 NBIGFLAGS = -Dnormbig -static
 GMPFLAGS = -lgmpxx -lgmp

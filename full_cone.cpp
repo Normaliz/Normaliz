@@ -840,7 +840,7 @@ Full_Cone::Full_Cone(){
 Full_Cone::Full_Cone(Matrix M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.\nProbable reason: Cone not full dimensional (<=> dual cone not not pointed)!");	
+		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");	
 	}
 	Generators = M;
 	nr_gen=Generators.nr_of_rows();
@@ -872,6 +872,9 @@ Full_Cone::Full_Cone(Matrix M){
 		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
+		is_Computed.set(ConeProperty::HilbertPolynomial);
+		is_Computed.set(ConeProperty::HVector);
+		is_Computed.set(ConeProperty::Triangulation);
 	}
 }
 
@@ -1264,6 +1267,10 @@ void Full_Cone::hilbert_basis_polynomial(){
 			find_new_face();
 			compute_hilbert_basis_polynomial();
 			compute_polynomial();
+		} else {
+			is_Computed.set(ConeProperty::HilbertBasis);
+			is_Computed.set(ConeProperty::Triangulation);
+			
 		}
 	}
 	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
@@ -2110,6 +2117,9 @@ void Full_Cone::compute_hilbert_basis(){
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	} // end if (dim>0)
+	else {
+		is_Computed.set(ConeProperty::Ht1Elements);
+	}
 	is_Computed.set(ConeProperty::HilbertBasis);
 }
 
