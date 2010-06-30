@@ -626,6 +626,7 @@ void Output::polytop() const{
 			}
 		}
 		out << endl;
+		out<<"dimension of the polytope = "<<rank-1<<endl;
 		
 		if (Result.read_homogeneous()) {
 			if (Result.isComputed(ConeProperty::Triangulation)){
@@ -857,7 +858,6 @@ void Output::rees(const bool primary) const{
 		else {
 			out<<"rank = "<<rank<<endl;
 		}
-		out<<"index = "<< Basis_Change.get_index() <<endl;
 
 		if (Result.isComputed(ConeProperty::ExtremeRays)) {
 			if (Result.isIntegrallyClosed()) {
