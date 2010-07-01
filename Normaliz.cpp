@@ -31,6 +31,7 @@ using namespace std;
 // this function determinates if and how the program will be terminated in case of errors
 void global_error_handling(){
 	cout<<"Some error detected. The program will be terminated."<<endl;
+	throw 1;
 	exit(1);
 }
 

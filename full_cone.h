@@ -102,6 +102,10 @@ class Full_Cone {
 
 	/* to be used with a shelling in order to add to each simples the maximal new face */
 	void find_new_face();
+	
+	/* */
+	Simplex find_start_simplex() const;
+
 	/* compute triangulations of the not compressed, not simplicial pieces and add them to Triangulation*/
 	void process_non_compressed(list<vector<int> > & non_compressed);
 	/* reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
