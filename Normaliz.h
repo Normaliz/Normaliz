@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include <assert.h>
+#include <omp.h>
 
 #include "integer.h"
 #include "vector_operations.h"

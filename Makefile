@@ -1,11 +1,14 @@
-#
-# Makefile for normaliz
-#
+##
+## Makefile for normaliz
+##
 CXX = g++
 CXXFLAGS += -Wall -Wno-sign-compare
 CXXFLAGS += -O3 -funroll-loops -pipe
+
+## comment out the following line to disable OpenMP and activate the lone after that to supress warnings
 CXXFLAGS += -fopenmp
 #CXXFLAGS += -Wno-unknown-pragmas
+
 N64FLAGS = -Dnorm64 -static
 NBIGFLAGS = -Dnormbig -static
 GMPFLAGS = -lgmpxx -lgmp

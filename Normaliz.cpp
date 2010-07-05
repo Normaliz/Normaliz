@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <algorithm>
 using namespace std;
 
@@ -37,7 +38,7 @@ void global_error_handling(){
 
 
 void printHelp(char* command) {
-	cout << "usage: "<<command<<" [-acdefhimnpsv?] [PROJECT]"<<endl;
+	cout << "usage: "<<command<<" [-acdefhimnpsv?] [-x=<T>] [PROJECT]"<<endl;
 	cout << "  runs normaliz on PROJECT.in"<<endl;
 	cout << "options:"<<endl;
 	cout << "  -?\tprint this help text and exit"<<endl;
@@ -51,12 +52,13 @@ void printHelp(char* command) {
 	cout << "  -p\tcomputation mode: hilbert_polynomial"<<endl;
 	cout << "  -h\tcomputation mode: hilbert_basis_polynomial"<<endl;
 	cout << "  -d\tcomputation mode: dual"<<endl;
-	cout << "  -f\tthe files .out .gen .inv .typ .sup are written"<<endl;
+	cout << "  -f\tthe files .out .gen .inv .typ .cst are written"<<endl;
 	cout << "  -a\tall output files are written"<<endl;
 	cout << "  -e\tperform tests for arithmetic errors"<<endl;
 	cout << "  -c\tverbose (prints control data)"<<endl;
 	cout << "  -m\tsave memory (currently has no effect)"<<endl;
 	cout << "  -i\tobsolete option"<<endl;
+	cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
 //---------------------------------------------------------------------------
@@ -78,7 +80,23 @@ int main(int argc, char* argv[])
 	string option;            //all options concatenated (including -)
 	for (i = 1; i <argc; i++) {
 		if (argv[i][0]=='-') {
-			option = option + argv[i];
+			if (argv[i][1]!='\0') {
+				if (argv[i][1]!='x') {
+					option = option + argv[i];
+				} else if (argv[i][2]=='=') {
+					string Threads = argv[i];
+					Threads.erase(0,3);
+					int nr_threads;
+					if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
+						if (verbose) cout<<"using "<<nr_threads<<" threads"<<endl;
+						omp_set_num_threads(nr_threads);
+					} else {
+						cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
+					}
+				} else {
+					cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
+				}
+			}
 		} else if (!filename_set) {
 			string s(argv[i]);
 			output_name=s;
@@ -143,6 +161,9 @@ int main(int argc, char* argv[])
 			case '?':  //print help text and exit
 				printHelp(argv[0]);
 				exit(1);
+				break;
+			case 'x': //shouldn't be used with other options
+				cerr<<"Warning: Option -x=<T> has to be seperated from other options"<<endl;
 				break;
 			default:
 				cerr<<"Warning: Unknown option -"<<option[i]<<endl;
