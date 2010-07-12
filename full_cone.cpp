@@ -1304,9 +1304,9 @@ void Full_Cone::hilbert_polynomial(){
 }
 
 void Full_Cone::dual_mode() {
-		Support_Hyperplanes.sort();
-		Support_Hyperplanes.unique();
-		Support_Hyperplanes.remove(vector<Integer>(dim,0));
+	Support_Hyperplanes.sort();
+	Support_Hyperplanes.unique();
+	Support_Hyperplanes.remove(vector<Integer>(dim,0));
 
 	if(dim>0) {            //correction needed to include the 0 cone;
 		Linear_Form = Generators.homogeneous(is_ht1_extreme_rays);
@@ -1315,6 +1315,9 @@ void Full_Cone::dual_mode() {
 		is_Computed.set(ConeProperty::IsHt1Generated);
 
 		if (is_ht1_extreme_rays) {
+			if (verbose) { 
+				cout << "Find height 1 elements" << endl;
+			}
 			list < vector <Integer> >::const_iterator h;
 			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 				if (v_scalar_product((*h),Linear_Form)==1) {

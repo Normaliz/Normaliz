@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS += -Wall -Wno-sign-compare
 CXXFLAGS += -O3 -funroll-loops -pipe
 
-## comment out the following line to disable OpenMP and activate the lone after that to supress warnings
+## comment out the following line to disable OpenMP and activate the line after that to supress warnings
 CXXFLAGS += -fopenmp
 #CXXFLAGS += -Wno-unknown-pragmas
 

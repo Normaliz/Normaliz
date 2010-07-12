@@ -324,8 +324,8 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Cone_Dual_Mode Cone1(Equations_Ordered);
 		Cone1.hilbert_basis_dual();
 		//Cone1 zu einem Full_Cone machen
-		Sublattice_Representation SR(Cone1.get_generators(),true);
-		if ( SR.get_rank() < Cone1.dim ) {
+		if ( Cone1.Generators.rank() < Cone1.dim ) {
+			Sublattice_Representation SR(Cone1.Generators,true);
 			Cone1.to_sublattice(SR);
 			Out.compose_basis_change(SR);
 		}

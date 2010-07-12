@@ -472,7 +472,6 @@ void Output::cone() const{
 			out << nr_orig_gens <<" original generators:"<<endl;
 			Original_Generators.pretty_print(out);
 		}
-		Matrix Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
 			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
@@ -480,79 +479,78 @@ void Output::cone() const{
 				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
-			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
+			Matrix Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
 			out<<nr<<" Hilbert basis elements:"<<endl;
 			Hilbert_Basis.pretty_print(out);
 		}
 
-		vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();          //write extreme rays
-		int nr_ex_rays=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				nr_ex_rays++;
+			vector<bool> Ex_Rays_Marked=Result.read_extreme_rays();          //write extreme rays
+			int nr_ex_rays=0;
+			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
+				if (Ex_Rays_Marked[i]==true) {
+					nr_ex_rays++;
+				}
 			}
-		}
-		vector<int> Ex_Rays_Position(nr_ex_rays);
-		j=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				Ex_Rays_Position[j]=i+1;
-				j++;
+			vector<int> Ex_Rays_Position(nr_ex_rays);
+			j=0;
+			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
+				if (Ex_Rays_Marked[i]==true) {
+					Ex_Rays_Position[j]=i+1;
+					j++;
+				}
 			}
+			Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+			write_matrix_ext(Extreme_Rays);
+			out<<nr_ex_rays<<" extreme rays:"<<endl;
+			Extreme_Rays.pretty_print(out);
+
+		{
+			//write constrains (support hyperplanes, congruences, equations)
+			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+			out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
+			Support_Hyperplanes.pretty_print(out);
+			
+			//equations 
+			int dim = Extreme_Rays.nr_of_columns();
+			int nr_of_equ = dim-rank;
+			Matrix Equations(nr_of_equ,dim);
+			if (nr_of_equ > 0) {
+				Lineare_Transformation NewLT = Transformation(Extreme_Rays);
+				Matrix Help = NewLT.get_right().transpose();
+				for (i = 1+rank; i <= dim; i++) {
+					Equations.write(i-rank,Help.read(i));
+				}
+	
+				out << nr_of_equ <<" equations:" <<endl;
+				Equations.pretty_print(out);
+			}
+	
+	
+			//congruences
+			Matrix Congruences = Basis_Change.get_congruences();
+			int nr_of_cong = Congruences.nr_of_rows();
+			if (nr_of_cong > 0) {
+				out << nr_of_cong <<" congruences:" <<endl;
+				Congruences.pretty_print(out);
+			}
+
+			if(sup) {
+				string cst_string = name+".cst";
+				const char* cst_file = cst_string.c_str();
+				ofstream cst_out(cst_file);
+	
+				Support_Hyperplanes.print(cst_out);
+				cst_out<<"hyperplanes"<<endl;
+				Equations.print(cst_out);
+				cst_out<<"equations"<<endl;
+				Congruences.print(cst_out);
+				cst_out<<"congruences"<<endl;
+	
+				cst_out.close();
+			}	
 		}
-		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
-		write_matrix_ext(Extreme_Rays);
-		out<<nr_ex_rays<<" extreme rays:"<<endl;
-		Extreme_Rays.pretty_print(out);
-
-
-		//write constrains (support hyperplanes, congruences, equations)
-		Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
-		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
-		Support_Hyperplanes.pretty_print(out);
-		
-		//equations 
-		Lineare_Transformation NewLT = Transformation(Extreme_Rays);
-		Matrix Help = NewLT.get_right().transpose();
-		int dim = Extreme_Rays.nr_of_columns();
-		Matrix Equations(dim-rank,dim);
-		for (i = 1+rank; i <= dim; i++) {
-			Equations.write(i-rank,Help.read(i));
-		}
-
-		int nr_of_equ = Equations.nr_of_rows();
-		if (nr_of_equ > 0) {
-			out << nr_of_equ <<" equations:" <<endl;
-			Equations.pretty_print(out);
-		}
-
-
-		//congruences
-		Matrix Congruences = Basis_Change.get_congruences();
-		int nr_of_cong = Congruences.nr_of_rows();
-		if (nr_of_cong > 0) {
-			out << nr_of_cong <<" congruences:" <<endl;
-			Congruences.pretty_print(out);
-		}
-
-
-		if(sup) {
-			string cst_string = name+".cst";
-			const char* cst_file = cst_string.c_str();
-			ofstream cst_out(cst_file);
-
-			Support_Hyperplanes.print(cst_out);
-			cst_out<<"hyperplanes"<<endl;
-			Equations.print(cst_out);
-			cst_out<<"equations"<<endl;
-			Congruences.print(cst_out);
-			cst_out<<"congruences"<<endl;
-
-			cst_out.close();
-		}	
-		
 		
 		if (Result.read_homogeneous()) {
 			if ( Result.isComputed(ConeProperty::Ht1Elements) ) {

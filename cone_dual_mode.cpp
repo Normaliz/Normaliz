@@ -602,6 +602,9 @@ void Cone_Dual_Mode::extreme_rays_reduction(){
 //---------------------------------------------------------------------------
 
 void Cone_Dual_Mode::extreme_rays_rank(){
+	if (verbose) {
+		cout << "Find extreme rays (via rank test)" << endl;
+	}
 	list < vector <Integer> >::iterator c;
 	list <int> zero_list;
 	int i,j,k;
@@ -659,6 +662,9 @@ void Cone_Dual_Mode::hilbert_basis_dual(){
 //---------------------------------------------------------------------------
 
 void Cone_Dual_Mode::relevant_support_hyperplanes(){
+	if (verbose) {
+		cout << "Find relevant support hyperplanes" << endl;
+	}
 	list <int> zero_list;
 	list<vector<Integer> >::iterator gen_it;
 	vector <int> relevant_sh;
