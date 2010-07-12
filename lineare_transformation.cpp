@@ -50,13 +50,9 @@ Lineare_Transformation::  Lineare_Transformation(const Matrix& M){
 	rk=0;
 	status="initialized, before transformation";
 	index=1;
-	Matrix Help1(M.nr_of_rows());
-	Matrix Help2(M);
-	Matrix Help3(M.nr_of_columns());
-	Matrix Help4(M.nr_of_columns());
-	Center=Help2;
-	Right=Help3;
-	Right_Inv=Help3;
+	Center    = Matrix(M);
+	Right     = Matrix(M.nr_of_columns());
+	Right_Inv = Matrix(M.nr_of_columns());
 }
 
 //---------------------------------------------------------------------------
