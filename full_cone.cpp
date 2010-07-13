@@ -1255,11 +1255,11 @@ void Full_Cone::hilbert_basis_polynomial(){
 	if ( !is_ht1_extreme_rays ) {
 		if (verbose) {
 			cout << "************************************************************" << endl;
-			cout << "extreme rays not in height 1, using computation type hilbert_basis" << endl;
+			cout << "extreme rays not in height 1, using computation type triangulation_hilbert_basis" << endl;
 		}
 		Support_Hyperplanes.clear();
 		is_Computed.set(ConeProperty::SupportHyperplanes,false);
-		hilbert_basis();
+		triangulation_hilbert_basis();
 	} else {
 		check_ht1_generated();
 		if(dim>0) {            //correction needed to include the 0 cone;
@@ -1287,11 +1287,11 @@ void Full_Cone::hilbert_polynomial(){
 	if ( !is_ht1_extreme_rays ) {
 		if (verbose) {
 			cout << "************************************************************" << endl;
-			cout << "extreme rays not in height 1, using computation type hilbert_basis" << endl;
+			cout << "extreme rays not in height 1, using computation type triangulation_hilbert_basis" << endl;
 		}
 		Support_Hyperplanes.clear();
 		is_Computed.set(ConeProperty::SupportHyperplanes,false);
-		hilbert_basis();
+		triangulation_hilbert_basis();
 	} else {
 		check_ht1_generated();
 		if(dim>0) {            //correction needed to include the 0 cone;
@@ -1421,7 +1421,6 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	for (i = 0; i < dim; i++) {
 		in_triang[key[i]-1]=true;
 	}
-	bool first_simplex_compressed = do_partial_triangulation;
 
 	Matrix G=S.read_generators();
 	G=G.transpose();
@@ -1434,8 +1433,6 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 			hyperplane[j]=L[j];
 			hyperplane[j+dim]=R[j];
 			test_key[j+dim]=key[j];
-			if (first_simplex_compressed && hyperplane[i]>1)
-				first_simplex_compressed = false;
 		}
 		Support_Hyperplanes.push_back(hyperplane);
 	}
@@ -1443,13 +1440,8 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	
 	int size=2*dim;
 	//test if the first simplex is compressed
-	if(do_partial_triangulation && !first_simplex_compressed){
-//		for (i=dim; i<size; i++) {
-//			if (hyperplane[i]>1) {
-				Triangulation.push_back(key);
-//				break;
-//			}
-//		}
+	if(do_partial_triangulation && S.read_volume() > 1){
+		Triangulation.push_back(key);
 	}
 
 	//computation of support hyperplanes
