@@ -1,6 +1,6 @@
 /*
  * Normaliz 2.5
- * Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Söger
+ * Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -183,8 +183,10 @@ int main(int argc, char* argv[])
 
 	if (!filename_set) {
 		cout<<"Normaliz 2.5"<<endl
-			<<"Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Söger"<<endl
-			<<"This program comes with ABSOLUTELY NO WARRANTY; This is free software, and you are welcome to redistribute it under certain conditions; See COPYING for details."
+			<<"Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+			<<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
+			<<"and you are welcome to redistribute it under certain conditions;"<<endl
+			<<"See COPYING for details."
 			<<endl<<endl;
 		cout<<"Enter the input file name or -? for help: ";
 		cin >>output_name;
