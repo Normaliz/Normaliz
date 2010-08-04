@@ -84,15 +84,18 @@ int main(int argc, char* argv[])
 				if (argv[i][1]!='x') {
 					option = option + argv[i];
 				} else if (argv[i][2]=='=') {
+					#ifndef NO_OPENMP
 					string Threads = argv[i];
 					Threads.erase(0,3);
 					int nr_threads;
 					if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-						if (verbose) cout<<"using "<<nr_threads<<" threads"<<endl;
 						omp_set_num_threads(nr_threads);
 					} else {
 						cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
 					}
+					#else
+					cerr << "Warning: Compiled without OpenMP support, option "<<argv[i]<<" ignored."<<endl;
+					#endif
 				} else {
 					cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
 				}

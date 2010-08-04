@@ -37,7 +37,11 @@
 #endif
 
 #ifdef normbig
-	#include <gmpxx.h>
+	#ifdef _WIN32 //for 32 and 64 bit windows
+		#include <mpirxx.h>
+	#else
+		#include <gmpxx.h>
+	#endif
 	typedef  mpz_class Integer;
 #endif
 

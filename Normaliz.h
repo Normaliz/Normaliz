@@ -22,7 +22,10 @@
 //---------------------------------------------------------------------------
 
 #include <assert.h>
+
+#ifndef NO_OPENMP
 #include <omp.h>
+#endif
 
 #include "integer.h"
 #include "vector_operations.h"
