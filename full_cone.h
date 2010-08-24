@@ -22,32 +22,12 @@
 #include <set>
 #include <list>
 #include <bitset>
+#include "libnormaliz.h"
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
 #include "cone_dual_mode.h"
 
-/* An enumeration of things, that can be computed for a cone.
- * The namespace prevents interferring with other names.
- */
-namespace ConeProperty {
-	enum Enum {
-//		Generators,
-		ExtremeRays,
-		SupportHyperplanes,
-		Triangulation,
-		HilbertBasis,
-		Ht1Elements,
-		HVector,
-		HilbertPolynomial,
-		IsPointed,
-		IsHt1Generated,
-		IsHt1ExtremeRays,
-		IsHt1HilbertBasis,
-		IsIntegrallyClosed,
-		EnumSize // this has to be the last entry, to get the number of entries in the enum
-	};
-}
 
 class Full_Cone {
 	int dim;
@@ -72,6 +52,7 @@ class Full_Cone {
 	vector<Integer> Hilbert_Polynomial;
 
 	friend void lift(Full_Cone&, Matrix);
+	friend class Cone;
 
 /* ---------------------------------------------------------------------------
  *				Private routines, used in the public routines
@@ -211,7 +192,7 @@ public:
 //class end *****************************************************************
 //---------------------------------------------------------------------------
 
-void lift(Full_Cone& Lifted, Matrix Extreme_Generators);//generates  a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
+void lift(Full_Cone& Lifted, Matrix Extreme_Generators); //generates a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------
