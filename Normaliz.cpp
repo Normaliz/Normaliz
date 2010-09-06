@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 				test_arithmetic_overflow=true;
 				break;
 			case 'm':  //save memory / don't optimize for speed
-				optimize_speed=false;
+			//	optimize_speed=false;
 				break;
 			case '?':  //print help text and exit
 				printHelp(argv[0]);

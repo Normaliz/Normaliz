@@ -27,45 +27,17 @@
 #include <omp.h>
 #endif
 
+#include "libnormaliz.h"
+
 #include "integer.h"
 #include "vector_operations.h"
 #include "matrix.h"
-#include "simplex.h"
 #include "list_operations.h"
 #include "lineare_transformation.h"
 #include "full_cone.h"
 #include "output.h"
 #include "mode.h"
 
-
-
-//---------------------------------------------------------------------------
-// global variables
-
-// used for turn on and off the tests for arithmetic overflow
-// the run time may double when the tests are performed
-bool test_arithmetic_overflow=false;
-
-// used for testing possible arithmetic overflow at key points
-// the bigger the number test is, the bigger the probability that no arithmetic
-// overflow is produced
-// a matrix which procuses overflow over int but not over long long is
-//    22222   33337
-//    55559   77773
-int overflow_test_modulus=15401;
-
-// used to turn on and off the display of a progress report
-// designed for users who run complex examples
-// it is activated by setup or by the option 'c' in the command line
-bool verbose=false;
-
-// used to turn on and off speed optimization
-// depend on how much RAM is available on the system
-bool optimize_speed=true;
-
-
-//---------------------------------------------------------------------------
-// global functions
 
 /**
  * Determinates if and how the program will be terminated in case of errors

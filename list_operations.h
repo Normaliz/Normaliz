@@ -31,6 +31,7 @@
 #include <algorithm>
 using namespace std;
 
+#include "libnormaliz.h"
 #include "simplex.h"
 //---------------------------------------------------------------------------
 //							Data acces

@@ -29,6 +29,7 @@
 #ifndef SUBLATTICE_REPRESENTATION_H
 #define SUBLATTICE_REPRESENTATION_H
 
+#include "libnormaliz.h"
 #include "lineare_transformation.h"
 
 //---------------------------------------------------------------------------

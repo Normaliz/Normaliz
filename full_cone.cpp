@@ -35,10 +35,7 @@ using namespace std;
 #include "list_operations.h"
 
 //---------------------------------------------------------------------------
-extern bool test_arithmetic_overflow;
-extern int overflow_test_modulus;
-extern bool verbose;
-extern bool optimize_speed;
+
 extern void global_error_handling();
 struct v_compare_shelling {
 	bool operator () (const vector<Integer>& u,const vector<Integer>& v) const 	{

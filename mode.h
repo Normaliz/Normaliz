@@ -20,6 +20,7 @@
 #ifndef MODE_H
 #define MODE_H
 //---------------------------------------------------------------------------
+#include "libnormaliz.h"
 #include "output.h"
 #include "matrix.h"
 

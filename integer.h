@@ -19,6 +19,8 @@
 #ifndef INTEGER_H
 #define INTEGER_H
 
+#include "libnormaliz.h"
+
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs
 // Integer min(Integer, Integer); here we use the template min in <algorithm>

@@ -34,9 +34,7 @@ using namespace std;
 #include "list_operations.h"
 
 //---------------------------------------------------------------------------
-extern bool test_arithmetic_overflow;
-extern int overflow_test_modulus;
-extern bool verbose;
+
 extern void global_error_handling();
 
 //---------------------------------------------------------------------------

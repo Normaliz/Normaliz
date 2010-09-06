@@ -7,7 +7,12 @@
 
 #include "libnormaliz.h"
 
+
+
 bool verbose = false;
+
 bool test_arithmetic_overflow = false;
-ostream verbose_ostream = cout;
-ostream error_ostream = cerr;
+int overflow_test_modulus = 15401;
+
+std::ostream& verbose_ostream = std::cout;
+std::ostream& error_ostream = std::cerr;

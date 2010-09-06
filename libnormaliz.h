@@ -12,9 +12,16 @@
 
 
 extern bool verbose;
+
+/* if test_arithmetic_overflow is true, many operations are also done
+ * modulo overflow_test_modulus to ensure the correctness of the calculations
+ */
 extern bool test_arithmetic_overflow;
-extern ostream verbose_ostream;
-extern ostream error_ostream;
+extern int overflow_test_modulus;
+
+extern std::ostream& verbose_ostream;
+extern std::ostream& error_ostream;
+
 //extern const unsigned int major_version, minor_version;  //TODO version
 
 /* An enumeration of things, that can be computed for a cone.

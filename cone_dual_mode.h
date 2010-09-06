@@ -21,6 +21,7 @@
 
 #include <set>
 #include <list>
+#include "libnormaliz.h"
 #include "integer.h"
 #include "matrix.h"
 #include "sublattice_representation.h"

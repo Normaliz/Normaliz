@@ -32,8 +32,6 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 
-extern bool test_arithmetic_overflow;
-extern int overflow_test_modulus;
 extern void global_error_handling();
 
 //---------------------------------------------------------------------------
