@@ -414,7 +414,7 @@ void Output::cone() const{
 		}
 		out<<"index = "<< Basis_Change.get_index() <<endl;
 
-		if (Result.isComputed(ConeProperty::ExtremeRays)) {
+		if (Result.isComputed(ConeProperty::IsIntegrallyClosed)) {
 			if (Result.isIntegrallyClosed()) {
 				out << "original monoid is integrally closed"<<endl;
 			} else {
@@ -616,7 +616,7 @@ void Output::polytop() const{
 		}
 		out<<endl;
 
-		if (Result.isComputed(ConeProperty::ExtremeRays)) {
+		if (Result.isComputed(ConeProperty::IsIntegrallyClosed)) {
 			if (Result.isIntegrallyClosed()) {
 				out << "polytope is integrally closed"<<endl;
 			} else {
@@ -857,7 +857,7 @@ void Output::rees(const bool primary) const{
 			out<<"rank = "<<rank<<endl;
 		}
 
-		if (Result.isComputed(ConeProperty::ExtremeRays)) {
+		if (Result.isComputed(ConeProperty::IsIntegrallyClosed)) {
 			if (Result.isIntegrallyClosed()) {
 				out << "original monoid is integrally closed"<<endl;
 			} else {
