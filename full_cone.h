@@ -22,6 +22,10 @@
 #include <set>
 #include <list>
 #include <bitset>
+
+#include <boost/dynamic_bitset.hpp>
+using boost::dynamic_bitset;
+
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
