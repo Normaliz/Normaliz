@@ -28,7 +28,14 @@
 #include "simplex.h"
 #include "cone_dual_mode.h"
 
+template<typename Integer> class Full_Cone;
 
+//generates a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
+template<typename Integer>
+void lift(Full_Cone<Integer>& Lifted, Matrix<Integer> Extreme_Generators);
+
+
+template<typename Integer>
 class Full_Cone {
 	int dim;
 	int nr_gen;
@@ -42,17 +49,17 @@ class Full_Cone {
 	bitset<ConeProperty::EnumSize> is_Computed;
 	vector<Integer> Linear_Form;
 	Integer multiplicity;
-	Matrix Generators;
+	Matrix<Integer> Generators;
 	vector<bool> Extreme_Rays;
 	list<vector<Integer> > Support_Hyperplanes;
-	list<Simplex> Triangulation;
+	list< Simplex<Integer> > Triangulation;
 	list<vector<Integer> > Hilbert_Basis;
 	list<vector<Integer> > Homogeneous_Elements;
 	vector<Integer> H_Vector;
 	vector<Integer> Hilbert_Polynomial;
 
-	friend void lift(Full_Cone&, Matrix);
-	friend class Cone;
+	friend void lift<Integer>(Full_Cone<Integer>&, Matrix<Integer>);
+//	friend class Cone<Integer>;
 
 /* ---------------------------------------------------------------------------
  *				Private routines, used in the public routines
@@ -76,7 +83,7 @@ class Full_Cone {
 	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const int & size);
 
 	/* adds a matrix with new elements to the Hilbert basis */
-	void reduce_and_insert(const Matrix & New_Elements);
+	void reduce_and_insert(const Matrix<Integer> & New_Elements);
 	/* adds a list with new elements to the Hilbert basis */
 	void reduce_and_insert(const list<vector<Integer> > & New_Elements);
 
@@ -85,7 +92,7 @@ class Full_Cone {
 	void find_new_face();
 	
 	/* */
-	Simplex find_start_simplex() const;
+	Simplex<Integer> find_start_simplex() const;
 
 	/* compute triangulations of the not compressed, not simplicial pieces and add them to Triangulation*/
 	void process_non_compressed(list<vector<int> > & non_compressed);
@@ -127,13 +134,13 @@ class Full_Cone {
 
     /* constructor for recursively generated subcones
      * int i is a dummy parameter to distinguish it from the standard constructor */
-    Full_Cone(Matrix M, int i);
+    Full_Cone(Matrix<Integer> M, int i);
 
 public:
 	Full_Cone();
-	Full_Cone(Matrix M);            //main constructor
-	Full_Cone(const Cone_Dual_Mode &C);
-	Full_Cone(const Full_Cone & C); //copy constructor
+	Full_Cone(Matrix<Integer> M);            //main constructor
+	Full_Cone(const Cone_Dual_Mode<Integer> &C);
+	Full_Cone(const Full_Cone<Integer> & C); //copy constructor
 	~Full_Cone();                   //destructor
 
 /*---------------------------------------------------------------------------
@@ -148,16 +155,16 @@ public:
 	bool isIntegrallyClosed() const;
 	vector<Integer> read_linear_form() const; //returns the linear form
 	Integer read_multiplicity() const; //returns multiplicity
-	Matrix read_generators() const;
+	Matrix<Integer> read_generators() const;
 	vector<bool> read_extreme_rays() const;
-	Matrix read_support_hyperplanes() const;
-	Matrix read_triangulation() const;
+	Matrix<Integer> read_support_hyperplanes() const;
+	Matrix<Integer> read_triangulation() const;
 	/* read the triangulation and the volume of each simplex,
 	 * the volume is saved on the last column
 	 * the vectors corresponding to the generators of each simplex are sorted */
-	Matrix read_triangulation_volume() const;
-	Matrix read_hilbert_basis() const;
-	Matrix read_homogeneous_elements() const;
+	Matrix<Integer> read_triangulation_volume() const;
+	Matrix<Integer> read_hilbert_basis() const;
+	Matrix<Integer> read_homogeneous_elements() const;
 	vector<Integer> read_h_vector() const;
 	vector<Integer> read_hilbert_polynomial() const;
 	
@@ -192,7 +199,7 @@ public:
 //class end *****************************************************************
 //---------------------------------------------------------------------------
 
-void lift(Full_Cone& Lifted, Matrix Extreme_Generators); //generates a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

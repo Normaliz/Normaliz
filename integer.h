@@ -27,48 +27,43 @@
 // It provides abs, gcd and lcm
 //---------------------------------------------------------------------------
 
-//default: norm64
-#ifndef normbig
-#ifndef norm64
-	#define norm64
-#endif
-#endif
 
-#ifdef norm64
-	typedef  long long Integer;
-#endif
-
-#ifdef normbig
-	#ifdef _WIN32 //for 32 and 64 bit windows
-		#include <mpirxx.h>
-	#else
-		#include <gmpxx.h>
-	#endif
-	typedef  mpz_class Integer;
-#endif
 
 //---------------------------------------------------------------------------
 
-inline long explicit_cast_to_long(const Integer & i); 
+template<typename Integer> inline long explicit_cast_to_long(const Integer& a) {
+	return a;
+}
+template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
+	return a.get_si();
+}
 
 //---------------------------------------------------------------------------
 //                     Basic functions
 //---------------------------------------------------------------------------
-inline Integer Iabs(const Integer& a); // returns the absolute value of a
-Integer gcd(const Integer& a, const Integer& b);  //returns gcd of a and b
+
+// returns the absolute value of a
+template<typename Integer> inline Integer Iabs(const Integer& a) {
+	return (a>=0) ? (a) :( -a);
+}
+template<> inline mpz_class Iabs<mpz_class>(const mpz_class& a) {
+	return a;
+}
+
+template<typename Integer> Integer gcd(const Integer& a, const Integer& b);  //returns gcd of a and b
 										//if one is 0 returns the nonzero one
-Integer lcm(const Integer& a, const Integer& b);  //returns lcm of a and b
+template<typename Integer> Integer lcm(const Integer& a, const Integer& b);  //returns lcm of a and b
 												//returns 0 if one is 0
 //---------------------------------------------------------------------------
 //                     Special functions
 //---------------------------------------------------------------------------
 
-int decimal_length(Integer a);  //return the number of decimals
-								//needed to write the Integer a
-Integer permutations(const int& a, const int& b); //returns b!/a!
+//return the number of decimals, needed to write the Integer a
+template<typename Integer> int decimal_length(Integer a);
 
-//---------------------------------------------------------------------------
-#include "integer.icc"
+//returns b!/a!
+template<typename Integer> Integer permutations(const int& a, const int& b);
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

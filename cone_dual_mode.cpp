@@ -41,9 +41,10 @@ extern void global_error_handling();
 //private
 //---------------------------------------------------------------------------
 
-bool Cone_Dual_Mode::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const int& size){
+template<typename Integer>
+bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const int& size){
 	register int i,c=1;
-	list< vector<Integer>* >::iterator j;
+	typename list< vector<Integer>* >::iterator j;
 	vector<Integer> *reducer;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
 		reducer=(*j);
@@ -69,9 +70,10 @@ bool Cone_Dual_Mode::reduce( list< vector< Integer >* >& Ired, const vector< Int
 
 //---------------------------------------------------------------------------
 
-bool Cone_Dual_Mode::reduce( list< vector< Integer > >& Ired, const vector< Integer >& new_element, const int& size){
+template<typename Integer>
+bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, const vector< Integer >& new_element, const int& size){
 	register int i,c=1;
-	list< vector<Integer> >::iterator j;
+	typename list< vector<Integer> >::iterator j;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
 		if (new_element[0]<=(*j)[0])
 			continue;
@@ -95,14 +97,15 @@ bool Cone_Dual_Mode::reduce( list< vector< Integer > >& Ired, const vector< Inte
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
 	Ired.sort();
 	register int i,c=1;
 	vector<Integer> dummy(size+3,0);
 	Red.push_front(dummy);
 	Red.push_back(dummy);
-	list< vector<Integer> >::iterator j;
-	list< vector<Integer> >::iterator s;
+	typename list< vector<Integer> >::iterator j;
+	typename list< vector<Integer> >::iterator s;
 	for (s = Red.begin(); s != Red.end(); s++) {
 		for (j =Ired.begin(); j != Ired.end(); j++) {
 			if ((*s)[0]<2*(*j)[0]) {
@@ -136,9 +139,10 @@ void Cone_Dual_Mode::reduce( list< vector< Integer > >& Ired, list< vector< Inte
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::reduce_and_insert(const vector< Integer >& new_element, const int& size){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_element, const int& size){
 	register int i,c=1;
-	list< vector<Integer> >::iterator j;
+	typename list< vector<Integer> >::iterator j;
 	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 		if (new_element[0]<2*(*j)[0]) {
 			break; //new_element is not reducible;
@@ -166,9 +170,10 @@ void Cone_Dual_Mode::reduce_and_insert(const vector< Integer >& new_element, con
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::reduce_and_insert_extreme( const vector< Integer >& new_element){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::reduce_and_insert_extreme( const vector< Integer >& new_element){
 	register int i,c=1;
-	list< vector<Integer> >::iterator j;
+	typename list< vector<Integer> >::iterator j;
 	for (j =GeneratorList.begin(); j != GeneratorList.end(); j++) {
 		if (new_element[0]<=(*j)[0])
 			continue;
@@ -194,7 +199,8 @@ void Cone_Dual_Mode::reduce_and_insert_extreme( const vector< Integer >& new_ele
 //public
 //---------------------------------------------------------------------------
 
-Cone_Dual_Mode::Cone_Dual_Mode(){
+template<typename Integer>
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(){
 	dim=0;
 	nr_sh=0;
 	hyp_size=0;
@@ -202,10 +208,11 @@ Cone_Dual_Mode::Cone_Dual_Mode(){
 
 //---------------------------------------------------------------------------
 
-Cone_Dual_Mode::Cone_Dual_Mode(Matrix M){
+template<typename Integer>
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Cone_Dual_Mode.\nProbable reason: The Cone is not pointed!");
+		error("error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!");
 	}
 	SupportHyperplanes = M;
 	nr_sh=SupportHyperplanes.nr_of_rows();
@@ -223,7 +230,8 @@ Cone_Dual_Mode::Cone_Dual_Mode(Matrix M){
 
 //---------------------------------------------------------------------------
 
-Cone_Dual_Mode::Cone_Dual_Mode(const Cone_Dual_Mode& C){
+template<typename Integer>
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(const Cone_Dual_Mode<Integer>& C){
 	dim=C.dim;
 	nr_sh=C.nr_sh;
 	hyp_size=C.hyp_size;
@@ -234,13 +242,15 @@ Cone_Dual_Mode::Cone_Dual_Mode(const Cone_Dual_Mode& C){
 
 //---------------------------------------------------------------------------
 
-Cone_Dual_Mode::~Cone_Dual_Mode(){
+template<typename Integer>
+Cone_Dual_Mode<Integer>::~Cone_Dual_Mode(){
 	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::print()const{
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::print()const{
 	cout<<"dim="<<dim<<".\n";
 	cout<<"nr_sh="<<nr_sh<<".\n";
 	cout<<"hyp_size="<<hyp_size<<".\n";
@@ -254,23 +264,26 @@ void Cone_Dual_Mode::print()const{
 
 //---------------------------------------------------------------------------
 
-Matrix Cone_Dual_Mode::get_support_hyperplanes() const {
+template<typename Integer>
+Matrix<Integer> Cone_Dual_Mode<Integer>::get_support_hyperplanes() const {
 	return SupportHyperplanes;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Cone_Dual_Mode::get_generators()const{
+template<typename Integer>
+Matrix<Integer> Cone_Dual_Mode<Integer>::get_generators()const{
 	return Generators;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Cone_Dual_Mode::read_hilbert_basis()const{
+template<typename Integer>
+Matrix<Integer> Cone_Dual_Mode<Integer>::read_hilbert_basis()const{
 	int s= Hilbert_Basis.size();
-	Matrix M(s,dim);
+	Matrix<Integer> M(s,dim);
 	int i=1;
-	list< vector<Integer> >::const_iterator l;
+	typename list< vector<Integer> >::const_iterator l;
 	for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
 		M.write(i,(*l));
 		i++;
@@ -280,7 +293,8 @@ Matrix Cone_Dual_Mode::read_hilbert_basis()const{
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
 	if (verbose==true) {
 		cout<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
 	}
@@ -289,12 +303,12 @@ void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, co
 	list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
 	Integer orientation, scalar_product,diff,factor;
 	vector <Integer> hyperplane=SupportHyperplanes.read(hyp_counter);
-	list< vector<Integer> >::iterator h;
+	typename list< vector<Integer> >::iterator h;
 	if (lifting==true) {
-		orientation=v_scalar_product(hyperplane,halfspace);
+		orientation=v_scalar_product<Integer>(hyperplane,halfspace);
 		if(orientation<0){
 			orientation=-orientation;
-			v_scalar_multiplication(halfspace,-1); //transforming into the generator of the positive halfspace
+			v_scalar_multiplication<Integer>(halfspace,-1); //transforming into the generator of the positive halfspace
 		}
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //reduction  modulo  the generator of the positive halfspace
 			scalar_product=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
@@ -320,14 +334,14 @@ void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, co
 		}
 		else{
 			Positive_Ired.push_back(hyp_element);
-			v_scalar_multiplication(hyp_element,-1);
+			v_scalar_multiplication<Integer>(hyp_element,-1);
 			hyp_element[hyp_counter]=orientation;
 			hyp_element[0]=orientation;
 			Negative_Ired.push_back(hyp_element);
 		}
 	}
 	for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //dividing into negative and positive
-		(*h)[hyp_counter]=v_scalar_product_unequal_vectors_end(hyperplane,(*h));
+		(*h)[hyp_counter]=v_scalar_product_unequal_vectors_end<Integer>(hyperplane,(*h));
 		if ((*h)[hyp_counter]>0) {
 			(*h)[nr_sh+1]=1;     // generation
 			(*h)[nr_sh+2]=0;     //not sum
@@ -352,8 +366,8 @@ void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, co
 	Negative_Ired.sort();
 	//long int counter=0;
 	list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Pos,Neg,Neu;
-	list < vector<Integer> >::const_iterator p,n;
-	list < vector <Integer> >::iterator c;
+	typename list < vector<Integer> >::const_iterator p,n;
+	typename list < vector <Integer> >::iterator c;
 	not_done=true;
 	while(not_done){
 		not_done=false;
@@ -364,7 +378,7 @@ void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, co
 //		cout<<"+"<<flush;
 //		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
 		list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
-		list < vector<Integer> >::iterator it;
+		typename list < vector<Integer> >::iterator it;
 		it=Positive_Ired.begin();
 		while (it!=Positive_Ired.end()) {
 			Positive.push_back(&(*(it++)));
@@ -513,7 +527,7 @@ void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, co
 	//still possible to have double elements in the Hilbert basis, coming from different generations
 
 	set< vector<Integer> > Help;
-	set< vector<Integer> >::iterator d;
+	typename set< vector<Integer> >::iterator d;
 	for (c = Positive_Ired.begin(); c != Positive_Ired.end(); ++c) {
 		(*c)[nr_sh+1]=0;
 		(*c)[nr_sh+2]=0;
@@ -538,11 +552,12 @@ void Cone_Dual_Mode::cut_with_halfspace_hilbert_basis(const int& hyp_counter, co
 
 //---------------------------------------------------------------------------
 
-Matrix Cone_Dual_Mode::cut_with_halfspace(const int& hyp_counter, const Matrix& Basis_Max_Subspace){
+template<typename Integer>
+Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const int& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
 	int i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
 	vector <Integer> scalar_product,hyperplane=SupportHyperplanes.read(hyp_counter),halfspace;
 	bool lifting=false;
-	Matrix New_Basis_Max_Subspace=Basis_Max_Subspace;
+	Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace;
 	if (rank_subspace!=0) {
 		scalar_product=Basis_Max_Subspace.MxV(hyperplane);
 		for (i = 0; i <rank_subspace; i++)
@@ -551,12 +566,12 @@ Matrix Cone_Dual_Mode::cut_with_halfspace(const int& hyp_counter, const Matrix& 
 		if (i!=rank_subspace) {    // the new hyperplane is not contained in the maximal subspace
 			lifting=true;
 			//computing new maximal subspace
-			Matrix M(1,rank_subspace);
+			Matrix<Integer> M(1,rank_subspace);
 			M.write(1,scalar_product);
-			Lineare_Transformation LT=Transformation(M);
-			Matrix Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
+			Lineare_Transformation<Integer> LT=Transformation(M);
+			Matrix<Integer> Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
 			Lifted_Basis_Factor_Space_over_Ker_and_Ker=Lifted_Basis_Factor_Space_over_Ker_and_Ker.transpose();
-			Matrix  Ker(rank_subspace-1,rank_subspace);
+			Matrix<Integer>  Ker(rank_subspace-1,rank_subspace);
 			for (j = 1; j <= rank_subspace-1; j++) {
 				Ker.write(j, Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(j+1));
 			}
@@ -570,8 +585,9 @@ Matrix Cone_Dual_Mode::cut_with_halfspace(const int& hyp_counter, const Matrix& 
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::extreme_rays_reduction(){
-	list < vector <Integer> >::iterator c;
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::extreme_rays_reduction(){
+	typename list < vector <Integer> >::iterator c;
 	int i,k;
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
 		k=0;
@@ -589,9 +605,9 @@ void Cone_Dual_Mode::extreme_rays_reduction(){
 		reduce_and_insert_extreme((*c));
 	}
 	int s = GeneratorList.size();
-	Generators = Matrix(s,dim);
+	Generators = Matrix<Integer>(s,dim);
 
-	list< vector<Integer> >::const_iterator l;
+	typename list< vector<Integer> >::const_iterator l;
 	for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
 		Generators.write( i, v_cut_front(*l, dim) );
 	}
@@ -599,11 +615,12 @@ void Cone_Dual_Mode::extreme_rays_reduction(){
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::extreme_rays_rank(){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 	if (verbose) {
 		cout << "Find extreme rays (via rank test)" << endl;
 	}
-	list < vector <Integer> >::iterator c;
+	typename list < vector <Integer> >::iterator c;
 	list <int> zero_list;
 	int i,j,k;
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
@@ -620,16 +637,16 @@ void Cone_Dual_Mode::extreme_rays_rank(){
 				zero_vector[j]=zero_list.front();
 				zero_list.pop_front();
 			}
-			Matrix Test=SupportHyperplanes.submatrix(zero_vector);
+			Matrix<Integer> Test=SupportHyperplanes.submatrix(zero_vector);
 			if (Test.rank()>=dim-1) {
 				GeneratorList.push_back((*c));
 			}
 		}
 	}
 	int s = GeneratorList.size();
-	Generators = Matrix(s,dim);
+	Generators = Matrix<Integer>(s,dim);
    
-   list< vector<Integer> >::const_iterator l;
+	typename  list< vector<Integer> >::const_iterator l;
    for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
      	Generators.write( i, v_cut_front(*l, dim) );
 	}
@@ -638,14 +655,15 @@ void Cone_Dual_Mode::extreme_rays_rank(){
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::hilbert_basis_dual(){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 	if(dim>0){            //correction needed to include the 0 cone;
 		if (verbose==true) {
 			cout<<"\n************************************************************\n";
 			cout<<"computing Hilbert basis ..."<<endl;
 		}
 		int hyp_counter;      // current hyperplane
-		Matrix Basis_Max_Subspace(dim);      //identity matrix
+		Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
 		for (hyp_counter = 1; hyp_counter <= nr_sh; hyp_counter++) {
 			Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
 		}
@@ -659,12 +677,13 @@ void Cone_Dual_Mode::hilbert_basis_dual(){
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::relevant_support_hyperplanes(){
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 	if (verbose) {
 		cout << "Find relevant support hyperplanes" << endl;
 	}
 	list <int> zero_list;
-	list<vector<Integer> >::iterator gen_it;
+	typename list<vector<Integer> >::iterator gen_it;
 	vector <int> relevant_sh;
 	relevant_sh.reserve(nr_sh);
 	int i,k;
@@ -672,7 +691,7 @@ void Cone_Dual_Mode::relevant_support_hyperplanes(){
 	int realdim = Generators.rank();
 
 	for (i = 1; i <= nr_sh; ++i) {
-		Matrix Test(0,dim);
+		Matrix<Integer> Test(0,dim);
 		k = 0;
 		for (gen_it = GeneratorList.begin(); gen_it != GeneratorList.end(); ++gen_it) {
 			if ((*gen_it)[i]==0) {
@@ -689,14 +708,15 @@ void Cone_Dual_Mode::relevant_support_hyperplanes(){
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::to_sublattice(Sublattice_Representation SR) {
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::to_sublattice(Sublattice_Representation<Integer> SR) {
 	if (SR.get_dim() != dim) {
 		error("to_sublattice: dimensions do not match!");
 	}
 	dim = SR.get_rank();
 	hyp_size = dim+nr_sh;
 	SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
-	list<vector<Integer> >::iterator it;
+	typename list<vector<Integer> >::iterator it;
 	vector<Integer> tmp;
 	
 	Generators = SR.to_sublattice(Generators);
@@ -710,8 +730,9 @@ void Cone_Dual_Mode::to_sublattice(Sublattice_Representation SR) {
 
 //---------------------------------------------------------------------------
 
-void Cone_Dual_Mode::error(string s) const{
-	cerr <<"\nCone_Dual_Mode: "<< s<<"\n";
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::error(string s) const{
+	cerr <<"\nCone_Dual_Mode<Integer>: "<< s<<"\n";
 	global_error_handling();
 }
 

@@ -41,7 +41,8 @@ extern void global_error_handling();
 
 //---------------------------------------------------------------------------
 
-Output::Output(){
+template<typename Integer>
+Output<Integer>::Output(){
 	out=true;
 	inv=false;
 	ext=false;
@@ -53,12 +54,13 @@ Output::Output(){
 	tri=false;
 	ht1=false;
 	BC_set=false;
-	Original_Generators = Matrix(0);
+	Original_Generators = Matrix<Integer>(0);
 }
 
 //---------------------------------------------------------------------------
 
-Output::Output(const Output& Out){
+template<typename Integer>
+Output<Integer>::Output(const Output<Integer>& Out){
 	name=Out.name;
 	out=Out.out;
 	inv=Out.inv;
@@ -78,13 +80,15 @@ Output::Output(const Output& Out){
 
 //---------------------------------------------------------------------------
 
-Output::~Output(){
+template<typename Integer>
+Output<Integer>::~Output(){
 	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
 
-void Output::read() const{
+template<typename Integer>
+void Output<Integer>::read() const{
 	cout<<"\nname="<<name<<"\n";
 	cout<<"\nout="<<out<<"\n";
 	cout<<"\ninv="<<inv<<"\n";
@@ -104,74 +108,86 @@ void Output::read() const{
 
 //---------------------------------------------------------------------------
 
-void Output::set_name(const string& n){
+template<typename Integer>
+void Output<Integer>::set_name(const string& n){
 	name=n;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_out(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_out(const bool& flag){
 	out=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_inv(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_inv(const bool& flag){
 	inv=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_ext(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_ext(const bool& flag){
 	ext=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_esp(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_esp(const bool& flag){
 	esp=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_typ(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_typ(const bool& flag){
 	typ=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_egn(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_egn(const bool& flag){
 	egn=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_gen(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_gen(const bool& flag){
 	gen=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_sup(const bool& flag){
+template<typename Integer>
+void Output<Integer>::set_write_sup(const bool& flag){
 	sup=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_tri(const bool& flag) {
+template<typename Integer>
+void Output<Integer>::set_write_tri(const bool& flag) {
 	tri=flag;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_ht1(const bool& flag) {
+template<typename Integer>
+void Output<Integer>::set_write_ht1(const bool& flag) {
 	ht1=flag;
 }
 
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_extra_files(){
+template<typename Integer>
+void Output<Integer>::set_write_extra_files(){
 	out=true;
 	inv=true;
 	ext=false;
@@ -186,7 +202,8 @@ void Output::set_write_extra_files(){
 
 //---------------------------------------------------------------------------
 
-void Output::set_write_all_files(){
+template<typename Integer>
+void Output<Integer>::set_write_all_files(){
 	out=true;
 	inv=true;
 	ext=true;
@@ -201,13 +218,15 @@ void Output::set_write_all_files(){
 
 //---------------------------------------------------------------------------
 
-void Output::set_result(const Full_Cone& C){
+template<typename Integer>
+void Output<Integer>::set_result(const Full_Cone<Integer>& C){
 	Result=C;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::compose_basis_change(const Sublattice_Representation& BC){
+template<typename Integer>
+void Output<Integer>::compose_basis_change(const Sublattice_Representation<Integer>& BC){
 	if (BC_set) {
 		Basis_Change.compose(BC);		
 	} else {
@@ -218,13 +237,15 @@ void Output::compose_basis_change(const Sublattice_Representation& BC){
 
 //---------------------------------------------------------------------------
 
-void Output::set_original_generators(Matrix OG) {
+template<typename Integer>
+void Output<Integer>::set_original_generators(Matrix<Integer> OG) {
 	Original_Generators = OG;
 }
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_ext(const Matrix& M) const{
+template<typename Integer>
+void Output<Integer>::write_matrix_ext(const Matrix<Integer>& M) const{
 	if (ext==true) {
 		M.print(name,"ext");
 	}
@@ -232,7 +253,8 @@ void Output::write_matrix_ext(const Matrix& M) const{
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_esp(const Matrix& M) const{
+template<typename Integer>
+void Output<Integer>::write_matrix_esp(const Matrix<Integer>& M) const{
 	if (esp==true) {
 		M.print(name,"esp");
 	}
@@ -240,7 +262,8 @@ void Output::write_matrix_esp(const Matrix& M) const{
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_typ(const Matrix& M) const{
+template<typename Integer>
+void Output<Integer>::write_matrix_typ(const Matrix<Integer>& M) const{
 	if (typ==true) {
 		M.print(name,"typ");
 	}
@@ -248,7 +271,8 @@ void Output::write_matrix_typ(const Matrix& M) const{
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_egn(const Matrix& M) const {
+template<typename Integer>
+void Output<Integer>::write_matrix_egn(const Matrix<Integer>& M) const {
 	if (egn==true) {
 		M.print(name,"egn");
 	}
@@ -256,7 +280,8 @@ void Output::write_matrix_egn(const Matrix& M) const {
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_gen(const Matrix& M) const {
+template<typename Integer>
+void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
 	if (gen==true) {
 		M.print(name,"gen");
 	}
@@ -264,7 +289,8 @@ void Output::write_matrix_gen(const Matrix& M) const {
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_sup(const Matrix& M) const{
+template<typename Integer>
+void Output<Integer>::write_matrix_sup(const Matrix<Integer>& M) const{
 	if (sup==true) {
 		M.print(name,"sup");
 	}
@@ -272,7 +298,8 @@ void Output::write_matrix_sup(const Matrix& M) const{
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_tri(const Matrix& M) const{
+template<typename Integer>
+void Output<Integer>::write_matrix_tri(const Matrix<Integer>& M) const{
 	if (tri==true) {
 		M.print(name,"tri");
 	}
@@ -280,7 +307,8 @@ void Output::write_matrix_tri(const Matrix& M) const{
 
 //---------------------------------------------------------------------------
 
-void Output::write_matrix_ht1(const Matrix& M) const{
+template<typename Integer>
+void Output<Integer>::write_matrix_ht1(const Matrix<Integer>& M) const{
 	if (ht1==true) {
 		M.print(name,"ht1");
 	}
@@ -288,7 +316,8 @@ void Output::write_matrix_ht1(const Matrix& M) const{
 
 //---------------------------------------------------------------------------
 
-void Output::write_inv_file() const{
+template<typename Integer>
+void Output<Integer>::write_inv_file() const{
 	if (inv==true) {//printing .inv file
 		int i,nr;
 		int rank=Basis_Change.get_rank();
@@ -296,9 +325,9 @@ void Output::write_inv_file() const{
 		const char* file=name_open.c_str();
 		ofstream inv(file);
 
-		Matrix Hilbert_Basis;                                            //write Hilbert Basis
+		Matrix<Integer> Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
-			Matrix Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
+			Matrix<Integer> Hilbert_Basis_Full_Cone=Result.read_hilbert_basis();
 			nr=Hilbert_Basis_Full_Cone.nr_of_rows();
 			inv<<"integer hilbert_basis_elements = "<<nr<<endl;
 		}
@@ -321,7 +350,7 @@ void Output::write_inv_file() const{
 		else {
 			inv<<"boolean homogeneous = "<<"true"<<endl;
 			if (Result.isComputed(ConeProperty::Ht1Elements)) {
-				Matrix Hom=Result.read_homogeneous_elements();
+				Matrix<Integer> Hom=Result.read_homogeneous_elements();
 				nr=Hom.nr_of_rows();
 				inv<<"integer height_1_elements = "<<nr<<endl;
 			}
@@ -362,10 +391,11 @@ void Output::write_inv_file() const{
 
 //---------------------------------------------------------------------------
 
-void Output::cone() const{
+template<typename Integer>
+void Output<Integer>::cone() const{
 	int i,j,nr,rank=Basis_Change.get_rank();    //read local data
-	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
-	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
+	Matrix<Integer> Generators = Basis_Change.from_sublattice(Result.read_generators());
+	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
 
 	if (esp && Result.isComputed(ConeProperty::SupportHyperplanes)) {
 		//write the suport hyperplanes of the full dimensional cone
@@ -473,13 +503,13 @@ void Output::cone() const{
 			Original_Generators.pretty_print(out);
 		}
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
-			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
+			Matrix<Integer> Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
-				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
+				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
-			Matrix Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
+			Matrix<Integer> Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
 			out<<nr<<" Hilbert basis elements:"<<endl;
@@ -501,24 +531,24 @@ void Output::cone() const{
 					j++;
 				}
 			}
-			Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+			Matrix<Integer> Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
 			write_matrix_ext(Extreme_Rays);
 			out<<nr_ex_rays<<" extreme rays:"<<endl;
 			Extreme_Rays.pretty_print(out);
 
 		{
 			//write constrains (support hyperplanes, congruences, equations)
-			Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+			Matrix<Integer> Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
 			out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
 			Support_Hyperplanes.pretty_print(out);
 			
 			//equations 
 			int dim = Extreme_Rays.nr_of_columns();
 			int nr_of_equ = dim-rank;
-			Matrix Equations(nr_of_equ,dim);
+			Matrix<Integer> Equations(nr_of_equ,dim);
 			if (nr_of_equ > 0) {
-				Lineare_Transformation NewLT = Transformation(Extreme_Rays);
-				Matrix Help = NewLT.get_right().transpose();
+				Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
+				Matrix<Integer> Help = NewLT.get_right().transpose();
 				for (i = 1+rank; i <= dim; i++) {
 					Equations.write(i-rank,Help.read(i));
 				}
@@ -529,7 +559,7 @@ void Output::cone() const{
 	
 	
 			//congruences
-			Matrix Congruences = Basis_Change.get_congruences();
+			Matrix<Integer> Congruences = Basis_Change.get_congruences();
 			int nr_of_cong = Congruences.nr_of_rows();
 			if (nr_of_cong > 0) {
 				out << nr_of_cong <<" congruences:" <<endl;
@@ -554,7 +584,7 @@ void Output::cone() const{
 		
 		if (Result.read_homogeneous()) {
 			if ( Result.isComputed(ConeProperty::Ht1Elements) ) {
-				Matrix Hom = Result.read_homogeneous_elements();
+				Matrix<Integer> Hom = Result.read_homogeneous_elements();
 				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
@@ -570,11 +600,12 @@ void Output::cone() const{
 
 //---------------------------------------------------------------------------
 
-void Output::polytop() const{
+template<typename Integer>
+void Output<Integer>::polytop() const{
 	int i,j,k,nr,max_decimal_length;
 	int dim = Basis_Change.get_dim(), rank=Basis_Change.get_rank();    //read local data
-	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
-	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
+	Matrix<Integer> Generators = Basis_Change.from_sublattice(Result.read_generators());
+	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
 
 	if (esp && Result.isComputed(ConeProperty::SupportHyperplanes)) {
 		//write the suport hyperplanes of the full dimensional cone
@@ -658,12 +689,12 @@ void Output::polytop() const{
 			out << nr_orig_gens <<" original generators:"<<endl;
 			Original_Generators.pretty_print(out);
 		}
-		Matrix Hilbert_Basis;                                            //write Hilbert Basis
+		Matrix<Integer> Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
-			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
+			Matrix<Integer> Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
-				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
+				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
 			Hilbert_Basis = Basis_Change.from_sublattice(Hilbert_Basis_Full_Cone);
@@ -674,7 +705,7 @@ void Output::polytop() const{
 		}
 
 		if ( Result.isComputed(ConeProperty::Ht1Elements) ) {
-			Matrix Hom = Result.read_homogeneous_elements();
+			Matrix<Integer> Hom = Result.read_homogeneous_elements();
 			Hom = Basis_Change.from_sublattice(Hom);
 			write_matrix_ht1(Hom);
 			Hom.cut_columns(Hom.nr_of_columns()-1);
@@ -698,16 +729,16 @@ void Output::polytop() const{
 				j++;
 			}
 		}
-		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+		Matrix<Integer> Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme points of polytope:"<<endl;
-		Matrix Extreme_Rays_Cut(Extreme_Rays);
+		Matrix<Integer> Extreme_Rays_Cut(Extreme_Rays);
 		Extreme_Rays_Cut.cut_columns(Extreme_Rays_Cut.nr_of_columns()-1);      //remove extra coordinate
 		Extreme_Rays_Cut.pretty_print(out);
 
 
 		//write constrains (support hyperplanes, congruences, equations)
-		Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+		Matrix<Integer> Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
 		Integer buf;
 		int nr_sup = Support_Hyperplanes.nr_of_rows();
 		max_decimal_length=Support_Hyperplanes.maximal_decimal_length();
@@ -732,9 +763,9 @@ void Output::polytop() const{
 		
 
 		//equations 
-		Lineare_Transformation NewLT = Transformation(Extreme_Rays);
-		Matrix Help = NewLT.get_right().transpose();
-		Matrix Equations(dim-rank,dim);
+		Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
+		Matrix<Integer> Help = NewLT.get_right().transpose();
+		Matrix<Integer> Equations(dim-rank,dim);
 		for (i = 1+rank; i <= dim; i++) {
 			Equations.write(i-rank,Help.read(i));
 		}
@@ -764,7 +795,7 @@ void Output::polytop() const{
 
 
 		//congruences
-		Matrix Congruences = Basis_Change.get_congruences();
+		Matrix<Integer> Congruences = Basis_Change.get_congruences();
 		int nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
@@ -795,14 +826,15 @@ void Output::polytop() const{
 
 //---------------------------------------------------------------------------
 
-void Output::rees(const bool primary) const{
+template<typename Integer>
+void Output<Integer>::rees(const bool primary) const{
 	int i,j,nr;
 	int dim = Basis_Change.get_dim(); 
 	int rank = Basis_Change.get_rank();
 	int nr_generators_ideal=0;
-	Matrix Generators = Basis_Change.from_sublattice(Result.read_generators());
-	Matrix Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
-	Matrix Hilbert_Basis;
+	Matrix<Integer> Generators = Basis_Change.from_sublattice(Result.read_generators());
+	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
+	Matrix<Integer> Hilbert_Basis;
 	vector<int> ideal_gen_key;
 
 	if (esp && Result.isComputed(ConeProperty::SupportHyperplanes)) {
@@ -925,10 +957,10 @@ void Output::rees(const bool primary) const{
 			Original_Generators.pretty_print(out);
 		}
 		if (Result.isComputed(ConeProperty::HilbertBasis)) {
-			Matrix Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
+			Matrix<Integer> Hilbert_Basis_Full_Cone = Result.read_hilbert_basis();
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
-				Matrix V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
+				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
 			write_matrix_gen(Hilbert_Basis);
@@ -937,7 +969,7 @@ void Output::rees(const bool primary) const{
 			Hilbert_Basis.pretty_print(out);
 			
 			out << nr_generators_ideal <<" generators of integral closure of the ideal:"<<endl;
-			Matrix Ideal_Gens = Hilbert_Basis.submatrix(ideal_gen_key);
+			Matrix<Integer> Ideal_Gens = Hilbert_Basis.submatrix(ideal_gen_key);
 			Ideal_Gens.cut_columns(dim-1);
 			Ideal_Gens.pretty_print(out);
 		}
@@ -957,22 +989,22 @@ void Output::rees(const bool primary) const{
 				j++;
 			}
 		}
-		Matrix Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+		Matrix<Integer> Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
 		Extreme_Rays.pretty_print(out);
 
 
 		//write constrains (support hyperplanes, congruences, equations)
-		Matrix Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+		Matrix<Integer> Support_Hyperplanes = Basis_Change.from_sublattice_dual(Support_Hyperplanes_Full_Cone);
 		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
 		Support_Hyperplanes.pretty_print(out);
 		
 		//equations 
-		Lineare_Transformation NewLT = Transformation(Extreme_Rays);
-		Matrix Help = NewLT.get_right().transpose();
+		Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
+		Matrix<Integer> Help = NewLT.get_right().transpose();
 		int dim = Extreme_Rays.nr_of_columns();
-		Matrix Equations(dim-rank,dim);
+		Matrix<Integer> Equations(dim-rank,dim);
 		for (i = 1+rank; i <= dim; i++) {
 			Equations.write(i-rank,Help.read(i));
 		}
@@ -985,7 +1017,7 @@ void Output::rees(const bool primary) const{
 
 
 		//congruences
-		Matrix Congruences = Basis_Change.get_congruences();
+		Matrix<Integer> Congruences = Basis_Change.get_congruences();
 		int nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
@@ -1011,7 +1043,7 @@ void Output::rees(const bool primary) const{
 		
 		if (Result.read_homogeneous()) {
 			if ( Result.isComputed(ConeProperty::Ht1Elements) ) {
-				Matrix Hom = Result.read_homogeneous_elements();
+				Matrix<Integer> Hom = Result.read_homogeneous_elements();
 				Hom = Basis_Change.from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 			}
@@ -1042,8 +1074,9 @@ void Output::rees(const bool primary) const{
 
 //---------------------------------------------------------------------------
 
-void Output::error(string s) const{
-	cerr <<"\nOutput "<< s<<"\n";
+template<typename Integer>
+void Output<Integer>::error(string s) const{
+	cerr <<"\nOutput<Integer> "<< s<<"\n";
 	global_error_handling();
 }
 

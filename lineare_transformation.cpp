@@ -36,7 +36,8 @@ extern void global_error_handling();
 
 //---------------------------------------------------------------------------
 
-Lineare_Transformation::  Lineare_Transformation(){
+template<typename Integer>
+Lineare_Transformation<Integer>::Lineare_Transformation(){
 	rk=0;
 	status="non initialized";
 	index=1;
@@ -44,18 +45,20 @@ Lineare_Transformation::  Lineare_Transformation(){
 
 //---------------------------------------------------------------------------
 
-Lineare_Transformation::  Lineare_Transformation(const Matrix& M){
+template<typename Integer>
+Lineare_Transformation<Integer>::Lineare_Transformation(const Matrix<Integer>& M){
 	rk=0;
 	status="initialized, before transformation";
 	index=1;
-	Center    = Matrix(M);
-	Right     = Matrix(M.nr_of_columns());
-	Right_Inv = Matrix(M.nr_of_columns());
+	Center    = Matrix<Integer>(M);
+	Right     = Matrix<Integer>(M.nr_of_columns());
+	Right_Inv = Matrix<Integer>(M.nr_of_columns());
 }
 
 //---------------------------------------------------------------------------
 
-Lineare_Transformation::Lineare_Transformation(const Lineare_Transformation& LT){
+template<typename Integer>
+Lineare_Transformation<Integer>::Lineare_Transformation(const Lineare_Transformation<Integer>& LT){
 	rk=LT.rk;
 	status=LT.status;
 	index=LT.index;
@@ -66,13 +69,15 @@ Lineare_Transformation::Lineare_Transformation(const Lineare_Transformation& LT)
 
 //---------------------------------------------------------------------------
 
-Lineare_Transformation::~Lineare_Transformation(){
+template<typename Integer>
+Lineare_Transformation<Integer>::~Lineare_Transformation(){
 	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::read() const{
+template<typename Integer>
+void Lineare_Transformation<Integer>::read() const{
 	cout<<"\nRank="<<rk<<"\n";
 	cout<<"\nStatus is "<<status<<".\n";
 	cout<<"\nIndex="<<index<<"\n";
@@ -86,73 +91,85 @@ void Lineare_Transformation::read() const{
 
 //---------------------------------------------------------------------------
 
-int Lineare_Transformation::get_rank() const{
+template<typename Integer>
+int Lineare_Transformation<Integer>::get_rank() const{
 	return rk;
 }
 
 //---------------------------------------------------------------------------
 
-string Lineare_Transformation::get_status() const{
+template<typename Integer>
+string Lineare_Transformation<Integer>::get_status() const{
 	return status;
 }
 
 //---------------------------------------------------------------------------
 
-Integer Lineare_Transformation::get_index() const{
+template<typename Integer>
+Integer Lineare_Transformation<Integer>::get_index() const{
 	return index;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Lineare_Transformation::get_center()const{
+template<typename Integer>
+Matrix<Integer> Lineare_Transformation<Integer>::get_center()const{
 	return Center;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Lineare_Transformation::get_right() const{
+template<typename Integer>
+Matrix<Integer> Lineare_Transformation<Integer>::get_right() const{
 	return Right;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Lineare_Transformation::get_right_inv() const{
+template<typename Integer>
+Matrix<Integer> Lineare_Transformation<Integer>::get_right_inv() const{
 	return Right_Inv;
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::set_rank(const int rank) {
+template<typename Integer>
+void Lineare_Transformation<Integer>::set_rank(const int rank) {
 	rk = rank;
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::set_center(const Matrix& M){
+template<typename Integer>
+void Lineare_Transformation<Integer>::set_center(const Matrix<Integer>& M){
 	Center=M;
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::set_right(const Matrix& M){
+template<typename Integer>
+void Lineare_Transformation<Integer>::set_right(const Matrix<Integer>& M){
 	Right=M;
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::set_right_inv(const Matrix& M){
+template<typename Integer>
+void Lineare_Transformation<Integer>::set_right_inv(const Matrix<Integer>& M){
 	Right_Inv=M;
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::exchange_rows(int row1, int row2){
+template<typename Integer>
+void Lineare_Transformation<Integer>::exchange_rows(int row1, int row2){
 	Center.exchange_rows(row1,row2);
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::exchange_columns(int col1, int col2){
+template<typename Integer>
+void Lineare_Transformation<Integer>::exchange_columns(int col1, int col2){
 	Center.exchange_columns(col1,col2);
 	Right.exchange_columns(col1,col2);
 	Right_Inv.exchange_rows(col1,col2);
@@ -160,19 +177,22 @@ void Lineare_Transformation::exchange_columns(int col1, int col2){
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::reduce_row(int corner){
+template<typename Integer>
+void Lineare_Transformation<Integer>::reduce_row(int corner){
 	Center.reduce_row(corner);
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::reduce_column(int corner){
+template<typename Integer>
+void Lineare_Transformation<Integer>::reduce_column(int corner){
 	Center.reduce_column(corner, Right, Right_Inv);
 }
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::transformation(){
+template<typename Integer>
+void Lineare_Transformation<Integer>::transformation(){
 	int r;
 	int rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
 	vector<int> piv(2,0);
@@ -200,12 +220,13 @@ void Lineare_Transformation::transformation(){
 
 //---------------------------------------------------------------------------
 
-bool Lineare_Transformation::test_transformation(const Matrix& M,const int& m) const{
+template<typename Integer>
+bool Lineare_Transformation<Integer>::test_transformation(const Matrix<Integer>& M,const int& m) const{
 	int nc=Center.nr_of_columns();
-	Matrix N=Right.multiplication(Right_Inv, m);
-	Matrix I(nc);
+	Matrix<Integer> N=Right.multiplication(Right_Inv, m);
+	Matrix<Integer> I(nc);
 	if (!I.equal(N,m)) {
-		error("error: Lineare_Transformation::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation.");
+		error("error: Lineare_Transformation<Integer>::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation.");
 		return false;
 	}
 	return true;
@@ -213,15 +234,17 @@ bool Lineare_Transformation::test_transformation(const Matrix& M,const int& m) c
 
 //---------------------------------------------------------------------------
 
-void Lineare_Transformation::error(string s) const{
+template<typename Integer>
+void Lineare_Transformation<Integer>::error(string s) const{
 	cerr <<"\nLineare transformation "<< s<<"\n";
 	global_error_handling();
 }
 
 //---------------------------------------------------------------------------
 
-Lineare_Transformation Transformation(const Matrix& M) {
-	Lineare_Transformation LT(M);
+template<typename Integer>
+Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
+	Lineare_Transformation<Integer> LT(M);
 	LT.transformation();
 	if (test_arithmetic_overflow==true) {
 		bool testing=LT.test_transformation(M,overflow_test_modulus);

@@ -19,7 +19,6 @@
 //---------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include <set>
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -36,7 +35,8 @@ extern void global_error_handling();
 
 //---------------------------------------------------------------------------
 
-void v_write(vector<Integer>& v){
+template <typename T>
+void v_write(vector<T>& v){
 	int i,s=v.size();
 	for (i=0; i <s; i++) {
 		cin>>v[i];
@@ -45,7 +45,8 @@ void v_write(vector<Integer>& v){
 
 //---------------------------------------------------------------------------
 
-int v_read(const vector<Integer>& v){
+template <typename T>
+int v_read(const vector<T>& v){
 	int i,s=v.size();
 	cout<<"\n";
 	for (i=0; i <s; i++) {
@@ -56,34 +57,15 @@ int v_read(const vector<Integer>& v){
 
 //---------------------------------------------------------------------------
 
-int v_read(const vector<int>& v){
-	int i,s=v.size();
-	cout<<"\n";
-	for (i=0; i <s; i++) {
-		cout<<v[i]<<" ";
-	}
-	return s;
-}
-
-//---------------------------------------------------------------------------
-
-int v_read(const vector<bool>& v){
-	int i,s=v.size();
-	cout<<"\n";
-	for (i=0; i <s; i++) {
-		cout<<v[i]<<" ";
-	}
-	return s;
-}
-
-//---------------------------------------------------------------------------
-
+template<typename Integer>
 Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
-
 	//loop stretching ; brings some small speed improvement
+
 	Integer ans = 0;
 	register int i,n=av.size();
-	vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();
+
+	typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
+
 
 	if( n >= 64 )
 	{
@@ -162,6 +144,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
 	Integer ans = 0;
 	register int i,n=a.size(),m=b.size();
@@ -171,23 +154,9 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 	return ans;
 }
 
-
 //---------------------------------------------------------------------------
 
-vector<Integer> v_merge(const vector<Integer>& a,const vector<Integer>& b){
-	int s1=a.size(), s2=b.size(), i;
-	vector<Integer> c(s1+s2);
-	for (i = 0; i < s1; i++) {
-		c[i]=a[i];
-	}
-	for (i = 0; i < s2; i++) {
-		c[s1+i]=b[i];
-	}
-	return c;
-}
-
-//---------------------------------------------------------------------------
-
+template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 	register int i,s=a.size();
 	vector<Integer> d(s);
@@ -199,20 +168,7 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 
 //---------------------------------------------------------------------------
 
-vector<int> v_complement(const int& a, const vector<int>& v){
-	int i,s=v.size();
-	vector<int> u(s-1);
-	for (i = 0; i <a; i++) {
-		u[i]=v[i];
-	}
-	for (; i <s-1; i++) {
-		u[i]=v[i+1];
-	}
-	return u;
-}
-
-//---------------------------------------------------------------------------
-
+template<typename Integer>
 vector<Integer> v_abs(const vector<Integer>& v){
 	int i, size=v.size();
 	vector<Integer> w(size,0);
@@ -224,6 +180,7 @@ vector<Integer> v_abs(const vector<Integer>& v){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 Integer v_gcd(const vector<Integer>& v){
 	int i, size=v.size();
 	Integer g=0;
@@ -238,6 +195,7 @@ Integer v_gcd(const vector<Integer>& v){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 Integer v_lcm(const vector<Integer>& v){
 	int i,size=v.size();
 	Integer g=1;
@@ -252,6 +210,7 @@ Integer v_lcm(const vector<Integer>& v){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 vector<Integer> v_make_prime(const vector<Integer>& v){
 	int i, size=v.size();
 	vector<Integer> w(size,0);
@@ -269,6 +228,7 @@ vector<Integer> v_make_prime(const vector<Integer>& v){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
 	int i, size=v.size();
 	vector<Integer> w(size,0);
@@ -286,20 +246,7 @@ vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
 
 //---------------------------------------------------------------------------
 
-vector<int> v_non_zero_pos(vector<Integer> v){
-	vector<int> key;
-	int size=v.size();
-	key.reserve(size);
-	for (int i = 0; i <size; i++) {
-		if (v[i]!=0) {
-			key.push_back(i+1);
-		}
-	}
-	return key;
-}
-
-//---------------------------------------------------------------------------
-
+template<typename Integer>
 void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
 	int i,size=v.size();
 	for (i = 0; i <size; i++) {
@@ -307,6 +254,7 @@ void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
 	}
 }
 
+template<typename Integer>
 vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Integer& scalar){
 	int i,size=v.size();
 	vector<Integer> w(size);
@@ -318,6 +266,7 @@ vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Inte
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer& scalar){
 	int i,size=v.size();
 	for (i = 0; i <size; i++) {
@@ -333,6 +282,7 @@ void v_scalar_division(vector<Integer>& v, const Integer& scalar){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
 	int i,size=v.size();
 	for (i = 0; i <size; i++) {
@@ -345,53 +295,11 @@ void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
 
 //---------------------------------------------------------------------------
 
-int v_diference_ordered_fast(const vector<int>& u,const vector<int>& v){
-	int i,j,k, s=u.size();
-	i=0;
-	// erste Stelle suchen, an der Unterschied
-	while (u[i]==v[i]){
-		i++ ;
-	}
-	j=s-1;
-	// letzte Stelle suchen, an der Unterschied
-	while (u[j]==v[j]){
-		j--;
-	}
-	if(i==j)
-		return u[i];
-
-	if(u[i]<v[i])    // bei "true" kommt u[i] nicht in v vor, sonst v[i] nicht in u
-	{
-		if(u[j]>v[j]) // bei "true" kommt auch u[j] nicht in v vor
-			return 0;  // jetzt u[i] und u[j] nicht in v
-		else
-		{
-			for(k=i+1;k<=j;k++)    // u[i] nicht in v und wir pruefen
-				if(u[k]!=v[k-1])  // ob u[i+1],...,u[j] in v
-					return 0;  // nein
-			return u[i];           // es fehlt wirklich nur u[i]
-		}
-	}
-	else  // v[i] nicht in u
-	{
-		if(u[j]<v[j]) // bei true kommt auch v[j] nicht in u vor
-			return 0;   // jetzt v[i] und v[j] nicht in u
-		else
-		{
-			for(k=i;k<=j-1;k++)        // v[i] nicht in u
-				if(u[k]!=v[k+1]) // und wir pruefen, ob v[i+1],...v[j] in u
-					return 0;  // nein
-			return u[j];         // es fehlt nur u[j] in v
-		}
-	}
-}
-
-//---------------------------------------------------------------------------
-
+template<typename Integer>
 bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const int& m){
 	Integer ans = 0;
 	register int i,n=av.size();
-	vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();
+	typename vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();
 
 	if( n >= 64 )
 	{
@@ -488,16 +396,89 @@ bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, 
 	}
 	return true;
 }
+
 //---------------------------------------------------------------------------
 
-vector<Integer> v_cut_front(const vector<Integer>& v, int size){
+template<typename T>
+vector<T> v_merge(const vector<T>& a,const vector<T>& b){
+	int s1=a.size(), s2=b.size(), i;
+	vector<T> c(s1+s2);
+	for (i = 0; i < s1; i++) {
+		c[i]=a[i];
+	}
+	for (i = 0; i < s2; i++) {
+		c[s1+i]=b[i];
+	}
+	return c;
+}
+//---------------------------------------------------------------------------
+
+template<typename T>
+vector<T> v_cut_front(const vector<T>& v, int size){
 	int s,k;
-	vector<Integer> tmp(size);
+	vector<T> tmp(size);
 	s=v.size()-size;
 	for (k = 0; k < size; k++) {
 		tmp[k]=v[s+k];
 	}
 	return tmp;
+}
+
+//---------------------------------------------------------------------------
+
+
+int v_difference_ordered_fast(const vector<int>& u,const vector<int>& v){
+   int i,j,k, s=u.size();
+   i=0;
+   // erste Stelle suchen, an der Unterschied
+   while (u[i]==v[i]){
+      i++ ;
+   }
+   j=s-1;
+   // letzte Stelle suchen, an der Unterschied
+   while (u[j]==v[j]){
+      j--;
+   }
+   if(i==j)
+      return u[i];
+
+   if(u[i]<v[i])    // bei "true" kommt u[i] nicht in v vor, sonst v[i] nicht in u
+   {
+      if(u[j]>v[j]) // bei "true" kommt auch u[j] nicht in v vor
+         return 0;  // jetzt u[i] und u[j] nicht in v
+      else
+      {
+         for(k=i+1;k<=j;k++)    // u[i] nicht in v und wir pruefen
+            if(u[k]!=v[k-1])  // ob u[i+1],...,u[j] in v
+               return 0;  // nein
+         return u[i];           // es fehlt wirklich nur u[i]
+      }
+   }
+   else  // v[i] nicht in u
+   {
+      if(u[j]<v[j]) // bei true kommt auch v[j] nicht in u vor
+         return 0;   // jetzt v[i] und v[j] nicht in u
+      else
+      {
+         for(k=i;k<=j-1;k++)        // v[i] nicht in u
+            if(u[k]!=v[k+1]) // und wir pruefen, ob v[i+1],...v[j] in u
+               return 0;  // nein
+         return u[j];         // es fehlt nur u[j] in v
+      }
+   }
+}
+
+template<typename Integer>
+vector<int> v_non_zero_pos(vector<Integer> v){
+	vector<int> key;
+	int size=v.size();
+	key.reserve(size);
+	for (int i = 0; i <size; i++) {
+		if (v[i]!=0) {
+			key.push_back(i+1);
+		}
+	}
+	return key;
 }
 
 //---------------------------------------------------------------------------

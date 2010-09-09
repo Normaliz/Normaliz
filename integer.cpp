@@ -18,32 +18,12 @@
 
 //---------------------------------------------------------------------------
 
-/*#include <stdlib.h>
-#include <vector>
-#include <fstream>
-#include <iostream>
-#include <string>*/
 #include <algorithm>
-//using namespace std;
-
-//---------------------------------------------------------------------------
-
 #include "integer.h"
 
 //---------------------------------------------------------------------------
 
-/* inline now
-Integer Iabs(const Integer& a){
-	if (a>=0) {
-		return a;
-	}
-	else
-		return -a;
-}
-*/
-
-//---------------------------------------------------------------------------
-
+template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){
 	if (a==0) {
 		return Iabs(b);
@@ -64,6 +44,7 @@ Integer gcd(const Integer& a, const Integer& b){
 
 //---------------------------------------------------------------------------
 
+template <typename Integer>
 Integer lcm(const Integer& a, const Integer& b){
 	if ((a==0)||(b==0)) {
 		return 0;
@@ -74,6 +55,7 @@ Integer lcm(const Integer& a, const Integer& b){
 
 //---------------------------------------------------------------------------
 
+template <typename Integer>
 int decimal_length(Integer a){
 	int l=1;
 	if (a<0) {
@@ -87,6 +69,7 @@ int decimal_length(Integer a){
 
 //---------------------------------------------------------------------------
 
+template <typename Integer>
 Integer permutations(const int& a, const int& b){
 	int i;
 	Integer P=1;

@@ -32,15 +32,15 @@ extern void global_error_handling();
 //---------------------------------------------------------------------------
 //Private
 //---------------------------------------------------------------------------
-
-void Simplex::reduce_and_insert_interior(const vector< Integer >& new_element){
+template<typename Integer>
+void Simplex<Integer>::reduce_and_insert_interior(const vector< Integer >& new_element){
 	//implementing this function as a tree searching may speed up computations ...
 	if (new_element[0]==0) {
 		return; // new_element=0
 	}
 	else {
 		register int i,c=1,d=dim+1;
-		list< vector<Integer> >::iterator j;
+		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			if (new_element[0]<2*(*j)[0]) {
 				break; //new_element is not reducible;
@@ -70,18 +70,21 @@ void Simplex::reduce_and_insert_interior(const vector< Integer >& new_element){
 //Public
 //---------------------------------------------------------------------------
 
-Simplex::Simplex(){
+template<typename Integer>
+Simplex<Integer>::Simplex(){
 	status="non initialized";
 }
 
-Simplex::Simplex(const vector<int>& k){
+template<typename Integer>
+Simplex<Integer>::Simplex(const vector<int>& k){
 	dim=k.size();
 	key=k;
 	volume=0;
 	status="key initialized";
 }
 
-Simplex::Simplex(const Matrix& Map){
+template<typename Integer>
+Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 	dim=Map.nr_of_columns();
 	key=Map.max_rank_submatrix_lex(dim);
 	Generators=Map.submatrix(key);
@@ -99,7 +102,8 @@ Simplex::Simplex(const Matrix& Map){
 
 //---------------------------------------------------------------------------
 
-Simplex::Simplex(const vector<int>& k, const Matrix& Map){
+template<typename Integer>
+Simplex<Integer>::Simplex(const vector<int>& k, const Matrix<Integer>& Map){
 	key=k;
 	Generators=Map.submatrix(k);
 	dim=k.size();
@@ -117,7 +121,8 @@ Simplex::Simplex(const vector<int>& k, const Matrix& Map){
 
 //---------------------------------------------------------------------------
 
-Simplex::Simplex(const Simplex& S){
+template<typename Integer>
+Simplex<Integer>::Simplex(const Simplex<Integer>& S){
 	dim=S.dim;
 	status=S.status;
 	volume=S.volume;
@@ -134,19 +139,22 @@ Simplex::Simplex(const Simplex& S){
 
 //---------------------------------------------------------------------------
 
-Simplex::~Simplex(){
+template<typename Integer>
+Simplex<Integer>::~Simplex(){
 	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
 
-void Simplex::write_new_face(const vector<int>& Face){
+template<typename Integer>
+void Simplex<Integer>::write_new_face(const vector<int>& Face){
 	New_Face=Face;
 }
 
 //---------------------------------------------------------------------------
 
-void Simplex::read() const{
+template<typename Integer>
+void Simplex<Integer>::read() const{
 	cout<<"\nDimension="<<dim<<"\n";
 	cout<<"\nStatus="<<status<<"\n";
 	cout<<"\nVolume="<<volume<<"\n";
@@ -162,7 +170,7 @@ void Simplex::read() const{
 	v_read(New_Face);
 	cout<<"\nSupport Hyperplanes are:\n";
 	Support_Hyperplanes.read();
-	Matrix M=read_hilbert_basis();
+	Matrix<Integer> M=read_hilbert_basis();
 	cout<<"\nHilbert Basis is:\n";
 	M.read();
 	cout<<"\nh-vector is:\n";
@@ -171,84 +179,97 @@ void Simplex::read() const{
 
 //---------------------------------------------------------------------------
 
-void Simplex::read_k() const{
+template<typename Integer>
+void Simplex<Integer>::read_k() const{
 	v_read(key);
 	v_read(New_Face);
 }
 
 //---------------------------------------------------------------------------
 
-int Simplex::read_dimension() const{
+template<typename Integer>
+int Simplex<Integer>::read_dimension() const{
 	return dim;
 }
 
 //---------------------------------------------------------------------------
 
-string Simplex::read_status() const{
+template<typename Integer>
+string Simplex<Integer>::read_status() const{
 	return status;
 }
 
 //---------------------------------------------------------------------------
 
-void Simplex::write_volume(const Integer& vol){
+template<typename Integer>
+void Simplex<Integer>::write_volume(const Integer& vol){
 	volume=vol;
 }
 
 //---------------------------------------------------------------------------
 
-Integer Simplex::read_volume() const{
+template<typename Integer>
+Integer Simplex<Integer>::read_volume() const{
 	return volume;
 }
 
 //---------------------------------------------------------------------------
 
-vector<int> Simplex::read_key() const{
+template<typename Integer>
+vector<int> Simplex<Integer>::read_key() const{
 	return key;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Simplex::read_generators() const{
+template<typename Integer>
+Matrix<Integer> Simplex<Integer>::read_generators() const{
 	return Generators;
 }
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Simplex::read_diagonal() const{
+template<typename Integer>
+vector<Integer> Simplex<Integer>::read_diagonal() const{
 	return diagonal;
 }
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Simplex::read_multiplicators() const{
+template<typename Integer>
+vector<Integer> Simplex<Integer>::read_multiplicators() const{
 	return multiplicators;
 }
 
 //---------------------------------------------------------------------------
 
-vector<int> Simplex::read_new_face() const{
+template<typename Integer>
+vector<int> Simplex<Integer>::read_new_face() const{
 	return New_Face;
 }
 
 //---------------------------------------------------------------------------
 
-int Simplex::read_new_face_size() const{
+template<typename Integer>
+int Simplex<Integer>::read_new_face_size() const{
 	return New_Face.size();
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Simplex::read_support_hyperplanes() const{
+template<typename Integer>
+Matrix<Integer> Simplex<Integer>::read_support_hyperplanes() const{
 	return Support_Hyperplanes;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Simplex::read_hilbert_basis()const{
+template<typename Integer>
+Matrix<Integer> Simplex<Integer>::read_hilbert_basis()const{
 	int s= Hilbert_Basis.size();
-	Matrix M(s,dim);
+	Matrix<Integer> M(s,dim);
 	int i=1;
-	list< vector<Integer> >::const_iterator l;
+	typename list< vector<Integer> >::const_iterator l;
 	for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
 		M.write(i,(*l));
 		i++;
@@ -258,41 +279,47 @@ Matrix Simplex::read_hilbert_basis()const{
 
 //---------------------------------------------------------------------------
 
-list< vector<Integer> > Simplex::read_homogeneous_elements()const{
+template<typename Integer>
+list< vector<Integer> > Simplex<Integer>::read_homogeneous_elements()const{
 	list< vector<Integer> > HE=Homogeneous_Elements;
 	return HE;
 }
 
 //---------------------------------------------------------------------------
 
-const list< vector<Integer> >& Simplex::acces_hilbert_basis()const{
+template<typename Integer>
+const list< vector<Integer> >& Simplex<Integer>::acces_hilbert_basis()const{
 	const list< vector<Integer> >& HB=Hilbert_Basis;
 	return HB;
 }
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Simplex::read_h_vector() const{
+template<typename Integer>
+vector<Integer> Simplex<Integer>::read_h_vector() const{
 	return H_Vector;
 }
 
 //---------------------------------------------------------------------------
 
-int Simplex::read_hilbert_basis_size() const{
+template<typename Integer>
+int Simplex<Integer>::read_hilbert_basis_size() const{
 	return Hilbert_Basis.size();
 }
 
 //---------------------------------------------------------------------------
 
-int Simplex::compare(const Simplex& S) const{
-	return v_diference_ordered_fast(key,S.key);
+template<typename Integer>
+int Simplex<Integer>::compare(const Simplex<Integer>& S) const{
+	return v_difference_ordered_fast(key,S.key);
 }
 
 //---------------------------------------------------------------------------
 
-void Simplex::initialize(const Matrix& Map){
+template<typename Integer>
+void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 	if (status=="non initialized") {
-		error("error: Bad Simplex passed to Simplex::initialize");
+		error("error: Bad Simplex passed to Simplex<Integer>::initialize");
 		return;
 	}
 	if (status=="key initialized") {
@@ -313,9 +340,10 @@ void Simplex::initialize(const Matrix& Map){
 
 //---------------------------------------------------------------------------
 
-void Simplex::hilbert_basis_interior(){
+template<typename Integer>
+void Simplex<Integer>::hilbert_basis_interior(){
 	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex::hilbert_basis");
+		error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis");
 		return;
 	}
 	else{
@@ -326,7 +354,7 @@ void Simplex::hilbert_basis_interior(){
 		vector < Integer > norm(1);
 		vector<Integer> point(dim,0);
 		set < vector<Integer> > Candidates;
-		set <vector <Integer> >::iterator c;
+		typename set <vector <Integer> >::iterator c;
 		//generating vector e=b_1*u_1+...+b_n*u_n (see documentation)
 		while (1) {
 			last=-1;
@@ -365,7 +393,7 @@ void Simplex::hilbert_basis_interior(){
 		//some test for arithmetic overflow may be implemented here
 
 		l_cut_front(Hilbert_Basis,dim);
-		list< vector<Integer> >::iterator j;
+		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			*j=Generators.VxM(*j);
 			v_scalar_division(*j,volume);
@@ -376,10 +404,11 @@ void Simplex::hilbert_basis_interior(){
 
 //---------------------------------------------------------------------------
 
-void Simplex::hilbert_basis_interior(const Matrix& Map){
+template<typename Integer>
+void Simplex<Integer>::hilbert_basis_interior(const Matrix<Integer>& Map){
 	if (status!="hilbert basis calculated") {
 		if (status=="non initialized") {
-			error("error: Bad Simplex passed to Simplex::hilbert_basis");
+			error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis");
 			return;
 		}
 		if (status=="initialized") {
@@ -406,9 +435,10 @@ void Simplex::hilbert_basis_interior(const Matrix& Map){
 
 //---------------------------------------------------------------------------
 
-void Simplex::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
+template<typename Integer>
+void Simplex<Integer>::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
 	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex::hilbert_basis_interior_h_vector");
+		error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis_interior_h_vector");
 		return;
 	}
 	else{
@@ -416,7 +446,7 @@ void Simplex::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
 		//transformation
 		vector < Integer > norm(1);
 		set < vector<Integer> > Candidates;
-		set <vector <Integer> >::iterator c;
+		typename set <vector <Integer> >::iterator c;
 		int i,k,last,h;
 		int counter;
 		Integer to_int,hom;
@@ -488,7 +518,7 @@ void Simplex::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
 		//some test for arithmetic overflow may be implemented here
 
 		l_cut_front(Hilbert_Basis,dim);
-		list< vector<Integer> >::iterator j;
+		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			*j=Generators.VxM(*j);
 			v_scalar_division(*j,volume);
@@ -500,9 +530,10 @@ void Simplex::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
 
 //---------------------------------------------------------------------------
 
-void Simplex::hilbert_basis_interior_h_vector(const Matrix& Map, const vector<Integer>& Form){
+template<typename Integer>
+void Simplex<Integer>::hilbert_basis_interior_h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form){
 	if (status!="key initialized") {
-		error("error: Bad Simplex passed to Simplex::hilbert_basis_interior_h_vector");
+		error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis_interior_h_vector");
 		return;
 	}
 	else {
@@ -536,9 +567,10 @@ void Simplex::hilbert_basis_interior_h_vector(const Matrix& Map, const vector<In
 
 //---------------------------------------------------------------------------
 
-void Simplex::ht1_elements(const vector<Integer>& Form){
+template<typename Integer>
+void Simplex<Integer>::ht1_elements(const vector<Integer>& Form){
 	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex::ht1_elements");
+		error("error: Bad Simplex passed to Simplex<Integer>::ht1_elements");
 		return;
 	}
 	else {
@@ -581,9 +613,10 @@ void Simplex::ht1_elements(const vector<Integer>& Form){
 
 //---------------------------------------------------------------------------
 
-void Simplex::h_vector(const vector<Integer>& Form){
+template<typename Integer>
+void Simplex<Integer>::h_vector(const vector<Integer>& Form){
 	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex::h_vector");
+		error("error: Bad Simplex passed to Simplex<Integer>::h_vector");
 		return;
 	}
 	else{
@@ -647,9 +680,10 @@ void Simplex::h_vector(const vector<Integer>& Form){
 
 //---------------------------------------------------------------------------
 
-void Simplex::h_vector(const Matrix& Map, const vector<Integer>& Form){
+template<typename Integer>
+void Simplex<Integer>::h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form){
 	if (status!="key initialized") {
-		error("error: Bad Simplex passed to Simplex::h_vector");
+		error("error: Bad Simplex passed to Simplex<Integer>::h_vector");
 		return;
 	}
 	else {
@@ -681,7 +715,8 @@ void Simplex::h_vector(const Matrix& Map, const vector<Integer>& Form){
 
 //---------------------------------------------------------------------------
 
-void Simplex::error(string s) const{
+template<typename Integer>
+void Simplex<Integer>::error(string s) const{
 	cerr <<"\nSimplex "<< s<<"\n";
 	global_error_handling();
 }
@@ -692,13 +727,14 @@ void Simplex::error(string s) const{
  * resets status to "key initialized" to save memory
  * 
  */
-void Simplex::clear() {
+template<typename Integer>
+void Simplex<Integer>::clear() {
 	// list
 	Hilbert_Basis.clear();
 	Homogeneous_Elements.clear();
 	// Matrix
-	Matrix Generators=Matrix();
-	Matrix Support_Hyperplanes=Matrix();
+	Generators=Matrix<Integer>();
+	Support_Hyperplanes=Matrix<Integer>();
 	// vector
 	H_Vector.clear();
 	diagonal.clear();

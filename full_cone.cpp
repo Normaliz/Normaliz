@@ -37,6 +37,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 extern void global_error_handling();
+
+template<typename Integer>
 struct v_compare_shelling {
 	bool operator () (const vector<Integer>& u,const vector<Integer>& v) const 	{
 		int dim=u.size()-1;
@@ -57,7 +59,8 @@ struct v_compare_shelling {
 //private
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive,const vector<Integer>& negative){
+template<typename Integer>
+void Full_Cone<Integer>::add_hyperplane(const int& size, const vector<Integer>& positive,const vector<Integer>& negative){
 	int k;
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	Integer used_for_tests;
@@ -85,7 +88,8 @@ void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive,
 //---------------------------------------------------------------------------
 
 
-void Full_Cone::transform_values(const int& size, const vector <int> & test_key){
+template<typename Integer>
+void Full_Cone<Integer>::transform_values(const int& size, const vector <int> & test_key){
 
 	//to see if possible to replace the function .end with constant iterator since push-back is performed.
 
@@ -105,7 +109,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	
 	if (tv_verbose) cout<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl<<flush;
 	int ipos=0;
-	list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
+	typename list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
 	int listsize=Support_Hyperplanes.size();
 	//for (ii =Support_Hyperplanes.begin();ii!= Support_Hyperplanes.end();ii++){
 //	#pragma omp parallel for private(simplex, nr_zero_i, k) firstprivate(ipos, ii) schedule(dynamic)
@@ -245,8 +249,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: go over multimap of size "<< Negative_Subfacet_Multi.size() <<endl<<flush;
-	multimap < vector< int >, int > ::iterator jj;
-	multimap < vector< int >, int > ::iterator del;
+	typename multimap < vector< int >, int > ::iterator jj;
+	typename multimap < vector< int >, int > ::iterator del;
 	jj =Negative_Subfacet_Multi.begin();
 	while (jj!= Negative_Subfacet_Multi.end()) {
 		del=jj++;
@@ -266,7 +270,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	vector< int > subfacet(dim-2);
 	jj = Negative_Subfacet_Multi.begin();
 	int jjpos=0;
-	map < vector< int >, int > ::iterator last_inserted=Negative_Subfacet.begin(); // used to speedup insertion into the new map
+	typename map < vector< int >, int > ::iterator last_inserted=Negative_Subfacet.begin(); // used to speedup insertion into the new map
 	bool found;
 	#pragma omp for schedule(dynamic)
 	for (int j=0; j<listsize; ++j) {
@@ -322,7 +326,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	if (tv_verbose) cout<<"transform_values: PS vs NS"<<endl<<flush;
 	
 	vector< int > zero_i(nr_gen);
-	map < vector< int >, int > ::iterator jj_map;
+	typename map < vector< int >, int > ::iterator jj_map;
 	#pragma omp for schedule(dynamic)
 	for (i =0; i<Positive_Simplex.size(); i++){ //Positive Simplex vs.Negative Simplex
 		nr_zero_i=0;
@@ -457,7 +461,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 				if(nr_zero_i_and_j>sub){//intersection of *i and *j may be a subfacet
 					exactly_two=true;
 					if (rangtest) {
-						Matrix Test(nr_zero_i_and_j,dim);
+						Matrix<Integer> Test(nr_zero_i_and_j,dim);
 						for (k = 0; k < nr_zero_i_and_j; k++) {
 							Test.write(k+1,Generators.read(test_key[zero_i_and_j[k]]));
 						}
@@ -519,7 +523,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 	//removing the negative hyperplanes
 	if (tv_verbose) cout<<"transform_values: remove negative hyperplanes"<<endl<<flush;
-	list< vector<Integer> >::iterator l;
+	typename list< vector<Integer> >::iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); ){
 		if ((*l)[size]<0) {
 			l=Support_Hyperplanes.erase(l);
@@ -532,9 +536,10 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_simplex(const int& new_generator,const int& size,const vector<int>& col, const vector<int>& col_inv){
-	list< vector<Integer> >::const_iterator i=Support_Hyperplanes.begin();
-	list< Simplex >::const_iterator j;
+template<typename Integer>
+void Full_Cone<Integer>::add_simplex(const int& new_generator,const int& size,const vector<int>& col, const vector<int>& col_inv){
+	typename list< vector<Integer> >::const_iterator i=Support_Hyperplanes.begin();
+	typename list< Simplex<Integer> >::const_iterator j;
 	int nr_zero_i, nr_nonzero_i, not_in_i=0, l, k, s, Triangulation_size=Triangulation.size();
 	vector<int> key(dim);
 
@@ -562,7 +567,7 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 					}
 				}
 				key[dim-1]=new_generator+1;
-				Simplex simp(key);
+				Simplex<Integer> simp(key);
 				#pragma omp critical(TRIANG)
 				Triangulation.push_back(simp);
 			}
@@ -581,7 +586,7 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 					} while((k<dim)&&(nr_nonzero_i<2));
 					if (nr_nonzero_i<=1){
 						key[not_in_i]=new_generator+1;
-						Simplex simp(key);
+						Simplex<Integer> simp(key);
 						#pragma omp critical(TRIANG)
 						Triangulation.push_back(simp);
 					}
@@ -594,12 +599,13 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::is_reducible(list< vector<Integer> >& Ired, const vector< Integer >& new_element){
+template<typename Integer>
+bool Full_Cone<Integer>::is_reducible(list< vector<Integer> >& Ired, const vector< Integer >& new_element){
 	register int i;
 	int s=Support_Hyperplanes.size();
 	vector <Integer> candidate=v_cut_front(new_element,dim);
 	vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
-	list< vector<Integer> >::iterator j;
+	typename list< vector<Integer> >::iterator j;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
 		for (i = 1; i <= s; i++) {
 			if ((*j)[i]>scalar_product[i-1]){
@@ -618,12 +624,13 @@ bool Full_Cone::is_reducible(list< vector<Integer> >& Ired, const vector< Intege
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::is_reducible(list< vector<Integer>* >& Ired, const vector< Integer >& new_element){
+template<typename Integer>
+bool Full_Cone<Integer>::is_reducible(list< vector<Integer>* >& Ired, const vector< Integer >& new_element){
 	register int i;
 	int s=Support_Hyperplanes.size();
 	vector <Integer> candidate=v_cut_front(new_element,dim);
 	vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
-	list< vector<Integer>* >::iterator j;
+	typename list< vector<Integer>* >::iterator j;
 	vector<Integer> *reducer;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
 		reducer=(*j);
@@ -644,7 +651,8 @@ bool Full_Cone::is_reducible(list< vector<Integer>* >& Ired, const vector< Integ
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::reduce_and_insert(const vector< Integer >& new_element){
+template<typename Integer>
+void Full_Cone<Integer>::reduce_and_insert(const vector< Integer >& new_element){
 	if (new_element[0]==0) {
 		return; // new_element=0
 	}
@@ -655,7 +663,7 @@ void Full_Cone::reduce_and_insert(const vector< Integer >& new_element){
 			candidate[i]=new_element[i+1];
 		}
 		vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
-		list< vector<Integer> >::iterator j;
+		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			if ( new_element[0]<2*(*j)[0] ) {
 				break; //new_element is not reducible since the norm is too small, goes into HB
@@ -686,13 +694,14 @@ void Full_Cone::reduce_and_insert(const vector< Integer >& new_element){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::reduce_and_insert_speed(const vector< Integer >& new_element){
+template<typename Integer>
+void Full_Cone<Integer>::reduce_and_insert_speed(const vector< Integer >& new_element){
 	if (new_element[0]==0) {
 		return; // new_element=0
 	}
 	else {
 		register int i,c=1,s=Support_Hyperplanes.size()+1;
-		list< vector<Integer> >::iterator j;
+		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			if (new_element[0]<2*(*j)[0]) {
 				break; //new_element is not reducible (not the sum of 2 or more basis elements)
@@ -720,14 +729,15 @@ void Full_Cone::reduce_and_insert_speed(const vector< Integer >& new_element){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
+template<typename Integer>
+void Full_Cone<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
 	Ired.sort();
 	register int i,c=1;
 	vector<Integer> dummy(size+3,0);
 	Red.push_front(dummy);
 	Red.push_back(dummy);
-	list< vector<Integer> >::iterator j;
-	list< vector<Integer> >::iterator s;
+	typename list< vector<Integer> >::iterator j;
+	typename list< vector<Integer> >::iterator s;
 	for (s = Red.begin(); s != Red.end(); s++) {
 		for (j =Ired.begin(); j != Ired.end(); j++) {
 			if ((*s)[0]<2*(*j)[0]) {
@@ -761,7 +771,8 @@ void Full_Cone::reduce( list< vector< Integer > >& Ired, list< vector< Integer >
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::reduce_and_insert(const Matrix& New_Elements){
+template<typename Integer>
+void Full_Cone<Integer>::reduce_and_insert(const Matrix<Integer>& New_Elements){
 	int i, j=New_Elements.nr_of_rows();
 	for (i = 1; i <= j; i++) {
 		reduce_and_insert(New_Elements.read(i));
@@ -770,8 +781,9 @@ void Full_Cone::reduce_and_insert(const Matrix& New_Elements){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::reduce_and_insert(const list< vector<Integer> >& New_Elements){
-	list< vector<Integer> >::const_iterator l;
+template<typename Integer>
+void Full_Cone<Integer>::reduce_and_insert(const list< vector<Integer> >& New_Elements){
+	typename list< vector<Integer> >::const_iterator l;
 	for (l =New_Elements.begin(); l != New_Elements.end(); l++) {
 		reduce_and_insert(*l);
 	}
@@ -779,17 +791,18 @@ void Full_Cone::reduce_and_insert(const list< vector<Integer> >& New_Elements){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::find_new_face(){
+template<typename Integer>
+void Full_Cone<Integer>::find_new_face(){
 	if (verbose==true) {
 		cout<<"combinatorial evaluation of the shelling ..."<<endl<<flush;
 	}
 	int i;
 	vector<int> facet(dim-1),key;
-	list< Simplex >::iterator l;
+	typename list< Simplex<Integer> >::iterator l;
 	list< int > help;
-	list< int >::const_iterator m;
+	typename list< int >::const_iterator m;
 	set< vector<int> > Facets;
-	pair<set< vector<int> >::iterator, bool> ret;
+	pair<typename set< vector<int> >::iterator, bool> ret;
 	for (l =Triangulation.begin(); l!=Triangulation.end(); l++){
 		help.clear();
 		key=(*l).read_key();
@@ -826,7 +839,8 @@ void Full_Cone::find_new_face(){
 //public
 //---------------------------------------------------------------------------
 
-Full_Cone::Full_Cone(){
+template<typename Integer>
+Full_Cone<Integer>::Full_Cone(){
 	dim=0;
 	nr_gen=0;
 	hyp_size=0;
@@ -834,10 +848,11 @@ Full_Cone::Full_Cone(){
 
 //---------------------------------------------------------------------------
 
-Full_Cone::Full_Cone(Matrix M){
+template<typename Integer>
+Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");	
+		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
 	}
 	Generators = M;
 	nr_gen=Generators.nr_of_rows();
@@ -858,7 +873,7 @@ Full_Cone::Full_Cone(Matrix M){
 	is_integrally_closed = false;
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
-	Triangulation = list< Simplex >();
+	Triangulation = list< Simplex<Integer> >();
 	Hilbert_Basis = list< vector<Integer> >();
 	Homogeneous_Elements = list< vector<Integer> >();
 	if(dim>0){            //correction needed to include the 0 cone;
@@ -877,7 +892,8 @@ Full_Cone::Full_Cone(Matrix M){
 
 //---------------------------------------------------------------------------
 
-Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
+template<typename Integer>
+Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
 	dim = C.dim;
 	Generators = C.get_generators();
@@ -894,13 +910,13 @@ Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 	is_integrally_closed = false;
 	Extreme_Rays = vector<bool>(nr_gen,true); //all generators are extreme rays
 	is_Computed.set(ConeProperty::ExtremeRays);
-	Matrix SH = C.SupportHyperplanes;
+	Matrix<Integer> SH = C.SupportHyperplanes;
 	Support_Hyperplanes = list< vector<Integer> >();
 	for (int i=1; i<= SH.nr_of_rows(); i++) {
 		Support_Hyperplanes.push_back(SH.read(i));
 	}
 	is_Computed.set(ConeProperty::SupportHyperplanes);
-	Triangulation = list< Simplex >();
+	Triangulation = list< Simplex<Integer> >();
 	Hilbert_Basis = C.Hilbert_Basis;
 	is_Computed.set(ConeProperty::HilbertBasis);
 	Homogeneous_Elements = list< vector<Integer> >();
@@ -919,7 +935,8 @@ Full_Cone::Full_Cone(const Cone_Dual_Mode &C) {
 
 //---------------------------------------------------------------------------
 
-Full_Cone::Full_Cone(const Full_Cone& C){
+template<typename Integer>
+Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C){
 	dim=C.dim;
 	nr_gen=C.nr_gen;
 	hyp_size=C.hyp_size;
@@ -944,7 +961,8 @@ Full_Cone::Full_Cone(const Full_Cone& C){
 //---------------------------------------------------------------------------
 
 /* constructor for recursively generated subcones */
-Full_Cone::Full_Cone(Matrix M, int i) {  
+template<typename Integer>
+Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, int i) {
 	dim = M.nr_of_columns();
 	Generators = M;
 	nr_gen = Generators.nr_of_rows();
@@ -953,7 +971,7 @@ Full_Cone::Full_Cone(Matrix M, int i) {
 	is_Computed =  bitset<ConeProperty::EnumSize>();
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
-	Triangulation = list< Simplex >();
+	Triangulation = list< Simplex<Integer> >();
 	Hilbert_Basis = list< vector<Integer> >();
 	Homogeneous_Elements = list< vector<Integer> >();
 	H_Vector = vector<Integer>(dim);
@@ -961,13 +979,15 @@ Full_Cone::Full_Cone(Matrix M, int i) {
 
 //---------------------------------------------------------------------------
 
-Full_Cone::~Full_Cone(){
+template<typename Integer>
+Full_Cone<Integer>::~Full_Cone(){
 	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::print()const{
+template<typename Integer>
+void Full_Cone<Integer>::print()const{
 	cout<<"\ndim="<<dim<<".\n";
 	cout<<"\nnr_gen="<<nr_gen<<".\n";
 	cout<<"\nhyp_size="<<hyp_size<<".\n";
@@ -995,67 +1015,78 @@ void Full_Cone::print()const{
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::isComputed(ConeProperty::Enum prop) const{
+template<typename Integer>
+bool Full_Cone<Integer>::isComputed(ConeProperty::Enum prop) const{
 	return is_Computed[prop];
 }
 
 //---------------------------------------------------------------------------
 
-int Full_Cone::read_dimension()const{
+template<typename Integer>
+int Full_Cone<Integer>::read_dimension()const{
 	return dim;
 }
 
 //---------------------------------------------------------------------------
 
-int Full_Cone::read_nr_generators()const{
+template<typename Integer>
+int Full_Cone<Integer>::read_nr_generators()const{
 	return nr_gen;
 }
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::read_homogeneous() const{
+template<typename Integer>
+bool Full_Cone<Integer>::read_homogeneous() const{
 	return is_ht1_extreme_rays;
 }
 
-bool Full_Cone::isHt1HilbertBasis() const{
+template<typename Integer>
+bool Full_Cone<Integer>::isHt1HilbertBasis() const{
 	return is_ht1_hilbert_basis;
 }
 
-bool Full_Cone::isIntegrallyClosed() const{
+template<typename Integer>
+bool Full_Cone<Integer>::isIntegrallyClosed() const{
 	return is_integrally_closed;
 }
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Full_Cone::read_linear_form() const{
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::read_linear_form() const{
 	return Linear_Form;
 }
 
 //---------------------------------------------------------------------------
 
-Integer Full_Cone::read_multiplicity()const{
+template<typename Integer>
+Integer Full_Cone<Integer>::read_multiplicity()const{
 	return multiplicity;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::read_generators()const{
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::read_generators()const{
 	return Generators;
 }
 
 //---------------------------------------------------------------------------
 
-vector<bool> Full_Cone::read_extreme_rays()const{
+template<typename Integer>
+vector<bool> Full_Cone<Integer>::read_extreme_rays()const{
 	return Extreme_Rays;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::read_support_hyperplanes()const{
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::read_support_hyperplanes()const{
 	int s= Support_Hyperplanes.size();
-	Matrix M(s,dim);
+	Matrix<Integer> M(s,dim);
 	int i=1;
-	list< vector<Integer> >::const_iterator l;
+	typename list< vector<Integer> >::const_iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++) {
 		M.write(i,(*l));
 		i++;
@@ -1065,12 +1096,13 @@ Matrix Full_Cone::read_support_hyperplanes()const{
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::read_triangulation()const{
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::read_triangulation()const{
 	int s= Triangulation.size();
-	Matrix M(s,dim);
+	Matrix<Integer> M(s,dim);
 	vector<int> key(dim);
 	int i=1;
-	list< Simplex >::const_iterator l;
+	typename list< Simplex<Integer> >::const_iterator l;
 	for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
 		key=(*l).read_key();
 		sort(key.begin(),key.end());
@@ -1082,12 +1114,13 @@ Matrix Full_Cone::read_triangulation()const{
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::read_triangulation_volume()const{
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::read_triangulation_volume()const{
 	int s= Triangulation.size();
-	Matrix M(s,dim+1);
+	Matrix<Integer> M(s,dim+1);
 	vector<int> key(dim);
 	int k,i=1;
-	list< Simplex >::const_iterator l;
+	typename list< Simplex<Integer> >::const_iterator l;
 	for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
 		key=(*l).read_key();
 		sort(key.begin(),key.end());
@@ -1102,11 +1135,12 @@ Matrix Full_Cone::read_triangulation_volume()const{
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::read_hilbert_basis()const{
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::read_hilbert_basis()const{
 	int s= Hilbert_Basis.size();
-	Matrix M(s,dim);
+	Matrix<Integer> M(s,dim);
 	int i=1;
-	list< vector<Integer> >::const_iterator l;
+	typename list< vector<Integer> >::const_iterator l;
 	for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
 		M.write(i,(*l));
 		i++;
@@ -1116,11 +1150,12 @@ Matrix Full_Cone::read_hilbert_basis()const{
 
 //---------------------------------------------------------------------------
 
-Matrix Full_Cone::read_homogeneous_elements()const{
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::read_homogeneous_elements()const{
 	int s= Homogeneous_Elements.size();
-	Matrix M(s,dim);
+	Matrix<Integer> M(s,dim);
 	int i=1;
-	list< vector<Integer> >::const_iterator l;
+	typename list< vector<Integer> >::const_iterator l;
 	for (l =Homogeneous_Elements.begin(); l != Homogeneous_Elements.end(); l++) {
 		M.write(i,(*l));
 		i++;
@@ -1130,13 +1165,15 @@ Matrix Full_Cone::read_homogeneous_elements()const{
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Full_Cone::read_h_vector() const{
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::read_h_vector() const{
 	return H_Vector;
 }
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Full_Cone::read_hilbert_polynomial() const{
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::read_hilbert_polynomial() const{
 	return Hilbert_Polynomial;
 }
 
@@ -1145,7 +1182,8 @@ vector<Integer> Full_Cone::read_hilbert_polynomial() const{
 // control methods (public)
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplane_common() {
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplane_common() {
 	 check_pointed();
     if(!is_pointed) return;
     compute_extreme_rays();
@@ -1153,23 +1191,27 @@ void Full_Cone::support_hyperplane_common() {
     check_ht1_generated();
 }
 
-void Full_Cone::support_hyperplanes() {
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplanes() {
 	compute_support_hyperplanes();
 	support_hyperplane_common();
 }
 
-void Full_Cone::support_hyperplanes_pyramid() {
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplanes_pyramid() {
 	compute_support_hyperplanes_pyramid();
 	support_hyperplane_common();
 }
 
-void Full_Cone::support_hyperplanes_partial_triangulation() {
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplanes_partial_triangulation() {
 	compute_support_hyperplanes(true);
 	support_hyperplane_common();
 	//process_non_compressed(non_compressed); //TODO in the method again (nicht gut)
 }
 
-void Full_Cone::support_hyperplanes_triangulation() {
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplanes_triangulation() {
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
 	if(!is_pointed) return;
@@ -1188,7 +1230,8 @@ void Full_Cone::support_hyperplanes_triangulation() {
 	compute_multiplicity();
 }
 
-void Full_Cone::support_hyperplanes_triangulation_pyramid() {
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {
 	compute_support_hyperplanes_pyramid(true);
 	support_hyperplane_common();
    if(!is_pointed) return;
@@ -1207,7 +1250,8 @@ void Full_Cone::support_hyperplanes_triangulation_pyramid() {
 	compute_multiplicity();
 }
 
-void Full_Cone::triangulation_hilbert_basis(){
+template<typename Integer>
+void Full_Cone<Integer>::triangulation_hilbert_basis(){
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
    if(!is_pointed) return;
@@ -1228,7 +1272,8 @@ void Full_Cone::triangulation_hilbert_basis(){
 	check_integrally_closed();
 }
 
-void Full_Cone::hilbert_basis(){
+template<typename Integer>
+void Full_Cone<Integer>::hilbert_basis(){
 	support_hyperplanes_partial_triangulation();
 	if(!is_pointed) return;
 	compute_hilbert_basis();
@@ -1236,13 +1281,15 @@ void Full_Cone::hilbert_basis(){
 	check_integrally_closed();
 }
 
-void Full_Cone::ht1_elements(){
+template<typename Integer>
+void Full_Cone<Integer>::ht1_elements(){
 	support_hyperplanes_partial_triangulation();
 	if(!is_pointed) return;
 	compute_ht1_elements();
 }
 
-void Full_Cone::hilbert_basis_polynomial(){
+template<typename Integer>
+void Full_Cone<Integer>::hilbert_basis_polynomial(){
 	compute_support_hyperplanes();
 	check_pointed();
 	if(!is_pointed) return;
@@ -1274,7 +1321,8 @@ void Full_Cone::hilbert_basis_polynomial(){
 	check_integrally_closed();
 }
 
-void Full_Cone::hilbert_polynomial(){
+template<typename Integer>
+void Full_Cone<Integer>::hilbert_polynomial(){
 	compute_support_hyperplanes();
 	check_pointed();
 	if(!is_pointed) return;
@@ -1300,7 +1348,8 @@ void Full_Cone::hilbert_polynomial(){
 	}
 }
 
-void Full_Cone::dual_mode() {
+template<typename Integer>
+void Full_Cone<Integer>::dual_mode() {
 	Support_Hyperplanes.sort();
 	Support_Hyperplanes.unique();
 	Support_Hyperplanes.remove(vector<Integer>(dim,0));
@@ -1315,7 +1364,7 @@ void Full_Cone::dual_mode() {
 			if (verbose) { 
 				cout << "Find height 1 elements" << endl;
 			}
-			list < vector <Integer> >::const_iterator h;
+			typename list < vector <Integer> >::const_iterator h;
 			for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 				if (v_scalar_product((*h),Linear_Form)==1) {
 					Homogeneous_Elements.push_back((*h));
@@ -1337,11 +1386,12 @@ void Full_Cone::dual_mode() {
 // compute methods (private)
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_extreme_rays(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_extreme_rays(){
 	int i,j,k,l,t;
-	Matrix SH=read_support_hyperplanes();
+	Matrix<Integer> SH=read_support_hyperplanes();
 	SH=SH.transpose();
-	Matrix Val=Generators.multiplication(SH);
+	Matrix<Integer> Val=Generators.multiplication(SH);
 	int nc=Val.nr_of_columns();
 	vector<int> Zero(nc);
 	for (i = 0; i <nr_gen; i++) {
@@ -1379,7 +1429,10 @@ void Full_Cone::compute_extreme_rays(){
 	is_Computed.set(ConeProperty::ExtremeRays);
 }
 
-Simplex Full_Cone::find_start_simplex() const {
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 	if (is_Computed.test(ConeProperty::ExtremeRays)) {
 		vector<int> marked_extreme_rays(0);
 		for (int i=0; i<nr_gen; i++) {
@@ -1392,14 +1445,15 @@ Simplex Full_Cone::find_start_simplex() const {
 		for (int i=0; i<dim; i++) {
 			key[i] = marked_extreme_rays[key_extreme[i]-1];
 		}
-		return Simplex(key, Generators);
+		return Simplex<Integer>(key, Generators);
 	} else {
-		return Simplex(Generators);
+		return Simplex<Integer>(Generators);
 	}
 }
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation) {
+template<typename Integer>
+void Full_Cone<Integer>::compute_support_hyperplanes(const bool do_partial_triangulation) {
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -1410,7 +1464,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	int i,j;
 	//Initialization of the list of support hyperplanes
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S = find_start_simplex();
+	Simplex<Integer> S = find_start_simplex();
 
 	vector<int> key=S.read_key();
 	vector<bool> in_triang(nr_gen,false);
@@ -1419,10 +1473,10 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 		in_triang[key[i]-1]=true;
 	}
 
-	Matrix G=S.read_generators();
+	Matrix<Integer> G=S.read_generators();
 	G=G.transpose();
-	Matrix H=S.read_support_hyperplanes();
-	Matrix P=H.multiplication(G);
+	Matrix<Integer> H=S.read_support_hyperplanes();
+	Matrix<Integer> P=H.multiplication(G);
 	for (i = 1; i <=dim; i++) {
 		L=H.read(i);
 		R=P.read(i);
@@ -1449,7 +1503,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 		for (i = 0; i < nr_gen; i++) {
 			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
 				new_generator=false;
-				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
+				typename list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
 				int lpos=0;
 				int listsize=Support_Hyperplanes.size();
 				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
@@ -1478,7 +1532,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 								}
 							}
 							if (pyramid.size()==dim) { //simplicial case
-								Simplex simp(pyramid);
+								Simplex<Integer> simp(pyramid);
 								#pragma omp critical(TRIANG)
 								Triangulation.push_back(simp);
 							}
@@ -1511,7 +1565,8 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
+template<typename Integer>
+void Full_Cone<Integer>::compute_support_hyperplanes_pyramid(const bool do_triang) {
 	if (verbose) {
 		cout << "\n************************************************************\n";
 		cout << "computing support hyperplanes ";
@@ -1521,7 +1576,7 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 
 	int i, j;
 	vector<Integer> hyperplane(hyp_size, 0), L, R;
-	Simplex S = find_start_simplex();
+	Simplex<Integer> S = find_start_simplex();
 	vector<int> key = S.read_key();
 	if (do_triang) {
 		Triangulation.push_back(key);
@@ -1532,10 +1587,10 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 	for (i = 0; i < dim; i++) {
 		in_triang[key[i]-1] = true;
 	}
-	Matrix G = S.read_generators();
+	Matrix<Integer> G = S.read_generators();
 	G = G.transpose();
-	Matrix H = S.read_support_hyperplanes();
-	Matrix P = H.multiplication(G);
+	Matrix<Integer> H = S.read_support_hyperplanes();
+	Matrix<Integer> P = H.multiplication(G);
 	for (i = 1; i <= dim; i++) {
 		L = H.read(i);
 		R = P.read(i);
@@ -1557,7 +1612,7 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 		for (i = 0; i < nr_gen; i++) {
 			if ((in_triang[i] == false) && ((j == 1) || (Extreme_Rays[i] == true))) {
 				new_generator = false;
-				list<vector<Integer> >::iterator l = Support_Hyperplanes.begin();
+				typename list<vector<Integer> >::iterator l = Support_Hyperplanes.begin();
 				int lpos = 0;
 				int listsize = Support_Hyperplanes.size();
 				//      for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
@@ -1586,8 +1641,8 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 						list<vector<Integer> > subconeSH;
 						if (pyramid.size() == dim) {   //do simplical subcones directly
 							vector<Integer> hyperplane(hyp_size, 0);
-							Simplex S(pyramid, Generators);
-							Matrix H = S.read_support_hyperplanes();
+							Simplex<Integer> S(pyramid, Generators);
+							Matrix<Integer> H = S.read_support_hyperplanes();
 							for (int k = 1; k <= dim; k++) {
 								subconeSH.push_back(H.read(k));
 							}
@@ -1596,12 +1651,12 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 								Triangulation.push_back(S);
 							}
 						} else {   //compute support hyperplanes of the subcone
-							Full_Cone subcone(Generators.submatrix(pyramid), 1);
+							Full_Cone<Integer> subcone(Generators.submatrix(pyramid), 1);
 							if (do_triang) {
 								//TODO use test to decide which function is called in recursion
 								subcone.compute_support_hyperplanes_triangulation();
-								list<Simplex>::const_iterator sub_it = subcone.Triangulation.begin();
-								list<Simplex>::const_iterator sub_end = subcone.Triangulation.end();
+								typename list< Simplex<Integer> >::const_iterator sub_it = subcone.Triangulation.begin();
+								typename list< Simplex<Integer> >::const_iterator sub_end = subcone.Triangulation.end();
 								vector<int> subkey;
 								 // adjust indices and add to Triangulation
 								while (sub_it != sub_end) {
@@ -1621,8 +1676,8 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 							subconeSH = subcone.Support_Hyperplanes;
 						}
 
-						list<vector<Integer> >::const_iterator sub_it = subconeSH.begin();
-						list<vector<Integer> >::const_iterator sub_end = subconeSH.end();
+						typename list<vector<Integer> >::const_iterator sub_it = subconeSH.begin();
+						typename list<vector<Integer> >::const_iterator sub_end = subconeSH.end();
 						vector<Integer> scalar_prods = vector<Integer> (nr_gen);
 						// add support hyperplanes when needed
 						while (sub_it != sub_end) {
@@ -1658,7 +1713,7 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 
 				if (new_generator) {
 					in_triang[i] = true;
-					list<vector<Integer> >::iterator l;
+					typename list<vector<Integer> >::iterator l;
 					//remove negative hyperplanes
 					for (l = Support_Hyperplanes.begin(); l != Support_Hyperplanes.end();) {
 						if ((*l)[size] < 0) {
@@ -1689,7 +1744,8 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes_dynamic(){
+template<typename Integer>
+void Full_Cone<Integer>::support_hyperplanes_dynamic(){
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing support hyperplanes ..."<<endl;
@@ -1700,17 +1756,17 @@ void Full_Cone::support_hyperplanes_dynamic(){
 	Integer scalar_product, scalar_product_small;
 	//intialization of the list of support hyperplanes
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S(Generators);
+	Simplex<Integer> S(Generators);
 	vector<int> key=S.read_key();
 	vector<bool> in_triang(nr_gen,false);
 	vector <int> test_key(hyp_size);
 	for (i = 0; i < dim; i++) {
 		 in_triang[key[i]-1]=true;
 	}
-	Matrix G=S.read_generators();
+	Matrix<Integer> G=S.read_generators();
 	G=G.transpose();
-	Matrix H=S.read_support_hyperplanes();
-	Matrix P=H.multiplication(G);
+	Matrix<Integer> H=S.read_support_hyperplanes();
+	Matrix<Integer> P=H.multiplication(G);
 	for (i = 1; i <=dim; i++) {
 		 L=H.read(i);
 		 R=P.read(i);
@@ -1729,7 +1785,7 @@ void Full_Cone::support_hyperplanes_dynamic(){
 			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
 				new_generator=false;
 				simplicial=true;
-				list< vector<Integer> >::iterator l;
+				typename list< vector<Integer> >::iterator l;
 				for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
 					L=Generators.read(i+1);
 					scalar_product=v_scalar_product(L,(*l));
@@ -1782,7 +1838,8 @@ void Full_Cone::support_hyperplanes_dynamic(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes_triangulation(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -1791,7 +1848,7 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 	int i,j;
 	//intialization of the lists of support hyperplanes and triangulation
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S = find_start_simplex();
+	Simplex<Integer> S = find_start_simplex();
 	Triangulation.push_back(S);
 	vector<int> key=S.read_key();
 	vector<bool> in_triang(nr_gen,false);
@@ -1805,10 +1862,10 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 		col[key[i]-1]=dim+i;
 		col_inv[i]=key[i]-1;
 	}
-	Matrix G=S.read_generators();
+	Matrix<Integer> G=S.read_generators();
 	G=G.transpose();
-	Matrix H=S.read_support_hyperplanes();
-	Matrix P=H.multiplication(G);
+	Matrix<Integer> H=S.read_support_hyperplanes();
+	Matrix<Integer> P=H.multiplication(G);
 	for (i = 1; i <=dim; i++) {
 		L=H.read(i);
 		R=P.read(i);
@@ -1827,7 +1884,7 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 		for (i = 0; i < nr_gen; i++) {
 			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
 				new_generator=false;
-				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
+				typename list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
 				int lpos=0;
 				int listsize=Support_Hyperplanes.size();
 				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
@@ -1873,13 +1930,15 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::check_pointed() {
-	Matrix SH = read_support_hyperplanes();
+template<typename Integer>
+void Full_Cone<Integer>::check_pointed() {
+	Matrix<Integer> SH = read_support_hyperplanes();
 	is_pointed = (SH.rank() == dim);
 	is_Computed.set(ConeProperty::IsPointed);
 }
 
-void Full_Cone::check_ht1_generated() {
+template<typename Integer>
+void Full_Cone<Integer>::check_ht1_generated() {
 	if (is_ht1_extreme_rays) {
 		is_ht1_generated = true;
 	 	for (int i = 0; i < nr_gen; i++) {
@@ -1895,7 +1954,8 @@ void Full_Cone::check_ht1_generated() {
 
 }
 
-void Full_Cone::check_ht1_extreme_rays() {
+template<typename Integer>
+void Full_Cone<Integer>::check_ht1_extreme_rays() {
 	if (is_ht1_generated) {
 		is_ht1_extreme_rays=true;
 		return ;
@@ -1905,12 +1965,13 @@ void Full_Cone::check_ht1_extreme_rays() {
 		if (Extreme_Rays[i])
 			key.push_back(i+1);
 	}
-	Matrix Extreme=Generators.submatrix(key);
+	Matrix<Integer> Extreme=Generators.submatrix(key);
 	Linear_Form = Extreme.homogeneous(is_ht1_extreme_rays);
 	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 }
 
-void Full_Cone::check_ht1_hilbert_basis() {
+template<typename Integer>
+void Full_Cone<Integer>::check_ht1_hilbert_basis() {
 	if ( !is_Computed.test(ConeProperty::IsHt1ExtremeRays) || !is_Computed.test(ConeProperty::HilbertBasis)) {
 		cerr << "Warning: unsatisfied preconditions in check_ht1_hilbert_basis()!" <<endl;
 		return;
@@ -1920,7 +1981,7 @@ void Full_Cone::check_ht1_hilbert_basis() {
 		is_ht1_hilbert_basis = (Homogeneous_Elements.size() == Hilbert_Basis.size());
 	} else {
 		is_ht1_hilbert_basis = true;
-		list< vector<Integer> >::iterator h;
+		typename list< vector<Integer> >::iterator h;
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 			if (v_scalar_product((*h),Linear_Form)!=1) {
 				is_ht1_hilbert_basis = false;
@@ -1931,7 +1992,8 @@ void Full_Cone::check_ht1_hilbert_basis() {
 	is_Computed.set(ConeProperty::IsHt1HilbertBasis);
 }
 
-void Full_Cone::check_integrally_closed() {
+template<typename Integer>
+void Full_Cone<Integer>::check_integrally_closed() {
 	if ( !is_Computed.test(ConeProperty::HilbertBasis)) {
 		cerr << "Warning: unsatisfied preconditions in check_integrally_closed()!" <<endl;
 		return;
@@ -1939,7 +2001,7 @@ void Full_Cone::check_integrally_closed() {
 	is_integrally_closed = false;
 	if (Hilbert_Basis.size() <= nr_gen) {
 		is_integrally_closed = true;
-		list< vector<Integer> >::iterator h;
+		typename list< vector<Integer> >::iterator h;
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 			is_integrally_closed = false;
 			for (int i=1; i<= nr_gen; i++) {
@@ -1958,7 +2020,8 @@ void Full_Cone::check_integrally_closed() {
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_multiplicity(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_multiplicity(){
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing multiplicity ..."<<endl;
@@ -1970,14 +2033,14 @@ void Full_Cone::compute_multiplicity(){
 	{	
 	Integer volume;
 	Integer mult=0;
-	list< Simplex >::iterator l=Triangulation.begin();
+	typename list< Simplex<Integer> >::iterator l=Triangulation.begin();
 	int lpos=0;
 	#pragma omp for schedule(dynamic)
 	for (int k=0; k<listsize; ++k) {
 		for(;k > lpos; ++lpos, ++l) ;
 		for(;k < lpos; --lpos, --l) ;
 
-		Simplex S=(*l);
+		Simplex<Integer> S=(*l);
 		S.initialize(Generators);
 		volume=S.read_volume();
 		(*l).write_volume(volume);
@@ -1993,7 +2056,8 @@ void Full_Cone::compute_multiplicity(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_ht1_elements() {
+template<typename Integer>
+void Full_Cone<Integer>::compute_ht1_elements() {
 	if(!is_ht1_extreme_rays)
 		return;
 	if (verbose==true) {
@@ -2016,16 +2080,16 @@ void Full_Cone::compute_ht1_elements() {
 	Integer volume;
 	Integer mult=0;
 	list <vector<Integer> > HE;
-	list <vector<Integer> >::const_iterator h;
+	typename list <vector<Integer> >::const_iterator h;
 
-	list< Simplex >::iterator l=Triangulation.begin();
+	typename list< Simplex<Integer> >::iterator l=Triangulation.begin();
 	int lpos=0;
 	#pragma omp for schedule(dynamic)
 	for (int k=0; k<listsize; ++k) {
 		for(;k > lpos; ++lpos, ++l) ;
 		for(;k < lpos; --lpos, --l) ;
 
-		Simplex S=(*l);
+		Simplex<Integer> S=(*l);
 		S.initialize(Generators);
 		volume=S.read_volume();
 		(*l).write_volume(volume);
@@ -2052,7 +2116,8 @@ void Full_Cone::compute_ht1_elements() {
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_hilbert_basis(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_hilbert_basis(){
 	if(dim>0){            //correction needed to include the 0 cone;
 	int counter=0,i;
 	Integer volume;
@@ -2063,14 +2128,14 @@ void Full_Cone::compute_hilbert_basis(){
 
 	// local hilbert basis
 	set <vector<Integer> > Candidates;
-	set <vector<Integer> >::iterator cit;
+	typename set <vector<Integer> >::iterator cit;
 	list <vector<Integer> > HB;
-	list <vector<Integer> >::const_iterator h;
+	typename list <vector<Integer> >::const_iterator h;
 	for (i = 1; i <=nr_gen; i++) {
 		Candidates.insert(Generators.read(i));
 	}
 	multiplicity=0;
-	list< Simplex >::iterator l=Triangulation.begin();
+	typename list< Simplex<Integer> >::iterator l=Triangulation.begin();
 	int lpos=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
@@ -2079,7 +2144,7 @@ void Full_Cone::compute_hilbert_basis(){
 		for(;k > lpos; ++lpos, ++l) ;
 		for(;k < lpos; --lpos, --l) ;
 
-		Simplex S=(*l);
+		Simplex<Integer> S=(*l);
 		S.hilbert_basis_interior(Generators);
 		volume=S.read_volume();
 		(*l).write_volume(volume);
@@ -2123,14 +2188,15 @@ void Full_Cone::compute_hilbert_basis(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
+template<typename Integer>
+void Full_Cone<Integer>::global_reduction(set < vector<Integer> >& Candidates) {
 	Integer norm;
 	
 	list <vector<Integer> > Candidates_with_Scalar_Product;
 	list <vector<Integer> > HB;
-	list <vector<Integer> >::iterator c;
-	list <vector<Integer> >::const_iterator h;
-	set <vector<Integer> >::iterator cit;
+	typename list <vector<Integer> >::iterator c;
+	typename list <vector<Integer> >::const_iterator h;
+	typename set <vector<Integer> >::iterator cit;
 
 	if (nr_gen == dim) { // cone is simplicial, therefore no global reduction is necessary
 		if (verbose) {
@@ -2259,7 +2325,8 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Full_Cone::compute_degree_function() const {
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 	if(verbose) {
 		cout<<"computing degree function: ";
 	}
@@ -2273,7 +2340,7 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 			cout<<" using homogenous linear form."<<endl<<flush;
 		}
 	} else { // add hyperplanes to get a degree function
-		list< vector<Integer> >::const_iterator h;
+		typename list< vector<Integer> >::const_iterator h;
 		for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); ++h) {
 			for (i=0; i<dim; i++) {
 				degree_function[i]+=(*h)[i];
@@ -2288,11 +2355,12 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::low_part_simplicial(){
+template<typename Integer>
+bool Full_Cone<Integer>::low_part_simplicial(){
 	support_hyperplanes_dynamic();		//change needed for dynamic lifting
 	vector<Integer> val;
 	//int i,counter;
-	list< vector<Integer> >::iterator l;
+	typename list< vector<Integer> >::iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end();){
 		if ((*l)[dim-1]>0) {         // consider just the lower facets
 /*			val=Generators.MxV((*l));
@@ -2316,14 +2384,15 @@ bool Full_Cone::low_part_simplicial(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::line_shelling(){  //try shelling with a line of direction (0,0 ... 0,1)
+template<typename Integer>
+void Full_Cone<Integer>::line_shelling(){  //try shelling with a line of direction (0,0 ... 0,1)
 	if (verbose==true) {
 		 cout<<"computing a line shelling ..."<<endl;
 	}
   int i,j;
 	vector<Integer> Support_Hyperplane_With_Intersection(dim+1);
-	list< vector<Integer> >::const_iterator l;
-	set < vector<Integer>, v_compare_shelling>::const_iterator k;
+	typename list< vector<Integer> >::const_iterator l;
+	typename set < vector<Integer>, v_compare_shelling<Integer> >::const_iterator k;
 	vector<Integer> line(dim,0);
 	for (i = 0; i <dim; i++){
 	  for (j = 1; j <=nr_gen; j++) {
@@ -2331,7 +2400,7 @@ void Full_Cone::line_shelling(){  //try shelling with a line of direction (0,0 .
 	  }
 	}
 	line[dim-1]=0;
-	set < vector < Integer >, v_compare_shelling > Shelling ;
+	set < vector < Integer >, v_compare_shelling<Integer> > Shelling ;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); ++l){
 	  for (i = 0; i <dim; i++){
 		 Support_Hyperplane_With_Intersection[i]=(*l)[i];
@@ -2351,9 +2420,10 @@ void Full_Cone::line_shelling(){  //try shelling with a line of direction (0,0 .
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::triangulation_lift(){
+template<typename Integer>
+void Full_Cone<Integer>::triangulation_lift(){
 	if ( ! is_Computed.test(ConeProperty::SupportHyperplanes) ) {
-		error("error: Status support hyperplanes needed before using Full_Cone::triangulation_lift.");
+		error("error: Status support hyperplanes needed before using Full_Cone<Integer>::triangulation_lift.");
 		return;
 	}
 	int i,j,counter=0,nr_extreme_rays=0;
@@ -2369,16 +2439,16 @@ void Full_Cone::triangulation_lift(){
 			counter++;
 		}
 	}
-	Matrix Extreme_Generators=Generators.submatrix(Extreme);
+	Matrix<Integer> Extreme_Generators=Generators.submatrix(Extreme);
 	if (Extreme_Generators.nr_of_columns()==Extreme_Generators.nr_of_rows()) {
-		Simplex S(Extreme);
+		Simplex<Integer> S(Extreme);
 		Triangulation.push_back(S); 
 	}
 	else {
-		Full_Cone Lifted;
+		Full_Cone<Integer> Lifted;
 		lift(Lifted,Extreme_Generators);
 		if ( !Lifted.isComputed(ConeProperty::SupportHyperplanes) ) {
-			error("error: Status support hyperplanes for the lifted cone needed when using Full_Cone::triangulation_lift.");
+			error("error: Status support hyperplanes for the lifted cone needed when using Full_Cone<Integer>::triangulation_lift.");
 			return;
 		}
 		Lifted.line_shelling();
@@ -2387,7 +2457,7 @@ void Full_Cone::triangulation_lift(){
 		}
 		vector<int> key(dim);
 		vector<Integer> v;
-		list < vector<Integer> >::const_iterator l;
+		typename list < vector<Integer> >::const_iterator l;
 		for (l = Lifted.Support_Hyperplanes.begin(); l != Lifted.Support_Hyperplanes.end(); ++l) {
 			v=Lifted.Generators.MxV((*l));
 			counter=0;
@@ -2397,7 +2467,7 @@ void Full_Cone::triangulation_lift(){
 					counter++;
 				}
 			}
-			Simplex S(key);
+			Simplex<Integer> S(key);
 			Triangulation.push_back(S);
 		}
 	}
@@ -2409,7 +2479,8 @@ void Full_Cone::triangulation_lift(){
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Full_Cone::compute_e_vector(){
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 	int i,j;
 	vector <Integer> E_Vector(dim,0);
 	vector <Integer> Q=H_Vector;
@@ -2418,7 +2489,7 @@ vector<Integer> Full_Cone::compute_e_vector(){
 		for (j = 0; j <dim; j++) {
 			E_Vector[i]+=Q[j];
 		}
-		E_Vector[i]/=permutations(1,i);
+		E_Vector[i]/=permutations<Integer>(1,i);
 		for (j = 1; j <=dim; j++) {
 			Q[j-1]=j*Q[j];
 		}
@@ -2428,7 +2499,8 @@ vector<Integer> Full_Cone::compute_e_vector(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_polynomial(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_polynomial(){
 #ifndef normbig
 	if (dim > 21) {
 		cerr << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
@@ -2436,12 +2508,12 @@ void Full_Cone::compute_polynomial(){
 	}
 #endif
 	int i,j;
-	Integer mult_factor, factorial=permutations(1,dim);
+	Integer mult_factor, factorial=permutations<Integer>(1,dim);
 	vector <Integer> E_Vector=compute_e_vector();
 	vector <Integer> C(dim,0);
 	C[0]=1;
 	for (i = 0; i <dim; i++) {
-		mult_factor=permutations(i,dim);
+		mult_factor=permutations<Integer>(i,dim);
 		if (((dim-1-i)%2)==0) {
 			for (j = 0; j <dim; j++) {
 				Hilbert_Polynomial[2*j]+=mult_factor*E_Vector[dim-1-i]*C[j];
@@ -2455,7 +2527,7 @@ void Full_Cone::compute_polynomial(){
 		for (j = dim-1; 0 <j; j--) {
 			C[j]=(i+1)*C[j]+C[j-1];
 		}
-		C[0]=permutations(1,i+1);
+		C[0]=permutations<Integer>(1,i+1);
 	}
 	for (i = 0; i <dim; i++) {
 		mult_factor=gcd(Hilbert_Polynomial[2*i],factorial);
@@ -2467,7 +2539,8 @@ void Full_Cone::compute_polynomial(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_hilbert_polynomial(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_hilbert_polynomial(){
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing Hilbert polynomial ..."<<endl;
@@ -2479,7 +2552,7 @@ void Full_Cone::compute_hilbert_polynomial(){
 		Homogeneous_Elements.push_back(Generators.read(i));
 	}
 	list< vector<Integer> > HE;
-	list< Simplex >::iterator l=Triangulation.begin();
+	typename list< Simplex<Integer> >::iterator l=Triangulation.begin();
 	int lpos=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
@@ -2488,7 +2561,7 @@ void Full_Cone::compute_hilbert_polynomial(){
 		for(;k > lpos; ++lpos, ++l) ;
 		for(;k < lpos; --lpos, --l) ;
 
-		Simplex S=(*l);
+		Simplex<Integer> S=(*l);
 		#pragma omp critical(H_VECTOR)
 		H_Vector[S.read_new_face_size()]++;
 		S.h_vector(Generators,Linear_Form);
@@ -2519,7 +2592,8 @@ void Full_Cone::compute_hilbert_polynomial(){
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_hilbert_basis_polynomial(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_hilbert_basis_polynomial(){
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
 		cout<<"computing Hilbert basis and polynomial ..."<<endl<<flush;
@@ -2529,8 +2603,8 @@ void Full_Cone::compute_hilbert_basis_polynomial(){
 	vector<Integer> scalar_product;
 	set <vector<Integer> > Candidates;
 	list <vector<Integer> >  HB,HE;
-	set <vector<Integer> >::iterator c;
-	list <vector<Integer> >::const_iterator h;
+	typename set <vector<Integer> >::iterator c;
+	typename list <vector<Integer> >::const_iterator h;
 	for (i = 1; i <=nr_gen; i++) {
 		vector<Integer> Generator = Generators.read(i);
 		Candidates.insert(Generator);
@@ -2539,7 +2613,7 @@ void Full_Cone::compute_hilbert_basis_polynomial(){
 		}
 	}
 	multiplicity=0;
-	list< Simplex >::iterator l=Triangulation.begin();
+	typename list< Simplex<Integer> >::iterator l=Triangulation.begin();
 	int lpos=0;
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
@@ -2548,7 +2622,7 @@ void Full_Cone::compute_hilbert_basis_polynomial(){
 		for(;k > lpos; ++lpos, ++l) ;
 		for(;k < lpos; --lpos, --l) ;
 		
-		Simplex S=(*l);
+		Simplex<Integer> S=(*l);
 		#pragma omp critical(H_VECTOR)
 		H_Vector[S.read_new_face_size()]++;
 		S.hilbert_basis_interior_h_vector(Generators,Linear_Form);
@@ -2587,18 +2661,19 @@ void Full_Cone::compute_hilbert_basis_polynomial(){
 
 //---------------------------------------------------------------------------
 
-Integer Full_Cone::primary_multiplicity() const{
+template<typename Integer>
+Integer Full_Cone<Integer>::primary_multiplicity() const{
 	int i,j,k;
 	Integer primary_multiplicity=0;
 	vector <int> key,new_key(dim-1);
-	Matrix Projection(nr_gen,dim-1);
+	Matrix<Integer> Projection(nr_gen,dim-1);
 	for (i = 1; i <= nr_gen; i++) {
 		for (j = 1; j <= dim-1; j++) {
 			Projection.write(i,j,Generators.read(i,j));
 		}
 	}
-	list< vector<Integer> >::const_iterator h;
-	list< Simplex >::const_iterator t;
+	typename list< vector<Integer> >::const_iterator h;
+	typename list< Simplex<Integer> >::const_iterator t;
 	for (h =Support_Hyperplanes.begin(); h != Support_Hyperplanes.end(); ++h){
 		if ((*h)[dim-1]!=0) {
 			for (t =Triangulation.begin(); t!=Triangulation.end(); ++t){
@@ -2619,7 +2694,7 @@ Integer Full_Cone::primary_multiplicity() const{
 							for (j = i; j <dim-1; j++) {
 								new_key[j]=key[j+1];
 							}
-							Simplex S(new_key,Projection);
+							Simplex<Integer> S(new_key,Projection);
 							primary_multiplicity+=S.read_volume();
 						}
 					}
@@ -2634,20 +2709,22 @@ Integer Full_Cone::primary_multiplicity() const{
 }
 //---------------------------------------------------------------------------
 
-void Full_Cone::error(string s) const{
+template<typename Integer>
+void Full_Cone<Integer>::error(string s) const{
 	cerr <<"\nFull Cone "<< s<<"\n";
 	global_error_handling();
 }
 
 //---------------------------------------------------------------------------
 
-void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
+template<typename Integer>
+void lift(Full_Cone<Integer>& Lifted,Matrix<Integer> Extreme_Generators){
 	if (verbose) {
 		cout<<"start lifting the cone ...";
 	}
 	int i,j,nr_extreme_gen=Extreme_Generators.nr_of_rows(),dim=Extreme_Generators.nr_of_columns();
 	// add an extra dimension, and the (0,...,0,1) vector
-	Matrix New_Generators(nr_extreme_gen+1,dim+1);
+	Matrix<Integer> New_Generators(nr_extreme_gen+1,dim+1);
 	New_Generators.write(1, dim+1, 1);  // (0,...,0,1)
 	for (i = 1; i <= nr_extreme_gen; i++) {
 		for (j = 1; j <= dim; j++) {
@@ -2655,7 +2732,7 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 		}
 	}
 
-	Lifted = Full_Cone(New_Generators,1);
+	Lifted = Full_Cone<Integer>(New_Generators,1);
 	if (Lifted.low_part_simplicial()==true) {
 		if (verbose) {
 			cout<<"lifting done."<<endl;
@@ -2663,18 +2740,19 @@ void lift(Full_Cone& Lifted,Matrix Extreme_Generators){
 		return;
 	}
 
-	cerr<<"error: Dynamic Lifting has failed in Full_Cone::lift.";
+	cerr<<"error: Dynamic Lifting has failed in Full_Cone<Integer>::lift.";
 	global_error_handling();
 }
 
 //---------------------------------------------------------------------------
 
-bool Full_Cone::check_compressed() {
+template<typename Integer>
+bool Full_Cone<Integer>::check_compressed() {
 	//TODO check for "status"
 	// test if the scalar products of the support hyperplanes with the generators are always <=1
 	int i;
 	bool is_compressed=true;
-	list< vector<Integer> >::const_iterator ss = Support_Hyperplanes.begin();
+	typename list< vector<Integer> >::const_iterator ss = Support_Hyperplanes.begin();
 	vector<Integer> scalarProduct;
 
 	for (; ss!=Support_Hyperplanes.end()&&is_compressed; ++ss) {
@@ -2691,14 +2769,15 @@ bool Full_Cone::check_compressed() {
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
+template<typename Integer>
+void Full_Cone<Integer>::process_non_compressed(list< vector<int> > &non_compressed) {
 	int listsize=non_compressed.size();
 	if (verbose) {
 		cout<<"\n************************************************************\n";
 		cout<<"Progress "<<listsize<<" subcones"<<endl;
 	}
 	int itpos=0;
-	list< vector<int> >::const_iterator it=non_compressed.begin();
+	typename list< vector<int> >::const_iterator it=non_compressed.begin();
 
 	//override global verbose value for recursion
 	bool verbose_bak = verbose;
@@ -2717,11 +2796,11 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 		for(;i < itpos; --itpos, --it) ;
 //		v_read(*it); cout<<" subcone "<<i+1;
 		//compute triangulations of subcones
-		Full_Cone subcone(Generators.submatrix(*it),1);
+		Full_Cone<Integer> subcone(Generators.submatrix(*it),1);
 		subcone.compute_support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
 //		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
-		list< Simplex >::const_iterator sub_it  = subcone.Triangulation.begin();
-		list< Simplex >::const_iterator sub_end = subcone.Triangulation.end();
+		typename list< Simplex<Integer> >::const_iterator sub_it  = subcone.Triangulation.begin();
+		typename list< Simplex<Integer> >::const_iterator sub_end = subcone.Triangulation.end();
 		vector<int> key;
 		// adjust indices and add to Triangulation
 		while (sub_it!=sub_end) {

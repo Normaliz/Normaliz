@@ -31,7 +31,7 @@ using namespace std;
 #include "integer.h"
 //---------------------------------------------------------------------------
 
-class Matrix {
+template<typename Integer> class Matrix {
   int nr;
   int nc;
   vector< vector<Integer> > elements;
@@ -222,15 +222,17 @@ public:
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-Matrix Solve(const Matrix& Left_side, const Matrix& Right_side,Integer& det);
+template<typename Integer>
+Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& det);
 // solves the system Left_side*Solution=det(Left_side)*Right_side and tests for
 //errors. Left_side should be a quadratic matrix with nonzero determinant.
-//The determinat of Left_side is saved in det.
+//The determinant of Left_side is saved in det.
 
-Matrix Invert(const Matrix& Left_side, vector< Integer >& diagonal ,Integer& det);
+template<typename Integer>
+Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector<Integer>& diagonal ,Integer& det);
 // solves the system Left_side*Solution=det(Left_side)*Right_side and tests for
 //errors. Left_side should be a quadratic matrix with nonzero determinant.
-//The determinat of Left_side is saved in det.
+//The determinant of Left_side is saved in det.
 
 //---------------------------------------------------------------------------
 #endif

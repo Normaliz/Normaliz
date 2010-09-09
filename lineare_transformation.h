@@ -39,13 +39,14 @@
 #include "matrix.h"
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 class Lineare_Transformation {
   int rk;
   string status;
   Integer index;
-  Matrix Center;
-  Matrix Right;
-  Matrix Right_Inv;
+  Matrix<Integer> Center;
+  Matrix<Integer> Right;
+  Matrix<Integer> Right_Inv;
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
@@ -53,8 +54,8 @@ public:
 //---------------------------------------------------------------------------
 
   Lineare_Transformation();
-  Lineare_Transformation(const Matrix& M);      //main constructor
-  Lineare_Transformation(const Lineare_Transformation& LT);  //copy constructor
+  Lineare_Transformation(const Matrix<Integer>& M);      //main constructor
+  Lineare_Transformation(const Lineare_Transformation<Integer>& LT);  //copy constructor
   ~Lineare_Transformation();            //destructor
 
 //---------------------------------------------------------------------------
@@ -69,27 +70,27 @@ public:
 							//  "initialized, before transformation"
 						   //  "initialized, after transformation"
   Integer get_index() const;
-  Matrix get_center() const;          //read center matrix
-  Matrix get_right() const;          //read right matrix
-  Matrix get_right_inv() const;     //read the inverse of the right matrix
+  Matrix<Integer> get_center() const;          //read center matrix
+  Matrix<Integer> get_right() const;          //read right matrix
+  Matrix<Integer> get_right_inv() const;     //read the inverse of the right matrix
   void set_rank(const int rank);
-  void set_center(const Matrix& M);          //write center matrix
-  void set_right(const Matrix& M);          //write right matrix
-  void set_right_inv(const Matrix& M);     //write the inverse of the right matrix
+  void set_center(const Matrix<Integer>& M);          //write center matrix
+  void set_right(const Matrix<Integer>& M);          //write right matrix
+  void set_right_inv(const Matrix<Integer>& M);     //write the inverse of the right matrix
 
 //---------------------------------------------------------------------------
 //					  Rows and columns exchange
 //---------------------------------------------------------------------------
 
-  void exchange_rows(int row1, int row2);     //similar to Matrix::exchange_rows
-  void exchange_columns(int col1, int col2); //similar to Matrix::exchange_columns
+  void exchange_rows(int row1, int row2);     //similar to Matrix<Integer>::exchange_rows
+  void exchange_columns(int col1, int col2); //similar to Matrix<Integer>::exchange_columns
 
 //---------------------------------------------------------------------------
 //					Rows and columns reduction
 //---------------------------------------------------------------------------
 
-  void reduce_row(int corner);      //similar to Matrix::reduce_row
-  void reduce_column(int corner);  //similar to Matrix::reduce_column
+  void reduce_row(int corner);      //similar to Matrix<Integer>::reduce_row
+  void reduce_column(int corner);  //similar to Matrix<Integer>::reduce_column
 
 //---------------------------------------------------------------------------
 //					 Algorithms
@@ -101,7 +102,7 @@ public:
 //Tests
 //---------------------------------------------------------------------------
 
-  bool test_transformation(const Matrix& M, const int& m) const;
+  bool test_transformation(const Matrix<Integer>& M, const int& m) const;
 									 // test the main computation
 									// for arithmetic overflow
 								   // uses multiplication mod m
@@ -114,8 +115,11 @@ public:
 //class end *****************************************************************
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-Lineare_Transformation Transformation(const Matrix& M); //makes the main
-										  //computation, test for errors
+
+//makes the main computation, test for errors
+template<typename Integer>
+Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M);
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

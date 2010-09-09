@@ -10,6 +10,12 @@
 
 #include <iostream>
 
+#ifdef _WIN32 //for 32 and 64 bit windows
+	#include <mpirxx.h>
+#else
+	#include <gmpxx.h>
+#endif
+
 
 extern bool verbose;
 
@@ -44,8 +50,5 @@ namespace ConeProperty {
 		EnumSize // this has to be the last entry, to get the number of entries in the enum
 	};
 }
-
-//#include "integer.h"
-//#include "cone.h"
 
 #endif /* LIBNORMALIZ_H_ */

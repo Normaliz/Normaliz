@@ -35,7 +35,8 @@ extern void global_error_handling();
 //Private
 //---------------------------------------------------------------------------
 
-void Matrix::max_rank_submatrix_lex(vector<int>& v, const int& rank) const{
+template<typename Integer>
+void Matrix<Integer>::max_rank_submatrix_lex(vector<int>& v, const int& rank) const{
 	int level=v.size();
 	if (level==rank) {
 		return;
@@ -47,7 +48,7 @@ void Matrix::max_rank_submatrix_lex(vector<int>& v, const int& rank) const{
 		v.push_back(v[level-1]+1);
 	}
 	for (; v[level] <= nr; v[level]++) {
-		Matrix S=submatrix(v);
+		Matrix<Integer> S=submatrix(v);
 		if (S.rank()==S.nr_of_rows()) {
 			max_rank_submatrix_lex(v,rank);
 			return;
@@ -59,14 +60,16 @@ void Matrix::max_rank_submatrix_lex(vector<int>& v, const int& rank) const{
 //Public
 //---------------------------------------------------------------------------
 
-Matrix::Matrix(){
+template<typename Integer>
+Matrix<Integer>::Matrix(){
 	nr=0;
 	nc=0;
 }
 
 //---------------------------------------------------------------------------
 
-Matrix::Matrix(int dim){
+template<typename Integer>
+Matrix<Integer>::Matrix(int dim){
 	assert(dim>=0);
 	nr=dim;
 	nc=dim;
@@ -78,7 +81,8 @@ Matrix::Matrix(int dim){
 
 //---------------------------------------------------------------------------
 
-Matrix::Matrix(int row, int col){
+template<typename Integer>
+Matrix<Integer>::Matrix(int row, int col){
 	assert(row>=0);
 	assert(col>=0);
 	nr=row;
@@ -88,7 +92,8 @@ Matrix::Matrix(int row, int col){
 
 //---------------------------------------------------------------------------
 
-Matrix::Matrix(int row, int col, Integer value){
+template<typename Integer>
+Matrix<Integer>::Matrix(int row, int col, Integer value){
 	assert(row>=0);
 	assert(col>=0);
 	nr=row;
@@ -98,7 +103,8 @@ Matrix::Matrix(int row, int col, Integer value){
 
 //---------------------------------------------------------------------------
 
-Matrix::Matrix(const vector< vector<Integer> >& elem){
+template<typename Integer>
+Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
 	nr=elem.size();
 	nc=elem[0].size();
 	elements=elem;
@@ -106,7 +112,8 @@ Matrix::Matrix(const vector< vector<Integer> >& elem){
 
 //---------------------------------------------------------------------------
 
-Matrix::Matrix(const Matrix& M){
+template<typename Integer>
+Matrix<Integer>::Matrix(const Matrix<Integer>& M){
 	nr=M.nr;
 	nc=M.nc;
 	elements=M.elements;
@@ -114,13 +121,15 @@ Matrix::Matrix(const Matrix& M){
 
 //---------------------------------------------------------------------------
 
-Matrix::~Matrix(){
+template<typename Integer>
+Matrix<Integer>::~Matrix(){
 	//automatic destructor
 }
 
 //---------------------------------------------------------------------------
 
-void Matrix::write(){      //to overload for files
+template<typename Integer>
+void Matrix<Integer>::write(){      //to overload for files
 	int i,j;
 	for(i=0; i<nr; i++){
 		for(j=0; j<nc; j++) {
@@ -131,7 +140,8 @@ void Matrix::write(){      //to overload for files
 
 //---------------------------------------------------------------------------
 
-void Matrix::write(int row, const vector<Integer>& data){
+template<typename Integer>
+void Matrix<Integer>::write(int row, const vector<Integer>& data){
 	assert(row >= 1);
 	assert(row <= nr); 
 	assert(nc == data.size());
@@ -141,7 +151,8 @@ void Matrix::write(int row, const vector<Integer>& data){
 
 //---------------------------------------------------------------------------
 
-void Matrix::write(int row, const vector<int>& data){
+template<typename Integer>
+void Matrix<Integer>::write(int row, const vector<int>& data){
 	assert(row >= 1);
 	assert(row <= nr); 
 	assert(nc == data.size());
@@ -153,7 +164,8 @@ void Matrix::write(int row, const vector<int>& data){
 
 //---------------------------------------------------------------------------
 
-void Matrix::write(int row, int col, Integer data){
+template<typename Integer>
+void Matrix<Integer>::write(int row, int col, Integer data){
 	assert(row >= 1);
 	assert(row <= nr); 
 	assert(col >= 1);
@@ -164,7 +176,8 @@ void Matrix::write(int row, int col, Integer data){
 
 //---------------------------------------------------------------------------
 
-void Matrix::print(const string& name,const string& suffix) const{
+template<typename Integer>
+void Matrix<Integer>::print(const string& name,const string& suffix) const{
 	string file_name = name+"."+suffix;
 	const char* file = file_name.c_str();
 	ofstream out(file);
@@ -174,7 +187,8 @@ void Matrix::print(const string& name,const string& suffix) const{
 
 //---------------------------------------------------------------------------
 
-void Matrix::print(ostream& out) const{
+template<typename Integer>
+void Matrix<Integer>::print(ostream& out) const{
 	int i,j;
 	out<<nr<<endl<<nc<<endl;
 	for (i = 0; i < nr; i++) {
@@ -187,7 +201,8 @@ void Matrix::print(ostream& out) const{
 
 //---------------------------------------------------------------------------
 
-void Matrix::pretty_print(ostream& out) const{
+template<typename Integer>
+void Matrix<Integer>::pretty_print(ostream& out) const{
 	int i,j,k;
 	int max_length = maximal_decimal_length();
 	for (i = 0; i < nr; i++) {
@@ -204,7 +219,8 @@ void Matrix::pretty_print(ostream& out) const{
 //---------------------------------------------------------------------------
 
 
-void Matrix::read() const{      //to overload for files
+template<typename Integer>
+void Matrix<Integer>::read() const{      //to overload for files
 	int i,j;
 	for(i=0; i<nr; i++){
 		cout << "\n" ;
@@ -216,7 +232,8 @@ void Matrix::read() const{      //to overload for files
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::read(int row) const{
+template<typename Integer>
+vector<Integer> Matrix<Integer>::read(int row) const{
 	assert(row >= 1);
 	assert(row <= nr); 
 
@@ -225,7 +242,8 @@ vector<Integer> Matrix::read(int row) const{
 
 //---------------------------------------------------------------------------
 
-Integer Matrix::read (int row, int col) const{
+template<typename Integer>
+Integer Matrix<Integer>::read (int row, int col) const{
 	assert(row >= 1);
 	assert(row <= nr); 
 	assert(col >= 1);
@@ -236,19 +254,22 @@ Integer Matrix::read (int row, int col) const{
 
 //---------------------------------------------------------------------------
 
-int Matrix::nr_of_rows () const{
+template<typename Integer>
+int Matrix<Integer>::nr_of_rows () const{
 	return nr;
 }
 
 //---------------------------------------------------------------------------
 
-int Matrix::nr_of_columns () const{
+template<typename Integer>
+int Matrix<Integer>::nr_of_columns () const{
 	return nc;
 }
 
 //---------------------------------------------------------------------------
 
-void Matrix::random () {
+template<typename Integer>
+void Matrix<Integer>::random () {
 	int i,j,k;
 	for (i = 0; i < nr; i++) {
 		for (j = 0; j < nc; j++) {
@@ -260,13 +281,14 @@ void Matrix::random () {
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::submatrix(const vector<int>& rows) const{
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::submatrix(const vector<int>& rows) const{
 	int size=rows.size(), j;
-	Matrix M(size, nc);
+	Matrix<Integer> M(size, nc);
 	for (int i=0; i < size; i++) {
 		j=rows[i]-1;
 		if (nr-1<j) {
-			error("error: Bad argument passed to Matrix::submatrix.");
+			error("error: Bad argument passed to Matrix<Integer>::submatrix.");
 			return M;
 		}
 		else {
@@ -278,14 +300,15 @@ Matrix Matrix::submatrix(const vector<int>& rows) const{
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::submatrix(const vector<bool>& rows) const{
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 	int size=0;
 	for (int i = 0; i <rows.size(); i++) {
 		if (rows[i]) {
 			size++;
 		}
 	}
-	Matrix M(size, nc);
+	Matrix<Integer> M(size, nc);
 	int j = 0;
 	for (int i = 0; i < nr; i++) {
 		if (rows[i]) {
@@ -297,9 +320,10 @@ Matrix Matrix::submatrix(const vector<bool>& rows) const{
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::diagonale() const{
+template<typename Integer>
+vector<Integer> Matrix<Integer>::diagonale() const{
 	if (nr!= nc) {
-		error("error: Bad argument passed to Matrix::diagonale.");
+		error("error: Bad argument passed to Matrix<Integer>::diagonale.");
 		vector<Integer> diag(0);
 		return diag;
 	}
@@ -314,7 +338,8 @@ vector<Integer> Matrix::diagonale() const{
 
 //---------------------------------------------------------------------------
 
-int Matrix::maximal_decimal_length() const{
+template<typename Integer>
+int Matrix<Integer>::maximal_decimal_length() const{
 	int i,j,maxim=0;
 	for (i = 0; i <nr; i++) {
 		for (j = 0; j <nc; j++) {
@@ -326,9 +351,10 @@ int Matrix::maximal_decimal_length() const{
 
 //---------------------------------------------------------------------------
 
-void Matrix::append(const Matrix& M) {
+template<typename Integer>
+void Matrix<Integer>::append(const Matrix<Integer>& M) {
 	if (nc != M.nc) {
-		error("error: Bad argument passed to Matrix::append.");
+		error("error: Bad argument passed to Matrix<Integer>::append.");
 	}
 	elements.reserve(nr+M.nr);
 	for (int i=0; i<M.nr; i++) {
@@ -339,10 +365,10 @@ void Matrix::append(const Matrix& M) {
 
 //---------------------------------------------------------------------------
 
-
-void Matrix::append(const vector<Integer>& V) {
+template<typename Integer>
+void Matrix<Integer>::append(const vector<Integer>& V) {
 	if (nc != V.size()) {
-		error("error: Bad argument passed to Matrix::append.");
+		error("error: Bad argument passed to Matrix<Integer>::append.");
 	}
 	elements.push_back(V);
 	nr++;
@@ -350,9 +376,10 @@ void Matrix::append(const vector<Integer>& V) {
 
 //---------------------------------------------------------------------------
 
-void Matrix::cut_columns(int c) { 
+template<typename Integer>
+void Matrix<Integer>::cut_columns(int c) {
 	if (c > nc || c < 0) {
-		error("error: Bad argument passed to Matrix::cut_columns.");
+		error("error: Bad argument passed to Matrix<Integer>::cut_columns.");
 	}
 	for (int i=0; i<nr; i++) {
 		elements[i].resize(c);
@@ -362,11 +389,12 @@ void Matrix::cut_columns(int c) {
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::add(const Matrix& A) const{
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::add(const Matrix<Integer>& A) const{
 	assert (nr == A.nr);
 	assert (nc == A.nc);
 	
-	Matrix B(nr,nc);
+	Matrix<Integer> B(nr,nc);
 	int i,j;
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
@@ -378,10 +406,11 @@ Matrix Matrix::add(const Matrix& A) const{
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::multiplication(const Matrix& A) const{
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
 	assert (nc == A.nr);
 
-	Matrix B(nr,A.nc,0);  //initialized with 0
+	Matrix<Integer> B(nr,A.nc,0);  //initialized with 0
 	int i,j,k;
 	for(i=0; i<B.nr;i++){
 		for(j=0; j<B.nc; j++){
@@ -395,10 +424,11 @@ Matrix Matrix::multiplication(const Matrix& A) const{
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::multiplication(const Matrix& A, int m) const{
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, int m) const{
 	assert (nc == A.nr);
 
-	Matrix B(nr,A.nc,0);  //initialized with 0
+	Matrix<Integer> B(nr,A.nc,0);  //initialized with 0
 	int i,j,k;
 	for(i=0; i<B.nr;i++){
 		for(j=0; j<B.nc; j++){
@@ -415,7 +445,8 @@ Matrix Matrix::multiplication(const Matrix& A, int m) const{
 
 //---------------------------------------------------------------------------
 
-bool Matrix::equal(const Matrix& A) const{
+template<typename Integer>
+bool Matrix<Integer>::equal(const Matrix<Integer>& A) const{
 	if ((nr!=A.nr)||(nc!=A.nc)){  return false; }
 	int i,j;
 	for (i=0; i < nr; i++) {
@@ -430,7 +461,8 @@ bool Matrix::equal(const Matrix& A) const{
 
 //---------------------------------------------------------------------------
 
-bool Matrix::equal(const Matrix& A, int m) const{
+template<typename Integer>
+bool Matrix<Integer>::equal(const Matrix<Integer>& A, int m) const{
 	if ((nr!=A.nr)||(nc!=A.nc)){  return false; }
 	int i,j;
 	for (i=0; i < nr; i++) {
@@ -445,8 +477,9 @@ bool Matrix::equal(const Matrix& A, int m) const{
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::transpose()const{
-	Matrix B(nc,nr);
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::transpose()const{
+	Matrix<Integer> B(nc,nr);
 	int i,j;
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
@@ -458,7 +491,8 @@ Matrix Matrix::transpose()const{
 
 //---------------------------------------------------------------------------
 
-void Matrix::scalar_multiplication(const Integer& scalar){
+template<typename Integer>
+void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
 	int i,j;
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
@@ -469,15 +503,16 @@ void Matrix::scalar_multiplication(const Integer& scalar){
 
 //---------------------------------------------------------------------------
 
-void Matrix::scalar_division(const Integer& scalar){
+template<typename Integer>
+void Matrix<Integer>::scalar_division(const Integer& scalar){
 	int i,j;
 	if(scalar == 0) {
-		error("error:  Bad argument passed to Matrix::scalar_division. (div by zero)");
+		error("error:  Bad argument passed to Matrix<Integer>::scalar_division. (div by zero)");
 	}
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
 			if (elements[i][j]%scalar!=0) {
-				error("error: Bad argument passed to Matrix::scalar_division.");
+				error("error: Bad argument passed to Matrix<Integer>::scalar_division.");
 				return;
 			}
 			else {
@@ -489,7 +524,8 @@ void Matrix::scalar_division(const Integer& scalar){
 
 //---------------------------------------------------------------------------
 
-void Matrix::reduction_modulo(const Integer& modulo){
+template<typename Integer>
+void Matrix<Integer>::reduction_modulo(const Integer& modulo){
 	int i,j;
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
@@ -503,7 +539,8 @@ void Matrix::reduction_modulo(const Integer& modulo){
 
 //---------------------------------------------------------------------------
 
-Integer Matrix::matrix_gcd() const{
+template<typename Integer>
+Integer Matrix<Integer>::matrix_gcd() const{
 	Integer g=0,h;
 	for (int i = 0; i <nr; i++) {
 		h = v_gcd(elements[i]);
@@ -515,7 +552,8 @@ Integer Matrix::matrix_gcd() const{
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::make_prime() {
+template<typename Integer>
+vector<Integer> Matrix<Integer>::make_prime() {
 	vector<Integer> g(nr);
 	for (int i = 0; i <nr; i++) {
 		elements[i]=v_make_prime(elements[i],g[i]);
@@ -525,9 +563,10 @@ vector<Integer> Matrix::make_prime() {
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::MxV(const vector<Integer>& v) const{
+template<typename Integer>
+vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
 	if ((nc!=v.size())) {
-		error("error: Bad argument passed to Matrix::MxV.");
+		error("error: Bad argument passed to Matrix<Integer>::MxV.");
 		vector<Integer> w;
 		return w;
 	}
@@ -542,9 +581,10 @@ vector<Integer> Matrix::MxV(const vector<Integer>& v) const{
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::VxM(const vector<Integer>& v) const{
+template<typename Integer>
+vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
 	if ((nr!=v.size())) {
-		error("error: Bad argument passed to Matrix::VxM.");
+		error("error: Bad argument passed to Matrix<Integer>::VxM.");
 		vector<Integer> w;
 		return w;
 	}
@@ -562,9 +602,10 @@ vector<Integer> Matrix::VxM(const vector<Integer>& v) const{
 
 //---------------------------------------------------------------------------
 
-void Matrix::exchange_rows(const int& row1, const int& row2){
+template<typename Integer>
+void Matrix<Integer>::exchange_rows(const int& row1, const int& row2){
 	if ((row1>nr) || (row2>nr)) {
-		error("error: Bad argument passed to Matrix::exchange_rows.");
+		error("error: Bad argument passed to Matrix<Integer>::exchange_rows.");
 	}
 	else {
 		elements[row1-1].swap(elements[row2-1]);
@@ -573,9 +614,10 @@ void Matrix::exchange_rows(const int& row1, const int& row2){
 
 //---------------------------------------------------------------------------
 
-void Matrix::exchange_columns(const int& col1, const int& col2){
+template<typename Integer>
+void Matrix<Integer>::exchange_columns(const int& col1, const int& col2){
 	if ((col1>nc) || (col2>nc)) {
-		error("error: Bad argument passed to Matrix::exchange_columns.");
+		error("error: Bad argument passed to Matrix<Integer>::exchange_columns.");
 	}
 	else {
 		register const int c1=col1-1;
@@ -592,9 +634,10 @@ void Matrix::exchange_columns(const int& col1, const int& col2){
 
 //---------------------------------------------------------------------------
 
-void Matrix::reduce_row (int corner) {
+template<typename Integer>
+void Matrix<Integer>::reduce_row (int corner) {
 	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix::reduce_row.");
+		error("error: Bad argument passed to Matrix<Integer>::reduce_row.");
 	}
 	else{
 		register int i,j;
@@ -612,9 +655,10 @@ void Matrix::reduce_row (int corner) {
 
 //---------------------------------------------------------------------------
 
-void Matrix::reduce_row (int corner, Matrix& Left) {
+template<typename Integer>
+void Matrix<Integer>::reduce_row (int corner, Matrix<Integer>& Left) {
 	if ((corner>nr)||(corner>nc)||(Left.nr!=nr)) {
-		error("error: Bad argument passed to Matrix::reduce_row.");
+		error("error: Bad argument passed to Matrix<Integer>::reduce_row.");
 	}
 	else {
 		int i,j;
@@ -635,9 +679,10 @@ void Matrix::reduce_row (int corner, Matrix& Left) {
 
 //---------------------------------------------------------------------------
 
-void Matrix::reduce_column (int corner) {
+template<typename Integer>
+void Matrix<Integer>::reduce_column (int corner) {
 	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix::reduce_column.");
+		error("error: Bad argument passed to Matrix<Integer>::reduce_column.");
 	}
 	else{
 		int i,j;
@@ -655,9 +700,10 @@ void Matrix::reduce_column (int corner) {
 
 //---------------------------------------------------------------------------
 
-void Matrix::reduce_column (int corner, Matrix& Right, Matrix& Right_Inv) {
+template<typename Integer>
+void Matrix<Integer>::reduce_column (int corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
 	if ((corner>nr)||(corner>nc)||(Right.nr!=nc)||(Right.nc!=nc)||(Right_Inv.nr!=nc)||(Right_Inv.nc!=nc)) {
-		error("error: Bad argument passed to Matrix::reduce_columen.");
+		error("error: Bad argument passed to Matrix<Integer>::reduce_columen.");
 	}
 	else {
 		int i,j;
@@ -679,12 +725,13 @@ void Matrix::reduce_column (int corner, Matrix& Right, Matrix& Right_Inv) {
 
 //---------------------------------------------------------------------------
 
-vector<int> Matrix::pivot(int corner){
+template<typename Integer>
+vector<int> Matrix<Integer>::pivot(int corner){
 	int i,j;
 	Integer help=0;
 	vector<int> v(2,0);
 	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix::pivot.");
+		error("error: Bad argument passed to Matrix<Integer>::pivot.");
 		return v;
 	}
 	else{
@@ -706,11 +753,12 @@ vector<int> Matrix::pivot(int corner){
 
 //---------------------------------------------------------------------------
 
-int Matrix::pivot_column(int col){
+template<typename Integer>
+int Matrix<Integer>::pivot_column(int col){
 	int i,j=0;
 	Integer help=0;
 	if ((col>nr)||(col>nc)) {
-		error("error: Bad argument passed to Matrix::pivot_column.");
+		error("error: Bad argument passed to Matrix<Integer>::pivot_column.");
 		return 0;
 	}
 	else{
@@ -728,7 +776,8 @@ int Matrix::pivot_column(int col){
 
 //---------------------------------------------------------------------------
 
-int Matrix::diagonalize(){
+template<typename Integer>
+int Matrix<Integer>::diagonalize(){
 	int rk;
 	int rk_max=min(nr,nc);
 	vector<int> piv(2,0);
@@ -751,11 +800,12 @@ int Matrix::diagonalize(){
 
 //---------------------------------------------------------------------------
 
-int Matrix::rank() const{
+template<typename Integer>
+int Matrix<Integer>::rank() const{
 	int rk;
 	int rk_max=min(nr,nc);
 	vector<int> piv(2,0);
-	Matrix M(*this);
+	Matrix<Integer> M(*this);
 	for (rk = 1; rk <= rk_max; rk++) {
 		piv=M.pivot(rk);
 		if (piv[0]>0) {
@@ -775,7 +825,8 @@ int Matrix::rank() const{
 
 //---------------------------------------------------------------------------
 
-int Matrix::rank_destructiv(){
+template<typename Integer>
+int Matrix<Integer>::rank_destructiv(){
 	register int rk,i,j,Min_Row, rk_max=min(nr,nc);
 	register bool empty;
 	Integer Test, Min;
@@ -816,15 +867,16 @@ int Matrix::rank_destructiv(){
 
 //---------------------------------------------------------------------------
 
-vector<int> Matrix::max_rank_submatrix() const{
+template<typename Integer>
+vector<int> Matrix<Integer>::max_rank_submatrix() const{
 	//may be optimized in two ways
 	//first only a triangular matrix is realy neaded, no full diagonalization is necesary
 	//second the matrix Rows_Exchanges may be computed by Lineare_transformation::transformation
 	int rk,i,j,k;
 	int rk_max=min(nr,nc);
 	vector<int> piv(2,0);
-	Matrix M(*this);
-	Matrix Rows_Exchanges(nr);
+	Matrix<Integer> M(*this);
+	Matrix<Integer> Rows_Exchanges(nr);
 	for (rk = 1; rk <= rk_max; rk++) {
 		piv=M.pivot(rk);
 		if (piv[0]>0) {
@@ -857,7 +909,8 @@ vector<int> Matrix::max_rank_submatrix() const{
 
 //---------------------------------------------------------------------------
 
-vector<int>  Matrix::max_rank_submatrix_lex() const{
+template<typename Integer>
+vector<int>  Matrix<Integer>::max_rank_submatrix_lex() const{
 	int rk=rank();
 	vector<int> v(0);
 	max_rank_submatrix_lex(v,rk);
@@ -866,7 +919,8 @@ vector<int>  Matrix::max_rank_submatrix_lex() const{
 
 //---------------------------------------------------------------------------
 
-vector<int>  Matrix::max_rank_submatrix_lex(const int& rank) const {
+template<typename Integer>
+vector<int>  Matrix<Integer>::max_rank_submatrix_lex(const int& rank) const {
 	vector<int> v(0);
 	max_rank_submatrix_lex(v,rank);
 	return v;
@@ -874,17 +928,18 @@ vector<int>  Matrix::max_rank_submatrix_lex(const int& rank) const {
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::solve(Matrix Right_side, Integer& det) const {
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& det) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	if ((nr!=nc)||(nc!=dim)) {
-		error("error: Bad argument passed to Matrix::solve(Matrix, Integer).");
-		Matrix Solution;
+		error("error: Bad argument passed to Matrix<Integer>::solve(Matrix<Integer>, Integer).");
+		Matrix<Integer> Solution;
 		return Solution;
 	}
 	else {
-		Matrix Left_side(*this);
-		Matrix Solution(dim,nr_sys);
+		Matrix<Integer> Left_side(*this);
+		Matrix<Integer> Solution(dim,nr_sys);
 		Integer S;
 		int piv,rk,i,j,k;
 		for (rk = 1; rk <= dim; rk++) {
@@ -903,7 +958,7 @@ Matrix Matrix::solve(Matrix Right_side, Integer& det) const {
 			det*=Left_side.elements[i][i];
 		}
 		if (det==0) {
-			error("warning: Determinant=0 in Matrix::solve.");
+			error("warning: Determinant=0 in Matrix<Integer>::solve.");
 			return Solution;
 		}
 		else {
@@ -924,17 +979,18 @@ Matrix Matrix::solve(Matrix Right_side, Integer& det) const {
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::solve(Matrix Right_side, vector< Integer >& diagonal, Integer& det) const {
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& det) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	if ((nr!=nc)||(nc!=dim)||(dim!=diagonal.size())) {
-		error("error: Bad argument passed to Matrix::solve(Matrix, vector, Integer).");
-		Matrix Solution;
+		error("error: Bad argument passed to Matrix<Integer>::solve(Matrix<Integer>, vector, Integer).");
+		Matrix<Integer> Solution;
 		return Solution;
 	}
 	else {
-		Matrix Left_side(*this);
-		Matrix Solution(dim,nr_sys);
+		Matrix<Integer> Left_side(*this);
+		Matrix<Integer> Solution(dim,nr_sys);
 		Integer S;
 		int piv,rk,i,j,k;
 		for (rk = 1; rk <= dim; rk++) {
@@ -955,7 +1011,7 @@ Matrix Matrix::solve(Matrix Right_side, vector< Integer >& diagonal, Integer& de
 			diagonal[i]= Left_side.elements[i][i];
 		}
 		if (det==0) {
-			error("warning: Determinant=0 in Matrix::solve.");
+			error("warning: Determinant=0 in Matrix<Integer>::solve.");
 			return Solution;
 		}
 		else {
@@ -976,16 +1032,17 @@ Matrix Matrix::solve(Matrix Right_side, vector< Integer >& diagonal, Integer& de
 
 //---------------------------------------------------------------------------
 
-Matrix Matrix::invert(vector< Integer >& diagonal, Integer& det) const{
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& det) const{
 	if ((nr!=nc)||(nr!=diagonal.size())) {
-		error("error: Bad argument passed to Matrix::invert.");
-		Matrix Solution;
+		error("error: Bad argument passed to Matrix<Integer>::invert.");
+		Matrix<Integer> Solution;
 		return Solution;
 	}
 	else{
-		Matrix Left_side(*this);
-		Matrix Right_side(nr);
-		Matrix Solution(nr,nr);
+		Matrix<Integer> Left_side(*this);
+		Matrix<Integer> Right_side(nr);
+		Matrix<Integer> Solution(nr,nr);
 		Integer S;
 		int piv,rk,i,j,k;
 		for (rk = 1; rk <= nr; rk++) {
@@ -1006,7 +1063,7 @@ Matrix Matrix::invert(vector< Integer >& diagonal, Integer& det) const{
 			diagonal[i]= Left_side.elements[i][i];
 		}
 		if (det==0) {
-			error("error: Determinant=0 in Matrix::invert. Non-invertible Matrix.");
+			error("error: Determinant=0 in Matrix<Integer>::invert. Non-invertible Matrix<Integer>.");
 			return Solution;
 		}
 		else {
@@ -1027,7 +1084,8 @@ Matrix Matrix::invert(vector< Integer >& diagonal, Integer& det) const{
 
 //---------------------------------------------------------------------------
 
-vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
+template<typename Integer>
+vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
 	if (nc == 0 || nr == 0) { //return zero-vector as linear form
 		homogeneous=true;
 		return vector<Integer>(nc,0);
@@ -1035,9 +1093,9 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 	int i;
 	Integer det,buffer;
 	vector<int>  rows=max_rank_submatrix_lex();
-	Matrix Left_Side=submatrix(rows);
-	Matrix Right_Side(nc,1,1);
-	Matrix Solution=Solve(Left_Side, Right_Side, det);
+	Matrix<Integer> Left_Side=submatrix(rows);
+	Matrix<Integer> Right_Side(nc,1,1);
+	Matrix<Integer> Solution=Solve(Left_Side, Right_Side, det);
 	det=Iabs(det);
 	vector<Integer> Linear_Form(nc);
 	for (i = 0; i <nc; i++) {
@@ -1056,7 +1114,8 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 	return Linear_Form;
 }
 
-vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
+template<typename Integer>
+vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 	int rank=(*this).rank();
 	if (rank == 0) { //return zero-vector as linear form
 		homogeneous=true;
@@ -1068,11 +1127,11 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 
 	// prepare basis change
 	vector <int> key = max_rank_submatrix_lex(rank);
-	Matrix Full_Rank_Matrix = submatrix(key);  // has maximal number of linear independent lines
-	Lineare_Transformation Basis_Change = Transformation(Full_Rank_Matrix);
+	Matrix<Integer> Full_Rank_Matrix = submatrix(key);  // has maximal number of linear independent lines
+	Lineare_Transformation<Integer> Basis_Change = Transformation(Full_Rank_Matrix);
 	rank=Basis_Change.get_rank();
-	Matrix V=Basis_Change.get_right();
-	Matrix Change_To_Full_Emb(nc,rank);
+	Matrix<Integer> V=Basis_Change.get_right();
+	Matrix<Integer> Change_To_Full_Emb(nc,rank);
 	int i,j;
 	for (i = 1; i <=nc; i++) {
 		for (j = 1; j <= rank; j++) {
@@ -1081,7 +1140,7 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 	}
 	
 	//apply basis change
-	Matrix Full_Cone_Generators = Full_Rank_Matrix.multiplication(Change_To_Full_Emb);
+	Matrix<Integer> Full_Cone_Generators = Full_Rank_Matrix.multiplication(Change_To_Full_Emb);
 	//compute linear form
 	vector<Integer> Linear_Form = Full_Cone_Generators.homogeneous(homogeneous);
 	if (homogeneous) {
@@ -1108,13 +1167,14 @@ vector<Integer> Matrix::homogeneous_low_dim (bool& homogeneous) const{
 }
 //---------------------------------------------------------------------------
 
-bool Matrix::test_solve(const Matrix& Solution, const Matrix& Right_side,
+template<typename Integer>
+bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<Integer>& Right_side,
 		const Integer& det,const int& m) const{
-	Matrix LS=multiplication(Solution,m);
-	Matrix RS=Right_side;
+	Matrix<Integer> LS=multiplication(Solution,m);
+	Matrix<Integer> RS=Right_side;
 	RS.scalar_multiplication(Iabs(det));
 	if (LS.equal(RS,m)!=true) {
-		error("error: Matrix::test_solve failed.\nPossible arithmetic overflow in Matrix::solve.\n");
+		error("error: Matrix<Integer>::test_solve failed.\nPossible arithmetic overflow in Matrix<Integer>::solve.\n");
 		return false;
 	}
 	return true;
@@ -1123,13 +1183,13 @@ bool Matrix::test_solve(const Matrix& Solution, const Matrix& Right_side,
 
 //---------------------------------------------------------------------------
 
-bool Matrix::test_invert(const Matrix& Solution,
-		const Integer& det,const int& m) const{
-	Matrix LS=multiplication(Solution,m);
-	Matrix RS(nr);
+template<typename Integer>
+bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer& det,const int& m) const{
+	Matrix<Integer> LS=multiplication(Solution,m);
+	Matrix<Integer> RS(nr);
 	RS.scalar_multiplication(Iabs(det));
 	if (LS.equal(RS,m)!=true) {
-		error("error: Matrix::test_invert failed.\nPossible arithmetic overflow in Matrix::invert.\n");
+		error("error: Matrix<Integer>::test_invert failed.\nPossible arithmetic overflow in Matrix<Integer>::invert.\n");
 		return false;
 	}
 	return true;
@@ -1138,15 +1198,17 @@ bool Matrix::test_invert(const Matrix& Solution,
 
 //---------------------------------------------------------------------------
 
-void Matrix::error(string s) const{
-	cerr <<"\nMatrix "<< s<<"\n";
+template<typename Integer>
+void Matrix<Integer>::error(string s) const{
+	cerr <<"\nMatrix<Integer> "<< s<<"\n";
 	global_error_handling();
 }
 
 //---------------------------------------------------------------------------
 
-Matrix Solve(const Matrix& Left_side, const Matrix& Right_side,Integer& det){
-	Matrix S=Left_side.solve(Right_side,det);
+template<typename Integer>
+Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& det){
+	Matrix<Integer> S=Left_side.solve(Right_side,det);
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_solve(S,Right_side,det,overflow_test_modulus);
 		if (testing==false) {
@@ -1159,8 +1221,9 @@ Matrix Solve(const Matrix& Left_side, const Matrix& Right_side,Integer& det){
 
 //---------------------------------------------------------------------------
 
-Matrix Invert(const Matrix& Left_side,  vector< Integer >& diagonal ,Integer& det){
-	Matrix S=Left_side.invert(diagonal,det);
+template<typename Integer>
+Matrix<Integer> Invert(const Matrix<Integer>& Left_side,  vector< Integer >& diagonal ,Integer& det){
+	Matrix<Integer> S=Left_side.invert(diagonal,det);
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_invert(S,det,overflow_test_modulus);
 		if (testing==false) {

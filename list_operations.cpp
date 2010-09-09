@@ -27,8 +27,9 @@
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 int l_read(const list< vector<Integer> >& l){
-	list< vector<Integer> >::const_iterator i;
+	typename list< vector<Integer> >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
 		v_read(*i);
 	}
@@ -37,8 +38,9 @@ int l_read(const list< vector<Integer> >& l){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 int l_read(const list< vector<int> >& l){
-	list< vector<int> >::const_iterator i;
+	typename list< vector<int> >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
 		v_read(*i);
 	}
@@ -47,8 +49,9 @@ int l_read(const list< vector<int> >& l){
 
 //---------------------------------------------------------------------------
 
-int l_read(const list< Simplex >& l){
-	list< Simplex >::const_iterator i;
+template<typename Integer>
+int l_read(const list< Simplex<Integer> >& l){
+	typename list< Simplex<Integer> >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
 		(*i).read_k();
 	}
@@ -57,8 +60,9 @@ int l_read(const list< Simplex >& l){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 int l_read(const list< int >& l){
-	list< int >::const_iterator i;
+	typename list< int >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
 		cout<<(*i)<<" ";
 	}
@@ -68,10 +72,11 @@ int l_read(const list< int >& l){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 vector<Integer> l_multiplication(const list< vector<Integer> >& l,const vector<Integer>& v){
 	register int s=l.size();
 	vector<Integer> p(s);
-	list< vector<Integer> >::const_iterator i;
+	typename list< vector<Integer> >::const_iterator i;
 	s=0;
 	for (i =l.begin(); i != l.end(); i++) {
 		p[s]=v_scalar_product(*i,v);             //maybe we loose time here?
@@ -82,10 +87,11 @@ vector<Integer> l_multiplication(const list< vector<Integer> >& l,const vector<I
 
 //---------------------------------------------------------------------------
 
-list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const Matrix& M){
+template<typename Integer>
+list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const Matrix<Integer>& M){
 	list< vector<Integer> > result;
 	vector<Integer> p;
-	list< vector<Integer> >::const_iterator i;
+	typename list< vector<Integer> >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
 		p=M.VxM(*i);
 		result.push_back(p);
@@ -94,8 +100,9 @@ list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const M
 }
 //---------------------------------------------------------------------------
 
+template<typename Integer>
 void  l_cut(list<  vector<Integer> >& l, int size){
-	list< vector<Integer> >::iterator i;
+	typename list< vector<Integer> >::iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
 		(*i).resize(size);
 	}
@@ -104,8 +111,9 @@ void  l_cut(list<  vector<Integer> >& l, int size){
 //---------------------------------------------------------------------------
 
 
+template<typename Integer>
 void  l_cut_front(list<  vector<Integer> >& l, int size){
-	list< vector<Integer> >::iterator i;
+	typename list< vector<Integer> >::iterator i;
 	vector<Integer> tmp;
 	for (i =l.begin(); i != l.end(); ) {
 		tmp=v_cut_front(*i, size);

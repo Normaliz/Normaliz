@@ -26,14 +26,15 @@
 #include "matrix.h"
 #include "sublattice_representation.h"
 
+template<typename Integer>
 class Cone_Dual_Mode {
 public:
 	int dim;
 	int nr_sh;
 	int hyp_size;
 	
-	Matrix SupportHyperplanes;
-	Matrix Generators;
+	Matrix<Integer> SupportHyperplanes;
+	Matrix<Integer> Generators;
 	list<vector<Integer> > GeneratorList; //only temporarily used
 	list<vector<Integer> > Hilbert_Basis;
 
@@ -61,7 +62,7 @@ public:
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
 	void cut_with_halfspace_hilbert_basis(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
-	Matrix cut_with_halfspace(const int & hyp_counter, const Matrix & Basis_Max_Subspace);
+	Matrix<Integer> cut_with_halfspace(const int & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);
 
 	/* computes the extreme rays using reduction, used for the dual algorithm */
 	void extreme_rays_reduction();
@@ -71,8 +72,8 @@ public:
 	void relevant_support_hyperplanes();
 
 	Cone_Dual_Mode();
-	Cone_Dual_Mode(Matrix M);            //main constructor
-	Cone_Dual_Mode(const Cone_Dual_Mode & C); //copy constructor
+	Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
+	Cone_Dual_Mode(const Cone_Dual_Mode<Integer> & C); //copy constructor
 	~Cone_Dual_Mode();                   //destructor
 
 /*---------------------------------------------------------------------------
@@ -80,9 +81,9 @@ public:
  *---------------------------------------------------------------------------
  */
 	void print() const;                //to be modified, just for tests
-	Matrix get_support_hyperplanes() const;
-	Matrix get_generators() const;
-	Matrix read_hilbert_basis() const;
+	Matrix<Integer> get_support_hyperplanes() const;
+	Matrix<Integer> get_generators() const;
+	Matrix<Integer> read_hilbert_basis() const;
 
 
 
@@ -93,7 +94,7 @@ public:
 	void hilbert_basis_dual();
 
 	/* transforms all data to the sublattice */
-	void to_sublattice(Sublattice_Representation SR);
+	void to_sublattice(Sublattice_Representation<Integer> SR);
 
 	void error(string s) const;
 };

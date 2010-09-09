@@ -28,6 +28,7 @@ using namespace std;
 
 #include "Normaliz.h"
 
+#include "libnormaliz.cpp"
 
 // this function determinates if and how the program will be terminated in case of errors
 void global_error_handling(){
@@ -72,10 +73,25 @@ int main(int argc, char* argv[])
 	//it is set by the setup file or by the options "s", "v", "n", "p", "h" and "d" in the command line
 	//the type given in the command line overrides the type set by the setup file
 	string output_name;         //name of the output file(s) saved here
-	Output Out;                //all the information relevant for output is collected
-	//in this object
 
-	// read commandline options 
+	//default: norm64
+	#ifndef normbig
+		#ifndef norm64
+			#define norm64
+		#endif
+	#endif
+
+	#ifdef norm64
+		typedef  long long Integer;
+	#endif
+
+	#ifdef normbig
+		typedef  mpz_class Integer;
+	#endif
+	Output<Integer> Out;    //all the information relevant for output is collected in this object
+
+
+	// read command line options
 	bool filename_set=false;
 	string option;            //all options concatenated (including -)
 	for (i = 1; i <argc; i++) {
@@ -175,10 +191,12 @@ int main(int argc, char* argv[])
 	}
 
 
+
+
 	//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
-#ifdef normbig
-	test_arithmetic_overflow=false;
-#endif
+	#ifdef normbig
+		test_arithmetic_overflow=false;
+	#endif
 
 
 
@@ -229,7 +247,7 @@ int main(int argc, char* argv[])
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
-	Matrix M(nr_rows,nr_columns);
+	Matrix<Integer> M(nr_rows,nr_columns);
 	for(i=1; i<=nr_rows; i++){
 		for(j=1; j<=nr_columns; j++) {
 			in >> number;
@@ -282,7 +300,7 @@ int main(int argc, char* argv[])
 		if (mode == 6) {
 			nc--;  //the congruence matrix has one extra column
 		}
-		Matrix Inequalities(0,nc), Equations(0,nc), Congruences(0,nc+1);
+		Matrix<Integer> Inequalities(0,nc), Equations(0,nc), Congruences(0,nc+1);
 		switch(mode) {
 			case 4: Inequalities = M;
 			        break;
@@ -298,7 +316,7 @@ int main(int argc, char* argv[])
 			in >> nr_columns;
 			if (in.eof())
 				break;  //not enough data to read on
-			M = Matrix(nr_rows,nr_columns);
+			M = Matrix<Integer>(nr_rows,nr_columns);
 			for(i=1; i<=nr_rows; i++){
 				for(j=1; j<=nr_columns; j++) {
 					in >> number;

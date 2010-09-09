@@ -43,7 +43,8 @@ extern void global_error_handling();
 
 //---------------------------------------------------------------------------
 
-void make_main_computation(const int& mode, string& computation_type,const Matrix& Input, Output& Out){
+template<typename Integer>
+void make_main_computation(const int& mode, string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
 	if ((mode<0 || mode>6) && mode!=10) {
 		cerr<<"warning: Unknown computation mode "<<mode<<". The program will run in computation mode 0."<<endl;
 		run_mode_0(computation_type,Input, Out);
@@ -55,24 +56,25 @@ void make_main_computation(const int& mode, string& computation_type,const Matri
 		case 1: run_mode_1(computation_type,Input, Out);break;
 		case 2: run_mode_2(computation_type,Input, Out);break;
 		case 3: run_mode_3(computation_type,Input, Out);break;
-		case 4: run_mode_456(computation_type, Matrix(0,dim), Matrix(0,dim), Input, Out);break;
-		case 5: run_mode_456(computation_type, Matrix(0,dim), Input, Matrix(0,dim), Out);break;
-		case 6: run_mode_456(computation_type, Input, Matrix(0,dim), Matrix(0,dim), Out);break;
+		case 4: run_mode_456(computation_type, Matrix<Integer>(0,dim), Matrix<Integer>(0,dim), Input, Out);break;
+		case 5: run_mode_456(computation_type, Matrix<Integer>(0,dim), Input, Matrix<Integer>(0,dim), Out);break;
+		case 6: run_mode_456(computation_type, Input, Matrix<Integer>(0,dim), Matrix<Integer>(0,dim), Out);break;
 		case 10: run_mode_10(computation_type,Input, Out);break;
 	}
 }
 
 //---------------------------------------------------------------------------
 
-void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
+template<typename Integer>
+void run_mode_0( string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
 	if (computation_type=="dual") {
 		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
 		cerr<<"The program will run in hilbert_basis mode."<<endl;
 		computation_type="hilbert_basis";
 	}
-	Sublattice_Representation Basis_Change(Input,true);
-	Matrix Full_Cone_Generators = Basis_Change.to_sublattice(Input);
-	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
+	Sublattice_Representation<Integer> Basis_Change(Input,true);
+	Matrix<Integer> Full_Cone_Generators = Basis_Change.to_sublattice(Input);
+	Full_Cone<Integer> Result = make_computations(computation_type, Full_Cone_Generators);
 
 	Out.set_result(Result);
 	Out.compose_basis_change(Basis_Change);
@@ -81,15 +83,16 @@ void run_mode_0( string& computation_type,const Matrix& Input, Output& Out){
 
 //---------------------------------------------------------------------------
 
-void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
+template<typename Integer>
+void run_mode_1( string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
 	if (computation_type=="dual") {
 		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
 		cerr<<"The program will run in computation mode hilbert_basis."<<endl;
 		computation_type="hilbert_basis";
 	}
-	Sublattice_Representation Basis_Change(Input,false);
-	Matrix Full_Cone_Generators = Basis_Change.to_sublattice(Input);
-	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
+	Sublattice_Representation<Integer> Basis_Change(Input,false);
+	Matrix<Integer> Full_Cone_Generators = Basis_Change.to_sublattice(Input);
+	Full_Cone<Integer> Result = make_computations(computation_type, Full_Cone_Generators);
 
 	Out.set_result(Result);
 	Out.compose_basis_change(Basis_Change);
@@ -98,7 +101,8 @@ void run_mode_1( string& computation_type,const Matrix& Input, Output& Out){
 
 //---------------------------------------------------------------------------
 
-void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
+template<typename Integer>
+void run_mode_2( string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
 	if (computation_type=="dual") {
 		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
 		cerr<<"The program will run in computation mode hilbert_basis."<<endl;
@@ -106,7 +110,7 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 	}
 	int i,j,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
 	Integer number;
-	Matrix Generators(nr_rows,nr_columns+1,1);
+	Matrix<Integer> Generators(nr_rows,nr_columns+1,1);
 	for(i=1; i<=nr_rows; i++){
 		for(j=1; j<=nr_columns; j++) {
 			number=Input.read(i,j);
@@ -114,9 +118,9 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 		}
 	}
 
-	Sublattice_Representation Basis_Change(Generators,true);
-	Matrix Full_Cone_Generators = Basis_Change.to_sublattice(Generators);
-	Full_Cone Result = make_computations(computation_type, Full_Cone_Generators);
+	Sublattice_Representation<Integer> Basis_Change(Generators,true);
+	Matrix<Integer> Full_Cone_Generators = Basis_Change.to_sublattice(Generators);
+	Full_Cone<Integer> Result = make_computations(computation_type, Full_Cone_Generators);
 
 	Out.set_result(Result);
 	Out.compose_basis_change(Basis_Change);
@@ -125,7 +129,8 @@ void run_mode_2( string& computation_type,const Matrix& Input, Output& Out){
 
 //---------------------------------------------------------------------------
 
-void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
+template<typename Integer>
+void run_mode_3( string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
 	if (computation_type=="dual") {
 		cerr<<"Computation mode \"dual\" not implemented for this input type."<<endl;
 		cerr<<"The program will run in computation mode hilbert_basis."<<endl;
@@ -134,7 +139,7 @@ void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 	int i,j,k,l,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
 	bool primary=true;
 	Integer number;
-	Matrix Full_Cone_Generators(nr_rows+nr_columns,nr_columns+1,0);
+	Matrix<Integer> Full_Cone_Generators(nr_rows+nr_columns,nr_columns+1,0);
 	for (i = 1; i <= nr_columns; i++) {
 		Full_Cone_Generators.write(i,i,1);
 	}
@@ -145,7 +150,7 @@ void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 			Full_Cone_Generators.write(i+nr_columns,j,number);
 		}
 	}
-	Matrix Prim_Test=Input;
+	Matrix<Integer> Prim_Test=Input;
 	for(i=1; i<=nr_rows; i++){           //preparing the  matrix for primarity test
 		k=0;
 		for(j=1; j<=nr_columns; j++) {
@@ -168,20 +173,21 @@ void run_mode_3( string& computation_type,const Matrix& Input, Output& Out){
 			break;
 		}
 	}
-	Full_Cone Result=make_computations(computation_type, Full_Cone_Generators);
+	Full_Cone<Integer> Result=make_computations(computation_type, Full_Cone_Generators);
 	Out.set_result(Result);
-	Out.compose_basis_change(Sublattice_Representation(Result.read_dimension()));	
+	Out.compose_basis_change(Sublattice_Representation<Integer>(Result.read_dimension()));
 	Out.rees(primary);
 }
 
 //---------------------------------------------------------------------------
 
-void run_mode_4( string& computation_type,const Matrix& Input, const int& nr_equations, Output& Out){
+template<typename Integer>
+void run_mode_4( string& computation_type,const Matrix<Integer>& Input, const int& nr_equations, Output<Integer>& Out){
 	int i;
 	int dim=Input.nr_of_columns();
-	Matrix Equations(nr_equations, dim);
+	Matrix<Integer> Equations(nr_equations, dim);
 	int nr_inequalities=Input.nr_of_rows()-nr_equations;
-	Matrix Inequalities(nr_inequalities, dim);
+	Matrix<Integer> Inequalities(nr_inequalities, dim);
 	for(i=1;i<=nr_inequalities;i++){
 		Inequalities.write(i,Input.read(i));
 	}
@@ -194,15 +200,17 @@ void run_mode_4( string& computation_type,const Matrix& Input, const int& nr_equ
 
 //---------------------------------------------------------------------------
 
-void run_mode_5( string& computation_type,const Matrix& Input, Output& Out){
+template<typename Integer>
+void run_mode_5( string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
 	int dim=Input.nr_of_columns();
-	Matrix Inequalities(dim);
+	Matrix<Integer> Inequalities(dim);
 	run_mode_equ_inequ(computation_type,Input,Inequalities,Out);    
 }
 
 //---------------------------------------------------------------------------
 
-void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Equations,  Matrix Inequalities, Output& Out) {
+template<typename Integer>
+void run_mode_456(string& computation_type, const Matrix<Integer>& Congruences, Matrix<Integer> Equations,  Matrix<Integer> Inequalities, Output<Integer>& Out) {
 	
 
 	int dim = 0;
@@ -220,7 +228,7 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 	}
 	// use positive orthant if no inequalities are given
 	if (Inequalities.nr_of_rows() == 0) {
-		Inequalities = Matrix(Equations.nr_of_columns()); 
+		Inequalities = Matrix<Integer>(Equations.nr_of_columns());
 	}
 		
 	// handle Congurences
@@ -228,7 +236,7 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		int i,j;
 		
 		//add slack variables
-		Matrix Cong_Slack(nr_cong, dim+nr_cong);
+		Matrix<Integer> Cong_Slack(nr_cong, dim+nr_cong);
 		for (i = 1; i <= nr_cong; i++) {
 			for (j = 1; j <= dim; j++) {
 				Cong_Slack.write(i,j,Congruences.read(i,j));
@@ -237,10 +245,10 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		}
 
 		//compute kernel
-		Lineare_Transformation Diagonalization = Transformation(Cong_Slack);
+		Lineare_Transformation<Integer> Diagonalization = Transformation(Cong_Slack);
 		int rank = Diagonalization.get_rank();
-		Matrix H = Diagonalization.get_right();
-		Matrix Ker_Basis_Transpose(dim, dim+nr_cong-rank);
+		Matrix<Integer> H = Diagonalization.get_right();
+		Matrix<Integer> Ker_Basis_Transpose(dim, dim+nr_cong-rank);
 		for (i = 1; i <= dim; i++) {
 			for (j = rank+1; j <= dim+nr_cong; j++) {
 				Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
@@ -248,7 +256,7 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 		}
 
 		//TODO now a new linear transformation is computed, necessary??
-		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
+		Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),false);
 		Out.compose_basis_change(Basis_Change);
 		Equations = Basis_Change.to_sublattice_dual(Equations);
 		Inequalities = Basis_Change.to_sublattice_dual(Inequalities);
@@ -259,36 +267,37 @@ void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Eq
 
 //---------------------------------------------------------------------------
 
-void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const Matrix& Inequalities, Output& Out){
+template<typename Integer>
+void run_mode_equ_inequ( string& computation_type,const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities, Output<Integer>& Out){
 	int i,j,dim=Equations.nr_of_columns();
-	Lineare_Transformation Diagonalization=Transformation(Equations);
+	Lineare_Transformation<Integer> Diagonalization=Transformation(Equations);
 	int rank=Diagonalization.get_rank();
 
 	if(computation_type!="dual"){
-		Matrix Help=Diagonalization.get_right();
-		Matrix Ker_Basis_Transpose(dim,dim-rank);
+		Matrix<Integer> Help=Diagonalization.get_right();
+		Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
 		for (i = 1; i <= dim; i++) {
 			for (j = rank+1; j <= dim; j++) {
 				Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
 			}
 		}
-		Sublattice_Representation Basis_Change(Ker_Basis_Transpose.transpose(),false);
+		Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),false);
 		Out.compose_basis_change(Basis_Change);
-		Matrix Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
+		Matrix<Integer> Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
 
 		if (verbose) {
 			cout <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
 		}
-		Full_Cone Dual_Cone(Inequ_on_Ker);
+		Full_Cone<Integer> Dual_Cone(Inequ_on_Ker);
 		Dual_Cone.support_hyperplanes();
-		Matrix Extreme_Rays=Dual_Cone.read_support_hyperplanes();
+		Matrix<Integer> Extreme_Rays=Dual_Cone.read_support_hyperplanes();
 		run_mode_0(computation_type, Extreme_Rays, Out);
 	}
 	if(computation_type=="dual"){
-		Matrix H=Diagonalization.get_right();
-		Matrix H_Inv=Diagonalization.get_right_inv();
-		Matrix Ker_Basis_Transpose(dim,dim-rank);
-		Matrix Ker_Basis_Transpose_Inv(dim-rank,dim);
+		Matrix<Integer> H=Diagonalization.get_right();
+		Matrix<Integer> H_Inv=Diagonalization.get_right_inv();
+		Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
+		Matrix<Integer> Ker_Basis_Transpose_Inv(dim-rank,dim);
 		for (i = 1; i <= dim; i++) {
 			for (j = rank+1; j <= dim; j++) {
 				Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
@@ -298,14 +307,14 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 		Diagonalization.set_rank(dim-rank);
 		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
 		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
-		Diagonalization.set_center(Matrix(dim-rank));
-		Out.compose_basis_change(Sublattice_Representation(Diagonalization,true));
-		Matrix M=Inequalities.multiplication(Ker_Basis_Transpose);
+		Diagonalization.set_center(Matrix<Integer>(dim-rank));
+		Out.compose_basis_change(Sublattice_Representation<Integer>(Diagonalization,true));
+		Matrix<Integer> M=Inequalities.multiplication(Ker_Basis_Transpose);
 		dim=M.nr_of_columns();
 		Integer norm;
 		vector< Integer > hyperplane;
 		multimap <Integer , vector <Integer> >  Help;
-		multimap <Integer , vector <Integer> >::const_iterator ii;
+		typename multimap <Integer , vector <Integer> >::const_iterator ii;
 		for (i = 1; i <= M.nr_of_rows() ; i++) {
 			hyperplane=M.read(i);
 			norm=0;
@@ -314,21 +323,21 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 			}
 			Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
 		}
-		Matrix Equations_Ordered(M.nr_of_rows(),dim);
+		Matrix<Integer> Equations_Ordered(M.nr_of_rows(),dim);
 		i=1;
 		for (ii=Help.begin(); ii != Help.end(); ii++) {
 			Equations_Ordered.write(i,(*ii).second);
 			i++;
 		}
-		Cone_Dual_Mode Cone1(Equations_Ordered);
+		Cone_Dual_Mode<Integer> Cone1(Equations_Ordered);
 		Cone1.hilbert_basis_dual();
-		//Cone1 zu einem Full_Cone machen
+		//Cone1 zu einem Full_Cone<Integer> machen
 		if ( Cone1.Generators.rank() < Cone1.dim ) {
-			Sublattice_Representation SR(Cone1.Generators,true);
+			Sublattice_Representation<Integer> SR(Cone1.Generators,true);
 			Cone1.to_sublattice(SR);
 			Out.compose_basis_change(SR);
 		}
-		Full_Cone Result(Cone1);
+		Full_Cone<Integer> Result(Cone1);
 		Result.dual_mode();
 		Out.set_result(Result);
 		Out.cone();
@@ -337,7 +346,8 @@ void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const
 
 //---------------------------------------------------------------------------
 
-void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out){
+template<typename Integer>
+void run_mode_10( string& computation_type,const Matrix<Integer>& Binomials, Output<Integer>& Out){
 	if (computation_type=="dual") {
 		cerr<<"Computation mode \"dual\" not implemented for input type 10."<<endl;
 		cerr<<"The program terminates."<<endl;
@@ -345,28 +355,29 @@ void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out)
 	}
 
 	int i,j, nr_of_monoid_generators=Binomials.nr_of_columns();
-	Lineare_Transformation Diagonalization=Transformation(Binomials);
+	Lineare_Transformation<Integer> Diagonalization=Transformation(Binomials);
 	int rank=Diagonalization.get_rank();
-	Matrix Help=Diagonalization.get_right();
-	Matrix Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
+	Matrix<Integer> Help=Diagonalization.get_right();
+	Matrix<Integer> Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
 	for (i = 1; i <= nr_of_monoid_generators; i++) {
 		for (j = rank+1; j <= nr_of_monoid_generators; j++) {
 			Generators.write(i,j-rank,Help.read(i,j));
 		}
 	}
-	Full_Cone C(Generators);
+	Full_Cone<Integer> C(Generators);
 	C.support_hyperplanes();
-	Matrix Supp_Hyp=C.read_support_hyperplanes();
-	Matrix Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
-	Matrix Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
+	Matrix<Integer> Supp_Hyp=C.read_support_hyperplanes();
+	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
+	Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
 	Out.set_original_generators(Positive_Embedded_Generators);
 	run_mode_1( computation_type, Positive_Embedded_Generators, Out);
 }
 
 //---------------------------------------------------------------------------
 
-Full_Cone make_computations(const string& computation_type, const Matrix& Full_Cone_Generators){
-	Full_Cone C(Full_Cone_Generators);
+template<typename Integer>
+Full_Cone<Integer> make_computations(const string& computation_type, const Matrix<Integer>& Full_Cone_Generators){
+	Full_Cone<Integer> C(Full_Cone_Generators);
 	if (computation_type=="triangulation_hilbert_basis"){
 		C.triangulation_hilbert_basis();
 	}

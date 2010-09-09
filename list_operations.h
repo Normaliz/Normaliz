@@ -34,26 +34,34 @@ using namespace std;
 #include "libnormaliz.h"
 #include "simplex.h"
 //---------------------------------------------------------------------------
-//							Data acces
+//							Data access
 //---------------------------------------------------------------------------
 
+template<typename Integer>
  int l_read(const list< vector<Integer> >& l);  //used for tests, returns size of l
+template<typename Integer>
  int l_read(const list< vector<int> >& l);  //used for tests, returns size of l
- int l_read(const list<Simplex>& l);  //used for tests, returns size of l
+template<typename Integer>
+ int l_read(const list< Simplex<Integer> >& l);  //used for tests, returns size of l
+template<typename Integer>
  int l_read(const list<int>& l);  //used for tests, returns size of l
 
 //---------------------------------------------------------------------------
 //						   List operations
 //---------------------------------------------------------------------------
 
+template<typename Integer>
  vector<Integer> l_multiplication(const list< vector<Integer> >& l,const vector<Integer>& v);
  //the list shall contain only vectors of size=v.size(). Returns a vector
  //containing all the scalar products  (we see l as as matrix and return l*v).
- list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const Matrix& M);
+template<typename Integer>
+ list< vector<Integer> > l_list_x_matrix(const list< vector<Integer> >& l,const Matrix<Integer>& M);
  //the list shall contain only vectors of size=M.nr_of_rows(). Returns a list
  //containing the product  (we see l as as matrix and return l*M).
+template<typename Integer>
  void  l_cut(list<  vector<Integer> >& l,int size );
  //cuts all the vectors in l to a given size.
+template<typename Integer>
  void  l_cut_front(list<  vector<Integer> >& l,int size );
  //cuts all the vectors in l to a given size, maintaining the back
 

@@ -28,23 +28,34 @@
 //                              Mode selection
 //---------------------------------------------------------------------------
 
-void make_main_computation(const int& mode, string& run_mode_type, const Matrix& Input, Output& Out);
-void run_mode_0( string& run_mode_type,const Matrix& Input, Output& Out);
-void run_mode_1( string& run_mode_type,const Matrix& Input, Output& Out);
-void run_mode_2( string& run_mode_type,const Matrix& Input, Output& Out);
-void run_mode_3( string& run_mode_type,const Matrix& Input, Output& Out);
-void run_mode_10( string& computation_type,const Matrix& Binomials, Output& Out);
+template<typename Integer>
+void make_main_computation(const int& mode, string& run_mode_type, const Matrix<Integer>& Input, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_0( string& run_mode_type,const Matrix<Integer>& Input, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_1( string& run_mode_type,const Matrix<Integer>& Input, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_2( string& run_mode_type,const Matrix<Integer>& Input, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_3( string& run_mode_type,const Matrix<Integer>& Input, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_10( string& computation_type,const Matrix<Integer>& Binomials, Output<Integer>& Out);
 
-void run_mode_456(string& computation_type, const Matrix& Congruences, Matrix Equations, Matrix Inequalities, Output& Out);
-void run_mode_4( string& run_mode_type,const Matrix& Input, const int& nr_equations, Output& Out);
-void run_mode_5( string& run_mode_type,const Matrix& Input, Output& Out);
-void run_mode_equ_inequ( string& computation_type,const Matrix& Equations, const Matrix& Inequalities, Output& Out);
+template<typename Integer>
+void run_mode_456(string& computation_type, const Matrix<Integer>& Congruences, Matrix<Integer> Equations, Matrix<Integer> Inequalities, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_4( string& run_mode_type,const Matrix<Integer>& Input, const int& nr_equations, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_5( string& run_mode_type,const Matrix<Integer>& Input, Output<Integer>& Out);
+template<typename Integer>
+void run_mode_equ_inequ( string& computation_type,const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities, Output<Integer>& Out);
 
 //---------------------------------------------------------------------------
 //                          Run_mode_type selection
 //---------------------------------------------------------------------------
 
-Full_Cone make_computations(const string& run_mode_type, const Matrix& Full_Cone_Generators);
+template<typename Integer>
+Full_Cone<Integer> make_computations(const string& run_mode_type, const Matrix<Integer>& Full_Cone_Generators);
 
 //---------------------------------------------------------------------------
 #endif

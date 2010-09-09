@@ -15,9 +15,10 @@
 #include "matrix.h"
 
 
+template<typename Integer>
 class Cone {
-	Full_Cone FullDimCone;
-	Sublattice_Representation ChangeToFullDim;
+	Full_Cone<Integer> FullDimCone;
+	Sublattice_Representation<Integer> ChangeToFullDim;
 	list< vector<Integer> > OriginalGenerators;
 
 public:
