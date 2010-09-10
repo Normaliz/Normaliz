@@ -42,6 +42,12 @@ Integer gcd(const Integer& a, const Integer& b){
 	return q1;
 }
 
+template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
+    mpz_class g;
+    mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
+    return g;
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -51,6 +57,12 @@ Integer lcm(const Integer& a, const Integer& b){
 	}
 	else
 		return Iabs<Integer>(a*b/gcd<Integer>(a,b));
+}
+
+template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
+    mpz_class g;
+    mpz_lcm (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
+    return g;
 }
 
 //---------------------------------------------------------------------------

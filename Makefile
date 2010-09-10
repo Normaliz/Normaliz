@@ -29,7 +29,7 @@ obj64/%.o: %.cpp %.h $(HEADERS)
 	@mkdir -p obj64
 	$(CXX) $(CXXFLAGS) $(N64FLAGS) -c $< -o $@
 norm64: Normaliz.cpp $(N64OBJ)
-	$(CXX) $(CXXFLAGS) $(N64FLAGS) Normaliz.cpp -o norm64
+	$(CXX) $(CXXFLAGS) $(N64FLAGS) Normaliz.cpp $(GMPFLAGS) -o norm64
 
 objBig/%.o: %.cpp $(HEADERS)
 	@mkdir -p objBig
