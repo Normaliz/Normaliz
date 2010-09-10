@@ -44,16 +44,14 @@ template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
 
 // returns the absolute value of a
 template<typename Integer> inline Integer Iabs(const Integer& a) {
-	return (a>=0) ? (a) :( -a);
-}
-template<> inline mpz_class Iabs<mpz_class>(const mpz_class& a) {
-	return a;
+	return (a>=0) ? (a) : Integer(-a);
 }
 
-template<typename Integer> Integer gcd(const Integer& a, const Integer& b);  //returns gcd of a and b
-										//if one is 0 returns the nonzero one
-template<typename Integer> Integer lcm(const Integer& a, const Integer& b);  //returns lcm of a and b
-												//returns 0 if one is 0
+//returns gcd of a and b, 	if one is 0 returns the nonzero one
+template<typename Integer> Integer gcd(const Integer& a, const Integer& b);
+
+//returns lcm of a and b, 	returns 0 if one is 0
+template<typename Integer> Integer lcm(const Integer& a, const Integer& b);
 //---------------------------------------------------------------------------
 //                     Special functions
 //---------------------------------------------------------------------------

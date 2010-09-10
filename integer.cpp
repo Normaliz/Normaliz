@@ -26,14 +26,14 @@
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){
 	if (a==0) {
-		return Iabs(b);
+		return Iabs<Integer>(b);
 	}
 	if (b==0) {
-		return Iabs(a);
+		return Iabs<Integer>(a);
 	}
 	Integer q0,q1,r;
-	q0=Iabs(a);
-	r=Iabs(b);
+	q0=Iabs<Integer>(a);
+	r=Iabs<Integer>(b);
 	do {
 		q1=r;
 		r=q0%q1;
@@ -50,7 +50,7 @@ Integer lcm(const Integer& a, const Integer& b){
 		return 0;
 	}
 	else
-		return Iabs(a*b/gcd(a,b));
+		return Iabs<Integer>(a*b/gcd<Integer>(a,b));
 }
 
 //---------------------------------------------------------------------------
