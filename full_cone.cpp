@@ -41,7 +41,7 @@ extern bool verbose;
 extern bool optimize_speed;
 extern void global_error_handling();
 struct v_compare_shelling {
-	bool operator () (const vector<Integer>& u,const vector<Integer>& v) const 	{
+	bool operator () (const vector<Integer>& u,const vector<Integer>& v) const  {
 		int dim=u.size()-1;
 		Integer a,b;
 		a=u[dim]*v[dim-1];
@@ -56,46 +56,57 @@ struct v_compare_shelling {
 };
 
 
+
 //---------------------------------------------------------------------------
 //private
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_hyperplane(const int& size, const vector<Integer>& positive,const vector<Integer>& negative){
+void Full_Cone::add_hyperplane(list<FMDATA>& HypIndVal,const int& size, const FMDATA & positive,const FMDATA & negative){
 	int k;
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
+	
+	FMDATA NewHypIndVal;
+	
 	Integer used_for_tests;
 	if (test_arithmetic_overflow==true) {  // does arithmetic tests
-		for (k = 0; k <size; k++) {
-			hyperplane[k]=positive[size]*negative[k]-negative[size]*positive[k];
-			used_for_tests =(positive[size]%overflow_test_modulus)*(negative[k]%overflow_test_modulus)-(negative[size]%overflow_test_modulus)*(positive[k]%overflow_test_modulus);
-			if (((hyperplane[k]-used_for_tests) % overflow_test_modulus)!=0) {
+		for (k = 0; k <dim; k++) {
+			NewHypIndVal.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
+			used_for_tests =(positive.ValNewGen%overflow_test_modulus)*(negative.Hyp[k]%overflow_test_modulus)-(negative.ValNewGen%overflow_test_modulus)*(positive.Hyp[k]%overflow_test_modulus);
+			if (((NewHypIndVal.Hyp[k]-used_for_tests) % overflow_test_modulus)!=0) {
 				error("error: Arithmetic failure in Full_cone::add_hyperplane. Possible arithmetic overflow.\n");
 			}
 		}
 	}
 	else  {                      // no arithmetic tests
-		for (k = 0; k <size; k++) {
-			hyperplane[k]=positive[size]*negative[k]-negative[size]*positive[k];
+		for (k = 0; k <dim; k++) {
+			NewHypIndVal.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
 		}
 	}
-	hyperplane=v_make_prime(hyperplane);
+	NewHypIndVal.Hyp=v_make_prime(NewHypIndVal.Hyp);
+	NewHypIndVal.ValNewGen=0; // not really needed, only for completeness
+	
+	NewHypIndVal.GenInHyp=~(~positive.GenInHyp | ~negative.GenInHyp); // new hyperplane is positive on a generator iff neg or pos is it
+	NewHypIndVal.GenInHyp[size]=1;  // new hypwerplane contains new generator
 	
 	#pragma omp critical(HYPERPLANE)
-	Support_Hyperplanes.push_back(hyperplane);
+	HypIndVal.push_back(NewHypIndVal);
 }
 
 
 //---------------------------------------------------------------------------
 
 
-void Full_Cone::transform_values(const int& size, const vector <int> & test_key){
+void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& size, const vector <int> & test_key){
 
 	//to see if possible to replace the function .end with constant iterator since push-back is performed.
+
+	FMDATA DUMMY; // damit es syntaktisch stimmt
 
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	register int i,j,k,t,nr_zero_i,nr_zero_i_and_j,sub=dim-3;
 	
 	const bool tv_verbose = false; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
+	
 		
 	// preparing the computations
 	list < vector<Integer>* > l_Positive_Simplex,l_Positive_Non_Simplex;
@@ -111,7 +122,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
 	int listsize=Support_Hyperplanes.size();
 	//for (ii =Support_Hyperplanes.begin();ii!= Support_Hyperplanes.end();ii++){
-//	#pragma omp parallel for private(simplex, nr_zero_i, k) firstprivate(ipos, ii) schedule(dynamic)
+//  #pragma omp parallel for private(simplex, nr_zero_i, k) firstprivate(ipos, ii) schedule(dynamic)
 	for (int kk=0; kk<listsize; ++kk) {
 		for(;kk > ipos; ++ipos, ++ii) ;
 		for(;kk < ipos; --ipos, --ii) ;
@@ -121,10 +132,10 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			if ((*ii)[k]==0) {
 				nr_zero_i++;
 				if ((*ii)[size]>0) {
-//					#pragma omp atomic
+//                  #pragma omp atomic
 					Zero_Positive[k]=true;
 				} else if ((*ii)[size]<0) {
-//					#pragma omp atomic
+//                  #pragma omp atomic
 					Zero_Negative[k]=true;
 				}
 			}
@@ -134,28 +145,28 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 		}
 		if ((*ii)[size]==0) {
 			if (simplex) {
-//				#pragma omp critical(NeutS)
+//              #pragma omp critical(NeutS)
 				l_Neutral_Simplex.push_back(&(*ii));
-			}	else {
-//				#pragma omp critical(NeutNS)
+			}   else {
+//              #pragma omp critical(NeutNS)
 				l_Neutral_Non_Simplex.push_back(&(*ii));
 			}
 		} else 
 		if ((*ii)[size]>0) {
 			if (simplex) {
-//				#pragma omp critical(PosS)
+//              #pragma omp critical(PosS)
 				l_Positive_Simplex.push_back(&(*ii));
 			} else {
-//				#pragma omp critical(PosNS)
+//              #pragma omp critical(PosNS)
 				l_Positive_Non_Simplex.push_back(&(*ii));
 			}
 		} else 
 		if ((*ii)[size]<0) {
 			if (simplex) {
-//				#pragma omp critical(NegS)
+//              #pragma omp critical(NegS)
 				l_Negative_Simplex.push_back(&(*ii));
 			} else {
-//				#pragma omp critical(NegNS)
+//              #pragma omp critical(NegNS)
 				l_Negative_Non_Simplex.push_back(&(*ii));
 			}
 		}
@@ -216,11 +227,11 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	multimap < vector< int >, int > Negative_Subfacet_Multi;
 
 	
-//	#pragma omp parallel private(i,k,nr_zero_i)
+//  #pragma omp parallel private(i,k,nr_zero_i)
 	{
 	vector< int > zero_i(nr_gen);
 	vector< int > subfacet(dim-2);
-//	#pragma omp for schedule(dynamic)
+//  #pragma omp for schedule(dynamic)
 	for (i=0; i<Negative_Simplex.size();i++){
 		nr_zero_i=0;
 		for (k = dim; k < size; k++) {
@@ -233,12 +244,12 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			for (k = 0; k <dim-2; k++) {
 				subfacet[k]=zero_i[k];
 			}
-//			#pragma omp critical(MULTISET)
+//          #pragma omp critical(MULTISET)
 			Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
 			if (nr_zero_i==dim-1){
 				for (k = dim-2; k >0; k--) {
 					subfacet[k-1]=zero_i[k];
-//					#pragma omp critical(MULTISET)
+//                  #pragma omp critical(MULTISET)
 					Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
 				}
 			}
@@ -341,7 +352,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 			}
 			jj_map=Negative_Subfacet.find(subfacet);
 			if (jj_map!=Negative_Subfacet.end()) {
-				add_hyperplane(size,*Positive_Simplex[i],*Negative_Simplex[(*jj_map).second]);
+				// add_hyperplane(HypIndVal,size,*Positive_Simplex[i],*Negative_Simplex[(*jj_map).second]);
+				add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
 				//Negative_Subfacet.erase(jj_map);
 				(*jj_map).second = -1;
 			}
@@ -350,7 +362,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 					subfacet[k-1]=zero_i[k];
 					jj_map=Negative_Subfacet.find(subfacet);
 					if (jj_map!=Negative_Subfacet.end()) {
-						add_hyperplane(size,*Positive_Simplex[i],*Negative_Simplex[(*jj_map).second]);
+						// add_hyperplane(HypIndVal,size,*Positive_Simplex[i],*Negative_Simplex[(*jj_map).second]);
+						add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
 						//Negative_Subfacet.erase(jj_map);
 						(*jj_map).second = -1;
 					}
@@ -364,7 +377,7 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 	#pragma omp single
 	listsize = Negative_Subfacet.size();
 
-//	for (jj_map = Negative_Subfacet.begin(); jj_map != Negative_Subfacet.end(); ++jj_map) { //Negative_simplex vs. Positive_Non_Simplex
+//  for (jj_map = Negative_Subfacet.begin(); jj_map != Negative_Subfacet.end(); ++jj_map) { //Negative_simplex vs. Positive_Non_Simplex
 	jj_map = Negative_Subfacet.begin();
 	jjpos=0;
 	#pragma omp for schedule(dynamic)
@@ -379,7 +392,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 					if ((*Positive_Non_Simplex[i])[subfacet[k]]!=0)
 						break;
 				if (k==dim-2) {
-					add_hyperplane(size,*Positive_Non_Simplex[i],*Negative_Simplex[(*jj_map).second]);
+					// add_hyperplane(HypIndVal,size,*Positive_Non_Simplex[i],*Negative_Simplex[(*jj_map).second]);
+					add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
 					break;
 				}
 			}
@@ -411,7 +425,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 					if ((*Negative_Non_Simplex[j])[zero_i[k]]==0)
 						nr_zero_i_and_j++;
 				if(nr_zero_i_and_j==dim-2){
-					add_hyperplane(size,*Positive_Simplex[i],*Negative_Non_Simplex[j]);
+					// add_hyperplane(HypIndVal,size,*Positive_Simplex[i],*Negative_Non_Simplex[j]);
+					add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
 					if (nr_zero_i==dim-2) {
 						break;
 					}
@@ -509,7 +524,8 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 						}
 					}
 					if (exactly_two) {  //intersection of i and j is a subfacet
-						add_hyperplane(size,hp_i,*hp_j);
+						// add_hyperplane(HypIndVal,size,hp_i,*hp_j);
+						add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
 					}
 				}
 			}
@@ -535,32 +551,28 @@ void Full_Cone::transform_values(const int& size, const vector <int> & test_key)
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_simplex(const int& new_generator,const int& size,const vector<int>& col, const vector<int>& col_inv){
-	list< vector<Integer> >::const_iterator i=Support_Hyperplanes.begin();
+void Full_Cone::add_simplex(list<FMDATA>& HypIndVal,const int& new_generator,const int& size,const vector<int>& col, const vector<int>& col_inv){
+	list<FMDATA>::const_iterator i=HypIndVal.begin();
 	list< Simplex >::const_iterator j;
 	int nr_zero_i, nr_nonzero_i, not_in_i=0, l, k, s, Triangulation_size=Triangulation.size();
 	vector<int> key(dim);
 
 	int ipos=0;
-	int listsize=Support_Hyperplanes.size();
+	int listsize=HypIndVal.size();
 	//for (i = Support_Hyperplanes.begin(); i != Support_Hyperplanes.end(); i++){
 	#pragma omp parallel for private(j,nr_zero_i,nr_nonzero_i,l,k,s) firstprivate(ipos, i, key, not_in_i) schedule(dynamic)
 	for (int kk=0; kk<listsize; ++kk) {
 		for(;kk > ipos; ++ipos, ++i) ;
 		for(;kk < ipos; --ipos, --i) ;
 
-		if ((*i)[size]<0) {
-			nr_zero_i=0;
-			for (k = dim; k <size; k++) {
-				if ((*i)[k]==0) {
-					nr_zero_i++;
-				}
-			}
+		if ((*i).ValNewGen<0) {
+			nr_zero_i=(*i).GenInHyp.count();
+
 			if (nr_zero_i==dim-1) { //simplicial
 				l=0;
-				for (k = dim; k <size; k++) {
-					if ((*i)[k]==0) {
-						key[l]=col_inv[k-dim]+1;
+				for (k = 0; k <size; k++) {
+					if ((*i).GenInHyp[k]==1) {
+						key[l]=col_inv[k]+1;
 						l++;
 					}
 				}
@@ -576,7 +588,7 @@ void Full_Cone::add_simplex(const int& new_generator,const int& size,const vecto
 					nr_nonzero_i=0;
 					k=0;
 					do{
-						if ((*i)[col[key[k]-1]] !=0) {
+						if ((*i).GenInHyp[col[key[k]-1]] !=1) {
 							nr_nonzero_i++;
 							not_in_i=k;
 						}
@@ -708,7 +720,7 @@ void Full_Cone::reduce_and_insert_speed(const vector< Integer >& new_element){
 							break;
 						}
 					}
-					if (i==s) { 				//new_element is not in the Hilbert Basis
+					if (i==s) {                 //new_element is not in the Hilbert Basis
 						Hilbert_Basis.push_front(*j); //put j to the front, it is a promising candidate to reduce with
 						Hilbert_Basis.erase(j);
 						return;
@@ -749,7 +761,7 @@ void Full_Cone::reduce( list< vector< Integer > >& Ired, list< vector< Integer >
 						Ired.push_front(*j);
 						Ired.erase(j);
 						s=Red.erase(s);
-						//	if(s!=Red.begin())
+						//  if(s!=Red.begin())
 						s--;
 						break;
 					}
@@ -840,7 +852,7 @@ Full_Cone::Full_Cone(){
 Full_Cone::Full_Cone(Matrix M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");	
+		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");   
 	}
 	Generators = M;
 	nr_gen=Generators.nr_of_rows();
@@ -1150,10 +1162,10 @@ vector<Integer> Full_Cone::read_hilbert_polynomial() const{
 
 void Full_Cone::support_hyperplane_common() {
 	 check_pointed();
-    if(!is_pointed) return;
-    compute_extreme_rays();
-    check_ht1_extreme_rays();
-    check_ht1_generated();
+	if(!is_pointed) return;
+	compute_extreme_rays();
+	check_ht1_extreme_rays();
+	check_ht1_generated();
 }
 
 void Full_Cone::support_hyperplanes() {
@@ -1179,7 +1191,7 @@ void Full_Cone::support_hyperplanes_triangulation() {
 	if (is_ht1_extreme_rays && !is_ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
-			     << "making a new triangulation with only extreme rays" <<endl;
+				 << "making a new triangulation with only extreme rays" <<endl;
 			v_read(Extreme_Rays);
 		}
 		Support_Hyperplanes.clear();
@@ -1198,7 +1210,7 @@ void Full_Cone::support_hyperplanes_triangulation_pyramid() {
 	if (is_ht1_extreme_rays && !is_ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
-			     << "making a new triangulation with only extreme rays" <<endl;
+				 << "making a new triangulation with only extreme rays" <<endl;
 			v_read(Extreme_Rays);
 		}
 		Support_Hyperplanes.clear();
@@ -1217,7 +1229,7 @@ void Full_Cone::triangulation_hilbert_basis(){
 	if (is_ht1_extreme_rays && !is_ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
-			     << "making a new triangulation with only extreme rays" <<endl;
+				 << "making a new triangulation with only extreme rays" <<endl;
 			v_read(Extreme_Rays);
 		}
 		Support_Hyperplanes.clear();
@@ -1412,6 +1424,8 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	}
 	int i,j;
 	//Initialization of the list of support hyperplanes
+	
+	list<FMDATA> HypIndVal;
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
 	Simplex S = find_start_simplex();
 
@@ -1455,7 +1469,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
 				int lpos=0;
 				int listsize=Support_Hyperplanes.size();
-				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+				//  for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
 				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
 				for (int k=0; k<listsize; k++) {
 					for(;k > lpos; lpos++, l++) ;
@@ -1495,7 +1509,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 				if (new_generator) {
 					in_triang[i]=true;
 					test_key[size]=i+1;
-					transform_values(size,test_key);
+					transform_values(HypIndVal,size,test_key);
 					size++;
 				}
 				if (verbose==true) {
@@ -1504,7 +1518,7 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 				}
 			}
 		}
-	}	
+	}   
 	
 	l_cut(Support_Hyperplanes,dim);
 	if(do_partial_triangulation && non_compressed.size()>0) process_non_compressed(non_compressed);
@@ -1633,7 +1647,7 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 							for (g = dim; g < size; g++) {
 								if (in_triang[test_key[g] - 1] && (*l)[g] != 0) {  //old gen && not in key
 									scalar_product = v_scalar_product(Generators.read(test_key[g]), (*sub_it));
-									if (scalar_product <= 0) {	 //hyperplane is no new support hyperplane
+									if (scalar_product <= 0) {   //hyperplane is no new support hyperplane
 										break;
 									}
 									scalar_prods[g-dim] = scalar_product;
@@ -1702,6 +1716,7 @@ void Full_Cone::support_hyperplanes_dynamic(){
 	set<Integer> test_simplicial;
 	Integer scalar_product, scalar_product_small;
 	//intialization of the list of support hyperplanes
+	list<FMDATA> HypIndVal;
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
 	Simplex S(Generators);
 	vector<int> key=S.read_key();
@@ -1764,12 +1779,12 @@ void Full_Cone::support_hyperplanes_dynamic(){
 					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
 						(*l)[size]=(*l)[size]+k* (*l)[dim-1];
 					}
-				    
+					
 				}
 				if (new_generator) {
 					in_triang[i]=true;
 					test_key[size]=i+1;
-					transform_values(size,test_key);
+					transform_values(HypIndVal,size,test_key);
 					size++;
 				}
 				if (verbose==true) {
@@ -1793,6 +1808,7 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 	}
 	int i,j;
 	//intialization of the lists of support hyperplanes and triangulation
+	list<FMDATA> HypIndVal;
 	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
 	Simplex S = find_start_simplex();
 	Triangulation.push_back(S);
@@ -1833,7 +1849,7 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
 				int lpos=0;
 				int listsize=Support_Hyperplanes.size();
-				//	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+				//  for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
 				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
 				for (int k=0; k<listsize; ++k) {
 					for(;k > lpos; ++lpos, ++l) ;
@@ -1852,8 +1868,8 @@ void Full_Cone::compute_support_hyperplanes_triangulation(){
 				if (new_generator) {
 					in_triang[i]=true;
 					test_key[size]=i+1;
-					add_simplex(i,size,col,col_inv);
-					transform_values(size,test_key);
+					add_simplex(HypIndVal,i,size,col,col_inv);
+					transform_values(HypIndVal,size,test_key);
 					col[i]=size;
 					col_inv[size-dim]=i;
 					size++;
@@ -1885,7 +1901,7 @@ void Full_Cone::check_pointed() {
 void Full_Cone::check_ht1_generated() {
 	if (is_ht1_extreme_rays) {
 		is_ht1_generated = true;
-	 	for (int i = 0; i < nr_gen; i++) {
+		for (int i = 0; i < nr_gen; i++) {
 			if (v_scalar_product(Generators.read(i+1), Linear_Form) != 1) {
 				is_ht1_generated = false;
 				return ;
@@ -1970,7 +1986,7 @@ void Full_Cone::compute_multiplicity(){
 	int listsize=Triangulation.size();
 	//for (l =Triangulation.begin(); l!=Triangulation.end(); l++) {
 	#pragma omp parallel 
-	{	
+	{   
 	Integer volume;
 	Integer mult=0;
 	list< Simplex >::iterator l=Triangulation.begin();
@@ -2224,7 +2240,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 		#pragma omp parallel private(c,cpos) firstprivate(HBpointers)
 		{
 		
-	//	list< vector<Integer>* > HBcopy(HBpointers); //one copy for each thread
+	//  list< vector<Integer>* > HBcopy(HBpointers); //one copy for each thread
 
 		c=Candidates_with_Scalar_Product.begin();
 		cpos=0;
@@ -2237,7 +2253,7 @@ void Full_Cone::global_reduction(set < vector<Integer> >& Candidates) {
 			}
 			
 			if ( is_reducible(HBpointers, *c) ) {
-				(*c)[0]=-1;	//mark as reducible
+				(*c)[0]=-1; //mark as reducible
 			}
 		}
 		} //end parallel
@@ -2266,7 +2282,7 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 	if(verbose) {
 		cout<<"computing degree function: ";
 	}
-	int i;	
+	int i;  
 	vector<Integer> degree_function(dim,0);
 	if(is_ht1_generated==true){ //use Linear_From in homogeneous case
 		for (i=0; i<dim; i++) {
@@ -2292,13 +2308,13 @@ vector<Integer> Full_Cone::compute_degree_function() const {
 //---------------------------------------------------------------------------
 
 bool Full_Cone::low_part_simplicial(){
-	support_hyperplanes_dynamic();		//change needed for dynamic lifting
+	support_hyperplanes_dynamic();      //change needed for dynamic lifting
 	vector<Integer> val;
 	//int i,counter;
 	list< vector<Integer> >::iterator l;
 	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end();){
 		if ((*l)[dim-1]>0) {         // consider just the lower facets
-/*			val=Generators.MxV((*l));
+/*          val=Generators.MxV((*l));
 			counter=0;
 			for (i = 0; i < nr_gen; i++) {
 				if (val[i]==0) {
@@ -2308,7 +2324,7 @@ bool Full_Cone::low_part_simplicial(){
 			if (counter!=dim-1) {   // more then dim vertices in one lower facet, the facet is not simplicial
 				return false;
 			}
-*/			++l;
+*/          ++l;
 		}
 		else {                     //delete the upper facets
 			l=Support_Hyperplanes.erase(l);  //only this should remain, other test not needed anymore
@@ -2718,11 +2734,11 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 	for (int i=0; i<listsize; ++i) {
 		for(;i > itpos; ++itpos, ++it) ;
 		for(;i < itpos; --itpos, --it) ;
-//		v_read(*it); cout<<" subcone "<<i+1;
+//      v_read(*it); cout<<" subcone "<<i+1;
 		//compute triangulations of subcones
 		Full_Cone subcone(Generators.submatrix(*it),1);
-		subcone.compute_support_hyperplanes_triangulation();	// use normal method to compute triangulation of subcone
-//		subcone.support_hyperplanes(true);				// use "compressed test" method to compute non-compressed subcones of subcone
+		subcone.compute_support_hyperplanes_triangulation();    // use normal method to compute triangulation of subcone
+//      subcone.support_hyperplanes(true);              // use "compressed test" method to compute non-compressed subcones of subcone
 		list< Simplex >::const_iterator sub_it  = subcone.Triangulation.begin();
 		list< Simplex >::const_iterator sub_end = subcone.Triangulation.end();
 		vector<int> key;
@@ -2735,8 +2751,8 @@ void Full_Cone::process_non_compressed(list< vector<int> > &non_compressed) {
 			}
 			#pragma omp critical(TRIANG)
 			Triangulation.push_back(simplex);
-	//		v_read(*sub_it); cout<<" simplex of subcone "<<i+1;
-	//		v_read(simplex); cout<<" corresponding simplex in fullcone";
+	//      v_read(*sub_it); cout<<" simplex of subcone "<<i+1;
+	//      v_read(simplex); cout<<" corresponding simplex in fullcone";
 			++sub_it;
 		}
 		if (verbose_bak && (i+1)%verbose_step==0) {

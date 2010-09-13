@@ -31,12 +31,19 @@ using boost::dynamic_bitset;
 #include "simplex.h"
 #include "cone_dual_mode.h"
 
+/* Data type for Fourier-Motzkin elimination */ 
+typedef struct FMDATA {
+	vector<Integer> Hyp;
+	bitset<192> GenInHyp;
+	Integer ValNewGen;
+};
+
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interferring with other names.
  */
 namespace ConeProperty {
 	enum Enum {
-//		Generators,
+//      Generators,
 		ExtremeRays,
 		SupportHyperplanes,
 		Triangulation,
@@ -78,12 +85,12 @@ class Full_Cone {
 	friend void lift(Full_Cone&, Matrix);
 
 /* ---------------------------------------------------------------------------
- *				Private routines, used in the public routines
+ *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-	void add_hyperplane(const int & size, const vector<Integer> & positive_gen, const vector<Integer> & negative_gen);
-	void transform_values(const int & size, const vector<int> & test_key);
-	void add_simplex(const int & new_generator, const int & size, const vector<int> & col, const vector<int> & col_inv);
+	void add_hyperplane(list<FMDATA>& HypIndVal,const int& size, const FMDATA & positive,const FMDATA & negative);
+	void transform_values(list<FMDATA>& HypIndVal,const int & size, const vector<int> & test_key);
+	void add_simplex(list<FMDATA>& HypIndVal,const int & new_generator, const int & size, const vector<int> & col, const vector<int> & col_inv);
 
 	/* adds a new element to the Hilbert basis */
 	void reduce_and_insert(const vector<Integer> & new_element);
@@ -148,9 +155,9 @@ class Full_Cone {
 	void support_hyperplanes_dynamic();
 
 
-    /* constructor for recursively generated subcones
-     * int i is a dummy parameter to distinguish it from the standard constructor */
-    Full_Cone(Matrix M, int i);
+	/* constructor for recursively generated subcones
+	 * int i is a dummy parameter to distinguish it from the standard constructor */
+	Full_Cone(Matrix M, int i);
 
 public:
 	Full_Cone();
@@ -160,7 +167,7 @@ public:
 	~Full_Cone();                   //destructor
 
 /*---------------------------------------------------------------------------
- *						Data access
+ *                      Data access
  *---------------------------------------------------------------------------
  */
 	void print() const;                //to be modified, just for tests
@@ -188,7 +195,7 @@ public:
 
 
 /*---------------------------------------------------------------------------
- *				Computation Methods
+ *              Computation Methods
  *---------------------------------------------------------------------------
  */
 	void support_hyperplanes();
