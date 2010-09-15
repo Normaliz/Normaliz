@@ -49,7 +49,7 @@ void global_error_handling();
 void printHelp(char* command);
 
 int main(int argc, char* argv[]);
-int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files);
+template<typename Integer> int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files);
 
 //---------------------------------------------------------------------------
 #endif

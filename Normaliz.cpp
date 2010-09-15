@@ -52,6 +52,7 @@ void printHelp(char* command) {
 	cout << "  -f\tthe files .out .gen .inv .typ .cst are written"<<endl;
 	cout << "  -a\tall output files are written"<<endl;
 	cout << "  -e\tperform tests for arithmetic errors"<<endl;
+	cout << "  -B\tuse indefinite precision arithmetic"<<endl;
 	cout << "  -c\tverbose (prints control data)"<<endl;
 	cout << "  -m\tsave memory (currently has no effect)"<<endl;
 	cout << "  -i\tobsolete option"<<endl;
@@ -108,7 +109,9 @@ int main(int argc, char* argv[])
 
 
 	//Analyzing the command line options
-	bool write_extra_files=false, write_all_files=false;
+	bool write_extra_files = false, write_all_files = false;
+	bool use_Big_Integer = false;
+
 	for (i = 1; i <option.size(); i++) {
 		switch (option[i]) {
 			case '-':
@@ -156,6 +159,9 @@ int main(int argc, char* argv[])
 			case 'e':  //check for arithmetic overflow
 				test_arithmetic_overflow=true;
 				break;
+			case 'B':  //use Big Interger
+				use_Big_Integer=true;
+				break;
 			case 'm':  //save memory / don't optimize for speed
 			//	optimize_speed=false;
 				break;
@@ -187,8 +193,17 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	//Read and process Input
-	int returnvalue = process_data(output_name, computation_type, write_extra_files, write_all_files);
+	int returnvalue;
+
+	if(use_Big_Integer) {
+		//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
+		test_arithmetic_overflow=false;
+		//Read and process Input
+		returnvalue = process_data<mpz_class>(output_name, computation_type, write_extra_files, write_all_files);
+	} else {
+		//Read and process Input
+		returnvalue = process_data<long long>(output_name, computation_type, write_extra_files, write_all_files);
+	}
 
 	//exit
 	if (!filename_set) {
@@ -200,23 +215,9 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files ) {
+template<typename Integer> int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files ) {
 	int i,j;
 
-	//default: norm64
-	#ifndef normbig
-		#ifndef norm64
-			#define norm64
-		#endif
-	#endif
-
-	#ifdef norm64
-		typedef  long long Integer;
-	#endif
-
-	#ifdef normbig
-		typedef  mpz_class Integer;
-	#endif
 	Output<Integer> Out;    //all the information relevant for output is collected in this object
 
 	if(write_all_files) {
@@ -250,10 +251,7 @@ int process_data(string& output_name, string& computation_type, bool write_extra
 	}
 
 
-	//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
-	#ifdef normbig
-		test_arithmetic_overflow=false;
-	#endif
+
 
 	string mode_string;
 	int nr_rows,nr_columns, mode;

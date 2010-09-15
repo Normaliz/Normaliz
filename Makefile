@@ -23,8 +23,9 @@ LIBHEADERS = $(LIBSOURCES:.cpp=.h)
 N64OBJ = obj64/libnormaliz.o obj64/full_cone.o obj64/integer.o obj64/cone_dual_mode.o obj64/lineare_transformation.o obj64/list_operations.o obj64/matrix.o obj64/mode.o obj64/output.o obj64/simplex.o obj64/sublattice_representation.o obj64/vector_operations.o
 NBIGOBJ = $(subst obj64,objBig,$(N64OBJ))
 
+default: normaliz
 
-all: norm64 normbig
+all: norm64 normbig normaliz
 
 obj64/%.o: %.cpp %.h $(LIBHEADERS)
 	@mkdir -p obj64
