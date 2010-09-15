@@ -2530,7 +2530,7 @@ void Full_Cone<Integer>::compute_polynomial(){
 		C[0]=permutations<Integer>(1,i+1);
 	}
 	for (i = 0; i <dim; i++) {
-		mult_factor=gcd(Hilbert_Polynomial[2*i],factorial);
+		mult_factor=gcd<Integer>(Hilbert_Polynomial[2*i],factorial);
 		Hilbert_Polynomial[2*i]/= mult_factor;
 		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
 	}

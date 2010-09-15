@@ -1,5 +1,7 @@
 norm32*
 norm64*
 normbig*
+normaliz
 obj*
 *~
+*.o

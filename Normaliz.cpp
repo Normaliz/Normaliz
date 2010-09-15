@@ -19,16 +19,12 @@
 #include <stdlib.h>
 #include <vector>
 #include <list>
-#include <fstream>
-#include <iostream>
-#include <string>
+
 #include <sstream>
 #include <algorithm>
 using namespace std;
 
 #include "Normaliz.h"
-
-#include "libnormaliz.cpp"
 
 // this function determinates if and how the program will be terminated in case of errors
 void global_error_handling(){
@@ -66,7 +62,7 @@ void printHelp(char* command) {
 
 int main(int argc, char* argv[])
 {
-	int i,j;       //used for iterations
+	int i;       //used for iterations
 	char c;
 	string computation_type="triangulation_hilbert_basis";
 	//4  types available, "support_hyperplanes", "triangulation", "normal" and "hilbert_polynomial"
@@ -74,21 +70,7 @@ int main(int argc, char* argv[])
 	//the type given in the command line overrides the type set by the setup file
 	string output_name;         //name of the output file(s) saved here
 
-	//default: norm64
-	#ifndef normbig
-		#ifndef norm64
-			#define norm64
-		#endif
-	#endif
 
-	#ifdef norm64
-		typedef  long long Integer;
-	#endif
-
-	#ifdef normbig
-		typedef  mpz_class Integer;
-	#endif
-	Output<Integer> Out;    //all the information relevant for output is collected in this object
 
 
 	// read command line options
@@ -126,7 +108,7 @@ int main(int argc, char* argv[])
 
 
 	//Analyzing the command line options
-
+	bool write_extra_files=false, write_all_files=false;
 	for (i = 1; i <option.size(); i++) {
 		switch (option[i]) {
 			case '-':
@@ -136,10 +118,10 @@ int main(int argc, char* argv[])
 				verbose=true;
 				break;
 			case 'f':
-				Out.set_write_extra_files();
+				write_extra_files = true;
 				break;
 			case 'a':
-				Out.set_write_all_files();
+				write_all_files = true;
 				break;
 			case 's':
 				computation_type="support_hyperplanes";
@@ -181,26 +163,14 @@ int main(int argc, char* argv[])
 				printHelp(argv[0]);
 				exit(1);
 				break;
-			case 'x': //shouldn't be used with other options
-				cerr<<"Warning: Option -x=<T> has to be seperated from other options"<<endl;
+			case 'x': //should be separated from other options
+				cerr<<"Warning: Option -x=<T> has to be separated from other options"<<endl;
 				break;
 			default:
 				cerr<<"Warning: Unknown option -"<<option[i]<<endl;
 				break;
 		}
 	}
-
-
-
-
-	//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
-	#ifdef normbig
-		test_arithmetic_overflow=false;
-	#endif
-
-
-
-	//Read Input
 
 	if (!filename_set) {
 		cout<<"Normaliz 2.5"<<endl
@@ -213,9 +183,50 @@ int main(int argc, char* argv[])
 		cin >>output_name;
 		if (output_name == "-?") {
 			printHelp(argv[0]);
-			exit(1);
+			return 1;
 		}
 	}
+
+	//Read and process Input
+	int returnvalue = process_data(output_name, computation_type, write_extra_files, write_all_files);
+
+	//exit
+	if (!filename_set) {
+		cout<< "\nType something and press enter to exit.\n";
+		cin >> c;
+	}
+	return returnvalue;
+}
+
+//---------------------------------------------------------------------------
+
+int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files ) {
+	int i,j;
+
+	//default: norm64
+	#ifndef normbig
+		#ifndef norm64
+			#define norm64
+		#endif
+	#endif
+
+	#ifdef norm64
+		typedef  long long Integer;
+	#endif
+
+	#ifdef normbig
+		typedef  mpz_class Integer;
+	#endif
+	Output<Integer> Out;    //all the information relevant for output is collected in this object
+
+	if(write_all_files) {
+		Out.set_write_all_files();
+	} else if (write_extra_files) {
+		Out.set_write_extra_files();
+	}
+
+
+
 	string name_in=output_name+".in";
 	const char* file_in=name_in.c_str();
 	ifstream in, in2;
@@ -228,20 +239,22 @@ int main(int argc, char* argv[])
 			output_name.erase(found);
 			name_in=output_name+".in";
 			file_in=name_in.c_str();
-			in.open(file_in,ifstream::in);
 		}
 	} else {
 		in2.close();
-		in.open(file_in,ifstream::in);
 	}
+	in.open(file_in,ifstream::in);
 	if (in.is_open()==false) {
 		cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
-		if (!filename_set) {
-			cout<< "Type something and press enter to exit."<<endl;
-			cin >> c;
-		}
 		return 1;
 	}
+
+
+	//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
+	#ifdef normbig
+		test_arithmetic_overflow=false;
+	#endif
+
 	string mode_string;
 	int nr_rows,nr_columns, mode;
 	Integer number;
@@ -286,10 +299,6 @@ int main(int argc, char* argv[])
 
 	if ( in.fail() ) {
 		cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file."<<endl;
-		if (!filename_set) {
-			cout<< "Type something and press enter to exit."<<endl;
-			cin >> c;
-		}
 		return 1;
 	}
 
@@ -303,13 +312,13 @@ int main(int argc, char* argv[])
 		Matrix<Integer> Inequalities(0,nc), Equations(0,nc), Congruences(0,nc+1);
 		switch(mode) {
 			case 4: Inequalities = M;
-			        break;
+					break;
 			case 5: Equations = M;
-			        break;
+					break;
 			case 6: Congruences = M;
-			        break;
+					break;
 			default: cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
-			         return 10;
+					 return 1;
 		}
 		while (in.good()) {
 			in >> nr_rows;
@@ -327,10 +336,6 @@ int main(int argc, char* argv[])
 			in>>mode_string;
 			if ( in.fail() ) {
 				cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file?"<<endl;
-				if (!filename_set) {
-					cout<< "Type something and press enter to exit."<<endl;
-					cin >> c;
-				}
 				return 1;
 			}
 
@@ -361,13 +366,13 @@ int main(int argc, char* argv[])
 			
 			switch(mode) {
 				case 4: Inequalities.append(M);
-				        break;
+						break;
 				case 5: Equations.append(M);
-				        break;
+						break;
 				case 6: Congruences.append(M);
-				        break;
+						break;
 				default: cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
-				         return 10;
+						return 10;
 			}
 		
 		}
@@ -388,14 +393,5 @@ int main(int argc, char* argv[])
 		}
 		make_main_computation(mode, computation_type, M, Out);
 	}
-
-
-	//exit
-	if (!filename_set) {
-		cout<< "\nProgram finished. Type something and press enter to exit.\n";
-		cin >> c;
-	}
 	return 0;
 }
-
-//---------------------------------------------------------------------------

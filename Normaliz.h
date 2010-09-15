@@ -21,20 +21,18 @@
 #define NORMALIZ_H
 //---------------------------------------------------------------------------
 
-#include <assert.h>
-
 #ifndef NO_OPENMP
 #include <omp.h>
 #endif
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include "libnormaliz.h"
 
 #include "integer.h"
-#include "vector_operations.h"
 #include "matrix.h"
-#include "list_operations.h"
-#include "lineare_transformation.h"
-#include "full_cone.h"
 #include "output.h"
 #include "mode.h"
 
@@ -51,6 +49,7 @@ void global_error_handling();
 void printHelp(char* command);
 
 int main(int argc, char* argv[]);
+int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files);
 
 //---------------------------------------------------------------------------
 #endif

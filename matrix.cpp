@@ -544,7 +544,7 @@ Integer Matrix<Integer>::matrix_gcd() const{
 	Integer g=0,h;
 	for (int i = 0; i <nr; i++) {
 		h = v_gcd(elements[i]);
-		g = gcd(g, h);
+		g = gcd<Integer>(g, h);
 		if (g==1) return g;
 	}
 	return g;
