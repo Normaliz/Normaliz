@@ -777,7 +777,7 @@ void Output<Integer>::polytop() const{
 		int nr_of_equ = Equations.nr_of_rows();
 		if (nr_of_equ > 0) {
 			max_decimal_length = Equations.maximal_decimal_length();
-			out << nr_of_equ <<" equations:" <<max_decimal_length<<endl;
+			out << nr_of_equ <<" equations:" <<endl;
 			for (i = 1; i <= nr_of_equ; i++) {
 				for (j = 1; j < dim; j++) {
 					buf = Equations.read(i,j);
