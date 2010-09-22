@@ -29,13 +29,14 @@ public:
 	bool isComputed(ConeProperty::Enum prop) const;
 
 	//getter
-	list< vector<Integer> > getExtremeRays() const;
-	list< vector<Integer> > getSupportHyperplanes() const;
-	list< vector<Integer> > getTriangulation() const;
-	list< vector<Integer> > getHilbertBasis() const;
-	list< vector<Integer> > getHt1Elements() const;
-	list< vector<Integer> > getHVector() const;
-	list< vector<Integer> > getHilbertPolynomial() const;
+	list< vector<Integer> > const& getExtremeRays() const;
+	list< vector<Integer> > const& getSupportHyperplanes() const;
+	list< vector<Integer> > const& getTriangulation() const;
+	list< vector<Integer> > const& getHilbertBasis() const;
+	list< vector<Integer> > const& getHt1Elements() const;
+	list< vector<Integer> > const& getHVector() const;
+	list< vector<Integer> > const& getHilbertPolynomial() const;
+	      vector<Integer>   const& getLinearFunction() const;
 	bool isPointed() const;
 	bool isHt1Generated() const;
 	bool isHt1ExtremeRays() const;
