@@ -29,10 +29,10 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-using namespace std;
 
 #include "libnormaliz.h"
 #include "simplex.h"
+
 //---------------------------------------------------------------------------
 //							Data access
 //---------------------------------------------------------------------------

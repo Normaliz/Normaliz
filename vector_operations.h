@@ -25,7 +25,6 @@
 #include <iostream>
 #include <algorithm>
 #include "libnormaliz.h"
-using namespace std;
 
 
 //---------------------------------------------------------------------------

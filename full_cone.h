@@ -22,6 +22,7 @@
 #include <set>
 #include <list>
 #include <bitset>
+
 #include "libnormaliz.h"
 #include "integer.h"
 #include "matrix.h"

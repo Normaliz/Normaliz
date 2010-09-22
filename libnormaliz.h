@@ -17,6 +17,7 @@
 	#include <gmpxx.h>
 #endif
 
+using namespace std;
 
 extern bool verbose;
 

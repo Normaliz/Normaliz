@@ -35,7 +35,7 @@
 #include <string>
 #include <algorithm>
 #include "libnormaliz.h"
-using namespace std;
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
