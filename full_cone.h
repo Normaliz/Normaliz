@@ -29,6 +29,8 @@
 #include "simplex.h"
 #include "cone_dual_mode.h"
 
+namespace libnormaliz {
+
 template<typename Integer> class Full_Cone;
 
 //generates a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
@@ -200,6 +202,7 @@ public:
 //class end *****************************************************************
 //---------------------------------------------------------------------------
 
+}
 
 //---------------------------------------------------------------------------
 #endif

@@ -51,4 +51,4 @@ clean:
 	-rm -f norm64 normbig
 	-rm -f libnormaliz.o normaliz
 
-.PHONY : clean all
+.PHONY : default clean all

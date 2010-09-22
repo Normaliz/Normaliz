@@ -29,7 +29,10 @@
 
 #include "libnormaliz.h"
 #include "integer.h"
+
 //---------------------------------------------------------------------------
+
+namespace libnormaliz {
 
 template<typename Integer> class Matrix {
   int nr;
@@ -233,6 +236,8 @@ Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector<Integer>& diagon
 // solves the system Left_side*Solution=det(Left_side)*Right_side and tests for
 //errors. Left_side should be a quadratic matrix with nonzero determinant.
 //The determinant of Left_side is saved in det.
+
+}
 
 //---------------------------------------------------------------------------
 #endif

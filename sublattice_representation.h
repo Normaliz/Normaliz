@@ -34,6 +34,8 @@
 
 //---------------------------------------------------------------------------
 
+namespace libnormaliz {
+
 template<typename Integer>
 class Sublattice_Representation {
 	int dim, rank;
@@ -117,6 +119,9 @@ public:
 	Matrix<Integer> get_congruences() const;
 
 };
+
+}
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

@@ -26,8 +26,6 @@
 #include <algorithm>
 #include <time.h>
 
-//---------------------------------------------------------------------------
-
 #include "full_cone.h"
 #include "vector_operations.h"
 #include "lineare_transformation.h"
@@ -35,7 +33,7 @@
 
 //---------------------------------------------------------------------------
 
-extern void global_error_handling();
+namespace libnormaliz {
 
 template<typename Integer>
 struct v_compare_shelling {
@@ -2826,3 +2824,4 @@ void Full_Cone<Integer>::process_non_compressed(list< vector<int> > &non_compres
 	verbose=verbose_bak;
 }
 
+}

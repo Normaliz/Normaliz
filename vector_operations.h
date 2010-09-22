@@ -26,6 +26,7 @@
 #include <algorithm>
 #include "libnormaliz.h"
 
+namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 //							Data access
@@ -122,6 +123,8 @@ vector<int> v_non_zero_pos(vector<Integer> v); //returns a key vector containing
 //---------------------------------------------------------------------------
 
 void v_error(string s);
+
+}
 
 //---------------------------------------------------------------------------
 #endif

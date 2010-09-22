@@ -26,6 +26,8 @@
 #include "matrix.h"
 #include "sublattice_representation.h"
 
+namespace libnormaliz {
+
 template<typename Integer>
 class Cone_Dual_Mode {
 public:
@@ -99,6 +101,8 @@ public:
 	void error(string s) const;
 };
 //class end *****************************************************************
+
+}
 
 //---------------------------------------------------------------------------
 #endif

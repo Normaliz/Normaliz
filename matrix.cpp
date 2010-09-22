@@ -20,15 +20,13 @@
 
 #include <fstream>
 
-//---------------------------------------------------------------------------
-
 #include "matrix.h"
 #include "vector_operations.h"
 #include "lineare_transformation.h"
 
 //---------------------------------------------------------------------------
 
-extern void global_error_handling();
+namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 //Private
@@ -1235,3 +1233,4 @@ Matrix<Integer> Invert(const Matrix<Integer>& Left_side,  vector< Integer >& dia
 
 //---------------------------------------------------------------------------
 
+}

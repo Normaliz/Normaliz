@@ -14,6 +14,7 @@
 #include "sublattice_representation.h"
 #include "matrix.h"
 
+namespace libnormaliz {
 
 template<typename Integer>
 class Cone {
@@ -44,5 +45,6 @@ public:
 	bool isIntegrallyClosed() const;
 };
 
+}
 
 #endif /* CONE_H_ */

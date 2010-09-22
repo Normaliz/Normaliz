@@ -37,7 +37,10 @@
 
 #include "libnormaliz.h"
 #include "matrix.h"
+
 //---------------------------------------------------------------------------
+
+namespace libnormaliz {
 
 template<typename Integer>
 class Lineare_Transformation {
@@ -119,6 +122,8 @@ public:
 //makes the main computation, test for errors
 template<typename Integer>
 Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M);
+
+}
 
 //---------------------------------------------------------------------------
 #endif

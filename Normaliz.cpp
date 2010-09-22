@@ -26,14 +26,6 @@ using namespace std;
 
 #include "Normaliz.h"
 
-// this function determinates if and how the program will be terminated in case of errors
-void global_error_handling(){
-	cout<<"Some error detected. The program will be terminated."<<endl;
-	throw 1;
-	exit(1);
-}
-
-
 void printHelp(char* command) {
 	cout << "usage: "<<command<<" [-acdefhimnpsv?] [-x=<T>] [PROJECT]"<<endl;
 	cout << "  runs normaliz on PROJECT.in"<<endl;

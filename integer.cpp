@@ -23,6 +23,8 @@
 
 //---------------------------------------------------------------------------
 
+namespace libnormaliz {
+
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){
 	if (a==0) {
@@ -93,3 +95,4 @@ Integer permutations(const int& a, const int& b){
 
 //---------------------------------------------------------------------------
 
+}

@@ -36,11 +36,7 @@
 #include "output.h"
 #include "mode.h"
 
-
-/**
- * Determinates if and how the program will be terminated in case of errors
- */
-void global_error_handling();
+using namespace libnormaliz;
 
 /**
  * Prints help text

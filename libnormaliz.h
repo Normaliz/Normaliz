@@ -19,6 +19,8 @@
 
 using namespace std;
 
+namespace libnormaliz {
+
 extern bool verbose;
 
 /* if test_arithmetic_overflow is true, many operations are also done
@@ -31,6 +33,12 @@ extern std::ostream& verbose_ostream;
 extern std::ostream& error_ostream;
 
 //extern const unsigned int major_version, minor_version;  //TODO version
+
+/**
+ * Determinates if and how the program will be terminated in case of errors
+ */
+void global_error_handling();
+
 
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interferring with other names.
@@ -51,6 +59,8 @@ namespace ConeProperty {
 		IsIntegrallyClosed,
 		EnumSize // this has to be the last entry, to get the number of entries in the enum
 	};
+}
+
 }
 
 #endif /* LIBNORMALIZ_H_ */

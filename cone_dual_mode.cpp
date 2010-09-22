@@ -25,8 +25,6 @@
 #include <string>
 #include <algorithm>
 
-//---------------------------------------------------------------------------
-
 #include "cone_dual_mode.h"
 #include "vector_operations.h"
 #include "lineare_transformation.h"
@@ -34,7 +32,7 @@
 
 //---------------------------------------------------------------------------
 
-extern void global_error_handling();
+namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 //private
@@ -735,3 +733,4 @@ void Cone_Dual_Mode<Integer>::error(string s) const{
 	global_error_handling();
 }
 
+}

@@ -33,6 +33,8 @@
 #include "libnormaliz.h"
 #include "simplex.h"
 
+namespace libnormaliz {
+
 //---------------------------------------------------------------------------
 //							Data access
 //---------------------------------------------------------------------------
@@ -64,6 +66,8 @@ template<typename Integer>
 template<typename Integer>
  void  l_cut_front(list<  vector<Integer> >& l,int size );
  //cuts all the vectors in l to a given size, maintaining the back
+
+}
 
 //---------------------------------------------------------------------------
 #endif

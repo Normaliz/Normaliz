@@ -24,14 +24,12 @@
 #include <string>
 #include <algorithm>
 
-//---------------------------------------------------------------------------
-
 #include "lineare_transformation.h"
 #include "integer.h"
 
 //---------------------------------------------------------------------------
 
-extern void global_error_handling();
+namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 
@@ -258,3 +256,4 @@ Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
 
 //---------------------------------------------------------------------------
 
+}

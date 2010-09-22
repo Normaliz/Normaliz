@@ -27,7 +27,7 @@
 // It provides abs, gcd and lcm
 //---------------------------------------------------------------------------
 
-
+namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 
@@ -63,6 +63,8 @@ template<typename Integer> int decimal_length(Integer a);
 
 //returns b!/a!
 template<typename Integer> Integer permutations(const int& a, const int& b);
+
+}
 
 //---------------------------------------------------------------------------
 #endif

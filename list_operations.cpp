@@ -27,6 +27,8 @@
 
 //---------------------------------------------------------------------------
 
+namespace libnormaliz {
+
 template<typename Integer>
 int l_read(const list< vector<Integer> >& l){
 	typename list< vector<Integer> >::const_iterator i;
@@ -123,3 +125,5 @@ void  l_cut_front(list<  vector<Integer> >& l, int size){
 }
 
 //---------------------------------------------------------------------------
+
+}

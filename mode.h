@@ -24,6 +24,8 @@
 #include "output.h"
 #include "matrix.h"
 
+namespace libnormaliz {
+
 //---------------------------------------------------------------------------
 //                              Mode selection
 //---------------------------------------------------------------------------
@@ -56,6 +58,8 @@ void run_mode_equ_inequ( string& computation_type,const Matrix<Integer>& Equatio
 
 template<typename Integer>
 Full_Cone<Integer> make_computations(const string& run_mode_type, const Matrix<Integer>& Full_Cone_Generators);
+
+}
 
 //---------------------------------------------------------------------------
 #endif

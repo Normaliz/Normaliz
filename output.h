@@ -26,8 +26,10 @@
 #include "lineare_transformation.h"
 #include "sublattice_representation.h"
 
-
 //---------------------------------------------------------------------------
+
+namespace libnormaliz {
+
 template<typename Integer>
 class Output {
   string name;
@@ -104,6 +106,9 @@ public:
   void error(string s) const;
 };
 //class end *****************************************************************
+
+}
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

@@ -31,6 +31,7 @@
 
 //---------------------------------------------------------------------------
 
+namespace libnormaliz {
 
 /**
  * creates a representation of Z^n as a sublattice of itself
@@ -308,4 +309,6 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
 		}
 	}
 	return Cong2;
+}
+
 }

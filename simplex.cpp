@@ -27,7 +27,7 @@
 
 //---------------------------------------------------------------------------
 
-extern void global_error_handling();
+namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 //Private
@@ -741,4 +741,6 @@ void Simplex<Integer>::clear() {
 	multiplicators.clear();
 	New_Face.clear();
 	status="key initialized";
+}
+
 }

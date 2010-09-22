@@ -25,8 +25,6 @@
 #include <algorithm>
 #include <map>
 
-//---------------------------------------------------------------------------
-
 #include "mode.h"
 #include "integer.h"
 #include "vector_operations.h"
@@ -38,9 +36,7 @@
 
 //---------------------------------------------------------------------------
 
-extern void global_error_handling();
-
-//---------------------------------------------------------------------------
+namespace libnormaliz {
 
 template<typename Integer>
 void make_main_computation(const int& mode, string& computation_type,const Matrix<Integer>& Input, Output<Integer>& Out){
@@ -409,3 +405,4 @@ Full_Cone<Integer> make_computations(const string& computation_type, const Matri
 
 //---------------------------------------------------------------------------
 
+}
