@@ -214,15 +214,13 @@ vector<Integer> Sublattice_Representation<Integer>::from_sublattice (const vecto
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const vector<Integer>& V) const {
 	vector<Integer> N = (A.transpose()).VxM(V);
-	v_make_prime(N);
-	return N;
+	return v_make_prime(N);
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const vector<Integer>& V) const {
 	vector<Integer> N = (B.transpose()).VxM(V);
-	v_make_prime(N);
-	return N;
+	return v_make_prime(N);
 }
 
 //---------------------------------------------------------------------------
