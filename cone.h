@@ -23,8 +23,8 @@ class Cone {
 	list< vector<Integer> > OriginalGenerators;
 
 public:
-	Cone(list< vector<Integer> > input1, int type1);
-	Cone(list< vector<Integer> > input1, int type1, list< vector<Integer> > input2, int type2, list< vector<Integer> > input3, int type3);
+	Cone(list< vector<Integer> > input, int type);
+	Cone(list< vector<Integer> > Inequalities, list< vector<Integer> > Equations, list< vector<Integer> > Congruences=list< vector<Interger> >() );
 
 	void compute(string mode);
 	bool isComputed(ConeProperty::Enum prop) const;

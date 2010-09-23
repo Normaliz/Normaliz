@@ -324,15 +324,15 @@ void run_mode_equ_inequ( string& computation_type,const Matrix<Integer>& Equatio
 			Equations_Ordered.write(i,(*ii).second);
 			i++;
 		}
-		Cone_Dual_Mode<Integer> Cone1(Equations_Ordered);
-		Cone1.hilbert_basis_dual();
-		//Cone1 zu einem Full_Cone<Integer> machen
-		if ( Cone1.Generators.rank() < Cone1.dim ) {
-			Sublattice_Representation<Integer> SR(Cone1.Generators,true);
-			Cone1.to_sublattice(SR);
+		Cone_Dual_Mode<Integer> ConeDM(Equations_Ordered);
+		ConeDM.hilbert_basis_dual();
+		//ConeDM zu einem Full_Cone<Integer> machen
+		if ( ConeDM.Generators.rank() < ConeDM.dim ) {
+			Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
+			ConeDM.to_sublattice(SR);
 			Out.compose_basis_change(SR);
 		}
-		Full_Cone<Integer> Result(Cone1);
+		Full_Cone<Integer> Result(ConeDM);
 		Result.dual_mode();
 		Out.set_result(Result);
 		Out.cone();
