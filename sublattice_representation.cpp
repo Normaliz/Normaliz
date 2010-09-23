@@ -199,14 +199,12 @@ vector<Integer> Sublattice_Representation::from_sublattice (const vector<Integer
 
 vector<Integer> Sublattice_Representation::to_sublattice_dual (const vector<Integer>& V) const {
 	vector<Integer> N = (A.transpose()).VxM(V);
-	v_make_prime(N);
-	return N;
+	return v_make_prime(N);
 }
 
 vector<Integer> Sublattice_Representation::from_sublattice_dual (const vector<Integer>& V) const {
 	vector<Integer> N = (B.transpose()).VxM(V);
-	v_make_prime(N);
-	return N;
+	return v_make_prime(N);
 }
 
 //---------------------------------------------------------------------------
