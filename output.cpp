@@ -390,7 +390,6 @@ void Output<Integer>::write_inv_file() const{
 
 template<typename Integer>
 void Output<Integer>::cone() const{
-cout<<"********************output::cone"<<endl;
 	int i,j,nr,rank=Basis_Change.get_rank();    //read local data
 	Matrix<Integer> Generators = Basis_Change.from_sublattice(Result.read_generators());
 	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result.read_support_hyperplanes();
@@ -550,9 +549,6 @@ cout<<"********************output::cone"<<endl;
 				for (i = 1+rank; i <= dim; i++) {
 					Equations.write(i-rank,Help.read(i));
 				}
-	
-				cout << nr_of_equ <<" equations:" <<endl;
-				Equations.pretty_print(cout);
 	
 				out << nr_of_equ <<" equations:" <<endl;
 				Equations.pretty_print(out);
