@@ -268,18 +268,18 @@ void run_mode_equ_inequ( string& computation_type,const Matrix<Integer>& Equatio
 	Lineare_Transformation<Integer> Diagonalization=Transformation(Equations);
 	int rank=Diagonalization.get_rank();
 
-	if(computation_type!="dual"){
-		Matrix<Integer> Help=Diagonalization.get_right();
-		Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
-		for (i = 1; i <= dim; i++) {
-			for (j = rank+1; j <= dim; j++) {
-				Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
-			}
+	Matrix<Integer> Help=Diagonalization.get_right();
+	Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
+	for (i = 1; i <= dim; i++) {
+		for (j = rank+1; j <= dim; j++) {
+			Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
 		}
-		Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),false);
-		Out.compose_basis_change(Basis_Change);
-		Matrix<Integer> Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
+	}
+	Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),true);
+	Out.compose_basis_change(Basis_Change);
+	Matrix<Integer> Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
 
+	if(computation_type!="dual"){
 		if (verbose) {
 			cout <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
 		}
@@ -289,36 +289,20 @@ void run_mode_equ_inequ( string& computation_type,const Matrix<Integer>& Equatio
 		run_mode_0(computation_type, Extreme_Rays, Out);
 	}
 	if(computation_type=="dual"){
-		Matrix<Integer> H=Diagonalization.get_right();
-		Matrix<Integer> H_Inv=Diagonalization.get_right_inv();
-		Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
-		Matrix<Integer> Ker_Basis_Transpose_Inv(dim-rank,dim);
-		for (i = 1; i <= dim; i++) {
-			for (j = rank+1; j <= dim; j++) {
-				Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
-				Ker_Basis_Transpose_Inv.write(j-rank,i,H_Inv.read(j,i));
-			}
-		}
-		Diagonalization.set_rank(dim-rank);
-		Diagonalization.set_right(Ker_Basis_Transpose_Inv.transpose());
-		Diagonalization.set_right_inv(Ker_Basis_Transpose.transpose());
-		Diagonalization.set_center(Matrix<Integer>(dim-rank));
-		Out.compose_basis_change(Sublattice_Representation<Integer>(Diagonalization,true));
-		Matrix<Integer> M=Inequalities.multiplication(Ker_Basis_Transpose);
-		dim=M.nr_of_columns();
+		dim = Inequ_on_Ker.nr_of_columns();
 		Integer norm;
 		vector< Integer > hyperplane;
 		multimap <Integer , vector <Integer> >  Help;
 		typename multimap <Integer , vector <Integer> >::const_iterator ii;
-		for (i = 1; i <= M.nr_of_rows() ; i++) {
-			hyperplane=M.read(i);
+		for (i = 1; i <= Inequ_on_Ker.nr_of_rows() ; i++) {
+			hyperplane=Inequ_on_Ker.read(i);
 			norm=0;
 			for (j = 0; j <dim; j++) {
 				norm+=Iabs(hyperplane[j]);
 			}
 			Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
 		}
-		Matrix<Integer> Equations_Ordered(M.nr_of_rows(),dim);
+		Matrix<Integer> Equations_Ordered(Inequ_on_Ker.nr_of_rows(),dim);
 		i=1;
 		for (ii=Help.begin(); ii != Help.end(); ii++) {
 			Equations_Ordered.write(i,(*ii).second);
