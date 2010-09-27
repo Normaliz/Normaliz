@@ -372,7 +372,11 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
 		}
-		run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
+		//run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
+		Cone MyCone = Cone(Inequalities, Equations, Congruences);
+		Cone.compute(computation_type);
+		Out.setCone(Cone);
+		Out.cone();
 	} 
 	else { // all other modes
 		in.close();
@@ -381,7 +385,17 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
 		}
-		make_main_computation(mode, computation_type, M, Out);
+		//make_main_computation(mode, computation_type, M, Out);
+		Cone MyCone = Cone(M, mode);
+		Cone.compute(computation_type);
+		Out.setCone(Cone);
+		if (mode == 2) {
+			Out.polytope();
+		} else if (mode == 3) {
+			Out.rees();
+		} else {
+			Out.cone();
+		}
 	}
 	return 0;
 }

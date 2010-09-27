@@ -862,7 +862,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	}
 	hyp_size=dim+nr_gen;
 	multiplicity = 0;
-	is_Computed =  bitset<ConeProperty::EnumSize>();
+	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
 	is_pointed = false;
 	is_ht1_extreme_rays = false;
 	is_ht1_generated = false;
@@ -898,7 +898,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
 	hyp_size = dim+nr_gen;
 	multiplicity = 0;
-	is_Computed =  bitset<ConeProperty::EnumSize>();
+	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
 	is_pointed = true;
 	is_Computed.set(ConeProperty::IsPointed);
 	is_ht1_extreme_rays = false;

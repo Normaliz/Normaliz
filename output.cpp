@@ -50,8 +50,6 @@ Output<Integer>::Output(){
 	sup=false;
 	tri=false;
 	ht1=false;
-	BC_set=false;
-	Original_Generators = Matrix<Integer>(0);
 }
 
 //---------------------------------------------------------------------------
@@ -70,9 +68,6 @@ Output<Integer>::Output(const Output<Integer>& Out){
 	tri=Out.tri;
 	ht1=Out.ht1;
 	Result=Out.Result;
-	Basis_Change=Out.Basis_Change;
-	BC_set=Out.BC_set;
-	Original_Generators = Out.Original_Generators;
 }
 
 //---------------------------------------------------------------------------
@@ -99,8 +94,6 @@ void Output<Integer>::read() const{
 	cout<<"\nht1="<<ht1<<"\n";
 	cout<<"\nResult is:\n";
 	Result.print();
-	cout<<"\nBasis Change is:\n";
-//	Basis_Change.print();
 }
 
 //---------------------------------------------------------------------------
@@ -211,32 +204,6 @@ void Output<Integer>::set_write_all_files(){
 	sup=true;
 	tri=true;
 	ht1=true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Output<Integer>::set_result(const Full_Cone<Integer>& C){
-	Result=C;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Output<Integer>::compose_basis_change(const Sublattice_Representation<Integer>& BC){
-	if (BC_set) {
-		Basis_Change.compose(BC);		
-	} else {
-		Basis_Change=BC;
-		BC_set=true;
-	}
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Output<Integer>::set_original_generators(Matrix<Integer> OG) {
-	Original_Generators = OG;
 }
 
 //---------------------------------------------------------------------------
@@ -1067,14 +1034,6 @@ void Output<Integer>::rees(const bool primary) const{
 		}
 		inv.close();
 	}
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Output<Integer>::error(string s) const{
-	cerr <<"\nOutput<Integer> "<< s<<"\n";
-	global_error_handling();
 }
 
 //---------------------------------------------------------------------------

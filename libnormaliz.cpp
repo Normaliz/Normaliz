@@ -1,12 +1,22 @@
 /*
- * libnormaliz.cpp
+ * Normaliz 2.5
+ * Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  Created on: Aug 24, 2010
- *      Author: csoeger
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 #include "libnormaliz.h"
-#include <stdlib.h> //for exit()
 
 namespace libnormaliz {
 
@@ -20,9 +30,8 @@ std::ostream& error_ostream = std::cerr;
 
 // this function determinates if and how the program will be terminated in case of errors
 void global_error_handling(){
-	cout<<"Some error detected. The program will be terminated."<<endl;
+	cout<<"Some error detected. The program will throw exception."<<endl;
 	throw 1;
-	exit(1);
 }
 
 }
@@ -36,19 +45,10 @@ void global_error_handling(){
 #include "sublattice_representation.cpp"
 #include "full_cone.cpp"
 #include "cone_dual_mode.cpp"
-#include "output.cpp"
-#include "mode.cpp"
+#include "cone.cpp"
 
 namespace libnormaliz {
 
-template class Matrix<long long>;
-template class Matrix<mpz_class>;
-template class Output<long long>;
-template class Output<mpz_class>;
-
-template void make_main_computation<long long>(const int&, string&, const Matrix<long long>&, Output<long long>&);
-template void run_mode_456<long long>(string&, const Matrix<long long>&, Matrix<long long>, Matrix<long long>, Output<long long>&);
-template void make_main_computation<mpz_class>(const int&, string&, const Matrix<mpz_class>&, Output<mpz_class>&);
-template void run_mode_456<mpz_class>(string&, const Matrix<mpz_class>&, Matrix<mpz_class>, Matrix<mpz_class>, Output<mpz_class>&);
-
+template class Cone<long long>;
+template class Cone<mpz_class>;
 }

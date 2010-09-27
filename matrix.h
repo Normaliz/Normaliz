@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <vector>
+#include <list>
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -57,14 +58,17 @@ public:
   Matrix();
   Matrix(int dim);                           //constructor of identity matrix
   Matrix(int row, int col);                 //main constructor, all entries 0
-  Matrix(int row, int col, Integer value); //constructor, all entries are value
-  Matrix(const vector< vector<Integer> >& elem);//constuctor, elements=elem
+  Matrix(int row, int col, Integer value); //constructor, all entries set to value
+  Matrix(const vector< vector<Integer> >& elem); //constuctor, elements=elem
+  Matrix(const list< vector<Integer> >& elems);
   Matrix(const Matrix& M);                //copy constructor
   ~Matrix();                             //destructor
 
 //---------------------------------------------------------------------------
-//							   Data acces
+//							   Data access
 //---------------------------------------------------------------------------
+
+  list< vector<Integer> >to_list();
 
   void write();                // to be modified, just for tests
   void write(int row, const vector<Integer>& data); //write  a row

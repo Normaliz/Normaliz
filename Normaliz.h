@@ -29,12 +29,9 @@
 #include <iostream>
 #include <string>
 
-#include "libnormaliz.h"
-
-#include "integer.h"
-#include "matrix.h"
+#include "cone.h"
 #include "output.h"
-#include "mode.h"
+
 
 using namespace libnormaliz;
 
@@ -45,7 +42,9 @@ using namespace libnormaliz;
 void printHelp(char* command);
 
 int main(int argc, char* argv[]);
-template<typename Integer> int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files);
+
+template<typename Integer> 
+int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files);
 
 //---------------------------------------------------------------------------
 #endif

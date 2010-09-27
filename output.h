@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "libnormaliz.h"
-#include "full_cone.h"
+#include "cone.h"
 #include "lineare_transformation.h"
 #include "sublattice_representation.h"
 
@@ -43,10 +43,8 @@ class Output {
   bool sup;
   bool tri;
   bool ht1;
-  Full_Cone<Integer> Result;
-  Sublattice_Representation<Integer> Basis_Change;
-  bool BC_set;
-  Matrix<Integer> Original_Generators;
+  Cone<Integer>& Result;
+
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
@@ -75,10 +73,6 @@ public:
   void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
   void set_write_extra_files();         	    //sets some flags to true
   void set_write_all_files();          		    //sets all flags to true
-
-  void set_result(const Full_Cone<Integer>& C);         //sets Result
-  void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes Basis_Change
-  void set_original_generators(Matrix<Integer> OG);
   
   void write_matrix_ext(const Matrix<Integer>& M) const; //writes M to file name.ext
   void write_matrix_esp(const Matrix<Integer>& M) const; //writes M to file name.esp
@@ -99,11 +93,6 @@ public:
   void polytop()const;
   void rees(const bool primary)const;
 
-//---------------------------------------------------------------------------
-//							Error msg
-//---------------------------------------------------------------------------
-
-  void error(string s) const;
 };
 //class end *****************************************************************
 

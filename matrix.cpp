@@ -110,6 +110,23 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
+	nr = elem.size();
+	nc = -1;
+	int i=0;
+	for(typename list< vector<Integer> >::const_iterator it=elem.begin(); it!=elem.end(); ++it, ++i) {
+		if(i == 0) {
+			nc = (*it).size();
+		} else {
+			assert((*it).size() == nc);
+		}
+		elements[i]=(*it);
+	}
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer>::Matrix(const Matrix<Integer>& M){
 	nr=M.nr;
 	nc=M.nc;
@@ -123,10 +140,25 @@ Matrix<Integer>::~Matrix(){
 	//automatic destructor
 }
 
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::write(){      //to overload for files
+list< vector<Integer> > Matrix<Integer>::to_list(){
+	//list< vector<Integer> > elemlist(nr, vector<Integer>());
+	list< vector<Integer> > elemlist();
+	//typename list< vector<Integer> >::iterator it=elemlist.begin();
+	for (int i=0; i<nr; ++i) {
+		//(*(it++)).swap(elements[i]);
+		elemlist.push_back(elements[i]);
+	}
+	return elemlist;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::write(){
 	int i,j;
 	for(i=0; i<nr; i++){
 		for(j=0; j<nc; j++) {
