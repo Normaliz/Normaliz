@@ -44,7 +44,6 @@ class Cone {
 //                  Progress input, depending on input_type
 //---------------------------------------------------------------------------
 
-	void prepare_input(int input_type, const list< vector<Integer> >& Input);
 	void prepare_input_type_0(const list< vector<Integer> >& Input);
 	void prepare_input_type_1(const list< vector<Integer> >& Input);
 	void prepare_input_type_2(const list< vector<Integer> >& Input);
@@ -54,7 +53,8 @@ class Cone {
 	void prepare_input_type_456(const list< vector<Integer> >& Congruences, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities);
 	void prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
 
-
+	/* only used by the constructors */
+	void initialize();
 //---------------------------------------------------------------------------
 //                          public methods
 //---------------------------------------------------------------------------
@@ -66,9 +66,10 @@ public:
 	/* do computation */
 	void compute(const string& mode);
 
-	/* getter */
+	/* check what is computed */
 	bool isComputed(ConeProperty::Enum prop) const;
 
+	/* getter */
 	list< vector<Integer> > const& getExtremeRays() const;
 	list< vector<Integer> > const& getSupportHyperplanes() const;
 	list< vector<Integer> > const& getTriangulation() const;

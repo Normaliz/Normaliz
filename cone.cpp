@@ -22,64 +22,82 @@ namespace libnormaliz {
 
 template<typename Integer>
 Cone<Integer>::Cone(const list< vector<Integer> >& Input, int input_type) {
-	BC_set=false; OrigGens_set=false;
-	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
-	prepare_input(input_type, Input);
+	initialize();
+	if (!Input.empty()) dim = (*(Input.begin())).size();
+	switch (input_type){
+		case  0: prepare_input_type_0(Input); break;
+		case  1: prepare_input_type_1(Input); break;
+		case  2: prepare_input_type_2(Input); break;
+		case  3: prepare_input_type_3(Input); break;
+		case  4: prepare_input_type_456(list<vector<Integer> >(), list<vector<Integer> >(), Input); break;
+		case  5: prepare_input_type_456(list<vector<Integer> >(), Input, list<vector<Integer> >()); break;
+		case  6: dim--; prepare_input_type_456(Input, list<vector<Integer> >(), list<vector<Integer> >()); break;
+		case 10: prepare_input_type_10(Input); break;
+		default: throw input_type; //TODO make a good exception
+	}
 }
 
 template<typename Integer>
 Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Congruences) {
-	BC_set=false; OrigGens_set=false;
-	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
+	initialize();
 	prepare_input_type_456(Congruences, Equations, Inequalities);
 }
 
-
+/* only used by the constructors */
 template<typename Integer>
-bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
-	return is_Computed(prop);
+void Cone<Integer>::initialize() {
+	BC_set=false; OrigGens_set=false;
+	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
+	dim = 0;
 }
 
 
-//getter
+/* check what is computed */
+template<typename Integer>
+bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
+	return is_Computed.test(prop);
+}
+
+
+/* getter */
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getExtremeRays() const {
-	return list< vector<Integer> >(); //TODO implement
+	return Generators; //TODO implement
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getSupportHyperplanes() const {
-   return list< vector<Integer> >(); //TODO implement
+   return Generators; //TODO implement
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getTriangulation() const {
-	return list< vector<Integer> >(); //TODO implement
+	return Generators; //TODO implement
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getHilbertBasis() const {
-	return list< vector<Integer> >(); //TODO implement
+	return Generators; //TODO implement
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getHt1Elements() const {
-	return list< vector<Integer> >(); //TODO implement
+	return Generators; //TODO implement
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getHVector() const {
-	return list< vector<Integer> >(); //TODO implement
+	return Generators; //TODO implement
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getHilbertPolynomial() const {
-	return list< vector<Integer> >(); //TODO implement
+	return Generators; //TODO implement
 }
 
 template<typename Integer>
 vector<Integer> const& Cone<Integer>::getLinearFunction() const {
-	return vector<Integer>(); //TODO implement
+	return *(Generators.begin()); //TODO implement
 }
 
 
@@ -112,7 +130,7 @@ bool Cone<Integer>::isIntegrallyClosed() const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Output<Integer>::compose_basis_change(const Sublattice_Representation<Integer>& BC) {
+void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer>& BC) {
 	if (BC_set) {
 		ChangeToFullDim.compose(BC);
 	} else {
@@ -124,29 +142,11 @@ void Output<Integer>::compose_basis_change(const Sublattice_Representation<Integ
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input(const list< vector<Integer> >& Input) {
-	dim=Input.nr_of_columns();
-	switch (mode){
-		case  0: prepare_input_type_0(Input); break;
-		case  1: prepare_input_type_1(Input); break;
-		case  2: prepare_input_type_2(Input); break;
-		case  3: prepare_input_type_3(Input); break;
-		case  4: prepare_input_type_456(Matrix<Integer>(0,dim), Matrix<Integer>(0,dim), Input); break;
-		case  5: prepare_input_type_456(Matrix<Integer>(0,dim), Input, Matrix<Integer>(0,dim)); break;
-		case  6: dim--; prepare_input_type_456(Input, Matrix<Integer>(0,dim), Matrix<Integer>(0,dim)); break;
-		case 10: prepare_input_type_10(Input); break;
-		default: throw mode; //TODO make a good exception
-	}
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Cone<Integer>::prepare_input_type_0(const list< vector<Integer> >& Input) {
 	Generators = Input;
 	is_Computed.set(ConeProperty::Generators);
 
-	Sublattice_Representation<Integer> Basis_Change(Matrix(Input),true);
+	Sublattice_Representation<Integer> Basis_Change(Matrix<Integer>(Input),true);
 	compose_basis_change(Basis_Change);
 }
 
@@ -171,12 +171,12 @@ void Cone<Integer>::prepare_input_type_2(const list< vector<Integer> >& Input) {
 		Generators = Input;
 	} else { //append a column of 1
 		Generators = list< vector<Integer> >();
-		list< vector<Integer> >::const_iterator it=Input.begin();
+		typename list< vector<Integer> >::const_iterator it=Input.begin();
 		int nc = (*it).size();
 		vector<Integer> row(nc+1);
 		row[nc]=1;
 		for (; it!=Input.end(); ++it) {
-			for (j=0; j<nc; j++) row[i]=(*it)[i];
+			for (j=0; j<nc; j++) row[j]=(*it)[j];
 			Generators.push_back(row);
 		}
 	}
@@ -310,10 +310,47 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
 		}
 	}
 	Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),true);
-	C.compose_basis_change(Basis_Change);
+	compose_basis_change(Basis_Change);
 	Matrix<Integer> Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
 
-	if(computation_type!="dual"){
+	//TODO set SH and isComp(SH)
+	cerr<<"WAHH! not implemeted yet!"<<endl;
+	throw 23;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& BinomialsL) {
+	Matrix<Integer> Binomials(BinomialsL); //TODO geschickter machen
+	int i,j, nr_of_monoid_generators = dim;
+	Lineare_Transformation<Integer> Diagonalization=Transformation(Binomials);
+	int rank=Diagonalization.get_rank();
+	Matrix<Integer> Help=Diagonalization.get_right();
+	Matrix<Integer> Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
+	for (i = 1; i <= nr_of_monoid_generators; i++) {
+		for (j = rank+1; j <= nr_of_monoid_generators; j++) {
+			Generators.write(i,j-rank,Help.read(i,j));
+		}
+	}
+	Full_Cone<Integer> FC(Generators);
+	//TODO cout, what is happening here?
+	FC.support_hyperplanes();
+	Matrix<Integer> Supp_Hyp=FC.read_support_hyperplanes();
+	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
+	Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
+	OriginalGenerators = Positive_Embedded_Generators.to_list();
+	OrigGens_set=true;
+	dim = Positive_Embedded_Generators.nr_of_columns();
+	prepare_input_type_1(OriginalGenerators);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::compute(const string& computation_type) {
+	//TODO check what is set, the code below should transfer, if necessary
+/*	if(computation_type!="dual"){
 		if (verbose) {
 			cout <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
 		}
@@ -348,42 +385,17 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
 		if ( ConeDM.Generators.rank() < ConeDM.dim ) {
 			Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
 			ConeDM.to_sublattice(SR);
-			C.compose_basis_change(SR);
+			compose_basis_change(SR);
 		}
 		Full_Cone<Integer> Result(ConeDM);
 		Result.dual_mode();
 		C.set_result(Result);
 	}
-}
 
-//---------------------------------------------------------------------------
+	*/
 
-template<typename Integer>
-void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomials) {
-	int i,j, nr_of_monoid_generators=Binomials.nr_of_columns();
-	Lineare_Transformation<Integer> Diagonalization=Transformation(Binomials);
-	int rank=Diagonalization.get_rank();
-	Matrix<Integer> Help=Diagonalization.get_right();
-	Matrix<Integer> Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
-	for (i = 1; i <= nr_of_monoid_generators; i++) {
-		for (j = rank+1; j <= nr_of_monoid_generators; j++) {
-			Generators.write(i,j-rank,Help.read(i,j));
-		}
-	}
-	Full_Cone<Integer> C(Generators);
-	//TODO cout, what is happening here?
-	FC.support_hyperplanes();
-	Matrix<Integer> Supp_Hyp=FC.read_support_hyperplanes();
-	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
-	Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
-	Original_Generators = Positive_Embedded_Generators.to_list();
-	prepare_input_type_1(Positive_Embedded_Generators);
-}
+	Full_Cone<Integer> FC(ChangeToFullDim.to_sublattice(Matrix<Integer>(Generators)));
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Cone<Integer>::compute(const string& computation_type) {
 	if (computation_type=="triangulation_hilbert_basis") {
 		FC.triangulation_hilbert_basis();
 	} else if (computation_type=="hilbert_basis") {

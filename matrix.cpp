@@ -146,7 +146,7 @@ Matrix<Integer>::~Matrix(){
 template<typename Integer>
 list< vector<Integer> > Matrix<Integer>::to_list(){
 	//list< vector<Integer> > elemlist(nr, vector<Integer>());
-	list< vector<Integer> > elemlist();
+	list< vector<Integer> > elemlist = list< vector<Integer> >();
 	//typename list< vector<Integer> >::iterator it=elemlist.begin();
 	for (int i=0; i<nr; ++i) {
 		//(*(it++)).swap(elements[i]);

@@ -373,9 +373,9 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
 		}
 		//run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
-		Cone MyCone = Cone(Inequalities, Equations, Congruences);
-		Cone.compute(computation_type);
-		Out.setCone(Cone);
+		Cone<Integer> MyCone = Cone(Inequalities, Equations, Congruences);
+		MyCone.compute(computation_type);
+		Out.setCone(MyCone);
 		Out.cone();
 	} 
 	else { // all other modes
