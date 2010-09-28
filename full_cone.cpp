@@ -1020,21 +1020,21 @@ bool Full_Cone<Integer>::isComputed(ConeProperty::Enum prop) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Full_Cone<Integer>::read_dimension()const{
+int Full_Cone<Integer>::getDimension()const{
 	return dim;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Full_Cone<Integer>::read_nr_generators()const{
+int Full_Cone<Integer>::getNrGenerators()const{
 	return nr_gen;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Full_Cone<Integer>::read_homogeneous() const{
+bool Full_Cone<Integer>::isHt1ExtremeRays() const{
 	return is_ht1_extreme_rays;
 }
 
@@ -1051,35 +1051,35 @@ bool Full_Cone<Integer>::isIntegrallyClosed() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::read_linear_form() const{
+vector<Integer> Full_Cone<Integer>::getLinearForm() const{
 	return Linear_Form;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer Full_Cone<Integer>::read_multiplicity()const{
+Integer Full_Cone<Integer>::getMultiplicity()const{
 	return multiplicity;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::read_generators()const{
+Matrix<Integer> Full_Cone<Integer>::getGenerators()const{
 	return Generators;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<bool> Full_Cone<Integer>::read_extreme_rays()const{
+vector<bool> Full_Cone<Integer>::getExtremeRays()const{
 	return Extreme_Rays;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::read_support_hyperplanes()const{
+Matrix<Integer> Full_Cone<Integer>::getSupportHyperplanes()const{
 	int s= Support_Hyperplanes.size();
 	Matrix<Integer> M(s,dim);
 	int i=1;
@@ -1094,7 +1094,7 @@ Matrix<Integer> Full_Cone<Integer>::read_support_hyperplanes()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::read_triangulation()const{
+Matrix<Integer> Full_Cone<Integer>::getTriangulation()const{
 	int s= Triangulation.size();
 	Matrix<Integer> M(s,dim);
 	vector<int> key(dim);
@@ -1112,7 +1112,7 @@ Matrix<Integer> Full_Cone<Integer>::read_triangulation()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::read_triangulation_volume()const{
+Matrix<Integer> Full_Cone<Integer>::getTriangulationVolume()const{
 	int s= Triangulation.size();
 	Matrix<Integer> M(s,dim+1);
 	vector<int> key(dim);
@@ -1133,7 +1133,7 @@ Matrix<Integer> Full_Cone<Integer>::read_triangulation_volume()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::read_hilbert_basis()const{
+Matrix<Integer> Full_Cone<Integer>::getHilbertBasis()const{
 	int s= Hilbert_Basis.size();
 	Matrix<Integer> M(s,dim);
 	int i=1;
@@ -1148,7 +1148,7 @@ Matrix<Integer> Full_Cone<Integer>::read_hilbert_basis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::read_homogeneous_elements()const{
+Matrix<Integer> Full_Cone<Integer>::getHomogeneousElements()const{
 	int s= Homogeneous_Elements.size();
 	Matrix<Integer> M(s,dim);
 	int i=1;
@@ -1163,14 +1163,14 @@ Matrix<Integer> Full_Cone<Integer>::read_homogeneous_elements()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::read_h_vector() const{
+vector<Integer> Full_Cone<Integer>::getHVector() const{
 	return H_Vector;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::read_hilbert_polynomial() const{
+vector<Integer> Full_Cone<Integer>::getHilbertPolynomial() const{
 	return Hilbert_Polynomial;
 }
 
@@ -1386,7 +1386,7 @@ void Full_Cone<Integer>::dual_mode() {
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
 	int i,j,k,l,t;
-	Matrix<Integer> SH=read_support_hyperplanes();
+	Matrix<Integer> SH=getSupportHyperplanes();
 	SH=SH.transpose();
 	Matrix<Integer> Val=Generators.multiplication(SH);
 	int nc=Val.nr_of_columns();
@@ -1929,7 +1929,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 
 template<typename Integer>
 void Full_Cone<Integer>::check_pointed() {
-	Matrix<Integer> SH = read_support_hyperplanes();
+	Matrix<Integer> SH = getSupportHyperplanes();
 	is_pointed = (SH.rank() == dim);
 	is_Computed.set(ConeProperty::IsPointed);
 }

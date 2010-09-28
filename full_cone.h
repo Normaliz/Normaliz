@@ -151,25 +151,25 @@ public:
  *---------------------------------------------------------------------------
  */
 	void print() const;                //to be modified, just for tests
-	int read_dimension() const;        //returns dimension
-	int read_nr_generators() const;    //returns the number of generators
-	bool read_homogeneous() const;     //returns homogeneous
+	int getDimension() const;        //returns dimension
+	int getNrGenerators() const;    //returns the number of generators
+	bool isHt1ExtremeRays() const;     //returns homogeneous
 	bool isHt1HilbertBasis() const;
 	bool isIntegrallyClosed() const;
-	vector<Integer> read_linear_form() const; //returns the linear form
-	Integer read_multiplicity() const; //returns multiplicity
-	Matrix<Integer> read_generators() const;
-	vector<bool> read_extreme_rays() const;
-	Matrix<Integer> read_support_hyperplanes() const;
-	Matrix<Integer> read_triangulation() const;
+	vector<Integer> getLinearForm() const; //returns the linear form
+	Integer getMultiplicity() const; //returns multiplicity
+	Matrix<Integer> getGenerators() const;
+	vector<bool> getExtremeRays() const;
+	Matrix<Integer> getSupportHyperplanes() const;
+	Matrix<Integer> getTriangulation() const;
 	/* read the triangulation and the volume of each simplex,
 	 * the volume is saved on the last column
 	 * the vectors corresponding to the generators of each simplex are sorted */
-	Matrix<Integer> read_triangulation_volume() const;
-	Matrix<Integer> read_hilbert_basis() const;
-	Matrix<Integer> read_homogeneous_elements() const;
-	vector<Integer> read_h_vector() const;
-	vector<Integer> read_hilbert_polynomial() const;
+	Matrix<Integer> getTriangulationVolume() const;
+	Matrix<Integer> getHilbertBasis() const;
+	Matrix<Integer> getHomogeneousElements() const;
+	vector<Integer> getHVector() const;
+	vector<Integer> getHilbertPolynomial() const;
 	
 	bool isComputed(ConeProperty::Enum prop) const; 
 

@@ -356,7 +356,7 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 	Full_Cone<Integer> FC(Generators);
 	//TODO cout, what is happening here?
 	FC.support_hyperplanes();
-	Matrix<Integer> Supp_Hyp=FC.read_support_hyperplanes();
+	Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
 	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
 	Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
 	OriginalGenerators = Positive_Embedded_Generators.to_list();
