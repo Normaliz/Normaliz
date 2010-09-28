@@ -35,7 +35,7 @@ class Cone {
 	Sublattice_Representation<Integer> ChangeToFullDim;  //always use compose_basis_change() !
 	bool BC_set;
 	bitset<ConeProperty::EnumSize> is_Computed;
-		list< vector<Integer> > OriginalGenerators;
+	list< vector<Integer> > OriginalGenerators;
 	list< vector<Integer> > Generators;
 	vector<bool> ExtremeRays;
 	list< vector<Integer> > SupportHyperplanes;
@@ -45,18 +45,15 @@ class Cone {
 	vector<Integer> HVector;
 	vector<Integer> HilbertPolynomial;
 	vector<Integer> LinearForm;
-	bool is_pointed;
-	bool is_ht1_generated;
-	bool is_ht1_extreme_rays;
-	bool is_ht1_hilbert_basis;
-	bool is_integrally_closed;
+	bool pointed;
+	bool ht1_extreme_rays;
+	bool ht1_hilbert_basis;
+	bool integrally_closed;
 
 	void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
-//---------------------------------------------------------------------------
-//                  Progress input, depending on input_type
-//---------------------------------------------------------------------------
 
+	/* Progress input, depending on input_type */
 	void prepare_input_type_0(const list< vector<Integer> >& Input);
 	void prepare_input_type_1(const list< vector<Integer> >& Input);
 	void prepare_input_type_2(const list< vector<Integer> >& Input);
@@ -68,6 +65,10 @@ class Cone {
 
 	/* only used by the constructors */
 	void initialize();
+
+	/* extract the data from Full_Cone, this may remove data from Full_Cone!*/
+	void extract_data(Full_Cone<Integer>& FC);
+
 //---------------------------------------------------------------------------
 //                          public methods
 //---------------------------------------------------------------------------
@@ -96,7 +97,6 @@ public:
 	vector<Integer> const& getLinearForm() const;
 	Integer const& getMultiplicity() const;
 	bool isPointed() const;
-	bool isHt1Generated() const;
 	bool isHt1ExtremeRays() const;
 	bool isHt1HilbertBasis() const;
 	bool isIntegrallyClosed() const;

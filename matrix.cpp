@@ -112,6 +112,7 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
 template<typename Integer>
 Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
 	nr = elem.size();
+	elements = vector< vector<Integer> > (nr);
 	nc = -1;
 	int i=0;
 	for(typename list< vector<Integer> >::const_iterator it=elem.begin(); it!=elem.end(); ++it, ++i) {

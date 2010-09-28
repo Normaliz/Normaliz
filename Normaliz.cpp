@@ -27,6 +27,7 @@ using namespace std;
 #include "Normaliz.h"
 
 #include "output.cpp"
+#include "libnormaliz.cpp"
 
 void printHelp(char* command) {
 	cout << "usage: "<<command<<" [-acdefhimnpsv?] [-x=<T>] [PROJECT]"<<endl;

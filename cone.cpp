@@ -20,10 +20,19 @@
 
 namespace libnormaliz {
 
+template<typename T> void list_vector_print(const list< vector<T> >& l) {
+	typename list< vector<T> >::const_iterator it = l.begin();
+	for (; it != l.end(); ++it) {
+		v_read(*it);
+	}
+	cout<<endl;
+}
+
 template<typename Integer>
 Cone<Integer>::Cone(const list< vector<Integer> >& Input, int input_type) {
 	initialize();
 	if (!Input.empty()) dim = (*(Input.begin())).size();
+
 	switch (input_type){
 		case  0: prepare_input_type_0(Input); break;
 		case  1: prepare_input_type_1(Input); break;
@@ -123,27 +132,22 @@ Integer const& Cone<Integer>::getMultiplicity() const {
 
 template<typename Integer>
 bool Cone<Integer>::isPointed() const {
-	return is_pointed;
-}
-
-template<typename Integer>
-bool Cone<Integer>::isHt1Generated() const {
-	return is_ht1_generated;
+	return pointed;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isHt1ExtremeRays() const {
-	return is_ht1_extreme_rays;
+	return ht1_extreme_rays;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isHt1HilbertBasis() const {
-	return is_ht1_hilbert_basis;
+	return ht1_hilbert_basis;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isIntegrallyClosed() const {
-	return is_integrally_closed;
+	return integrally_closed;
 }
 
 
@@ -436,6 +440,64 @@ void Cone<Integer>::compute(const string& computation_type) {
 	} else if (computation_type=="dual") {
 		cerr<<"WAHHHH! not implemented yet!";
 		throw 1; //TODO implement
+	}
+
+	extract_data(FC);
+}
+
+
+template<typename Integer>
+void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
+	//this function extracts ALL available data from the Full_Cone
+	//even if it was in Cone already <- this may change
+	//it is possible to delete the data in Full_Cone after extracting it
+	if (FC.isComputed(ConeProperty::Generators)) {
+		Generators = FC.getGenerators().to_list();
+		is_Computed.set(ConeProperty::Generators);
+	}
+	if (FC.isComputed(ConeProperty::ExtremeRays)) {
+		ExtremeRays = FC.getExtremeRays();
+		is_Computed.set(ConeProperty::ExtremeRays);
+	}
+	if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
+		SupportHyperplanes = FC.getSupportHyperplanes().to_list();
+		is_Computed.set(ConeProperty::SupportHyperplanes);
+	}
+	if (FC.isComputed(ConeProperty::Triangulation)) {
+		Triangulation = FC.getTriangulation().to_list();
+		is_Computed.set(ConeProperty::Triangulation);
+	}
+	if (FC.isComputed(ConeProperty::HilbertBasis)) {
+		HilbertBasis = FC.getHilbertBasis().to_list();
+		is_Computed.set(ConeProperty::HilbertBasis);
+	}
+	if (FC.isComputed(ConeProperty::Ht1Elements)) {
+		Ht1Elements = FC.getHt1Elements().to_list();
+		is_Computed.set(ConeProperty::Ht1Elements);
+	}
+	if (FC.isComputed(ConeProperty::HVector)) {
+		HVector = FC.getHVector();
+		is_Computed.set(ConeProperty::HVector);
+	}
+	if (FC.isComputed(ConeProperty::HilbertPolynomial)) {
+		HilbertPolynomial = FC.getHilbertPolynomial();
+		is_Computed.set(ConeProperty::HilbertPolynomial);
+	}
+	if (FC.isComputed(ConeProperty::IsPointed)) {
+		pointed = FC.isPointed();
+		is_Computed.set(ConeProperty::IsPointed);
+	}
+	if (FC.isComputed(ConeProperty::IsHt1ExtremeRays)) {
+		ht1_extreme_rays= FC.isHt1ExtremeRays();
+		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+	}
+	if (FC.isComputed(ConeProperty::IsHt1HilbertBasis)) {
+		ht1_hilbert_basis= FC.isHt1HilbertBasis();
+		is_Computed.set(ConeProperty::IsHt1HilbertBasis);
+	}
+	if (FC.isComputed(ConeProperty::IsIntegrallyClosed)) {
+		ht1_hilbert_basis= FC.isIntegrallyClosed();
+		is_Computed.set(ConeProperty::IsIntegrallyClosed);
 	}
 }
 

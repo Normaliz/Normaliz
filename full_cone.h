@@ -44,11 +44,11 @@ class Full_Cone {
 	int nr_gen;
 	int hyp_size;
 	
-	bool is_pointed;
-	bool is_ht1_generated;
-	bool is_ht1_extreme_rays;
-	bool is_ht1_hilbert_basis;
-	bool is_integrally_closed;
+	bool pointed;
+	bool ht1_generated;
+	bool ht1_extreme_rays;
+	bool ht1_hilbert_basis;
+	bool integrally_closed;
 	bitset<ConeProperty::EnumSize> is_Computed;
 	vector<Integer> Linear_Form;
 	Integer multiplicity;
@@ -153,6 +153,7 @@ public:
 	void print() const;                //to be modified, just for tests
 	int getDimension() const;        //returns dimension
 	int getNrGenerators() const;    //returns the number of generators
+	bool isPointed() const;
 	bool isHt1ExtremeRays() const;     //returns homogeneous
 	bool isHt1HilbertBasis() const;
 	bool isIntegrallyClosed() const;
@@ -167,7 +168,7 @@ public:
 	 * the vectors corresponding to the generators of each simplex are sorted */
 	Matrix<Integer> getTriangulationVolume() const;
 	Matrix<Integer> getHilbertBasis() const;
-	Matrix<Integer> getHomogeneousElements() const;
+	Matrix<Integer> getHt1Elements() const;
 	vector<Integer> getHVector() const;
 	vector<Integer> getHilbertPolynomial() const;
 	
@@ -187,6 +188,7 @@ public:
 	void hilbert_polynomial();
 	void hilbert_basis_polynomial();
 	void ht1_elements();
+
 	/* computes the multiplicity of the ideal in case of a Rees algebra
 	 * (not the same as the multiplicity of the semigroup) */
 	Integer primary_multiplicity() const;

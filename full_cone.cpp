@@ -863,11 +863,12 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	hyp_size=dim+nr_gen;
 	multiplicity = 0;
 	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
-	is_pointed = false;
-	is_ht1_extreme_rays = false;
-	is_ht1_generated = false;
-	is_ht1_hilbert_basis = false;
-	is_integrally_closed = false;
+	is_Computed.set(ConeProperty::Generators);
+	pointed = false;
+	ht1_extreme_rays = false;
+	ht1_generated = false;
+	ht1_hilbert_basis = false;
+	integrally_closed = false;
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
 	Triangulation = list< Simplex<Integer> >();
@@ -899,12 +900,13 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	hyp_size = dim+nr_gen;
 	multiplicity = 0;
 	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
-	is_pointed = true;
+	is_Computed.set(ConeProperty::Generators);
+	pointed = true;
 	is_Computed.set(ConeProperty::IsPointed);
-	is_ht1_extreme_rays = false;
-	is_ht1_generated = false;
-	is_ht1_hilbert_basis = false;
-	is_integrally_closed = false;
+	ht1_extreme_rays = false;
+	ht1_generated = false;
+	ht1_hilbert_basis = false;
+	integrally_closed = false;
 	Extreme_Rays = vector<bool>(nr_gen,true); //all generators are extreme rays
 	is_Computed.set(ConeProperty::ExtremeRays);
 	Matrix<Integer> SH = C.SupportHyperplanes;
@@ -938,11 +940,11 @@ Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C){
 	nr_gen=C.nr_gen;
 	hyp_size=C.hyp_size;
 	is_Computed = C.is_Computed;
-	is_pointed=C.is_pointed;
-	is_ht1_generated=C.is_ht1_generated;
-	is_ht1_extreme_rays=C.is_ht1_extreme_rays;
-	is_ht1_hilbert_basis = C.is_ht1_hilbert_basis;
-	is_integrally_closed = C.is_integrally_closed;
+	pointed=C.pointed;
+	ht1_generated=C.ht1_generated;
+	ht1_extreme_rays=C.ht1_extreme_rays;
+	ht1_hilbert_basis = C.ht1_hilbert_basis;
+	integrally_closed = C.integrally_closed;
 	Linear_Form=C.Linear_Form;
 	multiplicity=C.multiplicity;
 	Generators=C.Generators;
@@ -988,7 +990,7 @@ void Full_Cone<Integer>::print()const{
 	cout<<"\ndim="<<dim<<".\n";
 	cout<<"\nnr_gen="<<nr_gen<<".\n";
 	cout<<"\nhyp_size="<<hyp_size<<".\n";
-	cout<<"\nHomogeneous is "<<is_ht1_generated<<".\n";
+	cout<<"\nHomogeneous is "<<ht1_generated<<".\n";
 	cout<<"\nLinear_Form is:\n";
 	v_read(Linear_Form);
 	cout<<"\nMultiplicity is "<<multiplicity<<".\n";
@@ -1034,18 +1036,25 @@ int Full_Cone<Integer>::getNrGenerators()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool Full_Cone<Integer>::isPointed()const{
+	return pointed;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 bool Full_Cone<Integer>::isHt1ExtremeRays() const{
-	return is_ht1_extreme_rays;
+	return ht1_extreme_rays;
 }
 
 template<typename Integer>
 bool Full_Cone<Integer>::isHt1HilbertBasis() const{
-	return is_ht1_hilbert_basis;
+	return ht1_hilbert_basis;
 }
 
 template<typename Integer>
 bool Full_Cone<Integer>::isIntegrallyClosed() const{
-	return is_integrally_closed;
+	return integrally_closed;
 }
 
 //---------------------------------------------------------------------------
@@ -1148,7 +1157,7 @@ Matrix<Integer> Full_Cone<Integer>::getHilbertBasis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::getHomogeneousElements()const{
+Matrix<Integer> Full_Cone<Integer>::getHt1Elements()const{
 	int s= Homogeneous_Elements.size();
 	Matrix<Integer> M(s,dim);
 	int i=1;
@@ -1182,7 +1191,7 @@ vector<Integer> Full_Cone<Integer>::getHilbertPolynomial() const{
 template<typename Integer>
 void Full_Cone<Integer>::support_hyperplane_common() {
 	 check_pointed();
-    if(!is_pointed) return;
+    if(!pointed) return;
     compute_extreme_rays();
     check_ht1_extreme_rays();
     check_ht1_generated();
@@ -1211,8 +1220,8 @@ template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes_triangulation() {
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
-	if(!is_pointed) return;
-	if (is_ht1_extreme_rays && !is_ht1_generated) {
+	if(!pointed) return;
+	if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
 			     << "making a new triangulation with only extreme rays" <<endl;
@@ -1231,8 +1240,8 @@ template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {
 	compute_support_hyperplanes_pyramid(true);
 	support_hyperplane_common();
-   if(!is_pointed) return;
-	if (is_ht1_extreme_rays && !is_ht1_generated) {
+   if(!pointed) return;
+	if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
 			     << "making a new triangulation with only extreme rays" <<endl;
@@ -1251,8 +1260,8 @@ template<typename Integer>
 void Full_Cone<Integer>::triangulation_hilbert_basis(){
 	compute_support_hyperplanes_triangulation();
 	support_hyperplane_common();
-   if(!is_pointed) return;
-	if (is_ht1_extreme_rays && !is_ht1_generated) {
+   if(!pointed) return;
+	if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
 			     << "making a new triangulation with only extreme rays" <<endl;
@@ -1265,23 +1274,23 @@ void Full_Cone<Integer>::triangulation_hilbert_basis(){
 		compute_support_hyperplanes_triangulation();
 	}
 	compute_hilbert_basis();
-	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	if (ht1_extreme_rays) check_ht1_hilbert_basis();
 	check_integrally_closed();
 }
 
 template<typename Integer>
 void Full_Cone<Integer>::hilbert_basis(){
 	support_hyperplanes_partial_triangulation();
-	if(!is_pointed) return;
+	if(!pointed) return;
 	compute_hilbert_basis();
-	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	if (ht1_extreme_rays) check_ht1_hilbert_basis();
 	check_integrally_closed();
 }
 
 template<typename Integer>
 void Full_Cone<Integer>::ht1_elements(){
 	support_hyperplanes_partial_triangulation();
-	if(!is_pointed) return;
+	if(!pointed) return;
 	compute_ht1_elements();
 }
 
@@ -1289,11 +1298,11 @@ template<typename Integer>
 void Full_Cone<Integer>::hilbert_basis_polynomial(){
 	compute_support_hyperplanes();
 	check_pointed();
-	if(!is_pointed) return;
+	if(!pointed) return;
 	compute_extreme_rays();
 	
 	check_ht1_extreme_rays();
-	if ( !is_ht1_extreme_rays ) {
+	if ( !ht1_extreme_rays ) {
 		if (verbose) {
 			cout << "************************************************************" << endl;
 			cout << "extreme rays not in height 1, using computation type triangulation_hilbert_basis" << endl;
@@ -1314,7 +1323,7 @@ void Full_Cone<Integer>::hilbert_basis_polynomial(){
 			
 		}
 	}
-	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	if (ht1_extreme_rays) check_ht1_hilbert_basis();
 	check_integrally_closed();
 }
 
@@ -1322,11 +1331,11 @@ template<typename Integer>
 void Full_Cone<Integer>::hilbert_polynomial(){
 	compute_support_hyperplanes();
 	check_pointed();
-	if(!is_pointed) return;
+	if(!pointed) return;
 	compute_extreme_rays();
 	
 	check_ht1_extreme_rays();
-	if ( !is_ht1_extreme_rays ) {
+	if ( !ht1_extreme_rays ) {
 		if (verbose) {
 			cout << "************************************************************" << endl;
 			cout << "extreme rays not in height 1, using computation type triangulation_hilbert_basis" << endl;
@@ -1352,12 +1361,12 @@ void Full_Cone<Integer>::dual_mode() {
 	Support_Hyperplanes.remove(vector<Integer>(dim,0));
 
 	if(dim>0) {            //correction needed to include the 0 cone;
-		Linear_Form = Generators.homogeneous(is_ht1_extreme_rays);
-		is_ht1_generated = is_ht1_extreme_rays;
+		Linear_Form = Generators.homogeneous(ht1_extreme_rays);
+		ht1_generated = ht1_extreme_rays;
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::IsHt1Generated);
 
-		if (is_ht1_extreme_rays) {
+		if (ht1_extreme_rays) {
 			if (verbose) { 
 				cout << "Find height 1 elements" << endl;
 			}
@@ -1370,12 +1379,12 @@ void Full_Cone<Integer>::dual_mode() {
 			is_Computed.set(ConeProperty::Ht1Elements);
 		}
 	} else {
-		is_ht1_extreme_rays = is_ht1_generated = true;
+		ht1_extreme_rays = ht1_generated = true;
 		Linear_Form=vector<Integer>(dim);
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::IsHt1Generated);
 	}
-	if (is_ht1_extreme_rays) check_ht1_hilbert_basis();
+	if (ht1_extreme_rays) check_ht1_hilbert_basis();
 	check_integrally_closed();
 }
 
@@ -1930,22 +1939,22 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::check_pointed() {
 	Matrix<Integer> SH = getSupportHyperplanes();
-	is_pointed = (SH.rank() == dim);
+	pointed = (SH.rank() == dim);
 	is_Computed.set(ConeProperty::IsPointed);
 }
 
 template<typename Integer>
 void Full_Cone<Integer>::check_ht1_generated() {
-	if (is_ht1_extreme_rays) {
-		is_ht1_generated = true;
+	if (ht1_extreme_rays) {
+		ht1_generated = true;
 	 	for (int i = 0; i < nr_gen; i++) {
 			if (v_scalar_product(Generators.read(i+1), Linear_Form) != 1) {
-				is_ht1_generated = false;
+				ht1_generated = false;
 				return ;
 			}
 		}
 	} else {
-		Linear_Form = Generators.homogeneous(is_ht1_generated);
+		Linear_Form = Generators.homogeneous(ht1_generated);
 	}
 	is_Computed.set(ConeProperty::IsHt1Generated);
 
@@ -1953,8 +1962,8 @@ void Full_Cone<Integer>::check_ht1_generated() {
 
 template<typename Integer>
 void Full_Cone<Integer>::check_ht1_extreme_rays() {
-	if (is_ht1_generated) {
-		is_ht1_extreme_rays=true;
+	if (ht1_generated) {
+		ht1_extreme_rays=true;
 		return ;
 	}
 	vector<int> key;
@@ -1963,7 +1972,7 @@ void Full_Cone<Integer>::check_ht1_extreme_rays() {
 			key.push_back(i+1);
 	}
 	Matrix<Integer> Extreme=Generators.submatrix(key);
-	Linear_Form = Extreme.homogeneous(is_ht1_extreme_rays);
+	Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
 	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 }
 
@@ -1975,13 +1984,13 @@ void Full_Cone<Integer>::check_ht1_hilbert_basis() {
 	}
 	
 	if (is_Computed.test(ConeProperty::Ht1Elements)) {
-		is_ht1_hilbert_basis = (Homogeneous_Elements.size() == Hilbert_Basis.size());
+		ht1_hilbert_basis = (Homogeneous_Elements.size() == Hilbert_Basis.size());
 	} else {
-		is_ht1_hilbert_basis = true;
+		ht1_hilbert_basis = true;
 		typename list< vector<Integer> >::iterator h;
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 			if (v_scalar_product((*h),Linear_Form)!=1) {
-				is_ht1_hilbert_basis = false;
+				ht1_hilbert_basis = false;
 				break;
 			}
 		}
@@ -1995,19 +2004,19 @@ void Full_Cone<Integer>::check_integrally_closed() {
 		cerr << "Warning: unsatisfied preconditions in check_integrally_closed()!" <<endl;
 		return;
 	}
-	is_integrally_closed = false;
+	integrally_closed = false;
 	if (Hilbert_Basis.size() <= nr_gen) {
-		is_integrally_closed = true;
+		integrally_closed = true;
 		typename list< vector<Integer> >::iterator h;
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
-			is_integrally_closed = false;
+			integrally_closed = false;
 			for (int i=1; i<= nr_gen; i++) {
 				if ((*h) == Generators.read(i)) {
-					is_integrally_closed = true;
+					integrally_closed = true;
 					break;
 				}
 			}
-			if (!is_integrally_closed) {
+			if (!integrally_closed) {
 				break;
 			}
 		}
@@ -2055,7 +2064,7 @@ void Full_Cone<Integer>::compute_multiplicity(){
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_ht1_elements() {
-	if(!is_ht1_extreme_rays)
+	if(!ht1_extreme_rays)
 		return;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -2065,7 +2074,7 @@ void Full_Cone<Integer>::compute_ht1_elements() {
 	vector<Integer> generator;
 	for (int i = 0; i <nr_gen; i++) {
 		generator = Generators.read(i+1);
-		if (is_ht1_generated || Extreme_Rays[i] || v_scalar_product(generator,Linear_Form)==1)
+		if (ht1_generated || Extreme_Rays[i] || v_scalar_product(generator,Linear_Form)==1)
 			Homogeneous_Elements.push_back(generator);
 	}
 
@@ -2168,7 +2177,7 @@ void Full_Cone<Integer>::compute_hilbert_basis(){
 
 	global_reduction(Candidates);
 
-	if(is_ht1_generated==true){
+	if(ht1_generated==true){
 		for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
 			if (v_scalar_product((*h),Linear_Form)==1) {
 				Homogeneous_Elements.push_back((*h));
@@ -2329,7 +2338,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 	}
 	int i;	
 	vector<Integer> degree_function(dim,0);
-	if(is_ht1_generated==true){ //use Linear_From in homogeneous case
+	if(ht1_generated==true){ //use Linear_From in homogeneous case
 		for (i=0; i<dim; i++) {
 			degree_function[i] = Linear_Form[i];
 		}
@@ -2605,7 +2614,7 @@ void Full_Cone<Integer>::compute_hilbert_basis_polynomial(){
 	for (i = 1; i <=nr_gen; i++) {
 		vector<Integer> Generator = Generators.read(i);
 		Candidates.insert(Generator);
-		if (is_ht1_generated || v_scalar_product(Generator, Linear_Form)==1) { 
+		if (ht1_generated || v_scalar_product(Generator, Linear_Form)==1) { 
 			Homogeneous_Elements.push_back(Generator);
 		}
 	}
