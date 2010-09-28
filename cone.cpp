@@ -46,9 +46,10 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vec
 /* only used by the constructors */
 template<typename Integer>
 void Cone<Integer>::initialize() {
-	BC_set=false; OrigGens_set=false;
+	BC_set=false;
 	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
 	dim = 0;
+	OriginalGenerators = list< vector<Integer> >();
 }
 
 
@@ -61,69 +62,88 @@ bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
 
 /* getter */
 template<typename Integer>
-list< vector<Integer> > const& Cone<Integer>::getExtremeRays() const {
-	return Generators; //TODO implement
+Sublattice_Representation<Integer> const& Cone<Integer>::getBasisChange() const{
+	return ChangeToFullDim;
+}
+
+template<typename Integer>
+list< vector<Integer> > const& Cone<Integer>::getOriginalGenerators() const {
+	return OriginalGenerators;
+}
+
+template<typename Integer>
+list< vector<Integer> > const& Cone<Integer>::getGenerators() const {
+	return Generators;
+}
+
+template<typename Integer>
+vector<bool> const& Cone<Integer>::getExtremeRays() const {
+	return ExtremeRays;
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getSupportHyperplanes() const {
-   return Generators; //TODO implement
+   return SupportHyperplanes;
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getTriangulation() const {
-	return Generators; //TODO implement
+	return Triangulation;
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getHilbertBasis() const {
-	return Generators; //TODO implement
+	return HilbertBasis;
 }
 
 template<typename Integer>
 list< vector<Integer> > const& Cone<Integer>::getHt1Elements() const {
-	return Generators; //TODO implement
+	return Ht1Elements;
 }
 
 template<typename Integer>
-list< vector<Integer> > const& Cone<Integer>::getHVector() const {
-	return Generators; //TODO implement
+vector<Integer> const& Cone<Integer>::getHVector() const {
+	return HVector;
 }
 
 template<typename Integer>
-list< vector<Integer> > const& Cone<Integer>::getHilbertPolynomial() const {
-	return Generators; //TODO implement
+vector<Integer> const& Cone<Integer>::getHilbertPolynomial() const {
+	return HilbertPolynomial;
 }
 
 template<typename Integer>
-vector<Integer> const& Cone<Integer>::getLinearFunction() const {
-	return *(Generators.begin()); //TODO implement
+vector<Integer> const& Cone<Integer>::getLinearForm() const {
+	return LinearForm;
 }
 
+template<typename Integer>
+Integer const& Cone<Integer>::getMultiplicity() const {
+	return multiplicity;
+}
 
 template<typename Integer>
 bool Cone<Integer>::isPointed() const {
-	return false; //TODO implement
+	return is_pointed;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isHt1Generated() const {
-	return false; //TODO implement
+	return is_ht1_generated;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isHt1ExtremeRays() const {
-	return false; //TODO implement
+	return is_ht1_extreme_rays;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isHt1HilbertBasis() const {
-	return false; //TODO implement
+	return is_ht1_hilbert_basis;
 }
 
 template<typename Integer>
 bool Cone<Integer>::isIntegrallyClosed() const {
-	return false; //TODO implement
+	return is_integrally_closed;
 }
 
 
@@ -340,7 +360,6 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
 	Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
 	OriginalGenerators = Positive_Embedded_Generators.to_list();
-	OrigGens_set=true;
 	dim = Positive_Embedded_Generators.nr_of_columns();
 	prepare_input_type_1(OriginalGenerators);
 }

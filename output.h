@@ -26,9 +26,9 @@
 #include "lineare_transformation.h"
 #include "sublattice_representation.h"
 
-//---------------------------------------------------------------------------
+using namespace libnormaliz;
 
-namespace libnormaliz {
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 class Output {
@@ -43,7 +43,7 @@ class Output {
   bool sup;
   bool tri;
   bool ht1;
-  Cone<Integer>& Result;
+  Cone<Integer>* Result;
 
 //---------------------------------------------------------------------------
 public:
@@ -61,6 +61,7 @@ public:
 
   void read() const;                   // to be modified, just for tests
   void set_name(const string& n);             	//set name
+  void setCone(Cone<Integer> & C);
   void set_write_out(const bool& flag);             //sets the write .out flag
   void set_write_inv(const bool& flag);             //sets the write .inv flag
   void set_write_ext(const bool& flag);             //sets the write .ext flag
@@ -85,6 +86,7 @@ public:
 
   void write_inv_file() const;
 
+
 //---------------------------------------------------------------------------
 //                         Output Algorithms
 //---------------------------------------------------------------------------
@@ -95,8 +97,6 @@ public:
 
 };
 //class end *****************************************************************
-
-}
 
 //---------------------------------------------------------------------------
 #endif

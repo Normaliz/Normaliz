@@ -26,6 +26,8 @@ using namespace std;
 
 #include "Normaliz.h"
 
+#include "output.cpp"
+
 void printHelp(char* command) {
 	cout << "usage: "<<command<<" [-acdefhimnpsv?] [-x=<T>] [PROJECT]"<<endl;
 	cout << "  runs normaliz on PROJECT.in"<<endl;
@@ -373,7 +375,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
 		}
 		//run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
-		Cone<Integer> MyCone = Cone(Inequalities, Equations, Congruences);
+		Cone<Integer> MyCone = Cone<Integer>(Inequalities.to_list(), Equations.to_list(), Congruences.to_list());
 		MyCone.compute(computation_type);
 		Out.setCone(MyCone);
 		Out.cone();
@@ -386,13 +388,13 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
 		}
 		//make_main_computation(mode, computation_type, M, Out);
-		Cone MyCone = Cone(M, mode);
-		Cone.compute(computation_type);
-		Out.setCone(Cone);
+		Cone<Integer> MyCone = Cone<Integer>(M.to_list(), mode);
+		MyCone.compute(computation_type);
+		Out.setCone(MyCone);
 		if (mode == 2) {
-			Out.polytope();
+			Out.polytop();
 		} else if (mode == 3) {
-			Out.rees();
+			Out.rees(true); //TODO primary übergeben
 		} else {
 			Out.cone();
 		}

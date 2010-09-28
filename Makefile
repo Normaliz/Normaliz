@@ -3,7 +3,7 @@
 ##
 CXX = g++
 CXXFLAGS += -Wall -Wno-sign-compare
-CXXFLAGS += -O3 -funroll-loops -pipe
+CXXFLAGS += -O3 -funroll-loops
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
@@ -43,7 +43,7 @@ normbig: Normaliz.cpp Normaliz.h $(NBIGOBJ)
 libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz.cpp -o libnormaliz.o 
 normaliz: Normaliz.cpp Normaliz.h libnormaliz.o output.h output.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp output.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
 
 
 clean:
