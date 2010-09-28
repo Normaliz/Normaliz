@@ -52,7 +52,7 @@ void global_error_handling();
 
 
 /* An enumeration of things, that can be computed for a cone.
- * The namespace prevents interferring with other names.
+ * The namespace prevents interfering with other names.
  */
 namespace ConeProperty {
 	enum Enum {

@@ -32,7 +32,7 @@ class Cone {
 	int dim;
 	Integer multiplicity;
 //	Full_Cone<Integer> FullDimCone;
-	Sublattice_Representation<Integer> ChangeToFullDim;  //always use compose_basis_change() !
+	Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
 	bool BC_set;
 	bitset<ConeProperty::EnumSize> is_Computed;
 	list< vector<Integer> > OriginalGenerators;

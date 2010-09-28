@@ -35,7 +35,7 @@ void printHelp(char* command) {
 	cout << "options:"<<endl;
 	cout << "  -?\tprint this help text and exit"<<endl;
 	cout << "  -s\tcomputation mode: support_hyperplanes"<<endl;
-	cout << "  -S\tcomputation mode: support_hyperplanesvia pyramids"<<endl;
+	cout << "  -S\tcomputation mode: support_hyperplanes via pyramids"<<endl;
 	cout << "  -v\tcomputation mode: triangulation"<<endl;
 	cout << "  -V\tcomputation mode: triangulation via pyramids"<<endl;
 	cout << "  -n\tcomputation mode: triangulation_hilbert_basis (old type normal)"<<endl;
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 			case 'e':  //check for arithmetic overflow
 				test_arithmetic_overflow=true;
 				break;
-			case 'B':  //use Big Interger
+			case 'B':  //use Big Integer
 				use_Big_Integer=true;
 				break;
 			case 'm':  //save memory / don't optimize for speed

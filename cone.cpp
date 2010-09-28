@@ -49,6 +49,21 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Input, int input_type) {
 template<typename Integer>
 Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Congruences) {
 	initialize();
+	list<int> dimensions = list<int>();
+	if (Inequalities.size()>0) dimensions.push_back(Inequalities.begin()->size());
+	if (Equations.size()>0) dimensions.push_back(Equations.begin()->size());
+	if (Congruences.size()>0) dimensions.push_back(Congruences.begin()->size()-1);
+	if (!dimensions.empty()) {
+		dim = *dimensions.begin();
+		dimensions.pop_front();
+	}
+	while(!dimensions.empty()) {
+		if (dim != *dimensions.begin()) {
+			cerr << "Error: dimensions of input matrices do not match!";
+			throw dim; //TODO exception
+		}
+		dimensions.pop_front();
+	}
 	prepare_input_type_456(Congruences, Equations, Inequalities);
 }
 
@@ -72,7 +87,7 @@ bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const {
 /* getter */
 template<typename Integer>
 Sublattice_Representation<Integer> const& Cone<Integer>::getBasisChange() const{
-	return ChangeToFullDim;
+	return BasisChange;
 }
 
 template<typename Integer>
@@ -156,9 +171,9 @@ bool Cone<Integer>::isIntegrallyClosed() const {
 template<typename Integer>
 void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer>& BC) {
 	if (BC_set) {
-		ChangeToFullDim.compose(BC);
+		BasisChange.compose(BC);
 	} else {
-		ChangeToFullDim = BC;
+		BasisChange = BC;
 		BC_set = true;
 	}
 }
@@ -265,25 +280,15 @@ void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& Congru
 	Matrix<Integer> Equations(EquationsL);
 	Matrix<Integer> Inequalities(InequalitiesL);
 
-	int nr_cong = Congruences.nr_of_rows();
-	if (nr_cong > 0) {
-		dim = Congruences.nr_of_columns() -1;
-		if (Equations.nr_of_rows() > 0 &&  Equations.nr_of_columns() != dim) {
-			cerr << "Error: dimensions of input matrices do not match!";
-			throw 1; //TODO exception
-		}
-	} else if (Equations.nr_of_rows() > 0) {
-		dim = Equations.nr_of_columns();
-	} else if (Inequalities.nr_of_rows() > 0) {
-		dim = Inequalities.nr_of_columns();
-	}
-
+	cerr<<"WAHH! not implemeted yet!"<<endl;
+	throw 23;
 
 	// use positive orthant if no inequalities are given
 	if (Inequalities.nr_of_rows() == 0) {
-		Inequalities = Matrix<Integer>(Equations.nr_of_columns());
+		Inequalities = Matrix<Integer>(dim);
 	}
 
+	int nr_cong = Congruences.nr_of_rows();
 	// handle Congurences
 	if (nr_cong > 0) {
 		int i,j;
@@ -322,7 +327,8 @@ void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& Congru
 
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities) {
-	int i,j,dim=Equations.nr_of_columns();
+	int i,j;
+	//TODO nur wenn auch equations da sind
 	Lineare_Transformation<Integer> Diagonalization=Transformation(Equations);
 	int rank=Diagonalization.get_rank();
 
@@ -338,8 +344,6 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
 	Matrix<Integer> Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
 
 	//TODO set SH and isComp(SH)
-	cerr<<"WAHH! not implemeted yet!"<<endl;
-	throw 23;
 }
 
 //---------------------------------------------------------------------------
@@ -417,7 +421,7 @@ void Cone<Integer>::compute(const string& computation_type) {
 
 	*/
 
-	Full_Cone<Integer> FC(ChangeToFullDim.to_sublattice(Matrix<Integer>(Generators)));
+	Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
 	if (computation_type=="triangulation_hilbert_basis") {
 		FC.triangulation_hilbert_basis();
@@ -452,7 +456,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	//even if it was in Cone already <- this may change
 	//it is possible to delete the data in Full_Cone after extracting it
 	if (FC.isComputed(ConeProperty::Generators)) {
-		Generators = FC.getGenerators().to_list();
+		Generators = BasisChange.from_sublattice(FC.getGenerators()).to_list();
 		is_Computed.set(ConeProperty::Generators);
 	}
 	if (FC.isComputed(ConeProperty::ExtremeRays)) {
@@ -460,19 +464,20 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::ExtremeRays);
 	}
 	if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
-		SupportHyperplanes = FC.getSupportHyperplanes().to_list();
+		SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes()).to_list();
 		is_Computed.set(ConeProperty::SupportHyperplanes);
 	}
 	if (FC.isComputed(ConeProperty::Triangulation)) {
 		Triangulation = FC.getTriangulation().to_list();
+		multiplicity = FC.getMultiplicity();
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::HilbertBasis)) {
-		HilbertBasis = FC.getHilbertBasis().to_list();
+		HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis()).to_list();
 		is_Computed.set(ConeProperty::HilbertBasis);
 	}
 	if (FC.isComputed(ConeProperty::Ht1Elements)) {
-		Ht1Elements = FC.getHt1Elements().to_list();
+		Ht1Elements = BasisChange.from_sublattice(FC.getHt1Elements()).to_list();
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	if (FC.isComputed(ConeProperty::HVector)) {
@@ -488,15 +493,18 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::IsPointed);
 	}
 	if (FC.isComputed(ConeProperty::IsHt1ExtremeRays)) {
-		ht1_extreme_rays= FC.isHt1ExtremeRays();
+		ht1_extreme_rays = FC.isHt1ExtremeRays();
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+		if (ht1_extreme_rays) {
+			LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
+		}
 	}
 	if (FC.isComputed(ConeProperty::IsHt1HilbertBasis)) {
-		ht1_hilbert_basis= FC.isHt1HilbertBasis();
+		ht1_hilbert_basis = FC.isHt1HilbertBasis();
 		is_Computed.set(ConeProperty::IsHt1HilbertBasis);
 	}
 	if (FC.isComputed(ConeProperty::IsIntegrallyClosed)) {
-		ht1_hilbert_basis= FC.isIntegrallyClosed();
+		integrally_closed = FC.isIntegrallyClosed();
 		is_Computed.set(ConeProperty::IsIntegrallyClosed);
 	}
 }

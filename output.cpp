@@ -286,7 +286,7 @@ void Output<Integer>::write_matrix_ht1(const Matrix<Integer>& M) const{
 template<typename Integer>
 void Output<Integer>::write_inv_file() const{
 	if (inv==true) {//printing .inv file
-		int i,nr;
+		int i;
 		int rank=Result->getBasisChange().get_rank();
 		string name_open=name+".inv"; 							 //preparing output files
 		const char* file=name_open.c_str();
@@ -294,9 +294,7 @@ void Output<Integer>::write_inv_file() const{
 
 		Matrix<Integer> Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
-			Matrix<Integer> Hilbert_Basis_Full_Cone=Result->getHilbertBasis();
-			nr=Hilbert_Basis_Full_Cone.nr_of_rows();
-			inv<<"integer hilbert_basis_elements = "<<nr<<endl;
+			inv<<"integer hilbert_basis_elements = "<<Result->getHilbertBasis().size()<<endl;
 		}
 
 		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
@@ -317,12 +315,9 @@ void Output<Integer>::write_inv_file() const{
 		else {
 			inv<<"boolean homogeneous = "<<"true"<<endl;
 			if (Result->isComputed(ConeProperty::Ht1Elements)) {
-				Matrix<Integer> Hom=Result->getHt1Elements();
-				nr=Hom.nr_of_rows();
-				inv<<"integer height_1_elements = "<<nr<<endl;
+				inv<<"integer height_1_elements = "<<Result->getHt1Elements().size()<<endl;
 			}
 			vector<Integer> Linear_Form = Result->getLinearForm();
-			Linear_Form = Result->getBasisChange().from_sublattice_dual(Linear_Form);
 			inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
 			for (i = 0; i < Linear_Form.size(); i++) {
 				inv<<Linear_Form[i]<<" ";
@@ -359,17 +354,19 @@ void Output<Integer>::write_inv_file() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Output<Integer>::cone() const{
-	int i,j,nr,rank=Result->getBasisChange().get_rank();    //read local data
-	Matrix<Integer> Generators = Result->getBasisChange().from_sublattice(Result->getGenerators());
-	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result->getSupportHyperplanes();
+void Output<Integer>::cone() const {
+	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
+	int i,j,nr,rank=BasisChange.get_rank();    //read local data
+	Matrix<Integer> Generators = Result->getGenerators();
+	Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
 
 	if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
 		//write the suport hyperplanes of the full dimensional cone
+		Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Support_Hyperplanes);
 		Support_Hyperplanes_Full_Cone.print(name,"esp");
 	}
 	if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
-	//TODO	Result->get_triangulation_volume().print(name,"tri");
+		Matrix<Integer>(Result->getTriangulation()).print(name,"tri");	//TODO mit volume
 		Generators.print(name,"tgn");
 	}
 
@@ -403,13 +400,13 @@ void Output<Integer>::cone() const{
 			out << Result->getSupportHyperplanes().size() <<" support hyperplanes"<<endl;
 		}
 		out<<endl;
-		if (rank == Result->getBasisChange().get_dim()){                   //write rank and index
+		if (rank == BasisChange.get_dim()){                   //write rank and index
 			out<<"rank = "<<rank<<" (maximal)"<<endl;
 		}
 		else {
 			out<<"rank = "<<rank<<endl;
 		}
-		out<<"index = "<< Result->getBasisChange().get_index() <<endl;
+		out<<"index = "<< BasisChange.get_index() <<endl;
 
 		if (Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
 			if (Result->isIntegrallyClosed()) {
@@ -423,8 +420,7 @@ void Output<Integer>::cone() const{
 		if (Result->isHt1ExtremeRays()==false) {
 			out<<"extreme rays are not homogeneous"<<endl<<endl;
 		} else {
-			vector<Integer> Linear_Form=Result->getLinearForm();
-			Linear_Form = Result->getBasisChange().from_sublattice_dual(Linear_Form);
+			vector<Integer> Linear_Form = Result->getLinearForm();
 			out<<"extreme rays are homogeneous via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
@@ -470,13 +466,17 @@ void Output<Integer>::cone() const{
 			Matrix<Integer>(Result->getOriginalGenerators()).pretty_print(out);
 		}
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
-			Matrix<Integer> Hilbert_Basis_Full_Cone = Result->getHilbertBasis();
-			write_matrix_egn(Hilbert_Basis_Full_Cone);
-			if (typ) {
-				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
-				write_matrix_typ(V);
+			Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
+			if (egn || typ) {
+				Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
+				write_matrix_egn(Hilbert_Basis_Full_Cone);
+
+				if (typ) {
+					Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(BasisChange.to_sublattice_dual(Support_Hyperplanes).transpose());
+					write_matrix_typ(V);
+				}
 			}
-			Matrix<Integer> Hilbert_Basis = Result->getBasisChange().from_sublattice(Hilbert_Basis_Full_Cone);
+
 			write_matrix_gen(Hilbert_Basis);
 			nr=Hilbert_Basis.nr_of_rows();
 			out<<nr<<" Hilbert basis elements:"<<endl;
@@ -505,7 +505,7 @@ void Output<Integer>::cone() const{
 
 		{
 			//write constrains (support hyperplanes, congruences, equations)
-			Matrix<Integer> Support_Hyperplanes = Result->getBasisChange().from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+
 			out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
 			Support_Hyperplanes.pretty_print(out);
 			
@@ -526,7 +526,7 @@ void Output<Integer>::cone() const{
 	
 	
 			//congruences
-			Matrix<Integer> Congruences = Result->getBasisChange().get_congruences();
+			Matrix<Integer> Congruences = BasisChange.get_congruences();
 			int nr_of_cong = Congruences.nr_of_rows();
 			if (nr_of_cong > 0) {
 				out << nr_of_cong <<" congruences:" <<endl;
@@ -552,7 +552,6 @@ void Output<Integer>::cone() const{
 		if (Result->isHt1ExtremeRays()) {
 			if ( Result->isComputed(ConeProperty::Ht1Elements) ) {
 				Matrix<Integer> Hom = Result->getHt1Elements();
-				Hom = Result->getBasisChange().from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
 				out<<nr<<" height 1 Hilbert basis elements:"<<endl;
@@ -569,17 +568,18 @@ void Output<Integer>::cone() const{
 
 template<typename Integer>
 void Output<Integer>::polytop() const{
+	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
 	int i,j,k,nr,max_decimal_length;
-	int dim = Result->getBasisChange().get_dim(), rank=Result->getBasisChange().get_rank();    //read local data
-	Matrix<Integer> Generators = Result->getBasisChange().from_sublattice(Result->getGenerators());
-	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result->getSupportHyperplanes();
+	int dim = BasisChange.get_dim(), rank=BasisChange.get_rank();    //read local data
+	Matrix<Integer> Generators = Result->getGenerators();
+	Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanes());
 
 	if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
 		//write the suport hyperplanes of the full dimensional cone
 		Support_Hyperplanes_Full_Cone.print(name,"esp");
 	}
 	if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
-	//TODO	Result->get_triangulation_volume().print(name,"tri");
+		Matrix<Integer>(Result->getTriangulation()).print(name,"tri");	//TODO mit volume
 		Generators.print(name,"tgn");
 	}
 
@@ -664,7 +664,7 @@ void Output<Integer>::polytop() const{
 				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
 				write_matrix_typ(V);
 			}
-			Hilbert_Basis = Result->getBasisChange().from_sublattice(Hilbert_Basis_Full_Cone);
+			Hilbert_Basis = Result->getHilbertBasis();
 			write_matrix_gen(Hilbert_Basis);
 			int nr = Hilbert_Basis.nr_of_rows();
 			out<<nr<<" generators of Ehrhart ring:"<<endl;
@@ -673,7 +673,6 @@ void Output<Integer>::polytop() const{
 
 		if ( Result->isComputed(ConeProperty::Ht1Elements) ) {
 			Matrix<Integer> Hom = Result->getHt1Elements();
-			Hom = Result->getBasisChange().from_sublattice(Hom);
 			write_matrix_ht1(Hom);
 			Hom.cut_columns(Hom.nr_of_columns()-1);
 			nr=Hom.nr_of_rows();
@@ -705,7 +704,7 @@ void Output<Integer>::polytop() const{
 
 
 		//write constrains (support hyperplanes, congruences, equations)
-		Matrix<Integer> Support_Hyperplanes = Result->getBasisChange().from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+		Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
 		Integer buf;
 		int nr_sup = Support_Hyperplanes.nr_of_rows();
 		max_decimal_length=Support_Hyperplanes.maximal_decimal_length();
@@ -762,7 +761,7 @@ void Output<Integer>::polytop() const{
 
 
 		//congruences
-		Matrix<Integer> Congruences = Result->getBasisChange().get_congruences();
+		Matrix<Integer> Congruences = BasisChange.get_congruences();
 		int nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
@@ -795,12 +794,13 @@ void Output<Integer>::polytop() const{
 
 template<typename Integer>
 void Output<Integer>::rees(const bool primary) const{
+	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
 	int i,j,nr;
-	int dim = Result->getBasisChange().get_dim();
-	int rank = Result->getBasisChange().get_rank();
+	int dim = BasisChange.get_dim();
+	int rank = BasisChange.get_rank();
 	int nr_generators_ideal=0;
-	Matrix<Integer> Generators = Result->getBasisChange().from_sublattice(Result->getGenerators());
-	Matrix<Integer> Support_Hyperplanes_Full_Cone = Result->getSupportHyperplanes();
+	Matrix<Integer> Generators = Result->getGenerators();
+	Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanes());
 	Matrix<Integer> Hilbert_Basis;
 	vector<int> ideal_gen_key;
 
@@ -824,7 +824,7 @@ void Output<Integer>::rees(const bool primary) const{
 			out << nr_orig_gens <<" original generators"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
-			Hilbert_Basis = Result->getBasisChange().from_sublattice(Result->getHilbertBasis());
+			Hilbert_Basis = Result->getHilbertBasis();
 			nr = Hilbert_Basis.nr_of_rows();
 			out << nr <<" generators of integral closure of the Rees algebra"<<endl;
 			for (i = 1; i <= nr; i++) {
@@ -849,7 +849,7 @@ void Output<Integer>::rees(const bool primary) const{
 			out << Result->getSupportHyperplanes().size() <<" support hyperplanes"<<endl;
 		}
 		out<<endl;
-		if (rank == Result->getBasisChange().get_dim()){                   //write rank and index
+		if (rank == BasisChange.get_dim()){                   //write rank and index
 			out<<"rank = "<<rank<<" (maximal)"<<endl;
 		}
 		else {
@@ -869,7 +869,6 @@ void Output<Integer>::rees(const bool primary) const{
 			out<<"extreme rays are not homogeneous"<<endl<<endl;
 		} else {
 			vector<Integer> Linear_Form=Result->getLinearForm();
-			Linear_Form = Result->getBasisChange().from_sublattice_dual(Linear_Form);
 			out<<"extreme rays are homogeneous via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
@@ -924,7 +923,7 @@ void Output<Integer>::rees(const bool primary) const{
 			Matrix<Integer>(Result->getOriginalGenerators()).pretty_print(out);
 		}
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
-			Matrix<Integer> Hilbert_Basis_Full_Cone = Result->getHilbertBasis();
+			Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Result->getHilbertBasis());
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
 				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
@@ -963,7 +962,7 @@ void Output<Integer>::rees(const bool primary) const{
 
 
 		//write constrains (support hyperplanes, congruences, equations)
-		Matrix<Integer> Support_Hyperplanes = Result->getBasisChange().from_sublattice_dual(Support_Hyperplanes_Full_Cone);
+		Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
 		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
 		Support_Hyperplanes.pretty_print(out);
 		
@@ -984,7 +983,7 @@ void Output<Integer>::rees(const bool primary) const{
 
 
 		//congruences
-		Matrix<Integer> Congruences = Result->getBasisChange().get_congruences();
+		Matrix<Integer> Congruences = BasisChange.get_congruences();
 		int nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
@@ -1011,7 +1010,6 @@ void Output<Integer>::rees(const bool primary) const{
 		if (Result->isHt1ExtremeRays()) {
 			if ( Result->isComputed(ConeProperty::Ht1Elements) ) {
 				Matrix<Integer> Hom = Result->getHt1Elements();
-				Hom = Result->getBasisChange().from_sublattice(Hom);
 				write_matrix_ht1(Hom);
 			}
 		}
