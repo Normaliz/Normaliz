@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 		returnvalue = process_data<mpz_class>(output_name, computation_type, write_extra_files, write_all_files);
 	} else {
 		//Read and process Input
-		returnvalue = process_data<long long>(output_name, computation_type, write_extra_files, write_all_files);
+		returnvalue = process_data<long long int>(output_name, computation_type, write_extra_files, write_all_files);
 	}
 
 	//exit

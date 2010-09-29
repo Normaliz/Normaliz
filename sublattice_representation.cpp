@@ -135,7 +135,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Sublattice_R
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Sublattice_Representation<Integer>::~Sublattice_Representation() {};
+Sublattice_Representation<Integer>::~Sublattice_Representation() {}
 
 
 //---------------------------------------------------------------------------
