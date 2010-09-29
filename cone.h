@@ -61,10 +61,13 @@ class Cone {
 	void prepare_input_type_10(const list< vector<Integer> >& Binomials);
 //TODO reihenfolge anpassen
 	void prepare_input_type_456(const list< vector<Integer> >& Congruences, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities);
-	void prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
+	void prepare_input_type_45(const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities);
 
 	/* only used by the constructors */
 	void initialize();
+
+	/* compute method for the dual_mode, used in compute(string) */
+	void compute_dual();
 
 	/* extract the data from Full_Cone, this may remove data from Full_Cone!*/
 	void extract_data(Full_Cone<Integer>& FC);
@@ -75,7 +78,10 @@ class Cone {
 public:
 	/* Constructors, they preprocess the input */
 	Cone(const list< vector<Integer> >& input, int type);
-	Cone(const list< vector<Integer> >& Inequalities, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Congruences);
+
+	Cone(const list< vector<Integer> >& Inequalities,
+	     const list< vector<Integer> >& Equations,
+	     const list< vector<Integer> >& Congruences);
 
 	/* do computation */
 	void compute(const string& mode);

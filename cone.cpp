@@ -16,6 +16,7 @@
  *
  */
 
+#include <map>
 #include "cone.h"
 
 namespace libnormaliz {
@@ -44,6 +45,7 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Input, int input_type) {
 		case 10: prepare_input_type_10(Input); break;
 		default: throw input_type; //TODO make a good exception
 	}
+	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 }
 
 template<typename Integer>
@@ -64,6 +66,7 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vec
 		}
 		dimensions.pop_front();
 	}
+	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 	prepare_input_type_456(Congruences, Equations, Inequalities);
 }
 
@@ -211,13 +214,13 @@ void Cone<Integer>::prepare_input_type_2(const list< vector<Integer> >& Input) {
 	} else { //append a column of 1
 		Generators = list< vector<Integer> >();
 		typename list< vector<Integer> >::const_iterator it=Input.begin();
-		int nc = (*it).size();
-		vector<Integer> row(nc+1);
-		row[nc]=1;
+		vector<Integer> row(dim+1);
+		row[dim]=1;
 		for (; it!=Input.end(); ++it) {
-			for (j=0; j<nc; j++) row[j]=(*it)[j];
+			for (j=0; j<dim; j++) row[j]=(*it)[j];
 			Generators.push_back(row);
 		}
+		dim++;
 	}
 	is_Computed.set(ConeProperty::Generators);
 
@@ -267,6 +270,7 @@ void Cone<Integer>::prepare_input_type_3(const list< vector<Integer> >& InputL) 
 		}
 	}
 	Generators = Full_Cone_Generators.to_list();
+	dim = Generators.begin()->size();
 	is_Computed.set(ConeProperty::Generators);
 
 	compose_basis_change(Sublattice_Representation<Integer>(Full_Cone_Generators.nr_of_columns()));
@@ -275,18 +279,8 @@ void Cone<Integer>::prepare_input_type_3(const list< vector<Integer> >& InputL) 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& CongruencesL, const list< vector<Integer> >& EquationsL, const list< vector<Integer> >& InequalitiesL) {
+void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& CongruencesL, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities) {
 	Matrix<Integer> Congruences(CongruencesL); //TODO handle it better
-	Matrix<Integer> Equations(EquationsL);
-	Matrix<Integer> Inequalities(InequalitiesL);
-
-	cerr<<"WAHH! not implemeted yet!"<<endl;
-	throw 23;
-
-	// use positive orthant if no inequalities are given
-	if (Inequalities.nr_of_rows() == 0) {
-		Inequalities = Matrix<Integer>(dim);
-	}
 
 	int nr_cong = Congruences.nr_of_rows();
 	// handle Congurences
@@ -316,8 +310,6 @@ void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& Congru
 		//TODO now a new linear transformation is computed, necessary??
 		Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),false);
 		compose_basis_change(Basis_Change);
-		Equations = Basis_Change.to_sublattice_dual(Equations);
-		Inequalities = Basis_Change.to_sublattice_dual(Inequalities);
 	}
 
 	prepare_input_type_45(Equations, Inequalities);
@@ -326,24 +318,32 @@ void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& Congru
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities) {
-	int i,j;
-	//TODO nur wenn auch equations da sind
-	Lineare_Transformation<Integer> Diagonalization=Transformation(Equations);
-	int rank=Diagonalization.get_rank();
+void Cone<Integer>::prepare_input_type_45(const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities) {
 
-	Matrix<Integer> Help=Diagonalization.get_right();
-	Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
-	for (i = 1; i <= dim; i++) {
-		for (j = rank+1; j <= dim; j++) {
-			Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
-		}
+	// use positive orthant if no inequalities are given
+	if (Inequalities.size() == 0) {
+		SupportHyperplanes = (Matrix<Integer>(dim)).to_list();
+	} else {
+		SupportHyperplanes = Inequalities;
 	}
-	Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),true);
-	compose_basis_change(Basis_Change);
-	Matrix<Integer> Inequ_on_Ker = Basis_Change.to_sublattice_dual(Inequalities);
+	is_Computed.set(ConeProperty::SupportHyperplanes);
 
-	//TODO set SH and isComp(SH)
+
+	int i,j;
+	if (Equations.size()>0) {
+		Lineare_Transformation<Integer> Diagonalization = Transformation(BasisChange.to_sublattice_dual(Equations));
+		int rank=Diagonalization.get_rank();
+
+		Matrix<Integer> Help=Diagonalization.get_right();
+		Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
+		for (i = 1; i <= dim; i++) {
+			for (j = rank+1; j <= dim; j++) {
+				Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
+			}
+		}
+		Sublattice_Representation<Integer> Basis_Change(Ker_Basis_Transpose.transpose(),true);
+		compose_basis_change(Basis_Change);
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -376,50 +376,37 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 
 template<typename Integer>
 void Cone<Integer>::compute(const string& computation_type) {
-	//TODO check what is set, the code below should transfer, if necessary
-/*	if(computation_type!="dual"){
+	if (computation_type == "dual") {
+		compute_dual();
+		return;
+	}
+
+	//create Generators from SupportHyperplanes
+	if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
 		if (verbose) {
 			cout <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
 		}
-		Full_Cone<Integer> Dual_Cone(Inequ_on_Ker);
+		Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)));
 		Dual_Cone.support_hyperplanes();
-		Matrix<Integer> Extreme_Rays=Dual_Cone.read_support_hyperplanes();
-		prepare_input_type_0(Extreme_Rays);
-	}
-	if(computation_type=="dual"){
-		dim = Inequ_on_Ker.nr_of_columns();
-		Integer norm;
-		vector< Integer > hyperplane;
-		multimap <Integer , vector <Integer> >  Help;
-		typename multimap <Integer , vector <Integer> >::const_iterator ii;
-		for (i = 1; i <= Inequ_on_Ker.nr_of_rows() ; i++) {
-			hyperplane=Inequ_on_Ker.read(i);
-			norm=0;
-			for (j = 0; j <dim; j++) {
-				norm+=Iabs(hyperplane[j]);
-			}
-			Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
+		Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
+		if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
+			Generators = BasisChange.from_sublattice(Extreme_Rays).to_list();
+			is_Computed.set(ConeProperty::Generators);
+			Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
+			compose_basis_change(Basis_Change);
 		}
-		Matrix<Integer> Equations_Ordered(Inequ_on_Ker.nr_of_rows(),dim);
-		i=1;
-		for (ii=Help.begin(); ii != Help.end(); ii++) {
-			Equations_Ordered.write(i,(*ii).second);
-			i++;
-		}
-		Cone_Dual_Mode<Integer> ConeDM(Equations_Ordered);
-		ConeDM.hilbert_basis_dual();
-		//ConeDM zu einem Full_Cone<Integer> machen
-		if ( ConeDM.Generators.rank() < ConeDM.dim ) {
-			Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
-			ConeDM.to_sublattice(SR);
-			compose_basis_change(SR);
-		}
-		Full_Cone<Integer> Result(ConeDM);
-		Result.dual_mode();
-		C.set_result(Result);
 	}
 
-	*/
+	if (!isComputed(ConeProperty::Generators)) {
+		cerr<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
+		throw 42;  //TODO exception
+	}
+
+	//TODO workaround for zero cones :((
+	//die dimension bleibt in der liste nicht gespeichert, wenn sie leer ist, darum passt es dann beim transformieren nicht
+	if(Generators.size()==0) {
+		return;
+	}
 
 	Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
@@ -441,14 +428,59 @@ void Cone<Integer>::compute(const string& computation_type) {
 		FC.hilbert_polynomial();
 	} else if (computation_type=="hilbert_basis_polynomial") {
 		FC.hilbert_basis_polynomial();
-	} else if (computation_type=="dual") {
-		cerr<<"WAHHHH! not implemented yet!";
-		throw 1; //TODO implement
+	} else {
+		cerr<<"Unknown computation_type!"<<endl;
+		throw 1; //TODO exception
 	}
-
 	extract_data(FC);
 }
 
+template<typename Integer>
+void Cone<Integer>::compute_dual() {
+	if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
+		//TODO implement
+		cerr<<"...---... Not implemented yet!"<<endl;
+		throw 23;
+	}
+
+	if (!isComputed(ConeProperty::SupportHyperplanes)) {
+		cerr<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
+		throw 42;  //TODO exception
+	}
+
+	int i,j;
+	Matrix<Integer> Inequ_on_Ker = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes));
+	int newdim = Inequ_on_Ker.nr_of_columns();
+	Integer norm;
+	vector< Integer > hyperplane;
+	multimap <Integer , vector <Integer> >  Help;
+	typename multimap <Integer , vector <Integer> >::const_iterator ii;
+	for (i = 1; i <= Inequ_on_Ker.nr_of_rows() ; i++) {
+		hyperplane=Inequ_on_Ker.read(i);
+		norm=0;
+		for (j = 0; j <newdim; j++) {
+			norm+=Iabs(hyperplane[j]);
+		}
+		Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
+	}
+	Matrix<Integer> Equations_Ordered(Inequ_on_Ker.nr_of_rows(),newdim);
+	i=1;
+	for (ii=Help.begin(); ii != Help.end(); ii++) {
+		Equations_Ordered.write(i,(*ii).second);
+		i++;
+	}
+	Cone_Dual_Mode<Integer> ConeDM(Equations_Ordered);
+	ConeDM.hilbert_basis_dual();
+	//ConeDM zu einem Full_Cone<Integer> machen
+	if ( ConeDM.Generators.rank() < ConeDM.dim ) {
+		Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
+		ConeDM.to_sublattice(SR);
+		compose_basis_change(SR);
+	}
+	Full_Cone<Integer> FC(ConeDM);
+	FC.dual_mode();
+	extract_data(FC);
+}
 
 template<typename Integer>
 void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {

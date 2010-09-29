@@ -2,8 +2,8 @@
 ## Makefile for normaliz
 ##
 CXX = g++
-CXXFLAGS += -Wall -Wno-sign-compare
-CXXFLAGS += -O2 -funroll-loops
+CXXFLAGS += -Wall -Wno-sign-compare -pedantic
+CXXFLAGS += -O3 -funroll-loops
 #CXXFLAGS += -g #-p
 
 ## use OpenMP?
@@ -43,7 +43,7 @@ normbig: Normaliz.cpp Normaliz.h $(NBIGOBJ)
 
 libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz.cpp -o libnormaliz.o 
-normaliz: Normaliz.cpp Normaliz.h libnormaliz.o output.h output.cpp
+normaliz: Normaliz.cpp Normaliz.h output.h output.cpp libnormaliz.o
 #	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp $(GMPFLAGS) -o normaliz
 

@@ -482,7 +482,8 @@ void Output<Integer>::cone() const {
 			out<<nr<<" Hilbert basis elements:"<<endl;
 			Hilbert_Basis.pretty_print(out);
 		}
-
+		Matrix<Integer> Extreme_Rays;
+		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
 			int nr_ex_rays=0;
 			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
@@ -498,18 +499,19 @@ void Output<Integer>::cone() const {
 					j++;
 				}
 			}
-			Matrix<Integer> Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+			Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+
 			write_matrix_ext(Extreme_Rays);
 			out<<nr_ex_rays<<" extreme rays:"<<endl;
 			Extreme_Rays.pretty_print(out);
+		}
 
-		{
-			//write constrains (support hyperplanes, congruences, equations)
+		//write constrains (support hyperplanes, congruences, equations)
 
-			out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
-			Support_Hyperplanes.pretty_print(out);
-			
-			//equations 
+		out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
+		Support_Hyperplanes.pretty_print(out);
+		if (Result->isComputed(ConeProperty::ExtremeRays)) {
+			//equations
 			int dim = Extreme_Rays.nr_of_columns();
 			int nr_of_equ = dim-rank;
 			Matrix<Integer> Equations(nr_of_equ,dim);
@@ -519,11 +521,11 @@ void Output<Integer>::cone() const {
 				for (i = 1+rank; i <= dim; i++) {
 					Equations.write(i-rank,Help.read(i));
 				}
-	
+
 				out << nr_of_equ <<" equations:" <<endl;
 				Equations.pretty_print(out);
 			}
-	
+
 	
 			//congruences
 			Matrix<Integer> Congruences = BasisChange.get_congruences();
