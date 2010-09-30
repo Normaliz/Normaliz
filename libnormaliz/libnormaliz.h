@@ -28,7 +28,6 @@
 	#include <gmpxx.h>
 #endif
 
-using namespace std;
 
 namespace libnormaliz {
 
@@ -60,6 +59,7 @@ namespace ConeProperty {
 		ExtremeRays,
 		SupportHyperplanes,
 		Triangulation,
+		Multiplicity,
 		HilbertBasis,
 		Ht1Elements,
 		HVector,

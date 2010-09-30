@@ -25,9 +25,11 @@
 using namespace std;
 
 #include "Normaliz.h"
-
+#include "libnormaliz/libnormaliz.cpp"
+using namespace libnormaliz;
 #include "output.cpp"
-#include "libnormaliz.cpp"
+
+
 
 void printHelp(char* command) {
 	cout << "usage: "<<command<<" [-acdefhimnpsv?] [-x=<T>] [PROJECT]"<<endl;
@@ -375,7 +377,6 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
 		}
-		//run_mode_456(computation_type, Congruences, Equations, Inequalities, Out);
 		Cone<Integer> MyCone = Cone<Integer>(Inequalities.to_list(), Equations.to_list(), Congruences.to_list());
 		MyCone.compute(computation_type);
 		Out.setCone(MyCone);

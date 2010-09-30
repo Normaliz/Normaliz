@@ -30,7 +30,7 @@ namespace libnormaliz {
 template<typename Integer>
 class Cone {
 	int dim;
-	Integer multiplicity;
+
 //	Full_Cone<Integer> FullDimCone;
 	Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
 	bool BC_set;
@@ -40,6 +40,7 @@ class Cone {
 	vector<bool> ExtremeRays;
 	list< vector<Integer> > SupportHyperplanes;
 	list< vector<Integer> > Triangulation;
+	Integer multiplicity;
 	list< vector<Integer> > HilbertBasis;
 	list< vector<Integer> > Ht1Elements;
 	vector<Integer> HVector;

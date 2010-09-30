@@ -504,6 +504,10 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		multiplicity = FC.getMultiplicity();
 		is_Computed.set(ConeProperty::Triangulation);
 	}
+	if (FC.isComputed(ConeProperty::Multiplicity)) {
+		multiplicity = FC.getMultiplicity();
+		is_Computed.set(ConeProperty::Multiplicity);
+	}
 	if (FC.isComputed(ConeProperty::HilbertBasis)) {
 		HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis()).to_list();
 		is_Computed.set(ConeProperty::HilbertBasis);

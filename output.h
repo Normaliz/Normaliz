@@ -21,10 +21,9 @@
 #define OUTPUT_H
 //---------------------------------------------------------------------------
 
-#include "libnormaliz.h"
-#include "cone.h"
-#include "lineare_transformation.h"
-#include "sublattice_representation.h"
+#include "libnormaliz/lineare_transformation.h"
+#include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/cone.h"
 
 using namespace libnormaliz;
 

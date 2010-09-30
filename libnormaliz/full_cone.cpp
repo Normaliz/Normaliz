@@ -2058,6 +2058,7 @@ void Full_Cone<Integer>::compute_multiplicity(){
 	#pragma omp critical(MULT)
 	multiplicity+=mult;
 	} //END parallel
+	is_Computed.set(ConeProperty::Multiplicity);
 }
 
 //---------------------------------------------------------------------------
@@ -2115,6 +2116,7 @@ void Full_Cone<Integer>::compute_ht1_elements() {
 	#pragma omp critical(MULT)
 	multiplicity+=mult;
 	} //END parallel
+	is_Computed.set(ConeProperty::Multiplicity);
 	Homogeneous_Elements.sort();
 	Homogeneous_Elements.unique();
 	is_Computed.set(ConeProperty::Ht1Elements);
@@ -2174,6 +2176,7 @@ void Full_Cone<Integer>::compute_hilbert_basis(){
 	if (verbose) {
 		cout<<"simplex="<<counter<<" and "<< Candidates.size() <<" candidate vectors to be globally reduced."<<endl;
 	}
+	is_Computed.set(ConeProperty::Multiplicity);
 
 	global_reduction(Candidates);
 
@@ -2590,6 +2593,7 @@ void Full_Cone<Integer>::compute_hilbert_polynomial(){
 			}
 		}
 	}
+	is_Computed.set(ConeProperty::Multiplicity);
 	Homogeneous_Elements.sort();
 	Homogeneous_Elements.unique();
 	is_Computed.set(ConeProperty::Ht1Elements);
@@ -2655,7 +2659,7 @@ void Full_Cone<Integer>::compute_hilbert_basis_polynomial(){
 			}
 		}
 	}
-		
+	is_Computed.set(ConeProperty::Multiplicity);
 	Homogeneous_Elements.sort();
 	Homogeneous_Elements.unique();
 	is_Computed.set(ConeProperty::Ht1Elements);

@@ -29,11 +29,6 @@
 #include <iostream>
 #include <string>
 
-#include "cone.h"
-#include "output.h"
-
-
-using namespace libnormaliz;
 
 /**
  * Prints help text

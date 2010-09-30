@@ -14,43 +14,32 @@ else
 endif
 
 NORMFLAGS = -static
-N64FLAGS = -Dnorm64 $(NORMFLAGS)
-NBIGFLAGS = -Dnormbig $(NORMFLAGS)
 GMPFLAGS = -lgmpxx -lgmp
 
-LIBSOURCES = libnormaliz.cpp cone.cpp full_cone.cpp integer.cpp cone_dual_mode.cpp lineare_transformation.cpp list_operations.cpp matrix.cpp simplex.cpp sublattice_representation.cpp vector_operations.cpp
-LIBHEADERS = $(LIBSOURCES:.cpp=.h)
+LIBSOURCES = $(wildcard libnormaliz/*.cpp)
+LIBHEADERS = $(wildcard libnormaliz/*.h)
 
-N64OBJ = obj64/libnormaliz.o obj64/full_cone.o obj64/integer.o obj64/cone_dual_mode.o obj64/lineare_transformation.o obj64/list_operations.o obj64/matrix.o obj64/simplex.o obj64/sublattice_representation.o obj64/vector_operations.o
-NBIGOBJ = $(subst obj64,objBig,$(N64OBJ))
+SOURCES = $(wildcard *.cpp)
+HEADERS = $(wildcard *.h)
+
 
 default: normaliz
 
-all: norm64 normbig normaliz
+all: normaliz
 
-obj64/%.o: %.cpp %.h $(LIBHEADERS)
-	@mkdir -p obj64
-	$(CXX) $(CXXFLAGS) $(N64FLAGS) -c $< -o $@
-norm64: Normaliz.cpp Normaliz.h $(N64OBJ)
-	$(CXX) $(CXXFLAGS) $(N64FLAGS) libnormaliz.cpp Normaliz.cpp $(GMPFLAGS) -o norm64
-
-objBig/%.o: %.cpp $(LIBHEADERS)
-	@mkdir -p objBig
-	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) -c $< -o $@
-normbig: Normaliz.cpp Normaliz.h $(NBIGOBJ)
-	$(CXX) $(CXXFLAGS) $(NBIGFLAGS) libnormaliz.cpp Normaliz.cpp $(GMPFLAGS) -o normbig
+#libnormaliz/libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
+#	$(make) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz.cpp -o libnormaliz.o 
+#normaliz: Normaliz.cpp Normaliz.h output.h output.cpp libnormaliz.o
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp $(GMPFLAGS) -o normaliz
 
 
-libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz.cpp -o libnormaliz.o 
-normaliz: Normaliz.cpp Normaliz.h output.h output.cpp libnormaliz.o
+normaliz: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 #	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp $(GMPFLAGS) -o normaliz
 
 
 clean:
-	-rm -rf obj64 objBig
-	-rm -f norm64 normbig
-	-rm -f libnormaliz.o normaliz
+	-rm -f libnormaliz/libnormaliz.o normaliz
 
 .PHONY : default clean all

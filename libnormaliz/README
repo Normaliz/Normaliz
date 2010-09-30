@@ -1,0 +1,77 @@
+The easiest way to use libnormaliz
+http://www.mathematik.uni-osnabrueck.de/normaliz/
+
+recommended compile flags:
+-Wall -Wno-sign-compare             #warnings, but no-sign-compare (they woud be to many)
+-Wno-unknown-pragmas -DNO_OPENMP    #to disable openmp and supress warnings about that
+-lgmpxx -lgmp                       #for gmp
+-O3                                 #for optimization
+
+
+Quick workflow overview:
+1) include libnormaliz/libnormaliz.cpp
+2) create libnormaliz::Cone
+3) call the compute(computation_mode) method
+4) check if the desired data is computed: isComputed( X )
+5) get the data: getX()
+6) repeat 4+5 or 3+4+5
+
+1) The .cpp should be included since the whole library is templated, so you could use any integer type you want. We suggest (and only tested) 'long long int' and the gmp type 'mpz_class'.
+
+Example:
+//we discourage the use of "using namespace libnormaliz"
+using libnormaliz::Cone;
+using libnormaliz::ConeProperty;
+
+
+//use your prefered integer type
+typedef long long int Integer;
+//typedef mpz_class Integer;
+
+//get some input data
+list< vector <Integer> > Data = ...
+int type = ... 
+libnormaliz::Cone<Integer> MyCone = libnormaliz::Cone<Integer>(Data, type);
+string computation_type = "triangulation_hilbert_basis"
+MyCone.compute(computation_type);
+
+if(MyCone.isComputed(libnormaliz::ConeProperty::HilbertBasis)) {
+	list< vector< Integer> > HB& = MyCone.getHilbertBasis();
+	//use it
+}
+if(MyCone.isComputed(libnormaliz::ConeProperty::Multiplicity)) {
+   cout<<"MyCone has multiplicity "<<MyCone.getMultiplicity();
+}
+
+
+
+input types:
+0  Generators, integral closure
+1  Generators, normalisation
+2  Polytope
+3  Rees
+4  Inequalities
+5  Equalities
+6  Congruences
+10 lattice ideal (toric ring of a binomial ideal)
+
+to combine types 4,5,6 use the second constructor
+Cone(Inequalities, Equations, Congruences);
+empty list arguments will be ignored
+
+
+computation modes:
+the computation mode is a string, which can be one of the following:
+support_hyperplanes_pyramid
+triangulation
+triangulation_pyramid
+triangulation_hilbert_basis
+hilbert_basis
+support_hyperplanes
+ht1_elements
+hilbert_polynomial
+hilbert_basis_polynomial
+dual
+
+please see the Normaliz Documentation for more information on the input types and mode
+http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.5Documentation.pdf

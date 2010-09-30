@@ -113,7 +113,7 @@ template<typename Integer>
 Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
 	nr = elem.size();
 	elements = vector< vector<Integer> > (nr);
-	nc = -1;
+	nc = 0;
 	int i=0;
 	for(typename list< vector<Integer> >::const_iterator it=elem.begin(); it!=elem.end(); ++it, ++i) {
 		if(i == 0) {
