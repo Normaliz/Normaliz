@@ -501,7 +501,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	}
 	if (FC.isComputed(ConeProperty::Triangulation)) {
 		Triangulation = FC.getTriangulation().to_list();
-		multiplicity = FC.getMultiplicity();
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::Multiplicity)) {

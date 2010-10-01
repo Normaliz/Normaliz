@@ -25,7 +25,9 @@
 using namespace std;
 
 #include "Normaliz.h"
-#include "libnormaliz/libnormaliz.cpp"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/cone.h"
+//#include "libnormaliz/libnormaliz.cpp"
 using namespace libnormaliz;
 #include "output.cpp"
 

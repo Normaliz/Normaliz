@@ -16,8 +16,8 @@ endif
 NORMFLAGS = -static
 GMPFLAGS = -lgmpxx -lgmp
 
-LIBSOURCES = libnormaliz.cpp cone.cpp full_cone.cpp integer.cpp cone_dual_mode.cpp lineare_transformation.cpp list_operations.cpp matrix.cpp simplex.cpp sublattice_representation.cpp vector_operations.cpp
-LIBHEADERS = $(LIBSOURCES:.cpp=.h)
+LIBSOURCES = $(wildcard *.cpp)
+LIBHEADERS = $(wildcard *.h)
 
 default: libnormaliz.o
 

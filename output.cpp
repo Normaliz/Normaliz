@@ -27,10 +27,6 @@
 #include <algorithm>
 
 #include "output.h"
-//#include "integer.h"
-//#include "vector_operations.h"
-//#include "matrix.h"
-//#include "simplex.h"
 
 //---------------------------------------------------------------------------
 

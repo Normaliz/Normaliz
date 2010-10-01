@@ -25,21 +25,20 @@ HEADERS = $(wildcard *.h)
 
 default: normaliz
 
-all: normaliz
+all: normaliz normalizl
 
-#libnormaliz/libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
-#	$(make) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz.cpp -o libnormaliz.o 
-#normaliz: Normaliz.cpp Normaliz.h output.h output.cpp libnormaliz.o
-#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
+libnormaliz/libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
+	$(MAKE) --directory=libnormaliz libnormaliz.o
+
+normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.o
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz/libnormaliz.o $(GMPFLAGS) -o normaliz
+
+#normaliz: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 #	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp $(GMPFLAGS) -o normaliz
 
 
-normaliz: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz.o $(GMPFLAGS) -o normaliz
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp $(GMPFLAGS) -o normaliz
-
-
 clean:
-	-rm -f libnormaliz/libnormaliz.o normaliz
+	$(MAKE) --directory=libnormaliz clean
+	-rm -f normaliz
 
 .PHONY : default clean all
