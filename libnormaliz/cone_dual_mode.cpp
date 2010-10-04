@@ -209,7 +209,8 @@ template<typename Integer>
 Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!");
+		cerr<<"Cone_Dual_Mode error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!"<<endl;
+		global_error_handling();
 	}
 	SupportHyperplanes = M;
 	nr_sh=SupportHyperplanes.nr_of_rows();
@@ -707,9 +708,8 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::to_sublattice(Sublattice_Representation<Integer> SR) {
-	if (SR.get_dim() != dim) {
-		error("to_sublattice: dimensions do not match!");
-	}
+	assert(SR.get_dim() == dim);
+
 	dim = SR.get_rank();
 	hyp_size = dim+nr_sh;
 	SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
@@ -723,14 +723,6 @@ void Cone_Dual_Mode<Integer>::to_sublattice(Sublattice_Representation<Integer> S
 		it = Hilbert_Basis.erase(it);
 		Hilbert_Basis.insert(it,tmp);
 	}
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Cone_Dual_Mode<Integer>::error(string s) const{
-	cerr <<"\nCone_Dual_Mode<Integer>: "<< s<<"\n";
-	global_error_handling();
 }
 
 }

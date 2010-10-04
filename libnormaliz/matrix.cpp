@@ -317,13 +317,9 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<int>& rows) const{
 	Matrix<Integer> M(size, nc);
 	for (int i=0; i < size; i++) {
 		j=rows[i]-1;
-		if (nr-1<j) {
-			error("error: Bad argument passed to Matrix<Integer>::submatrix.");
-			return M;
-		}
-		else {
-			M.elements[i]=elements[j];
-		}
+		assert(j >= 0);
+		assert(j < nr);
+		M.elements[i]=elements[j];
 	}
 	return M;
 }
@@ -332,6 +328,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<int>& rows) const{
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
+	assert(rows.size() == nr);
 	int size=0;
 	for (int i = 0; i <rows.size(); i++) {
 		if (rows[i]) {
@@ -352,18 +349,12 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::diagonale() const{
-	if (nr!= nc) {
-		error("error: Bad argument passed to Matrix<Integer>::diagonale.");
-		vector<Integer> diag(0);
-		return diag;
+	assert(nr == nc); 
+	vector<Integer> diag(nr);
+	for(int i=0; i<nr;i++){
+		diag[i]=elements[i][i];
 	}
-	else  {
-		vector<Integer> diag(nr);
-		for(int i=0; i<nr;i++){
-			diag[i]=elements[i][i];
-		}
-		return diag;
-	}
+	return diag;
 }
 
 //---------------------------------------------------------------------------
@@ -383,9 +374,7 @@ int Matrix<Integer>::maximal_decimal_length() const{
 
 template<typename Integer>
 void Matrix<Integer>::append(const Matrix<Integer>& M) {
-	if (nc != M.nc) {
-		error("error: Bad argument passed to Matrix<Integer>::append.");
-	}
+	assert (nc == M.nc);
 	elements.reserve(nr+M.nr);
 	for (int i=0; i<M.nr; i++) {
 		elements.push_back(M.elements[i]);
@@ -397,9 +386,7 @@ void Matrix<Integer>::append(const Matrix<Integer>& M) {
 
 template<typename Integer>
 void Matrix<Integer>::append(const vector<Integer>& V) {
-	if (nc != V.size()) {
-		error("error: Bad argument passed to Matrix<Integer>::append.");
-	}
+	assert (nc == V.size());
 	elements.push_back(V);
 	nr++;
 }
@@ -408,9 +395,8 @@ void Matrix<Integer>::append(const vector<Integer>& V) {
 
 template<typename Integer>
 void Matrix<Integer>::cut_columns(int c) {
-	if (c > nc || c < 0) {
-		error("error: Bad argument passed to Matrix<Integer>::cut_columns.");
-	}
+	assert (c >= 0);
+	assert (c <= nc);
 	for (int i=0; i<nr; i++) {
 		elements[i].resize(c);
 	}
@@ -526,7 +512,7 @@ void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
 	int i,j;
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
-			elements[i][j]=elements[i][j]*scalar;
+			elements[i][j] *= scalar;
 		}
 	}
 }
@@ -536,18 +522,11 @@ void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
 template<typename Integer>
 void Matrix<Integer>::scalar_division(const Integer& scalar){
 	int i,j;
-	if(scalar == 0) {
-		error("error:  Bad argument passed to Matrix<Integer>::scalar_division. (div by zero)");
-	}
+	assert(scalar != 0);
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
-			if (elements[i][j]%scalar!=0) {
-				error("error: Bad argument passed to Matrix<Integer>::scalar_division.");
-				return;
-			}
-			else {
-				elements[i][j]=elements[i][j] / scalar;
-			}
+			assert (elements[i][j]%scalar == 0);
+			elements[i][j] /= scalar;
 		}
 	}
 }
@@ -559,9 +538,9 @@ void Matrix<Integer>::reduction_modulo(const Integer& modulo){
 	int i,j;
 	for(i=0; i<nr;i++){
 		for(j=0; j<nc; j++){
-			elements[i][j]=elements[i][j] % modulo;
-			if (elements[i][j]<0) {
-				elements[i][j]=elements[i][j]+modulo;
+			elements[i][j] %= modulo;
+			if (elements[i][j] < 0) {
+				elements[i][j] += modulo;
 			}
 		}
 	}
@@ -595,70 +574,56 @@ vector<Integer> Matrix<Integer>::make_prime() {
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
-	if ((nc!=v.size())) {
-		error("error: Bad argument passed to Matrix<Integer>::MxV.");
-		vector<Integer> w;
-		return w;
+	assert (nc == v.size());
+	vector<Integer> w(nr);
+	for(int i=0; i<nr;i++){
+		w[i]=v_scalar_product(elements[i],v);
 	}
-	else  {
-		vector<Integer> w(nr);
-		for(int i=0; i<nr;i++){
-			w[i]=v_scalar_product(elements[i],v);
-		}
-		return w;
-	}
+	return w;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
-	if ((nr!=v.size())) {
-		error("error: Bad argument passed to Matrix<Integer>::VxM.");
-		vector<Integer> w;
-		return w;
+	assert (nr == v.size());
+	vector<Integer> w(nc,0);
+	int i,j;
+	for (i=0; i<nc; i++){
+		for (j=0; j<nr; j++){
+			w[i] += v[j]*elements[j][i];
+ 		}
 	}
-	else  {
-		vector<Integer> w(nc,0);
-		int i,j;
-		for (i=0; i<nc; i++){
-			for (j=0; j<nr; j++){
-				w[i]=w[i]+v[j]*elements[j][i];
-			}
-		}
-		return w;
-	}
+	return w;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Matrix<Integer>::exchange_rows(const int& row1, const int& row2){
-	if ((row1>nr) || (row2>nr)) {
-		error("error: Bad argument passed to Matrix<Integer>::exchange_rows.");
-	}
-	else {
-		elements[row1-1].swap(elements[row2-1]);
-	}
+	assert(row1 > 0);
+	assert(row1 <= nr);
+	assert(row2 > 0);
+	assert(row2 <= nr);
+	elements[row1-1].swap(elements[row2-1]);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Matrix<Integer>::exchange_columns(const int& col1, const int& col2){
-	if ((col1>nc) || (col2>nc)) {
-		error("error: Bad argument passed to Matrix<Integer>::exchange_columns.");
-	}
-	else {
-		register const int c1=col1-1;
-		register const int c2=col2-1;
-		register int i;
-		Integer help;
-		for(i=0; i<nr;i++){
-			help=elements[i][c1];
-			elements[i][c1]= elements[i][c2];
-			elements[i][c2]=help;
-		}
+	assert(col1 > 0);
+	assert(col1 <= nc);
+	assert(col2 > 0);
+	assert(col2 <= nc);
+	register const int c1=col1-1;
+	register const int c2=col2-1;
+	register int i;
+	Integer help;
+	for(i=0; i<nr;i++){
+		help=elements[i][c1];
+		elements[i][c1]= elements[i][c2];
+		elements[i][c2]=help;
 	}
 }
 
@@ -666,18 +631,16 @@ void Matrix<Integer>::exchange_columns(const int& col1, const int& col2){
 
 template<typename Integer>
 void Matrix<Integer>::reduce_row (int corner) {
-	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix<Integer>::reduce_row.");
-	}
-	else{
-		register int i,j;
-		Integer help;
-		for ( i = corner; i < nr; i++) {
-			if (elements[i][corner-1]!=0) {
-				help=elements[i][corner-1] / elements[corner-1][corner-1];
-				for (j = corner-1; j < nc; j++) {
-					elements[i][j]=elements[i][j]-help*elements[corner-1][j];
-				}
+	assert(corner > 0);
+	assert(corner <= nc);
+	assert(corner <= nr);
+	register int i,j;
+	Integer help;
+	for ( i = corner; i < nr; i++) {
+		if (elements[i][corner-1]!=0) {
+			help=elements[i][corner-1] / elements[corner-1][corner-1];
+			for (j = corner-1; j < nc; j++) {
+				elements[i][j]=elements[i][j]-help*elements[corner-1][j];
 			}
 		}
 	}
@@ -687,21 +650,20 @@ void Matrix<Integer>::reduce_row (int corner) {
 
 template<typename Integer>
 void Matrix<Integer>::reduce_row (int corner, Matrix<Integer>& Left) {
-	if ((corner>nr)||(corner>nc)||(Left.nr!=nr)) {
-		error("error: Bad argument passed to Matrix<Integer>::reduce_row.");
-	}
-	else {
-		int i,j;
-		Integer help1, help2=elements[corner-1][corner-1];
-		for ( i = corner; i < nr; i++) {
-			help1=elements[i][corner-1] / help2;
-			if (help1!=0) {
-				for (j = corner-1; j < nc; j++) {
-					elements[i][j]=elements[i][j]-help1*elements[corner-1][j];
-				}
-				for (j = 0; j < Left.nc; j++) {
-					Left.elements[i][j]=Left.elements[i][j]-help1*Left.elements[corner-1][j];
-				}
+	assert(corner > 0);
+	assert(corner <= nc);
+	assert(corner <= nr);
+	assert(Left.nr == nr);
+	int i,j;
+	Integer help1, help2=elements[corner-1][corner-1];
+	for ( i = corner; i < nr; i++) {
+		help1=elements[i][corner-1] / help2;
+		if (help1!=0) {
+			for (j = corner-1; j < nc; j++) {
+				elements[i][j]=elements[i][j]-help1*elements[corner-1][j];
+			}
+			for (j = 0; j < Left.nc; j++) {
+				Left.elements[i][j]=Left.elements[i][j]-help1*Left.elements[corner-1][j];
 			}
 		}
 	}
@@ -711,18 +673,16 @@ void Matrix<Integer>::reduce_row (int corner, Matrix<Integer>& Left) {
 
 template<typename Integer>
 void Matrix<Integer>::reduce_column (int corner) {
-	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix<Integer>::reduce_column.");
-	}
-	else{
-		int i,j;
-		Integer help1, help2=elements[corner-1][corner-1];
-		for ( j = corner; j < nc; j++) {
-			help1=elements[corner-1][j] / help2;
-			if (help1!=0) {
-				for (i = corner-1; i < nr; i++) {
-					elements[i][j]=elements[i][j]-help1*elements[i][corner-1];
-				}
+	assert(corner > 0);
+	assert(corner <= nc);
+	assert(corner <= nr);
+	int i,j;
+	Integer help1, help2=elements[corner-1][corner-1];
+	for ( j = corner; j < nc; j++) {
+		help1=elements[corner-1][j] / help2;
+		if (help1!=0) {
+			for (i = corner-1; i < nr; i++) {
+				elements[i][j]=elements[i][j]-help1*elements[i][corner-1];
 			}
 		}
 	}
@@ -732,22 +692,24 @@ void Matrix<Integer>::reduce_column (int corner) {
 
 template<typename Integer>
 void Matrix<Integer>::reduce_column (int corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
-	if ((corner>nr)||(corner>nc)||(Right.nr!=nc)||(Right.nc!=nc)||(Right_Inv.nr!=nc)||(Right_Inv.nc!=nc)) {
-		error("error: Bad argument passed to Matrix<Integer>::reduce_columen.");
-	}
-	else {
-		int i,j;
-		Integer help1, help2=elements[corner-1][corner-1];
-		for ( j = corner; j < nc; j++) {
-			help1=elements[corner-1][j] / help2;
-			if (help1!=0) {
-				for (i = corner-1; i < nr; i++) {
-					elements[i][j]=elements[i][j]-help1*elements[i][corner-1];
-				}
-				for (i = 0; i < nc; i++) {
-					Right.elements[i][j]=Right.elements[i][j]-help1*Right.elements[i][corner-1];
-					Right_Inv.elements[corner-1][i]=Right_Inv.elements[corner-1][i]+help1*Right_Inv.elements[j][i];
-				}
+	assert(corner > 0);
+	assert(corner <= nc);
+	assert(corner <= nr);
+	assert(Right.nr == nc);
+	assert(Right.nc == nc);
+	assert(Right_Inv.nr == nc);
+	assert(Right_Inv.nc ==nc);
+	int i,j;
+	Integer help1, help2=elements[corner-1][corner-1];
+	for ( j = corner; j < nc; j++) {
+		help1=elements[corner-1][j] / help2;
+		if (help1!=0) {
+			for (i = corner-1; i < nr; i++) {
+				elements[i][j]=elements[i][j]-help1*elements[i][corner-1];
+			}
+			for (i = 0; i < nc; i++) {
+				Right.elements[i][j]=Right.elements[i][j]-help1*Right.elements[i][corner-1];
+				Right_Inv.elements[corner-1][i]=Right_Inv.elements[corner-1][i]+help1*Right_Inv.elements[j][i];
 			}
 		}
 	}
@@ -757,27 +719,26 @@ void Matrix<Integer>::reduce_column (int corner, Matrix<Integer>& Right, Matrix<
 
 template<typename Integer>
 vector<int> Matrix<Integer>::pivot(int corner){
+	assert(corner > 0);
+	assert(corner <= nc);
+	assert(corner <= nr);
 	int i,j;
 	Integer help=0;
 	vector<int> v(2,0);
-	if ((corner>nr)||(corner>nc)) {
-		error("error: Bad argument passed to Matrix<Integer>::pivot.");
-		return v;
-	}
-	else{
-		for (i = corner-1; i < nr; i++) {
-			for (j = corner-1; j < nc; j++) {
-				if (elements[i][j]!=0) {
-					if ((help==0)||(Iabs(elements[i][j])<help)) {
-						help=Iabs(elements[i][j]);
-						v[0]=i+1;
-						v[1]=j+1;
-						if (help == 1) return v;
-					}
+
+	for (i = corner-1; i < nr; i++) {
+		for (j = corner-1; j < nc; j++) {
+			if (elements[i][j]!=0) {
+				if ((help==0)||(Iabs(elements[i][j])<help)) {
+					help=Iabs(elements[i][j]);
+					v[0]=i+1;
+					v[1]=j+1;
+					if (help == 1) return v;
 				}
 			}
 		}
 	}
+
 	return v;
 }
 
@@ -785,22 +746,21 @@ vector<int> Matrix<Integer>::pivot(int corner){
 
 template<typename Integer>
 int Matrix<Integer>::pivot_column(int col){
+	assert(col > 0);
+	assert(col <= nc);
+	assert(col <= nr);
 	int i,j=0;
 	Integer help=0;
-	if ((col>nr)||(col>nc)) {
-		error("error: Bad argument passed to Matrix<Integer>::pivot_column.");
-		return 0;
-	}
-	else{
-		for (i = col-1; i < nr; i++) {
-			if (elements[i][col-1]!=0) {
-				if ((help==0)||(Iabs(elements[i][col-1])<help)) {
-					help=Iabs(elements[i][col-1]);
-					j=i+1;
-				}
+
+	for (i = col-1; i < nr; i++) {
+		if (elements[i][col-1]!=0) {
+			if ((help==0)||(Iabs(elements[i][col-1])<help)) {
+				help=Iabs(elements[i][col-1]);
+				j=i+1;
 			}
 		}
 	}
+
 	return j;
 }
 
@@ -962,49 +922,45 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& det) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
-	if ((nr!=nc)||(nc!=dim)) {
-		error("error: Bad argument passed to Matrix<Integer>::solve(Matrix<Integer>, Integer).");
-		Matrix<Integer> Solution;
+	assert(nr == nc);
+	assert(nc == dim);
+
+	Matrix<Integer> Left_side(*this);
+	Matrix<Integer> Solution(dim,nr_sys);
+	Integer S;
+	int piv,rk,i,j,k;
+	for (rk = 1; rk <= dim; rk++) {
+		piv=Left_side.pivot_column(rk);
+		if (piv>0) {
+			do {
+				Left_side.exchange_rows (rk,piv);
+				Right_side.exchange_rows (rk,piv);
+				Left_side.reduce_row(rk, Right_side);
+				piv=Left_side.pivot_column(rk);
+			} while (piv>rk);
+		}
+	}
+	det=Left_side.elements[0][0];
+	for (i = 1; i < dim; i++) {
+		det*=Left_side.elements[i][i];
+	}
+
+	if (det==0) { //TODO assert or exception?
+		error("warning: Determinant=0 in Matrix<Integer>::solve.");
 		return Solution;
 	}
-	else {
-		Matrix<Integer> Left_side(*this);
-		Matrix<Integer> Solution(dim,nr_sys);
-		Integer S;
-		int piv,rk,i,j,k;
-		for (rk = 1; rk <= dim; rk++) {
-			piv=Left_side.pivot_column(rk);
-			if (piv>0) {
-				do {
-					Left_side.exchange_rows (rk,piv);
-					Right_side.exchange_rows (rk,piv);
-					Left_side.reduce_row(rk, Right_side);
-					piv=Left_side.pivot_column(rk);
-				} while (piv>rk);
+
+	Integer d=Iabs(det);
+	for (i = 0; i < nr_sys; i++) {
+		for (j = dim-1; j >= 0; j--) {
+			S=Iabs(d)*Right_side.elements[j][i];
+			for (k = j+1; k < dim; k++) {
+				S-=Left_side.elements[j][k]*Solution.elements[k][i];
 			}
-		}
-		det=Left_side.elements[0][0];
-		for (i = 1; i < dim; i++) {
-			det*=Left_side.elements[i][i];
-		}
-		if (det==0) {
-			error("warning: Determinant=0 in Matrix<Integer>::solve.");
-			return Solution;
-		}
-		else {
-			Integer d=Iabs(det);
-			for (i = 0; i < nr_sys; i++) {
-				for (j = dim-1; j >= 0; j--) {
-					S=Iabs(d)*Right_side.elements[j][i];
-					for (k = j+1; k < dim; k++) {
-						S-=Left_side.elements[j][k]*Solution.elements[k][i];
-					}
-					Solution.elements[j][i]=S/Left_side.elements[j][j];
-				}
-			}
-			return Solution;
+			Solution.elements[j][i]=S/Left_side.elements[j][j];
 		}
 	}
+	return Solution;
 }
 
 //---------------------------------------------------------------------------
@@ -1013,103 +969,97 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& det) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
-	if ((nr!=nc)||(nc!=dim)||(dim!=diagonal.size())) {
-		error("error: Bad argument passed to Matrix<Integer>::solve(Matrix<Integer>, vector, Integer).");
-		Matrix<Integer> Solution;
+	assert(nr == nc);
+	assert(nc == dim);
+	assert(dim == diagonal.size());
+
+	Matrix<Integer> Left_side(*this);
+	Matrix<Integer> Solution(dim,nr_sys);
+	Integer S;
+	int piv,rk,i,j,k;
+	for (rk = 1; rk <= dim; rk++) {
+		piv=Left_side.pivot_column(rk);
+		if (piv>0) {
+			do {
+				Left_side.exchange_rows (rk,piv);
+				Right_side.exchange_rows (rk,piv);
+				Left_side.reduce_row(rk, Right_side);
+				piv=Left_side.pivot_column(rk);
+			} while (piv>rk);
+		}
+	}
+	det=Left_side.elements[0][0];
+	diagonal[0]= Left_side.elements[0][0];
+	for (i = 1; i < dim; i++) {
+		det*=Left_side.elements[i][i];
+		diagonal[i]= Left_side.elements[i][i];
+	}
+
+	if (det==0) { //TODO assert or exception?
+		error("warning: Determinant=0 in Matrix<Integer>::solve.");
 		return Solution;
 	}
-	else {
-		Matrix<Integer> Left_side(*this);
-		Matrix<Integer> Solution(dim,nr_sys);
-		Integer S;
-		int piv,rk,i,j,k;
-		for (rk = 1; rk <= dim; rk++) {
-			piv=Left_side.pivot_column(rk);
-			if (piv>0) {
-				do {
-					Left_side.exchange_rows (rk,piv);
-					Right_side.exchange_rows (rk,piv);
-					Left_side.reduce_row(rk, Right_side);
-					piv=Left_side.pivot_column(rk);
-				} while (piv>rk);
+
+	Integer d=Iabs(det);
+	for (i = 0; i < nr_sys; i++) {
+		for (j = dim-1; j >= 0; j--) {
+			S=Iabs(d)*Right_side.elements[j][i];
+			for (k = j+1; k < dim; k++) {
+				S-=Left_side.elements[j][k]*Solution.elements[k][i];
 			}
-		}
-		det=Left_side.elements[0][0];
-		diagonal[0]= Left_side.elements[0][0];
-		for (i = 1; i < dim; i++) {
-			det*=Left_side.elements[i][i];
-			diagonal[i]= Left_side.elements[i][i];
-		}
-		if (det==0) {
-			error("warning: Determinant=0 in Matrix<Integer>::solve.");
-			return Solution;
-		}
-		else {
-			Integer d=Iabs(det);
-			for (i = 0; i < nr_sys; i++) {
-				for (j = dim-1; j >= 0; j--) {
-					S=Iabs(d)*Right_side.elements[j][i];
-					for (k = j+1; k < dim; k++) {
-						S-=Left_side.elements[j][k]*Solution.elements[k][i];
-					}
-					Solution.elements[j][i]=S/Left_side.elements[j][j];
-				}
-			}
-			return Solution;
+			Solution.elements[j][i]=S/Left_side.elements[j][j];
 		}
 	}
+	return Solution;
+
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& det) const{
-	if ((nr!=nc)||(nr!=diagonal.size())) {
-		error("error: Bad argument passed to Matrix<Integer>::invert.");
-		Matrix<Integer> Solution;
+	assert(nr == nc);
+	assert(nr == diagonal.size());
+
+	Matrix<Integer> Left_side(*this);
+	Matrix<Integer> Right_side(nr);
+	Matrix<Integer> Solution(nr,nr);
+	Integer S;
+	int piv,rk,i,j,k;
+	for (rk = 1; rk <= nr; rk++) {
+		piv=Left_side.pivot_column(rk);
+		if (piv>0) {
+			do {
+				Left_side.exchange_rows (rk,piv);
+				Right_side.exchange_rows (rk,piv);
+				Left_side.reduce_row(rk, Right_side);
+				piv=Left_side.pivot_column(rk);
+			} while (piv>rk);
+		}
+	}
+	det=Left_side.elements[0][0];
+	diagonal[0]= Left_side.elements[0][0];
+	for (i = 1; i < nr; i++) {
+		det*=Left_side.elements[i][i];
+		diagonal[i]= Left_side.elements[i][i];
+	}
+
+	if (det==0) { //TODO assert or exception?
+		error("error: Determinant=0 in Matrix<Integer>::invert. Non-invertible Matrix<Integer>.");
 		return Solution;
 	}
-	else{
-		Matrix<Integer> Left_side(*this);
-		Matrix<Integer> Right_side(nr);
-		Matrix<Integer> Solution(nr,nr);
-		Integer S;
-		int piv,rk,i,j,k;
-		for (rk = 1; rk <= nr; rk++) {
-			piv=Left_side.pivot_column(rk);
-			if (piv>0) {
-				do {
-					Left_side.exchange_rows (rk,piv);
-					Right_side.exchange_rows (rk,piv);
-					Left_side.reduce_row(rk, Right_side);
-					piv=Left_side.pivot_column(rk);
-				} while (piv>rk);
+
+	Integer d=Iabs(det);
+	for (i = 0; i < nr; i++) {
+		for (j = nr-1; j >= 0; j--) {
+			S=Iabs(d)*Right_side.elements[j][i];
+			for (k = j+1; k < nr; k++) {
+				S-=Left_side.elements[j][k]*Solution.elements[k][i];
 			}
-		}
-		det=Left_side.elements[0][0];
-		diagonal[0]= Left_side.elements[0][0];
-		for (i = 1; i < nr; i++) {
-			det*=Left_side.elements[i][i];
-			diagonal[i]= Left_side.elements[i][i];
-		}
-		if (det==0) {
-			error("error: Determinant=0 in Matrix<Integer>::invert. Non-invertible Matrix<Integer>.");
-			return Solution;
-		}
-		else {
-			Integer d=Iabs(det);
-			for (i = 0; i < nr; i++) {
-				for (j = nr-1; j >= 0; j--) {
-					S=Iabs(d)*Right_side.elements[j][i];
-					for (k = j+1; k < nr; k++) {
-						S-=Left_side.elements[j][k]*Solution.elements[k][i];
-					}
-					Solution.elements[j][i]=S/Left_side.elements[j][j];
-				}
-			}
-			return Solution;
+			Solution.elements[j][i]=S/Left_side.elements[j][j];
 		}
 	}
+	return Solution;
 }
 
 //---------------------------------------------------------------------------

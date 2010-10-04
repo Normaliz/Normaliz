@@ -98,7 +98,6 @@ public:
 	/* transforms all data to the sublattice */
 	void to_sublattice(Sublattice_Representation<Integer> SR);
 
-	void error(string s) const;
 };
 //class end *****************************************************************
 
