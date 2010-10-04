@@ -1365,6 +1365,9 @@ void Full_Cone<Integer>::dual_mode() {
 		ht1_generated = ht1_extreme_rays;
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::IsHt1Generated);
+		if (ht1_extreme_rays) {
+			is_Computed.set(ConeProperty::LinearForm);
+		}
 
 		if (ht1_extreme_rays) {
 			if (verbose) { 
@@ -1381,6 +1384,7 @@ void Full_Cone<Integer>::dual_mode() {
 	} else {
 		ht1_extreme_rays = ht1_generated = true;
 		Linear_Form=vector<Integer>(dim);
+		is_Computed.set(ConeProperty::LinearForm);
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::IsHt1Generated);
 	}
@@ -1955,6 +1959,9 @@ void Full_Cone<Integer>::check_ht1_generated() {
 		}
 	} else {
 		Linear_Form = Generators.homogeneous(ht1_generated);
+		if (ht1_extreme_rays) {
+			is_Computed.set(ConeProperty::LinearForm);
+		}
 	}
 	is_Computed.set(ConeProperty::IsHt1Generated);
 
@@ -1974,6 +1981,9 @@ void Full_Cone<Integer>::check_ht1_extreme_rays() {
 	Matrix<Integer> Extreme=Generators.submatrix(key);
 	Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
 	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+	if (ht1_extreme_rays) {
+		is_Computed.set(ConeProperty::LinearForm);
+	}
 }
 
 template<typename Integer>

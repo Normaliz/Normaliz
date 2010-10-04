@@ -530,9 +530,10 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	if (FC.isComputed(ConeProperty::IsHt1ExtremeRays)) {
 		ht1_extreme_rays = FC.isHt1ExtremeRays();
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-		if (ht1_extreme_rays) {
-			LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
-		}
+	}
+	if (FC.isComputed(ConeProperty::LinearForm)) {
+		LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
+		is_Computed.set(ConeProperty::LinearForm);
 	}
 	if (FC.isComputed(ConeProperty::IsHt1HilbertBasis)) {
 		ht1_hilbert_basis = FC.isHt1HilbertBasis();

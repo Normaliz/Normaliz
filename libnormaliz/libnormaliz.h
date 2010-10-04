@@ -64,6 +64,7 @@ namespace ConeProperty {
 		Ht1Elements,
 		HVector,
 		HilbertPolynomial,
+		LinearForm,
 		IsPointed,
 		IsHt1Generated,
 		IsHt1ExtremeRays,
