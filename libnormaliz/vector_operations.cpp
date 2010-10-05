@@ -267,13 +267,8 @@ template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer& scalar){
 	int i,size=v.size();
 	for (i = 0; i <size; i++) {
-		if (v[i]%scalar!=0) {
-			v_error("error: Bad argument passed to vector_operations::v_scalar_division.");
-			return;
-		}
-		else{
-			v[i]=v[i]/scalar;
-		}
+		assert(v[i]%scalar == 0);
+		v[i] /= scalar;
 	}
 }
 
@@ -476,13 +471,6 @@ vector<int> v_non_zero_pos(vector<Integer> v){
 		}
 	}
 	return key;
-}
-
-//---------------------------------------------------------------------------
-
-void v_error(string s){
-	cerr <<"\nVector "<< s<<"\n";
-	global_error_handling();
 }
 
 //---------------------------------------------------------------------------

@@ -16,30 +16,28 @@
  *
  */
 
+#ifndef NORMALIZ_EXEPTION_H_
+#define NORMALIZ_EXEPTION_H_
+
+#include <exception>
 #include "libnormaliz.h"
 
 namespace libnormaliz {
 
-using namespace std;
+class NormalizException: public virtual std::exception {
+	virtual const char* what() const throw() {
+		return "NormalizException happened!";
+	}
+};
 
-bool verbose = false;
+class ArithmeticException: public virtual NormalizException {
+	virtual const char* what() const throw() {
+		return "Arithmetic Overflow detected, try a bigger integer type!";
+	}
+};
 
-bool test_arithmetic_overflow = false;
-int overflow_test_modulus = 15401;
 
-std::ostream& verbose_ostream = std::cout;
-std::ostream& error_ostream = std::cerr;
 
-}
+} /* end namespace */
 
-#include "integer.cpp"
-#include "vector_operations.cpp"
-#include "matrix.cpp"
-#include "simplex.cpp"
-#include "list_operations.cpp"
-#include "lineare_transformation.cpp"
-#include "sublattice_representation.cpp"
-#include "full_cone.cpp"
-#include "cone_dual_mode.cpp"
-#include "cone.cpp"
-
+#endif /* LIBNORMALIZ_H_ */

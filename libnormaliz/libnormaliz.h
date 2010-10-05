@@ -44,11 +44,6 @@ extern std::ostream& error_ostream;
 
 //extern const unsigned int major_version, minor_version;  //TODO version
 
-/**
- * Determinates if and how the program will be terminated in case of errors
- */
-void global_error_handling();
-
 
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interfering with other names.

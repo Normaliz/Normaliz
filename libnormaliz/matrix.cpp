@@ -23,6 +23,7 @@
 #include "matrix.h"
 #include "vector_operations.h"
 #include "lineare_transformation.h"
+#include "normaliz_exception.h"
 
 //---------------------------------------------------------------------------
 
@@ -945,9 +946,8 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& det)
 		det*=Left_side.elements[i][i];
 	}
 
-	if (det==0) { //TODO assert or exception?
-		error("warning: Determinant=0 in Matrix<Integer>::solve.");
-		return Solution;
+	if (det==0) { 
+		throw NormalizException(); //TODO welche Exception?
 	}
 
 	Integer d=Iabs(det);
@@ -995,9 +995,8 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integ
 		diagonal[i]= Left_side.elements[i][i];
 	}
 
-	if (det==0) { //TODO assert or exception?
-		error("warning: Determinant=0 in Matrix<Integer>::solve.");
-		return Solution;
+	if (det==0) { 
+		throw NormalizException(); //TODO welche Exception?
 	}
 
 	Integer d=Iabs(det);
@@ -1044,9 +1043,8 @@ Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& de
 		diagonal[i]= Left_side.elements[i][i];
 	}
 
-	if (det==0) { //TODO assert or exception?
-		error("error: Determinant=0 in Matrix<Integer>::invert. Non-invertible Matrix<Integer>.");
-		return Solution;
+	if (det==0) {
+		throw NormalizException(); //TODO welche Exception?
 	}
 
 	Integer d=Iabs(det);
@@ -1154,7 +1152,7 @@ bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<I
 	Matrix<Integer> RS=Right_side;
 	RS.scalar_multiplication(Iabs(det));
 	if (LS.equal(RS,m)!=true) {
-		error("error: Matrix<Integer>::test_solve failed.\nPossible arithmetic overflow in Matrix<Integer>::solve.\n");
+		throw ArithmeticException();
 		return false;
 	}
 	return true;
@@ -1169,19 +1167,11 @@ bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer
 	Matrix<Integer> RS(nr);
 	RS.scalar_multiplication(Iabs(det));
 	if (LS.equal(RS,m)!=true) {
-		error("error: Matrix<Integer>::test_invert failed.\nPossible arithmetic overflow in Matrix<Integer>::invert.\n");
+		throw ArithmeticException();
 		return false;
 	}
 	return true;
 
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::error(string s) const{
-	cerr <<"\nMatrix<Integer> "<< s<<"\n";
-	global_error_handling();
 }
 
 //---------------------------------------------------------------------------
@@ -1192,8 +1182,7 @@ Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& R
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_solve(S,Right_side,det,overflow_test_modulus);
 		if (testing==false) {
-			cerr<<"\nSolving the linear system of equations has failed.\n";
-			global_error_handling();
+			throw ArithmeticException();
 		}
 	}
 	return S;
@@ -1207,8 +1196,7 @@ Matrix<Integer> Invert(const Matrix<Integer>& Left_side,  vector< Integer >& dia
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_invert(S,det,overflow_test_modulus);
 		if (testing==false) {
-			cerr<<"\nInverting the matrix has failed.\n";
-			global_error_handling();
+			throw ArithmeticException();
 		}
 	}
 	return S;

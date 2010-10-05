@@ -145,10 +145,8 @@ Sublattice_Representation<Integer>::~Sublattice_Representation() {}
 /* first this then SR when going from Z^n to Z^r */
 template<typename Integer>
 void Sublattice_Representation<Integer>::compose(const Sublattice_Representation& SR) {
-	if (rank != SR.dim) {
-		cerr << "error in Sublattice_Representation<Integer>::compose: Dimensions do not match!" << endl;
-		exit(1);
-	}
+	assert(rank == SR.dim); //TODO vielleicht doch exception?
+
 	rank = SR.rank;
 	index = index * SR.index;
 	// A = SR.A * A
@@ -157,7 +155,7 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
 	B = B.multiplication(SR.B);
 	c = c * SR.c;
 	
-	//check if a factor can be extraced from B  TODO necessary?
+	//check if a factor can be extraced from B  //TODO necessary?
 	Integer g = B.matrix_gcd();
 	g = gcd(g,c);  //TODO necessary??
 	if (g > 1) {

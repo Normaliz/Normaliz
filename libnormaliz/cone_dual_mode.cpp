@@ -210,7 +210,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
 		cerr<<"Cone_Dual_Mode error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!"<<endl;
-		global_error_handling();
+		throw NormalizException();
 	}
 	SupportHyperplanes = M;
 	nr_sh=SupportHyperplanes.nr_of_rows();

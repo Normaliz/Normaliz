@@ -66,7 +66,8 @@ void Full_Cone<Integer>::add_hyperplane(const int& size, const vector<Integer>& 
 			hyperplane[k]=positive[size]*negative[k]-negative[size]*positive[k];
 			used_for_tests =(positive[size]%overflow_test_modulus)*(negative[k]%overflow_test_modulus)-(negative[size]%overflow_test_modulus)*(positive[k]%overflow_test_modulus);
 			if (((hyperplane[k]-used_for_tests) % overflow_test_modulus)!=0) {
-				error("error: Arithmetic failure in Full_cone::add_hyperplane. Possible arithmetic overflow.\n");
+				throw ArithmeticException();
+				//"Arithmetic failure in Full_cone::add_hyperplane. Possible arithmetic overflow.\n";
 			}
 		}
 	}
@@ -849,7 +850,8 @@ template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		error("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
+		error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
+		throw NormalizException();
 	}
 	Generators = M;
 	nr_gen=Generators.nr_of_rows();
@@ -1525,7 +1527,8 @@ void Full_Cone<Integer>::compute_support_hyperplanes(const bool do_partial_trian
 					L=Generators.read(i+1);
 					scalar_product=v_scalar_product(L,(*l));
 					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-						error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+						error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+						throw ArithmeticException();
 					}
 
 					(*l)[size]=scalar_product;
@@ -1634,7 +1637,8 @@ void Full_Cone<Integer>::compute_support_hyperplanes_pyramid(const bool do_trian
 					L = Generators.read(i + 1);
 					scalar_product = v_scalar_product(L, (*l));
 					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-						error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+						error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+						throw ArithmeticException();
 					}
 					(*l)[size] = scalar_product;
 					if (scalar_product < 0) {
@@ -1806,7 +1810,8 @@ void Full_Cone<Integer>::support_hyperplanes_dynamic(){
 						}
 					}
 					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-							error("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
+							error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
+							throw ArithmeticException();
 					}
 					
 					(*l)[size]=scalar_product;
@@ -1906,7 +1911,8 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 					L=Generators.read(i+1);
 					scalar_product=v_scalar_product(L,(*l));
 					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-						error("error: Arithmetic failure in Full_cone::support_hyperplanes_triangulation. Possible arithmetic overflow.\n");
+						error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes_triangulation. Possible arithmetic overflow.\n");
+						throw ArithmeticException();
 					}
 					(*l)[size]=scalar_product;
 					if (scalar_product<0) {
@@ -2442,8 +2448,8 @@ void Full_Cone<Integer>::line_shelling(){  //try shelling with a line of directi
 template<typename Integer>
 void Full_Cone<Integer>::triangulation_lift(){
 	if ( ! is_Computed.test(ConeProperty::SupportHyperplanes) ) {
-		error("error: Status support hyperplanes needed before using Full_Cone<Integer>::triangulation_lift.");
-		return;
+		error_msg("error: Status support hyperplanes needed before using Full_Cone<Integer>::triangulation_lift.");
+		throw NormalizException();
 	}
 	int i,j,counter=0,nr_extreme_rays=0;
 	for (i = 0; i < nr_gen; i++) {
@@ -2467,8 +2473,8 @@ void Full_Cone<Integer>::triangulation_lift(){
 		Full_Cone<Integer> Lifted;
 		lift(Lifted,Extreme_Generators);
 		if ( !Lifted.isComputed(ConeProperty::SupportHyperplanes) ) {
-			error("error: Status support hyperplanes for the lifted cone needed when using Full_Cone<Integer>::triangulation_lift.");
-			return;
+			error_msg("error: Status support hyperplanes for the lifted cone needed when using Full_Cone<Integer>::triangulation_lift.");
+			throw NormalizException();
 		}
 		Lifted.line_shelling();
 		if (verbose==true) {
@@ -2730,9 +2736,8 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::error(string s) const{
+void Full_Cone<Integer>::error_msg(string s) const{
 	cerr <<"\nFull Cone "<< s<<"\n";
-	global_error_handling();
 }
 
 //---------------------------------------------------------------------------
@@ -2761,7 +2766,7 @@ void lift(Full_Cone<Integer>& Lifted,Matrix<Integer> Extreme_Generators){
 	}
 
 	cerr<<"error: Dynamic Lifting has failed in Full_Cone<Integer>::lift.";
-	global_error_handling();
+	throw NormalizException();
 }
 
 //---------------------------------------------------------------------------

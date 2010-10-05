@@ -118,11 +118,6 @@ int v_difference_ordered_fast(const vector<int>& u,const vector<int>& v);
 template<typename Integer>
 vector<int> v_non_zero_pos(vector<Integer> v); //returns a key vector containing the positions of non-zero entrys of v (counting from 1 to v.size())
 
-//---------------------------------------------------------------------------
-//							   Error msg
-//---------------------------------------------------------------------------
-
-void v_error(string s);
 
 }
 

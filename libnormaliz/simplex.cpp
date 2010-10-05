@@ -318,10 +318,8 @@ int Simplex<Integer>::compare(const Simplex<Integer>& S) const{
 
 template<typename Integer>
 void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
-	if (status=="non initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::initialize");
-		return;
-	}
+	assert(status != "non initialized");
+
 	if (status=="key initialized") {
 		Generators=Map.submatrix(key);
 		vector< Integer > help(dim);
@@ -342,64 +340,59 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 
 template<typename Integer>
 void Simplex<Integer>::hilbert_basis_interior(){
-	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis");
-		return;
-	}
-	else{
+	assert(status == "initialized");
 
-		//transformation
+	//transformation
 
-		int i,k,last;
-		vector < Integer > norm(1);
-		vector<Integer> point(dim,0);
-		set < vector<Integer> > Candidates;
-		typename set <vector <Integer> >::iterator c;
-		//generating vector e=b_1*u_1+...+b_n*u_n (see documentation)
-		while (1) {
-			last=-1;
-			for (i = 0; i < dim; i++) {
-				if (point[i]<diagonal[i]-1) {
-					last=i;
-				}
+	int i,k,last;
+	vector < Integer > norm(1);
+	vector<Integer> point(dim,0);
+	set < vector<Integer> > Candidates;
+	typename set <vector <Integer> >::iterator c;
+	//generating vector e=b_1*u_1+...+b_n*u_n (see documentation)
+	while (1) {
+		last=-1;
+		for (i = 0; i < dim; i++) {
+			if (point[i]<diagonal[i]-1) {
+				last=i;
 			}
-			if (last==-1) {
-				break;
-			}
-			point[last]++;
-			for (i = last+1; i <dim; i++) {
-				point[i]=0;
-			}
-			vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-			for (k = 0; k < dim; k++) {
-				new_element[k]= new_element[k]*multiplicators[k];
-			}
-			v_reduction_modulo(new_element,volume);
-			norm[0]=0;
-			for (k = 0; k < dim; k++) {
-				norm[0]+=new_element[k];
-			}
-			new_element=v_merge(norm,new_element);
-			Candidates.insert(new_element);
 		}
+		if (last==-1) {
+			break;
+		}
+		point[last]++;
+		for (i = last+1; i <dim; i++) {
+			point[i]=0;
+		}
+		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
+		for (k = 0; k < dim; k++) {
+			new_element[k]= new_element[k]*multiplicators[k];
+		}
+		v_reduction_modulo(new_element,volume);
+		norm[0]=0;
+		for (k = 0; k < dim; k++) {
+			norm[0]+=new_element[k];
+		}
+		new_element=v_merge(norm,new_element);
+		Candidates.insert(new_element);
+	}
+	c=Candidates.begin();
+	while(c != Candidates.end()) {
+		reduce_and_insert_interior((*c));
+		Candidates.erase(c);
 		c=Candidates.begin();
-		while(c != Candidates.end()) {
-			reduce_and_insert_interior((*c));
-			Candidates.erase(c);
-			c=Candidates.begin();
-		}
-
-		//inverse transformation
-		//some test for arithmetic overflow may be implemented here
-
-		l_cut_front(Hilbert_Basis,dim);
-		typename list< vector<Integer> >::iterator j;
-		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-			*j=Generators.VxM(*j);
-			v_scalar_division(*j,volume);
-		}
-		status="Hilbert Basis interior calculated.";
 	}
+
+	//inverse transformation
+	//some test for arithmetic overflow may be implemented here
+
+	l_cut_front(Hilbert_Basis,dim);
+	typename list< vector<Integer> >::iterator j;
+	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
+		*j=Generators.VxM(*j);
+		v_scalar_division(*j,volume);
+	}
+	status="Hilbert Basis interior calculated.";
 }
 
 //---------------------------------------------------------------------------
@@ -407,10 +400,8 @@ void Simplex<Integer>::hilbert_basis_interior(){
 template<typename Integer>
 void Simplex<Integer>::hilbert_basis_interior(const Matrix<Integer>& Map){
 	if (status!="hilbert basis calculated") {
-		if (status=="non initialized") {
-			error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis");
-			return;
-		}
+		assert(status != "non initialized");
+
 		if (status=="initialized") {
 			hilbert_basis_interior();
 			return;
@@ -437,310 +428,258 @@ void Simplex<Integer>::hilbert_basis_interior(const Matrix<Integer>& Map){
 
 template<typename Integer>
 void Simplex<Integer>::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
-	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis_interior_h_vector");
-		return;
-	}
-	else{
+	assert(status == "initialized");
 
-		//transformation
-		vector < Integer > norm(1);
-		set < vector<Integer> > Candidates;
-		typename set <vector <Integer> >::iterator c;
-		int i,k,last,h;
-		int counter;
-		Integer to_int,hom;
-		vector<Integer> point(dim,0);
-		vector<Integer> Help(dim);
-		while (1){
-			last=-1;
-			for (i = 0; i < dim; i++) {
-				if (point[i]<diagonal[i]-1) {
-					last=i;
-				}
+	//transformation
+	vector < Integer > norm(1);
+	set < vector<Integer> > Candidates;
+	typename set <vector <Integer> >::iterator c;
+	int i,k,last,h;
+	int counter;
+	Integer to_int,hom;
+	vector<Integer> point(dim,0);
+	vector<Integer> Help(dim);
+	while (1){
+		last=-1;
+		for (i = 0; i < dim; i++) {
+			if (point[i]<diagonal[i]-1) {
+				last=i;
 			}
-			if (last==-1) {
-				break;
-			}
-			point[last]++;
-			for (i = last+1; i <dim; i++) {
-				point[i]=0;
-			}
-			vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-			for (k = 0; k < dim; k++) {
-				new_element[k]= new_element[k]*multiplicators[k];
-			}
-			v_reduction_modulo(new_element,volume);
-			//counting h-vector
-			vector< int > Face(dim,0);
-			for (k = 0; k <New_Face.size(); k++) {
-				Face[New_Face[k]-1]=1;
-			}
-			for (k = 0; k <dim; k++) {
-				if (new_element[k]!=0) {
-					Face[k]=1;
-				}
-			}
-			counter=0;
-			for (k = 0; k <dim; k++) {
-				if (Face[k]) {
-					counter++;
-				}
-			}
-			Help=Generators.VxM(new_element);
-			v_scalar_division(Help,volume);
-			hom=v_scalar_product(Help,Form);
-			if (hom==1) {
-				Homogeneous_Elements.push_back(Help);
-			}
-			to_int=counter-hom;
-			h=explicit_cast_to_long(to_int);        //explicit cast used here for speed
-			//the result of the above operation should be no greater than dim
-			H_Vector[h]++;
-
-			//preparing for reduction
-
-			norm[0]=0;
-			for (k = 0; k < dim; k++) {
-				norm[0]+=new_element[k];
-			}
-			new_element=v_merge(norm,new_element);
-			Candidates.insert(new_element);
 		}
+		if (last==-1) {
+			break;
+		}
+		point[last]++;
+		for (i = last+1; i <dim; i++) {
+			point[i]=0;
+		}
+		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
+		for (k = 0; k < dim; k++) {
+			new_element[k]= new_element[k]*multiplicators[k];
+		}
+		v_reduction_modulo(new_element,volume);
+		//counting h-vector
+		vector< int > Face(dim,0);
+		for (k = 0; k <New_Face.size(); k++) {
+			Face[New_Face[k]-1]=1;
+		}
+		for (k = 0; k <dim; k++) {
+			if (new_element[k]!=0) {
+				Face[k]=1;
+			}
+		}
+		counter=0;
+		for (k = 0; k <dim; k++) {
+			if (Face[k]) {
+				counter++;
+			}
+		}
+		Help=Generators.VxM(new_element);
+		v_scalar_division(Help,volume);
+		hom=v_scalar_product(Help,Form);
+		if (hom==1) {
+			Homogeneous_Elements.push_back(Help);
+		}
+		to_int=counter-hom;
+		h=explicit_cast_to_long(to_int);        //explicit cast used here for speed
+		//the result of the above operation should be no greater than dim
+		H_Vector[h]++;
+
+		//preparing for reduction
+
+		norm[0]=0;
+		for (k = 0; k < dim; k++) {
+			norm[0]+=new_element[k];
+		}
+		new_element=v_merge(norm,new_element);
+		Candidates.insert(new_element);
+	}
+	c=Candidates.begin();
+	while(c != Candidates.end()) {
+		reduce_and_insert_interior((*c));
+		Candidates.erase(c);
 		c=Candidates.begin();
-		while(c != Candidates.end()) {
-			reduce_and_insert_interior((*c));
-			Candidates.erase(c);
-			c=Candidates.begin();
-		}
-
-		//inverse transformation
-		//some test for arithmetic overflow may be implemented here
-
-		l_cut_front(Hilbert_Basis,dim);
-		typename list< vector<Integer> >::iterator j;
-		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-			*j=Generators.VxM(*j);
-			v_scalar_division(*j,volume);
-		}
-
-		status="Hilbert Basis interior and h vector calculated.";
 	}
+
+	//inverse transformation
+	//some test for arithmetic overflow may be implemented here
+
+	l_cut_front(Hilbert_Basis,dim);
+	typename list< vector<Integer> >::iterator j;
+	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
+		*j=Generators.VxM(*j);
+		v_scalar_division(*j,volume);
+	}
+
+	status="Hilbert Basis interior and h vector calculated.";
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Simplex<Integer>::hilbert_basis_interior_h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form){
-	if (status!="key initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::hilbert_basis_interior_h_vector");
-		return;
-	}
-	else {
-		Generators=Map.submatrix(key);
-		vector< Integer > help(dim);
-		Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
-		//overflow performed
-		volume=Iabs(volume);
-		diagonal=v_abs(help);
-		Support_Hyperplanes=Support_Hyperplanes.transpose();
-		multiplicators=Support_Hyperplanes.make_prime();
-		list< vector<Integer> >  Help;
-		Hilbert_Basis=Help;
-		list< vector<Integer> >  Help1;
-		Homogeneous_Elements=Help1;
-		vector<Integer> Help2(dim,0);
-		H_Vector=Help2;
-		status="initialized";
-		int i,j;
-		for (i = 0; i <New_Face.size(); i++) {
-			for ( j = 0; j <dim; j++) {
-				if (New_Face[i]==key[j]) {
-					New_Face[i]=j+1;
-				}
+	assert(status=="key initialized");
+
+	Generators=Map.submatrix(key);
+	vector< Integer > help(dim);
+	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+	//overflow performed
+	volume=Iabs(volume);
+	diagonal=v_abs(help);
+	Support_Hyperplanes=Support_Hyperplanes.transpose();
+	multiplicators=Support_Hyperplanes.make_prime();
+	list< vector<Integer> >  Help;
+	Hilbert_Basis=Help;
+	list< vector<Integer> >  Help1;
+	Homogeneous_Elements=Help1;
+	vector<Integer> Help2(dim,0);
+	H_Vector=Help2;
+	status="initialized";
+	int i,j;
+	for (i = 0; i <New_Face.size(); i++) {
+		for ( j = 0; j <dim; j++) {
+			if (New_Face[i]==key[j]) {
+				New_Face[i]=j+1;
 			}
 		}
-		hilbert_basis_interior_h_vector(Form);
-		return;
 	}
+	hilbert_basis_interior_h_vector(Form);
+	return;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Simplex<Integer>::ht1_elements(const vector<Integer>& Form){
-	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::ht1_elements");
-		return;
-	}
-	else {
+	assert(status == "initialized");
 
-		//computing ht1 elements of the simplex
-		int i,k,last;
-		Integer hom;
-		vector<Integer> point(dim,0);
-		vector<Integer> Help(dim);
-		while (1){
-			last=-1;
-			for (i = 0; i < dim; i++) {
-				if (point[i]<diagonal[i]-1) {
-					last=i;
-				}
-			}
-			if (last==-1) {
-				break;
-			}
-			point[last]++;
-			for (i = last+1; i <dim; i++) {
-				point[i]=0;
-			}
-			vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-			for (k = 0; k < dim; k++) {
-				new_element[k]= new_element[k]*multiplicators[k];
-			}
-			v_reduction_modulo(new_element,volume);
-
-			Help=Generators.VxM(new_element);
-			v_scalar_division(Help,volume);
-			hom=v_scalar_product(Help,Form);
-			if (hom==1) {
-				Homogeneous_Elements.push_back(Help);
+	//computing ht1 elements of the simplex
+	int i,k,last;
+	Integer hom;
+	vector<Integer> point(dim,0);
+	vector<Integer> Help(dim);
+	while (1){
+		last=-1;
+		for (i = 0; i < dim; i++) {
+			if (point[i]<diagonal[i]-1) {
+				last=i;
 			}
 		}
-		status="ht1 elements calculated.";
+		if (last==-1) {
+			break;
+		}
+		point[last]++;
+		for (i = last+1; i <dim; i++) {
+			point[i]=0;
+		}
+		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
+		for (k = 0; k < dim; k++) {
+			new_element[k]= new_element[k]*multiplicators[k];
+		}
+		v_reduction_modulo(new_element,volume);
+
+		Help=Generators.VxM(new_element);
+		v_scalar_division(Help,volume);
+		hom=v_scalar_product(Help,Form);
+		if (hom==1) {
+			Homogeneous_Elements.push_back(Help);
+		}
 	}
+	status="ht1 elements calculated.";
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Simplex<Integer>::h_vector(const vector<Integer>& Form){
-	if (status!="initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::h_vector");
-		return;
-	}
-	else{
+	assert(status == "initialized");
 
-		//computing h-vector for the simplex
+	//computing h-vector for the simplex
 
-		int i,k,last,h;
-		int counter;
-		Integer to_int,hom;
-		vector<Integer> point(dim,0);
-		vector<Integer> Help(dim);
-		while (1){
-			last=-1;
-			for (i = 0; i < dim; i++) {
-				if (point[i]<diagonal[i]-1) {
-					last=i;
-				}
+	int i,k,last,h;
+	int counter;
+	Integer to_int,hom;
+	vector<Integer> point(dim,0);
+	vector<Integer> Help(dim);
+	while (1){
+		last=-1;
+		for (i = 0; i < dim; i++) {
+			if (point[i]<diagonal[i]-1) {
+				last=i;
 			}
-			if (last==-1) {
-				break;
-			}
-			point[last]++;
-			for (i = last+1; i <dim; i++) {
-				point[i]=0;
-			}
-			vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-			for (k = 0; k < dim; k++) {
-				new_element[k]= new_element[k]*multiplicators[k];
-			}
-			v_reduction_modulo(new_element,volume);
-			//counting h-vector
-			vector< int > Face(dim,0);
-			for (k = 0; k <New_Face.size(); k++) {
-				Face[New_Face[k]-1]=1;
-			}
-			for (k = 0; k <dim; k++) {
-				if (new_element[k]!=0) {
-					Face[k]=1;
-				}
-			}
-			counter=0;
-			for (k = 0; k <dim; k++) {
-				if (Face[k]) {
-					counter++;
-				}
-			}
-			Help=Generators.VxM(new_element);
-			v_scalar_division(Help,volume);
-			hom=v_scalar_product(Help,Form);
-			if (hom==1) {
-				Homogeneous_Elements.push_back(Help);
-			}
-			to_int=counter-hom;
-			h=explicit_cast_to_long(to_int);        //explicit cast used here for speed
-			//the result of the above operation should be no greater than dim
-			H_Vector[h]++;
 		}
-		status="h vector calculated.";
+		if (last==-1) {
+			break;
+		}
+		point[last]++;
+		for (i = last+1; i <dim; i++) {
+			point[i]=0;
+		}
+		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
+		for (k = 0; k < dim; k++) {
+			new_element[k]= new_element[k]*multiplicators[k];
+		}
+		v_reduction_modulo(new_element,volume);
+		//counting h-vector
+		vector< int > Face(dim,0);
+		for (k = 0; k <New_Face.size(); k++) {
+			Face[New_Face[k]-1]=1;
+		}
+		for (k = 0; k <dim; k++) {
+			if (new_element[k]!=0) {
+				Face[k]=1;
+			}
+		}
+		counter=0;
+		for (k = 0; k <dim; k++) {
+			if (Face[k]) {
+				counter++;
+			}
+		}
+		Help=Generators.VxM(new_element);
+		v_scalar_division(Help,volume);
+		hom=v_scalar_product(Help,Form);
+		if (hom==1) {
+			Homogeneous_Elements.push_back(Help);
+		}
+		to_int=counter-hom;
+		h=explicit_cast_to_long(to_int);        //explicit cast used here for speed
+		//the result of the above operation should be no greater than dim
+		H_Vector[h]++;
 	}
+	status="h vector calculated.";
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Simplex<Integer>::h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form){
-	if (status!="key initialized") {
-		error("error: Bad Simplex passed to Simplex<Integer>::h_vector");
-		return;
-	}
-	else {
-		Generators=Map.submatrix(key);
-		vector< Integer > help(dim);
-		Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
-		//overflow performed
-		volume=Iabs(volume);
-		diagonal=v_abs(help);
-		Support_Hyperplanes=Support_Hyperplanes.transpose();
-		multiplicators=Support_Hyperplanes.make_prime();
-		list< vector<Integer> >  Help1;
-		Homogeneous_Elements=Help1;
-		vector<Integer> Help2(dim,0);
-		H_Vector=Help2;
-		status="initialized";
-		int i,j;
-		for (i = 0; i <New_Face.size(); i++) {
-			for ( j = 0; j <dim; j++) {
-				if (New_Face[i]==key[j]) {
-					New_Face[i]=j+1;
-				}
+	assert(status == "key initialized");
+
+	Generators=Map.submatrix(key);
+	vector< Integer > help(dim);
+	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+	//overflow performed
+	volume=Iabs(volume);
+	diagonal=v_abs(help);
+	Support_Hyperplanes=Support_Hyperplanes.transpose();
+	multiplicators=Support_Hyperplanes.make_prime();
+	list< vector<Integer> >  Help1;
+	Homogeneous_Elements=Help1;
+	vector<Integer> Help2(dim,0);
+	H_Vector=Help2;
+	status="initialized";
+	int i,j;
+	for (i = 0; i <New_Face.size(); i++) {
+		for ( j = 0; j <dim; j++) {
+			if (New_Face[i]==key[j]) {
+				New_Face[i]=j+1;
 			}
 		}
-		h_vector(Form);
-		return;
 	}
+	h_vector(Form);
+	return;
 }
 
-//---------------------------------------------------------------------------
 
-template<typename Integer>
-void Simplex<Integer>::error(string s) const{
-	cerr <<"\nSimplex "<< s<<"\n";
-	global_error_handling();
-}
-
-//---------------------------------------------------------------------------
-
-/**
- * resets status to "key initialized" to save memory
- * 
- */
-template<typename Integer>
-void Simplex<Integer>::clear() {
-	// list
-	Hilbert_Basis.clear();
-	Homogeneous_Elements.clear();
-	// Matrix
-	Generators=Matrix<Integer>();
-	Support_Hyperplanes=Matrix<Integer>();
-	// vector
-	H_Vector.clear();
-	diagonal.clear();
-	multiplicators.clear();
-	New_Face.clear();
-	status="key initialized";
-}
-
-}
+} /* end namespace */

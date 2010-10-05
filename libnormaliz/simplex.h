@@ -102,8 +102,6 @@ public:
   vector<Integer> read_h_vector() const; //returns the h-vector
   int read_hilbert_basis_size() const; //returns the size of the Hilbert basis
 
-	void clear(); //  resets status to "key initialized" to save memory
-
 //---------------------------------------------------------------------------
 //							Algoritms
 //---------------------------------------------------------------------------
@@ -127,12 +125,6 @@ public:
   void hilbert_basis_interior_h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form); // computes the Hilbert basis
   //and the new elements of h vector in case of a shelling,
   //the generators are not considered !!!, status must be "key initialized"
-
-//---------------------------------------------------------------------------
-//							Error msg
-//---------------------------------------------------------------------------
-
-  void error(string s) const;
   
 };
 //class end *****************************************************************

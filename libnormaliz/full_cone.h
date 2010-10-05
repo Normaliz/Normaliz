@@ -199,7 +199,7 @@ public:
 	/* checks if the cone is compressed, support hyperplanes must be computed */
 	bool check_compressed();
 
-	void error(string s) const;
+	void error_msg(string s) const;
 };
 //class end *****************************************************************
 //---------------------------------------------------------------------------
