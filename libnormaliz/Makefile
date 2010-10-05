@@ -1,25 +1,11 @@
 ##
-## Makefile for normaliz
+## Makefile for libnormaliz
 ##
-CXX = g++
-CXXFLAGS += -Wall -Wno-sign-compare -pedantic
-CXXFLAGS += -O3 -funroll-loops
-#CXXFLAGS += -g #-p
-
-## use OpenMP?
-ifeq ($(OPENMP),no)
- CXXFLAGS += -Wno-unknown-pragmas -DNO_OPENMP
-else
- CXXFLAGS += -fopenmp
-endif
-
-NORMFLAGS = -static
-GMPFLAGS = -lgmpxx -lgmp
-
-LIBSOURCES = $(wildcard *.cpp)
-LIBHEADERS = $(wildcard *.h)
+include ../Makefile.configuration
 
 default: libnormaliz.o
+
+all: default
 
 libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-impl.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz-impl.cpp -o libnormaliz.o 
