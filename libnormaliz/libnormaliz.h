@@ -24,10 +24,11 @@
 
 #ifdef _WIN32 //for 32 and 64 bit windows
 	#include <mpirxx.h>
-#else
+#else         // all other systems
 	#include <gmpxx.h>
 #endif
 
+#include "normaliz_exception.h"
 #include "cone_property.h"
 
 namespace libnormaliz {

@@ -3,6 +3,12 @@
 ##
 include Makefile.configuration
 
+LIBSOURCES = $(wildcard libnormaliz/*.cpp)
+LIBHEADERS = $(wildcard libnormaliz/*.h)
+
+SOURCES = $(wildcard *.cpp)
+HEADERS = $(wildcard *.h)
+
 default: normaliz
 
 all: normaliz normaliz1

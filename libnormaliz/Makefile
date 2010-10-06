@@ -3,6 +3,9 @@
 ##
 include ../Makefile.configuration
 
+LIBSOURCES = $(wildcard *.cpp)
+LIBHEADERS = $(wildcard *.h)
+
 default: libnormaliz.o
 
 all: default

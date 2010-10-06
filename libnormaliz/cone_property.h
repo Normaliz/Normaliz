@@ -47,6 +47,13 @@ namespace ConeProperty {
 	};
 }
 
+typedef std::bitset<ConeProperty::EnumSize> ConeProperties;
+/*class ConeProperties : public virtual std::bitset<ConeProperty::EnumSize> {
+	bitset<N>& set (ConeProperty::Enum Property) {
+
+	}
+};*/
+
 }
 
 #endif /* CONE_PROPERTY_H_ */

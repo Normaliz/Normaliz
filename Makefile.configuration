@@ -17,8 +17,3 @@ endif
 NORMFLAGS = -static
 GMPFLAGS = -lgmpxx -lgmp
 
-LIBSOURCES = $(wildcard libnormaliz/*.cpp)
-LIBHEADERS = $(wildcard libnormaliz/*.h)
-
-SOURCES = $(wildcard *.cpp)
-HEADERS = $(wildcard *.h)

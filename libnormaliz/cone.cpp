@@ -374,6 +374,58 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::compute(ConeProperties to_compute) {
+	to_compute &= ~is_Computed; // already computed
+
+	/* add preconditions */
+	if(to_compute.test(ConeProperty::Multiplicity))       to_compute.set(ConeProperty::Triangulation);
+	if(to_compute.test(ConeProperty::IsIntegrallyClosed)) to_compute.set(ConeProperty::HilbertBasis);
+	if(to_compute.test(ConeProperty::IsHt1HilbertBasis))  to_compute.set(ConeProperty::HilbertBasis);
+	if(to_compute.test(ConeProperty::IsHt1ExtremeRays))   to_compute.set(ConeProperty::ExtremeRays);
+	if(to_compute.test(ConeProperty::LinearForm))         to_compute.set(ConeProperty::ExtremeRays);
+	if(to_compute.test(ConeProperty::ExtremeRays))        to_compute.set(ConeProperty::SupportHyperplanes);
+	if(to_compute.test(ConeProperty::IsPointed))          to_compute.set(ConeProperty::SupportHyperplanes);
+	if(to_compute.test(ConeProperty::HilbertPolynomial))  to_compute.set(ConeProperty::HVector);
+
+
+	/* find correct mode */
+	if (to_compute.test(ConeProperty::HVector) ) {
+		if(to_compute.test(ConeProperty::HilbertBasis)) {
+			compute("hilbert_basis_polynomial");
+		} else {
+			compute("hilbert_polynomial");
+		}
+	} else { //no H-Vector
+		if(to_compute.test(ConeProperty::HilbertBasis)) {
+			if(to_compute.test(ConeProperty::Triangulation)) {
+				compute("triangulation_hilbert_basis");
+			} else {
+				compute("hilbert_basis");
+			}
+		} else { //no Hilbert basis
+			if(to_compute.test(ConeProperty::Triangulation)) {
+				compute("triangulation");
+				if(to_compute.test(ConeProperty::Ht1Elements)) {
+					compute("ht1_elements");
+				}
+			} else { //no triangulation
+				if(to_compute.test(ConeProperty::Ht1Elements)) {
+					compute("ht1_elements");
+				} else if(to_compute.test(ConeProperty::SupportHyperplanes)) {
+					compute("support_hyperplanes");
+				}
+			}
+		}
+	}
+
+	/* check if everything is computed*/
+	to_compute &= ~is_Computed;
+	if (to_compute.any()) cerr <<"Warning: Cone could not compute everything, that it was asked for!"<<endl;
+}
+
+
+
+template<typename Integer>
 void Cone<Integer>::compute(const string& computation_type) {
 	if (computation_type == "dual") {
 		compute_dual();
@@ -428,7 +480,7 @@ void Cone<Integer>::compute(const string& computation_type) {
 	} else if (computation_type=="hilbert_basis_polynomial") {
 		FC.hilbert_basis_polynomial();
 	} else {
-		cerr<<"Unknown computation_type!"<<endl;
+		cerr<<"Unknown computation_type: \""<<computation_type<<"\"!"<<endl;
 		throw 1; //TODO exception
 	}
 	extract_data(FC);
@@ -544,4 +596,4 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	}
 }
 
-} //end namespace
+} // end namespace libnormaliz

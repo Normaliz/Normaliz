@@ -391,8 +391,8 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
 		}
-		//make_main_computation(mode, computation_type, M, Out);
 		Cone<Integer> MyCone = Cone<Integer>(M.to_list(), mode);
+//		MyCone.compute(ConeProperties().set(ConeProperty::HilbertBasis).set(ConeProperty::Triangulation));
 		MyCone.compute(computation_type);
 		Out.setCone(MyCone);
 		if (mode == 2) {

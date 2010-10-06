@@ -803,7 +803,7 @@ void Output<Integer>::rees(const bool primary) const{
 	vector<int> ideal_gen_key;
 
 	if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
-		//write the suport hyperplanes of the full dimensional cone
+		//write the support hyperplanes of the full dimensional cone
 		Support_Hyperplanes_Full_Cone.print(name,"esp");
 	}
 	if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation

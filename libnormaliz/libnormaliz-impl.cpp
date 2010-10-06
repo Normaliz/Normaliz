@@ -1,4 +1,12 @@
 #include "libnormaliz.cpp"
+/*
+#include "libnormaliz.h"
+#include "cone.h"
+#include "matrix.h"
+#include "integer.h"
+#include "sublattice_representation.h"
+#include "lineare_transformation.h"
+*/
 
 namespace libnormaliz {
 

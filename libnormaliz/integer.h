@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef INTEGER_H
-#define INTEGER_H
+#ifndef INTEGER_H_
+#define INTEGER_H_
 
 #include "libnormaliz.h"
 
@@ -67,5 +67,5 @@ template<typename Integer> Integer permutations(const int& a, const int& b);
 }
 
 //---------------------------------------------------------------------------
-#endif
+#endif /* INTEGER_H_ */
 //---------------------------------------------------------------------------
