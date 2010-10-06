@@ -28,9 +28,11 @@
 	#include <gmpxx.h>
 #endif
 
+#include "cone_property.h"
 
 namespace libnormaliz {
 
+using namespace std;
 extern bool verbose;
 
 /* if test_arithmetic_overflow is true, many operations are also done
@@ -44,31 +46,6 @@ extern std::ostream& error_ostream;
 
 //extern const unsigned int major_version, minor_version;  //TODO version
 
-
-/* An enumeration of things, that can be computed for a cone.
- * The namespace prevents interfering with other names.
- */
-namespace ConeProperty {
-	enum Enum {
-		Generators,
-		ExtremeRays,
-		SupportHyperplanes,
-		Triangulation,
-		Multiplicity,
-		HilbertBasis,
-		Ht1Elements,
-		HVector,
-		HilbertPolynomial,
-		LinearForm,
-		IsPointed,
-		IsHt1Generated,
-		IsHt1ExtremeRays,
-		IsHt1HilbertBasis,
-		IsIntegrallyClosed,
-		EnumSize //this has to be the last entry, to get the number of entries in the enum
-	};
-}
-
-}
+} /* end namespace libnormaliz */
 
 #endif /* LIBNORMALIZ_H_ */

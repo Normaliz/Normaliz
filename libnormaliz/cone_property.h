@@ -16,28 +16,37 @@
  *
  */
 
-#include "libnormaliz.h"
+#ifndef CONE_PROPERTY_H_
+#define CONE_PROPERTY_H_
+
+#include <bitset>
 
 namespace libnormaliz {
 
-bool verbose = false;
-
-bool test_arithmetic_overflow = false;
-int overflow_test_modulus = 15401;
-
-std::ostream& verbose_ostream = std::cout;
-std::ostream& error_ostream = std::cerr;
+/* An enumeration of things, that can be computed for a cone.
+ * The namespace prevents interfering with other names.
+ */
+namespace ConeProperty {
+	enum Enum {
+		Generators,
+		ExtremeRays,
+		SupportHyperplanes,
+		Triangulation,
+		Multiplicity,
+		HilbertBasis,
+		Ht1Elements,
+		HVector,
+		HilbertPolynomial,
+		LinearForm,
+		IsPointed,
+		IsHt1Generated,
+		IsHt1ExtremeRays,
+		IsHt1HilbertBasis,
+		IsIntegrallyClosed,
+		EnumSize //this has to be the last entry, to get the number of entries in the enum
+	};
+}
 
 }
 
-#include "integer.cpp"
-#include "vector_operations.cpp"
-#include "matrix.cpp"
-#include "simplex.cpp"
-#include "list_operations.cpp"
-#include "lineare_transformation.cpp"
-#include "sublattice_representation.cpp"
-#include "full_cone.cpp"
-#include "cone_dual_mode.cpp"
-#include "cone.cpp"
-
+#endif /* CONE_PROPERTY_H_ */

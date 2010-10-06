@@ -58,6 +58,8 @@ struct v_compare_shelling {
 
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const int& size, const vector<Integer>& positive,const vector<Integer>& negative){
+	assert(positive.size() >= 0);
+	assert(negative.size() >= 0);
 	int k;
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	Integer used_for_tests;

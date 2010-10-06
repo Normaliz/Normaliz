@@ -20,5 +20,6 @@ normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 clean:
 	$(MAKE) --directory=libnormaliz clean
 	-rm -f normaliz
+	-rm -f normaliz?
 
 .PHONY : default clean all

@@ -76,7 +76,6 @@ void Cone<Integer>::initialize() {
 	BC_set=false;
 	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
 	dim = 0;
-	OriginalGenerators = list< vector<Integer> >();
 }
 
 
@@ -500,7 +499,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::SupportHyperplanes);
 	}
 	if (FC.isComputed(ConeProperty::Triangulation)) {
-		Triangulation = FC.getTriangulation().to_list();
+		Triangulation = FC.getTriangulationVolume().to_list();
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::Multiplicity)) {
