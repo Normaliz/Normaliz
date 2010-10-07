@@ -21,12 +21,12 @@
 
 #include <string>
 #include "libnormaliz.h"
+#include "cone_property.h"
 #include "full_cone.h"
 #include "sublattice_representation.h"
 #include "matrix.h"
 
 namespace libnormaliz {
-using std::bitset;
 using std::list;
 using std::vector;
 
@@ -38,7 +38,7 @@ class Cone {
 //	Full_Cone<Integer> FullDimCone;
 	Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
 	bool BC_set;
-	bitset<ConeProperty::EnumSize> is_Computed;
+	ConeProperties is_Computed;
 	list< vector<Integer> > OriginalGenerators;
 	list< vector<Integer> > Generators;
 	vector<bool> ExtremeRays;

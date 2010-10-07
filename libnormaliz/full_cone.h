@@ -19,19 +19,18 @@
 #ifndef FULL_CONE_H
 #define FULL_CONE_H
 
-#include <bitset>
 #include <list>
 #include <vector>
 #include <set>
 
 #include "libnormaliz.h"
+#include "cone_property.h"
 #include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
 #include "cone_dual_mode.h"
 
 namespace libnormaliz {
-using std::bitset;
 using std::list;
 using std::vector;
 using std::set;
@@ -55,7 +54,7 @@ class Full_Cone {
 	bool ht1_extreme_rays;
 	bool ht1_hilbert_basis;
 	bool integrally_closed;
-	bitset<ConeProperty::EnumSize> is_Computed;
+	ConeProperties is_Computed;
 	vector<Integer> Linear_Form;
 	Integer multiplicity;
 	Matrix<Integer> Generators;

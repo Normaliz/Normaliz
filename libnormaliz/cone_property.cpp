@@ -40,8 +40,8 @@ ConeProperties::ConeProperties(const bitset<ConeProperty::EnumSize>& props){
 }
 
 /* set Properties */
-ConeProperties& ConeProperties::set(ConeProperty::Enum p1) {
-	CPs.set(p1);
+ConeProperties& ConeProperties::set(ConeProperty::Enum p1, bool value) {
+	CPs.set(p1, value);
 	return *this;
 }
 ConeProperties& ConeProperties::set(ConeProperty::Enum p1, ConeProperty::Enum p2) {

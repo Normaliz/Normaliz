@@ -1022,7 +1022,7 @@ void Full_Cone<Integer>::print()const{
 
 template<typename Integer>
 bool Full_Cone<Integer>::isComputed(ConeProperty::Enum prop) const{
-	return is_Computed[prop];
+	return is_Computed.test(prop);
 }
 
 //---------------------------------------------------------------------------
@@ -1234,9 +1234,9 @@ void Full_Cone<Integer>::support_hyperplanes_triangulation() {
 			v_read(Extreme_Rays);
 		}
 		Support_Hyperplanes.clear();
-		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		Triangulation.clear();
-		is_Computed.set(ConeProperty::Triangulation,false);
+		is_Computed.reset(ConeProperty::Triangulation);
 		compute_support_hyperplanes_triangulation();
 	}
 	compute_multiplicity();
@@ -1254,9 +1254,9 @@ void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {
 			v_read(Extreme_Rays);
 		}
 		Support_Hyperplanes.clear();
-		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		Triangulation.clear();
-		is_Computed.set(ConeProperty::Triangulation,false);
+		is_Computed.reset(ConeProperty::Triangulation);
 		compute_support_hyperplanes_pyramid(true);
 	}
 	compute_multiplicity();
@@ -1274,9 +1274,9 @@ void Full_Cone<Integer>::triangulation_hilbert_basis(){
 			v_read(Extreme_Rays);
 		}
 		Support_Hyperplanes.clear();
-		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		Triangulation.clear();
-		is_Computed.set(ConeProperty::Triangulation,false);
+		is_Computed.reset(ConeProperty::Triangulation);
 		compute_support_hyperplanes_triangulation();
 	}
 	compute_hilbert_basis();
@@ -1314,7 +1314,7 @@ void Full_Cone<Integer>::hilbert_basis_polynomial(){
 			verboseOutput() << "extreme rays not in height 1, using computation type triangulation_hilbert_basis" << endl;
 		}
 		Support_Hyperplanes.clear();
-		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		triangulation_hilbert_basis();
 	} else {
 		check_ht1_generated();
@@ -1347,7 +1347,7 @@ void Full_Cone<Integer>::hilbert_polynomial(){
 			verboseOutput() << "extreme rays not in height 1, using computation type triangulation_hilbert_basis" << endl;
 		}
 		Support_Hyperplanes.clear();
-		is_Computed.set(ConeProperty::SupportHyperplanes,false);
+		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		triangulation_hilbert_basis();
 	} else {
 		check_ht1_generated();
