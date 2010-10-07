@@ -47,12 +47,39 @@ namespace ConeProperty {
 	};
 }
 
-typedef std::bitset<ConeProperty::EnumSize> ConeProperties;
-/*class ConeProperties : public virtual std::bitset<ConeProperty::EnumSize> {
-	std::bitset<N>& set (ConeProperty::Enum Property) {
+template<typename Integer> class Cone;
+template<typename Integer> class Full_Cone;
 
-	}
-};*/
+class ConeProperties {
+public:
+	/* Constructors */
+	ConeProperties();
+	ConeProperties(ConeProperty::Enum);
+	ConeProperties(ConeProperty::Enum, ConeProperty::Enum);
+	ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
+
+	/* set Properties */
+	ConeProperties& set(ConeProperty::Enum);
+	ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
+	ConeProperties& set(const ConeProperties&);
+
+	/* reset (=unset) properties */
+	ConeProperties& reset(ConeProperty::Enum Property);
+	ConeProperties& reset(const ConeProperties&);
+
+	/* test which/how many properties are set */
+	bool test(ConeProperty::Enum Property) const;
+	bool any() const;
+	bool none() const;
+	size_t count () const;
+
+
+private:
+	std::bitset<ConeProperty::EnumSize> CPs;
+
+	template<typename Integer> friend class Cone;
+	template<typename Integer> friend class Full_Cone;
+};
 
 }
 

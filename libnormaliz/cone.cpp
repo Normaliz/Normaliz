@@ -376,7 +376,7 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 
 template<typename Integer>
 void Cone<Integer>::compute(ConeProperties to_compute) {
-	to_compute &= ~is_Computed; // already computed
+	to_compute.reset(is_Computed); // already computed
 
 	/* add preconditions */
 	if(to_compute.test(ConeProperty::Multiplicity))       to_compute.set(ConeProperty::Triangulation);
@@ -420,7 +420,7 @@ void Cone<Integer>::compute(ConeProperties to_compute) {
 	}
 
 	/* check if everything is computed*/
-	to_compute &= ~is_Computed;
+	to_compute.reset(is_Computed); // now computed
 	if (to_compute.any()) errorOutput() <<"Warning: Cone could not compute everything, that it was asked for!"<<endl;
 }
 
