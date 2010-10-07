@@ -19,9 +19,10 @@
 #ifndef FULL_CONE_H
 #define FULL_CONE_H
 
-#include <set>
-#include <list>
 #include <bitset>
+#include <list>
+#include <vector>
+#include <set>
 
 #include "libnormaliz.h"
 #include "integer.h"
@@ -30,6 +31,10 @@
 #include "cone_dual_mode.h"
 
 namespace libnormaliz {
+using std::bitset;
+using std::list;
+using std::vector;
+using std::set;
 
 template<typename Integer> class Cone;
 template<typename Integer> class Full_Cone;

@@ -18,12 +18,9 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <iostream>
 #include <string>
 #include <algorithm>
-
-//---------------------------------------------------------------------------
 
 #include "integer.h"
 #include "vector_operations.h"
@@ -31,6 +28,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
 
 template <typename T>
 void v_write(vector<T>& v){

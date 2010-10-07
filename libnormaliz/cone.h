@@ -26,6 +26,10 @@
 #include "matrix.h"
 
 namespace libnormaliz {
+using std::bitset;
+using std::list;
+using std::vector;
+
 
 template<typename Integer>
 class Cone {

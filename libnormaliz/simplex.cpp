@@ -19,6 +19,11 @@
 
 //---------------------------------------------------------------------------
 
+#include <algorithm>
+#include <string>
+#include <iostream>
+#include <set>
+
 #include "integer.h"
 #include "vector_operations.h"
 #include "matrix.h"
@@ -28,6 +33,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
 
 //---------------------------------------------------------------------------
 //Private

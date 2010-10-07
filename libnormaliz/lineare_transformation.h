@@ -35,6 +35,8 @@
 #ifndef LINEARE_TRANSFORMATION_H
 #define LINEARE_TRANSFORMATION_H
 
+#include <string>
+
 #include "libnormaliz.h"
 #include "matrix.h"
 

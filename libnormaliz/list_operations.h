@@ -23,12 +23,8 @@
 
 //---------------------------------------------------------------------------
                   
-#include <stdlib.h>
 #include <vector>
 #include <list>
-#include <iostream>
-#include <string>
-#include <algorithm>
 
 #include "libnormaliz.h"
 #include "simplex.h"

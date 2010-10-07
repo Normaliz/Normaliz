@@ -33,7 +33,6 @@
 
 namespace libnormaliz {
 
-using namespace std;
 extern bool verbose;
 
 /* if test_arithmetic_overflow is true, many operations are also done
@@ -42,11 +41,11 @@ extern bool verbose;
 extern bool test_arithmetic_overflow;
 extern int overflow_test_modulus;
 
-void setVerboseOutput(ostream&);
-void setErrorOutput(ostream&);
+void setVerboseOutput(std::ostream&);
+void setErrorOutput(std::ostream&);
 
-ostream& verboseOutput();
-ostream& errorOutput();
+std::ostream& verboseOutput();
+std::ostream& errorOutput();
 
 //extern const unsigned int major_version, minor_version;  //TODO version
 

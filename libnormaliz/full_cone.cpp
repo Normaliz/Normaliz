@@ -19,7 +19,7 @@
 //---------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include <vector>
+#include <set>
 #include <map>
 #include <iostream>
 #include <string>
@@ -34,6 +34,8 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
+
 
 template<typename Integer>
 struct v_compare_shelling {

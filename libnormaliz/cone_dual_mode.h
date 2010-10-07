@@ -19,14 +19,17 @@
 #ifndef CONE_DUAL_MODE_H
 #define CONE_DUAL_MODE_H
 
-#include <set>
 #include <list>
+#include <vector>
+
 #include "libnormaliz.h"
 #include "integer.h"
 #include "matrix.h"
 #include "sublattice_representation.h"
 
 namespace libnormaliz {
+using std::list;
+using std::vector;
 
 template<typename Integer>
 class Cone_Dual_Mode {

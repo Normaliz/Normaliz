@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <map>
+#include <set>
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -33,6 +34,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
 
 //---------------------------------------------------------------------------
 //private

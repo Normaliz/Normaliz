@@ -20,6 +20,7 @@
 #include "cone.h"
 
 namespace libnormaliz {
+using namespace std;
 
 template<typename T> void list_vector_print(const list< vector<T> >& l) {
 	typename list< vector<T> >::const_iterator it = l.begin();

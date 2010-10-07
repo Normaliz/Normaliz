@@ -30,19 +30,19 @@ namespace {
 	std::ostream* error_ostream_ptr = &std::cerr;
 } // end anonymous namespace, only accessible in this file (and when it is included)
 
-void setVerboseOutput(ostream& v_out) {
+void setVerboseOutput(std::ostream& v_out) {
 	verbose_ostream_ptr = &v_out;
 }
 
-void setErrorOutput(ostream& e_out) {
+void setErrorOutput(std::ostream& e_out) {
 	error_ostream_ptr = &e_out;
 }
 
-ostream& verboseOutput() {
+std::ostream& verboseOutput() {
 	return *verbose_ostream_ptr;
 }
 
-ostream& errorOutput() {
+std::ostream& errorOutput() {
 	return *error_ostream_ptr;
 }
 

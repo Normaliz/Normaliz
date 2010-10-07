@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
 
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){

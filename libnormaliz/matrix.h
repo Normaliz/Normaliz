@@ -20,13 +20,13 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 //---------------------------------------------------------------------------
-#include <assert.h>
-#include <stdlib.h>
+
+
 #include <vector>
 #include <list>
 #include <iostream>
 #include <string>
-#include <algorithm>
+
 
 #include "libnormaliz.h"
 #include "integer.h"
@@ -34,6 +34,9 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using std::list;
+using std::vector;
+using std::string;
 
 template<typename Integer> class Matrix {
   int nr;
@@ -75,8 +78,8 @@ public:
   void write(int row, const vector<int>& data); //write  a row
   void write(int row, int col, Integer data);  // write data at (row,col)
   void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
-  void print(ostream& out) const;          // writes matrix to the stream
-  void pretty_print(ostream& out) const;  // writes matrix in a nice format to the stream
+  void print(std::ostream& out) const;          // writes matrix to the stream
+  void pretty_print(std::ostream& out) const;  // writes matrix in a nice format to the stream
   void read() const;                 // to be modified, just for tests
   vector<Integer> read(int row) const;                   // read a row
   Integer read (int row, int col) const;         // read data at (row,col)

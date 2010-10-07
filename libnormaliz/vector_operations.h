@@ -20,13 +20,12 @@
 #define VECTOR_OPERATIONS_H
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <vector>
-#include <iostream>
-#include <algorithm>
+
 #include "libnormaliz.h"
 
 namespace libnormaliz {
+using std::vector;
 
 //---------------------------------------------------------------------------
 //							Data access

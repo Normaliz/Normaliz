@@ -27,18 +27,16 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <vector>
-#include <set>
 #include <list>
-#include <iostream>
-#include <string>
-#include <algorithm>
+
 #include "libnormaliz.h"
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using std::list;
+using std::vector;
 
 template<typename Integer>
 class Simplex {

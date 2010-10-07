@@ -19,6 +19,9 @@
 
 //---------------------------------------------------------------------------
 
+#include <iostream>
+#include <string>
+
 #include "integer.h"
 #include "vector_operations.h"
 #include "matrix.h"
@@ -28,6 +31,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
 
 template<typename Integer>
 int l_read(const list< vector<Integer> >& l){
@@ -66,9 +70,9 @@ template<typename Integer>
 int l_read(const list< int >& l){
 	typename list< int >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
-		cout<<(*i)<<" ";
+		std::cout<<(*i)<<" ";
 	}
-	cout<<endl;
+	std::cout<<std::endl;
 	return l.size();
 }
 
