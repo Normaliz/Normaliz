@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 /**
  * The class Sublattice_Representation represents a sublattice of Z^n as Z^r.
  * To transform vectors of the sublattice  use:
@@ -71,7 +72,7 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
 	
 	rank = Basis_Change.get_rank();
 	if (rank==0) {
-		cerr<<"warning: matrix has rank 0. Please check input data."<<endl;
+		errorOutput()<<"warning: matrix has rank 0. Please check input data."<<endl;
 	}
 
 	//here: M=LCR  in LT: LMR=C
@@ -294,12 +295,7 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
 			//new_row cannot be divisible by a factor of m
 			//so make_prime divides by an invertible element
 			new_row = v_make_prime(new_row,rowgcd);  
-			//TODO test entfernen
-			if(gcd(m,rowgcd) != 1) {
-				cerr<<"congruencendenkfehler"<<endl;
-				cerr<<"m= "<<m<<"   rowgcd= "<< rowgcd<<endl;
-				exit(-100);
-			}
+			assert(gcd(m,rowgcd) == 1);
 			new_row[dim] = m;
 			Cong2.append(new_row);
 		}

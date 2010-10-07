@@ -209,7 +209,7 @@ template<typename Integer>
 Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
 	dim=M.nr_of_columns();
 	if (dim!=M.rank()) {
-		cerr<<"Cone_Dual_Mode error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!"<<endl;
+		errorOutput()<<"Cone_Dual_Mode error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!"<<endl;
 		throw NormalizException();
 	}
 	SupportHyperplanes = M;
@@ -249,15 +249,15 @@ Cone_Dual_Mode<Integer>::~Cone_Dual_Mode(){
 
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::print()const{
-	cout<<"dim="<<dim<<".\n";
-	cout<<"nr_sh="<<nr_sh<<".\n";
-	cout<<"hyp_size="<<hyp_size<<".\n";
-	cout<<"GeneratorList are:\n";
-	l_read(GeneratorList);cout<<endl;
-	cout<<"Support Hyperplanes are:\n";
-	SupportHyperplanes.read();cout<<endl;
-	cout<<"Hilbert Basis is:\n";
-	l_read(Hilbert_Basis);cout<<endl;
+	verboseOutput()<<"dim="<<dim<<".\n";
+	verboseOutput()<<"nr_sh="<<nr_sh<<".\n";
+	verboseOutput()<<"hyp_size="<<hyp_size<<".\n";
+	verboseOutput()<<"GeneratorList are:\n";
+	l_read(GeneratorList);verboseOutput()<<endl;
+	verboseOutput()<<"Support Hyperplanes are:\n";
+	SupportHyperplanes.read();verboseOutput()<<endl;
+	verboseOutput()<<"Hilbert Basis is:\n";
+	l_read(Hilbert_Basis);verboseOutput()<<endl;
 }
 
 //---------------------------------------------------------------------------
@@ -294,7 +294,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::read_hilbert_basis()const{
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
 	if (verbose==true) {
-		cout<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
+		verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
 	}
 	int i,sign;
 	bool  not_done;
@@ -373,7 +373,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_co
 		New_Negative.clear();
 		New_Neutral.clear();
 		//generating new elements
-//		cout<<"+"<<flush;
+//		verboseOutput()<<"+"<<flush;
 //		for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
 		list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
 		typename list < vector<Integer> >::iterator it;
@@ -457,7 +457,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_co
 		#pragma omp single nowait
 		New_Negative.sort();
 		} //END PARALLEL
-//		cout<<"-"<<flush;
+//		verboseOutput()<<"-"<<flush;
 		//reducing the new vectors agains them self
 		//Neutral_Ired=Neutral;
 		//Positive_Ired=Positive;
@@ -520,7 +520,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_co
 				(*c)[nr_sh+1]--;
 			}
 		}
-//		cout<<not_done;
+//		verboseOutput()<<not_done;
 	}
 	//still possible to have double elements in the Hilbert basis, coming from different generations
 
@@ -544,7 +544,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_co
 		d=Help.begin();
 	}
 	if (verbose==true) {
-		cout<<"Hilbert basis size="<<Hilbert_Basis.size()<<endl;
+		verboseOutput()<<"Hilbert basis size="<<Hilbert_Basis.size()<<endl;
 	}
 }
 
@@ -616,7 +616,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_reduction(){
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 	if (verbose) {
-		cout << "Find extreme rays (via rank test)" << endl;
+		verboseOutput() << "Find extreme rays (via rank test)" << endl;
 	}
 	typename list < vector <Integer> >::iterator c;
 	list <int> zero_list;
@@ -657,8 +657,8 @@ template<typename Integer>
 void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 	if(dim>0){            //correction needed to include the 0 cone;
 		if (verbose==true) {
-			cout<<"\n************************************************************\n";
-			cout<<"computing Hilbert basis ..."<<endl;
+			verboseOutput()<<"\n************************************************************\n";
+			verboseOutput()<<"computing Hilbert basis ..."<<endl;
 		}
 		int hyp_counter;      // current hyperplane
 		Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
@@ -678,7 +678,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 	if (verbose) {
-		cout << "Find relevant support hyperplanes" << endl;
+		verboseOutput() << "Find relevant support hyperplanes" << endl;
 	}
 	list <int> zero_list;
 	typename list<vector<Integer> >::iterator gen_it;

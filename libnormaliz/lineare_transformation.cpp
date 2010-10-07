@@ -223,17 +223,10 @@ bool Lineare_Transformation<Integer>::test_transformation(const Matrix<Integer>&
 	Matrix<Integer> N=Right.multiplication(Right_Inv, m);
 	Matrix<Integer> I(nc);
 	if (!I.equal(N,m)) {
-		error_msg("error: Lineare_Transformation<Integer>::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation.");
+		errorOutput()<<"Lineare transformation error: Lineare_Transformation<Integer>::test_transformation failed.\nPossible arithmetic overflow in Lineare_transformation::transformation."<<endl;
 		return false;
 	}
 	return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Lineare_Transformation<Integer>::error_msg(string s) const{
-	cerr <<"\nLineare transformation "<< s<<"\n";
 }
 
 //---------------------------------------------------------------------------
@@ -245,7 +238,7 @@ Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
 	if (test_arithmetic_overflow==true) {
 		bool testing=LT.test_transformation(M,overflow_test_modulus);
 		if (testing==false) {
-			cerr<<"\nThe linear transformation has failed.\n";
+			errorOutput()<<"\nThe linear transformation has failed.\n";
 			throw ArithmeticException();
 		}
 	}

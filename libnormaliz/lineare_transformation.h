@@ -105,25 +105,22 @@ public:
 //Tests
 //---------------------------------------------------------------------------
 
-  bool test_transformation(const Matrix<Integer>& M, const int& m) const;
-									 // test the main computation
-									// for arithmetic overflow
-								   // uses multiplication mod m
-//---------------------------------------------------------------------------
-//					Error msg
-//---------------------------------------------------------------------------
 
-  void error_msg(string s) const;
+  /* test the main computation for arithmetic overflow
+   * uses multiplication mod m
+   */
+  bool test_transformation(const Matrix<Integer>& M, const int& m) const;
+
+
 };
 //class end *****************************************************************
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 //makes the main computation, test for errors
 template<typename Integer>
 Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M);
 
-}
+} /* end namespace libnormaliz */
 
 //---------------------------------------------------------------------------
 #endif

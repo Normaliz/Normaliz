@@ -9,9 +9,10 @@ recommended compile flags:
 
 
 Quick workflow overview:
-1) include libnormaliz/libnormaliz.cpp
+1) include libnormaliz/Cone.h in your header when nessecary
+   include libnormaliz/libnormaliz.cpp in your source
 2) create libnormaliz::Cone
-3) call the compute(computation_mode) method
+3) call on of the Cone.compute() methods
 4) check if the desired data is computed: isComputed( X )
 5) get the data: getX()
 6) repeat 4+5 or 3+4+5
@@ -19,9 +20,10 @@ Quick workflow overview:
 1) The .cpp should be included since the whole library is templated, so you could use any integer type you want. We suggest (and only tested) 'long long int' and the gmp type 'mpz_class'.
 
 Example:
-//we discourage the use of "using namespace libnormaliz"
+//we discourage the use of "using namespace libnormaliz", but you may find these using usefull
 using libnormaliz::Cone;
 using libnormaliz::ConeProperty;
+using libnormaliz::ConeProperties;
 
 
 //use your prefered integer type
@@ -32,8 +34,14 @@ typedef long long int Integer;
 list< vector <Integer> > Data = ...
 int type = ... 
 libnormaliz::Cone<Integer> MyCone = libnormaliz::Cone<Integer>(Data, type);
-string computation_type = "triangulation_hilbert_basis"
-MyCone.compute(computation_type);
+
+libnormaliz::ConeProperties Wanted().set(libnormaliz::ConeProperty::Triangulation).set(libnormaliz::ConeProperty::HilbertBasis);
+MyCone.compute(Wanted);
+
+//old way to say what you want
+//string computation_type = "triangulation_hilbert_basis"
+//MyCone.compute(computation_type);
+
 
 if(MyCone.isComputed(libnormaliz::ConeProperty::HilbertBasis)) {
 	list< vector< Integer> > HB& = MyCone.getHilbertBasis();

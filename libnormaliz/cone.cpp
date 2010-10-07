@@ -26,7 +26,7 @@ template<typename T> void list_vector_print(const list< vector<T> >& l) {
 	for (; it != l.end(); ++it) {
 		v_read(*it);
 	}
-	cout<<endl;
+	verboseOutput()<<endl;
 }
 
 template<typename Integer>
@@ -61,8 +61,8 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vec
 	}
 	while(!dimensions.empty()) {
 		if (dim != *dimensions.begin()) {
-			cerr << "Error: dimensions of input matrices do not match!";
-			throw dim; //TODO exception
+			errorOutput() << "Error: dimensions of input matrices do not match!";
+			throw NormalizException();
 		}
 		dimensions.pop_front();
 	}
@@ -361,7 +361,7 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 		}
 	}
 	Full_Cone<Integer> FC(Generators);
-	//TODO cout, what is happening here?
+	//TODO verboseOutput(), what is happening here?
 	FC.support_hyperplanes();
 	Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
 	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
@@ -420,7 +420,7 @@ void Cone<Integer>::compute(ConeProperties to_compute) {
 
 	/* check if everything is computed*/
 	to_compute &= ~is_Computed;
-	if (to_compute.any()) cerr <<"Warning: Cone could not compute everything, that it was asked for!"<<endl;
+	if (to_compute.any()) errorOutput() <<"Warning: Cone could not compute everything, that it was asked for!"<<endl;
 }
 
 
@@ -435,7 +435,7 @@ void Cone<Integer>::compute(const string& computation_type) {
 	//create Generators from SupportHyperplanes
 	if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
 		if (verbose) {
-			cout <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
+			verboseOutput() <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
 		}
 		Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)));
 		Dual_Cone.support_hyperplanes();
@@ -449,8 +449,8 @@ void Cone<Integer>::compute(const string& computation_type) {
 	}
 
 	if (!isComputed(ConeProperty::Generators)) {
-		cerr<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
-		throw 42;  //TODO exception
+		errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
+		throw NormalizException();
 	}
 
 	//TODO workaround for zero cones :((
@@ -480,8 +480,8 @@ void Cone<Integer>::compute(const string& computation_type) {
 	} else if (computation_type=="hilbert_basis_polynomial") {
 		FC.hilbert_basis_polynomial();
 	} else {
-		cerr<<"Unknown computation_type: \""<<computation_type<<"\"!"<<endl;
-		throw 1; //TODO exception
+		errorOutput()<<"Unknown computation_type: \""<<computation_type<<"\"!"<<endl;
+		throw NormalizException();
 	}
 	extract_data(FC);
 }
@@ -490,13 +490,13 @@ template<typename Integer>
 void Cone<Integer>::compute_dual() {
 	if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
 		//TODO implement
-		cerr<<"...---... Not implemented yet!"<<endl;
-		throw 23;
+		errorOutput()<<"...---... Not implemented yet!"<<endl;
+		throw NormalizException();
 	}
 
 	if (!isComputed(ConeProperty::SupportHyperplanes)) {
-		cerr<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
-		throw 42;  //TODO exception
+		errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
+		throw NormalizException();
 	}
 
 	int i,j;
@@ -535,7 +535,12 @@ void Cone<Integer>::compute_dual() {
 
 template<typename Integer>
 void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
-	//this function extracts ALL available data from the Full_Cone
+/*	if(verbose) {
+		verboseOutput() << "extract data..." <<endl;
+		string tmp;
+		cin >> tmp;
+	}
+*/	//this function extracts ALL available data from the Full_Cone
 	//even if it was in Cone already <- this may change
 	//it is possible to delete the data in Full_Cone after extracting it
 	if (FC.isComputed(ConeProperty::Generators)) {
@@ -594,6 +599,12 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		integrally_closed = FC.isIntegrallyClosed();
 		is_Computed.set(ConeProperty::IsIntegrallyClosed);
 	}
+/*
+	if(verbose) {
+		verboseOutput() << "done (extract data)" <<endl;
+		string tmp;
+		cin >> tmp;
+	}*/
 }
 
 } // end namespace libnormaliz

@@ -25,10 +25,28 @@ bool verbose = false;
 bool test_arithmetic_overflow = false;
 int overflow_test_modulus = 15401;
 
-std::ostream& verbose_ostream = std::cout;
-std::ostream& error_ostream = std::cerr;
+namespace {
+	std::ostream* verbose_ostream_ptr = &std::cout;
+	std::ostream* error_ostream_ptr = &std::cerr;
+} // end anonymous namespace, only accessible in this file (and when it is included)
 
+void setVerboseOutput(ostream& v_out) {
+	verbose_ostream_ptr = &v_out;
 }
+
+void setErrorOutput(ostream& e_out) {
+	error_ostream_ptr = &e_out;
+}
+
+ostream& verboseOutput() {
+	return *verbose_ostream_ptr;
+}
+
+ostream& errorOutput() {
+	return *error_ostream_ptr;
+}
+
+} /* end namespace libnormaliz */
 
 #include "integer.cpp"
 #include "vector_operations.cpp"

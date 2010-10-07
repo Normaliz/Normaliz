@@ -31,6 +31,7 @@
 
 namespace libnormaliz {
 
+template<typename Integer> class Cone;
 template<typename Integer> class Full_Cone;
 
 //generates a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
@@ -62,7 +63,7 @@ class Full_Cone {
 	vector<Integer> Hilbert_Polynomial;
 
 	friend void lift<Integer>(Full_Cone<Integer>&, Matrix<Integer>);
-//	friend class Cone<Integer>;
+	friend class Cone<Integer>;
 
 /* ---------------------------------------------------------------------------
  *				Private routines, used in the public routines
@@ -159,7 +160,7 @@ public:
 	bool isIntegrallyClosed() const;
 	vector<Integer> getLinearForm() const; //returns the linear form
 	Integer getMultiplicity() const; //returns multiplicity
-	Matrix<Integer> getGenerators() const;
+	const Matrix<Integer>& getGenerators() const;
 	vector<bool> getExtremeRays() const;
 	Matrix<Integer> getSupportHyperplanes() const;
 	Matrix<Integer> getTriangulation() const;

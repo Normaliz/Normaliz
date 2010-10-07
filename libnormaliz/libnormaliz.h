@@ -42,8 +42,11 @@ extern bool verbose;
 extern bool test_arithmetic_overflow;
 extern int overflow_test_modulus;
 
-extern std::ostream& verbose_ostream;
-extern std::ostream& error_ostream;
+void setVerboseOutput(ostream&);
+void setErrorOutput(ostream&);
+
+ostream& verboseOutput();
+ostream& errorOutput();
 
 //extern const unsigned int major_version, minor_version;  //TODO version
 

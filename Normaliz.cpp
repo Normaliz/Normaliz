@@ -70,9 +70,6 @@ int main(int argc, char* argv[])
 	//the type given in the command line overrides the type set by the setup file
 	string output_name;         //name of the output file(s) saved here
 
-
-
-
 	// read command line options
 	bool filename_set=false;
 	string option;            //all options concatenated (including -)
