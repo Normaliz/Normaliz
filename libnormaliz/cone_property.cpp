@@ -60,7 +60,7 @@ ConeProperties& ConeProperties::reset(ConeProperty::Enum Property) {
 	return *this;
 }
 ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
-	CPs^= ~ConeProps.CPs;
+	CPs &= ~ConeProps.CPs;
 	return *this;
 }
 
@@ -78,6 +78,12 @@ size_t ConeProperties::count () const {
 	return CPs.count();
 }
 
-
+/* print it in a nice way */
+void ConeProperties::print(std::ostream& out) {
+	for (size_t i=0; i<ConeProperty::EnumSize; i++) {
+		if (CPs.test(i)) out << i << " ";
+	}
+	out << std::endl;
+}
 
 } /* end namespace libnormaliz */

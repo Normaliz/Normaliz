@@ -389,7 +389,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(M.to_list(), mode);
-//		MyCone.compute(ConeProperties().set(ConeProperty::HilbertBasis).set(ConeProperty::Triangulation));
+//		MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
 		MyCone.compute(computation_type);
 		Out.setCone(MyCone);
 		if (mode == 2) {

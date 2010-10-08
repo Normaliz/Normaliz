@@ -413,45 +413,46 @@ void Output<Integer>::cone() const {
 		}
 		out << endl;
 		
-		if (Result->isHt1ExtremeRays()==false) {
-			out<<"extreme rays are not homogeneous"<<endl<<endl;
-		} else {
-			vector<Integer> Linear_Form = Result->getLinearForm();
-			out<<"extreme rays are homogeneous via the linear form:"<<endl;
-			for (i = 0; i < Linear_Form.size(); i++) {
-				out<<Linear_Form[i]<<" ";
-			}
-			out<<endl<<endl;
-			if (Result->isComputed(ConeProperty::IsHt1HilbertBasis)) {
-				if (Result->isHt1HilbertBasis()) {
-					out << "Hilbert basis elements are homogeneous" << endl;
-				} else {
-					out << "Hilbert basis elements are not homogeneous" << endl;
-				}
-			}
-			out<<endl;
-			if (Result->isComputed(ConeProperty::Triangulation)){
-				out<<"multiplicity = "<<Result->getMultiplicity()<<endl;
-				out<<endl;
-			}
-			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
-				out<<"h-vector:"<<endl;
-				for (i = 0; i < h_vector.size(); i++) {
-					out<<h_vector[i]<<" ";
+		if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
+			if (Result->isHt1ExtremeRays()==false) {
+				out<<"extreme rays are not homogeneous"<<endl<<endl;
+			} else {
+				vector<Integer> Linear_Form = Result->getLinearForm();
+				out<<"extreme rays are homogeneous via the linear form:"<<endl;
+				for (i = 0; i < Linear_Form.size(); i++) {
+					out<<Linear_Form[i]<<" ";
 				}
 				out<<endl<<endl;
-			}
-			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				out<<"Hilbert polynomial:"<<endl;
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+				if (Result->isComputed(ConeProperty::IsHt1HilbertBasis)) {
+					if (Result->isHt1HilbertBasis()) {
+						out << "Hilbert basis elements are homogeneous" << endl;
+					} else {
+						out << "Hilbert basis elements are not homogeneous" << endl;
+					}
 				}
-				out << endl<< endl;
+				out<<endl;
+				if (Result->isComputed(ConeProperty::Triangulation)){
+					out<<"multiplicity = "<<Result->getMultiplicity()<<endl;
+					out<<endl;
+				}
+				if (Result->isComputed(ConeProperty::HVector)) {
+					vector<Integer> h_vector=Result->getHVector();
+					out<<"h-vector:"<<endl;
+					for (i = 0; i < h_vector.size(); i++) {
+						out<<h_vector[i]<<" ";
+					}
+					out<<endl<<endl;
+				}
+				if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
+					vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
+					out<<"Hilbert polynomial:"<<endl;
+					for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
+						out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+					}
+					out << endl<< endl;
+				}
 			}
 		}
-
 
 		out << "***********************************************************************"
 			 << endl << endl;

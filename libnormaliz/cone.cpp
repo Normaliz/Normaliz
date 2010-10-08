@@ -375,44 +375,44 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::compute(ConeProperties to_compute) {
-	to_compute.reset(is_Computed); // already computed
+void Cone<Integer>::compute(ConeProperties ToCompute) {
+	ToCompute.reset(is_Computed); // already computed
 
 	/* add preconditions */
-	if(to_compute.test(ConeProperty::Multiplicity))       to_compute.set(ConeProperty::Triangulation);
-	if(to_compute.test(ConeProperty::IsIntegrallyClosed)) to_compute.set(ConeProperty::HilbertBasis);
-	if(to_compute.test(ConeProperty::IsHt1HilbertBasis))  to_compute.set(ConeProperty::HilbertBasis);
-	if(to_compute.test(ConeProperty::IsHt1ExtremeRays))   to_compute.set(ConeProperty::ExtremeRays);
-	if(to_compute.test(ConeProperty::LinearForm))         to_compute.set(ConeProperty::ExtremeRays);
-	if(to_compute.test(ConeProperty::ExtremeRays))        to_compute.set(ConeProperty::SupportHyperplanes);
-	if(to_compute.test(ConeProperty::IsPointed))          to_compute.set(ConeProperty::SupportHyperplanes);
-	if(to_compute.test(ConeProperty::HilbertPolynomial))  to_compute.set(ConeProperty::HVector);
+	if(ToCompute.test(ConeProperty::Multiplicity))       ToCompute.set(ConeProperty::Triangulation);
+	if(ToCompute.test(ConeProperty::IsIntegrallyClosed)) ToCompute.set(ConeProperty::HilbertBasis);
+	if(ToCompute.test(ConeProperty::IsHt1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
+	if(ToCompute.test(ConeProperty::IsHt1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
+	if(ToCompute.test(ConeProperty::LinearForm))         ToCompute.set(ConeProperty::ExtremeRays);
+	if(ToCompute.test(ConeProperty::ExtremeRays))        ToCompute.set(ConeProperty::SupportHyperplanes);
+	if(ToCompute.test(ConeProperty::IsPointed))          ToCompute.set(ConeProperty::SupportHyperplanes);
+	if(ToCompute.test(ConeProperty::HilbertPolynomial))  ToCompute.set(ConeProperty::HVector);
 
 
 	/* find correct mode */
-	if (to_compute.test(ConeProperty::HVector) ) {
-		if(to_compute.test(ConeProperty::HilbertBasis)) {
+	if (ToCompute.test(ConeProperty::HVector) ) {
+		if(ToCompute.test(ConeProperty::HilbertBasis)) {
 			compute("hilbert_basis_polynomial");
 		} else {
 			compute("hilbert_polynomial");
 		}
 	} else { //no H-Vector
-		if(to_compute.test(ConeProperty::HilbertBasis)) {
-			if(to_compute.test(ConeProperty::Triangulation)) {
+		if(ToCompute.test(ConeProperty::HilbertBasis)) {
+			if(ToCompute.test(ConeProperty::Triangulation)) {
 				compute("triangulation_hilbert_basis");
 			} else {
 				compute("hilbert_basis");
 			}
 		} else { //no Hilbert basis
-			if(to_compute.test(ConeProperty::Triangulation)) {
+			if(ToCompute.test(ConeProperty::Triangulation)) {
 				compute("triangulation");
-				if(to_compute.test(ConeProperty::Ht1Elements)) {
+				if(ToCompute.test(ConeProperty::Ht1Elements)) {
 					compute("ht1_elements");
 				}
 			} else { //no triangulation
-				if(to_compute.test(ConeProperty::Ht1Elements)) {
+				if(ToCompute.test(ConeProperty::Ht1Elements)) {
 					compute("ht1_elements");
-				} else if(to_compute.test(ConeProperty::SupportHyperplanes)) {
+				} else if(ToCompute.test(ConeProperty::SupportHyperplanes)) {
 					compute("support_hyperplanes");
 				}
 			}
@@ -420,8 +420,11 @@ void Cone<Integer>::compute(ConeProperties to_compute) {
 	}
 
 	/* check if everything is computed*/
-	to_compute.reset(is_Computed); // now computed
-	if (to_compute.any()) errorOutput() <<"Warning: Cone could not compute everything, that it was asked for!"<<endl;
+	ToCompute.reset(is_Computed); //remove what is now computed
+	if (ToCompute.any()) {
+		errorOutput() << "Warning: Cone could not compute everything, that it was asked for!"<<endl;
+		errorOutput() << "Missing: "; ToCompute.print(errorOutput());
+	}
 }
 
 

@@ -20,6 +20,7 @@
 #define CONE_PROPERTY_H_
 
 #include <bitset>
+#include <iostream>
 
 namespace libnormaliz {
 
@@ -72,6 +73,10 @@ public:
 	bool any() const;
 	bool none() const;
 	size_t count () const;
+
+
+	/* print it in a nice way */
+	void print(std::ostream& out);
 
 
 private:
