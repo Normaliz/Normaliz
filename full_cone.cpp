@@ -61,11 +61,14 @@ struct v_compare_shelling {
 //private
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_hyperplane(list<FMDATA>& HypIndVal,const int& size, const FMDATA & positive,const FMDATA & negative){
+void Full_Cone::add_hyperplane(list<FMDATA>& HypIndVal,const int& ind_gen, const FMDATA & positive,const FMDATA & negative){
 	int k;
+	
+	// NEW: indgen is the index of the generator being inserted    
+	
 	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	
-	FMDATA NewHypIndVal;
+	FMDATA NewHypIndVal;NewHypIndVal.Hyp.resize(dim); NewHypIndVal.GenInHyp.resize(nr_gen);
 	
 	Integer used_for_tests;
 	if (test_arithmetic_overflow==true) {  // does arithmetic tests
@@ -85,9 +88,11 @@ void Full_Cone::add_hyperplane(list<FMDATA>& HypIndVal,const int& size, const FM
 	NewHypIndVal.Hyp=v_make_prime(NewHypIndVal.Hyp);
 	NewHypIndVal.ValNewGen=0; // not really needed, only for completeness
 	
-	NewHypIndVal.GenInHyp=~(~positive.GenInHyp | ~negative.GenInHyp); // new hyperplane is positive on a generator iff neg or pos is it
-	NewHypIndVal.GenInHyp[size]=1;  // new hypwerplane contains new generator
+	NewHypIndVal.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane cotains old gen iff both pos and neg do
+	NewHypIndVal.GenInHyp.set(ind_gen);  // new hyperplane contains new generator
 	
+	// cout << "In add_hyperplane" << endl;
+		
 	#pragma omp critical(HYPERPLANE)
 	HypIndVal.push_back(NewHypIndVal);
 }
@@ -96,275 +101,265 @@ void Full_Cone::add_hyperplane(list<FMDATA>& HypIndVal,const int& size, const FM
 //---------------------------------------------------------------------------
 
 
-void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& size, const vector <int> & test_key){
+void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& ind_gen){
 
 	//to see if possible to replace the function .end with constant iterator since push-back is performed.
 
-	FMDATA DUMMY; // damit es syntaktisch stimmt
+	// NEW: ind_gen is the index of the generator being inserted
 
-	vector<Integer> hyperplane(hyp_size,0); // initialized with 0
-	register int i,j,k,t,nr_zero_i,nr_zero_i_and_j,sub=dim-3;
+	// OBS vector<Integer> hyperplane(hyp_size,0); // initialized with 0
+	register int i,j,k,t,nr_zero_i;
+	register int subfacet_dim=dim-2; // NEW dimension of subfacet
+	register int facet_dim=dim-1; // NEW dimension of facet
 	
 	const bool tv_verbose = false; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
 	
 		
 	// preparing the computations
-	list < vector<Integer>* > l_Positive_Simplex,l_Positive_Non_Simplex;
-	list < vector<Integer>* > l_Negative_Simplex,l_Negative_Non_Simplex;
-	list < vector<Integer>* > l_Neutral_Simplex, l_Neutral_Non_Simplex;
-	vector <bool> Zero_Positive(hyp_size,false),Zero_Negative(hyp_size,false);
-	list < vector<Integer> > Non_Simplex;
+	// OBS list < vector<Integer>* > l_Pos_Simp,l_Pos_Non_Simp; usw.
+	list <FMDATA*> l_Pos_Simp,l_Pos_Non_Simp;
+	list <FMDATA*> l_Neg_Simp,l_Neg_Non_Simp;
+	list <FMDATA*> l_Neutral_Simp, l_Neutral_Non_Simp;
+	
+	// OBSvector <bool> Zero_Positive(hyp_size,false),Zero_Negative(hyp_size,false);
+	boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen);
+
 	bool simplex;
-	bool rangtest;
+	bool ranktest;
+	
+	// cout << "Adding gen "<< ind_gen << "= " << Generators.read(ind_gen+1,1)  << Generators.read(ind_gen+1,2)  << Generators.read(ind_gen+1,3) << endl;
+	
 	
 	if (tv_verbose) cout<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl<<flush;
 	int ipos=0;
-	list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
-	int listsize=Support_Hyperplanes.size();
-	//for (ii =Support_Hyperplanes.begin();ii!= Support_Hyperplanes.end();ii++){
-//  #pragma omp parallel for private(simplex, nr_zero_i, k) firstprivate(ipos, ii) schedule(dynamic)
+	
+	// OBS list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
+	list<FMDATA>::iterator ii=HypIndVal.begin();
+	
+	// OBS int listsize=Support_Hyperplanes.size();
+	int listsize=HypIndVal.size();
+
 	for (int kk=0; kk<listsize; ++kk) {
 		for(;kk > ipos; ++ipos, ++ii) ;
 		for(;kk < ipos; --ipos, --ii) ;
 		simplex=false;
-		nr_zero_i=0;
-		for (k = dim; k < size; k++) {
-			if ((*ii)[k]==0) {
-				nr_zero_i++;
-				if ((*ii)[size]>0) {
-//                  #pragma omp atomic
-					Zero_Positive[k]=true;
-				} else if ((*ii)[size]<0) {
-//                  #pragma omp atomic
-					Zero_Negative[k]=true;
-				}
-			}
-		}
-		if (nr_zero_i==dim-1) {
+		
+		/* cout << ii->GenInHyp << endl;
+		for(i=0;i<nr_gen;i++)
+			if(ii->GenInHyp.test(i))
+				cout << i << " "; */
+		
+		nr_zero_i=ii->GenInHyp.count();
+		if(ii->ValNewGen>0)
+			Zero_Positive|=ii->GenInHyp;
+		else if(ii->ValNewGen<0)
+			Zero_Negative|=ii->GenInHyp;        
+		if (nr_zero_i==dim-1)
 			simplex=true;
-		}
-		if ((*ii)[size]==0) {
+			
+		/* cout << " ** "<< simplex << " " << ii->ValNewGen << endl;*/
+
+		if (ii->ValNewGen==0) {
+			ii->GenInHyp.set(ind_gen);  // Must be set explicitly !!
 			if (simplex) {
-//              #pragma omp critical(NeutS)
-				l_Neutral_Simplex.push_back(&(*ii));
+				l_Neutral_Simp.push_back(&(*ii));
 			}   else {
-//              #pragma omp critical(NeutNS)
-				l_Neutral_Non_Simplex.push_back(&(*ii));
+				l_Neutral_Non_Simp.push_back(&(*ii));
 			}
-		} else 
-		if ((*ii)[size]>0) {
+		}
+		else if (ii->ValNewGen>0) {
 			if (simplex) {
-//              #pragma omp critical(PosS)
-				l_Positive_Simplex.push_back(&(*ii));
+				l_Pos_Simp.push_back(&(*ii));
 			} else {
-//              #pragma omp critical(PosNS)
-				l_Positive_Non_Simplex.push_back(&(*ii));
+				l_Pos_Non_Simp.push_back(&(*ii));
 			}
-		} else 
-		if ((*ii)[size]<0) {
+		} 
+		else if (ii->ValNewGen<0) {
 			if (simplex) {
-//              #pragma omp critical(NegS)
-				l_Negative_Simplex.push_back(&(*ii));
+				l_Neg_Simp.push_back(&(*ii));
 			} else {
-//              #pragma omp critical(NegNS)
-				l_Negative_Non_Simplex.push_back(&(*ii));
+				l_Neg_Non_Simp.push_back(&(*ii));
 			}
 		}
 	}
+	
+	// cout << "Zero_Positive " << Zero_Positive << endl;
+	// cout << "Zero_Negative " << Zero_Negative << endl;
 
-	vector <bool> Zero_PN(hyp_size,false);
-	for (k = dim; k < size; k++)
-		if (Zero_Positive[k]&&Zero_Negative[k])
-			Zero_PN[k]=true;
-
-	int PosNSsize = l_Positive_Non_Simplex.size();
+	boost::dynamic_bitset<> Zero_PN(nr_gen);
+	Zero_PN=Zero_Positive & Zero_Negative;
+	
+	// cout << "Zero_PN " << Zero_PN << endl; 
 
 	if (tv_verbose) cout<<"transform_values: copy to vector"<<endl;
-	vector < vector<Integer>* > Positive_Simplex(l_Positive_Simplex.size());
-	vector < vector<Integer>* > Positive_Non_Simplex(PosNSsize);
-	vector < vector<Integer>* > Negative_Simplex(l_Negative_Simplex.size());
-	vector < vector<Integer>* > Negative_Non_Simplex(l_Negative_Non_Simplex.size());
-	vector < vector<Integer>* > Neutral_Simplex(l_Neutral_Simplex.size());
-	vector < vector<Integer>* > Neutral_Non_Simplex(l_Neutral_Non_Simplex.size());
+	
+	// OBS vector < vector<Integer>* > Pos_Simp(l_Pos_Simp.size()); usw.
+	vector <FMDATA*> Pos_Simp(l_Pos_Simp.size());
+	vector <FMDATA*> Pos_Non_Simp(l_Pos_Non_Simp.size());
+	vector <FMDATA*> Neg_Simp(l_Neg_Simp.size());
+	vector <FMDATA*> Neg_Non_Simp(l_Neg_Non_Simp.size());
+	vector <FMDATA*> Neutral_Simp(l_Neutral_Simp.size());
+	vector <FMDATA*> Neutral_Non_Simp(l_Neutral_Non_Simp.size());
 
-	for (k = 0; k < Positive_Simplex.size(); k++) {
-		Positive_Simplex[k]=l_Positive_Simplex.front();
-		l_Positive_Simplex.pop_front();
+	for (k = 0; k < Pos_Simp.size(); k++) {
+		Pos_Simp[k]=l_Pos_Simp.front();
+		l_Pos_Simp.pop_front();
 	}
 
-	for (k = 0; k < Positive_Non_Simplex.size(); k++) {
-		Positive_Non_Simplex[k]=l_Positive_Non_Simplex.front();
-		l_Positive_Non_Simplex.pop_front();
+	for (k = 0; k < Pos_Non_Simp.size(); k++) {
+		Pos_Non_Simp[k]=l_Pos_Non_Simp.front();
+		l_Pos_Non_Simp.pop_front();
 	}
 
-	for (k = 0; k < Negative_Simplex.size(); k++) {
-		Negative_Simplex[k]=l_Negative_Simplex.front();
-		l_Negative_Simplex.pop_front();
+	for (k = 0; k < Neg_Simp.size(); k++) {
+		Neg_Simp[k]=l_Neg_Simp.front();
+		l_Neg_Simp.pop_front();
 	}
 
-	for (k = 0; k < Negative_Non_Simplex.size(); k++) {
-		Negative_Non_Simplex[k]=l_Negative_Non_Simplex.front();
-		l_Negative_Non_Simplex.pop_front();
+	for (k = 0; k < Neg_Non_Simp.size(); k++) {
+		Neg_Non_Simp[k]=l_Neg_Non_Simp.front();
+		l_Neg_Non_Simp.pop_front();
 	}
 
-	for (k = 0; k < Neutral_Simplex.size(); k++) {
-		Neutral_Simplex[k]=l_Neutral_Simplex.front();
-		l_Neutral_Simplex.pop_front();
+	for (k = 0; k < Neutral_Simp.size(); k++) {
+		Neutral_Simp[k]=l_Neutral_Simp.front();
+		l_Neutral_Simp.pop_front();
 	}
 
-	for (k = 0; k < Neutral_Non_Simplex.size(); k++) {
-		Neutral_Non_Simplex[k]=l_Neutral_Non_Simplex.front();
-		l_Neutral_Non_Simplex.pop_front();
+	for (k = 0; k < Neutral_Non_Simp.size(); k++) {
+		Neutral_Non_Simp[k]=l_Neutral_Non_Simp.front();
+		l_Neutral_Non_Simp.pop_front();
 	}
-	if (tv_verbose) cout<<"PS "<<Positive_Simplex.size()<<" P "<<Positive_Non_Simplex.size()<<" NS "<<Negative_Simplex.size()<<" N "<<Negative_Non_Simplex.size()<<" ZS "<<Neutral_Simplex.size()<<" Z "<<Neutral_Non_Simplex.size()<<endl<<flush;
-	 
-	/*
-	   possible improvement using the fact that in the lifted version all
-	   hyperplanes hyp[dim-1]!=0 are simplicies???
-	 */
+	if (tv_verbose) cout<<"PS "<<Pos_Simp.size()<<" P "<<Pos_Non_Simp.size()<<" NS "<<Neg_Simp.size()<<" N "<<Neg_Non_Simp.size()<<" ZS "<<Neutral_Simp.size()<<" Z "<<Neutral_Non_Simp.size()<<endl<<flush;
+
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: fill multimap with subfacets of NS"<<endl<<flush;
-	multimap < vector< int >, int > Negative_Subfacet_Multi;
-
 	
-//  #pragma omp parallel private(i,k,nr_zero_i)
-	{
-	vector< int > zero_i(nr_gen);
-	vector< int > subfacet(dim-2);
-//  #pragma omp for schedule(dynamic)
-	for (i=0; i<Negative_Simplex.size();i++){
-		nr_zero_i=0;
-		for (k = dim; k < size; k++) {
-			if (Zero_PN[k]&& ((*Negative_Simplex[i])[k]==0)){
-				zero_i[nr_zero_i]=k;
-				nr_zero_i++;
-			}
-		}
-		if(nr_zero_i>sub){
-			for (k = 0; k <dim-2; k++) {
-				subfacet[k]=zero_i[k];
-			}
-//          #pragma omp critical(MULTISET)
-			Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
-			if (nr_zero_i==dim-1){
-				for (k = dim-2; k >0; k--) {
-					subfacet[k-1]=zero_i[k];
-//                  #pragma omp critical(MULTISET)
-					Negative_Subfacet_Multi.insert(pair<vector< int >, int>(subfacet,i));
+	multimap < boost::dynamic_bitset<>, int > Neg_Subfacet_Multi;
+
+
+	// OBS vector< int > zero_i(nr_gen);
+	// OBS vector< int > subfacet(dim-2);
+	boost::dynamic_bitset<> zero_i(nr_gen);
+	boost::dynamic_bitset<> subfacet(nr_gen);
+
+	for (i=0; i<Neg_Simp.size();i++){
+		zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
+		nr_zero_i=zero_i.count();
+		
+		if(nr_zero_i==subfacet_dim) // NEW This case treated separately
+			Neg_Subfacet_Multi.insert(pair <boost::dynamic_bitset<>, int> (zero_i,i));
+			
+		else{       
+			for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
+				if(zero_i.test(k)) {              
+					subfacet=zero_i;
+					subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
+					Neg_Subfacet_Multi.insert(pair <boost::dynamic_bitset<>, int> (subfacet,i));
 				}
 			}
 		}
 	}
-	}
+
 
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: go over multimap of size "<< Negative_Subfacet_Multi.size() <<endl<<flush;
-	multimap < vector< int >, int > ::iterator jj;
-	multimap < vector< int >, int > ::iterator del;
-	jj =Negative_Subfacet_Multi.begin();
-	while (jj!= Negative_Subfacet_Multi.end()) {
+	if (tv_verbose) cout<<"transform_values: go over multimap of size "<< Neg_Subfacet_Multi.size() <<endl<<flush;
+
+	// OBS multimap < vector< int >, int > ::iterator jj,del;
+	multimap < boost::dynamic_bitset<>, int > ::iterator jj;
+	multimap < boost::dynamic_bitset<>, int > ::iterator del;
+	jj =Neg_Subfacet_Multi.begin();                               // remove negative subfecets shared
+	while (jj!= Neg_Subfacet_Multi.end()) {                       // by two neg simpl facets
 		del=jj++;
-		if (jj!=Negative_Subfacet_Multi.end() && (*jj).first==(*del).first) {   //delete since is the intersection of two negative simplicies
-			Negative_Subfacet_Multi.erase(del);
+		if (jj!=Neg_Subfacet_Multi.end() && (*jj).first==(*del).first) {   //delete since is the intersection of two negative simplicies
+			Neg_Subfacet_Multi.erase(del);
 			del=jj++;
-			Negative_Subfacet_Multi.erase(del);
+			Neg_Subfacet_Multi.erase(del);
 		}
 	}
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) cout<<"transform_values: singlemap size "<<Negative_Subfacet_Multi.size()<<endl<<flush;
+	if (tv_verbose) cout<<"transform_values: singlemap size "<<Neg_Subfacet_Multi.size()<<endl<<flush;
 	
-	listsize = Negative_Subfacet_Multi.size();
-	map < vector< int >, int > Negative_Subfacet;
+	listsize = Neg_Subfacet_Multi.size();
+	// OBS map < vector< int >, int > Neg_Subfacet;
+	map < boost::dynamic_bitset<>, int > Neg_Subfacet;
+	
 	#pragma omp parallel private(i, j, k, jj, nr_zero_i)
 	{
-	vector< int > subfacet(dim-2);
-	jj = Negative_Subfacet_Multi.begin();
+	boost::dynamic_bitset<> subfacet(dim-2);
+	jj = Neg_Subfacet_Multi.begin();
 	int jjpos=0;
-	map < vector< int >, int > ::iterator last_inserted=Negative_Subfacet.begin(); // used to speedup insertion into the new map
+	map < boost::dynamic_bitset<>, int > ::iterator last_inserted=Neg_Subfacet.begin(); // used to speedup insertion into the new map
 	bool found;
 	#pragma omp for schedule(dynamic)
-	for (int j=0; j<listsize; ++j) {
-		for(;j > jjpos; ++jjpos, ++jj) ;
+	for (int j=0; j<listsize; ++j) {                    // remove negative subfacets shared
+		for(;j > jjpos; ++jjpos, ++jj) ;                // by non-simpl neg or neutral facets 
 		for(;j < jjpos; --jjpos, --jj) ;
 
 		subfacet=(*jj).first;
 		found=false; 
-		for (i = 0; i <Neutral_Simplex.size(); i++) {
-			for (k = 0; k < dim-2; k++)
-				if((*Neutral_Simplex[i])[subfacet[k]]!=0)
-					break;
-			if (k==dim-2) {
-				found=true;
+		for (i = 0; i <Neutral_Simp.size(); i++) {
+			found=subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
+			if(found)
 				break;
-			}
 		}
 		if (!found) {
-			for (i = 0; i <Neutral_Non_Simplex.size(); i++) {
-				for (k = 0; k < dim-2; k++)
-					if((*Neutral_Non_Simplex[i])[subfacet[k]]!=0)
-						break;
-				if (k==dim-2) {
-					found=true;
-					break;
+			for (i = 0; i <Neutral_Non_Simp.size(); i++) {
+				found=subfacet.is_subset_of(Neutral_Non_Simp[i]->GenInHyp);
+				if(found)
+					break;                    
 				}
-			}
 			if(!found) {
-				for (i = 0; i <Negative_Non_Simplex.size(); i++) {
-					for (k = 0; k < dim-2; k++)
-						if((*Negative_Non_Simplex[i])[subfacet[k]]!=0)
-								break;
-					if (k==dim-2) {
-						found=true;
-						break;
-					}
+				for (i = 0; i <Neg_Non_Simp.size(); i++) {
+					found=subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
+					if(found)
+						break; 
 				}
 			}
 		}
 		if (!found) {
 			#pragma omp critical(NEGATIVE_SUBFACET)
-			{last_inserted=Negative_Subfacet.insert(last_inserted,*jj);}
+			{last_inserted=Neg_Subfacet.insert(last_inserted,*jj);}
 		}
 	}
 	
 	#pragma omp single
-	if (tv_verbose) cout<<"transform_values: reduced map size "<<Negative_Subfacet.size()<<endl<<flush;
+	if (tv_verbose) cout<<"transform_values: reduced map size "<<Neg_Subfacet.size()<<endl<<flush;
 	#pragma omp single nowait
-	Negative_Subfacet_Multi.clear();
+	Neg_Subfacet_Multi.clear();
 
 
 	#pragma omp single
 	if (tv_verbose) cout<<"transform_values: PS vs NS"<<endl<<flush;
 	
-	vector< int > zero_i(nr_gen);
-	map < vector< int >, int > ::iterator jj_map;
-	#pragma omp for schedule(dynamic)
-	for (i =0; i<Positive_Simplex.size(); i++){ //Positive Simplex vs.Negative Simplex
-		nr_zero_i=0;
-		for (k = dim; k < size; k++) {
-			if (Zero_PN[k] && (*Positive_Simplex[i])[k]==0) {
-				zero_i[nr_zero_i]=k; //contains the indices where *i is 0
-				nr_zero_i++;
+	// OBS vector< int > zero_i(nr_gen);
+	// OBS map < vector< int >, int > ::iterator jj_map;
+	boost::dynamic_bitset<> zero_i(nr_gen);
+	map <boost::dynamic_bitset<>, int> ::iterator jj_map;
+	
+	#pragma omp for schedule(dynamic)           // Now matching positive and negative (sub)facets
+	for (i =0; i<Pos_Simp.size(); i++){ //Positive Simp vs.Negative Simp
+		zero_i=Pos_Simp[i]->GenInHyp & Zero_PN;
+		nr_zero_i=zero_i.count();
+		
+		// cout << "nr_zero_i " << nr_zero_i << endl; 
+
+		if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Posiiive simpl facet shared at most
+			jj_map=Neg_Subfacet.find(zero_i);          // one subfacet with negative simpl facet
+			if (jj_map!=Neg_Subfacet.end()) {
+				add_hyperplane(HypIndVal,ind_gen,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
+				(*jj_map).second = -1;  // block subfacet in further searches
 			}
 		}
-		if (nr_zero_i>sub) {     //sub=dim-3, else can not contain an effective subfacet
-			for (k = 0; k <dim-2; k++) {
-				subfacet[k]=zero_i[k];
-			}
-			jj_map=Negative_Subfacet.find(subfacet);
-			if (jj_map!=Negative_Subfacet.end()) {
-				// add_hyperplane(HypIndVal,size,*Positive_Simplex[i],*Negative_Simplex[(*jj_map).second]);
-				add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
-				//Negative_Subfacet.erase(jj_map);
-				(*jj_map).second = -1;
-			}
-			if (nr_zero_i==dim-1){
-				for (k = dim-2; k >0; k--) {
-					subfacet[k-1]=zero_i[k];
-					jj_map=Negative_Subfacet.find(subfacet);
-					if (jj_map!=Negative_Subfacet.end()) {
-						// add_hyperplane(HypIndVal,size,*Positive_Simplex[i],*Negative_Simplex[(*jj_map).second]);
-						add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
-						//Negative_Subfacet.erase(jj_map);
+		if (nr_zero_i==facet_dim){    // now rthere could be more such subfacets. We make all and search them.      
+			for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
+				if(zero_i.test(k)) { 
+					// cout << "Drin " << k << endl;             
+					subfacet=zero_i;
+					subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
+					jj_map=Neg_Subfacet.find(subfacet);
+					if (jj_map!=Neg_Subfacet.end()) {
+						add_hyperplane(HypIndVal,ind_gen,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
 						(*jj_map).second = -1;
 					}
 				}
@@ -375,157 +370,171 @@ void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& size, const
 	#pragma omp single
 	if (tv_verbose) cout<<"transform_values: NS vs P"<<endl<<flush;
 	#pragma omp single
-	listsize = Negative_Subfacet.size();
+	listsize = Neg_Subfacet.size();
 
-//  for (jj_map = Negative_Subfacet.begin(); jj_map != Negative_Subfacet.end(); ++jj_map) { //Negative_simplex vs. Positive_Non_Simplex
-	jj_map = Negative_Subfacet.begin();
+//  for (jj_map = Neg_Subfacet.begin(); jj_map != Neg_Subfacet.end(); ++jj_map)  //Neg_simplex vs. Pos_Non_Simp
+	jj_map = Neg_Subfacet.begin();
 	jjpos=0;
 	#pragma omp for schedule(dynamic)
 	for (int j=0; j<listsize; ++j) {
 		for( ; j > jjpos; ++jjpos, ++jj_map) ;
 		for( ; j < jjpos; --jjpos, --jj_map) ;
 
-		if ( (*jj_map).second != -1 ) {
-			subfacet=(*jj_map).first;
-			for (i = 0; i <Positive_Non_Simplex.size(); i++) {
-				for (k = 0; k <dim-2; k++)
-					if ((*Positive_Non_Simplex[i])[subfacet[k]]!=0)
-						break;
-				if (k==dim-2) {
-					// add_hyperplane(HypIndVal,size,*Positive_Non_Simplex[i],*Negative_Simplex[(*jj_map).second]);
-					add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
+		if ( (*jj_map).second != -1 ) {  // skip used subfacets
+			for (i = 0; i <Pos_Non_Simp.size(); i++) {
+				if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
+					add_hyperplane(HypIndVal,ind_gen,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second]);
 					break;
 				}
 			}
 		}
 	}
+	
 	} //END parallel
 
 	
 	
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: PS vs N"<<endl<<flush;
-	listsize = Positive_Simplex.size();
-	#pragma omp parallel private(k,j,t,nr_zero_i,nr_zero_i_and_j)
+	listsize = Pos_Simp.size();
+	#pragma omp parallel private(k,j,t,nr_zero_i,nr_common_zero)
 	{
-	vector< int > zero_i(nr_gen);
+	boost::dynamic_bitset<> zero_i(nr_gen);
+	// boost::dynamic_bitset<> common_zero(nr_gen);
+	vector<int> key(nr_gen);
+	int nr_missing;
+	bool common_subfacet;
 	#pragma omp for schedule(dynamic)
-	for (int i =0; i<listsize; i++){ //Positive Simplex vs.Negative Non Simplex
+	for (int i =0; i<listsize; i++){ //Positive Simp vs.Negative Non Simp
+		zero_i=Zero_PN & Pos_Simp[i]->GenInHyp;
 		nr_zero_i=0;
-		for (k = dim; k < size; k++) {
-			if (Zero_PN[k] && (*Positive_Simplex[i])[k]==0) {
-				zero_i[nr_zero_i]=k; //contains the indices where i is 0
+		for(j=0;j<nr_gen && nr_zero_i<=facet_dim;j++)
+			if(zero_i.test(j)){
+				key[nr_zero_i]=j;
 				nr_zero_i++;
-			}
-		}
-		if (nr_zero_i>sub) {
-			for (j=0; j<Negative_Non_Simplex.size(); j++){
-				nr_zero_i_and_j=0;
-				for (k = 0; k < nr_zero_i; k++)
-					if ((*Negative_Non_Simplex[j])[zero_i[k]]==0)
-						nr_zero_i_and_j++;
-				if(nr_zero_i_and_j==dim-2){
-					// add_hyperplane(HypIndVal,size,*Positive_Simplex[i],*Negative_Non_Simplex[j]);
-					add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
-					if (nr_zero_i==dim-2) {
-						break;
+			}        
+		if(nr_zero_i>=subfacet_dim) {
+			for (j=0; j<Neg_Non_Simp.size(); j++){ // search negative facet with common subfacet
+				nr_missing=0; 
+				common_subfacet=true;               
+				for(k=0;k<nr_zero_i;k++) {
+					if(!Neg_Non_Simp[j]->GenInHyp.test(key[k])) {
+						nr_missing++;
+						if(nr_missing==2 || nr_zero_i==subfacet_dim) {
+							common_subfacet=false;
+							break;
+						}
 					}
-				}
-			}
-		}
-	}
+				 }
+					
+				 if(common_subfacet){                 
+					add_hyperplane(HypIndVal,ind_gen,*Pos_Simp[i],*Neg_Non_Simp[j]);
+					if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
+						break;
+				 }
+			}           
+		}            
+	} // PS vs N
 
 	#pragma omp single
 	{
-		rangtest=false;
-		if (Positive_Non_Simplex.size()+Negative_Non_Simplex.size()+Neutral_Non_Simplex.size()>dim*dim*dim/6) {
-			rangtest=true;
-		}
+		ranktest=false;
+		if (Pos_Non_Simp.size()+Neg_Non_Simp.size()+Neutral_Non_Simp.size()>dim*dim*dim/6)
+			ranktest=true;
 	}
+	//ranktest=false;
 
 	#pragma omp single
 	if (tv_verbose) cout<<"transform_values: P vs N"<<endl<<flush;
 	#pragma omp single
-	PosNSsize = Positive_Non_Simplex.size();
 	
 	bool exactly_two;
-	vector< int > zero_i_and_j(nr_gen);
-	vector<Integer> hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
+	FMDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
+	
+	int missing_bound, nr_common_zero;
+	boost::dynamic_bitset<> common_zero(nr_gen);
+	vector<int> common_key(nr_gen);
 	
 	#pragma omp for schedule(dynamic)
-	for (int i =0; i<PosNSsize; i++){ //Positive Non Simplex vs.Negative Non Simplex
+	
+	for (int i =0; i<Pos_Non_Simp.size(); i++){ //Positive Non Simp vs.Negative Non Simp
+
+		hp_i=Pos_Non_Simp[i];
+		zero_i=Zero_PN & hp_i->GenInHyp;
 		nr_zero_i=0;
-		hp_i=(*Positive_Non_Simplex[i]);
-		for (k = dim; k < size; k++) {
-			if (Zero_PN[k] && (hp_i)[k]==0) {
-				zero_i[nr_zero_i]=k; //contains the indices where i is 0
+		for(j=0;j<nr_gen;j++)
+			if(zero_i.test(j)){
+				key[nr_zero_i]=j;
 				nr_zero_i++;
 			}
-		}
-		if (nr_zero_i>sub) {
-			for (j=0; j<Negative_Non_Simplex.size(); j++){
-				hp_j=(Negative_Non_Simplex[j]);
-				nr_zero_i_and_j=0;
-				for (k = 0; k < nr_zero_i; k++){
-					if ((*hp_j)[zero_i[k]]==0){
-						zero_i_and_j[nr_zero_i_and_j]=zero_i[k]; //contains the indices where both *i and *j are 0
-						nr_zero_i_and_j++;
-					}
-				}
-				if(nr_zero_i_and_j>sub){//intersection of *i and *j may be a subfacet
-					exactly_two=true;
-					if (rangtest) {
-						Matrix Test(nr_zero_i_and_j,dim);
-						for (k = 0; k < nr_zero_i_and_j; k++) {
-							Test.write(k+1,Generators.read(test_key[zero_i_and_j[k]]));
+			
+		if (nr_zero_i>=subfacet_dim) {
+		
+			missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing to 
+			                                      // have a chance for common subfacet
+				for (j=0; j<Neg_Non_Simp.size(); j++){
+				hp_j=Neg_Non_Simp[j];
+				
+				nr_missing=0; 
+				nr_common_zero=0;
+				common_subfacet=true;               
+				for(k=0;k<nr_zero_i;k++) {
+					if(!hp_j->GenInHyp.test(key[k])) {
+						nr_missing++;
+						if(nr_missing>missing_bound || nr_zero_i==subfacet_dim) {
+							common_subfacet=false;
+							break;
 						}
-						if (Test.rank_destructiv()<dim-2) {
+					}
+					else {
+						common_key[nr_common_zero]=key[k];
+						nr_common_zero++;
+					}
+				 }
+				 
+
+				if(common_subfacet){//intersection of *i and *j may be a subfacet
+					common_zero=zero_i & hp_j->GenInHyp;
+					exactly_two=true;
+					if (ranktest) {
+						Matrix Test(nr_common_zero,dim);
+						for (k = 0; k < nr_common_zero; k++)
+							Test.write(k+1,Generators.read(common_key[k]+1)); 
+
+						if (Test.rank_destructiv()<subfacet_dim) {
 							exactly_two=false;
 						}
-					}
-					else{
-						for (t=0;t<PosNSsize;t++){
-							hp_t=(Positive_Non_Simplex[t]);
-							if (t!=i) {
-								k=0;
-								while((k<nr_zero_i_and_j)&&((*hp_t)[zero_i_and_j[k]]==0))
-									k++;
-								if (k==nr_zero_i_and_j) {
+					} // ranktest
+					else{                 // now the comparison test
+						for (t=0;t<Pos_Non_Simp.size();t++){
+							hp_t=Pos_Non_Simp[t];
+							if (t!=i && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+								exactly_two=false;
+								break;
+							}
+						}
+						if (exactly_two) {
+							for (t=0;t<Neg_Non_Simp.size();t++){
+								hp_t=Neg_Non_Simp[t];
+								if (t!=j && common_zero.is_subset_of(hp_t->GenInHyp)) {  
 									exactly_two=false;
 									break;
 								}
 							}
 						}
 						if (exactly_two) {
-							for (t=0;t<Negative_Non_Simplex.size();t++){
-								hp_t=(Negative_Non_Simplex[t]);
-								if (t!=j) {
-									k=0;
-									while((k<nr_zero_i_and_j)&&((*hp_t)[zero_i_and_j[k]]==0))
-										k++;
-									if (k==nr_zero_i_and_j) {
-										exactly_two=false;
-										break;
-									}
+							for (t=0;t<Neutral_Non_Simp.size();t++){
+								hp_t=Neutral_Non_Simp[t];
+								if(common_zero.is_subset_of(hp_t->GenInHyp)) {  
+									exactly_two=false;
+									break;
 								}
 							}
-							if (exactly_two) {
-								for (t=0;t<Neutral_Non_Simplex.size();t++){
-									hp_t=(Neutral_Non_Simplex[t]);
-									k=0;
-									while((k<nr_zero_i_and_j)&&((*hp_t)[zero_i_and_j[k]]==0))
-										k++;
-									if (k==nr_zero_i_and_j) {
-										exactly_two=false;
-										break;
-									}
-								}
-							}
-						}
-					}
+							
+						}                        
+					} // else
 					if (exactly_two) {  //intersection of i and j is a subfacet
-						// add_hyperplane(HypIndVal,size,hp_i,*hp_j);
-						add_hyperplane(HypIndVal,size,DUMMY,DUMMY);
+						add_hyperplane(HypIndVal,ind_gen,*hp_i,*hp_j);
 					}
 				}
 			}
@@ -533,15 +542,14 @@ void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& size, const
 	}
 	} //END parallel
 	#pragma omp critical(VERBOSE)
-
-
+	
 
 	//removing the negative hyperplanes
 	if (tv_verbose) cout<<"transform_values: remove negative hyperplanes"<<endl<<flush;
-	list< vector<Integer> >::iterator l;
-	for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); ){
-		if ((*l)[size]<0) {
-			l=Support_Hyperplanes.erase(l);
+	list<FMDATA>::iterator l;
+	for (l =HypIndVal.begin(); l != HypIndVal.end(); ){
+		if (l->ValNewGen<0) {
+			l=HypIndVal.erase(l);
 		} else {
 			++l;
 		}
@@ -551,7 +559,7 @@ void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& size, const
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::add_simplex(list<FMDATA>& HypIndVal,const int& new_generator,const int& size,const vector<int>& col, const vector<int>& col_inv){
+void Full_Cone::add_simplex(list<FMDATA>& HypIndVal,const int& new_generator){
 	list<FMDATA>::const_iterator i=HypIndVal.begin();
 	list< Simplex >::const_iterator j;
 	int nr_zero_i, nr_nonzero_i, not_in_i=0, l, k, s, Triangulation_size=Triangulation.size();
@@ -570,9 +578,9 @@ void Full_Cone::add_simplex(list<FMDATA>& HypIndVal,const int& new_generator,con
 
 			if (nr_zero_i==dim-1) { //simplicial
 				l=0;
-				for (k = 0; k <size; k++) {
+				for (k = 0; k <nr_gen; k++) {
 					if ((*i).GenInHyp[k]==1) {
-						key[l]=col_inv[k]+1;
+						key[l]=k+1;
 						l++;
 					}
 				}
@@ -588,12 +596,13 @@ void Full_Cone::add_simplex(list<FMDATA>& HypIndVal,const int& new_generator,con
 					nr_nonzero_i=0;
 					k=0;
 					do{
-						if ((*i).GenInHyp[col[key[k]-1]] !=1) {
+						if ( !(*i).GenInHyp.test(key[k]-1)) {
 							nr_nonzero_i++;
 							not_in_i=k;
 						}
 						k++;
 					} while((k<dim)&&(nr_nonzero_i<2));
+					
 					if (nr_nonzero_i<=1){
 						key[not_in_i]=new_generator+1;
 						Simplex simp(key);
@@ -1359,38 +1368,39 @@ void Full_Cone::compute_extreme_rays(){
 	Matrix Val=Generators.multiplication(SH);
 	int nc=Val.nr_of_columns();
 	vector<int> Zero(nc);
+	vector<int> nr_zeroes(nr_gen);
+
 	for (i = 0; i <nr_gen; i++) {
-		Extreme_Rays[i]=true;
-	}
-	for (i = 1; i <=nr_gen; i++) {
 		k=0;
-		for (j = 1; j <=nc; j++) {
-			if (Val.get_elem(i,j)==0) {
+		Extreme_Rays[i]=true;
+		for (j = 0; j <nc; j++) {
+			if (Val.get_elem(i+1,j+1)==0) {
 				Zero[k]=j;
 				k++;
 			}
 		}
-		if (k<dim-1||k==nc) {     // not contained in enough facets  or in all (0 as generator)
-			Extreme_Rays[i-1]=false;
-		}
-		else {
-			for (j = 1; j <=nr_gen; j++) {
-				if (i!=j && Extreme_Rays[j-1]!=false) { // not compare with itself or a known nonextreme ray
-					l=0;
-					for (t = 0; t < k; t++) {
-						if (Val.get_elem(j,Zero[t])==0) {
+		nr_zeroes[i]=k;
+		if (k<dim-1||k==nc)  // not contained in enough facets  or in all (0 as generator)
+			Extreme_Rays[i]=false;        
+	}
+	for (i = 0; i <nr_gen; i++) {
+			for (j = 0; j <nr_gen; j++) {
+				if (i!=j && Extreme_Rays[i] && Extreme_Rays[j] 
+							   && nr_zeroes[i]<nr_zeroes[j]) { // not compare with itself or a known nonextreme ray
+					l=0;                                        // or something whose zeroes cannot be a superset
+					for (t = 0; t < nr_zeroes[i]; t++) {
+						if (Val.get_elem(j+1,Zero[t]+1)==0)
 							l++;
-						}
 						if (l>=k) {
-							Extreme_Rays[i-1]=false;
+							Extreme_Rays[i]=false;
 							break;
 						}
 					}
 				}
 			}
 
-		}
 	}
+	// cout << "Extr durch" << endl;
 	is_Computed.set(ConeProperty::ExtremeRays);
 }
 
@@ -1414,7 +1424,76 @@ Simplex Full_Cone::find_start_simplex() const {
 }
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation) {
+void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation){
+// wrapper for computing only support hyperplanes
+
+	do_compute_support_hyperplanes(false, do_partial_triangulation,false);
+
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::compute_support_hyperplanes_triangulation(){
+// wrapper for support hyperplanes AND triangulation
+
+	do_compute_support_hyperplanes(true,false,false); // full triangulation yes, partial no
+
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::support_hyperplanes_dynamic(){
+
+	do_compute_support_hyperplanes(false,false,true); // no triangulation, but dynamic
+
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::adjust_weight(list<FMDATA>& HypIndVal, const int ind_gen){
+
+	bool simplicial;
+	set<Integer> test_simplicial;
+	Integer scalar_product, scalar_product_small;
+	vector<Integer> L;
+	int k;
+
+	list< FMDATA >::iterator l;
+	
+	for (l =HypIndVal.begin(); l != HypIndVal.end(); l++){
+		L=Generators.read(ind_gen+1);
+		scalar_product=v_scalar_product(L,l->Hyp);
+		scalar_product_small=scalar_product-L[dim-1]*l->Hyp[dim-1];
+		if (l->Hyp[dim-1]!=0) {
+			if (scalar_product_small % l->Hyp[dim-1]==0) { 
+				test_simplicial.insert(scalar_product_small / l->Hyp[dim-1]);
+			}
+		}
+		if (test_arithmetic_overflow && v_test_scalar_product(L,l->Hyp,scalar_product,overflow_test_modulus)==false) {
+				error("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
+		}
+		
+		l->ValNewGen=scalar_product;
+
+		if (scalar_product==0)
+		   simplicial=false;           
+	}
+	if (simplicial==false) {
+		k=0;
+		while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
+				L[dim-1]++;
+				k++;
+		}
+		Generators.write(ind_gen+1,dim,L[dim-1]);
+		for (l =HypIndVal.begin(); l != HypIndVal.end(); l++)
+			   l->ValNewGen=l->ValNewGen+k* l->Hyp[dim-1];           
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void Full_Cone::do_compute_support_hyperplanes(const bool do_triangulation, const bool do_partial_triangulation,
+								const bool dynamic) {
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		cout<<"\n************************************************************\n";
@@ -1423,15 +1502,18 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 		cout<<"..."<<endl;
 	}
 	int i,j;
-	//Initialization of the list of support hyperplanes
 	
 	list<FMDATA> HypIndVal;
-	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
+
+	vector<Integer> L; 
 	Simplex S = find_start_simplex();
+	
+	if(do_triangulation) 
+		Triangulation.push_back(S);
 
 	vector<int> key=S.read_key();
 	vector<bool> in_triang(nr_gen,false);
-	vector<int> test_key(hyp_size);
+	// OBS vector<int> test_key(hyp_size);
 	for (i = 0; i < dim; i++) {
 		in_triang[key[i]-1]=true;
 	}
@@ -1440,20 +1522,17 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	G=G.transpose();
 	Matrix H=S.read_support_hyperplanes();
 	Matrix P=H.multiplication(G);
-	for (i = 1; i <=dim; i++) {
-		L=H.read(i);
-		R=P.read(i);
-		for (j = 0; j < dim; j++) {
-			hyperplane[j]=L[j];
-			hyperplane[j+dim]=R[j];
-			test_key[j+dim]=key[j];
-		}
-		Support_Hyperplanes.push_back(hyperplane);
+	for (i = 0; i <dim; i++) {
+		FMDATA NewHypIndVal; NewHypIndVal.Hyp.resize(dim); NewHypIndVal.GenInHyp.resize(nr_gen);
+		NewHypIndVal.Hyp=H.read(i+1);
+		for(j=0;j < dim;j++)
+			if(j!=i)
+				NewHypIndVal.GenInHyp.set(key[j]-1);
+		HypIndVal.push_back(NewHypIndVal);
 	}
 
 	
-	int size=2*dim;
-	//test if the first simplex is compressed
+	//test if the first simplex is unimodular
 	if(do_partial_triangulation && S.read_volume() > 1){
 		Triangulation.push_back(key);
 	}
@@ -1462,36 +1541,51 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 	Integer scalar_product;
 	bool new_generator;
 	list< vector<int> > non_compressed;
-	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
+	for (j = 0; j <= 1; j++) {  //two times, first only KNOWN extreme rays are considered
 		for (i = 0; i < nr_gen; i++) {
 			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
 				new_generator=false;
-				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
+				
+			if(dynamic){
+				adjust_weight(HypIndVal,i);  // includes computation of scalar products
+				list< FMDATA >::iterator l=HypIndVal.begin();
+				for(;l!=HypIndVal.end();l++){
+					if(l->ValNewGen<0){
+						new_generator=true;
+						break;                
+					}            
+				}
+			}
+			else{ // in non-dynamic mode we make scalar products here
+			
+				list< FMDATA >::iterator l=HypIndVal.begin();
 				int lpos=0;
-				int listsize=Support_Hyperplanes.size();
-				//  for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
+
+				int listsize=HypIndVal.size();
+  
 				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
 				for (int k=0; k<listsize; k++) {
 					for(;k > lpos; lpos++, l++) ;
 					for(;k < lpos; lpos--, l--) ;
 
 					L=Generators.read(i+1);
-					scalar_product=v_scalar_product(L,(*l));
-					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
+					scalar_product=v_scalar_product(L,(*l).Hyp);
+					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l).Hyp,scalar_product,overflow_test_modulus)==false) {
 						error("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
 					}
 
-					(*l)[size]=scalar_product;
+					(*l).ValNewGen=scalar_product;
 					if (scalar_product<0) {
 						new_generator=true;
 						if (do_partial_triangulation && scalar_product<-1) { //found non-compressed pyramid
 							// make new subcone (gens in hyperplane + new gen)
 							vector<int> pyramid;
-							pyramid.reserve(size-dim+1);
+							pyramid.reserve(nr_gen);  // OBS size-dim+1
 							pyramid.push_back(i+1);
-							for (int g=dim; g<size; g++) {
-								if ((*l)[g]==0) {
-									pyramid.push_back(test_key[g]);
+							// BOOST ROUTINE
+							for (int g=0; g<nr_gen; g++) {
+								if ((*l).GenInHyp[g]==1) {
+									pyramid.push_back(g+1);
 								}
 							}
 							if (pyramid.size()==dim) { //simplicial case
@@ -1506,21 +1600,30 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 						}
 					}
 				}
+				
+				} // else
+				
 				if (new_generator) {
 					in_triang[i]=true;
-					test_key[size]=i+1;
-					transform_values(HypIndVal,size,test_key);
-					size++;
+					// OBS test_key[size]=i+1;
+					// OBStransform_values(size,test_key);
+					if(do_triangulation)
+						add_simplex(HypIndVal,i);
+					transform_values(HypIndVal,i);
 				}
 				if (verbose==true) {
-					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... ";
+					cout<<"generator="<< i+1 <<" and "<<HypIndVal.size()<<" hyperplanes... ";
 					cout<<endl;
 				}
 			}
 		}
 	}   
 	
-	l_cut(Support_Hyperplanes,dim);
+	list<FMDATA>::const_iterator IHV=HypIndVal.begin(); 
+	for(;IHV!=HypIndVal.end();IHV++){
+		Support_Hyperplanes.push_back(IHV->Hyp);
+	}
+	// l_cut(Support_Hyperplanes,dim);
 	if(do_partial_triangulation && non_compressed.size()>0) process_non_compressed(non_compressed);
 	} // end if (dim>0)
 	is_Computed.set(ConeProperty::SupportHyperplanes);
@@ -1535,17 +1638,26 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 		if (do_triang) cout << "and triangulation ";
 		cout << "(pyramid)..." << endl;
 	}
+	
+	cout <<"PYEAMIDE GESPERRT" << endl;
+	exit(1);
+	
+	vector<int> test_key;  
 
 	int i, j;
 	vector<Integer> hyperplane(hyp_size, 0), L, R;
+	vector<bool> in_triang(nr_gen, false);
+	int size;
+	
+	
 	Simplex S = find_start_simplex();
 	vector<int> key = S.read_key();
 	if (do_triang) {
 		Triangulation.push_back(key);
 	}
 
-	vector<bool> in_triang(nr_gen, false);
-	vector<int> test_key(hyp_size);
+	
+
 	for (i = 0; i < dim; i++) {
 		in_triang[key[i]-1] = true;
 	}
@@ -1564,7 +1676,6 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 		Support_Hyperplanes.push_back(hyperplane);
 	}
 
-	int size = 2 * dim;
 	int g;
 	bool verbose_bak = verbose;
 	verbose = false;
@@ -1706,189 +1817,8 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::support_hyperplanes_dynamic(){
-	if (verbose==true) {
-		cout<<"\n************************************************************\n";
-		cout<<"computing support hyperplanes ..."<<endl;
-	}
-	int i,j,k;
-	bool simplicial;
-	set<Integer> test_simplicial;
-	Integer scalar_product, scalar_product_small;
-	//intialization of the list of support hyperplanes
-	list<FMDATA> HypIndVal;
-	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S(Generators);
-	vector<int> key=S.read_key();
-	vector<bool> in_triang(nr_gen,false);
-	vector <int> test_key(hyp_size);
-	for (i = 0; i < dim; i++) {
-		 in_triang[key[i]-1]=true;
-	}
-	Matrix G=S.read_generators();
-	G=G.transpose();
-	Matrix H=S.read_support_hyperplanes();
-	Matrix P=H.multiplication(G);
-	for (i = 1; i <=dim; i++) {
-		 L=H.read(i);
-		 R=P.read(i);
-		 for (j = 0; j < dim; j++) {
-			 hyperplane[j]=L[j];
-			 hyperplane[j+dim]=R[j];
-			 test_key[j+dim]=key[j];
-		}
-		Support_Hyperplanes.push_back(hyperplane);
-	}
-	//computation of support hyperplanes
-	int size=2*dim;
-	bool new_generator;
-	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-		for (i = 0; i < nr_gen; i++) {
-			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-				new_generator=false;
-				simplicial=true;
-				list< vector<Integer> >::iterator l;
-				for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-					L=Generators.read(i+1);
-					scalar_product=v_scalar_product(L,(*l));
-					scalar_product_small=scalar_product-L[dim-1]*(*l)[dim-1];
-					if ((*l)[dim-1]!=0) {
-						if (scalar_product_small % (*l)[dim-1]==0) { 
-							test_simplicial.insert(scalar_product_small / (*l)[dim-1]);
-						}
-					}
-					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-							error("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
-					}
-					
-					(*l)[size]=scalar_product;
-					if (scalar_product<0) {
-					   new_generator=true;
-					}
-					if (scalar_product==0) {
-					   simplicial=false;
-					}
-				}
-				if (simplicial==false) {
-					k=0;
-					while(test_simplicial.find(-L[dim-1])!=test_simplicial.end()){
-						 L[dim-1]++;
-						 k++;
-					}
-					Generators.write(i+1,dim,L[dim-1]);
-					for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-						(*l)[size]=(*l)[size]+k* (*l)[dim-1];
-					}
-					
-				}
-				if (new_generator) {
-					in_triang[i]=true;
-					test_key[size]=i+1;
-					transform_values(HypIndVal,size,test_key);
-					size++;
-				}
-				if (verbose==true) {
-					cout<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes..."<<endl;
-				}
-			}
-		}
-	}
-	
-	l_cut(Support_Hyperplanes,dim);
-	is_Computed.set(ConeProperty::SupportHyperplanes);
-}
 
-//---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes_triangulation(){
-	if(dim>0){            //correction needed to include the 0 cone;
-	if (verbose==true) {
-		cout<<"\n************************************************************\n";
-		cout<<"computing support hyperplanes and triangulation ..."<<endl;
-	}
-	int i,j;
-	//intialization of the lists of support hyperplanes and triangulation
-	list<FMDATA> HypIndVal;
-	vector<Integer> hyperplane(hyp_size,0),L,R; // initialized with 0
-	Simplex S = find_start_simplex();
-	Triangulation.push_back(S);
-	vector<int> key=S.read_key();
-	vector<bool> in_triang(nr_gen,false);
-	vector<int> test_key(hyp_size);
-	vector<int> col(nr_gen,0),col_inv(nr_gen,0); //col[i] contains the position in the hyperplane
-	//of the scalar product the hyperplane
-	//and the i-th generator
-	//col_inv is the inverse of col
-	for (i = 0; i < dim; i++) {
-		in_triang[key[i]-1]=true;
-		col[key[i]-1]=dim+i;
-		col_inv[i]=key[i]-1;
-	}
-	Matrix G=S.read_generators();
-	G=G.transpose();
-	Matrix H=S.read_support_hyperplanes();
-	Matrix P=H.multiplication(G);
-	for (i = 1; i <=dim; i++) {
-		L=H.read(i);
-		R=P.read(i);
-		for (j = 0; j < dim; j++) {
-			hyperplane[j]=L[j];
-			hyperplane[j+dim]=R[j];
-			test_key[j+dim]=key[j];
-		}
-		Support_Hyperplanes.push_back(hyperplane);
-	}
-	//computation of support hyperplanes and triangulation
-	int size=2*dim;
-	Integer scalar_product;
-	bool new_generator;
-	for (j = 0; j <= 1; j++) {  //two times, first only extreme rays are considered
-		for (i = 0; i < nr_gen; i++) {
-			if ((in_triang[i]==false)&&((j==1)||(Extreme_Rays[i]==true))) {
-				new_generator=false;
-				list< vector<Integer> >::iterator l=Support_Hyperplanes.begin();
-				int lpos=0;
-				int listsize=Support_Hyperplanes.size();
-				//  for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++){
-				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
-				for (int k=0; k<listsize; ++k) {
-					for(;k > lpos; ++lpos, ++l) ;
-					for(;k < lpos; --lpos, --l) ;
-
-					L=Generators.read(i+1);
-					scalar_product=v_scalar_product(L,(*l));
-					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l),scalar_product,overflow_test_modulus)==false) {
-						error("error: Arithmetic failure in Full_cone::support_hyperplanes_triangulation. Possible arithmetic overflow.\n");
-					}
-					(*l)[size]=scalar_product;
-					if (scalar_product<0) {
-						new_generator=true;
-					}
-				}
-				if (new_generator) {
-					in_triang[i]=true;
-					test_key[size]=i+1;
-					add_simplex(HypIndVal,i,size,col,col_inv);
-					transform_values(HypIndVal,size,test_key);
-					col[i]=size;
-					col_inv[size-dim]=i;
-					size++;
-				}
-				if (verbose==true) {
-					cout<<"generator="<< i+1 <<", "<<Support_Hyperplanes.size()<<" hyperplanes..."<<" and "<<Triangulation.size()<<" simplicies"<<endl;
-				}
-			}
-		}
-	}
-	
-	if (verbose) {
-		cout<<Support_Hyperplanes.size()<<" hyperplanes and " <<Triangulation.size()<<" simplicies"<<endl;
-	}
-	l_cut(Support_Hyperplanes,dim);
-	} // end if (dim>0)
-	is_Computed.set(ConeProperty::SupportHyperplanes);
-	is_Computed.set(ConeProperty::Triangulation);
-}
 
 //---------------------------------------------------------------------------
 
