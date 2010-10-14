@@ -84,7 +84,7 @@ class Full_Cone {
 
 	friend void lift(Full_Cone&, Matrix);
 	
-	typedef struct FMDATA {
+	struct FMDATA {
 	vector<Integer> Hyp;
 	boost::dynamic_bitset<> GenInHyp;
 	Integer ValNewGen;
@@ -94,11 +94,11 @@ class Full_Cone {
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-	void Full_Cone::add_hyperplane(list<FMDATA>& HypIndVal,const int& ind_gen, const FMDATA & positive,const FMDATA & negative);
+	void add_hyperplane(list<FMDATA>& HypIndVal,const int& ind_gen, const FMDATA & positive,const FMDATA & negative);
 	void transform_values(list<FMDATA>& HypIndVal,const int & ind_gen);
 	void add_simplex(list<FMDATA>& HypIndVal,const int& new_generator);
 	
-	void Full_Cone::adjust_weight(list<FMDATA>& HypIndVal, const int new_generator);
+	void adjust_weight(list<FMDATA>& HypIndVal, const int new_generator);
 	// adjusts weights for dynamic lifting
 
 	/* adds a new element to the Hilbert basis */

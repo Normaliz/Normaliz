@@ -397,7 +397,7 @@ void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& ind_gen){
 	#pragma omp critical(VERBOSE)
 	if (tv_verbose) cout<<"transform_values: PS vs N"<<endl<<flush;
 	listsize = Pos_Simp.size();
-	#pragma omp parallel private(k,j,t,nr_zero_i,nr_common_zero)
+	#pragma omp parallel private(k,j,t,nr_zero_i)
 	{
 	boost::dynamic_bitset<> zero_i(nr_gen);
 	// boost::dynamic_bitset<> common_zero(nr_gen);
@@ -446,7 +446,6 @@ void Full_Cone::transform_values(list<FMDATA>& HypIndVal, const int& ind_gen){
 
 	#pragma omp single
 	if (tv_verbose) cout<<"transform_values: P vs N"<<endl<<flush;
-	#pragma omp single
 	
 	bool exactly_two;
 	FMDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
