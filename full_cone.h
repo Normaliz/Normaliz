@@ -31,13 +31,6 @@ using boost::dynamic_bitset;
 #include "simplex.h"
 #include "cone_dual_mode.h"
 
-/* Data type for Fourier-Motzkin elimination 
-typedef struct FMDATA {
-	vector<Integer> Hyp;
-	bitset<192> GenInHyp;
-	Integer ValNewGen;
-}; */
-
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interferring with other names.
  */
@@ -85,9 +78,9 @@ class Full_Cone {
 	friend void lift(Full_Cone&, Matrix);
 	
 	struct FMDATA {
-	vector<Integer> Hyp;
-	boost::dynamic_bitset<> GenInHyp;
-	Integer ValNewGen;
+		vector<Integer> Hyp;
+		boost::dynamic_bitset<> GenInHyp;
+		Integer ValNewGen;
 	};
 
 /* ---------------------------------------------------------------------------

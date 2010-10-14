@@ -1169,7 +1169,7 @@ vector<Integer> Full_Cone::read_hilbert_polynomial() const{
 //---------------------------------------------------------------------------
 
 void Full_Cone::support_hyperplane_common() {
-	 check_pointed();
+	check_pointed();
 	if(!is_pointed) return;
 	compute_extreme_rays();
 	check_ht1_extreme_rays();
@@ -1388,9 +1388,9 @@ void Full_Cone::compute_extreme_rays(){
 							   && nr_zeroes[i]<nr_zeroes[j]) { // not compare with itself or a known nonextreme ray
 					l=0;                                        // or something whose zeroes cannot be a superset
 					for (t = 0; t < nr_zeroes[i]; t++) {
-						if (Val.get_elem(j+1,Zero[t]+1)==0)
+						if (Val.get_elem(j+1,Zero[t]+1)==0) //TODO Zero not correct
 							l++;
-						if (l>=k) {
+						if (l>=nr_zeroes[i]) {
 							Extreme_Rays[i]=false;
 							break;
 						}
@@ -1625,7 +1625,10 @@ void Full_Cone::do_compute_support_hyperplanes(const bool do_triangulation, cons
 	// l_cut(Support_Hyperplanes,dim);
 	if(do_partial_triangulation && non_compressed.size()>0) process_non_compressed(non_compressed);
 	} // end if (dim>0)
+	
 	is_Computed.set(ConeProperty::SupportHyperplanes);
+	if(do_triangulation) is_Computed.set(ConeProperty::Triangulation);
+
 }
 
 //---------------------------------------------------------------------------
@@ -1638,7 +1641,7 @@ void Full_Cone::compute_support_hyperplanes_pyramid(const bool do_triang) {
 		cout << "(pyramid)..." << endl;
 	}
 	
-	cout <<"PYEAMIDE GESPERRT" << endl;
+	cout <<"PYRAMIDE GESPERRT" << endl;
 	exit(1);
 	
 	vector<int> test_key;  
@@ -1848,6 +1851,7 @@ void Full_Cone::check_ht1_extreme_rays() {
 		is_ht1_extreme_rays=true;
 		return ;
 	}
+	assert(is_Computed.test(ConeProperty::ExtremeRays));
 	vector<int> key;
 	for (int i = 0; i < nr_gen; i++) {
 		if (Extreme_Rays[i])
