@@ -1074,8 +1074,12 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
 	Integer det,buffer;
 	vector<int>  rows=max_rank_submatrix_lex();
 	Matrix<Integer> Left_Side=submatrix(rows);
+	assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
 	Matrix<Integer> Right_Side(nc,1,1);
 	Matrix<Integer> Solution=Solve(Left_Side, Right_Side, det);
+	Matrix Left_Side=submatrix(rows);
+	Matrix Right_Side(nc,1,1);
+	Matrix Solution=Solve(Left_Side, Right_Side, det);
 	det=Iabs(det);
 	vector<Integer> Linear_Form(nc);
 	for (i = 0; i <nc; i++) {

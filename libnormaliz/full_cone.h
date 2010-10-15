@@ -22,6 +22,7 @@
 #include <list>
 #include <vector>
 #include <set>
+#include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz.h"
 #include "cone_property.h"
@@ -34,6 +35,7 @@ namespace libnormaliz {
 using std::list;
 using std::vector;
 using std::set;
+using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
 template<typename Integer> class Full_Cone;
@@ -68,14 +70,23 @@ class Full_Cone {
 
 	friend void lift<Integer>(Full_Cone<Integer>&, Matrix<Integer>);
 	friend class Cone<Integer>;
+	
+	struct FMDATA {
+		vector<Integer> Hyp;
+		boost::dynamic_bitset<> GenInHyp;
+		Integer ValNewGen;
+	};
 
 /* ---------------------------------------------------------------------------
- *				Private routines, used in the public routines
+ *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-	void add_hyperplane(const int & size, const vector<Integer> & positive_gen, const vector<Integer> & negative_gen);
-	void transform_values(const int & size, const vector<int> & test_key);
-	void add_simplex(const int & new_generator, const int & size, const vector<int> & col, const vector<int> & col_inv);
+	void add_hyperplane(list<FMDATA>& HypIndVal,const int& ind_gen, const FMDATA & positive,const FMDATA & negative);
+	void transform_values(list<FMDATA>& HypIndVal,const int & ind_gen);
+	void add_simplex(list<FMDATA>& HypIndVal,const int& new_generator);
+	
+	void adjust_weight(list<FMDATA>& HypIndVal, const int new_generator);
+	// adjusts weights for dynamic lifting
 
 	/* adds a new element to the Hilbert basis */
 	void reduce_and_insert(const vector<Integer> & new_element);
@@ -110,7 +121,11 @@ class Full_Cone {
 	vector<Integer> compute_degree_function() const;
 
 	void compute_support_hyperplanes(const bool do_partial_triang = false);
-	void compute_support_hyperplanes_triangulation();
+	void compute_support_hyperplanes_triangulation();  
+	// wrapper functions for the next that really does something  
+	void do_compute_support_hyperplanes(const bool do_triangulation=false, 
+	                                    const bool do_partial_triangulation=false,const bool dynamic=false);
+	
 	void support_hyperplanes_partial_triangulation();
 	void compute_support_hyperplanes_pyramid(const bool do_triang = false);
 	void support_hyperplane_common();
@@ -140,9 +155,9 @@ class Full_Cone {
 	void support_hyperplanes_dynamic();
 
 
-    /* constructor for recursively generated subcones
-     * int i is a dummy parameter to distinguish it from the standard constructor */
-    Full_Cone(Matrix<Integer> M, int i);
+	/* constructor for recursively generated subcones
+	 * int i is a dummy parameter to distinguish it from the standard constructor */
+	Full_Cone(Matrix<Integer> M, int i);
 
 public:
 	Full_Cone();
@@ -152,7 +167,7 @@ public:
 	~Full_Cone();                   //destructor
 
 /*---------------------------------------------------------------------------
- *						Data access
+ *                      Data access
  *---------------------------------------------------------------------------
  */
 	void print() const;                //to be modified, just for tests
@@ -181,7 +196,7 @@ public:
 
 
 /*---------------------------------------------------------------------------
- *				Computation Methods
+ *              Computation Methods
  *---------------------------------------------------------------------------
  */
 	void support_hyperplanes();
