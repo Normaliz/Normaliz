@@ -1374,34 +1374,47 @@ void Full_Cone::compute_extreme_rays(){
 		Extreme_Rays[i]=true;
 		for (j = 0; j <nc; j++) {
 			if (Val.get_elem(i+1,j+1)==0) {
-				Zero[k]=j;
 				k++;
 			}
 		}
 		nr_zeroes[i]=k;
 		if (k<dim-1||k==nc)  // not contained in enough facets  or in all (0 as generator)
-			Extreme_Rays[i]=false;        
+			Extreme_Rays[i]=false;
 	}
+
 	for (i = 0; i <nr_gen; i++) {
-			for (j = 0; j <nr_gen; j++) {
-				if (i!=j && Extreme_Rays[i] && Extreme_Rays[j] 
-							   && nr_zeroes[i]<nr_zeroes[j]) { // not compare with itself or a known nonextreme ray
-					l=0;                                        // or something whose zeroes cannot be a superset
-					for (t = 0; t < nr_zeroes[i]; t++) {
-						if (Val.get_elem(j+1,Zero[t]+1)==0) //TODO Zero not correct
-							l++;
-						if (l>=nr_zeroes[i]) {
-							Extreme_Rays[i]=false;
-							break;
-						}
+		if(!Extreme_Rays[i])  // already known to be non-extreme
+			continue;
+
+		k=0;
+		for (j = 0; j <nc; j++) {
+			if (Val.get_elem(i+1,j+1)==0) {
+				Zero[k]=j;
+				k++;
+			}
+		}
+
+		for (j = 0; j <nr_gen; j++) {
+			if (i!=j && Extreme_Rays[j]                // not compare with itself or a known nonextreme ray
+			         && nr_zeroes[i]<nr_zeroes[j]) {   // or something whose zeroes cannot be a superset
+				l=0;
+				for (t = 0; t < nr_zeroes[i]; t++) {
+					if (Val.get_elem(j+1,Zero[t]+1)==0)
+						l++;
+					if (l>=nr_zeroes[i]) {
+						Extreme_Rays[i]=false;
+						break;
 					}
 				}
 			}
-
+		}
 	}
+
 	// cout << "Extr durch" << endl;
 	is_Computed.set(ConeProperty::ExtremeRays);
 }
+
+//---------------------------------------------------------------------------
 
 Simplex Full_Cone::find_start_simplex() const {
 	if (is_Computed.test(ConeProperty::ExtremeRays)) {
@@ -1421,6 +1434,7 @@ Simplex Full_Cone::find_start_simplex() const {
 		return Simplex(Generators);
 	}
 }
+
 //---------------------------------------------------------------------------
 
 void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation){
