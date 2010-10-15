@@ -1038,6 +1038,7 @@ vector<Integer> Matrix::homogeneous (bool& homogeneous) const{
 	Integer det,buffer;
 	vector<int>  rows=max_rank_submatrix_lex();
 	Matrix Left_Side=submatrix(rows);
+	assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
 	Matrix Right_Side(nc,1,1);
 	Matrix Solution=Solve(Left_Side, Right_Side, det);
 	det=Iabs(det);
