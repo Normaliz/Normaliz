@@ -5,7 +5,8 @@ CXX = g++
 CXXFLAGS += -Wall -Wno-sign-compare
 CXXFLAGS += -pedantic -Wno-long-long
 CXXFLAGS += -O3 -funroll-loops
-#CXXFLAGS += -g #-p
+#CXXFLAGS += -g
+#CXXFLAGS += -pg
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)

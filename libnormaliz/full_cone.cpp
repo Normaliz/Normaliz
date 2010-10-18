@@ -135,7 +135,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 	int ipos=0;
 	
 	// OBS typename list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
-	list<FMDATA>::iterator ii=HypIndVal.begin();
+	typename list<FMDATA>::iterator ii = HypIndVal.begin();
 	
 	// OBS int listsize=Support_Hyperplanes.size();
 	int listsize=HypIndVal.size();
@@ -232,7 +232,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 		l_Neutral_Non_Simp.pop_front();
 	}
 
-	if (tv_verbose) verboseOutput()<<"PS "<<Positive_Simplex.size()<<" P "<<Positive_Non_Simplex.size()<<" NS "<<Negative_Simplex.size()<<" N "<<Negative_Non_Simplex.size()<<" ZS "<<Neutral_Simplex.size()<<" Z "<<Neutral_Non_Simplex.size()<<endl<<flush;
+	if (tv_verbose) verboseOutput()<<"PS "<<Pos_Simp.size()<<" P "<<Pos_Non_Simp.size()<<" NS "<<Neg_Simp.size()<<" N "<<Neg_Non_Simp.size()<<" ZS "<<Neutral_Simp.size()<<" Z "<<Neutral_Non_Simp.size()<<endl<<flush;
 
 	if (tv_verbose) verboseOutput()<<"transform_values: fill multimap with subfacets of NS"<<endl<<flush;
 	
@@ -262,7 +262,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 	}
 
 
-	if (tv_verbose) verboseOutput()<<"transform_values: go over multimap of size "<< Negative_Subfacet_Multi.size() <<endl<<flush;
+	if (tv_verbose) verboseOutput()<<"transform_values: go over multimap of size "<< Neg_Subfacet_Multi.size() <<endl<<flush;
 
 	// OBS multimap < vector< int >, int > ::iterator jj,del;
 	multimap < boost::dynamic_bitset<>, int > ::iterator jj;
@@ -277,7 +277,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 		}
 	}
 	#pragma omp critical(VERBOSE)
-	if (tv_verbose) verboseOutput()<<"transform_values: singlemap size "<<Negative_Subfacet_Multi.size()<<endl<<flush;
+	if (tv_verbose) verboseOutput()<<"transform_values: singlemap size "<<Neg_Subfacet_Multi.size()<<endl<<flush;
 	
 	listsize = Neg_Subfacet_Multi.size();
 	// OBS map < vector< int >, int > Neg_Subfacet;
@@ -324,7 +324,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 	}
 	
 	#pragma omp single
-	if (tv_verbose) verboseOutput()<<"transform_values: reduced map size "<<Negative_Subfacet.size()<<endl<<flush;
+	if (tv_verbose) verboseOutput()<<"transform_values: reduced map size "<<Neg_Subfacet.size()<<endl<<flush;
 	#pragma omp single nowait
 	Neg_Subfacet_Multi.clear();
 
@@ -546,7 +546,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 
 	//removing the negative hyperplanes
 	if (tv_verbose) verboseOutput()<<"transform_values: remove negative hyperplanes"<<endl<<flush;
-	list<FMDATA>::iterator l;
+	typename list<FMDATA>::iterator l;
 	for (l =HypIndVal.begin(); l != HypIndVal.end(); ){
 		if (l->ValNewGen<0) {
 			l=HypIndVal.erase(l);
@@ -562,7 +562,7 @@ void Full_Cone<Integer>::transform_values(list<FMDATA>& HypIndVal, const int& in
 template<typename Integer>
 void Full_Cone<Integer>::add_simplex(list<FMDATA>& HypIndVal,const int& new_generator){
 	typename list<FMDATA>::const_iterator i=HypIndVal.begin();
-	typename list< Simplex >::const_iterator j;
+	typename list< Simplex<Integer> >::const_iterator j;
 	int nr_zero_i, nr_nonzero_i, not_in_i=0, l, k, s, Triangulation_size=Triangulation.size();
 	vector<int> key(dim);
 
@@ -1499,7 +1499,8 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation){
+template<typename Integer>
+void Full_Cone<Integer>::compute_support_hyperplanes(const bool do_partial_triangulation){
 // wrapper for computing only support hyperplanes
 
 	do_compute_support_hyperplanes(false, do_partial_triangulation,false);
@@ -1508,7 +1509,8 @@ void Full_Cone::compute_support_hyperplanes(const bool do_partial_triangulation)
 
 //---------------------------------------------------------------------------
 
-void Full_Cone::compute_support_hyperplanes_triangulation(){
+template<typename Integer>
+void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 // wrapper for support hyperplanes AND triangulation
 
 	do_compute_support_hyperplanes(true,false,false); // full triangulation yes, partial no
@@ -1527,7 +1529,7 @@ void Full_Cone<Integer>::support_hyperplanes_dynamic(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Interger>::adjust_weight(list<FMDATA>& HypIndVal, const int ind_gen){
+void Full_Cone<Integer>::adjust_weight(list<FMDATA>& HypIndVal, const int ind_gen){
 
 	bool simplicial;
 	set<Integer> test_simplicial;
@@ -1535,7 +1537,7 @@ void Full_Cone<Interger>::adjust_weight(list<FMDATA>& HypIndVal, const int ind_g
 	vector<Integer> L;
 	int k;
 
-	list< FMDATA >::iterator l;
+	typename list< FMDATA >::iterator l;
 	
 	for (l =HypIndVal.begin(); l != HypIndVal.end(); l++){
 		L=Generators.read(ind_gen+1);
@@ -1547,7 +1549,8 @@ void Full_Cone<Interger>::adjust_weight(list<FMDATA>& HypIndVal, const int ind_g
 			}
 		}
 		if (test_arithmetic_overflow && v_test_scalar_product(L,l->Hyp,scalar_product,overflow_test_modulus)==false) {
-				error("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
+				error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes_dynamic. Possible arithmetic overflow.\n");
+				throw ArithmeticException();
 		}
 		
 		l->ValNewGen=scalar_product;
@@ -1570,8 +1573,8 @@ void Full_Cone<Interger>::adjust_weight(list<FMDATA>& HypIndVal, const int ind_g
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::do_compute_support_hyperplanes(const bool do_triangulation, const bool do_partial_triangulation,
-	                                                     const bool dynamic) {
+void Full_Cone<Integer>::do_compute_support_hyperplanes(bool do_triangulation, bool do_partial_triangulation,
+	                                                     bool dynamic) {
 	if(dim>0){            //correction needed to include the 0 cone;
 	if (verbose==true) {
 		verboseOutput()<<"\n************************************************************\n";
@@ -1627,7 +1630,7 @@ void Full_Cone<Integer>::do_compute_support_hyperplanes(const bool do_triangulat
 				
 			if(dynamic){
 				adjust_weight(HypIndVal,i);  // includes computation of scalar products
-				list< FMDATA >::iterator l=HypIndVal.begin();
+				typename list< FMDATA >::iterator l=HypIndVal.begin();
 				for(;l!=HypIndVal.end();l++){
 					if(l->ValNewGen<0){
 						new_generator=true;
@@ -1637,7 +1640,7 @@ void Full_Cone<Integer>::do_compute_support_hyperplanes(const bool do_triangulat
 			}
 			else{ // in non-dynamic mode we make scalar products here
 			
-				list< FMDATA >::iterator l=HypIndVal.begin();
+				typename list< FMDATA >::iterator l=HypIndVal.begin();
 				int lpos=0;
 
 				int listsize=HypIndVal.size();
@@ -1692,14 +1695,14 @@ void Full_Cone<Integer>::do_compute_support_hyperplanes(const bool do_triangulat
 					transform_values(HypIndVal,i);
 				}
 				if (verbose==true) {
-					verboseOutput()<<"generator="<< i+1 <<" and "<<Support_Hyperplanes.size()<<" hyperplanes... ";
+					verboseOutput()<<"generator="<< i+1 <<" and "<<HypIndVal.size()<<" hyperplanes... ";
 					verboseOutput()<<endl;
 				}
 			}
 		}
 	}   
 	
-	list<FMDATA>::const_iterator IHV=HypIndVal.begin(); 
+	typename list<FMDATA>::const_iterator IHV=HypIndVal.begin(); 
 	for(;IHV!=HypIndVal.end();IHV++){
 		Support_Hyperplanes.push_back(IHV->Hyp);
 	}
