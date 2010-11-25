@@ -43,14 +43,14 @@ class Simplex {
   int dim;
   string status;
   Integer volume;
-  vector<int> key;
+  vector<size_t> key;
   Matrix<Integer> Generators;
   vector< Integer > diagonal;
   vector< Integer > multiplicators;
-  vector< int > New_Face; // to use with a shelling
+  vector<size_t> New_Face; // to use with a shelling
   Matrix<Integer> Support_Hyperplanes;
   list< vector<Integer> > Hilbert_Basis;
-  list< vector<Integer> > Homogeneous_Elements;
+  list< vector<Integer> > Ht1_Elements;
   vector<Integer> H_Vector;
 
 //---------------------------------------------------------------------------
@@ -63,45 +63,45 @@ class Simplex {
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
-//						Construction and destruction
+//                      Construction and destruction
 //---------------------------------------------------------------------------
 
   Simplex();
-  Simplex(const vector<int>& k);  //constructor, only key is initialized
+  Simplex(const vector<size_t>& k);  //constructor, only key is initialized
   Simplex(const Matrix<Integer>& Map);  //contructor of the first in lexicographic
   //order simplex inside Map, the rank of Map is assumed to equal the number of
   //columns of Map
-  Simplex(const vector<int>& k, const Matrix<Integer>& Map); //main constuctor
+  Simplex(const vector<size_t>& k, const Matrix<Integer>& Map); //main constuctor
   //the rank of M is assumed to equal the number of columns of M
   Simplex(const Simplex<Integer>& S);   //copy constructor
   ~Simplex();                 //destructor
 
 //---------------------------------------------------------------------------
-//							Data acces
+//                          Data acces
 //---------------------------------------------------------------------------
 
-  void write_new_face(const vector<int>& Face);//writes the new face in case of a shelling
+  void write_new_face(const vector<size_t>& Face);//writes the new face in case of a shelling
   void read() const;                        // to be modified, just for tests
   void read_k() const;                        // to be modified, just for tests
   int read_dimension() const;              // returns dim
   string read_status() const;              // returns status
   void write_volume(const Integer& vol);  // writes volume
   Integer read_volume() const;            // returns volume
-  vector<int> read_key() const;          // returns key
+  vector<size_t> read_key() const;          // returns key
   Matrix<Integer> read_generators() const;        // returns generators
   vector<Integer> read_diagonal() const;    // returns diagonal
   vector<Integer> read_multiplicators() const;    // returns multiplicators
-  vector<int> read_new_face() const;    // returns new face
+  vector<size_t> read_new_face() const;    // returns new face
   int read_new_face_size() const;    // returns new face size
   Matrix<Integer> read_support_hyperplanes() const;  // returns the support hyperplanes
   Matrix<Integer> read_hilbert_basis()const; //read the Hilbert basis
-  list< vector<Integer> > read_homogeneous_elements()const; //read the homogeneous elements
+  list< vector<Integer> > read_ht1_elements()const; //read the ht1 elements
   const list< vector<Integer> >& acces_hilbert_basis()const; //read the Hilbert basis
   vector<Integer> read_h_vector() const; //returns the h-vector
   int read_hilbert_basis_size() const; //returns the size of the Hilbert basis
 
 //---------------------------------------------------------------------------
-//							Algoritms
+//                          Algoritms
 //---------------------------------------------------------------------------
 
   int compare(const Simplex<Integer>& S) const; //compare the key of this with the key of S
@@ -123,6 +123,8 @@ public:
   void hilbert_basis_interior_h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form); // computes the Hilbert basis
   //and the new elements of h vector in case of a shelling,
   //the generators are not considered !!!, status must be "key initialized"
+  
+  Integer evaluate(Full_Cone<Integer>& C);
   
 };
 //class end *****************************************************************

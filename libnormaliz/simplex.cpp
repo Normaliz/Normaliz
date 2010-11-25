@@ -82,7 +82,7 @@ Simplex<Integer>::Simplex(){
 }
 
 template<typename Integer>
-Simplex<Integer>::Simplex(const vector<int>& k){
+Simplex<Integer>::Simplex(const vector<size_t>& k){
 	dim=k.size();
 	key=k;
 	volume=0;
@@ -109,7 +109,7 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Simplex<Integer>::Simplex(const vector<int>& k, const Matrix<Integer>& Map){
+Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
 	key=k;
 	Generators=Map.submatrix(k);
 	dim=k.size();
@@ -139,7 +139,7 @@ Simplex<Integer>::Simplex(const Simplex<Integer>& S){
 	New_Face=S.New_Face;
 	Support_Hyperplanes=S.Support_Hyperplanes;
 	Hilbert_Basis=S.Hilbert_Basis;
-	Homogeneous_Elements=S.Homogeneous_Elements;
+	Ht1_Elements=S.Ht1_Elements;
 	H_Vector=S.H_Vector;
 }
 
@@ -153,7 +153,7 @@ Simplex<Integer>::~Simplex(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Simplex<Integer>::write_new_face(const vector<int>& Face){
+void Simplex<Integer>::write_new_face(const vector<size_t>& Face){
 	New_Face=Face;
 }
 
@@ -222,7 +222,7 @@ Integer Simplex<Integer>::read_volume() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<int> Simplex<Integer>::read_key() const{
+vector<size_t> Simplex<Integer>::read_key() const{
 	return key;
 }
 
@@ -250,7 +250,7 @@ vector<Integer> Simplex<Integer>::read_multiplicators() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<int> Simplex<Integer>::read_new_face() const{
+vector<size_t> Simplex<Integer>::read_new_face() const{
 	return New_Face;
 }
 
@@ -286,8 +286,8 @@ Matrix<Integer> Simplex<Integer>::read_hilbert_basis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-list< vector<Integer> > Simplex<Integer>::read_homogeneous_elements()const{
-	list< vector<Integer> > HE=Homogeneous_Elements;
+list< vector<Integer> > Simplex<Integer>::read_ht1_elements()const{
+	list< vector<Integer> > HE=Ht1_Elements;
 	return HE;
 }
 
@@ -336,7 +336,7 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 		Support_Hyperplanes=Support_Hyperplanes.transpose();
 		multiplicators=Support_Hyperplanes.make_prime();
 		Hilbert_Basis=list< vector<Integer> >();
-		Homogeneous_Elements=list< vector<Integer> >();
+		Ht1_Elements=list< vector<Integer> >();
 		H_Vector=vector<Integer>(dim,0);
 		status="initialized";
 	}
@@ -344,348 +344,176 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 
 //---------------------------------------------------------------------------
 
+/* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
-void Simplex<Integer>::hilbert_basis_interior(){
-	assert(status == "initialized");
-
-	//transformation
-
-	int i,k,last;
-	vector < Integer > norm(1);
-	vector<Integer> point(dim,0);
-	set < vector<Integer> > Candidates;
-	typename set <vector <Integer> >::iterator c;
-	//generating vector e=b_1*u_1+...+b_n*u_n (see documentation)
-	while (1) {
-		last=-1;
-		for (i = 0; i < dim; i++) {
-			if (point[i]<diagonal[i]-1) {
-				last=i;
+Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C){
+ 
+	Generators=C.Generators.submatrix(key);
+	
+	bool unimodular=false;
+	vector<Integer> Indicator(dim,0);
+	if(C.do_h_vector || (!C.do_Hilbert_basis && !C.do_ht1_elements)){
+		Matrix<Integer> RS(1,dim);  // (trnsdpose of) right hand side
+		RS.write(1,C.Order_Vector); // to hold order vector
+		Matrix<Integer> Sol=Generators.transpose().solve(RS.transpose(),volume);
+		Indicator=Sol.transpose().read(1);
+		if(volume==1)
+			unimodular=true;
+	}
+			
+	if(!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements){ // in this case we had to add the volume
+		C.multiplicity+=volume;                     // and nothing else is to be done
+		return volume;
+	}
+	
+	bool decided=true;
+	int i,j;
+	int Deg=0;        // Deg is the degree in which the 0 vector is counted
+	if(unimodular){  // it remains to count the 0-vector in the h-vector 
+		for(i=0;i<dim;i++){
+			if(Indicator[i]<0)  // facet opposite of vertex i excluded
+				Deg++;
+			if(Indicator[i]==0){ // Order_Vector in facet, to be decided later
+				decided=false;
+				break;
 			}
 		}
-		if (last==-1) {
+		if(decided){
+			C.H_Vector[Deg]++;    // Done, provided decided==true
+				C.multiplicity+=volume;
+			return volume;               // if not we need lex decision, see below
+		}
+	} // We have tried to take care of the unimodular case WITHOUT the matrix inversion
+
+
+	vector< Integer > help(dim);
+	Matrix<Integer> InvGen=Invert(Generators, help, volume);
+	diagonal=v_abs(help);
+	vector<bool> Excluded(dim,false);
+	Integer Test; 
+	
+	if(C.do_h_vector){
+		Deg=0;
+		for(i=0;i<dim;i++) // register excluded facets nd degree shift for 0-vector
+		{
+			Test=Indicator[i];
+			if(Test<0)
+			{
+				Excluded[i]=true; // the facet opposite to vertex i is excluded
+				Deg++;
+			}
+			if(Test==0){  // Order_Vector in facet, now lexicographic decision
+				for(j=0;j<dim;j++){
+					if(InvGen.read(j+1,i+1)<0){ // COLUMNS of InvGen give supp hyps
+						Excluded[i]=true;
+						Deg++;
+						break;
+					}
+					if(InvGen.read(j+1,i+1)>0) // facet included
+						break;
+				}
+			}
+		}
+		C.H_Vector[Deg]++; // now the 0 vector is finally taken care of
+		if(unimodular){     // and in the unimodular case nothing left to be done
+			C.multiplicity+=volume;
+			return volume;
+		}
+	}
+	
+	vector < Integer > norm(1);
+	list < vector<Integer> > Candidates;
+	typename list <vector <Integer> >::iterator c;
+	int k,last;
+	vector<Integer> point(dim,0);
+ 
+	Matrix<Integer> elements(dim,dim); //all 0 matrix
+	Matrix<Integer> V = InvGen; //Support_Hyperplanes.multiply_rows(multiplicators).transpose();
+	V.reduction_modulo(volume); //TODO needed??
+
+	while (1){
+		last = dim;
+		for (i = dim-1; i >= 0; i--) {
+			if (point[i] < diagonal[i]-1) {
+				last = i;
+					 break;
+			}
+		}
+		if (last >= dim) {
 			break;
 		}
+
 		point[last]++;
+		elements[last] = v_add(elements[last], V[last]);
+		v_reduction_modulo(elements[last],volume);
+
 		for (i = last+1; i <dim; i++) {
 			point[i]=0;
+				elements[i] = elements[last];
 		}
-		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-		for (k = 0; k < dim; k++) {
-			new_element[k]= new_element[k]*multiplicators[k];
+//        vector<Integer> new_element=InvGen.VxM(point);
+
+		v_reduction_modulo(elements[last],volume);
+		
+		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree
+		for (k = 0; k < dim; k++) {  // since generators have degree 1
+			norm[0]+=elements[last][k];
 		}
-		v_reduction_modulo(new_element,volume);
-		norm[0]=0;
-		for (k = 0; k < dim; k++) {
-			norm[0]+=new_element[k];
+
+		if(C.do_h_vector){
+			Deg=explicit_cast_to_long<Integer>(norm[0]/volume); // basic degree, here we use that all generators have degree 1            
+			for(i=0;i<dim;i++)  // take care of excluded facets and increase degree where necessary
+				if(elements[last][i]==0 && Excluded[i])
+					Deg++;
+			
+			C.H_Vector[Deg]++; // count element in h-vector        
 		}
-		new_element=v_merge(norm,new_element);
-		Candidates.insert(new_element);
+		
+		if(C.do_ht1_elements && norm[0]==volume) // found degree 1 element
+		{        
+			help=Generators.VxM(elements[last]);
+			v_scalar_division(help,volume);
+			Ht1_Elements.push_back(help);
+			continue;
+		} 
+		
+		// now we are left with the case of Hilbert bases
+
+		if(C.do_Hilbert_basis){
+			Candidates.push_back(v_merge(norm,elements[last]));
+		}
 	}
-	c=Candidates.begin();
-	while(c != Candidates.end()) {
-		reduce_and_insert_interior((*c));
-		Candidates.erase(c);
-		c=Candidates.begin();
+	
+	if(C.do_ht1_elements)
+		C.Ht1_Elements.splice(C.Ht1_Elements.begin(),Ht1_Elements);
+	
+	if(!C.do_Hilbert_basis){
+		C.multiplicity+=volume;    
+		return volume;
+	}
+
+	Candidates.sort();        
+	typename list <vector <Integer> >::iterator cand=Candidates.begin();
+	while(cand != Candidates.end()) {
+		reduce_and_insert_interior((*cand));
+		Candidates.pop_front();
+		cand=Candidates.begin();
 	}
 
 	//inverse transformation
 	//some test for arithmetic overflow may be implemented here
 
 	l_cut_front(Hilbert_Basis,dim);
-	typename list< vector<Integer> >::iterator j;
-	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-		*j=Generators.VxM(*j);
-		v_scalar_division(*j,volume);
-	}
-	status="Hilbert Basis interior calculated.";
+	typename list< vector<Integer> >::iterator jj;
+	for (jj =Hilbert_Basis.begin(); jj != Hilbert_Basis.end(); jj++) {
+		*jj=Generators.VxM(*jj);
+		v_scalar_division(*jj,volume);
+	} 
+	
+	C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
+	
+	C.multiplicity+=volume;
+	return volume; 
 }
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::hilbert_basis_interior(const Matrix<Integer>& Map){
-	if (status!="hilbert basis calculated") {
-		assert(status != "non initialized");
-
-		if (status=="initialized") {
-			hilbert_basis_interior();
-			return;
-		}
-		if (status=="key initialized") {
-			Generators=Map.submatrix(key);
-			vector< Integer > help(dim);
-			Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
-			//overflow performed
-			volume=Iabs(volume);
-			diagonal=v_abs(help);
-			Support_Hyperplanes=Support_Hyperplanes.transpose();
-			multiplicators=Support_Hyperplanes.make_prime();
-			list< vector<Integer> >  Help;
-			Hilbert_Basis=Help;
-			status="initialized";
-			hilbert_basis_interior();
-			return;
-		}
-	}
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::hilbert_basis_interior_h_vector(const vector<Integer>& Form){
-	assert(status == "initialized");
-
-	//transformation
-	vector < Integer > norm(1);
-	set < vector<Integer> > Candidates;
-	typename set <vector <Integer> >::iterator c;
-	int i,k,last,h;
-	int counter;
-	Integer to_int,hom;
-	vector<Integer> point(dim,0);
-	vector<Integer> Help(dim);
-	while (1){
-		last=-1;
-		for (i = 0; i < dim; i++) {
-			if (point[i]<diagonal[i]-1) {
-				last=i;
-			}
-		}
-		if (last==-1) {
-			break;
-		}
-		point[last]++;
-		for (i = last+1; i <dim; i++) {
-			point[i]=0;
-		}
-		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-		for (k = 0; k < dim; k++) {
-			new_element[k]= new_element[k]*multiplicators[k];
-		}
-		v_reduction_modulo(new_element,volume);
-		//counting h-vector
-		vector< int > Face(dim,0);
-		for (k = 0; k <New_Face.size(); k++) {
-			Face[New_Face[k]-1]=1;
-		}
-		for (k = 0; k <dim; k++) {
-			if (new_element[k]!=0) {
-				Face[k]=1;
-			}
-		}
-		counter=0;
-		for (k = 0; k <dim; k++) {
-			if (Face[k]) {
-				counter++;
-			}
-		}
-		Help=Generators.VxM(new_element);
-		v_scalar_division(Help,volume);
-		hom=v_scalar_product(Help,Form);
-		if (hom==1) {
-			Homogeneous_Elements.push_back(Help);
-		}
-		to_int=counter-hom;
-		h=explicit_cast_to_long(to_int);        //explicit cast used here for speed
-		//the result of the above operation should be no greater than dim
-		H_Vector[h]++;
-
-		//preparing for reduction
-
-		norm[0]=0;
-		for (k = 0; k < dim; k++) {
-			norm[0]+=new_element[k];
-		}
-		new_element=v_merge(norm,new_element);
-		Candidates.insert(new_element);
-	}
-	c=Candidates.begin();
-	while(c != Candidates.end()) {
-		reduce_and_insert_interior((*c));
-		Candidates.erase(c);
-		c=Candidates.begin();
-	}
-
-	//inverse transformation
-	//some test for arithmetic overflow may be implemented here
-
-	l_cut_front(Hilbert_Basis,dim);
-	typename list< vector<Integer> >::iterator j;
-	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-		*j=Generators.VxM(*j);
-		v_scalar_division(*j,volume);
-	}
-
-	status="Hilbert Basis interior and h vector calculated.";
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::hilbert_basis_interior_h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form){
-	assert(status=="key initialized");
-
-	Generators=Map.submatrix(key);
-	vector< Integer > help(dim);
-	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
-	//overflow performed
-	volume=Iabs(volume);
-	diagonal=v_abs(help);
-	Support_Hyperplanes=Support_Hyperplanes.transpose();
-	multiplicators=Support_Hyperplanes.make_prime();
-	list< vector<Integer> >  Help;
-	Hilbert_Basis=Help;
-	list< vector<Integer> >  Help1;
-	Homogeneous_Elements=Help1;
-	vector<Integer> Help2(dim,0);
-	H_Vector=Help2;
-	status="initialized";
-	int i,j;
-	for (i = 0; i <New_Face.size(); i++) {
-		for ( j = 0; j <dim; j++) {
-			if (New_Face[i]==key[j]) {
-				New_Face[i]=j+1;
-			}
-		}
-	}
-	hilbert_basis_interior_h_vector(Form);
-	return;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::ht1_elements(const vector<Integer>& Form){
-	assert(status == "initialized");
-
-	//computing ht1 elements of the simplex
-	int i,k,last;
-	Integer hom;
-	vector<Integer> point(dim,0);
-	vector<Integer> Help(dim);
-	while (1){
-		last=-1;
-		for (i = 0; i < dim; i++) {
-			if (point[i]<diagonal[i]-1) {
-				last=i;
-			}
-		}
-		if (last==-1) {
-			break;
-		}
-		point[last]++;
-		for (i = last+1; i <dim; i++) {
-			point[i]=0;
-		}
-		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-		for (k = 0; k < dim; k++) {
-			new_element[k]= new_element[k]*multiplicators[k];
-		}
-		v_reduction_modulo(new_element,volume);
-
-		Help=Generators.VxM(new_element);
-		v_scalar_division(Help,volume);
-		hom=v_scalar_product(Help,Form);
-		if (hom==1) {
-			Homogeneous_Elements.push_back(Help);
-		}
-	}
-	status="ht1 elements calculated.";
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::h_vector(const vector<Integer>& Form){
-	assert(status == "initialized");
-
-	//computing h-vector for the simplex
-
-	int i,k,last,h;
-	int counter;
-	Integer to_int,hom;
-	vector<Integer> point(dim,0);
-	vector<Integer> Help(dim);
-	while (1){
-		last=-1;
-		for (i = 0; i < dim; i++) {
-			if (point[i]<diagonal[i]-1) {
-				last=i;
-			}
-		}
-		if (last==-1) {
-			break;
-		}
-		point[last]++;
-		for (i = last+1; i <dim; i++) {
-			point[i]=0;
-		}
-		vector<Integer> new_element=Support_Hyperplanes.MxV(point);
-		for (k = 0; k < dim; k++) {
-			new_element[k]= new_element[k]*multiplicators[k];
-		}
-		v_reduction_modulo(new_element,volume);
-		//counting h-vector
-		vector< int > Face(dim,0);
-		for (k = 0; k <New_Face.size(); k++) {
-			Face[New_Face[k]-1]=1;
-		}
-		for (k = 0; k <dim; k++) {
-			if (new_element[k]!=0) {
-				Face[k]=1;
-			}
-		}
-		counter=0;
-		for (k = 0; k <dim; k++) {
-			if (Face[k]) {
-				counter++;
-			}
-		}
-		Help=Generators.VxM(new_element);
-		v_scalar_division(Help,volume);
-		hom=v_scalar_product(Help,Form);
-		if (hom==1) {
-			Homogeneous_Elements.push_back(Help);
-		}
-		to_int=counter-hom;
-		h=explicit_cast_to_long(to_int);        //explicit cast used here for speed
-		//the result of the above operation should be no greater than dim
-		H_Vector[h]++;
-	}
-	status="h vector calculated.";
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form){
-	assert(status == "key initialized");
-
-	Generators=Map.submatrix(key);
-	vector< Integer > help(dim);
-	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
-	//overflow performed
-	volume=Iabs(volume);
-	diagonal=v_abs(help);
-	Support_Hyperplanes=Support_Hyperplanes.transpose();
-	multiplicators=Support_Hyperplanes.make_prime();
-	list< vector<Integer> >  Help1;
-	Homogeneous_Elements=Help1;
-	vector<Integer> Help2(dim,0);
-	H_Vector=Help2;
-	status="initialized";
-	int i,j;
-	for (i = 0; i <New_Face.size(); i++) {
-		for ( j = 0; j <dim; j++) {
-			if (New_Face[i]==key[j]) {
-				New_Face[i]=j+1;
-			}
-		}
-	}
-	h_vector(Form);
-	return;
-}
-
 
 } /* end namespace */

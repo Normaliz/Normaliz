@@ -36,8 +36,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::max_rank_submatrix_lex(vector<int>& v, const int& rank) const{
-	int level=v.size();
+void Matrix<Integer>::max_rank_submatrix_lex(vector<size_t>& v, const int& rank) const{
+	size_t level=v.size();
 	if (level==rank) {
 		return;
 	}
@@ -330,6 +330,21 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<int>& rows) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer> Matrix<Integer>::submatrix(const vector<size_t>& rows) const{
+	size_t size=rows.size(), j;
+	Matrix<Integer> M(size, nc);
+	for (size_t i=0; i < size; i++) {
+		j=rows[i]-1;
+		assert(j >= 0);
+		assert(j < nr);
+		M.elements[i]=elements[j];
+	}
+	return M;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 	assert(rows.size() == nr);
 	int size=0;
@@ -571,6 +586,20 @@ vector<Integer> Matrix<Integer>::make_prime() {
 		elements[i]=v_make_prime(elements[i],g[i]);
 	}
 	return g;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const{  //row i is multiplied by m[i]
+  Matrix M = Matrix(nr,nc);
+  int i,j;
+  for (i = 0; i<nr; i++) {
+     for (j = 0; j<nc; j++) {
+        M.elements[i][j] = elements[i][j]*m[i];
+     }
+  }
+  return M;
 }
 
 //---------------------------------------------------------------------------
@@ -861,7 +890,7 @@ int Matrix<Integer>::rank_destructiv(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<int> Matrix<Integer>::max_rank_submatrix() const{
+vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
 	//may be optimized in two ways
 	//first only a triangular matrix is realy neaded, no full diagonalization is necesary
 	//second the matrix Rows_Exchanges may be computed by Lineare_transformation::transformation
@@ -887,7 +916,7 @@ vector<int> Matrix<Integer>::max_rank_submatrix() const{
 	}
 	rk=rk-1;
 	M=Rows_Exchanges.multiplication(M);
-	vector<int> simplex(rk);
+	vector<size_t> simplex(rk);
 	k=0;
 	for (i = 0; i < nr; i++) {
 		for (j = 0; j < nc; j++) {
@@ -903,9 +932,9 @@ vector<int> Matrix<Integer>::max_rank_submatrix() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<int>  Matrix<Integer>::max_rank_submatrix_lex() const{
+vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 	int rk=rank();
-	vector<int> v(0);
+	vector<size_t> v(0);
 	max_rank_submatrix_lex(v,rk);
 	return v;
 }
@@ -913,8 +942,8 @@ vector<int>  Matrix<Integer>::max_rank_submatrix_lex() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<int>  Matrix<Integer>::max_rank_submatrix_lex(const int& rank) const {
-	vector<int> v(0);
+vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex(const int& rank) const {
+	vector<size_t> v(0);
 	max_rank_submatrix_lex(v,rank);
 	return v;
 }
@@ -922,7 +951,7 @@ vector<int>  Matrix<Integer>::max_rank_submatrix_lex(const int& rank) const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& det) const {
+Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& denom) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	assert(nr == nc);
@@ -943,19 +972,19 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& det)
 			} while (piv>rk);
 		}
 	}
-	det=Left_side.elements[0][0];
+	denom=Left_side.elements[0][0];
 	for (i = 1; i < dim; i++) {
-		det*=Left_side.elements[i][i];
+		denom*=Left_side.elements[i][i];
 	}
 
-	if (det==0) { 
+	if (denom==0) { 
 		throw NormalizException(); //TODO welche Exception?
 	}
 
-	Integer d=Iabs(det);
+	denom=Iabs(denom);
 	for (i = 0; i < nr_sys; i++) {
 		for (j = dim-1; j >= 0; j--) {
-			S=Iabs(d)*Right_side.elements[j][i];
+			S=denom*Right_side.elements[j][i];
 			for (k = j+1; k < dim; k++) {
 				S-=Left_side.elements[j][k]*Solution.elements[k][i];
 			}
@@ -968,7 +997,7 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& det)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& det) const {
+Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& denom) const {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	assert(nr == nc);
@@ -990,21 +1019,21 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integ
 			} while (piv>rk);
 		}
 	}
-	det=Left_side.elements[0][0];
+	denom=Left_side.elements[0][0];
 	diagonal[0]= Left_side.elements[0][0];
 	for (i = 1; i < dim; i++) {
-		det*=Left_side.elements[i][i];
+		denom*=Left_side.elements[i][i];
 		diagonal[i]= Left_side.elements[i][i];
 	}
 
-	if (det==0) { 
+	if (denom==0) { 
 		throw NormalizException(); //TODO welche Exception?
 	}
 
-	Integer d=Iabs(det);
+	denom=Iabs(denom);
 	for (i = 0; i < nr_sys; i++) {
 		for (j = dim-1; j >= 0; j--) {
-			S=Iabs(d)*Right_side.elements[j][i];
+			S=denom*Right_side.elements[j][i];
 			for (k = j+1; k < dim; k++) {
 				S-=Left_side.elements[j][k]*Solution.elements[k][i];
 			}
@@ -1018,7 +1047,7 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integ
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& det) const{
+Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& denom) const{
 	assert(nr == nc);
 	assert(nr == diagonal.size());
 
@@ -1038,21 +1067,21 @@ Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& de
 			} while (piv>rk);
 		}
 	}
-	det=Left_side.elements[0][0];
+	denom=Left_side.elements[0][0];
 	diagonal[0]= Left_side.elements[0][0];
 	for (i = 1; i < nr; i++) {
-		det*=Left_side.elements[i][i];
+		denom*=Left_side.elements[i][i];
 		diagonal[i]= Left_side.elements[i][i];
 	}
 
-	if (det==0) {
+	if (denom==0) {
 		throw NormalizException(); //TODO welche Exception?
 	}
 
-	Integer d=Iabs(det);
+	denom=Iabs(denom);
 	for (i = 0; i < nr; i++) {
 		for (j = nr-1; j >= 0; j--) {
-			S=Iabs(d)*Right_side.elements[j][i];
+			S=denom*Right_side.elements[j][i];
 			for (k = j+1; k < nr; k++) {
 				S-=Left_side.elements[j][k]*Solution.elements[k][i];
 			}
@@ -1071,17 +1100,16 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
 		return vector<Integer>(nc,0);
 	}
 	int i;
-	Integer det,buffer;
-	vector<int>  rows=max_rank_submatrix_lex();
+	Integer denom,buffer;
+	vector<size_t>  rows=max_rank_submatrix_lex();
 	Matrix<Integer> Left_Side=submatrix(rows);
 	assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
 	Matrix<Integer> Right_Side(nc,1,1);
-	Matrix<Integer> Solution=Solve(Left_Side, Right_Side, det);
-	det=Iabs(det);
+	Matrix<Integer> Solution=Solve(Left_Side, Right_Side, denom);
 	vector<Integer> Linear_Form(nc);
 	for (i = 0; i <nc; i++) {
 		buffer=Solution.read(i+1,1);
-		Linear_Form[i]=buffer/det;
+		Linear_Form[i]=buffer/denom;
 	}
 	vector<Integer> test_homogeneous=MxV(Linear_Form);
 	for (i = 0; i <nr; i++) {
@@ -1107,7 +1135,7 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 	}
 
 	// prepare basis change
-	vector <int> key = max_rank_submatrix_lex(rank);
+	vector <size_t> key = max_rank_submatrix_lex(rank);
 	Matrix<Integer> Full_Rank_Matrix = submatrix(key);  // has maximal number of linear independent lines
 	Lineare_Transformation<Integer> Basis_Change = Transformation(Full_Rank_Matrix);
 	rank=Basis_Change.get_rank();
@@ -1150,10 +1178,10 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 
 template<typename Integer>
 bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<Integer>& Right_side,
-		const Integer& det,const int& m) const{
+		const Integer& denom,const int& m) const{
 	Matrix<Integer> LS=multiplication(Solution,m);
 	Matrix<Integer> RS=Right_side;
-	RS.scalar_multiplication(Iabs(det));
+	RS.scalar_multiplication(denom);
 	if (LS.equal(RS,m)!=true) {
 		throw ArithmeticException();
 		return false;
@@ -1165,10 +1193,10 @@ bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<I
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer& det,const int& m) const{
+bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer& denom,const int& m) const{
 	Matrix<Integer> LS=multiplication(Solution,m);
 	Matrix<Integer> RS(nr);
-	RS.scalar_multiplication(Iabs(det));
+	RS.scalar_multiplication(denom);
 	if (LS.equal(RS,m)!=true) {
 		throw ArithmeticException();
 		return false;
@@ -1180,10 +1208,10 @@ bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& det){
-	Matrix<Integer> S=Left_side.solve(Right_side,det);
+Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom){
+	Matrix<Integer> S=Left_side.solve(Right_side,denom);
 	if (test_arithmetic_overflow==true) {
-		bool testing=Left_side.test_solve(S,Right_side,det,overflow_test_modulus);
+		bool testing=Left_side.test_solve(S,Right_side,denom,overflow_test_modulus);
 		if (testing==false) {
 			throw ArithmeticException();
 		}
@@ -1194,10 +1222,10 @@ Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& R
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Invert(const Matrix<Integer>& Left_side,  vector< Integer >& diagonal ,Integer& det){
-	Matrix<Integer> S=Left_side.invert(diagonal,det);
+Matrix<Integer> Invert(const Matrix<Integer>& Left_side,  vector< Integer >& diagonal ,Integer& denom){
+	Matrix<Integer> S=Left_side.invert(diagonal,denom);
 	if (test_arithmetic_overflow==true) {
-		bool testing=Left_side.test_invert(S,det,overflow_test_modulus);
+		bool testing=Left_side.test_invert(S,denom,overflow_test_modulus);
 		if (testing==false) {
 			throw ArithmeticException();
 		}

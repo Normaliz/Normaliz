@@ -56,10 +56,10 @@ int l_read(const list< vector<int> >& l){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int l_read(const list< Simplex<Integer> >& l){
+int l_read(const list <pair<vector<size_t>,Integer> >& l){
 	typename list< Simplex<Integer> >::const_iterator i;
 	for (i =l.begin(); i != l.end(); i++) {
-		(*i).read_k();
+		(*i).first;
 	}
 	return l.size();
 }

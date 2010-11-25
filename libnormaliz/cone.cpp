@@ -472,7 +472,7 @@ void Cone<Integer>::compute(const string& computation_type) {
 	} else if (computation_type=="support_hyperplanes") {
 		FC.support_hyperplanes();
 	} else if (computation_type=="support_hyperplanes_pyramid") {
-		FC.support_hyperplanes_pyramid();
+		FC.support_hyperplanes(); //TODO typen anpassen
 	} else if (computation_type=="triangulation") {
 		FC.support_hyperplanes_triangulation();
 	} else if (computation_type=="triangulation_pyramid") {

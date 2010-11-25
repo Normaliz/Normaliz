@@ -43,10 +43,10 @@ void v_write(vector<T>& v){
 template <typename T>
 int v_read(const vector<T>& v){
 	int i,s=v.size();
-	cout<<"\n";
 	for (i=0; i <s; i++) {
 		cout<<v[i]<<" ";
 	}
+	cout<<endl;
 	return s;
 }
 
@@ -153,6 +153,7 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
+   assert(a.size() == b.size());
 	register int i,s=a.size();
 	vector<Integer> d(s);
 	for (i = 0; i <s; i++) {

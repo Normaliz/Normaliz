@@ -47,7 +47,7 @@ template<typename Integer> class Matrix {
 //				Private routines, used in the public routines
 //---------------------------------------------------------------------------
 
-  void max_rank_submatrix_lex(vector<int>& v, const int& rank) const;
+  void max_rank_submatrix_lex(vector<size_t>& v, const int& rank) const;
   //v will be a vector with entries the indices of the first rows in lexicographic
   //order of this forming a submatrix of maximal rank.
   //v shoud be a vector of size 0 by call!!!
@@ -89,6 +89,7 @@ public:
   Matrix submatrix(const vector<int>& rows) const;  //returns a submatrix with rows
 									  //corresponding to indices given by
 									//the entries of rows, Numbering from 1 to n, not 0 to n-1 !
+  Matrix submatrix(const vector<size_t>& rows) const;
   Matrix submatrix(const vector<bool>& rows) const;
   vector<Integer> diagonale() const;     //returns the diagonale of this
 								  //this should be a quadratic matrix
@@ -102,6 +103,14 @@ public:
 	inline const Integer& get_elem(int row, int col) const {
 		return elements[row-1][col-1];
 	}
+	inline vector<Integer> const& operator[] (int row) const {
+		return elements[row];
+	}
+	inline vector<Integer>& operator[] (int row) { 
+		return elements[row];
+	}
+
+
 //---------------------------------------------------------------------------
 //					Basic matrices operations
 //---------------------------------------------------------------------------
@@ -124,6 +133,8 @@ public:
   Integer matrix_gcd() const; //returns the gcd of all elements
   vector<Integer> make_prime();         //each row of this is reduced by its gcd
 	//return a vector containing the gcd of the rows
+
+  Matrix multiply_rows(const vector<Integer>& m) const;  //returns matrix were row i is multiplied by m[i]
 
 //---------------------------------------------------------------------------
 //							Vector operations
@@ -174,33 +185,36 @@ public:
 
   int rank_destructiv(); //returns rank, destructiv
 
-  vector<int> max_rank_submatrix() const; //returns a vector with entries the
+  vector<size_t> max_rank_submatrix() const; //returns a vector with entries the
   //indices of the rows of this forming a submatrix of maximal rank
 
-  vector<int>  max_rank_submatrix_lex() const; //returns a vector with entries
+  vector<size_t>  max_rank_submatrix_lex() const; //returns a vector with entries
   //the indices of the first rows in lexicographic order of this forming
   //a submatrix of maximal rank.
 
-  vector<int>  max_rank_submatrix_lex(const int& rank) const;
+  vector<size_t>  max_rank_submatrix_lex(const int& rank) const;
   //returns a vector with entries the indices of the first rows in lexicographic
   //order of this forming a submatrix of maximal rank, assuming that
   //the rank of this is known.
+  
+  // In the following routines denom is the absolute value of the determinant of the
+  // left side matrix ( =this).
 
 
-  Matrix solve(Matrix Right_side, Integer& det) const;// solves the system
-  //this*Solution=|det(this)|*Right_side. this should be a quadratic
-  //matrix with nonzero determinant. The determinat of this is saved in det.
+  Matrix solve(Matrix Right_side, Integer& denom) const;// solves the system
+  //this*Solution=denom*Right_side. this should be a quadratic
+  //matrix with nonzero determinant.
 
-  Matrix solve(Matrix Right_side, vector< Integer >& diagonal, Integer& det) const;// solves the system
-  //this*Solution=|det(this)|*Right_side. this should be a quadratic
-  //matrix with nonzero determinant. The determinat of this is saved in det,
-  //and the diagonal of this after transformation into an upper triangular matrix
+  Matrix solve(Matrix Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
+  //this*Solution=denom*Right_side. this should be a quadratic
+  //matrix with nonzero determinant.
+  //The diagonal of this after transformation into an upper triangular matrix
   //is saved in diagonal
 
-  Matrix invert(vector< Integer >& diagonal, Integer& det) const;// solves the system
-  //this*Solution=|det(this)|*I. this should be a quadratic
-  //matrix with nonzero determinant. The determinat of this is saved in det,
-  //and the diagonal of this after transformation into an upper triangular matrix
+  Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
+  //this*Solution=denom*I. this should be a quadratic
+  //matrix with nonzero determinant. 
+  //The diagonal of this after transformation into an upper triangular matrix
   //is saved in diagonal
 
   vector<Integer> homogeneous (bool& homogeneous) const;// solves the system
@@ -214,11 +228,11 @@ public:
 //								Tests
 //---------------------------------------------------------------------------
 
-  bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& det,const int& m) const;
+  bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& denom,const int& m) const;
   // test the main computation for arithmetic overflow
   // uses multiplication mod m
 
-  bool test_invert(const Matrix& Solution, const Integer& det,const int& m) const;
+  bool test_invert(const Matrix& Solution, const Integer& denom,const int& m) const;
   // test the main computation for arithmetic overflow
   // uses multiplication mod m
 
@@ -228,17 +242,14 @@ public:
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& det);
-// solves the system Left_side*Solution=det(Left_side)*Right_side and tests for
+Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom);
+// solves the system Left_side*Solution=denom(Left_side)*Right_side and tests for
 //errors. Left_side should be a quadratic matrix with nonzero determinant.
-//The determinant of Left_side is saved in det.
 
 template<typename Integer>
-Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector<Integer>& diagonal ,Integer& det);
-// solves the system Left_side*Solution=det(Left_side)*Right_side and tests for
+Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector<Integer>& diagonal ,Integer& denom);
+// solves the system Left_side*Solution=denom(Left_side)*Right_side and tests for
 //errors. Left_side should be a quadratic matrix with nonzero determinant.
-//The determinant of Left_side is saved in det.
-
 }
 
 //---------------------------------------------------------------------------

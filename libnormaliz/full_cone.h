@@ -56,80 +56,83 @@ class Full_Cone {
 	bool ht1_extreme_rays;
 	bool ht1_hilbert_basis;
 	bool integrally_closed;
+	
+	bool do_triangulation;
+	bool do_partial_triangulation;
+	bool do_Hilbert_basis;
+	bool do_ht1_elements;
+	bool do_h_vector;
+	bool keep_triangulation;
+	bool is_pyramid;
+	
 	ConeProperties is_Computed;
 	vector<Integer> Linear_Form;
 	Integer multiplicity;
 	Matrix<Integer> Generators;
 	vector<bool> Extreme_Rays;
 	list<vector<Integer> > Support_Hyperplanes;
-	list< Simplex<Integer> > Triangulation;
+		
+	list <pair<vector<size_t>,Integer> > Triangulation; 
+	
+	vector<bool> in_triang;
+	
 	list<vector<Integer> > Hilbert_Basis;
-	list<vector<Integer> > Homogeneous_Elements;
+	list<vector<Integer> > Candidates;
+	list<vector<Integer> > Ht1_Elements;
 	vector<Integer> H_Vector;
 	vector<Integer> Hilbert_Polynomial;
 
-	friend void lift<Integer>(Full_Cone<Integer>&, Matrix<Integer>);
 	friend class Cone<Integer>;
+	friend class Simplex<Integer>;
 	
 	struct FMDATA {
 		vector<Integer> Hyp;
 		boost::dynamic_bitset<> GenInHyp;
 		Integer ValNewGen;
 	};
+	
+	list<FMDATA> HypIndVal;
+	
+	vector<Integer> Order_Vector;
+	
+	
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-	void add_hyperplane(list<FMDATA>& HypIndVal,const int& ind_gen, const FMDATA & positive,const FMDATA & negative);
-	void transform_values(list<FMDATA>& HypIndVal,const int & ind_gen);
-	void add_simplex(list<FMDATA>& HypIndVal,const int& new_generator);
-	
-	void adjust_weight(list<FMDATA>& HypIndVal, const int new_generator);
-	// adjusts weights for dynamic lifting
-
-	/* adds a new element to the Hilbert basis */
-	void reduce_and_insert(const vector<Integer> & new_element);
-	/* adds a new element to the Hilbert basis
-	 * faster as above, provided the scalar products are precomputed, which needs more memory */
-	void reduce_and_insert_speed(const vector<Integer> & new_element);
-
-	/* Returns true if new_element is reducible versus the elements in Ired */
-	bool is_reducible(list<vector<Integer> > & Ired, const vector<Integer> & new_element);
-	bool is_reducible(list<vector<Integer> *> & Ired, const vector<Integer> & new_element);
-
-	/* reduce Red versus Ired */
-	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const int & size);
-
-	/* adds a matrix with new elements to the Hilbert basis */
-	void reduce_and_insert(const Matrix<Integer> & New_Elements);
-	/* adds a list with new elements to the Hilbert basis */
-	void reduce_and_insert(const list<vector<Integer> > & New_Elements);
-
-
-	/* to be used with a shelling in order to add to each simples the maximal new face */
-	void find_new_face();
+	void add_hyperplane(const int& ind_gen, const FMDATA & positive,const FMDATA & negative);
+	void transform_values(const int & ind_gen);
+	void add_simplex(const int& new_generator);
+	void process_pyramids(const size_t ind_gen,const bool recursive);
 	
 	/* */
+	void find_and_evaluate_start_simplex();
 	Simplex<Integer> find_start_simplex() const;
-
-	/* compute triangulations of the not compressed, not simplicial pieces and add them to Triangulation*/
-	void process_non_compressed(list<vector<int> > & non_compressed);
+	void store_key(const vector<size_t>&);
+	
+	void build_cone();
+	
+	/* Returns true if new_element is reducible versus the elements in Irred */
+	bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
 	/* reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
-	void global_reduction(set<vector<Integer> > & Candidates);
+	void global_reduction();
 	/* computes a degree function, s.t. every generator has value >0 */
 	vector<Integer> compute_degree_function() const;
 
-	void compute_support_hyperplanes(const bool do_partial_triang = false);
-	void compute_support_hyperplanes_triangulation();  
-	// wrapper functions for the next that really does something  
-	void do_compute_support_hyperplanes(const bool do_triangulation=false, 
-	                                    const bool do_partial_triangulation=false,const bool dynamic=false);
-	
-	void support_hyperplanes_partial_triangulation();
-	void compute_support_hyperplanes_pyramid(const bool do_triang = false);
-	void support_hyperplane_common();
+	void extreme_rays_and_ht1_check();
+	void compute_support_hyperplanes();
+	void compute_support_hyperplanes_triangulation();
+	void evaluate_triangulation();
+	void primal_algorithm_main(); 
+	void primal_algorithm_keep_triang();
+	void primal_algorithm_immediate_evaluation();
+	 
+	// void support_hyperplanes_partial_triangulation();
+	// void compute_support_hyperplanes_pyramid(const bool do_triang = false);
+
 	void compute_extreme_rays();
+	void select_ht1_elements();
 	void compute_hilbert_basis();
 	void compute_ht1_elements();
 	void compute_hilbert_polynomial();
@@ -158,13 +161,14 @@ class Full_Cone {
 	/* constructor for recursively generated subcones
 	 * int i is a dummy parameter to distinguish it from the standard constructor */
 	Full_Cone(Matrix<Integer> M, int i);
+	
+	void reset_tasks();
 
 public:
 	Full_Cone();
 	Full_Cone(Matrix<Integer> M);            //main constructor
 	Full_Cone(const Cone_Dual_Mode<Integer> &C);
-	Full_Cone(const Full_Cone<Integer> & C); //copy constructor
-	~Full_Cone();                   //destructor
+	Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access
@@ -174,7 +178,7 @@ public:
 	int getDimension() const;        //returns dimension
 	int getNrGenerators() const;    //returns the number of generators
 	bool isPointed() const;
-	bool isHt1ExtremeRays() const;     //returns homogeneous
+	bool isHt1ExtremeRays() const;     //returns ht1
 	bool isHt1HilbertBasis() const;
 	bool isIntegrallyClosed() const;
 	vector<Integer> getLinearForm() const; //returns the linear form
@@ -199,14 +203,15 @@ public:
  *              Computation Methods
  *---------------------------------------------------------------------------
  */
+	void dualize_cone();
 	void support_hyperplanes();
-	void support_hyperplanes_pyramid();
 	void support_hyperplanes_triangulation();
 	void support_hyperplanes_triangulation_pyramid();
 	void triangulation_hilbert_basis();
 	void hilbert_basis();
 	void hilbert_polynomial();
 	void hilbert_basis_polynomial();
+	void hilbert_basis_polynomial_pyramid();
 	void ht1_elements();
 
 	/* computes the multiplicity of the ideal in case of a Rees algebra
@@ -215,9 +220,6 @@ public:
 
 	/* completes the computation when a Cone_Dual_Mode is given */
 	void dual_mode();
-
-	/* checks if the cone is compressed, support hyperplanes must be computed */
-	bool check_compressed();
 
 	void error_msg(string s) const;
 };
