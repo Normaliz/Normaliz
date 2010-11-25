@@ -770,10 +770,8 @@ void Full_Cone<Integer>::build_cone() {
 	
 	RekTiefe++;
 	
-	cout << "RekTiefe " << RekTiefe << endl;
+	cout << " " << RekTiefe;
 	
-	// if(RekTiefe>=2) exit(1);
-
 	find_and_evaluate_start_simplex();
 	
 	Integer scalar_product;
@@ -1104,6 +1102,7 @@ void Full_Cone<Integer>::dual_mode() {
 		is_Computed.set(ConeProperty::IsHt1Generated);
 
 		if (ht1_extreme_rays) {
+			is_Computed.set(ConeProperty::LinearForm);
 			if (verbose) { 
 				cout << "Find height 1 elements" << endl;
 			}
@@ -1119,7 +1118,8 @@ void Full_Cone<Integer>::dual_mode() {
 		ht1_extreme_rays = ht1_generated = true;
 		Linear_Form=vector<Integer>(dim);
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-		is_Computed.set(ConeProperty::IsHt1Generated);
+		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+		is_Computed.set(ConeProperty::LinearForm);
 	}
 	if (ht1_extreme_rays) check_ht1_hilbert_basis();
 	check_integrally_closed();

@@ -267,16 +267,14 @@ void Output<Integer>::write_tri() const{
 		string file_name = name+".tri";
 		ofstream out(file_name.c_str());
 
-		list< vector<size_t> > Tri = Result->getTriangulation();
-		list< Integer > TriVol = Result->getTriangulationVolumes();
-		typename list< vector<size_t> >::const_iterator tit = Tri.begin();
-		typename list< Integer >::const_iterator vit = TriVol.begin();
+		list< pair<vector<size_t>,Integer> > Tri = Result->getTriangulation();
+		typename list< pair<vector<size_t>,Integer> >::const_iterator tit = Tri.begin();
 
-		for(; tit != Tri.end() && vit != TriVol.end(); ++tit, ++vit) {
-			for (size_t i=0; i<tit->size(); i++) {
-				out<< (*tit)[i] << " ";
+		for(; tit != Tri.end(); ++tit) {
+			for (size_t i=0; i<tit->first.size(); i++) {
+				out << tit->first[i] << " ";
 			}
-			out << (*vit) << endl;
+			out << tit->second << endl;
 		}
 		out.close();
 	}

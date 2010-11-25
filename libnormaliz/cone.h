@@ -43,8 +43,7 @@ class Cone {
 	list< vector<Integer> > Generators;
 	vector<bool> ExtremeRays;
 	list< vector<Integer> > SupportHyperplanes;
-	list< vector<size_t> > Triangulation;
-	list< Integer > TriangulationMultiplicities;
+	list< pair<vector<size_t>, Integer> > Triangulation;
 	Integer multiplicity;
 	list< vector<Integer> > HilbertBasis;
 	list< vector<Integer> > Ht1Elements;
@@ -104,8 +103,7 @@ public:
 	list< vector<Integer> > const& getGenerators() const;
 	vector<bool> const& getExtremeRays() const;
 	list< vector<Integer> > const& getSupportHyperplanes() const;
-	list< vector<size_t> > const& getTriangulation() const;
-	list< Integer > const& getTriangulationVolumes() const;
+	list< pair<vector<size_t>, Integer> > const& getTriangulation() const;
 	list< vector<Integer> > const& getHilbertBasis() const;
 	list< vector<Integer> > const& getHt1Elements() const;
 	vector<Integer> const& getHVector() const;

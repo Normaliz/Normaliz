@@ -115,13 +115,8 @@ list< vector<Integer> > const& Cone<Integer>::getSupportHyperplanes() const {
 }
 
 template<typename Integer>
-list< vector<size_t> > const& Cone<Integer>::getTriangulation() const {
+list< pair<vector<size_t>,Integer> > const& Cone<Integer>::getTriangulation() const {
 	return Triangulation;
-}
-
-template<typename Integer>
-list< Integer > const& Cone<Integer>::getTriangulationVolumes() const {
-	return TriangulationMultiplicities;
 }
 
 template<typename Integer>
@@ -559,14 +554,20 @@ void Cone<Integer>::compute_dual() {
 
 template<typename Integer>
 void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
-/*	if(verbose) {
-		verboseOutput() << "extract data..." <<endl;
-		string tmp;
-		cin >> tmp;
-	}
-*/	//this function extracts ALL available data from the Full_Cone
+	//this function extracts ALL available data from the Full_Cone
 	//even if it was in Cone already <- this may change
 	//it is possible to delete the data in Full_Cone after extracting it
+
+	if(verbose) {
+		verboseOutput() << "transforming data...";
+	}
+	
+	if (rees_primary) {
+		//here are some computations involved, made first so that data can be deleted in FC later
+		ReesPrimaryMultiplicity = FC.primary_multiplicity();
+		is_Computed.set(ConeProperty::ReesPrimary);
+	}
+	
 	if (FC.isComputed(ConeProperty::Generators)) {
 		Generators = BasisChange.from_sublattice(FC.getGenerators()).to_list();
 		is_Computed.set(ConeProperty::Generators);
@@ -580,7 +581,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::SupportHyperplanes);
 	}
 	if (FC.isComputed(ConeProperty::Triangulation)) {
-		FC.getTriangulation(Triangulation, TriangulationMultiplicities);
+		Triangulation.clear();
+		Triangulation.splice(Triangulation.begin(),FC.Triangulation);
+		//TODO sort the keys  typename list
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::Multiplicity)) {
@@ -595,6 +598,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		Ht1Elements = BasisChange.from_sublattice(FC.getHt1Elements()).to_list();
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
+	verboseOutput() << "hb+ht1 rdy... "; cin >> tmp;
 	if (FC.isComputed(ConeProperty::HVector)) {
 		HVector = FC.getHVector();
 		is_Computed.set(ConeProperty::HVector);
@@ -624,16 +628,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::IsIntegrallyClosed);
 	}
 
-	if (rees_primary) {
-		ReesPrimaryMultiplicity = FC.primary_multiplicity();
-		is_Computed.set(ConeProperty::ReesPrimary);
-	}
-/*
 	if(verbose) {
-		verboseOutput() << "done (extract data)" <<endl;
-		string tmp;
-		cin >> tmp;
-	}*/
+		verboseOutput() << "done" <<endl;
+	}
 }
 
 } // end namespace libnormaliz
