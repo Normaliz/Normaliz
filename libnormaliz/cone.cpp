@@ -598,7 +598,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		Ht1Elements = BasisChange.from_sublattice(FC.getHt1Elements()).to_list();
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
-	verboseOutput() << "hb+ht1 rdy... "; cin >> tmp;
 	if (FC.isComputed(ConeProperty::HVector)) {
 		HVector = FC.getHVector();
 		is_Computed.set(ConeProperty::HVector);

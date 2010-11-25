@@ -124,7 +124,7 @@ public:
   //and the new elements of h vector in case of a shelling,
   //the generators are not considered !!!, status must be "key initialized"
   
-  Integer evaluate(Full_Cone<Integer>& C);
+  Integer evaluate(Full_Cone<Integer>& C, const Integer& height);
   
 };
 //class end *****************************************************************

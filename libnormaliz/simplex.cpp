@@ -344,16 +344,19 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 
 //---------------------------------------------------------------------------
 
+//TODO remove
+int NrInvert=0;
+
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
-Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C){
+Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height) {
  
 	Generators=C.Generators.submatrix(key);
 	
 	bool unimodular=false;
 	vector<Integer> Indicator(dim,0);
-	if(C.do_h_vector || (!C.do_Hilbert_basis && !C.do_ht1_elements)){
-		Matrix<Integer> RS(1,dim);  // (trnsdpose of) right hand side
+	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
+		Matrix<Integer> RS(1,dim);  // (transpose of) right hand side
 		RS.write(1,C.Order_Vector); // to hold order vector
 		Matrix<Integer> Sol=Generators.transpose().solve(RS.transpose(),volume);
 		Indicator=Sol.transpose().read(1);
@@ -366,12 +369,17 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C){
 		return volume;
 	}
 	
+	if(unimodular && !C.do_h_vector) { // in this case we have to add the volume
+		C.multiplicity+=volume;         // and nothing else is to be done
+		return volume;
+	}
+
 	bool decided=true;
 	int i,j;
 	int Deg=0;        // Deg is the degree in which the 0 vector is counted
-	if(unimodular){  // it remains to count the 0-vector in the h-vector 
+	if(unimodular){   // it remains to count the 0-vector in the h-vector 
 		for(i=0;i<dim;i++){
-			if(Indicator[i]<0)  // facet opposite of vertex i excluded
+			if(Indicator[i]<0)   // facet opposite of vertex i excluded
 				Deg++;
 			if(Indicator[i]==0){ // Order_Vector in facet, to be decided later
 				decided=false;
@@ -380,12 +388,13 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C){
 		}
 		if(decided){
 			C.H_Vector[Deg]++;    // Done, provided decided==true
-				C.multiplicity+=volume;
+			C.multiplicity+=volume;
 			return volume;               // if not we need lex decision, see below
 		}
 	} // We have tried to take care of the unimodular case WITHOUT the matrix inversion
 
 
+	NrInvert++;
 	vector< Integer > help(dim);
 	Matrix<Integer> InvGen=Invert(Generators, help, volume);
 	diagonal=v_abs(help);

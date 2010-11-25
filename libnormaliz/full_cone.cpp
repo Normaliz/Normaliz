@@ -562,10 +562,10 @@ void Full_Cone<Integer>::add_simplex(const int& new_generator){
 				}
 				key[dim-1]=new_generator+1;
 
-				store_key(key);
+				store_key(key,i->ValNewGen);
 				if(!keep_triangulation){
 					Simplex<Integer> simp(key);        
-					simp.evaluate(*this);
+					simp.evaluate(*this,i->ValNewGen);
 				}
 			}
 			else {
@@ -585,10 +585,10 @@ void Full_Cone<Integer>::add_simplex(const int& new_generator){
 					if (nr_nonzero_i<=1){
 						key[not_in_i]=new_generator+1;
 
-						store_key(key);
+						store_key(key,i->ValNewGen);
 						if(!keep_triangulation){
 							Simplex<Integer> simp(key);        
-							simp.evaluate(*this);
+							simp.evaluate(*this,i->ValNewGen);
 						}
 					}
 
@@ -607,9 +607,10 @@ void Full_Cone<Integer>::add_simplex(const int& new_generator){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::store_key(const vector<size_t>& key){
+void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& height){
 	pair<vector<size_t>,Integer> newsimplex;
 	newsimplex.first=key;
+	newsimplex.second=height;
 	#pragma omp critical(TRIANG)
 	Triangulation.push_back(newsimplex);
 }
@@ -736,10 +737,10 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 	}
 
 	if(do_triangulation)
-		store_key(key);
-	if(!keep_triangulation){
-		Simplex<Integer> simp(key);        
-		simp.evaluate(*this);
+		store_key(key,-2);  // We have no a priori information on multiplicity
+	if(!keep_triangulation) {
+		Simplex<Integer> simp(key);
+		simp.evaluate(*this, -2);
 	}
 }
 
@@ -907,9 +908,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
 	for(s=Triangulation.begin();s!=Triangulation.end();s++){
 		Simplex<Integer> simp(s->first);
-		simp.evaluate(*this);
+		simp.evaluate(*this,s->second);
 		s->second=simp.read_volume();
-	}  
+	}
+	cout << "Nr Invert " << NrInvert << endl;
 }
 
 //---------------------------------------------------------------------------

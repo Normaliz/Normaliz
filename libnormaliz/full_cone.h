@@ -109,7 +109,7 @@ class Full_Cone {
 	/* */
 	void find_and_evaluate_start_simplex();
 	Simplex<Integer> find_start_simplex() const;
-	void store_key(const vector<size_t>&);
+	void store_key(const vector<size_t>&, const Integer& height);
 	
 	void build_cone();
 	
