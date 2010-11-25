@@ -50,7 +50,6 @@ public:
 
 	/* Returns true if new_element is reducible versus the elements in Ired
 	 * used for dual algorithm */
-	bool reduce(list<vector<Integer> > & Ired, const vector<Integer> & new_element, const int & size);
 	bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const int & size);
 
 	/* reduce Red versus Ired */

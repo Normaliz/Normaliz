@@ -450,7 +450,7 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 			
 		if (nr_zero_i>=subfacet_dim) {
 		
-			missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing 
+			missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
 			                                      // to have a chance for common subfacet
 				for (j=0; j<Neg_Non_Simp.size(); j++){
 				hp_j=Neg_Non_Simp[j];
@@ -541,10 +541,11 @@ void Full_Cone<Integer>::add_simplex(const int& new_generator){
 	size_t s, Triangulation_size=Triangulation.size(); // the size we start with
 	vector<size_t> key(dim);
 
-	int ipos=0;
-	int listsize=HypIndVal.size();
+	size_t ipos=0;
+	size_t listsize=HypIndVal.size();
+	//for (i = Support_Hyperplanes.begin(); i != Support_Hyperplanes.end(); i++){
 	#pragma omp parallel for private(j,nr_zero_i,nr_nonzero_i,l,k,s) firstprivate(ipos, i, key, not_in_i) schedule(dynamic)
-	for (int kk=0; kk<listsize; ++kk) {
+	for (size_t kk=0; kk<listsize; ++kk) {
 		for(;kk > ipos; ++ipos, ++i) ;
 		for(;kk < ipos; --ipos, --i) ;
 
@@ -604,6 +605,7 @@ void Full_Cone<Integer>::add_simplex(const int& new_generator){
 }
 
 //---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::store_key(const vector<size_t>& key){
 	pair<vector<size_t>,Integer> newsimplex;
@@ -611,7 +613,6 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key){
 	#pragma omp critical(TRIANG)
 	Triangulation.push_back(newsimplex);
 }
-	
 
 //---------------------------------------------------------------------------
 
@@ -897,6 +898,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 	do_triangulation=true;   
 	build_cone();
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -911,6 +913,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 		s->second=simp.read_volume();
 	}  
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1220,11 +1223,10 @@ void Full_Cone<Integer>::select_ht1_elements() {
 
 //---------------------------------------------------------------------------
 
-
 template<typename Integer>
 void Full_Cone<Integer>::check_pointed() {
 	Matrix<Integer> SH = getSupportHyperplanes();
-	pointed = (SH.rank() == dim);
+	pointed = (SH.rank_destructiv() == dim);
 	is_Computed.set(ConeProperty::IsPointed);
 }
 
@@ -1587,7 +1589,7 @@ template<typename Integer>
 Integer Full_Cone<Integer>::primary_multiplicity() const{
 	int i,j,k;
 	Integer primary_multiplicity=0;
-	vector <int> key,new_key(dim-1);
+	vector <size_t> key,new_key(dim-1);
 	Matrix<Integer> Projection(nr_gen,dim-1);
 	for (i = 1; i <= nr_gen; i++) {
 		for (j = 1; j <= dim-1; j++) {
@@ -1607,7 +1609,6 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
 							if (v_scalar_product(Generators.read(key[j]),(*h))==0) {
 								k++;
 							}
-
 						}
 						if (k==dim-1) {
 							for (j = 0; j <i; j++) {
@@ -1875,40 +1876,17 @@ Matrix<Integer> Full_Cone<Integer>::getSupportHyperplanes()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::getTriangulation()const{
-	int s= Triangulation.size();
-	Matrix<Integer> M(s,dim);
-	vector<int> key(dim);
-	int i=1;
-	typename list<pair<vector<size_t>,Integer> >::const_iterator l;
-	for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
-		key=l->key;
-		sort(key.begin(),key.end());
-		M.write(i,key);
-		i++;
-	}
-	return M;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::getTriangulationVolume()const{
-	int s= Triangulation.size();
-	Matrix<Integer> M(s,dim+1);
+void Full_Cone<Integer>::getTriangulation(list< vector<size_t> >& Triang, list<Integer>& TriangVol) const {
+	Triang.clear();
+	TriangVol.clear();
 	vector<size_t> key(dim);
-	int k,i=1;
-	typename list< pair<vector<size_t>,Integer> >::const_iterator l;
+	typename list<pair<vector<size_t>,Integer> >::const_iterator l;
 	for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
 		key=l->first;
 		sort(key.begin(),key.end());
-		for (k = 0; k <dim; k++) {
-			M.write(i,k+1,key[k]);
-		}
-		M.write(i,dim+1,l->second);
-		i++;
+		Triang.push_back(key);
+		TriangVol.push_back(l->second);
 	}
-	return M;
 }
 
 //---------------------------------------------------------------------------
@@ -1963,7 +1941,6 @@ void Full_Cone<Integer>::error_msg(string s) const{
 
 //---------------------------------------------------------------------------
 
-
 template<typename Integer>
 void Full_Cone<Integer>::print()const{
 	verboseOutput()<<"\ndim="<<dim<<".\n";
@@ -1991,7 +1968,5 @@ void Full_Cone<Integer>::print()const{
 	v_read(Hilbert_Polynomial);
 }
 
-
-
-}
+} //end namespace
 

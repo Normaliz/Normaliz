@@ -257,7 +257,7 @@ vector<size_t> Simplex<Integer>::read_new_face() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Simplex<Integer>::read_new_face_size() const{
+size_t Simplex<Integer>::read_new_face_size() const{
 	return New_Face.size();
 }
 
@@ -272,9 +272,9 @@ Matrix<Integer> Simplex<Integer>::read_support_hyperplanes() const{
 
 template<typename Integer>
 Matrix<Integer> Simplex<Integer>::read_hilbert_basis()const{
-	int s= Hilbert_Basis.size();
+	size_t s= Hilbert_Basis.size();
 	Matrix<Integer> M(s,dim);
-	int i=1;
+	size_t i=1;
 	typename list< vector<Integer> >::const_iterator l;
 	for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
 		M.write(i,(*l));
@@ -309,7 +309,7 @@ vector<Integer> Simplex<Integer>::read_h_vector() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Simplex<Integer>::read_hilbert_basis_size() const{
+size_t Simplex<Integer>::read_hilbert_basis_size() const{
 	return Hilbert_Basis.size();
 }
 

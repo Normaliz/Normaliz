@@ -92,13 +92,13 @@ public:
   vector<Integer> read_diagonal() const;    // returns diagonal
   vector<Integer> read_multiplicators() const;    // returns multiplicators
   vector<size_t> read_new_face() const;    // returns new face
-  int read_new_face_size() const;    // returns new face size
+  size_t read_new_face_size() const;    // returns new face size
   Matrix<Integer> read_support_hyperplanes() const;  // returns the support hyperplanes
   Matrix<Integer> read_hilbert_basis()const; //read the Hilbert basis
   list< vector<Integer> > read_ht1_elements()const; //read the ht1 elements
   const list< vector<Integer> >& acces_hilbert_basis()const; //read the Hilbert basis
   vector<Integer> read_h_vector() const; //returns the h-vector
-  int read_hilbert_basis_size() const; //returns the size of the Hilbert basis
+  size_t read_hilbert_basis_size() const; //returns the size of the Hilbert basis
 
 //---------------------------------------------------------------------------
 //                          Algoritms

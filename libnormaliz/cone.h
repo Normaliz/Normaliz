@@ -39,11 +39,12 @@ class Cone {
 	Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
 	bool BC_set;
 	ConeProperties is_Computed;
-	list< vector<Integer> > OriginalGenerators;
+	list< vector<Integer> > GeneratorsOfToricRing;
 	list< vector<Integer> > Generators;
 	vector<bool> ExtremeRays;
 	list< vector<Integer> > SupportHyperplanes;
-	list< vector<Integer> > Triangulation;
+	list< vector<size_t> > Triangulation;
+	list< Integer > TriangulationMultiplicities;
 	Integer multiplicity;
 	list< vector<Integer> > HilbertBasis;
 	list< vector<Integer> > Ht1Elements;
@@ -54,6 +55,8 @@ class Cone {
 	bool ht1_extreme_rays;
 	bool ht1_hilbert_basis;
 	bool integrally_closed;
+	bool rees_primary;
+	Integer ReesPrimaryMultiplicity;
 
 	void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
@@ -97,11 +100,12 @@ public:
 
 	/* getter */
 	Sublattice_Representation<Integer> const& getBasisChange() const;
-	list< vector<Integer> > const& getOriginalGenerators() const;
+	list< vector<Integer> > const& getGeneratorsOfToricRing() const;
 	list< vector<Integer> > const& getGenerators() const;
 	vector<bool> const& getExtremeRays() const;
 	list< vector<Integer> > const& getSupportHyperplanes() const;
-	list< vector<Integer> > const& getTriangulation() const;
+	list< vector<size_t> > const& getTriangulation() const;
+	list< Integer > const& getTriangulationVolumes() const;
 	list< vector<Integer> > const& getHilbertBasis() const;
 	list< vector<Integer> > const& getHt1Elements() const;
 	vector<Integer> const& getHVector() const;
@@ -112,6 +116,8 @@ public:
 	bool isHt1ExtremeRays() const;
 	bool isHt1HilbertBasis() const;
 	bool isIntegrallyClosed() const;
+	bool isReesPrimary() const;
+	Integer const& getReesPrimaryMultiplicity() const;
 };
 
 }  //end namespace libnormaliz

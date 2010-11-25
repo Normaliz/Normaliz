@@ -262,9 +262,23 @@ void Output<Integer>::write_matrix_sup(const Matrix<Integer>& M) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Output<Integer>::write_matrix_tri(const Matrix<Integer>& M) const{
+void Output<Integer>::write_tri() const{
 	if (tri==true) {
-		M.print(name,"tri");
+		string file_name = name+".tri";
+		ofstream out(file_name.c_str());
+
+		list< vector<size_t> > Tri = Result->getTriangulation();
+		list< Integer > TriVol = Result->getTriangulationVolumes();
+		typename list< vector<size_t> >::const_iterator tit = Tri.begin();
+		typename list< Integer >::const_iterator vit = TriVol.begin();
+
+		for(; tit != Tri.end() && vit != TriVol.end(); ++tit, ++vit) {
+			for (size_t i=0; i<tit->size(); i++) {
+				out<< (*tit)[i] << " ";
+			}
+			out << (*vit) << endl;
+		}
+		out.close();
 	}
 }
 
@@ -288,7 +302,6 @@ void Output<Integer>::write_inv_file() const{
 		const char* file=name_open.c_str();
 		ofstream inv(file);
 
-		Matrix<Integer> Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
 			inv<<"integer hilbert_basis_elements = "<<Result->getHilbertBasis().size()<<endl;
 		}
@@ -362,7 +375,7 @@ void Output<Integer>::cone() const {
 		Support_Hyperplanes_Full_Cone.print(name,"esp");
 	}
 	if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
-		Matrix<Integer>(Result->getTriangulation()).print(name,"tri");	//TODO mit volume
+		write_tri();
 		Generators.print(name,"tgn");
 	}
 
@@ -372,9 +385,9 @@ void Output<Integer>::cone() const {
 		ofstream out(file);
 
 		// write "header" of the .out file
-		int nr_orig_gens = Result->getOriginalGenerators().size();
+		int nr_orig_gens = Result->getGeneratorsOfToricRing().size();
 		if (nr_orig_gens > 0) {
-			out << nr_orig_gens <<" original generators"<<endl;
+			out << nr_orig_gens <<" original generators of the toric ring"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
 			out << Result->getHilbertBasis().size() <<" Hilbert basis elements"<<endl;
@@ -460,7 +473,7 @@ void Output<Integer>::cone() const {
 
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators:"<<endl;
-			Matrix<Integer>(Result->getOriginalGenerators()).pretty_print(out);
+			Matrix<Integer>(Result->getGeneratorsOfToricRing()).pretty_print(out);
 		}
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
 			Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
@@ -578,7 +591,7 @@ void Output<Integer>::polytop() const{
 		Support_Hyperplanes_Full_Cone.print(name,"esp");
 	}
 	if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
-		Matrix<Integer>(Result->getTriangulation()).print(name,"tri");	//TODO mit volume
+		write_tri();
 		Generators.print(name,"tgn");
 	}
 
@@ -588,7 +601,7 @@ void Output<Integer>::polytop() const{
 		ofstream out(file);
 
 		// write "header" of the .out file
-		int nr_orig_gens = Result->getOriginalGenerators().size();
+		int nr_orig_gens = Result->getGeneratorsOfToricRing().size();
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators"<<endl;
 		}
@@ -653,7 +666,7 @@ void Output<Integer>::polytop() const{
 
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators:"<<endl;
-			Matrix<Integer>(Result->getOriginalGenerators()).pretty_print(out);
+			Matrix<Integer>(Result->getGeneratorsOfToricRing()).pretty_print(out);
 		}
 		Matrix<Integer> Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
@@ -792,7 +805,10 @@ void Output<Integer>::polytop() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Output<Integer>::rees(const bool primary) const{
+void Output<Integer>::rees() const{
+   if (!Result->isComputed(ConeProperty::ReesPrimary)) {
+		libnormaliz::errorOutput()<<"error in Output.rees(): primary was NOT computed!"<<endl;
+	}
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
 	int i,j,nr;
 	int dim = BasisChange.get_dim();
@@ -808,7 +824,7 @@ void Output<Integer>::rees(const bool primary) const{
 		Support_Hyperplanes_Full_Cone.print(name,"esp");
 	}
 	if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
-	//TODO	Result->get_triangulation_volume().print(name,"tri");
+		write_tri();
 		Generators.print(name,"tgn");
 	}
 
@@ -818,7 +834,7 @@ void Output<Integer>::rees(const bool primary) const{
 		ofstream out(file);
 
 		// write "header" of the .out file
-		int nr_orig_gens = Result->getOriginalGenerators().size();
+		int nr_orig_gens = Result->getGeneratorsOfToricRing().size();
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators"<<endl;
 		}
@@ -903,10 +919,9 @@ void Output<Integer>::rees(const bool primary) const{
 			}
 		}
 
-      if (primary) {
+		if (Result->isReesPrimary()) {
 			out<<"ideal is primary to the ideal generated by the indeterminates"<<endl;
-			//TODO	Integer primary_multiplicity=Result->primary_multiplicity();
-			//out<<"multiplicity of the ideal = "<<primary_multiplicity<<endl;
+			out<<"multiplicity of the ideal = "<<Result->getReesPrimaryMultiplicity()<<endl;
 		} else {
 			out<<"ideal is not primary to the ideal generated by the indeterminates"<<endl;
 		}
@@ -919,7 +934,7 @@ void Output<Integer>::rees(const bool primary) const{
 
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators:"<<endl;
-			Matrix<Integer>(Result->getOriginalGenerators()).pretty_print(out);
+			Matrix<Integer>(Result->getGeneratorsOfToricRing()).pretty_print(out);
 		}
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
 			Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Result->getHilbertBasis());
@@ -1025,10 +1040,9 @@ void Output<Integer>::rees(const bool primary) const{
 		const char* file=name_open.c_str();
 		ofstream inv(file,ios_base::app);
 
-		if (primary) {
+		if (Result->isReesPrimary()) {
 			inv<<"boolean primary = true"<<endl;
-			//TODO	Integer primary_multiplicity=Result->primary_multiplicity();
-			//inv<<"integer ideal_multiplicity = "<<primary_multiplicity<<endl;
+			inv<<"integer ideal_multiplicity = "<<Result->getReesPrimaryMultiplicity()<<endl;
 		} else {
 			inv<<"boolean primary = false"<<endl;
 		}

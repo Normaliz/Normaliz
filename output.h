@@ -83,7 +83,7 @@ public:
   void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
   void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
   void write_matrix_sup(const Matrix<Integer>& M) const; //writes M to file name.sup
-  void write_matrix_tri(const Matrix<Integer>& M) const; //writes M to file name.tri
+  void write_tri() const; //writes the .tri file
   void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 
   void write_inv_file() const;
@@ -95,7 +95,7 @@ public:
 
   void cone()const;
   void polytop()const;
-  void rees(const bool primary)const;
+  void rees()const;
 
 };
 //class end *****************************************************************

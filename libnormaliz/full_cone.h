@@ -105,7 +105,7 @@ class Full_Cone {
 	void transform_values(const int & ind_gen);
 	void add_simplex(const int& new_generator);
 	void process_pyramids(const size_t ind_gen,const bool recursive);
-	
+
 	/* */
 	void find_and_evaluate_start_simplex();
 	Simplex<Integer> find_start_simplex() const;
@@ -174,11 +174,11 @@ public:
  *                      Data access
  *---------------------------------------------------------------------------
  */
-	void print() const;                //to be modified, just for tests
-	int getDimension() const;        //returns dimension
+	void print() const;             //to be modified, just for tests
+	int getDimension() const;       //returns dimension
 	int getNrGenerators() const;    //returns the number of generators
 	bool isPointed() const;
-	bool isHt1ExtremeRays() const;     //returns ht1
+	bool isHt1ExtremeRays() const;
 	bool isHt1HilbertBasis() const;
 	bool isIntegrallyClosed() const;
 	vector<Integer> getLinearForm() const; //returns the linear form
@@ -186,11 +186,11 @@ public:
 	const Matrix<Integer>& getGenerators() const;
 	vector<bool> getExtremeRays() const;
 	Matrix<Integer> getSupportHyperplanes() const;
-	Matrix<Integer> getTriangulation() const;
-	/* read the triangulation and the volume of each simplex,
-	 * the volume is saved on the last column
-	 * the vectors corresponding to the generators of each simplex are sorted */
-	Matrix<Integer> getTriangulationVolume() const;
+	/* saves the triangulation and the volume of each simplex
+	 * the vectors corresponding to the generators of each simplex are sorted and saved in Triang
+	 * the volumes are saved in TriangVol 
+	 * cleares the lists first */
+	void getTriangulation(list< vector<size_t> >& Triang, list<Integer>& TriangVol) const;
 	Matrix<Integer> getHilbertBasis() const;
 	Matrix<Integer> getHt1Elements() const;
 	vector<Integer> getHVector() const;

@@ -44,6 +44,8 @@ namespace ConeProperty {
 		IsHt1ExtremeRays,
 		IsHt1HilbertBasis,
 		IsIntegrallyClosed,
+		GeneratorsOfToricRing,
+		ReesPrimary,
 		EnumSize //this has to be the last entry, to get the number of entries in the enum
 	};
 }

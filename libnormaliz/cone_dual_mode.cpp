@@ -70,33 +70,6 @@ bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const ve
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, const vector< Integer >& new_element, const int& size){
-	register int i,c=1;
-	typename list< vector<Integer> >::iterator j;
-	for (j =Ired.begin(); j != Ired.end(); j++) {
-		if (new_element[0]<=(*j)[0])
-			continue;
-		if ((*j)[c]<=new_element[c]){
-			for (i = 1; i <=size ; i++) {
-				if ((*j)[i]>new_element[i]){
-					c=i;
-					break;
-				}
-			}
-			if (i==size+1) {
-				Ired.push_front(*j);
-				Ired.erase(j);
-				return true;
-			}
-		}
-		//new_element is reducible
-	}
-	return false;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
 	Ired.sort();
 	register int i,c=1;

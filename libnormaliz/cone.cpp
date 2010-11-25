@@ -75,8 +75,9 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vec
 template<typename Integer>
 void Cone<Integer>::initialize() {
 	BC_set=false;
-	is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
+	is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
 	dim = 0;
+	rees_primary = false;
 }
 
 
@@ -94,8 +95,8 @@ Sublattice_Representation<Integer> const& Cone<Integer>::getBasisChange() const{
 }
 
 template<typename Integer>
-list< vector<Integer> > const& Cone<Integer>::getOriginalGenerators() const {
-	return OriginalGenerators;
+list< vector<Integer> > const& Cone<Integer>::getGeneratorsOfToricRing() const {
+	return GeneratorsOfToricRing;
 }
 
 template<typename Integer>
@@ -114,8 +115,13 @@ list< vector<Integer> > const& Cone<Integer>::getSupportHyperplanes() const {
 }
 
 template<typename Integer>
-list< vector<Integer> > const& Cone<Integer>::getTriangulation() const {
+list< vector<size_t> > const& Cone<Integer>::getTriangulation() const {
 	return Triangulation;
+}
+
+template<typename Integer>
+list< Integer > const& Cone<Integer>::getTriangulationVolumes() const {
+	return TriangulationMultiplicities;
 }
 
 template<typename Integer>
@@ -168,6 +174,15 @@ bool Cone<Integer>::isIntegrallyClosed() const {
 	return integrally_closed;
 }
 
+template<typename Integer>
+bool Cone<Integer>::isReesPrimary() const {
+	return rees_primary;
+}
+
+template<typename Integer>
+Integer const& Cone<Integer>::getReesPrimaryMultiplicity() const {
+	return ReesPrimaryMultiplicity;
+}
 
 //---------------------------------------------------------------------------
 
@@ -233,7 +248,7 @@ template<typename Integer>
 void Cone<Integer>::prepare_input_type_3(const list< vector<Integer> >& InputL) {
 	Matrix<Integer> Input(InputL);  //TODO handle it better
 	int i,j,k,l,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
-	bool primary=true;
+	rees_primary=true;
 	Integer number;
 	Matrix<Integer> Full_Cone_Generators(nr_rows+nr_columns,nr_columns+1,0);
 	for (i = 1; i <= nr_columns; i++) {
@@ -265,7 +280,8 @@ void Cone<Integer>::prepare_input_type_3(const list< vector<Integer> >& InputL) 
 	for(j=1; j<=nr_columns; j++){         //primarity test
 		for(i=1; i<=nr_rows && Prim_Test.read(i,j)==0; i++);
 		if (i>nr_rows) {
-			primary=false;
+			rees_primary=false;
+			is_Computed.set(ConeProperty::ReesPrimary);
 			break;
 		}
 	}
@@ -367,9 +383,10 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 	Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
 	Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
 	Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
-	OriginalGenerators = Positive_Embedded_Generators.to_list();
+	GeneratorsOfToricRing = Positive_Embedded_Generators.to_list();
+	is_Computed.set(ConeProperty::GeneratorsOfToricRing);
 	dim = Positive_Embedded_Generators.nr_of_columns();
-	prepare_input_type_1(OriginalGenerators);
+	prepare_input_type_1(GeneratorsOfToricRing);
 }
 
 //---------------------------------------------------------------------------
@@ -493,9 +510,12 @@ void Cone<Integer>::compute(const string& computation_type) {
 template<typename Integer>
 void Cone<Integer>::compute_dual() {
 	if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
-		//TODO implement
-		errorOutput()<<"...---... Not implemented yet!"<<endl;
-		throw NormalizException();
+		if (verbose) {
+			verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
+		}
+		Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
+		Tmp_Cone.support_hyperplanes();
+		extract_data(Tmp_Cone);
 	}
 
 	if (!isComputed(ConeProperty::SupportHyperplanes)) {
@@ -560,7 +580,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::SupportHyperplanes);
 	}
 	if (FC.isComputed(ConeProperty::Triangulation)) {
-		Triangulation = FC.getTriangulationVolume().to_list();
+		FC.getTriangulation(Triangulation, TriangulationMultiplicities);
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::Multiplicity)) {
@@ -602,6 +622,11 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	if (FC.isComputed(ConeProperty::IsIntegrallyClosed)) {
 		integrally_closed = FC.isIntegrallyClosed();
 		is_Computed.set(ConeProperty::IsIntegrallyClosed);
+	}
+
+	if (rees_primary) {
+		ReesPrimaryMultiplicity = FC.primary_multiplicity();
+		is_Computed.set(ConeProperty::ReesPrimary);
 	}
 /*
 	if(verbose) {

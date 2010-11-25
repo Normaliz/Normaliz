@@ -395,7 +395,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 		if (mode == 2) {
 			Out.polytop();
 		} else if (mode == 3) {
-			Out.rees(true); //TODO primary übergeben
+			Out.rees();
 		} else {
 			Out.cone();
 		}
