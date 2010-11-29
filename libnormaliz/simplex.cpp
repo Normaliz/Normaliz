@@ -354,7 +354,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	Generators=C.Generators.submatrix(key);
 	
 	bool unimodular=false;
-	vector<Integer> Indicator(dim,0);
+	vector<Integer> Indicator;
 	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
 		Matrix<Integer> RS(1,dim);  // (transpose of) right hand side
 		RS.write(1,C.Order_Vector); // to hold order vector
@@ -403,6 +403,9 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	
 	if(C.do_h_vector){
 		Deg=0;
+		if (Indicator.size() != dim) { //it hasn't been computed yet
+			Indicator = InvGen.VxM(C.Order_Vector);
+		}
 		for(i=0;i<dim;i++) // register excluded facets nd degree shift for 0-vector
 		{
 			Test=Indicator[i];
