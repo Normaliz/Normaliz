@@ -824,25 +824,8 @@ int Matrix<Integer>::diagonalize(){
 
 template<typename Integer>
 int Matrix<Integer>::rank() const{
-	int rk;
-	int rk_max=min(nr,nc);
-	vector<int> piv(2,0);
-	Matrix<Integer> M(*this);
-	for (rk = 1; rk <= rk_max; rk++) {
-		piv=M.pivot(rk);
-		if (piv[0]>0) {
-			do {
-				M.exchange_rows (rk,piv[0]);
-				M.exchange_columns (rk,piv[1]);
-				M.reduce_row (rk);
-				M.reduce_column (rk);
-				piv=M.pivot(rk);
-			} while ((piv[0]>rk)||(piv[1]>rk));
-		}
-		else
-			break;
-	}
-	return rk-1;
+    Matrix<Integer> N=*this;
+    return N.rank_destructiv();
 }
 
 //---------------------------------------------------------------------------
@@ -892,7 +875,7 @@ int Matrix<Integer>::rank_destructiv(){
 template<typename Integer>
 vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
 	//may be optimized in two ways
-	//first only a triangular matrix is realy neaded, no full diagonalization is necesary
+	//first only a triangular matrix is realy needed, no full diagonalization is necesary
 	//second the matrix Rows_Exchanges may be computed by Lineare_transformation::transformation
 	int rk,i,j,k;
 	int rk_max=min(nr,nc);
@@ -952,46 +935,9 @@ vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex(const int& rank) const {
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& denom) const {
-	int dim=Right_side.nr;
-	int nr_sys=Right_side.nc;
-	assert(nr == nc);
-	assert(nc == dim);
 
-	Matrix<Integer> Left_side(*this);
-	Matrix<Integer> Solution(dim,nr_sys);
-	Integer S;
-	int piv,rk,i,j,k;
-	for (rk = 1; rk <= dim; rk++) {
-		piv=Left_side.pivot_column(rk);
-		if (piv>0) {
-			do {
-				Left_side.exchange_rows (rk,piv);
-				Right_side.exchange_rows (rk,piv);
-				Left_side.reduce_row(rk, Right_side);
-				piv=Left_side.pivot_column(rk);
-			} while (piv>rk);
-		}
-	}
-	denom=Left_side.elements[0][0];
-	for (i = 1; i < dim; i++) {
-		denom*=Left_side.elements[i][i];
-	}
-
-	if (denom==0) { 
-		throw NormalizException(); //TODO welche Exception?
-	}
-
-	denom=Iabs(denom);
-	for (i = 0; i < nr_sys; i++) {
-		for (j = dim-1; j >= 0; j--) {
-			S=denom*Right_side.elements[j][i];
-			for (k = j+1; k < dim; k++) {
-				S-=Left_side.elements[j][k]*Solution.elements[k][i];
-			}
-			Solution.elements[j][i]=S/Left_side.elements[j][j];
-		}
-	}
-	return Solution;
+    vector<Integer> dummy_diag(nr);
+    return solve(Right_side, dummy_diag,denom);
 }
 
 //---------------------------------------------------------------------------
@@ -1050,45 +996,9 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& denom) const{
 	assert(nr == nc);
 	assert(nr == diagonal.size());
+    Matrix<Integer> Right_side(nr);
 
-	Matrix<Integer> Left_side(*this);
-	Matrix<Integer> Right_side(nr);
-	Matrix<Integer> Solution(nr,nr);
-	Integer S;
-	int piv,rk,i,j,k;
-	for (rk = 1; rk <= nr; rk++) {
-		piv=Left_side.pivot_column(rk);
-		if (piv>0) {
-			do {
-				Left_side.exchange_rows (rk,piv);
-				Right_side.exchange_rows (rk,piv);
-				Left_side.reduce_row(rk, Right_side);
-				piv=Left_side.pivot_column(rk);
-			} while (piv>rk);
-		}
-	}
-	denom=Left_side.elements[0][0];
-	diagonal[0]= Left_side.elements[0][0];
-	for (i = 1; i < nr; i++) {
-		denom*=Left_side.elements[i][i];
-		diagonal[i]= Left_side.elements[i][i];
-	}
-
-	if (denom==0) {
-		throw NormalizException(); //TODO welche Exception?
-	}
-
-	denom=Iabs(denom);
-	for (i = 0; i < nr; i++) {
-		for (j = nr-1; j >= 0; j--) {
-			S=denom*Right_side.elements[j][i];
-			for (k = j+1; k < nr; k++) {
-				S-=Left_side.elements[j][k]*Solution.elements[k][i];
-			}
-			Solution.elements[j][i]=S/Left_side.elements[j][j];
-		}
-	}
-	return Solution;
+    return solve(Right_side,diagonal,denom);
 }
 
 //---------------------------------------------------------------------------
