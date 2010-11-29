@@ -736,11 +736,12 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 		} 
 	}
 
+	//the volume is an upper bound for the height
 	if(do_triangulation)
-		store_key(key,-2);  // We have no a priori information on multiplicity
+		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
 		Simplex<Integer> simp(key);
-		simp.evaluate(*this, -2);
+		simp.evaluate(*this, -S.read_volume());
 	}
 }
 

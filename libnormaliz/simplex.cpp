@@ -97,7 +97,6 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 	vector< Integer > help(dim);
 	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
 	//overflow performed
-	volume=Iabs(volume);
 	diagonal=v_abs(help);
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
@@ -116,7 +115,6 @@ Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
 	vector< Integer > help(dim);
 	Support_Hyperplanes=Invert(Generators, help, volume);  //test for arithmetic
 	//overflow performed
-	volume=Iabs(volume);
 	diagonal=v_abs(help);
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
@@ -331,7 +329,6 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 		vector< Integer > help(dim);
 		Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
 		//overflow performed
-		volume=Iabs(volume);
 		diagonal=v_abs(help);
 		Support_Hyperplanes=Support_Hyperplanes.transpose();
 		multiplicators=Support_Hyperplanes.make_prime();
