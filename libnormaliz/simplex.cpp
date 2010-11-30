@@ -361,13 +361,11 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			unimodular=true;
 	}
 			
-	if(!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements){ // in this case we had to add the volume
-		C.multiplicity+=volume;                     // and nothing else is to be done
-		return volume;
-	}
-	
-	if(unimodular && !C.do_h_vector) { // in this case we have to add the volume
-		C.multiplicity+=volume;         // and nothing else is to be done
+	// in this cases we had to add the volume and nothing else is to be done
+	if ( (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements) 
+	  || (unimodular && !C.do_h_vector) ) {
+		#pragma omp critical(MULTIPLICITY)
+		C.multiplicity+=volume;
 		return volume;
 	}
 
@@ -384,7 +382,9 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			}
 		}
 		if(decided){
+			#pragma omp critical(HVECTOR)
 			C.H_Vector[Deg]++;    // Done, provided decided==true
+			#pragma omp critical(MULTIPLICITY)
 			C.multiplicity+=volume;
 			return volume;               // if not we need lex decision, see below
 		}
@@ -423,8 +423,10 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				}
 			}
 		}
+		#pragma omp critical(HVECTOR)
 		C.H_Vector[Deg]++; // now the 0 vector is finally taken care of
 		if(unimodular){     // and in the unimodular case nothing left to be done
+			#pragma omp critical(MULTIPLICITY)
 			C.multiplicity+=volume;
 			return volume;
 		}
@@ -475,6 +477,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				if(elements[last][i]==0 && Excluded[i])
 					Deg++;
 			
+			#pragma omp critical(HVECTOR)
 			C.H_Vector[Deg]++; // count element in h-vector        
 		}
 		
@@ -482,6 +485,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		{        
 			help=Generators.VxM(elements[last]);
 			v_scalar_division(help,volume);
+			#pragma omp critical(HT1ELEMENTS)
 			Ht1_Elements.push_back(help);
 			continue;
 		} 
@@ -494,9 +498,11 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	}
 	
 	if(C.do_ht1_elements)
+		#pragma omp critical(HT1ELEMENTS)
 		C.Ht1_Elements.splice(C.Ht1_Elements.begin(),Ht1_Elements);
 	
 	if(!C.do_Hilbert_basis){
+		#pragma omp critical(MULTIPLICITY)
 		C.multiplicity+=volume;    
 		return volume;
 	}
@@ -519,8 +525,10 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		v_scalar_division(*jj,volume);
 	} 
 	
+	#pragma omp critical(CANDIDATES)
 	C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
 	
+	#pragma omp critical(MULTIPLICITY)
 	C.multiplicity+=volume;
 	return volume; 
 }

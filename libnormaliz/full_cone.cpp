@@ -48,7 +48,7 @@ void Full_Cone<Integer>::add_hyperplane(const int& ind_gen, const FMDATA & posit
 	
 	// vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	
-	FMDATA NewHypIndVal;NewHypIndVal.Hyp.resize(dim); NewHypIndVal.GenInHyp.resize(nr_gen);
+	FMDATA NewHypIndVal; NewHypIndVal.Hyp.resize(dim); NewHypIndVal.GenInHyp.resize(nr_gen);
 	
 	Integer used_for_tests;
 	if (test_arithmetic_overflow==true) {  // does arithmetic tests
@@ -89,7 +89,6 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 
 	// NEW: ind_gen is the index of the generator being inserted
 
-	// OBS vector<Integer> hyperplane(hyp_size,0); // initialized with 0
 	register int i,j,k,t,nr_zero_i;
 	register int subfacet_dim=dim-2; // NEW dimension of subfacet
 	register int facet_dim=dim-1; // NEW dimension of facet
@@ -98,12 +97,10 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	
 		
 	// preparing the computations
-	// OBS list < vector<Integer>* > l_Pos_Simp,l_Pos_Non_Simp; usw.
 	list <FMDATA*> l_Pos_Simp,l_Pos_Non_Simp;
 	list <FMDATA*> l_Neg_Simp,l_Neg_Non_Simp;
 	list <FMDATA*> l_Neutral_Simp, l_Neutral_Non_Simp;
 	
-	// OBSvector <bool> Zero_Positive(hyp_size,false),Zero_Negative(hyp_size,false);
 	boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen);
 
 	bool simplex;
@@ -115,10 +112,8 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	if (tv_verbose) verboseOutput()<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl<<flush;
 	int ipos=0;
 	
-	// OBS typename list< vector<Integer> >::iterator ii = Support_Hyperplanes.begin();
 	typename list<FMDATA>::iterator ii = HypIndVal.begin();
 	
-	// OBS int listsize=Support_Hyperplanes.size();
 	int listsize=HypIndVal.size();
 
 	for (int kk=0; kk<listsize; ++kk) {
@@ -175,7 +170,6 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 
 	if (tv_verbose) verboseOutput()<<"transform_values: copy to vector"<<endl;
 
-	// OBS vector < vector<Integer>* > Pos_Simp(l_Pos_Simp.size()); usw.
 	vector <FMDATA*> Pos_Simp(l_Pos_Simp.size());
 	vector <FMDATA*> Pos_Non_Simp(l_Pos_Non_Simp.size());
 	vector <FMDATA*> Neg_Simp(l_Neg_Simp.size());
@@ -219,8 +213,6 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	
 	multimap < boost::dynamic_bitset<>, int > Neg_Subfacet_Multi;
 
-	// OBS vector< int > zero_i(nr_gen);
-	// OBS vector< int > subfacet(dim-2);
 	boost::dynamic_bitset<> zero_i(nr_gen);
 	boost::dynamic_bitset<> subfacet(nr_gen);
 
@@ -232,7 +224,7 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 			Neg_Subfacet_Multi.insert(pair <boost::dynamic_bitset<>, int> (zero_i,i));
 			
 		else{       
-			for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
+			for (k =0; k<nr_gen; k++) {  //TODO use BOOST ROUTINE
 				if(zero_i.test(k)) {              
 					subfacet=zero_i;
 					subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
@@ -245,7 +237,6 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 
 	if (tv_verbose) verboseOutput()<<"transform_values: go over multimap of size "<< Neg_Subfacet_Multi.size() <<endl<<flush;
 
-	// OBS multimap < vector< int >, int > ::iterator jj,del;
 	multimap < boost::dynamic_bitset<>, int > ::iterator jj;
 	multimap < boost::dynamic_bitset<>, int > ::iterator del;
 	jj =Neg_Subfacet_Multi.begin();                               // remove negative subfecets shared
@@ -257,11 +248,10 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 			Neg_Subfacet_Multi.erase(del);
 		}
 	}
-	#pragma omp critical(VERBOSE)
+
 	if (tv_verbose) verboseOutput()<<"transform_values: singlemap size "<<Neg_Subfacet_Multi.size()<<endl<<flush;
 	
 	listsize = Neg_Subfacet_Multi.size();
-	// OBS map < vector< int >, int > Neg_Subfacet;
 	map < boost::dynamic_bitset<>, int > Neg_Subfacet;
 	
 	#pragma omp parallel private(i, j, k, jj, nr_zero_i)
@@ -313,13 +303,12 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	#pragma omp single
 	if (tv_verbose) verboseOutput()<<"transform_values: PS vs NS"<<endl<<flush;
 	
-	// OBS vector< int > zero_i(nr_gen);
-	// OBS map < vector< int >, int > ::iterator jj_map;
 	boost::dynamic_bitset<> zero_i(nr_gen);
 	map <boost::dynamic_bitset<>, int> ::iterator jj_map;
+	listsize = Pos_Simp.size();
 	
 	#pragma omp for schedule(dynamic)           // Now matching positive and negative (sub)facets
-	for (i =0; i<Pos_Simp.size(); i++){ //Positive Simp vs.Negative Simp
+	for (i =0; i<listsize; i++){ //Positive Simp vs.Negative Simp
 		zero_i=Pos_Simp[i]->GenInHyp & Zero_PN;
 		nr_zero_i=zero_i.count();
 		
@@ -436,7 +425,6 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	vector<int> common_key(nr_gen);
 	
 	#pragma omp for schedule(dynamic)
-	
 	for (int i =0; i<Pos_Non_Simp.size(); i++){ //Positive Non Simp vs.Negative Non Simp
 
 		hp_i=Pos_Non_Simp[i];
@@ -522,8 +510,6 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 		}
 	}
 	} //END parallel
-	#pragma omp critical(VERBOSE)
-	
 
 	//removing the negative hyperplanes
 	// now done in build_cone
@@ -543,7 +529,7 @@ void Full_Cone<Integer>::add_simplex(const int& new_generator){
 
 	size_t ipos=0;
 	size_t listsize=HypIndVal.size();
-	//for (i = Support_Hyperplanes.begin(); i != Support_Hyperplanes.end(); i++){
+
 	#pragma omp parallel for private(j,nr_zero_i,nr_nonzero_i,l,k,s) firstprivate(ipos, i, key, not_in_i) schedule(dynamic)
 	for (size_t kk=0; kk<listsize; ++kk) {
 		for(;kk > ipos; ++ipos, ++i) ;
@@ -657,6 +643,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 				for(i=0;i<dim;i++)
 					newsimplex.first[i]=Pyramid_key[pyr_simp->first[i]-1];
 				newsimplex.second=pyr_simp->second;
+				#pragma omp critical(TRIANG)
 				Triangulation.push_back(newsimplex);          
 			}
 		}
@@ -683,18 +670,23 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 				}
 				if(new_global_hyp){
 					NewHypIndVal.Hyp=*pyr_hyp;                
+					#pragma omp critical(HYPERPLANE)
 					HypIndVal.push_back(NewHypIndVal);
 				}
 			}
 		}
 		Pyramid.Support_Hyperplanes.clear();
 		
-		if(do_h_vector)
+		if(do_h_vector) {
+			#pragma omp critical(HVECTOR)
 			H_Vector=v_add(H_Vector,Pyramid.H_Vector);
-				
+		}
+		
+		#pragma omp critical(CANDIDATES)
 		Candidates.splice(Candidates.begin(),Pyramid.Candidates);
+		#pragma omp critical(HT1ELEMENTS)
 		Ht1_Elements.splice(Ht1_Elements.begin(),Pyramid.Ht1_Elements);
-	  }
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -747,8 +739,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
 int RekTiefe=-1;
 
-
-
 //---------------------------------------------------------------------------
 
 /* builds the cone successively by inserting generators, computes all essential data
@@ -766,8 +756,8 @@ void Full_Cone<Integer>::build_cone() {
 	}
 	int i;
 	
-	Integer RecBoundSuppHyp=1000000;
-	Integer RecBoundTriang=5000000;
+	Integer RecBoundSuppHyp=5000000;
+	Integer RecBoundTriang=10000000;
 	bool pyramid_recursion=false;
 	
 	RekTiefe++;
@@ -800,7 +790,7 @@ void Full_Cone<Integer>::build_cone() {
 
 					L=Generators.read(i+1);
 					scalar_product=v_scalar_product(L,(*l).Hyp);
-					if (test_arithmetic_overflow && v_test_scalar_product(L,(*l).Hyp,scalar_product,overflow_test_modulus)==false) {
+					if (test_arithmetic_overflow && !v_test_scalar_product(L,(*l).Hyp,scalar_product,overflow_test_modulus)) {
 						error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
 						throw ArithmeticException();
 					}
@@ -906,7 +896,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
 	Simplex<Integer> simp;
 	typename list<pair<vector<size_t>,Integer> >::iterator s;
-
+//TODO make parallel!!!!!!
 	for(s=Triangulation.begin();s!=Triangulation.end();s++){
 		Simplex<Integer> simp(s->first);
 		simp.evaluate(*this,s->second);
@@ -932,7 +922,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		for(int i=0;i<nr_gen;i++)
 			in_triang[i]=false;
-			cout << "New build " << endl;
+		cout << "New build " << endl;
 		build_cone();
 	}
 	
