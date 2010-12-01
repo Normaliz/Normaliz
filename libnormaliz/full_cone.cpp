@@ -894,13 +894,21 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
-	Simplex<Integer> simp;
-	typename list<pair<vector<size_t>,Integer> >::iterator s;
-//TODO make parallel!!!!!!
-	for(s=Triangulation.begin();s!=Triangulation.end();s++){
-		Simplex<Integer> simp(s->first);
-		simp.evaluate(*this,s->second);
-		s->second=simp.read_volume();
+	size_t listsize = Triangulation.size();
+
+	#pragma omp parallel 
+	{
+		typename list<pair<vector<size_t>,Integer> >::iterator s = Triangulation.begin();
+		size_t spos=0;
+		#pragma omp for schedule(dynamic) 
+		for(size_t i=0; i<listsize; i++){
+			for(; i > spos; ++spos, ++s) ;
+			for(; i < spos; --spos, --s) ;
+
+			Simplex<Integer> simp(s->first);
+			simp.evaluate(*this,s->second);
+			s->second=simp.read_volume();
+		}
 	}
 	cout << "Nr Invert " << NrInvert << endl;
 }
