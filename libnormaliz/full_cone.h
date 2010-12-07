@@ -210,6 +210,7 @@ public:
 	void triangulation_hilbert_basis();
 	void hilbert_basis();
 	void hilbert_polynomial();
+	void hilbert_polynomial_pyramid();
 	void hilbert_basis_polynomial();
 	void hilbert_basis_polynomial_pyramid();
 	void ht1_elements();

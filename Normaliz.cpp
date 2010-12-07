@@ -39,14 +39,16 @@ void printHelp(char* command) {
 	cout << "options:"<<endl;
 	cout << "  -?\tprint this help text and exit"<<endl;
 	cout << "  -s\tcomputation mode: support_hyperplanes"<<endl;
-	cout << "  -S\tcomputation mode: support_hyperplanes via pyramids"<<endl;
+	cout << "  -S\tcomputation mode: support_hyperplanes (currently same as -s)"<<endl;
 	cout << "  -v\tcomputation mode: triangulation"<<endl;
-	cout << "  -V\tcomputation mode: triangulation via pyramids"<<endl;
+	cout << "  -V\tcomputation mode: volume"<<endl;
 	cout << "  -n\tcomputation mode: triangulation_hilbert_basis (old type normal)"<<endl;
 	cout << "  -N\tcomputation mode: hilbert_basis (using a partial triangulation)"<<endl;
-	cout << "  -1\tcomputation mode: ht1_elements"<<endl;
 	cout << "  -p\tcomputation mode: hilbert_polynomial"<<endl;
+	cout << "  -P\tcomputation mode: hilbert_polynomial_pyramid"<<endl;
 	cout << "  -h\tcomputation mode: hilbert_basis_polynomial"<<endl;
+	cout << "  -H\tcomputation mode: hilbert_basis_polynomial_pyramid"<<endl;
+	cout << "  -1\tcomputation mode: ht1_elements"<<endl;
 	cout << "  -d\tcomputation mode: dual"<<endl;
 	cout << "  -f\tthe files .out .gen .inv .typ .cst are written"<<endl;
 	cout << "  -a\tall output files are written"<<endl;
@@ -135,7 +137,7 @@ int main(int argc, char* argv[])
 				computation_type="triangulation";
 				break;
 			case 'V':
-				computation_type="triangulation_pyramid";
+				computation_type="volume";
 				break;
 			case 'n':
 				computation_type="triangulation_hilbert_basis";
@@ -149,8 +151,14 @@ int main(int argc, char* argv[])
 			case 'p':
 				computation_type="hilbert_polynomial";
 				break;
+			case 'P':
+				computation_type="hilbert_polynomial_pyramid";
+				break;
 			case 'h':
 				computation_type="hilbert_basis_polynomial";
+				break;
+			case 'H':
+				computation_type="hilbert_basis_polynomial_pyramid";
 				break;
 			case 'd':
 				computation_type="dual";

@@ -487,14 +487,18 @@ void Cone<Integer>::compute(const string& computation_type) {
 		FC.support_hyperplanes(); //TODO typen anpassen
 	} else if (computation_type=="triangulation") {
 		FC.support_hyperplanes_triangulation();
-	} else if (computation_type=="triangulation_pyramid") {
+	} else if (computation_type=="volume") {
 		FC.support_hyperplanes_triangulation_pyramid();
 	} else if (computation_type=="ht1_elements") {
 		FC.ht1_elements();
 	} else if (computation_type=="hilbert_polynomial") {
 		FC.hilbert_polynomial();
+	} else if (computation_type=="hilbert_polynomial_pyramid") {
+		FC.hilbert_polynomial_pyramid();
 	} else if (computation_type=="hilbert_basis_polynomial") {
 		FC.hilbert_basis_polynomial();
+	} else if (computation_type=="hilbert_basis_polynomial_pyramid") {
+		FC.hilbert_basis_polynomial_pyramid();
 	} else {
 		errorOutput()<<"Unknown computation_type: \""<<computation_type<<"\"!"<<endl;
 		throw NormalizException();

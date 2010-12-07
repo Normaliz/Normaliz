@@ -989,11 +989,13 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
-	if ( (do_triangulation || do_ht1_elements || do_h_vector)
-	  && (!is_Computed.test(ConeProperty::ExtremeRays))) {
-		compute_support_hyperplanes();
-		extreme_rays_and_ht1_check();
-		if(!pointed) return;
+	if (do_triangulation || do_ht1_elements || do_h_vector) {
+		check_ht1_generated();
+		if(!ht1_generated) {
+			compute_support_hyperplanes();
+			extreme_rays_and_ht1_check();
+			if(!pointed) return;
+		}
 	}
 
 	primal_algorithm_main();
@@ -1077,6 +1079,16 @@ void Full_Cone<Integer>::hilbert_polynomial() {
 	do_ht1_elements=true;
 	do_h_vector=true;
 	primal_algorithm_keep_triang();
+	reset_tasks();
+}
+
+// -P
+template<typename Integer>
+void Full_Cone<Integer>::hilbert_polynomial_pyramid() {
+	do_ht1_elements=true;
+	do_h_vector=true;
+	do_triangulation=true;
+	primal_algorithm_immediate_evaluation();
 	reset_tasks();
 }
 
