@@ -391,7 +391,7 @@ void Output<Integer>::cone() const {
 			out << Result->getHilbertBasis().size() <<" Hilbert basis elements"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::Ht1Elements)) {
-			out << Result->getHt1Elements().size() <<" height 1 Hilbert basis elements"<<endl;
+			out << Result->getHt1Elements().size() <<" Hilbert basis elements of height 1"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
@@ -426,19 +426,19 @@ void Output<Integer>::cone() const {
 		
 		if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
 			if (Result->isHt1ExtremeRays()==false) {
-				out<<"extreme rays are not homogeneous"<<endl<<endl;
+				out<<"extreme rays are not of height 1"<<endl<<endl;
 			} else {
 				vector<Integer> Linear_Form = Result->getLinearForm();
-				out<<"extreme rays are homogeneous via the linear form:"<<endl;
+				out<<"extreme rays are of height 1 via the linear form:"<<endl;
 				for (i = 0; i < Linear_Form.size(); i++) {
 					out<<Linear_Form[i]<<" ";
 				}
 				out<<endl<<endl;
 				if (Result->isComputed(ConeProperty::IsHt1HilbertBasis)) {
 					if (Result->isHt1HilbertBasis()) {
-						out << "Hilbert basis elements are homogeneous" << endl;
+						out << "Hilbert basis elements are of height 1" << endl;
 					} else {
-						out << "Hilbert basis elements are not homogeneous" << endl;
+						out << "Hilbert basis elements are not of height 1" << endl;
 					}
 				}
 				out<<endl;
@@ -564,7 +564,7 @@ void Output<Integer>::cone() const {
 				Matrix<Integer> Hom = Result->getHt1Elements();
 				write_matrix_ht1(Hom);
 				nr=Hom.nr_of_rows();
-				out<<nr<<" height 1 Hilbert basis elements:"<<endl;
+				out<<nr<<" Hilbert basis elements of height 1:"<<endl;
 				Hom.pretty_print(out);
 			}
 		}
@@ -879,19 +879,19 @@ void Output<Integer>::rees() const{
 		out << endl;
 		
 		if (Result->isHt1ExtremeRays()==false) {
-			out<<"extreme rays are not homogeneous"<<endl<<endl;
+			out<<"extreme rays are not of height 1"<<endl<<endl;
 		} else {
 			vector<Integer> Linear_Form=Result->getLinearForm();
-			out<<"extreme rays are homogeneous via the linear form:"<<endl;
+			out<<"extreme rays are of height 1 via the linear form:"<<endl;
 			for (i = 0; i < Linear_Form.size(); i++) {
 				out<<Linear_Form[i]<<" ";
 			}
 			out<<endl<<endl;
 			if (Result->isComputed(ConeProperty::IsHt1HilbertBasis)) {
 				if (Result->isHt1HilbertBasis()) {
-					out << "generators of integral closure of the Rees algebra are homogeneous" << endl;
+					out << "generators of integral closure of the Rees algebra are of height 1" << endl;
 				} else {
-					out << "generators of integral closure of the Rees algebra are not homogeneous" << endl;
+					out << "generators of integral closure of the Rees algebra are not of height 1" << endl;
 				}
 			}
 			out<<endl;
