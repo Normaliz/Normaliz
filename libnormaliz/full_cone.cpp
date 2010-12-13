@@ -759,8 +759,20 @@ void Full_Cone<Integer>::build_cone() {
 	bool pyramid_recursion=false;
 	
 	RekTiefe++;
-	cout << " " << RekTiefe;
-	
+	cout << RekTiefe;
+
+	//magic bound sqrt(2)^(dim-4)*10 * Factor (Factor=1000)
+	size_t RecBoundSuppHyp=RecBoundFactor;
+	for (i=dim-4; i>=2; i-=2) {
+		RecBoundSuppHyp*=2;
+	}
+	if(i==1) { 
+		RecBoundSuppHyp*=14;
+	} else {
+		RecBoundSuppHyp*=10;
+	}
+	size_t RecBoundTriang=RecBoundSuppHyp;
+
 	find_and_evaluate_start_simplex();
 	
 	Integer scalar_product;

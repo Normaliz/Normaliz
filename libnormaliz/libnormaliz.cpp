@@ -25,8 +25,7 @@ bool verbose = false;
 bool test_arithmetic_overflow = false;
 int overflow_test_modulus = 15401;
 
-size_t RecBoundSuppHyp= 50000000;
-size_t RecBoundTriang= 100000000;
+size_t RecBoundFactor = 1000;
 
 namespace {
 	std::ostream* verbose_ostream_ptr = &std::cout;

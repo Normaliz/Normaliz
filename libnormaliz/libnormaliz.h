@@ -41,8 +41,7 @@ extern bool verbose;
 extern bool test_arithmetic_overflow;
 extern int overflow_test_modulus;
 
-extern size_t RecBoundSuppHyp;
-extern size_t RecBoundTriang;
+extern size_t RecBoundFactor;
 
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);
