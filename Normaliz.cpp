@@ -65,7 +65,7 @@ void printHelp(char* command) {
 int main(int argc, char* argv[])
 {
 
-	libnormaliz::RecBoundFactor =  1000;
+	libnormaliz::RecBoundFactor =  50000000;
 	int i;       //used for iterations
 	char c;
 	string computation_type="triangulation_hilbert_basis";

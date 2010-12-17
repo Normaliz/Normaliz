@@ -757,21 +757,22 @@ void Full_Cone<Integer>::build_cone() {
 	int i;
 	
 	bool pyramid_recursion=false;
-	
+
+#pragma omp critical(REKTIEFE)
 	RekTiefe++;
 	cout << RekTiefe;
 
-	//magic bound sqrt(2)^(dim-4)*10 * Factor (Factor=1000)
-	size_t RecBoundSuppHyp=RecBoundFactor;
-	for (i=dim-4; i>=2; i-=2) {
-		RecBoundSuppHyp*=2;
-	}
-	if(i==1) { 
-		RecBoundSuppHyp*=14;
-	} else {
-		RecBoundSuppHyp*=10;
-	}
-	size_t RecBoundTriang=RecBoundSuppHyp;
+	size_t RecBoundSuppHyp = dim*dim*dim;
+	RecBoundSuppHyp *= RecBoundSuppHyp * 10; //dim^6 * 10
+	size_t bound_div = nr_gen-dim+1;
+	if(bound_div > 3*dim) bound_div = 3*dim;
+	RecBoundSuppHyp /= bound_div;
+
+	size_t RecBoundTriang=RecBoundFactor; //dim*dim*dim*dim*RecBoundFactor;
+	//dim^4
+
+if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
+if(!is_pyramid) cout << "RecBoundTriang  = "<<RecBoundTriang<<endl;
 
 	find_and_evaluate_start_simplex();
 	
@@ -816,6 +817,7 @@ void Full_Cone<Integer>::build_cone() {
 				if(!new_generator)
 					continue;
 					
+//				if(pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp){
 				if(pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp || nr_neg*Triangulation.size()>RecBoundTriang){
 					if(!pyramid_recursion && !keep_triangulation)
 						Triangulation.clear();
@@ -860,6 +862,7 @@ void Full_Cone<Integer>::build_cone() {
 	
 	HypIndVal.clear();
 	
+#pragma omp critical(REKTIEFE)
 	RekTiefe--;
 
 	is_Computed.set(ConeProperty::SupportHyperplanes);
