@@ -100,8 +100,8 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 	diagonal=v_abs(help);
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
-	list< vector<Integer> >  Help;
-	Hilbert_Basis=Help;
+	Hilbert_Basis = list< vector<Integer> >();
+	H_Vector = vector<Integer>(dim,0);
 	status="initialized";
 }
 
@@ -118,8 +118,8 @@ Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
 	diagonal=v_abs(help);
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
-	list< vector<Integer> >  Help;
-	Hilbert_Basis=Help;
+	Hilbert_Basis = list< vector<Integer> >();
+	H_Vector=vector<Integer>(dim,0);
 	status="initialized";
 }
 
@@ -349,6 +349,7 @@ template<typename Integer>
 Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height) {
  
 	Generators=C.Generators.submatrix(key);
+	H_Vector=vector<Integer>(dim,0);
 	
 	bool unimodular=false;
 	vector<Integer> Indicator;
@@ -382,7 +383,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			}
 		}
 		if(decided){
-			#pragma omp critical(HVECTOR)
+			#pragma omp critical(HVECTOR) //only change in the H-vector, so done directliy
 			C.H_Vector[Deg]++;    // Done, provided decided==true
 			#pragma omp critical(MULTIPLICITY)
 			C.multiplicity+=volume;
@@ -390,7 +391,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 	} // We have tried to take care of the unimodular case WITHOUT the matrix inversion
 
-
+	#pragma omp critical(NRINVERT)
 	NrInvert++;
 	vector< Integer > help(dim);
 	Matrix<Integer> InvGen=Invert(Generators, help, volume);
@@ -423,9 +424,10 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				}
 			}
 		}
-		#pragma omp critical(HVECTOR)
-		C.H_Vector[Deg]++; // now the 0 vector is finally taken care of
+		H_Vector[Deg]++; // now the 0 vector is finally taken care of
 		if(unimodular){     // and in the unimodular case nothing left to be done
+			#pragma omp critical(HVECTOR)
+			C.H_Vector[Deg]++; 
 			#pragma omp critical(MULTIPLICITY)
 			C.multiplicity+=volume;
 			return volume;
@@ -477,15 +479,13 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				if(elements[last][i]==0 && Excluded[i])
 					Deg++;
 			
-			#pragma omp critical(HVECTOR)
-			C.H_Vector[Deg]++; // count element in h-vector        
+			H_Vector[Deg]++; // count element in h-vector        
 		}
 		
 		if(C.do_ht1_elements && norm[0]==volume) // found degree 1 element
 		{        
 			help=Generators.VxM(elements[last]);
 			v_scalar_division(help,volume);
-			#pragma omp critical(HT1ELEMENTS)
 			Ht1_Elements.push_back(help);
 			continue;
 		} 
@@ -497,11 +497,21 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 	}
 	
-	if(C.do_ht1_elements)
+	if(C.do_h_vector) {
+		for(int i=0; i<dim; i++) {
+			if(H_Vector[i]!=0) {
+				#pragma omp critical(HVECTOR)
+				C.H_Vector[i]+=H_Vector[i];
+			}
+		}
+	}
+	
+	if(C.do_ht1_elements) {
 		#pragma omp critical(HT1ELEMENTS)
 		C.Ht1_Elements.splice(C.Ht1_Elements.begin(),Ht1_Elements);
+	}
 	
-	if(!C.do_Hilbert_basis){
+	if(!C.do_Hilbert_basis) {
 		#pragma omp critical(MULTIPLICITY)
 		C.multiplicity+=volume;    
 		return volume;
