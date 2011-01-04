@@ -633,7 +633,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 		Pyramid.do_triangulation= !recursive || do_triangulation;
 		if(Pyramid.do_triangulation)
 			Pyramid.do_partial_triangulation=false;
-		Pyramid.build_cone();       
+		Pyramid.build_cone(); 
 		
 		if(recursive && keep_triangulation){        
 			typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Pyramid.Triangulation.begin();
@@ -923,7 +923,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 			s->second=simp.read_volume();
 		}
 	}
-	cout << "Nr Invert " << NrInvert << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -938,9 +937,9 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 			do_h_vector=false;
 	}
 		
-	if (keep_triangulation)
+	if (keep_triangulation) {
 		evaluate_triangulation();
-	else {
+	} else {
 		Support_Hyperplanes.clear();
 		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		for(int i=0;i<nr_gen;i++)
@@ -950,6 +949,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		extreme_rays_and_ht1_check();
 		if(!pointed) return;
 	}
+	cout << "Nr Invert " << NrInvert << endl;
 	
 	if (ht1_extreme_rays && do_triangulation)
 		is_Computed.set(ConeProperty::Multiplicity,true);

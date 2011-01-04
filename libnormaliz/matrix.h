@@ -202,24 +202,24 @@ public:
 
 
   Matrix solve(Matrix Right_side, Integer& denom) const;// solves the system
-  //this*Solution=denom*Right_side. this should be a quadratic
-  //matrix with nonzero determinant.
+  //this*Solution=denom*Right_side. this should be a quadratic matrix with nonzero determinant.
 
   Matrix solve(Matrix Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
-  //this*Solution=denom*Right_side. this should be a quadratic
-  //matrix with nonzero determinant.
+  //this*Solution=denom*Right_side. this should be a quadratic /matrix with nonzero determinant.
   //The diagonal of this after transformation into an upper triangular matrix
   //is saved in diagonal
 
+  // Right_side and this get destroyed!
+  Matrix solve_destructiv(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
+
   Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
-  //this*Solution=denom*I. this should be a quadratic
-  //matrix with nonzero determinant. 
+  //this*Solution=denom*I. this should be a quadratic matrix with nonzero determinant. 
   //The diagonal of this after transformation into an upper triangular matrix
   //is saved in diagonal
 
   vector<Integer> homogeneous (bool& homogeneous) const;// solves the system
   //this*Solution=(1,1,...). this should be a   m x n , m>=n,
-  //matrix of maxinal rank. The existence of solution  is marked in homogeneous
+  //matrix of maxinal rank. The existence of solution is marked in homogeneous
   
   vector<Integer> homogeneous_low_dim (bool& homogeneous) const;
   //same as homogeneous but also works with not maximal rank

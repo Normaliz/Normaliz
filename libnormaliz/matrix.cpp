@@ -633,6 +633,7 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
 
 template<typename Integer>
 void Matrix<Integer>::exchange_rows(const int& row1, const int& row2){
+	if (row1 == row2) return;
 	assert(row1 > 0);
 	assert(row1 <= nr);
 	assert(row2 > 0);
@@ -644,6 +645,7 @@ void Matrix<Integer>::exchange_rows(const int& row1, const int& row2){
 
 template<typename Integer>
 void Matrix<Integer>::exchange_columns(const int& col1, const int& col2){
+	if (col1 == col2) return;
 	assert(col1 > 0);
 	assert(col1 <= nc);
 	assert(col2 > 0);
@@ -672,7 +674,7 @@ void Matrix<Integer>::reduce_row (int corner) {
 		if (elements[i][corner-1]!=0) {
 			help=elements[i][corner-1] / elements[corner-1][corner-1];
 			for (j = corner-1; j < nc; j++) {
-				elements[i][j]=elements[i][j]-help*elements[corner-1][j];
+				elements[i][j] -= help*elements[corner-1][j];
 			}
 		}
 	}
@@ -692,10 +694,10 @@ void Matrix<Integer>::reduce_row (int corner, Matrix<Integer>& Left) {
 		help1=elements[i][corner-1] / help2;
 		if (help1!=0) {
 			for (j = corner-1; j < nc; j++) {
-				elements[i][j]=elements[i][j]-help1*elements[corner-1][j];
+				elements[i][j] -= help1*elements[corner-1][j];
 			}
 			for (j = 0; j < Left.nc; j++) {
-				Left.elements[i][j]=Left.elements[i][j]-help1*Left.elements[corner-1][j];
+				Left.elements[i][j] -= help1*Left.elements[corner-1][j];
 			}
 		}
 	}
@@ -714,7 +716,7 @@ void Matrix<Integer>::reduce_column (int corner) {
 		help1=elements[corner-1][j] / help2;
 		if (help1!=0) {
 			for (i = corner-1; i < nr; i++) {
-				elements[i][j]=elements[i][j]-help1*elements[i][corner-1];
+				elements[i][j] -= help1*elements[i][corner-1];
 			}
 		}
 	}
@@ -737,11 +739,11 @@ void Matrix<Integer>::reduce_column (int corner, Matrix<Integer>& Right, Matrix<
 		help1=elements[corner-1][j] / help2;
 		if (help1!=0) {
 			for (i = corner-1; i < nr; i++) {
-				elements[i][j]=elements[i][j]-help1*elements[i][corner-1];
+				elements[i][j] -= help1*elements[i][corner-1];
 			}
 			for (i = 0; i < nc; i++) {
-				Right.elements[i][j]=Right.elements[i][j]-help1*Right.elements[i][corner-1];
-				Right_Inv.elements[corner-1][i]=Right_Inv.elements[corner-1][i]+help1*Right_Inv.elements[j][i];
+				Right.elements[i][j] -= help1*Right.elements[i][corner-1];
+				Right_Inv.elements[corner-1][i] += help1*Right_Inv.elements[j][i];
 			}
 		}
 	}
@@ -790,6 +792,7 @@ int Matrix<Integer>::pivot_column(int col){
 				help=Iabs(elements[i][col-1]);
 				j=i+1;
 			}
+			if (help == 1) break;
 		}
 	}
 
@@ -935,41 +938,48 @@ vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex(const int& rank) const {
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& denom) const {
-
-    vector<Integer> dummy_diag(nr);
-    return solve(Right_side, dummy_diag,denom);
+	Matrix<Integer> Left_side(*this);
+	vector<Integer> dummy_diag(nr);
+	return Left_side.solve_destructiv(Right_side, dummy_diag, denom);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& denom) const {
+	Matrix<Integer> Left_side(*this);
+	return Left_side.solve_destructiv(Right_side, diagonal, denom);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve_destructiv(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
 	int dim=Right_side.nr;
 	int nr_sys=Right_side.nc;
 	assert(nr == nc);
 	assert(nc == dim);
 	assert(dim == diagonal.size());
 
-	Matrix<Integer> Left_side(*this);
 	Matrix<Integer> Solution(dim,nr_sys);
 	Integer S;
 	int piv,rk,i,j,k;
 	for (rk = 1; rk <= dim; rk++) {
-		piv=Left_side.pivot_column(rk);
+		piv=(*this).pivot_column(rk);
 		if (piv>0) {
 			do {
-				Left_side.exchange_rows (rk,piv);
+				(*this).exchange_rows (rk,piv);
 				Right_side.exchange_rows (rk,piv);
-				Left_side.reduce_row(rk, Right_side);
-				piv=Left_side.pivot_column(rk);
+				(*this).reduce_row(rk, Right_side);
+				piv=(*this).pivot_column(rk);
 			} while (piv>rk);
 		}
 	}
-	denom=Left_side.elements[0][0];
-	diagonal[0]= Left_side.elements[0][0];
+	denom=(*this).elements[0][0];
+	diagonal[0]= (*this).elements[0][0];
 	for (i = 1; i < dim; i++) {
-		denom*=Left_side.elements[i][i];
-		diagonal[i]= Left_side.elements[i][i];
+		denom*=(*this).elements[i][i];
+		diagonal[i]= (*this).elements[i][i];
 	}
 
 	if (denom==0) { 
@@ -981,9 +991,9 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integ
 		for (j = dim-1; j >= 0; j--) {
 			S=denom*Right_side.elements[j][i];
 			for (k = j+1; k < dim; k++) {
-				S-=Left_side.elements[j][k]*Solution.elements[k][i];
+				S-=(*this).elements[j][k]*Solution.elements[k][i];
 			}
-			Solution.elements[j][i]=S/Left_side.elements[j][j];
+			Solution.elements[j][i]=S/(*this).elements[j][j];
 		}
 	}
 	return Solution;
@@ -996,9 +1006,10 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& denom) const{
 	assert(nr == nc);
 	assert(nr == diagonal.size());
-    Matrix<Integer> Right_side(nr);
+	Matrix<Integer> Left_side(*this);
+	Matrix<Integer> Right_side(nr);
 
-    return solve(Right_side,diagonal,denom);
+	return Left_side.solve_destructiv(Right_side,diagonal,denom);
 }
 
 //---------------------------------------------------------------------------
@@ -1032,6 +1043,8 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
 	homogeneous=true;
 	return Linear_Form;
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
@@ -1084,6 +1097,7 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 	}
 	return Linear_Form;
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1132,7 +1146,7 @@ Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& R
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Invert(const Matrix<Integer>& Left_side,  vector< Integer >& diagonal ,Integer& denom){
+Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector< Integer >& diagonal, Integer& denom){
 	Matrix<Integer> S=Left_side.invert(diagonal,denom);
 	if (test_arithmetic_overflow==true) {
 		bool testing=Left_side.test_invert(S,denom,overflow_test_modulus);

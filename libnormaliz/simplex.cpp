@@ -356,7 +356,9 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
 		Matrix<Integer> RS(1,dim);  // (transpose of) right hand side
 		RS.write(1,C.Order_Vector); // to hold order vector
-		Matrix<Integer> Sol=Generators.transpose().solve(RS.transpose(),volume);
+		RS=RS.transpose();
+		vector<Integer> diag(dim);
+		Matrix<Integer> Sol=Generators.transpose().solve_destructiv(RS,diag,volume);
 		Indicator=Sol.transpose().read(1);
 		if(volume==1)
 			unimodular=true;
@@ -414,12 +416,12 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			}
 			if(Test==0){  // Order_Vector in facet, now lexicographic decision
 				for(j=0;j<dim;j++){
-					if(InvGen.read(j+1,i+1)<0){ // COLUMNS of InvGen give supp hyps
+					if(InvGen[j][i]<0){ // COLUMNS of InvGen give supp hyps
 						Excluded[i]=true;
 						Deg++;
 						break;
 					}
-					if(InvGen.read(j+1,i+1)>0) // facet included
+					if(InvGen[j][i]>0) // facet included
 						break;
 				}
 			}
