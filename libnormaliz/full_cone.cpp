@@ -763,6 +763,7 @@ void Full_Cone<Integer>::build_cone() {
 	RekTiefe++;
 	cout << RekTiefe;
 
+	// DECIDE WHETHER TO USE RECURSION
 	size_t RecBoundSuppHyp = dim*dim*dim;
 	RecBoundSuppHyp *= RecBoundSuppHyp * 10; //dim^6 * 10
 	size_t bound_div = nr_gen-dim+1;
@@ -770,10 +771,8 @@ void Full_Cone<Integer>::build_cone() {
 	RecBoundSuppHyp /= bound_div;
 
 	size_t RecBoundTriang=RecBoundFactor; //dim*dim*dim*dim*RecBoundFactor;
-	//dim^4
 
 if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
-if(!is_pyramid) cout << "RecBoundTriang  = "<<RecBoundTriang<<endl;
 
 	find_and_evaluate_start_simplex();
 	
