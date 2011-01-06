@@ -909,6 +909,7 @@ template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
 	size_t listsize = Triangulation.size();
+	if (verbose) verboseOutput() << "evaluating "<<listsize<<" simplices" <<endl;
 
 	#pragma omp parallel 
 	{
@@ -922,7 +923,14 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 			Simplex<Integer> simp(s->first);
 			simp.evaluate(*this,s->second);
 			s->second=simp.read_volume();
+			if (verbose && (i+1)%10000==0) {
+				verboseOutput() << "evaluated "<< (i+1)<<" simplices" <<endl;
+			}
 		}
+	}
+
+	if (verbose) {
+		verboseOutput() << "evaluated "<< listsize<<" simplices" <<endl;
 	}
 }
 
