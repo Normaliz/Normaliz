@@ -464,7 +464,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 
 		for (i = last+1; i <dim; i++) {
 			point[i]=0;
-				elements[i] = elements[last];
+			elements[i] = elements[last];
 		}
 //        vector<Integer> new_element=InvGen.VxM(point);
 

@@ -721,8 +721,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 	
 	if(!is_pyramid && do_h_vector){
 		Matrix<Integer> G=S.read_generators();
+		//srand(12345);
 		for(i=0;i<dim;i++){
-			factor=2*(rand()%dim)+1;
+			factor=2*(rand()%(2*dim))+3;
 			for(j=0;j<dim;j++)
 				Order_Vector[j]+=factor*G.read(i+1,j+1);        
 		} 

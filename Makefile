@@ -23,9 +23,13 @@ normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz-impl.cpp $(GMPFLAGS) -o normaliz1
 
 
+normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg Normaliz-impl.cpp $(GMPFLAGS) -o normaliz-pg
+
 clean:
 	$(MAKE) --directory=libnormaliz clean
 	-rm -f normaliz
 	-rm -f normaliz?
+	-rm -f normaliz-pg
 
 .PHONY : default clean all
