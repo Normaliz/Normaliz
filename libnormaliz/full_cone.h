@@ -105,6 +105,7 @@ class Full_Cone {
 	void transform_values(const int & ind_gen);
 	void add_simplex(const int& new_generator);
 	void process_pyramids(const size_t ind_gen,const bool recursive);
+	void process_pyramid(FMDATA& l, const size_t ind_gen,const bool recursive);
 
 	/* */
 	void find_and_evaluate_start_simplex();

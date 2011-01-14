@@ -595,87 +595,113 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
 template<typename Integer>
 void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recursive){
 
-	size_t lpos=0, listsize=HypIndVal.size();
 	typename list< FMDATA >::iterator l=HypIndVal.begin();
 		
-	#pragma omp parallel for firstprivate(lpos,l) schedule(dynamic) 
-	for (int k=0; k<listsize; k++) {
-		for(;k > lpos; lpos++, l++) ;
-		for(;k < lpos; lpos--, l--) ;
-
-		if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1)) // only triangulation of Pyramids of height >=2 needeed
-			continue;
-			
-		vector<size_t> Pyramid_key;
-		Pyramid_key.reserve(nr_gen);
-		size_t i; 
-		boost::dynamic_bitset<> in_Pyramid(nr_gen,false);           
-		Pyramid_key.push_back(ind_gen+1);
-		in_Pyramid.set(ind_gen);
-		for(i=0;i<nr_gen;i++){
-			if(in_triang[i] && v_scalar_product(l->Hyp,Generators.read(i+1))==0){ // we cannot trust that HypIndVal is
-				Pyramid_key.push_back(i+1);                                      // up-to-date
-				in_Pyramid.set(i);
-			}
-		}
-		Full_Cone<Integer> Pyramid(*this,Generators.submatrix(Pyramid_key));
-		Pyramid.do_triangulation= !recursive || do_triangulation;
-		if(Pyramid.do_triangulation)
-			Pyramid.do_partial_triangulation=false;
-		Pyramid.build_cone(); 
+	if (is_pyramid) { //do not create a new parallel region
+		for (; l != HypIndVal.end(); ++l) {
+			// only triangulation of Pyramids of height >=2 needeed
+			if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1))
+				continue;
 		
-		if(recursive && keep_triangulation){        
-			typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Pyramid.Triangulation.begin();
-			pair<vector<size_t>,Integer> newsimplex;
-			newsimplex.first=vector<size_t> (dim);
-			for(;pyr_simp!=Pyramid.Triangulation.end();pyr_simp++){
-				for(i=0;i<dim;i++)
-					newsimplex.first[i]=Pyramid_key[pyr_simp->first[i]-1];
-				newsimplex.second=pyr_simp->second;
-				#pragma omp critical(TRIANG)
-				Triangulation.push_back(newsimplex);          
-			}
-		}
-		Pyramid.Triangulation.clear();        
-	  
-		if(recursive){         
-			typename list<vector<Integer> >::iterator pyr_hyp = Pyramid.Support_Hyperplanes.begin();
-			bool new_global_hyp;
-			FMDATA NewHypIndVal;
-			Integer test;   
-			for(;pyr_hyp!=Pyramid.Support_Hyperplanes.end();pyr_hyp++){
-				if(v_scalar_product(Generators.read(ind_gen+1),*pyr_hyp)>0)
-					continue;
-				new_global_hyp=true;
-				for(i=0;i<nr_gen;i++){
-					if(in_Pyramid.test(i) || !in_triang[i])
+			#pragma omp task firstprivate(l)
+			process_pyramid((*l), ind_gen, recursive);	
+		} //end for
+		#pragma omp taskwait
+	} else {
+		#pragma omp parallel if(!is_pyramid)
+		{
+			#pragma omp single
+			{
+				for (; l != HypIndVal.end(); ++l) {
+	
+					// only triangulation of Pyramids of height >=2 needeed
+					if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1))
 						continue;
-					test=v_scalar_product(Generators.read(i+1),*pyr_hyp);
-					if(test<=0){
-						new_global_hyp=false;
-						break;
-					}
 				
+					#pragma omp task firstprivate(l)
+					process_pyramid((*l), ind_gen, recursive);
+			
+				} //end for
+			} //end single
+			#pragma omp taskwait
+		} //end parallel
+	}
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const bool recursive){
+
+	vector<size_t> Pyramid_key;
+	Pyramid_key.reserve(nr_gen);
+	size_t i; 
+	boost::dynamic_bitset<> in_Pyramid(nr_gen,false);           
+	Pyramid_key.push_back(ind_gen+1);
+	in_Pyramid.set(ind_gen);
+	for(i=0;i<nr_gen;i++){
+		if(in_triang[i] && v_scalar_product(l.Hyp,Generators.read(i+1))==0){ // we cannot trust that HypIndVal is
+			Pyramid_key.push_back(i+1);                                      // up-to-date
+			in_Pyramid.set(i);
+		}
+	}
+	Full_Cone<Integer> Pyramid(*this,Generators.submatrix(Pyramid_key));
+	Pyramid.do_triangulation= !recursive || do_triangulation;
+	if(Pyramid.do_triangulation)
+		Pyramid.do_partial_triangulation=false;
+	Pyramid.build_cone(); 
+	
+	if(recursive && keep_triangulation){        
+		typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Pyramid.Triangulation.begin();
+		pair<vector<size_t>,Integer> newsimplex;
+		newsimplex.first=vector<size_t> (dim);
+		for(;pyr_simp!=Pyramid.Triangulation.end();pyr_simp++){
+			for(i=0;i<dim;i++)
+				newsimplex.first[i]=Pyramid_key[pyr_simp->first[i]-1];
+			newsimplex.second=pyr_simp->second;
+			#pragma omp critical(TRIANG)
+			Triangulation.push_back(newsimplex);          
+		}
+	}
+	Pyramid.Triangulation.clear();        
+	 
+	if(recursive){         
+		typename list<vector<Integer> >::iterator pyr_hyp = Pyramid.Support_Hyperplanes.begin();
+		bool new_global_hyp;
+		FMDATA NewHypIndVal;
+		Integer test;   
+		for(;pyr_hyp!=Pyramid.Support_Hyperplanes.end();pyr_hyp++){
+			if(v_scalar_product(Generators.read(ind_gen+1),*pyr_hyp)>0)
+				continue;
+			new_global_hyp=true;
+			for(i=0;i<nr_gen;i++){
+				if(in_Pyramid.test(i) || !in_triang[i])
+					continue;
+				test=v_scalar_product(Generators.read(i+1),*pyr_hyp);
+				if(test<=0){
+					new_global_hyp=false;
+					break;
 				}
-				if(new_global_hyp){
-					NewHypIndVal.Hyp=*pyr_hyp;                
-					#pragma omp critical(HYPERPLANE)
-					HypIndVal.push_back(NewHypIndVal);
-				}
+			
+			}
+			if(new_global_hyp){
+				NewHypIndVal.Hyp=*pyr_hyp;                
+				#pragma omp critical(HYPERPLANE)
+				HypIndVal.push_back(NewHypIndVal);
 			}
 		}
-		Pyramid.Support_Hyperplanes.clear();
-		
-		if(do_h_vector) {
-			#pragma omp critical(HVECTOR)
-			H_Vector=v_add(H_Vector,Pyramid.H_Vector);
-		}
-		
-		#pragma omp critical(CANDIDATES)
-		Candidates.splice(Candidates.begin(),Pyramid.Candidates);
-		#pragma omp critical(HT1ELEMENTS)
-		Ht1_Elements.splice(Ht1_Elements.begin(),Pyramid.Ht1_Elements);
 	}
+	Pyramid.Support_Hyperplanes.clear();
+	
+	if(do_h_vector) {
+		#pragma omp critical(HVECTOR)
+		H_Vector=v_add(H_Vector,Pyramid.H_Vector);
+	}
+	
+	#pragma omp critical(CANDIDATES)
+	Candidates.splice(Candidates.begin(),Pyramid.Candidates);
+	#pragma omp critical(HT1ELEMENTS)
+	Ht1_Elements.splice(Ht1_Elements.begin(),Pyramid.Ht1_Elements);
 }
 
 //---------------------------------------------------------------------------
