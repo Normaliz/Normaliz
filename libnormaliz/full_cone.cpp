@@ -51,7 +51,7 @@ void Full_Cone<Integer>::add_hyperplane(const int& ind_gen, const FMDATA & posit
 	FMDATA NewHypIndVal; NewHypIndVal.Hyp.resize(dim); NewHypIndVal.GenInHyp.resize(nr_gen);
 	
 	Integer used_for_tests;
-	if (test_arithmetic_overflow==true) {  // does arithmetic tests
+	if (test_arithmetic_overflow) {  // does arithmetic tests
 		for (k = 0; k <dim; k++) {
 			NewHypIndVal.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
 			used_for_tests =(positive.ValNewGen%overflow_test_modulus)*(negative.Hyp[k]%overflow_test_modulus)-(negative.ValNewGen%overflow_test_modulus)*(positive.Hyp[k]%overflow_test_modulus);
@@ -698,6 +698,9 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 		H_Vector=v_add(H_Vector,Pyramid.H_Vector);
 	}
 	
+	#pragma omp critical(MULTIPLICITY)
+	multiplicity += Pyramid.multiplicity;
+
 	#pragma omp critical(CANDIDATES)
 	Candidates.splice(Candidates.begin(),Pyramid.Candidates);
 	#pragma omp critical(HT1ELEMENTS)
@@ -762,7 +765,7 @@ except global reduction */
 template<typename Integer>
 void Full_Cone<Integer>::build_cone() {
 	if(dim>0){            //correction needed to include the 0 cone;
-	if (verbose==true && !is_pyramid) {
+	if (verbose && !is_pyramid) {
 		verboseOutput()<<"\n************************************************************\n";
 		verboseOutput()<<"starting primal algorithm ";
 		if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
@@ -858,7 +861,7 @@ if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 				
 				in_triang[i]=true;
 
-				if (verbose==true && !is_pyramid) {
+				if (verbose && !is_pyramid) {
 					verboseOutput() << "generator="<< i+1 <<" and "<<HypIndVal.size()<<" hyperplanes... ";
 					if(keep_triangulation)
 						verboseOutput() << Triangulation.size() << " simplices ";
