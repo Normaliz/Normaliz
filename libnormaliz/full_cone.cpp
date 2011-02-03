@@ -89,7 +89,7 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 
 	// NEW: ind_gen is the index of the generator being inserted
 
-	register int i,j,k,t,nr_zero_i;
+	register int i,k,nr_zero_i;
 	register int subfacet_dim=dim-2; // NEW dimension of subfacet
 	register int facet_dim=dim-1; // NEW dimension of facet
 	
@@ -258,8 +258,9 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	size_t nr_NegSubf;
 	map < boost::dynamic_bitset<>, int > Neg_Subfacet;
 	
-	#pragma omp parallel private(i, j, k, t, jj, nr_zero_i)
+	#pragma omp parallel private(jj)
 	{
+	int i,j,k,t,nr_zero_i;
 	boost::dynamic_bitset<> subfacet(dim-2);
 	jj = Neg_Subfacet_Multi.begin();
 	int jjpos=0;
@@ -299,15 +300,19 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	}
 	
 	#pragma omp single
-	nr_NegSubf = Neg_Subfacet.size();
+	{nr_NegSubf = Neg_Subfacet.size();}
 
 	#pragma omp single nowait
-	if (tv_verbose) verboseOutput()<<"transform_values: reduced map size "<<nr_NegSubf<<endl<<flush;
+	if (tv_verbose) {
+		verboseOutput()<<"transform_values: reduced map size "<<nr_NegSubf<<endl<<flush;
+	} 
 	#pragma omp single nowait
-	Neg_Subfacet_Multi.clear();
+	{Neg_Subfacet_Multi.clear();}
 
 	#pragma omp single nowait
-	if (tv_verbose) verboseOutput()<<"transform_values: PS vs NS"<<endl<<flush;
+	if (tv_verbose) {
+		verboseOutput()<<"transform_values: PS vs NS"<<endl<<flush;
+	}
 	
 	boost::dynamic_bitset<> zero_i(nr_gen);
 	map <boost::dynamic_bitset<>, int> ::iterator jj_map;
@@ -343,7 +348,9 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	}
 
 	#pragma omp single nowait
-	if (tv_verbose) verboseOutput()<<"transform_values: NS vs P"<<endl<<flush;
+	if (tv_verbose) {
+		verboseOutput()<<"transform_values: NS vs P"<<endl<<flush;
+	}
 
 //  for (jj_map = Neg_Subfacet.begin(); jj_map != Neg_Subfacet.end(); ++jj_map)  //Neg_simplex vs. Pos_Non_Simp
 	jj_map = Neg_Subfacet.begin();
@@ -364,7 +371,9 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 	}
 	
 	#pragma omp single nowait
-	if (tv_verbose) verboseOutput()<<"transform_values: PS vs N"<<endl<<flush;
+	if (tv_verbose) {
+		verboseOutput()<<"transform_values: PS vs N"<<endl<<flush;
+	}
 
 	vector<int> key(nr_gen);
 	int nr_missing;
@@ -404,7 +413,9 @@ void Full_Cone<Integer>::transform_values(const int& ind_gen){
 
 
 	#pragma omp single nowait
-	if (tv_verbose) verboseOutput()<<"transform_values: P vs N"<<endl<<flush;
+	if (tv_verbose) {
+		verboseOutput()<<"transform_values: P vs N"<<endl<<flush;
+	}
 	
 	bool exactly_two;
 	FMDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
@@ -604,7 +615,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 				continue;
 		
 			#pragma omp task firstprivate(l)
-			process_pyramid((*l), ind_gen, recursive);	
+			{
+				process_pyramid((*l), ind_gen, recursive);
+			}
 		} //end for
 		#pragma omp taskwait
 	} else {
@@ -619,7 +632,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 						continue;
 				
 					#pragma omp task firstprivate(l)
-					process_pyramid((*l), ind_gen, recursive);
+					{
+						process_pyramid((*l), ind_gen, recursive);
+					}
 			
 				} //end for
 			} //end single
