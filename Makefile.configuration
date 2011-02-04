@@ -1,8 +1,8 @@
 ##
 ## Makefile configuration for normaliz
 ##
-CXX = g++
-CXXFLAGS += -Wall -Wno-sign-compare
+CXX = g++ 
+CXXFLAGS += -Wall
 CXXFLAGS += -pedantic -Wno-long-long
 CXXFLAGS += -O3 -funroll-loops
 #CXXFLAGS += -g

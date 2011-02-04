@@ -22,7 +22,7 @@ template class Sublattice_Representation<mpz_class>;
 template class Lineare_Transformation<long long int>;
 template class Lineare_Transformation<mpz_class>;
 
-template int decimal_length<long long int>(long long int);
-template int decimal_length<mpz_class>(mpz_class);
+template size_t decimal_length<long long int>(long long int);
+template size_t decimal_length<mpz_class>(mpz_class);
 
 }

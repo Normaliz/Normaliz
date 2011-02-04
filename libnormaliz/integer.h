@@ -59,10 +59,10 @@ template<> mpz_class lcm(const mpz_class& a, const mpz_class& b);
 //---------------------------------------------------------------------------
 
 //return the number of decimals, needed to write the Integer a
-template<typename Integer> int decimal_length(Integer a);
+template<typename Integer> size_t decimal_length(Integer a);
 
 //returns b!/a!
-template<typename Integer> Integer permutations(const int& a, const int& b);
+template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
 
 }
 

@@ -45,7 +45,7 @@ void Simplex<Integer>::reduce_and_insert_interior(const vector< Integer >& new_e
 		return; // new_element=0
 	}
 	else {
-		register int i,c=1,d=dim+1;
+		register size_t i,c=1,d=dim+1;
 		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			if (new_element[0]<2*(*j)[0]) {
@@ -192,7 +192,7 @@ void Simplex<Integer>::read_k() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Simplex<Integer>::read_dimension() const{
+size_t Simplex<Integer>::read_dimension() const{
 	return dim;
 }
 
@@ -314,7 +314,7 @@ size_t Simplex<Integer>::read_hilbert_basis_size() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Simplex<Integer>::compare(const Simplex<Integer>& S) const{
+size_t Simplex<Integer>::compare(const Simplex<Integer>& S) const{
 	return v_difference_ordered_fast(key,S.key);
 }
 
@@ -342,7 +342,7 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 //---------------------------------------------------------------------------
 
 //TODO remove
-int NrInvert=0;
+size_t NrInvert=0;
 
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
@@ -373,8 +373,8 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	}
 
 	bool decided=true;
-	int i,j;
-	int Deg=0;        // Deg is the degree in which the 0 vector is counted
+	size_t i,j;
+	size_t Deg=0;        // Deg is the degree in which the 0 vector is counted
 	if(unimodular){   // it remains to count the 0-vector in the h-vector 
 		for(i=0;i<dim;i++){
 			if(Indicator[i]<0)   // facet opposite of vertex i excluded
@@ -439,7 +439,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	vector < Integer > norm(1);
 	list < vector<Integer> > Candidates;
 	typename list <vector <Integer> >::iterator c;
-	int k,last;
+	size_t k,last;
 	vector<Integer> point(dim,0);
  
 	Matrix<Integer> elements(dim,dim); //all 0 matrix
@@ -500,7 +500,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	}
 	
 	if(C.do_h_vector) {
-		for(int i=0; i<dim; i++) {
+		for(size_t i=0; i<dim; i++) {
 			if(H_Vector[i]!=0) {
 				#pragma omp critical(HVECTOR)
 				C.H_Vector[i]+=H_Vector[i];

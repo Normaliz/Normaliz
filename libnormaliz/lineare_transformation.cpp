@@ -90,7 +90,7 @@ void Lineare_Transformation<Integer>::read() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-int Lineare_Transformation<Integer>::get_rank() const{
+size_t Lineare_Transformation<Integer>::get_rank() const{
 	return rk;
 }
 
@@ -132,7 +132,7 @@ Matrix<Integer> Lineare_Transformation<Integer>::get_right_inv() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::set_rank(const int rank) {
+void Lineare_Transformation<Integer>::set_rank(const size_t rank) {
 	rk = rank;
 }
 
@@ -160,14 +160,14 @@ void Lineare_Transformation<Integer>::set_right_inv(const Matrix<Integer>& M){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::exchange_rows(int row1, int row2){
+void Lineare_Transformation<Integer>::exchange_rows(size_t row1, size_t row2){
 	Center.exchange_rows(row1,row2);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::exchange_columns(int col1, int col2){
+void Lineare_Transformation<Integer>::exchange_columns(size_t col1, size_t col2){
 	Center.exchange_columns(col1,col2);
 	Right.exchange_columns(col1,col2);
 	Right_Inv.exchange_rows(col1,col2);
@@ -176,14 +176,14 @@ void Lineare_Transformation<Integer>::exchange_columns(int col1, int col2){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::reduce_row(int corner){
+void Lineare_Transformation<Integer>::reduce_row(size_t corner){
 	Center.reduce_row(corner);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::reduce_column(int corner){
+void Lineare_Transformation<Integer>::reduce_column(size_t corner){
 	Center.reduce_column(corner, Right, Right_Inv);
 }
 
@@ -191,9 +191,9 @@ void Lineare_Transformation<Integer>::reduce_column(int corner){
 
 template<typename Integer>
 void Lineare_Transformation<Integer>::transformation(){
-	int r;
-	int rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
-	vector<int> piv(2,0);
+	size_t r;
+	size_t rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
+	vector<size_t> piv(2,0);
 	for (r = 1; r <= rk_max; r++) {
 		piv=Center.pivot(r);
 		if (piv[0]>0) {
@@ -219,8 +219,8 @@ void Lineare_Transformation<Integer>::transformation(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Lineare_Transformation<Integer>::test_transformation(const Matrix<Integer>& M,const int& m) const{
-	int nc=Center.nr_of_columns();
+bool Lineare_Transformation<Integer>::test_transformation(const Matrix<Integer>& M,const size_t& m) const{
+	size_t nc=Center.nr_of_columns();
 	Matrix<Integer> N=Right.multiplication(Right_Inv, m);
 	Matrix<Integer> I(nc);
 	if (!I.equal(N,m)) {

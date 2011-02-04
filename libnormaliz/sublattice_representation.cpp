@@ -39,7 +39,7 @@ using namespace std;
  * creates a representation of Z^n as a sublattice of itself
  */
 template<typename Integer>
-Sublattice_Representation<Integer>::Sublattice_Representation(int n) {
+Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
 	dim = n;
 	rank = n;
 	index = 1;
@@ -69,7 +69,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Lineare_Tran
 
 template<typename Integer>
 void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation<Integer>& Basis_Change, bool direct_summand) {
-	int i,j;
+	size_t i,j;
 	
 	rank = Basis_Change.get_rank();
 	if (rank==0) {
@@ -229,7 +229,7 @@ vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const 
 
 /* returns the dimension of the ambient space */
 template<typename Integer>
-int Sublattice_Representation<Integer>::get_dim() const {
+size_t Sublattice_Representation<Integer>::get_dim() const {
 	return dim;
 }
 
@@ -237,7 +237,7 @@ int Sublattice_Representation<Integer>::get_dim() const {
 
 /* returns the rank of the sublattice */
 template<typename Integer>
-int Sublattice_Representation<Integer>::get_rank() const {
+size_t Sublattice_Representation<Integer>::get_rank() const {
 	return rank;
 }
 
@@ -288,7 +288,7 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
 	Integer rowgcd;
 	Matrix<Integer> Cong2(0,dim+1); //only the relavant congruences
 	vector<Integer> new_row;
-	for (int j=1; j<=rank; j++) {
+	for (size_t j=1; j<=rank; j++) {
 		m = c/gcds[j-1];
 		if ( m != 1 ) {
 			new_row = Cong.read(j);

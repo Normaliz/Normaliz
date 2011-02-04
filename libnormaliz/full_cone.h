@@ -47,9 +47,9 @@ void lift(Full_Cone<Integer>& Lifted, Matrix<Integer> Extreme_Generators);
 
 template<typename Integer>
 class Full_Cone {
-	int dim;
-	int nr_gen;
-	int hyp_size;
+	size_t dim;
+	size_t nr_gen;
+	size_t hyp_size;
 	
 	bool pointed;
 	bool ht1_generated;
@@ -101,9 +101,9 @@ class Full_Cone {
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-	void add_hyperplane(const int& ind_gen, const FMDATA & positive,const FMDATA & negative);
-	void transform_values(const int & ind_gen);
-	void add_simplex(const int& new_generator);
+	void add_hyperplane(const size_t& ind_gen, const FMDATA & positive,const FMDATA & negative);
+	void transform_values(const size_t & ind_gen);
+	void add_simplex(const size_t& new_generator);
 	void process_pyramids(const size_t ind_gen,const bool recursive);
 	void process_pyramid(FMDATA& l, const size_t ind_gen,const bool recursive);
 
@@ -176,8 +176,8 @@ public:
  *---------------------------------------------------------------------------
  */
 	void print() const;             //to be modified, just for tests
-	int getDimension() const;       //returns dimension
-	int getNrGenerators() const;    //returns the number of generators
+	size_t getDimension() const;       //returns dimension
+	size_t getNrGenerators() const;    //returns the number of generators
 	bool isPointed() const;
 	bool isHt1ExtremeRays() const;
 	bool isHt1HilbertBasis() const;

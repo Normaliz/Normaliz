@@ -32,7 +32,7 @@ using std::vector;
 //---------------------------------------------------------------------------
 
 template <typename T> void v_write(vector<T>& v);        //used for tests
-template <typename T> int v_read(const vector<T>& v);  //used for tests, returns size of v
+template <typename T> size_t v_read(const vector<T>& v);  //used for tests, returns size of v
 
 //---------------------------------------------------------------------------
 //					    	Vector operations
@@ -93,7 +93,7 @@ void v_reduction_modulo(vector<Integer>& v, const Integer& modulo);
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool v_test_scalar_product(const vector<Integer>& a,const vector<Integer>& b, const Integer& result, const int& m);
+bool v_test_scalar_product(const vector<Integer>& a,const vector<Integer>& b, const Integer& result, const size_t& m);
 // test the main computation for arithmetic overflow
 // uses multiplication mod m
 
@@ -107,15 +107,15 @@ vector<T> v_merge(const vector<T>& a,const vector<T>& b);
 
 //returns a new vector with the last size entries of v
 template<typename T>
-vector<T> v_cut_front(const vector<T>& v, int size);
+vector<T> v_cut_front(const vector<T>& v, size_t size);
 
 //the input vectors must be ordered of equal size
 //if u is different from v by just one element, it returns that element
 //else returns 0 (the elements of u and v are >0)
-int v_difference_ordered_fast(const vector<int>& u,const vector<int>& v);
+int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v);
 
 template<typename Integer>
-vector<int> v_non_zero_pos(vector<Integer> v); //returns a key vector containing the positions of non-zero entrys of v (counting from 1 to v.size())
+vector<size_t> v_non_zero_pos(vector<Integer> v); //returns a key vector containing the positions of non-zero entrys of v (counting from 1 to v.size())
 
 
 }

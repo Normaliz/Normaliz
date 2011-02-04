@@ -71,8 +71,8 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-int decimal_length(Integer a){
-	int l=1;
+size_t decimal_length(Integer a){
+	size_t l=1;
 	if (a<0) {
 		a=-a;
 		l++;
@@ -85,10 +85,10 @@ int decimal_length(Integer a){
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-Integer permutations(const int& a, const int& b){
-	int i;
+Integer permutations(const size_t& a, const size_t& b){
+	size_t i;
 	Integer P=1;
-	for (i = a+1; i <=b; i++) {
+	for (i = a+1; i <= b; i++) {
 		P*=i;
 	}
 	return P;

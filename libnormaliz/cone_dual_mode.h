@@ -34,9 +34,9 @@ using std::vector;
 template<typename Integer>
 class Cone_Dual_Mode {
 public:
-	int dim;
-	int nr_sh;
-	int hyp_size;
+	size_t dim;
+	size_t nr_sh;
+	size_t hyp_size;
 	
 	Matrix<Integer> SupportHyperplanes;
 	Matrix<Integer> Generators;
@@ -50,23 +50,23 @@ public:
 
 	/* Returns true if new_element is reducible versus the elements in Ired
 	 * used for dual algorithm */
-	bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const int & size);
+	bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const size_t & size);
 
 	/* reduce Red versus Ired */
-	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const int & size);
+	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const size_t & size);
 
 	/* adds a new element irreducible to the Hilbert basis
 	 * the new elements must come from a  structure sorted by total degree
 	 * used for dual algorithm */
-	void reduce_and_insert(const vector<Integer> & new_element, const int & size);
+	void reduce_and_insert(const vector<Integer> & new_element, const size_t & size);
 	/* select extreme rays  by reduction
 	 * used for the dual algorithm */
 	void reduce_and_insert_extreme(const vector<Integer> & new_element);
 
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
-	void cut_with_halfspace_hilbert_basis(const int & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
+	void cut_with_halfspace_hilbert_basis(const size_t & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
 	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
-	Matrix<Integer> cut_with_halfspace(const int & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);
+	Matrix<Integer> cut_with_halfspace(const size_t & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);
 
 	/* computes the extreme rays using reduction, used for the dual algorithm */
 	void extreme_rays_reduction();

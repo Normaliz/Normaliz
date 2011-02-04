@@ -294,8 +294,8 @@ void Output<Integer>::write_matrix_ht1(const Matrix<Integer>& M) const{
 template<typename Integer>
 void Output<Integer>::write_inv_file() const{
 	if (inv==true) {//printing .inv file
-		int i;
-		int rank=Result->getBasisChange().get_rank();
+		size_t i;
+		size_t rank=Result->getBasisChange().get_rank();
 		string name_open=name+".inv"; 							 //preparing output files
 		const char* file=name_open.c_str();
 		ofstream inv(file);
@@ -305,7 +305,7 @@ void Output<Integer>::write_inv_file() const{
 		}
 
 		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-		int nr_ex_rays=0;
+		size_t nr_ex_rays=0;
 		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 			if (Ex_Rays_Marked[i]==true) {
 				nr_ex_rays++;
@@ -363,7 +363,7 @@ void Output<Integer>::write_inv_file() const{
 template<typename Integer>
 void Output<Integer>::cone() const {
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
-	int i,j,nr,rank=BasisChange.get_rank();    //read local data
+	size_t i,j,nr,rank=BasisChange.get_rank();    //read local data
 	Matrix<Integer> Generators = Result->getGenerators();
 	Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
 
@@ -383,7 +383,7 @@ void Output<Integer>::cone() const {
 		ofstream out(file);
 
 		// write "header" of the .out file
-		int nr_orig_gens = Result->getGeneratorsOfToricRing().size();
+		size_t nr_orig_gens = Result->getGeneratorsOfToricRing().size();
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators of the toric ring"<<endl;
 		}
@@ -395,7 +395,7 @@ void Output<Integer>::cone() const {
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
-			int nr_ex_rays=0;
+			size_t nr_ex_rays=0;
 			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 				if (Ex_Rays_Marked[i]==true) {
 					nr_ex_rays++;
@@ -493,13 +493,13 @@ void Output<Integer>::cone() const {
 		Matrix<Integer> Extreme_Rays;
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-			int nr_ex_rays=0;
+			size_t nr_ex_rays=0;
 			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 				if (Ex_Rays_Marked[i]==true) {
 					nr_ex_rays++;
 				}
 			}
-			vector<int> Ex_Rays_Position(nr_ex_rays);
+			vector<size_t> Ex_Rays_Position(nr_ex_rays);
 			j=0;
 			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 				if (Ex_Rays_Marked[i]==true) {
@@ -520,8 +520,8 @@ void Output<Integer>::cone() const {
 		Support_Hyperplanes.pretty_print(out);
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			//equations
-			int dim = Extreme_Rays.nr_of_columns();
-			int nr_of_equ = dim-rank;
+			size_t dim = Extreme_Rays.nr_of_columns();
+			size_t nr_of_equ = dim-rank;
 			Matrix<Integer> Equations(nr_of_equ,dim);
 			if (nr_of_equ > 0) {
 				Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
@@ -537,7 +537,7 @@ void Output<Integer>::cone() const {
 	
 			//congruences
 			Matrix<Integer> Congruences = BasisChange.get_congruences();
-			int nr_of_cong = Congruences.nr_of_rows();
+			size_t nr_of_cong = Congruences.nr_of_rows();
 			if (nr_of_cong > 0) {
 				out << nr_of_cong <<" congruences:" <<endl;
 				Congruences.pretty_print(out);
@@ -579,8 +579,8 @@ void Output<Integer>::cone() const {
 template<typename Integer>
 void Output<Integer>::polytop() const{
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
-	int i,j,k,nr,max_decimal_length;
-	int dim = BasisChange.get_dim(), rank=BasisChange.get_rank();    //read local data
+	size_t i,j,k,nr,max_decimal_length;
+	size_t dim = BasisChange.get_dim(), rank=BasisChange.get_rank();    //read local data
 	Matrix<Integer> Generators = Result->getGenerators();
 	Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanes());
 
@@ -599,7 +599,7 @@ void Output<Integer>::polytop() const{
 		ofstream out(file);
 
 		// write "header" of the .out file
-		int nr_orig_gens = Result->getGeneratorsOfToricRing().size();
+		size_t nr_orig_gens = Result->getGeneratorsOfToricRing().size();
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators"<<endl;
 		}
@@ -611,7 +611,7 @@ void Output<Integer>::polytop() const{
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
-			int nr_ex_rays=0;
+			size_t nr_ex_rays=0;
 			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 				if (Ex_Rays_Marked[i]==true) {
 					nr_ex_rays++;
@@ -676,7 +676,7 @@ void Output<Integer>::polytop() const{
 			}
 			Hilbert_Basis = Result->getHilbertBasis();
 			write_matrix_gen(Hilbert_Basis);
-			int nr = Hilbert_Basis.nr_of_rows();
+			size_t nr = Hilbert_Basis.nr_of_rows();
 			out<<nr<<" generators of Ehrhart ring:"<<endl;
 			Hilbert_Basis.pretty_print(out);
 		}
@@ -691,13 +691,13 @@ void Output<Integer>::polytop() const{
 		}
 
 		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-		int nr_ex_rays=0;
+		size_t nr_ex_rays=0;
 		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 			if (Ex_Rays_Marked[i]==true) {
 				nr_ex_rays++;
 			}
 		}
-		vector<int> Ex_Rays_Position(nr_ex_rays);
+		vector<size_t> Ex_Rays_Position(nr_ex_rays);
 		j=0;
 		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 			if (Ex_Rays_Marked[i]==true) {
@@ -716,7 +716,7 @@ void Output<Integer>::polytop() const{
 		//write constrains (support hyperplanes, congruences, equations)
 		Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
 		Integer buf;
-		int nr_sup = Support_Hyperplanes.nr_of_rows();
+		size_t nr_sup = Support_Hyperplanes.nr_of_rows();
 		max_decimal_length=Support_Hyperplanes.maximal_decimal_length();
 		out<<nr_sup<<" support hyperplanes:"<<endl;
 		for (i = 1; i <= nr_sup; i++) {
@@ -746,7 +746,7 @@ void Output<Integer>::polytop() const{
 			Equations.write(i-rank,Help.read(i));
 		}
 
-		int nr_of_equ = Equations.nr_of_rows();
+		size_t nr_of_equ = Equations.nr_of_rows();
 		if (nr_of_equ > 0) {
 			max_decimal_length = Equations.maximal_decimal_length();
 			out << nr_of_equ <<" equations:" <<endl;
@@ -772,7 +772,7 @@ void Output<Integer>::polytop() const{
 
 		//congruences
 		Matrix<Integer> Congruences = BasisChange.get_congruences();
-		int nr_of_cong = Congruences.nr_of_rows();
+		size_t nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
 			Congruences.pretty_print(out);
@@ -808,14 +808,14 @@ void Output<Integer>::rees() const{
 		libnormaliz::errorOutput()<<"error in Output.rees(): primary was NOT computed!"<<endl;
 	}
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
-	int i,j,nr;
-	int dim = BasisChange.get_dim();
-	int rank = BasisChange.get_rank();
-	int nr_generators_ideal=0;
+	size_t i,j,nr;
+	size_t dim = BasisChange.get_dim();
+	size_t rank = BasisChange.get_rank();
+	size_t nr_generators_ideal=0;
 	Matrix<Integer> Generators = Result->getGenerators();
 	Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanes());
 	Matrix<Integer> Hilbert_Basis;
-	vector<int> ideal_gen_key;
+	vector<size_t> ideal_gen_key;
 
 	if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
 		//write the support hyperplanes of the full dimensional cone
@@ -832,7 +832,7 @@ void Output<Integer>::rees() const{
 		ofstream out(file);
 
 		// write "header" of the .out file
-		int nr_orig_gens = Result->getGeneratorsOfToricRing().size();
+		size_t nr_orig_gens = Result->getGeneratorsOfToricRing().size();
 		if (nr_orig_gens > 0) {
 			out << nr_orig_gens <<" original generators"<<endl;
 		}
@@ -850,7 +850,7 @@ void Output<Integer>::rees() const{
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
 			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
-			int nr_ex_rays=0;
+			size_t nr_ex_rays=0;
 			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 				if (Ex_Rays_Marked[i]==true) {
 					nr_ex_rays++;
@@ -953,13 +953,13 @@ void Output<Integer>::rees() const{
 		}
 
 		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-		int nr_ex_rays=0;
+		size_t nr_ex_rays=0;
 		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 			if (Ex_Rays_Marked[i]==true) {
 				nr_ex_rays++;
 			}
 		}
-		vector<int> Ex_Rays_Position(nr_ex_rays);
+		vector<size_t> Ex_Rays_Position(nr_ex_rays);
 		j=0;
 		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
 			if (Ex_Rays_Marked[i]==true) {
@@ -981,13 +981,13 @@ void Output<Integer>::rees() const{
 		//equations 
 		Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
 		Matrix<Integer> Help = NewLT.get_right().transpose();
-		int dim = Extreme_Rays.nr_of_columns();
+		size_t dim = Extreme_Rays.nr_of_columns();
 		Matrix<Integer> Equations(dim-rank,dim);
 		for (i = 1+rank; i <= dim; i++) {
 			Equations.write(i-rank,Help.read(i));
 		}
 
-		int nr_of_equ = Equations.nr_of_rows();
+		size_t nr_of_equ = Equations.nr_of_rows();
 		if (nr_of_equ > 0) {
 			out << nr_of_equ <<" equations:" <<endl;
 			Equations.pretty_print(out);
@@ -996,7 +996,7 @@ void Output<Integer>::rees() const{
 
 		//congruences
 		Matrix<Integer> Congruences = BasisChange.get_congruences();
-		int nr_of_cong = Congruences.nr_of_rows();
+		size_t nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
 			Congruences.pretty_print(out);

@@ -38,7 +38,7 @@ namespace libnormaliz {
 
 template<typename Integer>
 class Sublattice_Representation {
-	int dim, rank;
+	size_t dim, rank;
 	Matrix<Integer> A;
 	Matrix<Integer> B;
 	Integer c;
@@ -58,7 +58,7 @@ public:
 	/**
 	 * creates a representation of Z^n as a sublattice of itself
 	 */
-	Sublattice_Representation(int n);
+	Sublattice_Representation(size_t n);
 	
 	/**
 	 * Main Constructor
@@ -101,10 +101,10 @@ public:
 //---------------------------------------------------------------------------
 
 	/* returns the dimension of the ambient space */
-	int get_dim() const;
+	size_t get_dim() const;
 
 	/* returns the rank of the sublattice */
-	int get_rank() const;
+	size_t get_rank() const;
 
 	/* returns the index of the sublattice */
 	Integer get_index() const;

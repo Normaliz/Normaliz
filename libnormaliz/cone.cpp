@@ -52,7 +52,7 @@ Cone<Integer>::Cone(const list< vector<Integer> >& Input, int input_type) {
 template<typename Integer>
 Cone<Integer>::Cone(const list< vector<Integer> >& Inequalities, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Congruences) {
 	initialize();
-	list<int> dimensions = list<int>();
+	list<size_t> dimensions = list<size_t>();
 	if (Inequalities.size()>0) dimensions.push_back(Inequalities.begin()->size());
 	if (Equations.size()>0) dimensions.push_back(Equations.begin()->size());
 	if (Congruences.size()>0) dimensions.push_back(Congruences.begin()->size()-1);
@@ -217,8 +217,8 @@ void Cone<Integer>::prepare_input_type_1(const list< vector<Integer> >& Input) {
 
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_2(const list< vector<Integer> >& Input) {
-	int j;
-	int nr = Input.size();
+	size_t j;
+	size_t nr = Input.size();
 	if (nr == 0) {
 		Generators = Input;
 	} else { //append a column of 1
@@ -293,10 +293,10 @@ template<typename Integer>
 void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& CongruencesL, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities) {
 	Matrix<Integer> Congruences(CongruencesL); //TODO handle it better
 
-	int nr_cong = Congruences.nr_of_rows();
+	size_t nr_cong = Congruences.nr_of_rows();
 	// handle Congurences
 	if (nr_cong > 0) {
-		int i,j;
+		size_t i,j;
 
 		//add slack variables
 		Matrix<Integer> Cong_Slack(nr_cong, dim+nr_cong);
@@ -309,7 +309,7 @@ void Cone<Integer>::prepare_input_type_456(const list< vector<Integer> >& Congru
 
 		//compute kernel
 		Lineare_Transformation<Integer> Diagonalization = Transformation(Cong_Slack);
-		int rank = Diagonalization.get_rank();
+		size_t rank = Diagonalization.get_rank();
 		Matrix<Integer> H = Diagonalization.get_right();
 		Matrix<Integer> Ker_Basis_Transpose(dim, dim+nr_cong-rank);
 		for (i = 1; i <= dim; i++) {
@@ -340,10 +340,10 @@ void Cone<Integer>::prepare_input_type_45(const list< vector<Integer> >& Equatio
 	is_Computed.set(ConeProperty::SupportHyperplanes);
 
 
-	int i,j;
+	size_t i,j;
 	if (Equations.size()>0) {
 		Lineare_Transformation<Integer> Diagonalization = Transformation(BasisChange.to_sublattice_dual(Equations));
-		int rank=Diagonalization.get_rank();
+		size_t rank=Diagonalization.get_rank();
 
 		Matrix<Integer> Help=Diagonalization.get_right();
 		Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
@@ -362,9 +362,9 @@ void Cone<Integer>::prepare_input_type_45(const list< vector<Integer> >& Equatio
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& BinomialsL) {
 	Matrix<Integer> Binomials(BinomialsL); //TODO geschickter machen
-	int i,j, nr_of_monoid_generators = dim;
+	size_t i,j, nr_of_monoid_generators = dim;
 	Lineare_Transformation<Integer> Diagonalization=Transformation(Binomials);
-	int rank=Diagonalization.get_rank();
+	size_t rank=Diagonalization.get_rank();
 	Matrix<Integer> Help=Diagonalization.get_right();
 	Matrix<Integer> Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
 	for (i = 1; i <= nr_of_monoid_generators; i++) {
@@ -522,9 +522,9 @@ void Cone<Integer>::compute_dual() {
 		throw NormalizException();
 	}
 
-	int i,j;
+	size_t i,j;
 	Matrix<Integer> Inequ_on_Ker = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes));
-	int newdim = Inequ_on_Ker.nr_of_columns();
+	size_t newdim = Inequ_on_Ker.nr_of_columns();
 	Integer norm;
 	vector< Integer > hyperplane;
 	multimap <Integer , vector <Integer> >  Help;

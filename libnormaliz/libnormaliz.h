@@ -39,7 +39,7 @@ extern bool verbose;
  * modulo overflow_test_modulus to ensure the correctness of the calculations
  */
 extern bool test_arithmetic_overflow;
-extern int overflow_test_modulus;
+extern size_t overflow_test_modulus;
 
 extern size_t RecBoundFactor;
 

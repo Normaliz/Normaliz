@@ -33,7 +33,7 @@ using std::vector;
 
 template<typename Integer>
 class Cone {
-	int dim;
+	size_t dim;
 
 //	Full_Cone<Integer> FullDimCone;
 	Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !

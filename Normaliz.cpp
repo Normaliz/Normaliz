@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 {
 
 	//libnormaliz::RecBoundFactor = 5000000;
-	int i;       //used for iterations
+	size_t i;       //used for iterations
 	char c;
 	string computation_type="triangulation_hilbert_basis";
 	//4  types available, "support_hyperplanes", "triangulation", "normal" and "hilbert_polynomial"
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 	// read command line options
 	bool filename_set=false;
 	string option;            //all options concatenated (including -)
-	for (i = 1; i <argc; i++) {
+	for (i = 1; i < (unsigned int)argc; i++) {
 		if (argv[i][0]=='-') {
 			if (argv[i][1]!='\0') {
 				if (argv[i][1]!='x') {
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 					#ifndef NO_OPENMP
 					string Threads = argv[i];
 					Threads.erase(0,3);
-					int nr_threads;
+					size_t nr_threads;
 					if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
 						omp_set_num_threads(nr_threads);
 					} else {
@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
 //---------------------------------------------------------------------------
 
 template<typename Integer> int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files ) {
-	int i,j;
+	size_t i,j;
 
 	Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -260,7 +260,8 @@ template<typename Integer> int process_data(string& output_name, string& computa
 
 
 	string mode_string;
-	int nr_rows,nr_columns, mode;
+	size_t nr_rows,nr_columns;;
+	int mode;
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
@@ -309,7 +310,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 	Out.set_name(output_name);
 	
 	if (mode >= 4 && mode <= 6) { //equations, inequalities, congruences
-		int nc = nr_columns;
+		size_t nc = nr_columns;
 		if (mode == 6) {
 			nc--;  //the congruence matrix has one extra column
 		}

@@ -32,7 +32,7 @@ using namespace std;
 
 template <typename T>
 void v_write(vector<T>& v){
-	int i,s=v.size();
+	size_t i,s=v.size();
 	for (i=0; i <s; i++) {
 		cin>>v[i];
 	}
@@ -41,8 +41,8 @@ void v_write(vector<T>& v){
 //---------------------------------------------------------------------------
 
 template <typename T>
-int v_read(const vector<T>& v){
-	int i,s=v.size();
+size_t v_read(const vector<T>& v){
+	size_t i,s=v.size();
 	for (i=0; i <s; i++) {
 		cout<<v[i]<<" ";
 	}
@@ -57,7 +57,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 	//loop stretching ; brings some small speed improvement
 
 	Integer ans = 0;
-	register int i,n=av.size();
+	register size_t i,n=av.size();
 
 	typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
 
@@ -142,7 +142,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
 	Integer ans = 0;
-	register int i,n=a.size(),m=b.size();
+	register size_t i,n=a.size(),m=b.size();
 	for (i = 1; i <= n; i++) {
 		ans+=a[n-i]*b[m-i];
 	}
@@ -154,7 +154,7 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size());
-	register int i,s=a.size();
+	register size_t i,s=a.size();
 	vector<Integer> d(s);
 	for (i = 0; i <s; i++) {
 		d[i]=a[i]+b[i];
@@ -166,7 +166,7 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 
 template<typename Integer>
 vector<Integer> v_abs(const vector<Integer>& v){
-	int i, size=v.size();
+	size_t i, size=v.size();
 	vector<Integer> w(size,0);
 	for (i = 0; i < size; i++) {
 		w[i]=Iabs(v[i]);
@@ -178,7 +178,7 @@ vector<Integer> v_abs(const vector<Integer>& v){
 
 template<typename Integer>
 Integer v_gcd(const vector<Integer>& v){
-	int i, size=v.size();
+	size_t i, size=v.size();
 	Integer g=0;
 	for (i = 0; i < size; i++) {
 		g=gcd(g,v[i]);
@@ -193,7 +193,7 @@ Integer v_gcd(const vector<Integer>& v){
 
 template<typename Integer>
 Integer v_lcm(const vector<Integer>& v){
-	int i,size=v.size();
+	size_t i,size=v.size();
 	Integer g=1;
 	for (i = 0; i < size; i++) {
 		g=lcm(g,v[i]);
@@ -208,7 +208,7 @@ Integer v_lcm(const vector<Integer>& v){
 
 template<typename Integer>
 vector<Integer> v_make_prime(const vector<Integer>& v){
-	int i, size=v.size();
+	size_t i, size=v.size();
 	vector<Integer> w(size,0);
 	Integer g=v_gcd(v);
 	if (g==0) {
@@ -226,7 +226,7 @@ vector<Integer> v_make_prime(const vector<Integer>& v){
 
 template<typename Integer>
 vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
-	int i, size=v.size();
+	size_t i, size=v.size();
 	vector<Integer> w(size,0);
 	g=v_gcd(v);
 	if (g==0) {
@@ -244,7 +244,7 @@ vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
 
 template<typename Integer>
 void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
-	int i,size=v.size();
+	size_t i,size=v.size();
 	for (i = 0; i <size; i++) {
 		v[i]=v[i]*scalar;
 	}
@@ -252,7 +252,7 @@ void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
 
 template<typename Integer>
 vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Integer& scalar){
-	int i,size=v.size();
+	size_t i,size=v.size();
 	vector<Integer> w(size);
 	for (i = 0; i <size; i++) {
 		w[i]=v[i]*scalar;
@@ -264,7 +264,7 @@ vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Inte
 
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer& scalar){
-	int i,size=v.size();
+	size_t i,size=v.size();
 	for (i = 0; i <size; i++) {
 		assert(v[i]%scalar == 0);
 		v[i] /= scalar;
@@ -275,7 +275,7 @@ void v_scalar_division(vector<Integer>& v, const Integer& scalar){
 
 template<typename Integer>
 void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
-	int i,size=v.size();
+	size_t i,size=v.size();
 	for (i = 0; i <size; i++) {
 		v[i]=v[i]%modulo;
 		if (v[i]<0) {
@@ -287,9 +287,9 @@ void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const int& m){
+bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const size_t& m){
 	Integer ans = 0;
-	register int i,n=av.size();
+	register size_t i,n=av.size();
 	typename vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();
 
 	if( n >= 64 )
@@ -392,7 +392,7 @@ bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, 
 
 template<typename T>
 vector<T> v_merge(const vector<T>& a,const vector<T>& b){
-	int s1=a.size(), s2=b.size(), i;
+	size_t s1=a.size(), s2=b.size(), i;
 	vector<T> c(s1+s2);
 	for (i = 0; i < s1; i++) {
 		c[i]=a[i];
@@ -405,8 +405,8 @@ vector<T> v_merge(const vector<T>& a,const vector<T>& b){
 //---------------------------------------------------------------------------
 
 template<typename T>
-vector<T> v_cut_front(const vector<T>& v, int size){
-	int s,k;
+vector<T> v_cut_front(const vector<T>& v, size_t size){
+	size_t s,k;
 	vector<T> tmp(size);
 	s=v.size()-size;
 	for (k = 0; k < size; k++) {
@@ -418,8 +418,8 @@ vector<T> v_cut_front(const vector<T>& v, int size){
 //---------------------------------------------------------------------------
 
 
-int v_difference_ordered_fast(const vector<int>& u,const vector<int>& v){
-   int i,j,k, s=u.size();
+int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v){
+   size_t i,j,k, s=u.size();
    i=0;
    // erste Stelle suchen, an der Unterschied
    while (u[i]==v[i]){
@@ -460,11 +460,11 @@ int v_difference_ordered_fast(const vector<int>& u,const vector<int>& v){
 }
 
 template<typename Integer>
-vector<int> v_non_zero_pos(vector<Integer> v){
-	vector<int> key;
-	int size=v.size();
+vector<size_t> v_non_zero_pos(vector<Integer> v){
+	vector<size_t> key;
+	size_t size=v.size();
 	key.reserve(size);
-	for (int i = 0; i <size; i++) {
+	for (size_t i = 0; i <size; i++) {
 		if (v[i]!=0) {
 			key.push_back(i+1);
 		}

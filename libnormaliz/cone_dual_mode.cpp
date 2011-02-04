@@ -41,8 +41,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const int& size){
-	register int i,c=1;
+bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const size_t& size){
+	register size_t i,c=1;
 	typename list< vector<Integer>* >::iterator j;
 	vector<Integer> *reducer;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
@@ -70,9 +70,9 @@ bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const ve
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const int& size){
+void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const size_t& size){
 	Ired.sort();
-	register int i,c=1;
+	register size_t i,c=1;
 	vector<Integer> dummy(size+3,0);
 	Red.push_front(dummy);
 	Red.push_back(dummy);
@@ -112,8 +112,8 @@ void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vec
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_element, const int& size){
-	register int i,c=1;
+void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_element, const size_t& size){
+	register size_t i,c=1;
 	typename list< vector<Integer> >::iterator j;
 	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 		if (new_element[0]<2*(*j)[0]) {
@@ -144,7 +144,7 @@ void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_ele
 
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::reduce_and_insert_extreme( const vector< Integer >& new_element){
-	register int i,c=1;
+	register size_t i,c=1;
 	typename list< vector<Integer> >::iterator j;
 	for (j =GeneratorList.begin(); j != GeneratorList.end(); j++) {
 		if (new_element[0]<=(*j)[0])
@@ -191,7 +191,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
 	nr_sh=SupportHyperplanes.nr_of_rows();
 	//make the generators coprime and remove 0 rows
 	vector<Integer> gcds = SupportHyperplanes.make_prime();
-	vector<int> key=v_non_zero_pos(gcds);
+	vector<size_t> key=v_non_zero_pos(gcds);
 	if (key.size() < nr_sh) {
 		SupportHyperplanes=SupportHyperplanes.submatrix(key);
 		nr_sh=SupportHyperplanes.nr_of_rows();
@@ -253,9 +253,9 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::get_generators()const{
 
 template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::read_hilbert_basis()const{
-	int s= Hilbert_Basis.size();
+	size_t s= Hilbert_Basis.size();
 	Matrix<Integer> M(s,dim);
-	int i=1;
+	size_t i=1;
 	typename list< vector<Integer> >::const_iterator l;
 	for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
 		M.write(i,(*l));
@@ -267,11 +267,11 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::read_hilbert_basis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
+void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp_counter, const bool& lifting, vector<Integer>& halfspace){
 	if (verbose==true) {
 		verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
 	}
-	int i,sign;
+	size_t i,sign;
 	bool  not_done;
 	list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
 	Integer orientation, scalar_product,diff,factor;
@@ -364,10 +364,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_co
 		while (it!=Neutral_Ired.end()) {
 			Neutral.push_back(&(*(it++)));
 		}
-		int psize=Positive_Ired.size();
+		size_t psize=Positive_Ired.size();
 		#pragma omp parallel private(p,n,diff) firstprivate(Positive,Negative,Neutral)
 		{
-		int ppos=0;
+		size_t ppos=0;
 		p = Positive_Ired.begin();
 		#pragma omp for schedule(dynamic)
 		for(i = 0; i<psize; ++i){
@@ -526,8 +526,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const int& hyp_co
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const int& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
-	int i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
+Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
+	size_t i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
 	vector <Integer> scalar_product,hyperplane=SupportHyperplanes.read(hyp_counter),halfspace;
 	bool lifting=false;
 	Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace;
@@ -561,7 +561,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const int& hyp_count
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::extreme_rays_reduction(){
 	typename list < vector <Integer> >::iterator c;
-	int i,k;
+	size_t i,k;
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
 		k=0;
 		for (i = 1; i <= nr_sh; i++) {
@@ -577,7 +577,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_reduction(){
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
 		reduce_and_insert_extreme((*c));
 	}
-	int s = GeneratorList.size();
+	size_t s = GeneratorList.size();
 	Generators = Matrix<Integer>(s,dim);
 
 	typename list< vector<Integer> >::const_iterator l;
@@ -594,8 +594,8 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 		verboseOutput() << "Find extreme rays (via rank test)" << endl;
 	}
 	typename list < vector <Integer> >::iterator c;
-	list <int> zero_list;
-	int i,j,k;
+	list <size_t> zero_list;
+	size_t i,j,k;
 	for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
 		zero_list.clear();
 		for (i = 1; i <= nr_sh; i++) {
@@ -605,7 +605,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 		}
 		k=zero_list.size();
 		if (k>=dim-1) {
-			vector <int> zero_vector(k);
+			vector <size_t> zero_vector(k);
 			for (j = 0; j < k; j++) {
 				zero_vector[j]=zero_list.front();
 				zero_list.pop_front();
@@ -616,7 +616,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 			}
 		}
 	}
-	int s = GeneratorList.size();
+	size_t s = GeneratorList.size();
 	Generators = Matrix<Integer>(s,dim);
    
 	typename  list< vector<Integer> >::const_iterator l;
@@ -635,7 +635,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 			verboseOutput()<<"\n************************************************************\n";
 			verboseOutput()<<"computing Hilbert basis ..."<<endl;
 		}
-		int hyp_counter;      // current hyperplane
+		size_t hyp_counter;      // current hyperplane
 		Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
 		for (hyp_counter = 1; hyp_counter <= nr_sh; hyp_counter++) {
 			Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
@@ -655,13 +655,13 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 	if (verbose) {
 		verboseOutput() << "Find relevant support hyperplanes" << endl;
 	}
-	list <int> zero_list;
+	list <size_t> zero_list;
 	typename list<vector<Integer> >::iterator gen_it;
-	vector <int> relevant_sh;
+	vector <size_t> relevant_sh;
 	relevant_sh.reserve(nr_sh);
-	int i,k;
+	size_t i,k;
 	
-	int realdim = Generators.rank();
+	size_t realdim = Generators.rank();
 
 	for (i = 1; i <= nr_sh; ++i) {
 		Matrix<Integer> Test(0,dim);

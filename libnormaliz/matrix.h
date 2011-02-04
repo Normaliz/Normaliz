@@ -39,15 +39,15 @@ using std::vector;
 using std::string;
 
 template<typename Integer> class Matrix {
-  int nr;
-  int nc;
+  size_t nr;
+  size_t nc;
   vector< vector<Integer> > elements;
 
 //---------------------------------------------------------------------------
 //				Private routines, used in the public routines
 //---------------------------------------------------------------------------
 
-  void max_rank_submatrix_lex(vector<size_t>& v, const int& rank) const;
+  void max_rank_submatrix_lex(vector<size_t>& v, const size_t& rank) const;
   //v will be a vector with entries the indices of the first rows in lexicographic
   //order of this forming a submatrix of maximal rank.
   //v shoud be a vector of size 0 by call!!!
@@ -59,9 +59,9 @@ public:
 //---------------------------------------------------------------------------
 
   Matrix();
-  Matrix(int dim);                           //constructor of identity matrix
-  Matrix(int row, int col);                 //main constructor, all entries 0
-  Matrix(int row, int col, Integer value); //constructor, all entries set to value
+  Matrix(size_t dim);                           //constructor of identity matrix
+  Matrix(size_t row, size_t col);                 //main constructor, all entries 0
+  Matrix(size_t row, size_t col, Integer value); //constructor, all entries set to value
   Matrix(const vector< vector<Integer> >& elem); //constuctor, elements=elem
   Matrix(const list< vector<Integer> >& elems);
   Matrix(const Matrix& M);                //copy constructor
@@ -74,39 +74,39 @@ public:
   list< vector<Integer> >to_list();
 
   void write();                // to be modified, just for tests
-  void write(int row, const vector<Integer>& data); //write  a row
-  void write(int row, const vector<int>& data); //write  a row
-  void write(int row, int col, Integer data);  // write data at (row,col)
+  void write(size_t row, const vector<Integer>& data); //write  a row
+  void write(size_t row, const vector<int>& data); //write  a row
+  void write(size_t row, size_t col, Integer data);  // write data at (row,col)
   void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
   void print(std::ostream& out) const;          // writes matrix to the stream
   void pretty_print(std::ostream& out) const;  // writes matrix in a nice format to the stream
   void read() const;                 // to be modified, just for tests
-  vector<Integer> read(int row) const;                   // read a row
-  Integer read (int row, int col) const;         // read data at (row,col)
-  int nr_of_rows() const;                       // returns nr
-  int nr_of_columns() const;                   // returns nc
+  vector<Integer> read(size_t row) const;                   // read a row
+  Integer read (size_t row, size_t col) const;         // read data at (row,col)
+  size_t nr_of_rows() const;                       // returns nr
+  size_t nr_of_columns() const;                   // returns nc
   void random();     // generates a pseudo random matrix for tests
-  Matrix submatrix(const vector<int>& rows) const;  //returns a submatrix with rows
+  Matrix submatrix(const vector<size_t>& rows) const;  //returns a submatrix with rows
 									  //corresponding to indices given by
 									//the entries of rows, Numbering from 1 to n, not 0 to n-1 !
-  Matrix submatrix(const vector<size_t>& rows) const;
+  Matrix submatrix(const vector<int>& rows) const;
   Matrix submatrix(const vector<bool>& rows) const;
   vector<Integer> diagonale() const;     //returns the diagonale of this
 								  //this should be a quadratic matrix
-  int maximal_decimal_length() const;    //return the maximal number of decimals
+  size_t maximal_decimal_length() const;    //return the maximal number of decimals
 									  //needed to write an entry
 
 	void append(const Matrix& M); // appends the rows of M to this
 	void append(const vector<Integer>& v); // append the row v to this
-	void cut_columns(int c); // remove columns, only the first c columns will survive
+	void cut_columns(size_t c); // remove columns, only the first c columns will survive
 
-	inline const Integer& get_elem(int row, int col) const {
+	inline const Integer& get_elem(size_t row, size_t col) const {
 		return elements[row-1][col-1];
 	}
-	inline vector<Integer> const& operator[] (int row) const {
+	inline vector<Integer> const& operator[] (size_t row) const {
 		return elements[row];
 	}
-	inline vector<Integer>& operator[] (int row) { 
+	inline vector<Integer>& operator[] (size_t row) { 
 		return elements[row];
 	}
 
@@ -117,9 +117,9 @@ public:
 
   Matrix add(const Matrix& A) const;                       // returns this+A
   Matrix multiplication(const Matrix& A) const;          // returns this*A
-  Matrix multiplication(const Matrix& A, int m) const;// returns this*A (mod m)
+  Matrix multiplication(const Matrix& A, size_t m) const;// returns this*A (mod m)
   bool equal(const Matrix& A) const;             // returns this==A
-  bool equal(const Matrix& A, int m) const;     // returns this==A (mod m)
+  bool equal(const Matrix& A, size_t m) const;     // returns this==A (mod m)
   Matrix transpose() const;                     // returns the transpose of this
 
 //---------------------------------------------------------------------------
@@ -147,19 +147,19 @@ public:
 //						Rows and columns exchange
 //---------------------------------------------------------------------------
 
-  void exchange_rows(const int& row1, const int& row2);      //row1 is exchanged with row2
-  void exchange_columns(const int& col1, const int& col2); // col1 is exchanged with col2
+  void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
+  void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
 
 //---------------------------------------------------------------------------
 //				Rows and columns reduction  in  respect to
 //			the right-lower submatrix of this described by an int corner
 //---------------------------------------------------------------------------
 
-  void reduce_row(int corner);      //reduction by the corner-th row
-  void reduce_row(int corner, Matrix& Left);//row reduction, Left used
+  void reduce_row(size_t corner);      //reduction by the corner-th row
+  void reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
   //for saving or copying the linear transformations
-  void reduce_column(int corner);  //reduction by the corner-th column
-  void reduce_column(int corner, Matrix& Right, Matrix& Right_Inv);
+  void reduce_column(size_t corner);  //reduction by the corner-th column
+  void reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv);
   //column reduction,  Right used for saving or copying the linear
   //transformations, Right_Inv used for saving the inverse linear transformations
 
@@ -167,10 +167,10 @@ public:
 //						Pivots for rows/columns operations
 //---------------------------------------------------------------------------
 
-  vector<int> pivot(int corner); //Find the position of an element x with
+  vector<size_t> pivot(size_t corner); //Find the position of an element x with
   //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
   //described by an int corner
-  int pivot_column(int col);  //Find the position of an element x with
+  size_t pivot_column(size_t col);  //Find the position of an element x with
   //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
   //described by an int col
 
@@ -179,11 +179,11 @@ public:
 //           --- this are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
-  int diagonalize(); //computes rank and diagonalizes this, destructiv
+  size_t diagonalize(); //computes rank and diagonalizes this, destructiv
 
-  int rank() const; //returns rank, nondestructiv
+  size_t rank() const; //returns rank, nondestructiv
 
-  int rank_destructiv(); //returns rank, destructiv
+  size_t rank_destructiv(); //returns rank, destructiv
 
   vector<size_t> max_rank_submatrix() const; //returns a vector with entries the
   //indices of the rows of this forming a submatrix of maximal rank
@@ -192,7 +192,7 @@ public:
   //the indices of the first rows in lexicographic order of this forming
   //a submatrix of maximal rank.
 
-  vector<size_t>  max_rank_submatrix_lex(const int& rank) const;
+  vector<size_t>  max_rank_submatrix_lex(const size_t& rank) const;
   //returns a vector with entries the indices of the first rows in lexicographic
   //order of this forming a submatrix of maximal rank, assuming that
   //the rank of this is known.
@@ -228,11 +228,11 @@ public:
 //								Tests
 //---------------------------------------------------------------------------
 
-  bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& denom,const int& m) const;
+  bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& denom,const size_t& m) const;
   // test the main computation for arithmetic overflow
   // uses multiplication mod m
 
-  bool test_invert(const Matrix& Solution, const Integer& denom,const int& m) const;
+  bool test_invert(const Matrix& Solution, const Integer& denom,const size_t& m) const;
   // test the main computation for arithmetic overflow
   // uses multiplication mod m
 

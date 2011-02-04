@@ -40,7 +40,7 @@ using std::vector;
 
 template<typename Integer>
 class Simplex {
-  int dim;
+  size_t dim;
   string status;
   Integer volume;
   vector<size_t> key;
@@ -83,7 +83,7 @@ public:
   void write_new_face(const vector<size_t>& Face);//writes the new face in case of a shelling
   void read() const;                        // to be modified, just for tests
   void read_k() const;                        // to be modified, just for tests
-  int read_dimension() const;              // returns dim
+  size_t read_dimension() const;              // returns dim
   string read_status() const;              // returns status
   void write_volume(const Integer& vol);  // writes volume
   Integer read_volume() const;            // returns volume
@@ -104,7 +104,7 @@ public:
 //                          Algoritms
 //---------------------------------------------------------------------------
 
-  int compare(const Simplex<Integer>& S) const; //compare the key of this with the key of S
+  size_t compare(const Simplex<Integer>& S) const; //compare the key of this with the key of S
   void initialize(const Matrix<Integer>& Map); //change status from "key initialized" to "initialized"
   void hilbert_basis_interior(); // computes the Hilbert basis,
   //the generators are not considered !!!, status must be "initialized"
