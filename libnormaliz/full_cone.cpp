@@ -72,8 +72,6 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FMDATA & po
 	NewHypIndVal.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane cotains old gen iff both pos and neg do
 	NewHypIndVal.GenInHyp.set(ind_gen);  // new hyperplane contains new generator
 	
-	// cout << "In add_hyperplane" << endl;
-		
 	#pragma omp critical(HYPERPLANE)
 	HypIndVal.push_back(NewHypIndVal);
 }
@@ -126,8 +124,6 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 		if (nr_zero_i==dim-1)
 			simplex=true;
 			
-		/* cout << " ** "<< simplex << " " << ii->ValNewGen << endl;*/
-
 		if (ii->ValNewGen==0) {
 			ii->GenInHyp.set(ind_gen);  // Must be set explicitly !!
 			if (simplex) {
@@ -152,14 +148,9 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 		}
 	}
 	
-	// cout << "Zero_Positive " << Zero_Positive << endl;
-	// cout << "Zero_Negative " << Zero_Negative << endl;
-
 	boost::dynamic_bitset<> Zero_PN(nr_gen);
 	Zero_PN=Zero_Positive & Zero_Negative;
 	
-	// cout << "Zero_PN " << Zero_PN << endl; 
-
 	if (tv_verbose) verboseOutput()<<"transform_values: copy to vector"<<endl;
 
 	size_t nr_PosSimp  = l_Pos_Simp.size();
@@ -322,8 +313,6 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 		zero_i=Pos_Simp[i]->GenInHyp & Zero_PN;
 		nr_zero_i=zero_i.count();
 		
-		// cout << "nr_zero_i " << nr_zero_i << endl; 
-
 		if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
 			jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
 			if (jj_map!=Neg_Subfacet.end()) {
@@ -334,7 +323,6 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 		if (nr_zero_i==facet_dim){    // now there could be more such subfacets. We make all and search them.      
 			for (k =0; k<nr_gen; k++) {  // BOOST ROUTINE
 				if(zero_i.test(k)) { 
-					// cout << "Drin " << k << endl;             
 					subfacet=zero_i;
 					subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
 					jj_map=Neg_Subfacet.find(subfacet);
@@ -805,7 +793,7 @@ void Full_Cone<Integer>::build_cone() {
 
 	size_t RecBoundTriang=RecBoundFactor; //dim*dim*dim*dim*RecBoundFactor;
 
-if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
+//if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
 	find_and_evaluate_start_simplex();
 	
@@ -990,7 +978,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		extreme_rays_and_ht1_check();
 		if(!pointed) return;
 	}
-	cout << "Nr Invert " << NrInvert << endl;
+//	cout << "Nr Invert " << NrInvert << endl;
 	
 	if (ht1_extreme_rays && do_triangulation)
 		is_Computed.set(ConeProperty::Multiplicity,true);

@@ -393,7 +393,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 	} // We have tried to take care of the unimodular case WITHOUT the matrix inversion
 
-	#pragma omp critical(NRINVERT)
+	#pragma omp atomic
 	NrInvert++;
 	vector< Integer > help(dim);
 	Matrix<Integer> InvGen=Invert(Generators, help, volume);
