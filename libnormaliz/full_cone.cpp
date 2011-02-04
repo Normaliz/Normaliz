@@ -595,7 +595,7 @@ template<typename Integer>
 void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recursive){
 
 	typename list< FMDATA >::iterator l=HypIndVal.begin();
-		
+	
 	if (is_pyramid) { //do not create a new parallel region
 		for (; l != HypIndVal.end(); ++l) {
 			// only triangulation of Pyramids of height >=2 needeed
@@ -929,7 +929,14 @@ template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
 	size_t listsize = Triangulation.size();
-	if (verbose) verboseOutput() << "evaluating "<<listsize<<" simplices" <<endl;
+
+	const size_t VERBOSE_STEPS = 50;
+	size_t step_x_size = listsize-1;
+	if (verbose) {
+		verboseOutput() << "evaluating "<<listsize<<" simplices" <<endl;
+		verboseOutput() << "---------+---------+---------+---------+---------+"<<endl;
+	}
+	
 
 	#pragma omp parallel 
 	{
@@ -943,14 +950,19 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 			Simplex<Integer> simp(s->first);
 			simp.evaluate(*this,s->second);
 			s->second=simp.read_volume();
-			if (verbose && (i+1)%10000==0) {
-				verboseOutput() << "evaluated "<< (i+1)<<" simplices" <<endl;
+			if (verbose) {
+				#pragma omp critical(VERBOSE)
+				while (i*VERBOSE_STEPS >= step_x_size) {
+					step_x_size += listsize;
+					verboseOutput() << "|" <<flush;
+				}
+				//verboseOutput() << "evaluated "<< (i+1)<<" simplices" <<endl;
 			}
 		}
 	}
 
 	if (verbose) {
-		verboseOutput() << "evaluated "<< listsize<<" simplices" <<endl;
+		verboseOutput() << "|" << endl << "evaluated "<< listsize<<" simplices" <<endl;
 	}
 }
 
@@ -1529,6 +1541,13 @@ void Full_Cone<Integer>::global_reduction() {
 			HBpointers.push_back(&(*(c++)));
 		}
 
+		const size_t VERBOSE_STEPS = 50;
+		size_t step_x_size = csize-1;
+		if (verbose) {
+			verboseOutput() << "---------+---------+---------+---------+---------+"<<endl;
+		}
+
+
 		#pragma omp parallel private(c,cpos) firstprivate(HBpointers)
 		{
 		
@@ -1540,15 +1559,21 @@ void Full_Cone<Integer>::global_reduction() {
 		for (size_t k=0; k<csize; ++k) {
 			for(;k > cpos; ++cpos, ++c) ;
 			for(;k < cpos; --cpos, --c) ;
-			if (verbose && k%10000==0 && k!=0) {
-				verboseOutput()<<k<<" / "<<csize<<endl<<flush;
-			}
 			
 			if ( is_reducible(HBpointers, *c) ) {
 				(*c)[0]=-1; //mark as reducible
 			}
-		}
+
+			if (verbose) {
+				#pragma omp critical(VERBOSE)
+			   while (k*VERBOSE_STEPS >= step_x_size) {
+					step_x_size += csize;
+					verboseOutput() << "|" <<flush;
+				}  
+			}
+		} //end for
 		} //end parallel
+		if (verbose) verboseOutput() << "|" << endl;
 
 		// delete reducible candidates
 		c=Candidates_with_Scalar_Product.begin();
