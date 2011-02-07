@@ -595,7 +595,25 @@ template<typename Integer>
 void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recursive){
 
 	typename list< FMDATA >::iterator l=HypIndVal.begin();
+
+#ifdef _WIN32 //for 32 and 64 bit windows
+
+	size_t lpos=0, listsize=HypIndVal.size();
+
+   #pragma omp parallel for firstprivate(lpos,l) schedule(dynamic) 
+	for (int k=0; k<listsize; k++) {
+		for(;k > lpos; lpos++, l++) ;
+		for(;k < lpos; lpos--, l--) ;
+
+		// only triangulation of Pyramids of height >=2 needeed
+		if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1))
+			continue;
 	
+		process_pyramid((*l), ind_gen, recursive);
+	} //end for
+
+#else         // all other systems
+
 	if (is_pyramid) { //do not create a new parallel region
 		for (; l != HypIndVal.end(); ++l) {
 			// only triangulation of Pyramids of height >=2 needeed
@@ -629,6 +647,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 			#pragma omp taskwait
 		} //end parallel
 	}
+#endif //else _WIN32
 }
 
 //---------------------------------------------------------------------------
@@ -930,8 +949,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
 	size_t listsize = Triangulation.size();
 
-	const size_t VERBOSE_STEPS = 50;
-	size_t step_x_size = listsize-1;
+	const long VERBOSE_STEPS = 50;
+	long step_x_size = listsize-VERBOSE_STEPS;
 	if (verbose) {
 		verboseOutput() << "evaluating "<<listsize<<" simplices" <<endl;
 		verboseOutput() << "---------+---------+---------+---------+---------+"<<endl;
@@ -952,7 +971,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 			s->second=simp.read_volume();
 			if (verbose) {
 				#pragma omp critical(VERBOSE)
-				while (i*VERBOSE_STEPS >= step_x_size) {
+				while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
 					step_x_size += listsize;
 					verboseOutput() << "|" <<flush;
 				}
@@ -962,7 +981,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 	}
 
 	if (verbose) {
-		verboseOutput() << "|" << endl << "evaluated "<< listsize<<" simplices" <<endl;
+		verboseOutput() << endl << "evaluated "<< listsize<<" simplices" <<endl;
 	}
 }
 
@@ -1541,8 +1560,8 @@ void Full_Cone<Integer>::global_reduction() {
 			HBpointers.push_back(&(*(c++)));
 		}
 
-		const size_t VERBOSE_STEPS = 50;
-		size_t step_x_size = csize-1;
+		const long VERBOSE_STEPS = 50;
+		long step_x_size = csize-VERBOSE_STEPS;
 		if (verbose) {
 			verboseOutput() << "---------+---------+---------+---------+---------+"<<endl;
 		}
@@ -1566,14 +1585,14 @@ void Full_Cone<Integer>::global_reduction() {
 
 			if (verbose) {
 				#pragma omp critical(VERBOSE)
-			   while (k*VERBOSE_STEPS >= step_x_size) {
+			   while ((long)(k*VERBOSE_STEPS) >= step_x_size) {
 					step_x_size += csize;
 					verboseOutput() << "|" <<flush;
 				}  
 			}
 		} //end for
 		} //end parallel
-		if (verbose) verboseOutput() << "|" << endl;
+		if (verbose) verboseOutput() << endl;
 
 		// delete reducible candidates
 		c=Candidates_with_Scalar_Product.begin();
