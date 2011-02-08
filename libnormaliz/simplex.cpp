@@ -314,7 +314,7 @@ size_t Simplex<Integer>::read_hilbert_basis_size() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Simplex<Integer>::compare(const Simplex<Integer>& S) const{
+int Simplex<Integer>::compare(const Simplex<Integer>& S) const{
 	return v_difference_ordered_fast(key,S.key);
 }
 
@@ -406,7 +406,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		if (Indicator.size() != dim) { //it hasn't been computed yet
 			Indicator = InvGen.VxM(C.Order_Vector);
 		}
-		for(i=0;i<dim;i++) // register excluded facets nd degree shift for 0-vector
+		for(i=0;i<dim;i++) // register excluded facets and degree shift for 0-vector
 		{
 			Test=Indicator[i];
 			if(Test<0)
@@ -439,19 +439,19 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	vector < Integer > norm(1);
 	list < vector<Integer> > Candidates;
 	typename list <vector <Integer> >::iterator c;
-	size_t k,last;
+	size_t last;
 	vector<Integer> point(dim,0);
  
 	Matrix<Integer> elements(dim,dim); //all 0 matrix
 	Matrix<Integer> V = InvGen; //Support_Hyperplanes.multiply_rows(multiplicators).transpose();
-	V.reduction_modulo(volume); //TODO needed??
+	V.reduction_modulo(volume); //makes reduction when adding V easier
 
 	while (1){
 		last = dim;
-		for (i = dim-1; i >= 0; i--) {
-			if (point[i] < diagonal[i]-1) {
-				last = i;
-					 break;
+		for (int k = dim-1; k >= 0; k--) {
+			if (point[k] < diagonal[k]-1) {
+				last = k;
+				break;
 			}
 		}
 		if (last >= dim) {
@@ -459,20 +459,17 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 
 		point[last]++;
-		elements[last] = v_add(elements[last], V[last]);
-		v_reduction_modulo(elements[last],volume);
+		elements[last] = v_add(elements[last], V[last]); //TODO angepasste operation
+		v_reduction_modulo(elements[last],volume);       //für beide schritte schreiben
 
 		for (i = last+1; i <dim; i++) {
 			point[i]=0;
 			elements[i] = elements[last];
 		}
-//        vector<Integer> new_element=InvGen.VxM(point);
-
-		v_reduction_modulo(elements[last],volume);
 		
 		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree
-		for (k = 0; k < dim; k++) {  // since generators have degree 1
-			norm[0]+=elements[last][k];
+		for (i = 0; i < dim; i++) {  // since generators have degree 1
+			norm[0]+=elements[last][i];
 		}
 
 		if(C.do_h_vector){

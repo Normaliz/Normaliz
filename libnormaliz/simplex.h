@@ -104,7 +104,7 @@ public:
 //                          Algoritms
 //---------------------------------------------------------------------------
 
-  size_t compare(const Simplex<Integer>& S) const; //compare the key of this with the key of S
+  int compare(const Simplex<Integer>& S) const; //compare the key of this with the key of S
   void initialize(const Matrix<Integer>& Map); //change status from "key initialized" to "initialized"
   void hilbert_basis_interior(); // computes the Hilbert basis,
   //the generators are not considered !!!, status must be "initialized"

@@ -601,7 +601,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 	size_t lpos=0, listsize=HypIndVal.size();
 
    #pragma omp parallel for firstprivate(lpos,l) schedule(dynamic) 
-	for (int k=0; k<listsize; k++) {
+	for (size_t k=0; k<listsize; k++) {
 		for(;k > lpos; lpos++, l++) ;
 		for(;k < lpos; lpos--, l--) ;
 
@@ -906,7 +906,7 @@ void Full_Cone<Integer>::build_cone() {
 //	RekTiefe--;
 
 	is_Computed.set(ConeProperty::SupportHyperplanes);
-	if(do_triangulation) is_Computed.set(ConeProperty::Triangulation);
+	if(keep_triangulation) is_Computed.set(ConeProperty::Triangulation);
 }
 
 //---------------------------------------------------------------------------
