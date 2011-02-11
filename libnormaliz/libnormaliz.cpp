@@ -23,7 +23,7 @@ namespace libnormaliz {
 bool verbose = false;
 
 bool test_arithmetic_overflow = false;
-size_t overflow_test_modulus = 15401;
+long overflow_test_modulus = 15401;
 
 size_t RecBoundFactor = 5000000;
 

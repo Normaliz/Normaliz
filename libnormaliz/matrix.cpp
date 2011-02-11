@@ -459,7 +459,7 @@ Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, size_t m) const{
+Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, long m) const{
 	assert (nc == A.nr);
 
 	Matrix<Integer> B(nr,A.nc,0);  //initialized with 0
@@ -496,7 +496,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::equal(const Matrix<Integer>& A, size_t m) const{
+bool Matrix<Integer>::equal(const Matrix<Integer>& A, long m) const{
 	if ((nr!=A.nr)||(nc!=A.nc)){  return false; }
 	size_t i,j;
 	for (i=0; i < nr; i++) {
@@ -1105,7 +1105,7 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 
 template<typename Integer>
 bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<Integer>& Right_side,
-		const Integer& denom,const size_t& m) const{
+		const Integer& denom,const long& m) const{
 	Matrix<Integer> LS=multiplication(Solution,m);
 	Matrix<Integer> RS=Right_side;
 	RS.scalar_multiplication(denom);
@@ -1120,7 +1120,7 @@ bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<I
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer& denom,const size_t& m) const{
+bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer& denom,const long& m) const{
 	Matrix<Integer> LS=multiplication(Solution,m);
 	Matrix<Integer> RS(nr);
 	RS.scalar_multiplication(denom);
@@ -1137,7 +1137,7 @@ bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer
 template<typename Integer>
 Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom){
 	Matrix<Integer> S=Left_side.solve(Right_side,denom);
-	if (test_arithmetic_overflow==true) {
+	if (test_arithmetic_overflow) {
 		bool testing=Left_side.test_solve(S,Right_side,denom,overflow_test_modulus);
 		if (testing==false) {
 			throw ArithmeticException();
@@ -1151,7 +1151,7 @@ Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& R
 template<typename Integer>
 Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector< Integer >& diagonal, Integer& denom){
 	Matrix<Integer> S=Left_side.invert(diagonal,denom);
-	if (test_arithmetic_overflow==true) {
+	if (test_arithmetic_overflow) {
 		bool testing=Left_side.test_invert(S,denom,overflow_test_modulus);
 		if (testing==false) {
 			throw ArithmeticException();

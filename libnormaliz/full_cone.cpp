@@ -56,8 +56,8 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FMDATA & po
 			NewHypIndVal.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
 			used_for_tests =(positive.ValNewGen%overflow_test_modulus)*(negative.Hyp[k]%overflow_test_modulus)-(negative.ValNewGen%overflow_test_modulus)*(positive.Hyp[k]%overflow_test_modulus);
 			if (((NewHypIndVal.Hyp[k]-used_for_tests) % overflow_test_modulus)!=0) {
+				errorOutput()<<"Arithmetic failure in Full_cone::add_hyperplane. Possible arithmetic overflow.\n";
 				throw ArithmeticException();
-				//"Arithmetic failure in Full_cone::add_hyperplane. Possible arithmetic overflow.\n";
 			}
 		}
 	}

@@ -93,7 +93,7 @@ void v_reduction_modulo(vector<Integer>& v, const Integer& modulo);
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool v_test_scalar_product(const vector<Integer>& a,const vector<Integer>& b, const Integer& result, const size_t& m);
+bool v_test_scalar_product(const vector<Integer>& a,const vector<Integer>& b, const Integer& result, const long& m);
 // test the main computation for arithmetic overflow
 // uses multiplication mod m
 

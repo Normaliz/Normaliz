@@ -287,7 +287,7 @@ void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const size_t& m){
+bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const long& m){
 	Integer ans = 0;
 	register size_t i,n=av.size();
 	typename vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();

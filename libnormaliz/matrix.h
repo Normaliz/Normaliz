@@ -117,9 +117,9 @@ public:
 
   Matrix add(const Matrix& A) const;                       // returns this+A
   Matrix multiplication(const Matrix& A) const;          // returns this*A
-  Matrix multiplication(const Matrix& A, size_t m) const;// returns this*A (mod m)
+  Matrix multiplication(const Matrix& A, long m) const;// returns this*A (mod m)
   bool equal(const Matrix& A) const;             // returns this==A
-  bool equal(const Matrix& A, size_t m) const;     // returns this==A (mod m)
+  bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
   Matrix transpose() const;                     // returns the transpose of this
 
 //---------------------------------------------------------------------------
@@ -228,11 +228,11 @@ public:
 //								Tests
 //---------------------------------------------------------------------------
 
-  bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& denom,const size_t& m) const;
+  bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& denom,const long& m) const;
   // test the main computation for arithmetic overflow
   // uses multiplication mod m
 
-  bool test_invert(const Matrix& Solution, const Integer& denom,const size_t& m) const;
+  bool test_invert(const Matrix& Solution, const Integer& denom,const long& m) const;
   // test the main computation for arithmetic overflow
   // uses multiplication mod m
 

@@ -35,6 +35,7 @@ namespace libnormaliz {
 using std::list;
 using std::vector;
 using std::set;
+using std::pair;
 using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
