@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 				if (argv[i][1]!='x') {
 					option = option + argv[i];
 				} else if (argv[i][2]=='=') {
-					#ifndef NO_OPENMP
+					#ifdef _OPENMP
 					string Threads = argv[i];
 					Threads.erase(0,3);
 					size_t nr_threads;

@@ -10,7 +10,7 @@ CXXFLAGS += -O3 -funroll-loops
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
- CXXFLAGS += -Wno-unknown-pragmas -DNO_OPENMP
+ CXXFLAGS += -Wno-unknown-pragmas
 else
  CXXFLAGS += -fopenmp
 endif

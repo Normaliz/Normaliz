@@ -2,10 +2,10 @@ The easiest way to use libnormaliz
 http://www.mathematik.uni-osnabrueck.de/normaliz/
 
 recommended compile flags:
--Wall -Wno-sign-compare             #warnings, but no-sign-compare (they woud be to many)
--Wno-unknown-pragmas -DNO_OPENMP    #to disable openmp and supress warnings about that
--lgmpxx -lgmp                       #for gmp
--O3                                 #for optimization
+-Wall                        #warnings, but no-sign-compare (they woud be to many)
+-Wno-unknown-pragmas         #to supress warnings about unknown pragmas when not using openmp
+-lgmpxx -lgmp                #for gmp
+-O3                          #for optimization
 
 
 Quick workflow overview:
@@ -82,4 +82,4 @@ hilbert_basis_polynomial
 dual
 
 please see the Normaliz Documentation for more information on the input types and mode
-http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.5Documentation.pdf
+http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.7Documentation.pdf

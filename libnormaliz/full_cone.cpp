@@ -1510,7 +1510,7 @@ void Full_Cone<Integer>::global_reduction() {
 	}
 	Candidates.clear();         //delete old set
 	if(verbose) {
-		verboseOutput()<<"sorting the list, "<<flush;
+		verboseOutput()<<"sorting the list... "<<endl<<flush;
 	}
 	Candidates_with_Scalar_Product.sort();
 	if (verbose) {
@@ -1626,7 +1626,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 			degree_function[i] = Linear_Form[i];
 		}
 		if(verbose) {
-			verboseOutput()<<" using homogenous linear form."<<endl<<flush;
+			verboseOutput()<<"using homogenous linear form."<<endl<<flush;
 		}
 	} else { // add hyperplanes to get a degree function
 		typename list< vector<Integer> >::const_iterator h;
