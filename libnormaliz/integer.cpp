@@ -1,7 +1,6 @@
 /*
- * Normaliz 2.5
- * Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Soeger
- * This program is free software: you can redistribute it and/or modify
+ * Normaliz 2.7
+ * Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.

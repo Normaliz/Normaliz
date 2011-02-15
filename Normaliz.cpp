@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.5
- * Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz 2.7
+ * Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,14 +34,14 @@ using namespace libnormaliz;
 
 
 void printHelp(char* command) {
-	cout << "usage: "<<command<<" [-acdefhimnpsv?] [-x=<T>] [PROJECT]"<<endl;
+	cout << "usage: "<<command<<" [-sSvVnNpPhH1dBface?] [-x=<T>] [PROJECT]"<<endl;
 	cout << "  runs normaliz on PROJECT.in"<<endl;
 	cout << "options:"<<endl;
 	cout << "  -?\tprint this help text and exit"<<endl;
 	cout << "  -s\tcomputation mode: support_hyperplanes"<<endl;
 	cout << "  -S\tcomputation mode: support_hyperplanes (currently same as -s)"<<endl;
-	cout << "  -v\tcomputation mode: triangulation"<<endl;
-	cout << "  -V\tcomputation mode: volume"<<endl;
+	cout << "  -v\tcomputation mode: volume triangulation"<<endl;
+	cout << "  -V\tcomputation mode: volume large"<<endl;
 	cout << "  -n\tcomputation mode: triangulation_hilbert_basis (old type normal)"<<endl;
 	cout << "  -N\tcomputation mode: hilbert_basis (using a partial triangulation)"<<endl;
 	cout << "  -p\tcomputation mode: hilbert_polynomial"<<endl;
@@ -185,8 +185,8 @@ int main(int argc, char* argv[])
 	}
 
 	if (!filename_set) {
-		cout<<"Normaliz 2.5"<<endl
-			<<"Copyright (C) 2007-2010  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+		cout<<"Normaliz 2.7"<<endl
+			<<"Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
 			<<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
 			<<"and you are welcome to redistribute it under certain conditions;"<<endl
 			<<"See COPYING for details."
