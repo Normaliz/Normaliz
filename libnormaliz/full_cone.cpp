@@ -763,7 +763,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 		Matrix<Integer> G=S.read_generators();
 		//srand(12345);
 		for(i=0;i<dim;i++){
-			factor=2*(rand()%(2*dim))+3;
+			factor=(unsigned long)(2*(rand()%(2*dim))+3);
 			for(j=0;j<dim;j++)
 				Order_Vector[j]+=factor*G.read(i+1,j+1);        
 		} 
@@ -1658,7 +1658,7 @@ vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 		}
 		E_Vector[i]/=permutations<Integer>(1,i);
 		for (j = 1; j <=dim; j++) {
-			Q[j-1]=j*Q[j];
+			Q[j-1]=(unsigned long)j*Q[j];
 		}
 	}
 	return E_Vector;
@@ -1692,7 +1692,7 @@ void Full_Cone<Integer>::compute_polynomial(){
 			}
 		}
 		for (j = dim-1; 0 <j; j--) {
-			C[j]=(i+1)*C[j]+C[j-1];
+			C[j]=(unsigned long)(i+1)*C[j]+C[j-1];
 		}
 		C[0]=permutations<Integer>(1,i+1);
 	}

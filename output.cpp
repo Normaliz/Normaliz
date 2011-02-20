@@ -344,7 +344,7 @@ void Output<Integer>::write_inv_file() const{
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
 				Integer factorial=1;
 				for (i = 2; i <rank; i++) {
-					factorial*=i;
+					factorial*=(unsigned long) i;
 				}
 				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
 				inv<<"vector "<<hilbert_polynomial.size()/2<<" hilbert_polynomial = ";

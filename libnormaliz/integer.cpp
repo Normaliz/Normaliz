@@ -88,7 +88,7 @@ Integer permutations(const size_t& a, const size_t& b){
 	size_t i;
 	Integer P=1;
 	for (i = a+1; i <= b; i++) {
-		P*=i;
+		P*=(unsigned long)i;
 	}
 	return P;
 }

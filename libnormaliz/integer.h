@@ -32,7 +32,7 @@ namespace libnormaliz {
 //---------------------------------------------------------------------------
 
 template<typename Integer> inline long explicit_cast_to_long(const Integer& a) {
-	return a;
+	return (long)a;
 }
 template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
 	return a.get_si();

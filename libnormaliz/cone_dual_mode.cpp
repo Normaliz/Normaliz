@@ -271,7 +271,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 	if (verbose==true) {
 		verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
 	}
-	size_t i,sign;
+	size_t i;
+	int sign;
 	bool  not_done;
 	list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
 	Integer orientation, scalar_product,diff,factor;
