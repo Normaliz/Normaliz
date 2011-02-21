@@ -1668,14 +1668,13 @@ vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_polynomial(){
-#ifndef normbig
-	if (dim > 21) {
+	size_t i,j;
+	Integer factorial=permutations<Integer>(1,dim);
+	if ((factorial-permutations_modulo<Integer>(1,dim,overflow_test_modulus))%overflow_test_modulus != 0) {
 		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
 		return;
 	}
-#endif
-	size_t i,j;
-	Integer mult_factor, factorial=permutations<Integer>(1,dim);
+	Integer mult_factor = factorial;
 	vector <Integer> E_Vector=compute_e_vector();
 	vector <Integer> C(dim,0);
 	C[0]=1;

@@ -85,10 +85,22 @@ size_t decimal_length(Integer a){
 
 template <typename Integer>
 Integer permutations(const size_t& a, const size_t& b){
-	size_t i;
+	unsigned long i;
 	Integer P=1;
 	for (i = a+1; i <= b; i++) {
-		P*=(unsigned long)i;
+		P*=i;
+	}
+	return P;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer> 
+Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
+	unsigned long i;
+	Integer P=1;
+	for (i = a+1; i <= b; i++) {
+		P*=i; P%=m;
 	}
 	return P;
 }

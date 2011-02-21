@@ -63,6 +63,7 @@ template<typename Integer> size_t decimal_length(Integer a);
 
 //returns b!/a!
 template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
+template<typename Integer> Integer permutations_modulo(const size_t& a, const size_t& b, long m);
 
 }
 
