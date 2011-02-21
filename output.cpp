@@ -365,7 +365,7 @@ void Output<Integer>::cone() const {
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
 	size_t i,j,nr,rank=BasisChange.get_rank();    //read local data
 	Matrix<Integer> Generators = Result->getGenerators();
-	Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
+	Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanes());
 
 	if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
 		//write the suport hyperplanes of the full dimensional cone
@@ -717,6 +717,9 @@ void Output<Integer>::polytop() const{
 		Matrix<Integer> Support_Hyperplanes = Result->getSupportHyperplanes();
 		Integer buf;
 		size_t nr_sup = Support_Hyperplanes.nr_of_rows();
+		for (i = 0; i < nr_sup; i++) {
+			Support_Hyperplanes[i][dim-1]*=-1;
+		}
 		max_decimal_length=Support_Hyperplanes.maximal_decimal_length();
 		out<<nr_sup<<" support hyperplanes:"<<endl;
 		for (i = 1; i <= nr_sup; i++) {
@@ -728,7 +731,7 @@ void Output<Integer>::polytop() const{
 				out<<buf;
 			}
 			out<<" >=";
-			buf = - Support_Hyperplanes.read(i,j);
+			buf = Support_Hyperplanes.read(i,j);
 			for (k= 0; k <= max_decimal_length-decimal_length(buf); k++) {
 				out<<" ";
 			}
