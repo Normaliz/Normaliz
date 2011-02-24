@@ -668,7 +668,8 @@ void Output<Integer>::polytop() const{
 		}
 		Matrix<Integer> Hilbert_Basis;                                            //write Hilbert Basis
 		if (Result->isComputed(ConeProperty::HilbertBasis)) {
-			Matrix<Integer> Hilbert_Basis_Full_Cone = Result->getHilbertBasis();
+			Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
+			Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
 			write_matrix_egn(Hilbert_Basis_Full_Cone);
 			if (typ) {
 				Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(Support_Hyperplanes_Full_Cone.transpose());
