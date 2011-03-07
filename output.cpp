@@ -270,6 +270,9 @@ void Output<Integer>::write_tri() const{
 		list< pair<vector<size_t>,Integer> > Tri = Result->getTriangulation();
 		typename list< pair<vector<size_t>,Integer> >::const_iterator tit = Tri.begin();
 
+		out << Tri.size() << endl;
+		out << Result->getBasisChange().get_rank()+1 << endl; //works also for empty list
+
 		for(; tit != Tri.end(); ++tit) {
 			for (size_t i=0; i<tit->first.size(); i++) {
 				out << tit->first[i] << " ";
