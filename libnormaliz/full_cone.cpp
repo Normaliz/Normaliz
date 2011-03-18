@@ -1635,6 +1635,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 				degree_function[i]+=(*h)[i];
 			}
 		} //TODO parallel addition in each thread and final addition at the end
+		//TODO make_prime()?
 		if(verbose) {
 			verboseOutput()<<"done."<<endl<<flush;
 		}
