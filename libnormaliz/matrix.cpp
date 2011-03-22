@@ -302,12 +302,12 @@ size_t Matrix<Integer>::nr_of_columns () const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::random () {
+void Matrix<Integer>::random (int mod) {
 	size_t i,j,k;
 	for (i = 0; i < nr; i++) {
 		for (j = 0; j < nc; j++) {
 			k = rand();
-			elements[i][j]=k % 3;
+			elements[i][j]=k % mod;
 		}
 	}
 }

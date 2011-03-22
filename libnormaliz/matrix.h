@@ -85,7 +85,8 @@ public:
   Integer read (size_t row, size_t col) const;         // read data at (row,col)
   size_t nr_of_rows() const;                       // returns nr
   size_t nr_of_columns() const;                   // returns nc
-  void random();     // generates a pseudo random matrix for tests
+  /* generates a pseudo random matrix for tests, entries form 0 to mod-1 */
+  void random(int mod=3);
   Matrix submatrix(const vector<size_t>& rows) const;  //returns a submatrix with rows
 									  //corresponding to indices given by
 									//the entries of rows, Numbering from 1 to n, not 0 to n-1 !
