@@ -587,7 +587,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	if (FC.isComputed(ConeProperty::Triangulation)) {
 		Triangulation.clear();
 		Triangulation.splice(Triangulation.begin(),FC.Triangulation);
-		//TODO sort the keys  typename list
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::Multiplicity)) {

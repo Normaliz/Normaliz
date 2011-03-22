@@ -906,7 +906,18 @@ void Full_Cone<Integer>::build_cone() {
 //	RekTiefe--;
 
 	is_Computed.set(ConeProperty::SupportHyperplanes);
-	if(keep_triangulation) is_Computed.set(ConeProperty::Triangulation);
+	if(keep_triangulation) {
+		if(!is_pyramid) {
+			//sort the keys
+			typename list< pair<vector<size_t>, Integer> >::iterator it = Triangulation.begin();
+			while (it!=Triangulation.end()) {
+				sort(it->first.begin(),it->first.end());
+				++it;
+			}
+		}
+		is_Computed.set(ConeProperty::Triangulation);
+	}
+	
 }
 
 //---------------------------------------------------------------------------
