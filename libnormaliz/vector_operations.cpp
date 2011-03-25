@@ -41,12 +41,12 @@ void v_write(vector<T>& v){
 //---------------------------------------------------------------------------
 
 template <typename T>
-size_t v_read(const vector<T>& v){
+size_t v_read(const vector<T>& v, std::ostream& out){
 	size_t i,s=v.size();
 	for (i=0; i <s; i++) {
-		cout<<v[i]<<" ";
+		out<<v[i]<<" ";
 	}
-	cout<<endl;
+	out<<endl;
 	return s;
 }
 
