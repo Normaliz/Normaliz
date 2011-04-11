@@ -458,6 +458,8 @@ void Cone<Integer>::compute(const string& computation_type) {
 		Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
 		if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
 			Generators = BasisChange.from_sublattice(Extreme_Rays).to_list();
+			//Sort Generators to get deterministic triangulations
+			Generators.sort();
 			is_Computed.set(ConeProperty::Generators);
 			Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
 			compose_basis_change(Basis_Change);
