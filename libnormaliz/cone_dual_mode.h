@@ -56,10 +56,10 @@ public:
 	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const size_t & size);
 
 	/* adds a new element irreducible to the Hilbert basis
-	 * the new elements must come from a  structure sorted by total degree
+	 * the new elements must come from a structure sorted by total degree
 	 * used for dual algorithm */
 	void reduce_and_insert(const vector<Integer> & new_element, const size_t & size);
-	/* select extreme rays  by reduction
+	/* select extreme rays by reduction
 	 * used for the dual algorithm */
 	void reduce_and_insert_extreme(const vector<Integer> & new_element);
 

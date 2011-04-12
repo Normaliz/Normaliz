@@ -87,11 +87,13 @@ public:
   size_t nr_of_columns() const;                   // returns nc
   /* generates a pseudo random matrix for tests, entries form 0 to mod-1 */
   void random(int mod=3);
-  Matrix submatrix(const vector<size_t>& rows) const;  //returns a submatrix with rows
-									  //corresponding to indices given by
-									//the entries of rows, Numbering from 1 to n, not 0 to n-1 !
+
+  /* returns a submatrix with rows corresponding to indices given by
+   * the entries of rows, Numbering from 1 to n, not 0 to n-1 ! */
+  Matrix submatrix(const vector<size_t>& rows) const;
   Matrix submatrix(const vector<int>& rows) const;
   Matrix submatrix(const vector<bool>& rows) const;
+
   vector<Integer> diagonale() const;     //returns the diagonale of this
 								  //this should be a quadratic matrix
   size_t maximal_decimal_length() const;    //return the maximal number of decimals

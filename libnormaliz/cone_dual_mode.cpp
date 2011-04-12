@@ -621,10 +621,9 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 	Generators = Matrix<Integer>(s,dim);
    
 	typename  list< vector<Integer> >::const_iterator l;
-   for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
-     	Generators.write( i, v_cut_front(*l, dim) );
+	for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
+		Generators.write( i, v_cut_front(*l, dim) );
 	}
-
 }
 
 //---------------------------------------------------------------------------
@@ -674,7 +673,7 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 			}
 		}
 		if (k >= realdim-1 && Test.rank()>=realdim-1) {
-				relevant_sh.push_back(i);
+			relevant_sh.push_back(i);
 		}
 	}
 	SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
@@ -701,4 +700,4 @@ void Cone_Dual_Mode<Integer>::to_sublattice(Sublattice_Representation<Integer> S
 	}
 }
 
-}
+} //end namespace libnormaliz

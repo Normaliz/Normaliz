@@ -167,6 +167,10 @@ class Full_Cone {
 	void reset_tasks();
 
 public:
+/*---------------------------------------------------------------------------
+ *                      Constructors
+ *---------------------------------------------------------------------------
+ */
 	Full_Cone();
 	Full_Cone(Matrix<Integer> M);            //main constructor
 	Full_Cone(const Cone_Dual_Mode<Integer> &C);

@@ -455,12 +455,17 @@ void Cone<Integer>::compute(const string& computation_type) {
 		}
 		Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)));
 		Dual_Cone.support_hyperplanes();
-		Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
 		if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
+			//get the extreme rays of the primal cone
+			Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
 			Generators = BasisChange.from_sublattice(Extreme_Rays).to_list();
-			//Sort Generators to get deterministic triangulations
+			//sort Generators to get deterministic triangulations
 			Generators.sort();
 			is_Computed.set(ConeProperty::Generators);
+			//get minmal set of support_hyperplanes
+			Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
+			SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp).to_list();
+
 			Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
 			compose_basis_change(Basis_Change);
 		}
@@ -483,10 +488,14 @@ void Cone<Integer>::compute(const string& computation_type) {
 		FC.triangulation_hilbert_basis();
 	} else if (computation_type=="hilbert_basis") {
 		FC.hilbert_basis();
-	} else if (computation_type=="support_hyperplanes") {
+	} else if (computation_type=="support_hyperplanes" ||
+	           computation_type=="support_hyperplanes_pyramid") {
+		if (isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
+			//this is the workaround for not dualizing twice
+			FC.Support_Hyperplanes=BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).to_list();
+			FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+		}
 		FC.support_hyperplanes();
-	} else if (computation_type=="support_hyperplanes_pyramid") {
-		FC.support_hyperplanes(); //TODO typen anpassen
 	} else if (computation_type=="triangulation") {
 		FC.support_hyperplanes_triangulation();
 	} else if (computation_type=="volume") {

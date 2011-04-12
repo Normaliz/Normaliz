@@ -69,7 +69,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FMDATA & po
 	NewHypIndVal.Hyp=v_make_prime(NewHypIndVal.Hyp);
 	NewHypIndVal.ValNewGen=0; // not really needed, only for completeness
 	
-	NewHypIndVal.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane cotains old gen iff both pos and neg do
+	NewHypIndVal.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
 	NewHypIndVal.GenInHyp.set(ind_gen);  // new hyperplane contains new generator
 	
 	#pragma omp critical(HYPERPLANE)
@@ -935,6 +935,8 @@ void Full_Cone<Integer>::extreme_rays_and_ht1_check() {
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_support_hyperplanes(){
+	if(is_Computed.test(ConeProperty::SupportHyperplanes))
+		return;
 	bool save_tri=do_triangulation;
 	bool save_part_tri=do_partial_triangulation;
 	do_triangulation=false;
@@ -1255,8 +1257,7 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
 	size_t i,j,k,l,t;
-	Matrix<Integer> SH=getSupportHyperplanes();
-	SH=SH.transpose();
+	Matrix<Integer> SH=getSupportHyperplanes().transpose();
 	Matrix<Integer> Val=Generators.multiplication(SH);
 	size_t nc=Val.nr_of_columns();
 	vector<size_t> Zero(nc);
@@ -1271,7 +1272,7 @@ void Full_Cone<Integer>::compute_extreme_rays(){
 			}
 		}
 		nr_zeroes[i]=k;
-		if (k<dim-1||k==nc)  // not contained in enough facets  or in all (0 as generator)
+		if (k<dim-1||k==nc)  // not contained in enough facets or in all (0 as generator)
 			Extreme_Rays[i]=false;
 	}
 
