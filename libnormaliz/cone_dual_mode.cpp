@@ -273,8 +273,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 	}
 	size_t i;
 	int sign;
-	bool  not_done;
-	list < vector <Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
+	bool not_done;
+	list < vector<Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
 	Integer orientation, scalar_product,diff,factor;
 	vector <Integer> hyperplane=SupportHyperplanes.read(hyp_counter);
 	typename list< vector<Integer> >::iterator h;
@@ -313,7 +313,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 			hyp_element[0]=orientation;
 			Negative_Ired.push_back(hyp_element);
 		}
-	}
+	} //end lifting
 	for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //dividing into negative and positive
 		(*h)[hyp_counter]=v_scalar_product_unequal_vectors_end<Integer>(hyperplane,(*h));
 		if ((*h)[hyp_counter]>0) {
@@ -366,6 +366,12 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 			Neutral.push_back(&(*(it++)));
 		}
 		size_t psize=Positive_Ired.size();
+		if (verbose) {
+			size_t nsize=Negative_Ired.size();
+			size_t zsize=Neutral_Ired.size();
+			if (psize*nsize>1000000)
+				verboseOutput()<<"Positive: "<<psize<<"  Negative: "<<nsize<<"  Neutral: "<<zsize<<endl;
+		}
 		#pragma omp parallel private(p,n,diff) firstprivate(Positive,Negative,Neutral)
 		{
 		size_t ppos=0;
@@ -376,8 +382,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 			for(;i < ppos; --ppos, --p) ;
 
 			for (n = Negative_Ired.begin(); n != Negative_Ired.end(); ++n){
-				if ((*p)[nr_sh+1]<=1&&(*n)[nr_sh+1]<=1&&((*p)[nr_sh+1]!=0||(*n)[nr_sh+1]!=0)) {
-					if (((*p)[nr_sh+2]!=0&&(*p)[nr_sh+2]<=(*n)[hyp_counter])||((*n)[nr_sh+2]!=0&&(*n)[nr_sh+2]<=(*p)[hyp_counter]))
+				if ((*p)[nr_sh+1]<=1 && (*n)[nr_sh+1]<=1
+				&& ((*p)[nr_sh+1]!=0 || (*n)[nr_sh+1]!=0)) {
+					if (((*p)[nr_sh+2]!=0&&(*p)[nr_sh+2]<=(*n)[hyp_counter])
+					|| ((*n)[nr_sh+2]!=0&&(*n)[nr_sh+2]<=(*p)[hyp_counter]))
 						continue;
 					//	counter++;
 					diff=(*p)[hyp_counter]-(*n)[hyp_counter];
