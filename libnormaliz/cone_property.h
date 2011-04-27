@@ -61,7 +61,7 @@ public:
 	ConeProperties(ConeProperty::Enum, ConeProperty::Enum);
 	ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
 
-	/* set Properties */
+	/* set properties */
 	ConeProperties& set(ConeProperty::Enum, bool value=true);
 	ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
 	ConeProperties& set(const ConeProperties&);

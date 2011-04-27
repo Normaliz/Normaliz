@@ -642,7 +642,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	}
 
 	if(verbose) {
-		verboseOutput() << "done" <<endl;
+		verboseOutput() << " done" <<endl;
 	}
 }
 

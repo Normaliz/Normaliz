@@ -1,32 +1,43 @@
-The easiest way to use libnormaliz
+*******************************************************************************
+**********             The easiest way to use libnormaliz            **********
+*******************************************************************************
+
+This is the very first version of what will be a library for normaliz in a future version.
+It may very well happen that the interface changes! Please contact us if you want to use the normaliz library.
+
+More information on normaliz:
 http://www.mathematik.uni-osnabrueck.de/normaliz/
 
 recommended compile flags:
--Wall                        #warnings, but no-sign-compare (they woud be to many)
--Wno-unknown-pragmas         #to supress warnings about unknown pragmas when not using openmp
--lgmpxx -lgmp                #for gmp
--O3                          #for optimization
+-Wall                   # warnings
+-lgmpxx -lgmp           # for gmp
+-O3                     # for optimization
+also one of the following:
+-fopenmp                # for openmp
+-Wno-unknown-pragmas    # to suppress warnings about unknown pragmas when not using openmp
 
 
 Quick workflow overview:
-1) include libnormaliz/Cone.h in your header when nessecary
+1) include libnormaliz/Cone.h in your header when necessary
    include libnormaliz/libnormaliz.cpp in your source
 2) create libnormaliz::Cone
-3) call on of the Cone.compute() methods
+3) call one of the Cone.compute() methods
 4) check if the desired data is computed: isComputed( X )
 5) get the data: getX()
 6) repeat 4+5 or 3+4+5
 
 1) The .cpp should be included since the whole library is templated, so you could use any integer type you want. We suggest (and only tested) 'long long int' and the gmp type 'mpz_class'.
+If you want to use only these two types it is enough to include the headers and link libnormaliz.o.
+
 
 Example:
-//we discourage the use of "using namespace libnormaliz", but you may find these using usefull
+//we discourage the use of "using namespace libnormaliz", but you may find these useful
 using libnormaliz::Cone;
 using libnormaliz::ConeProperty;
 using libnormaliz::ConeProperties;
 
 
-//use your prefered integer type
+//use your preferred integer type
 typedef long long int Integer;
 //typedef mpz_class Integer;
 
@@ -35,7 +46,8 @@ list< vector <Integer> > Data = ...
 int type = ... 
 libnormaliz::Cone<Integer> MyCone = libnormaliz::Cone<Integer>(Data, type);
 
-libnormaliz::ConeProperties Wanted().set(libnormaliz::ConeProperty::Triangulation).set(libnormaliz::ConeProperty::HilbertBasis);
+libnormaliz::ConeProperties Wanted();
+Wanted.set(libnormaliz::ConeProperty::Triangulation).set(libnormaliz::ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 
 //old way to say what you want
@@ -48,7 +60,7 @@ if(MyCone.isComputed(libnormaliz::ConeProperty::HilbertBasis)) {
 	//use it
 }
 if(MyCone.isComputed(libnormaliz::ConeProperty::Multiplicity)) {
-   cout<<"MyCone has multiplicity "<<MyCone.getMultiplicity();
+   cout << "MyCone has multiplicity " << MyCone.getMultiplicity();
 }
 
 
@@ -81,5 +93,5 @@ hilbert_polynomial
 hilbert_basis_polynomial
 dual
 
-please see the Normaliz Documentation for more information on the input types and mode
+Please see the Normaliz Documentation for more information on the input types and computation modes
 http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.7Documentation.pdf

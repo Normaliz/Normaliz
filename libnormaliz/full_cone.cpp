@@ -988,13 +988,12 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 					step_x_size += listsize;
 					verboseOutput() << "|" <<flush;
 				}
-				//verboseOutput() << "evaluated "<< (i+1)<<" simplices" <<endl;
 			}
 		}
 	}
 
 	if (verbose) {
-		verboseOutput() << endl << "evaluated "<< listsize<<" simplices" <<endl;
+		verboseOutput() << endl << listsize<<" simplices evaluated." <<endl;
 	}
 }
 
@@ -1504,7 +1503,7 @@ void Full_Cone<Integer>::global_reduction() {
 	size_t listsize=Candidates.size();
 	
 	if(verbose) {
-		verboseOutput()<<"Computing the degrees of the candidates, "<<flush;
+		verboseOutput()<<"computing the degrees of the candidates... "<<flush;
 	}
 	//go over candidates: do single scalar product
 	//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
@@ -1539,7 +1538,7 @@ void Full_Cone<Integer>::global_reduction() {
 		if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
 			if (verbose) {
 				verboseOutput()<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
-				verboseOutput()<<" Hilbert Basis elements of degree <= "<<norm_crit-1<<", done"<<endl;
+				verboseOutput()<<" Hilbert Basis elements of degree <= "<<norm_crit-1<<"; done"<<endl;
 			}
 			while ( !Candidates_with_Scalar_Product.empty()) {
 				Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
@@ -1629,7 +1628,7 @@ void Full_Cone<Integer>::global_reduction() {
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 	if(verbose) {
-		verboseOutput()<<"computing degree function: ";
+		verboseOutput()<<"computing degree function... ";
 	}
 	size_t i;  
 	vector<Integer> degree_function(dim,0);
