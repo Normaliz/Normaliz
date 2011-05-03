@@ -966,7 +966,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 	long step_x_size = listsize-VERBOSE_STEPS;
 	if (verbose) {
 		verboseOutput() << "evaluating "<<listsize<<" simplices" <<endl;
-		verboseOutput() << "---------+---------+---------+---------+---------+"<<endl;
+		verboseOutput() << "---------+---------+---------+---------+---------+"
+		                << " (one | per 2%)" << endl;
 	}
 	
 
@@ -1571,10 +1572,20 @@ void Full_Cone<Integer>::global_reduction() {
 			HBpointers.push_back(&(*(c++)));
 		}
 
-		const long VERBOSE_STEPS = 50;
+		long VERBOSE_STEPS = 50;      //print | for 2%
+		if (verbose && csize>50000) { //print | for 1000 candidates
+			VERBOSE_STEPS=csize/1000;
+		}
 		long step_x_size = csize-VERBOSE_STEPS;
+		long counter = 0;
+		long steps_done = 0;
 		if (verbose) {
-			verboseOutput() << "---------+---------+---------+---------+---------+"<<endl;
+			verboseOutput() << "---------+---------+---------+---------+---------+";
+			if (VERBOSE_STEPS == 50) {
+				verboseOutput() << " (one | per 2%)" << endl;
+			} else { 
+				verboseOutput() << " (one | per 1000 candidates)" << endl;
+			}
 		}
 
 
@@ -1596,10 +1607,19 @@ void Full_Cone<Integer>::global_reduction() {
 
 			if (verbose) {
 				#pragma omp critical(VERBOSE)
-			   while ((long)(k*VERBOSE_STEPS) >= step_x_size) {
+				{
+				counter++;
+
+				while (counter*VERBOSE_STEPS >= step_x_size) {
+					steps_done++;
 					step_x_size += csize;
 					verboseOutput() << "|" <<flush;
-				}  
+//					cout<<counter<<" ";
+					if(VERBOSE_STEPS > 50 && steps_done%50 == 0) {
+						verboseOutput() << "  " << (steps_done) << "000" << endl;
+					}
+				}
+				} //end critical(VERBOSE)
 			}
 		} //end for
 		} //end parallel
