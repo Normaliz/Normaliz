@@ -91,7 +91,7 @@ public:
 	     const list< vector<Integer> >& Congruences);
 
 	/* do computation */
-	void compute(ConeProperties to_compute);
+	void compute(ConeProperties& to_compute);
 	void compute(const string& mode);
 
 	/* check what is computed */

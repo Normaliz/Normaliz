@@ -387,7 +387,7 @@ void Cone<Integer>::prepare_input_type_10(const list< vector<Integer> >& Binomia
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::compute(ConeProperties ToCompute) {
+void Cone<Integer>::compute(ConeProperties& ToCompute) {
 	ToCompute.reset(is_Computed); // already computed
 
 	/* add preconditions */
