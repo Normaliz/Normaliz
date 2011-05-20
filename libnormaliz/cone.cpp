@@ -399,7 +399,7 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::compute(ConeProperties& ToCompute) {
+void Cone<Integer>::compute(ConeProperties ToCompute) {
 	ToCompute.reset(is_Computed); // already computed
 
 	/* add preconditions */
@@ -416,28 +416,28 @@ void Cone<Integer>::compute(ConeProperties& ToCompute) {
 	/* find correct mode */
 	if (ToCompute.test(ConeProperty::HVector) ) {
 		if(ToCompute.test(ConeProperty::HilbertBasis)) {
-			compute("hilbert_basis_polynomial");
+			compute(hilbertBasisPolynomial);
 		} else {
-			compute("hilbert_polynomial");
+			compute(hilbertPolynomial);
 		}
 	} else { //no H-Vector
 		if(ToCompute.test(ConeProperty::HilbertBasis)) {
 			if(ToCompute.test(ConeProperty::Triangulation)) {
-				compute("triangulation_hilbert_basis");
+				compute(hilbertBasisTriangulation);
 			} else {
-				compute("hilbert_basis");
+				compute(hilbertBasisLarge);
 			}
 		} else { //no Hilbert basis
 			if(ToCompute.test(ConeProperty::Triangulation)) {
-				compute("triangulation");
+				compute(volumeTriangulation);
 				if(ToCompute.test(ConeProperty::Ht1Elements)) {
-					compute("ht1_elements");
+					compute(height1Elements);
 				}
 			} else { //no triangulation
 				if(ToCompute.test(ConeProperty::Ht1Elements)) {
-					compute("ht1_elements");
+					compute(height1Elements);
 				} else if(ToCompute.test(ConeProperty::SupportHyperplanes)) {
-					compute("support_hyperplanes");
+					compute(supportHyperplanes);
 				}
 			}
 		}
@@ -454,8 +454,8 @@ void Cone<Integer>::compute(ConeProperties& ToCompute) {
 
 
 template<typename Integer>
-void Cone<Integer>::compute(const string& computation_type) {
-	if (computation_type == "dual") {
+void Cone<Integer>::compute(ComputationMode mode) {
+	if (mode == dual) {
 		compute_dual();
 		return;
 	}
@@ -496,35 +496,46 @@ void Cone<Integer>::compute(const string& computation_type) {
 
 	Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
-	if (computation_type=="triangulation_hilbert_basis") {
+	switch (mode) {
+	case hilbertBasisTriangulation:
 		FC.triangulation_hilbert_basis();
-	} else if (computation_type=="hilbert_basis") {
+		break;
+	case hilbertBasisLarge:
 		FC.hilbert_basis();
-	} else if (computation_type=="support_hyperplanes" ||
-	           computation_type=="support_hyperplanes_pyramid") {
-		if (isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
-			//this is the workaround for not dualizing twice
+		break;
+	case supportHyperplanes:
+		// workaround for not dualizing twice
+		if (isComputed(ConeProperty::Generators)
+		 && isComputed(ConeProperty::SupportHyperplanes)) {
 			vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
 			FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
 			FC.is_Computed.set(ConeProperty::SupportHyperplanes);
 		}
 		FC.support_hyperplanes();
-	} else if (computation_type=="triangulation") {
+		break;
+	case volumeTriangulation:
 		FC.support_hyperplanes_triangulation();
-	} else if (computation_type=="volume") {
+		break;
+	case volumeLarge:
 		FC.support_hyperplanes_triangulation_pyramid();
-	} else if (computation_type=="ht1_elements") {
+		break;
+	case height1Elements:
 		FC.ht1_elements();
-	} else if (computation_type=="hilbert_polynomial") {
+		break;
+	case hilbertPolynomial:
 		FC.hilbert_polynomial();
-	} else if (computation_type=="hilbert_polynomial_pyramid") {
+		break;
+	case hilbertPolynomialLarge:
 		FC.hilbert_polynomial_pyramid();
-	} else if (computation_type=="hilbert_basis_polynomial") {
+		break;
+	case hilbertBasisPolynomial:
 		FC.hilbert_basis_polynomial();
-	} else if (computation_type=="hilbert_basis_polynomial_pyramid") {
+		break;
+	case hilbertBasisPolynomialLarge:
 		FC.hilbert_basis_polynomial_pyramid();
-	} else {
-		errorOutput()<<"Unknown computation_type: \""<<computation_type<<"\"!"<<endl;
+		break;
+	default: //should not happen
+		errorOutput()<<"Unknown computation mode: \""<<mode<<"\"!"<<endl;
 		throw NormalizException();
 	}
 	extract_data(FC);
@@ -655,8 +666,8 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::IsIntegrallyClosed);
 	}
 
-	if(verbose) {
-		verboseOutput() << " done" <<endl;
+	if (verbose) {
+		verboseOutput() << " done." <<endl;
 	}
 }
 

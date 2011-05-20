@@ -62,8 +62,9 @@ public:
 //                           make computations
 //---------------------------------------------------------------------------
 
-	void compute(ConeProperties& to_compute);
-	void compute(const string& mode);
+	void compute(ComputationMode mode);
+	void compute(ConeProperties to_compute);
+//	void compute(ConeProperty::Enum prop);
 
 
 //---------------------------------------------------------------------------
@@ -80,6 +81,9 @@ public:
 	vector< vector<Integer> > getGenerators() const;
 	vector< vector<Integer> > getExtremeRays() const;
 	vector< vector<Integer> > getSupportHyperplanes() const;
+	vector< vector<Integer> > getEquations() const;
+	vector< vector<Integer> > getCongruences() const;
+	multimap< ConstraintType , vector< vector<Integer> > > getConstraints () const;
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;

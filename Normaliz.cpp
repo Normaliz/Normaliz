@@ -68,10 +68,9 @@ int main(int argc, char* argv[])
 	//libnormaliz::RecBoundFactor = 5000000;
 	size_t i;       //used for iterations
 	char c;
-	string computation_type="triangulation_hilbert_basis";
-	//4  types available, "support_hyperplanes", "triangulation", "normal" and "hilbert_polynomial"
-	//it is set by the setup file or by the options "s", "v", "n", "p", "h" and "d" in the command line
-	//the type given in the command line overrides the type set by the setup file
+	ComputationMode computation_mode = hilbertBasisTriangulation;
+	//for available modes see libnormaliz/libnormaliz.h
+	//it is set by the option from the command line
 	string output_name;         //name of the output file(s) saved here
 
 	// read command line options
@@ -127,40 +126,40 @@ int main(int argc, char* argv[])
 				write_all_files = true;
 				break;
 			case 's':
-				computation_type="support_hyperplanes";
+				computation_mode=supportHyperplanes;
 				break;
 			case 'S':
-				computation_type="support_hyperplanes_pyramid";
+				computation_mode=supportHyperplanes;
 				break;
 			case 'v':
-				computation_type="triangulation";
+				computation_mode=volumeTriangulation;
 				break;
 			case 'V':
-				computation_type="volume";
+				computation_mode=volumeLarge;
 				break;
 			case 'n':
-				computation_type="triangulation_hilbert_basis";
+				computation_mode=hilbertBasisTriangulation;
 				break;
 			case 'N':
-				computation_type="hilbert_basis";
+				computation_mode=hilbertBasisLarge;
 				break;
 			case '1':
-				computation_type="ht1_elements";
+				computation_mode=height1Elements;
 				break;
 			case 'p':
-				computation_type="hilbert_polynomial";
+				computation_mode=hilbertPolynomial;
 				break;
 			case 'P':
-				computation_type="hilbert_polynomial_pyramid";
+				computation_mode=hilbertPolynomialLarge;
 				break;
 			case 'h':
-				computation_type="hilbert_basis_polynomial";
+				computation_mode=hilbertBasisPolynomial;
 				break;
 			case 'H':
-				computation_type="hilbert_basis_polynomial_pyramid";
+				computation_mode=hilbertBasisPolynomialLarge;
 				break;
 			case 'd':
-				computation_type="dual";
+				computation_mode=dual;
 				break;
 			case 'e':  //check for arithmetic overflow
 				test_arithmetic_overflow=true;
@@ -205,10 +204,10 @@ int main(int argc, char* argv[])
 		//if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
 		test_arithmetic_overflow=false;
 		//Read and process Input
-		returnvalue = process_data<mpz_class>(output_name, computation_type, write_extra_files, write_all_files);
+		returnvalue = process_data<mpz_class>(output_name, computation_mode, write_extra_files, write_all_files);
 	} else {
 		//Read and process Input
-		returnvalue = process_data<long long int>(output_name, computation_type, write_extra_files, write_all_files);
+		returnvalue = process_data<long long int>(output_name, computation_mode, write_extra_files, write_all_files);
 	}
 
 	//exit
@@ -221,7 +220,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, string& computation_type, bool write_extra_files, bool write_all_files ) {
+template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_all_files ) {
 	size_t i,j;
 
 	Output<Integer> Out;    //all the information relevant for output is collected in this object
@@ -392,10 +391,10 @@ template<typename Integer> int process_data(string& output_name, string& computa
 		in.close();
 		if (verbose) {
 			cout<<"\n************************************************************\n";
-			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
+			cout<<"Running in computation mode "<<computation_mode<<" with input type constraints."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(Inequalities.get_elements(), Equations.get_elements(), Congruences.get_elements());
-		MyCone.compute(computation_type);
+		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
 		Out.cone();
 	} 
@@ -404,11 +403,11 @@ template<typename Integer> int process_data(string& output_name, string& computa
 		//main computations and output
 		if (verbose) {
 			cout<<"\n************************************************************\n";
-			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
+			cout<<"Running in computation mode "<<computation_mode<<" with input type "<<mode<<"."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(M.get_elements(), input_type);
 //		MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
-		MyCone.compute(computation_type);
+		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
 		if (mode == 2) {
 			Out.polytop();

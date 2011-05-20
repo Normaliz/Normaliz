@@ -33,6 +33,7 @@ enum InputType {
 };
 //it would be nice if ConstraintType is a subset of InputType
 
+//TODO add homogeneous for first 3?
 enum ConstraintType {
 	hyperplanes,
 	equations,
@@ -41,6 +42,23 @@ enum ConstraintType {
 	inhomogeneous_equations,
 	inhomogeneous_congruences
 };
+
+//TODO entweder in namespace oder Namen eindeutig machen
+//namespace Mode {
+enum ComputationMode {
+	supportHyperplanes,
+	volumeTriangulation,
+	volumeLarge,
+	height1Elements,
+	hilbertBasisTriangulation,
+	hilbertBasisLarge,
+	hilbertPolynomial,
+	hilbertPolynomialLarge,
+	hilbertBasisPolynomial,
+	hilbertBasisPolynomialLarge,
+	dual
+};
+//} //end namespace mode
 
 extern bool verbose;
 
