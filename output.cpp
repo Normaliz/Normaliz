@@ -267,8 +267,8 @@ void Output<Integer>::write_tri() const{
 		string file_name = name+".tri";
 		ofstream out(file_name.c_str());
 
-		list< pair<vector<size_t>,Integer> > Tri = Result->getTriangulation();
-		typename list< pair<vector<size_t>,Integer> >::const_iterator tit = Tri.begin();
+		vector< pair<vector<size_t>,Integer> > Tri = Result->getTriangulation();
+		typename vector< pair<vector<size_t>,Integer> >::const_iterator tit = Tri.begin();
 
 		out << Tri.size() << endl;
 		out << Result->getBasisChange().get_rank()+1 << endl; //works also for empty list
@@ -307,13 +307,8 @@ void Output<Integer>::write_inv_file() const{
 			inv<<"integer hilbert_basis_elements = "<<Result->getHilbertBasis().size()<<endl;
 		}
 
-		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-		size_t nr_ex_rays=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				nr_ex_rays++;
-			}
-		}
+		size_t nr_ex_rays = Result->getExtremeRays().size();
+
 		inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
 		inv<<"integer rank = "<<rank<<endl;
 		inv<<"integer index = "<< Result->getBasisChange().get_index() <<endl;
@@ -366,7 +361,7 @@ void Output<Integer>::write_inv_file() const{
 template<typename Integer>
 void Output<Integer>::cone() const {
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
-	size_t i,j,nr,rank=BasisChange.get_rank();    //read local data
+	size_t i,nr,rank=BasisChange.get_rank();    //read local data
 	Matrix<Integer> Generators = Result->getGenerators();
 	Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanes());
 
@@ -397,13 +392,7 @@ void Output<Integer>::cone() const {
 			out << Result->getHt1Elements().size() <<" Hilbert basis elements of height 1"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
-			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
-			size_t nr_ex_rays=0;
-			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-				if (Ex_Rays_Marked[i]==true) {
-					nr_ex_rays++;
-				}
-			}
+			size_t nr_ex_rays = Result->getExtremeRays().size();
 			out << nr_ex_rays <<" extreme rays"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
@@ -495,22 +484,8 @@ void Output<Integer>::cone() const {
 		}
 		Matrix<Integer> Extreme_Rays;
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
-			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-			size_t nr_ex_rays=0;
-			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-				if (Ex_Rays_Marked[i]==true) {
-					nr_ex_rays++;
-				}
-			}
-			vector<size_t> Ex_Rays_Position(nr_ex_rays);
-			j=0;
-			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-				if (Ex_Rays_Marked[i]==true) {
-					Ex_Rays_Position[j]=i+1;
-					j++;
-				}
-			}
-			Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+			Extreme_Rays = Result->getExtremeRays();          //write extreme rays
+			size_t nr_ex_rays = Extreme_Rays.nr_of_rows();
 
 			write_matrix_ext(Extreme_Rays);
 			out<<nr_ex_rays<<" extreme rays:"<<endl;
@@ -613,13 +588,7 @@ void Output<Integer>::polytop() const{
 			out << Result->getHt1Elements().size() <<" lattice points in polytope"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
-			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
-			size_t nr_ex_rays=0;
-			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-				if (Ex_Rays_Marked[i]==true) {
-					nr_ex_rays++;
-				}
-			}
+			size_t nr_ex_rays = Result->getExtremeRays().size();
 			out << nr_ex_rays <<" extreme points of polytope"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
@@ -694,22 +663,9 @@ void Output<Integer>::polytop() const{
 			Hom.pretty_print(out);
 		}
 
-		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-		size_t nr_ex_rays=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				nr_ex_rays++;
-			}
-		}
-		vector<size_t> Ex_Rays_Position(nr_ex_rays);
-		j=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				Ex_Rays_Position[j]=i+1;
-				j++;
-			}
-		}
-		Matrix<Integer> Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+		Matrix<Integer> Extreme_Rays = Result->getExtremeRays();          //write extreme rays
+		size_t nr_ex_rays = Extreme_Rays.nr_of_rows();
+
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme points of polytope:"<<endl;
 		Matrix<Integer> Extreme_Rays_Cut(Extreme_Rays);
@@ -815,7 +771,7 @@ void Output<Integer>::rees() const{
 		libnormaliz::errorOutput()<<"error in Output.rees(): primary was NOT computed!"<<endl;
 	}
 	const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
-	size_t i,j,nr;
+	size_t i,nr;
 	size_t dim = BasisChange.get_dim();
 	size_t rank = BasisChange.get_rank();
 	size_t nr_generators_ideal=0;
@@ -856,13 +812,7 @@ void Output<Integer>::rees() const{
 			out << nr_generators_ideal <<" generators of integral closure of the ideal"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::ExtremeRays)) {
-			vector<bool> Ex_Rays_Marked=Result->getExtremeRays();
-			size_t nr_ex_rays=0;
-			for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-				if (Ex_Rays_Marked[i]==true) {
-					nr_ex_rays++;
-				}
-			}
+			size_t nr_ex_rays = Result->getExtremeRays().size();
 			out << nr_ex_rays <<" extreme rays"<<endl;
 		}
 		if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
@@ -959,22 +909,8 @@ void Output<Integer>::rees() const{
 			Ideal_Gens.pretty_print(out);
 		}
 
-		vector<bool> Ex_Rays_Marked=Result->getExtremeRays();          //write extreme rays
-		size_t nr_ex_rays=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				nr_ex_rays++;
-			}
-		}
-		vector<size_t> Ex_Rays_Position(nr_ex_rays);
-		j=0;
-		for (i = 0; i <Ex_Rays_Marked.size(); i++) {
-			if (Ex_Rays_Marked[i]==true) {
-				Ex_Rays_Position[j]=i+1;
-				j++;
-			}
-		}
-		Matrix<Integer> Extreme_Rays=Generators.submatrix(Ex_Rays_Position);
+		Matrix<Integer> Extreme_Rays = Result->getExtremeRays();          //write extreme rays
+		size_t nr_ex_rays = Extreme_Rays.nr_of_rows();
 		write_matrix_ext(Extreme_Rays);
 		out<<nr_ex_rays<<" extreme rays:"<<endl;
 		Extreme_Rays.pretty_print(out);

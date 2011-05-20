@@ -810,7 +810,7 @@ void Full_Cone<Integer>::build_cone() {
 	if(bound_div > 3*dim) bound_div = 3*dim;
 	RecBoundSuppHyp /= bound_div;
 
-	size_t RecBoundTriang=RecBoundFactor; //dim*dim*dim*dim*RecBoundFactor;
+	size_t RecBoundTriang = 5000000; // 5Mio
 
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 

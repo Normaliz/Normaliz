@@ -106,8 +106,13 @@ Matrix<Integer>::Matrix(size_t row, size_t col, Integer value){
 template<typename Integer>
 Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
 	nr=elem.size();
-	nc=elem[0].size();
-	elements=elem;
+	if (nr>0) {
+		nc=elem[0].size();
+		elements=elem;
+		//TODO check if all rows have the same length
+	} else {
+		nc=0;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -144,20 +149,6 @@ Matrix<Integer>::~Matrix(){
 	//automatic destructor
 }
 
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-list< vector<Integer> > Matrix<Integer>::to_list(){
-	//list< vector<Integer> > elemlist(nr, vector<Integer>());
-	list< vector<Integer> > elemlist = list< vector<Integer> >();
-	//typename list< vector<Integer> >::iterator it=elemlist.begin();
-	for (size_t i=0; i<nr; ++i) {
-		//(*(it++)).swap(elements[i]);
-		elemlist.push_back(elements[i]);
-	}
-	return elemlist;
-}
 
 //---------------------------------------------------------------------------
 

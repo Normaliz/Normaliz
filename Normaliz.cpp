@@ -262,6 +262,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 	string mode_string;
 	size_t nr_rows,nr_columns;;
 	int mode;
+	InputType input_type = integral_closure;
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
@@ -276,15 +277,19 @@ template<typename Integer> int process_data(string& output_name, string& computa
 	in>>mode_string;
 	if (mode_string=="0"||mode_string=="integral_closure") {
 		mode=0;
+		input_type = integral_closure;
 	} else
 	if (mode_string=="1"||mode_string=="normalization") {
 		mode=1;
+		input_type = normalization;
 	} else
 	if (mode_string=="2"||mode_string=="polytope") {
 		mode=2;
+		input_type = polytope;
 	} else
 	if (mode_string=="3"||mode_string=="rees_algebra") {
 		mode=3;
+		input_type = rees_algebra;
 	} else
 	if (mode_string=="4"||mode_string=="hyperplanes") {
 		mode=4;
@@ -297,9 +302,11 @@ template<typename Integer> int process_data(string& output_name, string& computa
 	} else
 	if (mode_string=="10"||mode_string=="lattice_ideal") {
 		mode=10;
+		input_type = lattice_ideal;
 	} else {
 		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
 		mode=0;
+		input_type = integral_closure;
 	}
 
 	if ( in.fail() ) {
@@ -387,7 +394,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<456<<"."<<endl;
 		}
-		Cone<Integer> MyCone = Cone<Integer>(Inequalities.to_list(), Equations.to_list(), Congruences.to_list());
+		Cone<Integer> MyCone = Cone<Integer>(Inequalities.get_elements(), Equations.get_elements(), Congruences.get_elements());
 		MyCone.compute(computation_type);
 		Out.setCone(MyCone);
 		Out.cone();
@@ -399,7 +406,7 @@ template<typename Integer> int process_data(string& output_name, string& computa
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_type<<" with input type "<<mode<<"."<<endl;
 		}
-		Cone<Integer> MyCone = Cone<Integer>(M.to_list(), mode);
+		Cone<Integer> MyCone = Cone<Integer>(M.get_elements(), input_type);
 //		MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
 		MyCone.compute(computation_type);
 		Out.setCone(MyCone);

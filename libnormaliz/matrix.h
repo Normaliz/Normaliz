@@ -71,8 +71,6 @@ public:
 //							   Data access
 //---------------------------------------------------------------------------
 
-  list< vector<Integer> >to_list();
-
   void write();                // to be modified, just for tests
   void write(size_t row, const vector<Integer>& data); //write  a row
   void write(size_t row, const vector<int>& data); //write  a row
@@ -106,12 +104,16 @@ public:
 	inline const Integer& get_elem(size_t row, size_t col) const {
 		return elements[row-1][col-1];
 	}
+	inline const vector< vector<Integer> >& get_elements() const {
+		return elements;
+	}
 	inline vector<Integer> const& operator[] (size_t row) const {
 		return elements[row];
 	}
 	inline vector<Integer>& operator[] (size_t row) { 
 		return elements[row];
 	}
+
 
 
 //---------------------------------------------------------------------------

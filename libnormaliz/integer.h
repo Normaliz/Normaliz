@@ -19,7 +19,7 @@
 #ifndef INTEGER_H_
 #define INTEGER_H_
 
-#include "libnormaliz.h"
+#include "general.h"
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs

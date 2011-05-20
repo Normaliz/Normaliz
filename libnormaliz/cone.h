@@ -19,34 +19,101 @@
 #ifndef CONE_H_
 #define CONE_H_
 
+#include <vector>
+#include <map>
 #include <string>
 #include "libnormaliz.h"
 #include "cone_property.h"
 #include "full_cone.h"
 #include "sublattice_representation.h"
-#include "matrix.h"
 
 namespace libnormaliz {
-using std::list;
 using std::vector;
 
 
 template<typename Integer>
 class Cone {
+
+//---------------------------------------------------------------------------
+//                               public methods
+//---------------------------------------------------------------------------
+public:
+
+//---------------------------------------------------------------------------
+//                    Constructors, they preprocess the input 
+//---------------------------------------------------------------------------
+
+	/* give a single matrix of generators */
+	Cone(const vector< vector<Integer> >& generators_or_relations, InputType type);
+
+	/* give a single constraint */
+	Cone(const vector< vector<Integer> >& constraints, ConstraintType type);
+
+	/* give multiple constraints */
+	Cone(const multimap< ConstraintType , vector< vector<Integer> > >& constraints);
+
+	//TODO keep this?
+	Cone(const vector< vector<Integer> >& Inequalities,
+	     const vector< vector<Integer> >& Equations,
+	     const vector< vector<Integer> >& Congruences);
+
+
+//---------------------------------------------------------------------------
+//                           make computations
+//---------------------------------------------------------------------------
+
+	void compute(ConeProperties& to_compute);
+	void compute(const string& mode);
+
+
+//---------------------------------------------------------------------------
+//                         check what is computed
+//---------------------------------------------------------------------------
+	bool isComputed(ConeProperty::Enum prop) const;
+
+//---------------------------------------------------------------------------
+//                           get the results
+//---------------------------------------------------------------------------
+	//TODO sollen die eine Berechnung starten falls nötig?
+	//TODO was wenn es nicht möglich ist es zu berechnen?
+	vector< vector<Integer> > getGeneratorsOfToricRing() const;
+	vector< vector<Integer> > getGenerators() const;
+	vector< vector<Integer> > getExtremeRays() const;
+	vector< vector<Integer> > getSupportHyperplanes() const;
+	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
+	vector< vector<Integer> > getHilbertBasis() const;
+	vector< vector<Integer> > getHt1Elements() const;
+	vector<Integer> getHVector() const;
+	vector<Integer> getHilbertPolynomial() const;
+	vector<Integer> getLinearForm() const;
+	Integer getMultiplicity() const;
+	bool isPointed() const;
+	bool isHt1ExtremeRays() const;
+	bool isHt1HilbertBasis() const;
+	bool isIntegrallyClosed() const;
+	bool isReesPrimary() const;
+	Integer getReesPrimaryMultiplicity() const;
+	Sublattice_Representation<Integer> getBasisChange() const;
+	
+	
+//---------------------------------------------------------------------------
+//                          private part
+//---------------------------------------------------------------------------
+
+private:	
 	size_t dim;
 
-//	Full_Cone<Integer> FullDimCone;
 	Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
 	bool BC_set;
 	ConeProperties is_Computed;
-	list< vector<Integer> > GeneratorsOfToricRing;
-	list< vector<Integer> > Generators;
+	vector< vector<Integer> > GeneratorsOfToricRing;
+	vector< vector<Integer> > Generators;
 	vector<bool> ExtremeRays;
-	list< vector<Integer> > SupportHyperplanes;
-	list< pair<vector<size_t>, Integer> > Triangulation;
+	vector< vector<Integer> > SupportHyperplanes;
+	vector< pair<vector<size_t>, Integer> > Triangulation;
 	Integer multiplicity;
-	list< vector<Integer> > HilbertBasis;
-	list< vector<Integer> > Ht1Elements;
+	vector< vector<Integer> > HilbertBasis;
+	vector< vector<Integer> > Ht1Elements;
 	vector<Integer> HVector;
 	vector<Integer> HilbertPolynomial;
 	vector<Integer> LinearForm;
@@ -61,14 +128,14 @@ class Cone {
 
 
 	/* Progress input, depending on input_type */
-	void prepare_input_type_0(const list< vector<Integer> >& Input);
-	void prepare_input_type_1(const list< vector<Integer> >& Input);
-	void prepare_input_type_2(const list< vector<Integer> >& Input);
-	void prepare_input_type_3(const list< vector<Integer> >& Input);
-	void prepare_input_type_10(const list< vector<Integer> >& Binomials);
+	void prepare_input_type_0(const vector< vector<Integer> >& Input);
+	void prepare_input_type_1(const vector< vector<Integer> >& Input);
+	void prepare_input_type_2(const vector< vector<Integer> >& Input);
+	void prepare_input_type_3(const vector< vector<Integer> >& Input);
+	void prepare_input_type_10(const vector< vector<Integer> >& Binomials);
 //TODO reihenfolge anpassen
-	void prepare_input_type_456(const list< vector<Integer> >& Congruences, const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities);
-	void prepare_input_type_45(const list< vector<Integer> >& Equations, const list< vector<Integer> >& Inequalities);
+	void prepare_input_type_456(const vector< vector<Integer> >& Congruences, const vector< vector<Integer> >& Equations, const vector< vector<Integer> >& Inequalities);
+	void prepare_input_type_45(const vector< vector<Integer> >& Equations, const vector< vector<Integer> >& Inequalities);
 
 	/* only used by the constructors */
 	void initialize();
@@ -79,43 +146,6 @@ class Cone {
 	/* extract the data from Full_Cone, this may remove data from Full_Cone!*/
 	void extract_data(Full_Cone<Integer>& FC);
 
-//---------------------------------------------------------------------------
-//                          public methods
-//---------------------------------------------------------------------------
-public:
-	/* Constructors, they preprocess the input */
-	Cone(const list< vector<Integer> >& input, int type);
-
-	Cone(const list< vector<Integer> >& Inequalities,
-	     const list< vector<Integer> >& Equations,
-	     const list< vector<Integer> >& Congruences);
-
-	/* do computation */
-	void compute(ConeProperties& to_compute);
-	void compute(const string& mode);
-
-	/* check what is computed */
-	bool isComputed(ConeProperty::Enum prop) const;
-
-	/* getter */
-	Sublattice_Representation<Integer> const& getBasisChange() const;
-	list< vector<Integer> > const& getGeneratorsOfToricRing() const;
-	list< vector<Integer> > const& getGenerators() const;
-	vector<bool> const& getExtremeRays() const;
-	list< vector<Integer> > const& getSupportHyperplanes() const;
-	list< pair<vector<size_t>, Integer> > const& getTriangulation() const;
-	list< vector<Integer> > const& getHilbertBasis() const;
-	list< vector<Integer> > const& getHt1Elements() const;
-	vector<Integer> const& getHVector() const;
-	vector<Integer> const& getHilbertPolynomial() const;
-	vector<Integer> const& getLinearForm() const;
-	Integer const& getMultiplicity() const;
-	bool isPointed() const;
-	bool isHt1ExtremeRays() const;
-	bool isHt1HilbertBasis() const;
-	bool isIntegrallyClosed() const;
-	bool isReesPrimary() const;
-	Integer const& getReesPrimaryMultiplicity() const;
 };
 
 }  //end namespace libnormaliz

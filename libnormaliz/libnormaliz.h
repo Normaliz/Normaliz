@@ -20,18 +20,27 @@
 #define LIBNORMALIZ_H_
 
 #include <iostream>
-#include <assert.h>
-
-#ifdef _WIN32 //for 32 and 64 bit windows
-	#include <mpirxx.h>
-#else         // all other systems
-	#include <gmpxx.h>
-#endif
-
-#include "normaliz_exception.h"
-#include "cone_property.h"
 
 namespace libnormaliz {
+
+enum InputType {
+	integral_closure,
+	normalization,
+	polytope,
+	rees_algebra,
+//	constraints, //TODO what to do with a matrix of type constraints? 
+	lattice_ideal
+};
+//it would be nice if ConstraintType is a subset of InputType
+
+enum ConstraintType {
+	hyperplanes,
+	equations,
+	congruences,
+	inhomogeneous_hyperplanes,
+	inhomogeneous_equations,
+	inhomogeneous_congruences
+};
 
 extern bool verbose;
 
@@ -41,15 +50,13 @@ extern bool verbose;
 extern bool test_arithmetic_overflow;
 extern long overflow_test_modulus;
 
-extern size_t RecBoundFactor;
-
+/* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);
 
 std::ostream& verboseOutput();
 std::ostream& errorOutput();
 
-//extern const unsigned int major_version, minor_version;  //TODO version
 
 } /* end namespace libnormaliz */
 
