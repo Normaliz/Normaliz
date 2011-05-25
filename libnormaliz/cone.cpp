@@ -27,7 +27,7 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type
 	initialize();
 	if (!Input.empty()) dim = (*(Input.begin())).size();
 
-	switch (input_type){
+	switch (input_type) {
 		case integral_closure: prepare_input_type_0(Input); break;
 		case normalization:    prepare_input_type_1(Input); break;
 		case polytope:         prepare_input_type_2(Input); break;
@@ -125,6 +125,37 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
    return SupportHyperplanes;
 }
+
+//TODO gehts nicht auch in der SR?
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getEquations() const {
+	size_t rank = BasisChange.get_rank();
+	size_t nr_of_equ = dim-rank;
+	Matrix<Integer> Equations(nr_of_equ,dim);
+	if (nr_of_equ > 0) {
+		Lineare_Transformation<Integer> NewLT = Transformation(Matrix<Integer>(getExtremeRays()));
+		Matrix<Integer> Help = NewLT.get_right().transpose();
+		for (size_t i = 1+rank; i <= dim; i++) {
+			Equations.write(i-rank,Help.read(i));
+		}
+	}
+	return Equations.get_elements();
+}
+
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getCongruences() const {
+	return BasisChange.get_congruences().get_elements();
+}
+
+template<typename Integer>
+multimap< ConstraintType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
+	multimap<ConstraintType, vector< vector<Integer> > > c;
+	c.insert(pair< ConstraintType,vector< vector<Integer> > >(hyperplanes,SupportHyperplanes));
+	c.insert(pair< ConstraintType,vector< vector<Integer> > >(equations,getEquations()));
+	c.insert(pair< ConstraintType,vector< vector<Integer> > >(congruences,getCongruences()));
+	return c;
+}
+
 
 template<typename Integer>
 vector< pair<vector<size_t>,Integer> > Cone<Integer>::getTriangulation() const {

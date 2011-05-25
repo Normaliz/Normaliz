@@ -64,7 +64,7 @@ public:
 
 	void compute(ComputationMode mode);
 	void compute(ConeProperties to_compute);
-//	void compute(ConeProperty::Enum prop);
+//	void compute(ConeProperty::Enum prop); //TODO auch das zulassen?
 
 
 //---------------------------------------------------------------------------

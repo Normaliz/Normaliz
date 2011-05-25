@@ -500,21 +500,15 @@ void Output<Integer>::cone() const {
 			//equations
 			size_t dim = Extreme_Rays.nr_of_columns();
 			size_t nr_of_equ = dim-rank;
-			Matrix<Integer> Equations(nr_of_equ,dim);
+			Matrix<Integer> Equations = Result->getEquations();
 			if (nr_of_equ > 0) {
-				Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
-				Matrix<Integer> Help = NewLT.get_right().transpose();
-				for (i = 1+rank; i <= dim; i++) {
-					Equations.write(i-rank,Help.read(i));
-				}
-
 				out << nr_of_equ <<" equations:" <<endl;
 				Equations.pretty_print(out);
 			}
 
 	
 			//congruences
-			Matrix<Integer> Congruences = BasisChange.get_congruences();
+			Matrix<Integer> Congruences = Result->getCongruences();
 			size_t nr_of_cong = Congruences.nr_of_rows();
 			if (nr_of_cong > 0) {
 				out << nr_of_cong <<" congruences:" <<endl;
@@ -702,13 +696,7 @@ void Output<Integer>::polytop() const{
 		
 
 		//equations 
-		Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
-		Matrix<Integer> Help = NewLT.get_right().transpose();
-		Matrix<Integer> Equations(dim-rank,dim);
-		for (i = 1+rank; i <= dim; i++) {
-			Equations.write(i-rank,Help.read(i));
-		}
-
+		Matrix<Integer> Equations = Result->getEquations();
 		size_t nr_of_equ = Equations.nr_of_rows();
 		if (nr_of_equ > 0) {
 			max_decimal_length = Equations.maximal_decimal_length();
@@ -734,7 +722,7 @@ void Output<Integer>::polytop() const{
 
 
 		//congruences
-		Matrix<Integer> Congruences = BasisChange.get_congruences();
+		Matrix<Integer> Congruences = Result->getCongruences();
 		size_t nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
@@ -922,14 +910,7 @@ void Output<Integer>::rees() const{
 		Support_Hyperplanes.pretty_print(out);
 		
 		//equations 
-		Lineare_Transformation<Integer> NewLT = Transformation(Extreme_Rays);
-		Matrix<Integer> Help = NewLT.get_right().transpose();
-		size_t dim = Extreme_Rays.nr_of_columns();
-		Matrix<Integer> Equations(dim-rank,dim);
-		for (i = 1+rank; i <= dim; i++) {
-			Equations.write(i-rank,Help.read(i));
-		}
-
+		Matrix<Integer> Equations = Result->getEquations();
 		size_t nr_of_equ = Equations.nr_of_rows();
 		if (nr_of_equ > 0) {
 			out << nr_of_equ <<" equations:" <<endl;
@@ -938,7 +919,7 @@ void Output<Integer>::rees() const{
 
 
 		//congruences
-		Matrix<Integer> Congruences = BasisChange.get_congruences();
+		Matrix<Integer> Congruences = Result->getCongruences();
 		size_t nr_of_cong = Congruences.nr_of_rows();
 		if (nr_of_cong > 0) {
 			out << nr_of_cong <<" congruences:" <<endl;
