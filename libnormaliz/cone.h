@@ -44,7 +44,8 @@ public:
 //---------------------------------------------------------------------------
 
 	/* give a single matrix of generators */
-	Cone(const vector< vector<Integer> >& generators_or_relations, InputType type);
+	Cone(const vector< vector<Integer> >& generators_or_relations,
+	     InputType type = Type::integral_closure);
 
 	/* give a single constraint */
 	Cone(const vector< vector<Integer> >& constraints, ConstraintType type);
@@ -52,38 +53,32 @@ public:
 	/* give multiple constraints */
 	Cone(const multimap< ConstraintType , vector< vector<Integer> > >& constraints);
 
-	//TODO keep this?
-	Cone(const vector< vector<Integer> >& Inequalities,
-	     const vector< vector<Integer> >& Equations,
-	     const vector< vector<Integer> >& Congruences);
-
 
 //---------------------------------------------------------------------------
 //                           make computations
 //---------------------------------------------------------------------------
 
-	void compute(ComputationMode mode);
+	void compute(ComputationMode mode = Mode::hilbertBasisPolynomial);
 	void compute(ConeProperties to_compute);
-//	void compute(ConeProperty::Enum prop); //TODO auch das zulassen?
+	void compute(ConeProperty::Enum prop);
 
 
 //---------------------------------------------------------------------------
 //                         check what is computed
 //---------------------------------------------------------------------------
+
 	bool isComputed(ConeProperty::Enum prop) const;
 
 //---------------------------------------------------------------------------
-//                           get the results
+//          get the results, these methods do not start a computation
 //---------------------------------------------------------------------------
-	//TODO sollen die eine Berechnung starten falls nötig?
-	//TODO was wenn es nicht möglich ist es zu berechnen?
-	vector< vector<Integer> > getGeneratorsOfToricRing() const;
+
 	vector< vector<Integer> > getGenerators() const;
 	vector< vector<Integer> > getExtremeRays() const;
 	vector< vector<Integer> > getSupportHyperplanes() const;
 	vector< vector<Integer> > getEquations() const;
 	vector< vector<Integer> > getCongruences() const;
-	multimap< ConstraintType , vector< vector<Integer> > > getConstraints () const;
+	multimap< ConstraintType , vector< vector<Integer> > > getConstraints() const;
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
@@ -97,8 +92,8 @@ public:
 	bool isIntegrallyClosed() const;
 	bool isReesPrimary() const;
 	Integer getReesPrimaryMultiplicity() const;
+	vector< vector<Integer> > getGeneratorsOfToricRing() const;
 	Sublattice_Representation<Integer> getBasisChange() const;
-	
 	
 //---------------------------------------------------------------------------
 //                          private part
@@ -137,9 +132,8 @@ private:
 	void prepare_input_type_2(const vector< vector<Integer> >& Input);
 	void prepare_input_type_3(const vector< vector<Integer> >& Input);
 	void prepare_input_type_10(const vector< vector<Integer> >& Binomials);
-//TODO reihenfolge anpassen
-	void prepare_input_type_456(const vector< vector<Integer> >& Congruences, const vector< vector<Integer> >& Equations, const vector< vector<Integer> >& Inequalities);
-	void prepare_input_type_45(const vector< vector<Integer> >& Equations, const vector< vector<Integer> >& Inequalities);
+	void prepare_input_type_456(const Matrix<Integer>& Congruences, const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
+	void prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
 
 	/* only used by the constructors */
 	void initialize();

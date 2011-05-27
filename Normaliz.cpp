@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 	//libnormaliz::RecBoundFactor = 5000000;
 	size_t i;       //used for iterations
 	char c;
-	ComputationMode computation_mode = hilbertBasisTriangulation;
+	ComputationMode computation_mode = Mode::hilbertBasisTriangulation;
 	//for available modes see libnormaliz/libnormaliz.h
 	//it is set by the option from the command line
 	string output_name;         //name of the output file(s) saved here
@@ -126,40 +126,40 @@ int main(int argc, char* argv[])
 				write_all_files = true;
 				break;
 			case 's':
-				computation_mode=supportHyperplanes;
+				computation_mode = Mode::supportHyperplanes;
 				break;
 			case 'S':
-				computation_mode=supportHyperplanes;
+				computation_mode = Mode::supportHyperplanes;
 				break;
 			case 'v':
-				computation_mode=volumeTriangulation;
+				computation_mode = Mode::volumeTriangulation;
 				break;
 			case 'V':
-				computation_mode=volumeLarge;
+				computation_mode = Mode::volumeLarge;
 				break;
 			case 'n':
-				computation_mode=hilbertBasisTriangulation;
+				computation_mode = Mode::hilbertBasisTriangulation;
 				break;
 			case 'N':
-				computation_mode=hilbertBasisLarge;
+				computation_mode = Mode::hilbertBasisLarge;
 				break;
 			case '1':
-				computation_mode=height1Elements;
+				computation_mode = Mode::height1Elements;
 				break;
 			case 'p':
-				computation_mode=hilbertPolynomial;
+				computation_mode = Mode::hilbertPolynomial;
 				break;
 			case 'P':
-				computation_mode=hilbertPolynomialLarge;
+				computation_mode = Mode::hilbertPolynomialLarge;
 				break;
 			case 'h':
-				computation_mode=hilbertBasisPolynomial;
+				computation_mode = Mode::hilbertBasisPolynomial;
 				break;
 			case 'H':
-				computation_mode=hilbertBasisPolynomialLarge;
+				computation_mode = Mode::hilbertBasisPolynomialLarge;
 				break;
 			case 'd':
-				computation_mode=dual;
+				computation_mode = Mode::dual;
 				break;
 			case 'e':  //check for arithmetic overflow
 				test_arithmetic_overflow=true;
@@ -261,7 +261,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 	string mode_string;
 	size_t nr_rows,nr_columns;;
 	int mode;
-	InputType input_type = integral_closure;
+	InputType input_type = Type::integral_closure;
 	Integer number;
 	in >> nr_rows;
 	in >> nr_columns;
@@ -276,19 +276,19 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 	in>>mode_string;
 	if (mode_string=="0"||mode_string=="integral_closure") {
 		mode=0;
-		input_type = integral_closure;
+		input_type = Type::integral_closure;
 	} else
 	if (mode_string=="1"||mode_string=="normalization") {
 		mode=1;
-		input_type = normalization;
+		input_type = Type::normalization;
 	} else
 	if (mode_string=="2"||mode_string=="polytope") {
 		mode=2;
-		input_type = polytope;
+		input_type = Type::polytope;
 	} else
 	if (mode_string=="3"||mode_string=="rees_algebra") {
 		mode=3;
-		input_type = rees_algebra;
+		input_type = Type::rees_algebra;
 	} else
 	if (mode_string=="4"||mode_string=="hyperplanes") {
 		mode=4;
@@ -301,11 +301,11 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 	} else
 	if (mode_string=="10"||mode_string=="lattice_ideal") {
 		mode=10;
-		input_type = lattice_ideal;
+		input_type = Type::lattice_ideal;
 	} else {
 		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
 		mode=0;
-		input_type = integral_closure;
+		input_type = Type::integral_closure;
 	}
 
 	if ( in.fail() ) {
@@ -320,18 +320,25 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		if (mode == 6) {
 			nc--;  //the congruence matrix has one extra column
 		}
-		Matrix<Integer> Inequalities(0,nc), Equations(0,nc), Congruences(0,nc+1);
-		switch(mode) {
-			case 4: Inequalities = M;
+		multimap <Type::ConstraintType, vector< vector<Integer> > > constraints;
+
+		while (true) {
+			switch(mode) {
+				case 4:
+					constraints.insert(pair<Type::ConstraintType, vector< vector<Integer> > > (Type::hyperplanes, M.get_elements()));
 					break;
-			case 5: Equations = M;
+				case 5:
+					constraints.insert(pair<Type::ConstraintType, vector< vector<Integer> > > (Type::equations, M.get_elements()));
 					break;
-			case 6: Congruences = M;
+				case 6:
+					constraints.insert(pair<Type::ConstraintType, vector< vector<Integer> > > (Type::congruences, M.get_elements()));
 					break;
-			default: cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
-					 return 1;
-		}
-		while (in.good()) {
+				default:
+					cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
+					return 1;
+			}
+			if (!in.good()) 
+				break;
 			in >> nr_rows;
 			in >> nr_columns;
 			if (in.eof())
@@ -374,18 +381,6 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 				cerr<<"Illegal input type \""<<mode_string<<"\" at this position."<<endl;
 				return 1;
 			}
-			
-			switch(mode) {
-				case 4: Inequalities.append(M);
-						break;
-				case 5: Equations.append(M);
-						break;
-				case 6: Congruences.append(M);
-						break;
-				default: cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
-						return 10;
-			}
-		
 		}
 		
 		in.close();
@@ -393,7 +388,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 			cout<<"\n************************************************************\n";
 			cout<<"Running in computation mode "<<computation_mode<<" with input type constraints."<<endl;
 		}
-		Cone<Integer> MyCone = Cone<Integer>(Inequalities.get_elements(), Equations.get_elements(), Congruences.get_elements());
+		Cone<Integer> MyCone = Cone<Integer>(constraints);
 		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
 		Out.cone();

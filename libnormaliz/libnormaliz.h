@@ -23,17 +23,14 @@
 
 namespace libnormaliz {
 
+namespace Type {
 enum InputType {
 	integral_closure,
 	normalization,
 	polytope,
 	rees_algebra,
-//	constraints, //TODO what to do with a matrix of type constraints? 
 	lattice_ideal
 };
-//it would be nice if ConstraintType is a subset of InputType
-
-//TODO add homogeneous for first 3?
 enum ConstraintType {
 	hyperplanes,
 	equations,
@@ -42,9 +39,9 @@ enum ConstraintType {
 	inhomogeneous_equations,
 	inhomogeneous_congruences
 };
+} //end namespace Type
 
-//TODO entweder in namespace oder Namen eindeutig machen
-//namespace Mode {
+namespace Mode {
 enum ComputationMode {
 	supportHyperplanes,
 	volumeTriangulation,
@@ -58,7 +55,12 @@ enum ComputationMode {
 	hilbertBasisPolynomialLarge,
 	dual
 };
-//} //end namespace mode
+} //end namespace Mode
+
+using Type::InputType;
+using Type::ConstraintType;
+using Mode::ComputationMode;
+
 
 extern bool verbose;
 

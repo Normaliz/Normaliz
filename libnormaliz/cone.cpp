@@ -28,11 +28,11 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type
 	if (!Input.empty()) dim = (*(Input.begin())).size();
 
 	switch (input_type) {
-		case integral_closure: prepare_input_type_0(Input); break;
-		case normalization:    prepare_input_type_1(Input); break;
-		case polytope:         prepare_input_type_2(Input); break;
-		case rees_algebra:     prepare_input_type_3(Input); break;
-		case lattice_ideal:    prepare_input_type_10(Input); break;
+		case Type::integral_closure: prepare_input_type_0(Input); break;
+		case Type::normalization:    prepare_input_type_1(Input); break;
+		case Type::polytope:         prepare_input_type_2(Input); break;
+		case Type::rees_algebra:     prepare_input_type_3(Input); break;
+		case Type::lattice_ideal:    prepare_input_type_10(Input); break;
 		default:               throw input_type; //TODO make a good exception
 	}
 	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
@@ -44,13 +44,13 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, ConstraintType input
 	if (!Input.empty()) dim = Input.begin()->size();
 
 	switch (input_type){
-		case hyperplanes:
+		case Type::hyperplanes:
 		  prepare_input_type_456(vector<vector<Integer> >(), vector<vector<Integer> >(), Input);
 		  break;
-		case equations:
+		case Type::equations:
 		  prepare_input_type_456(vector<vector<Integer> >(), Input, vector<vector<Integer> >());
 		  break;
-		case congruences:
+		case Type::congruences:
 		  dim--;
 		  prepare_input_type_456(Input, vector<vector<Integer> >(), vector<vector<Integer> >());
 		  break;
@@ -60,24 +60,50 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, ConstraintType input
 }
 
 template<typename Integer>
-Cone<Integer>::Cone(const vector< vector<Integer> >& Inequalities,
-                    const vector< vector<Integer> >& Equations,
-					const vector< vector<Integer> >& Congruences) {
+Cone<Integer>::Cone(const multimap< ConstraintType , vector< vector<Integer> > >& constraints) {
 	initialize();
-	list<size_t> dimensions = list<size_t>();
-	if (Inequalities.size()>0) dimensions.push_back(Inequalities.begin()->size());
-	if (Equations.size()>0) dimensions.push_back(Equations.begin()->size());
-	if (Congruences.size()>0) dimensions.push_back(Congruences.begin()->size()-1);
-	if (!dimensions.empty()) {
-		dim = *dimensions.begin();
-		dimensions.pop_front();
-	}
-	while(!dimensions.empty()) {
-		if (dim != *dimensions.begin()) {
-			errorOutput() << "Error: dimensions of input matrices do not match!";
-			throw NormalizException();
+	
+	typename multimap< ConstraintType , vector< vector<Integer> > >::const_iterator it = constraints.begin();
+	for(; it != constraints.end(); ++it) {
+		if (it->second.size() > 0) {
+			dim = it->second.begin()->size();
+			if (it->first == Type::congruences) {
+				dim--; //congruences have one extra column
+			}
+			break;
 		}
-		dimensions.pop_front();
+	}
+	Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
+	for (; it != constraints.end(); ++it) {
+		if (it->second.size() == 0) {
+			continue;
+		}
+		switch (it->first) {
+			case Type::hyperplanes:
+				if (it->second.begin()->size() != dim) {
+					errorOutput() << "Dimensions of hyperplanes ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+					throw NormalizException();
+				}
+				Inequalities.append(it->second);
+				break;
+			case Type::equations:
+				if (it->second.begin()->size() != dim) {
+					errorOutput() << "Dimensions of equations ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+					throw NormalizException();
+				}
+				Equations.append(it->second);
+				break;
+			case Type::congruences:
+				if (it->second.begin()->size() != dim+1) {
+					errorOutput() << "Dimensions of congruences ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+					throw NormalizException();
+				}
+				Congruences.append(it->second);
+				break;
+			default:
+				errorOutput() << "Unknown Constraint Type " << endl;
+				throw NormalizException();
+		}
 	}
 	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 	prepare_input_type_456(Congruences, Equations, Inequalities);
@@ -150,9 +176,9 @@ vector< vector<Integer> > Cone<Integer>::getCongruences() const {
 template<typename Integer>
 multimap< ConstraintType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
 	multimap<ConstraintType, vector< vector<Integer> > > c;
-	c.insert(pair< ConstraintType,vector< vector<Integer> > >(hyperplanes,SupportHyperplanes));
-	c.insert(pair< ConstraintType,vector< vector<Integer> > >(equations,getEquations()));
-	c.insert(pair< ConstraintType,vector< vector<Integer> > >(congruences,getCongruences()));
+	c.insert(pair< ConstraintType,vector< vector<Integer> > >(Type::hyperplanes,SupportHyperplanes));
+	c.insert(pair< ConstraintType,vector< vector<Integer> > >(Type::equations,getEquations()));
+	c.insert(pair< ConstraintType,vector< vector<Integer> > >(Type::congruences,getCongruences()));
 	return c;
 }
 
@@ -333,8 +359,7 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_type_456(const vector< vector<Integer> >& CongruencesV, const vector< vector<Integer> >& Equations, const vector< vector<Integer> >& Inequalities) {
-	Matrix<Integer> Congruences(CongruencesV);
+void Cone<Integer>::prepare_input_type_456(const Matrix<Integer>& Congruences, const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities) {
 
 	size_t nr_cong = Congruences.nr_of_rows();
 	// handle Congurences
@@ -372,19 +397,19 @@ void Cone<Integer>::prepare_input_type_456(const vector< vector<Integer> >& Cong
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_type_45(const vector< vector<Integer> >& Equations, const vector< vector<Integer> >& Inequalities) {
+void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities) {
 
 	// use positive orthant if no inequalities are given
-	if (Inequalities.size() == 0) {
+	if (Inequalities.nr_of_rows() == 0) {
 		SupportHyperplanes = (Matrix<Integer>(dim)).get_elements();
 	} else {
-		SupportHyperplanes = Inequalities;
+		SupportHyperplanes = Inequalities.get_elements();
 	}
 	is_Computed.set(ConeProperty::SupportHyperplanes);
 
 
 	size_t i,j;
-	if (Equations.size()>0) {
+	if (Equations.nr_of_rows()>0) {
 		Lineare_Transformation<Integer> Diagonalization = Transformation(BasisChange.to_sublattice_dual(Equations));
 		size_t rank=Diagonalization.get_rank();
 
@@ -447,28 +472,28 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
 	/* find correct mode */
 	if (ToCompute.test(ConeProperty::HVector) ) {
 		if(ToCompute.test(ConeProperty::HilbertBasis)) {
-			compute(hilbertBasisPolynomial);
+			compute(Mode::hilbertBasisPolynomial);
 		} else {
-			compute(hilbertPolynomial);
+			compute(Mode::hilbertPolynomial);
 		}
 	} else { //no H-Vector
 		if(ToCompute.test(ConeProperty::HilbertBasis)) {
 			if(ToCompute.test(ConeProperty::Triangulation)) {
-				compute(hilbertBasisTriangulation);
+				compute(Mode::hilbertBasisTriangulation);
 			} else {
-				compute(hilbertBasisLarge);
+				compute(Mode::hilbertBasisLarge);
 			}
 		} else { //no Hilbert basis
 			if(ToCompute.test(ConeProperty::Triangulation)) {
-				compute(volumeTriangulation);
+				compute(Mode::volumeTriangulation);
 				if(ToCompute.test(ConeProperty::Ht1Elements)) {
-					compute(height1Elements);
+					compute(Mode::height1Elements);
 				}
 			} else { //no triangulation
 				if(ToCompute.test(ConeProperty::Ht1Elements)) {
-					compute(height1Elements);
+					compute(Mode::height1Elements);
 				} else if(ToCompute.test(ConeProperty::SupportHyperplanes)) {
-					compute(supportHyperplanes);
+					compute(Mode::supportHyperplanes);
 				}
 			}
 		}
@@ -486,7 +511,7 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 void Cone<Integer>::compute(ComputationMode mode) {
-	if (mode == dual) {
+	if (mode == Mode::dual) {
 		compute_dual();
 		return;
 	}
@@ -528,13 +553,13 @@ void Cone<Integer>::compute(ComputationMode mode) {
 	Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
 	switch (mode) {
-	case hilbertBasisTriangulation:
+	case Mode::hilbertBasisTriangulation:
 		FC.triangulation_hilbert_basis();
 		break;
-	case hilbertBasisLarge:
+	case Mode::hilbertBasisLarge:
 		FC.hilbert_basis();
 		break;
-	case supportHyperplanes:
+	case Mode::supportHyperplanes:
 		// workaround for not dualizing twice
 		if (isComputed(ConeProperty::Generators)
 		 && isComputed(ConeProperty::SupportHyperplanes)) {
@@ -544,29 +569,29 @@ void Cone<Integer>::compute(ComputationMode mode) {
 		}
 		FC.support_hyperplanes();
 		break;
-	case volumeTriangulation:
+	case Mode::volumeTriangulation:
 		FC.support_hyperplanes_triangulation();
 		break;
-	case volumeLarge:
+	case Mode::volumeLarge:
 		FC.support_hyperplanes_triangulation_pyramid();
 		break;
-	case height1Elements:
+	case Mode::height1Elements:
 		FC.ht1_elements();
 		break;
-	case hilbertPolynomial:
+	case Mode::hilbertPolynomial:
 		FC.hilbert_polynomial();
 		break;
-	case hilbertPolynomialLarge:
+	case Mode::hilbertPolynomialLarge:
 		FC.hilbert_polynomial_pyramid();
 		break;
-	case hilbertBasisPolynomial:
+	case Mode::hilbertBasisPolynomial:
 		FC.hilbert_basis_polynomial();
 		break;
-	case hilbertBasisPolynomialLarge:
+	case Mode::hilbertBasisPolynomialLarge:
 		FC.hilbert_basis_polynomial_pyramid();
 		break;
 	default: //should not happen
-		errorOutput()<<"Unknown computation mode: \""<<mode<<"\"!"<<endl;
+		errorOutput()<<"Unknown computation mode: \""<<static_cast<int>(mode)<<"\"!"<<endl;
 		throw NormalizException();
 	}
 	extract_data(FC);
