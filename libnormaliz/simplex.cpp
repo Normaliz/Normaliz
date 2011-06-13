@@ -446,7 +446,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	Matrix<Integer> V = InvGen; //Support_Hyperplanes.multiply_rows(multiplicators).transpose();
 	V.reduction_modulo(volume); //makes reduction when adding V easier
 
-	while (1){
+	while (true) {
 		last = dim;
 		for (int k = dim-1; k >= 0; k--) {
 			if (point[k] < diagonal[k]-1) {
