@@ -24,6 +24,7 @@
 namespace libnormaliz {
 using std::cout; using std::endl;
 
+//TODO just vor debug output
 template <typename Class>
 ostream& operator<< (ostream& out, const vector<Class>& vec) {
 	for (size_t i=0; i<vec.size(); ++i) {
@@ -85,10 +86,39 @@ HilbertSeries<Integer>& HilbertSeries<Integer>::operator+=(const HilbertSeries<I
 template<typename Integer>
 void HilbertSeries<Integer>::simplify() {
 
-	//TODO check for canceling
+	remove_zeros(denom);
+	cout << denom;
+	vector<Integer> q,r, poly;
+	for (int i=denom.size()-1; i>=0; --i) {
+		// check if nominator is divisable by (1-t^i)
+		poly = coeff_vector<Integer>(i);
+		while(denom[i]>0) {
+			poly_div(q, r, nom, poly);
+			if (r.size() == 0) { //nominator is divisable by poly
+				nom = q;
+				denom[i]--;
+			}
+			else {
+				break;
+			}
+		}
 
-	//TODO decompose denominator into cyclotomic polynomials
+/*		poly = cyclotomicPoly(i);
+		while(denom[i]>0) {
+			//check if nominator is divisable by i-th cyclotomic polynomial
+			poly_div(q, r, nom, poly);
+			if (r.size() == 0) { //nominator is divisable by poly
+				denom[i]--;
+				nom = q;
+			}
+			else {
+				break;
+			}
+		}*/
+	} //end for
+	remove_zeros(denom);
 }
+
 
 // returns the nominator, repr. as vector of coefficients, the h-vector
 template<typename Integer>
@@ -116,6 +146,8 @@ ostream& operator<< (ostream& out, const HilbertSeries<Integer>& HS) {
 	return out;
 }
 
+
+
 //---------------------------------------------------------------------------
 // polynomial operations, for polynomials repr. as vector of coefficients
 //---------------------------------------------------------------------------
@@ -123,19 +155,20 @@ ostream& operator<< (ostream& out, const HilbertSeries<Integer>& HS) {
 // returns the coefficient vector of 1-t^i
 template<typename Integer>
 vector<Integer> coeff_vector(size_t i) {
-	cout << "create 1-t^"<<i<<" :   ";
+//	cout << "create 1-t^"<<i<<" :   ";
 	vector<Integer> p(i+1,0);
 	p[0] =  1;
 	p[i] = -1;
-	cout<<p[0]<<p[i]<<"*t^"<<i<<"   size="<<p.size() <<endl;
+//	cout<<p[0]<<p[i]<<"*t^"<<i<<"   size="<<p.size() <<endl;
+	return p;
 }
 
 template<typename Integer>
 void remove_zeros(vector<Integer>& a) {
 	int i=a.size()-1;
-	while ( i>0 && a[i]==0 ) --i;
-	if (i<a.size()-1) {
-		cout<<"resizing to "<<i+1<<endl;
+	while ( i>=0 && a[i]==0 ) --i;
+
+	if (i+1 < a.size()) {
 		a.resize(i+1);
 	}
 }
@@ -175,7 +208,7 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
 	size_t i,j;
 	for (i=0; i<a_size; ++i) {
 		if (a[i] == 0) continue;
-		for (j=0; j<a_size; ++j) {
+		for (j=0; j<b_size; ++j) {
 			if (b[j] == 0) continue;
 			p[i+j] += a[i]*b[j];
 		}
@@ -202,12 +235,12 @@ void poly_mult_to(vector<Integer>& a, size_t d, size_t e = 1) {
 template<typename Integer>
 void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b) {
 	assert(b.back()!=0); // no unneeded zeros
-	assert(b.back()==1 || b.back()==-1);
+	assert(b.back()==1 || b.back()==-1); // then division is always possible
 	r = a;
 	remove_zeros(r);
 	size_t b_size = b.size();
-	int degdiff = r.size()-b_size; //degree differenz
-	if (degdiff<0) {
+	int degdiff = r.size()-b_size; // degree differenz
+	if (r.size() < b_size) {
 		q = vector<Integer>();
 	} else {
 		q = vector<Integer>(degdiff+1);
@@ -215,7 +248,10 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 	Integer divisor;
 	size_t i=0;
 
-	while (degdiff >= 0) {
+//	cout<<"poly_div: r_start="<<r;
+//	cout<<"poly_div: div="<<b;
+	while (r.size() >= b_size) {
+		
 		divisor = r.back()/b.back();
 		q[degdiff] = divisor;
 		// r -= divisor * t^degdiff * b
@@ -223,10 +259,39 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 			r[i+degdiff] -= divisor * b[i];
 		}
 		remove_zeros(r);
+//		cout<<"r = "<<r;
+//		cout<<"q = "<<q;
 		degdiff = r.size()-b_size;
 	}
 
 	return;
+}
+
+template<typename Integer>
+vector<Integer> cyclotomicPoly(size_t n) {
+	// the static variable is initialized only once and then stored
+	static vector< vector<Integer> > CyclotomicPoly = vector< vector<Integer> >();
+	int computed = CyclotomicPoly.size();
+	if (computed < n) {
+		CyclotomicPoly.resize(n);
+		vector<Integer> poly, q, r;
+		for (int i = computed+1; i <= n; ++i) {
+			// compute the i-th poly by dividing X^i-1 by the 
+			// d-th cycl.poly. with d divides i
+			poly = vector<Integer>(i+1);
+			poly[0] = -1; poly[i] = 1;  // X^i - 1
+			for (int d = 1; d < i; ++d) { // <= i/2 should be ok
+				if( i % d == 0) {
+					poly_div(q, r, poly, CyclotomicPoly[d-1]);
+					assert(r.size()==0);
+					poly = q;
+				}
+			}
+			CyclotomicPoly[i-1] = poly;
+			cout << i << "-th cycl. pol.: " << CyclotomicPoly[i-1];
+		}
+	}
+	return CyclotomicPoly[n-1];
 }
 
 } //end namespace libnormaliz

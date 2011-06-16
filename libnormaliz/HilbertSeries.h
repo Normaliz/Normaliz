@@ -21,9 +21,9 @@
  * with non-homogeneous generators.
  * It is represented as a polynomial divided by a product of (1-t^i).
  * The nominator is represented as vector of coefficients, the h-vector
- * vector h repr.: sum of h[i]*t^i
+ * h vector repr.: sum of h[i]*t^i
  * and the denominator is represented as a vector of the exponents of (1-t^i)
- * vector d repr.: product of (1-t^i)^d[i] over i > 0
+ * d vector repr.: product of (1-t^i)^d[i] over i > 0
  *
  * The class offers basic operations on the series and a simplification which
  * transforms the series in the simplest presentation of such a form in terms
@@ -107,6 +107,7 @@ void poly_add_to (vector<Integer>& a, const vector<Integer>& b);
 template<typename Integer>
 void poly_subt_to (vector<Integer>& a, const vector<Integer>& b);
 
+
 // a * b
 template<typename Integer>
 vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b);
@@ -116,10 +117,25 @@ template<typename Integer>
 void poly_mult_to(vector<Integer>& a, size_t d, size_t e = 1);
 
 
-
 // division with remainder, a = q * b + r
 template<typename Integer>
 void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b);
+
+
+// remove leading zero coefficients, 0 polynomial leads to empty list
+template<typename Integer>
+void remove_zeros(vector<Integer>& a);
+
+
+// Returns the n-th cyclotomic polynomial, all smaller are computed and stored.
+// The n-th cyclotomic polynomial is the product of (X-w) over all 
+// n-th primitive roots of unity w.
+template<typename Integer>
+vector<Integer> cyclotomicPoly(size_t n);
+
+// returns the coefficient vector of 1-t^i
+template<typename Integer>
+vector<Integer> coeff_vector(size_t i);
 
 } //end namespace libnormaliz
 

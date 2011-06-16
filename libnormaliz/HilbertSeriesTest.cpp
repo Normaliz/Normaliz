@@ -3,19 +3,8 @@
 using namespace std;
 using namespace libnormaliz;
 
-/*
-template <typename Class>
-ostream& operator<< (ostream& out, const vector<Class>& vec) {
-    for (size_t i=0; i<vec.size(); ++i) {
-		out << " " << vec[i];
-	}
-	out << endl;
-	return out;
-}
-*/
-
 int main() {
-	
+
 	vector<long> anom(3);
 	anom[1]=1; anom[2]=1;
 	vector<long> adenom(4);
@@ -37,9 +26,10 @@ int main() {
 	ABA += A;
 	cout << "B+A: " << ABA;
 	ABA += A;
-	cout << "B+A+A: " << ABA;
+	cout << "B+A+A: " << ABA << endl;
 
-
+	ABA.simplify();
+	cout << "Simpl: " << ABA;
 
 	return 0;
 }
