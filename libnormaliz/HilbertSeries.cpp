@@ -24,7 +24,7 @@
 namespace libnormaliz {
 using std::cout; using std::endl;
 
-//TODO just vor debug output
+//TODO just for debug output
 template <typename Class>
 ostream& operator<< (ostream& out, const vector<Class>& vec) {
 	for (size_t i=0; i<vec.size(); ++i) {
@@ -87,14 +87,18 @@ template<typename Integer>
 void HilbertSeries<Integer>::simplify() {
 
 	remove_zeros(denom);
-	cout << denom;
-	vector<Integer> q,r, poly;
-	for (int i=denom.size()-1; i>=0; --i) {
-		// check if nominator is divisable by (1-t^i)
+	vector<Integer> q, r, poly; //polynomials
+	// In cyclPolyExp we collect cyclotomic polynomials in the denominator,
+	// During this method the Hilbert series is given by nom/(denom*denom_cyclo)
+	// where denom and denom_cyclo are exponent vectors of (1-t^i), i-th cyclotminc poly.
+	vector<Integer> denom_cyclo = vector<Integer>(denom.size());
+
+	for (int i=denom.size()-1; i>0; --i) {
+		// check if we can divide the nominator by (1-t^i)
 		poly = coeff_vector<Integer>(i);
 		while(denom[i]>0) {
 			poly_div(q, r, nom, poly);
-			if (r.size() == 0) { //nominator is divisable by poly
+			if (r.size() == 0) { // nominator is divisable by poly
 				nom = q;
 				denom[i]--;
 			}
@@ -103,19 +107,44 @@ void HilbertSeries<Integer>::simplify() {
 			}
 		}
 
-/*		poly = cyclotomicPoly(i);
-		while(denom[i]>0) {
-			//check if nominator is divisable by i-th cyclotomic polynomial
+		// check if we can divide the nominator by i-th cyclotomic polynomial
+		poly = cyclotomicPoly<Integer>(i);
+		while(denom_cyclo[i]>0 || denom[i]>0) {
 			poly_div(q, r, nom, poly);
-			if (r.size() == 0) { //nominator is divisable by poly
-				denom[i]--;
+			if (r.size() == 0) { // nominator is divisable by poly
 				nom = q;
+				if (denom_cyclo[i]>0) {
+					denom_cyclo[i]--;
+				} else { // decompose (1-t^i)
+					denom[i]--;
+					// put the remaining factors of (1-t^i) in denom_cyclo
+					for(int d=1; d<=i/2; ++d) {
+						if (i % d == 0) denom_cyclo[d]++;
+					}
+				}
 			}
 			else {
 				break;
 			}
-		}*/
-	} //end for
+		}
+	} // end for
+	// done with canceling
+	// now collect the remaining cyclotomic polynomials in (1-t^i) factors
+	for (int i=denom.size()-1; i>0; --i) {
+		while(denom_cyclo[i]>0) {
+			denom[i]++;
+			denom_cyclo[i]--;
+			for(int d=1; d<=i/2; ++d) {
+				if (i % d == 0) {
+					if (denom_cyclo[d]>0) {
+						denom_cyclo[d]--;
+					} else {
+						nom = poly_mult(nom, cyclotomicPoly<Integer>(d));
+					}
+				}
+			}
+		}
+	}
 	remove_zeros(denom);
 }
 
@@ -136,7 +165,10 @@ template<typename Integer>
 ostream& operator<< (ostream& out, const HilbertSeries<Integer>& HS) {
 	out << "(";
     for (size_t i=0; i<HS.nom.size(); ++i) {
-		if ( HS.nom[i]!=0 ) out << " +("<<HS.nom[i]<<")*t^"<<i;
+		     if ( HS.nom[i]== 1 ) out << " +t^"<<i;
+		else if ( HS.nom[i]==-1 ) out << " -t^"<<i;
+		else if ( HS.nom[i] > 0 ) out << " +"<<HS.nom[i]<<"*t^"<<i;
+		else if ( HS.nom[i] < 0 ) out << " -"<<-HS.nom[i]<<"*t^"<<i;
 	}
 	out << " ) / (";
     for (size_t i=1; i<HS.denom.size(); ++i) {

@@ -42,8 +42,6 @@
 #include <vector>
 #include <ostream>
 
-//#include "general.h"
-
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
