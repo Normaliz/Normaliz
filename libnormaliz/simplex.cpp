@@ -29,6 +29,7 @@
 #include "matrix.h"
 #include "simplex.h"
 #include "list_operations.h"
+#include "HilbertSeries.h"
 
 //---------------------------------------------------------------------------
 
@@ -350,6 +351,21 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
  
 	Generators=C.Generators.submatrix(key);
 	H_Vector=vector<Integer>(dim,0);
+
+	//degrees of the generators according to the Grading of C
+	vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form); //TODO Grading);
+	vector<long64> gen_degrees(gen_degrees_Integer.size());
+	for (size_t i=0; i<dim; i++) {
+		assert(gen_degrees_Integer[i] > 0); 
+		gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+	}
+	int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
+	vector<long64> denom(max_degree+1);
+	for (size_t i=0; i<dim; i++) {
+		denom[gen_degrees[i]]++;
+	}
+
+	HilbertSeries Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
 	
 	bool unimodular=false;
 	vector<Integer> Indicator;
@@ -364,7 +380,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			unimodular=true;
 	}
 			
-	// in this cases we had to add the volume and nothing else is to be done
+	// in this cases we have to add the volume and nothing else is to be done
 	if ( (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements) 
 	  || (unimodular && !C.do_h_vector) ) {
 		#pragma omp critical(MULTIPLICITY)
@@ -374,19 +390,26 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 
 	bool decided=true;
 	size_t i,j;
-	size_t Deg=0;        // Deg is the degree in which the 0 vector is counted
-	if(unimodular){   // it remains to count the 0-vector in the h-vector 
+	size_t Deg=0;     // Deg is the degree in which the 0 vector is counted
+	long64 DegG=0;    // Deg2 is the degree according to Grading in which the 0 vector is counted
+	if(unimodular) {  // it remains to count the 0-vector in the h-vector 
 		for(i=0;i<dim;i++){
-			if(Indicator[i]<0)   // facet opposite of vertex i excluded
+			if(Indicator[i]<0) {       // facet opposite of vertex i excluded
 				Deg++;
-			if(Indicator[i]==0){ // Order_Vector in facet, to be decided later
+				DegG=gen_degrees[i];
+			}
+			else if(Indicator[i]==0) { // Order_Vector in facet, to be decided later
 				decided=false;
 				break;
 			}
 		}
 		if(decided){
-			#pragma omp critical(HVECTOR) //only change in the H-vector, so done directliy
+			#pragma omp critical(HVECTOR) //only change in the H-vector, so done directly
 			C.H_Vector[Deg]++;    // Done, provided decided==true
+
+			Hilbert_Series.add_to_nom(DegG);
+			#pragma omp critical(HSERIES) 
+			C.Hilbert_Series += Hilbert_Series;
 			#pragma omp critical(MULTIPLICITY)
 			C.multiplicity+=volume;
 			return volume;               // if not we need lex decision, see below
@@ -403,6 +426,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	
 	if(C.do_h_vector){
 		Deg=0;
+		DegG=0;
 		if (Indicator.size() != dim) { //it hasn't been computed yet
 			Indicator = InvGen.VxM(C.Order_Vector);
 		}
@@ -413,12 +437,14 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			{
 				Excluded[i]=true; // the facet opposite to vertex i is excluded
 				Deg++;
+				DegG += gen_degrees[i];
 			}
 			if(Test==0){  // Order_Vector in facet, now lexicographic decision
 				for(j=0;j<dim;j++){
 					if(InvGen[j][i]<0){ // COLUMNS of InvGen give supp hyps
 						Excluded[i]=true;
 						Deg++;
+						DegG += gen_degrees[i];
 						break;
 					}
 					if(InvGen[j][i]>0) // facet included
@@ -427,11 +453,14 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			}
 		}
 		H_Vector[Deg]++; // now the 0 vector is finally taken care of
+		Hilbert_Series.add_to_nom(DegG);
 		if(unimodular){     // and in the unimodular case nothing left to be done
 			#pragma omp critical(HVECTOR)
 			C.H_Vector[Deg]++; 
+			#pragma omp critical(HSERIES) 
+			C.Hilbert_Series += Hilbert_Series;
 			#pragma omp critical(MULTIPLICITY)
-			C.multiplicity+=volume;
+			C.multiplicity += volume;
 			return volume;
 		}
 	}
@@ -470,15 +499,22 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree
 		for (i = 0; i < dim; i++) {  // since generators have degree 1
 			norm[0]+=elements[last][i];
+			if(C.do_h_vector) {
+				DegG += explicit_cast_to_long(elements[last][i])*gen_degrees[i];
+			}
 		}
 
 		if(C.do_h_vector){
 			Deg=explicit_cast_to_long<Integer>(norm[0]/volume); // basic degree, here we use that all generators have degree 1            
-			for(i=0;i<dim;i++)  // take care of excluded facets and increase degree where necessary
-				if(elements[last][i]==0 && Excluded[i])
+			for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
+				if(elements[last][i]==0 && Excluded[i]) {
 					Deg++;
+					DegG += gen_degrees[i];
+				}
+			}
 			
 			H_Vector[Deg]++; // count element in h-vector        
+			Hilbert_Series.add_to_nom(DegG);
 		}
 		
 		if(C.do_ht1_elements && norm[0]==volume) // found degree 1 element
@@ -503,6 +539,8 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				C.H_Vector[i]+=H_Vector[i];
 			}
 		}
+		#pragma omp critical(HSERIES)
+		C.Hilbert_Series += Hilbert_Series;
 	}
 	
 	if(C.do_ht1_elements) {

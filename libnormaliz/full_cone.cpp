@@ -718,6 +718,8 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 	if(do_h_vector) {
 		#pragma omp critical(HVECTOR)
 		H_Vector=v_add(H_Vector,Pyramid.H_Vector);
+		#pragma omp critical(HSERIES)
+		Hilbert_Series += Pyramid.Hilbert_Series;
 	}
 	
 	#pragma omp critical(MULTIPLICITY)
@@ -1680,6 +1682,8 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_e_vector(){
+	cout << "Hilbert Series: " << Hilbert_Series << endl;
+	cout << "h-vector:       " << H_Vector << endl;
 	size_t i,j;
 	vector <Integer> E_Vector(dim,0);
 	vector <Integer> Q=H_Vector;
@@ -1845,11 +1849,14 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	if(dim>0){            //correction needed to include the 0 cone;
 		H_Vector = vector<Integer>(dim);
 		Hilbert_Polynomial = vector<Integer>(2*dim);
+		Hilbert_Series = HilbertSeries();
 	} else {
 		multiplicity = 1;
 		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
+		Hilbert_Series = HilbertSeries();
+		Hilbert_Series.add_to_nom(0);
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 		is_Computed.set(ConeProperty::HVector);
 		is_Computed.set(ConeProperty::Triangulation);
@@ -1893,10 +1900,13 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	Ht1_Elements = list< vector<Integer> >();
 	if(dim>0){            //correction needed to include the 0 cone;
 		H_Vector = vector<Integer>(dim);
+		Hilbert_Series = HilbertSeries();
 		Hilbert_Polynomial = vector<Integer>(2*dim);
 	} else {
 		multiplicity = 1;
 		H_Vector = vector<Integer>(1,1);
+		Hilbert_Series = HilbertSeries();
+		Hilbert_Series.add_to_nom(0);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 		is_Computed.set(ConeProperty::HVector);
@@ -1920,6 +1930,7 @@ Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M) {
 	Ht1_Elements = list< vector<Integer> >();
 	Candidates = list< vector<Integer> >();
 	H_Vector = vector<Integer>(dim);
+	Hilbert_Series = HilbertSeries();
 	in_triang = vector<bool> (nr_gen,false);
 	HypIndVal = list<FMDATA>();
 	

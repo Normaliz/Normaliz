@@ -30,6 +30,7 @@
 #include "matrix.h"
 #include "simplex.h"
 #include "cone_dual_mode.h"
+#include "HilbertSeries.h"
 
 namespace libnormaliz {
 using std::list;
@@ -68,6 +69,7 @@ class Full_Cone {
 	
 	ConeProperties is_Computed;
 	vector<Integer> Linear_Form;
+	vector<Integer> Grading;
 	Integer multiplicity;
 	Matrix<Integer> Generators;
 	vector<bool> Extreme_Rays;
@@ -82,6 +84,7 @@ class Full_Cone {
 	list<vector<Integer> > Ht1_Elements;
 	vector<Integer> H_Vector;
 	vector<Integer> Hilbert_Polynomial;
+	HilbertSeries Hilbert_Series;
 
 	friend class Cone<Integer>;
 	friend class Simplex<Integer>;

@@ -18,7 +18,7 @@
 
 /*
  * HilbertSeries represents a Hilbert series of a N-graded algebra
- * with non-homogeneous generators.
+ * with generators of different degrees.
  * It is represented as a polynomial divided by a product of (1-t^i).
  * The nominator is represented as vector of coefficients, the h-vector
  * h vector repr.: sum of h[i]*t^i
@@ -48,46 +48,49 @@ namespace libnormaliz {
 using std::vector;
 using std::ostream;
 
-template<typename Integer> class HilbertSeries;
+class HilbertSeries;
 
 // write a readable representation to the stream
-template<typename Integer>
-ostream& operator<< (ostream& out, const HilbertSeries<Integer>& HS);
+ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
 
-template<typename Integer>
+typedef long long long64;
+
 class HilbertSeries {
 
 public:
 	// Constructor, creates 0/1
 	HilbertSeries();
 	// Constructor, creates nom/denom, see class description for format
-	HilbertSeries(const vector<Integer>& nom, const vector<Integer>& denom);
+	HilbertSeries(const vector<long64>& nom, const vector<long64>& denom);
 
 	// add another HilbertSeries to this
-	HilbertSeries<Integer>& operator+=(const HilbertSeries<Integer>& other);
+	HilbertSeries& operator+=(const HilbertSeries& other);
 
 /*	// multiply the series with 1/(1-t^i)
 	void multiply_denom(size_t i);
-	// add t^i to the nominator
-	void add_to_nom(size_t i);
-*/
+*/	// add t^i to the nominator
+	inline void add_to_nom(size_t i) {
+		if(nom.size()<=i) nom.resize(i+1);
+		nom[i]++;
+	};
+
 
 	// simplify, see class description
 	void simplify();
 
 	// returns the nominator, repr. as vector of coefficients, the h-vector
-	const vector<Integer>& getNominator() const;
+	const vector<long64>& getNominator() const;
 	// returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
-	const vector<Integer>& getDenominator() const;
+	const vector<long64>& getDenominator() const;
 
 private:
 	// the nominator, repr. as vector of coefficients, the h-vector
-	vector<Integer> nom;
+	vector<long64> nom;
 	// the denominator, repr. as a vector of the exponents of (1-t^i)^e
-	vector<Integer> denom;
+	vector<long64> denom;
 
-	friend ostream& operator<< <> (ostream& out, const HilbertSeries<Integer>& HS);
+	friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
 };
 //class end *****************************************************************
@@ -98,42 +101,34 @@ private:
 //---------------------------------------------------------------------------
 
 // a += b
-template<typename Integer>
-void poly_add_to (vector<Integer>& a, const vector<Integer>& b);
+void poly_add_to (vector<long64>& a, const vector<long64>& b);
 
 // a -= b
-template<typename Integer>
-void poly_subt_to (vector<Integer>& a, const vector<Integer>& b);
+void poly_sub_to (vector<long64>& a, const vector<long64>& b);
 
 
 // a * b
-template<typename Integer>
-vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b);
+vector<long64> poly_mult(const vector<long64>& a, const vector<long64>& b);
 
 // a *= (1-t^d)^e
-template<typename Integer>
-void poly_mult_to(vector<Integer>& a, size_t d, size_t e = 1);
+void poly_mult_to(vector<long64>& a, size_t d, size_t e = 1);
 
 
 // division with remainder, a = q * b + r
-template<typename Integer>
-void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b);
+void poly_div(vector<long64>& q, vector<long64>& r, const vector<long64>& a, const vector<long64>&b);
 
 
 // remove leading zero coefficients, 0 polynomial leads to empty list
-template<typename Integer>
-void remove_zeros(vector<Integer>& a);
+void remove_zeros(vector<long64>& a);
 
 
 // Returns the n-th cyclotomic polynomial, all smaller are computed and stored.
 // The n-th cyclotomic polynomial is the product of (X-w) over all 
 // n-th primitive roots of unity w.
-template<typename Integer>
-vector<Integer> cyclotomicPoly(size_t n);
+vector<long64> cyclotomicPoly(size_t n);
 
 // returns the coefficient vector of 1-t^i
-template<typename Integer>
-vector<Integer> coeff_vector(size_t i);
+vector<long64> coeff_vector(size_t i);
 
 } //end namespace libnormaliz
 
