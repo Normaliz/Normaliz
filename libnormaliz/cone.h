@@ -21,7 +21,6 @@
 
 #include <vector>
 #include <map>
-#include <string>
 #include "libnormaliz.h"
 #include "cone_property.h"
 #include "full_cone.h"
@@ -29,6 +28,7 @@
 
 namespace libnormaliz {
 using std::vector;
+using std::multimap;
 
 
 template<typename Integer>
