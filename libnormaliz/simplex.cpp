@@ -45,7 +45,7 @@ void Simplex<Integer>::reduce_and_insert_interior(const vector< Integer >& new_e
 		return; // new_element=0
 	}
 	else {
-		register size_t i,c=1,d=dim+1;
+		size_t i,c=1,d=dim+1;
 		typename list< vector<Integer> >::iterator j;
 		for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 			if (new_element[0]<2*(*j)[0]) {
@@ -406,7 +406,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		if (Indicator.size() != dim) { //it hasn't been computed yet
 			Indicator = InvGen.VxM(C.Order_Vector);
 		}
-		for(i=0;i<dim;i++) // register excluded facets and degree shift for 0-vector
+		for(i=0;i<dim;i++) // excluded facets and degree shift for 0-vector
 		{
 			Test=Indicator[i];
 			if(Test<0)

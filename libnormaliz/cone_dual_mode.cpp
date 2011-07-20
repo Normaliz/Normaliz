@@ -42,7 +42,7 @@ using namespace std;
 
 template<typename Integer>
 bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const size_t& size){
-	register size_t i,c=1;
+	size_t i,c=1;
 	typename list< vector<Integer>* >::iterator j;
 	vector<Integer> *reducer;
 	for (j =Ired.begin(); j != Ired.end(); j++) {
@@ -72,7 +72,7 @@ bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const ve
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const size_t& size){
 	Ired.sort();
-	register size_t i,c=1;
+	size_t i,c=1;
 	vector<Integer> dummy(size+3,0);
 	Red.push_front(dummy);
 	Red.push_back(dummy);
@@ -113,7 +113,7 @@ void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vec
 
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_element, const size_t& size){
-	register size_t i,c=1;
+	size_t i,c=1;
 	typename list< vector<Integer> >::iterator j;
 	for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
 		if (new_element[0]<2*(*j)[0]) {
@@ -144,7 +144,7 @@ void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_ele
 
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::reduce_and_insert_extreme( const vector< Integer >& new_element){
-	register size_t i,c=1;
+	size_t i,c=1;
 	typename list< vector<Integer> >::iterator j;
 	for (j =GeneratorList.begin(); j != GeneratorList.end(); j++) {
 		if (new_element[0]<=(*j)[0])

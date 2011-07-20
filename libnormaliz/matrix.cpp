@@ -641,9 +641,9 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
 	assert(col1 <= nc);
 	assert(col2 > 0);
 	assert(col2 <= nc);
-	register const size_t c1=col1-1;
-	register const size_t c2=col2-1;
-	register size_t i;
+	const size_t c1=col1-1;
+	const size_t c2=col2-1;
+	size_t i;
 	Integer help;
 	for(i=0; i<nr;i++){
 		help=elements[i][c1];
@@ -659,7 +659,7 @@ void Matrix<Integer>::reduce_row (size_t corner) {
 	assert(corner > 0);
 	assert(corner <= nc);
 	assert(corner <= nr);
-	register size_t i,j;
+	size_t i,j;
 	Integer help;
 	for ( i = corner; i < nr; i++) {
 		if (elements[i][corner-1]!=0) {
@@ -826,8 +826,8 @@ size_t Matrix<Integer>::rank() const{
 
 template<typename Integer>
 size_t Matrix<Integer>::rank_destructiv(){
-	register size_t rk,i,j,Min_Row, rk_max=min(nr,nc);
-	register bool empty;
+	size_t rk,i,j,Min_Row, rk_max=min(nr,nc);
+	bool empty;
 	Integer Test, Min;
 	for (rk = 1; rk <= rk_max; rk++) {
 		for (i = rk; i <= nr; i++) {

@@ -342,7 +342,7 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
 		}
 	}
 	for(j=1; j<=nr_columns; j++){         //primarity test
-		for(i=1; i<=nr_rows && Prim_Test.read(i,j)==0; i++);
+		for(i=1; i<=nr_rows && Prim_Test.read(i,j)==0; i++) {}
 		if (i>nr_rows) {
 			rees_primary=false;
 			is_Computed.set(ConeProperty::ReesPrimary);

@@ -80,7 +80,7 @@ int l_read(const list< int >& l){
 
 template<typename Integer>
 vector<Integer> l_multiplication(const list< vector<Integer> >& l,const vector<Integer>& v){
-	register int s=l.size();
+	int s=l.size();
 	vector<Integer> p(s);
 	typename list< vector<Integer> >::const_iterator i;
 	s=0;

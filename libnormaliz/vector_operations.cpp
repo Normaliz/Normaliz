@@ -57,7 +57,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 	//loop stretching ; brings some small speed improvement
 
 	Integer ans = 0;
-	register size_t i,n=av.size();
+	size_t i,n=av.size();
 
 	typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
 
@@ -142,7 +142,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
 	Integer ans = 0;
-	register size_t i,n=a.size(),m=b.size();
+	size_t i,n=a.size(),m=b.size();
 	for (i = 1; i <= n; i++) {
 		ans+=a[n-i]*b[m-i];
 	}
@@ -154,7 +154,7 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size());
-	register size_t i,s=a.size();
+	size_t i,s=a.size();
 	vector<Integer> d(s);
 	for (i = 0; i <s; i++) {
 		d[i]=a[i]+b[i];
@@ -289,7 +289,7 @@ void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
 template<typename Integer>
 bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const long& m){
 	Integer ans = 0;
-	register size_t i,n=av.size();
+	size_t i,n=av.size();
 	typename vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();
 
 	if( n >= 64 )

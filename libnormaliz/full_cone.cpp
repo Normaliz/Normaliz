@@ -87,9 +87,9 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 
 	// NEW: ind_gen is the index of the generator being inserted
 
-	register size_t i,k,nr_zero_i;
-	register size_t subfacet_dim=dim-2; // NEW dimension of subfacet
-	register size_t facet_dim=dim-1; // NEW dimension of facet
+	size_t i,k,nr_zero_i;
+	size_t subfacet_dim=dim-2; // NEW dimension of subfacet
+	size_t facet_dim=dim-1; // NEW dimension of facet
 	
 	const bool tv_verbose = false; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
 	
@@ -1444,7 +1444,7 @@ void Full_Cone<Integer>::check_integrally_closed() {
 
 template<typename Integer>
 bool Full_Cone<Integer>::is_reducible(list< vector<Integer>* >& Irred, const vector< Integer >& new_element){
-	register size_t i;
+	size_t i;
 	size_t s=Support_Hyperplanes.size();
 	vector <Integer> candidate=v_cut_front(new_element,dim);
 	vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
