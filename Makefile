@@ -16,8 +16,11 @@ all: normaliz normaliz1
 libnormaliz/libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES)
 	$(MAKE) --directory=libnormaliz libnormaliz.o
 
-normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.o
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz/libnormaliz.o $(GMPFLAGS) -o normaliz
+libnormaliz/libnormaliz.a: $(LIBHEADERS) $(LIBSOURCES)
+	$(MAKE) --directory=libnormaliz libnormaliz.a
+
+normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz/libnormaliz.a $(GMPFLAGS) -o normaliz
 
 normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz-impl.cpp $(GMPFLAGS) -o normaliz1
