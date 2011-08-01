@@ -816,6 +816,13 @@ void Full_Cone<Integer>::build_cone() {
 
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
+/*	if (do_h_vector || do_ht1_elements) {
+		bool tmp;
+		Grading = Generators.homogeneous(tmp);
+		cout << "Grading: "; v_read(Grading);
+		Generators.pretty_print(cout);
+	}
+*/
 	find_and_evaluate_start_simplex();
 	
 	Integer scalar_product;
@@ -1682,8 +1689,6 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_e_vector(){
-	cout << "Hilbert Series: " << Hilbert_Series << endl;
-	cout << "h-vector:       " << H_Vector << endl;
 	size_t i,j;
 	vector <Integer> E_Vector(dim,0);
 	vector <Integer> Q=H_Vector;
@@ -1704,6 +1709,9 @@ vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_polynomial(){
+	cout << "Hilbert Series: " << Hilbert_Series;
+	cout << "h-vector of HS: " << Hilbert_Series.getNominator();
+	cout << "h-vector:       " << H_Vector << endl;
 	size_t i,j;
 	Integer factorial=permutations<Integer>(1,dim);
 	if ((factorial-permutations_modulo<Integer>(1,dim,overflow_test_modulus))%overflow_test_modulus != 0) {

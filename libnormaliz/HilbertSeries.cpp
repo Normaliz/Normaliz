@@ -18,13 +18,14 @@
 #include <cassert>
 #include <iostream>
 #include "HilbertSeries.h"
+#include "vector_operations.h"
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
 using std::cout; using std::endl;
 
-template <typename Class>
+/*template <typename Class>
 ostream& operator<< (ostream& out, const vector<Class>& vec) {
     for (size_t i=0; i<vec.size(); ++i) {
         out << " " << vec[i];
@@ -32,7 +33,7 @@ ostream& operator<< (ostream& out, const vector<Class>& vec) {
     out << endl;
     return out;
 }
-
+*/
 
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
@@ -48,6 +49,7 @@ HilbertSeries::HilbertSeries(const vector<long64>& nominator, const vector<long6
 
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
+//cout<<"adding "<<other;
 	vector<long64> other_nom = other.nom;
 	vector<long64> other_denom = other.denom;
 

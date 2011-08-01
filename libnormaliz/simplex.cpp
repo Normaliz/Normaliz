@@ -350,23 +350,29 @@ template<typename Integer>
 Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height) {
  
 	Generators=C.Generators.submatrix(key);
-	H_Vector=vector<Integer>(dim,0);
 
-	//degrees of the generators according to the Grading of C
-	vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form); //TODO Grading);
-	vector<long64> gen_degrees(gen_degrees_Integer.size());
-	for (size_t i=0; i<dim; i++) {
-		assert(gen_degrees_Integer[i] > 0); 
-		gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
-	}
-	int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
-	vector<long64> denom(max_degree+1);
-	for (size_t i=0; i<dim; i++) {
-		denom[gen_degrees[i]]++;
+	vector<long> gen_degrees;
+	HilbertSeries Hilbert_Series;
+	if (C.do_h_vector) {
+		H_Vector=vector<Integer>(dim,0);
+
+		//degrees of the generators according to the Grading of C
+		vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form);
+		gen_degrees = vector<long>(dim);
+		for (size_t i=0; i<dim; i++) {
+			assert(gen_degrees_Integer[i] > 0); 
+			gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+		}
+
+		int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
+		vector<long64> denom(max_degree+1);
+		for (size_t i=0; i<dim; i++) {
+			denom[gen_degrees[i]]++;
+		}
+
+		Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
 	}
 
-	HilbertSeries Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
-	
 	bool unimodular=false;
 	vector<Integer> Indicator;
 	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
@@ -391,12 +397,12 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	bool decided=true;
 	size_t i,j;
 	size_t Deg=0;     // Deg is the degree in which the 0 vector is counted
-	long64 DegG=0;    // Deg2 is the degree according to Grading in which the 0 vector is counted
+	long64 DegG=0;    // DegG is the degree according to Grading in which the 0 vector is counted
 	if(unimodular) {  // it remains to count the 0-vector in the h-vector 
 		for(i=0;i<dim;i++){
 			if(Indicator[i]<0) {       // facet opposite of vertex i excluded
 				Deg++;
-				DegG=gen_degrees[i];
+				DegG += gen_degrees[i];
 			}
 			else if(Indicator[i]==0) { // Order_Vector in facet, to be decided later
 				decided=false;
@@ -466,6 +472,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	}
 	
 	vector < Integer > norm(1);
+	Integer normG;
 	list < vector<Integer> > Candidates;
 	typename list <vector <Integer> >::iterator c;
 	size_t last;
@@ -497,15 +504,17 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 		
 		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree
+		normG = 0;
 		for (i = 0; i < dim; i++) {  // since generators have degree 1
 			norm[0]+=elements[last][i];
 			if(C.do_h_vector) {
-				DegG += explicit_cast_to_long(elements[last][i])*gen_degrees[i];
+				normG += elements[last][i]*gen_degrees[i];
 			}
 		}
 
 		if(C.do_h_vector){
 			Deg=explicit_cast_to_long<Integer>(norm[0]/volume); // basic degree, here we use that all generators have degree 1            
+			DegG = explicit_cast_to_long<Integer>(normG/volume);
 			for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
 				if(elements[last][i]==0 && Excluded[i]) {
 					Deg++;

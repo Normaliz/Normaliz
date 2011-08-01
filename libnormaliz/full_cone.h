@@ -69,7 +69,6 @@ class Full_Cone {
 	
 	ConeProperties is_Computed;
 	vector<Integer> Linear_Form;
-	vector<Integer> Grading;
 	Integer multiplicity;
 	Matrix<Integer> Generators;
 	vector<bool> Extreme_Rays;

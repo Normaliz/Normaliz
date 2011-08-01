@@ -36,6 +36,11 @@ class ArithmeticException: public virtual NormalizException {
 	}
 };
 
+class BadInputException: public virtual NormalizException {
+	virtual const char* what() const throw() {
+		return "Some error in the input data detected!";
+	}
+};
 
 
 } /* end namespace */

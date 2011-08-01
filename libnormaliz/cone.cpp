@@ -455,6 +455,29 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::setLinearForm (vector<Integer> lf) {
+	if (lf.size != dim) {
+		errorOutput() << "Linear form has wrong dimension " << lf.size()
+		              << " (should be" << dim << ")" << endl;
+		throw BadInputException();
+	}
+	if (isComputed(ConeProperty::Generators)) {
+		vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
+		for (size_t i=0; i<degrees.size(); ++i) {
+			if (degress[i]<1) {
+				errorOutput() << "Linear form gives non-positive value " << degress[i]
+				              << " for generator " << i+1 << "." << endl;
+				throw BadInputException();
+			}
+		}
+	}
+	LinearForm = lf;
+	is_Computed.set(ConeProperty::LinearForm);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Cone<Integer>::compute(ConeProperties ToCompute) {
 	ToCompute.reset(is_Computed); // already computed
 
@@ -550,8 +573,16 @@ void Cone<Integer>::compute(ComputationMode mode) {
 		return;
 	}
 
+	// Create a Full_Cone FC
 	Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
+	// Give extra data to FC
+	if ( isComputed(ConeProperty::LinearForm) ) {
+		FC.Linear_Form = LinearForm;
+		FC.is_Computed.set(ConeProperty::LinearForm);
+	}
+
+	// Start computations in FC
 	switch (mode) {
 	case Mode::hilbertBasisTriangulation:
 		FC.triangulation_hilbert_basis();

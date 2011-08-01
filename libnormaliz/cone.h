@@ -53,6 +53,17 @@ public:
 	/* give multiple constraints */
 	Cone(const multimap< ConstraintType , vector< vector<Integer> > >& constraints);
 
+//---------------------------------------------------------------------------
+//                          give additional data
+//---------------------------------------------------------------------------
+
+	/* Sets the linear form which is used to grade. 
+	 * It has to be an N-grading, i.e. all generators must have a value >=1.
+	 * If it is not, a NormalizException will be thrown at the time of 
+	 * detection which can be in this method or later!
+	 */
+	void setLinearForm (vector<Integer> lf);
+
 
 //---------------------------------------------------------------------------
 //                           make computations
@@ -61,7 +72,6 @@ public:
 	void compute(ComputationMode mode = Mode::hilbertBasisPolynomial);
 	void compute(ConeProperties to_compute);
 	void compute(ConeProperty::Enum prop);
-
 
 //---------------------------------------------------------------------------
 //                         check what is computed

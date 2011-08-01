@@ -26,13 +26,20 @@
 
 namespace libnormaliz {
 using std::vector;
+using std::ostream;
 
 //---------------------------------------------------------------------------
 //							Data access
 //---------------------------------------------------------------------------
 
-template <typename T> void v_write(vector<T>& v);        //used for tests
-template <typename T> size_t v_read(const vector<T>& v,std::ostream& out=std::cout);  //used for tests, returns size of v
+template <typename T>
+void v_write(vector<T>& v);        //used for tests
+
+template <typename T>
+size_t v_read(const vector<T>& v,std::ostream& out=std::cout);  //used for tests, returns size of v
+
+template <typename T>
+ostream& operator<< (ostream& out, const vector<T>& v);
 
 //---------------------------------------------------------------------------
 //					    	Vector operations
