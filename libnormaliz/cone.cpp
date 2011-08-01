@@ -461,6 +461,10 @@ void Cone<Integer>::setLinearForm (vector<Integer> lf) {
 		              << " (should be" << dim << ")" << endl;
 		throw BadInputException();
 	}
+	//check if the linear forms are the same
+	if (isComputed(ConeProperty::Generators) && LinearForm == lf) {
+		return;
+	}
 	if (isComputed(ConeProperty::Generators)) {
 		vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
 		for (size_t i=0; i<degrees.size(); ++i) {
@@ -473,6 +477,17 @@ void Cone<Integer>::setLinearForm (vector<Integer> lf) {
 	}
 	LinearForm = lf;
 	is_Computed.set(ConeProperty::LinearForm);
+
+	//remove data that depends on the grading 
+	Ht1Elements.clear();
+    HVector.clear();
+    HilbertPolynomial.clear();
+	is_Computed.reset(ConeProperty::IsHt1Generated);
+	is_Computed.reset(ConeProperty::IsHt1ExtremeRays);
+	is_Computed.reset(ConeProperty::IsHt1HilbertBasis);
+	is_Computed.reset(ConeProperty::Ht1Elements);
+	is_Computed.reset(ConeProperty::HVector);
+	is_Computed.reset(ConeProperty::HilbertPolynomial);
 }
 
 //---------------------------------------------------------------------------

@@ -61,6 +61,7 @@ public:
 	 * It has to be an N-grading, i.e. all generators must have a value >=1.
 	 * If it is not, a NormalizException will be thrown at the time of 
 	 * detection which can be in this method or later!
+	 * It will delete all data from the cone that depend on the grading!
 	 */
 	void setLinearForm (vector<Integer> lf);
 
