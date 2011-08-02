@@ -762,19 +762,29 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 		Order_Vector = vector<Integer>(dim,0);
 	
 	if(!is_pyramid && do_h_vector){
+		//define Order_Vector, decides which facets of the simplices are excluded
 		Matrix<Integer> G=S.read_generators();
 		//srand(12345);
 		for(i=0;i<dim;i++){
 			factor=(unsigned long)(2*(rand()%(2*dim))+3);
 			for(j=0;j<dim;j++)
 				Order_Vector[j]+=factor*G.read(i+1,j+1);        
-		} 
+		}
 	}
 
 	//the volume is an upper bound for the height
 	if(do_triangulation)
 		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
+		if (do_h_vector) {
+			//in the evaluation we need the linear form
+			check_ht1_generated();
+			if(!is_Computed.test(ConeProperty::LinearForm)) {
+				//TODO make something more clever?
+				errorOutput() << "WARNING: Cannot find an homogeneous linear form, skip h-vector computation.";
+				do_h_vector = false;
+			}
+		}
 		Simplex<Integer> simp(key);
 		simp.evaluate(*this, -S.read_volume());
 	}
