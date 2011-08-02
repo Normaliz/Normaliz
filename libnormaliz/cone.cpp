@@ -456,7 +456,7 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 
 template<typename Integer>
 void Cone<Integer>::setLinearForm (vector<Integer> lf) {
-	if (lf.size != dim) {
+	if (lf.size() != dim) {
 		errorOutput() << "Linear form has wrong dimension " << lf.size()
 		              << " (should be" << dim << ")" << endl;
 		throw BadInputException();
@@ -468,8 +468,8 @@ void Cone<Integer>::setLinearForm (vector<Integer> lf) {
 	if (isComputed(ConeProperty::Generators)) {
 		vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
 		for (size_t i=0; i<degrees.size(); ++i) {
-			if (degress[i]<1) {
-				errorOutput() << "Linear form gives non-positive value " << degress[i]
+			if (degrees[i]<1) {
+				errorOutput() << "Linear form gives non-positive value " << degrees[i]
 				              << " for generator " << i+1 << "." << endl;
 				throw BadInputException();
 			}

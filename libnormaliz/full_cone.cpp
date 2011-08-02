@@ -1357,13 +1357,32 @@ void Full_Cone<Integer>::check_ht1_generated() {
 					break;
 				}
 			}
+		} else {
+			ht1_generated = false;
 		}
 	} else {
-		Linear_Form = Generators.homogeneous(ht1_generated);
-		if (ht1_generated) {
-			ht1_extreme_rays=true;
-			is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-			is_Computed.set(ConeProperty::LinearForm);
+		if (is_Computed.test(ConeProperty::LinearForm)) {
+			Integer sp; //scalar product
+			ht1_generated = true;
+			for (size_t i = 0; i < nr_gen; i++) {
+				sp = v_scalar_product(Generators[i], Linear_Form);
+				if (sp<1) {
+					errorOutput() << "Linear form gives non-positive value " << sp
+					              << " for generator " << i+1 << "." << endl;
+					throw BadInputException();
+				}
+				if (sp != 1) {
+					ht1_generated = false;
+					break;
+				}
+			}
+		} else {
+			Linear_Form = Generators.homogeneous(ht1_generated);
+			if (ht1_generated) {
+				ht1_extreme_rays=true;
+				is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+				is_Computed.set(ConeProperty::LinearForm);
+			}
 		}
 	}
 	is_Computed.set(ConeProperty::IsHt1Generated);
@@ -1380,17 +1399,31 @@ void Full_Cone<Integer>::check_ht1_extreme_rays() {
 		return;
 	}
 	assert(is_Computed.test(ConeProperty::ExtremeRays));
-	vector<size_t> key;
-	for (size_t i = 0; i < nr_gen; i++) {
-		if (Extreme_Rays[i])
-			key.push_back(i+1);
+	if (is_Computed.test(ConeProperty::LinearForm)) {
+		Integer sp; //scalar product
+		ht1_extreme_rays = true;
+		for (size_t i = 0; i < nr_gen; i++) {
+			if (!Extreme_Rays[i])
+				continue;
+			sp = v_scalar_product(Generators[i], Linear_Form);
+			if (sp<1) {
+				errorOutput() << "Linear form gives non-positive value " << sp
+				              << " for generator " << i+1 << "." << endl;
+				throw BadInputException();
+			}
+			if (sp != 1) {
+				ht1_extreme_rays = false;
+				break;
+			}
+		}
+	} else {
+		Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
+		Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
+		if (ht1_extreme_rays) {
+			is_Computed.set(ConeProperty::LinearForm);
+		}
 	}
-	Matrix<Integer> Extreme=Generators.submatrix(key);
-	Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
 	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-	if (ht1_extreme_rays) {
-		is_Computed.set(ConeProperty::LinearForm);
-	}
 }
 
 template<typename Integer>
@@ -1398,7 +1431,7 @@ void Full_Cone<Integer>::check_ht1_hilbert_basis() {
 	if (is_Computed.test(ConeProperty::IsHt1HilbertBasis))
 		return;
 
-	if ( !is_Computed.test(ConeProperty::IsHt1ExtremeRays) || !is_Computed.test(ConeProperty::HilbertBasis)) {
+	if ( !is_Computed.test(ConeProperty::LinearForm) || !is_Computed.test(ConeProperty::HilbertBasis)) {
 		errorOutput() << "Warning: unsatisfied preconditions in check_ht1_hilbert_basis()!" <<endl;
 		return;
 	}
@@ -1661,7 +1694,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 	}
 	size_t i;  
 	vector<Integer> degree_function(dim,0);
-	if(is_Computed.test(ConeProperty::LinearForm)){ //use Linear_From in homogeneous case
+	if(is_Computed.test(ConeProperty::LinearForm)){ //use Linear_From if we have one
 		for (i=0; i<dim; i++) {
 			degree_function[i] = Linear_Form[i];
 		}

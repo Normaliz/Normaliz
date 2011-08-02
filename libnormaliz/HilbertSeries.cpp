@@ -238,9 +238,9 @@ vector<long64> poly_mult(const vector<long64>& a, const vector<long64>& b) {
 }
 
 // a *= (1-t^i)^e
-void poly_mult_to(vector<long64>& a, size_t d, size_t e) {
+void poly_mult_to(vector<long64>& a, long d, long e) {
 	assert(d>0);
-	int i;
+	long i;
 	a.reserve(a.size() + d*e);
 	while (e>0) {
 		a.resize(a.size() + d);
@@ -286,19 +286,19 @@ void poly_div(vector<long64>& q, vector<long64>& r, const vector<long64>& a, con
 	return;
 }
 
-vector<long64> cyclotomicPoly(size_t n) {
+vector<long64> cyclotomicPoly(long n) {
 	// the static variable is initialized only once and then stored
 	static vector< vector<long64> > CyclotomicPoly = vector< vector<long64> >();
-	int computed = CyclotomicPoly.size();
+	long computed = CyclotomicPoly.size();
 	if (computed < n) {
 		CyclotomicPoly.resize(n);
 		vector<long64> poly, q, r;
-		for (int i = computed+1; i <= n; ++i) {
+		for (long i = computed+1; i <= n; ++i) {
 			// compute the i-th poly by dividing X^i-1 by the 
 			// d-th cycl.poly. with d divides i
 			poly = vector<long64>(i+1);
 			poly[0] = -1; poly[i] = 1;  // X^i - 1
-			for (int d = 1; d < i; ++d) { // <= i/2 should be ok
+			for (long d = 1; d < i; ++d) { // <= i/2 should be ok
 				if( i % d == 0) {
 					poly_div(q, r, poly, CyclotomicPoly[d-1]);
 					assert(r.size()==0);

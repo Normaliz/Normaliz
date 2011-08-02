@@ -111,7 +111,7 @@ void poly_sub_to (vector<long64>& a, const vector<long64>& b);
 vector<long64> poly_mult(const vector<long64>& a, const vector<long64>& b);
 
 // a *= (1-t^d)^e
-void poly_mult_to(vector<long64>& a, size_t d, size_t e = 1);
+void poly_mult_to(vector<long64>& a, long d, long e = 1);
 
 
 // division with remainder, a = q * b + r
@@ -125,7 +125,7 @@ void remove_zeros(vector<long64>& a);
 // Returns the n-th cyclotomic polynomial, all smaller are computed and stored.
 // The n-th cyclotomic polynomial is the product of (X-w) over all 
 // n-th primitive roots of unity w.
-vector<long64> cyclotomicPoly(size_t n);
+vector<long64> cyclotomicPoly(long n);
 
 // returns the coefficient vector of 1-t^i
 vector<long64> coeff_vector(size_t i);
