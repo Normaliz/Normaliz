@@ -777,11 +777,11 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
 		if (do_h_vector) {
+			//TODO still needed? ?
 			//in the evaluation we need the linear form
 			check_ht1_generated();
 			if(!is_Computed.test(ConeProperty::LinearForm)) {
-				//TODO make something more clever?
-				errorOutput() << "WARNING: Cannot find an homogeneous linear form, skip h-vector computation.";
+				errorOutput() << "WARNING: Cannot find an homogeneous linear form, skip h-vector computation."<<endl;
 				do_h_vector = false;
 			}
 		}
@@ -956,13 +956,22 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_support_hyperplanes(){
 	if(is_Computed.test(ConeProperty::SupportHyperplanes))
 		return;
-	bool save_tri=do_triangulation;
-	bool save_part_tri=do_partial_triangulation;
-	do_triangulation=false;
-	do_partial_triangulation=false;
+	bool save_tri      = do_triangulation;
+	bool save_part_tri = do_partial_triangulation;
+	bool save_HB       = do_Hilbert_basis;
+	bool save_ht1_el   = do_ht1_elements;
+	bool save_h_vector = do_h_vector;
+	do_triangulation         = false;
+	do_partial_triangulation = false;
+	do_Hilbert_basis         = false; 
+	do_ht1_elements          = false; 
+	do_h_vector              = false;
 	build_cone();
-	do_triangulation=save_tri;
-	do_partial_triangulation=save_part_tri;
+	do_triangulation         = save_tri;
+	do_partial_triangulation = save_part_tri;
+	do_Hilbert_basis         = save_HB;
+	do_ht1_elements          = save_ht1_el;
+	do_h_vector              = save_h_vector;
 }
 
 //---------------------------------------------------------------------------
@@ -1986,6 +1995,7 @@ Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M) {
 	HypIndVal = list<FMDATA>();
 	
 	Linear_Form=C.Linear_Form;
+	is_Computed.set(ConeProperty::LinearForm, C.isComputed(ConeProperty::LinearForm));
 	Order_Vector=C.Order_Vector;
 	
 	do_triangulation=C.do_triangulation;
