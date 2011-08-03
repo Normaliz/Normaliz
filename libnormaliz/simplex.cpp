@@ -495,8 +495,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 
 		point[last]++;
-		elements[last] = v_add(elements[last], V[last]); //TODO angepasste operation
-		v_reduction_modulo(elements[last],volume);       //für beide schritte schreiben
+		v_add_to_mod(elements[last], V[last], volume);
 
 		for (i = last+1; i <dim; i++) {
 			point[i]=0;

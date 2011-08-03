@@ -55,6 +55,10 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b);
 
+//adds b to a reduces the result modulo m, a and b must be reduced modulo m!
+template<typename Integer>
+vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m);
+
 //---------------------------------------------------------------------------
 //							abs, gcd and lcm
 //---------------------------------------------------------------------------
