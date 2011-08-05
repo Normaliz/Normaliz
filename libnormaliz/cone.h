@@ -93,7 +93,7 @@ public:
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
-	vector<Integer> getHVector() const;
+	vector<long64> getHVector() const;
 	vector<Integer> getHilbertPolynomial() const;
 	vector<Integer> getLinearForm() const;
 	Integer getMultiplicity() const;
@@ -124,7 +124,7 @@ private:
 	Integer multiplicity;
 	vector< vector<Integer> > HilbertBasis;
 	vector< vector<Integer> > Ht1Elements;
-	vector<Integer> HVector;
+	vector<long64> HVector;
 	vector<Integer> HilbertPolynomial;
 	vector<Integer> LinearForm;
 	bool pointed;

@@ -67,9 +67,7 @@ public:
 	// add another HilbertSeries to this
 	HilbertSeries& operator+=(const HilbertSeries& other);
 
-/*	// multiply the series with 1/(1-t^i)
-	void multiply_denom(size_t i);
-*/	// add t^i to the nominator
+	// add t^i to the nominator
 	inline void add_to_nom(size_t i) {
 		if(nom.size()<=i) nom.resize(i+1);
 		nom[i]++;

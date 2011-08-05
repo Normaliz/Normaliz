@@ -81,7 +81,6 @@ class Full_Cone {
 	list<vector<Integer> > Hilbert_Basis;
 	list<vector<Integer> > Candidates;
 	list<vector<Integer> > Ht1_Elements;
-	vector<Integer> H_Vector;
 	vector<Integer> Hilbert_Polynomial;
 	HilbertSeries Hilbert_Series;
 

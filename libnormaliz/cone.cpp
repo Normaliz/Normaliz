@@ -54,7 +54,7 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, ConstraintType input
 		  dim--;
 		  prepare_input_type_456(Input, vector<vector<Integer> >(), vector<vector<Integer> >());
 		  break;
-		default:  throw input_type; //TODO make a good exception
+		default:  throw NormalizException(); //TODO make a good exception
 	}
 	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 }
@@ -199,7 +199,7 @@ vector< vector<Integer> > Cone<Integer>::getHt1Elements() const {
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getHVector() const {
+vector<long64> Cone<Integer>::getHVector() const {
 	return HVector;
 }
 
@@ -593,7 +593,7 @@ void Cone<Integer>::compute(ComputationMode mode) {
 
 	// Give extra data to FC
 	if ( isComputed(ConeProperty::LinearForm) ) {
-		FC.Linear_Form = LinearForm;
+		FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
 		FC.is_Computed.set(ConeProperty::LinearForm);
 	}
 
@@ -740,7 +740,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	if (FC.isComputed(ConeProperty::HVector)) {
-		HVector = FC.getHVector();
+		HVector = FC.Hilbert_Series.getNominator();
 		is_Computed.set(ConeProperty::HVector);
 	}
 	if (FC.isComputed(ConeProperty::HilbertPolynomial)) {

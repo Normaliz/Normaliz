@@ -716,8 +716,6 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 	Pyramid.Support_Hyperplanes.clear();
 	
 	if(do_h_vector) {
-		#pragma omp critical(HVECTOR)
-		H_Vector=v_add(H_Vector,Pyramid.H_Vector);
 		#pragma omp critical(HSERIES)
 		Hilbert_Series += Pyramid.Hilbert_Series;
 	}
@@ -1743,11 +1741,12 @@ template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 	size_t i,j;
 	vector <Integer> E_Vector(dim,0);
-	vector <Integer> Q=H_Vector;
-	Q.push_back(0);
+	vector <long64> Q=Hilbert_Series.getNominator();
+	Q.resize(dim+1);
 	for (i = 0; i <dim; i++) {
 		for (j = 0; j <dim; j++) {
-			E_Vector[i]+=Q[j];
+			E_Vector[i] += (long) Q[j];
+			//TODO this is not good on 32bit systems
 		}
 		E_Vector[i]/=permutations<Integer>(1,i);
 		for (j = 1; j <=dim; j++) {
@@ -1763,7 +1762,6 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_polynomial(){
 	cout << "Hilbert Series: " << Hilbert_Series;
 	cout << "h-vector of HS: " << Hilbert_Series.getNominator();
-	cout << "h-vector:       " << H_Vector << endl;
 	size_t i,j;
 	Integer factorial=permutations<Integer>(1,dim);
 	if ((factorial-permutations_modulo<Integer>(1,dim,overflow_test_modulus))%overflow_test_modulus != 0) {
@@ -1907,12 +1905,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	Candidates = list< vector<Integer> >();
 	Ht1_Elements = list< vector<Integer> >();  
 	if(dim>0){            //correction needed to include the 0 cone;
-		H_Vector = vector<Integer>(dim);
 		Hilbert_Polynomial = vector<Integer>(2*dim);
 		Hilbert_Series = HilbertSeries();
 	} else {
 		multiplicity = 1;
-		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 		Hilbert_Series = HilbertSeries();
@@ -1959,12 +1955,10 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	is_Computed.set(ConeProperty::HilbertBasis);
 	Ht1_Elements = list< vector<Integer> >();
 	if(dim>0){            //correction needed to include the 0 cone;
-		H_Vector = vector<Integer>(dim);
 		Hilbert_Series = HilbertSeries();
 		Hilbert_Polynomial = vector<Integer>(2*dim);
 	} else {
 		multiplicity = 1;
-		H_Vector = vector<Integer>(1,1);
 		Hilbert_Series = HilbertSeries();
 		Hilbert_Series.add_to_nom(0);
 		Hilbert_Polynomial = vector<Integer>(2,1);
@@ -1989,7 +1983,6 @@ Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M) {
 	Hilbert_Basis = list< vector<Integer> >();
 	Ht1_Elements = list< vector<Integer> >();
 	Candidates = list< vector<Integer> >();
-	H_Vector = vector<Integer>(dim);
 	Hilbert_Series = HilbertSeries();
 	in_triang = vector<bool> (nr_gen,false);
 	HypIndVal = list<FMDATA>();
@@ -2146,13 +2139,6 @@ Matrix<Integer> Full_Cone<Integer>::getHt1Elements()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::getHVector() const{
-	return H_Vector;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 vector<Integer> Full_Cone<Integer>::getHilbertPolynomial() const{
 	return Hilbert_Polynomial;
 }
@@ -2186,9 +2172,9 @@ void Full_Cone<Integer>::print()const{
 	l_read(Hilbert_Basis);
 	verboseOutput()<<"\nHt1 elements are:\n";
 	l_read(Ht1_Elements);
-	verboseOutput()<<"\nh-vector is:\n";
-	v_read(H_Vector);
-	verboseOutput()<<"\nHilbert polvnomial is:\n";
+	verboseOutput()<<"\nHilbert Series  is:\n";
+	verboseOutput()<<Hilbert_Series;
+	verboseOutput()<<"\nHilbert polynomial is:\n";
 	v_read(Hilbert_Polynomial);
 }
 

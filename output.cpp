@@ -332,7 +332,7 @@ void Output<Integer>::write_inv_file() const{
 				inv<<"integer multiplicity = "<<Result->getMultiplicity()<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
+				vector<long64> h_vector=Result->getHVector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					inv<<h_vector[i]<<" ";
@@ -439,7 +439,7 @@ void Output<Integer>::cone() const {
 					out<<endl;
 				}
 				if (Result->isComputed(ConeProperty::HVector)) {
-					vector<Integer> h_vector=Result->getHVector();
+					vector<long64> h_vector=Result->getHVector();
 					out<<"h-vector:"<<endl;
 					for (i = 0; i < h_vector.size(); i++) {
 						out<<h_vector[i]<<" ";
@@ -606,7 +606,7 @@ void Output<Integer>::polytop() const{
 				out<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
+				vector<long64> h_vector=Result->getHVector();
 				out<<"h-vector:"<<endl;
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
@@ -845,7 +845,7 @@ void Output<Integer>::rees() const{
 				out<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
+				vector<long64> h_vector=Result->getHVector();
 				out<<"h-vector:"<<endl;
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
