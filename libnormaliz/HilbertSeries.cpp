@@ -180,11 +180,9 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
 
 // returns the coefficient vector of 1-t^i
 vector<long64> coeff_vector(size_t i) {
-//	cout << "create 1-t^"<<i<<" :   ";
 	vector<long64> p(i+1,0);
 	p[0] =  1;
 	p[i] = -1;
-//	cout<<p[0]<<p[i]<<"*t^"<<i<<"   size="<<p.size() <<endl;
 	return p;
 }
 
@@ -306,7 +304,7 @@ vector<long64> cyclotomicPoly(long n) {
 				}
 			}
 			CyclotomicPoly[i-1] = poly;
-			cout << i << "-th cycl. pol.: " << CyclotomicPoly[i-1];
+//			cout << i << "-th cycl. pol.: " << CyclotomicPoly[i-1];
 		}
 	}
 	return CyclotomicPoly[n-1];

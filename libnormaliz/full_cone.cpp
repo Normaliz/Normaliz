@@ -1072,10 +1072,15 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		is_Computed.set(ConeProperty::Ht1Elements,true);
 	}
 	if (do_h_vector) {
+cout << "Hilbert Series: " << Hilbert_Series;
+		Hilbert_Series.simplify();
+cout << "Hilbert Series: " << Hilbert_Series;
+cout << "h-vector of HS: " << Hilbert_Series.getNominator();
 		is_Computed.set(ConeProperty::HVector);
 		compute_polynomial();
 	}
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1083,7 +1088,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 	compute_support_hyperplanes_triangulation();
 	extreme_rays_and_ht1_check();    
 	if(!pointed) return;
-	if (ht1_extreme_rays && !ht1_generated) { //TODO ht1_triangulated einbauen und nutzen
+/*	if (ht1_extreme_rays && !ht1_generated) { //TODO ht1_triangulated einbauen und nutzen
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
 			     << "making a new triangulation with only extreme rays" <<endl;
@@ -1095,7 +1100,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 		is_Computed.set(ConeProperty::Triangulation,false);
 		compute_support_hyperplanes_triangulation();
 	}
-		
+*/		
 	primal_algorithm_main();
 }
 
@@ -1760,8 +1765,6 @@ vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_polynomial(){
-	cout << "Hilbert Series: " << Hilbert_Series;
-	cout << "h-vector of HS: " << Hilbert_Series.getNominator();
 	size_t i,j;
 	Integer factorial=permutations<Integer>(1,dim);
 	if ((factorial-permutations_modulo<Integer>(1,dim,overflow_test_modulus))%overflow_test_modulus != 0) {

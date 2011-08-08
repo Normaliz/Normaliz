@@ -417,48 +417,52 @@ void Output<Integer>::cone() const {
 		out << endl;
 		
 		if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
-			if (Result->isHt1ExtremeRays()==false) {
-				out<<"extreme rays are not of height 1"<<endl<<endl;
+			if ( Result->isHt1ExtremeRays() ) {
+				out<<"extreme rays are of height 1";
 			} else {
+				out<<"extreme rays are not of height 1";
+			}
+			if ( Result->isComputed(ConeProperty::LinearForm) ) {
+				out<<" via the linear form:"<<endl;
 				vector<Integer> Linear_Form = Result->getLinearForm();
-				out<<"extreme rays are of height 1 via the linear form:"<<endl;
 				for (i = 0; i < Linear_Form.size(); i++) {
 					out<<Linear_Form[i]<<" ";
 				}
-				out<<endl<<endl;
-				if (Result->isComputed(ConeProperty::IsHt1HilbertBasis)) {
-					if (Result->isHt1HilbertBasis()) {
-						out << "Hilbert basis elements are of height 1" << endl;
-					} else {
-						out << "Hilbert basis elements are not of height 1" << endl;
-					}
-				}
-				out<<endl;
-				if (Result->isComputed(ConeProperty::Triangulation)){
-					out<<"multiplicity = "<<Result->getMultiplicity()<<endl;
-					out<<endl;
-				}
-				if (Result->isComputed(ConeProperty::HVector)) {
-					vector<long64> h_vector=Result->getHVector();
-					out<<"h-vector:"<<endl;
-					for (i = 0; i < h_vector.size(); i++) {
-						out<<h_vector[i]<<" ";
-					}
-					out<<endl<<endl;
-				}
-				if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-					vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-					out<<"Hilbert polynomial:"<<endl;
-					for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-						out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
-					}
-					out << endl<< endl;
-				}
 			}
+			out<<endl<<endl;
+			if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
+			  && Result->isHt1ExtremeRays() ) {
+				if (Result->isHt1HilbertBasis()) {
+					out << "Hilbert basis elements are of height 1";
+				} else {
+					out << "Hilbert basis elements are not of height 1";
+				}
+				out<<endl<<endl;
+			}
+			if ( Result->isComputed(ConeProperty::Triangulation)
+			  && Result->isHt1ExtremeRays() ) {
+				out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
+			}
+		}
+		if ( Result->isComputed(ConeProperty::HVector) ) {
+			vector<long64> h_vector=Result->getHVector();
+			out<<"h-vector:"<<endl;
+			for (i = 0; i < h_vector.size(); i++) {
+				out<<h_vector[i]<<" ";
+			}
+			out<<endl<<endl;
+		}
+		if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
+			vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
+			out<<"Hilbert polynomial:"<<endl;
+			for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
+				out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+			}
+			out << endl<< endl;
 		}
 
 		out << "***********************************************************************"
-			 << endl << endl;
+		    << endl << endl;
 
 
 		if (nr_orig_gens > 0) {
