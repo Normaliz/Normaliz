@@ -328,7 +328,7 @@ void Output<Integer>::write_inv_file() const{
 				inv<<Linear_Form[i]<<" ";
 			}
 			inv<<endl;
-			if (Result->isComputed(ConeProperty::Triangulation)){
+			if (Result->isComputed(ConeProperty::Multiplicity)){
 				inv<<"integer multiplicity = "<<Result->getMultiplicity()<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
@@ -439,8 +439,7 @@ void Output<Integer>::cone() const {
 				}
 				out<<endl<<endl;
 			}
-			if ( Result->isComputed(ConeProperty::Triangulation)
-			  && Result->isHt1ExtremeRays() ) {
+			if ( Result->isComputed(ConeProperty::Multiplicity) ) {
 				out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
 			}
 		}
@@ -605,7 +604,7 @@ void Output<Integer>::polytop() const{
 		out<<"dimension of the polytope = "<<rank-1<<endl;
 		
 		if (Result->isHt1ExtremeRays()) {
-			if (Result->isComputed(ConeProperty::Triangulation)){
+			if (Result->isComputed(ConeProperty::Multiplicity)){
 				out<<"normalized volume = " << Result->getMultiplicity()<<endl;
 				out<<endl;
 			}
@@ -844,7 +843,7 @@ void Output<Integer>::rees() const{
 				}
 			}
 			out<<endl;
-			if (Result->isComputed(ConeProperty::Triangulation)){
+			if (Result->isComputed(ConeProperty::Multiplicity)){
 				out<<"multiplicity = "<<Result->getMultiplicity()<<endl;
 				out<<endl;
 			}

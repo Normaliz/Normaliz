@@ -775,7 +775,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
 		if (do_h_vector) {
-			//TODO still needed? ?
 			//in the evaluation we need the linear form
 			check_ht1_generated();
 			if(!is_Computed.test(ConeProperty::LinearForm)) {
@@ -801,7 +800,10 @@ void Full_Cone<Integer>::build_cone() {
 		verboseOutput()<<"\n************************************************************\n";
 		verboseOutput()<<"starting primal algorithm ";
 		if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
-		if (do_triangulation) verboseOutput()<<"with full triangulation ";
+		if (do_triangulation) {
+			verboseOutput()<<"with full triangulation ";
+			if (!keep_triangulation) verboseOutput()<<"and direct evaluation ";
+		}
 		if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
 		verboseOutput()<<"..."<<endl;
 	}
@@ -809,7 +811,7 @@ void Full_Cone<Integer>::build_cone() {
 	
 	bool pyramid_recursion=false;
 
-//#pragma omp critical(REKTIEFE)
+//#pragma omp atomic
 	//RekTiefe++;
 	//cout << RekTiefe;
 
@@ -824,13 +826,6 @@ void Full_Cone<Integer>::build_cone() {
 
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
-/*	if (do_h_vector || do_ht1_elements) {
-		bool tmp;
-		Grading = Generators.homogeneous(tmp);
-		cout << "Grading: "; v_read(Grading);
-		Generators.pretty_print(cout);
-	}
-*/
 	find_and_evaluate_start_simplex();
 	
 	Integer scalar_product;
@@ -919,7 +914,7 @@ void Full_Cone<Integer>::build_cone() {
 	
 	HypIndVal.clear();
 	
-//#pragma omp critical(REKTIEFE)
+//#pragma omp atomic
 //	RekTiefe--;
 
 	is_Computed.set(ConeProperty::SupportHyperplanes);
@@ -1086,9 +1081,9 @@ cout << "h-vector of HS: " << Hilbert_Series.getNominator();
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 	compute_support_hyperplanes_triangulation();
-	extreme_rays_and_ht1_check();    
+	extreme_rays_and_ht1_check();
 	if(!pointed) return;
-/*	if (ht1_extreme_rays && !ht1_generated) { //TODO ht1_triangulated einbauen und nutzen
+/*	if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
 			     << "making a new triangulation with only extreme rays" <<endl;
@@ -1287,6 +1282,8 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
+	if (isComputed(ConeProperty::ExtremeRays))
+		return;
 	size_t i,j,k,l,t;
 	Matrix<Integer> SH=getSupportHyperplanes().transpose();
 	Matrix<Integer> Val=Generators.multiplication(SH);
@@ -1335,7 +1332,6 @@ void Full_Cone<Integer>::compute_extreme_rays(){
 		}
 	}
 
-	// cout << "Extr durch" << endl;
 	is_Computed.set(ConeProperty::ExtremeRays);
 }
 
