@@ -71,7 +71,7 @@ public:
 //							   Data access
 //---------------------------------------------------------------------------
 
-  void write();                // to be modified, just for tests
+  void write(std::istream& in = std::cin);                // to be modified, just for tests
   void write(size_t row, const vector<Integer>& data); //write  a row
   void write(size_t row, const vector<int>& data); //write  a row
   void write(size_t row, size_t col, Integer data);  // write data at (row,col)

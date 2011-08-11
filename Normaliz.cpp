@@ -398,6 +398,25 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		Out.cone();
 	} 
 	else { // all other modes
+
+		//TODO quick solution to input a grading
+		if (in.good()) {
+			in >> nr_rows;
+		}
+		if (in.good()) {
+			cout << "looking for grading ... ";
+			in >> nr_columns;
+			Matrix<Integer> GradingMatrix = Matrix<Integer>(nr_rows, nr_columns);
+			GradingMatrix.write(in);
+			if (!in.fail() && nr_rows > 0) {
+				Grading = GradingMatrix[0];
+				cout << "successfull! " << endl;
+				//v_read(Grading);
+			} else {
+				cout << "FAILED!"<<endl;
+				GradingMatrix.print(cout);
+			}
+		}
 		in.close();
 		//main computations and output
 		if (verbose) {
@@ -405,7 +424,6 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 			cout<<"Running in computation mode "<<computation_mode<<" with input type "<<mode<<"."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(M.get_elements(), input_type);
-//		Grading = vector<Integer>(M.nr_of_columns(),1);
 		if (Grading.size() != 0) {
 			MyCone.setLinearForm(Grading);
 		}

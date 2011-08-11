@@ -1023,8 +1023,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_main(){
-
-	if (is_Computed.test(ConeProperty::IsHt1ExtremeRays) && !ht1_extreme_rays) {
+	//at this time we should have a linear form if we can find one
+	if (!is_Computed.test(ConeProperty::LinearForm)) {
 		if (do_ht1_elements)
 			return;
 		if (do_h_vector)
@@ -1054,7 +1054,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		check_integrally_closed();
 	}
 	
-	if (ht1_extreme_rays && do_Hilbert_basis) {
+	if (is_Computed.test(ConeProperty::LinearForm) && do_Hilbert_basis) {
 		select_ht1_elements();
 		check_ht1_hilbert_basis();
 	}
@@ -1095,7 +1095,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 		is_Computed.set(ConeProperty::Triangulation,false);
 		compute_support_hyperplanes_triangulation();
 	}
-*/		
+*/ //TODO not needed anymore?
 	primal_algorithm_main();
 }
 
@@ -1103,7 +1103,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
-	if (do_triangulation || do_ht1_elements || do_h_vector) {
+	if (!isComputed(ConeProperty::LinearForm) && (do_triangulation || do_ht1_elements || do_h_vector)) {
 		check_ht1_generated();
 		if(!ht1_generated) {
 			compute_support_hyperplanes();
@@ -1111,7 +1111,7 @@ void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
 			if(!pointed) return;
 		}
 	}
-
+  //TODO not needed anymore?
 	primal_algorithm_main();
 }
 
@@ -1247,7 +1247,7 @@ void Full_Cone<Integer>::dual_mode() {
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::LinearForm);
 	}
-	if (ht1_extreme_rays) check_ht1_hilbert_basis();
+	if (is_Computed.test(ConeProperty::LinearForm)) check_ht1_hilbert_basis();
 	check_integrally_closed();
 }
 
