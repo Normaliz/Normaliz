@@ -345,10 +345,10 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
 		for(i=1; i<=nr_rows && Prim_Test.read(i,j)==0; i++);
 		if (i>nr_rows) {
 			rees_primary=false;
-			is_Computed.set(ConeProperty::ReesPrimary);
 			break;
 		}
 	}
+	is_Computed.set(ConeProperty::ReesPrimary);
 	Generators = Full_Cone_Generators.get_elements();
 	dim = Generators.begin()->size();
 	is_Computed.set(ConeProperty::Generators);
@@ -703,10 +703,10 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		verboseOutput() << "transforming data...";
 	}
 	
-	if (rees_primary) {
+	if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {
 		//here are some computations involved, made first so that data can be deleted in FC later
 		ReesPrimaryMultiplicity = FC.primary_multiplicity();
-		is_Computed.set(ConeProperty::ReesPrimary);
+		is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
 	}
 	
 	if (FC.isComputed(ConeProperty::Generators)) {

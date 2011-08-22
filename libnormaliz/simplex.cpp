@@ -338,28 +338,6 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
  
 	Generators=C.Generators.submatrix(key);
 
-	vector<long> gen_degrees;
-	HilbertSeries Hilbert_Series;
-	if (C.do_h_vector) {
-
-		//degrees of the generators according to the Grading of C
-		vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form);
-		//TODO compute degrees in full_cone and just get the ones according to key?
-		gen_degrees = vector<long>(dim);
-		for (size_t i=0; i<dim; i++) {
-			assert(gen_degrees_Integer[i] > 0); 
-			gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
-		}
-
-		int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
-		vector<long64> denom(max_degree+1);
-		for (size_t i=0; i<dim; i++) {
-			denom[gen_degrees[i]]++;
-		}
-
-		Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
-	}
-
 	bool unimodular=false;
 	vector<Integer> Indicator;
 	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
@@ -379,6 +357,29 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		#pragma omp critical(MULTIPLICITY)
 		C.multiplicity+=volume;
 		return volume;
+	}
+
+	// compute degrees of the generators
+	vector<long> gen_degrees;
+	HilbertSeries Hilbert_Series;
+	if (C.do_h_vector || C.do_ht1_elements) {
+		//degrees of the generators according to the Grading of C
+		vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form);
+		//TODO compute degrees in full_cone and just get the ones according to key?
+		gen_degrees = vector<long>(dim);
+		for (size_t i=0; i<dim; i++) {
+			assert(gen_degrees_Integer[i] > 0);
+			gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+		}
+		if (C.do_h_vector) {
+			int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
+			vector<long64> denom(max_degree+1);
+			for (size_t i=0; i<dim; i++) {
+				denom[gen_degrees[i]]++;
+			}
+
+			Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
+		}
 	}
 
 	bool decided=true;
@@ -459,6 +460,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	Matrix<Integer> V = InvGen; //Support_Hyperplanes.multiply_rows(multiplicators).transpose();
 	V.reduction_modulo(volume); //makes reduction when adding V easier
 
+	//now we need to create the candidates
 	while (true) {
 		last = dim;
 		for (int k = dim-1; k >= 0; k--) {
@@ -508,7 +510,6 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		} 
 		
 		// now we are left with the case of Hilbert bases
-
 		if(C.do_Hilbert_basis){
 			Candidates.push_back(v_merge(norm,elements[last]));
 		}
