@@ -17,7 +17,7 @@
  */
 
 /*
- * HilbertSeries represents a Hilbert series of a N-graded algebra
+ * HilbertSeries represents a Hilbert series of a (ZZ_+)-graded algebra
  * with generators of different degrees.
  * It is represented as a polynomial divided by a product of (1-t^i).
  * The nominator is represented as vector of coefficients, the h-vector
@@ -77,6 +77,8 @@ public:
 	// simplify, see class description
 	void simplify();
 
+	void computeHilbertQuasiPolynomial();
+
 	// returns the nominator, repr. as vector of coefficients, the h-vector
 	const vector<long64>& getNominator() const;
 	// returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
@@ -87,6 +89,9 @@ private:
 	vector<long64> nom;
 	// the denominator, repr. as a vector of the exponents of (1-t^i)^e
 	vector<long64> denom;
+
+	// the quasi polynomial, can have big coefficients
+	vector< vector<mpz_class> > quasi_poly;
 
 	friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
@@ -127,6 +132,16 @@ vector<long64> cyclotomicPoly(long n);
 
 // returns the coefficient vector of 1-t^i
 vector<long64> coeff_vector(size_t i);
+
+//---------------------------------------------------------------------------
+// computing the Hilbert polynomial from h-vector
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> compute_e_vector(vector<Integer> h_vector, int dim);
+
+template<typename Integer>
+vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim);
 
 } //end namespace libnormaliz
 

@@ -1071,6 +1071,7 @@ cout << "Hilbert Series: " << Hilbert_Series;
 		Hilbert_Series.simplify();
 cout << "HS simplified : " << Hilbert_Series;
 cout << "h-vector of HS: " << Hilbert_Series.getNominator();
+Hilbert_Series.computeHilbertQuasiPolynomial();
 		is_Computed.set(ConeProperty::HVector);
 		compute_polynomial();
 	}

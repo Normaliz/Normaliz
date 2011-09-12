@@ -47,7 +47,7 @@ template<typename Integer> inline Integer Iabs(const Integer& a) {
 	return (a>=0) ? (a) : Integer(-a);
 }
 
-//returns gcd of a and b, 	if one is 0 returns the nonzero one
+//returns gcd of a and b, 	if one is 0 returns the other integer
 template<typename Integer> Integer gcd(const Integer& a, const Integer& b);
 template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
 
