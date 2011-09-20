@@ -149,14 +149,15 @@ void HilbertSeries::simplify() {
 void HilbertSeries::computeHilbertQuasiPolynomial() {
 	//TODO simplify first?
 	long64 periode = 1; //least common multiple of the degrees of t in the denominator
-	long64 power = 0;
+	long64 dim = 0;
+	long64 i,j;
 	for (int d = denom.size()-1; d > 0; --d) {
-		power += denom[d];
+		dim += denom[d];
 		if (denom[d] > 0 && (periode % d) != 0) {
 			periode = lcm<long64>(periode, d);
 		}
 	}
-	//periode und power encode the denominator
+	//periode und dim encode the denominator
 	//now adjust the nominator
 	vector<long64> norm_nom = nom; //normalized nominator
 	for (int d = denom.size()-1; d > 0; --d) {
@@ -174,22 +175,58 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 		}
 	}
 	cout << "normed   nom: "<< norm_nom;
-	cout << "normed denom: (1-t^"<< periode <<")^"<<power <<endl;
+	cout << "normed denom: (1-t^"<< periode <<")^"<<dim <<endl;
 	//cut nominator into periode many pieces and apply standart method
-	vector< vector<long64> > split_nom(periode, vector<long64>());
-	for (int i=0; i<periode; ++i) {
-		split_nom[i].reserve(norm_nom.size()/periode+1);
-	}
-	for (size_t i=0; i<norm_nom.size(); ++i) {
-		split_nom[i%periode].push_back(norm_nom[i]);
-	}
-	cout << "The splited nominators:" << endl << split_nom;
-
 	vector< vector<long64> > quasi_poly(periode);
-	for (int i=0; i<periode; ++i) {
-		quasi_poly[i] = compute_polynomial(split_nom[i], power);
+	for (j=0; j<periode; ++j) {
+		quasi_poly[j].reserve(norm_nom.size()/periode+1);
 	}
-	cout << "The Hilbert quasi-polynomials:" << endl << quasi_poly;
+	for (i=0; i<norm_nom.size(); ++i) {
+		quasi_poly[i%periode].push_back(norm_nom[i]);
+	}
+	cout << "The splited nominators:" << endl << quasi_poly;
+
+	for (j=0; j<periode; ++j) {
+		quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
+	}
+	cout << "The untransformed quasi-polynomials:" << endl << quasi_poly;
+	cout << "All coeff to divide by "<< permutations<Integer>(1,dim) << endl;
+	
+	//substitute t by t/periode
+	long64 pp=1;
+	for (i = dim-1; i >= 0; --i) {
+		pp *= periode; //p^i
+		for (j=0; j<periode; ++j) {
+			quasi_poly[j][i] *= pp;
+		}
+	}
+	//the common denominator for all polynomial coefficients
+	Integer common_denom = permutations<Integer>(1,dim) * pp;
+	// overflow check
+	if ( (common_denom 
+	   - (permutations_modulo<Integer>(1,dim,overflow_test_modulus) 
+	     * (pp % overflow_test_modulus) ) % overflow_test_modulus
+		 ) != 0) {
+		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
+		return ; //TODO!!!!! exception?
+	}
+
+	//substitute t by t-j
+	for (j=0; j<periode; ++j) {
+		linear_substitution(quasi_poly[j], j); // replaces quasi_poly[i]
+	}
+	cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
+	cout << "All coeff to divide by "<< common_denom << endl;
+
+
+	//devide by common_denom
+/*	for (i = 0; i <dim; i++) {
+		mult_factor=gcd<Integer>(Hilbert_Polynomial[2*i],factorial);
+		Hilbert_Polynomial[2*i]/= mult_factor;
+		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
+	}
+*/
+
 }
 
 // returns the nominator, repr. as vector of coefficients, the h-vector
@@ -356,6 +393,7 @@ vector<long64> cyclotomicPoly(long n) {
 }
 
 
+
 //---------------------------------------------------------------------------
 // computing the Hilbert polynomial from h-vector
 //---------------------------------------------------------------------------
@@ -381,14 +419,10 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim){
 
 template<typename Integer>
 vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
-	vector<Integer> Hilbert_Polynomial = vector<Integer>(2*dim);
+	vector<Integer> Hilbert_Polynomial = vector<Integer>(dim);
 	size_t i,j;
-	Integer factorial=permutations<Integer>(1,dim);
-	if ((factorial-permutations_modulo<Integer>(1,dim,overflow_test_modulus))%overflow_test_modulus != 0) {
-		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
-		return h_vector; //TODO!!!!!
-	}
-	Integer mult_factor = factorial;
+	
+	Integer mult_factor;
 	vector <Integer> E_Vector=compute_e_vector(h_vector, dim);
 	vector <Integer> C(dim,0);
 	C[0]=1;
@@ -396,12 +430,12 @@ vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
 		mult_factor=permutations<Integer>(i,dim);
 		if (((dim-1-i)%2)==0) {
 			for (j = 0; j <dim; j++) {
-				Hilbert_Polynomial[2*j]+=mult_factor*E_Vector[dim-1-i]*C[j];
+				Hilbert_Polynomial[j]+=mult_factor*E_Vector[dim-1-i]*C[j];
 			}
 		}
 		else {
 			for (j = 0; j <dim; j++) {
-				Hilbert_Polynomial[2*j]-=mult_factor*E_Vector[dim-1-i]*C[j];
+				Hilbert_Polynomial[j]-=mult_factor*E_Vector[dim-1-i]*C[j];
 			}
 		}
 		for (j = dim-1; 0 <j; j--) {
@@ -409,14 +443,39 @@ vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
 		}
 		C[0]=permutations<Integer>(1,i+1);
 	}
-	for (i = 0; i <dim; i++) {
-		mult_factor=gcd<Integer>(Hilbert_Polynomial[2*i],factorial);
-		Hilbert_Polynomial[2*i]/= mult_factor;
-		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
-	}
+
 	return Hilbert_Polynomial;
 }
 
 template vector<long64> compute_polynomial(vector<long64>, int);
+
+
+//---------------------------------------------------------------------------
+
+// substitutes t by (t-a), overwrites the polynomial!
+template<typename Integer>
+void linear_substitution(vector<Integer>& poly, const Integer& a) {
+	vector<Integer> tmp = poly;
+	int dim = tmp.size();
+	Integer r;
+	// Iterated division by (t+a)
+	for (int step=0; step<dim; ++step) {
+		r = tmp.back();
+		size = tmp.size();
+		for (int i = 0; i < size; i += 2) {
+			// ] -= a*tmp[size-i-1]
+			tmp[size-i-2] -= a*r;
+			tmp[size-i-2] -= a*r;
+
+	
+		}
+		poly[bla]=r;
+	}
+	
+}
+//not true anymore
+// This method uses polynomials with rational coefficients.
+// The vector a encodes a[0]/a[1] + a[2]/a[3]*t + ...
+
 
 } //end namespace libnormaliz
