@@ -21,7 +21,7 @@
 #define NORMALIZ_H
 //---------------------------------------------------------------------------
 
-#ifndef NO_OPENMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
