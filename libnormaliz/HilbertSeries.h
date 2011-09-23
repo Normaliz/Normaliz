@@ -42,6 +42,8 @@
 #include <vector>
 #include <ostream>
 
+#include "general.h"
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -77,6 +79,7 @@ public:
 	// simplify, see class description
 	void simplify();
 
+//	template<typename Integer>
 	void computeHilbertQuasiPolynomial();
 
 	// returns the nominator, repr. as vector of coefficients, the h-vector
@@ -132,6 +135,10 @@ vector<long64> cyclotomicPoly(long n);
 
 // returns the coefficient vector of 1-t^i
 vector<long64> coeff_vector(size_t i);
+
+// substitutes t by (t-a), overwrites the polynomial!
+template<typename Integer>
+void linear_substitution(vector<Integer>& poly, const Integer& a);
 
 //---------------------------------------------------------------------------
 // computing the Hilbert polynomial from h-vector

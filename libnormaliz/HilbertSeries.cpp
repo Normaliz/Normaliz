@@ -19,6 +19,7 @@
 #include <iostream>
 #include "HilbertSeries.h"
 #include "vector_operations.h"
+#include "integer.h"
 
 //---------------------------------------------------------------------------
 
@@ -146,6 +147,7 @@ void HilbertSeries::simplify() {
 }
 
 
+//template<typename Integer>
 void HilbertSeries::computeHilbertQuasiPolynomial() {
 	//TODO simplify first?
 	long64 periode = 1; //least common multiple of the degrees of t in the denominator
@@ -190,9 +192,10 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 		quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
 	}
 	cout << "The untransformed quasi-polynomials:" << endl << quasi_poly;
-	cout << "All coeff to divide by "<< permutations<Integer>(1,dim) << endl;
+	cout << "All coeff to divide by "<< permutations<long64>(1,dim) << endl;
 	
-	//substitute t by t/periode
+	//substitute t by t/periode:
+	//dividing by periode^dim and multipling the coeff with powers of periode
 	long64 pp=1;
 	for (i = dim-1; i >= 0; --i) {
 		pp *= periode; //p^i
@@ -201,10 +204,10 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 		}
 	}
 	//the common denominator for all polynomial coefficients
-	Integer common_denom = permutations<Integer>(1,dim) * pp;
+	long64 common_denom = permutations<long64>(1,dim) * pp;
 	// overflow check
 	if ( (common_denom 
-	   - (permutations_modulo<Integer>(1,dim,overflow_test_modulus) 
+	   - (permutations_modulo<long64>(1,dim,overflow_test_modulus) 
 	     * (pp % overflow_test_modulus) ) % overflow_test_modulus
 		 ) != 0) {
 		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
@@ -213,7 +216,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 
 	//substitute t by t-j
 	for (j=0; j<periode; ++j) {
-		linear_substitution(quasi_poly[j], j); // replaces quasi_poly[i]
+		linear_substitution<long64>(quasi_poly[j], j); // replaces quasi_poly[i]
 	}
 	cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
 	cout << "All coeff to divide by "<< common_denom << endl;
@@ -400,7 +403,7 @@ vector<long64> cyclotomicPoly(long n) {
 
 template<typename Integer>
 vector<Integer> compute_e_vector(vector<Integer> Q, int dim){
-	size_t i,j;
+	int i,j;
 	vector <Integer> E_Vector(dim,0);
 	Q.resize(dim+1);
 	for (i = 0; i <dim; i++) {
@@ -420,7 +423,7 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim){
 template<typename Integer>
 vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
 	vector<Integer> Hilbert_Polynomial = vector<Integer>(dim);
-	size_t i,j;
+	int i,j;
 	
 	Integer mult_factor;
 	vector <Integer> E_Vector=compute_e_vector(h_vector, dim);
@@ -455,24 +458,17 @@ template vector<long64> compute_polynomial(vector<long64>, int);
 // substitutes t by (t-a), overwrites the polynomial!
 template<typename Integer>
 void linear_substitution(vector<Integer>& poly, const Integer& a) {
-	vector<Integer> tmp = poly;
-	int dim = tmp.size();
-	Integer r;
-	// Iterated division by (t+a)
-	for (int step=0; step<dim; ++step) {
-		r = tmp.back();
-		size = tmp.size();
-		for (int i = 0; i < size; i += 2) {
-			// ] -= a*tmp[size-i-1]
-			tmp[size-i-2] -= a*r;
-			tmp[size-i-2] -= a*r;
-
-	
+	int dim = poly.size();
+	// Iterated division by (t-a)
+	for (int step=0; step<dim-1; ++step) {
+		for (int i = dim-2; i >= step; --i) {
+			poly[i] += a * poly[i+1];
 		}
-		poly[bla]=r;
+		//the remainders are the coefficients of the transformed polynomial
 	}
-	
 }
+
+
 //not true anymore
 // This method uses polynomials with rational coefficients.
 // The vector a encodes a[0]/a[1] + a[2]/a[3]*t + ...
