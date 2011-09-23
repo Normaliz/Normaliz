@@ -1070,8 +1070,8 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 cout << "Hilbert Series: " << Hilbert_Series;
 		Hilbert_Series.simplify();
 cout << "HS simplified : " << Hilbert_Series;
-cout << "h-vector of HS: " << Hilbert_Series.getNominator();
-Hilbert_Series.computeHilbertQuasiPolynomial();
+cout << "h-vector of HS: " << Hilbert_Series.getNumerator();
+Hilbert_Series.computeHilbertQuasiPolynomial<Integer>();
 		is_Computed.set(ConeProperty::HVector);
 		compute_polynomial();
 	}
@@ -1743,7 +1743,7 @@ template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 	size_t i,j;
 	vector <Integer> E_Vector(dim,0);
-	vector <long64> Q=Hilbert_Series.getNominator();
+	vector <long64> Q=Hilbert_Series.getNumerator();
 	Q.resize(dim+1);
 	for (i = 0; i <dim; i++) {
 		for (j = 0; j <dim; j++) {
@@ -1912,7 +1912,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 		Hilbert_Series = HilbertSeries();
-		Hilbert_Series.add_to_nom(0);
+		Hilbert_Series.add_to_num(0);
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 		is_Computed.set(ConeProperty::HVector);
 		is_Computed.set(ConeProperty::Triangulation);
@@ -1960,7 +1960,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	} else {
 		multiplicity = 1;
 		Hilbert_Series = HilbertSeries();
-		Hilbert_Series.add_to_nom(0);
+		Hilbert_Series.add_to_num(0);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 		is_Computed.set(ConeProperty::HVector);

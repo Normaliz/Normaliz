@@ -397,7 +397,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 		if(decided){
 			//only change in the H-vector, so done directly
-			Hilbert_Series.add_to_nom(Deg);
+			Hilbert_Series.add_to_num(Deg);
 			#pragma omp critical(HSERIES) 
 			C.Hilbert_Series += Hilbert_Series;
 			#pragma omp critical(MULTIPLICITY)
@@ -439,7 +439,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				}
 			}
 		}
-		Hilbert_Series.add_to_nom(Deg);
+		Hilbert_Series.add_to_num(Deg);
 		if(unimodular){     // and in the unimodular case nothing left to be done
 			#pragma omp critical(HSERIES) 
 			C.Hilbert_Series += Hilbert_Series;
@@ -498,7 +498,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				}
 			}
 			
-			Hilbert_Series.add_to_nom(Deg);
+			Hilbert_Series.add_to_num(Deg);
 		}
 		
 		if(C.do_ht1_elements && normG==volume) // found degree 1 element

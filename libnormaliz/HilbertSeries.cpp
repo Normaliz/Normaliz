@@ -38,20 +38,20 @@ ostream& operator<< (ostream& out, const vector<Class>& vec) {
 
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
-	nom   = vector<long64>(1,0);
+	num   = vector<long64>(1,0);
 	denom = vector<long64>(1,0);
 }
 
-// Constructor, creates nom/denom, see class description for format
-HilbertSeries::HilbertSeries(const vector<long64>& nominator, const vector<long64>& denominator) {
-	nom   = nominator;
+// Constructor, creates num/denom, see class description for format
+HilbertSeries::HilbertSeries(const vector<long64>& numerator, const vector<long64>& denominator) {
+	num   = numerator;
 	denom = denominator;
 }
 
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
 //cout<<"adding "<<other;
-	vector<long64> other_nom = other.nom;
+	vector<long64> other_num = other.num;
 	vector<long64> other_denom = other.denom;
 
 	// adjust denominators
@@ -65,17 +65,17 @@ HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
 		diff = denom[i] - other_denom[i];
 		if (diff > 0) {        // augment other
 			other_denom[i] += diff;
-			poly_mult_to(other_nom, i, diff);
+			poly_mult_to(other_num, i, diff);
 		} else if (diff < 0) { // augment this
 			diff = -diff;
 			denom[i] += diff;
-			poly_mult_to(nom, i, diff);
+			poly_mult_to(num, i, diff);
 		}
 	}
 	assert (denom == other_denom);
 
-	// now just add the nominators
-	poly_add_to(nom,other_nom);
+	// now just add the numerators
+	poly_add_to(num,other_num);
 
 	return (*this);
 }
@@ -87,17 +87,17 @@ void HilbertSeries::simplify() {
 	remove_zeros(denom);
 	vector<long64> q, r, poly; //polynomials
 	// In cyclPolyExp we collect cyclotomic polynomials in the denominator,
-	// During this method the Hilbert series is given by nom/(denom*denom_cyclo)
+	// During this method the Hilbert series is given by num/(denom*denom_cyclo)
 	// where denom and denom_cyclo are exponent vectors of (1-t^i), i-th cyclotminc poly.
 	vector<long64> denom_cyclo = vector<long64>(denom.size());
 
 	for (int i=denom.size()-1; i>0; --i) {
-		// check if we can divide the nominator by (1-t^i)
+		// check if we can divide the numerator by (1-t^i)
 		poly = coeff_vector(i);
 		while(denom[i]>0) {
-			poly_div(q, r, nom, poly);
-			if (r.size() == 0) { // nominator is divisable by poly
-				nom = q;
+			poly_div(q, r, num, poly);
+			if (r.size() == 0) { // numerator is divisable by poly
+				num = q;
 				denom[i]--;
 			}
 			else {
@@ -105,12 +105,12 @@ void HilbertSeries::simplify() {
 			}
 		}
 
-		// check if we can divide the nominator by i-th cyclotomic polynomial
+		// check if we can divide the numerator by i-th cyclotomic polynomial
 		poly = cyclotomicPoly(i);
 		while(denom_cyclo[i]>0 || denom[i]>0) {
-			poly_div(q, r, nom, poly);
-			if (r.size() == 0) { // nominator is divisable by poly
-				nom = q;
+			poly_div(q, r, num, poly);
+			if (r.size() == 0) { // numerator is divisable by poly
+				num = q;
 				if (denom_cyclo[i]>0) {
 					denom_cyclo[i]--;
 				} else { // decompose (1-t^i)
@@ -137,7 +137,7 @@ void HilbertSeries::simplify() {
 					if (denom_cyclo[d]>0) {
 						denom_cyclo[d]--;
 					} else {
-						nom = poly_mult(nom, cyclotomicPoly(d));
+						num = poly_mult(num, cyclotomicPoly(d));
 					}
 				}
 			}
@@ -147,94 +147,106 @@ void HilbertSeries::simplify() {
 }
 
 
-//template<typename Integer>
+template<typename Integer>
 void HilbertSeries::computeHilbertQuasiPolynomial() {
 	//TODO simplify first?
-	long64 periode = 1; //least common multiple of the degrees of t in the denominator
-	long64 dim = 0;
-	long64 i,j;
-	for (int d = denom.size()-1; d > 0; --d) {
+	long periode = 1; //least common multiple of the degrees of t in the denominator
+	long dim = 0;
+	long i,j;
+	for (long d = denom.size()-1; d > 0; --d) {
 		dim += denom[d];
 		if (denom[d] > 0 && (periode % d) != 0) {
-			periode = lcm<long64>(periode, d);
+			periode = lcm<long>(periode, d);
 		}
 	}
 	//periode und dim encode the denominator
-	//now adjust the nominator
-	vector<long64> norm_nom = nom; //normalized nominator
-	for (int d = denom.size()-1; d > 0; --d) {
+	//now adjust the numerator
+	vector<long64> norm_num = num; //normalized numerator //TODO start using Integer here?
+	for (long d = denom.size()-1; d > 0; --d) {
 		vector<long64> factor, r;
 		//nothing to do if it already has the correct t-power or exponent is 0
 		if (d != periode && denom[d] > 0) {
-			//n_nom *= (1-t^p / 1-t^d)^denom[d]
+			//n_num *= (1-t^p / 1-t^d)^denom[d]
 			poly_div(factor, r, coeff_vector(periode), coeff_vector(d));
 			assert(r.size()==0); //assert rest r is 0
 			//TODO more efficient method *=
 			//TODO Exponentiation by squaring of factor, then *=
-			for (int i=0; i<denom[d]; ++i) {
-				norm_nom = poly_mult(norm_nom, factor);
+			for (i=0; i<denom[d]; ++i) {
+				norm_num = poly_mult(norm_num, factor);
 			}
 		}
 	}
-	cout << "normed   nom: "<< norm_nom;
-	cout << "normed denom: (1-t^"<< periode <<")^"<<dim <<endl;
-	//cut nominator into periode many pieces and apply standart method
-	vector< vector<long64> > quasi_poly(periode);
+	cout << "normed numerator  : "<< norm_num;
+	cout << "normed denominator: (1-t^"<< periode <<")^"<<dim <<endl;
+	//cut numerator into periode many pieces and apply standart method
+	vector< vector<Integer> > quasi_poly(periode);
+	long nn_size = norm_num.size();
 	for (j=0; j<periode; ++j) {
-		quasi_poly[j].reserve(norm_nom.size()/periode+1);
+		quasi_poly[j].reserve(nn_size/periode+1);
 	}
-	for (i=0; i<norm_nom.size(); ++i) {
-		quasi_poly[i%periode].push_back(norm_nom[i]);
+	for (i=0; i<nn_size; ++i) {
+		//TODO down and upcasting again in case of both long long
+		//so we have to make our own cast long long to mpz_class
+		quasi_poly[i%periode].push_back(static_cast<long>(norm_num[i]));
 	}
-	cout << "The splited nominators:" << endl << quasi_poly;
+	cout << "The split numerators:" << endl << quasi_poly;
 
 	for (j=0; j<periode; ++j) {
 		quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
 	}
 	cout << "The untransformed quasi-polynomials:" << endl << quasi_poly;
-	cout << "All coeff to divide by "<< permutations<long64>(1,dim) << endl;
+	cout << "All coeff to divide by "<< permutations<Integer>(1,dim) << endl;
 	
 	//substitute t by t/periode:
 	//dividing by periode^dim and multipling the coeff with powers of periode
-	long64 pp=1;
+	Integer pp=1;
 	for (i = dim-1; i >= 0; --i) {
 		pp *= periode; //p^i
 		for (j=0; j<periode; ++j) {
 			quasi_poly[j][i] *= pp;
 		}
 	}
-	//the common denominator for all polynomial coefficients
-	long64 common_denom = permutations<long64>(1,dim) * pp;
+	//the common denominator for all coefficients
+	Integer common_denom = permutations<Integer>(1,dim) * pp;
 	// overflow check
 	if ( (common_denom 
-	   - (permutations_modulo<long64>(1,dim,overflow_test_modulus) 
-	     * (pp % overflow_test_modulus) ) % overflow_test_modulus
-		 ) != 0) {
+	  - permutations_modulo<Integer>(1,dim,overflow_test_modulus) * (pp % overflow_test_modulus) 
+	  ) % overflow_test_modulus != 0) {
 		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
 		return ; //TODO!!!!! exception?
 	}
 
 	//substitute t by t-j
 	for (j=0; j<periode; ++j) {
-		linear_substitution<long64>(quasi_poly[j], j); // replaces quasi_poly[i]
+		linear_substitution<Integer>(quasi_poly[j], j); // replaces quasi_poly[i]
 	}
 	cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
 	cout << "All coeff to divide by "<< common_denom << endl;
 
 
-	//devide by common_denom
-/*	for (i = 0; i <dim; i++) {
-		mult_factor=gcd<Integer>(Hilbert_Polynomial[2*i],factorial);
-		Hilbert_Polynomial[2*i]/= mult_factor;
-		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
+	//cancel coefficients and common_denom
+	Integer g = common_denom; //the gcd
+	for (j=0; j<periode && g!=1; ++j) {
+		for (i = 0; i <dim && g!=1; i++) {
+			g = gcd<Integer>(quasi_poly[j][i],g);
+		}
 	}
-*/
+	if (g!=1) {
+		common_denom /= g;
+		for (j=0; j<periode; ++j) {
+			for (i = 0; i <dim; i++) {
+				quasi_poly[j][i] /= g;
+			}
+		}
+		cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
+		cout << "All coeff to divide by "<< common_denom << endl;
+	}
 
 }
 
-// returns the nominator, repr. as vector of coefficients, the h-vector
-const vector<long64>& HilbertSeries::getNominator() const {
-	return nom;
+// returns the numerator, repr. as vector of coefficients, the h-vector
+const vector<long64>& HilbertSeries::getNumerator() const {
+	return num;
 }
 // returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
 const vector<long64>& HilbertSeries::getDenominator() const {
@@ -243,12 +255,12 @@ const vector<long64>& HilbertSeries::getDenominator() const {
 
 ostream& operator<< (ostream& out, const HilbertSeries& HS) {
 	out << "(";
-	if (HS.nom.size()>0) out << " " << HS.nom[0];
-    for (size_t i=1; i<HS.nom.size(); ++i) {
-		     if ( HS.nom[i]== 1 ) out << " +t^"<<i;
-		else if ( HS.nom[i]==-1 ) out << " -t^"<<i;
-		else if ( HS.nom[i] > 0 ) out << " +"<<HS.nom[i]<<"*t^"<<i;
-		else if ( HS.nom[i] < 0 ) out << " -"<<-HS.nom[i]<<"*t^"<<i;
+	if (HS.num.size()>0) out << " " << HS.num[0];
+    for (size_t i=1; i<HS.num.size(); ++i) {
+		     if ( HS.num[i]== 1 ) out << " +t^"<<i;
+		else if ( HS.num[i]==-1 ) out << " -t^"<<i;
+		else if ( HS.num[i] > 0 ) out << " +"<<HS.num[i]<<"*t^"<<i;
+		else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i;
 	}
 	out << " ) / (";
     for (size_t i=1; i<HS.denom.size(); ++i) {
@@ -459,10 +471,10 @@ template vector<long64> compute_polynomial(vector<long64>, int);
 template<typename Integer>
 void linear_substitution(vector<Integer>& poly, const Integer& a) {
 	int dim = poly.size();
-	// Iterated division by (t-a)
+	// Iterated division by (t+a)
 	for (int step=0; step<dim-1; ++step) {
 		for (int i = dim-2; i >= step; --i) {
-			poly[i] += a * poly[i+1];
+			poly[i] -= a * poly[i+1];
 		}
 		//the remainders are the coefficients of the transformed polynomial
 	}

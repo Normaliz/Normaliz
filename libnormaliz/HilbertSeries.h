@@ -20,14 +20,14 @@
  * HilbertSeries represents a Hilbert series of a (ZZ_+)-graded algebra
  * with generators of different degrees.
  * It is represented as a polynomial divided by a product of (1-t^i).
- * The nominator is represented as vector of coefficients, the h-vector
+ * The numerator is represented as vector of coefficients, the h-vector
  * h vector repr.: sum of h[i]*t^i
  * and the denominator is represented as a vector of the exponents of (1-t^i)
  * d vector repr.: product of (1-t^i)^d[i] over i > 0
  *
  * The class offers basic operations on the series and a simplification which
  * transforms the series in the simplest presentation of such a form in terms
- * of the degrees of the nominator and denominator.
+ * of the degrees of the numerator and denominator.
  *
  * Furthermore this file include operations for the polynomials used.
  */
@@ -63,33 +63,33 @@ class HilbertSeries {
 public:
 	// Constructor, creates 0/1
 	HilbertSeries();
-	// Constructor, creates nom/denom, see class description for format
-	HilbertSeries(const vector<long64>& nom, const vector<long64>& denom);
+	// Constructor, creates num/denom, see class description for format
+	HilbertSeries(const vector<long64>& num, const vector<long64>& denom);
 
 	// add another HilbertSeries to this
 	HilbertSeries& operator+=(const HilbertSeries& other);
 
-	// add t^i to the nominator
-	inline void add_to_nom(size_t i) {
-		if(nom.size()<=i) nom.resize(i+1);
-		nom[i]++;
+	// add t^i to the numerator
+	inline void add_to_num(size_t i) {
+		if(num.size()<=i) num.resize(i+1);
+		num[i]++;
 	};
 
 
 	// simplify, see class description
 	void simplify();
 
-//	template<typename Integer>
+	template<typename Integer>
 	void computeHilbertQuasiPolynomial();
 
-	// returns the nominator, repr. as vector of coefficients, the h-vector
-	const vector<long64>& getNominator() const;
+	// returns the numerator, repr. as vector of coefficients, the h-vector
+	const vector<long64>& getNumerator() const;
 	// returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
 	const vector<long64>& getDenominator() const;
 
 private:
-	// the nominator, repr. as vector of coefficients, the h-vector
-	vector<long64> nom;
+	// the numerator, repr. as vector of coefficients, the h-vector
+	vector<long64> num;
 	// the denominator, repr. as a vector of the exponents of (1-t^i)^e
 	vector<long64> denom;
 

@@ -744,7 +744,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	if (FC.isComputed(ConeProperty::HVector)) {
-		HVector = FC.Hilbert_Series.getNominator();
+		HVector = FC.Hilbert_Series.getNumerator();
 		is_Computed.set(ConeProperty::HVector);
 	}
 	if (FC.isComputed(ConeProperty::HilbertPolynomial)) {
