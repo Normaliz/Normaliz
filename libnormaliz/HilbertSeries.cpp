@@ -147,6 +147,14 @@ void HilbertSeries::simplify() {
 }
 
 
+vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() {
+	if(quasi_poly.size()==0) {
+		computeHilbertQuasiPolynomial<mpz_class>();
+	}
+	return quasi_poly;
+}
+
+
 template<typename Integer>
 void HilbertSeries::computeHilbertQuasiPolynomial() {
 	//TODO simplify first?
@@ -179,7 +187,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 	cout << "normed numerator  : "<< norm_num;
 	cout << "normed denominator: (1-t^"<< periode <<")^"<<dim <<endl;
 	//cut numerator into periode many pieces and apply standart method
-	vector< vector<Integer> > quasi_poly(periode);
+	quasi_poly = vector< vector<Integer> >(periode);
 	long nn_size = norm_num.size();
 	for (j=0; j<periode; ++j) {
 		quasi_poly[j].reserve(nn_size/periode+1);
@@ -213,6 +221,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 	  - permutations_modulo<Integer>(1,dim,overflow_test_modulus) * (pp % overflow_test_modulus) 
 	  ) % overflow_test_modulus != 0) {
 		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
+		quasi_poly.clear();
 		return ; //TODO!!!!! exception?
 	}
 
@@ -224,7 +233,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 	cout << "All coeff to divide by "<< common_denom << endl;
 
 
-	//cancel coefficients and common_denom
+/*	//cancel coefficients and common_denom
 	Integer g = common_denom; //the gcd
 	for (j=0; j<periode && g!=1; ++j) {
 		for (i = 0; i <dim && g!=1; i++) {
@@ -241,7 +250,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 		cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
 		cout << "All coeff to divide by "<< common_denom << endl;
 	}
-
+*/
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector

@@ -79,8 +79,8 @@ public:
 	// simplify, see class description
 	void simplify();
 
-	template<typename Integer>
-	void computeHilbertQuasiPolynomial();
+	//does compute it, if not available
+	vector< vector<mpz_class> > getHilbertQuasiPolynomial();
 
 	// returns the numerator, repr. as vector of coefficients, the h-vector
 	const vector<long64>& getNumerator() const;
@@ -95,6 +95,9 @@ private:
 
 	// the quasi polynomial, can have big coefficients
 	vector< vector<mpz_class> > quasi_poly;
+
+	template<typename Integer>
+	void computeHilbertQuasiPolynomial();
 
 	friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 

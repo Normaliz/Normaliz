@@ -1070,10 +1070,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 cout << "Hilbert Series: " << Hilbert_Series;
 		Hilbert_Series.simplify();
 cout << "HS simplified : " << Hilbert_Series;
-cout << "h-vector of HS: " << Hilbert_Series.getNumerator();
-Hilbert_Series.computeHilbertQuasiPolynomial<Integer>();
 		is_Computed.set(ConeProperty::HVector);
-		compute_polynomial();
 	}
 }
 

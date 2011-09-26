@@ -94,7 +94,8 @@ public:
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
 	vector<long64> getHVector() const;
-	vector<Integer> getHilbertPolynomial() const;
+	vector<mpz_class> getHilbertPolynomial();
+	vector< vector<mpz_class> > getHilbertQuasiPolynomial();
 	vector<Integer> getLinearForm() const;
 	Integer getMultiplicity() const;
 	bool isPointed() const;
@@ -124,8 +125,8 @@ private:
 	Integer multiplicity;
 	vector< vector<Integer> > HilbertBasis;
 	vector< vector<Integer> > Ht1Elements;
-	vector<long64> HVector;
-	vector<Integer> HilbertPolynomial;
+	HilbertSeries HSeries;
+	vector< vector<Integer> > HilbertQuasiPolynomial;
 	vector<Integer> LinearForm;
 	bool pointed;
 	bool ht1_extreme_rays;

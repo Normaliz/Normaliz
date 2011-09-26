@@ -27,6 +27,7 @@
 #include <algorithm>
 
 #include "output.h"
+#include "libnormaliz/vector_operations.h"
 
 //---------------------------------------------------------------------------
 
@@ -340,16 +341,9 @@ void Output<Integer>::write_inv_file() const{
 				inv<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				Integer factorial=1;
-				for (i = 2; i <rank; i++) {
-					factorial*=(unsigned long) i;
-				}
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				inv<<"vector "<<hilbert_polynomial.size()/2<<" hilbert_polynomial = ";
-				for (i = 0; i < hilbert_polynomial.size(); i+=2) {
-					inv<<hilbert_polynomial[i]*(factorial /hilbert_polynomial[i+1])<<" ";
-				}
-				inv<<endl;
+				vector<mpz_class> hilbert_polynomial=Result->getHilbertPolynomial();
+				inv<<"vector "<<hilbert_polynomial.size()<<" hilbert_polynomial = ";
+				inv<<hilbert_polynomial;
 			}
 		}
 		inv.close();
@@ -452,12 +446,17 @@ void Output<Integer>::cone() const {
 			out<<endl<<endl;
 		}
 		if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-			vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-			out<<"Hilbert polynomial:"<<endl;
-			for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-				out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+			vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
+			if (hilbert_polynomial.size() > 0) {
+				out<<"Hilbert polynomial:"<<endl;
+				mpz_class common_denom = permutations<mpz_class>(1,rank);
+				mpz_class g;
+				for (i = 0; i < hilbert_polynomial.size(); i++) {
+					g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
+					out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
+				}
+				out << endl<< endl;
 			}
-			out << endl<< endl;
 		}
 
 		out << "***********************************************************************"
@@ -617,12 +616,17 @@ void Output<Integer>::polytop() const{
 				out<<endl<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				out<<"Ehrhart polynomial:"<<endl;
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+				vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
+				if (hilbert_polynomial.size() > 0) {
+					out<<"Ehrhart polynomial:"<<endl;
+					mpz_class common_denom = permutations<mpz_class>(1,rank);
+					mpz_class g;
+					for (i = 0; i < hilbert_polynomial.size(); i++) {
+						g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
+						out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
+					}
+					out << endl<< endl;
 				}
-				out << endl<< endl;
 			}
 		}
 
@@ -856,12 +860,17 @@ void Output<Integer>::rees() const{
 				out<<endl<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				out<<"Hilbert polynomial:"<<endl;
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+			vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
+				if (hilbert_polynomial.size() > 0) {
+					out<<"Hilbert polynomial:"<<endl;
+					mpz_class common_denom = permutations<mpz_class>(1,rank);
+					mpz_class g;
+					for (i = 0; i < hilbert_polynomial.size(); i++) {
+						g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
+						out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
+					}
+					out << endl<< endl;
 				}
-				out << endl<< endl;
 			}
 		}
 

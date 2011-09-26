@@ -200,12 +200,22 @@ vector< vector<Integer> > Cone<Integer>::getHt1Elements() const {
 
 template<typename Integer>
 vector<long64> Cone<Integer>::getHVector() const {
-	return HVector;
+	return HSeries.getNumerator();
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getHilbertPolynomial() const {
-	return HilbertPolynomial;
+vector<mpz_class> Cone<Integer>::getHilbertPolynomial() {
+	if (HSeries.getHilbertQuasiPolynomial().size()==1) {
+		return HSeries.getHilbertQuasiPolynomial()[0];
+	} else {
+		//TODO don't know what to do
+		return vector<mpz_class>();
+	}
+}
+
+template<typename Integer>
+vector< vector<mpz_class> > Cone<Integer>::getHilbertQuasiPolynomial() {
+	return HSeries.getHilbertQuasiPolynomial();
 }
 
 template<typename Integer>
@@ -480,8 +490,7 @@ void Cone<Integer>::setLinearForm (vector<Integer> lf) {
 
 	//remove data that depends on the grading 
 	Ht1Elements.clear();
-    HVector.clear();
-    HilbertPolynomial.clear();
+    HilbertQuasiPolynomial.clear();
 	is_Computed.reset(ConeProperty::IsHt1Generated);
 	is_Computed.reset(ConeProperty::IsHt1ExtremeRays);
 	is_Computed.reset(ConeProperty::IsHt1HilbertBasis);
@@ -744,11 +753,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	if (FC.isComputed(ConeProperty::HVector)) {
-		HVector = FC.Hilbert_Series.getNumerator();
+		//TODO HilbertSeries
+		HSeries = FC.Hilbert_Series;
 		is_Computed.set(ConeProperty::HVector);
-	}
-	if (FC.isComputed(ConeProperty::HilbertPolynomial)) {
-		HilbertPolynomial = FC.getHilbertPolynomial();
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 	}
 	if (FC.isComputed(ConeProperty::IsPointed)) {
