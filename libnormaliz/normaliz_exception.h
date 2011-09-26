@@ -26,7 +26,14 @@ namespace libnormaliz {
 
 class NormalizException: public virtual std::exception {
 	virtual const char* what() const throw() {
-		return "NormalizException happened!";
+		return "General NormalizException happened!";
+	}
+};
+
+//like the IllegalArgumentException
+class BadInputException: public virtual NormalizException {
+	virtual const char* what() const throw() {
+		return "Bad Normaliz Input!";
 	}
 };
 

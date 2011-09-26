@@ -43,15 +43,11 @@ public:
 //                    Constructors, they preprocess the input 
 //---------------------------------------------------------------------------
 
-	/* give a single matrix of generators */
-	Cone(const vector< vector<Integer> >& generators_or_relations,
+	/* give a single matrix as input */
+	Cone(const vector< vector<Integer> >& input_data,
 	     InputType type = Type::integral_closure);
-
-	/* give a single constraint */
-	Cone(const vector< vector<Integer> >& constraints, ConstraintType type);
-
 	/* give multiple constraints */
-	Cone(const multimap< ConstraintType , vector< vector<Integer> > >& constraints);
+	Cone(const multimap< InputType , vector< vector<Integer> > >& multi_input_data);
 
 
 //---------------------------------------------------------------------------
@@ -78,7 +74,7 @@ public:
 	vector< vector<Integer> > getSupportHyperplanes() const;
 	vector< vector<Integer> > getEquations() const;
 	vector< vector<Integer> > getCongruences() const;
-	multimap< ConstraintType , vector< vector<Integer> > > getConstraints() const;
+	multimap< InputType , vector< vector<Integer> > > getConstraints() const;
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;

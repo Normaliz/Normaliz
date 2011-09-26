@@ -320,18 +320,18 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		if (mode == 6) {
 			nc--;  //the congruence matrix has one extra column
 		}
-		multimap <Type::ConstraintType, vector< vector<Integer> > > constraints;
+		multimap <Type::InputType, vector< vector<Integer> > > constraints;
 
 		while (true) {
 			switch(mode) {
 				case 4:
-					constraints.insert(pair<Type::ConstraintType, vector< vector<Integer> > > (Type::hyperplanes, M.get_elements()));
+					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::hyperplanes, M.get_elements()));
 					break;
 				case 5:
-					constraints.insert(pair<Type::ConstraintType, vector< vector<Integer> > > (Type::equations, M.get_elements()));
+					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::equations, M.get_elements()));
 					break;
 				case 6:
-					constraints.insert(pair<Type::ConstraintType, vector< vector<Integer> > > (Type::congruences, M.get_elements()));
+					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::congruences, M.get_elements()));
 					break;
 				default:
 					cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;

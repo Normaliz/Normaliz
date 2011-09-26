@@ -29,15 +29,14 @@ enum InputType {
 	normalization,
 	polytope,
 	rees_algebra,
-	lattice_ideal
-};
-enum ConstraintType {
 	hyperplanes,
 	equations,
 	congruences,
 	inhomogeneous_hyperplanes,
 	inhomogeneous_equations,
-	inhomogeneous_congruences
+	inhomogeneous_congruences,
+	lattice_ideal,
+	grading
 };
 } //end namespace Type
 
@@ -58,7 +57,6 @@ enum ComputationMode {
 } //end namespace Mode
 
 using Type::InputType;
-using Type::ConstraintType;
 using Mode::ComputationMode;
 
 

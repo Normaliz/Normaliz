@@ -32,18 +32,6 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type
 		case Type::normalization:    prepare_input_type_1(Input); break;
 		case Type::polytope:         prepare_input_type_2(Input); break;
 		case Type::rees_algebra:     prepare_input_type_3(Input); break;
-		case Type::lattice_ideal:    prepare_input_type_10(Input); break;
-		default:               throw input_type; //TODO make a good exception
-	}
-	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
-}
-
-template<typename Integer>
-Cone<Integer>::Cone(const vector< vector<Integer> >& Input, ConstraintType input_type) {
-	initialize();
-	if (!Input.empty()) dim = Input.begin()->size();
-
-	switch (input_type){
 		case Type::hyperplanes:
 		  prepare_input_type_456(vector<vector<Integer> >(), vector<vector<Integer> >(), Input);
 		  break;
@@ -54,17 +42,22 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, ConstraintType input
 		  dim--;
 		  prepare_input_type_456(Input, vector<vector<Integer> >(), vector<vector<Integer> >());
 		  break;
-		default:  throw input_type; //TODO make a good exception
+		case Type::lattice_ideal:    prepare_input_type_10(Input); break;
+		case Type::grading:
+		  errorOutput() << "Grading as only input not supported!" << endl;
+		  // no break, go to default
+		default:
+		  throw BadInputException();
 	}
 	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 }
 
 template<typename Integer>
-Cone<Integer>::Cone(const multimap< ConstraintType , vector< vector<Integer> > >& constraints) {
+Cone<Integer>::Cone(const multimap< InputType , vector< vector<Integer> > >& multi_input_data) {
 	initialize();
 	
-	typename multimap< ConstraintType , vector< vector<Integer> > >::const_iterator it = constraints.begin();
-	for(; it != constraints.end(); ++it) {
+	typename multimap< InputType , vector< vector<Integer> > >::const_iterator it = multi_input_data.begin();
+	for(; it != multi_input_data.end(); ++it) {
 		if (it->second.size() > 0) {
 			dim = it->second.begin()->size();
 			if (it->first == Type::congruences) {
@@ -74,7 +67,7 @@ Cone<Integer>::Cone(const multimap< ConstraintType , vector< vector<Integer> > >
 		}
 	}
 	Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
-	for (; it != constraints.end(); ++it) {
+	for (; it != multi_input_data.end(); ++it) {
 		if (it->second.size() == 0) {
 			continue;
 		}
@@ -82,27 +75,27 @@ Cone<Integer>::Cone(const multimap< ConstraintType , vector< vector<Integer> > >
 			case Type::hyperplanes:
 				if (it->second.begin()->size() != dim) {
 					errorOutput() << "Dimensions of hyperplanes ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
-					throw NormalizException();
+					throw BadInputException();
 				}
 				Inequalities.append(it->second);
 				break;
 			case Type::equations:
 				if (it->second.begin()->size() != dim) {
 					errorOutput() << "Dimensions of equations ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
-					throw NormalizException();
+					throw BadInputException();
 				}
 				Equations.append(it->second);
 				break;
 			case Type::congruences:
 				if (it->second.begin()->size() != dim+1) {
 					errorOutput() << "Dimensions of congruences ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
-					throw NormalizException();
+					throw BadInputException();
 				}
 				Congruences.append(it->second);
 				break;
 			default:
-				errorOutput() << "Unknown Constraint Type " << endl;
-				throw NormalizException();
+				errorOutput() << "This InputType combination is currently not supported!" << endl;
+				throw BadInputException();
 		}
 	}
 	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
@@ -174,11 +167,11 @@ vector< vector<Integer> > Cone<Integer>::getCongruences() const {
 }
 
 template<typename Integer>
-multimap< ConstraintType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
-	multimap<ConstraintType, vector< vector<Integer> > > c;
-	c.insert(pair< ConstraintType,vector< vector<Integer> > >(Type::hyperplanes,SupportHyperplanes));
-	c.insert(pair< ConstraintType,vector< vector<Integer> > >(Type::equations,getEquations()));
-	c.insert(pair< ConstraintType,vector< vector<Integer> > >(Type::congruences,getCongruences()));
+multimap< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
+	multimap<InputType, vector< vector<Integer> > > c;
+	c.insert(pair< InputType,vector< vector<Integer> > >(Type::hyperplanes,SupportHyperplanes));
+	c.insert(pair< InputType,vector< vector<Integer> > >(Type::equations,getEquations()));
+	c.insert(pair< InputType,vector< vector<Integer> > >(Type::congruences,getCongruences()));
 	return c;
 }
 
