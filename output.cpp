@@ -456,7 +456,28 @@ void Output<Integer>::cone() const {
 					out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
 				}
 				out << endl<< endl;
+			} else {
+				vector< vector<mpz_class> > hilbert_quasi_poly = Result->getHilbertQuasiPolynomial();
+				long p = hilbert_quasi_poly.size(); // periode 
+				if (p > 0) { // == 0 means not computed
+					mpz_class common_denom = 1;
+					for (long i=0; i<(long)rank-1; ++i) common_denom *= p; //p^(dim-1)
+					common_denom *= permutations<mpz_class>(1,rank); // * dim!
+					long size;
+					mpz_class g;
+					out<<"Hilbert quasi-polynomial:"<<endl;
+					for (long j = 0; j< p; ++j) {
+						size =  hilbert_quasi_poly[j].size();
+						for (long i = 0; i < size; ++i) {
+							g = gcd<mpz_class>(common_denom,hilbert_quasi_poly[j][i]);
+							out<<hilbert_quasi_poly[j][i]/g<<"/"<<common_denom/g<<" ";
+						}
+						out << endl;
+					}
+					out << endl<< endl;
+				}
 			}
+
 		}
 
 		out << "***********************************************************************"
