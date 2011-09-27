@@ -30,19 +30,17 @@ class NormalizException: public virtual std::exception {
 	}
 };
 
-//like the IllegalArgumentException
-class BadInputException: public virtual NormalizException {
-	virtual const char* what() const throw() {
-		return "Bad Normaliz Input!";
-	}
-};
-
 class ArithmeticException: public virtual NormalizException {
 	virtual const char* what() const throw() {
 		return "Arithmetic Overflow detected, try a bigger integer type!";
 	}
 };
 
+class BadInputException: public virtual NormalizException {
+	virtual const char* what() const throw() {
+		return "Some error in the normaliz input data detected!";
+	}
+};
 
 
 } /* end namespace */

@@ -52,6 +52,17 @@ size_t v_read(const vector<T>& v, std::ostream& out){
 
 //---------------------------------------------------------------------------
 
+template <typename T>
+ostream& operator<< (ostream& out, const vector<T>& vec) {
+	for (size_t i=0; i<vec.size(); ++i) {
+		out << " " << vec[i];
+	}
+	out << endl;
+	return out;
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 	//loop stretching ; brings some small speed improvement
@@ -160,6 +171,21 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 		d[i]=a[i]+b[i];
 	}
 	return d;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m) {
+//	assert(a.size() == b.size());
+	size_t i, s=a.size();
+	for (i = 0; i <s; i++) {
+//		a[i] = (a[i]+b[i])%m;
+		if ((a[i] += b[i]) >= m) {
+			a[i] -= m;
+		}
+	}
+	return a;
 }
 
 //---------------------------------------------------------------------------

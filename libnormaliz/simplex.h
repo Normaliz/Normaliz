@@ -51,7 +51,6 @@ class Simplex {
   Matrix<Integer> Support_Hyperplanes;
   list< vector<Integer> > Hilbert_Basis;
   list< vector<Integer> > Ht1_Elements;
-  vector<Integer> H_Vector;
 
 //---------------------------------------------------------------------------
 //                 Private routines, used in the public routines
@@ -97,7 +96,6 @@ public:
   Matrix<Integer> read_hilbert_basis()const; //read the Hilbert basis
   list< vector<Integer> > read_ht1_elements()const; //read the ht1 elements
   const list< vector<Integer> >& acces_hilbert_basis()const; //read the Hilbert basis
-  vector<Integer> read_h_vector() const; //returns the h-vector
   size_t read_hilbert_basis_size() const; //returns the size of the Hilbert basis
 
 //---------------------------------------------------------------------------

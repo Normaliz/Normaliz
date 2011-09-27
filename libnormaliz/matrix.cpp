@@ -153,11 +153,11 @@ Matrix<Integer>::~Matrix(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::write(){
+void Matrix<Integer>::write(istream& in){
 	size_t i,j;
 	for(i=0; i<nr; i++){
 		for(j=0; j<nc; j++) {
-			cin >> elements[i][j];
+			in >> elements[i][j];
 		}
 	}
 }

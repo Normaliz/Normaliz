@@ -49,6 +49,18 @@ public:
 	/* give multiple constraints */
 	Cone(const multimap< InputType , vector< vector<Integer> > >& multi_input_data);
 
+//---------------------------------------------------------------------------
+//                          give additional data
+//---------------------------------------------------------------------------
+
+	/* Sets the linear form which is used to grade. 
+	 * It has to be an N-grading, i.e. all generators must have a value >=1.
+	 * If it is not, a NormalizException will be thrown at the time of 
+	 * detection which can be in this method or later!
+	 * It will delete all data from the cone that depend on the grading!
+	 */
+	void setLinearForm (vector<Integer> lf);
+
 
 //---------------------------------------------------------------------------
 //                           make computations
@@ -57,7 +69,6 @@ public:
 	void compute(ComputationMode mode = Mode::hilbertBasisPolynomial);
 	void compute(ConeProperties to_compute);
 	void compute(ConeProperty::Enum prop);
-
 
 //---------------------------------------------------------------------------
 //                         check what is computed
@@ -78,8 +89,9 @@ public:
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
-	vector<Integer> getHVector() const;
-	vector<Integer> getHilbertPolynomial() const;
+	vector<long64> getHVector() const;
+	vector<mpz_class> getHilbertPolynomial();
+	vector< vector<mpz_class> > getHilbertQuasiPolynomial();
 	vector<Integer> getLinearForm() const;
 	Integer getMultiplicity() const;
 	bool isPointed() const;
@@ -109,8 +121,8 @@ private:
 	Integer multiplicity;
 	vector< vector<Integer> > HilbertBasis;
 	vector< vector<Integer> > Ht1Elements;
-	vector<Integer> HVector;
-	vector<Integer> HilbertPolynomial;
+	HilbertSeries HSeries;
+	vector< vector<Integer> > HilbertQuasiPolynomial;
 	vector<Integer> LinearForm;
 	bool pointed;
 	bool ht1_extreme_rays;

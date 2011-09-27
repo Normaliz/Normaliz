@@ -27,6 +27,7 @@
 #include <algorithm>
 
 #include "output.h"
+#include "libnormaliz/vector_operations.h"
 
 //---------------------------------------------------------------------------
 
@@ -328,11 +329,11 @@ void Output<Integer>::write_inv_file() const{
 				inv<<Linear_Form[i]<<" ";
 			}
 			inv<<endl;
-			if (Result->isComputed(ConeProperty::Triangulation)){
+			if (Result->isComputed(ConeProperty::Multiplicity)){
 				inv<<"integer multiplicity = "<<Result->getMultiplicity()<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
+				vector<long64> h_vector=Result->getHVector();
 				inv<<"vector "<<h_vector.size()<<" h-vector = ";
 				for (i = 0; i < h_vector.size(); i++) {
 					inv<<h_vector[i]<<" ";
@@ -340,16 +341,9 @@ void Output<Integer>::write_inv_file() const{
 				inv<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				Integer factorial=1;
-				for (i = 2; i <rank; i++) {
-					factorial*=(unsigned long) i;
-				}
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				inv<<"vector "<<hilbert_polynomial.size()/2<<" hilbert_polynomial = ";
-				for (i = 0; i < hilbert_polynomial.size(); i+=2) {
-					inv<<hilbert_polynomial[i]*(factorial /hilbert_polynomial[i+1])<<" ";
-				}
-				inv<<endl;
+				vector<mpz_class> hilbert_polynomial=Result->getHilbertPolynomial();
+				inv<<"vector "<<hilbert_polynomial.size()<<" hilbert_polynomial = ";
+				inv<<hilbert_polynomial;
 			}
 		}
 		inv.close();
@@ -417,48 +411,77 @@ void Output<Integer>::cone() const {
 		out << endl;
 		
 		if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
-			if (Result->isHt1ExtremeRays()==false) {
-				out<<"extreme rays are not of height 1"<<endl<<endl;
+			if ( Result->isHt1ExtremeRays() ) {
+				out<<"extreme rays are of height 1";
 			} else {
+				out<<"extreme rays are not of height 1";
+			}
+			if ( Result->isComputed(ConeProperty::LinearForm) ) {
+				out<<" via the linear form:"<<endl;
 				vector<Integer> Linear_Form = Result->getLinearForm();
-				out<<"extreme rays are of height 1 via the linear form:"<<endl;
 				for (i = 0; i < Linear_Form.size(); i++) {
 					out<<Linear_Form[i]<<" ";
 				}
+			}
+			out<<endl<<endl;
+			if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
+			  && Result->isHt1ExtremeRays() ) {
+				if (Result->isHt1HilbertBasis()) {
+					out << "Hilbert basis elements are of height 1";
+				} else {
+					out << "Hilbert basis elements are not of height 1";
+				}
 				out<<endl<<endl;
-				if (Result->isComputed(ConeProperty::IsHt1HilbertBasis)) {
-					if (Result->isHt1HilbertBasis()) {
-						out << "Hilbert basis elements are of height 1" << endl;
-					} else {
-						out << "Hilbert basis elements are not of height 1" << endl;
-					}
+			}
+			if ( Result->isComputed(ConeProperty::Multiplicity) ) {
+				out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
+			}
+		}
+		if ( Result->isComputed(ConeProperty::HVector) ) {
+			vector<long64> h_vector=Result->getHVector();
+			out<<"h-vector:"<<endl;
+			for (i = 0; i < h_vector.size(); i++) {
+				out<<h_vector[i]<<" ";
+			}
+			out<<endl<<endl;
+		}
+		if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
+			vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
+			if (hilbert_polynomial.size() > 0) {
+				out<<"Hilbert polynomial:"<<endl;
+				mpz_class common_denom = permutations<mpz_class>(1,rank);
+				mpz_class g;
+				for (i = 0; i < hilbert_polynomial.size(); i++) {
+					g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
+					out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
 				}
-				out<<endl;
-				if (Result->isComputed(ConeProperty::Triangulation)){
-					out<<"multiplicity = "<<Result->getMultiplicity()<<endl;
-					out<<endl;
-				}
-				if (Result->isComputed(ConeProperty::HVector)) {
-					vector<Integer> h_vector=Result->getHVector();
-					out<<"h-vector:"<<endl;
-					for (i = 0; i < h_vector.size(); i++) {
-						out<<h_vector[i]<<" ";
-					}
-					out<<endl<<endl;
-				}
-				if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-					vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-					out<<"Hilbert polynomial:"<<endl;
-					for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-						out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+				out << endl<< endl;
+			} else {
+				vector< vector<mpz_class> > hilbert_quasi_poly = Result->getHilbertQuasiPolynomial();
+				long p = hilbert_quasi_poly.size(); // periode 
+				if (p > 0) { // == 0 means not computed
+					mpz_class common_denom = 1;
+					for (long i=0; i<(long)rank-1; ++i) common_denom *= p; //p^(dim-1)
+					common_denom *= permutations<mpz_class>(1,rank); // * dim!
+					long size;
+					mpz_class g;
+					out<<"Hilbert quasi-polynomial:"<<endl;
+					for (long j = 0; j< p; ++j) {
+						size =  hilbert_quasi_poly[j].size();
+						for (long i = 0; i < size; ++i) {
+							g = gcd<mpz_class>(common_denom,hilbert_quasi_poly[j][i]);
+							out<<hilbert_quasi_poly[j][i]/g<<"/"<<common_denom/g<<" ";
+						}
+						out << endl;
 					}
 					out << endl<< endl;
 				}
 			}
+
 		}
 
 		out << "***********************************************************************"
-			 << endl << endl;
+		    << endl << endl;
 
 
 		if (nr_orig_gens > 0) {
@@ -601,12 +624,12 @@ void Output<Integer>::polytop() const{
 		out<<"dimension of the polytope = "<<rank-1<<endl;
 		
 		if (Result->isHt1ExtremeRays()) {
-			if (Result->isComputed(ConeProperty::Triangulation)){
+			if (Result->isComputed(ConeProperty::Multiplicity)){
 				out<<"normalized volume = " << Result->getMultiplicity()<<endl;
 				out<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
+				vector<long64> h_vector=Result->getHVector();
 				out<<"h-vector:"<<endl;
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
@@ -614,12 +637,17 @@ void Output<Integer>::polytop() const{
 				out<<endl<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				out<<"Ehrhart polynomial:"<<endl;
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+				vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
+				if (hilbert_polynomial.size() > 0) {
+					out<<"Ehrhart polynomial:"<<endl;
+					mpz_class common_denom = permutations<mpz_class>(1,rank);
+					mpz_class g;
+					for (i = 0; i < hilbert_polynomial.size(); i++) {
+						g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
+						out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
+					}
+					out << endl<< endl;
 				}
-				out << endl<< endl;
 			}
 		}
 
@@ -840,12 +868,12 @@ void Output<Integer>::rees() const{
 				}
 			}
 			out<<endl;
-			if (Result->isComputed(ConeProperty::Triangulation)){
+			if (Result->isComputed(ConeProperty::Multiplicity)){
 				out<<"multiplicity = "<<Result->getMultiplicity()<<endl;
 				out<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HVector)) {
-				vector<Integer> h_vector=Result->getHVector();
+				vector<long64> h_vector=Result->getHVector();
 				out<<"h-vector:"<<endl;
 				for (i = 0; i < h_vector.size(); i++) {
 					out<<h_vector[i]<<" ";
@@ -853,18 +881,25 @@ void Output<Integer>::rees() const{
 				out<<endl<<endl;
 			}
 			if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-				vector<Integer> hilbert_polynomial=Result->getHilbertPolynomial();
-				out<<"Hilbert polynomial:"<<endl;
-				for (i = 0; i < hilbert_polynomial.size(); i=i+2) {
-					out<<hilbert_polynomial[i]<<"/"<<hilbert_polynomial[i+1]<<" ";
+			vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
+				if (hilbert_polynomial.size() > 0) {
+					out<<"Hilbert polynomial:"<<endl;
+					mpz_class common_denom = permutations<mpz_class>(1,rank);
+					mpz_class g;
+					for (i = 0; i < hilbert_polynomial.size(); i++) {
+						g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
+						out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
+					}
+					out << endl<< endl;
 				}
-				out << endl<< endl;
 			}
 		}
 
 		if (Result->isReesPrimary()) {
 			out<<"ideal is primary to the ideal generated by the indeterminates"<<endl;
-			out<<"multiplicity of the ideal = "<<Result->getReesPrimaryMultiplicity()<<endl;
+			if (Result->isComputed(ConeProperty::ReesPrimaryMultiplicity)) {
+				out<<"multiplicity of the ideal = "<<Result->getReesPrimaryMultiplicity()<<endl;
+			}
 		} else {
 			out<<"ideal is not primary to the ideal generated by the indeterminates"<<endl;
 		}

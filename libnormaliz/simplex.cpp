@@ -29,6 +29,7 @@
 #include "matrix.h"
 #include "simplex.h"
 #include "list_operations.h"
+#include "HilbertSeries.h"
 
 //---------------------------------------------------------------------------
 
@@ -101,7 +102,6 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
 	Hilbert_Basis = list< vector<Integer> >();
-	H_Vector = vector<Integer>(dim,0);
 	status="initialized";
 }
 
@@ -119,7 +119,6 @@ Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
 	Hilbert_Basis = list< vector<Integer> >();
-	H_Vector=vector<Integer>(dim,0);
 	status="initialized";
 }
 
@@ -138,7 +137,6 @@ Simplex<Integer>::Simplex(const Simplex<Integer>& S){
 	Support_Hyperplanes=S.Support_Hyperplanes;
 	Hilbert_Basis=S.Hilbert_Basis;
 	Ht1_Elements=S.Ht1_Elements;
-	H_Vector=S.H_Vector;
 }
 
 //---------------------------------------------------------------------------
@@ -177,8 +175,6 @@ void Simplex<Integer>::read() const{
 	Matrix<Integer> M=read_hilbert_basis();
 	cout<<"\nHilbert Basis is:\n";
 	M.read();
-	cout<<"\nh-vector is:\n";
-	v_read(H_Vector);
 }
 
 //---------------------------------------------------------------------------
@@ -300,13 +296,6 @@ const list< vector<Integer> >& Simplex<Integer>::acces_hilbert_basis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Simplex<Integer>::read_h_vector() const{
-	return H_Vector;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 size_t Simplex<Integer>::read_hilbert_basis_size() const{
 	return Hilbert_Basis.size();
 }
@@ -334,7 +323,6 @@ void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
 		multiplicators=Support_Hyperplanes.make_prime();
 		Hilbert_Basis=list< vector<Integer> >();
 		Ht1_Elements=list< vector<Integer> >();
-		H_Vector=vector<Integer>(dim,0);
 		status="initialized";
 	}
 }
@@ -349,8 +337,7 @@ template<typename Integer>
 Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height) {
  
 	Generators=C.Generators.submatrix(key);
-	H_Vector=vector<Integer>(dim,0);
-	
+
 	bool unimodular=false;
 	vector<Integer> Indicator;
 	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
@@ -364,7 +351,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			unimodular=true;
 	}
 			
-	// in this cases we had to add the volume and nothing else is to be done
+	// in this cases we have to add the volume and nothing else is to be done
 	if ( (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements) 
 	  || (unimodular && !C.do_h_vector) ) {
 		#pragma omp critical(MULTIPLICITY)
@@ -372,21 +359,47 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		return volume;
 	}
 
+	// compute degrees of the generators
+	vector<long> gen_degrees;
+	HilbertSeries Hilbert_Series;
+	if (C.do_h_vector || C.do_ht1_elements) {
+		//degrees of the generators according to the Grading of C
+		vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form);
+		//TODO compute degrees in full_cone and just get the ones according to key?
+		gen_degrees = vector<long>(dim);
+		for (size_t i=0; i<dim; i++) {
+			assert(gen_degrees_Integer[i] > 0);
+			gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+		}
+		if (C.do_h_vector) {
+			int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
+			vector<long64> denom(max_degree+1);
+			for (size_t i=0; i<dim; i++) {
+				denom[gen_degrees[i]]++;
+			}
+
+			Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
+		}
+	}
+
 	bool decided=true;
 	size_t i,j;
-	size_t Deg=0;        // Deg is the degree in which the 0 vector is counted
-	if(unimodular){   // it remains to count the 0-vector in the h-vector 
+	long64 Deg=0;    // Deg is the degree according to Grading in which the 0 vector is counted
+	if(unimodular) {  // it remains to count the 0-vector in the h-vector 
 		for(i=0;i<dim;i++){
-			if(Indicator[i]<0)   // facet opposite of vertex i excluded
-				Deg++;
-			if(Indicator[i]==0){ // Order_Vector in facet, to be decided later
+			if(Indicator[i]<0) {       // facet opposite of vertex i excluded
+				Deg += gen_degrees[i];
+			}
+			else if(Indicator[i]==0) { // Order_Vector in facet, to be decided later
 				decided=false;
 				break;
 			}
 		}
 		if(decided){
-			#pragma omp critical(HVECTOR) //only change in the H-vector, so done directliy
-			C.H_Vector[Deg]++;    // Done, provided decided==true
+			//only change in the H-vector, so done directly
+			Hilbert_Series.add_to_num(Deg);
+			#pragma omp critical(HSERIES) 
+			C.Hilbert_Series += Hilbert_Series;
 			#pragma omp critical(MULTIPLICITY)
 			C.multiplicity+=volume;
 			return volume;               // if not we need lex decision, see below
@@ -412,13 +425,13 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			if(Test<0)
 			{
 				Excluded[i]=true; // the facet opposite to vertex i is excluded
-				Deg++;
+				Deg += gen_degrees[i];
 			}
 			if(Test==0){  // Order_Vector in facet, now lexicographic decision
 				for(j=0;j<dim;j++){
 					if(InvGen[j][i]<0){ // COLUMNS of InvGen give supp hyps
 						Excluded[i]=true;
-						Deg++;
+						Deg += gen_degrees[i];
 						break;
 					}
 					if(InvGen[j][i]>0) // facet included
@@ -426,17 +439,18 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 				}
 			}
 		}
-		H_Vector[Deg]++; // now the 0 vector is finally taken care of
+		Hilbert_Series.add_to_num(Deg);
 		if(unimodular){     // and in the unimodular case nothing left to be done
-			#pragma omp critical(HVECTOR)
-			C.H_Vector[Deg]++; 
+			#pragma omp critical(HSERIES) 
+			C.Hilbert_Series += Hilbert_Series;
 			#pragma omp critical(MULTIPLICITY)
-			C.multiplicity+=volume;
+			C.multiplicity += volume;
 			return volume;
 		}
 	}
 	
 	vector < Integer > norm(1);
+	Integer normG;
 	list < vector<Integer> > Candidates;
 	typename list <vector <Integer> >::iterator c;
 	size_t last;
@@ -446,6 +460,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	Matrix<Integer> V = InvGen; //Support_Hyperplanes.multiply_rows(multiplicators).transpose();
 	V.reduction_modulo(volume); //makes reduction when adding V easier
 
+	//now we need to create the candidates
 	while (true) {
 		last = dim;
 		for (int k = dim-1; k >= 0; k--) {
@@ -459,29 +474,34 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 
 		point[last]++;
-		elements[last] = v_add(elements[last], V[last]); //TODO angepasste operation
-		v_reduction_modulo(elements[last],volume);       //für beide schritte schreiben
+		v_add_to_mod(elements[last], V[last], volume);
 
 		for (i = last+1; i <dim; i++) {
 			point[i]=0;
 			elements[i] = elements[last];
 		}
 		
-		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree
+		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree for standart grading
+		normG = 0;
 		for (i = 0; i < dim; i++) {  // since generators have degree 1
 			norm[0]+=elements[last][i];
+			if(C.do_h_vector || C.do_ht1_elements) {
+				normG += elements[last][i]*gen_degrees[i];
+			}
 		}
 
 		if(C.do_h_vector){
-			Deg=explicit_cast_to_long<Integer>(norm[0]/volume); // basic degree, here we use that all generators have degree 1            
-			for(i=0;i<dim;i++)  // take care of excluded facets and increase degree where necessary
-				if(elements[last][i]==0 && Excluded[i])
-					Deg++;
+			Deg = explicit_cast_to_long<Integer>(normG/volume);
+			for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
+				if(elements[last][i]==0 && Excluded[i]) {
+					Deg += gen_degrees[i];
+				}
+			}
 			
-			H_Vector[Deg]++; // count element in h-vector        
+			Hilbert_Series.add_to_num(Deg);
 		}
 		
-		if(C.do_ht1_elements && norm[0]==volume) // found degree 1 element
+		if(C.do_ht1_elements && normG==volume) // found degree 1 element
 		{        
 			help=Generators.VxM(elements[last]);
 			v_scalar_division(help,volume);
@@ -490,19 +510,14 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		} 
 		
 		// now we are left with the case of Hilbert bases
-
 		if(C.do_Hilbert_basis){
 			Candidates.push_back(v_merge(norm,elements[last]));
 		}
 	}
 	
 	if(C.do_h_vector) {
-		for(size_t i=0; i<dim; i++) {
-			if(H_Vector[i]!=0) {
-				#pragma omp critical(HVECTOR)
-				C.H_Vector[i]+=H_Vector[i];
-			}
-		}
+		#pragma omp critical(HSERIES)
+		C.Hilbert_Series += Hilbert_Series;
 	}
 	
 	if(C.do_ht1_elements) {

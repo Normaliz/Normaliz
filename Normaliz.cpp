@@ -222,6 +222,7 @@ int main(int argc, char* argv[])
 
 template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_all_files ) {
 	size_t i,j;
+	vector<Integer> Grading;
 
 	Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -389,11 +390,33 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 			cout<<"Running in computation mode "<<computation_mode<<" with input type constraints."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(constraints);
+		if (Grading.size() != 0) {
+			MyCone.setLinearForm(Grading);
+		}
 		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
 		Out.cone();
 	} 
 	else { // all other modes
+
+		//TODO quick solution to input a grading
+		if (in.good()) {
+			in >> nr_rows;
+		}
+		if (in.good()) {
+			cout << "looking for grading ... ";
+			in >> nr_columns;
+			Matrix<Integer> GradingMatrix = Matrix<Integer>(nr_rows, nr_columns);
+			GradingMatrix.write(in);
+			if (!in.fail() && nr_rows > 0) {
+				Grading = GradingMatrix[0];
+				cout << "successfull! " << endl;
+				//v_read(Grading);
+			} else {
+				cout << "FAILED!"<<endl;
+				GradingMatrix.print(cout);
+			}
+		}
 		in.close();
 		//main computations and output
 		if (verbose) {
@@ -401,6 +424,9 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 			cout<<"Running in computation mode "<<computation_mode<<" with input type "<<mode<<"."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(M.get_elements(), input_type);
+		if (Grading.size() != 0) {
+			MyCone.setLinearForm(Grading);
+		}
 //		MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
 		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);

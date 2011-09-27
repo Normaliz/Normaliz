@@ -59,7 +59,7 @@ std::ostream& errorOutput() {
 #include "full_cone.cpp"
 #include "cone_dual_mode.cpp"
 #include "cone.cpp"
-
+#include "HilbertSeries.cpp"
 
 namespace libnormaliz {
 

@@ -26,13 +26,20 @@
 
 namespace libnormaliz {
 using std::vector;
+using std::ostream;
 
 //---------------------------------------------------------------------------
 //							Data access
 //---------------------------------------------------------------------------
 
-template <typename T> void v_write(vector<T>& v);        //used for tests
-template <typename T> size_t v_read(const vector<T>& v,std::ostream& out=std::cout);  //used for tests, returns size of v
+template <typename T>
+void v_write(vector<T>& v);        //used for tests
+
+template <typename T>
+size_t v_read(const vector<T>& v,std::ostream& out=std::cout);  //used for tests, returns size of v
+
+template <typename T>
+ostream& operator<< (ostream& out, const vector<T>& v);
 
 //---------------------------------------------------------------------------
 //					    	Vector operations
@@ -47,6 +54,10 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 //returns the addition a + b, vectors must be of equal size
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b);
+
+//adds b to a reduces the result modulo m, a and b must be reduced modulo m!
+template<typename Integer>
+vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m);
 
 //---------------------------------------------------------------------------
 //							abs, gcd and lcm

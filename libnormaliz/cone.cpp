@@ -192,13 +192,23 @@ vector< vector<Integer> > Cone<Integer>::getHt1Elements() const {
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getHVector() const {
-	return HVector;
+vector<long64> Cone<Integer>::getHVector() const {
+	return HSeries.getNumerator();
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getHilbertPolynomial() const {
-	return HilbertPolynomial;
+vector<mpz_class> Cone<Integer>::getHilbertPolynomial() {
+	if (HSeries.getHilbertQuasiPolynomial().size()==1) {
+		return HSeries.getHilbertQuasiPolynomial()[0];
+	} else {
+		//TODO don't know what to do
+		return vector<mpz_class>();
+	}
+}
+
+template<typename Integer>
+vector< vector<mpz_class> > Cone<Integer>::getHilbertQuasiPolynomial() {
+	return HSeries.getHilbertQuasiPolynomial();
 }
 
 template<typename Integer>
@@ -338,10 +348,10 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
 		for(i=1; i<=nr_rows && Prim_Test.read(i,j)==0; i++) {}
 		if (i>nr_rows) {
 			rees_primary=false;
-			is_Computed.set(ConeProperty::ReesPrimary);
 			break;
 		}
 	}
+	is_Computed.set(ConeProperty::ReesPrimary);
 	Generators = Full_Cone_Generators.get_elements();
 	dim = Generators.begin()->size();
 	is_Computed.set(ConeProperty::Generators);
@@ -448,6 +458,43 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::setLinearForm (vector<Integer> lf) {
+	if (lf.size() != dim) {
+		errorOutput() << "Linear form has wrong dimension " << lf.size()
+		              << " (should be" << dim << ")" << endl;
+		throw BadInputException();
+	}
+	//check if the linear forms are the same
+	if (isComputed(ConeProperty::Generators) && LinearForm == lf) {
+		return;
+	}
+	if (isComputed(ConeProperty::Generators)) {
+		vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
+		for (size_t i=0; i<degrees.size(); ++i) {
+			if (degrees[i]<1) {
+				errorOutput() << "Linear form gives non-positive value " << degrees[i]
+				              << " for generator " << i+1 << "." << endl;
+				throw BadInputException();
+			}
+		}
+	}
+	LinearForm = lf;
+	is_Computed.set(ConeProperty::LinearForm);
+
+	//remove data that depends on the grading 
+	Ht1Elements.clear();
+    HilbertQuasiPolynomial.clear();
+	is_Computed.reset(ConeProperty::IsHt1Generated);
+	is_Computed.reset(ConeProperty::IsHt1ExtremeRays);
+	is_Computed.reset(ConeProperty::IsHt1HilbertBasis);
+	is_Computed.reset(ConeProperty::Ht1Elements);
+	is_Computed.reset(ConeProperty::HVector);
+	is_Computed.reset(ConeProperty::HilbertPolynomial);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Cone<Integer>::compute(ConeProperties ToCompute) {
 	ToCompute.reset(is_Computed); // already computed
 
@@ -543,8 +590,16 @@ void Cone<Integer>::compute(ComputationMode mode) {
 		return;
 	}
 
+	// Create a Full_Cone FC
 	Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
+	// Give extra data to FC
+	if ( isComputed(ConeProperty::LinearForm) ) {
+		FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
+		FC.is_Computed.set(ConeProperty::LinearForm);
+	}
+
+	// Start computations in FC
 	switch (mode) {
 	case Mode::hilbertBasisTriangulation:
 		FC.triangulation_hilbert_basis();
@@ -650,10 +705,10 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		verboseOutput() << "transforming data...";
 	}
 	
-	if (rees_primary) {
+	if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {
 		//here are some computations involved, made first so that data can be deleted in FC later
 		ReesPrimaryMultiplicity = FC.primary_multiplicity();
-		is_Computed.set(ConeProperty::ReesPrimary);
+		is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
 	}
 	
 	if (FC.isComputed(ConeProperty::Generators)) {
@@ -669,9 +724,13 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::SupportHyperplanes);
 	}
 	if (FC.isComputed(ConeProperty::Triangulation)) {
-		Triangulation = vector< pair<vector<size_t>, Integer> >
-		                  (FC.Triangulation.begin(),FC.Triangulation.end());
-		FC.Triangulation.clear();
+		size_t tri_size = FC.Triangulation.size();
+		Triangulation = vector< pair<vector<size_t>, Integer> >();
+		Triangulation.reserve(tri_size);
+		for (size_t i = 0; i<tri_size; ++i) {
+			Triangulation.push_back(FC.Triangulation.front());
+			FC.Triangulation.pop_front();
+		}
 		is_Computed.set(ConeProperty::Triangulation);
 	}
 	if (FC.isComputed(ConeProperty::Multiplicity)) {
@@ -687,11 +746,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 		is_Computed.set(ConeProperty::Ht1Elements);
 	}
 	if (FC.isComputed(ConeProperty::HVector)) {
-		HVector = FC.getHVector();
+		//TODO HilbertSeries
+		HSeries = FC.Hilbert_Series;
 		is_Computed.set(ConeProperty::HVector);
-	}
-	if (FC.isComputed(ConeProperty::HilbertPolynomial)) {
-		HilbertPolynomial = FC.getHilbertPolynomial();
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 	}
 	if (FC.isComputed(ConeProperty::IsPointed)) {

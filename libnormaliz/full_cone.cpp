@@ -716,8 +716,8 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 	Pyramid.Support_Hyperplanes.clear();
 	
 	if(do_h_vector) {
-		#pragma omp critical(HVECTOR)
-		H_Vector=v_add(H_Vector,Pyramid.H_Vector);
+		#pragma omp critical(HSERIES)
+		Hilbert_Series += Pyramid.Hilbert_Series;
 	}
 	
 	#pragma omp critical(MULTIPLICITY)
@@ -760,19 +760,28 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 		Order_Vector = vector<Integer>(dim,0);
 	
 	if(!is_pyramid && do_h_vector){
+		//define Order_Vector, decides which facets of the simplices are excluded
 		Matrix<Integer> G=S.read_generators();
 		//srand(12345);
 		for(i=0;i<dim;i++){
 			factor=(unsigned long)(2*(rand()%(2*dim))+3);
 			for(j=0;j<dim;j++)
 				Order_Vector[j]+=factor*G.read(i+1,j+1);        
-		} 
+		}
 	}
 
 	//the volume is an upper bound for the height
 	if(do_triangulation)
 		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
+		if (do_h_vector) {
+			//in the evaluation we need the linear form
+			check_ht1_generated();
+			if(!is_Computed.test(ConeProperty::LinearForm)) {
+				errorOutput() << "WARNING: Cannot find an homogeneous linear form, skip h-vector computation."<<endl;
+				do_h_vector = false;
+			}
+		}
 		Simplex<Integer> simp(key);
 		simp.evaluate(*this, -S.read_volume());
 	}
@@ -791,7 +800,10 @@ void Full_Cone<Integer>::build_cone() {
 		verboseOutput()<<"\n************************************************************\n";
 		verboseOutput()<<"starting primal algorithm ";
 		if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
-		if (do_triangulation) verboseOutput()<<"with full triangulation ";
+		if (do_triangulation) {
+			verboseOutput()<<"with full triangulation ";
+			if (!keep_triangulation) verboseOutput()<<"and direct evaluation ";
+		}
 		if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
 		verboseOutput()<<"..."<<endl;
 	}
@@ -799,7 +811,7 @@ void Full_Cone<Integer>::build_cone() {
 	
 	bool pyramid_recursion=false;
 
-//#pragma omp critical(REKTIEFE)
+//#pragma omp atomic
 	//RekTiefe++;
 	//cout << RekTiefe;
 
@@ -902,7 +914,7 @@ void Full_Cone<Integer>::build_cone() {
 	
 	HypIndVal.clear();
 	
-//#pragma omp critical(REKTIEFE)
+//#pragma omp atomic
 //	RekTiefe--;
 
 	is_Computed.set(ConeProperty::SupportHyperplanes);
@@ -937,13 +949,22 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_support_hyperplanes(){
 	if(is_Computed.test(ConeProperty::SupportHyperplanes))
 		return;
-	bool save_tri=do_triangulation;
-	bool save_part_tri=do_partial_triangulation;
-	do_triangulation=false;
-	do_partial_triangulation=false;
+	bool save_tri      = do_triangulation;
+	bool save_part_tri = do_partial_triangulation;
+	bool save_HB       = do_Hilbert_basis;
+	bool save_ht1_el   = do_ht1_elements;
+	bool save_h_vector = do_h_vector;
+	do_triangulation         = false;
+	do_partial_triangulation = false;
+	do_Hilbert_basis         = false; 
+	do_ht1_elements          = false; 
+	do_h_vector              = false;
 	build_cone();
-	do_triangulation=save_tri;
-	do_partial_triangulation=save_part_tri;
+	do_triangulation         = save_tri;
+	do_partial_triangulation = save_part_tri;
+	do_Hilbert_basis         = save_HB;
+	do_ht1_elements          = save_ht1_el;
+	do_h_vector              = save_h_vector;
 }
 
 //---------------------------------------------------------------------------
@@ -1002,8 +1023,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_main(){
-
-	if (is_Computed.test(ConeProperty::IsHt1ExtremeRays) && !ht1_extreme_rays) {
+	//at this time we should have a linear form if we can find one
+	if (!is_Computed.test(ConeProperty::LinearForm)) {
 		if (do_ht1_elements)
 			return;
 		if (do_h_vector)
@@ -1033,7 +1054,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		check_integrally_closed();
 	}
 	
-	if (ht1_extreme_rays && do_Hilbert_basis) {
+	if (is_Computed.test(ConeProperty::LinearForm) && do_Hilbert_basis) {
 		select_ht1_elements();
 		check_ht1_hilbert_basis();
 	}
@@ -1046,18 +1067,21 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		is_Computed.set(ConeProperty::Ht1Elements,true);
 	}
 	if (do_h_vector) {
+cout << "Hilbert Series: " << Hilbert_Series;
+		Hilbert_Series.simplify();
+cout << "HS simplified : " << Hilbert_Series;
 		is_Computed.set(ConeProperty::HVector);
-		compute_polynomial();
 	}
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 	compute_support_hyperplanes_triangulation();
-	extreme_rays_and_ht1_check();    
+	extreme_rays_and_ht1_check();
 	if(!pointed) return;
-	if (ht1_extreme_rays && !ht1_generated) { //TODO ht1_triangulated einbauen und nutzen
+/*	if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
 			     << "making a new triangulation with only extreme rays" <<endl;
@@ -1069,7 +1093,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 		is_Computed.set(ConeProperty::Triangulation,false);
 		compute_support_hyperplanes_triangulation();
 	}
-		
+*/ //TODO not needed anymore?
 	primal_algorithm_main();
 }
 
@@ -1077,7 +1101,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
-	if (do_triangulation || do_ht1_elements || do_h_vector) {
+	if (!isComputed(ConeProperty::LinearForm) && (do_triangulation || do_ht1_elements || do_h_vector)) {
 		check_ht1_generated();
 		if(!ht1_generated) {
 			compute_support_hyperplanes();
@@ -1085,7 +1109,7 @@ void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
 			if(!pointed) return;
 		}
 	}
-
+  //TODO not needed anymore?
 	primal_algorithm_main();
 }
 
@@ -1221,7 +1245,7 @@ void Full_Cone<Integer>::dual_mode() {
 		is_Computed.set(ConeProperty::IsHt1ExtremeRays);
 		is_Computed.set(ConeProperty::LinearForm);
 	}
-	if (ht1_extreme_rays) check_ht1_hilbert_basis();
+	if (is_Computed.test(ConeProperty::LinearForm)) check_ht1_hilbert_basis();
 	check_integrally_closed();
 }
 
@@ -1256,6 +1280,8 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
+	if (isComputed(ConeProperty::ExtremeRays))
+		return;
 	size_t i,j,k,l,t;
 	Matrix<Integer> SH=getSupportHyperplanes().transpose();
 	Matrix<Integer> Val=Generators.multiplication(SH);
@@ -1304,7 +1330,6 @@ void Full_Cone<Integer>::compute_extreme_rays(){
 		}
 	}
 
-	// cout << "Extr durch" << endl;
 	is_Computed.set(ConeProperty::ExtremeRays);
 }
 
@@ -1348,13 +1373,32 @@ void Full_Cone<Integer>::check_ht1_generated() {
 					break;
 				}
 			}
+		} else {
+			ht1_generated = false;
 		}
 	} else {
-		Linear_Form = Generators.homogeneous(ht1_generated);
-		if (ht1_generated) {
-			ht1_extreme_rays=true;
-			is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-			is_Computed.set(ConeProperty::LinearForm);
+		if (is_Computed.test(ConeProperty::LinearForm)) {
+			Integer sp; //scalar product
+			ht1_generated = true;
+			for (size_t i = 0; i < nr_gen; i++) {
+				sp = v_scalar_product(Generators[i], Linear_Form);
+				if (sp<1) {
+					errorOutput() << "Linear form gives non-positive value " << sp
+					              << " for generator " << i+1 << "." << endl;
+					throw BadInputException();
+				}
+				if (sp != 1) {
+					ht1_generated = false;
+					break;
+				}
+			}
+		} else {
+			Linear_Form = Generators.homogeneous(ht1_generated);
+			if (ht1_generated) {
+				ht1_extreme_rays=true;
+				is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+				is_Computed.set(ConeProperty::LinearForm);
+			}
 		}
 	}
 	is_Computed.set(ConeProperty::IsHt1Generated);
@@ -1371,17 +1415,31 @@ void Full_Cone<Integer>::check_ht1_extreme_rays() {
 		return;
 	}
 	assert(is_Computed.test(ConeProperty::ExtremeRays));
-	vector<size_t> key;
-	for (size_t i = 0; i < nr_gen; i++) {
-		if (Extreme_Rays[i])
-			key.push_back(i+1);
+	if (is_Computed.test(ConeProperty::LinearForm)) {
+		Integer sp; //scalar product
+		ht1_extreme_rays = true;
+		for (size_t i = 0; i < nr_gen; i++) {
+			if (!Extreme_Rays[i])
+				continue;
+			sp = v_scalar_product(Generators[i], Linear_Form);
+			if (sp<1) {
+				errorOutput() << "Linear form gives non-positive value " << sp
+				              << " for generator " << i+1 << "." << endl;
+				throw BadInputException();
+			}
+			if (sp != 1) {
+				ht1_extreme_rays = false;
+				break;
+			}
+		}
+	} else {
+		Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
+		Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
+		if (ht1_extreme_rays) {
+			is_Computed.set(ConeProperty::LinearForm);
+		}
 	}
-	Matrix<Integer> Extreme=Generators.submatrix(key);
-	Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
 	is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-	if (ht1_extreme_rays) {
-		is_Computed.set(ConeProperty::LinearForm);
-	}
 }
 
 template<typename Integer>
@@ -1389,7 +1447,7 @@ void Full_Cone<Integer>::check_ht1_hilbert_basis() {
 	if (is_Computed.test(ConeProperty::IsHt1HilbertBasis))
 		return;
 
-	if ( !is_Computed.test(ConeProperty::IsHt1ExtremeRays) || !is_Computed.test(ConeProperty::HilbertBasis)) {
+	if ( !is_Computed.test(ConeProperty::LinearForm) || !is_Computed.test(ConeProperty::HilbertBasis)) {
 		errorOutput() << "Warning: unsatisfied preconditions in check_ht1_hilbert_basis()!" <<endl;
 		return;
 	}
@@ -1652,7 +1710,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 	}
 	size_t i;  
 	vector<Integer> degree_function(dim,0);
-	if(is_Computed.test(ConeProperty::LinearForm)){ //use Linear_From in homogeneous case
+	if(is_Computed.test(ConeProperty::LinearForm)){ //use Linear_From if we have one
 		for (i=0; i<dim; i++) {
 			degree_function[i] = Linear_Form[i];
 		}
@@ -1682,11 +1740,12 @@ template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_e_vector(){
 	size_t i,j;
 	vector <Integer> E_Vector(dim,0);
-	vector <Integer> Q=H_Vector;
-	Q.push_back(0);
+	vector <long64> Q=Hilbert_Series.getNumerator();
+	Q.resize(dim+1);
 	for (i = 0; i <dim; i++) {
 		for (j = 0; j <dim; j++) {
-			E_Vector[i]+=Q[j];
+			E_Vector[i] += (long) Q[j];
+			//TODO this is not good on 32bit systems
 		}
 		E_Vector[i]/=permutations<Integer>(1,i);
 		for (j = 1; j <=dim; j++) {
@@ -1843,13 +1902,14 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	Candidates = list< vector<Integer> >();
 	Ht1_Elements = list< vector<Integer> >();  
 	if(dim>0){            //correction needed to include the 0 cone;
-		H_Vector = vector<Integer>(dim);
 		Hilbert_Polynomial = vector<Integer>(2*dim);
+		Hilbert_Series = HilbertSeries();
 	} else {
 		multiplicity = 1;
-		H_Vector = vector<Integer>(1,1);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
+		Hilbert_Series = HilbertSeries();
+		Hilbert_Series.add_to_num(0);
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 		is_Computed.set(ConeProperty::HVector);
 		is_Computed.set(ConeProperty::Triangulation);
@@ -1892,11 +1952,12 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	is_Computed.set(ConeProperty::HilbertBasis);
 	Ht1_Elements = list< vector<Integer> >();
 	if(dim>0){            //correction needed to include the 0 cone;
-		H_Vector = vector<Integer>(dim);
+		Hilbert_Series = HilbertSeries();
 		Hilbert_Polynomial = vector<Integer>(2*dim);
 	} else {
 		multiplicity = 1;
-		H_Vector = vector<Integer>(1,1);
+		Hilbert_Series = HilbertSeries();
+		Hilbert_Series.add_to_num(0);
 		Hilbert_Polynomial = vector<Integer>(2,1);
 		Hilbert_Polynomial[0] = 0;
 		is_Computed.set(ConeProperty::HVector);
@@ -1919,11 +1980,12 @@ Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M) {
 	Hilbert_Basis = list< vector<Integer> >();
 	Ht1_Elements = list< vector<Integer> >();
 	Candidates = list< vector<Integer> >();
-	H_Vector = vector<Integer>(dim);
+	Hilbert_Series = HilbertSeries();
 	in_triang = vector<bool> (nr_gen,false);
 	HypIndVal = list<FMDATA>();
 	
 	Linear_Form=C.Linear_Form;
+	is_Computed.set(ConeProperty::LinearForm, C.isComputed(ConeProperty::LinearForm));
 	Order_Vector=C.Order_Vector;
 	
 	do_triangulation=C.do_triangulation;
@@ -2074,13 +2136,6 @@ Matrix<Integer> Full_Cone<Integer>::getHt1Elements()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::getHVector() const{
-	return H_Vector;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 vector<Integer> Full_Cone<Integer>::getHilbertPolynomial() const{
 	return Hilbert_Polynomial;
 }
@@ -2114,9 +2169,9 @@ void Full_Cone<Integer>::print()const{
 	l_read(Hilbert_Basis);
 	verboseOutput()<<"\nHt1 elements are:\n";
 	l_read(Ht1_Elements);
-	verboseOutput()<<"\nh-vector is:\n";
-	v_read(H_Vector);
-	verboseOutput()<<"\nHilbert polvnomial is:\n";
+	verboseOutput()<<"\nHilbert Series  is:\n";
+	verboseOutput()<<Hilbert_Series;
+	verboseOutput()<<"\nHilbert polynomial is:\n";
 	v_read(Hilbert_Polynomial);
 }
 

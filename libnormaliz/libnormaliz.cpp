@@ -60,4 +60,5 @@ std::ostream& errorOutput() {
 #include "cone_dual_mode.cpp"
 #include "cone.cpp"
 #include "cone_property.cpp"
+#include "HilbertSeries.cpp"
 
