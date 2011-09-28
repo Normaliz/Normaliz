@@ -190,7 +190,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 	quasi_poly = vector< vector<Integer> >(periode);
 	long nn_size = norm_num.size();
 	for (j=0; j<periode; ++j) {
-		quasi_poly[j].reserve(nn_size/periode+1);
+		quasi_poly[j].reserve(dim);
 	}
 	for (i=0; i<nn_size; ++i) {
 		//TODO down and upcasting again in case of both long long
@@ -208,18 +208,19 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 	//substitute t by t/periode:
 	//dividing by periode^dim and multipling the coeff with powers of periode
 	Integer pp=1;
-	for (i = dim-1; i >= 0; --i) {
-		pp *= periode; //p^i
+	Integer pp_mod=1;
+	for (i = dim-2; i >= 0; --i) {
+		pp *= periode; //p^i   ok, it is p^(dim-1-i)
+		pp_mod *= periode; pp_mod %= overflow_test_modulus;
 		for (j=0; j<periode; ++j) {
 			quasi_poly[j][i] *= pp;
 		}
-	}
+	} //at the end pp=p^dim-1
 	//the common denominator for all coefficients
 	Integer common_denom = permutations<Integer>(1,dim) * pp;
 	// overflow check
-	if ( (common_denom 
-	  - permutations_modulo<Integer>(1,dim,overflow_test_modulus) * (pp % overflow_test_modulus) 
-	  ) % overflow_test_modulus != 0) {
+	if ( (common_denom - permutations_modulo<Integer>(1,dim,overflow_test_modulus) * pp_mod)
+	     % overflow_test_modulus != 0) {
 		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
 		quasi_poly.clear();
 		return ; //TODO!!!!! exception?

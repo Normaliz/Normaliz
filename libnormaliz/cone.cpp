@@ -192,6 +192,12 @@ vector< vector<Integer> > Cone<Integer>::getHt1Elements() const {
 }
 
 template<typename Integer>
+HilbertSeries Cone<Integer>::getHilbertSeries() const {
+	return HSeries;
+}
+
+//TODO remove everything depending on HilbertSeries?
+template<typename Integer>
 vector<long64> Cone<Integer>::getHVector() const {
 	return HSeries.getNumerator();
 }

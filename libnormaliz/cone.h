@@ -89,6 +89,7 @@ public:
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
+	HilbertSeries getHilbertSeries() const; //general purpose object
 	vector<long64> getHVector() const;
 	vector<mpz_class> getHilbertPolynomial();
 	vector< vector<mpz_class> > getHilbertQuasiPolynomial();

@@ -443,6 +443,7 @@ void Output<Integer>::cone() const {
 			for (i = 0; i < h_vector.size(); i++) {
 				out<<h_vector[i]<<" ";
 			}
+			out<<endl<<"denominator:"<<endl<<Result->getHilbertSeries().getDenominator();
 			out<<endl<<endl;
 		}
 		if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
@@ -458,7 +459,7 @@ void Output<Integer>::cone() const {
 				out << endl<< endl;
 			} else {
 				vector< vector<mpz_class> > hilbert_quasi_poly = Result->getHilbertQuasiPolynomial();
-				long p = hilbert_quasi_poly.size(); // periode 
+				long p = hilbert_quasi_poly.size(); // periode
 				if (p > 0) { // == 0 means not computed
 					mpz_class common_denom = 1;
 					for (long i=0; i<(long)rank-1; ++i) common_denom *= p; //p^(dim-1)
@@ -468,6 +469,7 @@ void Output<Integer>::cone() const {
 					out<<"Hilbert quasi-polynomial:"<<endl;
 					for (long j = 0; j< p; ++j) {
 						size =  hilbert_quasi_poly[j].size();
+						out << j <<": ";
 						for (long i = 0; i < size; ++i) {
 							g = gcd<mpz_class>(common_denom,hilbert_quasi_poly[j][i]);
 							out<<hilbert_quasi_poly[j][i]/g<<"/"<<common_denom/g<<" ";
