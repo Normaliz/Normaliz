@@ -1067,9 +1067,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		is_Computed.set(ConeProperty::Ht1Elements,true);
 	}
 	if (do_h_vector) {
-cout << "Hilbert Series: " << Hilbert_Series;
 		Hilbert_Series.simplify();
-cout << "HS simplified : " << Hilbert_Series;
 		is_Computed.set(ConeProperty::HVector);
 	}
 }

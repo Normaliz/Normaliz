@@ -198,8 +198,21 @@ HilbertSeries Cone<Integer>::getHilbertSeries() const {
 
 //TODO remove everything depending on HilbertSeries?
 template<typename Integer>
-vector<long64> Cone<Integer>::getHVector() const {
+vector<long64> Cone<Integer>::getHVector64() const {
 	return HSeries.getNumerator();
+}
+template<>
+vector<long long> Cone<long long>::getHVector() const {
+	return HSeries.getNumerator();
+}
+template<typename Integer>
+vector<Integer> Cone<Integer>::getHVector() const {
+	vector<long64> h = HSeries.getNumerator();
+	vector<Integer> ret(h.size());
+	for(long i=h.size()-1; i>=0; --i) {
+		ret[i]=explicit_cast_to_long(h[i]);
+	}
+	return ret;
 }
 
 template<typename Integer>

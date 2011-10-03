@@ -50,7 +50,6 @@ HilbertSeries::HilbertSeries(const vector<long64>& numerator, const vector<long6
 
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
-//cout<<"adding "<<other;
 	vector<long64> other_num = other.num;
 	vector<long64> other_denom = other.denom;
 
@@ -184,8 +183,6 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 			}
 		}
 	}
-	cout << "normed numerator  : "<< norm_num;
-	cout << "normed denominator: (1-t^"<< periode <<")^"<<dim <<endl;
 	//cut numerator into periode many pieces and apply standart method
 	quasi_poly = vector< vector<Integer> >(periode);
 	long nn_size = norm_num.size();
@@ -197,13 +194,10 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 		//so we have to make our own cast long long to mpz_class
 		quasi_poly[i%periode].push_back(static_cast<long>(norm_num[i]));
 	}
-	cout << "The split numerators:" << endl << quasi_poly;
 
 	for (j=0; j<periode; ++j) {
 		quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
 	}
-	cout << "The untransformed quasi-polynomials:" << endl << quasi_poly;
-	cout << "All coeff to divide by "<< permutations<Integer>(1,dim) << endl;
 	
 	//substitute t by t/periode:
 	//dividing by periode^dim and multipling the coeff with powers of periode
@@ -230,28 +224,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 	for (j=0; j<periode; ++j) {
 		linear_substitution<Integer>(quasi_poly[j], j); // replaces quasi_poly[i]
 	}
-	cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
-	cout << "All coeff to divide by "<< common_denom << endl;
 
-
-/*	//cancel coefficients and common_denom
-	Integer g = common_denom; //the gcd
-	for (j=0; j<periode && g!=1; ++j) {
-		for (i = 0; i <dim && g!=1; i++) {
-			g = gcd<Integer>(quasi_poly[j][i],g);
-		}
-	}
-	if (g!=1) {
-		common_denom /= g;
-		for (j=0; j<periode; ++j) {
-			for (i = 0; i <dim; i++) {
-				quasi_poly[j][i] /= g;
-			}
-		}
-		cout << "The transformed quasi-polynomials:" << endl << quasi_poly;
-		cout << "All coeff to divide by "<< common_denom << endl;
-	}
-*/
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector

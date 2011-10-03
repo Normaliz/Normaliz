@@ -46,7 +46,7 @@ public:
 	/* give a single matrix as input */
 	Cone(const vector< vector<Integer> >& input_data,
 	     InputType type = Type::integral_closure);
-	/* give multiple constraints */
+	/* give multiple */ //TODO
 	Cone(const multimap< InputType , vector< vector<Integer> > >& multi_input_data);
 
 //---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ public:
 //                           make computations
 //---------------------------------------------------------------------------
 
-	void compute(ComputationMode mode = Mode::hilbertBasisPolynomial);
+	void compute(ComputationMode mode = Mode::hilbertBasisPolynomial); //default: everything
 	void compute(ConeProperties to_compute);
 	void compute(ConeProperty::Enum prop);
 
@@ -90,7 +90,8 @@ public:
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
 	HilbertSeries getHilbertSeries() const; //general purpose object
-	vector<long64> getHVector() const;
+	vector<long64> getHVector64() const;
+	vector<Integer> getHVector() const;
 	vector<mpz_class> getHilbertPolynomial();
 	vector< vector<mpz_class> > getHilbertQuasiPolynomial();
 	vector<Integer> getLinearForm() const;
