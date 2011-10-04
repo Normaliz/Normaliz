@@ -202,7 +202,7 @@ vector<long64> Cone<Integer>::getHVector64() const {
 	return HSeries.getNumerator();
 }
 template<>
-vector<long long> Cone<long long>::getHVector() const {
+vector<long64> Cone<long64>::getHVector() const {
 	return HSeries.getNumerator();
 }
 template<typename Integer>

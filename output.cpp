@@ -86,7 +86,7 @@ void Output<Integer>::read() const{
 	cout<<"\ntri="<<tri<<"\n";
 	cout<<"\nht1="<<ht1<<"\n";
 	cout<<"\nResult is:\n";
-	Result.print();
+	Result->print();
 }
 
 //---------------------------------------------------------------------------

@@ -53,7 +53,7 @@ public:
 	/**
 	 * creates a dummy object
 	 */
-	Sublattice_Representation() {};
+	Sublattice_Representation() {}
 
 	/**
 	 * creates a representation of Z^n as a sublattice of itself

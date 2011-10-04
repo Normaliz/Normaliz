@@ -73,7 +73,7 @@ public:
 	inline void add_to_num(size_t i) {
 		if(num.size()<=i) num.resize(i+1);
 		num[i]++;
-	};
+	}
 
 
 	// simplify, see class description
