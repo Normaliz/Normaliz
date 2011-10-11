@@ -214,13 +214,15 @@ vector<Integer> Sublattice_Representation<Integer>::from_sublattice (const vecto
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const vector<Integer>& V) const {
 	vector<Integer> N = (A.transpose()).VxM(V);
-	return v_make_prime(N);
+	v_make_prime(N);
+	return N;
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const vector<Integer>& V) const {
 	vector<Integer> N = (B.transpose()).VxM(V);
-	return v_make_prime(N);
+	v_make_prime(N);
+	return N;
 }
 
 //---------------------------------------------------------------------------
@@ -295,7 +297,7 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
 			v_reduction_modulo(new_row,m);  
 			//new_row cannot be divisible by a factor of m
 			//so make_prime divides by an invertible element
-			new_row = v_make_prime(new_row,rowgcd);  
+			rowgcd = v_make_prime(new_row);  
 			assert(gcd(m,rowgcd) == 1);
 			new_row[dim] = m;
 			Cong2.append(new_row);

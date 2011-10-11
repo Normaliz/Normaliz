@@ -66,7 +66,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FMDATA & po
 			NewHypIndVal.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
 		}
 	}
-	NewHypIndVal.Hyp=v_make_prime(NewHypIndVal.Hyp);
+	v_make_prime(NewHypIndVal.Hyp);
 	NewHypIndVal.ValNewGen=0; // not really needed, only for completeness
 	
 	NewHypIndVal.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do

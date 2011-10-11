@@ -574,7 +574,7 @@ template<typename Integer>
 vector<Integer> Matrix<Integer>::make_prime() {
 	vector<Integer> g(nr);
 	for (size_t i = 0; i <nr; i++) {
-		elements[i]=v_make_prime(elements[i],g[i]);
+		g[i] = v_make_prime(elements[i]);
 	}
 	return g;
 }
@@ -1078,8 +1078,8 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 			homogeneous = false;
 			return Linear_Form;
 		}
-		Linear_Form=Change_To_Full_Emb.VxM(Linear_Form);
-		Linear_Form=v_make_prime(Linear_Form);
+		Linear_Form = Change_To_Full_Emb.VxM(Linear_Form);
+		v_make_prime(Linear_Form);
 
 		//check if all rows are in height 1
 		for (i=0; i<nr; i++) {

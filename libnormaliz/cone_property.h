@@ -85,8 +85,6 @@ public:
 private:
 	std::bitset<ConeProperty::EnumSize> CPs;
 
-	template<typename Integer> friend class Cone;
-	template<typename Integer> friend class Full_Cone;
 };
 
 }

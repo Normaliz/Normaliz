@@ -95,12 +95,12 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 	dim=Map.nr_of_columns();
 	key=Map.max_rank_submatrix_lex(dim);
 	Generators=Map.submatrix(key);
-	vector< Integer > help(dim);
-	Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
+	diagonal = vector< Integer >(dim);
+	Support_Hyperplanes=Invert(Generators, diagonal, volume); //test for arithmetic
 	//overflow performed
-	diagonal=v_abs(help);
-	Support_Hyperplanes=Support_Hyperplanes.transpose();
-	multiplicators=Support_Hyperplanes.make_prime();
+	v_abs(diagonal);
+	Support_Hyperplanes = Support_Hyperplanes.transpose();
+	multiplicators = Support_Hyperplanes.make_prime();
 	Hilbert_Basis = list< vector<Integer> >();
 	status="initialized";
 }
@@ -112,10 +112,10 @@ Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
 	key=k;
 	Generators=Map.submatrix(k);
 	dim=k.size();
-	vector< Integer > help(dim);
-	Support_Hyperplanes=Invert(Generators, help, volume);  //test for arithmetic
+	diagonal = vector< Integer >(dim);
+	Support_Hyperplanes=Invert(Generators, diagonal, volume);  //test for arithmetic
 	//overflow performed
-	diagonal=v_abs(help);
+	v_abs(diagonal);
 	Support_Hyperplanes=Support_Hyperplanes.transpose();
 	multiplicators=Support_Hyperplanes.make_prime();
 	Hilbert_Basis = list< vector<Integer> >();
@@ -125,32 +125,17 @@ Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Simplex<Integer>::Simplex(const Simplex<Integer>& S){
-	dim=S.dim;
-	status=S.status;
-	volume=S.volume;
-	key=S.key;
-	Generators=S.Generators;
-	diagonal=S.diagonal;
-	multiplicators=S.multiplicators;
-	New_Face=S.New_Face;
-	Support_Hyperplanes=S.Support_Hyperplanes;
-	Hilbert_Basis=S.Hilbert_Basis;
-	Ht1_Elements=S.Ht1_Elements;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Simplex<Integer>::~Simplex(){
-	//automatic destructor
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::write_new_face(const vector<size_t>& Face){
-	New_Face=Face;
+void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
+	Generators=Map.submatrix(key);
+	diagonal = vector< Integer >(dim);
+	Support_Hyperplanes=Invert(Generators, diagonal, volume); //test for arithmetic
+	//overflow performed
+	v_abs(diagonal);
+	Support_Hyperplanes=Support_Hyperplanes.transpose();
+	multiplicators=Support_Hyperplanes.make_prime();
+	Hilbert_Basis=list< vector<Integer> >();
+	Ht1_Elements=list< vector<Integer> >();
+	status="initialized";
 }
 
 //---------------------------------------------------------------------------
@@ -168,8 +153,6 @@ void Simplex<Integer>::read() const{
 	v_read(diagonal);
 	cout<<"\nMultiplicators are:\n";
 	v_read(multiplicators);
-	cout<<"\nNew face is:\n";
-	v_read(New_Face);
 	cout<<"\nSupport Hyperplanes are:\n";
 	Support_Hyperplanes.read();
 	Matrix<Integer> M=read_hilbert_basis();
@@ -182,7 +165,6 @@ void Simplex<Integer>::read() const{
 template<typename Integer>
 void Simplex<Integer>::read_k() const{
 	v_read(key);
-	v_read(New_Face);
 }
 
 //---------------------------------------------------------------------------
@@ -243,19 +225,6 @@ vector<Integer> Simplex<Integer>::read_multiplicators() const{
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-vector<size_t> Simplex<Integer>::read_new_face() const{
-	return New_Face;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-size_t Simplex<Integer>::read_new_face_size() const{
-	return New_Face.size();
-}
-
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Simplex<Integer>::read_support_hyperplanes() const{
@@ -305,26 +274,6 @@ size_t Simplex<Integer>::read_hilbert_basis_size() const{
 template<typename Integer>
 int Simplex<Integer>::compare(const Simplex<Integer>& S) const{
 	return v_difference_ordered_fast(key,S.key);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
-	assert(status != "non initialized");
-
-	if (status=="key initialized") {
-		Generators=Map.submatrix(key);
-		vector< Integer > help(dim);
-		Support_Hyperplanes=Invert(Generators, help, volume); //test for arithmetic
-		//overflow performed
-		diagonal=v_abs(help);
-		Support_Hyperplanes=Support_Hyperplanes.transpose();
-		multiplicators=Support_Hyperplanes.make_prime();
-		Hilbert_Basis=list< vector<Integer> >();
-		Ht1_Elements=list< vector<Integer> >();
-		status="initialized";
-	}
 }
 
 //---------------------------------------------------------------------------
@@ -408,9 +357,9 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 
 	#pragma omp atomic
 	NrInvert++;
-	vector< Integer > help(dim);
-	Matrix<Integer> InvGen=Invert(Generators, help, volume);
-	diagonal=v_abs(help);
+	diagonal = vector< Integer >(dim);
+	Matrix<Integer> InvGen=Invert(Generators, diagonal, volume);
+	v_abs(diagonal);
 	vector<bool> Excluded(dim,false);
 	Integer Test; 
 	
@@ -459,6 +408,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	Matrix<Integer> elements(dim,dim); //all 0 matrix
 	Matrix<Integer> V = InvGen; //Support_Hyperplanes.multiply_rows(multiplicators).transpose();
 	V.reduction_modulo(volume); //makes reduction when adding V easier
+	vector<Integer> help;
 
 	//now we need to create the candidates
 	while (true) {

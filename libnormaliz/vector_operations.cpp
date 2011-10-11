@@ -191,13 +191,12 @@ vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, cons
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> v_abs(const vector<Integer>& v){
+vector<Integer>& v_abs(vector<Integer>& v){
 	size_t i, size=v.size();
-	vector<Integer> w(size,0);
 	for (i = 0; i < size; i++) {
-		w[i]=Iabs(v[i]);
+		if (v[i]<0) v[i] = Iabs(v[i]);
 	}
-	return w;
+	return v;
 }
 
 //---------------------------------------------------------------------------
@@ -233,38 +232,17 @@ Integer v_lcm(const vector<Integer>& v){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> v_make_prime(const vector<Integer>& v){
+Integer v_make_prime(vector<Integer>& v){
 	size_t i, size=v.size();
-	vector<Integer> w(size,0);
 	Integer g=v_gcd(v);
-	if (g==0) {
-		return w;
-	}
-	else {
+	if (g!=0) {
 		for (i = 0; i < size; i++) {
-			w[i]=v[i]/g;
+			v[i] /= g;
 		}
 	}
-	return w;
+	return g;
 }
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g){
-	size_t i, size=v.size();
-	vector<Integer> w(size,0);
-	g=v_gcd(v);
-	if (g==0) {
-		return w;
-	}
-	else {
-		for (i = 0; i < size; i++) {
-			w[i]=v[i]/g;
-		}
-	}
-	return w;
-}
 
 //---------------------------------------------------------------------------
 
@@ -272,7 +250,7 @@ template<typename Integer>
 void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
 	size_t i,size=v.size();
 	for (i = 0; i <size; i++) {
-		v[i]=v[i]*scalar;
+		v[i] *= scalar;
 	}
 }
 

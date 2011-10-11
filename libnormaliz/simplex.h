@@ -47,7 +47,6 @@ class Simplex {
   Matrix<Integer> Generators;
   vector< Integer > diagonal;
   vector< Integer > multiplicators;
-  vector<size_t> New_Face; // to use with a shelling
   Matrix<Integer> Support_Hyperplanes;
   list< vector<Integer> > Hilbert_Basis;
   list< vector<Integer> > Ht1_Elements;
@@ -72,14 +71,11 @@ public:
   //columns of Map
   Simplex(const vector<size_t>& k, const Matrix<Integer>& Map); //main constuctor
   //the rank of M is assumed to equal the number of columns of M
-  Simplex(const Simplex<Integer>& S);   //copy constructor
-  ~Simplex();                 //destructor
 
 //---------------------------------------------------------------------------
 //                          Data acces
 //---------------------------------------------------------------------------
 
-  void write_new_face(const vector<size_t>& Face);//writes the new face in case of a shelling
   void read() const;                        // to be modified, just for tests
   void read_k() const;                        // to be modified, just for tests
   size_t read_dimension() const;              // returns dim
@@ -90,8 +86,6 @@ public:
   Matrix<Integer> read_generators() const;        // returns generators
   vector<Integer> read_diagonal() const;    // returns diagonal
   vector<Integer> read_multiplicators() const;    // returns multiplicators
-  vector<size_t> read_new_face() const;    // returns new face
-  size_t read_new_face_size() const;    // returns new face size
   Matrix<Integer> read_support_hyperplanes() const;  // returns the support hyperplanes
   Matrix<Integer> read_hilbert_basis()const; //read the Hilbert basis
   list< vector<Integer> > read_ht1_elements()const; //read the ht1 elements

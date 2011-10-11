@@ -63,21 +63,21 @@ vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, cons
 //							abs, gcd and lcm
 //---------------------------------------------------------------------------
 
-//returns a vector with the absolute value of the elements
+//takes the absolute value of the elements and returns a reference to the changed vector
 template<typename Integer>
-vector<Integer> v_abs(const vector<Integer>& v);
+vector<Integer>& v_abs(vector<Integer>& v);
 
+//returns gcd of the elements of v
 template<typename Integer>
-Integer v_gcd(const vector<Integer>& v); //returns gcd of the elements of v
+Integer v_gcd(const vector<Integer>& v);
 
+//returns lcm of the elements of v
 template<typename Integer>
-Integer v_lcm(const vector<Integer>& v); //returns lcm of the elements of v
+Integer v_lcm(const vector<Integer>& v);
 
+//divides the elements by their gcd and returns the gcd
 template<typename Integer>
-vector<Integer> v_make_prime(const vector<Integer>& v); //returns v divided by the gcd of elements
-
-template<typename Integer>
-vector<Integer> v_make_prime(const vector<Integer>& v,Integer& g); //returns v divided by the gcd of elements, g saves the gcd
+Integer v_make_prime(vector<Integer>& v);
 
 
 //---------------------------------------------------------------------------
