@@ -481,7 +481,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			elements[i] = elements[last];
 		}
 		
-		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree for standart grading
+		norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree for standard grading
 		normG = 0;
 		for (i = 0; i < dim; i++) {  // since generators have degree 1
 			norm[0]+=elements[last][i];

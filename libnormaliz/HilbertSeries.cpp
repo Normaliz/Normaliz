@@ -183,7 +183,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 			}
 		}
 	}
-	//cut numerator into periode many pieces and apply standart method
+	//cut numerator into periode many pieces and apply standard method
 	quasi_poly = vector< vector<Integer> >(periode);
 	long nn_size = norm_num.size();
 	for (j=0; j<periode; ++j) {

@@ -67,7 +67,7 @@ public:
 //---------------------------------------------------------------------------
 
 	void compute(ComputationMode mode = Mode::hilbertBasisPolynomial); //default: everything
-	void compute(ConeProperties to_compute);
+	void compute(ConeProperties ToCompute);
 	void compute(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
@@ -75,6 +75,8 @@ public:
 //---------------------------------------------------------------------------
 
 	bool isComputed(ConeProperty::Enum prop) const;
+	//returns true, when ALL properties in CheckComputed are computed
+	bool isComputed(ConeProperties CheckComputed) const;
 
 //---------------------------------------------------------------------------
 //          get the results, these methods do not start a computation

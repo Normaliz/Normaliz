@@ -1571,8 +1571,7 @@ void Full_Cone<Integer>::global_reduction() {
 
 		norm=v_scalar_product(degree_function,(*cit));
 
-		vector <Integer> new_element(1);
-		new_element[0]=norm;
+		vector <Integer> new_element(1, norm);
 		new_element=v_merge(new_element,(*cit));
 		Candidates_with_Scalar_Product.push_back(new_element);
 	}
@@ -1704,7 +1703,7 @@ void Full_Cone<Integer>::global_reduction() {
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 	if(verbose) {
-		verboseOutput()<<"computing degree function... ";
+		verboseOutput()<<"computing degree function... "<<flush;
 	}
 	size_t i;  
 	vector<Integer> degree_function(dim,0);
@@ -1713,7 +1712,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 			degree_function[i] = Linear_Form[i];
 		}
 		if(verbose) {
-			verboseOutput()<<"using homogenous linear form."<<endl<<flush;
+			verboseOutput()<<"using homogenous linear form."<<endl;
 		}
 	} else { // add hyperplanes to get a degree function
 		typename list< vector<Integer> >::const_iterator h;
@@ -1724,7 +1723,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 		} //TODO parallel addition in each thread and final addition at the end
 		//TODO make_prime()?
 		if(verbose) {
-			verboseOutput()<<"done."<<endl<<flush;
+			verboseOutput()<<"done."<<endl;
 		}
 	}
 	return degree_function;
