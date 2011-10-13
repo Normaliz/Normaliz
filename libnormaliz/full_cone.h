@@ -151,10 +151,6 @@ class Full_Cone {
 	bool low_part_simplicial();
 	void line_shelling();
 	void triangulation_lift();
-	/* computes the e vector using the h vector */
-	vector<Integer> compute_e_vector();
-	/* computes the Hilbert polynomial using the h-vector */
-	void compute_polynomial();
 
 	/* support hyperplanes computation for a dynamic lifting
 	 * adjusts the lifting if necessary, used in dual algorithm */

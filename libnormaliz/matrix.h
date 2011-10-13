@@ -64,8 +64,6 @@ public:
   Matrix(size_t row, size_t col, Integer value); //constructor, all entries set to value
   Matrix(const vector< vector<Integer> >& elem); //constuctor, elements=elem
   Matrix(const list< vector<Integer> >& elems);
-  Matrix(const Matrix& M);                //copy constructor
-  ~Matrix();                             //destructor
 
 //---------------------------------------------------------------------------
 //							   Data access

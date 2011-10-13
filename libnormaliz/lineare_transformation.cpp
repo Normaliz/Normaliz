@@ -56,25 +56,6 @@ Lineare_Transformation<Integer>::Lineare_Transformation(const Matrix<Integer>& M
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Lineare_Transformation<Integer>::Lineare_Transformation(const Lineare_Transformation<Integer>& LT){
-	rk=LT.rk;
-	status=LT.status;
-	index=LT.index;
-	Center=LT.Center;
-	Right=LT.Right;
-	Right_Inv=LT.Right_Inv;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Lineare_Transformation<Integer>::~Lineare_Transformation(){
-	//automatic destructor
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Lineare_Transformation<Integer>::read() const{
 	cout<<"\nRank="<<rk<<"\n";
 	cout<<"\nStatus is "<<status<<".\n";

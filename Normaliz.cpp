@@ -259,9 +259,9 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 
 
 
-	string mode_string;
+	string type_string;
 	size_t nr_rows,nr_columns;;
-	int mode;
+	int type;
 	InputType input_type = Type::integral_closure;
 	Integer number;
 	in >> nr_rows;
@@ -274,38 +274,38 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		}
 	}
 
-	in>>mode_string;
-	if (mode_string=="0"||mode_string=="integral_closure") {
-		mode=0;
+	in>>type_string;
+	if (type_string=="0"||type_string=="integral_closure") {
+		type=0;
 		input_type = Type::integral_closure;
 	} else
-	if (mode_string=="1"||mode_string=="normalization") {
-		mode=1;
+	if (type_string=="1"||type_string=="normalization") {
+		type=1;
 		input_type = Type::normalization;
 	} else
-	if (mode_string=="2"||mode_string=="polytope") {
-		mode=2;
+	if (type_string=="2"||type_string=="polytope") {
+		type=2;
 		input_type = Type::polytope;
 	} else
-	if (mode_string=="3"||mode_string=="rees_algebra") {
-		mode=3;
+	if (type_string=="3"||type_string=="rees_algebra") {
+		type=3;
 		input_type = Type::rees_algebra;
 	} else
-	if (mode_string=="4"||mode_string=="hyperplanes") {
-		mode=4;
+	if (type_string=="4"||type_string=="hyperplanes") {
+		type=4;
 	} else
-	if (mode_string=="5"||mode_string=="equations") {
-		mode=5;
+	if (type_string=="5"||type_string=="equations") {
+		type=5;
 	} else
-	if (mode_string=="6"||mode_string=="congruences") {
-		mode=6;
+	if (type_string=="6"||type_string=="congruences") {
+		type=6;
 	} else
-	if (mode_string=="10"||mode_string=="lattice_ideal") {
-		mode=10;
+	if (type_string=="10"||type_string=="lattice_ideal") {
+		type=10;
 		input_type = Type::lattice_ideal;
 	} else {
-		cerr<<"Warning: Unknown mode "<<mode_string<<" and will be replaced with mode integral_closure."<<endl;
-		mode=0;
+		cerr<<"Warning: Unknown type "<<type_string<<" and will be replaced with type integral_closure."<<endl;
+		type=0;
 		input_type = Type::integral_closure;
 	}
 
@@ -316,15 +316,15 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 
 	Out.set_name(output_name);
 	
-	if (mode >= 4 && mode <= 6) { //equations, inequalities, congruences
+	if (type >= 4 && type <= 6) { //equations, inequalities, congruences
 		size_t nc = nr_columns;
-		if (mode == 6) {
+		if (type == 6) {
 			nc--;  //the congruence matrix has one extra column
 		}
 		multimap <Type::InputType, vector< vector<Integer> > > constraints;
 
 		while (true) {
-			switch(mode) {
+			switch(type) {
 				case 4:
 					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::hyperplanes, M.get_elements()));
 					break;
@@ -352,34 +352,34 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 				}
 			}
 
-			in>>mode_string;
+			in>>type_string;
 			if ( in.fail() ) {
 				cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file?"<<endl;
 				return 1;
 			}
 
-			if	 (mode_string=="4"||mode_string=="hyperplanes") {
-				mode=4;
+			if	 (type_string=="4"||type_string=="hyperplanes") {
+				type=4;
 				if(nr_columns!=nc) {
 					cerr<<"Number of columns not matching. Check input file!";
 					return 1;
 				}
 			} else
-			if (mode_string=="5"||mode_string=="equations") {
-				mode=5;
+			if (type_string=="5"||type_string=="equations") {
+				type=5;
 				if(nr_columns!=nc) {
 					cerr<<"Number of columns not matching. Check input file!";
 					return 1;
 				}
 			} else
-			if (mode_string=="6"||mode_string=="congruences") {
-				mode=6;
+			if (type_string=="6"||type_string=="congruences") {
+				type=6;
 				if(nr_columns!=nc+1) {
 					cerr<<"Number of columns not matching. Check input file!";
 					return 1;
 				}
 			} else {
-				cerr<<"Illegal input type \""<<mode_string<<"\" at this position."<<endl;
+				cerr<<"Illegal input type \""<<type_string<<"\" at this position."<<endl;
 				return 1;
 			}
 		}
@@ -397,7 +397,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		Out.setCone(MyCone);
 		Out.cone();
 	} 
-	else { // all other modes
+	else { // all other types
 
 		//TODO quick solution to input a grading
 		if (in.good()) {
@@ -421,7 +421,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		//main computations and output
 		if (verbose) {
 			cout<<"\n************************************************************\n";
-			cout<<"Running in computation mode "<<computation_mode<<" with input type "<<mode<<"."<<endl;
+			cout<<"Running in computation mode "<<computation_mode<<" with input type "<<type<<"."<<endl;
 		}
 		Cone<Integer> MyCone = Cone<Integer>(M.get_elements(), input_type);
 		if (Grading.size() != 0) {
@@ -430,9 +430,9 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 //		MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
 		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
-		if (mode == 2) {
+		if (type == 2) {
 			Out.polytop();
-		} else if (mode == 3) {
+		} else if (type == 3) {
 			Out.rees();
 		} else {
 			Out.cone();

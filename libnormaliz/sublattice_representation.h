@@ -68,9 +68,6 @@ public:
 	 */
 	Sublattice_Representation(const Matrix<Integer>& M, bool direct_summand);
 	Sublattice_Representation(const Lineare_Transformation<Integer>& LT, bool direct_summand);
-	Sublattice_Representation(const Sublattice_Representation<Integer>& SR);
-	~Sublattice_Representation();
-
 
 //---------------------------------------------------------------------------
 //                       Manipulation operations

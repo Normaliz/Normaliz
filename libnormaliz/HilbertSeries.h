@@ -55,7 +55,7 @@ class HilbertSeries;
 // write a readable representation to the stream
 ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
-
+//we always want to use machine integers of at least 64bit
 typedef long long long64;
 
 class HilbertSeries {

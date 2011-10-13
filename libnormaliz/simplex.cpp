@@ -350,7 +350,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			#pragma omp critical(HSERIES) 
 			C.Hilbert_Series += Hilbert_Series;
 			#pragma omp critical(MULTIPLICITY)
-			C.multiplicity+=volume;
+			C.multiplicity += volume;
 			return volume;               // if not we need lex decision, see below
 		}
 	} // We have tried to take care of the unimodular case WITHOUT the matrix inversion

@@ -54,8 +54,8 @@ public:
 //---------------------------------------------------------------------------
 
   Output();  //main constructor
-  Output(const Output<Integer>& Out);  //copy constructor
-  ~Output();           		 //destructor
+  // default copy constructor and destructors are ok
+  // the Cone Object is handled at another place
 
 //---------------------------------------------------------------------------
 //								Data acces

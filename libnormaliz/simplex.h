@@ -98,24 +98,7 @@ public:
 
   int compare(const Simplex<Integer>& S) const; //compare the key of this with the key of S
   void initialize(const Matrix<Integer>& Map); //change status from "key initialized" to "initialized"
-  void hilbert_basis_interior(); // computes the Hilbert basis,
-  //the generators are not considered !!!, status must be "initialized"
-  void hilbert_basis_interior(const Matrix<Integer>& Map); // computes the Hilbert basis,
-  //the generators are not considered !!!, status may be "key initialized" or "initialized"
-  void ht1_elements(const vector<Integer>& Form); //computes the volume and ht1 elements (unique without generators, stored in Hilbert_Basis)
-  void h_vector(const vector<Integer>& Form);
-  // computes the new elements of h vector in case of a shelling,
-  // status must be "initialized"
-  void h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form); // computes
-  // computes the new elements of h vector in case of a shelling,
-  // status must be "key initialized"
-  void hilbert_basis_interior_h_vector(const vector<Integer>& Form); // computes the Hilbert basis
-  //and the new elements of h vector in case of a shelling,
-  //the generators are not considered !!!, status must be "initialized"
-  void hilbert_basis_interior_h_vector(const Matrix<Integer>& Map, const vector<Integer>& Form); // computes the Hilbert basis
-  //and the new elements of h vector in case of a shelling,
-  //the generators are not considered !!!, status must be "key initialized"
-  
+ 
   Integer evaluate(Full_Cone<Integer>& C, const Integer& height);
   
 };

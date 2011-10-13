@@ -869,8 +869,9 @@ void Full_Cone<Integer>::build_cone() {
 				if(!new_generator)
 					continue;
 					
-//				if(pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp){
-				if(pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp || nr_neg*Triangulation.size()>RecBoundTriang){
+				// Magic Bounds to deside whether to use pyramids
+				if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
+				  || nr_neg*Triangulation.size() > RecBoundTriang) {
 					if(!pyramid_recursion && !keep_triangulation)
 						Triangulation.clear();
 					pyramid_recursion=true;
@@ -1563,7 +1564,7 @@ void Full_Cone<Integer>::global_reduction() {
 		verboseOutput()<<"computing the degrees of the candidates... "<<flush;
 	}
 	//go over candidates: do single scalar product
-	//for (c = Candidates.begin(); c != Candidates.end(); c++) { 
+	//for (c = Candidates.begin(); c != Candidates.end(); c++) 
 	vector<Integer> scalar_product;
 	for (size_t j=0; j<listsize; ++j) {
 		for(;j > cpos; ++cpos, ++cit) ;
@@ -1712,7 +1713,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 			degree_function[i] = Linear_Form[i];
 		}
 		if(verbose) {
-			verboseOutput()<<"using homogenous linear form."<<endl;
+			verboseOutput()<<"using given or homogenous linear form."<<endl;
 		}
 	} else { // add hyperplanes to get a degree function
 		typename list< vector<Integer> >::const_iterator h;
@@ -1720,75 +1721,13 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 			for (i=0; i<dim; i++) {
 				degree_function[i]+=(*h)[i];
 			}
-		} //TODO parallel addition in each thread and final addition at the end
-		//TODO make_prime()?
+		} 
+		v_make_prime(degree_function); //TODO maybe not needed
 		if(verbose) {
 			verboseOutput()<<"done."<<endl;
 		}
 	}
 	return degree_function;
-}
-
-//--------------------------------------------------------------------------
-// Hilbert polynomial
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> Full_Cone<Integer>::compute_e_vector(){
-	size_t i,j;
-	vector <Integer> E_Vector(dim,0);
-	vector <long64> Q=Hilbert_Series.getNumerator();
-	Q.resize(dim+1);
-	for (i = 0; i <dim; i++) {
-		for (j = 0; j <dim; j++) {
-			E_Vector[i] += (long) Q[j];
-			//TODO this is not good on 32bit systems
-		}
-		E_Vector[i]/=permutations<Integer>(1,i);
-		for (j = 1; j <=dim; j++) {
-			Q[j-1]=(unsigned long)j*Q[j];
-		}
-	}
-	return E_Vector;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::compute_polynomial(){
-	size_t i,j;
-	Integer factorial=permutations<Integer>(1,dim);
-	if ((factorial-permutations_modulo<Integer>(1,dim,overflow_test_modulus))%overflow_test_modulus != 0) {
-		errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
-		return;
-	}
-	Integer mult_factor = factorial;
-	vector <Integer> E_Vector=compute_e_vector();
-	vector <Integer> C(dim,0);
-	C[0]=1;
-	for (i = 0; i <dim; i++) {
-		mult_factor=permutations<Integer>(i,dim);
-		if (((dim-1-i)%2)==0) {
-			for (j = 0; j <dim; j++) {
-				Hilbert_Polynomial[2*j]+=mult_factor*E_Vector[dim-1-i]*C[j];
-			}
-		}
-		else {
-			for (j = 0; j <dim; j++) {
-				Hilbert_Polynomial[2*j]-=mult_factor*E_Vector[dim-1-i]*C[j];
-			}
-		}
-		for (j = dim-1; 0 <j; j--) {
-			C[j]=(unsigned long)(i+1)*C[j]+C[j-1];
-		}
-		C[0]=permutations<Integer>(1,i+1);
-	}
-	for (i = 0; i <dim; i++) {
-		mult_factor=gcd<Integer>(Hilbert_Polynomial[2*i],factorial);
-		Hilbert_Polynomial[2*i]/= mult_factor;
-		Hilbert_Polynomial[2*i+1]= factorial/mult_factor;
-	}
-	is_Computed.set(ConeProperty::HilbertPolynomial);
 }
 
 //---------------------------------------------------------------------------

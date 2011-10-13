@@ -204,25 +204,6 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone_Dual_Mode<Integer>::Cone_Dual_Mode(const Cone_Dual_Mode<Integer>& C){
-	dim=C.dim;
-	nr_sh=C.nr_sh;
-	hyp_size=C.hyp_size;
-	SupportHyperplanes=C.SupportHyperplanes;
-	GeneratorList=C.GeneratorList;
-	Hilbert_Basis=C.Hilbert_Basis;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Cone_Dual_Mode<Integer>::~Cone_Dual_Mode(){
-	//automatic destructor
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Cone_Dual_Mode<Integer>::print()const{
 	verboseOutput()<<"dim="<<dim<<".\n";
 	verboseOutput()<<"nr_sh="<<nr_sh<<".\n";

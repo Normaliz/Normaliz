@@ -48,31 +48,6 @@ Output<Integer>::Output(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Output<Integer>::Output(const Output<Integer>& Out){
-	name=Out.name;
-	out=Out.out;
-	inv=Out.inv;
-	ext=Out.ext;
-	esp=Out.esp;
-	typ=Out.typ;
-	egn=Out.egn;
-	gen=Out.gen;
-	sup=Out.sup;
-	tri=Out.tri;
-	ht1=Out.ht1;
-	Result=Out.Result;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Output<Integer>::~Output(){
-	//automatic destructor
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Output<Integer>::read() const{
 	cout<<"\nname="<<name<<"\n";
 	cout<<"\nout="<<out<<"\n";

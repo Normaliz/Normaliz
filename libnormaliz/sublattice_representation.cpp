@@ -124,23 +124,6 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
 }
 
 //---------------------------------------------------------------------------
-
-template<typename Integer>
-Sublattice_Representation<Integer>::Sublattice_Representation(const Sublattice_Representation& SR) {
-	A = SR.A;
-	B = SR.B;
-	c = SR.c;
-	dim = SR.dim;
-	rank = SR.rank;
-	index = SR.index;
-}
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Sublattice_Representation<Integer>::~Sublattice_Representation() {}
-
-
-//---------------------------------------------------------------------------
 //                       Manipulation operations
 //---------------------------------------------------------------------------
 

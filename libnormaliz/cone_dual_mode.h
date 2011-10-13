@@ -77,8 +77,6 @@ public:
 
 	Cone_Dual_Mode();
 	Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
-	Cone_Dual_Mode(const Cone_Dual_Mode<Integer> & C); //copy constructor
-	~Cone_Dual_Mode();                   //destructor
 
 /*---------------------------------------------------------------------------
  *						Data access

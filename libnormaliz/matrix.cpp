@@ -109,7 +109,12 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
 	if (nr>0) {
 		nc=elem[0].size();
 		elements=elem;
-		//TODO check if all rows have the same length
+		//check if all rows have the same length
+		for (size_t i=1; i<nr; i++) {
+			if (elements[i].size() != nc) {
+				throw BadInputException();
+			}
+		}
 	} else {
 		nc=0;
 	}
@@ -123,32 +128,18 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
 	elements = vector< vector<Integer> > (nr);
 	nc = 0;
 	size_t i=0;
-	for(typename list< vector<Integer> >::const_iterator it=elem.begin(); it!=elem.end(); ++it, ++i) {
+	typename list< vector<Integer> >::const_iterator it=elem.begin();
+	for(; it!=elem.end(); ++it, ++i) {
 		if(i == 0) {
 			nc = (*it).size();
 		} else {
-			assert((*it).size() == nc);
+			if ((*it).size() != nc) {
+				throw BadInputException();
+			}
 		}
 		elements[i]=(*it);
 	}
 }
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer>::Matrix(const Matrix<Integer>& M){
-	nr=M.nr;
-	nc=M.nc;
-	elements=M.elements;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer>::~Matrix(){
-	//automatic destructor
-}
-
 
 //---------------------------------------------------------------------------
 

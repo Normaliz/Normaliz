@@ -60,8 +60,6 @@ public:
 
   Lineare_Transformation();
   Lineare_Transformation(const Matrix<Integer>& M);      //main constructor
-  Lineare_Transformation(const Lineare_Transformation<Integer>& LT);  //copy constructor
-  ~Lineare_Transformation();            //destructor
 
 //---------------------------------------------------------------------------
 //						   Data acces
