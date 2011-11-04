@@ -1539,8 +1539,11 @@ void Full_Cone<Integer>::global_reduction() {
 	for (size_t i = 0; i <nr_gen; i++) {
 		Candidates.push_front(Generators.read(i+1));
 	}
+	if(verbose) verboseOutput()<<"sorting the candidates... "<<flush;
 	Candidates.sort();
+	if(verbose) verboseOutput()<<"make them unique... "<<flush;
 	Candidates.unique();
+	if(verbose) verboseOutput()<<"done."<<endl;
 
 	if (nr_gen == dim) { // cone is simplicial, therefore no global reduction is necessary
 		if (verbose) {

@@ -395,7 +395,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		}
 		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
-		Out.cone();
+		Out.write_files();
 	} 
 	else { // all other types
 
@@ -431,12 +431,11 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		MyCone.compute(computation_mode);
 		Out.setCone(MyCone);
 		if (type == 2) {
-			Out.polytop();
+			Out.set_type(OT_POLYTOP);
 		} else if (type == 3) {
-			Out.rees();
-		} else {
-			Out.cone();
+			Out.set_type(OT_REES);
 		}
+		Out.write_files();
 	}
 	return 0;
 }

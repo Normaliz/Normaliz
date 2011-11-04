@@ -319,7 +319,6 @@ void Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input)
 		Generators = Input;
 	} else { //append a column of 1
 		Generators = vector< vector<Integer> >(nr);
-		typename vector< vector<Integer> >::const_iterator it=Input.begin();
 		vector<Integer> row(dim+1);
 		row[dim]=1;
 		for (size_t i=0; i<nr; i++) {
@@ -726,7 +725,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	//it is possible to delete the data in Full_Cone after extracting it
 
 	if(verbose) {
-		verboseOutput() << "transforming data...";
+		verboseOutput() << "transforming data..."<<flush;
 	}
 	
 	if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {
