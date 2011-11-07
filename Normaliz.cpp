@@ -29,6 +29,7 @@ using namespace std;
 #include "libnormaliz/cone.h"
 //#include "libnormaliz/libnormaliz.cpp"
 using namespace libnormaliz;
+#include "Input.cpp"
 #include "output.cpp"
 
 
@@ -221,7 +222,6 @@ int main(int argc, char* argv[])
 //---------------------------------------------------------------------------
 
 template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_all_files ) {
-	size_t i,j;
 	vector<Integer> Grading;
 
 	Output<Integer> Out;    //all the information relevant for output is collected in this object
@@ -231,8 +231,6 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 	} else if (write_extra_files) {
 		Out.set_write_extra_files();
 	}
-
-
 
 	string name_in=output_name+".in";
 	const char* file_in=name_in.c_str();
@@ -251,191 +249,28 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 		in2.close();
 	}
 	in.open(file_in,ifstream::in);
-	if (in.is_open()==false) {
+	if ( !in.is_open() ) {
 		cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
 		return 1;
 	}
 
-
-
-
-	string type_string;
-	size_t nr_rows,nr_columns;;
-	int type;
-	InputType input_type = Type::integral_closure;
-	Integer number;
-	in >> nr_rows;
-	in >> nr_columns;
-	Matrix<Integer> M(nr_rows,nr_columns);
-	for(i=1; i<=nr_rows; i++){
-		for(j=1; j<=nr_columns; j++) {
-			in >> number;
-			M.write(i,j,number);
-		}
-	}
-
-	in>>type_string;
-	if (type_string=="0"||type_string=="integral_closure") {
-		type=0;
-		input_type = Type::integral_closure;
-	} else
-	if (type_string=="1"||type_string=="normalization") {
-		type=1;
-		input_type = Type::normalization;
-	} else
-	if (type_string=="2"||type_string=="polytope") {
-		type=2;
-		input_type = Type::polytope;
-	} else
-	if (type_string=="3"||type_string=="rees_algebra") {
-		type=3;
-		input_type = Type::rees_algebra;
-	} else
-	if (type_string=="4"||type_string=="hyperplanes") {
-		type=4;
-	} else
-	if (type_string=="5"||type_string=="equations") {
-		type=5;
-	} else
-	if (type_string=="6"||type_string=="congruences") {
-		type=6;
-	} else
-	if (type_string=="10"||type_string=="lattice_ideal") {
-		type=10;
-		input_type = Type::lattice_ideal;
-	} else {
-		cerr<<"Warning: Unknown type "<<type_string<<" and will be replaced with type integral_closure."<<endl;
-		type=0;
-		input_type = Type::integral_closure;
-	}
-
-	if ( in.fail() ) {
-		cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file."<<endl;
-		return 1;
-	}
-
 	Out.set_name(output_name);
-	
-	if (type >= 4 && type <= 6) { //equations, inequalities, congruences
-		size_t nc = nr_columns;
-		if (type == 6) {
-			nc--;  //the congruence matrix has one extra column
-		}
-		multimap <Type::InputType, vector< vector<Integer> > > constraints;
 
-		while (true) {
-			switch(type) {
-				case 4:
-					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::hyperplanes, M.get_elements()));
-					break;
-				case 5:
-					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::equations, M.get_elements()));
-					break;
-				case 6:
-					constraints.insert(pair<Type::InputType, vector< vector<Integer> > > (Type::congruences, M.get_elements()));
-					break;
-				default:
-					cerr<<"Reached unreachable code in Normaliz.cpp. Please contact the developers"<<endl;
-					return 1;
-			}
-			if (!in.good()) 
-				break;
-			in >> nr_rows;
-			in >> nr_columns;
-			if (in.eof())
-				break;  //not enough data to read on
-			M = Matrix<Integer>(nr_rows,nr_columns);
-			for(i=1; i<=nr_rows; i++){
-				for(j=1; j<=nr_columns; j++) {
-					in >> number;
-					M.write(i,j,number);
-				}
-			}
+	//read the file
+	map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput (in, Out);
 
-			in>>type_string;
-			if ( in.fail() ) {
-				cerr << "error: Failed to read file "<<name_in<<". May be a bad format of the input file?"<<endl;
-				return 1;
-			}
+	in.close();
 
-			if	 (type_string=="4"||type_string=="hyperplanes") {
-				type=4;
-				if(nr_columns!=nc) {
-					cerr<<"Number of columns not matching. Check input file!";
-					return 1;
-				}
-			} else
-			if (type_string=="5"||type_string=="equations") {
-				type=5;
-				if(nr_columns!=nc) {
-					cerr<<"Number of columns not matching. Check input file!";
-					return 1;
-				}
-			} else
-			if (type_string=="6"||type_string=="congruences") {
-				type=6;
-				if(nr_columns!=nc+1) {
-					cerr<<"Number of columns not matching. Check input file!";
-					return 1;
-				}
-			} else {
-				cerr<<"Illegal input type \""<<type_string<<"\" at this position."<<endl;
-				return 1;
-			}
-		}
-		
-		in.close();
-		if (verbose) {
-			cout<<"\n************************************************************\n";
-			cout<<"Running in computation mode "<<computation_mode<<" with input type constraints."<<endl;
-		}
-		Cone<Integer> MyCone = Cone<Integer>(constraints);
-		if (Grading.size() != 0) {
-			MyCone.setLinearForm(Grading);
-		}
-		MyCone.compute(computation_mode);
-		Out.setCone(MyCone);
-		Out.write_files();
-	} 
-	else { // all other types
-
-		//TODO quick solution to input a grading
-		if (in.good()) {
-			in >> nr_rows;
-		}
-		if (in.good()) {
-			cout << "looking for grading ... ";
-			in >> nr_columns;
-			Matrix<Integer> GradingMatrix = Matrix<Integer>(nr_rows, nr_columns);
-			GradingMatrix.write(in);
-			if (!in.fail() && nr_rows > 0) {
-				Grading = GradingMatrix[0];
-				cout << "successfull! " << endl;
-				//v_read(Grading);
-			} else {
-				cout << "FAILED!"<<endl;
-				GradingMatrix.print(cout);
-			}
-		}
-		in.close();
-		//main computations and output
-		if (verbose) {
-			cout<<"\n************************************************************\n";
-			cout<<"Running in computation mode "<<computation_mode<<" with input type "<<type<<"."<<endl;
-		}
-		Cone<Integer> MyCone = Cone<Integer>(M.get_elements(), input_type);
-		if (Grading.size() != 0) {
-			MyCone.setLinearForm(Grading);
-		}
-//		MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
-		MyCone.compute(computation_mode);
-		Out.setCone(MyCone);
-		if (type == 2) {
-			Out.set_type(OT_POLYTOP);
-		} else if (type == 3) {
-			Out.set_type(OT_REES);
-		}
-		Out.write_files();
+	if (verbose) {
+		cout<<"\n************************************************************\n";
+		cout<<"Running in computation mode "<<computation_mode<<"."<<endl;
 	}
+
+	Cone<Integer> MyCone = Cone<Integer>(input);
+//	MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
+	MyCone.compute(computation_mode);
+	Out.setCone(MyCone);
+	Out.write_files();
+
 	return 0;
 }

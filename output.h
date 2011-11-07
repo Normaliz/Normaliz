@@ -34,7 +34,7 @@ using namespace libnormaliz;
 
 enum OutputType {
   OT_CONE,
-  OT_POLYTOP,
+  OT_POLYTOPE,
   OT_REES
 };
 

@@ -406,7 +406,7 @@ void Output<Integer>::write_files() const {
 		}
 		out<<"index = "<< BasisChange.get_index() <<endl;
 
-		if (type == OT_POLYTOP) {
+		if (type == OT_POLYTOPE) {
 			out<<"dimension of the polytope = "<<rank-1<<endl;
 		}
 		
