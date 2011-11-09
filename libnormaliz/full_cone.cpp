@@ -427,7 +427,7 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 		if (nr_zero_i>=subfacet_dim) {
 		
 			missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
-											      // to have a chance for common subfacet
+			                                      // to have a chance for common subfacet
 				for (j=0; j<nr_NegNSimp; j++){
 				hp_j=Neg_Non_Simp[j];
 				
@@ -509,72 +509,81 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 
 template<typename Integer>
 void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
-	typename list<FMDATA>::const_iterator i=HypIndVal.begin();
-	typename list< pair< vector<size_t>, Integer> >::const_iterator j;
-	size_t nr_zero_i, nr_nonzero_i, not_in_i=0, l, k; 
+
 	size_t s, Triangulation_size=Triangulation.size(); // the size we start with
-	vector<size_t> key(dim);
 
-	size_t ipos=0;
 	size_t listsize=HypIndVal.size();
+	vector<typename list<FMDATA>::iterator> neg_nonsimp;
+	neg_nonsimp.reserve(listsize);
+	typename list<FMDATA>::iterator i=HypIndVal.begin();
 
-	#pragma omp parallel for private(j,nr_zero_i,nr_nonzero_i,l,k,s) firstprivate(ipos, i, key, not_in_i) schedule(dynamic)
-	for (size_t kk=0; kk<listsize; ++kk) {
-		for(;kk > ipos; ++ipos, ++i) ;
-		for(;kk < ipos; --ipos, --i) ;
+	vector<size_t> key(dim);
+	size_t nr_gen_i, k,l;
 
-		if ((*i).ValNewGen<0) {
-			nr_zero_i=(*i).GenInHyp.count();
+	// #pragma omp critical(VERBOSE)
+	// verboseOutput() << "L " << pyr_level << " H " << listsize << " T " << Triangulation.size() << endl << flush;
 
-			if (nr_zero_i==dim-1) { //simplicial
-				l=0;
-				for (k = 0; k <nr_gen; k++) {
-					if ((*i).GenInHyp[k]==1) {
-						key[l]=k+1;
-						l++;
-					}
-				}
-				key[dim-1]=new_generator+1;
+	for (;i!=HypIndVal.end(); ++i) {
 
-				store_key(key,i->ValNewGen);
-				// if(!keep_triangulation){     NEW EVA
-				//  Simplex<Integer> simp(key);        
-				//  simp.evaluate(*this,i->ValNewGen);
-				// }
+		if (i->ValNewGen>=0) // non-visble facet
+			 continue;       // not in the next loop
+
+		nr_gen_i=i->GenInHyp.count();  // number of generators in hyperplane
+
+		if (nr_gen_i!=dim-1) {  // non-simplicial visible
+			neg_nonsimp.push_back(i);  // will be treated later
+			continue;
+		}
+
+		// only simplicial visible taken care of here
+		l=0;
+		for (k = 0; k <nr_gen; k++) {
+			if (i->GenInHyp[k]==1) {
+				key[l]=k+1;
+				l++;
 			}
-			else {
-				j =Triangulation.begin();
-				for (s=0; s<Triangulation_size; s++){
-					key=j->first;
-					nr_nonzero_i=0;
-					k=0;
-					do{
-						if ( !(*i).GenInHyp.test(key[k]-1)) {
-							nr_nonzero_i++;
-							not_in_i=k;
-						}
-						k++;
-					} while((k<dim)&&(nr_nonzero_i<2));
-					
-					if (nr_nonzero_i<=1){
-						key[not_in_i]=new_generator+1;
-						store_key(key,i->ValNewGen); // store simplex in triangulation
+		}
+		key[dim-1]=new_generator+1;
+		store_key(key,i->ValNewGen);
+	}
 
-						// if(!keep_triangulation){       NEW EVA
-						//  Simplex<Integer> simp(key);        
-						//  simp.evaluate(*this,i->ValNewGen);
-						// }
-					}
-
-					j++; 
-									   
-				}  // s
-				
-				
-			} // else
 			
-		} // if < 0
-		
+	typename list< pair< vector<size_t>, Integer> >::iterator j;
+	listsize=neg_nonsimp.size();
+	bool one_not_in_i, not_in_facet;
+	size_t not_in_i;
+	
+	#pragma omp parallel for private(i,j,not_in_i,one_not_in_i,not_in_facet,k,s,key)  schedule(dynamic)
+	for (size_t kk=0; kk<listsize; ++kk) {
+		 i=neg_nonsimp[kk];
+		 j =Triangulation.begin();
+		 for (s=0; s<Triangulation_size; s++){
+			 key=j->first;
+			 one_not_in_i=false;  // true indicates that one gen of simplex is not in hyperplane
+			 not_in_facet=false;  // true indicates that a second gen of simplex is not in hyperplane
+			 for(k=0;k<dim;k++)
+			 {
+				if ( !i->GenInHyp.test(key[k]-1)) {
+					if(one_not_in_i){
+						not_in_facet=true;
+						break;
+					}
+					one_not_in_i=true;
+					not_in_i=k;
+				 }
+			 }
+			 
+			 if(not_in_facet){ // simplex does npot share facet with hyperplane
+				j++;
+				continue;
+			 }
+			 
+			 key[not_in_i]=new_generator+1;
+			 store_key(key,i->ValNewGen); // store simplex in triangulation
+			 j++;
+			 
+		 } // for s
+
 	} // for kk
 }
 
@@ -709,7 +718,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 	}
 
 	//the volume is an upper bound for the height
-	if(do_triangulation)
+	if(do_triangulation || do_partial_triangulation)
 		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
 		if (do_h_vector) {
@@ -720,8 +729,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 				do_h_vector = false;
 			}
 		}
-		Simplex<Integer> simp(key);
-		// simp.evaluate(*this, -S.read_volume()); NEW EVA
 	}
 }
 
@@ -939,13 +946,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 		return; 
 		
 	// now we are in a pyramid
-
-	#pragma omp critical(TRIANG)
-	{
-	if(!Top_Cone->keep_triangulation && Top_Cone->Triangulation.size()>EvalBoundTriang)
-		Top_Cone->evaluate_triangulation();
-	}
-   
+  
 	typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Triangulation.begin();
 	for(;pyr_simp!=Triangulation.end();pyr_simp++){
 		for(i=0;i<dim;i++)
@@ -953,6 +954,12 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 	}
 	#pragma omp critical(TRIANG)
 	Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
+	
+	#pragma omp critical(TRIANG)
+	{
+	if(!Top_Cone->keep_triangulation && Top_Cone->Triangulation.size()>EvalBoundTriang)
+		Top_Cone->evaluate_triangulation();
+	}
   
 }
 //---------------------------------------------------------------------------
@@ -961,6 +968,8 @@ template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
 	size_t listsize = Triangulation.size();
+	if(listsize==0)
+		return;
 
 	const long VERBOSE_STEPS = 50;
 	long step_x_size = listsize-VERBOSE_STEPS;
@@ -1831,6 +1840,11 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 		is_Computed.set(ConeProperty::HVector);
 		is_Computed.set(ConeProperty::Triangulation);
 	}
+	pyr_level=0;
+	Top_Cone=this;
+	Top_Key.resize(nr_gen);
+	for(int i=0;i<nr_gen;i++)
+		Top_Key[i]=i+1;
 }
 
 //---------------------------------------------------------------------------
@@ -1880,6 +1894,11 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 		is_Computed.set(ConeProperty::HVector);
 		is_Computed.set(ConeProperty::HilbertPolynomial);
 	}
+	pyr_level=0;
+	Top_Cone=this;
+	Top_Key.resize(nr_gen);
+	for(int i=0;i<nr_gen;i++)
+		Top_Key[i]=i+1;
 }
 //---------------------------------------------------------------------------
 
@@ -1890,18 +1909,12 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
 	Generators = C.Generators.submatrix(Key);
 	dim = Generators.nr_of_columns();
 	nr_gen = Generators.nr_of_rows();
-	if(C.is_pyramid){
-		Top_Cone=C.Top_Cone;       // relate to top cone
-		Top_Key.reserve(nr_gen);
-		for(int i=0;i<nr_gen;i++)
-		{
-			Top_Key[i]=C.Top_Key[Key[i]-1];
-		}    
-	}
-	else{ // C is the top cone
-		Top_Cone=&C;
-		Top_Key=Key;
-	}
+	
+	Top_Cone=C.Top_Cone; // relate to top cone
+	Top_Key.resize(nr_gen);
+	for(int i=0;i<nr_gen;i++)
+		Top_Key[i]=C.Top_Key[Key[i]-1];
+  
 	multiplicity = 0;
 	is_Computed =  bitset<ConeProperty::EnumSize>();
 	Extreme_Rays = vector<bool>(nr_gen,false);
@@ -1925,6 +1938,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
 	do_Hilbert_basis=C.do_Hilbert_basis;
 	keep_triangulation=C.keep_triangulation;
 	is_pyramid=true;
+	pyr_level=C.pyr_level+1;
 }
 
 //---------------------------------------------------------------------------

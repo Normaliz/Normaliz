@@ -100,6 +100,8 @@ class Full_Cone {
 	Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
 	vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
 	
+	int pyr_level;
+	
 	
 
 /* ---------------------------------------------------------------------------
