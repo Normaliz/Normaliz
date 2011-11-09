@@ -96,6 +96,9 @@ class Full_Cone {
 	list<FMDATA> HypIndVal;
 	
 	vector<Integer> Order_Vector;
+
+	Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
+	vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
 	
 	
 
@@ -127,6 +130,7 @@ class Full_Cone {
 	void compute_support_hyperplanes();
 	void compute_support_hyperplanes_triangulation();
 	void evaluate_triangulation();
+	void transfer_triangulation_to_top();
 	void primal_algorithm_main(); 
 	void primal_algorithm_keep_triang();
 	void primal_algorithm_immediate_evaluation();
@@ -171,7 +175,7 @@ public:
 	Full_Cone();
 	Full_Cone(Matrix<Integer> M);            //main constructor
 	Full_Cone(const Cone_Dual_Mode<Integer> &C);
-	Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M); // for pyramids
+	Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access

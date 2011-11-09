@@ -628,7 +628,7 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 			in_Pyramid.set(i);
 		}
 	}
-	Full_Cone<Integer> Pyramid(*this,Generators.submatrix(Pyramid_key));
+	Full_Cone<Integer> Pyramid(*this,Pyramid_key);
 	Pyramid.do_triangulation= !recursive || do_triangulation;
 	if(Pyramid.do_triangulation)
 		Pyramid.do_partial_triangulation=false;
@@ -636,21 +636,7 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 
 	// now we give the data back to the "mother cone"
 	// triangulation and support hypewrplanes only if 
-	// they are not done on the "mother" level ( <==> recursive==tue)
-	
-	if(recursive && keep_triangulation){   
-		typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Pyramid.Triangulation.begin();
-		pair<vector<size_t>,Integer> newsimplex;
-		newsimplex.first=vector<size_t> (dim);
-		for(;pyr_simp!=Pyramid.Triangulation.end();pyr_simp++){
-			for(i=0;i<dim;i++)
-				newsimplex.first[i]=Pyramid_key[pyr_simp->first[i]-1];
-			newsimplex.second=pyr_simp->second;
-			#pragma omp critical(TRIANG)
-			Triangulation.push_back(newsimplex);          
-		}
-	}
-	Pyramid.Triangulation.clear();        
+	// they are not done on the "mother" level ( <==> recursive==tue)      
 	 
 	if(recursive){         
 		typename list<vector<Integer> >::iterator pyr_hyp = Pyramid.Support_Hyperplanes.begin();
@@ -679,19 +665,6 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 		}
 	}
 	Pyramid.Support_Hyperplanes.clear();
-	
-	if(do_h_vector) {
-		#pragma omp critical(HSERIES)
-		Hilbert_Series += Pyramid.Hilbert_Series;
-	}
-	
-	#pragma omp critical(MULTIPLICITY)
-	multiplicity += Pyramid.multiplicity;
-
-	#pragma omp critical(CANDIDATES)
-	Candidates.splice(Candidates.begin(),Pyramid.Candidates);
-	#pragma omp critical(HT1ELEMENTS)
-	Ht1_Elements.splice(Ht1_Elements.begin(),Pyramid.Ht1_Elements);
 }
 
 //---------------------------------------------------------------------------
@@ -837,11 +810,7 @@ void Full_Cone<Integer>::build_cone() {
 				// Magic Bounds to deside whether to use pyramids
 				if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
 				  || nr_neg*Triangulation.size() > RecBoundTriang) {
-					if(!pyramid_recursion && !keep_triangulation)
-					{
-						evaluate_triangulation();  // NEW EVA
-						Triangulation.clear();
-					}
+					transfer_triangulation_to_top(); // NEW EVA
 					pyramid_recursion=true;
 					process_pyramids(i,true); //recursive
 				}
@@ -883,12 +852,11 @@ void Full_Cone<Integer>::build_cone() {
 	
 	HypIndVal.clear();
 
-	if(!keep_triangulation) // NEW EVA  evaluate what has not yet been evaluated,
-	{                       // that is, on the lowest recirsion level.
-	   evaluate_triangulation();   // if(!keep_triangulation) lower levels do not
-	   Triangulation.clear();      // return any simplices,
-	}                              // in other words: we do not evaluate what has been
-								   // evaluated on a lower level.
+	transfer_triangulation_to_top(); // NEW EVA
+	
+	if(!is_pyramid)
+		evaluate_triangulation(); // force evaluation of remaining simplices
+	
 //#pragma omp atomic
 //  RekTiefe--;
 
@@ -955,6 +923,41 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
+
+	int i;
+	size_t EvalBoundTriang = 1000000; // 1Mio
+	
+	if(!is_pyramid && keep_triangulation)  // no transfer necessary
+		return;                            // and evaluation at the end
+		
+	#pragma omp critical(TRIANG)
+	if(!is_pyramid && Triangulation.size()>EvalBoundTriang)
+		evaluate_triangulation();   // evaluate now and clear triangulation     
+
+	if(!is_pyramid)  // if on top level, everything has been done
+		return; 
+		
+	// now we are in a pyramid
+
+	#pragma omp critical(TRIANG)
+	{
+	if(!Top_Cone->keep_triangulation && Top_Cone->Triangulation.size()>EvalBoundTriang)
+		Top_Cone->evaluate_triangulation();
+	}
+   
+	typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Triangulation.begin();
+	for(;pyr_simp!=Triangulation.end();pyr_simp++){
+		for(i=0;i<dim;i++)
+			pyr_simp->first[i]=Top_Key[pyr_simp->first[i]-1];                  
+	}
+	#pragma omp critical(TRIANG)
+	Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
+  
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
 	size_t listsize = Triangulation.size();
@@ -967,7 +970,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 						<< " (one | per 2%)" << endl;
 	}
 	
-
 	#pragma omp parallel 
 	{
 		typename list<pair<vector<size_t>,Integer> >::iterator s = Triangulation.begin();
@@ -993,6 +995,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 	if (verbose) {
 		verboseOutput() << endl << listsize<<" simplices evaluated." <<endl;
 	}
+	
+	if(!keep_triangulation)
+		Triangulation.clear();
 }
 
 //---------------------------------------------------------------------------
@@ -1007,9 +1012,10 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 			do_h_vector=false;
 	}
 		
-	if (keep_triangulation) {
-		evaluate_triangulation();
-	} else {
+	/* if (keep_triangulation) {                // NEW EVA
+		evaluate_triangulation(); 
+	} else { */
+	if (!keep_triangulation) {               // NEW EVA
 		Support_Hyperplanes.clear();
 		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		for(size_t i=0;i<nr_gen;i++)
@@ -1879,10 +1885,23 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
 /* constructor for pyramids */
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(const Full_Cone<Integer>& C, Matrix<Integer> M) {
-	dim = M.nr_of_columns();
-	Generators = M;
+Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
+
+	Generators = C.Generators.submatrix(Key);
+	dim = Generators.nr_of_columns();
 	nr_gen = Generators.nr_of_rows();
+	if(C.is_pyramid){
+		Top_Cone=C.Top_Cone;       // relate to top cone
+		Top_Key.reserve(nr_gen);
+		for(int i=0;i<nr_gen;i++)
+		{
+			Top_Key[i]=C.Top_Key[Key[i]-1];
+		}    
+	}
+	else{ // C is the top cone
+		Top_Cone=&C;
+		Top_Key=Key;
+	}
 	multiplicity = 0;
 	is_Computed =  bitset<ConeProperty::EnumSize>();
 	Extreme_Rays = vector<bool>(nr_gen,false);
