@@ -427,7 +427,7 @@ void Full_Cone<Integer>::transform_values(const size_t& ind_gen){
 		if (nr_zero_i>=subfacet_dim) {
 		
 			missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
-			                                      // to have a chance for common subfacet
+											      // to have a chance for common subfacet
 				for (j=0; j<nr_NegNSimp; j++){
 				hp_j=Neg_Non_Simp[j];
 				
@@ -537,10 +537,10 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 				key[dim-1]=new_generator+1;
 
 				store_key(key,i->ValNewGen);
-				if(!keep_triangulation){
-					Simplex<Integer> simp(key);        
-					simp.evaluate(*this,i->ValNewGen);
-				}
+				// if(!keep_triangulation){     NEW EVA
+				//  Simplex<Integer> simp(key);        
+				//  simp.evaluate(*this,i->ValNewGen);
+				// }
 			}
 			else {
 				j =Triangulation.begin();
@@ -558,12 +558,12 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 					
 					if (nr_nonzero_i<=1){
 						key[not_in_i]=new_generator+1;
+						store_key(key,i->ValNewGen); // store simplex in triangulation
 
-						store_key(key,i->ValNewGen);
-						if(!keep_triangulation){
-							Simplex<Integer> simp(key);        
-							simp.evaluate(*this,i->ValNewGen);
-						}
+						// if(!keep_triangulation){       NEW EVA
+						//  Simplex<Integer> simp(key);        
+						//  simp.evaluate(*this,i->ValNewGen);
+						// }
 					}
 
 					j++; 
@@ -596,11 +596,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 
 	typename list< FMDATA >::iterator l=HypIndVal.begin();
 
-#ifdef _WIN32 //for 32 and 64 bit windows
-
 	size_t lpos=0, listsize=HypIndVal.size();
 
-   #pragma omp parallel for firstprivate(lpos,l) schedule(dynamic) 
+   // #pragma omp parallel for firstprivate(lpos,l) schedule(dynamic) 
 	for (size_t k=0; k<listsize; k++) {
 		for(;k > lpos; lpos++, l++) ;
 		for(;k < lpos; lpos--, l--) ;
@@ -610,44 +608,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recurs
 			continue;
 	
 		process_pyramid((*l), ind_gen, recursive);
-	} //end for
-
-#else         // all other systems
-
-	if (is_pyramid) { //do not create a new parallel region
-		for (; l != HypIndVal.end(); ++l) {
-			// only triangulation of Pyramids of height >=2 needeed
-			if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1))
-				continue;
-		
-			#pragma omp task firstprivate(l)
-			{
-				process_pyramid((*l), ind_gen, recursive);
-			}
-		} //end for
-		#pragma omp taskwait
-	} else {
-		#pragma omp parallel if(!is_pyramid)
-		{
-			#pragma omp single
-			{
-				for (; l != HypIndVal.end(); ++l) {
-	
-					// only triangulation of Pyramids of height >=2 needeed
-					if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1))
-						continue;
-				
-					#pragma omp task firstprivate(l)
-					{
-						process_pyramid((*l), ind_gen, recursive);
-					}
-			
-				} //end for
-			} //end single
-			#pragma omp taskwait
-		} //end parallel
 	}
-#endif //else _WIN32
 }
 
 //---------------------------------------------------------------------------
@@ -671,9 +632,13 @@ void Full_Cone<Integer>::process_pyramid(FMDATA& l, const size_t ind_gen,const b
 	Pyramid.do_triangulation= !recursive || do_triangulation;
 	if(Pyramid.do_triangulation)
 		Pyramid.do_partial_triangulation=false;
-	Pyramid.build_cone(); 
+	Pyramid.build_cone(); // build and evaluate pyramid
+
+	// now we give the data back to the "mother cone"
+	// triangulation and support hypewrplanes only if 
+	// they are not done on the "mother" level ( <==> recursive==tue)
 	
-	if(recursive && keep_triangulation){        
+	if(recursive && keep_triangulation){   
 		typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Pyramid.Triangulation.begin();
 		pair<vector<size_t>,Integer> newsimplex;
 		newsimplex.first=vector<size_t> (dim);
@@ -783,7 +748,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 			}
 		}
 		Simplex<Integer> simp(key);
-		simp.evaluate(*this, -S.read_volume());
+		// simp.evaluate(*this, -S.read_volume()); NEW EVA
 	}
 }
 
@@ -873,7 +838,10 @@ void Full_Cone<Integer>::build_cone() {
 				if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
 				  || nr_neg*Triangulation.size() > RecBoundTriang) {
 					if(!pyramid_recursion && !keep_triangulation)
+					{
+						evaluate_triangulation();  // NEW EVA
 						Triangulation.clear();
+					}
 					pyramid_recursion=true;
 					process_pyramids(i,true); //recursive
 				}
@@ -914,14 +882,21 @@ void Full_Cone<Integer>::build_cone() {
 	} // end if (dim>0)
 	
 	HypIndVal.clear();
-	
+
+	if(!keep_triangulation) // NEW EVA  evaluate what has not yet been evaluated,
+	{                       // that is, on the lowest recirsion level.
+	   evaluate_triangulation();   // if(!keep_triangulation) lower levels do not
+	   Triangulation.clear();      // return any simplices,
+	}                              // in other words: we do not evaluate what has been
+								   // evaluated on a lower level.
 //#pragma omp atomic
-//	RekTiefe--;
+//  RekTiefe--;
 
 	is_Computed.set(ConeProperty::SupportHyperplanes);
+
 	if(keep_triangulation) {
 		if(!is_pyramid) {
-			//sort the keys
+			//sort the keys only at top level and when the traingulation is complete 
 			typename list< pair<vector<size_t>, Integer> >::iterator it = Triangulation.begin();
 			while (it!=Triangulation.end()) {
 				sort(it->first.begin(),it->first.end());
@@ -989,7 +964,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 	if (verbose) {
 		verboseOutput() << "evaluating "<<listsize<<" simplices" <<endl;
 		verboseOutput() << "---------+---------+---------+---------+---------+"
-		                << " (one | per 2%)" << endl;
+						<< " (one | per 2%)" << endl;
 	}
 	
 
@@ -1039,12 +1014,12 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		is_Computed.reset(ConeProperty::SupportHyperplanes);
 		for(size_t i=0;i<nr_gen;i++)
 			in_triang[i]=false;
-//		cout << "New build " << endl;
+//      cout << "New build " << endl;
 		build_cone();
 		extreme_rays_and_ht1_check();
 		if(!pointed) return;
 	}
-//	cout << "Nr Invert " << NrInvert << endl;
+//  cout << "Nr Invert " << NrInvert << endl;
 	
 	if (ht1_extreme_rays && do_triangulation)
 		is_Computed.set(ConeProperty::Multiplicity,true);
@@ -1080,10 +1055,10 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 	compute_support_hyperplanes_triangulation();
 	extreme_rays_and_ht1_check();
 	if(!pointed) return;
-/*	if (ht1_extreme_rays && !ht1_generated) {
+/*  if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
 			cout << "not all generators have height 1, but extreme rays have"<<endl
-			     << "making a new triangulation with only extreme rays" <<endl;
+				 << "making a new triangulation with only extreme rays" <<endl;
 		}
 		Support_Hyperplanes.clear();
 		is_Computed.set(ConeProperty::SupportHyperplanes,false);
@@ -1383,7 +1358,7 @@ void Full_Cone<Integer>::check_ht1_generated() {
 				sp = v_scalar_product(Generators[i], Linear_Form);
 				if (sp<1) {
 					errorOutput() << "Linear form gives non-positive value " << sp
-					              << " for generator " << i+1 << "." << endl;
+								  << " for generator " << i+1 << "." << endl;
 					throw BadInputException();
 				}
 				if (sp != 1) {
@@ -1423,7 +1398,7 @@ void Full_Cone<Integer>::check_ht1_extreme_rays() {
 			sp = v_scalar_product(Generators[i], Linear_Form);
 			if (sp<1) {
 				errorOutput() << "Linear form gives non-positive value " << sp
-				              << " for generator " << i+1 << "." << endl;
+							  << " for generator " << i+1 << "." << endl;
 				throw BadInputException();
 			}
 			if (sp != 1) {
@@ -1670,7 +1645,7 @@ void Full_Cone<Integer>::global_reduction() {
 					steps_done++;
 					step_x_size += csize;
 					verboseOutput() << "|" <<flush;
-//					cout<<counter<<" ";
+//                  cout<<counter<<" ";
 					if(VERBOSE_STEPS > 50 && steps_done%50 == 0) {
 						verboseOutput() << "  " << (steps_done) << "000" << endl;
 					}
