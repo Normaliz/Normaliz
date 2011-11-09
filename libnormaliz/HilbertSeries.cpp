@@ -322,7 +322,7 @@ void poly_mult_to(vector<long64>& a, long d, long e) {
 	a.reserve(a.size() + d*e);
 	while (e>0) {
 		a.resize(a.size() + d);
-		for (i=a.size(); i>=d; --i) {
+		for (i=a.size()-1; i>=d; --i) {
 			a[i] -= a[i-d];
 		}
 		e--;
@@ -462,11 +462,5 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
 		//the remainders are the coefficients of the transformed polynomial
 	}
 }
-
-
-//not true anymore
-// This method uses polynomials with rational coefficients.
-// The vector a encodes a[0]/a[1] + a[2]/a[3]*t + ...
-
 
 } //end namespace libnormaliz
