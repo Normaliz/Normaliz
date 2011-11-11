@@ -313,6 +313,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	HilbertSeries Hilbert_Series;
 	if (C.do_h_vector || C.do_ht1_elements) {
 		//degrees of the generators according to the Grading of C
+		assert(C.isComputed(ConeProperty::LinearForm));
 		vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form);
 		//TODO compute degrees in full_cone and just get the ones according to key?
 		gen_degrees = vector<long>(dim);

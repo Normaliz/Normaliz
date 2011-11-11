@@ -557,7 +557,7 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 	for (size_t kk=0; kk<listsize; ++kk) {
 		 i=neg_nonsimp[kk];
 		 j =Triangulation.begin();
-		 for (s=0; s<Triangulation_size; s++){
+		 for (s=0; s<Triangulation_size; s++, j++) {
 			 key=j->first;
 			 one_not_in_i=false;  // true indicates that one gen of simplex is not in hyperplane
 			 not_in_facet=false;  // true indicates that a second gen of simplex is not in hyperplane
@@ -573,14 +573,12 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 				 }
 			 }
 			 
-			 if(not_in_facet){ // simplex does npot share facet with hyperplane
-				j++;
+			 if(not_in_facet){ // simplex does not share facet with hyperplane
 				continue;
 			 }
 			 
 			 key[not_in_i]=new_generator+1;
 			 store_key(key,i->ValNewGen); // store simplex in triangulation
-			 j++;
 			 
 		 } // for s
 
@@ -721,7 +719,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 	if(do_triangulation || do_partial_triangulation)
 		store_key(key,-S.read_volume());
 	if(!keep_triangulation) {
-		if (do_h_vector) {
+		if (do_h_vector || do_ht1_elements) {
 			//in the evaluation we need the linear form
 			check_ht1_generated();
 			if(!is_Computed.test(ConeProperty::LinearForm)) {
@@ -858,16 +856,18 @@ void Full_Cone<Integer>::build_cone() {
 	} // end if (dim>0)
 	
 	HypIndVal.clear();
+	is_Computed.set(ConeProperty::SupportHyperplanes);
 
 	transfer_triangulation_to_top(); // NEW EVA
 	
-	if(!is_pyramid)
-		evaluate_triangulation(); // force evaluation of remaining simplices
-	
+	if(!is_pyramid) { 
+		extreme_rays_and_ht1_check(); //computes also the linear form if possible
+		if(!pointed) return;
+		evaluate_triangulation(); // force evaluation of remaining/all simplices
+	}
 //#pragma omp atomic
 //  RekTiefe--;
 
-	is_Computed.set(ConeProperty::SupportHyperplanes);
 
 	if(keep_triangulation) {
 		if(!is_pyramid) {
@@ -892,6 +892,13 @@ void Full_Cone<Integer>::extreme_rays_and_ht1_check() {
 	compute_extreme_rays();
 	check_ht1_extreme_rays();
 	check_ht1_generated();
+	if(!isComputed(ConeProperty::LinearForm)
+	   && (do_ht1_elements || do_h_vector)){
+		errorOutput() << "No grading specified and cannot find one. "
+		              << "Disabling some computations!" << endl;
+		do_ht1_elements = false;
+		do_h_vector = false;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -932,7 +939,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
-	int i;
+	size_t i;
 	size_t EvalBoundTriang = 1000000; // 1Mio
 	
 	if(!is_pyramid && keep_triangulation)  // no transfer necessary
@@ -1069,6 +1076,7 @@ template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 	compute_support_hyperplanes_triangulation();
 	extreme_rays_and_ht1_check();
+
 	if(!pointed) return;
 /*  if (ht1_extreme_rays && !ht1_generated) {
 		if (verbose) {
@@ -1090,6 +1098,7 @@ void Full_Cone<Integer>::primal_algorithm_keep_triang() {
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
+	//find a grading linear form if necessary
 	if (!isComputed(ConeProperty::LinearForm) && (do_triangulation || do_ht1_elements || do_h_vector)) {
 		check_ht1_generated();
 		if(!ht1_generated) {
@@ -1098,7 +1107,6 @@ void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
 			if(!pointed) return;
 		}
 	}
-  //TODO not needed anymore?
 	primal_algorithm_main();
 }
 
@@ -1271,6 +1279,7 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
 	if (isComputed(ConeProperty::ExtremeRays))
 		return;
+	assert(isComputed(ConeProperty::SupportHyperplanes));
 	size_t i,j,k,l,t;
 	Matrix<Integer> SH=getSupportHyperplanes().transpose();
 	Matrix<Integer> Val=Generators.multiplication(SH);
@@ -1338,6 +1347,7 @@ void Full_Cone<Integer>::select_ht1_elements() {
 
 template<typename Integer>
 void Full_Cone<Integer>::check_pointed() {
+	assert(isComputed(ConeProperty::SupportHyperplanes));
 	if (is_Computed.test(ConeProperty::IsPointed))
 		return;
 	Matrix<Integer> SH = getSupportHyperplanes();
@@ -1843,7 +1853,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	pyr_level=0;
 	Top_Cone=this;
 	Top_Key.resize(nr_gen);
-	for(int i=0;i<nr_gen;i++)
+	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=i+1;
 }
 
@@ -1897,7 +1907,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	pyr_level=0;
 	Top_Cone=this;
 	Top_Key.resize(nr_gen);
-	for(int i=0;i<nr_gen;i++)
+	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=i+1;
 }
 //---------------------------------------------------------------------------
@@ -1912,11 +1922,11 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
 	
 	Top_Cone=C.Top_Cone; // relate to top cone
 	Top_Key.resize(nr_gen);
-	for(int i=0;i<nr_gen;i++)
+	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=C.Top_Key[Key[i]-1];
   
 	multiplicity = 0;
-	is_Computed =  bitset<ConeProperty::EnumSize>();
+	is_Computed =  ConeProperties();
 	Extreme_Rays = vector<bool>(nr_gen,false);
 	Support_Hyperplanes = list< vector<Integer> >();
 	Triangulation = list< pair<vector<size_t>,Integer> >();
