@@ -788,7 +788,7 @@ void Full_Cone<Integer>::build_cone() {
 				
 				size_t lpos=0;
 				size_t listsize=HypIndVal.size();
-				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) schedule(dynamic)
+				#pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic)
 				for (size_t k=0; k<listsize; k++) {
 					for(;k > lpos; lpos++, l++) ;
 					for(;k < lpos; lpos--, l--) ;
@@ -805,8 +805,9 @@ void Full_Cone<Integer>::build_cone() {
 						new_generator=true;
 						nr_neg++;
 					}
-					if (scalar_product>0) 
+					if (scalar_product>0) {
 						nr_pos++;
+					}
 				}  //end parallel for
 				
 				if(!new_generator)
