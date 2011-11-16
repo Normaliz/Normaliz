@@ -526,7 +526,7 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 	for (;i!=HypIndVal.end(); ++i) {
 
 		if (i->ValNewGen>=0) // non-visble facet
-			 continue;       // not in the next loop
+			continue;        // not in the next loop
 
 		nr_gen_i=i->GenInHyp.count();  // number of generators in hyperplane
 
@@ -552,8 +552,10 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 	listsize=neg_nonsimp.size();
 	bool one_not_in_i, not_in_facet;
 	size_t not_in_i;
+	pair<vector<size_t>,Integer> newsimplex;
+	list<pair<vector<size_t>,Integer> > Triangulation_kk;
 	
-	#pragma omp parallel for private(i,j,not_in_i,one_not_in_i,not_in_facet,k,s,key)  schedule(dynamic)
+	#pragma omp parallel for private(i,j,not_in_i,one_not_in_i,not_in_facet,k,s,key,newsimplex) firstprivate(Triangulation_kk)  schedule(dynamic)
 	for (size_t kk=0; kk<listsize; ++kk) {
 		 i=neg_nonsimp[kk];
 		 j =Triangulation.begin();
@@ -578,9 +580,14 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 			 }
 			 
 			 key[not_in_i]=new_generator+1;
-			 store_key(key,i->ValNewGen); // store simplex in triangulation
+			 // store_key(key,i->ValNewGen); // store simplex in triangulation
+			 newsimplex.first=key;
+			 newsimplex.second=i->ValNewGen;
+			 Triangulation_kk.push_back(newsimplex);
 			 
 		 } // for s
+		 #pragma omp critical(TRIANG)
+		 Triangulation.splice(Triangulation.end(),Triangulation_kk);
 
 	} // for kk
 }
@@ -730,7 +737,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 	}
 }
 
-//int RekTiefe=-1;
 
 //---------------------------------------------------------------------------
 
@@ -753,10 +759,6 @@ void Full_Cone<Integer>::build_cone() {
 	size_t i;
 	
 	bool pyramid_recursion=false;
-
-//#pragma omp atomic
-	//RekTiefe++;
-	//cout << RekTiefe;
 
 	// DECIDE WHETHER TO USE RECURSION
 	size_t RecBoundSuppHyp = dim*dim*dim;
@@ -861,13 +863,11 @@ void Full_Cone<Integer>::build_cone() {
 
 	transfer_triangulation_to_top(); // NEW EVA
 	
-	if(!is_pyramid) { 
-		extreme_rays_and_ht1_check(); //computes also the linear form if possible
-		if(!pointed) return;
-		evaluate_triangulation(); // force evaluation of remaining/all simplices
+	if(!is_pyramid && !keep_triangulation)
+	{
+		// verboseOutput() << "Forced evaluation build_cone"<< endl << flush;
+		evaluate_triangulation(); // force evaluation of remaining simplices
 	}
-//#pragma omp atomic
-//  RekTiefe--;
 
 
 	if(keep_triangulation) {
@@ -899,6 +899,20 @@ void Full_Cone<Integer>::extreme_rays_and_ht1_check() {
 		              << "Disabling some computations!" << endl;
 		do_ht1_elements = false;
 		do_h_vector = false;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::set_degrees() {
+	if(gen_degrees.size()==0 && is_Computed.test(ConeProperty::LinearForm)) // now we set the degrees
+	{
+		gen_degrees.resize(nr_gen);
+		vector<Integer> gen_degrees_Integer=Generators.MxV(Linear_Form);
+		for (size_t i=0; i<nr_gen; i++) {
+			assert(gen_degrees_Integer[i] > 0);
+			gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+		}
 	}
 }
 
@@ -929,15 +943,6 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_support_hyperplanes_triangulation(){
-	keep_triangulation=true;
-	do_triangulation=true;   
-	build_cone();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
 	size_t i;
@@ -948,7 +953,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 		
 	#pragma omp critical(TRIANG)
 	if(!is_pyramid && Triangulation.size()>EvalBoundTriang)
-		evaluate_triangulation();   // evaluate now and clear triangulation     
+		evaluate_triangulation();   // evaluate now and clear triangulation
 
 	if(!is_pyramid)  // if on top level, everything has been done
 		return; 
@@ -987,6 +992,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 						<< " (one | per 2%)" << endl;
 	}
 	
+	totalNrSimplices+=listsize;
+
 	#pragma omp parallel 
 	{
 		typename list<pair<vector<size_t>,Integer> >::iterator s = Triangulation.begin();
@@ -1009,8 +1016,21 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 		}
 	}
 
-	if (verbose) {
-		verboseOutput() << endl << listsize<<" simplices evaluated." <<endl;
+
+	Ht1_Elements.sort();
+	Ht1_Elements.unique();
+
+	Candidates.sort();
+	Candidates.unique();
+
+	if (verbose)
+	{
+		verboseOutput() << endl << totalNrSimplices << " simplices, ";
+		if(do_Hilbert_basis)
+			verboseOutput() << Candidates.size() << " HB candidates";
+	   if(do_ht1_elements)
+			verboseOutput() << Ht1_Elements.size()<< " ht1 vectors";
+		verboseOutput() << " accumulated" << endl << flush;
 	}
 	
 	if(!keep_triangulation)
@@ -1020,29 +1040,45 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::primal_algorithm_main(){
-	//at this time we should have a linear form if we can find one
+void Full_Cone<Integer>::primal_algorithm(){
+
+	// if keep_triangulation==false we must first find a grading if it is needed
+	if (!keep_triangulation && !isComputed(ConeProperty::LinearForm) && (do_triangulation || do_ht1_elements || do_h_vector)) {
+		check_ht1_generated();
+		if(!ht1_generated) {
+			compute_support_hyperplanes();
+			extreme_rays_and_ht1_check();
+			if(!pointed) return;
+
+			Support_Hyperplanes.clear();  // will be computed again by build_cone
+			is_Computed.reset(ConeProperty::SupportHyperplanes);
+			for(size_t i=0;i<nr_gen;i++)
+				in_triang[i]=false;
+		}
+		//if keep_triangulation==false we should have a linear form if we need one and can find it
+		if (!is_Computed.test(ConeProperty::LinearForm)) {
+			if (do_ht1_elements)
+				return;
+			if (do_h_vector)
+				do_h_vector=false;
+		}
+	}
+	set_degrees();
+
+	build_cone();  // evaluates if keep_triangulation==false
+
+	extreme_rays_and_ht1_check();
+	if(!pointed) return;
+	set_degrees();
 	if (!is_Computed.test(ConeProperty::LinearForm)) {
 		if (do_ht1_elements)
 			return;
 		if (do_h_vector)
 			do_h_vector=false;
 	}
-		
-	/* if (keep_triangulation) {                // NEW EVA
+
+	if (keep_triangulation)
 		evaluate_triangulation(); 
-	} else { */
-	if (!keep_triangulation) {               // NEW EVA
-		Support_Hyperplanes.clear();
-		is_Computed.reset(ConeProperty::SupportHyperplanes);
-		for(size_t i=0;i<nr_gen;i++)
-			in_triang[i]=false;
-//      cout << "New build " << endl;
-		build_cone();
-		extreme_rays_and_ht1_check();
-		if(!pointed) return;
-	}
-//  cout << "Nr Invert " << NrInvert << endl;
 	
 	if (ht1_extreme_rays && do_triangulation)
 		is_Computed.set(ConeProperty::Multiplicity,true);
@@ -1069,46 +1105,7 @@ void Full_Cone<Integer>::primal_algorithm_main(){
 		Hilbert_Series.simplify();
 		is_Computed.set(ConeProperty::HVector);
 	}
-}
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::primal_algorithm_keep_triang() {
-	compute_support_hyperplanes_triangulation();
-	extreme_rays_and_ht1_check();
-
-	if(!pointed) return;
-/*  if (ht1_extreme_rays && !ht1_generated) {
-		if (verbose) {
-			cout << "not all generators have height 1, but extreme rays have"<<endl
-				 << "making a new triangulation with only extreme rays" <<endl;
-		}
-		Support_Hyperplanes.clear();
-		is_Computed.set(ConeProperty::SupportHyperplanes,false);
-		Triangulation.clear();
-		in_triang = vector<bool>(nr_gen,false);
-		is_Computed.set(ConeProperty::Triangulation,false);
-		compute_support_hyperplanes_triangulation();
-	}
-*/ //TODO not needed anymore?
-	primal_algorithm_main();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::primal_algorithm_immediate_evaluation(){
-	//find a grading linear form if necessary
-	if (!isComputed(ConeProperty::LinearForm) && (do_triangulation || do_ht1_elements || do_h_vector)) {
-		check_ht1_generated();
-		if(!ht1_generated) {
-			compute_support_hyperplanes();
-			extreme_rays_and_ht1_check();
-			if(!pointed) return;
-		}
-	}
-	primal_algorithm_main();
 }
 
    
@@ -1133,8 +1130,10 @@ void Full_Cone<Integer>::support_hyperplanes() {
 
 // -v
 template<typename Integer>
-void Full_Cone<Integer>::support_hyperplanes_triangulation() { 
-	primal_algorithm_keep_triang();
+void Full_Cone<Integer>::support_hyperplanes_triangulation() {
+	do_triangulation=true;
+	keep_triangulation=true;
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1143,7 +1142,7 @@ void Full_Cone<Integer>::support_hyperplanes_triangulation() {
 template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {   
 	do_triangulation=true; 
-	primal_algorithm_immediate_evaluation();
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1151,7 +1150,9 @@ void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {
 template<typename Integer>
 void Full_Cone<Integer>::triangulation_hilbert_basis() {
 	do_Hilbert_basis=true;
-	primal_algorithm_keep_triang();
+	do_triangulation=true;
+	keep_triangulation=true;
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1160,7 +1161,7 @@ template<typename Integer>
 void Full_Cone<Integer>::hilbert_basis() {
 	do_Hilbert_basis=true;
 	do_partial_triangulation=true;
-	primal_algorithm_immediate_evaluation();
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1169,7 +1170,9 @@ template<typename Integer>
 void Full_Cone<Integer>::hilbert_basis_polynomial() {
 	do_Hilbert_basis=true;
 	do_h_vector=true;
-	primal_algorithm_keep_triang();   
+	do_triangulation=true;
+	keep_triangulation=true;
+	primal_algorithm();
 	reset_tasks();    
 }
 
@@ -1179,7 +1182,7 @@ void Full_Cone<Integer>::hilbert_basis_polynomial_pyramid() {
 	do_Hilbert_basis=true;
 	do_h_vector=true;
 	do_triangulation=true;
-	primal_algorithm_immediate_evaluation();
+	primal_algorithm();
 	reset_tasks();    
 }
 
@@ -1188,7 +1191,9 @@ template<typename Integer>
 void Full_Cone<Integer>::hilbert_polynomial() {
 	do_ht1_elements=true;
 	do_h_vector=true;
-	primal_algorithm_keep_triang();
+	do_triangulation=true;
+	keep_triangulation=true;
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1198,7 +1203,7 @@ void Full_Cone<Integer>::hilbert_polynomial_pyramid() {
 	do_ht1_elements=true;
 	do_h_vector=true;
 	do_triangulation=true;
-	primal_algorithm_immediate_evaluation();
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1207,7 +1212,7 @@ template<typename Integer>
 void Full_Cone<Integer>::ht1_elements() {
 	do_ht1_elements=true;
 	do_partial_triangulation=true;
-	primal_algorithm_immediate_evaluation();
+	primal_algorithm();
 	reset_tasks();
 }
 
@@ -1856,6 +1861,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	Top_Key.resize(nr_gen);
 	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=i+1;
+	totalNrSimplices=0;
 }
 
 //---------------------------------------------------------------------------
@@ -1910,6 +1916,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	Top_Key.resize(nr_gen);
 	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=i+1;
+	totalNrSimplices=0;
 }
 //---------------------------------------------------------------------------
 
@@ -1950,6 +1957,13 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
 	keep_triangulation=C.keep_triangulation;
 	is_pyramid=true;
 	pyr_level=C.pyr_level+1;
+	totalNrSimplices=0;
+	gen_degrees.resize(nr_gen);
+	if(is_Computed.test(ConeProperty::LinearForm)){ // now we copy the degrees
+		for (size_t i=0; i<nr_gen; i++) {
+			gen_degrees[i] = C.gen_degrees[Key[i]-1];
+		}
+	}
 }
 
 //---------------------------------------------------------------------------

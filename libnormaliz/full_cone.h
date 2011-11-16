@@ -88,20 +88,23 @@ class Full_Cone {
 	friend class Simplex<Integer>;
 	
 	struct FMDATA {
-		vector<Integer> Hyp;
-		boost::dynamic_bitset<> GenInHyp;
-		Integer ValNewGen;
+		vector<Integer> Hyp;               // linear form of the hyperplane
+		boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
+		Integer ValNewGen;                 // value of linear form on the generator to be added
 	};
 	
-	list<FMDATA> HypIndVal;
+	list<FMDATA> HypIndVal;  // contains the data for Fourier-Motzkin and extension of triangulation
 	
-	vector<Integer> Order_Vector;
+	vector<Integer> Order_Vector;  // vector for inclusion-exclusion
 
 	Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
 	vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
 	
-	int pyr_level;
+	int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
 	
+	size_t totalNrSimplices;
+
+	vector<long> gen_degrees;  // will contain the degrees of the generators
 	
 
 /* ---------------------------------------------------------------------------
@@ -129,13 +132,11 @@ class Full_Cone {
 	vector<Integer> compute_degree_function() const;
 
 	void extreme_rays_and_ht1_check();
+	void set_degrees();
 	void compute_support_hyperplanes();
-	void compute_support_hyperplanes_triangulation();
 	void evaluate_triangulation();
 	void transfer_triangulation_to_top();
-	void primal_algorithm_main(); 
-	void primal_algorithm_keep_triang();
-	void primal_algorithm_immediate_evaluation();
+	void primal_algorithm(); 
 	 
 	// void support_hyperplanes_partial_triangulation();
 	// void compute_support_hyperplanes_pyramid(const bool do_triang = false);

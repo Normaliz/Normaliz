@@ -287,9 +287,11 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
  
 	Generators=C.Generators.submatrix(key);
 
+	bool do_only_multiplicity=!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements;
+
 	bool unimodular=false;
 	vector<Integer> Indicator;
-	if(height >=-1 || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)) {
+	if(height >=-1 || do_only_multiplicity) {
 		Matrix<Integer> RS(1,dim);  // (transpose of) right hand side
 		RS.write(1,C.Order_Vector); // to hold order vector
 		RS=RS.transpose();
@@ -300,26 +302,20 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			unimodular=true;
 	}
 			
-	// in this cases we have to add the volume and nothing else is to be done
-	if ( (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements) 
-	  || (unimodular && !C.do_h_vector) ) {
+	// in this case we have to add the volume and nothing else is to be done
+	if ( do_only_multiplicity || (unimodular && !C.do_h_vector) ) {
 		#pragma omp critical(MULTIPLICITY)
 		C.multiplicity+=volume;
 		return volume;
 	}
 
 	// compute degrees of the generators
-	vector<long> gen_degrees;
+	vector<long> gen_degrees(dim);
 	HilbertSeries Hilbert_Series;
 	if (C.do_h_vector || C.do_ht1_elements) {
 		//degrees of the generators according to the Grading of C
-		assert(C.isComputed(ConeProperty::LinearForm));
-		vector<Integer> gen_degrees_Integer=Generators.MxV(C.Linear_Form);
-		//TODO compute degrees in full_cone and just get the ones according to key?
-		gen_degrees = vector<long>(dim);
-		for (size_t i=0; i<dim; i++) {
-			assert(gen_degrees_Integer[i] > 0);
-			gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+		for (size_t i=0; i<dim; i++){
+			gen_degrees[i] = C.gen_degrees[key[i]-1];
 		}
 		if (C.do_h_vector) {
 			int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
@@ -332,7 +328,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		}
 	}
 
-	bool decided=true;
+	bool decided=true; // true if order vector in no hyperplane of simplex
 	size_t i,j;
 	long64 Deg=0;    // Deg is the degree according to Grading in which the 0 vector is counted
 	if(unimodular) {  // it remains to count the 0-vector in the h-vector 
@@ -452,8 +448,8 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			Hilbert_Series.add_to_num(Deg);
 		}
 		
-		if(C.do_ht1_elements && normG==volume) // found degree 1 element
-		{        
+		if(C.do_ht1_elements && normG==volume && height <= -2) // found degree 1 element
+		{                                                      // only added if height >=2
 			help=Generators.VxM(elements[last]);
 			v_scalar_division(help,volume);
 			Ht1_Elements.push_back(help);
@@ -461,7 +457,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		} 
 		
 		// now we are left with the case of Hilbert bases
-		if(C.do_Hilbert_basis){
+		if(C.do_Hilbert_basis && height <= -2){                 // only added if height >=2
 			Candidates.push_back(v_merge(norm,elements[last]));
 		}
 	}
@@ -476,11 +472,12 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		C.Ht1_Elements.splice(C.Ht1_Elements.begin(),Ht1_Elements);
 	}
 	
-	if(!C.do_Hilbert_basis) {
-		#pragma omp critical(MULTIPLICITY)
-		C.multiplicity+=volume;    
-		return volume;
-	}
+
+	#pragma omp critical(MULTIPLICITY)
+	C.multiplicity+=volume;
+
+	if(!C.do_Hilbert_basis)
+		return volume;  // no local reduction in this case
 
 	Candidates.sort();        
 	typename list <vector <Integer> >::iterator cand=Candidates.begin();
@@ -503,9 +500,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 	#pragma omp critical(CANDIDATES)
 	C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
 	
-	#pragma omp critical(MULTIPLICITY)
-	C.multiplicity+=volume;
-	return volume; 
+	return volume;
 }
 
 } /* end namespace */
