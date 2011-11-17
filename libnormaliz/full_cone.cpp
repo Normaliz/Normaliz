@@ -899,6 +899,7 @@ void Full_Cone<Integer>::extreme_rays_and_ht1_check() {
 		              << "Disabling some computations!" << endl;
 		do_ht1_elements = false;
 		do_h_vector = false;
+	}
 }
 
 //---------------------------------------------------------------------------
