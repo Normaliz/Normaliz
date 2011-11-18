@@ -102,7 +102,8 @@ class Full_Cone {
 	
 	int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
 	
-	size_t totalNrSimplices;
+	size_t totalNrSimplices;   // total number of simplices
+	size_t nrSimplToEvaluate;  // number of simplices to be evaluated
 
 	vector<long> gen_degrees;  // will contain the degrees of the generators
 	

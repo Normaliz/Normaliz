@@ -584,6 +584,8 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 			 newsimplex.first=key;
 			 newsimplex.second=i->ValNewGen;
 			 Triangulation_kk.push_back(newsimplex);
+			 #pragma omp atomic
+			 nrSimplToEvaluate++;
 			 
 		 } // for s
 		 #pragma omp critical(TRIANG)
@@ -601,6 +603,8 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
 	newsimplex.second=height;
 	#pragma omp critical(TRIANG)
 	Triangulation.push_back(newsimplex);
+	#pragma omp atomic
+	nrSimplToEvaluate++;
 }
 
 //---------------------------------------------------------------------------
@@ -952,8 +956,8 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 	if(!is_pyramid && keep_triangulation)  // no transfer necessary
 		return;                            // and evaluation at the end
 		
-	#pragma omp critical(TRIANG)
-	if(!is_pyramid && Triangulation.size()>EvalBoundTriang)
+	//#pragma omp critical(TRIANG)
+	if(!is_pyramid && nrSimplToEvaluate > EvalBoundTriang)
 		evaluate_triangulation();   // evaluate now and clear triangulation
 
 	if(!is_pyramid)  // if on top level, everything has been done
@@ -962,16 +966,20 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 	// now we are in a pyramid
   
 	typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Triangulation.begin();
-	for(;pyr_simp!=Triangulation.end();pyr_simp++){
+	for(;pyr_simp!=Triangulation.end();pyr_simp++) {
 		for(i=0;i<dim;i++)
-			pyr_simp->first[i]=Top_Key[pyr_simp->first[i]-1];                  
+			pyr_simp->first[i]=Top_Key[pyr_simp->first[i]-1];
 	}
-	#pragma omp critical(TRIANG)
+
+	//#pragma omp critical(TRIANG)
 	Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
+	//#pragma omp atomic
+	Top_Cone->nrSimplToEvaluate += nrSimplToEvaluate;
+	nrSimplToEvaluate = 0;
 	
 	#pragma omp critical(TRIANG)
 	{
-	if(!Top_Cone->keep_triangulation && Top_Cone->Triangulation.size()>EvalBoundTriang)
+	if(!Top_Cone->keep_triangulation && Top_Cone->nrSimplToEvaluate > EvalBoundTriang)
 		Top_Cone->evaluate_triangulation();
 	}
   
@@ -1026,16 +1034,18 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
 	if (verbose)
 	{
-		verboseOutput() << endl << totalNrSimplices << " simplices, ";
+		verboseOutput() << endl << totalNrSimplices << " simplices";
 		if(do_Hilbert_basis)
-			verboseOutput() << Candidates.size() << " HB candidates";
+			verboseOutput() << ", " << Candidates.size() << " HB candidates";
 	   if(do_ht1_elements)
-			verboseOutput() << Ht1_Elements.size()<< " ht1 vectors";
-		verboseOutput() << " accumulated" << endl << flush;
+			verboseOutput() << ", " << Ht1_Elements.size()<< " ht1 vectors";
+		verboseOutput() << " accumulated." << endl;
 	}
 	
 	if(!keep_triangulation)
 		Triangulation.clear();
+
+	nrSimplToEvaluate=0;
 }
 
 //---------------------------------------------------------------------------
@@ -1863,6 +1873,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
 	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=i+1;
 	totalNrSimplices=0;
+	nrSimplToEvaluate=0;
 }
 
 //---------------------------------------------------------------------------
@@ -1918,6 +1929,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 	for(size_t i=0;i<nr_gen;i++)
 		Top_Key[i]=i+1;
 	totalNrSimplices=0;
+	nrSimplToEvaluate=0;
 }
 //---------------------------------------------------------------------------
 
@@ -1965,6 +1977,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
 			gen_degrees[i] = C.gen_degrees[Key[i]-1];
 		}
 	}
+	nrSimplToEvaluate=0;
 }
 
 //---------------------------------------------------------------------------
