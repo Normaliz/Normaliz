@@ -291,7 +291,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 
 	bool unimodular=false;
 	vector<Integer> Indicator;
-	if(height >=-1 || do_only_multiplicity) {
+	if(height <= 1 || do_only_multiplicity) {
 		Matrix<Integer> RS(1,dim);  // (transpose of) right hand side
 		RS.write(1,C.Order_Vector); // to hold order vector
 		RS=RS.transpose();
@@ -448,7 +448,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 			Hilbert_Series.add_to_num(Deg);
 		}
 		
-		if(C.do_ht1_elements && normG==volume && height <= -2) // found degree 1 element
+		if(C.do_ht1_elements && normG==volume && height >= 2) // found degree 1 element
 		{                                                      // only added if height >=2
 			help=Generators.VxM(elements[last]);
 			v_scalar_division(help,volume);
@@ -457,7 +457,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
 		} 
 		
 		// now we are left with the case of Hilbert bases
-		if(C.do_Hilbert_basis && height <= -2){                 // only added if height >=2
+		if(C.do_Hilbert_basis && height >= 2){                 // only added if height >=2
 			Candidates.push_back(v_merge(norm,elements[last]));
 		}
 	}

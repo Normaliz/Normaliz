@@ -544,7 +544,7 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 			}
 		}
 		key[dim-1]=new_generator+1;
-		store_key(key,i->ValNewGen);
+		store_key(key,-i->ValNewGen);  // height understood positive
 	}
 
 			
@@ -580,9 +580,9 @@ void Full_Cone<Integer>::add_simplex(const size_t& new_generator){
 			 }
 			 
 			 key[not_in_i]=new_generator+1;
-			 // store_key(key,i->ValNewGen); // store simplex in triangulation
+			 // store_key(key,-i->ValNewGen); // store simplex in triangulation
 			 newsimplex.first=key;
-			 newsimplex.second=i->ValNewGen;
+			 newsimplex.second=-i->ValNewGen;  // height unerstood positive
 			 Triangulation_kk.push_back(newsimplex);
 			 #pragma omp atomic
 			 nrSimplToEvaluate++;
@@ -728,17 +728,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
 	//the volume is an upper bound for the height
 	if(do_triangulation || do_partial_triangulation)
-		store_key(key,-S.read_volume());
-	if(!keep_triangulation) {
-		if (do_h_vector || do_ht1_elements) {
-			//in the evaluation we need the linear form
-			check_ht1_generated();
-			if(!is_Computed.test(ConeProperty::LinearForm)) {
-				errorOutput() << "WARNING: Cannot find an homogeneous linear form, skip h-vector computation."<<endl;
-				do_h_vector = false;
-			}
-		}
-	}
+		store_key(key,S.read_volume());  // height unerstood positive
 }
 
 
@@ -821,12 +811,13 @@ void Full_Cone<Integer>::build_cone() {
 					
 				// Magic Bounds to deside whether to use pyramids
 				if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
-				  || nr_neg*Triangulation.size() > RecBoundTriang) {
+				  || (do_triangulation && nr_neg*Triangulation.size() > RecBoundTriang))
+				{
 					transfer_triangulation_to_top(); // NEW EVA
 					pyramid_recursion=true;
 					process_pyramids(i,true); //recursive
 				}
-				else{
+				else {
 					if(do_triangulation)
 						add_simplex(i); 
 					if(do_partial_triangulation)
@@ -952,38 +943,45 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
 	size_t i;
 	size_t EvalBoundTriang = 1000000; // 1Mio
-	
-	if(!is_pyramid && keep_triangulation)  // no transfer necessary
-		return;                            // and evaluation at the end
-		
-	//#pragma omp critical(TRIANG)
-	if(!is_pyramid && nrSimplToEvaluate > EvalBoundTriang)
-		evaluate_triangulation();   // evaluate now and clear triangulation
 
-	if(!is_pyramid)  // if on top level, everything has been done
-		return; 
+	// cout << "Pyr level " << pyr_level << endl;
+	
+	if(!is_pyramid) { // we are in top cone
+		if(keep_triangulation)  // no transfer necessary and evaluation at the end
+			return;
 		
+		if(nrSimplToEvaluate > EvalBoundTriang)
+			evaluate_triangulation();   // evaluate now and clear triangulation
+
+		return;
+	}
+
 	// now we are in a pyramid
+
+	// cout << "In pyramid " << endl;
   
 	typename list<pair<vector<size_t>,Integer> >::iterator pyr_simp=Triangulation.begin();
-	for(;pyr_simp!=Triangulation.end();pyr_simp++) {
+	for(;pyr_simp!=Triangulation.end();pyr_simp++)
 		for(i=0;i<dim;i++)
 			pyr_simp->first[i]=Top_Key[pyr_simp->first[i]-1];
+
+	// cout << "Keys transferred " << endl;
+	// #pragma omp critical(TRIANG)
+	{
+		Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
+		Top_Cone->nrSimplToEvaluate+=nrSimplToEvaluate;
+		nrSimplToEvaluate=0;
+		
+		// cout << "To evaluate " << Top_Cone->nrSimplToEvaluate << endl;
+
+		if(!Top_Cone->keep_triangulation && Top_Cone->nrSimplToEvaluate > EvalBoundTriang)
+			Top_Cone->evaluate_triangulation();
 	}
 
-	//#pragma omp critical(TRIANG)
-	Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
-	//#pragma omp atomic
-	Top_Cone->nrSimplToEvaluate += nrSimplToEvaluate;
-	nrSimplToEvaluate = 0;
-	
-	#pragma omp critical(TRIANG)
-	{
-	if(!Top_Cone->keep_triangulation && Top_Cone->nrSimplToEvaluate > EvalBoundTriang)
-		Top_Cone->evaluate_triangulation();
-	}
+	// cout << "Done." << endl;
   
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1022,6 +1020,19 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 					verboseOutput() << "|" <<flush;
 				}
 			}
+			if(spos%20000==0)
+			{
+				#pragma omp critical(HT1ELEMENTS)
+				{
+				Ht1_Elements.sort();
+				Ht1_Elements.unique();
+				}
+				#pragma omp critical(CANDIDATES)
+				{
+				Candidates.sort();
+				Candidates.unique();
+				}
+			}
 		}
 	}
 
@@ -1037,8 +1048,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 		verboseOutput() << endl << totalNrSimplices << " simplices";
 		if(do_Hilbert_basis)
 			verboseOutput() << ", " << Candidates.size() << " HB candidates";
-	   if(do_ht1_elements)
-			verboseOutput() << ", " << Ht1_Elements.size()<< " ht1 vectors";
+		if(do_ht1_elements)
+			verboseOutput() << Ht1_Elements.size()<< " ht1 vectors";
 		verboseOutput() << " accumulated." << endl;
 	}
 	
@@ -1276,7 +1287,7 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 			if (Extreme_Rays[i])
 				marked_extreme_rays.push_back(i+1);
 		}
-		vector<size_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex();
+		vector<size_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex(dim);
 		assert(key_extreme.size() == dim);
 		vector<size_t> key(dim);
 		for (size_t i=0; i<dim; i++) {
