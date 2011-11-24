@@ -28,7 +28,7 @@
 
 namespace libnormaliz {
 using std::vector;
-using std::multimap;
+using std::map;
 
 
 template<typename Integer>
@@ -47,7 +47,7 @@ public:
 	Cone(const vector< vector<Integer> >& input_data,
 	     InputType type = Type::integral_closure);
 	/* give multiple */ //TODO
-	Cone(const multimap< InputType , vector< vector<Integer> > >& multi_input_data);
+	Cone(map< InputType , vector< vector<Integer> > >& multi_input_data);
 
 //---------------------------------------------------------------------------
 //                          give additional data
@@ -87,7 +87,7 @@ public:
 	vector< vector<Integer> > getSupportHyperplanes() const;
 	vector< vector<Integer> > getEquations() const;
 	vector< vector<Integer> > getCongruences() const;
-	multimap< InputType , vector< vector<Integer> > > getConstraints() const;
+	map< InputType , vector< vector<Integer> > > getConstraints() const;
 	vector< pair<vector<size_t>, Integer> > getTriangulation() const;
 	vector< vector<Integer> > getHilbertBasis() const;
 	vector< vector<Integer> > getHt1Elements() const;
@@ -149,6 +149,7 @@ private:
 
 	/* only used by the constructors */
 	void initialize();
+	void single_matrix_input(const vector< vector<Integer> >& Input, InputType input_type);
 
 	/* compute method for the dual_mode, used in compute(string) */
 	void compute_dual();

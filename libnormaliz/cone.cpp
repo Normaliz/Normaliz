@@ -25,7 +25,94 @@ using namespace std;
 template<typename Integer>
 Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
 	initialize();
-	if (!Input.empty()) dim = (*(Input.begin())).size();
+	single_matrix_input(Input, input_type);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_data) {
+	initialize();
+	typename map< InputType , vector< vector<Integer> > >::iterator it;
+	vector< vector<Integer> > lf; //linear form / grading
+	//check for a grading and remove it from map
+	it = multi_input_data.find(Type::grading);
+	if (it != multi_input_data.end()) {
+		lf = it->second;
+		if (lf.size() != 1) {
+			errorOutput() << "bad grading!"<<endl;
+			throw BadInputException();
+		}
+		multi_input_data.erase(it);
+	}
+
+	if (multi_input_data.size() == 1) { // use the "one-matrix-input" method
+		it = multi_input_data.begin();
+		single_matrix_input(it->second,it->first);
+	} else {               // now we have to have constraints!
+	
+		it = multi_input_data.begin();
+		for(; it != multi_input_data.end(); ++it) {
+			if (it->second.size() > 0) {
+				dim = it->second.begin()->size();
+				if (it->first == Type::congruences) {
+					dim--; //congruences have one extra column
+				}
+				break;
+			}
+		}
+		Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
+		for (; it != multi_input_data.end(); ++it) {
+			if (it->second.size() == 0) {
+				continue;
+			}
+			switch (it->first) {
+				case Type::hyperplanes:
+					if (it->second.begin()->size() != dim) {
+						errorOutput() << "Dimensions of hyperplanes ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+						throw BadInputException();
+					}
+					Inequalities = it->second;
+					break;
+				case Type::equations:
+					if (it->second.begin()->size() != dim) {
+						errorOutput() << "Dimensions of equations ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+						throw BadInputException();
+					}
+					Equations = it->second;
+					break;
+				case Type::congruences:
+					if (it->second.begin()->size() != dim+1) {
+						errorOutput() << "Dimensions of congruences ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+						throw BadInputException();
+					}
+					Congruences = it->second;
+					break;
+				default:
+					errorOutput() << "This InputType combination is currently not supported!" << endl;
+					throw BadInputException();
+				}
+		}
+		if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
+		prepare_input_type_456(Congruences, Equations, Inequalities);
+	}
+	
+	//set the grading if one was in the map
+	if ( lf.size() == 1 ) {
+		setLinearForm (lf[0]);
+	}
+}
+	
+/* only used by the constructors */
+template<typename Integer>
+void Cone<Integer>::initialize() {
+	BC_set=false;
+	is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
+	dim = 0;
+	rees_primary = false;
+}
+
+template<typename Integer>
+void Cone<Integer>::single_matrix_input(const vector< vector<Integer> >& Input, InputType input_type) {
+	if (!Input.empty()) dim = Input.front().size();
 
 	switch (input_type) {
 		case Type::integral_closure: prepare_input_type_0(Input); break;
@@ -33,10 +120,10 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type
 		case Type::polytope:         prepare_input_type_2(Input); break;
 		case Type::rees_algebra:     prepare_input_type_3(Input); break;
 		case Type::hyperplanes:
-		  prepare_input_type_456(vector<vector<Integer> >(), vector<vector<Integer> >(), Input);
+		  prepare_input_type_45(vector<vector<Integer> >(), Input);
 		  break;
 		case Type::equations:
-		  prepare_input_type_456(vector<vector<Integer> >(), Input, vector<vector<Integer> >());
+		  prepare_input_type_45(Input, vector<vector<Integer> >());
 		  break;
 		case Type::congruences:
 		  dim--;
@@ -51,66 +138,6 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type
 	}
 	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 }
-
-template<typename Integer>
-Cone<Integer>::Cone(const multimap< InputType , vector< vector<Integer> > >& multi_input_data) {
-	initialize();
-	
-	typename multimap< InputType , vector< vector<Integer> > >::const_iterator it = multi_input_data.begin();
-	for(; it != multi_input_data.end(); ++it) {
-		if (it->second.size() > 0) {
-			dim = it->second.begin()->size();
-			if (it->first == Type::congruences) {
-				dim--; //congruences have one extra column
-			}
-			break;
-		}
-	}
-	Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
-	for (; it != multi_input_data.end(); ++it) {
-		if (it->second.size() == 0) {
-			continue;
-		}
-		switch (it->first) {
-			case Type::hyperplanes:
-				if (it->second.begin()->size() != dim) {
-					errorOutput() << "Dimensions of hyperplanes ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
-					throw BadInputException();
-				}
-				Inequalities.append(it->second);
-				break;
-			case Type::equations:
-				if (it->second.begin()->size() != dim) {
-					errorOutput() << "Dimensions of equations ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
-					throw BadInputException();
-				}
-				Equations.append(it->second);
-				break;
-			case Type::congruences:
-				if (it->second.begin()->size() != dim+1) {
-					errorOutput() << "Dimensions of congruences ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
-					throw BadInputException();
-				}
-				Congruences.append(it->second);
-				break;
-			default:
-				errorOutput() << "This InputType combination is currently not supported!" << endl;
-				throw BadInputException();
-		}
-	}
-	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
-	prepare_input_type_456(Congruences, Equations, Inequalities);
-}
-
-/* only used by the constructors */
-template<typename Integer>
-void Cone<Integer>::initialize() {
-	BC_set=false;
-	is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
-	dim = 0;
-	rees_primary = false;
-}
-
 
 /* check what is computed */
 template<typename Integer>
@@ -172,8 +199,8 @@ vector< vector<Integer> > Cone<Integer>::getCongruences() const {
 }
 
 template<typename Integer>
-multimap< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
-	multimap<InputType, vector< vector<Integer> > > c;
+map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
+	map<InputType, vector< vector<Integer> > > c;
 	c.insert(pair< InputType,vector< vector<Integer> > >(Type::hyperplanes,SupportHyperplanes));
 	c.insert(pair< InputType,vector< vector<Integer> > >(Type::equations,getEquations()));
 	c.insert(pair< InputType,vector< vector<Integer> > >(Type::congruences,getCongruences()));
@@ -319,7 +346,6 @@ void Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input)
 		Generators = Input;
 	} else { //append a column of 1
 		Generators = vector< vector<Integer> >(nr);
-		typename vector< vector<Integer> >::const_iterator it=Input.begin();
 		vector<Integer> row(dim+1);
 		row[dim]=1;
 		for (size_t i=0; i<nr; i++) {
@@ -428,12 +454,16 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
 
 	// use positive orthant if no inequalities are given
 	if (Inequalities.nr_of_rows() == 0) {
+		if (verbose) {
+			verboseOutput() << "No inequalities specified in constraint mode, using non-negative space." << endl;
+		}
 		SupportHyperplanes = (Matrix<Integer>(dim)).get_elements();
 	} else {
 		SupportHyperplanes = Inequalities.get_elements();
 	}
 	is_Computed.set(ConeProperty::SupportHyperplanes);
 
+	if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 
 	size_t i,j;
 	if (Equations.nr_of_rows()>0) {
@@ -688,9 +718,10 @@ void Cone<Integer>::compute_dual() {
 	size_t i,j;
 	Matrix<Integer> Inequ_on_Ker = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes));
 	size_t newdim = Inequ_on_Ker.nr_of_columns();
+	//now sort the inequalities, hopefully this makes the computation faster
 	Integer norm;
 	vector< Integer > hyperplane;
-	multimap <Integer , vector <Integer> >  Help;
+	multimap <Integer , vector <Integer> >  SortingHelp;
 	typename multimap <Integer , vector <Integer> >::const_iterator ii;
 	for (i = 1; i <= Inequ_on_Ker.nr_of_rows() ; i++) {
 		hyperplane=Inequ_on_Ker.read(i);
@@ -698,17 +729,17 @@ void Cone<Integer>::compute_dual() {
 		for (j = 0; j <newdim; j++) {
 			norm+=Iabs(hyperplane[j]);
 		}
-		Help.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
+		SortingHelp.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
 	}
-	Matrix<Integer> Equations_Ordered(Inequ_on_Ker.nr_of_rows(),newdim);
+	Matrix<Integer> Inequ_Ordered(Inequ_on_Ker.nr_of_rows(),newdim);
 	i=1;
-	for (ii=Help.begin(); ii != Help.end(); ii++) {
-		Equations_Ordered.write(i,(*ii).second);
+	for (ii=SortingHelp.begin(); ii != SortingHelp.end(); ii++) {
+		Inequ_Ordered.write(i,(*ii).second);
 		i++;
 	}
-	Cone_Dual_Mode<Integer> ConeDM(Equations_Ordered);
+	Cone_Dual_Mode<Integer> ConeDM(Inequ_Ordered);
 	ConeDM.hilbert_basis_dual();
-	//ConeDM zu einem Full_Cone<Integer> machen
+	//create a Full_Cone out of ConeDM
 	if ( ConeDM.Generators.rank() < ConeDM.dim ) {
 		Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
 		ConeDM.to_sublattice(SR);
@@ -726,7 +757,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 	//it is possible to delete the data in Full_Cone after extracting it
 
 	if(verbose) {
-		verboseOutput() << "transforming data...";
+		verboseOutput() << "transforming data..."<<flush;
 	}
 	
 	if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {
