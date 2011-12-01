@@ -27,21 +27,21 @@ using namespace std;
 
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){
-	if (a==0) {
-		return Iabs<Integer>(b);
-	}
-	if (b==0) {
-		return Iabs<Integer>(a);
-	}
-	Integer q0,q1,r;
-	q0=Iabs<Integer>(a);
-	r=Iabs<Integer>(b);
-	do {
-		q1=r;
-		r=q0%q1;
-		q0=q1;
-	} while (r!=0);
-	return q1;
+    if (a==0) {
+        return Iabs<Integer>(b);
+    }
+    if (b==0) {
+        return Iabs<Integer>(a);
+    }
+    Integer q0,q1,r;
+    q0=Iabs<Integer>(a);
+    r=Iabs<Integer>(b);
+    do {
+        q1=r;
+        r=q0%q1;
+        q0=q1;
+    } while (r!=0);
+    return q1;
 }
 
 template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
@@ -54,11 +54,11 @@ template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
 
 template <typename Integer>
 Integer lcm(const Integer& a, const Integer& b){
-	if ((a==0)||(b==0)) {
-		return 0;
-	}
-	else
-		return Iabs<Integer>(a*b/gcd<Integer>(a,b));
+    if ((a==0)||(b==0)) {
+        return 0;
+    }
+    else
+        return Iabs<Integer>(a*b/gcd<Integer>(a,b));
 }
 
 template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
@@ -71,38 +71,38 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
 
 template <typename Integer>
 size_t decimal_length(Integer a){
-	size_t l=1;
-	if (a<0) {
-		a=-a;
-		l++;
-	}
-	while((a/=10)!=0)
-		l++;
-	return l;
+    size_t l=1;
+    if (a<0) {
+        a=-a;
+        l++;
+    }
+    while((a/=10)!=0)
+        l++;
+    return l;
 }
 
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 Integer permutations(const size_t& a, const size_t& b){
-	unsigned long i;
-	Integer P=1;
-	for (i = a+1; i <= b; i++) {
-		P*=i;
-	}
-	return P;
+    unsigned long i;
+    Integer P=1;
+    for (i = a+1; i <= b; i++) {
+        P*=i;
+    }
+    return P;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer> 
 Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
-	unsigned long i;
-	Integer P=1;
-	for (i = a+1; i <= b; i++) {
-		P*=i; P%=m;
-	}
-	return P;
+    unsigned long i;
+    Integer P=1;
+    for (i = a+1; i <= b; i++) {
+        P*=i; P%=m;
+    }
+    return P;
 }
 
 //---------------------------------------------------------------------------

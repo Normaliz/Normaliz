@@ -61,45 +61,45 @@ typedef long long long64;
 class HilbertSeries {
 
 public:
-	// Constructor, creates 0/1
-	HilbertSeries();
-	// Constructor, creates num/denom, see class description for format
-	HilbertSeries(const vector<long64>& num, const vector<long64>& denom);
+    // Constructor, creates 0/1
+    HilbertSeries();
+    // Constructor, creates num/denom, see class description for format
+    HilbertSeries(const vector<long64>& num, const vector<long64>& denom);
 
-	// add another HilbertSeries to this
-	HilbertSeries& operator+=(const HilbertSeries& other);
+    // add another HilbertSeries to this
+    HilbertSeries& operator+=(const HilbertSeries& other);
 
-	// add t^i to the numerator
-	inline void add_to_num(size_t i) {
-		if(num.size()<=i) num.resize(i+1);
-		num[i]++;
-	}
+    // add t^i to the numerator
+    inline void add_to_num(size_t i) {
+        if(num.size()<=i) num.resize(i+1);
+        num[i]++;
+    }
 
 
-	// simplify, see class description
-	void simplify();
+    // simplify, see class description
+    void simplify();
 
-	//does compute it, if not available
-	vector< vector<mpz_class> > getHilbertQuasiPolynomial();
+    //does compute it, if not available
+    vector< vector<mpz_class> > getHilbertQuasiPolynomial();
 
-	// returns the numerator, repr. as vector of coefficients, the h-vector
-	const vector<long64>& getNumerator() const;
-	// returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
-	const vector<long64>& getDenominator() const;
+    // returns the numerator, repr. as vector of coefficients, the h-vector
+    const vector<long64>& getNumerator() const;
+    // returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
+    const vector<long64>& getDenominator() const;
 
 private:
-	// the numerator, repr. as vector of coefficients, the h-vector
-	vector<long64> num;
-	// the denominator, repr. as a vector of the exponents of (1-t^i)^e
-	vector<long64> denom;
+    // the numerator, repr. as vector of coefficients, the h-vector
+    vector<long64> num;
+    // the denominator, repr. as a vector of the exponents of (1-t^i)^e
+    vector<long64> denom;
 
-	// the quasi polynomial, can have big coefficients
-	vector< vector<mpz_class> > quasi_poly;
+    // the quasi polynomial, can have big coefficients
+    vector< vector<mpz_class> > quasi_poly;
 
-	template<typename Integer>
-	void computeHilbertQuasiPolynomial();
+    template<typename Integer>
+    void computeHilbertQuasiPolynomial();
 
-	friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
+    friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
 };
 //class end *****************************************************************

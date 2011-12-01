@@ -34,69 +34,69 @@ using std::vector;
 template<typename Integer>
 class Cone_Dual_Mode {
 public:
-	size_t dim;
-	size_t nr_sh;
-	size_t hyp_size;
-	
-	Matrix<Integer> SupportHyperplanes;
-	Matrix<Integer> Generators;
-	list<vector<Integer> > GeneratorList; //only temporarily used
-	list<vector<Integer> > Hilbert_Basis;
+    size_t dim;
+    size_t nr_sh;
+    size_t hyp_size;
+    
+    Matrix<Integer> SupportHyperplanes;
+    Matrix<Integer> Generators;
+    list<vector<Integer> > GeneratorList; //only temporarily used
+    list<vector<Integer> > Hilbert_Basis;
 
 /* ---------------------------------------------------------------------------
- *				Private routines, used in the public routines
+ *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
 
-	/* Returns true if new_element is reducible versus the elements in Ired
-	 * used for dual algorithm */
-	bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const size_t & size);
+    /* Returns true if new_element is reducible versus the elements in Ired
+     * used for dual algorithm */
+    bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const size_t & size);
 
-	/* reduce Red versus Ired */
-	void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const size_t & size);
+    /* reduce Red versus Ired */
+    void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const size_t & size);
 
-	/* adds a new element irreducible to the Hilbert basis
-	 * the new elements must come from a structure sorted by total degree
-	 * used for dual algorithm */
-	void reduce_and_insert(const vector<Integer> & new_element, const size_t & size);
-	/* select extreme rays by reduction
-	 * used for the dual algorithm */
-	void reduce_and_insert_extreme(const vector<Integer> & new_element);
+    /* adds a new element irreducible to the Hilbert basis
+     * the new elements must come from a structure sorted by total degree
+     * used for dual algorithm */
+    void reduce_and_insert(const vector<Integer> & new_element, const size_t & size);
+    /* select extreme rays by reduction
+     * used for the dual algorithm */
+    void reduce_and_insert_extreme(const vector<Integer> & new_element);
 
-	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
-	void cut_with_halfspace_hilbert_basis(const size_t & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
-	/* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
-	Matrix<Integer> cut_with_halfspace(const size_t & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);
+    /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
+    void cut_with_halfspace_hilbert_basis(const size_t & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
+    /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
+    Matrix<Integer> cut_with_halfspace(const size_t & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);
 
-	/* computes the extreme rays using reduction, used for the dual algorithm */
-	void extreme_rays_reduction();
-	/* computes the extreme rays using rank test, used for the dual algorithm */
-	void extreme_rays_rank();
+    /* computes the extreme rays using reduction, used for the dual algorithm */
+    void extreme_rays_reduction();
+    /* computes the extreme rays using rank test, used for the dual algorithm */
+    void extreme_rays_rank();
 
-	void relevant_support_hyperplanes();
+    void relevant_support_hyperplanes();
 
-	Cone_Dual_Mode();
-	Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
-
-/*---------------------------------------------------------------------------
- *						Data access
- *---------------------------------------------------------------------------
- */
-	void print() const;                //to be modified, just for tests
-	Matrix<Integer> get_support_hyperplanes() const;
-	Matrix<Integer> get_generators() const;
-	Matrix<Integer> read_hilbert_basis() const;
-
-
+    Cone_Dual_Mode();
+    Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
 
 /*---------------------------------------------------------------------------
- *				Computation Methods
+ *                      Data access
  *---------------------------------------------------------------------------
  */
-	void hilbert_basis_dual();
+    void print() const;                //to be modified, just for tests
+    Matrix<Integer> get_support_hyperplanes() const;
+    Matrix<Integer> get_generators() const;
+    Matrix<Integer> read_hilbert_basis() const;
 
-	/* transforms all data to the sublattice */
-	void to_sublattice(Sublattice_Representation<Integer> SR);
+
+
+/*---------------------------------------------------------------------------
+ *              Computation Methods
+ *---------------------------------------------------------------------------
+ */
+    void hilbert_basis_dual();
+
+    /* transforms all data to the sublattice */
+    void to_sublattice(Sublattice_Representation<Integer> SR);
 
 };
 //class end *****************************************************************

@@ -24,9 +24,9 @@
 #include <assert.h>
 
 #ifdef _WIN32 //for 32 and 64 bit windows
-	#include <mpirxx.h>
+    #include <mpirxx.h>
 #else         // all other systems
-	#include <gmpxx.h>
+    #include <gmpxx.h>
 #endif
 
 

@@ -55,23 +55,23 @@ class Lineare_Transformation {
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
-//						Construction and destruction
+//                      Construction and destruction
 //---------------------------------------------------------------------------
 
   Lineare_Transformation();
   Lineare_Transformation(const Matrix<Integer>& M);      //main constructor
 
 //---------------------------------------------------------------------------
-//						   Data acces
+//                         Data acces
 //---------------------------------------------------------------------------
 
   void read() const;                   // to be modified, just for tests
   size_t get_rank() const;              //returns rank if status is
-							   // "initialized, after transformation"
+                               // "initialized, after transformation"
   string get_status()const;       //returns status, may be:
-							 // "non initialized"
-							//  "initialized, before transformation"
-						   //  "initialized, after transformation"
+                             // "non initialized"
+                            //  "initialized, before transformation"
+                           //  "initialized, after transformation"
   Integer get_index() const;
   Matrix<Integer> get_center() const;          //read center matrix
   Matrix<Integer> get_right() const;          //read right matrix
@@ -82,25 +82,25 @@ public:
   void set_right_inv(const Matrix<Integer>& M);     //write the inverse of the right matrix
 
 //---------------------------------------------------------------------------
-//					  Rows and columns exchange
+//                    Rows and columns exchange
 //---------------------------------------------------------------------------
 
   void exchange_rows(size_t row1, size_t row2);     //similar to Matrix<Integer>::exchange_rows
   void exchange_columns(size_t col1, size_t col2); //similar to Matrix<Integer>::exchange_columns
 
 //---------------------------------------------------------------------------
-//					Rows and columns reduction
+//                  Rows and columns reduction
 //---------------------------------------------------------------------------
 
   void reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
   void reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
 
 //---------------------------------------------------------------------------
-//					 Algorithms
+//                   Algorithms
 //---------------------------------------------------------------------------
 
   void transformation(); //makes the main computation
-						//no tests for errors
+                        //no tests for errors
 //---------------------------------------------------------------------------
 //Tests
 //---------------------------------------------------------------------------

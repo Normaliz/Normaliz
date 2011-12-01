@@ -28,27 +28,27 @@ namespace libnormaliz {
  * The namespace prevents interfering with other names.
  */
 namespace ConeProperty {
-	enum Enum {
-		Generators,
-		ExtremeRays,
-		SupportHyperplanes,
-		Triangulation,
-		Multiplicity,
-		HilbertBasis,
-		Ht1Elements,
-		HVector,
-		HilbertPolynomial,
-		LinearForm,
-		IsPointed,
-		IsHt1Generated,
-		IsHt1ExtremeRays,
-		IsHt1HilbertBasis,
-		IsIntegrallyClosed,
-		GeneratorsOfToricRing,
-		ReesPrimary,
-		ReesPrimaryMultiplicity,
-		EnumSize //this has to be the last entry, to get the number of entries in the enum
-	};
+    enum Enum {
+        Generators,
+        ExtremeRays,
+        SupportHyperplanes,
+        Triangulation,
+        Multiplicity,
+        HilbertBasis,
+        Ht1Elements,
+        HVector,
+        HilbertPolynomial,
+        LinearForm,
+        IsPointed,
+        IsHt1Generated,
+        IsHt1ExtremeRays,
+        IsHt1HilbertBasis,
+        IsIntegrallyClosed,
+        GeneratorsOfToricRing,
+        ReesPrimary,
+        ReesPrimaryMultiplicity,
+        EnumSize //this has to be the last entry, to get the number of entries in the enum
+    };
 }
 
 template<typename Integer> class Cone;
@@ -56,34 +56,34 @@ template<typename Integer> class Full_Cone;
 
 class ConeProperties {
 public:
-	/* Constructors */
-	ConeProperties();
-	ConeProperties(ConeProperty::Enum);
-	ConeProperties(ConeProperty::Enum, ConeProperty::Enum);
-	ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
+    /* Constructors */
+    ConeProperties();
+    ConeProperties(ConeProperty::Enum);
+    ConeProperties(ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties(const std::bitset<ConeProperty::EnumSize>&);
 
-	/* set properties */
-	ConeProperties& set(ConeProperty::Enum, bool value=true);
-	ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
-	ConeProperties& set(const ConeProperties&);
+    /* set properties */
+    ConeProperties& set(ConeProperty::Enum, bool value=true);
+    ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties& set(const ConeProperties&);
 
-	/* reset (=unset) properties */
-	ConeProperties& reset(ConeProperty::Enum Property);
-	ConeProperties& reset(const ConeProperties&);
+    /* reset (=unset) properties */
+    ConeProperties& reset(ConeProperty::Enum Property);
+    ConeProperties& reset(const ConeProperties&);
 
-	/* test which/how many properties are set */
-	bool test(ConeProperty::Enum Property) const;
-	bool any() const;
-	bool none() const;
-	size_t count () const;
+    /* test which/how many properties are set */
+    bool test(ConeProperty::Enum Property) const;
+    bool any() const;
+    bool none() const;
+    size_t count () const;
 
 
-	/* print it in a nice way */
-	void print(std::ostream& out);
+    /* print it in a nice way */
+    void print(std::ostream& out);
 
 
 private:
-	std::bitset<ConeProperty::EnumSize> CPs;
+    std::bitset<ConeProperty::EnumSize> CPs;
 
 };
 

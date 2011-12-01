@@ -32,7 +32,7 @@
 namespace libnormaliz {
 
 //---------------------------------------------------------------------------
-//							Data access
+//                          Data access
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -47,7 +47,7 @@ template<typename Integer>
  int l_read(const list<int>& l);  //used for tests, returns size of l
 
 //---------------------------------------------------------------------------
-//						   List operations
+//                         List operations
 //---------------------------------------------------------------------------
 
 template<typename Integer>

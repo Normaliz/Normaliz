@@ -49,191 +49,191 @@ void lift(Full_Cone<Integer>& Lifted, Matrix<Integer> Extreme_Generators);
 
 template<typename Integer>
 class Full_Cone {
-	size_t dim;
-	size_t nr_gen;
-	size_t hyp_size;
-	
-	bool pointed;
-	bool ht1_generated;
-	bool ht1_extreme_rays;
-	bool ht1_hilbert_basis;
-	bool integrally_closed;
-	
-	bool do_triangulation;
-	bool do_partial_triangulation;
-	bool do_Hilbert_basis;
-	bool do_ht1_elements;
-	bool do_h_vector;
-	bool keep_triangulation;
-	bool is_pyramid;
-	
-	ConeProperties is_Computed;
-	vector<Integer> Linear_Form;
-	Integer multiplicity;
-	Matrix<Integer> Generators;
-	vector<bool> Extreme_Rays;
-	list<vector<Integer> > Support_Hyperplanes;
-		
-	list <pair<vector<size_t>,Integer> > Triangulation; 
-	
-	vector<bool> in_triang;
-	
-	list<vector<Integer> > Hilbert_Basis;
-	list<vector<Integer> > Candidates;
-	list<vector<Integer> > Ht1_Elements;
-	vector<Integer> Hilbert_Polynomial;
-	HilbertSeries Hilbert_Series;
+    size_t dim;
+    size_t nr_gen;
+    size_t hyp_size;
+    
+    bool pointed;
+    bool ht1_generated;
+    bool ht1_extreme_rays;
+    bool ht1_hilbert_basis;
+    bool integrally_closed;
+    
+    bool do_triangulation;
+    bool do_partial_triangulation;
+    bool do_Hilbert_basis;
+    bool do_ht1_elements;
+    bool do_h_vector;
+    bool keep_triangulation;
+    bool is_pyramid;
+    
+    ConeProperties is_Computed;
+    vector<Integer> Linear_Form;
+    Integer multiplicity;
+    Matrix<Integer> Generators;
+    vector<bool> Extreme_Rays;
+    list<vector<Integer> > Support_Hyperplanes;
+        
+    list <pair<vector<size_t>,Integer> > Triangulation; 
+    
+    vector<bool> in_triang;
+    
+    list<vector<Integer> > Hilbert_Basis;
+    list<vector<Integer> > Candidates;
+    list<vector<Integer> > Ht1_Elements;
+    vector<Integer> Hilbert_Polynomial;
+    HilbertSeries Hilbert_Series;
 
-	friend class Cone<Integer>;
-	friend class Simplex<Integer>;
-	
-	struct FMDATA {
-		vector<Integer> Hyp;               // linear form of the hyperplane
-		boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
-		Integer ValNewGen;                 // value of linear form on the generator to be added
-	};
-	
-	list<FMDATA> HypIndVal;  // contains the data for Fourier-Motzkin and extension of triangulation
-	
-	vector<Integer> Order_Vector;  // vector for inclusion-exclusion
+    friend class Cone<Integer>;
+    friend class Simplex<Integer>;
+    
+    struct FMDATA {
+        vector<Integer> Hyp;               // linear form of the hyperplane
+        boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
+        Integer ValNewGen;                 // value of linear form on the generator to be added
+    };
+    
+    list<FMDATA> HypIndVal;  // contains the data for Fourier-Motzkin and extension of triangulation
+    
+    vector<Integer> Order_Vector;  // vector for inclusion-exclusion
 
-	Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
-	vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
-	
-	int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
-	
-	size_t totalNrSimplices;   // total number of simplices
-	size_t nrSimplToEvaluate;  // number of simplices to be evaluated
+    Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
+    vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
+    
+    int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
+    
+    size_t totalNrSimplices;   // total number of simplices
+    size_t nrSimplToEvaluate;  // number of simplices to be evaluated
 
-	vector<long> gen_degrees;  // will contain the degrees of the generators
-	
+    vector<long> gen_degrees;  // will contain the degrees of the generators
+    
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-	void add_hyperplane(const size_t& ind_gen, const FMDATA & positive,const FMDATA & negative);
-	void transform_values(const size_t & ind_gen);
-	void add_simplex(const size_t& new_generator);
-	void process_pyramids(const size_t ind_gen,const bool recursive);
-	void process_pyramid(FMDATA& l, const size_t ind_gen,const bool recursive);
+    void add_hyperplane(const size_t& ind_gen, const FMDATA & positive,const FMDATA & negative);
+    void transform_values(const size_t & ind_gen);
+    void add_simplex(const size_t& new_generator);
+    void process_pyramids(const size_t ind_gen,const bool recursive);
+    void process_pyramid(FMDATA& l, const size_t ind_gen,const bool recursive);
 
-	/* */
-	void find_and_evaluate_start_simplex();
-	Simplex<Integer> find_start_simplex() const;
-	void store_key(const vector<size_t>&, const Integer& height);
-	
-	void build_cone();
-	
-	/* Returns true if new_element is reducible versus the elements in Irred */
-	bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
-	/* reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
-	void global_reduction();
-	/* computes a degree function, s.t. every generator has value >0 */
-	vector<Integer> compute_degree_function() const;
+    /* */
+    void find_and_evaluate_start_simplex();
+    Simplex<Integer> find_start_simplex() const;
+    void store_key(const vector<size_t>&, const Integer& height);
+    
+    void build_cone();
+    
+    /* Returns true if new_element is reducible versus the elements in Irred */
+    bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
+    /* reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
+    void global_reduction();
+    /* computes a degree function, s.t. every generator has value >0 */
+    vector<Integer> compute_degree_function() const;
 
-	void extreme_rays_and_ht1_check();
-	void set_degrees();
-	void compute_support_hyperplanes();
-	void evaluate_triangulation();
-	void transfer_triangulation_to_top();
-	void primal_algorithm(); 
-	 
-	// void support_hyperplanes_partial_triangulation();
-	// void compute_support_hyperplanes_pyramid(const bool do_triang = false);
+    void extreme_rays_and_ht1_check();
+    void set_degrees();
+    void compute_support_hyperplanes();
+    void evaluate_triangulation();
+    void transfer_triangulation_to_top();
+    void primal_algorithm(); 
+     
+    // void support_hyperplanes_partial_triangulation();
+    // void compute_support_hyperplanes_pyramid(const bool do_triang = false);
 
-	void compute_extreme_rays();
-	void select_ht1_elements();
-	void compute_hilbert_basis();
-	void compute_ht1_elements();
-	void compute_hilbert_polynomial();
-	void compute_hilbert_basis_polynomial();
+    void compute_extreme_rays();
+    void select_ht1_elements();
+    void compute_hilbert_basis();
+    void compute_ht1_elements();
+    void compute_hilbert_polynomial();
+    void compute_hilbert_basis_polynomial();
 
-	void check_pointed();
-	void check_ht1_generated();
-	void check_ht1_extreme_rays();
-	void check_ht1_hilbert_basis();
-	void check_integrally_closed();
+    void check_pointed();
+    void check_ht1_generated();
+    void check_ht1_extreme_rays();
+    void check_ht1_hilbert_basis();
+    void check_integrally_closed();
 
-	void compute_multiplicity();
-	bool low_part_simplicial();
-	void line_shelling();
-	void triangulation_lift();
+    void compute_multiplicity();
+    bool low_part_simplicial();
+    void line_shelling();
+    void triangulation_lift();
 
-	/* support hyperplanes computation for a dynamic lifting
-	 * adjusts the lifting if necessary, used in dual algorithm */
-	void support_hyperplanes_dynamic();
+    /* support hyperplanes computation for a dynamic lifting
+     * adjusts the lifting if necessary, used in dual algorithm */
+    void support_hyperplanes_dynamic();
 
 
-	/* constructor for recursively generated subcones
-	 * int i is a dummy parameter to distinguish it from the standard constructor */
-	Full_Cone(Matrix<Integer> M, int i);
-	
-	void reset_tasks();
+    /* constructor for recursively generated subcones
+     * int i is a dummy parameter to distinguish it from the standard constructor */
+    Full_Cone(Matrix<Integer> M, int i);
+    
+    void reset_tasks();
 
 public:
 /*---------------------------------------------------------------------------
  *                      Constructors
  *---------------------------------------------------------------------------
  */
-	Full_Cone();
-	Full_Cone(Matrix<Integer> M);            //main constructor
-	Full_Cone(const Cone_Dual_Mode<Integer> &C);
-	Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key); // for pyramids
+    Full_Cone();
+    Full_Cone(Matrix<Integer> M);            //main constructor
+    Full_Cone(const Cone_Dual_Mode<Integer> &C);
+    Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access
  *---------------------------------------------------------------------------
  */
-	void print() const;             //to be modified, just for tests
-	size_t getDimension() const;       //returns dimension
-	size_t getNrGenerators() const;    //returns the number of generators
-	bool isPointed() const;
-	bool isHt1ExtremeRays() const;
-	bool isHt1HilbertBasis() const;
-	bool isIntegrallyClosed() const;
-	vector<Integer> getLinearForm() const; //returns the linear form
-	Integer getMultiplicity() const; //returns multiplicity
-	const Matrix<Integer>& getGenerators() const;
-	vector<bool> getExtremeRays() const;
-	Matrix<Integer> getSupportHyperplanes() const;
-	/* saves the triangulation and the volume of each simplex
-	 * the vectors corresponding to the generators of each simplex are sorted and saved in Triang
-	 * the volumes are saved in TriangVol 
-	 * cleares the lists first */
-	void getTriangulation(list< vector<size_t> >& Triang, list<Integer>& TriangVol) const;
-	Matrix<Integer> getHilbertBasis() const;
-	Matrix<Integer> getHt1Elements() const;
-	vector<Integer> getHVector() const;
-	vector<Integer> getHilbertPolynomial() const;
-	
-	bool isComputed(ConeProperty::Enum prop) const; 
+    void print() const;             //to be modified, just for tests
+    size_t getDimension() const;       //returns dimension
+    size_t getNrGenerators() const;    //returns the number of generators
+    bool isPointed() const;
+    bool isHt1ExtremeRays() const;
+    bool isHt1HilbertBasis() const;
+    bool isIntegrallyClosed() const;
+    vector<Integer> getLinearForm() const; //returns the linear form
+    Integer getMultiplicity() const; //returns multiplicity
+    const Matrix<Integer>& getGenerators() const;
+    vector<bool> getExtremeRays() const;
+    Matrix<Integer> getSupportHyperplanes() const;
+    /* saves the triangulation and the volume of each simplex
+     * the vectors corresponding to the generators of each simplex are sorted and saved in Triang
+     * the volumes are saved in TriangVol 
+     * cleares the lists first */
+    void getTriangulation(list< vector<size_t> >& Triang, list<Integer>& TriangVol) const;
+    Matrix<Integer> getHilbertBasis() const;
+    Matrix<Integer> getHt1Elements() const;
+    vector<Integer> getHVector() const;
+    vector<Integer> getHilbertPolynomial() const;
+    
+    bool isComputed(ConeProperty::Enum prop) const; 
 
 
 /*---------------------------------------------------------------------------
  *              Computation Methods
  *---------------------------------------------------------------------------
  */
-	void dualize_cone();
-	void support_hyperplanes();
-	void support_hyperplanes_triangulation();
-	void support_hyperplanes_triangulation_pyramid();
-	void triangulation_hilbert_basis();
-	void hilbert_basis();
-	void hilbert_polynomial();
-	void hilbert_polynomial_pyramid();
-	void hilbert_basis_polynomial();
-	void hilbert_basis_polynomial_pyramid();
-	void ht1_elements();
+    void dualize_cone();
+    void support_hyperplanes();
+    void support_hyperplanes_triangulation();
+    void support_hyperplanes_triangulation_pyramid();
+    void triangulation_hilbert_basis();
+    void hilbert_basis();
+    void hilbert_polynomial();
+    void hilbert_polynomial_pyramid();
+    void hilbert_basis_polynomial();
+    void hilbert_basis_polynomial_pyramid();
+    void ht1_elements();
 
-	/* computes the multiplicity of the ideal in case of a Rees algebra
-	 * (not the same as the multiplicity of the semigroup) */
-	Integer primary_multiplicity() const;
+    /* computes the multiplicity of the ideal in case of a Rees algebra
+     * (not the same as the multiplicity of the semigroup) */
+    Integer primary_multiplicity() const;
 
-	/* completes the computation when a Cone_Dual_Mode is given */
-	void dual_mode();
+    /* completes the computation when a Cone_Dual_Mode is given */
+    void dual_mode();
 
-	void error_msg(string s) const;
+    void error_msg(string s) const;
 };
 //class end *****************************************************************
 //---------------------------------------------------------------------------

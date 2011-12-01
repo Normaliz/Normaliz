@@ -24,66 +24,66 @@ using std::bitset;
 
 /* Constructors */
 ConeProperties::ConeProperties() {
-	CPs = bitset<ConeProperty::EnumSize>();
+    CPs = bitset<ConeProperty::EnumSize>();
 }
 ConeProperties::ConeProperties(ConeProperty::Enum p1) {
-	CPs = bitset<ConeProperty::EnumSize>();
-	CPs.set(p1);
+    CPs = bitset<ConeProperty::EnumSize>();
+    CPs.set(p1);
 }
 ConeProperties::ConeProperties(ConeProperty::Enum p1, ConeProperty::Enum p2) {
-	CPs = bitset<ConeProperty::EnumSize>();
-	CPs.set(p1);
-	CPs.set(p2);
+    CPs = bitset<ConeProperty::EnumSize>();
+    CPs.set(p1);
+    CPs.set(p2);
 }
 ConeProperties::ConeProperties(const bitset<ConeProperty::EnumSize>& props){
-	CPs = props;
+    CPs = props;
 }
 
 /* set Properties */
 ConeProperties& ConeProperties::set(ConeProperty::Enum p1, bool value) {
-	CPs.set(p1, value);
-	return *this;
+    CPs.set(p1, value);
+    return *this;
 }
 ConeProperties& ConeProperties::set(ConeProperty::Enum p1, ConeProperty::Enum p2) {
-	CPs.set(p1);
-	CPs.set(p2);
-	return *this;
+    CPs.set(p1);
+    CPs.set(p2);
+    return *this;
 }
 ConeProperties& ConeProperties::set(const ConeProperties& ConeProps) {
-	CPs ^= ConeProps.CPs;
-	return *this;
+    CPs ^= ConeProps.CPs;
+    return *this;
 }
 
 /* reset (=unset) properties */
 ConeProperties& ConeProperties::reset(ConeProperty::Enum Property) {
-	CPs.set(Property, false);
-	return *this;
+    CPs.set(Property, false);
+    return *this;
 }
 ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
-	CPs &= ~ConeProps.CPs;
-	return *this;
+    CPs &= ~ConeProps.CPs;
+    return *this;
 }
 
 /* test which/how many properties are set */
 bool ConeProperties::test(ConeProperty::Enum Property) const {
-	return CPs.test(Property);
+    return CPs.test(Property);
 }
 bool ConeProperties::any() const {
-	return CPs.any();
+    return CPs.any();
 }
 bool ConeProperties::none() const {
-	return CPs.none();
+    return CPs.none();
 }
 size_t ConeProperties::count () const {
-	return CPs.count();
+    return CPs.count();
 }
 
 /* print it in a nice way */
 void ConeProperties::print(std::ostream& out) {
-	for (size_t i=0; i<ConeProperty::EnumSize; i++) {
-		if (CPs.test(i)) out << i << " ";
-	}
-	out << std::endl;
+    for (size_t i=0; i<ConeProperty::EnumSize; i++) {
+        if (CPs.test(i)) out << i << " ";
+    }
+    out << std::endl;
 }
 
 } /* end namespace libnormaliz */

@@ -33,80 +33,80 @@ using namespace libnormaliz;
 //---------------------------------------------------------------------------
 
 enum OutputType {
-  OT_CONE,
-  OT_POLYTOPE,
-  OT_REES
+    OT_CONE,
+    OT_POLYTOPE,
+    OT_REES
 };
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 class Output {
-  string name;
-  bool out;
-  bool inv;
-  bool ext;
-  bool esp;
-  bool typ;
-  bool egn;
-  bool gen;
-  bool sup;
-  bool tri;
-  bool ht1;
-  Cone<Integer>* Result;
+    string name;
+    bool out;
+    bool inv;
+    bool ext;
+    bool esp;
+    bool typ;
+    bool egn;
+    bool gen;
+    bool sup;
+    bool tri;
+    bool ht1;
+    Cone<Integer>* Result;
 
-  OutputType type;
+    OutputType type;
 
 //---------------------------------------------------------------------------
 public:
 //---------------------------------------------------------------------------
-//						Construction and destruction
+//                        Construction and destruction
 //---------------------------------------------------------------------------
 
-  Output();  //main constructor
-  // default copy constructor and destructors are ok
-  // the Cone Object is handled at another place
+    Output();  //main constructor
+    // default copy constructor and destructors are ok
+    // the Cone Object is handled at another place
 
 //---------------------------------------------------------------------------
-//								Data acces
+//                                Data acces
 //---------------------------------------------------------------------------
 
-  void read() const;                   // to be modified, just for tests
+    void read() const;                   // to be modified, just for tests
 
-  void set_name(const string& n);
-  void set_type(OutputType t);
-  void setCone(Cone<Integer> & C);
+    void set_name(const string& n);
+    void set_type(OutputType t);
+    void setCone(Cone<Integer> & C);
   
-  void set_write_out(const bool& flag);             //sets the write .out flag
-  void set_write_inv(const bool& flag);             //sets the write .inv flag
-  void set_write_ext(const bool& flag);             //sets the write .ext flag
-  void set_write_esp(const bool& flag);             //sets the write .esp flag
-  void set_write_typ(const bool& flag);             //sets the write .typ flag
-  void set_write_egn(const bool& flag);             //sets the write .egn flag
-  void set_write_gen(const bool& flag);             //sets the write .gen flag
-  void set_write_sup(const bool& flag);             //sets the write .sup flag
-  void set_write_tri(const bool& flag);             //sets the write .tri flag
-  void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
-  void set_write_extra_files();         	    //sets some flags to true
-  void set_write_all_files();          		    //sets all flags to true
+    void set_write_out(const bool& flag);             //sets the write .out flag
+    void set_write_inv(const bool& flag);             //sets the write .inv flag
+    void set_write_ext(const bool& flag);             //sets the write .ext flag
+    void set_write_esp(const bool& flag);             //sets the write .esp flag
+    void set_write_typ(const bool& flag);             //sets the write .typ flag
+    void set_write_egn(const bool& flag);             //sets the write .egn flag
+    void set_write_gen(const bool& flag);             //sets the write .gen flag
+    void set_write_sup(const bool& flag);             //sets the write .sup flag
+    void set_write_tri(const bool& flag);             //sets the write .tri flag
+    void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
+    void set_write_extra_files();                 //sets some flags to true
+    void set_write_all_files();                      //sets all flags to true
   
-  void write_matrix_ext(const Matrix<Integer>& M) const; //writes M to file name.ext
-  void write_matrix_esp(const Matrix<Integer>& M) const; //writes M to file name.esp
-  void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
-  void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
-  void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
-  void write_matrix_sup(const Matrix<Integer>& M) const; //writes M to file name.sup
-  void write_tri() const; //writes the .tri file
-  void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
+    void write_matrix_ext(const Matrix<Integer>& M) const; //writes M to file name.ext
+    void write_matrix_esp(const Matrix<Integer>& M) const; //writes M to file name.esp
+    void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
+    void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
+    void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
+    void write_matrix_sup(const Matrix<Integer>& M) const; //writes M to file name.sup
+    void write_tri() const; //writes the .tri file
+    void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 
-  void write_inv_file() const;
+    void write_inv_file() const;
 
 
 //---------------------------------------------------------------------------
 //                         Output Algorithms
 //---------------------------------------------------------------------------
 
-  void write_files() const;
+    void write_files() const;
 
 };
 //class end *****************************************************************

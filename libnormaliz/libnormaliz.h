@@ -25,34 +25,34 @@ namespace libnormaliz {
 
 namespace Type {
 enum InputType {
-	integral_closure,
-	normalization,
-	polytope,
-	rees_algebra,
-	hyperplanes,
-	equations,
-	congruences,
-	inhomogeneous_hyperplanes,
-	inhomogeneous_equations,
-	inhomogeneous_congruences,
-	lattice_ideal,
-	grading
+    integral_closure,
+    normalization,
+    polytope,
+    rees_algebra,
+    hyperplanes,
+    equations,
+    congruences,
+    inhomogeneous_hyperplanes,
+    inhomogeneous_equations,
+    inhomogeneous_congruences,
+    lattice_ideal,
+    grading
 };
 } //end namespace Type
 
 namespace Mode {
 enum ComputationMode {
-	supportHyperplanes,
-	volumeTriangulation,
-	volumeLarge,
-	height1Elements,
-	hilbertBasisTriangulation,
-	hilbertBasisLarge,
-	hilbertPolynomial,
-	hilbertPolynomialLarge,
-	hilbertBasisPolynomial,
-	hilbertBasisPolynomialLarge,
-	dual
+    supportHyperplanes,
+    volumeTriangulation,
+    volumeLarge,
+    height1Elements,
+    hilbertBasisTriangulation,
+    hilbertBasisLarge,
+    hilbertPolynomial,
+    hilbertPolynomialLarge,
+    hilbertBasisPolynomial,
+    hilbertBasisPolynomialLarge,
+    dual
 };
 } //end namespace Mode
 
