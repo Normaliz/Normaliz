@@ -74,8 +74,6 @@ class Full_Cone {
     vector<bool> Extreme_Rays;
     list<vector<Integer> > Support_Hyperplanes;
         
-    list <pair<vector<size_t>,Integer> > Triangulation; 
-    
     vector<bool> in_triang;
     
     list<vector<Integer> > Hilbert_Basis;
@@ -83,17 +81,30 @@ class Full_Cone {
     list<vector<Integer> > Ht1_Elements;
     vector<Integer> Hilbert_Polynomial;
     HilbertSeries Hilbert_Series;
+    vector<long> gen_degrees;  // will contain the degrees of the generators
 
     friend class Cone<Integer>;
     friend class Simplex<Integer>;
     
-    struct FMDATA {
+    struct SHORTSIMPLEX{                   // type for simplex, short in contrast to class Simplex
+        vector<size_t> key;                // full key of simplex
+        Integer height;                    // height of last vertex over opposite facet
+    };
+    
+    list <SHORTSIMPLEX> Triangulation;      // triangulation of cone
+    size_t TriangulationSize;               // number of elements in Triangulation, for efficiency
+    vector<typename list <SHORTSIMPLEX>::iterator> TriSectionFirst;   // first simplex with lead vertex i
+    vector<typename list <SHORTSIMPLEX>::iterator> TriSectionLast;     // last simplex with lead vertex i
+    vector<size_t> VertInTri;               // generators in the order in which they are inserted
+       
+    struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
         Integer ValNewGen;                 // value of linear form on the generator to be added
+        Integer ValPrevGen;                 // value on last generator added
     };
     
-    list<FMDATA> HypIndVal;  // contains the data for Fourier-Motzkin and extension of triangulation
+    list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
     
     vector<Integer> Order_Vector;  // vector for inclusion-exclusion
 
@@ -102,32 +113,27 @@ class Full_Cone {
     
     int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
     
-    size_t totalNrSimplices;   // total number of simplices
-    size_t nrSimplToEvaluate;  // number of simplices to be evaluated
-
-    vector<long> gen_degrees;  // will contain the degrees of the generators
-    
+    size_t totalNrSimplices;   // total number of simplices evaluated
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-    void add_hyperplane(const size_t& ind_gen, const FMDATA & positive,const FMDATA & negative);
-    void transform_values(const size_t & ind_gen);
-    void add_simplex(const size_t& new_generator);
+    void add_hyperplane(const size_t& ind_gen, const FACETDATA & positive,const FACETDATA & negative);
+    void extend_triangulation(const size_t& new_generator);
+    void find_new_facets(const size_t& ind_gen);
     void process_pyramids(const size_t ind_gen,const bool recursive);
-    void process_pyramid(FMDATA& l, const size_t ind_gen,const bool recursive);
+    void process_pyramid(FACETDATA& l, const size_t ind_gen,const bool recursive);
 
-    /* */
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
     void store_key(const vector<size_t>&, const Integer& height);
     
     void build_cone();
     
-    /* Returns true if new_element is reducible versus the elements in Irred */
+    // Returns true if new_element is reducible versus the elements in Irred
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
-    /* reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
+    // reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
     void global_reduction();
     /* computes a degree function, s.t. every generator has value >0 */
     vector<Integer> compute_degree_function() const;
