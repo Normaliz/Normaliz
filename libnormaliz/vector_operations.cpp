@@ -55,7 +55,7 @@ size_t v_read(const vector<T>& v, std::ostream& out){
 template <typename T>
 ostream& operator<< (ostream& out, const vector<T>& vec) {
     for (size_t i=0; i<vec.size(); ++i) {
-        out << " " << vec[i];
+        out << vec[i]<<" ";
     }
     out << endl;
     return out;
