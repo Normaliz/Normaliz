@@ -1018,16 +1018,15 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     {
         typename list<SHORTSIMPLEX>::iterator s = Triangulation.begin();
         size_t spos=0;
+        SimplexEvaluator<Integer> simp(*this);
         #pragma omp for schedule(dynamic) 
         for(size_t i=0; i<TriangulationSize; i++){
             for(; i > spos; ++spos, ++s) ;
             for(; i < spos; --spos, --s) ;
 
-            Simplex<Integer> simp(s->key);
-            simp.evaluate(*this,s->height);
+            s->height = simp.evaluate(s->key,s->height);
             if(keep_triangulation)
                 sort(s->key.begin(),s->key.end());
-            s->height=simp.read_volume();
             if (verbose) {
                 #pragma omp critical(VERBOSE)
                 while ((long)(i*VERBOSE_STEPS) >= step_x_size) {

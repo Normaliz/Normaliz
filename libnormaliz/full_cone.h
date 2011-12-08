@@ -85,6 +85,7 @@ class Full_Cone {
 
     friend class Cone<Integer>;
     friend class Simplex<Integer>;
+    friend class SimplexEvaluator<Integer>;
     
     struct SHORTSIMPLEX{                   // type for simplex, short in contrast to class Simplex
         vector<size_t> key;                // full key of simplex

@@ -40,7 +40,7 @@ using namespace std;
 //Private
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Simplex<Integer>::reduce_and_insert_interior(const vector< Integer >& new_element){
+void SimplexEvaluator<Integer>::reduce_and_insert_interior(const vector< Integer >& new_element){
     //implementing this function as a tree searching may speed up computations ...
     if (new_element[0]==0) {
         return; // new_element=0
@@ -78,19 +78,6 @@ void Simplex<Integer>::reduce_and_insert_interior(const vector< Integer >& new_e
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Simplex<Integer>::Simplex(){
-    status="non initialized";
-}
-
-template<typename Integer>
-Simplex<Integer>::Simplex(const vector<size_t>& k){
-    dim=k.size();
-    key=k;
-    volume=0;
-    status="key initialized";
-}
-
-template<typename Integer>
 Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
     dim=Map.nr_of_columns();
     key=Map.max_rank_submatrix_lex(dim);
@@ -101,8 +88,6 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
     v_abs(diagonal);
     Support_Hyperplanes = Support_Hyperplanes.transpose();
     multiplicators = Support_Hyperplanes.make_prime();
-    Hilbert_Basis = list< vector<Integer> >();
-    status="initialized";
 }
 
 //---------------------------------------------------------------------------
@@ -118,53 +103,6 @@ Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
     v_abs(diagonal);
     Support_Hyperplanes=Support_Hyperplanes.transpose();
     multiplicators=Support_Hyperplanes.make_prime();
-    Hilbert_Basis = list< vector<Integer> >();
-    status="initialized";
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::initialize(const Matrix<Integer>& Map){
-    Generators=Map.submatrix(key);
-    diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=Invert(Generators, diagonal, volume); //test for arithmetic
-    //overflow performed
-    v_abs(diagonal);
-    Support_Hyperplanes=Support_Hyperplanes.transpose();
-    multiplicators=Support_Hyperplanes.make_prime();
-    Hilbert_Basis=list< vector<Integer> >();
-    Ht1_Elements=list< vector<Integer> >();
-    status="initialized";
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::read() const{
-    cout<<"\nDimension="<<dim<<"\n";
-    cout<<"\nStatus="<<status<<"\n";
-    cout<<"\nVolume="<<volume<<"\n";
-    cout<<"\nKey is:\n";
-    v_read(key);
-    cout<<"\nGenerators are:\n";
-    Generators.read();
-    cout<<"\nDiagonal is:\n";
-    v_read(diagonal);
-    cout<<"\nMultiplicators are:\n";
-    v_read(multiplicators);
-    cout<<"\nSupport Hyperplanes are:\n";
-    Support_Hyperplanes.read();
-    Matrix<Integer> M=read_hilbert_basis();
-    cout<<"\nHilbert Basis is:\n";
-    M.read();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::read_k() const{
-    v_read(key);
 }
 
 //---------------------------------------------------------------------------
@@ -172,13 +110,6 @@ void Simplex<Integer>::read_k() const{
 template<typename Integer>
 size_t Simplex<Integer>::read_dimension() const{
     return dim;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-string Simplex<Integer>::read_status() const{
-    return status;
 }
 
 //---------------------------------------------------------------------------
@@ -234,57 +165,24 @@ Matrix<Integer> Simplex<Integer>::read_support_hyperplanes() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Simplex<Integer>::read_hilbert_basis()const{
-    size_t s= Hilbert_Basis.size();
-    Matrix<Integer> M(s,dim);
-    size_t i=1;
-    typename list< vector<Integer> >::const_iterator l;
-    for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
-        M.write(i,(*l));
-        i++;
-    }
-    return M;
+SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
+: C(fc),
+  dim(C.dim),
+  key(dim),
+  Generators(dim,dim),
+  Generators_trans(dim,dim),
+  diagonal(dim),
+  RS(dim,1)
+{
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-list< vector<Integer> > Simplex<Integer>::read_ht1_elements()const{
-    list< vector<Integer> > HE=Ht1_Elements;
-    return HE;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-const list< vector<Integer> >& Simplex<Integer>::acces_hilbert_basis()const{
-    const list< vector<Integer> >& HB=Hilbert_Basis;
-    return HB;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-size_t Simplex<Integer>::read_hilbert_basis_size() const{
-    return Hilbert_Basis.size();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-int Simplex<Integer>::compare(const Simplex<Integer>& S) const{
-    return v_difference_ordered_fast(key,S.key);
-}
-
-//---------------------------------------------------------------------------
-
-//TODO remove
-size_t NrInvert=0;
 
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
-Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height) {
- 
+Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& k, const Integer& height) {
+    key=k;
     Generators=C.Generators.submatrix(key);
 
     bool do_only_multiplicity=!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements;
@@ -292,11 +190,9 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
     bool unimodular=false;
     vector<Integer> Indicator;
     if(height <= 1 || do_only_multiplicity) {
-        Matrix<Integer> RS(1,dim);  // (transpose of) right hand side
-        RS.write(1,C.Order_Vector); // to hold order vector
-        RS=RS.transpose();
-        vector<Integer> diag(dim);
-        Matrix<Integer> Sol=Generators.transpose().solve_destructiv(RS,diag,volume);
+        RS.write_column(1,C.Order_Vector);  // right hand side
+
+        Matrix<Integer> Sol=Generators.transpose().solve_destructiv(RS,diagonal,volume);
         Indicator=Sol.transpose().read(1);
         if(volume==1)
             unimodular=true;
@@ -312,6 +208,7 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
     // compute degrees of the generators
     vector<long> gen_degrees(dim);
     HilbertSeries Hilbert_Series;
+
     if (C.do_h_vector || C.do_ht1_elements) {
         //degrees of the generators according to the Grading of C
         for (size_t i=0; i<dim; i++){
@@ -352,9 +249,6 @@ Integer Simplex<Integer>::evaluate(Full_Cone<Integer>& C, const Integer& height)
         }
     } // We have tried to take care of the unimodular case WITHOUT the matrix inversion
 
-    #pragma omp atomic
-    NrInvert++;
-    diagonal = vector< Integer >(dim);
     Matrix<Integer> InvGen=Invert(Generators, diagonal, volume);
     v_abs(diagonal);
     vector<bool> Excluded(dim,false);

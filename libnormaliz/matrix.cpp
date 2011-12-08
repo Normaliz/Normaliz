@@ -172,8 +172,23 @@ void Matrix<Integer>::write(size_t row, const vector<int>& data){
     assert(row <= nr); 
     assert(nc == data.size());
 
-    for (size_t i = 0; i <nc ; i++) {
-        elements[row-1][i]=data[i];
+    --row;
+    for (size_t i = 0; i < nc; i++) {
+        elements[row][i]=data[i];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
+    assert(col >= 1);
+    assert(col <= nr); 
+    assert(nr == data.size());
+
+    --col;
+    for (size_t i = 0; i < nr; i++) {
+        elements[i][col]=data[i];
     }
 }
 
