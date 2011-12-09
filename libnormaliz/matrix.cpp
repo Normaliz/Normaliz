@@ -650,11 +650,8 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
     const size_t c1=col1-1;
     const size_t c2=col2-1;
     size_t i;
-    Integer help;
     for(i=0; i<nr;i++){
-        help=elements[i][c1];
-        elements[i][c1]= elements[i][c2];
-        elements[i][c2]=help;
+        std::swap(elements[i][c1], elements[i][c2]);
     }
 }
 

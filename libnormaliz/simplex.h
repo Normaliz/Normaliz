@@ -76,13 +76,12 @@ class SimplexEvaluator {
     Full_Cone<Integer>& C;
     size_t dim;
     Integer volume;
-    vector<size_t> key;
     Matrix<Integer> Generators;
-    Matrix<Integer> Generators_trans;
     vector< Integer > diagonal;
     Matrix<Integer> Support_Hyperplanes;
     list< vector<Integer> > Hilbert_Basis;
     list< vector<Integer> > Ht1_Elements;
+    //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
 
     void reduce_and_insert_interior(const vector< Integer >& new_element);

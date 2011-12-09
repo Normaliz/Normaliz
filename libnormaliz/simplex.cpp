@@ -168,9 +168,7 @@ template<typename Integer>
 SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 : C(fc),
   dim(C.dim),
-  key(dim),
   Generators(dim,dim),
-  Generators_trans(dim,dim),
   diagonal(dim),
   RS(dim,1)
 {
@@ -181,19 +179,23 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& k, const Integer& height) {
-    key=k;
-    Generators=C.Generators.submatrix(key);
+Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Integer& height) {
 
     bool do_only_multiplicity=!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements;
 
     bool unimodular=false;
     vector<Integer> Indicator;
     if(height <= 1 || do_only_multiplicity) {
+        for(size_t i=0; i<dim; ++i) {
+            Generators.write_column(i+1,C.Generators[key[i]-1]);
+        } // already transposed Generators
         RS.write_column(1,C.Order_Vector);  // right hand side
 
-        Matrix<Integer> Sol=Generators.transpose().solve_destructiv(RS,diagonal,volume);
-        Indicator=Sol.transpose().read(1);
+        Matrix<Integer> Sol(Generators.solve_destructiv(RS,diagonal,volume));
+        Indicator.resize(dim);
+        for (size_t i=0; i<dim; i++){
+            Indicator[i]=Sol[i][0];
+        }
         if(volume==1)
             unimodular=true;
     }
@@ -249,6 +251,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& k, const Integ
         }
     } // We have tried to take care of the unimodular case WITHOUT the matrix inversion
 
+    for(size_t i=0; i<dim; ++i) {
+        Generators[i] = C.Generators[key[i]-1];
+    }
     Matrix<Integer> InvGen=Invert(Generators, diagonal, volume);
     v_abs(diagonal);
     vector<bool> Excluded(dim,false);
