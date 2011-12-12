@@ -29,7 +29,8 @@ InputType to_type(string& type_string) {
         return Type::grading;
     }
     
-    cerr<<"Warning: Unknown type \""<<type_string<<"\"! Will be replaced with type integral_closure."<<endl;
+    cerr<<"ERROR: Unknown type \""<<type_string<<"\"!"<<endl;
+    throw BadInputException();
     return Type::integral_closure;
 }
 

@@ -511,24 +511,22 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 template<typename Integer>
 void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
-    // size_t s, TriangulationSize=Triangulation.size(); // the size we start with
-
-    size_t listsize=Facets.size();
+    size_t listsize = Facets.size();
     vector<typename list<FACETDATA>::iterator> visible;
     visible.reserve(listsize);
-    typename list<FACETDATA>::iterator i=Facets.begin();
+    typename list<FACETDATA>::iterator i = Facets.begin();
 
-    size_t nr_gen_i, k,l;
+    size_t k,l;
 
     // #pragma omp critical(VERBOSE)
     // verboseOutput() << "L " << pyr_level << " H " << listsize << " T " << TriangulationSize << endl << flush;
 
-    for (;i!=Facets.end(); ++i) 
-        if (i->ValNewGen<0) // visble facet
+    for (; i!=Facets.end(); ++i) 
+        if (i->ValNewGen < 0) // visible facet
             visible.push_back(i);
 
     typename list<SHORTSIMPLEX>::iterator j;
-    listsize=visible.size();
+    listsize = visible.size();
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
     bool one_not_in_i, not_in_facet;
     size_t not_in_i;
@@ -536,8 +534,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     SHORTSIMPLEX newsimplex;
     newsimplex.key.reserve(dim);
     
-    typename list<SHORTSIMPLEX>::iterator oldTriBack=Triangulation.end();
-    --oldTriBack;
+    typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
     
     vector<size_t> key(dim);
     
@@ -926,7 +923,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     
     if(do_triangulation || (do_partial_triangulation && S.read_volume()>1))
     {
-        store_key(key,S.read_volume());  // height unerstood positive 
+        store_key(key,S.read_volume());  // height understood positive
     }
     
     if(do_triangulation){ // we must prepare the sections of the triangulation
@@ -992,9 +989,8 @@ void Full_Cone<Integer>::build_cone() {
                 size_t old_nr_supp_hyps=Facets.size();                
                 
                 size_t lpos=0;
-                size_t listsize=Facets.size();
                 #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic)
-                for (size_t k=0; k<listsize; k++) {
+                for (size_t k=0; k<old_nr_supp_hyps; k++) {
                     for(;k > lpos; lpos++, l++) ;
                     for(;k < lpos; lpos--, l--) ;
 
@@ -1034,7 +1030,7 @@ void Full_Cone<Integer>::build_cone() {
                     pyramid_recursion=true;
                     process_pyramids(i,true); //recursive
                 }
-                else{
+                else {
                     if(do_partial_triangulation)
                         process_pyramids(i,false); // non-recursive
                     if(do_triangulation)
@@ -1209,8 +1205,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
     #pragma omp critical(EVALUATE)
     if(TriangulationSize>0)
-{
-
+    {
             if(Top_Cone->TriangulationSize!=Top_Cone->Triangulation.size())
             cout<< " ALARM ALARM ALARM" << endl;    
  
@@ -1228,16 +1223,15 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     {
         typename list<SHORTSIMPLEX>::iterator s = Triangulation.begin();
         size_t spos=0;
+        SimplexEvaluator<Integer> simp(*this);
         #pragma omp for schedule(dynamic) 
         for(size_t i=0; i<TriangulationSize; i++){
             for(; i > spos; ++spos, ++s) ;
             for(; i < spos; --spos, --s) ;
 
-            Simplex<Integer> simp(s->key);
-            simp.evaluate(*this,s->height);
+            s->height = simp.evaluate(s->key,s->height);
             if(keep_triangulation)
                 sort(s->key.begin(),s->key.end());
-            s->height=simp.read_volume();
             if (verbose) {
                 #pragma omp critical(VERBOSE)
                 while ((long)(i*VERBOSE_STEPS) >= step_x_size) {

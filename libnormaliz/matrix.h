@@ -70,8 +70,9 @@ public:
 //---------------------------------------------------------------------------
 
     void write(std::istream& in = std::cin);                // to be modified, just for tests
-    void write(size_t row, const vector<Integer>& data); //write  a row
-    void write(size_t row, const vector<int>& data); //write  a row
+    void write(size_t row, const vector<Integer>& data); //write a row
+    void write(size_t row, const vector<int>& data); //write a row
+    void write_column(size_t col, const vector<Integer>& data); //write a column
     void write(size_t row, size_t col, Integer data);  // write data at (row,col)
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print(std::ostream& out) const;          // writes matrix to the stream
