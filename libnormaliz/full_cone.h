@@ -91,11 +91,17 @@ class Full_Cone {
         Integer height;                    // height of last vertex over opposite facet
     };
     
+    // list<SHORTSIMPLEX> CheckTri;
     list <SHORTSIMPLEX> Triangulation;      // triangulation of cone
     size_t TriangulationSize;               // number of elements in Triangulation, for efficiency
+    size_t nrSimplTransferred;              // number of simplices already transferred to Top_Cone (also by itself)
+    // The sum of TriangulationSize and nrSimplTransferred is the number of simplices produced
+    // in the currect cone so far
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionLast;     // last simplex with lead vertex i
     vector<size_t> VertInTri;               // generators in the order in which they are inserted
+    
+    list<SHORTSIMPLEX> FreeSimpl;           // list of short simplices no longer in use, kept for recycling
        
     struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
@@ -114,16 +120,29 @@ class Full_Cone {
     int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
     
     size_t totalNrSimplices;   // total number of simplices evaluated
+    
+    bool largePyr; // indicates large pyramid
+    bool largeAncestors; // indicates whether all ancestors (including the cone itself) are large
+    
+    size_t sizeBound; // distinguishes small and large pyramids
+    
+    size_t largeSmall;
+    size_t smallLarge;
+    size_t nrSimplicialPyr;
+    size_t totalNrPyr;
+    size_t nrLargePyr;
+    size_t nrSmallPyr;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-    void add_hyperplane(const size_t& ind_gen, const FACETDATA & positive,const FACETDATA & negative);
+    void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative);
     void extend_triangulation(const size_t& new_generator);
-    void find_new_facets(const size_t& ind_gen);
-    void process_pyramids(const size_t ind_gen,const bool recursive);
-    void process_pyramid(FACETDATA& l, const size_t ind_gen,const bool recursive);
+    void find_new_facets(const size_t& new_generator);
+    void process_pyramids(const size_t new_generator,const bool recursive);
+    void process_pyramid(const vector<size_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
+                      const size_t new_generator,const bool recursive, const bool large);
 
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
@@ -141,6 +160,7 @@ class Full_Cone {
     void extreme_rays_and_ht1_check();
     void set_degrees();
     void compute_support_hyperplanes();
+    bool check_evaluation_buffer();
     void evaluate_triangulation();
     void transfer_triangulation_to_top();
     void primal_algorithm(); 
@@ -185,7 +205,7 @@ public:
     Full_Cone();
     Full_Cone(Matrix<Integer> M);            //main constructor
     Full_Cone(const Cone_Dual_Mode<Integer> &C);
-    Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key); // for pyramids
+    Full_Cone(Full_Cone<Integer>& C, const vector<size_t> Key, const bool isLarge); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access
@@ -249,3 +269,4 @@ public:
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------
+

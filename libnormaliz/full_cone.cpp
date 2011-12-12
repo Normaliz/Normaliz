@@ -41,7 +41,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FACETDATA & positive,const FACETDATA & negative){
+void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative){
     size_t k;
     
     // NEW: indgen is the index of the generator being inserted    
@@ -70,7 +70,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FACETDATA &
     NewFacet.ValNewGen=0; // not really needed, only for completeness
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
-    NewFacet.GenInHyp.set(ind_gen);  // new hyperplane contains new generator
+    NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     
     #pragma omp critical(HYPERPLANE)
     Facets.push_back(NewFacet);
@@ -81,11 +81,11 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& ind_gen, const FACETDATA &
 
 
 template<typename Integer>
-void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
+void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     //to see if possible to replace the function .end with constant iterator since push-back is performed.
 
-    // NEW: ind_gen is the index of the generator being inserted
+    // NEW: new_generator is the index of the generator being inserted
 
     size_t i,k,nr_zero_i;
     size_t subfacet_dim=dim-2; // NEW dimension of subfacet
@@ -125,7 +125,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
             simplex=true;
             
         if (ii->ValNewGen==0) {
-            ii->GenInHyp.set(ind_gen);  // Must be set explicitly !!
+            ii->GenInHyp.set(new_generator);  // Must be set explicitly !!
             if (simplex) {
                 l_Neutral_Simp.push_back(&(*ii));
             }   else {
@@ -316,7 +316,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
         if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
             jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
             if (jj_map!=Neg_Subfacet.end()) {
-                add_hyperplane(ind_gen,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
+                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
                 (*jj_map).second = -1;  // block subfacet in further searches
             }
         }
@@ -327,7 +327,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
                     jj_map=Neg_Subfacet.find(subfacet);
                     if (jj_map!=Neg_Subfacet.end()) {
-                        add_hyperplane(ind_gen,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
+                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
                         (*jj_map).second = -1;
                     }
                 }
@@ -351,7 +351,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
         if ( (*jj_map).second != -1 ) {  // skip used subfacets
             for (i = 0; i <Pos_Non_Simp.size(); i++) {
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
-                    add_hyperplane(ind_gen,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second]);
+                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second]);
                     break;
                 }
             }
@@ -390,7 +390,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
                  }
                     
                  if(common_subfacet){                 
-                    add_hyperplane(ind_gen,*Pos_Simp[i],*Neg_Non_Simp[j]);
+                    add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j]);
                     if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
                         break;
                  }
@@ -491,7 +491,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& ind_gen){
                         }                        
                     } // else
                     if (exactly_two) {  //intersection of i and j is a subfacet
-                        add_hyperplane(ind_gen,*hp_i,*hp_j);
+                        add_hyperplane(new_generator,*hp_i,*hp_j);
                     }
                 }
             }
@@ -529,18 +529,19 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
     typename list<SHORTSIMPLEX>::iterator j;
     listsize=visible.size();
-        // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
+    // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
     bool one_not_in_i, not_in_facet;
     size_t not_in_i;
-    SHORTSIMPLEX newsimplex;
     list<SHORTSIMPLEX> Triangulation_kk;
+    SHORTSIMPLEX newsimplex;
+    newsimplex.key.reserve(dim);
     
     typename list<SHORTSIMPLEX>::iterator oldTriBack=Triangulation.end();
     --oldTriBack;
     
     vector<size_t> key(dim);
     
-    #pragma omp parallel for private(i,j,k,l,not_in_i,one_not_in_i,not_in_facet,newsimplex) firstprivate(key,Triangulation_kk)  schedule(dynamic)
+    #pragma omp parallel for private(i,j,k,l,not_in_i,one_not_in_i,not_in_facet) firstprivate(key,Triangulation_kk,newsimplex)  schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
          i=visible[kk];
          
@@ -592,13 +593,32 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
               
               key[not_in_i]=new_generator+1;
               // store_key(key,-i->ValNewGen); // store simplex in triangulation
+              
               newsimplex.key=key;
-              newsimplex.height=-i->ValNewGen;  // height unerstood positive
-              Triangulation_kk.push_back(newsimplex);
+              newsimplex.height=-i->ValNewGen;
+              
+              if(keep_triangulation){
+                Triangulation_kk.push_back(newsimplex);
+                #pragma omp atomic
+                TriangulationSize++;
+                continue;   
+              }
+              
+              #pragma omp critical(FREESIMPL)
+              {
+              if(!Top_Cone->FreeSimpl.empty()){
+                    Triangulation_kk.splice(Triangulation_kk.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+                    Triangulation_kk.back()=newsimplex;
+              }       
+              else
+                    Triangulation_kk.push_back(newsimplex);  // to have a new element
+              } // critical
+              
               #pragma omp atomic
               TriangulationSize++;
             
-            } // for s
+            } // for j
+            
             #pragma omp critical(TRIANG)
             Triangulation.splice(Triangulation.end(),Triangulation_kk);
             
@@ -608,18 +628,37 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     VertInTri.push_back(new_generator);
     TriSectionFirst.push_back(++oldTriBack);
     TriSectionLast.push_back(--Triangulation.end());
-    
 } 
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& height){
+
     SHORTSIMPLEX newsimplex;
     newsimplex.key=key;
     newsimplex.height=height;
-    #pragma omp critical(TRIANG)
-    Triangulation.push_back(newsimplex);
+    
+    if(keep_triangulation){
+        #pragma omp critical(TRIANG)
+        Triangulation.push_back(newsimplex);
+        #pragma omp atomic
+        TriangulationSize++;
+        return;    
+    }
+
+    #pragma omp critical(FREESIMPL)
+    {
+    if(Top_Cone->FreeSimpl.empty()){
+        Top_Cone->FreeSimpl.push_front(newsimplex);
+    }
+    else{
+        Top_Cone->FreeSimpl.front()=newsimplex;
+    }
+    #pragma omp critical(TRIANG)    
+    Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+    }
+    
     #pragma omp atomic
     TriangulationSize++;
 }
@@ -627,59 +666,195 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::process_pyramids(const size_t ind_gen,const bool recursive){
+void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool recursive){
 
-    typename list< FACETDATA >::iterator l=Facets.begin();
+    
+    vector<size_t> Pyramid_key;
+    Pyramid_key.reserve(nr_gen);
+    boost::dynamic_bitset<> in_Pyramid(nr_gen);
+    
+    vector<vector<size_t> > largeKeys;
+    vector<boost::dynamic_bitset<> > largeInPyramid; 
+    
+    size_t nrSmall=0;
+    size_t sizeBound=Top_Cone->sizeBound;
+    
+    // cout << "AnzPyr " << listsize << endl;
+    
+    bool allLarge=false;
+    if(TriangulationSize+nrSimplTransferred>6000000){
+        allLarge=true;
+        // cout << "All large" << endl;
+    }
+    
+    
+     
+    bool skip_remaining, skip_remaining_priv;
+    typename list< FACETDATA >::iterator l;
+    size_t i,lpos, listsize=Facets.size();
+    vector<bool> done_or_large(listsize,false);
+    
+    // size_t Done=0;
 
-    size_t lpos=0, listsize=Facets.size();
+    do{    
 
-   // #pragma omp parallel for firstprivate(lpos,l) schedule(dynamic) 
+    lpos=0;
+    skip_remaining=false;
+    l=Facets.begin();
+
+    #pragma omp parallel for private(i,skip_remaining_priv) firstprivate(lpos,l,Pyramid_key,in_Pyramid) schedule(dynamic) 
     for (size_t k=0; k<listsize; k++) {
+    
+
+        // #pragma omp critical(PYRPAR)
+        skip_remaining_priv=skip_remaining;  //private copy
+        
+        if(skip_remaining_priv)
+            continue;
+            
         for(;k > lpos; lpos++, l++) ;
         for(;k < lpos; lpos--, l--) ;
-
+                
         // only triangulation of Pyramids of height >=2 needeed
-        if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1))
+        if(done_or_large[lpos])
             continue;
-    
-        process_pyramid((*l), ind_gen, recursive);
+            
+        #pragma omp critical(DONE)
+        done_or_large[lpos]=true;
+        
+        // #pragma omp atomic 
+        // Done++;
+            
+        if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1)){
+            continue;
+        }
+            
+        boost::dynamic_bitset<> in_Pyramid(nr_gen,false);           
+        Pyramid_key.push_back(new_generator+1);
+        in_Pyramid.set(new_generator);
+        for(i=0;i<nr_gen;i++){
+            if(in_triang[i] && v_scalar_product(l->Hyp,Generators.read(i+1))==0){ // from the second extension on the incidence data
+                Pyramid_key.push_back(i+1);                                      // in Facets is no longer up-to-date
+                in_Pyramid.set(i);
+            }
+        }
+        
+        if(Pyramid_key.size() <= sizeBound && !allLarge){
+            process_pyramid(Pyramid_key, in_Pyramid, new_generator, recursive,false);
+            #pragma omp atomic
+            nrSmall++;
+            #pragma omp atomic
+            Top_Cone->nrSmallPyr++;
+        }
+        else
+            #pragma omp critical(LARGEPYRAMIDS)
+            {
+                largeKeys.push_back(Pyramid_key);
+                largeInPyramid.push_back(in_Pyramid);
+                #pragma omp atomic
+                Top_Cone->nrLargePyr++;
+            }
+        Pyramid_key.clear();
+        
+        if(largeAncestors &&  check_evaluation_buffer()){  // we interrupt papllel execution if it is really parallel
+                                                           //  to keep the triangulation buffer under control
+            // #pragma omp critical(PYRPAR)
+            skip_remaining=true;
+        }
+            
     }
+    
+    if(skip_remaining)
+    {
+        // cout << "In skip_remaining " << Top_Cone->TriangulationSize << endl;
+           Top_Cone->evaluate_triangulation();
+    }
+    
+    /* size_t Anz=0;
+    for(i=0;i<listsize;i++)
+        if(done_or_large[i])
+            Anz++;
+     if(Done!=Anz)
+        cout << "ALARM ANZ "<< Anz << " " << Done << endl; */  
+    
+    }while(skip_remaining);
+    
+    /* if(Done!=listsize)
+        cout << "ALARM ALARM ALARM "<< listsize << " " << Done << endl; */
+        
+    /* size_t Anz=0;
+    for(i=0;i<listsize;i++)
+        if(done_or_large[i])
+            Anz++;
+     if(Done!=Anz)
+        cout << "ALARM ANZ NEU"<< Anz << " " << Done << endl; */  
+    
+    // cout << "Nach small" << endl;
+    
+    listsize=largeKeys.size();
+    for (size_t k=0; k<listsize; k++){
+        process_pyramid(largeKeys[k],largeInPyramid[k],new_generator,recursive,true);
+        if(largeAncestors && check_evaluation_buffer())
+            Top_Cone->evaluate_triangulation();
+    }
+    
+    // cout << "Nach large" << endl;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::process_pyramid(FACETDATA& l, const size_t ind_gen,const bool recursive){
+void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
+                          const size_t new_generator,const bool recursive, const bool large){
+    
+    
+    // cout << "In py " << pyr_level << endl;
+    
+    #pragma omp atomic
+    Top_Cone->totalNrPyr++;
 
-    vector<size_t> Pyramid_key;
-    Pyramid_key.reserve(nr_gen);
-    size_t i; 
-    boost::dynamic_bitset<> in_Pyramid(nr_gen,false);           
-    Pyramid_key.push_back(ind_gen+1);
-    in_Pyramid.set(ind_gen);
-    for(i=0;i<nr_gen;i++){
-        if(in_triang[i] && v_scalar_product(l.Hyp,Generators.read(i+1))==0){ // we cannot trust that Facets is
-            Pyramid_key.push_back(i+1);                                      // up-to-date
-            in_Pyramid.set(i);
+    list<vector<Integer> > NewFacets;
+    bool simplicial;
+    
+    if(Pyramid_key.size()==dim){  // simplicial pyramid done here
+        simplicial=true;
+        // cout << "Simplicial "  << endl;
+        #pragma omp atomic
+        Top_Cone->nrSimplicialPyr++;
+        Simplex<Integer> S(Pyramid_key, Generators);
+        if(recursive){ // the facets may be facets of the mother cone and if recursive==true must be given back
+            Matrix<Integer> H=S.read_support_hyperplanes();
+            for (size_t i=0; i<dim;i++)
+                NewFacets.push_back(H.read(i+1));
+        }    
+        if(do_triangulation || (do_partial_triangulation && S.read_volume()>1)){
+            #pragma omp critical(EVALUATE)
+            store_key(Pyramid_key,S.read_volume());  // height unerstood positive 
         }
     }
-    Full_Cone<Integer> Pyramid(*this,Pyramid_key);
-    Pyramid.do_triangulation= !recursive || do_triangulation;
-    if(Pyramid.do_triangulation)
-        Pyramid.do_partial_triangulation=false;
-    Pyramid.build_cone(); // build and evaluate pyramid
+    else {
+        Full_Cone<Integer> Pyramid(*this,Pyramid_key,large);
+        // cout << "Non-simplicial" << endl;
+        Pyramid.do_triangulation= !recursive || do_triangulation;
+        if(Pyramid.do_triangulation)
+            Pyramid.do_partial_triangulation=false;
+        Pyramid.build_cone(); // build and evaluate pyramid        
+        if(recursive)
+            NewFacets.splice(NewFacets.begin(),Pyramid.Support_Hyperplanes);
+    }   
 
-    // now we give the data back to the "mother cone"
-    // triangulation and support hypewrplanes only if 
-    // they are not done on the "mother" level ( <==> recursive==tue)      
-     
-    if(recursive){         
-        typename list<vector<Integer> >::iterator pyr_hyp = Pyramid.Support_Hyperplanes.begin();
+    // now we give  support hypeerplanes back to the mother cone if only if 
+    // they are not done on the "mother" level if and only if recursive==tue
+    
+
+    if(recursive){
+        size_t i;                        
+        typename list<vector<Integer> >::iterator pyr_hyp = NewFacets.begin();
         bool new_global_hyp;
-        FACETDATA NewFacets;
+        FACETDATA NewFacet;
         Integer test;   
-        for(;pyr_hyp!=Pyramid.Support_Hyperplanes.end();pyr_hyp++){
-            if(v_scalar_product(Generators.read(ind_gen+1),*pyr_hyp)>0)
+        for(;pyr_hyp!= NewFacets.end();pyr_hyp++){
+            if(v_scalar_product(Generators.read(new_generator+1),*pyr_hyp)>0)
                 continue;
             new_global_hyp=true;
             for(i=0;i<nr_gen;i++){
@@ -693,13 +868,15 @@ void Full_Cone<Integer>::process_pyramid(FACETDATA& l, const size_t ind_gen,cons
             
             }
             if(new_global_hyp){
-                NewFacets.Hyp=*pyr_hyp;                
+                NewFacet.Hyp=*pyr_hyp;                
                 #pragma omp critical(HYPERPLANE)
-                Facets.push_back(NewFacets);
+                Facets.push_back(NewFacet);
             }
         }
     }
-    Pyramid.Support_Hyperplanes.clear();
+    NewFacets.clear();
+    
+    // cout << "Aus py" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -793,7 +970,7 @@ void Full_Cone<Integer>::build_cone() {
     if(bound_div > 3*dim) bound_div = 3*dim;
     RecBoundSuppHyp /= bound_div;
 
-    size_t RecBoundTriang = 5000000; // 5Mio
+    size_t RecBoundTriang = 1000000;  // 1 Mio      5000000; // 5Mio
 
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
@@ -845,7 +1022,15 @@ void Full_Cone<Integer>::build_cone() {
                 // Magic Bounds to deside whether to use pyramids
                 if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
                   || (do_triangulation && nr_neg*TriangulationSize > RecBoundTriang)) {
+                  
+                    // cout << "Starting Pyramids from Pyr level " << pyr_level <<" Triang " << TriangulationSize+nrSimplTransferred << endl;
                     transfer_triangulation_to_top(); // NEW EVA
+
+                    if(largeAncestors && check_evaluation_buffer()){
+
+                            // cout << "Evaluating in build_cone " << TriangulationSize << " Simpl" << endl;
+                            Top_Cone->evaluate_triangulation();
+                    }
                     pyramid_recursion=true;
                     process_pyramids(i,true); //recursive
                 }
@@ -883,6 +1068,18 @@ void Full_Cone<Integer>::build_cone() {
         Support_Hyperplanes.push_back(IHV->Hyp);
     }
     
+     #pragma omp critical(SIZEBOUND)
+     {
+     if(pyramid_recursion && !largePyr){  // adapt separation of large and small
+        Top_Cone->smallLarge++;           // to experience
+        Top_Cone->sizeBound-=Top_Cone->sizeBound/5;
+     }
+     if(!pyramid_recursion && largePyr){
+        Top_Cone->largeSmall++;
+        Top_Cone->sizeBound+=Top_Cone->sizeBound/5;
+     }
+     }
+    
 
     } // end if (dim>0)
     
@@ -890,12 +1087,15 @@ void Full_Cone<Integer>::build_cone() {
     is_Computed.set(ConeProperty::SupportHyperplanes);
 
     transfer_triangulation_to_top(); // transfer remaining simplices to top
+    if(largeAncestors && check_evaluation_buffer())
+        Top_Cone->evaluate_triangulation();
     
     if(!is_pyramid && !keep_triangulation) // force evaluation of remaining simplices
-        evaluate_triangulation(); 
+        evaluate_triangulation();          // on top level
 
     if(!is_pyramid && keep_triangulation)  // in this case triangulation now complete
-        is_Computed.set(ConeProperty::Triangulation);  // and stored            
+        is_Computed.set(ConeProperty::Triangulation);  // and stored 
+               
 }
 
 //---------------------------------------------------------------------------
@@ -958,21 +1158,26 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool Full_Cone<Integer>::check_evaluation_buffer(){
+
+    size_t EvalBoundTriang = 1000000; // 1Mio
+
+    return(!Top_Cone->keep_triangulation && Top_Cone->TriangulationSize > EvalBoundTriang);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
     size_t i;
-    size_t EvalBoundTriang = 1000000; // 1Mio
 
     // cout << "Pyr level " << pyr_level << endl;
     
-    if(!is_pyramid) { // we are in top cone
-        if(keep_triangulation)  // no transfer necessary and evaluation at the end
-            return;
-        
-        if(TriangulationSize > EvalBoundTriang)
-            evaluate_triangulation();   // evaluate now and clear triangulation
-
-        return;
+    if(!is_pyramid) {  // we are in top cone
+        if(check_evaluation_buffer())
+            evaluate_triangulation();
+        return;      // no transfer necessary
     }
 
     // now we are in a pyramid
@@ -985,16 +1190,12 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
             pyr_simp->key[i]=Top_Key[pyr_simp->key[i]-1];
 
     // cout << "Keys transferred " << endl;
-    // #pragma omp critical(TRIANG)
+    #pragma omp critical(EVALUATE)
     {
         Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
         Top_Cone->TriangulationSize+=TriangulationSize;
+        nrSimplTransferred+=TriangulationSize;
         TriangulationSize=0;
-        
-        // cout << "To evaluate " << Top_Cone->TriangulationSize << endl;
-
-        if(!Top_Cone->keep_triangulation && Top_Cone->TriangulationSize > EvalBoundTriang)
-            Top_Cone->evaluate_triangulation();
     }
 
     // cout << "Done." << endl;
@@ -1006,10 +1207,13 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
-    // size_t TriangulationSize = TriangulationSize;
-    if(TriangulationSize==0)
-        return;
+    #pragma omp critical(EVALUATE)
+    if(TriangulationSize>0)
+{
 
+            if(Top_Cone->TriangulationSize!=Top_Cone->Triangulation.size())
+            cout<< " ALARM ALARM ALARM" << endl;    
+ 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
     if (verbose) {
@@ -1074,10 +1278,19 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << " accumulated." << endl;
     }
     
+    #pragma omp(FREESIMPL)
     if(!keep_triangulation){
-        Triangulation.clear();
+        // list<SHORTSIMPLEX> Rette=Triangulation;
+        // CheckTri.splice(CheckTri.begin(),Rette);
+        // Triangulation.clear();
+        FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
+        nrSimplTransferred+=TriangulationSize;        
         TriangulationSize=0;
     }
+    
+    
+} // TriangulationSize
+
 }
 
 //---------------------------------------------------------------------------
@@ -1109,6 +1322,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     set_degrees();
 
     build_cone();  // evaluates if keep_triangulation==false
+    
+    cout << "TotPyr "<< totalNrPyr << " LargePyr " << nrLargePyr << " SmallPyr " << nrSmallPyr << endl;
+    cout << "Large-->Small " <<largeSmall << " Small-->Large " << smallLarge << " Simplicial " << nrSimplicialPyr << endl;
 
     extreme_rays_and_ht1_check();
     if(!pointed) return;
@@ -1121,7 +1337,17 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
 
     if (keep_triangulation)
-        evaluate_triangulation(); 
+        evaluate_triangulation();
+    FreeSimpl.clear();
+    
+     /* list<vector<size_t> > Check;
+    typename list<SHORTSIMPLEX>::iterator s =CheckTri.begin();
+        for(;s!=CheckTri.end();++s)
+            Check.push_back(s->key);
+        Check.sort();
+        Check.unique();
+        if(Check.size()!=CheckTri.size())
+            cout<< "ALARM ALARM ALARM" << endl; */
     
     if (ht1_extreme_rays && do_triangulation)
         is_Computed.set(ConeProperty::Multiplicity,true);
@@ -1850,6 +2076,13 @@ void Full_Cone<Integer>::reset_tasks(){
     keep_triangulation = false;
     do_h_vector=false;
     is_pyramid = false;
+    
+     largeSmall=0;
+     smallLarge=0;
+     nrSimplicialPyr=0;
+     totalNrPyr=0;
+     nrLargePyr=0;
+     nrSmallPyr=0;
 }
 
 //---------------------------------------------------------------------------
@@ -1909,6 +2142,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
         Top_Key[i]=i+1;
     totalNrSimplices=0;
     TriangulationSize=0;
+    nrSimplTransferred=0;
+    largePyr=true; // irrelevant on top level
+    largeAncestors=true;
+    sizeBound=dim+300/(5+dim); // start value
 }
 
 //---------------------------------------------------------------------------
@@ -1970,7 +2207,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
 /* constructor for pyramids */
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
+Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<size_t> Key, const bool large) {
 
     Generators = C.Generators.submatrix(Key);
     dim = Generators.nr_of_columns();
@@ -2018,6 +2255,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, vector<size_t> Key) {
         }
     }
     TriangulationSize=0;
+    nrSimplTransferred=0;
+    largePyr=large;
+    largeAncestors=C.largeAncestors && largePyr;
 }
 
 //---------------------------------------------------------------------------
@@ -2199,4 +2439,5 @@ void Full_Cone<Integer>::print()const{
 }
 
 } //end namespace
+
 
