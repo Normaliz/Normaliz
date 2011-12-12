@@ -811,11 +811,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
     Top_Cone->totalNrPyr++;
 
     list<vector<Integer> > NewFacets;
-    bool simplicial;
     
     if(Pyramid_key.size()==dim){  // simplicial pyramid done here
-        simplicial=true;
-        // cout << "Simplicial "  << endl;
         #pragma omp atomic
         Top_Cone->nrSimplicialPyr++;
         Simplex<Integer> S(Pyramid_key, Generators);
@@ -826,12 +823,11 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
         }    
         if(do_triangulation || (do_partial_triangulation && S.read_volume()>1)){
             #pragma omp critical(EVALUATE)
-            store_key(Pyramid_key,S.read_volume());  // height unerstood positive 
+            store_key(Pyramid_key,S.read_volume());  // height understood positive 
         }
     }
     else {
         Full_Cone<Integer> Pyramid(*this,Pyramid_key,large);
-        // cout << "Non-simplicial" << endl;
         Pyramid.do_triangulation= !recursive || do_triangulation;
         if(Pyramid.do_triangulation)
             Pyramid.do_partial_triangulation=false;
@@ -1272,7 +1268,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << " accumulated." << endl;
     }
     
-    #pragma omp(FREESIMPL)
+    #pragma omp critical(FREESIMPL)
     if(!keep_triangulation){
         // list<SHORTSIMPLEX> Rette=Triangulation;
         // CheckTri.splice(CheckTri.begin(),Rette);
