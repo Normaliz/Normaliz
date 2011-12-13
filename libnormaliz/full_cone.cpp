@@ -1202,9 +1202,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     #pragma omp critical(EVALUATE)
     if(TriangulationSize>0)
     {
-            if(Top_Cone->TriangulationSize!=Top_Cone->Triangulation.size())
-            cout<< " ALARM ALARM ALARM" << endl;    
- 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
     if (verbose) {
@@ -1270,8 +1267,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     #pragma omp critical(FREESIMPL)
     if(!keep_triangulation){
-        // list<SHORTSIMPLEX> Rette=Triangulation;
-        // CheckTri.splice(CheckTri.begin(),Rette);
         // Triangulation.clear();
         FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
         nrSimplTransferred+=TriangulationSize;        
@@ -1329,15 +1324,6 @@ void Full_Cone<Integer>::primal_algorithm(){
     if (keep_triangulation)
         evaluate_triangulation();
     FreeSimpl.clear();
-    
-     /* list<vector<size_t> > Check;
-    typename list<SHORTSIMPLEX>::iterator s =CheckTri.begin();
-        for(;s!=CheckTri.end();++s)
-            Check.push_back(s->key);
-        Check.sort();
-        Check.unique();
-        if(Check.size()!=CheckTri.size())
-            cout<< "ALARM ALARM ALARM" << endl; */
     
     if (ht1_extreme_rays && do_triangulation)
         is_Computed.set(ConeProperty::Multiplicity,true);
