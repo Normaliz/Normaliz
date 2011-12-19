@@ -678,11 +678,14 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     
     // cout << "AnzPyr " << listsize << endl;
     
+    // cout << "total Triang so far " << TriangulationSize+nrSimplTransferred 
+    //      << " eva buff " << Top_Cone->TriangulationSize << endl;
     bool allLarge=false;
     if(TriangulationSize+nrSimplTransferred>6000000){
         allLarge=true;
-        // cout << "All large" << endl;
+        // cout << "All large " << endl;
     }
+
     
     
      
@@ -691,7 +694,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     size_t i,lpos, listsize=Facets.size();
     vector<bool> done_or_large(listsize,false);
     
-    // size_t Done=0;
+    size_t Done=0;
 
     do{    
 
@@ -719,8 +722,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         #pragma omp critical(DONE)
         done_or_large[lpos]=true;
         
-        // #pragma omp atomic 
-        // Done++;
+        #pragma omp atomic 
+        Done++;
             
         if(l->ValNewGen>=0 ||(!recursive && l->ValNewGen>=-1)){
             continue;
@@ -753,7 +756,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             }
         Pyramid_key.clear();
         
-        if(largeAncestors &&  check_evaluation_buffer()){  // we interrupt papllel execution if it is really parallel
+        if(check_evaluation_buffer() && Done < listsize){  // we interrupt papllel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
             // #pragma omp critical(PYRPAR)
             skip_remaining=true;
@@ -763,36 +766,30 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     
     if(skip_remaining)
     {
-        // cout << "In skip_remaining " << Top_Cone->TriangulationSize << endl;
+         // cout << "In skip_remaining, pyr level " << pyr_level << 
+         // " total pyr " << listsize << " pyr done " << Done << endl;
            Top_Cone->evaluate_triangulation();
     }
     
-    /* size_t Anz=0;
-    for(i=0;i<listsize;i++)
-        if(done_or_large[i])
-            Anz++;
-     if(Done!=Anz)
-        cout << "ALARM ANZ "<< Anz << " " << Done << endl; */  
     
     }while(skip_remaining);
-    
-    /* if(Done!=listsize)
-        cout << "ALARM ALARM ALARM "<< listsize << " " << Done << endl; */
         
-    /* size_t Anz=0;
-    for(i=0;i<listsize;i++)
-        if(done_or_large[i])
-            Anz++;
-     if(Done!=Anz)
-        cout << "ALARM ANZ NEU"<< Anz << " " << Done << endl; */  
+    if(check_evaluation_buffer()){
+     // cout << "After small pyr, pyr level " << pyr_level << 
+     //     " total pyr" << listsize << endl;
+          Top_Cone->evaluate_triangulation();
+     }  
     
     // cout << "Nach small" << endl;
     
     listsize=largeKeys.size();
     for (size_t k=0; k<listsize; k++){
         process_pyramid(largeKeys[k],largeInPyramid[k],new_generator,recursive,true);
-        if(largeAncestors && check_evaluation_buffer())
+        if(check_evaluation_buffer()){
+        // cout << "Large pyr, pyr level " << pyr_level << 
+        //  " total pyr" << listsize << " pyr done " << k+1 << endl;
             Top_Cone->evaluate_triangulation();
+        }
     }
     
     // cout << "Nach large" << endl;
@@ -831,12 +828,14 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
         Pyramid.do_triangulation= !recursive || do_triangulation;
         if(Pyramid.do_triangulation)
             Pyramid.do_partial_triangulation=false;
-        Pyramid.build_cone(); // build and evaluate pyramid        
+        Pyramid.build_cone(); // build and evaluate pyramid
+        nrSimplTransferred+=Pyramid.nrSimplTransferred;  // reguster the number
+                                        // of simplices generated in the pyramid        
         if(recursive)
             NewFacets.splice(NewFacets.begin(),Pyramid.Support_Hyperplanes);
     }   
 
-    // now we give  support hypeerplanes back to the mother cone if only if 
+    // now we give support hyperplanes back to the mother cone if only if 
     // they are not done on the "mother" level if and only if recursive==tue
     
 
@@ -1015,12 +1014,11 @@ void Full_Cone<Integer>::build_cone() {
                 if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
                   || (do_triangulation && nr_neg*TriangulationSize > RecBoundTriang)) {
                   
-                    // cout << "Starting Pyramids from Pyr level " << pyr_level <<" Triang " << TriangulationSize+nrSimplTransferred << endl;
+                    // cout << "Starting Pyramids from Pyr level " << pyr_level << " Gen "<< i << " Triang " << TriangulationSize+nrSimplTransferred << endl;
                     transfer_triangulation_to_top(); // NEW EVA
 
-                    if(largeAncestors && check_evaluation_buffer()){
-
-                            // cout << "Evaluating in build_cone " << TriangulationSize << " Simpl" << endl;
+                    if(check_evaluation_buffer()){
+                        // cout << "Evaluating in build_cone at pyr recursion, pyr level " << pyr_level << endl;
                             Top_Cone->evaluate_triangulation();
                     }
                     pyramid_recursion=true;
@@ -1079,10 +1077,13 @@ void Full_Cone<Integer>::build_cone() {
     is_Computed.set(ConeProperty::SupportHyperplanes);
 
     transfer_triangulation_to_top(); // transfer remaining simplices to top
-    if(largeAncestors && check_evaluation_buffer())
+    if(check_evaluation_buffer()){
+        // cout << "Evaluating in build_cone at end, pyr level " << pyr_level << endl;
         Top_Cone->evaluate_triangulation();
+    }
     
     if(!is_pyramid && !keep_triangulation) // force evaluation of remaining simplices
+        // cout << " Top cone evaluation in build_cone" << endl;
         evaluate_triangulation();          // on top level
 
     if(!is_pyramid && keep_triangulation)  // in this case triangulation now complete
@@ -1154,7 +1155,8 @@ bool Full_Cone<Integer>::check_evaluation_buffer(){
 
     size_t EvalBoundTriang = 1000000; // 1Mio
 
-    return(!Top_Cone->keep_triangulation && Top_Cone->TriangulationSize > EvalBoundTriang);
+    return(largeAncestors && !Top_Cone->keep_triangulation && 
+               Top_Cone->TriangulationSize > EvalBoundTriang);
 }
 
 //---------------------------------------------------------------------------
@@ -1167,8 +1169,10 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     // cout << "Pyr level " << pyr_level << endl;
     
     if(!is_pyramid) {  // we are in top cone
-        if(check_evaluation_buffer())
+        if(check_evaluation_buffer()){
+            // cout << " Top cone evaluation in transfer" << endl;
             evaluate_triangulation();
+        }
         return;      // no transfer necessary
     }
 
