@@ -835,7 +835,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
             NewFacets.splice(NewFacets.begin(),Pyramid.Support_Hyperplanes);
     }   
 
-    // now we give support hyperplanes back to the mother cone if only if 
+    // now we give support hyperplanes back to the mother cone if only if
     // they are not done on the "mother" level if and only if recursive==tue
     
 
@@ -970,86 +970,85 @@ void Full_Cone<Integer>::build_cone() {
     
     Integer scalar_product;
     bool new_generator;
-    short round;    
 
-    for (round = 0; round <= 1; round++) {  //two times, first only KNOWN extreme rays are considered
-        for (i = 0; i < nr_gen; i++) {
-            if ((in_triang[i]==false)&&((round==1)||(Extreme_Rays[i]==true))) {
-                new_generator=false;
+    for (i = 0; i < nr_gen; i++) {
+    
+        if(in_triang[i] || (isComputed(ConeProperty::ExtremeRays) && !Extreme_Rays[i]))
+            continue;
 
-                typename list< FACETDATA >::iterator l=Facets.begin();
+        new_generator=false;
 
-                size_t nr_pos=0; size_t nr_neg=0;
-                vector<Integer> L;
-                size_t old_nr_supp_hyps=Facets.size();                
-                
-                size_t lpos=0;
-                #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic)
-                for (size_t k=0; k<old_nr_supp_hyps; k++) {
-                    for(;k > lpos; lpos++, l++) ;
-                    for(;k < lpos; lpos--, l--) ;
+        typename list< FACETDATA >::iterator l=Facets.begin();
 
-                    L=Generators.read(i+1);
-                    scalar_product=v_scalar_product(L,(*l).Hyp);
-                    if (test_arithmetic_overflow && !v_test_scalar_product(L,(*l).Hyp,scalar_product,overflow_test_modulus)) {
-                        error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
-                        throw ArithmeticException();
-                    }
-                    
-                    l->ValPrevGen=l->ValNewGen;  // last new generator is now previous generator
-                    l->ValNewGen=scalar_product;
-                    if (scalar_product<0) {
-                        new_generator=true;
-                        nr_neg++;
-                    }
-                    if (scalar_product>0) {
-                        nr_pos++;
-                    }
-                }  //end parallel for
-                
-                if(!new_generator)
-                    continue;
-                    
-                // Magic Bounds to deside whether to use pyramids
-                if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
-                  || (do_triangulation && nr_neg*TriangulationSize > RecBoundTriang)) {
-                  
-                    // cout << "Starting Pyramids from Pyr level " << pyr_level << " Gen "<< i << " Triang " << TriangulationSize+nrSimplTransferred << endl;
-                    transfer_triangulation_to_top(); // NEW EVA
+        size_t nr_pos=0; size_t nr_neg=0;
+        vector<Integer> L;
+        size_t old_nr_supp_hyps=Facets.size();                
+        
+        size_t lpos=0;
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic)
+        for (size_t k=0; k<old_nr_supp_hyps; k++) {
+            for(;k > lpos; lpos++, l++) ;
+            for(;k < lpos; lpos--, l--) ;
 
-                    if(check_evaluation_buffer()){
-                        // cout << "Evaluating in build_cone at pyr recursion, pyr level " << pyr_level << endl;
-                            Top_Cone->evaluate_triangulation();
-                    }
-                    pyramid_recursion=true;
-                    process_pyramids(i,true); //recursive
-                }
-                else {
-                    if(do_partial_triangulation)
-                        process_pyramids(i,false); // non-recursive
-                    if(do_triangulation)
-                        extend_triangulation(i);
-                    find_new_facets(i);
-                }
-                
-                //removing the negative hyperplanes
-                l=Facets.begin();
-                for (size_t j=0; j<old_nr_supp_hyps;j++){
-                    if (l->ValNewGen<0) 
-                        l=Facets.erase(l);
-                    else 
-                        l++;
-                }
-                
-                in_triang[i]=true;
-
-                if (verbose && !is_pyramid) {
-                    verboseOutput() << "generator="<< i+1 <<" and "<<Facets.size()<<" hyperplanes... ";
-                    if(keep_triangulation)
-                        verboseOutput() << TriangulationSize << " simplices ";
-                    verboseOutput()<<endl;
-                }
+            L=Generators.read(i+1);
+            scalar_product=v_scalar_product(L,(*l).Hyp);
+            if (test_arithmetic_overflow && !v_test_scalar_product(L,(*l).Hyp,scalar_product,overflow_test_modulus)) {
+                error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
+                throw ArithmeticException();
             }
+            
+            l->ValPrevGen=l->ValNewGen;  // last new generator is now previous generator
+            l->ValNewGen=scalar_product;
+            if (scalar_product<0) {
+                new_generator=true;
+                nr_neg++;
+            }
+            if (scalar_product>0) {
+                nr_pos++;
+            }
+        }  //end parallel for
+        
+        if(!new_generator)
+            continue;
+            
+        // Magic Bounds to deside whether to use pyramids
+        if ( pyramid_recursion || nr_neg*nr_pos>RecBoundSuppHyp 
+          || (do_triangulation && nr_neg*TriangulationSize > RecBoundTriang)) {
+          
+            // cout << "Starting Pyramids from Pyr level " << pyr_level << " Gen "<< i << " Triang " << TriangulationSize+nrSimplTransferred << endl;
+            transfer_triangulation_to_top(); // NEW EVA
+
+            if(check_evaluation_buffer()){
+                // cout << "Evaluating in build_cone at pyr recursion, pyr level " << pyr_level << endl;
+                    Top_Cone->evaluate_triangulation();
+            }
+            pyramid_recursion=true;
+            process_pyramids(i,true); //recursive
+        }
+        else {
+            if(do_partial_triangulation)
+                process_pyramids(i,false); // non-recursive
+            if(do_triangulation)
+                extend_triangulation(i);
+            find_new_facets(i);
+        }
+        
+        //removing the negative hyperplanes
+        l=Facets.begin();
+        for (size_t j=0; j<old_nr_supp_hyps;j++){
+            if (l->ValNewGen<0) 
+                l=Facets.erase(l);
+            else 
+                l++;
+        }
+        
+        in_triang[i]=true;
+
+        if (verbose && !is_pyramid) {
+            verboseOutput() << "generator="<< i+1 <<" and "<<Facets.size()<<" hyperplanes... ";
+            if(keep_triangulation)
+                verboseOutput() << TriangulationSize << " simplices ";
+            verboseOutput()<<endl;
         }
     }
 
@@ -1068,7 +1067,7 @@ void Full_Cone<Integer>::build_cone() {
         Top_Cone->largeSmall++;
         Top_Cone->sizeBound+=Top_Cone->sizeBound/5;
      }
-     }
+     } // critical
     
 
     } // end if (dim>0)
@@ -1281,7 +1280,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 } // TriangulationSize
 
 }
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
