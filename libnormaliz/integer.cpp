@@ -19,11 +19,35 @@
 
 #include <algorithm>
 #include "integer.h"
+#include "limits.h"
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
 using namespace std;
+
+
+
+bool fits_long_range(long long a) {
+    //TODO make it return true without check when ranges are the same
+    return ( a <= LONG_MAX && a >= LONG_MIN);
+}
+
+mpz_class to_mpz(long a) {
+    return mpz_class(a);
+}
+mpz_class to_mpz(long long a) {
+    if (fits_long_range(a)) {
+        return mpz_class(long(a));
+    } else {
+        static long long mod = LONG_MAX;
+        // to ensure the following % and / are done in long long
+        return mpz_class(long (a % mod)) + mpz_class(LONG_MAX) * to_mpz(long(a/mod));
+    }
+}
+
+
+
 
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){

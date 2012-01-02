@@ -96,7 +96,6 @@ private:
     // the quasi polynomial, can have big coefficients
     vector< vector<mpz_class> > quasi_poly;
 
-    template<typename Integer>
     void computeHilbertQuasiPolynomial();
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);

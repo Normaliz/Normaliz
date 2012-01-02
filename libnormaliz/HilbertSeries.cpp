@@ -148,13 +148,12 @@ void HilbertSeries::simplify() {
 
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() {
     if(quasi_poly.size()==0) {
-        computeHilbertQuasiPolynomial<mpz_class>();
+        computeHilbertQuasiPolynomial();
     }
     return quasi_poly;
 }
 
 
-template<typename Integer>
 void HilbertSeries::computeHilbertQuasiPolynomial() {
     //TODO simplify first?
     long periode = 1; //least common multiple of the degrees of t in the denominator
@@ -168,7 +167,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
     }
     //periode und dim encode the denominator
     //now adjust the numerator
-    vector<long64> norm_num = num; //normalized numerator //TODO start using Integer here?
+    vector<long64> norm_num = num; //normalized numerator //TODO start using mpz_class here?
     for (long d = denom.size()-1; d > 0; --d) {
         vector<long64> factor, r;
         //nothing to do if it already has the correct t-power or exponent is 0
@@ -184,15 +183,13 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
         }
     }
     //cut numerator into periode many pieces and apply standard method
-    quasi_poly = vector< vector<Integer> >(periode);
+    quasi_poly = vector< vector<mpz_class> >(periode);
     long nn_size = norm_num.size();
     for (j=0; j<periode; ++j) {
         quasi_poly[j].reserve(dim);
     }
     for (i=0; i<nn_size; ++i) {
-        //TODO down and upcasting again in case of both long long
-        //so we have to make our own cast long long to mpz_class
-        quasi_poly[i%periode].push_back(static_cast<long>(norm_num[i]));
+        quasi_poly[i%periode].push_back(to_mpz(norm_num[i]));
     }
 
     for (j=0; j<periode; ++j) {
@@ -201,28 +198,18 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
     
     //substitute t by t/periode:
     //dividing by periode^dim and multipling the coeff with powers of periode
-    Integer pp=1;
-    Integer pp_mod=1;
+    mpz_class pp=1;
     for (i = dim-2; i >= 0; --i) {
         pp *= periode; //p^i   ok, it is p^(dim-1-i)
-        pp_mod *= periode; pp_mod %= overflow_test_modulus;
         for (j=0; j<periode; ++j) {
             quasi_poly[j][i] *= pp;
         }
     } //at the end pp=p^dim-1
     //the common denominator for all coefficients
-    Integer common_denom = permutations<Integer>(1,dim) * pp;
-    // overflow check
-    if ( (common_denom - permutations_modulo<Integer>(1,dim,overflow_test_modulus) * pp_mod)
-         % overflow_test_modulus != 0) {
-        errorOutput() << "Hilbert polynom has too big coefficients. Its computation is omitted." <<endl;
-        quasi_poly.clear();
-        return ; //TODO!!!!! exception?
-    }
-
+    mpz_class common_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
     for (j=0; j<periode; ++j) {
-        linear_substitution<Integer>(quasi_poly[j], j); // replaces quasi_poly[i]
+        linear_substitution<mpz_class>(quasi_poly[j], j); // replaces quasi_poly[j]
     }
 
 }

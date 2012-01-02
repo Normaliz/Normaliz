@@ -31,12 +31,28 @@ namespace libnormaliz {
 
 //---------------------------------------------------------------------------
 
+
+bool fits_long_range(long long a);
+
+mpz_class to_mpz(long a);
+mpz_class to_mpz(long long a);
+
+
 template<typename Integer> inline long explicit_cast_to_long(const Integer& a) {
-    //TODO add check for overflow
+    // check for overflow
+    if (!fits_long_range(a)) {
+        throw ArithmeticException();
+    }
     return (long)a;
 }
+template<> inline long explicit_cast_to_long(const long& a) {
+    return a;
+}
 template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
-    //TODO add check for overflow
+    // check for overflow
+    if (!a.fits_slong_p()) {
+        throw ArithmeticException();
+    }
     return a.get_si();
 }
 
