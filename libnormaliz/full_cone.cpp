@@ -1126,6 +1126,59 @@ void Full_Cone<Integer>::set_degrees() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::sort_gens_by_degree() {
+    if(gen_degrees.size()==0)
+        return;
+        
+    cout << "Before sort" << endl;
+    for(size_t k=0;k<nr_gen;k++)
+        cout << gen_degrees[k] << " " ;
+    cout << endl;
+
+    list<vector<Integer> > genList;
+    vector<Integer> v(dim+3);
+    vector<Integer> w(dim);
+    size_t i,j;
+    
+    for(i=0;i<nr_gen;i++){
+        v[0]=gen_degrees[i];
+        v[1]=i;                // keep the input order as far as possible
+        w=Generators[i];
+        for(j=0;j<dim;j++)
+            v[j+2]=w[j];
+        v[dim+2]=0;
+        if(Extreme_Rays[i]) // after sorting we must recover the extreme rays
+            v[dim+2]=1;
+        genList.push_back(v);
+    }
+    genList.sort();
+    
+    cout << "Sorted" << endl;
+    
+    i=0;
+    typename list<vector<Integer> >::iterator g=genList.begin();
+    for(;g!=genList.end();++g){
+        v=*g;
+        gen_degrees[i]=explicit_cast_to_long<Integer>(v[0]);
+        Extreme_Rays[i]=false;
+        if(v[dim+2]>0)
+            Extreme_Rays[i]=true;
+        for(j=0;j<dim;j++)
+            w[j]=v[j+2];
+        Generators[i]=w;
+        i++;
+    }
+    
+        cout << "After sort" << endl;
+    for(size_t k=0;k<nr_gen;k++)
+        cout << gen_degrees[k] << " " ;
+    cout << endl;
+    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::compute_support_hyperplanes(){
     if(isComputed(ConeProperty::SupportHyperplanes))
         return;
@@ -1307,6 +1360,7 @@ void Full_Cone<Integer>::primal_algorithm(){
         }
     }
     set_degrees();
+    sort_gens_by_degree();
 
     build_cone();  // evaluates if keep_triangulation==false
     
