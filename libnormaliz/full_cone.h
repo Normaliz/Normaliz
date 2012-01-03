@@ -160,6 +160,7 @@ class Full_Cone {
 
     void extreme_rays_and_ht1_check();
     void set_degrees();
+    void sort_gens_by_degree();
     void compute_support_hyperplanes();
     bool check_evaluation_buffer();
     void evaluate_triangulation();
