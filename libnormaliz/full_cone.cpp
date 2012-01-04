@@ -529,7 +529,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     listsize = visible.size();
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
     bool one_not_in_i, not_in_facet;
-    size_t not_in_i;
+    size_t not_in_i=0;
     list<SHORTSIMPLEX> Triangulation_kk;
     SHORTSIMPLEX newsimplex;
     newsimplex.key.reserve(dim);
@@ -538,7 +538,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     
     vector<size_t> key(dim);
     
-    #pragma omp parallel for private(i,j,k,l,not_in_i,one_not_in_i,not_in_facet) firstprivate(key,Triangulation_kk,newsimplex)  schedule(dynamic)
+    #pragma omp parallel for private(i,j,k,l,one_not_in_i,not_in_facet) firstprivate(not_in_i,key,Triangulation_kk,newsimplex)  schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
          i=visible[kk];
          
