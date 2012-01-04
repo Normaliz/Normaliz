@@ -56,7 +56,9 @@ class HilbertSeries;
 ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
 //we always want to use machine integers of at least 64bit
-typedef long long long64;
+//typedef mpz_class num_t;    //integer type for numerator
+typedef long long num_t;    //integer type for numerator
+typedef long denom_t;       //integer type for denominator
 
 class HilbertSeries {
 
@@ -64,7 +66,7 @@ public:
     // Constructor, creates 0/1
     HilbertSeries();
     // Constructor, creates num/denom, see class description for format
-    HilbertSeries(const vector<long64>& num, const vector<long64>& denom);
+    HilbertSeries(const vector<num_t>& num, const vector<denom_t>& denom);
 
     // add another HilbertSeries to this
     HilbertSeries& operator+=(const HilbertSeries& other);
@@ -83,15 +85,15 @@ public:
     vector< vector<mpz_class> > getHilbertQuasiPolynomial();
 
     // returns the numerator, repr. as vector of coefficients, the h-vector
-    const vector<long64>& getNumerator() const;
+    const vector<num_t>& getNumerator() const;
     // returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
-    const vector<long64>& getDenominator() const;
+    const vector<denom_t>& getDenominator() const;
 
 private:
     // the numerator, repr. as vector of coefficients, the h-vector
-    vector<long64> num;
+    vector<num_t> num;
     // the denominator, repr. as a vector of the exponents of (1-t^i)^e
-    vector<long64> denom;
+    vector<denom_t> denom;
 
     // the quasi polynomial, can have big coefficients
     vector< vector<mpz_class> > quasi_poly;
@@ -109,34 +111,42 @@ private:
 //---------------------------------------------------------------------------
 
 // a += b
-void poly_add_to (vector<long64>& a, const vector<long64>& b);
+template<typename Integer>
+void poly_add_to (vector<Integer>& a, const vector<Integer>& b);
 
 // a -= b
-void poly_sub_to (vector<long64>& a, const vector<long64>& b);
+template<typename Integer>
+void poly_sub_to (vector<Integer>& a, const vector<Integer>& b);
 
 
 // a * b
-vector<long64> poly_mult(const vector<long64>& a, const vector<long64>& b);
+template<typename Integer>
+vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b);
 
 // a *= (1-t^d)^e
-void poly_mult_to(vector<long64>& a, long d, long e = 1);
+template<typename Integer>
+void poly_mult_to(vector<Integer>& a, long d, long e = 1);
 
 
 // division with remainder, a = q * b + r
-void poly_div(vector<long64>& q, vector<long64>& r, const vector<long64>& a, const vector<long64>&b);
+template<typename Integer>
+void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b);
 
 
 // remove leading zero coefficients, 0 polynomial leads to empty list
-void remove_zeros(vector<long64>& a);
+template<typename Integer>
+void remove_zeros(vector<Integer>& a);
 
 
 // Returns the n-th cyclotomic polynomial, all smaller are computed and stored.
 // The n-th cyclotomic polynomial is the product of (X-w) over all 
 // n-th primitive roots of unity w.
-vector<long64> cyclotomicPoly(long n);
+template<typename Integer>
+vector<Integer> cyclotomicPoly(long n);
 
 // returns the coefficient vector of 1-t^i
-vector<long64> coeff_vector(size_t i);
+template<typename Integer>
+vector<Integer> coeff_vector(size_t i);
 
 // substitutes t by (t-a), overwrites the polynomial!
 template<typename Integer>

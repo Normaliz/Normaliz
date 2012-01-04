@@ -230,16 +230,17 @@ HilbertSeries Cone<Integer>::getHilbertSeries() const {
 
 //TODO remove everything depending on HilbertSeries?
 template<typename Integer>
-vector<long64> Cone<Integer>::getHVector64() const {
+vector<num_t> Cone<Integer>::getHVector64() const {
     return HSeries.getNumerator();
 }
 template<>
-vector<long64> Cone<long64>::getHVector() const {
+vector<num_t> Cone<num_t>::getHVector() const {
     return HSeries.getNumerator();
 }
+//TODO better conversion
 template<typename Integer>
 vector<Integer> Cone<Integer>::getHVector() const {
-    vector<long64> h = HSeries.getNumerator();
+    vector<num_t> h = HSeries.getNumerator();
     vector<Integer> ret(h.size());
     for(long i=h.size()-1; i>=0; --i) {
         ret[i]=explicit_cast_to_long(h[i]);

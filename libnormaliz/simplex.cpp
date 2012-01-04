@@ -218,18 +218,18 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         }
         if (C.do_h_vector) {
             int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
-            vector<long64> denom(max_degree+1);
+            vector<denom_t> denom(max_degree+1);
             for (size_t i=0; i<dim; i++) {
                 denom[gen_degrees[i]]++;
             }
 
-            Hilbert_Series = HilbertSeries(vector<long64>(dim+1),denom);
+            Hilbert_Series = HilbertSeries(vector<num_t>(dim+1),denom);
         }
     }
 
     bool decided=true; // true if order vector in no hyperplane of simplex
     size_t i,j;
-    long64 Deg=0;    // Deg is the degree according to Grading in which the 0 vector is counted
+    long Deg=0;    // Deg is the degree according to Grading in which the 0 vector is counted
     if(unimodular) {  // it remains to count the 0-vector in the h-vector 
         for(i=0;i<dim;i++){
             if(Indicator[i]<0) {       // facet opposite of vertex i excluded

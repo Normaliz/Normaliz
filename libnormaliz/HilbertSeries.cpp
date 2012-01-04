@@ -26,32 +26,22 @@
 namespace libnormaliz {
 using std::cout; using std::endl;
 
-/*template <typename Class>
-ostream& operator<< (ostream& out, const vector<Class>& vec) {
-    for (size_t i=0; i<vec.size(); ++i) {
-        out << " " << vec[i];
-    }
-    out << endl;
-    return out;
-}
-*/
-
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
-    num   = vector<long64>(1,0);
-    denom = vector<long64>(1,0);
+    num   = vector<num_t>(1,0);
+    denom = vector<denom_t>(1,0);
 }
 
 // Constructor, creates num/denom, see class description for format
-HilbertSeries::HilbertSeries(const vector<long64>& numerator, const vector<long64>& denominator) {
+HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& denominator) {
     num   = numerator;
     denom = denominator;
 }
 
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
-    vector<long64> other_num = other.num;
-    vector<long64> other_denom = other.denom;
+    vector<num_t> other_num = other.num;
+    vector<denom_t> other_denom = other.denom;
 
     // adjust denominators
     if (denom.size() < other_denom.size()) 
@@ -59,7 +49,7 @@ HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     else if (denom.size() > other_denom.size())
         other_denom.resize(denom.size());
     size_t d_size = denom.size();
-    long64 diff;
+    denom_t diff;
     for (size_t i=1; i<d_size; ++i) {
         diff = denom[i] - other_denom[i];
         if (diff > 0) {        // augment other
@@ -84,15 +74,15 @@ HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
 void HilbertSeries::simplify() {
 
     remove_zeros(denom);
-    vector<long64> q, r, poly; //polynomials
-    // In cyclPolyExp we collect cyclotomic polynomials in the denominator,
+    vector<num_t> q, r, poly; //polynomials
+    // In denom_cyclo we collect cyclotomic polynomials in the denominator.
     // During this method the Hilbert series is given by num/(denom*denom_cyclo)
-    // where denom and denom_cyclo are exponent vectors of (1-t^i), i-th cyclotminc poly.
-    vector<long64> denom_cyclo = vector<long64>(denom.size());
+    // where denom | denom_cyclo are exponent vectors of (1-t^i) | i-th cyclotminc poly.
+    vector<denom_t> denom_cyclo = vector<denom_t>(denom.size());
 
-    for (int i=denom.size()-1; i>0; --i) {
+    for (long i=denom.size()-1; i>0; --i) {
         // check if we can divide the numerator by (1-t^i)
-        poly = coeff_vector(i);
+        poly = coeff_vector<num_t>(i);
         while(denom[i]>0) {
             poly_div(q, r, num, poly);
             if (r.size() == 0) { // numerator is divisable by poly
@@ -105,7 +95,7 @@ void HilbertSeries::simplify() {
         }
 
         // check if we can divide the numerator by i-th cyclotomic polynomial
-        poly = cyclotomicPoly(i);
+        poly = cyclotomicPoly<num_t>(i);
         while(denom_cyclo[i]>0 || denom[i]>0) {
             poly_div(q, r, num, poly);
             if (r.size() == 0) { // numerator is divisable by poly
@@ -136,7 +126,7 @@ void HilbertSeries::simplify() {
                     if (denom_cyclo[d]>0) {
                         denom_cyclo[d]--;
                     } else {
-                        num = poly_mult(num, cyclotomicPoly(d));
+                        num = poly_mult(num, cyclotomicPoly<num_t>(d));
                     }
                 }
             }
@@ -167,13 +157,17 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
     }
     //periode und dim encode the denominator
     //now adjust the numerator
-    vector<long64> norm_num = num; //normalized numerator //TODO start using mpz_class here?
+    long num_size = num.size();
+    vector<mpz_class> norm_num(num_size);  //normalized numerator
+    for (i = 0;  i < num_size;  ++i) {
+        norm_num[i] = to_mpz(num[i]);
+    }
     for (long d = denom.size()-1; d > 0; --d) {
-        vector<long64> factor, r;
+        vector<mpz_class> factor, r;
         //nothing to do if it already has the correct t-power or exponent is 0
         if (d != periode && denom[d] > 0) {
             //n_num *= (1-t^p / 1-t^d)^denom[d]
-            poly_div(factor, r, coeff_vector(periode), coeff_vector(d));
+            poly_div(factor, r, coeff_vector<mpz_class>(periode), coeff_vector<mpz_class>(d));
             assert(r.size()==0); //assert rest r is 0
             //TODO more efficient method *=
             //TODO Exponentiation by squaring of factor, then *=
@@ -189,7 +183,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
         quasi_poly[j].reserve(dim);
     }
     for (i=0; i<nn_size; ++i) {
-        quasi_poly[i%periode].push_back(to_mpz(norm_num[i]));
+        quasi_poly[i%periode].push_back((norm_num[i]));
     }
 
     for (j=0; j<periode; ++j) {
@@ -215,11 +209,11 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector
-const vector<long64>& HilbertSeries::getNumerator() const {
+const vector<num_t>& HilbertSeries::getNumerator() const {
     return num;
 }
 // returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
-const vector<long64>& HilbertSeries::getDenominator() const {
+const vector<denom_t>& HilbertSeries::getDenominator() const {
     return denom;
 }
 
@@ -247,14 +241,15 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
 //---------------------------------------------------------------------------
 
 // returns the coefficient vector of 1-t^i
-vector<long64> coeff_vector(size_t i) {
-    vector<long64> p(i+1,0);
+template<typename Integer>
+vector<Integer> coeff_vector(size_t i) {
+    vector<Integer> p(i+1,0);
     p[0] =  1;
     p[i] = -1;
     return p;
 }
-
-void remove_zeros(vector<long64>& a) {
+template<typename Integer>
+void remove_zeros(vector<Integer>& a) {
     size_t i=a.size();
     while ( i>0 && a[i-1]==0 ) --i;
 
@@ -264,7 +259,8 @@ void remove_zeros(vector<long64>& a) {
 }
 
 // a += b  (also possible to define the += op for vector)
-void poly_add_to (vector<long64>& a, const vector<long64>& b) {
+template<typename Integer>
+void poly_add_to (vector<Integer>& a, const vector<Integer>& b) {
     size_t b_size = b.size();
     if (a.size() < b_size) {
         a.resize(b_size);
@@ -275,7 +271,8 @@ void poly_add_to (vector<long64>& a, const vector<long64>& b) {
     remove_zeros(a);
 }
 // a -= b  (also possible to define the += op for vector)
-void poly_sub_to (vector<long64>& a, const vector<long64>& b) {
+template<typename Integer>
+void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
     size_t b_size = b.size();
     if (a.size() < b_size) {
         a.resize(b_size);
@@ -287,10 +284,11 @@ void poly_sub_to (vector<long64>& a, const vector<long64>& b) {
 }
 
 // a * b
-vector<long64> poly_mult(const vector<long64>& a, const vector<long64>& b) {
+template<typename Integer>
+vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
-    vector<long64> p( a_size + b_size - 1 );
+    vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
     for (i=0; i<a_size; ++i) {
         if (a[i] == 0) continue;
@@ -303,7 +301,8 @@ vector<long64> poly_mult(const vector<long64>& a, const vector<long64>& b) {
 }
 
 // a *= (1-t^i)^e
-void poly_mult_to(vector<long64>& a, long d, long e) {
+template<typename Integer>
+void poly_mult_to(vector<Integer>& a, long d, long e) {
     assert(d>0);
     long i;
     a.reserve(a.size() + d*e);
@@ -317,7 +316,8 @@ void poly_mult_to(vector<long64>& a, long d, long e) {
 }
 
 // division with remainder, a = q * b + r, deg(r) < deg(b), needs |leadcoef(b)| = 1
-void poly_div(vector<long64>& q, vector<long64>& r, const vector<long64>& a, const vector<long64>&b) {
+template<typename Integer>
+void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, const vector<Integer>&b) {
     assert(b.back()!=0); // no unneeded zeros
     assert(b.back()==1 || b.back()==-1); // then division is always possible
     r = a;
@@ -325,11 +325,11 @@ void poly_div(vector<long64>& q, vector<long64>& r, const vector<long64>& a, con
     size_t b_size = b.size();
     int degdiff = r.size()-b_size; // degree differenz
     if (r.size() < b_size) {
-        q = vector<long64>();
+        q = vector<Integer>();
     } else {
-        q = vector<long64>(degdiff+1);
+        q = vector<Integer>(degdiff+1);
     }
-    long64 divisor;
+    Integer divisor;
     size_t i=0;
 
 //  cout<<"poly_div: r_start="<<r;
@@ -351,17 +351,18 @@ void poly_div(vector<long64>& q, vector<long64>& r, const vector<long64>& a, con
     return;
 }
 
-vector<long64> cyclotomicPoly(long n) {
+template<typename Integer>
+vector<Integer> cyclotomicPoly(long n) {
     // the static variable is initialized only once and then stored
-    static vector< vector<long64> > CyclotomicPoly = vector< vector<long64> >();
+    static vector< vector<Integer> > CyclotomicPoly = vector< vector<Integer> >();
     long computed = CyclotomicPoly.size();
     if (computed < n) {
         CyclotomicPoly.resize(n);
-        vector<long64> poly, q, r;
+        vector<Integer> poly, q, r;
         for (long i = computed+1; i <= n; ++i) {
             // compute the i-th poly by dividing X^i-1 by the 
             // d-th cycl.poly. with d divides i
-            poly = vector<long64>(i+1);
+            poly = vector<Integer>(i+1);
             poly[0] = -1; poly[i] = 1;  // X^i - 1
             for (long d = 1; d < i; ++d) { // <= i/2 should be ok
                 if( i % d == 0) {
@@ -432,7 +433,7 @@ vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
     return Hilbert_Polynomial;
 }
 
-template vector<long64> compute_polynomial(vector<long64>, int);
+//template vector<num_t> compute_polynomial(vector<num_t>, int);
 
 
 //---------------------------------------------------------------------------
