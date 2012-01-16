@@ -81,6 +81,7 @@ class Full_Cone {
     list<vector<Integer> > Ht1_Elements;
     vector<Integer> Hilbert_Polynomial;
     HilbertSeries Hilbert_Series;
+    vector<HilbertSeries> HS;
     vector<long> gen_degrees;  // will contain the degrees of the generators
 
     friend class Cone<Integer>;

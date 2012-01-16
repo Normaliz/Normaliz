@@ -185,7 +185,12 @@ public:
 
     size_t diagonalize(); //computes rank and diagonalizes this, destructiv
 
-    size_t rank() const; //returns rank, nondestructiv
+    size_t rank() const; //returns rank, nondestructive
+    
+    Integer det_destructive();
+    Integer det_destructive(vector<Integer>& diag);
+    Integer vol_destructive();
+    Integer vol_destructive(vector<Integer>& diag);
 
     size_t rank_destructiv(); //returns rank, destructiv
 
@@ -214,6 +219,7 @@ public:
 
     // Right_side and this get destroyed!
     Matrix solve_destructiv(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
+    void solve_destructiv_Sol(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix& Solution); 
 
     Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*I. this should be a quadratic matrix with nonzero determinant. 

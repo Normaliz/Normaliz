@@ -31,6 +31,7 @@
 #include <list>
 
 #include "libnormaliz.h"
+#include "HilbertSeries.h"
 
 //---------------------------------------------------------------------------
 
@@ -77,12 +78,24 @@ class SimplexEvaluator {
     size_t dim;
     Integer volume;
     Matrix<Integer> Generators;
-    vector< Integer > diagonal;
-    Matrix<Integer> Support_Hyperplanes;
+    Matrix<Integer> TGenerators;
+    Matrix<Integer> GenCopy;
+    Matrix<Integer> InvGenSelRows; // selected rows of inverse of Gen
+    Matrix<Integer> InvGenSelCols; // selected columns of inverse of Gen
+    Matrix<Integer> Sol;
+    Matrix<Integer> InvSol;
+    vector< Integer > GDiag; // diagonal of generaor matrix after trigonalization
+    vector< Integer > TDiag; // diagonal of transpose of generaor matrix after trigonalization
+    vector< bool > Excluded;
+    vector< Integer > Indicator; 
+    vector<size_t> gen_degrees;
+    HilbertSeries Hilbert_Series;
     list< vector<Integer> > Hilbert_Basis;
+    list< vector<Integer> > Candidates;
     list< vector<Integer> > Ht1_Elements;
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
+    // Matrix<Integer> RSmult; // for multiple right hand sides
 
     void reduce_and_insert_interior(const vector< Integer >& new_element);
     //adds a new element to the Hilbert basis

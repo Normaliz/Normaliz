@@ -30,6 +30,9 @@
 #include "vector_operations.h"
 #include "lineare_transformation.h"
 #include "list_operations.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -72,8 +75,12 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     
-    #pragma omp critical(HYPERPLANE)
-    Facets.push_back(NewFacet);
+    if(largeAncestors){
+        #pragma omp critical(HYPERPLANE)  // lA
+        Facets.push_back(NewFacet);
+    }
+    else
+       Facets.push_back(NewFacet);
 }
 
 
@@ -285,7 +292,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
         }
         if (!found) {
-            #pragma omp critical(NEGATIVE_SUBFACET)
+            #pragma omp critical(NEGATIVE_SUBFACET) // lA
             {last_inserted=Neg_Subfacet.insert(last_inserted,*jj);}
         }
     }
@@ -616,7 +623,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
             
             } // for j
             
-            #pragma omp critical(TRIANG)
+            #pragma omp critical(TRIANG)  // lA
             Triangulation.splice(Triangulation.end(),Triangulation_kk);
             
         } // for vertex
@@ -637,7 +644,7 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     newsimplex.height=height;
     
     if(keep_triangulation){
-        #pragma omp critical(TRIANG)
+        #pragma omp critical(TRIANG) // lA
         Triangulation.push_back(newsimplex);
         #pragma omp atomic
         TriangulationSize++;
@@ -652,7 +659,7 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     else{
         Top_Cone->FreeSimpl.front()=newsimplex;
     }
-    #pragma omp critical(TRIANG)    
+    #pragma omp critical(TRIANG) // lA    
     Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
     }
     
@@ -719,7 +726,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         if(done_or_large[lpos])
             continue;
             
-        #pragma omp critical(DONE)
+        #pragma omp critical(DONE) // int ?????
         done_or_large[lpos]=true;
         
         #pragma omp atomic 
@@ -747,7 +754,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             Top_Cone->nrSmallPyr++;
         }
         else
-            #pragma omp critical(LARGEPYRAMIDS)
+            #pragma omp critical(LARGEPYRAMIDS)  // Bleibt, eventuell verkleinern
             {
                 largeKeys.push_back(Pyramid_key);
                 largeInPyramid.push_back(in_Pyramid);
@@ -819,7 +826,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
                 NewFacets.push_back(H.read(i+1));
         }    
         if(do_triangulation || (do_partial_triangulation && S.read_volume()>1)){
-            #pragma omp critical(EVALUATE)
+            #pragma omp critical(EVALUATE) // nur auf Top-Ebene
             store_key(Pyramid_key,S.read_volume());  // height understood positive 
         }
     }
@@ -861,7 +868,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
             }
             if(new_global_hyp){
                 NewFacet.Hyp=*pyr_hyp;                
-                #pragma omp critical(HYPERPLANE)
+                #pragma omp critical(HYPERPLANE) // lA
                 Facets.push_back(NewFacet);
             }
         }
@@ -1057,7 +1064,7 @@ void Full_Cone<Integer>::build_cone() {
         Support_Hyperplanes.push_back(IHV->Hyp);
     }
     
-     #pragma omp critical(SIZEBOUND)
+     #pragma omp critical(SIZEBOUND) // Brauchen wir das ???
      {
      if(pyramid_recursion && !largePyr){  // adapt separation of large and small
         Top_Cone->smallLarge++;           // to experience
@@ -1242,7 +1249,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     {
         Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
         Top_Cone->TriangulationSize+=TriangulationSize;
-        nrSimplTransferred+=TriangulationSize;
+        nrSimplTransferred+=TriangulationSize;  // raus aus critical
         TriangulationSize=0;
     }
 
@@ -1255,7 +1262,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
-    #pragma omp critical(EVALUATE)
+    // #pragma omp critical(EVALUATE)
     if(TriangulationSize>0)
     {
     const long VERBOSE_STEPS = 50;
@@ -1267,6 +1274,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     }
     
     totalNrSimplices+=TriangulationSize;
+    
+    HS.resize(omp_get_max_threads()+1);
 
     #pragma omp parallel 
     {
@@ -1303,6 +1312,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             }
         }
     }
+    
+    HilbertSeries ZeroHS;
+    
+    for(int i=0;i<omp_get_max_threads()+1;++i){
+        Hilbert_Series+=HS[i];
+        HS[i]=ZeroHS;
+    }
 
 
     Ht1_Elements.sort();
@@ -1321,7 +1337,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << " accumulated." << endl;
     }
     
-    #pragma omp critical(FREESIMPL)
+    // #pragma omp critical(FREESIMPL)
     if(!keep_triangulation){
         // Triangulation.clear();
         FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
@@ -1366,6 +1382,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     
     cout << "TotPyr "<< totalNrPyr << " LargePyr " << nrLargePyr << " SmallPyr " << nrSmallPyr << endl;
     cout << "Large-->Small " <<largeSmall << " Small-->Large " << smallLarge << " Simplicial " << nrSimplicialPyr << endl;
+    cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
 
     extreme_rays_and_ht1_check();
     if(!pointed) return;

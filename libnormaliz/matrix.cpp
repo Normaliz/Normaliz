@@ -870,6 +870,63 @@ size_t Matrix<Integer>::rank_destructiv(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Integer Matrix<Integer>::det_destructive(){
+    size_t rk,i,j,Min_Row, rk_max=nr; // we assume nr==nc
+    bool empty;
+
+    Integer Test, Min;
+    for (rk = 1; rk <= rk_max; rk++) {
+        for (i = rk; i <= nr; i++) {
+            for (j = rk; j <= nc; j++)
+                if (elements[i-1][j-1]!=0)
+                    break;
+            if (j<=nc)
+                break;
+        }
+        if (i>nr)
+            break;
+        if (rk!=i)
+            exchange_rows (rk,i);
+        if (rk!=j)
+            exchange_columns (rk,j);
+        do {
+            Min=Iabs(elements[rk-1][rk-1]);
+            Min_Row=rk;
+            empty=true;
+            for (i = rk+1; i <= nr; i++) {
+                Test=Iabs(elements[i-1][rk-1]);
+                empty=empty && (Test==0);
+                if (Test!=0&& (Test<Min)) {
+                    Min=Test;
+                    Min_Row=i;
+                }
+            }
+            if (Min_Row!=rk) {
+                exchange_rows (rk,Min_Row);    
+            }
+            reduce_row (rk);
+        } while (!empty);
+    }
+    if(rk<=nr)
+        return 0;
+    
+    
+    Integer det=elements[0][0];
+    for(i=1;i<nr;i++){
+        det*=elements[i][i];
+    }
+    return det;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::vol_destructive(){
+    return Iabs(det_destructive());
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
     //may be optimized in two ways
     //first only a triangular matrix is realy needed, no full diagonalization is necesary
@@ -948,14 +1005,16 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integ
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_destructiv(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
+void Matrix<Integer>::solve_destructiv_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
     size_t nr_sys=Right_side.nc;
+    // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
     assert(nr == nc);
     assert(nc == dim);
     assert(dim == diagonal.size());
-
-    Matrix<Integer> Solution(dim,nr_sys);
+    assert(Solution.nc>=nr_sys);
+    assert(Solution.nr==dim);
+    
     Integer S;
     size_t piv,rk,i;
 
@@ -993,8 +1052,16 @@ Matrix<Integer> Matrix<Integer>::solve_destructiv(Matrix<Integer>& Right_side, v
             Solution.elements[j][i]=S/(*this).elements[j][j];
         }
     }
-    return Solution;
+}
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve_destructiv(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
+
+    Matrix<Integer> Solution(Right_side.nr,Right_side.nc);  
+    solve_destructiv_Sol(Right_side,diagonal,denom,Solution);
+    return Solution;
 }
 
 //---------------------------------------------------------------------------
