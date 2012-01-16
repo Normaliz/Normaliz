@@ -38,6 +38,15 @@ HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_
     denom = denominator;
 }
 
+
+void HilbertSeries::reset() {
+    num.clear();
+    num.push_back(0);
+    denom.clear();
+    denom.push_back(0);
+}
+
+
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     vector<num_t> other_num = other.num;

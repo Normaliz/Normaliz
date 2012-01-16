@@ -68,6 +68,9 @@ public:
     // Constructor, creates num/denom, see class description for format
     HilbertSeries(const vector<num_t>& num, const vector<denom_t>& denom);
 
+    // resets to 0/1
+    void reset();
+ 
     // add another HilbertSeries to this
     HilbertSeries& operator+=(const HilbertSeries& other);
 
