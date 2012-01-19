@@ -529,6 +529,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     typename list<FACETDATA>::iterator i = Facets.begin();
 
     size_t k,l;
+    
+    bool active=(omp_get_active_level()==0);
 
     // #pragma omp critical(VERBOSE)
     // verboseOutput() << "L " << pyr_level << " H " << listsize << " T " << TriangulationSize << endl << flush;
@@ -545,15 +547,23 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     list<SHORTSIMPLEX> Triangulation_kk;
     SHORTSIMPLEX newsimplex;
     newsimplex.key.reserve(dim);
+    bool Simpl_available;
+    int tn;
     
     typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
+    typename list<SHORTSIMPLEX>::iterator  F;
     
     vector<size_t> key(dim);
     
-    #pragma omp parallel for private(i,j,k,l,one_not_in_i,not_in_facet) firstprivate(not_in_i,key,Triangulation_kk,newsimplex)  schedule(dynamic)
+    #pragma omp parallel for private(i,j,k,l,one_not_in_i,not_in_facet,F,Simpl_available,tn) firstprivate(not_in_i,key,Triangulation_kk,newsimplex)  schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
          i=visible[kk];
          
+         if(active)
+            tn=omp_get_thread_num();
+         else
+            tn=thread_num;
+
         if (i->GenInHyp.count()==dim-1){  // simplicial
             l=0;
             for (k = 0; k <nr_gen; k++) {
@@ -613,15 +623,40 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                 continue;   
               }
               
-              #pragma omp critical(FREESIMPL)
-              {
-              if(!Top_Cone->FreeSimpl.empty()){
-                    Triangulation_kk.splice(Triangulation_kk.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
-                    Triangulation_kk.back()=newsimplex;
-              }       
+              Simpl_available=true;
+
+              if(Top_Cone->FS[tn].empty()){
+                  #pragma omp critical(FREESIMPL)
+                  {                
+                  if(Top_Cone->FreeSimpl.empty())
+                      Simpl_available=false;
+                  else{
+                      F=Top_Cone->FreeSimpl.begin();  // take 100 simplices from FreeSimpl
+                      size_t q; for(q=0;q<1000;++q){            // or what you can get
+                          if(F==Top_Cone->FreeSimpl.end())
+                              break;
+                          ++F;
+                      }
+                  
+                      // cout << "Hole " << q << " " << tn << " " << omp_get_level() << " p " << omp_in_parallel() << endl;
+                      if(q<1000)
+                          Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                              Top_Cone->FreeSimpl);
+                      else
+                          Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                                        Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),++F);
+                  } // else
+                  } // critical
+              } // if empty
+                    
+
+              if(Simpl_available){
+                  Triangulation_kk.splice(Triangulation_kk.end(),Top_Cone->FS[tn],
+                                  Top_Cone->FS[tn].begin());
+                  Triangulation_kk.back()=newsimplex;
+              }
               else
-                    Triangulation_kk.push_back(newsimplex);  // to have a new element
-              } // critical
+                  Triangulation_kk.push_back(newsimplex); 
               
               #pragma omp atomic
               TriangulationSize++;
@@ -827,9 +862,6 @@ template<typename Integer>
 void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
                           const size_t new_generator,const bool recursive, const bool large){
     
-    
-    // cout << "In py " << pyr_level << endl;
-    
     #pragma omp atomic
     Top_Cone->totalNrPyr++;
 
@@ -856,6 +888,13 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
     else {
         Full_Cone<Integer> Pyramid(*this,Pyramid_key,large);
         Pyramid.do_triangulation= !recursive || do_triangulation;
+        
+        if(omp_get_level()==1)
+            Pyramid.thread_num=omp_get_thread_num();
+        else
+            Pyramid.thread_num=thread_num;
+        // cout << "In py " << omp_get_level() << " " << omp_get_thread_num() << " tn " << Pyramid.thread_num << endl;
+
         if(Pyramid.do_triangulation)
             Pyramid.do_partial_triangulation=false;
         Pyramid.build_cone(); // build and evaluate pyramid
@@ -1299,8 +1338,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     }
     
     totalNrSimplices+=TriangulationSize;
-    
-    HS.resize(omp_get_max_threads()+1);
 
     #pragma omp parallel 
     {
@@ -1364,7 +1401,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << " accumulated." << endl;
     }
     
-    // #pragma omp critical(FREESIMPL)
+    #pragma omp critical(FREESIMPL)
     if(!keep_triangulation){
         // Triangulation.clear();
         FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
@@ -2222,6 +2259,9 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
     largePyr=true; // irrelevant on top level
     largeAncestors=true;
     sizeBound=dim+300/(5+dim); // start value
+    
+    HS.resize(omp_get_max_threads()+1);
+    FS.resize(omp_get_max_threads()+1);
 }
 
 //---------------------------------------------------------------------------

@@ -104,6 +104,7 @@ class Full_Cone {
     vector<size_t> VertInTri;               // generators in the order in which they are inserted
     
     list<SHORTSIMPLEX> FreeSimpl;           // list of short simplices no longer in use, kept for recycling
+    vector<list<SHORTSIMPLEX> > FS;
        
     struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
@@ -134,6 +135,8 @@ class Full_Cone {
     size_t totalNrPyr;
     size_t nrLargePyr;
     size_t nrSmallPyr;
+    
+    int thread_num;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
