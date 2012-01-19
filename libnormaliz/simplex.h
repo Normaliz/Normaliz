@@ -77,6 +77,7 @@ class SimplexEvaluator {
     Full_Cone<Integer>& C;
     size_t dim;
     Integer volume;
+    Integer mult_sum; // sum of the multiplicities of all evaluated simplices
     Matrix<Integer> Generators;
     Matrix<Integer> TGenerators;
     Matrix<Integer> GenCopy;
@@ -106,9 +107,11 @@ public:
 
     SimplexEvaluator(Full_Cone<Integer>& fc);
 
-    // full evaluation of the simplex, writes data back to the cone
+    // full evaluation of the simplex, writes data back to the cone,
     // returns volume
     Integer evaluate(const vector<size_t>& key, const Integer& height);
+    // returns sum of the multiplicities of all evaluated simplices
+    Integer getMultiplicitySum() const;
 };
 //class SimplexEvaluater end
 

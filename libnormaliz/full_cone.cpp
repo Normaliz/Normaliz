@@ -25,6 +25,7 @@
 #include <string>
 #include <algorithm>
 #include <time.h>
+#include <deque>
 
 #include "full_cone.h"
 #include "vector_operations.h"
@@ -292,8 +293,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
         }
         if (!found) {
-            #pragma omp critical(NEGATIVE_SUBFACET) // lA
-            {last_inserted=Neg_Subfacet.insert(last_inserted,*jj);}
+            if(largeAncestors){
+                #pragma omp critical(NEGATIVE_SUBFACET) // lA
+                {last_inserted=Neg_Subfacet.insert(last_inserted,*jj);}
+            } else {
+                last_inserted=Neg_Subfacet.insert(last_inserted,*jj);
+            }
         }
     }
     
@@ -623,8 +628,12 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
             
             } // for j
             
-            #pragma omp critical(TRIANG)  // lA
-            Triangulation.splice(Triangulation.end(),Triangulation_kk);
+            if(largeAncestors) {
+                #pragma omp critical(TRIANG)  // lA
+                Triangulation.splice(Triangulation.end(),Triangulation_kk);
+            } else {
+                Triangulation.splice(Triangulation.end(),Triangulation_kk);
+            }
             
         } // for vertex
     } // for kk 
@@ -644,8 +653,12 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     newsimplex.height=height;
     
     if(keep_triangulation){
-        #pragma omp critical(TRIANG) // lA
-        Triangulation.push_back(newsimplex);
+        if (largeAncestors) {
+            #pragma omp critical(TRIANG) // lA
+            Triangulation.push_back(newsimplex);
+        } else {
+            Triangulation.push_back(newsimplex);
+        }
         #pragma omp atomic
         TriangulationSize++;
         return;    
@@ -659,8 +672,12 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     else{
         Top_Cone->FreeSimpl.front()=newsimplex;
     }
-    #pragma omp critical(TRIANG) // lA    
-    Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+    if(largeAncestors){
+        #pragma omp critical(TRIANG) // lA
+        Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+       } else {
+        Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+    }
     }
     
     #pragma omp atomic
@@ -699,7 +716,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     bool skip_remaining, skip_remaining_priv;
     typename list< FACETDATA >::iterator l;
     size_t i,lpos, listsize=Facets.size();
-    vector<bool> done_or_large(listsize,false);
+    //use deque here to have independent entries
+    deque<bool> done_or_large(listsize,false);
     
     size_t Done=0;
 
@@ -726,7 +744,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         if(done_or_large[lpos])
             continue;
             
-        #pragma omp critical(DONE) // int ?????
+        //#pragma omp critical(DONE) //TODO change type to prevent side effects
         done_or_large[lpos]=true;
         
         #pragma omp atomic 
@@ -753,17 +771,18 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             #pragma omp atomic
             Top_Cone->nrSmallPyr++;
         }
-        else
-            #pragma omp critical(LARGEPYRAMIDS)  // Bleibt, eventuell verkleinern
+        else {
+            #pragma omp critical(LARGEPYRAMIDS)
             {
                 largeKeys.push_back(Pyramid_key);
                 largeInPyramid.push_back(in_Pyramid);
-                #pragma omp atomic
-                Top_Cone->nrLargePyr++;
             }
+            #pragma omp atomic
+            Top_Cone->nrLargePyr++;
+        }
         Pyramid_key.clear();
         
-        if(check_evaluation_buffer() && Done < listsize){  // we interrupt papllel execution if it is really parallel
+        if(check_evaluation_buffer() && Done < listsize){  // we interrupt parallel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
             // #pragma omp critical(PYRPAR)
             skip_remaining=true;
@@ -826,8 +845,12 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
                 NewFacets.push_back(H.read(i+1));
         }    
         if(do_triangulation || (do_partial_triangulation && S.read_volume()>1)){
-            #pragma omp critical(EVALUATE) // nur auf Top-Ebene
-            store_key(Pyramid_key,S.read_volume());  // height understood positive 
+            if(!is_pyramid) {
+                #pragma omp critical(EVALUATE) // nur auf Top-Ebene kritisch
+                store_key(Pyramid_key,S.read_volume());  // height understood positive
+            } else {
+                store_key(Pyramid_key,S.read_volume());  // height understood positive
+            }
         }
     }
     else {
@@ -868,14 +891,16 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
             }
             if(new_global_hyp){
                 NewFacet.Hyp=*pyr_hyp;                
-                #pragma omp critical(HYPERPLANE) // lA
-                Facets.push_back(NewFacet);
+                if(largeAncestors){
+                    #pragma omp critical(HYPERPLANE) // lA
+                    Facets.push_back(NewFacet);
+                } else {
+                    Facets.push_back(NewFacet);
+                }
             }
         }
     }
     NewFacets.clear();
-    
-    // cout << "Aus py" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -1064,17 +1089,18 @@ void Full_Cone<Integer>::build_cone() {
         Support_Hyperplanes.push_back(IHV->Hyp);
     }
     
-     #pragma omp critical(SIZEBOUND) // Brauchen wir das ???
-     {
-     if(pyramid_recursion && !largePyr){  // adapt separation of large and small
-        Top_Cone->smallLarge++;           // to experience
+    if(pyramid_recursion && !largePyr){  // adapt separation of large and small
+        #pragma omp atomic
+        Top_Cone->smallLarge++;          // to experience
+        #pragma omp critical(SIZEBOUND)
         Top_Cone->sizeBound-=Top_Cone->sizeBound/5;
-     }
-     if(!pyramid_recursion && largePyr){
+    }
+    if(!pyramid_recursion && largePyr){
+        #pragma omp atomic
         Top_Cone->largeSmall++;
+        #pragma omp critical(SIZEBOUND)
         Top_Cone->sizeBound+=Top_Cone->sizeBound/5;
-     }
-     } // critical
+    }
     
 
     } // end if (dim>0)
@@ -1229,7 +1255,6 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     
     if(!is_pyramid) {  // we are in top cone
         if(check_evaluation_buffer()){
-            // cout << " Top cone evaluation in transfer" << endl;
             evaluate_triangulation();
         }
         return;      // no transfer necessary
@@ -1249,9 +1274,9 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     {
         Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
         Top_Cone->TriangulationSize+=TriangulationSize;
-        nrSimplTransferred+=TriangulationSize;  // raus aus critical
-        TriangulationSize=0;
     }
+    nrSimplTransferred += TriangulationSize;
+    TriangulationSize  =  0;
 
     // cout << "Done." << endl;
   
@@ -1311,6 +1336,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 }
             }
         }
+        #pragma omp critical(MULTIPLICITY)
+        multiplicity += simp.getMultiplicitySum(); 
     }
     
     HilbertSeries ZeroHS;

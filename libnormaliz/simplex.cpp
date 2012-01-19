@@ -173,6 +173,7 @@ template<typename Integer>
 SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 : C(fc),
   dim(C.dim),
+  mult_sum(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
   GenCopy(dim,dim),
@@ -205,8 +206,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         for(size_t i=0; i<dim; ++i)
             Generators[i] = C.Generators[key[i]-1];
         volume=Generators.vol_destructive();
-        #pragma omp critical(MULTIPLICITY)
-        C.multiplicity+=volume;
+        mult_sum += volume;
         return volume;         
     }  // done if only mult is asked for
 
@@ -267,8 +267,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         }
     }  
     
-    //#pragma omp critical(MULTIPLICITY)
-    // C.multiplicity+=volume;
+    mult_sum += volume;
     
 
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
@@ -500,6 +499,11 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
         
     return volume;
+}
+
+template<typename Integer>
+Integer SimplexEvaluator<Integer>::getMultiplicitySum() const {
+    return mult_sum;
 }
 
 } /* end namespace */
