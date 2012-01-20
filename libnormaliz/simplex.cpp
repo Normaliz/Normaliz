@@ -31,9 +31,7 @@
 #include "list_operations.h"
 #include "HilbertSeries.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include "my_omp.h"
 
 
 //---------------------------------------------------------------------------

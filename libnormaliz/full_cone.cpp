@@ -31,9 +31,7 @@
 #include "vector_operations.h"
 #include "lineare_transformation.h"
 #include "list_operations.h"
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include "my_omp.h"
 
 //---------------------------------------------------------------------------
 
