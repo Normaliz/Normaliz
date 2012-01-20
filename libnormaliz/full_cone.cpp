@@ -526,10 +526,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     visible.reserve(listsize);
     typename list<FACETDATA>::iterator i = Facets.begin();
 
-    size_t k,l;
     
-    bool active=(omp_get_active_level()==0);
-
     // #pragma omp critical(VERBOSE)
     // verboseOutput() << "L " << pyr_level << " H " << listsize << " T " << TriangulationSize << endl << flush;
 
@@ -537,30 +534,30 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
         if (i->ValNewGen < 0) // visible facet
             visible.push_back(i);
 
-    typename list<SHORTSIMPLEX>::iterator j;
     listsize = visible.size();
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
+
+
+    typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
+    #pragma omp parallel private(i)
+    {
+    size_t k,l;
     bool one_not_in_i, not_in_facet;
     size_t not_in_i=0;
     list<SHORTSIMPLEX> Triangulation_kk;
     SHORTSIMPLEX newsimplex;
     newsimplex.key.reserve(dim);
     bool Simpl_available;
-    int tn;
+    int tn = omp_get_ancestor_thread_num(1);
     
-    typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
-    typename list<SHORTSIMPLEX>::iterator  F;
+    typename list<SHORTSIMPLEX>::iterator F;
+    typename list<SHORTSIMPLEX>::iterator j;
     
     vector<size_t> key(dim);
     
-    #pragma omp parallel for private(i,j,k,l,one_not_in_i,not_in_facet,F,Simpl_available,tn) firstprivate(not_in_i,key,Triangulation_kk,newsimplex)  schedule(dynamic)
+    #pragma omp for schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
-         i=visible[kk];
-         
-         if(active)
-            tn=omp_get_thread_num();
-         else
-            tn=thread_num;
+        i=visible[kk];
 
         if (i->GenInHyp.count()==dim-1){  // simplicial
             l=0;
@@ -625,7 +622,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
               if(Top_Cone->FS[tn].empty()){
                   #pragma omp critical(FREESIMPL)
-                  {                
+                  {
                   if(Top_Cone->FreeSimpl.empty())
                       Simpl_available=false;
                   else{
@@ -670,6 +667,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
             
         } // for vertex
     } // for kk 
+    } // parallel
 
     VertInTri.push_back(new_generator);
     TriSectionFirst.push_back(++oldTriBack);
@@ -685,36 +683,36 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     newsimplex.key=key;
     newsimplex.height=height;
     
-    if(keep_triangulation){
+    #pragma omp atomic
+    TriangulationSize++;
+    
+    // if FreeSimpl is empty we (most likely) have to push a new element anyway
+    if (keep_triangulation || Top_Cone->FreeSimpl.empty()){
         if (largeAncestors) {
             #pragma omp critical(TRIANG) // lA
             Triangulation.push_back(newsimplex);
         } else {
             Triangulation.push_back(newsimplex);
         }
-        #pragma omp atomic
-        TriangulationSize++;
         return;    
     }
 
     #pragma omp critical(FREESIMPL)
     {
-    if(Top_Cone->FreeSimpl.empty()){
-        Top_Cone->FreeSimpl.push_front(newsimplex);
+    if (Top_Cone->FreeSimpl.empty()) { //this should not happen often
+        #pragma omp critical(TRIANG) // lA possible
+        Triangulation.push_back(newsimplex);
     }
-    else{
+    else {
         Top_Cone->FreeSimpl.front()=newsimplex;
+        if(largeAncestors){
+            #pragma omp critical(TRIANG) // lA
+            Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+           } else {
+            Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
+        }
     }
-    if(largeAncestors){
-        #pragma omp critical(TRIANG) // lA
-        Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
-       } else {
-        Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
     }
-    }
-    
-    #pragma omp atomic
-    TriangulationSize++;
 }
 
 //---------------------------------------------------------------------------
@@ -887,10 +885,6 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
         Full_Cone<Integer> Pyramid(*this,Pyramid_key,large);
         Pyramid.do_triangulation= !recursive || do_triangulation;
         
-        if(omp_get_level()==1)
-            Pyramid.thread_num=omp_get_thread_num();
-        else
-            Pyramid.thread_num=thread_num;
         // cout << "In py " << omp_get_level() << " " << omp_get_thread_num() << " tn " << Pyramid.thread_num << endl;
 
         if(Pyramid.do_triangulation)
@@ -1377,7 +1371,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     HilbertSeries ZeroHS;
     
-    for(int i=0;i<omp_get_max_threads()+1;++i){
+    for(int i=0;i<omp_get_max_threads();++i){
         Hilbert_Series+=HS[i];
         HS[i]=ZeroHS;
     }
@@ -1399,9 +1393,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << " accumulated." << endl;
     }
     
-    #pragma omp critical(FREESIMPL)
     if(!keep_triangulation){
         // Triangulation.clear();
+        #pragma omp critical(FREESIMPL)
         FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
         nrSimplTransferred+=TriangulationSize;        
         TriangulationSize=0;
@@ -2258,8 +2252,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
     largeAncestors=true;
     sizeBound=dim+300/(5+dim); // start value
     
-    HS.resize(omp_get_max_threads()+1);
-    FS.resize(omp_get_max_threads()+1);
+    HS.resize(omp_get_max_threads());
+    FS.resize(omp_get_max_threads());
 }
 
 //---------------------------------------------------------------------------

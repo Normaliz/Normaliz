@@ -136,8 +136,6 @@ class Full_Cone {
     size_t nrLargePyr;
     size_t nrSmallPyr;
     
-    int thread_num;
-
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
