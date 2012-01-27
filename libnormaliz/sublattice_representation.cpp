@@ -87,8 +87,8 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
     c = 1;
     index = 1;
 
-    for (i = 1; i <= rank; i++) {
-        for (j = 1; j <= dim; j++) {
+    for (i = 0; i < rank; i++) {
+        for (j = 0; j < dim; j++) {
             A.write(i,j, R.read(i,j));
             B.write(j,i, R_Inv.read(j,i));
         }
@@ -100,14 +100,14 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
 //  cout <<"rank="<<rank<<" Dia: "<<D.nr_of_rows()<<"x"<<D.nr_of_columns()<<endl;
 
     if ( direct_summand ) {
-        for (i = 1; i <= rank; i++) {
+        for (i = 0; i < rank; i++) {
             index *= D.read(i,i);
         }
         index = Iabs(index);
         
     } else {
         Matrix<Integer> Diagonal(rank);
-        for (i = 1; i <= rank; i++) {
+        for (i = 0; i < rank; i++) {
             Diagonal.write(i,i,D.read(i,i));
         }
         A = Diagonal.multiplication(A);
@@ -115,8 +115,8 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
         
         c = v_lcm(c_vector);
         //invert Diagonal, multiply c to maintain integer coefficients
-        for (i = 1; i <= rank; i++) {
-            Diagonal.write(i,i,c/c_vector[i-1]);
+        for (i = 0; i < rank; i++) {
+            Diagonal.write(i,i,c/c_vector[i]);
         }
         B = B.multiplication(Diagonal);
     }   
@@ -273,8 +273,8 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
     Integer rowgcd;
     Matrix<Integer> Cong2(0,dim+1); //only the relavant congruences
     vector<Integer> new_row;
-    for (size_t j=1; j<=rank; j++) {
-        m = c/gcds[j-1];
+    for (size_t j=0; j<rank; j++) {
+        m = c/gcds[j];
         if ( m != 1 ) {
             new_row = Cong.read(j);
             v_reduction_modulo(new_row,m);  

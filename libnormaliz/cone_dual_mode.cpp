@@ -185,6 +185,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
         errorOutput()<<"Cone_Dual_Mode error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!"<<endl;
+        M.pretty_print(errorOutput());
         throw NormalizException();
     }
     SupportHyperplanes = M;
@@ -236,11 +237,10 @@ template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::read_hilbert_basis()const{
     size_t s= Hilbert_Basis.size();
     Matrix<Integer> M(s,dim);
-    size_t i=1;
+    size_t i;
     typename list< vector<Integer> >::const_iterator l;
-    for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
+    for (i=0, l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); ++l, ++i) {
         M.write(i,(*l));
-        i++;
     }
     return M;
 }
@@ -257,7 +257,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     bool not_done;
     list < vector<Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
     Integer orientation, scalar_product,diff,factor;
-    vector <Integer> hyperplane=SupportHyperplanes.read(hyp_counter);
+    vector <Integer> hyperplane=SupportHyperplanes.read(hyp_counter-1);
     typename list< vector<Integer> >::iterator h;
     if (lifting==true) {
         orientation=v_scalar_product<Integer>(hyperplane,halfspace);
@@ -518,7 +518,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
     size_t i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
-    vector <Integer> scalar_product,hyperplane=SupportHyperplanes.read(hyp_counter),halfspace;
+    vector <Integer> scalar_product,hyperplane=SupportHyperplanes.read(hyp_counter-1),halfspace;
     bool lifting=false;
     Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace;
     if (rank_subspace!=0) {
@@ -530,16 +530,16 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
             lifting=true;
             //computing new maximal subspace
             Matrix<Integer> M(1,rank_subspace);
-            M.write(1,scalar_product);
+            M.write(0,scalar_product);
             Lineare_Transformation<Integer> LT=Transformation(M);
             Matrix<Integer> Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
             Lifted_Basis_Factor_Space_over_Ker_and_Ker=Lifted_Basis_Factor_Space_over_Ker_and_Ker.transpose();
             Matrix<Integer>  Ker(rank_subspace-1,rank_subspace);
-            for (j = 1; j <= rank_subspace-1; j++) {
+            for (j = 0; j < rank_subspace-1; j++) {
                 Ker.write(j, Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(j+1));
             }
             New_Basis_Max_Subspace=Ker.multiplication(Basis_Max_Subspace);
-            halfspace=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(1));
+            halfspace=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(0));
         }
     }
     cut_with_halfspace_hilbert_basis(hyp_counter, lifting, halfspace);
@@ -571,7 +571,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_reduction(){
     Generators = Matrix<Integer>(s,dim);
 
     typename list< vector<Integer> >::const_iterator l;
-    for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
+    for (i=0, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
         Generators.write( i, v_cut_front(*l, dim) );
     }
 }
@@ -588,8 +588,8 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     size_t i,j,k;
     for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
         zero_list.clear();
-        for (i = 1; i <= nr_sh; i++) {
-            if ((*c)[i]==0) {
+        for (i = 0; i < nr_sh; i++) {
+            if ((*c)[i+1]==0) {
                 zero_list.push_back(i);
             }
         }
@@ -610,7 +610,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     Generators = Matrix<Integer>(s,dim);
    
     typename  list< vector<Integer> >::const_iterator l;
-    for (i=1, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
+    for (i=0, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
         Generators.write( i, v_cut_front(*l, dim) );
     }
 }
@@ -652,16 +652,16 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     
     size_t realdim = Generators.rank();
 
-    for (i = 1; i <= nr_sh; ++i) {
+    for (i = 0; i < nr_sh; ++i) {
         Matrix<Integer> Test(0,dim);
         k = 0;
         for (gen_it = GeneratorList.begin(); gen_it != GeneratorList.end(); ++gen_it) {
-            if ((*gen_it)[i]==0) {
+            if ((*gen_it)[i+1]==0) {
                 Test.append( v_cut_front(*gen_it,dim) );
                 k++;
             }
         }
-        if (k >= realdim-1 && Test.rank()>=realdim-1) {
+        if (k >= realdim-1 && Test.rank_destructive()>=realdim-1) {
             relevant_sh.push_back(i);
         }
     }

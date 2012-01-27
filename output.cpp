@@ -383,8 +383,8 @@ void Output<Integer>::write_files() const {
         if (type == OT_REES && Result->isComputed(ConeProperty::HilbertBasis)) {
             Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
             nr = Hilbert_Basis.nr_of_rows();
-            for (i = 1; i <= nr; i++) {
-                if (Hilbert_Basis.read(i,dim)==1) {
+            for (i = 0; i < nr; i++) {
+                if (Hilbert_Basis.read(i,dim-1)==1) {
                     rees_ideal_key.push_back(i);
                  }
             }

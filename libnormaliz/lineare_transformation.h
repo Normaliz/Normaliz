@@ -46,7 +46,7 @@ namespace libnormaliz {
 
 template<typename Integer>
 class Lineare_Transformation {
-  size_t rk;
+  long rk;
   string status;
   Integer index;
   Matrix<Integer> Center;
@@ -66,7 +66,7 @@ public:
 //---------------------------------------------------------------------------
 
   void read() const;                   // to be modified, just for tests
-  size_t get_rank() const;              //returns rank if status is
+  long get_rank() const;              //returns rank if status is
                                // "initialized, after transformation"
   string get_status()const;       //returns status, may be:
                              // "non initialized"

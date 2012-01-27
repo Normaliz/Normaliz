@@ -101,7 +101,7 @@ public:
     void cut_columns(size_t c); // remove columns, only the first c columns will survive
 
     inline const Integer& get_elem(size_t row, size_t col) const {
-        return elements[row-1][col-1];
+        return elements[row][col];
     }
     inline const vector< vector<Integer> >& get_elements() const {
         return elements;
@@ -171,10 +171,10 @@ public:
 //                      Pivots for rows/columns operations
 //---------------------------------------------------------------------------
 
-    vector<size_t> pivot(size_t corner); //Find the position of an element x with
+    vector<long> pivot(size_t corner); //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
     //described by an int corner
-    size_t pivot_column(size_t col);  //Find the position of an element x with
+    long pivot_column(size_t col);  //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
     //described by an int col
 
@@ -183,16 +183,13 @@ public:
 //           --- this are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
-    size_t diagonalize(); //computes rank and diagonalizes this, destructiv
+    size_t diagonalize(); //computes rank and diagonalizes this, destructive
 
     size_t rank() const; //returns rank, nondestructive
     
-    Integer det_destructive();
-    Integer det_destructive(vector<Integer>& diag);
     Integer vol_destructive();
-    Integer vol_destructive(vector<Integer>& diag);
 
-    size_t rank_destructiv(); //returns rank, destructiv
+    size_t rank_destructive(); //returns rank, destructive
 
     vector<size_t> max_rank_submatrix() const; //returns a vector with entries the
     //indices of the rows of this forming a submatrix of maximal rank
@@ -218,8 +215,8 @@ public:
     //is saved in diagonal
 
     // Right_side and this get destroyed!
-    Matrix solve_destructiv(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
-    void solve_destructiv_Sol(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix& Solution); 
+    Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
+    void solve_destructive_Sol(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix& Solution); 
 
     Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*I. this should be a quadratic matrix with nonzero determinant. 

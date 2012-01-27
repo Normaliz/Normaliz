@@ -470,7 +470,7 @@ vector<size_t> v_non_zero_pos(vector<Integer> v){
     key.reserve(size);
     for (size_t i = 0; i <size; i++) {
         if (v[i]!=0) {
-            key.push_back(i+1);
+            key.push_back(i);
         }
     }
     return key;

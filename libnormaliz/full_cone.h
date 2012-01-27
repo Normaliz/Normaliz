@@ -209,7 +209,7 @@ public:
     Full_Cone();
     Full_Cone(Matrix<Integer> M);            //main constructor
     Full_Cone(const Cone_Dual_Mode<Integer> &C);
-    Full_Cone(Full_Cone<Integer>& C, const vector<size_t> Key, const bool isLarge); // for pyramids
+    Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key, const bool isLarge); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access

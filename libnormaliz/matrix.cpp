@@ -42,12 +42,12 @@ void Matrix<Integer>::max_rank_submatrix_lex(vector<size_t>& v, const size_t& ra
         return;
     }
     if (level==0) {
-        v.push_back(1);
+        v.push_back(0);
     }
     else{
-        v.push_back(v[level-1]+1);
+        v.push_back(v[level-1]);
     }
-    for (; v[level] <= nr; v[level]++) {
+    for (; v[level] < nr; v[level]++) {
         Matrix<Integer> S=submatrix(v);
         if (S.rank()==S.nr_of_rows()) {
             max_rank_submatrix_lex(v,rank);
@@ -157,22 +157,21 @@ void Matrix<Integer>::write(istream& in){
 
 template<typename Integer>
 void Matrix<Integer>::write(size_t row, const vector<Integer>& data){
-    assert(row >= 1);
-    assert(row <= nr); 
+    assert(row >= 0);
+    assert(row < nr); 
     assert(nc == data.size());
     
-    elements[row-1]=data;
+    elements[row]=data;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Matrix<Integer>::write(size_t row, const vector<int>& data){
-    assert(row >= 1);
-    assert(row <= nr); 
+    assert(row >= 0);
+    assert(row < nr); 
     assert(nc == data.size());
 
-    --row;
     for (size_t i = 0; i < nc; i++) {
         elements[row][i]=data[i];
     }
@@ -182,11 +181,10 @@ void Matrix<Integer>::write(size_t row, const vector<int>& data){
 
 template<typename Integer>
 void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
-    assert(col >= 1);
-    assert(col <= nr); 
+    assert(col >= 0);
+    assert(col < nr); 
     assert(nr == data.size());
 
-    --col;
     for (size_t i = 0; i < nr; i++) {
         elements[i][col]=data[i];
     }
@@ -196,12 +194,12 @@ void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
 
 template<typename Integer>
 void Matrix<Integer>::write(size_t row, size_t col, Integer data){
-    assert(row >= 1);
-    assert(row <= nr); 
-    assert(col >= 1);
-    assert(col <= nc); 
+    assert(row >= 0);
+    assert(row < nr); 
+    assert(col >= 0);
+    assert(col < nc); 
 
-    elements[row-1][col-1]=data;
+    elements[row][col]=data;
 }
 
 //---------------------------------------------------------------------------
@@ -264,22 +262,22 @@ void Matrix<Integer>::read() const{      //to overload for files
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::read(size_t row) const{
-    assert(row >= 1);
-    assert(row <= nr); 
+    assert(row >= 0);
+    assert(row < nr);
 
-    return elements[row-1];
+    return elements[row];
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Integer Matrix<Integer>::read (size_t row, size_t col) const{
-    assert(row >= 1);
-    assert(row <= nr); 
-    assert(col >= 1);
-    assert(col <= nc); 
+    assert(row >= 0);
+    assert(row < nr); 
+    assert(col >= 0);
+    assert(col < nc); 
 
-    return elements[row-1][col-1];
+    return elements[row][col];
 }
 
 //---------------------------------------------------------------------------
@@ -316,7 +314,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<size_t>& rows) const{
     size_t size=rows.size(), j;
     Matrix<Integer> M(size, nc);
     for (size_t i=0; i < size; i++) {
-        j=rows[i]-1;
+        j=rows[i];
         assert(j >= 0);
         assert(j < nr);
         M.elements[i]=elements[j];
@@ -331,7 +329,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<int>& rows) const{
     size_t size=rows.size(), j;
     Matrix<Integer> M(size, nc);
     for (size_t i=0; i < size; i++) {
-        j=rows[i]-1;
+        j=rows[i];
         assert(j >= 0);
         assert(j < nr);
         M.elements[i]=elements[j];
@@ -631,11 +629,11 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
 template<typename Integer>
 void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2){
     if (row1 == row2) return;
-    assert(row1 > 0);
-    assert(row1 <= nr);
-    assert(row2 > 0);
-    assert(row2 <= nr);
-    elements[row1-1].swap(elements[row2-1]);
+    assert(row1 >= 0);
+    assert(row1 < nr);
+    assert(row2 >= 0);
+    assert(row2 < nr);
+    elements[row1].swap(elements[row2]);
 }
 
 //---------------------------------------------------------------------------
@@ -643,15 +641,12 @@ void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2){
 template<typename Integer>
 void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
     if (col1 == col2) return;
-    assert(col1 > 0);
-    assert(col1 <= nc);
-    assert(col2 > 0);
-    assert(col2 <= nc);
-    const size_t c1=col1-1;
-    const size_t c2=col2-1;
-    size_t i;
-    for(i=0; i<nr;i++){
-        std::swap(elements[i][c1], elements[i][c2]);
+    assert(col1 >= 0);
+    assert(col1 < nc);
+    assert(col2 >= 0);
+    assert(col2 < nc);
+    for(size_t i=0; i<nr;i++){
+        std::swap(elements[i][col1], elements[i][col2]);
     }
 }
 
@@ -659,16 +654,16 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
 
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t corner) {
-    assert(corner > 0);
-    assert(corner <= nc);
-    assert(corner <= nr);
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
     size_t i,j;
     Integer help;
-    for ( i = corner; i < nr; i++) {
-        if (elements[i][corner-1]!=0) {
-            help=elements[i][corner-1] / elements[corner-1][corner-1];
-            for (j = corner-1; j < nc; j++) {
-                elements[i][j] -= help*elements[corner-1][j];
+    for (i = corner+1; i < nr; i++) {
+        if (elements[i][corner]!=0) {
+            help=elements[i][corner] / elements[corner][corner];
+            for (j = corner; j < nc; j++) {
+                elements[i][j] -= help*elements[corner][j];
             }
         }
     }
@@ -678,20 +673,20 @@ void Matrix<Integer>::reduce_row (size_t corner) {
 
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
-    assert(corner > 0);
-    assert(corner <= nc);
-    assert(corner <= nr);
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
     assert(Left.nr == nr);
     size_t i,j;
-    Integer help1, help2=elements[corner-1][corner-1];
-    for ( i = corner; i < nr; i++) {
-        help1=elements[i][corner-1] / help2;
+    Integer help1, help2=elements[corner][corner];
+    for ( i = corner+1; i < nr; i++) {
+        help1=elements[i][corner] / help2;
         if (help1!=0) {
-            for (j = corner-1; j < nc; j++) {
-                elements[i][j] -= help1*elements[corner-1][j];
+            for (j = corner; j < nc; j++) {
+                elements[i][j] -= help1*elements[corner][j];
             }
             for (j = 0; j < Left.nc; j++) {
-                Left.elements[i][j] -= help1*Left.elements[corner-1][j];
+                Left.elements[i][j] -= help1*Left.elements[corner][j];
             }
         }
     }
@@ -701,16 +696,16 @@ void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
 
 template<typename Integer>
 void Matrix<Integer>::reduce_column (size_t corner) {
-    assert(corner > 0);
-    assert(corner <= nc);
-    assert(corner <= nr);
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
     size_t i,j;
-    Integer help1, help2=elements[corner-1][corner-1];
-    for ( j = corner; j < nc; j++) {
-        help1=elements[corner-1][j] / help2;
+    Integer help1, help2=elements[corner][corner];
+    for ( j = corner+1; j < nc; j++) {
+        help1=elements[corner][j] / help2;
         if (help1!=0) {
-            for (i = corner-1; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner-1];
+            for (i = corner; i < nr; i++) {
+                elements[i][j] -= help1*elements[i][corner];
             }
         }
     }
@@ -720,24 +715,24 @@ void Matrix<Integer>::reduce_column (size_t corner) {
 
 template<typename Integer>
 void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
-    assert(corner > 0);
-    assert(corner <= nc);
-    assert(corner <= nr);
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
     assert(Right.nr == nc);
     assert(Right.nc == nc);
     assert(Right_Inv.nr == nc);
     assert(Right_Inv.nc ==nc);
     size_t i,j;
-    Integer help1, help2=elements[corner-1][corner-1];
-    for ( j = corner; j < nc; j++) {
-        help1=elements[corner-1][j] / help2;
+    Integer help1, help2=elements[corner][corner];
+    for ( j = corner+1; j < nc; j++) {
+        help1=elements[corner][j] / help2;
         if (help1!=0) {
-            for (i = corner-1; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner-1];
+            for (i = corner; i < nr; i++) {
+                elements[i][j] -= help1*elements[i][corner];
             }
             for (i = 0; i < nc; i++) {
-                Right.elements[i][j] -= help1*Right.elements[i][corner-1];
-                Right_Inv.elements[corner-1][i] += help1*Right_Inv.elements[j][i];
+                Right.elements[i][j] -= help1*Right.elements[i][corner];
+                Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
             }
         }
     }
@@ -746,21 +741,21 @@ void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matr
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<size_t> Matrix<Integer>::pivot(size_t corner){
-    assert(corner > 0);
-    assert(corner <= nc);
-    assert(corner <= nr);
+vector<long> Matrix<Integer>::pivot(size_t corner){
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
     size_t i,j;
     Integer help=0;
-    vector<size_t> v(2,0);
+    vector<long> v(2,-1);
 
-    for (i = corner-1; i < nr; i++) {
-        for (j = corner-1; j < nc; j++) {
+    for (i = corner; i < nr; i++) {
+        for (j = corner; j < nc; j++) {
             if (elements[i][j]!=0) {
                 if ((help==0)||(Iabs(elements[i][j])<help)) {
                     help=Iabs(elements[i][j]);
-                    v[0]=i+1;
-                    v[1]=j+1;
+                    v[0]=i;
+                    v[1]=j;
                     if (help == 1) return v;
                 }
             }
@@ -773,20 +768,20 @@ vector<size_t> Matrix<Integer>::pivot(size_t corner){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::pivot_column(size_t col){
-    assert(col > 0);
-    assert(col <= nc);
-    assert(col <= nr);
-    size_t i,j=0;
+long Matrix<Integer>::pivot_column(size_t col){
+    assert(col >= 0);
+    assert(col < nc);
+    assert(col < nr);
+    size_t i,j=-1;
     Integer help=0;
 
-    for (i = col-1; i < nr; i++) {
-        if (elements[i][col-1]!=0) {
-            if ((help==0)||(Iabs(elements[i][col-1])<help)) {
-                help=Iabs(elements[i][col-1]);
-                j=i+1;
+    for (i = col; i < nr; i++) {
+        if (elements[i][col]!=0) {
+            if ((help==0)||(Iabs(elements[i][col])<help)) {
+                help=Iabs(elements[i][col]);
+                j=i;
+                if (help == 1) return j;
             }
-            if (help == 1) break;
         }
     }
 
@@ -797,12 +792,12 @@ size_t Matrix<Integer>::pivot_column(size_t col){
 
 template<typename Integer>
 size_t Matrix<Integer>::diagonalize(){
-    size_t rk;
-    size_t rk_max=min(nr,nc);
-    vector<size_t> piv(2,0);
-    for (rk = 1; rk <= rk_max; rk++) {
+    long rk;
+    long rk_max=min(nr,nc);
+    vector<long> piv(2,-1);
+    for (rk = 0; rk < rk_max; rk++) {
         piv=pivot(rk);
-        if (piv[0]>0) {
+        if (piv[0]>=0) {
             do {
                 exchange_rows (rk,piv[0]);
                 exchange_columns (rk,piv[1]);
@@ -814,46 +809,46 @@ size_t Matrix<Integer>::diagonalize(){
         else
             break;
     }
-    return rk-1;
+    return rk;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 size_t Matrix<Integer>::rank() const{
-    Matrix<Integer> N=*this;
-    return N.rank_destructiv();
+    Matrix<Integer> N(*this);
+    return N.rank_destructive();
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::rank_destructiv(){
+size_t Matrix<Integer>::rank_destructive(){
     size_t rk,i,j,Min_Row, rk_max=min(nr,nc);
     bool empty;
     Integer Test, Min;
-    for (rk = 1; rk <= rk_max; rk++) {
-        for (i = rk; i <= nr; i++) {
-            for (j = rk; j <= nc; j++)
-                if (elements[i-1][j-1]!=0)
+    for (rk = 0; rk < rk_max; rk++) {
+        for (i = rk; i < nr; i++) {   //TODO exchange i,j loops?
+            for (j = rk; j < nc; j++)
+                if (elements[i][j]!=0)
                     break;
-            if (j<=nc)
+            if (j < nc)
                 break;
         }
-        if (i>nr)
-            break;
+        if (i >= nr)
+            break;   //no element != 0 left
         if (rk!=i)
             exchange_rows (rk,i);
         if (rk!=j)
             exchange_columns (rk,j);
         do {
-            Min=Iabs(elements[rk-1][rk-1]);
+            Min=Iabs(elements[rk][rk]);
             Min_Row=rk;
             empty=true;
-            for (i = rk+1; i <= nr; i++) {
-                Test=Iabs(elements[i-1][rk-1]);
-                empty=empty && (Test==0);
-                if (Test!=0&& (Test<Min)) {
+            for (i = rk+1; i < nr; i++) {
+                Test=Iabs(elements[i][rk]);
+                empty = empty && (Test==0);
+                if (Test!=0 && (Test<Min)) {
                     Min=Test;
                     Min_Row=i;
                 }
@@ -864,37 +859,37 @@ size_t Matrix<Integer>::rank_destructiv(){
             reduce_row (rk);
         } while (!empty);
     }
-    return rk-1;
+    return rk;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer Matrix<Integer>::det_destructive(){
+Integer Matrix<Integer>::vol_destructive(){
     size_t rk,i,j,Min_Row, rk_max=nr; // we assume nr==nc
     bool empty;
 
     Integer Test, Min;
-    for (rk = 1; rk <= rk_max; rk++) {
-        for (i = rk; i <= nr; i++) {
-            for (j = rk; j <= nc; j++)
-                if (elements[i-1][j-1]!=0)
+    for (rk = 0; rk < rk_max; rk++) {
+        for (i = rk; i < nr; i++) {
+            for (j = rk; j < nc; j++)
+                if (elements[i][j]!=0)
                     break;
-            if (j<=nc)
+            if (j<nc)
                 break;
         }
-        if (i>nr)
+        if (i>=nr)
             break;
         if (rk!=i)
             exchange_rows (rk,i);
         if (rk!=j)
             exchange_columns (rk,j);
         do {
-            Min=Iabs(elements[rk-1][rk-1]);
+            Min=Iabs(elements[rk][rk]);
             Min_Row=rk;
             empty=true;
-            for (i = rk+1; i <= nr; i++) {
-                Test=Iabs(elements[i-1][rk-1]);
+            for (i = rk+1; i < nr; i++) {
+                Test=Iabs(elements[i][rk]);
                 empty=empty && (Test==0);
                 if (Test!=0&& (Test<Min)) {
                     Min=Test;
@@ -907,7 +902,7 @@ Integer Matrix<Integer>::det_destructive(){
             reduce_row (rk);
         } while (!empty);
     }
-    if(rk<=nr)
+    if(rk<nr)
         return 0;
     
     
@@ -915,15 +910,9 @@ Integer Matrix<Integer>::det_destructive(){
     for(i=1;i<nr;i++){
         det*=elements[i][i];
     }
-    return det;
+    return Iabs(det);
 }
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Integer Matrix<Integer>::vol_destructive(){
-    return Iabs(det_destructive());
-}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -931,14 +920,14 @@ vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
     //may be optimized in two ways
     //first only a triangular matrix is realy needed, no full diagonalization is necesary
     //second the matrix Rows_Exchanges may be computed by Lineare_transformation::transformation
-    size_t rk,i,j,k;
-    size_t rk_max=min(nr,nc);
-    vector<size_t> piv(2,0);
+    size_t i,j,k;
+    long rk, rk_max=min(nr,nc);
+    vector<long> piv(2);
     Matrix<Integer> M(*this);
     Matrix<Integer> Rows_Exchanges(nr);
-    for (rk = 1; rk <= rk_max; rk++) {
+    for (rk = 0; rk < rk_max; rk++) {
         piv=M.pivot(rk);
-        if (piv[0]>0) {
+        if (piv[0]>=0) {
             do {
                 M.exchange_rows (rk,piv[0]);
                 Rows_Exchanges.exchange_columns(rk,piv[0]);
@@ -951,15 +940,15 @@ vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
         else
             break;
     }
-    rk=rk-1;
     M=Rows_Exchanges.multiplication(M);
     vector<size_t> simplex(rk);
     k=0;
     for (i = 0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
             if (M.elements[i][j]!=0) {
-                simplex[k]=i+1;
+                simplex[k]=i;
                 k++;
+                //TODO break
             }
         }
     }
@@ -991,7 +980,7 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& denom) const {
     Matrix<Integer> Left_side(*this);
     vector<Integer> dummy_diag(nr);
-    return Left_side.solve_destructiv(Right_side, dummy_diag, denom);
+    return Left_side.solve_destructive(Right_side, dummy_diag, denom);
 }
 
 //---------------------------------------------------------------------------
@@ -999,13 +988,13 @@ Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& deno
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& denom) const {
     Matrix<Integer> Left_side(*this);
-    return Left_side.solve_destructiv(Right_side, diagonal, denom);
+    return Left_side.solve_destructive(Right_side, diagonal, denom);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructiv_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
     size_t nr_sys=Right_side.nc;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
@@ -1016,11 +1005,12 @@ void Matrix<Integer>::solve_destructiv_Sol(Matrix<Integer>& Right_side, vector< 
     assert(Solution.nr==dim);
     
     Integer S;
-    size_t piv,rk,i;
+    size_t i;
+    long rk, piv;
 
-    for (rk = 1; rk <= dim; rk++) {
+    for (rk = 0; rk < (long)dim; rk++) {
         piv=(*this).pivot_column(rk);
-        if (piv>0) {
+        if (piv>=0) {
             do {
                 (*this).exchange_rows (rk,piv);
                 Right_side.exchange_rows (rk,piv);
@@ -1029,11 +1019,10 @@ void Matrix<Integer>::solve_destructiv_Sol(Matrix<Integer>& Right_side, vector< 
             } while (piv>rk);
         }
     }
-    denom=(*this).elements[0][0];
-    diagonal[0]= (*this).elements[0][0];
-    for (i = 1; i < dim; i++) {
-        denom*=(*this).elements[i][i];
-        diagonal[i]= (*this).elements[i][i];
+    denom = 1;
+    for (i = 0; i < dim; i++) {
+        denom *= (*this).elements[i][i];
+        diagonal[i] = (*this).elements[i][i];
     }
 
     if (denom==0) { 
@@ -1041,7 +1030,7 @@ void Matrix<Integer>::solve_destructiv_Sol(Matrix<Integer>& Right_side, vector< 
     }
 
     denom=Iabs(denom);
-    int j;
+    long j;
     size_t k;
     for (i = 0; i < nr_sys; i++) {
         for (j = dim-1; j >= 0; j--) {
@@ -1057,10 +1046,10 @@ void Matrix<Integer>::solve_destructiv_Sol(Matrix<Integer>& Right_side, vector< 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_destructiv(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
+Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
 
     Matrix<Integer> Solution(Right_side.nr,Right_side.nc);  
-    solve_destructiv_Sol(Right_side,diagonal,denom,Solution);
+    solve_destructive_Sol(Right_side,diagonal,denom,Solution);
     return Solution;
 }
 
@@ -1073,7 +1062,7 @@ Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& de
     Matrix<Integer> Left_side(*this);
     Matrix<Integer> Right_side(nr);
 
-    return Left_side.solve_destructiv(Right_side,diagonal,denom);
+    return Left_side.solve_destructive(Right_side,diagonal,denom);
 }
 
 //---------------------------------------------------------------------------
@@ -1093,7 +1082,7 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
     Matrix<Integer> Solution=Solve(Left_Side, Right_Side, denom);
     vector<Integer> Linear_Form(nc);
     for (i = 0; i <nc; i++) {
-        buffer=Solution.read(i+1,1);
+        buffer=Solution.read(i,0);
         Linear_Form[i]=buffer/denom;
     }
     vector<Integer> test_homogeneous=MxV(Linear_Form);
@@ -1129,8 +1118,8 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
     Matrix<Integer> V=Basis_Change.get_right();
     Matrix<Integer> Change_To_Full_Emb(nc,rank);
     size_t i,j;
-    for (i = 1; i <=nc; i++) {
-        for (j = 1; j <= rank; j++) {
+    for (i = 0; i <nc; i++) {
+        for (j = 0; j < rank; j++) {
             Change_To_Full_Emb.write(i,j,V.read(i,j));
         }
     }
@@ -1153,7 +1142,7 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 
         //check if all rows are in height 1
         for (i=0; i<nr; i++) {
-            if (v_scalar_product(read(i+1),Linear_Form) != 1) {
+            if (v_scalar_product(elements[i],Linear_Form) != 1) {
                 homogeneous=false;
                 return Linear_Form;
             }

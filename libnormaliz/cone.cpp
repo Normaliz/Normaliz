@@ -186,7 +186,7 @@ vector< vector<Integer> > Cone<Integer>::getEquations() const {
     if (nr_of_equ > 0) {
         Lineare_Transformation<Integer> NewLT = Transformation(Matrix<Integer>(getExtremeRays()));
         Matrix<Integer> Help = NewLT.get_right().transpose();
-        for (size_t i = 1+rank; i <= dim; i++) {
+        for (size_t i = rank; i < dim; i++) {
             Equations.write(i-rank,Help.read(i));
         }
     }
@@ -369,35 +369,35 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
     rees_primary=true;
     Integer number;
     Matrix<Integer> Full_Cone_Generators(nr_rows+nr_columns,nr_columns+1,0);
-    for (i = 1; i <= nr_columns; i++) {
+    for (i = 0; i < nr_columns; i++) {
         Full_Cone_Generators.write(i,i,1);
     }
-    for(i=1; i<=nr_rows; i++){
-        Full_Cone_Generators.write(i+nr_columns,nr_columns+1,1);
-        for(j=1; j<=nr_columns; j++) {
+    for(i=0; i<nr_rows; i++){
+        Full_Cone_Generators.write(i+nr_columns,nr_columns,1);
+        for(j=0; j<nr_columns; j++) {
             number=Input.read(i,j);
             Full_Cone_Generators.write(i+nr_columns,j,number);
         }
     }
     Matrix<Integer> Prim_Test=Input;
-    for(i=1; i<=nr_rows; i++){           //preparing the  matrix for primarity test
+    for(i=0; i<nr_rows; i++){           //preparing the matrix for primarity test
         k=0;
-        for(j=1; j<=nr_columns; j++) {
+        for(j=0; j<nr_columns; j++) {
             if (k<2) {
                 if (Input.read(i,j)!=0 )
                     k++;
             }
             if (k==2) {
-                for (l = 1; l <= nr_columns; l++) {
+                for (l = 0; l < nr_columns; l++) {
                     Prim_Test.write(i,l,0);
                 }
                 break;
             }
         }
     }
-    for(j=1; j<=nr_columns; j++){         //primarity test
-        for(i=1; i<=nr_rows && Prim_Test.read(i,j)==0; i++) {}
-        if (i>nr_rows) {
+    for(j=0; j<nr_columns; j++) {         //primarity test
+        for(i=0; i<nr_rows && Prim_Test.read(i,j)==0; i++) {}
+        if (i>=nr_rows) {
             rees_primary=false;
             break;
         }
@@ -422,11 +422,11 @@ void Cone<Integer>::prepare_input_type_456(const Matrix<Integer>& Congruences, c
 
         //add slack variables
         Matrix<Integer> Cong_Slack(nr_cong, dim+nr_cong);
-        for (i = 1; i <= nr_cong; i++) {
-            for (j = 1; j <= dim; j++) {
+        for (i = 0; i < nr_cong; i++) {
+            for (j = 0; j < dim; j++) {
                 Cong_Slack.write(i,j,Congruences.read(i,j));
             }
-            Cong_Slack.write(i,dim+i,Congruences.read(i,dim+1));
+            Cong_Slack.write(i,dim+i,Congruences.read(i,dim));
         }
 
         //compute kernel
@@ -434,9 +434,9 @@ void Cone<Integer>::prepare_input_type_456(const Matrix<Integer>& Congruences, c
         size_t rank = Diagonalization.get_rank();
         Matrix<Integer> H = Diagonalization.get_right();
         Matrix<Integer> Ker_Basis_Transpose(dim, dim+nr_cong-rank);
-        for (i = 1; i <= dim; i++) {
-            for (j = rank+1; j <= dim+nr_cong; j++) {
-                Ker_Basis_Transpose.write(i,j-rank,H.read(i,j));
+        for (i = 0; i < dim; i++) {
+            for (j = rank; j < dim+nr_cong; j++) {
+                Ker_Basis_Transpose.write(i, j-rank, H.read(i,j));
             }
         }
 
@@ -473,8 +473,8 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
 
         Matrix<Integer> Help=Diagonalization.get_right();
         Matrix<Integer> Ker_Basis_Transpose(dim,dim-rank);
-        for (i = 1; i <= dim; i++) {
-            for (j = rank+1; j <= dim; j++) {
+        for (i = 0; i < dim; i++) {
+            for (j = rank; j < dim; j++) {
                 Ker_Basis_Transpose.write(i,j-rank,Help.read(i,j));
             }
         }
@@ -493,8 +493,8 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
     size_t rank=Diagonalization.get_rank();
     Matrix<Integer> Help=Diagonalization.get_right();
     Matrix<Integer> Generators(nr_of_monoid_generators,nr_of_monoid_generators-rank);
-    for (i = 1; i <= nr_of_monoid_generators; i++) {
-        for (j = rank+1; j <= nr_of_monoid_generators; j++) {
+    for (i = 0; i < nr_of_monoid_generators; i++) {
+        for (j = rank; j < nr_of_monoid_generators; j++) {
             Generators.write(i,j-rank,Help.read(i,j));
         }
     }
@@ -724,7 +724,7 @@ void Cone<Integer>::compute_dual() {
     vector< Integer > hyperplane;
     multimap <Integer , vector <Integer> >  SortingHelp;
     typename multimap <Integer , vector <Integer> >::const_iterator ii;
-    for (i = 1; i <= Inequ_on_Ker.nr_of_rows() ; i++) {
+    for (i = 0; i < Inequ_on_Ker.nr_of_rows() ; i++) {
         hyperplane=Inequ_on_Ker.read(i);
         norm=0;
         for (j = 0; j <newdim; j++) {
@@ -733,7 +733,7 @@ void Cone<Integer>::compute_dual() {
         SortingHelp.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
     }
     Matrix<Integer> Inequ_Ordered(Inequ_on_Ker.nr_of_rows(),newdim);
-    i=1;
+    i=0;
     for (ii=SortingHelp.begin(); ii != SortingHelp.end(); ii++) {
         Inequ_Ordered.write(i,(*ii).second);
         i++;

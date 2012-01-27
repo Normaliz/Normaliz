@@ -71,7 +71,7 @@ void Lineare_Transformation<Integer>::read() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Lineare_Transformation<Integer>::get_rank() const{
+long Lineare_Transformation<Integer>::get_rank() const{
     return rk;
 }
 
@@ -172,12 +172,12 @@ void Lineare_Transformation<Integer>::reduce_column(size_t corner){
 
 template<typename Integer>
 void Lineare_Transformation<Integer>::transformation(){
-    size_t r;
-    size_t rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
-    vector<size_t> piv(2,0);
-    for (r = 1; r <= rk_max; r++) {
+    long r;
+    long rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
+    vector<long> piv(2,0);
+    for (r = 0; r < rk_max; r++) {
         piv=Center.pivot(r);
-        if (piv[0]>0) {
+        if (piv[0]>=0) {
             do {
                 exchange_rows (r,piv[0]);
                 exchange_columns (r,piv[1]);
@@ -189,8 +189,8 @@ void Lineare_Transformation<Integer>::transformation(){
         else
             break;
     }
-    rk=r-1;
-    for (r = 1; r <= rk; r++) {
+    rk=r;
+    for (r = 0; r < rk; r++) {
         index*=Center.read(r,r);
     }
     index=Iabs(index);

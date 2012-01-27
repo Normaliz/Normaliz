@@ -202,7 +202,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     
     if(do_only_multiplicity){
         for(size_t i=0; i<dim; ++i)
-            Generators[i] = C.Generators[key[i]-1];
+            Generators[i] = C.Generators[key[i]];
         volume=Generators.vol_destructive();
         mult_sum += volume;
         return volume;         
@@ -214,9 +214,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
 
     if(height==1){ // very likely unimodular, Indicator computed firstm uses transpose of Gen
         for(i=0; i<dim; ++i)
-            TGenerators.write_column(i+1,C.Generators[key[i]-1]); 
-        RS.write_column(1,C.Order_Vector);  // right hand side
-        TGenerators.solve_destructiv_Sol(RS,TDiag,volume,Sol);
+            TGenerators.write_column(i,C.Generators[key[i]]); 
+        RS.write_column(0,C.Order_Vector);  // right hand side
+        TGenerators.solve_destructive_Sol(RS,TDiag,volume,Sol);
         for (i=0; i<dim; i++)
             Indicator[i]=Sol[i][0];
         if(volume==1){
@@ -243,23 +243,23 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     if(height==1)
         for(i=0;i<dim;i++)
             if(Indicator[i]==0)
-                Ind0_key.push_back(i+1);
+                Ind0_key.push_back(i);
     if(!unimodular || Ind0_key.size()>0){      
         for(i=0; i<dim; ++i)  // (uses Gen)
-            Generators[i] = C.Generators[key[i]-1];
+            Generators[i] = C.Generators[key[i]];
         if(!unimodular)
             GenCopy=Generators;
         if(Ind0_key.size()>0){
             Matrix<Integer> RSmult(dim,Ind0_key.size());
             for(i=0;i<Ind0_key.size();i++) // insert unit vectors
-                    RSmult[Ind0_key[i]-1][i]=1;
-            Generators.solve_destructiv_Sol(RSmult,GDiag,volume,InvSol);
+                    RSmult[Ind0_key[i]][i]=1;
+            Generators.solve_destructive_Sol(RSmult,GDiag,volume,InvSol);
             v_abs(GDiag);
             GDiag_computed=true;         
             }
         if(!GDiag_computed){
             Matrix<Integer> RSmult(dim,Ind0_key.size());
-            Generators.solve_destructiv_Sol(RSmult,GDiag,volume,InvSol);
+            Generators.solve_destructive_Sol(RSmult,GDiag,volume,InvSol);
             v_abs(GDiag);
             GDiag_computed=true;
         }
@@ -278,9 +278,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     Last_key.reserve(dim);       
     if(!unimodular){                
         for(i=0; i<dim; ++i) { 
-            TGenerators.write_column(i+1,C.Generators[key[i]-1]);
+            TGenerators.write_column(i,C.Generators[key[i]]);
             if(GDiag[i]>1)
-                Last_key.push_back(i+1);
+                Last_key.push_back(i);
         }
         
         size_t RScol;
@@ -291,15 +291,15 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         Matrix<Integer> RSmult(dim,RScol);
             
         for(i=0;i<Last_key.size();i++) // insert unit vectors
-            RSmult[Last_key[i]-1][i]=1;
+            RSmult[Last_key[i]][i]=1;
         if(height>1) // insert order vector if necessary
-            RSmult.write_column(Last_key.size()+1,C.Order_Vector);
-        TGenerators.solve_destructiv_Sol(RSmult,TDiag,volume,Sol);
+            RSmult.write_column(Last_key.size(),C.Order_Vector);
+        TGenerators.solve_destructive_Sol(RSmult,TDiag,volume,Sol);
                 // Sol.print(cout);
            
         for(i=0;i<Last_key.size();i++) // write solutions as selected rows of InvDen
             for(j=0;j<dim;j++)
-                InvGenSelRows[Last_key[i]-1][j]=Sol[j][i];
+                InvGenSelRows[Last_key[i]][j]=Sol[j][i];
         InvGenSelRows.reduction_modulo(volume); //makes reduction mod volume easier
         if(height>1) // extract Indicator
             for (i=0; i<dim; i++)
@@ -316,13 +316,13 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     if(height>1){
         for(i=0;i<dim;i++)
             if(Indicator[i]==0)
-                Ind0_key.push_back(i+1);
+                Ind0_key.push_back(i);
         if(Ind0_key.size()>0){  
             Generators=GenCopy;
             Matrix<Integer> RSmult(dim,Ind0_key.size());
             for(i=0;i<Ind0_key.size();i++) // insert unit vectors
-                    RSmult[Ind0_key[i]-1][i]=1;
-            Generators.solve_destructiv_Sol(RSmult,TDiag,volume,InvSol);  // kep GDiag from above     
+                    RSmult[Ind0_key[i]][i]=1;
+            Generators.solve_destructive_Sol(RSmult,TDiag,volume,InvSol);  // kep GDiag from above     
         }
     }
     
@@ -335,7 +335,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     
     for(i=0;i<Ind0_key.size();i++) // unsert selected columns of InvGen at right place
         for(j=0;j<dim;j++){
-            InvGenSelCols[j][Ind0_key[i]-1]=InvSol[j][i];
+            InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
     
     // compute degrees of the generators and prepare Hilbert series if necessary
@@ -344,7 +344,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     if (C.do_h_vector || C.do_ht1_elements) {
         //degrees of the generators according to the Grading of C
         for (size_t i=0; i<dim; i++){
-            gen_degrees[i] = C.gen_degrees[key[i]-1];
+            gen_degrees[i] = C.gen_degrees[key[i]];
         }
         if (C.do_h_vector) {
             int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());

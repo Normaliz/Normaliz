@@ -52,8 +52,8 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             break;
         in >> nr_columns;
         Matrix<Integer> M(nr_rows,nr_columns);
-        for(i=1; i<=nr_rows; i++){
-            for(j=1; j<=nr_columns; j++) {
+        for(i=0; i<nr_rows; i++){
+            for(j=0; j<nr_columns; j++) {
                 in >> number;
                 M.write(i,j,number);
             }
@@ -77,7 +77,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             input_map.insert(make_pair(input_type, M.get_elements()));
         } else { //in this case we merge the data
             vector< vector<Integer> > v = M.get_elements();
-            it->second.insert(it->second.end(), v.begin(), v.end());
+            it->second.insert(it->second.end(), M.get_elements().begin(), M.get_elements().end());
             //TODO shoud not be necessary to create copy v
             //M.get_elements().begin(), M.get_elements.end());
         }
