@@ -96,9 +96,7 @@ class Full_Cone {
     // list<SHORTSIMPLEX> CheckTri;
     list <SHORTSIMPLEX> Triangulation;      // triangulation of cone
     size_t TriangulationSize;               // number of elements in Triangulation, for efficiency
-    size_t nrSimplTransferred;              // number of simplices already transferred to Top_Cone (also by itself)
-    // The sum of TriangulationSize and nrSimplTransferred is the number of simplices produced
-    // in the currect cone so far
+
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionLast;     // last simplex with lead vertex i
     vector<size_t> VertInTri;               // generators in the order in which they are inserted
@@ -124,17 +122,11 @@ class Full_Cone {
     
     size_t totalNrSimplices;   // total number of simplices evaluated
     
-    bool largePyr; // indicates large pyramid
-    bool largeAncestors; // indicates whether all ancestors (including the cone itself) are large
-    
-    size_t sizeBound; // distinguishes small and large pyramids
-    
-    size_t largeSmall;
-    size_t smallLarge;
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
-    size_t nrLargePyr;
-    size_t nrSmallPyr;
+    
+    vector< list<vector<size_t> > > Pyramids;  //storage for pyramids
+    bool recursion_allowed;  // to allow or block recursive formation of pytamids
     
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -145,7 +137,8 @@ class Full_Cone {
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
     void process_pyramid(const vector<size_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
-                      const size_t new_generator,const bool recursive, const bool large);
+                      const size_t new_generator,const bool recursive);
+    void evaluate_stored_pyramids(const size_t level);
 
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
@@ -165,6 +158,7 @@ class Full_Cone {
     void sort_gens_by_degree();
     void compute_support_hyperplanes();
     bool check_evaluation_buffer();
+    bool check_evaluation_buffer_size();
     void evaluate_triangulation();
     void transfer_triangulation_to_top();
     void primal_algorithm(); 
@@ -209,7 +203,7 @@ public:
     Full_Cone();
     Full_Cone(Matrix<Integer> M);            //main constructor
     Full_Cone(const Cone_Dual_Mode<Integer> &C);
-    Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key, const bool isLarge); // for pyramids
+    Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access
