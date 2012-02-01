@@ -781,7 +781,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         process_pyramid(Pyramid_key, in_Pyramid, new_generator, recursive);
         Pyramid_key.clear();
         
-        if(check_evaluation_buffer_size() && omp_get_level()==1 && Done < listsize){  // we interrupt parallel execution if it is really parallel
+        if(check_evaluation_buffer_size() && omp_get_level()<=1 && Done < listsize){  // we interrupt parallel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
             // #pragma omp critical(PYRPAR)
             skip_remaining=true;
@@ -851,7 +851,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
        
             NewFacets.splice(NewFacets.begin(),Pyramid.Support_Hyperplanes);
        }
-       else{ // if rcursive==false we only store the pyramid
+       else{ // if recursive==false we only store the pyramid
            vector<size_t> key_wrt_top(Pyramid_key.size());
            for(size_t i=0;i<Pyramid_key.size();i++)
                 key_wrt_top[i]=Top_Key[Pyramid_key[i]];
