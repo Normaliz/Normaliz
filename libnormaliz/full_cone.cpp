@@ -686,8 +686,8 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     #pragma omp atomic
     TriangulationSize++;
     
-    // if FreeSimpl is empty we (most likely) have to push a new element anyway
-    if (keep_triangulation || Top_Cone->FreeSimpl.empty()){
+    // // if FreeSimpl is (most likely) empty we have to push a new element anyway
+    if (keep_triangulation) { // || Top_Cone->FreeSimpl.empty()){
         if (pyr_level==0) {
             #pragma omp critical(TRIANG)
             Triangulation.push_back(newsimplex);
@@ -699,7 +699,7 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
 
     #pragma omp critical(FREESIMPL)
     {
-    if (Top_Cone->FreeSimpl.empty()) { //this should not happen often
+    if (Top_Cone->FreeSimpl.empty()) { // //this should not happen often
         #pragma omp critical(TRIANG)
         Triangulation.push_back(newsimplex);
     }
