@@ -74,7 +74,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     
-    if(pyr_level==0){
+    if(!is_pyramid){
         #pragma omp critical(HYPERPLANE)
         Facets.push_back(NewFacet);
     }
@@ -291,7 +291,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
         }
         if (!found) {
-            if(pyr_level==0){
+            if(!is_pyramid){
                 #pragma omp critical(NEGATIVE_SUBFACET)
                 {last_inserted=Neg_Subfacet.insert(last_inserted,*jj);}
             } else {
@@ -545,12 +545,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     bool one_not_in_i, not_in_facet;
     size_t not_in_i=0;
     list<SHORTSIMPLEX> Triangulation_kk;
-    SHORTSIMPLEX newsimplex;
-    newsimplex.key.reserve(dim);
-    bool Simpl_available;
-    int tn = omp_get_ancestor_thread_num(1);
     
-    typename list<SHORTSIMPLEX>::iterator F;
     typename list<SHORTSIMPLEX>::iterator j;
     
     vector<size_t> key(dim);
@@ -568,8 +563,14 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                 }
             }
             key[dim-1]=new_generator;
-            store_key(key,-i->ValNewGen);  // height understood positive
-            continue;                      // done with simplicial cone facet
+ 
+            if(!is_pyramid) {
+                #pragma omp critical(TRIANG) // critical only on top level
+                store_key(key,-i->ValNewGen,Triangulation);
+            } else {
+                store_key(key,-i->ValNewGen,Triangulation);
+            }
+            continue;
         }
         
         size_t irrelevant_vertices=0;
@@ -606,67 +607,22 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                  continue;
               
               key[not_in_i]=new_generator;
-              // store_key(key,-i->ValNewGen); // store simplex in triangulation
               
-              newsimplex.key=key;
-              newsimplex.height=-i->ValNewGen;
-              
-              if(keep_triangulation){
-                Triangulation_kk.push_back(newsimplex);
-                #pragma omp atomic
-                TriangulationSize++;
-                continue;   
-              }
-              
-              Simpl_available=true;
-
-              if(Top_Cone->FS[tn].empty()){
-                  #pragma omp critical(FREESIMPL)
-                  {
-                  if(Top_Cone->FreeSimpl.empty())
-                      Simpl_available=false;
-                  else{
-                      F=Top_Cone->FreeSimpl.begin();  // take 100 simplices from FreeSimpl
-                      size_t q; for(q=0;q<1000;++q){            // or what you can get
-                          if(F==Top_Cone->FreeSimpl.end())
-                              break;
-                          ++F;
-                      }
-                  
-                      // cout << "Hole " << q << " " << tn << " " << omp_get_level() << " p " << omp_in_parallel() << endl;
-                      if(q<1000)
-                          Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                              Top_Cone->FreeSimpl);
-                      else
-                          Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                                        Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),++F);
-                  } // else
-                  } // critical
-              } // if empty
-                    
-
-              if(Simpl_available){
-                  Triangulation_kk.splice(Triangulation_kk.end(),Top_Cone->FS[tn],
-                                  Top_Cone->FS[tn].begin());
-                  Triangulation_kk.back()=newsimplex;
-              }
-              else
-                  Triangulation_kk.push_back(newsimplex); 
-              
-              #pragma omp atomic
-              TriangulationSize++;
+              store_key(key,-i->ValNewGen,Triangulation_kk);
             
             } // for j
             
-            if(pyr_level==0) {
-                #pragma omp critical(TRIANG)
-                Triangulation.splice(Triangulation.end(),Triangulation_kk);
-            } else {
+        } // for vertex
+
+        if(!is_pyramid) {
+            #pragma omp critical(TRIANG)
                 Triangulation.splice(Triangulation.end(),Triangulation_kk);
             }
-            
-        } // for vertex
-    } // for kk 
+        else {
+            Triangulation.splice(Triangulation.end(),Triangulation_kk);
+        }
+    } // for kk
+
     } // parallel
 
     VertInTri.push_back(new_generator);
@@ -677,7 +633,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& height){
+void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& height,
+                                list<SHORTSIMPLEX>& Triangulation){
 
     SHORTSIMPLEX newsimplex;
     newsimplex.key=key;
@@ -686,33 +643,50 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
     #pragma omp atomic
     TriangulationSize++;
     
-    // // if FreeSimpl is (most likely) empty we have to push a new element anyway
-    if (keep_triangulation) { // || Top_Cone->FreeSimpl.empty()){
-        if (pyr_level==0) {
-            #pragma omp critical(TRIANG)
-            Triangulation.push_back(newsimplex);
-        } else {
-            Triangulation.push_back(newsimplex);
-        }
-        return;    
-    }
-
-    #pragma omp critical(FREESIMPL)
-    {
-    if (Top_Cone->FreeSimpl.empty()) { // //this should not happen often
-        #pragma omp critical(TRIANG)
+    if(keep_triangulation){
         Triangulation.push_back(newsimplex);
+        return;  
     }
-    else {
-        Top_Cone->FreeSimpl.front()=newsimplex;
-        if(pyr_level==0){
-            #pragma omp critical(TRIANG)
-            Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
-           } else {
-            Triangulation.splice(Triangulation.end(),Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin());
-        }
+    
+    bool Simpl_available=true;
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+    typename list<SHORTSIMPLEX>::iterator F;
+
+    if(Top_Cone->FS[tn].empty()){
+        #pragma omp critical(FREESIMPL)
+        {
+        if(Top_Cone->FreeSimpl.empty())
+            Simpl_available=false;
+        else{
+            F=Top_Cone->FreeSimpl.begin();  // take 100 simplices from FreeSimpl
+            size_t q; for(q=0;q<1000;++q){            // or what you can get
+                if(F==Top_Cone->FreeSimpl.end())
+                    break;
+                ++F;
+            }
+        
+            if(q<1000)
+                Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                    Top_Cone->FreeSimpl);
+            else
+                Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                              Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),++F);
+        } // else
+        } // critical
+    } // if empty
+          
+
+    if(Simpl_available){
+        Triangulation.splice(Triangulation.end(),Top_Cone->FS[tn],
+                        Top_Cone->FS[tn].begin());
+        Triangulation.back()=newsimplex;
     }
-    }
+    else
+        Triangulation.push_back(newsimplex);
 }
 
 //---------------------------------------------------------------------------
@@ -823,11 +797,11 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
         }    
         if(do_triangulation || (do_partial_triangulation && S.read_volume()>1)){
             if(!is_pyramid) {
-                #pragma omp critical(EVALUATE) // nur auf Top-Ebene kritisch
-                store_key(Pyramid_key,S.read_volume());  // height understood positive
+                #pragma omp critical(TRIANG) // critical only on top level
+                store_key(Pyramid_key,S.read_volume(),Triangulation);  
             } else {
-                store_key(Pyramid_key,S.read_volume());  // height understood positive
-            }
+                store_key(Pyramid_key,S.read_volume(),Triangulation);
+            }  
         }
     }
     else {  // non-simplicial
@@ -881,7 +855,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
             }
             if(new_global_hyp){
                 NewFacet.Hyp=*pyr_hyp;                
-                if(pyr_level==0){
+                if(!is_pyramid){
                     #pragma omp critical(HYPERPLANE) 
                     Facets.push_back(NewFacet);
                 } else {
@@ -940,7 +914,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     
     if(do_triangulation || (do_partial_triangulation && S.read_volume()>1))
     {
-        store_key(key,S.read_volume());  // height understood positive
+        store_key(key,S.read_volume(),Triangulation);  // height understood positive
     }
     
     if(do_triangulation){ // we must prepare the sections of the triangulation
@@ -960,6 +934,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
+
+    assert(omp_get_thread_num()==0);
 
     if(Pyramids[level].empty())
         return;
@@ -1061,6 +1037,8 @@ void Full_Cone<Integer>::build_cone() {
     RecBoundSuppHyp /= bound_div;
 
     size_t RecBoundTriang = 1000000;  // 1 Mio      5000000; // 5Mio
+    size_t EvalBoundTriang = 1000000; // 1 Mio --- should coincide with the value in check_evaluation_buffer_size()
+
 
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
@@ -1120,7 +1098,8 @@ void Full_Cone<Integer>::build_cone() {
         }
         else{
             if(tri_recursion || (do_triangulation 
-                         && nr_neg*TriangulationSize > RecBoundTriang)){ // go to pyramids because of triangulation
+                         && (nr_neg*TriangulationSize > RecBoundTriang 
+                                || 3*omp_get_max_threads()*TriangulationSize>EvalBoundTriang ))){ // go to pyramids because of triangulation
                 if(check_evaluation_buffer()){
                     Top_Cone->evaluate_triangulation();
                 }   
@@ -1312,7 +1291,7 @@ bool Full_Cone<Integer>::check_evaluation_buffer(){
 template<typename Integer>
 bool Full_Cone<Integer>::check_evaluation_buffer_size(){
 
-    size_t EvalBoundTriang = 1000000; // 1Mio
+    size_t EvalBoundTriang = 1000000; // 1 Mio --- should coincide with the value in build_cone()
 
     return(!Top_Cone->keep_triangulation && 
                Top_Cone->TriangulationSize > EvalBoundTriang);
@@ -1344,7 +1323,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
             pyr_simp->key[i]=Top_Key[pyr_simp->key[i]];
 
     // cout << "Keys transferred " << endl;
-    #pragma omp critical(EVALUATE)
+    #pragma omp critical(TRIANG)
     {
         Top_Cone->Triangulation.splice(Top_Cone->Triangulation.end(),Triangulation);
         Top_Cone->TriangulationSize+=TriangulationSize;
@@ -1360,7 +1339,8 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
-    // #pragma omp critical(EVALUATE)
+    assert(omp_get_thread_num()==0);
+   
     if(TriangulationSize>0)
     {
     const long VERBOSE_STEPS = 50;
