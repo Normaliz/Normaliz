@@ -2167,16 +2167,14 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
                             for (j = i; j <dim-1; j++) {
                                 new_key[j]=key[j+1];
                             }
-                            Simplex<Integer> S(new_key,Projection);
-                            primary_multiplicity+=S.read_volume();
+                            // add the volume of the projected simplex
+                            primary_multiplicity +=
+                              Projection.submatrix(new_key).vol_destructive();
                         }
                     }
-
                 }
-
             }
         }
-
     }
     return primary_multiplicity;
 }
