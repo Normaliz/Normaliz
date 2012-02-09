@@ -895,11 +895,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         Facets.push_back(NewFacet);    // was visible before adding this vertex
     }
     
-    if(!is_pyramid)
-        Order_Vector = vector<Integer>(dim,0);
-    
-    if(!is_pyramid && do_h_vector){
+    if(!is_pyramid){
         //define Order_Vector, decides which facets of the simplices are excluded
+        Order_Vector = vector<Integer>(dim,0);
         Matrix<Integer> G=S.read_generators();
         //srand(12345);
         for(i=0;i<dim;i++){
@@ -910,8 +908,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     }
 
     //the volume is an upper bound for the height
-
-    
     if(do_triangulation || (do_partial_triangulation && S.read_volume()>1))
     {
         store_key(key,S.read_volume(),Triangulation);  // height understood positive
@@ -989,21 +985,23 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
                 
        }
        
-       if(skip_remaining){
-          verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids done, ";
-          Top_Cone->evaluate_triangulation();
+        if(skip_remaining){
+            if (verbose)
+                verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids done, ";
+            Top_Cone->evaluate_triangulation();
        }
     
      }while(skip_remaining);
      
+     if (verbose)
+         verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids done!"<<endl;
      if(check_evaluation_buffer())
      {
-          Top_Cone->evaluate_triangulation();
+        Top_Cone->evaluate_triangulation();
      }
      
      Pyramids[level].clear();
      evaluate_stored_pyramids(level+1);  
-     
 }
 
 //---------------------------------------------------------------------------
@@ -1373,7 +1371,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                     verboseOutput() << "|" <<flush;
                 }
             }
-            if(spos%20000==0)
+/*            if(spos%20000==0)
             {
                 #pragma omp critical(HT1ELEMENTS)
                 {
@@ -1386,7 +1384,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 Candidates.unique();
                 }
             }
-        }
+*/        }
         #pragma omp critical(MULTIPLICITY)
         multiplicity += simp.getMultiplicitySum(); 
     }
@@ -1399,9 +1397,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     }
 
 
+    if (verbose) {
+        cout<<endl<<"ht1: "<<Ht1_Elements.size();
+        cout<<"   cand: "<<Candidates.size()<<flush;
+    }
+
     Ht1_Elements.sort();
     Ht1_Elements.unique();
-
     Candidates.sort();
     Candidates.unique();
 
@@ -2073,7 +2075,6 @@ void Full_Cone<Integer>::global_reduction() {
                     steps_done++;
                     step_x_size += csize;
                     verboseOutput() << "|" <<flush;
-//                  cout<<counter<<" ";
                     if(VERBOSE_STEPS > 50 && steps_done%50 == 0) {
                         verboseOutput() << "  " << (steps_done) << "000" << endl;
                     }
