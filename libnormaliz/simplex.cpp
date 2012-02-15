@@ -298,9 +298,11 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
                 // Sol.print(cout);
            
         for(i=0;i<Last_key.size();i++) // write solutions as selected rows of InvDen
-            for(j=0;j<dim;j++)
-                InvGenSelRows[Last_key[i]][j]=Sol[j][i];
-        InvGenSelRows.reduction_modulo(volume); //makes reduction mod volume easier
+            for(j=0;j<dim;j++){
+                InvGenSelRows[Last_key[i]][j]=Sol[j][i]%volume; //makes reduction mod volume easier
+                if(InvGenSelRows[Last_key[i]][j] <0)
+                    InvGenSelRows[Last_key[i]][j]+=volume;
+            }
         if(height>1) // extract Indicator
             for (i=0; i<dim; i++)
                 Indicator[i]=Sol[i][Last_key.size()];
