@@ -824,8 +824,13 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
            vector<size_t> key_wrt_top(Pyramid_key.size());
            for(size_t i=0;i<Pyramid_key.size();i++)
                 key_wrt_top[i]=Top_Key[Pyramid_key[i]];
-           #pragma omp critical(STOREPYRAMIDS)    
-           Top_Cone->Pyramids[pyr_level].push_back(key_wrt_top);
+           #pragma omp critical(STOREPYRAMIDS)
+           {
+           if(recursion_allowed)    
+                Top_Cone->Pyramids[0].push_back(key_wrt_top); // if we come from top cone
+           else                                               // Pyramids go level 0
+                Top_Cone->Pyramids[pyr_level].push_back(key_wrt_top);           
+           }
        }
     }   
 
@@ -977,7 +982,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            nr_done++;
            
            Full_Cone<Integer> Pyramid(*this,*p);
-           Pyramid.recursion_allowed=false;
+           Pyramid.recursion_allowed=false; // ABSOLUTELY NECESSARY HERE
            Pyramid.pyr_level=level+1;
            if(level>=2){
                Pyramid.do_triangulation=true;
@@ -1147,9 +1152,12 @@ void Full_Cone<Integer>::build_cone() {
     
     if(!is_pyramid)
     {
-        for(size_t i=1;i<Pyramids.size();i++) // unite all pyramids created from the top cone 
-            Pyramids[0].splice(Pyramids[0].begin(),Pyramids[i]); // at level 0
-        evaluate_stored_pyramids(0);             // there may some of higher level if recursion was used
+        for(size_t i=1;i<Pyramids.size();i++) // there should be nothing on higher level at this point   
+                if(Pyramids[i].size()>0){
+                    cout << "ALARM ALARM ALARM" << endl;
+                    exit(1);
+                }
+        evaluate_stored_pyramids(0);                    
     }
 
     transfer_triangulation_to_top(); // transfer remaining simplices to top
@@ -2167,16 +2175,14 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
                             for (j = i; j <dim-1; j++) {
                                 new_key[j]=key[j+1];
                             }
-                            Simplex<Integer> S(new_key,Projection);
-                            primary_multiplicity+=S.read_volume();
+                            // add the volume of the projected simplex
+                            primary_multiplicity +=
+                              Projection.submatrix(new_key).vol_destructive();
                         }
                     }
-
                 }
-
             }
         }
-
     }
     return primary_multiplicity;
 }
