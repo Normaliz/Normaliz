@@ -196,7 +196,9 @@ size_t Unimod=0, Ht1NonUni=0, NonDecided=0, NonDecidedHyp=0;
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Integer& height) {
     
-    bool do_only_multiplicity=(height <=1 && !C.do_h_vector) || (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements);
+    bool do_only_multiplicity =
+        (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)
+        || (height==1 && C.do_partial_triangulation && !C.do_h_vector);
     
     size_t i,j;
     
@@ -212,7 +214,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     bool GDiag_computed=false;
 
 
-    if(height==1){ // very likely unimodular, Indicator computed firstm uses transpose of Gen
+    if(height==1){ // very likely unimodular, Indicator computed first uses transpose of Gen
         for(i=0; i<dim; ++i)
             TGenerators.write_column(i,C.Generators[key[i]]); 
         RS.write_column(0,C.Order_Vector);  // right hand side
@@ -252,11 +254,11 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         if(Ind0_key.size()>0){
             Matrix<Integer> RSmult(dim,Ind0_key.size());
             for(i=0;i<Ind0_key.size();i++) // insert unit vectors
-                    RSmult[Ind0_key[i]][i]=1;
+                RSmult[Ind0_key[i]][i]=1;
             Generators.solve_destructive_Sol(RSmult,GDiag,volume,InvSol);
             v_abs(GDiag);
             GDiag_computed=true;         
-            }
+        }
         if(!GDiag_computed){
             Matrix<Integer> RSmult(dim,Ind0_key.size());
             Generators.solve_destructive_Sol(RSmult,GDiag,volume,InvSol);
@@ -276,7 +278,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
          
     vector<size_t> Last_key;
     Last_key.reserve(dim);       
-    if(!unimodular){                
+    if (!unimodular) {
         for(i=0; i<dim; ++i) { 
             TGenerators.write_column(i,C.Generators[key[i]]);
             if(GDiag[i]>1)
@@ -335,7 +337,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         NonDecidedHyp+=Ind0_key.size();
     }
     
-    for(i=0;i<Ind0_key.size();i++) // unsert selected columns of InvGen at right place
+    for(i=0;i<Ind0_key.size();i++) // insert selected columns of InvGen at right place
         for(j=0;j<dim;j++){
             InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
@@ -387,8 +389,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     if(C.do_h_vector)
         Hilbert_Series.add_to_num(Deg); // count the 0-vector in k-vector with the right shift
 
-    if(unimodular){  // dO_h_vector==true automatically here
-        // #pragma omp critical(HSERIES) 
+    if(unimodular){  // do_h_vector==true automatically here
         C.HS[omp_get_thread_num()] += Hilbert_Series;
         return volume;
     } // the unimodular case has been taken care of
@@ -448,17 +449,17 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
             Hilbert_Series.add_to_num(Deg);
         }
         
-        if(C.do_ht1_elements && normG==volume && height >= 2) // degree 1 element
-        {                                                      // only added if height >=2
-            help=GenCopy.VxM(elements[last]);
-            v_scalar_division(help,volume);
-            Ht1_Elements.push_back(help);
-            continue;
-        } 
-        
-        // now we are left with the case of Hilbert bases
-        if(C.do_Hilbert_basis && height >= 2){                 // only added if height >=2
-            Candidates.push_back(v_merge(norm,elements[last]));
+        // the case of Hilbert bases and height 1 elements, only added if height >=2
+        if(!C.do_partial_triangulation || height >= 2) {
+            if (C.do_Hilbert_basis) {
+                Candidates.push_back(v_merge(norm,elements[last]));
+                continue;
+            }
+            if(C.do_ht1_elements && normG==volume && !isDuplicate(elements[last])) {
+                help=GenCopy.VxM(elements[last]);
+                v_scalar_division(help,volume);
+                Ht1_Elements.push_back(help);
+            }
         }
     }
         
@@ -487,11 +488,16 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     //inverse transformation
     //some test for arithmetic overflow may be implemented here
     
-    l_cut_front(Hilbert_Basis,dim);
-    typename list< vector<Integer> >::iterator jj;
-    for (jj =Hilbert_Basis.begin(); jj != Hilbert_Basis.end(); jj++) {
-        *jj=GenCopy.VxM(*jj);
-        v_scalar_division(*jj,volume);
+    l_cut_front(Hilbert_Basis,dim); //remove the norm entry at pos 0
+    typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
+    while (jj != Hilbert_Basis.end()) {
+        if (isDuplicate(*jj)) { //delete the element
+            jj = Hilbert_Basis.erase(jj);
+        } else {
+            *jj = GenCopy.VxM(*jj);
+            v_scalar_division(*jj,volume);
+            ++jj;
+        }
     } 
 
     
@@ -499,6 +505,17 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
         
     return volume;
+}
+
+template<typename Integer>
+bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
+    if (C.do_partial_triangulation) // we cannot use the criterion then
+        return false;
+
+    for (size_t i=0; i<dim; i++)
+        if (cand[i]==0 && Excluded[i])
+            return true;
+    return false;
 }
 
 template<typename Integer>

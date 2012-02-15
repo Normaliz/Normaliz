@@ -98,8 +98,11 @@ class SimplexEvaluator {
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides
 
-    void reduce_and_insert_interior(const vector< Integer >& new_element);
+
     //adds a new element to the Hilbert basis
+    void reduce_and_insert_interior(const vector< Integer >& new_element);
+
+    bool isDuplicate(const vector<Integer>& cand) const;
 
 //---------------------------------------------------------------------------
 
