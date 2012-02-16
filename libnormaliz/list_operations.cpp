@@ -84,9 +84,8 @@ vector<Integer> l_multiplication(const list< vector<Integer> >& l,const vector<I
     vector<Integer> p(s);
     typename list< vector<Integer> >::const_iterator i;
     s=0;
-    for (i =l.begin(); i != l.end(); i++) {
+    for (i =l.begin(); i != l.end(); ++i, ++s) {
         p[s]=v_scalar_product(*i,v);             //maybe we loose time here?
-        s++;
     }
     return p;
 }

@@ -1215,9 +1215,7 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         return;
         
     cout << "Before sort" << endl;
-    for(size_t k=0;k<nr_gen;k++)
-        cout << gen_degrees[k] << " " ;
-    cout << endl;
+    cout << gen_degrees;
 
     list<vector<Integer> > genList;
     vector<Integer> v(dim+3);
@@ -1253,11 +1251,8 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         i++;
     }
     
-        cout << "After sort" << endl;
-    for(size_t k=0;k<nr_gen;k++)
-        cout << gen_degrees[k] << " " ;
-    cout << endl;
-    
+    cout << "After sort" << endl;
+    cout << gen_degrees;
 }
 
 //---------------------------------------------------------------------------
@@ -1913,18 +1908,19 @@ template<typename Integer>
 bool Full_Cone<Integer>::is_reducible(list< vector<Integer>* >& Irred, const vector< Integer >& new_element){
     size_t i;
     size_t s=Support_Hyperplanes.size();
-    vector <Integer> candidate=v_cut_front(new_element,dim);
-    vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,candidate);
+    // new_element can be longer than dim (it has one extra entry for the norm)
+    // the scalar product function just takes the first dim entries
+    vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,new_element);
     typename list< vector<Integer>* >::iterator j;
     vector<Integer> *reducer;
     for (j =Irred.begin(); j != Irred.end(); j++) {
         reducer=(*j);
-        for (i = 1; i <= s; i++) {
-            if ((*reducer)[i]>scalar_product[i-1]){
+        for (i = 0; i < s; i++) {
+            if ((*reducer)[i]>scalar_product[i]){
                 break;
             }
         }
-        if (i==s+1) {
+        if (i==s) {
             //found a "reducer" and move it to the front
             Irred.push_front(*j);
             Irred.erase(j);
@@ -1940,11 +1936,8 @@ template<typename Integer>
 void Full_Cone<Integer>::global_reduction() {
     Integer norm;
     
-    list <vector<Integer> > Candidates_with_Scalar_Product;
     list <vector<Integer> > HB;
     typename list <vector<Integer> >::iterator c;
-    typename list <vector<Integer> >::const_iterator h;
-    typename list <vector<Integer> >::iterator cit;
     
     for (size_t i = 0; i <nr_gen; i++) {
         Candidates.push_front(Generators.read(i));
@@ -1959,76 +1952,65 @@ void Full_Cone<Integer>::global_reduction() {
         if (verbose) {
             verboseOutput()<<"Cone is simplicial, no global reduction necessary."<<endl;
         }
-        for (cit = Candidates.begin(); cit != Candidates.end(); ++cit) {
-            Hilbert_Basis.push_back(v_cut_front(*cit,dim));
-        }
-        Candidates.clear();
+        Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates);
         return;
     }
     
 
     vector<Integer> degree_function=compute_degree_function();
 
-    cit = Candidates.begin();
+    c = Candidates.begin();
     size_t cpos = 0;
-    size_t listsize=Candidates.size();
+    size_t csize=Candidates.size();
     
     if(verbose) {
         verboseOutput()<<"computing the degrees of the candidates... "<<flush;
     }
-    //go over candidates: do single scalar product
+    //go over candidates: do single scalar product and save it at the end of the candidate
     //for (c = Candidates.begin(); c != Candidates.end(); c++) 
     vector<Integer> scalar_product;
-    for (size_t j=0; j<listsize; ++j) {
-        for(;j > cpos; ++cpos, ++cit) ;
-        for(;j < cpos; --cpos, --cit) ;
+    for (size_t j=0; j<csize; ++j) {
+        for(;j > cpos; ++cpos, ++c) ;
+        for(;j < cpos; --cpos, --c) ;
 
-        norm=v_scalar_product(degree_function,(*cit));
-
-        vector <Integer> new_element(1, norm);
-        new_element=v_merge(new_element,(*cit));
-        Candidates_with_Scalar_Product.push_back(new_element);
+        norm=v_scalar_product(degree_function,(*c));
+        c->push_back(norm);
     }
-    Candidates.clear();         //delete old set
     if(verbose) {
-        verboseOutput()<<"sorting the list... "<<endl<<flush;
+        verboseOutput()<<"sorting the list... "<<endl;
     }
-    Candidates_with_Scalar_Product.sort();
+    Candidates.sort(compare_last<Integer>);
     if (verbose) {
-        verboseOutput()<< Candidates_with_Scalar_Product.size() <<" candidate vectors sorted."<<endl;
+        verboseOutput()<< csize <<" candidate vectors sorted."<<endl;
     }
     
     // do global reduction
-    list< vector<Integer> > HBtmp(0);
+    list< vector<Integer> > HBtmp;
     Integer norm_crit;
-    while ( !Candidates_with_Scalar_Product.empty() ) {
+    while ( !Candidates.empty() ) {
         //use norm criterion to find irreducible elements
-        c=Candidates_with_Scalar_Product.begin();
-        norm_crit=(*c)[0]*2;  //candidates with smaller norm are irreducible
-        if ( Candidates_with_Scalar_Product.back()[0] < norm_crit) { //all candidates are irreducible
+        c=Candidates.begin();
+        norm_crit=(*c)[dim]*2;  //candidates with smaller norm are irreducible
+        if ( Candidates.back()[dim] < norm_crit) { //all candidates are irreducible
             if (verbose) {
-                verboseOutput()<<Hilbert_Basis.size()+Candidates_with_Scalar_Product.size();
+                verboseOutput()<<Hilbert_Basis.size()+Candidates.size();
                 verboseOutput()<<" Hilbert Basis elements of degree <= "<<norm_crit-1<<"; done"<<endl;
             }
-            while ( !Candidates_with_Scalar_Product.empty()) {
-                Hilbert_Basis.push_back(v_cut_front(*c,dim)); // already of the final type 
-                c=Candidates_with_Scalar_Product.erase(c);
+            for (; c!=Candidates.end(); ++c) {
+                c->pop_back();
             }
+            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates);
             break;
         }
-        while ( (*c)[0] < norm_crit ) { //can't go over the end because of the previous if
-            // push to HBtmp with scalar products
-            vector <Integer> candidate=v_cut_front(*c,dim);
-            vector <Integer> scalar_products=l_multiplication(Support_Hyperplanes,candidate);
-            vector <Integer> new_HB_element(1);
-            new_HB_element[0]=(*c)[0];
-            new_HB_element=v_merge(new_HB_element,scalar_products);
-            new_HB_element=v_merge(new_HB_element,candidate);
-            HBtmp.push_back(new_HB_element);
-            Hilbert_Basis.push_back(candidate); // already of the final type 
-            c=Candidates_with_Scalar_Product.erase(c);
+        while ( (*c)[dim] < norm_crit ) { //can't go over the end because of the previous if
+            // remove norm
+            c->pop_back();
+            // push the scalar products to the reducer list
+            HBtmp.push_back(l_multiplication(Support_Hyperplanes, *c));
+            // and the candidate itself to the Hilbert basis
+            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, c++);
         }
-        size_t csize=Candidates_with_Scalar_Product.size();
+        csize = Candidates.size();
         if (verbose) {
             verboseOutput()<<Hilbert_Basis.size()<< " Hilbert Basis elements of degree <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
         }
@@ -2036,8 +2018,8 @@ void Full_Cone<Integer>::global_reduction() {
         // reduce candidates against HBtmp
         // fill pointer list
         list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
-        c=HBtmp.begin();
-        while (c!=HBtmp.end()) {
+        c = HBtmp.begin();
+        while (c != HBtmp.end()) {
             HBpointers.push_back(&(*(c++)));
         }
 
@@ -2061,9 +2043,7 @@ void Full_Cone<Integer>::global_reduction() {
         #pragma omp parallel private(c,cpos) firstprivate(HBpointers)
         {
         
-    //  list< vector<Integer>* > HBcopy(HBpointers); //one copy for each thread
-
-        c=Candidates_with_Scalar_Product.begin();
+        c=Candidates.begin();
         cpos=0;
         #pragma omp for schedule(dynamic)
         for (size_t k=0; k<csize; ++k) {
@@ -2071,7 +2051,7 @@ void Full_Cone<Integer>::global_reduction() {
             for(;k < cpos; --cpos, --c) ;
             
             if ( is_reducible(HBpointers, *c) ) {
-                (*c)[0]=-1; //mark as reducible
+                (*c)[dim]=-1; //mark as reducible
             }
 
             if (verbose) {
@@ -2094,10 +2074,10 @@ void Full_Cone<Integer>::global_reduction() {
         if (verbose) verboseOutput() << endl;
 
         // delete reducible candidates
-        c=Candidates_with_Scalar_Product.begin();
-        while(c != Candidates_with_Scalar_Product.end()) {
-            if((*c)[0]==-1) {
-                c=Candidates_with_Scalar_Product.erase(c);
+        c = Candidates.begin();
+        while (c != Candidates.end()) {
+            if ((*c)[dim]==-1) {
+                c = Candidates.erase(c);
             } else {
                 ++c;
             }

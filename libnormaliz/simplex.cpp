@@ -45,25 +45,25 @@ using namespace std;
 template<typename Integer>
 void SimplexEvaluator<Integer>::reduce_and_insert_interior(const vector< Integer >& new_element){
     //implementing this function as a tree searching may speed up computations ...
-    if (new_element[0]==0) {
+    if (new_element[dim]==0) {
         return; // new_element=0
     }
     else {
-        size_t i,c=1,d=dim+1;
+        size_t i,c=0;
         typename list< vector<Integer> >::iterator j;
         for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
-            if (new_element[0]<2*(*j)[0]) {
+            if (new_element[dim]<2*(*j)[dim]) {
                 break; //new_element is not reducible;
             }
             else  {
                 if ((*j)[c]<=new_element[c]){
-                    for (i = 1; i < d; i++) {
+                    for (i = 0; i < dim; i++) {
                         if ((*j)[i]>new_element[i]){
                             c=i;
                             break;
                         }
                     }
-                    if (i==d) {
+                    if (i==dim) {
                         Hilbert_Basis.push_front(*j);
                         Hilbert_Basis.erase(j);
                         return;
@@ -450,9 +450,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
         }
         
         // the case of Hilbert bases and height 1 elements, only added if height >=2
-        if(!C.do_partial_triangulation || height >= 2) {
+        if (!C.do_partial_triangulation || height >= 2) {
             if (C.do_Hilbert_basis) {
-                Candidates.push_back(v_merge(norm,elements[last]));
+                Candidates.push_back(v_merge(elements[last],norm));
                 continue;
             }
             if(C.do_ht1_elements && normG==volume && !isDuplicate(elements[last])) {
@@ -477,7 +477,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     if(!C.do_Hilbert_basis)
         return volume;  // no local reduction in this case
 
-    Candidates.sort();        
+    Candidates.sort(compare_last<Integer>);
     typename list <vector <Integer> >::iterator cand=Candidates.begin();
     while(cand != Candidates.end()) {
         reduce_and_insert_interior((*cand));
@@ -488,12 +488,12 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     //inverse transformation
     //some test for arithmetic overflow may be implemented here
     
-    l_cut_front(Hilbert_Basis,dim); //remove the norm entry at pos 0
     typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
     while (jj != Hilbert_Basis.end()) {
         if (isDuplicate(*jj)) { //delete the element
             jj = Hilbert_Basis.erase(jj);
         } else {
+            jj->pop_back(); //remove the norm entry at the end
             *jj = GenCopy.VxM(*jj);
             v_scalar_division(*jj,volume);
             ++jj;

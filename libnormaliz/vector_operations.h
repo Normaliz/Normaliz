@@ -125,8 +125,20 @@ vector<T> v_cut_front(const vector<T>& v, size_t size);
 //else returns 0 (the elements of u and v are >0)
 int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v);
 
+
 template<typename Integer>
-vector<size_t> v_non_zero_pos(vector<Integer> v); //returns a key vector containing the positions of non-zero entrys of v (counting from 1 to v.size())
+bool compare_last (vector<Integer> a, vector<Integer> b)
+{
+    if(a.back() < b.back())
+        return true;
+    if(a.back() > b.back())
+        return false;
+    return a<b;
+}
+
+//returns a key vector containing the positions of non-zero entrys of v
+template<typename Integer>
+vector<size_t> v_non_zero_pos(vector<Integer> v);
 
 
 }
