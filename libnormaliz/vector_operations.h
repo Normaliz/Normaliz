@@ -127,7 +127,7 @@ int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v);
 
 
 template<typename Integer>
-bool compare_last (vector<Integer> a, vector<Integer> b)
+bool compare_last (const vector<Integer>& a, const vector<Integer>& b)
 {
     if(a.back() < b.back())
         return true;

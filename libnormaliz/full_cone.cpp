@@ -1374,7 +1374,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                     verboseOutput() << "|" <<flush;
                 }
             }
-/*            if(spos%20000==0)
+/*            if(do_partial_triangulation && spos%20000==0)
             {
                 #pragma omp critical(HT1ELEMENTS)
                 {
@@ -1399,16 +1399,16 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         HS[i]=ZeroHS;
     }
 
-
-    if (verbose) {
-        cout<<endl<<"ht1: "<<Ht1_Elements.size();
-        cout<<"   cand: "<<Candidates.size()<<flush;
+    if (do_partial_triangulation) {
+        if (verbose) {
+            cout<<endl<<"ht1: "<<Ht1_Elements.size();
+            cout<<"   cand: "<<Candidates.size()<<flush;
+        }
+        Ht1_Elements.sort();
+        Ht1_Elements.unique();
+        Candidates.sort();
+        Candidates.unique();
     }
-
-    Ht1_Elements.sort();
-    Ht1_Elements.unique();
-    Candidates.sort();
-    Candidates.unique();
 
     if (verbose)
     {
@@ -1942,12 +1942,12 @@ void Full_Cone<Integer>::global_reduction() {
     for (size_t i = 0; i <nr_gen; i++) {
         Candidates.push_front(Generators.read(i));
     }
-    if(verbose) verboseOutput()<<"sorting the candidates... "<<flush;
+/*    if(verbose) verboseOutput()<<"sorting the candidates... "<<flush;
     Candidates.sort();
     if(verbose) verboseOutput()<<"make them unique... "<<flush;
     Candidates.unique();
     if(verbose) verboseOutput()<<"done."<<endl;
-
+*/  // Duplicates are avoided or removed earlier
     if (nr_gen == dim) { // cone is simplicial, therefore no global reduction is necessary
         if (verbose) {
             verboseOutput()<<"Cone is simplicial, no global reduction necessary."<<endl;
