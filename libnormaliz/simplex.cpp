@@ -43,15 +43,15 @@ using namespace std;
 //Private
 //---------------------------------------------------------------------------
 template<typename Integer>
-void SimplexEvaluator<Integer>::reduce_and_insert_interior(const vector< Integer >& new_element){
-    //implementing this function as a tree searching may speed up computations ...
+bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& new_element){
+    // the norm is at position dim
     if (new_element[dim]==0) {
-        return; // new_element=0
+        return true; // new_element=0
     }
     else {
         size_t i,c=0;
         typename list< vector<Integer> >::iterator j;
-        for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
+        for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); ++j) {
             if (new_element[dim]<2*(*j)[dim]) {
                 break; //new_element is not reducible;
             }
@@ -64,15 +64,15 @@ void SimplexEvaluator<Integer>::reduce_and_insert_interior(const vector< Integer
                         }
                     }
                     if (i==dim) {
-                        Hilbert_Basis.push_front(*j);
-                        Hilbert_Basis.erase(j);
-                        return;
+                        // move the reducer to the begin
+                        Hilbert_Basis.splice(Hilbert_Basis.begin(), Hilbert_Basis, j);
+                        return true;
                     }
                     //new_element is not in the Hilbert Basis
                 }
             }
         }
-        Hilbert_Basis.push_back(new_element);
+        return false;
     }
 }
 
@@ -480,9 +480,10 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     Candidates.sort(compare_last<Integer>);
     typename list <vector <Integer> >::iterator cand=Candidates.begin();
     while(cand != Candidates.end()) {
-        reduce_and_insert_interior((*cand));
-        Candidates.pop_front();
-        cand=Candidates.begin();
+        if (is_reducible_interior(*cand)) // erase the candidate
+            cand = Candidates.erase(cand);
+        else // move it to the Hilbert basis
+            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, cand++);
     }
 
     //inverse transformation

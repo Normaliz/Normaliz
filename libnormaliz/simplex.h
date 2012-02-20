@@ -99,8 +99,8 @@ class SimplexEvaluator {
     // Matrix<Integer> RSmult; // for multiple right hand sides
 
 
-    //adds a new element to the Hilbert basis
-    void reduce_and_insert_interior(const vector< Integer >& new_element);
+    //checks whether a new element is reducible by the local Hilbert basis
+    bool is_reducible_interior(const vector< Integer >& new_element);
 
     bool isDuplicate(const vector<Integer>& cand) const;
 
