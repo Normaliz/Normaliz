@@ -59,6 +59,7 @@ class Full_Cone {
     bool ht1_hilbert_basis;
     bool integrally_closed;
     
+    bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool do_triangulation;
     bool do_partial_triangulation;
     bool do_Hilbert_basis;
@@ -118,7 +119,7 @@ class Full_Cone {
     Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
     vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
     
-    int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
+    int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
     
     size_t totalNrSimplices;   // total number of simplices evaluated
     

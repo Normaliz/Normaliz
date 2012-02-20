@@ -693,10 +693,6 @@ void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& hei
 
 template<typename Integer>
 void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool recursive){
-
-    
-    if(recursive)                               // in case we have to store new pyramids
-        Top_Cone->Pyramids.resize(pyr_level+2); // in non-recursive mode done some where else
           
     vector<size_t> Pyramid_key;
     Pyramid_key.reserve(nr_gen);
@@ -807,6 +803,12 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
     else {  // non-simplicial
         if(recursive){
             Full_Cone<Integer> Pyramid(*this,Pyramid_key);
+            Pyramid.pyr_level=0; // value is in principle irrelevant
+            Pyramid.do_all_hyperplanes=true;
+
+/*          AT PRESENT WE DO NOT LIMIT THE RECURSION FOR PARTIAL TRIANGULATION HERE
+A REASONABLE SOLUTION WOULD REQUIRE BOOKKEEPING OF THE NATURAL LEVEL OF THE PYRAMIDS
+SEE ALSO evaluate_stored_pyramids
             
             // the next line has the effect that we fully triangulate the pyramid in order to avoid
             // recursion down to simplices in case of partial triangulation
@@ -816,6 +818,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
             
             if(Pyramid.do_triangulation)
                 Pyramid.do_partial_triangulation=false;
+*/
             Pyramid.build_cone(); // build and evaluate pyramid
        
             NewFacets.splice(NewFacets.begin(),Pyramid.Support_Hyperplanes);
@@ -829,7 +832,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
            if(recursion_allowed)    
                 Top_Cone->Pyramids[0].push_back(key_wrt_top); // if we come from top cone
            else                                               // Pyramids go level 0
-                Top_Cone->Pyramids[pyr_level].push_back(key_wrt_top);           
+                Top_Cone->Pyramids[pyr_level+1].push_back(key_wrt_top);           
            }
        }
     }   
@@ -940,7 +943,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 
     if(Pyramids[level].empty())
         return;
-    Pyramids.resize(level+2); // make room for a new generation
+    Pyramids.resize(level+2); // provide space for a new generation
 
     size_t nr_done=0;
     size_t nr_pyramids=Pyramids[level].size();
@@ -979,8 +982,9 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            
            Full_Cone<Integer> Pyramid(*this,*p);
            Pyramid.recursion_allowed=false; // ABSOLUTELY NECESSARY HERE
-           Pyramid.pyr_level=level+1;
-           if(level>=2){
+           Pyramid.pyr_level=level;
+           Pyramid.do_all_hyperplanes=false;
+           if(level>=2 && do_partial_triangulation){ // limits the descent of do_partial_triangulation
                Pyramid.do_triangulation=true;
                Pyramid.do_partial_triangulation=false;
            }
@@ -1046,11 +1050,28 @@ void Full_Cone<Integer>::build_cone() {
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
     find_and_evaluate_start_simplex();
+    if (!is_pyramid)                   // provide space for level 0 pyramids
+        Pyramids.resize(1); 
     
     Integer scalar_product;
     bool new_generator;
+    size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
+    last_to_be_inserted=nr_gen-1; 
+    for(int j=nr_gen-1;j>=0;--j){
+        if(isComputed(ConeProperty::ExtremeRays)){
+            if(!in_triang[j] && Extreme_Rays[j]){
+                last_to_be_inserted=j;
+                break;
+            }
+        }
+        else
+            if(!in_triang[j]){
+                last_to_be_inserted=j;
+                break;
+            }
+    }
 
-    for (i = 0; i < nr_gen; i++) {
+    for (i=0;i<nr_gen;++i) {
     
         if(in_triang[i] || (isComputed(ConeProperty::ExtremeRays) && !Extreme_Rays[i]))
             continue;
@@ -1115,16 +1136,19 @@ void Full_Cone<Integer>::build_cone() {
                 if(do_triangulation)
                     extend_triangulation(i);
             }
-            find_new_facets(i); // in the non-recursive case we must compute supphyps on this level
+            if(do_all_hyperplanes || i!=last_to_be_inserted)
+                find_new_facets(i); 
         }
         
-        // removing the negative hyperplanes
-        l=Facets.begin();
-        for (size_t j=0; j<old_nr_supp_hyps;j++){
-            if (l->ValNewGen<0) 
-                l=Facets.erase(l);
+        // removing the negative hyperplanes if necessary
+        if(do_all_hyperplanes || i!=last_to_be_inserted){
+            l=Facets.begin();
+            for (size_t j=0; j<old_nr_supp_hyps;j++){
+                if (l->ValNewGen<0) 
+                    l=Facets.erase(l);
             else 
                 l++;
+            }
         }
         
         in_triang[i]=true;
@@ -1137,9 +1161,11 @@ void Full_Cone<Integer>::build_cone() {
         }
     }
 
-    typename list<FACETDATA>::const_iterator IHV=Facets.begin();
-    for(;IHV!=Facets.end();IHV++){
-        Support_Hyperplanes.push_back(IHV->Hyp);
+    if(do_all_hyperplanes){
+        typename list<FACETDATA>::const_iterator IHV=Facets.begin();
+        for(;IHV!=Facets.end();IHV++){
+            Support_Hyperplanes.push_back(IHV->Hyp);
+        }
     }
     
 
@@ -2216,7 +2242,7 @@ void Full_Cone<Integer>::reset_tasks(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
+Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
@@ -2263,7 +2289,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
         is_Computed.set(ConeProperty::HVector);
         is_Computed.set(ConeProperty::Triangulation);
     }
-    pyr_level=0;
+    pyr_level=-1;
     Top_Cone=this;
     Top_Key.resize(nr_gen);
     for(size_t i=0;i<nr_gen;i++)
@@ -2276,6 +2302,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
     
     Pyramids.resize(1);  // prepare storage for pyramids
     recursion_allowed=true;
+    
+    do_all_hyperplanes=true;
 }
 
 //---------------------------------------------------------------------------
@@ -2325,13 +2353,15 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
         is_Computed.set(ConeProperty::HVector);
         is_Computed.set(ConeProperty::HilbertPolynomial);
     }
-    pyr_level=0;
+    pyr_level=-1;
     Top_Cone=this;
     Top_Key.resize(nr_gen);
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    
+    do_all_hyperplanes=true;
 }
 //---------------------------------------------------------------------------
 
@@ -2376,7 +2406,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key) 
     do_Hilbert_basis=C.do_Hilbert_basis;
     keep_triangulation=C.keep_triangulation;
     is_pyramid=true;
-    pyr_level=C.pyr_level+1;
+    
+    // pyr_level set by the calling routine
+    
     totalNrSimplices=0;
     gen_degrees.resize(nr_gen);
     if(isComputed(ConeProperty::LinearForm)){ // now we copy the degrees
@@ -2387,6 +2419,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key) 
     TriangulationSize=0;
     
     recursion_allowed=C.recursion_allowed;
+    // do_all_hyperplanes to be set by calling routine
 }
 
 //---------------------------------------------------------------------------
