@@ -153,6 +153,8 @@ class Full_Cone {
     void global_reduction();
     /* computes a degree function, s.t. every generator has value >0 */
     vector<Integer> compute_degree_function() const;
+    
+    Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
     void extreme_rays_and_ht1_check();
     void set_degrees();
@@ -168,6 +170,8 @@ class Full_Cone {
     // void compute_support_hyperplanes_pyramid(const bool do_triang = false);
 
     void compute_extreme_rays();
+    void compute_extreme_rays_compare();
+    void compute_extreme_rays_rank();
     void select_ht1_elements();
     void compute_hilbert_basis();
     void compute_ht1_elements();

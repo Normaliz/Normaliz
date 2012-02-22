@@ -1712,24 +1712,102 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<Integer> >& S,
+                                   vector<size_t>& selection){
+
+    sort(selection.begin(),selection.end());
+    assert(selection.back()<S.size());
+    size_t i=0,j=0;
+    Matrix<Integer> M(selection.size(),S.front().size());
+    typename list<vector<Integer> >::const_iterator ll=S.begin();
+    for(;ll!=S.end();++ll){
+        if(j==selection[i]){
+            M[i]=*ll;
+            i++;
+        }
+        j++;
+    }
+    return M;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
+
     if (isComputed(ConeProperty::ExtremeRays))
         return;
     assert(isComputed(ConeProperty::SupportHyperplanes));
+
+    if(dim*Support_Hyperplanes.size() < nr_gen)
+         compute_extreme_rays_rank();
+    else
+         compute_extreme_rays_compare();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_extreme_rays_rank(){
+
+    
+    size_t i,j;
+    typename list<vector<Integer> >::iterator s;
+    vector<size_t> gen_in_hyperplanes;
+    gen_in_hyperplanes.reserve(Support_Hyperplanes.size());
+    Matrix<Integer> M;
+    
+    for(i=0;i<nr_gen;++i){
+        Extreme_Rays[i]=false;
+        j=0;
+        gen_in_hyperplanes.clear();
+        for(s=Support_Hyperplanes.begin();s!=Support_Hyperplanes.end();++s){
+            if(v_scalar_product(Generators[i],*s)==0)
+                gen_in_hyperplanes.push_back(j);
+            j++;
+        }
+        if(gen_in_hyperplanes.size()< dim-1)
+            continue;
+        M=select_matrix_from_list(Support_Hyperplanes,gen_in_hyperplanes);
+        if(M.rank_destructive()>=dim-1)
+            Extreme_Rays[i]=true;   
+    }
+
+    is_Computed.set(ConeProperty::ExtremeRays);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_extreme_rays_compare(){
+
     size_t i,j,k,l,t;
-    Matrix<Integer> SH=getSupportHyperplanes().transpose();
-    Matrix<Integer> Val=Generators.multiplication(SH);
-    size_t nc=Val.nr_of_columns();
+    // Matrix<Integer> SH=getSupportHyperplanes().transpose();
+    // Matrix<Integer> Val=Generators.multiplication(SH);
+    size_t nc=Support_Hyperplanes.size();
+    
+    vector<vector<bool> > Val(nr_gen);
+    for (i=0;i<nr_gen;++i)
+       Val[i].resize(nc);
+        
+    // Attention: in this routine Val[i][j]==0, i.e. false, indicates that
+    // the i-th generator is contained in the j-th support hyperplane
+    
     vector<size_t> Zero(nc);
     vector<size_t> nr_zeroes(nr_gen);
+     typename list<vector<Integer> >::iterator s;
 
     for (i = 0; i <nr_gen; i++) {
         k=0;
         Extreme_Rays[i]=true;
-        for (j = 0; j <nc; j++) {
-            if (Val.get_elem(i,j)==0) {
+        s=Support_Hyperplanes.begin();
+        for (j = 0; j <nc; ++j,++s) {
+            if (v_scalar_product(Generators[i],*s)==0) {
                 k++;
+                Val[i][j]=false;                
             }
+            else
+                Val[i][j]=true;  
         }
         nr_zeroes[i]=k;
         if (k<dim-1||k==nc)  // not contained in enough facets or in all (0 as generator)
@@ -1742,7 +1820,7 @@ void Full_Cone<Integer>::compute_extreme_rays(){
 
         k=0;
         for (j = 0; j <nc; j++) {
-            if (Val.get_elem(i,j)==0) {
+            if (Val[i][j]==false) {
                 Zero[k]=j;
                 k++;
             }
@@ -1753,7 +1831,7 @@ void Full_Cone<Integer>::compute_extreme_rays(){
                      && nr_zeroes[i]<nr_zeroes[j]) {   // or something whose zeroes cannot be a superset
                 l=0;
                 for (t = 0; t < nr_zeroes[i]; t++) {
-                    if (Val.get_elem(j,Zero[t])==0)
+                    if (Val[j][Zero[t]]==false)
                         l++;
                     if (l>=nr_zeroes[i]) {
                         Extreme_Rays[i]=false;
