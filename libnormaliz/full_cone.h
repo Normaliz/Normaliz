@@ -89,7 +89,7 @@ class Full_Cone {
     friend class SimplexEvaluator<Integer>;
     
     struct SHORTSIMPLEX{                   // type for simplex, short in contrast to class Simplex
-        vector<size_t> key;                // full key of simplex
+        vector<key_t> key;                // full key of simplex
         Integer height;                    // height of last vertex over opposite facet
     };
     
@@ -99,7 +99,7 @@ class Full_Cone {
 
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionLast;     // last simplex with lead vertex i
-    vector<size_t> VertInTri;               // generators in the order in which they are inserted
+    vector<key_t> VertInTri;               // generators in the order in which they are inserted
     
     list<SHORTSIMPLEX> FreeSimpl;           // list of short simplices no longer in use, kept for recycling
     vector<list<SHORTSIMPLEX> > FS;
@@ -116,7 +116,7 @@ class Full_Cone {
     vector<Integer> Order_Vector;  // vector for inclusion-exclusion
 
     Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
-    vector<size_t> Top_Key;  // Indices of generators w.r.t Top_Cone
+    vector<key_t> Top_Key;  // Indices of generators w.r.t Top_Cone
     
     int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
     
@@ -125,7 +125,7 @@ class Full_Cone {
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
     
-    vector< list<vector<size_t> > > Pyramids;  //storage for pyramids
+    vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     
 /* ---------------------------------------------------------------------------
@@ -136,13 +136,13 @@ class Full_Cone {
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
-    void process_pyramid(const vector<size_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
+    void process_pyramid(const vector<key_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
                       const size_t new_generator,const bool recursive);
     void evaluate_stored_pyramids(const size_t level);
 
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
-    void store_key(const vector<size_t>&, const Integer& height, list<SHORTSIMPLEX>& Triangulation);
+    void store_key(const vector<key_t>&, const Integer& height, list<SHORTSIMPLEX>& Triangulation);
     
     void build_cone();
     
@@ -200,10 +200,9 @@ public:
  *                      Constructors
  *---------------------------------------------------------------------------
  */
-    Full_Cone();
     Full_Cone(Matrix<Integer> M);            //main constructor
     Full_Cone(const Cone_Dual_Mode<Integer> &C);
-    Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key); // for pyramids
+    Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
 
 /*---------------------------------------------------------------------------
  *                      Data access
@@ -225,7 +224,7 @@ public:
      * the vectors corresponding to the generators of each simplex are sorted and saved in Triang
      * the volumes are saved in TriangVol 
      * cleares the lists first */
-    void getTriangulation(list< vector<size_t> >& Triang, list<Integer>& TriangVol) const;
+    void getTriangulation(list< vector<key_t> >& Triang, list<Integer>& TriangVol) const;
     Matrix<Integer> getHilbertBasis() const;
     Matrix<Integer> getHt1Elements() const;
     vector<Integer> getHVector() const;

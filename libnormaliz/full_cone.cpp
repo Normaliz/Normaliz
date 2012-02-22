@@ -58,7 +58,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
             NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
             used_for_tests =(positive.ValNewGen%overflow_test_modulus)*(negative.Hyp[k]%overflow_test_modulus)-(negative.ValNewGen%overflow_test_modulus)*(positive.Hyp[k]%overflow_test_modulus);
             if (((NewFacet.Hyp[k]-used_for_tests) % overflow_test_modulus)!=0) {
-                errorOutput()<<"Arithmetic failure in Full_cone::add_hyperplane. Possible arithmetic overflow.\n";
+                errorOutput()<<"Arithmetic failure in Full_Cone::add_hyperplane. Possible arithmetic overflow.\n";
                 throw ArithmeticException();
             }
         }
@@ -373,7 +373,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         verboseOutput()<<"transform_values: PS vs N"<<endl;
     }
 
-    vector<size_t> key(nr_gen);
+    vector<key_t> key(nr_gen);
     size_t nr_missing;
     bool common_subfacet;
     #pragma omp for schedule(dynamic) nowait
@@ -420,7 +420,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
-    vector<size_t> common_key(nr_gen);
+    vector<key_t> common_key(nr_gen);
     
     #pragma omp for schedule(dynamic) nowait
     for (size_t i =0; i<nr_PosNSimp; i++){ //Positive Non Simp vs.Negative Non Simp
@@ -548,7 +548,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     
     typename list<SHORTSIMPLEX>::iterator j;
     
-    vector<size_t> key(dim);
+    vector<key_t> key(dim);
     
     #pragma omp for schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
@@ -633,7 +633,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::store_key(const vector<size_t>& key, const Integer& height,
+void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& height,
                                 list<SHORTSIMPLEX>& Triangulation){
 
     SHORTSIMPLEX newsimplex;
@@ -698,7 +698,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     if(recursive)                               // in case we have to store new pyramids
         Top_Cone->Pyramids.resize(pyr_level+2); // in non-recursive mode done some where else
           
-    vector<size_t> Pyramid_key;
+    vector<key_t> Pyramid_key;
     Pyramid_key.reserve(nr_gen);
     boost::dynamic_bitset<> in_Pyramid(nr_gen); 
      
@@ -776,7 +776,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
+void Full_Cone<Integer>::process_pyramid(const vector<key_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
                           const size_t new_generator,const bool recursive){
     
     #pragma omp atomic
@@ -821,7 +821,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<size_t> Pyramid_key, const
             NewFacets.splice(NewFacets.begin(),Pyramid.Support_Hyperplanes);
        }
        else{ // if recursive==false we only store the pyramid
-           vector<size_t> key_wrt_top(Pyramid_key.size());
+           vector<key_t> key_wrt_top(Pyramid_key.size());
            for(size_t i=0;i<Pyramid_key.size();i++)
                 key_wrt_top[i]=Top_Key[Pyramid_key[i]];
            #pragma omp critical(STOREPYRAMIDS)
@@ -882,7 +882,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 
     
     Simplex<Integer> S = find_start_simplex();
-    vector<size_t> key=S.read_key();   // generators indexed from 1
+    vector<key_t> key=S.read_key();   // generators indexed from 1
         
     // vector<bool> in_triang(nr_gen,false);
     for (i = 0; i < dim; i++) {
@@ -950,7 +950,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     cout << "Evaluating " << nr_pyramids << " pyramids on level " << level << endl;
     cout << "************************************************" << endl;
     
-    typename list<vector<size_t> >::iterator p;
+    typename list<vector<key_t> >::iterator p;
     size_t ppos;
     bool skip_remaining;
 
@@ -1659,15 +1659,15 @@ void Full_Cone<Integer>::dual_mode() {
 template<typename Integer>
 Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
     if (isComputed(ConeProperty::ExtremeRays)) {
-        vector<size_t> marked_extreme_rays(0);
+        vector<key_t> marked_extreme_rays(0);
         for (size_t i=0; i<nr_gen; i++) {
             if (Extreme_Rays[i])
                 marked_extreme_rays.push_back(i);
         }
-        vector<size_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex(dim);
+        vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex(dim);
         assert(key_extreme.size() == dim);
-        vector<size_t> key(dim);
-        for (size_t i=0; i<dim; i++) {
+        vector<key_t> key(dim);
+        for (key_t i=0; i<dim; i++) {
             key[i] = marked_extreme_rays[key_extreme[i]];
         }
         return Simplex<Integer>(key, Generators);
@@ -1689,8 +1689,8 @@ void Full_Cone<Integer>::compute_extreme_rays(){
     Matrix<Integer> SH=getSupportHyperplanes().transpose();
     Matrix<Integer> Val=Generators.multiplication(SH);
     size_t nc=Val.nr_of_columns();
-    vector<size_t> Zero(nc);
-    vector<size_t> nr_zeroes(nr_gen);
+    vector<key_t> Zero(nc);
+    vector<key_t> nr_zeroes(nr_gen);
 
     for (i = 0; i <nr_gen; i++) {
         k=0;
@@ -2128,7 +2128,7 @@ template<typename Integer>
 Integer Full_Cone<Integer>::primary_multiplicity() const{
     size_t i,j,k;
     Integer primary_multiplicity=0;
-    vector <size_t> key,new_key(dim-1);
+    vector <key_t> key,new_key(dim-1);
     Matrix<Integer> Projection(nr_gen,dim-1);
     for (i = 0; i < nr_gen; i++) {
         for (j = 0; j < dim-1; j++) {
@@ -2172,14 +2172,6 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(){
-    dim=0;
-    nr_gen=0;
-    hyp_size=0;
-}
-
-//---------------------------------------------------------------------------
-template<typename Integer>
 void Full_Cone<Integer>::reset_tasks(){
     do_triangulation = false;
     do_partial_triangulation = false;
@@ -2204,9 +2196,13 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){
     }
     Generators = M;
     nr_gen=Generators.nr_of_rows();
+    if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {
+        error_msg("To many generators to fit in range of key_t!");
+        throw NormalizException();
+    }
     //make the generators coprime and remove 0 rows
     vector<Integer> gcds = Generators.make_prime();
-    vector<size_t> key=v_non_zero_pos(gcds);
+    vector<key_t> key=v_non_zero_pos(gcds);
     if (key.size() < nr_gen) {
         Generators=Generators.submatrix(key);
         nr_gen=Generators.nr_of_rows();
@@ -2317,7 +2313,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
 /* constructor for pyramids */
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<size_t>& Key) {
+Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
 
     Generators = C.Generators.submatrix(Key);
     dim = Generators.nr_of_columns();
@@ -2462,14 +2458,13 @@ Matrix<Integer> Full_Cone<Integer>::getSupportHyperplanes()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::getTriangulation(list< vector<size_t> >& Triang, list<Integer>& TriangVol) const {
+void Full_Cone<Integer>::getTriangulation(list< vector<key_t> >& Triang, list<Integer>& TriangVol) const {
     Triang.clear();
     TriangVol.clear();
-    vector<size_t> key(dim);
+    vector<key_t> key(dim);
     typename list<SHORTSIMPLEX>::const_iterator l;
     for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
         key=l->key;
-        sort(key.begin(),key.end());
         Triang.push_back(key);
         TriangVol.push_back(l->height);
     }

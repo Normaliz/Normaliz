@@ -36,7 +36,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::max_rank_submatrix_lex(vector<size_t>& v, const size_t& rank) const{
+void Matrix<Integer>::max_rank_submatrix_lex(vector<key_t>& v, const size_t& rank) const{
     size_t level=v.size();
     if (level==rank) {
         return;
@@ -310,7 +310,7 @@ void Matrix<Integer>::random (int mod) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::submatrix(const vector<size_t>& rows) const{
+Matrix<Integer> Matrix<Integer>::submatrix(const vector<key_t>& rows) const{
     size_t size=rows.size(), j;
     Matrix<Integer> M(size, nc);
     for (size_t i=0; i < size; i++) {
@@ -916,7 +916,7 @@ Integer Matrix<Integer>::vol_destructive(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
+vector<key_t> Matrix<Integer>::max_rank_submatrix() const{
     //may be optimized in two ways
     //first only a triangular matrix is realy needed, no full diagonalization is necesary
     //second the matrix Rows_Exchanges may be computed by Lineare_transformation::transformation
@@ -941,7 +941,7 @@ vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
             break;
     }
     M=Rows_Exchanges.multiplication(M);
-    vector<size_t> simplex(rk);
+    vector<key_t> simplex(rk);
     k=0;
     for (i = 0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
@@ -958,9 +958,9 @@ vector<size_t> Matrix<Integer>::max_rank_submatrix() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
     size_t rk=rank();
-    vector<size_t> v(0);
+    vector<key_t> v(0);
     max_rank_submatrix_lex(v,rk);
     return v;
 }
@@ -968,8 +968,8 @@ vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<size_t>  Matrix<Integer>::max_rank_submatrix_lex(const size_t& rank) const {
-    vector<size_t> v(0);
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex(const size_t& rank) const {
+    vector<key_t> v(0);
     max_rank_submatrix_lex(v,rank);
     return v;
 }
@@ -1075,7 +1075,7 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
     }
     size_t i;
     Integer denom,buffer;
-    vector<size_t>  rows=max_rank_submatrix_lex();
+    vector<key_t>  rows=max_rank_submatrix_lex();
     Matrix<Integer> Left_Side=submatrix(rows);
     assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
     Matrix<Integer> Right_Side(nc,1,1);
@@ -1111,7 +1111,7 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
     }
 
     // prepare basis change
-    vector <size_t> key = max_rank_submatrix_lex(rank);
+    vector <key_t> key = max_rank_submatrix_lex(rank);
     Matrix<Integer> Full_Rank_Matrix = submatrix(key);  // has maximal number of linear independent lines
     Lineare_Transformation<Integer> Basis_Change = Transformation(Full_Rank_Matrix);
     rank=Basis_Change.get_rank();

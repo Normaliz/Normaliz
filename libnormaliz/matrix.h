@@ -47,7 +47,7 @@ template<typename Integer> class Matrix {
 //              Private routines, used in the public routines
 //---------------------------------------------------------------------------
 
-    void max_rank_submatrix_lex(vector<size_t>& v, const size_t& rank) const;
+    void max_rank_submatrix_lex(vector<key_t>& v, const size_t& rank) const;
     //v will be a vector with entries the indices of the first rows in lexicographic
     //order of this forming a submatrix of maximal rank.
     //v shoud be a vector of size 0 by call!!!
@@ -87,7 +87,7 @@ public:
 
     /* returns a submatrix with rows corresponding to indices given by
      * the entries of rows, Numbering from 1 to n, not 0 to n-1 ! */
-    Matrix submatrix(const vector<size_t>& rows) const;
+    Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
 
@@ -191,14 +191,14 @@ public:
 
     size_t rank_destructive(); //returns rank, destructive
 
-    vector<size_t> max_rank_submatrix() const; //returns a vector with entries the
+    vector<key_t> max_rank_submatrix() const; //returns a vector with entries the
     //indices of the rows of this forming a submatrix of maximal rank
 
-    vector<size_t>  max_rank_submatrix_lex() const; //returns a vector with entries
+    vector<key_t>  max_rank_submatrix_lex() const; //returns a vector with entries
     //the indices of the first rows in lexicographic order of this forming
     //a submatrix of maximal rank.
 
-    vector<size_t>  max_rank_submatrix_lex(const size_t& rank) const;
+    vector<key_t>  max_rank_submatrix_lex(const size_t& rank) const;
     //returns a vector with entries the indices of the first rows in lexicographic
     //order of this forming a submatrix of maximal rank, assuming that
     //the rank of this is known.

@@ -134,7 +134,7 @@ bool compare_last (const vector<Integer>& a, const vector<Integer>& b)
 
 //returns a key vector containing the positions of non-zero entrys of v
 template<typename Integer>
-vector<size_t> v_non_zero_pos(vector<Integer> v);
+vector<key_t> v_non_zero_pos(vector<Integer> v);
 
 
 }

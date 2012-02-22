@@ -88,7 +88,7 @@ public:
     vector< vector<Integer> > getEquations() const;
     vector< vector<Integer> > getCongruences() const;
     map< InputType , vector< vector<Integer> > > getConstraints() const;
-    vector< pair<vector<size_t>, Integer> > getTriangulation() const;
+    vector< pair<vector<key_t>, Integer> > getTriangulation() const;
     vector< vector<Integer> > getHilbertBasis() const;
     vector< vector<Integer> > getHt1Elements() const;
     HilbertSeries getHilbertSeries() const; //general purpose object
@@ -121,7 +121,7 @@ private:
     vector< vector<Integer> > Generators;
     vector<bool> ExtremeRays;
     vector< vector<Integer> > SupportHyperplanes;
-    vector< pair<vector<size_t>, Integer> > Triangulation;
+    vector< pair<vector<key_t>, Integer> > Triangulation;
     Integer multiplicity;
     vector< vector<Integer> > HilbertBasis;
     vector< vector<Integer> > Ht1Elements;

@@ -209,7 +209,7 @@ map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () co
 
 
 template<typename Integer>
-vector< pair<vector<size_t>,Integer> > Cone<Integer>::getTriangulation() const {
+vector< pair<vector<key_t>,Integer> > Cone<Integer>::getTriangulation() const {
     return Triangulation;
 }
 
@@ -781,7 +781,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();
-        Triangulation = vector< pair<vector<size_t>, Integer> >();
+        Triangulation = vector< pair<vector<key_t>, Integer> >();
         Triangulation.resize(tri_size);
         typename Full_Cone<Integer>::SHORTSIMPLEX simp;
         for (size_t i = 0; i<tri_size; ++i) {

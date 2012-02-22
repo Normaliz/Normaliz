@@ -464,11 +464,11 @@ int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v){
 }
 
 template<typename Integer>
-vector<size_t> v_non_zero_pos(vector<Integer> v){
-    vector<size_t> key;
+vector<key_t> v_non_zero_pos(vector<Integer> v){
+    vector<key_t> key;
     size_t size=v.size();
     key.reserve(size);
-    for (size_t i = 0; i <size; i++) {
+    for (key_t i = 0; i <size; i++) {
         if (v[i]!=0) {
             key.push_back(i);
         }

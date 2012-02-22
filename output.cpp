@@ -251,8 +251,8 @@ void Output<Integer>::write_tri() const{
         string file_name = name+".tri";
         ofstream out(file_name.c_str());
 
-        vector< pair<vector<size_t>,Integer> > Tri = Result->getTriangulation();
-        typename vector< pair<vector<size_t>,Integer> >::const_iterator tit = Tri.begin();
+        vector< pair<vector<libnormaliz::key_t>,Integer> > Tri = Result->getTriangulation();
+        typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();
 
         out << Tri.size() << endl;
         out << Result->getBasisChange().get_rank()+1 << endl; //works also for empty list
@@ -352,7 +352,7 @@ void Output<Integer>::write_files() const {
     size_t i, nr;
     Matrix<Integer> Generators = Result->getGenerators();
     Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanes());
-    vector<size_t> rees_ideal_key;
+    vector<libnormaliz::key_t> rees_ideal_key;
 
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
         //write the suport hyperplanes of the full dimensional cone

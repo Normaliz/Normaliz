@@ -96,7 +96,7 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Simplex<Integer>::Simplex(const vector<size_t>& k, const Matrix<Integer>& Map){
+Simplex<Integer>::Simplex(const vector<key_t>& k, const Matrix<Integer>& Map){
     key=k;
     Generators=Map.submatrix(k);
     dim=k.size();
@@ -132,7 +132,7 @@ Integer Simplex<Integer>::read_volume() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<size_t> Simplex<Integer>::read_key() const{
+vector<key_t> Simplex<Integer>::read_key() const{
     return key;
 }
 
@@ -194,7 +194,7 @@ size_t Unimod=0, Ht1NonUni=0, NonDecided=0, NonDecidedHyp=0;
     
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Integer& height) {
+Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height) {
     
     bool do_only_multiplicity =
         (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)
@@ -239,7 +239,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     // stored in InvSol (transferred to InvGenSelCols later)
     // if unimodular and all Ind[i] !=0, then nothing is done here
   
-    vector<size_t> Ind0_key;  //contains the indices i as above 
+    vector<key_t> Ind0_key;  //contains the indices i as above 
     Ind0_key.reserve(dim-1);
     
     if(height==1)
@@ -276,7 +276,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<size_t>& key, const Int
     
 
          
-    vector<size_t> Last_key;
+    vector<key_t> Last_key;
     Last_key.reserve(dim);       
     if (!unimodular) {
         for(i=0; i<dim; ++i) { 

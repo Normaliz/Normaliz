@@ -172,15 +172,6 @@ void Cone_Dual_Mode<Integer>::reduce_and_insert_extreme( const vector< Integer >
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone_Dual_Mode<Integer>::Cone_Dual_Mode(){
-    dim=0;
-    nr_sh=0;
-    hyp_size=0;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
@@ -190,9 +181,13 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
     }
     SupportHyperplanes = M;
     nr_sh=SupportHyperplanes.nr_of_rows();
+    if (nr_sh != static_cast<size_t>(static_cast<key_t>(nr_sh))) {
+        errorOutput()<<"To many support hyperplanes to fit in range of key_t!"<<endl;
+        throw NormalizException();
+    }
     //make the generators coprime and remove 0 rows
     vector<Integer> gcds = SupportHyperplanes.make_prime();
-    vector<size_t> key=v_non_zero_pos(gcds);
+    vector<key_t> key=v_non_zero_pos(gcds);
     if (key.size() < nr_sh) {
         SupportHyperplanes=SupportHyperplanes.submatrix(key);
         nr_sh=SupportHyperplanes.nr_of_rows();
@@ -584,7 +579,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
         verboseOutput() << "Find extreme rays (via rank test)" << endl;
     }
     typename list < vector <Integer> >::iterator c;
-    list <size_t> zero_list;
+    list <key_t> zero_list;
     size_t i,j,k;
     for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
         zero_list.clear();
@@ -595,7 +590,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
         }
         k=zero_list.size();
         if (k>=dim-1) {
-            vector <size_t> zero_vector(k);
+            vector <key_t> zero_vector(k);
             for (j = 0; j < k; j++) {
                 zero_vector[j]=zero_list.front();
                 zero_list.pop_front();
@@ -644,9 +639,9 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     if (verbose) {
         verboseOutput() << "Find relevant support hyperplanes" << endl;
     }
-    list <size_t> zero_list;
+    list <key_t> zero_list;
     typename list<vector<Integer> >::iterator gen_it;
-    vector <size_t> relevant_sh;
+    vector <key_t> relevant_sh;
     relevant_sh.reserve(nr_sh);
     size_t i,k;
     

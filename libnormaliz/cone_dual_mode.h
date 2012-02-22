@@ -75,7 +75,6 @@ public:
 
     void relevant_support_hyperplanes();
 
-    Cone_Dual_Mode();
     Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
 
 /*---------------------------------------------------------------------------
