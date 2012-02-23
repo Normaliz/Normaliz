@@ -1732,9 +1732,10 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
     sort(selection.begin(),selection.end());
     assert(selection.back()<S.size());
     size_t i=0,j=0;
+    size_t k=selection.size();
     Matrix<Integer> M(selection.size(),S.front().size());
     typename list<vector<Integer> >::const_iterator ll=S.begin();
-    for(;ll!=S.end();++ll){
+    for(; ll!=S.end()&&i<k ;++ll){
         if(j==selection[i]){
             M[i]=*ll;
             i++;
