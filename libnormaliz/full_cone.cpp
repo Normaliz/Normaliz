@@ -698,24 +698,31 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     Pyramid_key.reserve(nr_gen);
     boost::dynamic_bitset<> in_Pyramid(nr_gen); 
      
-    bool skip_remaining;
+
     typename list< FACETDATA >::iterator l;
     size_t i,lpos, listsize=Facets.size();
     //use deque here to have independent entries
     deque<bool> done(listsize,false);
     
     size_t nr_done=0;
+    size_t store_level;
+    if(recursion_allowed)
+        store_level=0;
+    else
+        store_level=1;
+        
+    bool skip_remaining_tri,skip_remaining_pyr;
 
     do{    
 
     lpos=0;
-    skip_remaining=false;
+    skip_remaining_tri=skip_remaining_pyr=false;
     l=Facets.begin();
 
     #pragma omp parallel for private(i) firstprivate(lpos,l,Pyramid_key,in_Pyramid) schedule(dynamic) 
     for (size_t k=0; k<listsize; k++) {
     
-        if(skip_remaining)
+        if(skip_remaining_tri || skip_remaining_pyr )
             continue;
             
         for(;k > lpos; lpos++, l++) ;
@@ -748,19 +755,28 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         
         if(check_evaluation_buffer_size() && omp_get_level()<=1 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
-            skip_remaining=true;
+            skip_remaining_tri=true;
+        }
+        
+        if(Top_Cone->Pyramids[store_level].size() > 100000 && omp_get_level()<=1 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
+                                                           //  to keep the triangulation buffer under control
+            skip_remaining_pyr=true;                      // CHOOSE SAME VALUE IN evaluate_stored_pyramids
         }
             
     } // end parallel for k
     
-    if(skip_remaining)
+    if(skip_remaining_tri)
     {
         //verboseOutput() << nr_done << " of " << listsize << " pyramids done." << endl;
         Top_Cone->evaluate_triangulation();
     }
+    if(skip_remaining_pyr){
+            if (verbose)
+                verboseOutput() << "++++++++++++  descending to level " << store_level << endl;
+                Top_Cone->evaluate_stored_pyramids(store_level);
+    }    
     
-    
-    } while(skip_remaining);
+    } while(skip_remaining_tri || skip_remaining_pyr);
     
     //verboseOutput() << nr_done << " of " << listsize << " pyramids done." << endl;
         
@@ -949,25 +965,26 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     size_t nr_pyramids=Pyramids[level].size();
     vector<short> Done(nr_pyramids,0);
     
-    cout << "************************************************" << endl;
-    cout << "Evaluating " << nr_pyramids << " pyramids on level " << level << endl;
-    cout << "************************************************" << endl;
+    verboseOutput() << "************************************************" << endl;
+    verboseOutput() << "Evaluating " << nr_pyramids << " pyramids on level " << level << endl;
+    verboseOutput() << "************************************************" << endl;
     
     typename list<vector<size_t> >::iterator p;
     size_t ppos;
-    bool skip_remaining;
+    bool skip_remaining_tri,skip_remaining_pyr;
 
     do
     {
 
        p = Pyramids[level].begin();
        ppos=0;
-       skip_remaining=false;
+       skip_remaining_tri=false;
+       skip_remaining_pyr=false;
     
        #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
        for(size_t i=0; i<nr_pyramids; i++){
        
-           if(skip_remaining)
+           if(skip_remaining_tri || skip_remaining_pyr)
                 continue;
                 
            for(; i > ppos; ++ppos, ++p) ;
@@ -990,20 +1007,30 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            }
            Pyramid.build_cone();
            if(check_evaluation_buffer_size() && nr_done < nr_pyramids)  // we interrupt parallel execution if it is really parallel
-                skip_remaining=true;                         //  to keep the triangulation buffer under control
+                skip_remaining_tri=true;                         //  to keep the triangulation buffer under control
                 
+            if(Pyramids[level+1].size()>100000 && nr_done < nr_pyramids) // CHOOSE SAME VALUE IN process_pytamids
+                 skip_remaining_pyr=true;
        }
        
-        if(skip_remaining){
+        if(skip_remaining_tri){
             if (verbose)
-                verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids done, ";
+                verboseOutput() << nr_done << " of " << nr_pyramids << 
+                    " pyramids done on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
+        }
+
+        if(skip_remaining_pyr){
+            if (verbose)
+                verboseOutput() << " ++++++++++++ " << nr_done << " of " << nr_pyramids << 
+                            " pyramids done, descending to level " << level+1 << endl;
+            evaluate_stored_pyramids(level+1);
        }
     
-     }while(skip_remaining);
+     }while(skip_remaining_tri || skip_remaining_pyr);
      
      if (verbose)
-         verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids done!"<<endl;
+         verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids on level "<< level << " done!"<<endl;
      if(check_evaluation_buffer())
      {
         Top_Cone->evaluate_triangulation();
