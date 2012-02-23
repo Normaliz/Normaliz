@@ -59,6 +59,7 @@ class Full_Cone {
     bool ht1_hilbert_basis;
     bool integrally_closed;
     
+    bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool do_triangulation;
     bool do_partial_triangulation;
     bool do_Hilbert_basis;
@@ -118,7 +119,7 @@ class Full_Cone {
     Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
     vector<key_t> Top_Key;  // Indices of generators w.r.t Top_Cone
     
-    int pyr_level;  // 0 for top cone, increased by 1 for each level of pyramids
+    int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
     
     size_t totalNrSimplices;   // total number of simplices evaluated
     
@@ -152,6 +153,8 @@ class Full_Cone {
     void global_reduction();
     /* computes a degree function, s.t. every generator has value >0 */
     vector<Integer> compute_degree_function() const;
+    
+    Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
     void extreme_rays_and_ht1_check();
     void set_degrees();
@@ -167,6 +170,8 @@ class Full_Cone {
     // void compute_support_hyperplanes_pyramid(const bool do_triang = false);
 
     void compute_extreme_rays();
+    void compute_extreme_rays_compare();
+    void compute_extreme_rays_rank();
     void select_ht1_elements();
     void compute_hilbert_basis();
     void compute_ht1_elements();
