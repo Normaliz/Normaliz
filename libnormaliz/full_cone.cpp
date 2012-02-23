@@ -964,11 +964,11 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     size_t nr_done=0;
     size_t nr_pyramids=Pyramids[level].size();
     vector<short> Done(nr_pyramids,0);
-    
-    verboseOutput() << "************************************************" << endl;
-    verboseOutput() << "Evaluating " << nr_pyramids << " pyramids on level " << level << endl;
-    verboseOutput() << "************************************************" << endl;
-    
+    if (verbose) {
+        verboseOutput() << "************************************************" << endl;
+        verboseOutput() << "Evaluating " << nr_pyramids << " pyramids on level " << level << endl;
+        verboseOutput() << "************************************************" << endl;
+    }
     typename list<vector<key_t> >::iterator p;
     size_t ppos;
     bool skip_remaining_tri,skip_remaining_pyr;
@@ -1266,10 +1266,7 @@ template<typename Integer>
 void Full_Cone<Integer>::sort_gens_by_degree() {
     if(gen_degrees.size()==0)
         return;
-        
-    cout << "Before sort" << endl;
-    cout << gen_degrees;
-
+    
     list<vector<Integer> > genList;
     vector<Integer> v(dim+3);
     vector<Integer> w(dim);
@@ -1288,8 +1285,6 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
     }
     genList.sort();
     
-    cout << "Sorted" << endl;
-    
     i=0;
     typename list<vector<Integer> >::iterator g=genList.begin();
     for(;g!=genList.end();++g){
@@ -1303,9 +1298,6 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         Generators[i]=w;
         i++;
     }
-    
-    cout << "After sort" << endl;
-    cout << gen_degrees;
 }
 
 //---------------------------------------------------------------------------
