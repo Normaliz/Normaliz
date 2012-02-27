@@ -93,6 +93,7 @@ public:
 	vector<Integer> to_sublattice_dual (const vector<Integer>& M) const;
 	vector<Integer> from_sublattice_dual (const vector<Integer>& V) const;
 
+	vector<Integer> to_sublattice_dual_no_div (const vector<Integer>& M) const;
 //---------------------------------------------------------------------------
 //						 Data acces
 //---------------------------------------------------------------------------

@@ -650,7 +650,7 @@ void Cone<Integer>::compute(ComputationMode mode) {
 
     // Give extra data to FC
     if ( isComputed(ConeProperty::LinearForm) ) {
-        FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
+        FC.Linear_Form = BasisChange.to_sublattice_dual_no_div(LinearForm);
         FC.is_Computed.set(ConeProperty::LinearForm);
     }
 
@@ -747,6 +747,11 @@ void Cone<Integer>::compute_dual() {
         compose_basis_change(SR);
     }
     Full_Cone<Integer> FC(ConeDM);
+    // Give extra data to FC
+    if ( isComputed(ConeProperty::LinearForm) ) {
+        FC.Linear_Form = BasisChange.to_sublattice_dual_no_div(LinearForm);
+        FC.is_Computed.set(ConeProperty::LinearForm);
+    }
     FC.dual_mode();
     extract_data(FC);
 }
@@ -818,7 +823,8 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         ht1_extreme_rays = FC.isHt1ExtremeRays();
         is_Computed.set(ConeProperty::IsHt1ExtremeRays);
     }
-    if (FC.isComputed(ConeProperty::LinearForm)) {
+    if (!isComputed(ConeProperty::LinearForm) && 
+        FC.isComputed(ConeProperty::LinearForm)) {
         LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
         is_Computed.set(ConeProperty::LinearForm);
     }

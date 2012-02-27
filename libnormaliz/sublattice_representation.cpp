@@ -208,6 +208,12 @@ vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const 
     return N;
 }
 
+template<typename Integer>
+vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual_no_div (const vector<Integer>& V) const {
+    vector<Integer> N = (A.transpose()).VxM(V);
+    return N;
+}
+
 //---------------------------------------------------------------------------
 //                       Data access
 //---------------------------------------------------------------------------
