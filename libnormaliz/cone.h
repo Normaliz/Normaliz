@@ -97,6 +97,7 @@ public:
     vector<mpz_class> getHilbertPolynomial();
     vector< vector<mpz_class> > getHilbertQuasiPolynomial();
     vector<Integer> getLinearForm() const;
+    Integer getLinearFormDenom() const;
     Integer getMultiplicity() const;
     bool isPointed() const;
     bool isHt1ExtremeRays() const;
@@ -128,6 +129,7 @@ private:
     HilbertSeries HSeries;
     vector< vector<Integer> > HilbertQuasiPolynomial;
     vector<Integer> LinearForm;
+    Integer LinearFormDenom;
     bool pointed;
     bool ht1_extreme_rays;
     bool ht1_hilbert_basis;

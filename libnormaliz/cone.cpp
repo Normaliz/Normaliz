@@ -269,6 +269,11 @@ vector<Integer> Cone<Integer>::getLinearForm() const {
 }
 
 template<typename Integer>
+Integer Cone<Integer>::getLinearFormDenom() const {
+    return LinearFormDenom;
+}
+
+template<typename Integer>
 Integer Cone<Integer>::getMultiplicity() const {
     return multiplicity;
 }
@@ -650,7 +655,7 @@ void Cone<Integer>::compute(ComputationMode mode) {
 
     // Give extra data to FC
     if ( isComputed(ConeProperty::LinearForm) ) {
-        FC.Linear_Form = BasisChange.to_sublattice_dual_no_div(LinearForm);
+        FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
         FC.is_Computed.set(ConeProperty::LinearForm);
     }
 
@@ -749,7 +754,7 @@ void Cone<Integer>::compute_dual() {
     Full_Cone<Integer> FC(ConeDM);
     // Give extra data to FC
     if ( isComputed(ConeProperty::LinearForm) ) {
-        FC.Linear_Form = BasisChange.to_sublattice_dual_no_div(LinearForm);
+        FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
         FC.is_Computed.set(ConeProperty::LinearForm);
     }
     FC.dual_mode();
@@ -823,10 +828,14 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         ht1_extreme_rays = FC.isHt1ExtremeRays();
         is_Computed.set(ConeProperty::IsHt1ExtremeRays);
     }
-    if (!isComputed(ConeProperty::LinearForm) && 
-        FC.isComputed(ConeProperty::LinearForm)) {
-        LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
-        is_Computed.set(ConeProperty::LinearForm);
+    if (FC.isComputed(ConeProperty::LinearForm)) {
+        if (!isComputed(ConeProperty::LinearForm)) {
+            LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
+            is_Computed.set(ConeProperty::LinearForm);
+        }
+        //compute denominator of LinearForm
+        LinearFormDenom  = v_scalar_product(LinearForm,Generators[0]);
+        LinearFormDenom /= v_scalar_product(FC.getLinearForm(),FC.Generators[0]);
     }
     if (FC.isComputed(ConeProperty::IsHt1HilbertBasis)) {
         ht1_hilbert_basis = FC.isHt1HilbertBasis();

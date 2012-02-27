@@ -81,7 +81,6 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
     Matrix<Integer> R_Inv = Basis_Change.get_right();
 
     dim = R.nr_of_columns();
-//  cout << "dim = "<<dim<<"    rank = "<<rank<<endl;
     A = Matrix<Integer>(rank, dim);
     B = Matrix<Integer>(dim, rank);
     c = 1;
@@ -96,8 +95,6 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
     
 
     Matrix<Integer> D = Basis_Change.get_center();
-
-//  cout <<"rank="<<rank<<" Dia: "<<D.nr_of_rows()<<"x"<<D.nr_of_columns()<<endl;
 
     if ( direct_summand ) {
         for (i = 0; i < rank; i++) {

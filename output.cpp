@@ -431,6 +431,10 @@ void Output<Integer>::write_files() const {
                 for (i = 0; i < Linear_Form.size(); i++) {
                     out<<Linear_Form[i]<<" ";
                 }
+                Integer denom = Result->getLinearFormDenom();
+                if (denom != 1) {
+                    out << endl <<"with denominator = "<<denom;
+                }
             }
             out<<endl<<endl;
             if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
