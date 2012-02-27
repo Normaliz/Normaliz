@@ -709,7 +709,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     if(recursion_allowed)
         store_level=0;
     else
-        store_level=1;
+        store_level=pyr_level+1;
         
     bool skip_remaining_tri,skip_remaining_pyr;
 
@@ -758,7 +758,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             skip_remaining_tri=true;
         }
         
-        if(Top_Cone->Pyramids[store_level].size() > 100000 && omp_get_level()<=1 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
+        if(Top_Cone->nrPyramids[store_level] > 200000 && omp_get_level()<=1 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
             skip_remaining_pyr=true;                      // CHOOSE SAME VALUE IN evaluate_stored_pyramids
         }
@@ -794,8 +794,6 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t> Pyramid_key, const 
     #pragma omp atomic
     Top_Cone->totalNrPyr++;
     
-    // cout << "recursive " << recursive << " PyrTiefe " << Top_Cone->Pyramids.size() << " PyrLevel " << pyr_level << endl;
-
     list<vector<Integer> > NewFacets;
     
     if(Pyramid_key.size()==dim){  // simplicial pyramid done here
@@ -845,10 +843,14 @@ SEE ALSO evaluate_stored_pyramids
                 key_wrt_top[i]=Top_Key[Pyramid_key[i]];
            #pragma omp critical(STOREPYRAMIDS)
            {
-           if(recursion_allowed)    
+           if(recursion_allowed){    
                 Top_Cone->Pyramids[0].push_back(key_wrt_top); // if we come from top cone
-           else                                               // Pyramids go level 0
-                Top_Cone->Pyramids[pyr_level+1].push_back(key_wrt_top);           
+                Top_Cone->nrPyramids[0]++;// Pyramids go level 0
+           }
+           else{                                                         
+                Top_Cone->Pyramids[pyr_level+1].push_back(key_wrt_top);
+                Top_Cone->nrPyramids[pyr_level+1]++;           
+           }
            }
        }
     }   
@@ -960,9 +962,11 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     if(Pyramids[level].empty())
         return;
     Pyramids.resize(level+2); // provide space for a new generation
+    nrPyramids.resize(level+2);
+    nrPyramids[level+1]=0;
 
     size_t nr_done=0;
-    size_t nr_pyramids=Pyramids[level].size();
+    size_t nr_pyramids=nrPyramids[level];
     vector<short> Done(nr_pyramids,0);
     if (verbose) {
         verboseOutput() << "************************************************" << endl;
@@ -1009,7 +1013,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            if(check_evaluation_buffer_size() && nr_done < nr_pyramids)  // we interrupt parallel execution if it is really parallel
                 skip_remaining_tri=true;                         //  to keep the triangulation buffer under control
                 
-            if(Pyramids[level+1].size()>100000 && nr_done < nr_pyramids) // CHOOSE SAME VALUE IN process_pytamids
+            if(nrPyramids[level+1]>200000 && nr_done < nr_pyramids) // CHOOSE SAME VALUE IN process_pytamids
                  skip_remaining_pyr=true;
        }
        
@@ -1037,6 +1041,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
      }
      
      Pyramids[level].clear();
+     nrPyramids[level]=0;
      evaluate_stored_pyramids(level+1);  
 }
 
@@ -1071,14 +1076,12 @@ void Full_Cone<Integer>::build_cone() {
     RecBoundSuppHyp /= bound_div;
 
     size_t RecBoundTriang = 1000000;  // 1 Mio      5000000; // 5Mio
-    size_t EvalBoundTriang = 1000000; // 1 Mio --- should coincide with the value in check_evaluation_buffer_size()
+    size_t EvalBoundTriang = 2500000; // 2.5 Mio --- should coincide with the value in check_evaluation_buffer_size()
 
 
 //if(!is_pyramid) cout << "RecBoundSuppHyp = "<<RecBoundSuppHyp<<endl;
 
     find_and_evaluate_start_simplex();
-    if (!is_pyramid)                   // provide space for level 0 pyramids
-        Pyramids.resize(1); 
     
     Integer scalar_product;
     bool new_generator;
@@ -1203,11 +1206,6 @@ void Full_Cone<Integer>::build_cone() {
     
     if(!is_pyramid)
     {
-        for(size_t i=1;i<Pyramids.size();i++) // there should be nothing on higher level at this point   
-                if(Pyramids[i].size()>0){
-                    cout << "ALARM ALARM ALARM" << endl;
-                    exit(1);
-                }
         evaluate_stored_pyramids(0);                    
     }
 
@@ -1337,7 +1335,7 @@ bool Full_Cone<Integer>::check_evaluation_buffer(){
 template<typename Integer>
 bool Full_Cone<Integer>::check_evaluation_buffer_size(){
 
-    size_t EvalBoundTriang = 1000000; // 1 Mio --- should coincide with the value in build_cone()
+    size_t EvalBoundTriang = 2500000; // 2.5 Mio --- should coincide with the value in build_cone()
 
     return(!Top_Cone->keep_triangulation && 
                Top_Cone->TriangulationSize > EvalBoundTriang);
@@ -1735,7 +1733,7 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
     size_t k=selection.size();
     Matrix<Integer> M(selection.size(),S.front().size());
     typename list<vector<Integer> >::const_iterator ll=S.begin();
-    for(; ll!=S.end()&&i<k ;++ll){
+    for(;ll!=S.end()&&i<k;++ll){
         if(j==selection[i]){
             M[i]=*ll;
             i++;
@@ -1744,6 +1742,7 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
     }
     return M;
 }
+
 
 //---------------------------------------------------------------------------
 
@@ -2375,7 +2374,9 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
     FS.resize(omp_get_max_threads());
     
     Pyramids.resize(1);  // prepare storage for pyramids
-    recursion_allowed=true;
+    nrPyramids.resize(1);
+    nrPyramids[0]=0;
+    recursion_allowed=false;
     
     do_all_hyperplanes=true;
 }

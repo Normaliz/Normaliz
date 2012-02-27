@@ -127,6 +127,7 @@ class Full_Cone {
     size_t totalNrPyr;
     
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
+    vector<size_t> nrPyramids; // number of pyramids on the various levels
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     
 /* ---------------------------------------------------------------------------
