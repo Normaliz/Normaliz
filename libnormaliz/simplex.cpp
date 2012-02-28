@@ -195,7 +195,6 @@ size_t Unimod=0, Ht1NonUni=0, NonDecided=0, NonDecidedHyp=0;
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height) {
-    
     bool do_only_multiplicity =
         (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)
         || (height==1 && C.do_partial_triangulation && !C.do_h_vector);

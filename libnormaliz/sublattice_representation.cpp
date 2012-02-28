@@ -81,20 +81,33 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
     Matrix<Integer> R_Inv = Basis_Change.get_right();
 
     dim = R.nr_of_columns();
-    A = Matrix<Integer>(rank, dim);
-    B = Matrix<Integer>(dim, rank);
     c = 1;
     index = 1;
 
-    for (i = 0; i < rank; i++) {
-        for (j = 0; j < dim; j++) {
-            A.write(i,j, R.read(i,j));
-            B.write(j,i, R_Inv.read(j,i));
+    Matrix<Integer> D = Basis_Change.get_center();
+
+    //use the identity matrix when possible
+    bool is_identity = (dim==rank);
+    if (is_identity && !direct_summand) {
+        for (i = 0; i < rank; i++) {
+            if (Iabs(D.read(i,i)) != 1) {
+                is_identity = false;
+                break;
+            }
         }
     }
-    
-
-    Matrix<Integer> D = Basis_Change.get_center();
+    if (is_identity) {
+        A = B = Matrix<Integer>(dim);
+    } else {
+        A = Matrix<Integer>(rank, dim);
+        B = Matrix<Integer>(dim, rank);
+        for (i = 0; i < rank; i++) {
+            for (j = 0; j < dim; j++) {
+                A.write(i,j, R.read(i,j));
+                B.write(j,i, R_Inv.read(j,i));
+            }
+        }
+    }
 
     if ( direct_summand ) {
         for (i = 0; i < rank; i++) {
@@ -102,7 +115,7 @@ void Sublattice_Representation<Integer>::initialize(const Lineare_Transformation
         }
         index = Iabs(index);
         
-    } else {
+    } else if(!is_identity) {
         Matrix<Integer> Diagonal(rank);
         for (i = 0; i < rank; i++) {
             Diagonal.write(i,i,D.read(i,i));
@@ -193,21 +206,21 @@ vector<Integer> Sublattice_Representation<Integer>::from_sublattice (const vecto
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const vector<Integer>& V) const {
-    vector<Integer> N = (A.transpose()).VxM(V);
+    vector<Integer> N = A.MxV(V);
     v_make_prime(N);
     return N;
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const vector<Integer>& V) const {
-    vector<Integer> N = (B.transpose()).VxM(V);
+    vector<Integer> N = B.MxV(V);
     v_make_prime(N);
     return N;
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual_no_div (const vector<Integer>& V) const {
-    vector<Integer> N = (A.transpose()).VxM(V);
+    vector<Integer> N = A.MxV(V);
     return N;
 }
 

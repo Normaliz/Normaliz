@@ -182,7 +182,7 @@ void Matrix<Integer>::write(size_t row, const vector<int>& data){
 template<typename Integer>
 void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
     assert(col >= 0);
-    assert(col < nr); 
+    assert(col < nc); 
     assert(nr == data.size());
 
     for (size_t i = 0; i < nr; i++) {
