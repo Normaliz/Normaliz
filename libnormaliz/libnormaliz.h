@@ -61,7 +61,7 @@ using Mode::ComputationMode;
 
 /* this type is used in the entries of keys
  * it has to be able to hold number of generators*/
-typedef unsigned short key_t;
+typedef unsigned long key_t;
 
 extern bool verbose;
 

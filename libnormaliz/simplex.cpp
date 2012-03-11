@@ -190,12 +190,13 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 
 //---------------------------------------------------------------------------
 
-size_t Unimod=0, Ht1NonUni=0, NonDecided=0, NonDecidedHyp=0;
+size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
     
 /* evaluates a simplex in regard to all data, key must be initialized */
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height) {
     
+
     bool do_only_multiplicity =
         (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)
         || (height==1 && C.do_partial_triangulation && !C.do_h_vector);
@@ -212,9 +213,19 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
 
     bool unimodular=false;
     bool GDiag_computed=false;
+    bool potentially_unimodular=false;
+    
+    size_t g=0;
+    if(height==1){
+        for(i=0;i<dim;++i){
+            g=gcd(g,gen_degrees[i]);
+            if(g==1)
+                break;        
+        }
+        potentially_unimodular=(g==1);
+    }
 
-
-    if(height==1){ // very likely unimodular, Indicator computed first uses transpose of Gen
+    if(potentially_unimodular){ // very likely unimodular, Indicator computed first uses transpose of Gen
         for(i=0; i<dim; ++i)
             TGenerators.write_column(i,C.Generators[key[i]]); 
         RS.write_column(0,C.Order_Vector);  // right hand side
@@ -235,14 +246,14 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     
 
     // we need the GDiag if not unimodular (to be computed from Gen)
-    // if height==1, we combine its computation with that of the i-th support forms for Ind[i]==0
+    // if potentially unimodular, we combine its computation with that of the i-th support forms for Ind[i]==0
     // stored in InvSol (transferred to InvGenSelCols later)
     // if unimodular and all Ind[i] !=0, then nothing is done here
   
     vector<key_t> Ind0_key;  //contains the indices i as above 
     Ind0_key.reserve(dim-1);
     
-    if(height==1)
+    if(potentially_unimodular)
         for(i=0;i<dim;i++)
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
@@ -272,7 +283,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
 
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
     // for those i for which Gdiag[i]>1 combined with computation
-    // of Indicator in case of height >=2 (uses transpose of Gen)
+    // of Indicator in case of potentially_unimodular==false (uses transpose of Gen)
     
 
          
@@ -286,7 +297,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
         
         size_t RScol;
-        if(height==1)
+        if(potentially_unimodular)
             RScol=Last_key.size();
         else
             RScol=Last_key.size()+1;
@@ -294,7 +305,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             
         for(i=0;i<Last_key.size();i++) // insert unit vectors
             RSmult[Last_key[i]][i]=1;
-        if(height>1) // insert order vector if necessary
+        if(!potentially_unimodular) // insert order vector if necessary
             RSmult.write_column(Last_key.size(),C.Order_Vector);
         TGenerators.solve_destructive_Sol(RSmult,TDiag,volume,Sol);
                 // Sol.print(cout);
@@ -305,7 +316,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
                 if(InvGenSelRows[Last_key[i]][j] <0)
                     InvGenSelRows[Last_key[i]][j]+=volume;
             }
-        if(height>1) // extract Indicator
+        if(!potentially_unimodular) // extract Indicator
             for (i=0; i<dim; i++)
                 Indicator[i]=Sol[i][Last_key.size()];
     }
@@ -313,11 +324,11 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
 
         // InvGenSelRows.print(cout);exit(0);
     
-    // in case of height>1 it remains to compute support forms for i
+    // if potentially_unimodular==false  it remains to compute support forms for i
     // with Ind[i]>0 (if there are any)
 
     
-    if(height>1){
+    if(!potentially_unimodular){
         for(i=0;i<dim;i++)
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);

@@ -1296,6 +1296,11 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         Generators[i]=w;
         i++;
     }
+    
+            cout << "After sort" << endl;
+    for(size_t k=0;k<nr_gen;k++)
+        cout << gen_degrees[k] << " " ;
+    cout << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -1391,8 +1396,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
     if (verbose) {
         verboseOutput() << "evaluating "<<TriangulationSize<<" simplices" <<endl;
-        verboseOutput() << "---------+---------+---------+---------+---------+"
-                        << " (one | per 2%)" << endl;
+        /* verboseOutput() << "---------+---------+---------+---------+---------+"
+                        << " (one | per 2%)" << endl;*/
     }
     
     totalNrSimplices+=TriangulationSize;
@@ -1417,24 +1422,12 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                     verboseOutput() << "|" <<flush;
                 }
             }
-/*            if(do_partial_triangulation && spos%20000==0)
-            {
-                #pragma omp critical(HT1ELEMENTS)
-                {
-                Ht1_Elements.sort();
-                Ht1_Elements.unique();
-                }
-                #pragma omp critical(CANDIDATES)
-                {
-                Candidates.sort();
-                Candidates.unique();
-                }
-            }
-*/        }
+        }
         #pragma omp critical(MULTIPLICITY)
         multiplicity += simp.getMultiplicitySum(); 
     }
-    
+
+
     HilbertSeries ZeroHS;
     
     for(int i=0;i<omp_get_max_threads();++i){
@@ -1453,9 +1446,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         Candidates.unique();
     }
 
+
     if (verbose)
     {
-        verboseOutput() << endl << totalNrSimplices << " simplices";
+        verboseOutput()  << endl  << totalNrSimplices << " simplices";
         if(do_Hilbert_basis)
             verboseOutput() << ", " << Candidates.size() << " HB candidates";
         if(do_ht1_elements)
@@ -1564,7 +1558,8 @@ void Full_Cone<Integer>::dualize_cone() {
 
 // -s
 template<typename Integer>
-void Full_Cone<Integer>::support_hyperplanes() { 
+void Full_Cone<Integer>::support_hyperplanes() {
+    recursion_allowed=true; 
     compute_support_hyperplanes();
     extreme_rays_and_ht1_check();
     reset_tasks();
