@@ -750,6 +750,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             }
         }
         
+        
         process_pyramid(Pyramid_key, in_Pyramid, new_generator, recursive);
         Pyramid_key.clear();
         
@@ -2480,8 +2481,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     // pyr_level set by the calling routine
     
     totalNrSimplices=0;
-    gen_degrees.resize(nr_gen);
-    if(isComputed(ConeProperty::LinearForm)){ // now we copy the degrees
+    if(C.gen_degrees.size()>0){ // now we copy the degrees
+    	gen_degrees.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
             gen_degrees[i] = C.gen_degrees[Key[i]];
         }
