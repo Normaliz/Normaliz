@@ -97,13 +97,13 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t subfacet_dim=dim-2; // NEW dimension of subfacet
     size_t facet_dim=dim-1; // NEW dimension of facet
     
-    const bool tv_verbose = false; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
+    const bool tv_verbose = false; // true && !is_pyramid; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
     
         
     // preparing the computations
-    list <FACETDATA*> l_Pos_Simp,l_Pos_Non_Simp;
-    list <FACETDATA*> l_Neg_Simp,l_Neg_Non_Simp;
-    list <FACETDATA*> l_Neutral_Simp, l_Neutral_Non_Simp;
+    deque <FACETDATA*> Pos_Simp,Pos_Non_Simp;
+    deque <FACETDATA*> Neg_Simp,Neg_Non_Simp;
+    deque <FACETDATA*> Neutral_Simp, Neutral_Non_Simp;
     
     boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen);
 
@@ -120,36 +120,43 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     for (size_t kk=0; kk<listsize; ++kk) {
         for(;kk > ipos; ++ipos, ++ii) ;
         for(;kk < ipos; --ipos, --ii) ;
-        simplex=false;
         
-        nr_zero_i=ii->GenInHyp.count();
+        simplex=true;
+        nr_zero_i=0;
+        for(size_t j=0;j<nr_gen;j++){
+            if(ii->GenInHyp.test(j))
+                nr_zero_i++;
+            if(nr_zero_i>facet_dim){
+                simplex=false;
+                break;
+            }
+        }
+        
         if(ii->ValNewGen>0)
             Zero_Positive|=ii->GenInHyp;
         else if(ii->ValNewGen<0)
-            Zero_Negative|=ii->GenInHyp;        
-        if (nr_zero_i==dim-1)
-            simplex=true;
+            Zero_Negative|=ii->GenInHyp;
             
         if (ii->ValNewGen==0) {
             ii->GenInHyp.set(new_generator);  // Must be set explicitly !!
             if (simplex) {
-                l_Neutral_Simp.push_back(&(*ii));
+                Neutral_Simp.push_back(&(*ii));
             }   else {
-                l_Neutral_Non_Simp.push_back(&(*ii));
+                Neutral_Non_Simp.push_back(&(*ii));
             }
         }
         else if (ii->ValNewGen>0) {
             if (simplex) {
-                l_Pos_Simp.push_back(&(*ii));
+                Pos_Simp.push_back(&(*ii));
             } else {
-                l_Pos_Non_Simp.push_back(&(*ii));
+                Pos_Non_Simp.push_back(&(*ii));
             }
         } 
         else if (ii->ValNewGen<0) {
             if (simplex) {
-                l_Neg_Simp.push_back(&(*ii));
+                Neg_Simp.push_back(&(*ii));
             } else {
-                l_Neg_Non_Simp.push_back(&(*ii));
+                Neg_Non_Simp.push_back(&(*ii));
             }
         }
     }
@@ -157,109 +164,82 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> Zero_PN(nr_gen);
     Zero_PN=Zero_Positive & Zero_Negative;
     
-    if (tv_verbose) verboseOutput()<<"transform_values: copy to vector"<<endl;
-
-    size_t nr_PosSimp  = l_Pos_Simp.size();
-    size_t nr_PosNSimp = l_Pos_Non_Simp.size();
-    size_t nr_NegSimp  = l_Neg_Simp.size();
-    size_t nr_NegNSimp = l_Neg_Non_Simp.size();
-    size_t nr_NeuSimp  = l_Neutral_Simp.size();
-    size_t nr_NeuNSimp = l_Neutral_Non_Simp.size();
-
-    ranktest=false;
-    if (nr_PosNSimp+nr_NegNSimp+nr_NeuNSimp > dim*dim*dim/6)
-        ranktest=true;
-
-    vector <FACETDATA*> Pos_Simp(nr_PosSimp);
-    vector <FACETDATA*> Pos_Non_Simp(nr_PosNSimp);
-    vector <FACETDATA*> Neg_Simp(nr_NegSimp);
-    vector <FACETDATA*> Neg_Non_Simp(nr_NegNSimp);
-    vector <FACETDATA*> Neutral_Simp(nr_NeuSimp);
-    vector <FACETDATA*> Neutral_Non_Simp(nr_NeuNSimp);
-
-    for (k = 0; k < Pos_Simp.size(); k++) {
-        Pos_Simp[k]=l_Pos_Simp.front();
-        l_Pos_Simp.pop_front();
-    }
-
-    for (k = 0; k < Pos_Non_Simp.size(); k++) {
-        Pos_Non_Simp[k]=l_Pos_Non_Simp.front();
-        l_Pos_Non_Simp.pop_front();
-    }
-
-    for (k = 0; k < Neg_Simp.size(); k++) {
-        Neg_Simp[k]=l_Neg_Simp.front();
-        l_Neg_Simp.pop_front();
-    }
-
-    for (k = 0; k < Neg_Non_Simp.size(); k++) {
-        Neg_Non_Simp[k]=l_Neg_Non_Simp.front();
-        l_Neg_Non_Simp.pop_front();
-    }
-
-    for (k = 0; k < Neutral_Simp.size(); k++) {
-        Neutral_Simp[k]=l_Neutral_Simp.front();
-        l_Neutral_Simp.pop_front();
-    }
-
-    for (k = 0; k < Neutral_Non_Simp.size(); k++) {
-        Neutral_Non_Simp[k]=l_Neutral_Non_Simp.front();
-        l_Neutral_Non_Simp.pop_front();
-    }
-
-    if (tv_verbose) verboseOutput()<<"PS "<<nr_PosSimp<<" P "<<nr_PosNSimp<<" NS "<<nr_NegSimp<<" N "<<nr_NegNSimp<<" ZS "<<nr_NeuSimp<<" Z "<<nr_NeuNSimp<<endl<<flush;
-
-    if (tv_verbose) verboseOutput()<<"transform_values: fill multimap with subfacets of NS"<<endl<<flush;
+    size_t nr_PosSimp  = Pos_Simp.size();
+    size_t nr_PosNonSimp = Pos_Non_Simp.size();
+    size_t nr_NegSimp  = Neg_Simp.size();
+    size_t nr_NegNonSimp = Neg_Non_Simp.size();
+    size_t nr_NeuSimp  = Neutral_Simp.size();
+    size_t nr_NeuNonSimp = Neutral_Non_Simp.size();
     
-    multimap < boost::dynamic_bitset<>, int> Neg_Subfacet_Multi;
+
+
+    if (tv_verbose) verboseOutput()<<"PS "<<nr_PosSimp<<" P "<<nr_PosNonSimp<<" NS "<<nr_NegSimp<<" N "<<nr_NegNonSimp<<" ZS "<<nr_NeuSimp<<" Z "<<nr_NeuNonSimp<<endl<<flush;
+
+    if (tv_verbose) verboseOutput()<<"transform_values: create lst of pairs <subfacet,facet> of NS"<<endl<<flush;
+    
+    vector< list<pair < boost::dynamic_bitset<>, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
 
     boost::dynamic_bitset<> zero_i(nr_gen);
     boost::dynamic_bitset<> subfacet(nr_gen);
 
+    #pragma omp parallel for firstprivate(zero_i,subfacet) private(k,nr_zero_i) schedule(dynamic)
     for (i=0; i<nr_NegSimp;i++){
         zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
-        nr_zero_i=zero_i.count();
         
+        nr_zero_i=0;
+        for(size_t j=0;j<nr_gen;j++){
+            if(zero_i.test(j))
+                nr_zero_i++;
+            if(nr_zero_i>subfacet_dim){
+                break;
+            }
+        }
+
         if(nr_zero_i==subfacet_dim) // NEW This case treated separately
-            Neg_Subfacet_Multi.insert(pair <boost::dynamic_bitset<>, int> (zero_i,i));
+            Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (zero_i,i));
             
         else{       
-            for (k =0; k<nr_gen; k++) {  //TODO use BOOST ROUTINE
+            for (k =0; k<nr_gen; k++) {  
                 if(zero_i.test(k)) {              
                     subfacet=zero_i;
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
-                    Neg_Subfacet_Multi.insert(pair <boost::dynamic_bitset<>, int> (subfacet,i));
+                    Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (subfacet,i));
                 }
             }
         }
     }
+    
+    list < pair < boost::dynamic_bitset<>, int> > Neg_Subfacet_Multi_United;
+    for(int i=0;i<omp_get_max_threads();++i)
+        Neg_Subfacet_Multi_United.splice(Neg_Subfacet_Multi_United.begin(),Neg_Subfacet_Multi[i]);       
+    Neg_Subfacet_Multi_United.sort();
 
 
-    if (tv_verbose) verboseOutput()<<"transform_values: go over multimap of size "<< Neg_Subfacet_Multi.size() <<endl<<flush;
+    if (tv_verbose) verboseOutput()<<"transform_values: discard double subfacets of NS, list size "<< Neg_Subfacet_Multi_United.size() <<endl<<flush;
 
-    multimap < boost::dynamic_bitset<>, int > ::iterator jj;
-    multimap < boost::dynamic_bitset<>, int > ::iterator del;
-    jj =Neg_Subfacet_Multi.begin();                               // remove negative subfecets shared
-    while (jj!= Neg_Subfacet_Multi.end()) {                       // by two neg simpl facets
+    list< pair < boost::dynamic_bitset<>, int > >::iterator jj;
+    list< pair < boost::dynamic_bitset<>, int > >::iterator del;
+    jj =Neg_Subfacet_Multi_United.begin();                               // remove negative subfecets shared
+    while (jj!= Neg_Subfacet_Multi_United.end()) {                       // by two neg simpl facets
         del=jj++;
-        if (jj!=Neg_Subfacet_Multi.end() && (*jj).first==(*del).first) {   //delete since is the intersection of two negative simplicies
-            Neg_Subfacet_Multi.erase(del);
+        if (jj!=Neg_Subfacet_Multi_United.end() && (*jj).first==(*del).first) {   //delete since is the intersection of two negative simplicies
+            Neg_Subfacet_Multi_United.erase(del);
             del=jj++;
-            Neg_Subfacet_Multi.erase(del);
+            Neg_Subfacet_Multi_United.erase(del);
         }
     }
 
-    if (tv_verbose) verboseOutput()<<"transform_values: singlemap size "<<Neg_Subfacet_Multi.size()<<endl<<flush;
+    size_t nr_NegSubfMult = Neg_Subfacet_Multi_United.size();
+    if (tv_verbose) verboseOutput()<<"transform_values: after discarding double subfacets of NS list size "<<nr_NegSubfMult<<endl<<flush;
     
-    size_t nr_NegSubfMult = Neg_Subfacet_Multi.size();
-    size_t nr_NegSubf;
     map < boost::dynamic_bitset<>, int > Neg_Subfacet;
+    size_t nr_NegSubf=0;
     
     #pragma omp parallel private(jj)
     {
     size_t i,j,k,t,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
-    jj = Neg_Subfacet_Multi.begin();
+    jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
 
     map < boost::dynamic_bitset<>, int > ::iterator last_inserted=Neg_Subfacet.begin(); // used to speedup insertion into the new map
@@ -271,19 +251,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
         subfacet=(*jj).first;
         found=false; 
-        for (i = 0; i <Neutral_Simp.size(); i++) {
+        for (i = 0; i <nr_NeuSimp; i++) {
             found=subfacet.is_subset_of(Neutral_Simp[i]->GenInHyp);
             if(found)
                 break;
         }
         if (!found) {
-            for (i = 0; i <Neutral_Non_Simp.size(); i++) {
+            for (i = 0; i <nr_NeuNonSimp; i++) {
                 found=subfacet.is_subset_of(Neutral_Non_Simp[i]->GenInHyp);
                 if(found)
                     break;                    
                 }
             if(!found) {
-                for (i = 0; i <Neg_Non_Simp.size(); i++) {
+                for (i = 0; i <nr_NegNonSimp; i++) {
                     found=subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
                     if(found)
                         break; 
@@ -301,16 +281,16 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     }
     
     #pragma omp single
-    {nr_NegSubf = Neg_Subfacet.size();}
-
-    #pragma omp single nowait
+    {nr_NegSubf=Neg_Subfacet.size();}
+    
+    #pragma omp single
     if (tv_verbose) {
-        verboseOutput()<<"transform_values: reduced map size "<<nr_NegSubf<<endl<<flush;
+        verboseOutput()<<"transform_values: reduced map size "<< nr_NegSubf <<endl<<flush;
     } 
     #pragma omp single nowait
-    {Neg_Subfacet_Multi.clear();}
+    {Neg_Subfacet_Multi_United.clear();}
 
-    #pragma omp single nowait
+    #pragma omp single
     if (tv_verbose) {
         verboseOutput()<<"transform_values: PS vs NS"<<endl<<flush;
     }
@@ -321,7 +301,14 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     #pragma omp for schedule(dynamic) nowait           // Now matching positive and negative (sub)facets
     for (i =0; i<nr_PosSimp; i++){ //Positive Simp vs.Negative Simp
         zero_i=Pos_Simp[i]->GenInHyp & Zero_PN;
-        nr_zero_i=zero_i.count();
+        nr_zero_i=0;
+        for(size_t m=0;m<nr_gen;m++){
+            if(zero_i.test(m))
+                nr_zero_i++;
+            if(nr_zero_i>subfacet_dim){
+                break;
+            }
+        }
         
         if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
             jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
@@ -345,12 +332,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }
     }
 
-    #pragma omp single nowait
+    #pragma omp single
     if (tv_verbose) {
-        verboseOutput()<<"transform_values: NS vs P"<<endl;
+        verboseOutput()<<"transform_values: NS vs P"<<endl << flush;
     }
 
-//  for (jj_map = Neg_Subfacet.begin(); jj_map != Neg_Subfacet.end(); ++jj_map)  //Neg_simplex vs. Pos_Non_Simp
+
     jj_map = Neg_Subfacet.begin();
     jjpos=0;
     #pragma omp for schedule(dynamic) nowait
@@ -359,7 +346,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         for( ; j < jjpos; --jjpos, --jj_map) ;
 
         if ( (*jj_map).second != -1 ) {  // skip used subfacets
-            for (i = 0; i <Pos_Non_Simp.size(); i++) {
+            for (i = 0; i <nr_PosNonSimp; i++) {
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
                     add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second]);
                     break;
@@ -370,7 +357,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     #pragma omp single nowait
     if (tv_verbose) {
-        verboseOutput()<<"transform_values: PS vs N"<<endl;
+        verboseOutput()<<"transform_values: PS vs N"<<endl << flush;
     }
 
     vector<key_t> key(nr_gen);
@@ -386,7 +373,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                 nr_zero_i++;
             }        
         if(nr_zero_i>=subfacet_dim) {
-            for (j=0; j<Neg_Non_Simp.size(); j++){ // search negative facet with common subfacet
+            for (j=0; j<nr_NegNonSimp; j++){ // search negative facet with common subfacet
                 nr_missing=0; 
                 common_subfacet=true;               
                 for(k=0;k<nr_zero_i;k++) {
@@ -423,7 +410,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     vector<key_t> common_key(nr_gen);
     
     #pragma omp for schedule(dynamic) nowait
-    for (size_t i =0; i<nr_PosNSimp; i++){ //Positive Non Simp vs.Negative Non Simp
+    for (size_t i =0; i<nr_PosNonSimp; i++){ //Positive Non Simp vs.Negative Non Simp
 
         hp_i=Pos_Non_Simp[i];
         zero_i=Zero_PN & hp_i->GenInHyp;
@@ -438,7 +425,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         
             missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
                                                   // to have a chance for common subfacet
-                for (j=0; j<nr_NegNSimp; j++){
+                for (j=0; j<nr_NegNonSimp; j++){
                 hp_j=Neg_Non_Simp[j];
                 
                 nr_missing=0; 
@@ -473,7 +460,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                         }
                     } // ranktest
                     else{                 // now the comparison test
-                        for (t=0;t<nr_PosNSimp;t++){
+                        for (t=0;t<nr_PosNonSimp;t++){
                             hp_t=Pos_Non_Simp[t];
                             if (t!=i && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
                                 exactly_two=false;
@@ -481,7 +468,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                             }
                         }
                         if (exactly_two) {
-                            for (t=0;t<Neg_Non_Simp.size();t++){
+                            for (t=0;t<nr_NegNonSimp;t++){
                                 hp_t=Neg_Non_Simp[t];
                                 if (t!=j && common_zero.is_subset_of(hp_t->GenInHyp)) {  
                                     exactly_two=false;
@@ -490,7 +477,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                             }
                         }
                         if (exactly_two) {
-                            for (t=0;t<nr_NeuNSimp;t++){
+                            for (t=0;t<nr_NeuNonSimp;t++){
                                 hp_t=Neutral_Non_Simp[t];
                                 if(common_zero.is_subset_of(hp_t->GenInHyp)) {  
                                     exactly_two=false;
@@ -544,6 +531,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     size_t k,l;
     bool one_not_in_i, not_in_facet;
     size_t not_in_i=0;
+    size_t facet_dim=dim-1;
+    size_t nr_in_i=0;
     list<SHORTSIMPLEX> Triangulation_kk;
     
     typename list<SHORTSIMPLEX>::iterator j;
@@ -553,8 +542,17 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     #pragma omp for schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
         i=visible[kk];
+        
+        nr_in_i=0;
+        for(size_t m=0;m<nr_gen;m++){
+            if(i->GenInHyp.test(m))
+                nr_in_i++;
+            if(nr_in_i>facet_dim){
+                break;
+            }
+        }
 
-        if (i->GenInHyp.count()==dim-1){  // simplicial
+        if (nr_in_i==facet_dim){  // simplicial
             l=0;
             for (k = 0; k <nr_gen; k++) {
                 if (i->GenInHyp[k]==1) {
@@ -773,7 +771,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     }
     if(skip_remaining_pyr){
             if (verbose)
-                verboseOutput() << "++++++++++++  descending to level " << store_level << endl;
+                verboseOutput() << ">>>>>>>>>>  descending to level " << store_level << endl;
                 Top_Cone->evaluate_stored_pyramids(store_level);
     }    
     
@@ -783,7 +781,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         
     if(check_evaluation_buffer()){
           Top_Cone->evaluate_triangulation();
-    }  
+    } 
 }
 
 //---------------------------------------------------------------------------
@@ -1027,7 +1025,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 
         if(skip_remaining_pyr){
             if (verbose)
-                verboseOutput() << " ++++++++++++ " << nr_done << " of " << nr_pyramids << 
+                verboseOutput() << ">>>>>>>>>>>>>>> " << nr_done << " of " << nr_pyramids << 
                             " pyramids done, descending to level " << level+1 << endl;
             evaluate_stored_pyramids(level+1);
        }
@@ -1141,6 +1139,7 @@ void Full_Cone<Integer>::build_cone() {
         
         if(!new_generator)
             continue;
+
             
         // Magic Bounds to decide whether to use pyramids
         if( supphyp_recursion || (recursion_allowed && nr_neg*nr_pos>RecBoundSuppHyp)){  // go to pyramids because of supphyps
@@ -1167,8 +1166,9 @@ void Full_Cone<Integer>::build_cone() {
                 if(do_triangulation)
                     extend_triangulation(i);
             }
+
             if(do_all_hyperplanes || i!=last_to_be_inserted)
-                find_new_facets(i); 
+                find_new_facets(i);
         }
         
         // removing the negative hyperplanes if necessary
