@@ -36,6 +36,7 @@ bool fits_long_range(long long a);
 
 mpz_class to_mpz(long a);
 mpz_class to_mpz(long long a);
+inline mpz_class to_mpz(mpz_class& a) {return a;}
 
 
 template<typename Integer> inline long explicit_cast_to_long(const Integer& a) {

@@ -274,7 +274,7 @@ Integer Cone<Integer>::getLinearFormDenom() const {
 }
 
 template<typename Integer>
-Integer Cone<Integer>::getMultiplicity() const {
+mpq_class Cone<Integer>::getMultiplicity() const {
     return multiplicity;
 }
 

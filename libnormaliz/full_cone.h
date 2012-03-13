@@ -70,7 +70,7 @@ class Full_Cone {
     
     ConeProperties is_Computed;
     vector<Integer> Linear_Form;
-    Integer multiplicity;
+    mpq_class multiplicity;
     Matrix<Integer> Generators;
     vector<bool> Extreme_Rays;
     list<vector<Integer> > Support_Hyperplanes;
@@ -222,7 +222,7 @@ public:
     bool isHt1HilbertBasis() const;
     bool isIntegrallyClosed() const;
     vector<Integer> getLinearForm() const; //returns the linear form
-    Integer getMultiplicity() const; //returns multiplicity
+    mpq_class getMultiplicity() const; //returns multiplicity
     const Matrix<Integer>& getGenerators() const;
     vector<bool> getExtremeRays() const;
     Matrix<Integer> getSupportHyperplanes() const;

@@ -205,7 +205,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         for(size_t i=0; i<dim; ++i)
             Generators[i] = C.Generators[key[i]];
         volume=Generators.vol_destructive();
-        mult_sum += volume;
+        addMult(key);
         return volume;         
     }  // done if only mult is asked for
 
@@ -264,17 +264,16 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             v_abs(GDiag);
             GDiag_computed=true;
         }
-    }  
-    
-    mult_sum += volume;
-    
+    }
+
+    addMult(key);
+
 
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
     // for those i for which Gdiag[i]>1 combined with computation
     // of Indicator in case of height >=2 (uses transpose of Gen)
     
 
-         
     vector<key_t> Last_key;
     Last_key.reserve(dim);       
     if (!unimodular) {
@@ -342,7 +341,6 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
     
     // compute degrees of the generators and prepare Hilbert series if necessary
-    vector<long> gen_degrees(dim);
     HilbertSeries Hilbert_Series;
     if (C.do_h_vector || C.do_ht1_elements) {
         //degrees of the generators according to the Grading of C
@@ -519,7 +517,20 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 }
 
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::getMultiplicitySum() const {
+void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
+    if (C.gen_degrees.size()==0) { //TODO ht_1_gen
+        mult_sum += to_mpz(volume);
+    } else {
+        mpq_class mult = to_mpz(volume);
+        for (size_t i=0; i<dim; i++){
+            mult /= C.gen_degrees[key[i]];
+        }
+        mult_sum += mult;
+    }
+}
+
+template<typename Integer>
+mpq_class SimplexEvaluator<Integer>::getMultiplicitySum() const {
     return mult_sum;
 }
 

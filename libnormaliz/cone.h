@@ -98,7 +98,7 @@ public:
     vector< vector<mpz_class> > getHilbertQuasiPolynomial();
     vector<Integer> getLinearForm() const;
     Integer getLinearFormDenom() const;
-    Integer getMultiplicity() const;
+    mpq_class getMultiplicity() const;
     bool isPointed() const;
     bool isHt1ExtremeRays() const;
     bool isHt1HilbertBasis() const;
@@ -123,7 +123,7 @@ private:
     vector<bool> ExtremeRays;
     vector< vector<Integer> > SupportHyperplanes;
     vector< pair<vector<key_t>, Integer> > Triangulation;
-    Integer multiplicity;
+    mpq_class multiplicity;
     vector< vector<Integer> > HilbertBasis;
     vector< vector<Integer> > Ht1Elements;
     HilbertSeries HSeries;

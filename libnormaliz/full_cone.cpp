@@ -1522,7 +1522,7 @@ void Full_Cone<Integer>::primal_algorithm(){
         evaluate_triangulation();
     FreeSimpl.clear();
     
-    if (ht1_extreme_rays && do_triangulation)
+    if (isComputed(ConeProperty::LinearForm) && do_triangulation)
         is_Computed.set(ConeProperty::Multiplicity,true);
         
     if (do_Hilbert_basis) {
@@ -2554,7 +2554,7 @@ vector<Integer> Full_Cone<Integer>::getLinearForm() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer Full_Cone<Integer>::getMultiplicity()const{
+mpq_class Full_Cone<Integer>::getMultiplicity()const{
     return multiplicity;
 }
 

@@ -77,7 +77,7 @@ class SimplexEvaluator {
     Full_Cone<Integer>& C;
     size_t dim;
     Integer volume;
-    Integer mult_sum; // sum of the multiplicities of all evaluated simplices
+    mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
     Matrix<Integer> Generators;
     Matrix<Integer> TGenerators;
     Matrix<Integer> GenCopy;
@@ -104,6 +104,8 @@ class SimplexEvaluator {
 
     bool isDuplicate(const vector<Integer>& cand) const;
 
+	 void addMult(const vector<key_t>& key);
+
 //---------------------------------------------------------------------------
 
 public:
@@ -114,7 +116,7 @@ public:
     // returns volume
     Integer evaluate(const vector<key_t>& key, const Integer& height);
     // returns sum of the multiplicities of all evaluated simplices
-    Integer getMultiplicitySum() const;
+    mpq_class getMultiplicitySum() const;
 };
 //class SimplexEvaluater end
 
