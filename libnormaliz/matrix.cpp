@@ -454,6 +454,26 @@ Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer> Matrix<Integer>::multiplication_cut(const Matrix<Integer>& A, const size_t& c) const{
+    assert (nc == A.nr);
+    assert(c<= A.nc);
+
+    Matrix<Integer> B(nr,c,0);  //initialized with 0
+    size_t i,j,k;
+    for(i=0; i<B.nr;i++){
+        for(j=0; j<c; j++){
+            for(k=0; k<nc; k++){
+                B.elements[i][j]=B.elements[i][j]+elements[i][k]*A.elements[k][j];
+            }
+        }
+    }
+    return B;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, long m) const{
     assert (nc == A.nr);
 
@@ -859,7 +879,25 @@ size_t Matrix<Integer>::rank_destructive(){
             reduce_row (rk);
         } while (!empty);
     }
-    return rk;
+
+    if(!test_arithmetic_overflow)
+            return rk;
+            
+    Integer det=elements[0][0];
+    for(i=1;i<rk;i++){
+        det*=elements[i][i];
+    }
+        
+    Integer test_det=elements[0][0]%overflow_test_modulus;
+    for(i=1;i<rk;i++){
+        test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
+    }
+    if(test_det!=det%overflow_test_modulus){
+        errorOutput()<<"Arithmetic failure in computing rank. Most likely overflow.\n";
+        throw ArithmeticException();
+    } 
+    
+    return rk;         
 }
 
 //---------------------------------------------------------------------------
@@ -910,7 +948,21 @@ Integer Matrix<Integer>::vol_destructive(){
     for(i=1;i<nr;i++){
         det*=elements[i][i];
     }
-    return Iabs(det);
+
+    if(!!test_arithmetic_overflow)
+        return Iabs(det);
+        
+    Integer test_det=elements[0][0]%overflow_test_modulus;
+    for(i=1;i<nr;i++){
+        test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
+    }
+    if(test_det!=det%overflow_test_modulus){
+        errorOutput()<<"Arithmetic failure in computing determinant. Most likely overflow.\n";
+        throw ArithmeticException();
+    } 
+    
+    return Iabs(det);                   
+        
 }
 
 //---------------------------------------------------------------------------
@@ -977,24 +1029,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex(const size_t& rank) const
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& denom) const {
-    Matrix<Integer> Left_side(*this);
-    vector<Integer> dummy_diag(nr);
-    return Left_side.solve_destructive(Right_side, dummy_diag, denom);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& denom) const {
-    Matrix<Integer> Left_side(*this);
-    return Left_side.solve_destructive(Right_side, diagonal, denom);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
     size_t nr_sys=Right_side.nc;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
@@ -1004,6 +1039,7 @@ void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector<
     assert(Solution.nc>=nr_sys);
     assert(Solution.nr==dim);
     
+
     Integer S;
     size_t i;
     long rk, piv;
@@ -1043,6 +1079,38 @@ void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector<
     }
 }
 
+
+    
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
+                    Integer& denom, Matrix<Integer>& Solution) {
+                    
+    if(!test_arithmetic_overflow){
+        solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
+        return;
+    }
+    
+    // now with test_arithmetic_overflow
+    Matrix LS_Copy=*this;
+    Matrix RS_x_denom=Right_side;
+    solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
+    RS_x_denom.scalar_multiplication(denom);
+    // cout << endl;
+    // cout << RS_x_denom.nr << " " << RS_x_denom.nc << endl;  
+    // RS_x_denom.pretty_print(cout);
+    // cout << endl;
+
+    Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
+    // cout << RS_test.nr << " " << RS_test.nc << endl; 
+    // RS_test.pretty_print(cout);
+    if(!RS_x_denom.equal(RS_test)){
+            errorOutput()<<"Arithmetic failure in solving a linear system. Most likely overflow.\n";
+                throw ArithmeticException();
+        }                    
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1052,6 +1120,23 @@ Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, 
     solve_destructive_Sol(Right_side,diagonal,denom,Solution);
     return Solution;
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, Integer& denom) const {
+    Matrix<Integer> Left_side(*this);
+    vector<Integer> dummy_diag(nr);
+    return Left_side.solve_destructive(Right_side, dummy_diag, denom);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve(Matrix<Integer> Right_side, vector< Integer >& diagonal, Integer& denom) const {
+    Matrix<Integer> Left_side(*this);
+    return Left_side.solve_destructive(Right_side, diagonal, denom);
+}    
 
 //---------------------------------------------------------------------------
 
@@ -1079,7 +1164,7 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
     Matrix<Integer> Left_Side=submatrix(rows);
     assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
     Matrix<Integer> Right_Side(nc,1,1);
-    Matrix<Integer> Solution=Solve(Left_Side, Right_Side, denom);
+    Matrix<Integer> Solution=Left_Side.solve(Right_Side, denom);
     vector<Integer> Linear_Form(nc);
     for (i = 0; i <nc; i++) {
         buffer=Solution.read(i,0);
@@ -1154,62 +1239,18 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::test_solve(const Matrix<Integer>& Solution, const Matrix<Integer>& Right_side,
-        const Integer& denom,const long& m) const{
-    Matrix<Integer> LS=multiplication(Solution,m);
-    Matrix<Integer> RS=Right_side;
-    RS.scalar_multiplication(denom);
-    if (LS.equal(RS,m)!=true) {
-        throw ArithmeticException();
-        return false;
-    }
-    return true;
-
+Matrix<Integer> solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom){
+    return Left_side.solve(Right_side,denom);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::test_invert(const Matrix<Integer>& Solution, const Integer& denom,const long& m) const{
-    Matrix<Integer> LS=multiplication(Solution,m);
-    Matrix<Integer> RS(nr);
-    RS.scalar_multiplication(denom);
-    if (LS.equal(RS,m)!=true) {
-        throw ArithmeticException();
-        return false;
-    }
-    return true;
-
+Matrix<Integer> invert(const Matrix<Integer>& Left_side, vector< Integer >& diagonal, Integer& denom){
+    return Left_side.invert(diagonal,denom);
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom){
-    Matrix<Integer> S=Left_side.solve(Right_side,denom);
-    if (test_arithmetic_overflow) {
-        bool testing=Left_side.test_solve(S,Right_side,denom,overflow_test_modulus);
-        if (testing==false) {
-            throw ArithmeticException();
-        }
-    }
-    return S;
-}
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector< Integer >& diagonal, Integer& denom){
-    Matrix<Integer> S=Left_side.invert(diagonal,denom);
-    if (test_arithmetic_overflow) {
-        bool testing=Left_side.test_invert(S,denom,overflow_test_modulus);
-        if (testing==false) {
-            throw ArithmeticException();
-        }
-    }
-    return S;
-}
-
-//---------------------------------------------------------------------------
-
-}
+}  // namespace

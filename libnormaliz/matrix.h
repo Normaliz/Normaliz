@@ -51,6 +51,10 @@ template<typename Integer> class Matrix {
     //v will be a vector with entries the indices of the first rows in lexicographic
     //order of this forming a submatrix of maximal rank.
     //v shoud be a vector of size 0 by call!!!
+    
+    // Does the computation for the solution of linear systems
+    void solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
+                    Integer& denom, Matrix<Integer>& Solution);     
   
 //---------------------------------------------------------------------------
 public:
@@ -122,6 +126,8 @@ public:
     Matrix add(const Matrix& A) const;                       // returns this+A
     Matrix multiplication(const Matrix& A) const;          // returns this*A
     Matrix multiplication(const Matrix& A, long m) const;// returns this*A (mod m)
+    Matrix<Integer> multiplication_cut(const Matrix<Integer>& A, const size_t& c) const; // returns 
+    // this*(first c columns of A)
     bool equal(const Matrix& A) const;             // returns this==A
     bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this
@@ -216,8 +222,11 @@ public:
 
     // Right_side and this get destroyed!
     Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
-    void solve_destructive_Sol(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix& Solution); 
 
+    // Returns the solutionm of the system in Solution (for efficiency)
+    void solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
+                    Integer& denom, Matrix<Integer>& Solution);
+                   
     Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*I. this should be a quadratic matrix with nonzero determinant. 
     //The diagonal of this after transformation into an upper triangular matrix
@@ -231,33 +240,10 @@ public:
     //same as homogeneous but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix
 
-//---------------------------------------------------------------------------
-//                              Tests
-//---------------------------------------------------------------------------
-
-    bool test_solve(const Matrix& Solution, const Matrix& Right_side, const Integer& denom,const long& m) const;
-  // test the main computation for arithmetic overflow
-  // uses multiplication mod m
-
-    bool test_invert(const Matrix& Solution, const Integer& denom,const long& m) const;
-  // test the main computation for arithmetic overflow
-  // uses multiplication mod m
-
 };
 //class end *****************************************************************
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-template<typename Integer>
-Matrix<Integer> Solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom);
-// solves the system Left_side*Solution=denom(Left_side)*Right_side and tests for
-//errors. Left_side should be a quadratic matrix with nonzero determinant.
-
-template<typename Integer>
-Matrix<Integer> Invert(const Matrix<Integer>& Left_side, vector<Integer>& diagonal ,Integer& denom);
-// solves the system Left_side*Solution=denom(Left_side)*Right_side and tests for
-//errors. Left_side should be a quadratic matrix with nonzero determinant.
-}
+} // namespace
 
 //---------------------------------------------------------------------------
 #endif

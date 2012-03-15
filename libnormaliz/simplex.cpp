@@ -86,7 +86,7 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
     key=Map.max_rank_submatrix_lex(dim);
     Generators=Map.submatrix(key);
     diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=Invert(Generators, diagonal, volume); //test for arithmetic
+    Support_Hyperplanes=invert(Generators, diagonal, volume); //test for arithmetic
     //overflow performed
     v_abs(diagonal);
     Support_Hyperplanes = Support_Hyperplanes.transpose();
@@ -101,7 +101,7 @@ Simplex<Integer>::Simplex(const vector<key_t>& k, const Matrix<Integer>& Map){
     Generators=Map.submatrix(k);
     dim=k.size();
     diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=Invert(Generators, diagonal, volume);  //test for arithmetic
+    Support_Hyperplanes=invert(Generators, diagonal, volume);  //test for arithmetic
     //overflow performed
     v_abs(diagonal);
     Support_Hyperplanes=Support_Hyperplanes.transpose();

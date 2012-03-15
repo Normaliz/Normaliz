@@ -109,7 +109,7 @@ class Full_Cone {
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
         Integer ValNewGen;                 // value of linear form on the generator to be added
-        Integer ValPrevGen;                 // value on last generator added
+        // Integer ValPrevGen;                 // value on last generator added
     };
     
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation

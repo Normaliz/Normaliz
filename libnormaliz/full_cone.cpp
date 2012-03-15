@@ -1121,12 +1121,7 @@ void Full_Cone<Integer>::build_cone() {
 
             L=Generators.read(i);
             scalar_product=v_scalar_product(L,(*l).Hyp);
-            if (test_arithmetic_overflow && !v_test_scalar_product(L,(*l).Hyp,scalar_product,overflow_test_modulus)) {
-                error_msg("error: Arithmetic failure in Full_cone::support_hyperplanes. Possible arithmetic overflow.\n");
-                throw ArithmeticException();
-            }
-            
-            l->ValPrevGen=l->ValNewGen;  // last new generator is now previous generator
+            // l->ValPrevGen=l->ValNewGen;  // last new generator is now previous generator
             l->ValNewGen=scalar_product;
             if (scalar_product<0) {
                 new_generator=true;
@@ -1298,7 +1293,7 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         i++;
     }
     
-            cout << "After sort" << endl;
+    cout << "Degrees after sort" << endl;
     for(size_t k=0;k<nr_gen;k++)
         cout << gen_degrees[k] << " " ;
     cout << endl;
