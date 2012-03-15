@@ -47,29 +47,45 @@ public:
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
+    /* splices a vector of lists into a total list*/
+    void splice_them(list< vector< Integer > >& Total, vector<list< vector< Integer > > >& Parts);
 
-    /* Returns true if new_element is reducible versus the elements in Ired
-     * used for dual algorithm */
-    bool reduce(list<vector<Integer> *> & Ired, const vector<Integer> & new_element, const size_t & size);
+    /* records the order of Elements in pointer list Order */
+    void record_order(list< vector< Integer > >& Elements, list< vector< Integer >* >& Order);
 
-    /* reduce Red versus Ired */
-    void reduce(list<vector<Integer> > & Ired, list<vector<Integer> > & Red, const size_t & size);
+    /* Returns true if new_element is reducible versus the elements in Irred used for dual algorithm
+     *  ATTENTION: this is "random access" for new_element if ordered==false. 
+     * Otherrwise it is assumed that the new elements tested come in ascending total degree 
+     * after the list underlying Irred has been ordered the last time */
+    bool reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element, 
+                            const size_t & size, const bool ordered);
 
-    /* adds a new element irreducible to the Hilbert basis
+    /* reduce Red versus Irred ATTENTION: both lists must be ordered by total degree 
+     * Irred will not be changed, Red is returned without the reducible elements, but no other
+     * change 
+     * ATTENTION: not suitable for autoreduction */
+    void reduce(list<vector<Integer> > & Irred, list<vector<Integer> > & Red, const size_t & size);
+
+    /* adds a new element that is irreducible w.r.t. Irred to Irred
      * the new elements must come from a structure sorted by total degree
      * used for dual algorithm */
-    void reduce_and_insert(const vector<Integer> & new_element, const size_t & size);
-    /* select extreme rays by reduction
-     * used for the dual algorithm */
-    void reduce_and_insert_extreme(const vector<Integer> & new_element);
+    void reduce_and_insert(const vector<Integer> & new_element, list<vector<Integer> >& Irred, const size_t & size);
+    
+    /* reduces a list against itself
+     * the list must be sorted  sorted by total degree as used for dual algorithm
+     * The irreducible elements are reurned in ascendingorder */
+    void auto_reduce(list< vector< Integer> >& To_Reduce, const size_t& size);
+
 
     /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
     void cut_with_halfspace_hilbert_basis(const size_t & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
+    
     /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
     Matrix<Integer> cut_with_halfspace(const size_t & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);
 
     /* computes the extreme rays using reduction, used for the dual algorithm */
     void extreme_rays_reduction();
+    
     /* computes the extreme rays using rank test, used for the dual algorithm */
     void extreme_rays_rank();
 
