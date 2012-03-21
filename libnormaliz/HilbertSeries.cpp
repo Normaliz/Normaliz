@@ -103,34 +103,35 @@ void HilbertSeries::simplify() {
             }
         }
 
+        // decompose (1-t^i) into cyclotomic polynomial
+        for(long d=1; d<=i/2; ++d) {
+            if (i % d == 0)
+                denom_cyclo[d] += denom[i];
+        }
+        denom_cyclo[i] += denom[i];
+        denom[i] = 0;
+ 
         // check if we can divide the numerator by i-th cyclotomic polynomial
         poly = cyclotomicPoly<num_t>(i);
-        while(denom_cyclo[i]>0 || denom[i]>0) {
+        while(denom_cyclo[i]>0) {
             poly_div(q, r, num, poly);
             if (r.size() == 0) { // numerator is divisable by poly
                 num = q;
-                if (denom_cyclo[i]>0) {
-                    denom_cyclo[i]--;
-                } else { // decompose (1-t^i)
-                    denom[i]--;
-                    // put the remaining factors of (1-t^i) in denom_cyclo
-                    for(int d=1; d<=i/2; ++d) {
-                        if (i % d == 0) denom_cyclo[d]++;
-                    }
-                }
+                denom_cyclo[i]--;
             }
             else {
-                break;
+               break;
             }
         }
     } // end for
+
     // done with canceling
-    // now collect the remaining cyclotomic polynomials in (1-t^i) factors
-    for (int i = denom.size()-1; i > 0; --i) {
+    // now collect the cyclotomic polynomials in (1-t^i) factors
+    for (long i = denom.size()-1; i > 0; --i) {
         while(denom_cyclo[i]>0) {
             denom[i]++;
             denom_cyclo[i]--;
-            for(int d = 1; d <= i/2; ++d) {
+            for (long d = 1; d <= i/2; ++d) {
                 if (i % d == 0) {
                     if (denom_cyclo[d]>0) {
                         denom_cyclo[d]--;

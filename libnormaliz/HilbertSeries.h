@@ -24,6 +24,7 @@
  * h vector repr.: sum of h[i]*t^i
  * and the denominator is represented as a vector of the exponents of (1-t^i)
  * d vector repr.: product of (1-t^i)^d[i] over i > 0
+ * The vector therefore has an unused 0th entry equal to 0.
  *
  * The class offers basic operations on the series and a simplification which
  * transforms the series in the simplest presentation of such a form in terms
