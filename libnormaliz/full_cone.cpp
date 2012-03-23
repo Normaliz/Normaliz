@@ -108,7 +108,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen);
 
     bool simplex;
-    bool ranktest;
     
     if (tv_verbose) verboseOutput()<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl<<flush;
     size_t ipos=0;
@@ -171,7 +170,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t nr_NeuSimp  = Neutral_Simp.size();
     size_t nr_NeuNonSimp = Neutral_Non_Simp.size();
     
-
+    bool ranktest=((nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp>dim*dim*dim/6));  
 
     if (tv_verbose) verboseOutput()<<"PS "<<nr_PosSimp<<" P "<<nr_PosNonSimp<<" NS "<<nr_NegSimp<<" N "<<nr_NegNonSimp<<" ZS "<<nr_NeuSimp<<" Z "<<nr_NeuNonSimp<<endl<<flush;
 
@@ -1577,7 +1576,7 @@ void Full_Cone<Integer>::dualize_cone() {
 // -s
 template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes() {
-    recursion_allowed=true; 
+    // recursion_allowed=true; 
     compute_support_hyperplanes();
     extreme_rays_and_ht1_check();
     reset_tasks();
