@@ -202,10 +202,15 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         || (height==1 && C.do_partial_triangulation && !C.do_h_vector);
     
     size_t i,j;
+    for(i=0; i<dim; ++i)
+        Generators[i] = C.Generators[key[i]];
+        
+    //degrees of the generators according to the Grading of C
+    if(C.isComputed(ConeProperty::LinearForm))
+        for (i=0; i<dim; i++)
+            gen_degrees[i] = C.gen_degrees[key[i]];
     
     if(do_only_multiplicity){
-        for(size_t i=0; i<dim; ++i)
-            Generators[i] = C.Generators[key[i]];
         volume=Generators.vol_destructive();
         mult_sum += volume;
         return volume;         
@@ -213,10 +218,10 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
 
     bool unimodular=false;
     bool GDiag_computed=false;
-    bool potentially_unimodular=false;
-    
-    size_t g=0;
-    if(height==1){
+    bool potentially_unimodular=(height==1);   
+            
+    if(potentially_unimodular && C.isComputed(ConeProperty::LinearForm)){
+        size_t g=0;
         for(i=0;i<dim;++i){
             g=gcd(g,gen_degrees[i]);
             if(g==1)
@@ -354,13 +359,8 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
     
     // compute degrees of the generators and prepare Hilbert series if necessary
-    vector<long> gen_degrees(dim);
     HilbertSeries Hilbert_Series;
     if (C.do_h_vector || C.do_ht1_elements) {
-        //degrees of the generators according to the Grading of C
-        for (size_t i=0; i<dim; i++){
-            gen_degrees[i] = C.gen_degrees[key[i]];
-        }
         if (C.do_h_vector) {
             int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
             vector<denom_t> denom(max_degree+1);

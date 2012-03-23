@@ -129,6 +129,7 @@ class Full_Cone {
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
     vector<size_t> nrPyramids; // number of pyramids on the various levels
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
+    bool parallel_in_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
     
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
