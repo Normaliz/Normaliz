@@ -26,6 +26,19 @@
 namespace libnormaliz {
 using std::cout; using std::endl;
 
+template<typename Integer>
+long lcm_of_pos(const vector<Integer>& v){
+    long size=v.size();
+    long l=1;
+    for (long i = 0; i < size; i++) {
+        if (v[i]!=0)
+            l = lcm(l,i);
+    }
+    return l;
+}
+
+//---------------------------------------------------------------------------
+
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
     num   = vector<num_t>(1,0);
@@ -127,22 +140,31 @@ void HilbertSeries::simplify() {
 
     // done with canceling
     // now collect the cyclotomic polynomials in (1-t^i) factors
-    for (long i = denom.size()-1; i > 0; --i) {
-        while(denom_cyclo[i]>0) {
-            denom[i]++;
-            denom_cyclo[i]--;
-            for (long d = 1; d <= i/2; ++d) {
-                if (i % d == 0) {
-                    if (denom_cyclo[d]>0) {
-                        denom_cyclo[d]--;
-                    } else {
-                        num = poly_mult(num, cyclotomicPoly<num_t>(d));
-                    }
+    remove_zeros(denom_cyclo);
+    cout << "num (h-vector) : " << num;
+    cout << "denom (cyclo.) : " << denom_cyclo;
+    long i = lcm_of_pos(denom_cyclo);
+    cout << "periode: " << i;
+    denom.resize(i+1);
+    while (denom_cyclo.size()>0) {
+        //create a (1-t^i) factor out of all cyclotomic poly.
+
+        denom[i]++;
+        for (long d = 1; d <= i; ++d) {
+            if (i % d == 0) {
+                if (denom_cyclo[d]>0) {
+                    denom_cyclo[d]--;
+                } else {
+                    num = poly_mult(num, cyclotomicPoly<num_t>(d));
                 }
             }
         }
+        remove_zeros(denom_cyclo);
+        i = lcm_of_pos(denom_cyclo);
     }
     remove_zeros(denom);
+    cout << "num (h-vector) : " << num;
+    cout << "denom (1-t^i)  : " << denom;
 }
 
 
@@ -364,6 +386,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
     // the static variable is initialized only once and then stored
+    // the i-th cyclotomic poly is at pos i-1
     static vector< vector<Integer> > CyclotomicPoly = vector< vector<Integer> >();
     long computed = CyclotomicPoly.size();
     if (computed < n) {
@@ -382,7 +405,7 @@ vector<Integer> cyclotomicPoly(long n) {
                 }
             }
             CyclotomicPoly[i-1] = poly;
-//          cout << i << "-th cycl. pol.: " << CyclotomicPoly[i-1];
+            cout << i << "-th cycl. pol.: " << CyclotomicPoly[i-1];
         }
     }
     return CyclotomicPoly[n-1];
