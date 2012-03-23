@@ -109,7 +109,7 @@ class Full_Cone {
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
         Integer ValNewGen;                 // value of linear form on the generator to be added
-        Integer ValPrevGen;                 // value on last generator added
+        // Integer ValPrevGen;                 // value on last generator added
     };
     
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
@@ -129,6 +129,7 @@ class Full_Cone {
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
     vector<size_t> nrPyramids; // number of pyramids on the various levels
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
+    bool parallel_in_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
     
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines

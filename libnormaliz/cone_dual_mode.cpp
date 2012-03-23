@@ -41,12 +41,38 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const vector< Integer >& new_element, const size_t& size){
+void Cone_Dual_Mode<Integer>::splice_them(list< vector< Integer > >& Total, vector<list< vector< Integer > > >& Parts){
+
+    for(int i=0;i<omp_get_max_threads();i++)
+        Total.splice(Total.end(),Parts[i]);
+}
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::record_order(list< vector< Integer > >& Elements, list< vector< Integer >* >& Order){
+
+    Order.clear();
+    typename list < vector<Integer> >::iterator it=Elements.begin();
+    for(;it!=Elements.end();++it) {
+            Order.push_back(&(*it));
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Cone_Dual_Mode<Integer>::reducible( list< vector< Integer >* >& Irred, const vector< Integer >& new_element, 
+                              const size_t& size, const bool ordered){
     size_t i,c=1;
     typename list< vector<Integer>* >::iterator j;
     vector<Integer> *reducer;
-    for (j =Ired.begin(); j != Ired.end(); j++) {
+    for (j =Irred.begin(); j != Irred.end(); j++) {
         reducer=(*j);
+        if (ordered && new_element[0]<2*(*reducer)[0]) {
+            break; // if element is reducible, divisor of smallest degree will be found later
+        }
         if (new_element[0]<=(*reducer)[0])
             continue;
         if ((*reducer)[c]<=new_element[c]){
@@ -57,8 +83,7 @@ bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const ve
                 }
             }
             if (i==size+1) {
-                Ired.push_front(*j);
-                Ired.erase(j);
+                Irred.splice(Irred.begin(),Irred,j);
                 return true;
             }
         }
@@ -70,54 +95,29 @@ bool Cone_Dual_Mode<Integer>::reduce( list< vector< Integer >* >& Ired, const ve
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::reduce( list< vector< Integer > >& Ired, list< vector< Integer > >& Red, const size_t& size){
-    Ired.sort();
-    size_t i,c=1;
-    vector<Integer> dummy(size+3,0);
-    Red.push_front(dummy);
-    Red.push_back(dummy);
-    typename list< vector<Integer> >::iterator j;
+void Cone_Dual_Mode<Integer>::reduce(list< vector< Integer > >& Irred, list< vector< Integer > >& Red, const size_t& size){
+
+    list< vector< Integer >* > Irred_Reorder;
+    record_order(Irred, Irred_Reorder);
+    
     typename list< vector<Integer> >::iterator s;
-    for (s = Red.begin(); s != Red.end(); s++) {
-        for (j =Ired.begin(); j != Ired.end(); j++) {
-            if ((*s)[0]<2*(*j)[0]) {
-                break; //element is not reducible;
-            }
-            else  {
-
-                if ((*j)[c]<=(*s)[c]){
-                    for (i = 1; i <= size; i++) {
-                        if ((*j)[i]>(*s)[i]){
-                            c=i;
-                            break;
-                        }
-                    }
-                    if (i==size+1) {
-                        Ired.push_front(*j);
-                        Ired.erase(j);
-                        s=Red.erase(s);
-                        //  if(s!=Red.begin())
-                        s--;
-                        break;
-                    }
-                }
-                //new_element is not in the Hilbert Basis
-            }
-        }
-    }
-    Red.pop_front();
-    Red.pop_back();
+    for (s = Red.begin(); s != Red.end();) 
+        if(reducible(Irred_Reorder,*s,size,true))
+            s=Red.erase(s);
+        else
+            ++s;
 }
-
+    
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_element, const size_t& size){
+void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_element, 
+                        list<vector<Integer> >& Irred,const size_t& size){
     size_t i,c=1;
     typename list< vector<Integer> >::iterator j;
-    for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); j++) {
+    for (j =Irred.begin(); j != Irred.end(); j++) {
         if (new_element[0]<2*(*j)[0]) {
-            break; //new_element is not reducible;
+            break; // if element is reducible, divisor of smallest degree will be found later
         }
         else  {
 
@@ -129,42 +129,30 @@ void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_ele
                     }
                 }
                 if (i==size+1) {
-                    Hilbert_Basis.push_front(*j);
-                    Hilbert_Basis.erase(j);
+                    Irred.splice(Irred.begin(),Irred,j);
                     return;
                 }
             }
-            //new_element is not in the Hilbert Basis
         }
     }
-    Hilbert_Basis.push_back(new_element);
+    Irred.push_back(new_element);
 }
 
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::reduce_and_insert_extreme( const vector< Integer >& new_element){
-    size_t i,c=1;
-    typename list< vector<Integer> >::iterator j;
-    for (j =GeneratorList.begin(); j != GeneratorList.end(); j++) {
-        if (new_element[0]<=(*j)[0])
-            continue;
-        if ((*j)[c]<=new_element[c]){
-            for (i = 1; i <=nr_sh ; i++) {
-                if ((*j)[i]>new_element[i]){
-                    c=i;
-                    break;
-                }
-            }
-            if (i==nr_sh+1) {
-                GeneratorList.push_front(*j);
-                GeneratorList.erase(j);
-                return; //new element is not an extreme ray
-            }
+void Cone_Dual_Mode<Integer>::auto_reduce(list< vector< Integer> >& To_Reduce, const size_t& size){
+
+        To_Reduce.sort();
+        list<vector<Integer> > Irred;
+        typename list < vector <Integer> >::iterator c;
+
+        for (c=To_Reduce.begin(); c != To_Reduce.end(); ++c) {
+            reduce_and_insert((*c),Irred,size);
         }
-        //new_element is reducible
-    }
-    GeneratorList.push_back(new_element);
+        To_Reduce.clear();
+        To_Reduce.splice(To_Reduce.begin(),Irred);
+        To_Reduce.sort();
 }
 
 //---------------------------------------------------------------------------
@@ -250,7 +238,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     size_t i;
     int sign;
     bool not_done;
-    list < vector<Integer> > Positive_Ired,Negative_Ired,Neutral_Ired;
+    list < vector<Integer> > Positive_Irred,Negative_Irred,Neutral_Irred;
     Integer orientation, scalar_product,diff,factor;
     vector <Integer> hyperplane=SupportHyperplanes.read(hyp_counter-1);
     typename list< vector<Integer> >::iterator h;
@@ -280,14 +268,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         hyp_element[hyp_counter]=orientation;
         hyp_element[0]=orientation;
         if (orientation==0){ //never
-            Neutral_Ired.push_back(hyp_element);
+            Neutral_Irred.push_back(hyp_element);
         }
         else{
-            Positive_Ired.push_back(hyp_element);
+            Positive_Irred.push_back(hyp_element);
             v_scalar_multiplication<Integer>(hyp_element,-1);
             hyp_element[hyp_counter]=orientation;
             hyp_element[0]=orientation;
-            Negative_Ired.push_back(hyp_element);
+            Negative_Irred.push_back(hyp_element);
         }
     } //end lifting
     for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //dividing into negative and positive
@@ -296,26 +284,29 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             (*h)[nr_sh+1]=1;     // generation
             (*h)[nr_sh+2]=0;     //not sum
             (*h)[0]+=(*h)[hyp_counter];
-            Positive_Ired.push_back((*h));
+            Positive_Irred.push_back((*h));
         }
         if ((*h)[hyp_counter]<0) {
             (*h)[hyp_counter]=-(*h)[hyp_counter];
             (*h)[nr_sh+1]=1;
             (*h)[nr_sh+2]=0;
             (*h)[0]+=(*h)[hyp_counter];
-            Negative_Ired.push_back((*h));
+            Negative_Irred.push_back((*h));
         }
         if ((*h)[hyp_counter]==0) {
             (*h)[nr_sh+1]=0;
             (*h)[nr_sh+2]=0;
-            Neutral_Ired.push_back((*h));
+            Neutral_Irred.push_back((*h));
         }
     }
-    Neutral_Ired.sort();
-    Positive_Ired.sort();
-    Negative_Ired.sort();
+    Neutral_Irred.sort();
+    Positive_Irred.sort();
+    Negative_Irred.sort();
     //long int counter=0;
     list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Pos,Neg,Neu;
+    vector<list< vector< Integer > > > New_Positive_thread(omp_get_max_threads()),
+                      New_Negative_thread(omp_get_max_threads()),
+                      New_Neutral_thread(omp_get_max_threads());
     typename list < vector<Integer> >::const_iterator p,n;
     typename list < vector <Integer> >::iterator c;
     not_done=true;
@@ -324,40 +315,41 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         New_Positive.clear();
         New_Negative.clear();
         New_Neutral.clear();
+        
         //generating new elements
-//      verboseOutput()<<"+"<<flush;
-//      for(p = Positive_Ired.begin(); p != Positive_Ired.end(); p++){
+        
         list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
-        typename list < vector<Integer> >::iterator it;
-        it=Positive_Ired.begin();
-        while (it!=Positive_Ired.end()) {
-            Positive.push_back(&(*(it++)));
-        }
-        it=Negative_Ired.begin();
-        while (it!=Negative_Ired.end()) {
-            Negative.push_back(&(*(it++)));
-        }
-        it=Neutral_Ired.begin();
-        while (it!=Neutral_Ired.end()) {
-            Neutral.push_back(&(*(it++)));
-        }
-        size_t psize=Positive_Ired.size();
+        size_t psize=0;
+        #pragma omp parallel
+        {
+        #pragma omp single nowait
+        record_order(Negative_Irred,Negative);
+        
+        #pragma omp single nowait
+        record_order(Positive_Irred,Positive);
+        #pragma omp single nowait
+        psize=Positive_Irred.size();
+        
+        #pragma omp single nowait
+        record_order(Neutral_Irred,Neutral);
+        } // END PARALLEL
+
         if (verbose) {
-            size_t nsize=Negative_Ired.size();
-            size_t zsize=Neutral_Ired.size();
+            size_t nsize=Negative_Irred.size();
+            size_t zsize=Neutral_Irred.size();
             if (psize*nsize>1000000)
                 verboseOutput()<<"Positive: "<<psize<<"  Negative: "<<nsize<<"  Neutral: "<<zsize<<endl;
         }
         #pragma omp parallel private(p,n,diff) firstprivate(Positive,Negative,Neutral)
         {
         size_t ppos=0;
-        p = Positive_Ired.begin();
+        p = Positive_Irred.begin();
         #pragma omp for schedule(dynamic)
         for(i = 0; i<psize; ++i){
             for(;i > ppos; ++ppos, ++p) ;
             for(;i < ppos; --ppos, --p) ;
 
-            for (n = Negative_Ired.begin(); n != Negative_Ired.end(); ++n){
+            for (n = Negative_Irred.begin(); n != Negative_Irred.end(); ++n){
                 if ((*p)[nr_sh+1]<=1 && (*n)[nr_sh+1]<=1
                 && ((*p)[nr_sh+1]!=0 || (*n)[nr_sh+1]!=0)) {
                     if (((*p)[nr_sh+2]!=0&&(*p)[nr_sh+2]<=(*n)[hyp_counter])
@@ -370,140 +362,137 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     if (diff>0) {
                         new_candidate[hyp_counter]=diff;
                         new_candidate[0]-=2*(*n)[hyp_counter];
-                        if(reduce(Positive,new_candidate,hyp_counter)) {
+                        if(reducible(Positive,new_candidate,hyp_counter,false)) {
                             continue;
                         }
-                        if(reduce(Neutral,new_candidate,hyp_counter-1)) {
+                        if(reducible(Neutral,new_candidate,hyp_counter-1,false)) {
                             continue;
                         }
                         new_candidate[nr_sh+1]=2;
                         new_candidate[nr_sh+2]=(*p)[hyp_counter];
-                        #pragma omp critical(NEW_POSITIVE)
-                        New_Positive.push_back(new_candidate);
+                        // #pragma omp critical(NEW_POSITIVE)
+                        New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
                     }
                     if (diff<0) {
                         new_candidate[hyp_counter]=-diff;
                         new_candidate[0]-=2*(*p)[hyp_counter];
-                        if(reduce(Negative,new_candidate,hyp_counter)) {
+                        if(reducible(Negative,new_candidate,hyp_counter,false)) {
                             continue;
                         }
-                        if(reduce(Neutral,new_candidate,hyp_counter-1)) {
+                        if(reducible(Neutral,new_candidate,hyp_counter-1,false)) {
                             continue;
                         }
                         new_candidate[nr_sh+1]=2;
                         new_candidate[nr_sh+2]=(*n)[hyp_counter];
-                        #pragma omp critical(NEW_NEGATIVE)
-                        New_Negative.push_back(new_candidate);
+                        // #pragma omp critical(NEW_NEGATIVE)
+                        New_Negative_thread[omp_get_thread_num()].push_back(new_candidate);
                     }
                     if (diff==0) {
                         new_candidate[hyp_counter]=0;
                         new_candidate[0]-=2*(*p)[hyp_counter];
-                        if(reduce(Neutral,new_candidate,hyp_counter-1)) {
+                        if(reducible(Neutral,new_candidate,hyp_counter-1,false)) {
                             continue;
                         }
                         new_candidate[nr_sh+1]=0;
                         new_candidate[nr_sh+2]=0;
                         #pragma omp critical(NEW_NEUTRAL)
-                        New_Neutral.push_back(new_candidate);
+                        New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                     }
                 }
             }
         }
         //end generation of new elements
-        #pragma omp single nowait
-        New_Neutral.sort();
-        #pragma omp single nowait
-        New_Positive.sort();
-        #pragma omp single nowait
-        New_Negative.sort();
+
         } //END PARALLEL
-//      verboseOutput()<<"-"<<flush;
-        //reducing the new vectors agains them self
-        //Neutral_Ired=Neutral;
-        //Positive_Ired=Positive;
-        //Negative_Ired=Negative;
-        /*reduce(Neutral,New_Neutral,hyp_counter-1);
-          reduce(Neutral,New_Positive,hyp_counter-1);
-          reduce(Neutral,New_Negative,hyp_counter-1);
-          New_Positive.sort();
-          New_Negative.sort();
-          reduce(Positive,New_Positive,hyp_counter);
-          reduce(Negative,New_Negative,hyp_counter);
-          New_Neutral.sort();
-          New_Positive.sort();
-          New_Negative.sort();
-          New_Neutral.merge(Neu);
-          New_Positive.merge(Pos);
-          New_Negative.merge(Neg);*/
-        Hilbert_Basis.clear();
-        for (c=New_Neutral.begin(); c != New_Neutral.end(); ++c) {
-            reduce_and_insert((*c),hyp_counter-1);
+
+        #pragma omp parallel 
+        {
+        #pragma omp single nowait
+        {
+        splice_them(New_Neutral,New_Neutral_thread);
+        auto_reduce(New_Neutral,hyp_counter-1);
         }
-        New_Neutral=Hilbert_Basis;
-        Hilbert_Basis.clear();
-        for (c=New_Positive.begin(); c != New_Positive.end(); ++c) {
-            reduce_and_insert((*c),hyp_counter);
+        #pragma omp single nowait
+        {
+        splice_them(New_Positive,New_Positive_thread);
+        auto_reduce(New_Positive,hyp_counter-1);
         }
-        New_Positive=Hilbert_Basis;
-        Hilbert_Basis.clear();
-        for (c=New_Negative.begin(); c != New_Negative.end(); ++c) {
-            reduce_and_insert((*c),hyp_counter);
+        #pragma omp single nowait
+        {
+        splice_them(New_Negative,New_Negative_thread);
+        auto_reduce(New_Negative,hyp_counter-1);
         }
-        New_Negative=Hilbert_Basis;
+        } // END PARALLEL
+
+        
         if (New_Neutral.size()!=0) {
-            New_Positive.sort();
+            #pragma omp parallel
+            {
+            #pragma omp single nowait
             reduce(New_Neutral,New_Positive, hyp_counter-1);
-            New_Negative.sort();
+            #pragma omp single nowait
             reduce(New_Neutral,New_Negative, hyp_counter-1);
-            reduce(New_Neutral,Neutral_Ired, hyp_counter-1);
-            reduce(New_Neutral,Positive_Ired, hyp_counter-1);
-            reduce(New_Neutral,Negative_Ired, hyp_counter-1);
-            Neutral_Ired.merge(New_Neutral);
+            #pragma omp single nowait
+            reduce(New_Neutral,Neutral_Irred, hyp_counter-1);
+            #pragma omp single nowait
+            reduce(New_Neutral,Positive_Irred, hyp_counter-1);
+            #pragma omp single nowait
+            reduce(New_Neutral,Negative_Irred, hyp_counter-1);
+            } // END PARALLEL
+            Neutral_Irred.merge(New_Neutral);
         }
+        
+        #pragma omp parallel
+        {
+        #pragma omp single nowait
         if (New_Positive.size()!=0) {
             not_done=true;
-            reduce(New_Positive,Positive_Ired, hyp_counter);
-            Positive_Ired.merge(New_Positive);
+            reduce(New_Positive,Positive_Irred, hyp_counter);
+            Positive_Irred.merge(New_Positive);
         }
+        #pragma omp single nowait
         if (New_Negative.size()!=0) {
             not_done=true;
-            reduce(New_Negative,Negative_Ired, hyp_counter);
-            Negative_Ired.merge(New_Negative);
+            reduce(New_Negative,Negative_Irred, hyp_counter);
+            Negative_Irred.merge(New_Negative);
         }
-        for (c = Positive_Ired.begin(); c != Positive_Ired.end(); ++c){
+        } // PARALLEL
+        
+        // adjust generation
+
+        #pragma omp parallel
+        {
+        #pragma omp single nowait
+        for (c = Positive_Irred.begin(); c != Positive_Irred.end(); ++c){
             if((*c)[nr_sh+1]>0) {
                 (*c)[nr_sh+1]--;
             }
         }
-        for (c = Negative_Ired.begin(); c != Negative_Ired.end(); ++c){
+        #pragma omp single nowait
+        for (c = Negative_Irred.begin(); c != Negative_Irred.end(); ++c){
             if((*c)[nr_sh+1]>0) {
                 (*c)[nr_sh+1]--;
             }
         }
+        } // END PARALLEL
 //      verboseOutput()<<not_done;
     }
+    
+    
+    Hilbert_Basis.clear();
+    Hilbert_Basis.splice(Hilbert_Basis.begin(),Positive_Irred);
+    Hilbert_Basis.splice(Hilbert_Basis.end(),Neutral_Irred);
+    
     //still possible to have double elements in the Hilbert basis, coming from different generations
 
-    set< vector<Integer> > Help;
-    typename set< vector<Integer> >::iterator d;
-    for (c = Positive_Ired.begin(); c != Positive_Ired.end(); ++c) {
+    for (c = Hilbert_Basis.begin(); c != Hilbert_Basis.end(); ++c) {
         (*c)[nr_sh+1]=0;
         (*c)[nr_sh+2]=0;
-        Help.insert(*c);
     }
-    for (c = Neutral_Ired.begin(); c != Neutral_Ired.end(); ++c) {
-        (*c)[nr_sh+1]=0;
-        (*c)[nr_sh+2]=0;
-        Help.insert(*c);
-    }
-    Hilbert_Basis.clear();
-    d=Help.begin();
-    while(d != Help.end()) {
-        Hilbert_Basis.push_back(*d);
-        Help.erase(d);
-        d=Help.begin();
-    }
-    if (verbose==true) {
+    Hilbert_Basis.sort();
+    Hilbert_Basis.unique(); 
+
+    if (verbose) {
         verboseOutput()<<"Hilbert basis size="<<Hilbert_Basis.size()<<endl;
     }
 }
@@ -544,39 +533,9 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::extreme_rays_reduction(){
-    typename list < vector <Integer> >::iterator c;
-    size_t i,k;
-    for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
-        k=0;
-        for (i = 1; i <= nr_sh; i++) {
-            if ((*c)[i]!=0) {
-                (*c)[i]=1;
-                k++;
-            }
-
-        }
-        (*c)[0]=k;       //if (k>=dim-1) improuves speed much here
-    }
-    Hilbert_Basis.sort();
-    for (c=Hilbert_Basis.begin(); c!=Hilbert_Basis.end(); ++c){
-        reduce_and_insert_extreme((*c));
-    }
-    size_t s = GeneratorList.size();
-    Generators = Matrix<Integer>(s,dim);
-
-    typename list< vector<Integer> >::const_iterator l;
-    for (i=0, l=GeneratorList.begin(); l != GeneratorList.end(); ++l, ++i) {
-        Generators.write( i, v_cut_front(*l, dim) );
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     if (verbose) {
-        verboseOutput() << "Find extreme rays (via rank test)" << endl;
+        verboseOutput() << "Find extreme rays" << endl;
     }
     typename list < vector <Integer> >::iterator c;
     list <key_t> zero_list;
