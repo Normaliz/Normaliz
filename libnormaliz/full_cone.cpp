@@ -236,7 +236,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     #pragma omp parallel private(jj)
     {
-    size_t i,j,k,t,nr_zero_i;
+    size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
     jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
@@ -401,6 +401,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         verboseOutput()<<"transform_values: P vs N"<<endl<<flush;
     }
     
+    list<FACETDATA*> AllNonSimpHyp;
+    typename list<FACETDATA*>::iterator a;
+    if(!ranktest){
+        for(i=0;i<nr_PosNonSimp;++i)
+            AllNonSimpHyp.push_back(&(*Pos_Non_Simp[i]));
+        for(i=0;i<nr_NegNonSimp;++i)
+            AllNonSimpHyp.push_back(&(*Neg_Non_Simp[i]));
+        for(i=0;i<nr_NeuNonSimp;++i)
+            AllNonSimpHyp.push_back(&(*Neutral_Non_Simp[i]));
+    }  
+    // cout << "ranktest " << ranktest << endl;   
+    
+    
     bool exactly_two;
     FACETDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
     
@@ -459,32 +472,14 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                         }
                     } // ranktest
                     else{                 // now the comparison test
-                        for (t=0;t<nr_PosNonSimp;t++){
-                            hp_t=Pos_Non_Simp[t];
-                            if (t!=i && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+                        for (a=AllNonSimpHyp.begin();a!=AllNonSimpHyp.end();++a){
+                            hp_t=*a;
+                            if ((hp_t!=hp_i) && (hp_t!=hp_j) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
                                 exactly_two=false;
+                                AllNonSimpHyp.splice(AllNonSimpHyp.begin(),AllNonSimpHyp,a);
                                 break;
                             }
-                        }
-                        if (exactly_two) {
-                            for (t=0;t<nr_NegNonSimp;t++){
-                                hp_t=Neg_Non_Simp[t];
-                                if (t!=j && common_zero.is_subset_of(hp_t->GenInHyp)) {  
-                                    exactly_two=false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (exactly_two) {
-                            for (t=0;t<nr_NeuNonSimp;t++){
-                                hp_t=Neutral_Non_Simp[t];
-                                if(common_zero.is_subset_of(hp_t->GenInHyp)) {  
-                                    exactly_two=false;
-                                    break;
-                                }
-                            }
-                            
-                        }                        
+                        }                       
                     } // else
                     if (exactly_two) {  //intersection of i and j is a subfacet
                         add_hyperplane(new_generator,*hp_i,*hp_j);

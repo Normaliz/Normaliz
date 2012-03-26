@@ -144,7 +144,7 @@ void HilbertSeries::simplify() {
     cout << "num (h-vector) : " << num;
     cout << "denom (cyclo.) : " << denom_cyclo;
     long i = lcm_of_pos(denom_cyclo);
-    cout << "periode: " << i;
+    cout << "periode: " << i << endl;
     denom.resize(i+1);
     while (denom_cyclo.size()>0) {
         //create a (1-t^i) factor out of all cyclotomic poly.
