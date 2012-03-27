@@ -421,7 +421,7 @@ vector<T> v_cut_front(const vector<T>& v, size_t size){
 
 //---------------------------------------------------------------------------
 
-
+/*
 int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v){
    size_t i,j,k, s=u.size();
    i=0;
@@ -462,6 +462,7 @@ int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v){
       }
    }
 }
+*/
 
 template<typename Integer>
 vector<key_t> v_non_zero_pos(vector<Integer> v){

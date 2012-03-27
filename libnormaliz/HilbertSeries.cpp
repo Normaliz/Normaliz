@@ -20,6 +20,7 @@
 #include "HilbertSeries.h"
 #include "vector_operations.h"
 #include "integer.h"
+#include "vector_operations.cpp"
 
 //---------------------------------------------------------------------------
 
@@ -95,6 +96,8 @@ HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
 // simplify, see class description
 void HilbertSeries::simplify() {
 
+    cout << "num (h-vector) : " << num;
+    cout << "denom          : " << denom;
     remove_zeros(denom);
     vector<num_t> q, r, poly; //polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
@@ -122,11 +125,14 @@ void HilbertSeries::simplify() {
                 denom_cyclo[d] += denom[i];
         }
         denom_cyclo[i] += denom[i];
+        // the product of the cyclo. is t^i-1 = -(1-t^i)
+        if (denom[i]%2 == 1)
+            v_scalar_multiplication(num,(num_t) -1);
         denom[i] = 0;
  
         // check if we can divide the numerator by i-th cyclotomic polynomial
         poly = cyclotomicPoly<num_t>(i);
-        while(denom_cyclo[i]>0) {
+        while (denom_cyclo[i]>0) {
             poly_div(q, r, num, poly);
             if (r.size() == 0) { // numerator is divisable by poly
                 num = q;
@@ -141,7 +147,7 @@ void HilbertSeries::simplify() {
     // done with canceling
     // now collect the cyclotomic polynomials in (1-t^i) factors
     remove_zeros(denom_cyclo);
-    cout << "num (h-vector) : " << num;
+    cout << "num            : " << num;
     cout << "denom (cyclo.) : " << denom_cyclo;
     long i = lcm_of_pos(denom_cyclo);
     cout << "periode: " << i << endl;
@@ -150,9 +156,10 @@ void HilbertSeries::simplify() {
         //create a (1-t^i) factor out of all cyclotomic poly.
 
         denom[i]++;
+        v_scalar_multiplication(num,(num_t) -1);
         for (long d = 1; d <= i; ++d) {
             if (i % d == 0) {
-                if (denom_cyclo[d]>0) {
+                if (d < (long)denom_cyclo.size() && denom_cyclo[d]>0) {
                     denom_cyclo[d]--;
                 } else {
                     num = poly_mult(num, cyclotomicPoly<num_t>(d));
@@ -163,6 +170,7 @@ void HilbertSeries::simplify() {
         i = lcm_of_pos(denom_cyclo);
     }
     remove_zeros(denom);
+
     cout << "num (h-vector) : " << num;
     cout << "denom (1-t^i)  : " << denom;
 }

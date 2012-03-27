@@ -123,7 +123,7 @@ vector<T> v_cut_front(const vector<T>& v, size_t size);
 //the input vectors must be ordered of equal size
 //if u is different from v by just one element, it returns that element
 //else returns 0 (the elements of u and v are >0)
-int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v);
+//int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v);
 
 
 template<typename Integer>
