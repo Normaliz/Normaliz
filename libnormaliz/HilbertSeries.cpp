@@ -17,6 +17,7 @@
  */
 #include <cassert>
 #include <iostream>
+#include <map>
 #include "HilbertSeries.h"
 #include "vector_operations.h"
 #include "integer.h"
@@ -394,29 +395,30 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
     // the static variable is initialized only once and then stored
-    // the i-th cyclotomic poly is at pos i-1
-    static vector< vector<Integer> > CyclotomicPoly = vector< vector<Integer> >();
-    long computed = CyclotomicPoly.size();
-    if (computed < n) {
-        CyclotomicPoly.resize(n);
+    static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
+    if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
         vector<Integer> poly, q, r;
-        for (long i = computed+1; i <= n; ++i) {
-            // compute the i-th poly by dividing X^i-1 by the 
-            // d-th cycl.poly. with d divides i
-            poly = vector<Integer>(i+1);
-            poly[0] = -1; poly[i] = 1;  // X^i - 1
-            for (long d = 1; d < i; ++d) { // <= i/2 should be ok
-                if( i % d == 0) {
-                    poly_div(q, r, poly, CyclotomicPoly[d-1]);
-                    assert(r.size()==0);
-                    poly = q;
+        for (long i = 1; i <= n; ++i) {
+            // compute needed and uncomputed factors
+            if( n % i == 0 && CyclotomicPoly.count(i) == 0) {
+                // compute the i-th poly by dividing X^i-1 by the 
+                // d-th cycl.poly. with d divides i
+                poly = vector<Integer>(i+1);
+                poly[0] = -1; poly[i] = 1;  // X^i - 1
+                for (long d = 1; d < i; ++d) { // <= i/2 should be ok
+                    if( i % d == 0) {
+                        poly_div(q, r, poly, CyclotomicPoly[d]);
+                        assert(r.size()==0);
+                        poly = q;
+                    }
                 }
+                CyclotomicPoly[i] = poly;
+                cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
             }
-            CyclotomicPoly[i-1] = poly;
-            cout << i << "-th cycl. pol.: " << CyclotomicPoly[i-1];
         }
     }
-    return CyclotomicPoly[n-1];
+    assert(CyclotomicPoly.count(n)>0);
+    return CyclotomicPoly[n];
 }
 
 
