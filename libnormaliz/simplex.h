@@ -89,7 +89,7 @@ class SimplexEvaluator {
     vector< Integer > TDiag; // diagonal of transpose of generaor matrix after trigonalization
     vector< bool > Excluded;
     vector< Integer > Indicator; 
-    vector<size_t> gen_degrees;
+    vector< long > gen_degrees;
     HilbertSeries Hilbert_Series;
     list< vector<Integer> > Hilbert_Basis;
     list< vector<Integer> > Candidates;

@@ -20,6 +20,7 @@
 #include <map>
 #include "HilbertSeries.h"
 #include "vector_operations.h"
+#include "map_operations.h"
 #include "integer.h"
 #include "vector_operations.cpp"
 
@@ -28,13 +29,12 @@
 namespace libnormaliz {
 using std::cout; using std::endl;
 
-template<typename Integer>
-long lcm_of_pos(const vector<Integer>& v){
-    long size=v.size();
-    long l=1;
-    for (long i = 0; i < size; i++) {
-        if (v[i]!=0)
-            l = lcm(l,i);
+long lcm_of_keys(const map<long, denom_t>& m){
+    long l = 1;
+    typename map<long, denom_t>::const_iterator it;
+    for (it = m.begin(); it != m.end(); ++it) {
+        if (it->second != 0)
+            l = lcm(l,it->first);
     }
     return l;
 }
@@ -44,13 +44,16 @@ long lcm_of_pos(const vector<Integer>& v){
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
     num   = vector<num_t>(1,0);
-    denom = vector<denom_t>(1,0);
+    //denom just default constructed
 }
 
 // Constructor, creates num/denom, see class description for format
-HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& denominator) {
+HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num   = numerator;
-    denom = denominator;
+    long s = gen_degrees.size();
+    for (long i=0; i<s; ++i) {
+        denom[gen_degrees[i]]++;
+    }
 }
 
 
@@ -58,127 +61,149 @@ void HilbertSeries::reset() {
     num.clear();
     num.push_back(0);
     denom.clear();
-    denom.push_back(0);
+    is_simplified = false;
 }
 
 
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     vector<num_t> other_num = other.num;
-    vector<denom_t> other_denom = other.denom;
-
+    map<long, denom_t> other_denom = other.denom;
     // adjust denominators
-    if (denom.size() < other_denom.size()) 
-        denom.resize(other_denom.size());
-    else if (denom.size() > other_denom.size())
-        other_denom.resize(denom.size());
-    size_t d_size = denom.size();
     denom_t diff;
-    for (size_t i=1; i<d_size; ++i) {
-        diff = denom[i] - other_denom[i];
-        if (diff > 0) {        // augment other
-            other_denom[i] += diff;
-            poly_mult_to(other_num, i, diff);
-        } else if (diff < 0) { // augment this
-            diff = -diff;
-            denom[i] += diff;
-            poly_mult_to(num, i, diff);
+    typename map<long, denom_t>::iterator it;
+    for (it = denom.begin(); it != denom.end(); ++it) {  // augment other
+        denom_t& ref = other_denom[it->first];
+        diff = it->second - ref;
+        if (diff > 0) {
+            ref += diff;
+            poly_mult_to(other_num, it->first, diff);
+        }
+    }
+    for (it = other_denom.begin(); it != other_denom.end(); ++it) {  // augment this
+        denom_t& ref = denom[it->first];
+        diff = it->second - ref;
+        if (diff > 0) {
+            ref += diff;
+            poly_mult_to(num, it->first, diff);
         }
     }
     assert (denom == other_denom);
 
     // now just add the numerators
     poly_add_to(num,other_num);
-
+    remove_zeros(num);
+    is_simplified = false;
     return (*this);
 }
 
 
 // simplify, see class description
 void HilbertSeries::simplify() {
-
+    if (is_simplified)
+        return;
     cout << "num (h-vector) : " << num;
-    cout << "denom          : " << denom;
-    remove_zeros(denom);
+    cout << "denom (1-t^i)  : " << denom;
+    cout << *this;
     vector<num_t> q, r, poly; //polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
     // During this method the Hilbert series is given by num/(denom*denom_cyclo)
     // where denom | denom_cyclo are exponent vectors of (1-t^i) | i-th cyclotminc poly.
-    vector<denom_t> denom_cyclo = vector<denom_t>(denom.size());
+    map<long, denom_t> denom_cyclo;
 
-    for (long i=denom.size()-1; i>0; --i) {
+    typename map<long, denom_t>::reverse_iterator rit;
+    long i;
+    for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
         // check if we can divide the numerator by (1-t^i)
+        i = rit->first;
+        denom_t& denom_i = rit->second;
         poly = coeff_vector<num_t>(i);
-        while(denom[i]>0) {
+        while (denom_i > 0) {
             poly_div(q, r, num, poly);
             if (r.size() == 0) { // numerator is divisable by poly
                 num = q;
-                denom[i]--;
+                denom_i--;
             }
             else {
                 break;
             }
         }
+        if (denom_i == 0)
+            continue;
 
         // decompose (1-t^i) into cyclotomic polynomial
         for(long d=1; d<=i/2; ++d) {
             if (i % d == 0)
-                denom_cyclo[d] += denom[i];
+                denom_cyclo[d] += denom_i;
         }
-        denom_cyclo[i] += denom[i];
+        denom_cyclo[i] += denom_i;
         // the product of the cyclo. is t^i-1 = -(1-t^i)
-        if (denom[i]%2 == 1)
+        if (denom_i%2 == 1)
             v_scalar_multiplication(num,(num_t) -1);
-        denom[i] = 0;
+    } // end for
+    denom.clear();
  
+    typename map<long, denom_t>::iterator it = denom_cyclo.begin(); 
+    while (it != denom_cyclo.end()) {
         // check if we can divide the numerator by i-th cyclotomic polynomial
+        i = it->first;
+        denom_t& cyclo_i = it->second;
         poly = cyclotomicPoly<num_t>(i);
-        while (denom_cyclo[i]>0) {
+        while (cyclo_i > 0) {
             poly_div(q, r, num, poly);
             if (r.size() == 0) { // numerator is divisable by poly
                 num = q;
-                denom_cyclo[i]--;
+                cyclo_i--;
             }
             else {
                break;
             }
         }
-    } // end for
+
+        if (cyclo_i == 0) {
+            denom_cyclo.erase(it++);
+        } else {
+            ++it;
+        }
+    }
 
     // done with canceling
     // now collect the cyclotomic polynomials in (1-t^i) factors
-    remove_zeros(denom_cyclo);
-    cout << "num            : " << num;
-    cout << "denom (cyclo.) : " << denom_cyclo;
-    long i = lcm_of_pos(denom_cyclo);
-    cout << "periode: " << i << endl;
-    denom.resize(i+1);
-    while (denom_cyclo.size()>0) {
+    cout << "num (h-vector) : " << num;
+    cout << "denom (cyclo)  : " << denom_cyclo;
+    periode = lcm_of_keys(denom_cyclo);
+    dim = denom_cyclo[1];
+    cout << "periode: " << periode << endl;
+    i = periode;
+    while (!denom_cyclo.empty()) {
         //create a (1-t^i) factor out of all cyclotomic poly.
 
         denom[i]++;
         v_scalar_multiplication(num,(num_t) -1);
         for (long d = 1; d <= i; ++d) {
             if (i % d == 0) {
-                if (d < (long)denom_cyclo.size() && denom_cyclo[d]>0) {
+                if (denom_cyclo.count(d) && denom_cyclo[d]>0) { //TODO eff
                     denom_cyclo[d]--;
+                    if (denom_cyclo[d] == 0)
+                        denom_cyclo.erase(d);
                 } else {
                     num = poly_mult(num, cyclotomicPoly<num_t>(d));
                 }
             }
         }
-        remove_zeros(denom_cyclo);
-        i = lcm_of_pos(denom_cyclo);
+        i = lcm_of_keys(denom_cyclo);
+        //cout << "lcm = "<< i <<" of "<<denom_cyclo; 
     }
-    remove_zeros(denom);
 
     cout << "num (h-vector) : " << num;
     cout << "denom (1-t^i)  : " << denom;
+    cout << *this;
+    is_simplified = true;
 }
 
 
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() {
-    if(quasi_poly.size()==0) {
+    if(!is_simplified || quasi_poly.size()==0) {
         computeHilbertQuasiPolynomial();
     }
     return quasi_poly;
@@ -186,16 +211,11 @@ vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() {
 
 
 void HilbertSeries::computeHilbertQuasiPolynomial() {
-    //TODO simplify first?
-    long periode = 1; //least common multiple of the degrees of t in the denominator
-    long dim = 0;
-    long i,j;
-    for (long d = denom.size()-1; d > 0; --d) {
-        dim += denom[d];
-        if (denom[d] > 0 && (periode % d) != 0) {
-            periode = lcm<long>(periode, d);
-        }
+    simplify();
+    if (periode > 1000) {
+        errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the periode "<< periode <<" is to big!" <<endl;
     }
+    long i,j;
     //periode und dim encode the denominator
     //now adjust the numerator
     long num_size = num.size();
@@ -203,16 +223,19 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
     for (i = 0;  i < num_size;  ++i) {
         norm_num[i] = to_mpz(num[i]);
     }
-    for (long d = denom.size()-1; d > 0; --d) {
-        vector<mpz_class> factor, r;
-        //nothing to do if it already has the correct t-power or exponent is 0
-        if (d != periode && denom[d] > 0) {
-            //n_num *= (1-t^p / 1-t^d)^denom[d]
+    typename map<long, denom_t>::reverse_iterator rit;
+    long d;
+    vector<mpz_class> factor, r;
+    for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
+        d = rit->first;
+        //nothing to do if it already has the correct t-power
+        if (d != periode) {
+            //norm_num *= (1-t^p / 1-t^d)^denom[d]
             poly_div(factor, r, coeff_vector<mpz_class>(periode), coeff_vector<mpz_class>(d));
             assert(r.size()==0); //assert rest r is 0
             //TODO more efficient method *=
             //TODO Exponentiation by squaring of factor, then *=
-            for (i=0; i<denom[d]; ++i) {
+            for (i=0; i < rit->second; ++i) {
                 norm_num = poly_mult(norm_num, factor);
             }
         }
@@ -253,8 +276,8 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
 const vector<num_t>& HilbertSeries::getNumerator() const {
     return num;
 }
-// returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
-const vector<denom_t>& HilbertSeries::getDenominator() const {
+// returns the denominator, repr. as a map of the exponents of (1-t^i)^e
+const map<long, denom_t>& HilbertSeries::getDenominator() const {
     return denom;
 }
 
@@ -268,8 +291,9 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
         else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i;
     }
     out << " ) / (";
-    for (size_t i=1; i<HS.denom.size(); ++i) {
-        if ( HS.denom[i]!=0 ) out << " (1-t^"<<i<<")^"<<HS.denom[i];
+    typename map<long, denom_t>::const_iterator it;
+    for (it = HS.denom.begin(); it != HS.denom.end(); ++it) { 
+        if ( it->second != 0 ) out << " (1-t^"<< it->first <<")^" << it->second;
     }
     out << " )" << std::endl;
     return out;
@@ -341,10 +365,11 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     return p;
 }
 
-// a *= (1-t^i)^e
+// a *= (1-t^d)^e
 template<typename Integer>
 void poly_mult_to(vector<Integer>& a, long d, long e) {
     assert(d>0);
+    assert(e>=0);
     long i;
     a.reserve(a.size() + d*e);
     while (e>0) {

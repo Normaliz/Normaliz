@@ -22,13 +22,12 @@
  * It is represented as a polynomial divided by a product of (1-t^i).
  * The numerator is represented as vector of coefficients, the h-vector
  * h vector repr.: sum of h[i]*t^i
- * and the denominator is represented as a vector of the exponents of (1-t^i)
- * d vector repr.: product of (1-t^i)^d[i] over i > 0
- * The vector therefore has an unused 0th entry equal to 0.
+ * and the denominator is represented as a map d of the exponents of (1-t^i)
+ * d vector repr.: product of (1-t^i)^d[i] over i in d
  *
  * The class offers basic operations on the series and a simplification which
  * transforms the series in the simplest presentation of such a form in terms
- * of the degrees of the numerator and denominator.
+ * of the degrees of the numerator and denominator. //TODO correct
  *
  * Furthermore this file include operations for the polynomials used.
  */
@@ -41,6 +40,7 @@
 //---------------------------------------------------------------------------
 
 #include <vector>
+#include <map>
 #include <ostream>
 
 #include "general.h"
@@ -49,6 +49,7 @@
 
 namespace libnormaliz {
 using std::vector;
+using std::map;
 using std::ostream;
 
 class HilbertSeries;
@@ -67,7 +68,7 @@ public:
     // Constructor, creates 0/1
     HilbertSeries();
     // Constructor, creates num/denom, see class description for format
-    HilbertSeries(const vector<num_t>& num, const vector<denom_t>& denom);
+    HilbertSeries(const vector<num_t>& num, const vector<denom_t>& gen_degrees);
 
     // resets to 0/1
     void reset();
@@ -79,6 +80,7 @@ public:
     inline void add_to_num(size_t i) {
         if(num.size()<=i) num.resize(i+1);
         num[i]++;
+        is_simplified = false;
     }
 
 
@@ -91,14 +93,17 @@ public:
     // returns the numerator, repr. as vector of coefficients, the h-vector
     const vector<num_t>& getNumerator() const;
     // returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
-    const vector<denom_t>& getDenominator() const;
+    const map<long, denom_t>& getDenominator() const;
 
 private:
     // the numerator, repr. as vector of coefficients, the h-vector
     vector<num_t> num;
-    // the denominator, repr. as a vector of the exponents of (1-t^i)^e
-    vector<denom_t> denom;
+    // the denominator, repr. as a map of the exponents of (1-t^i)^e
+    map<long, denom_t> denom;
 
+    bool is_simplified;
+    long dim;
+    long periode;
     // the quasi polynomial, can have big coefficients
     vector< vector<mpz_class> > quasi_poly;
 

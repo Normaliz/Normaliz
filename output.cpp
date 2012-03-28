@@ -28,6 +28,7 @@
 
 #include "output.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/map_operations.h"
 
 //---------------------------------------------------------------------------
 

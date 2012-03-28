@@ -192,7 +192,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 
 size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
     
-/* evaluates a simplex in regard to all data, key must be initialized */
+/* evaluates a simplex in regard to all data */
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height) {
     bool do_only_multiplicity =
@@ -219,7 +219,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     bool potentially_unimodular=(height==1);   
             
     if(potentially_unimodular && C.isComputed(ConeProperty::LinearForm)){
-        size_t g=0;
+        long g=0;
         for(i=0;i<dim;++i){
             g=gcd(g,gen_degrees[i]);
             if(g==1)
@@ -339,7 +339,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             Matrix<Integer> RSmult(dim,Ind0_key.size());
             for(i=0;i<Ind0_key.size();i++) // insert unit vectors
                     RSmult[Ind0_key[i]][i]=1;
-            Generators.solve_destructive_Sol(RSmult,TDiag,volume,InvSol);  // kep GDiag from above     
+            Generators.solve_destructive_Sol(RSmult,TDiag,volume,InvSol);  // keep GDiag from above     
         }
     }
     
@@ -359,12 +359,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     HilbertSeries Hilbert_Series;
     if (C.do_h_vector || C.do_ht1_elements) {
         if (C.do_h_vector) {
-            int max_degree = *max_element(gen_degrees.begin(),gen_degrees.end());
-            vector<denom_t> denom(max_degree+1);
-            for (size_t i=0; i<dim; i++) {
-                denom[gen_degrees[i]]++;
-            }
-            Hilbert_Series = HilbertSeries(vector<num_t>(dim+1),denom);
+            Hilbert_Series = HilbertSeries(vector<num_t>(dim+1),gen_degrees);
         }
     }
     
@@ -529,12 +524,12 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
-    if (C.gen_degrees.size()==0) { //TODO ht_1_gen
+    if (!C.isComputed(ConeProperty::LinearForm)) { //TODO ht_1_gen
         mult_sum += to_mpz(volume);
     } else {
         mpq_class mult = to_mpz(volume);
         for (size_t i=0; i<dim; i++){
-            mult /= C.gen_degrees[key[i]];
+            mult /= gen_degrees[i];
         }
         mult_sum += mult;
     }
