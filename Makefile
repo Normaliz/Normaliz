@@ -9,9 +9,12 @@ LIBHEADERS = $(wildcard libnormaliz/*.h)
 SOURCES = $(wildcard *.cpp)
 HEADERS = $(wildcard *.h)
 
-.PHONY : default all
-default: normaliz
-all: normaliz normaliz1
+.PHONY : default all linknormaliz
+default: linknormaliz
+all: lib normaliz normaliz1
+
+linknormaliz: lib
+	$(MAKE) normaliz
 
 normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz/libnormaliz.a $(GMPFLAGS) -o normaliz
@@ -24,12 +27,8 @@ normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 
 
 #always go down the directory and let the make there check what has to be done
-.PHONY : libnormaliz/libnormaliz.o
-libnormaliz/libnormaliz.o:
-	$(MAKE) --directory=libnormaliz libnormaliz.o
-
-.PHONY : libnormaliz/libnormaliz.a
-libnormaliz/libnormaliz.a:
+.PHONY : lib
+lib:
 	$(MAKE) --directory=libnormaliz libnormaliz.a
 
 
