@@ -529,14 +529,15 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
-    if (C.gen_degrees.size()==0) { //TODO ht_1_gen
+    
+    if (C.ht1_extreme_rays || C.gen_degrees.size()==0) {
         mult_sum += to_mpz(volume);
     } else {
-        mpq_class mult = to_mpz(volume);
-        for (size_t i=0; i<dim; i++){
-            mult /= C.gen_degrees[key[i]];
+        mpz_class deg_prod=C.gen_degrees[key[0]];
+        for (size_t i=1; i<dim; i++){
+            deg_prod *= C.gen_degrees[key[i]];
         }
-        mult_sum += mult;
+        mult_sum += to_mpz(volume)/deg_prod;;
     }
 }
 
