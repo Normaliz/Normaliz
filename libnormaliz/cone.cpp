@@ -664,6 +664,9 @@ void Cone<Integer>::compute(ComputationMode mode) {
     case Mode::hilbertBasisTriangulation:
         FC.triangulation_hilbert_basis();
         break;
+    case Mode::hilbertBasisMultiplicity:
+        FC.multiplicity_hilbert_basis();
+        break;
     case Mode::hilbertBasisLarge:
         FC.hilbert_basis();
         break;

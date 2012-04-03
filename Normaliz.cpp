@@ -183,6 +183,10 @@ int main(int argc, char* argv[])
                 break;
         }
     }
+    //don't save the triangulation if the user doesn't want to see it
+    if (computation_mode == Mode::hilbertBasisTriangulation && !write_all_files) {
+        computation_mode = Mode::hilbertBasisMultiplicity;
+    }
 
     if (!filename_set) {
         cout<<"Normaliz 2.7"<<endl

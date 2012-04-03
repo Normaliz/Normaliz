@@ -47,6 +47,7 @@ enum ComputationMode {
     volumeLarge,
     height1Elements,
     hilbertBasisTriangulation,
+    hilbertBasisMultiplicity,
     hilbertBasisLarge,
     hilbertPolynomial,
     hilbertPolynomialLarge,
