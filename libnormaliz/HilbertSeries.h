@@ -57,8 +57,8 @@ class HilbertSeries;
 // write a readable representation to the stream
 ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
-//we always want to use machine integers of at least 64bit
 //typedef mpz_class num_t;    //integer type for numerator
+//we always want to use machine integers of at least 64bit
 typedef long long num_t;    //integer type for numerator
 typedef long denom_t;       //integer type for denominator
 
@@ -92,14 +92,24 @@ public:
 
     // returns the numerator, repr. as vector of coefficients, the h-vector
     const vector<num_t>& getNumerator() const;
-    // returns the denominator, repr. as a vector of the exponents of (1-t^i)^e
+    // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
     const map<long, denom_t>& getDenominator() const;
+
+    // returns the numerator, repr. as vector of coefficients
+    const vector<num_t>& getCyclotomicNumerator();
+    // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
+    const map<long, denom_t>& getCyclotomicDenominator();
 
 private:
     // the numerator, repr. as vector of coefficients, the h-vector
     vector<num_t> num;
     // the denominator, repr. as a map of the exponents of (1-t^i)^e
     map<long, denom_t> denom;
+
+    // the numerator, repr. as vector of coefficients
+    vector<num_t> cyclo_num;
+    // the denominator, repr. as a map of the exponents of the cyclotomic polynomials
+    map<long, denom_t> cyclo_denom;
 
     bool is_simplified;
     long dim;

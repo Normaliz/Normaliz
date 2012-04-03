@@ -107,9 +107,9 @@ void HilbertSeries::simplify() {
     cout << *this;
     vector<num_t> q, r, poly; //polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
-    // During this method the Hilbert series is given by num/(denom*denom_cyclo)
-    // where denom | denom_cyclo are exponent vectors of (1-t^i) | i-th cyclotminc poly.
-    map<long, denom_t> denom_cyclo;
+    // During this method the Hilbert series is given by num/(denom*cdenom)
+    // where denom | cdenom are exponent vectors of (1-t^i) | i-th cyclotminc poly.
+    map<long, denom_t> cdenom;
 
     typename map<long, denom_t>::reverse_iterator rit;
     long i;
@@ -134,17 +134,17 @@ void HilbertSeries::simplify() {
         // decompose (1-t^i) into cyclotomic polynomial
         for(long d=1; d<=i/2; ++d) {
             if (i % d == 0)
-                denom_cyclo[d] += denom_i;
+                cdenom[d] += denom_i;
         }
-        denom_cyclo[i] += denom_i;
+        cdenom[i] += denom_i;
         // the product of the cyclo. is t^i-1 = -(1-t^i)
         if (denom_i%2 == 1)
             v_scalar_multiplication(num,(num_t) -1);
     } // end for
     denom.clear();
  
-    typename map<long, denom_t>::iterator it = denom_cyclo.begin(); 
-    while (it != denom_cyclo.end()) {
+    typename map<long, denom_t>::iterator it = cdenom.begin(); 
+    while (it != cdenom.end()) {
         // check if we can divide the numerator by i-th cyclotomic polynomial
         i = it->first;
         denom_t& cyclo_i = it->second;
@@ -161,38 +161,46 @@ void HilbertSeries::simplify() {
         }
 
         if (cyclo_i == 0) {
-            denom_cyclo.erase(it++);
+            cdenom.erase(it++);
         } else {
             ++it;
         }
     }
-
     // done with canceling
+    // save this representation
+    cyclo_num = num;
+    cyclo_denom = cdenom;
+
     // now collect the cyclotomic polynomials in (1-t^i) factors
     cout << "num (h-vector) : " << num;
-    cout << "denom (cyclo)  : " << denom_cyclo;
-    periode = lcm_of_keys(denom_cyclo);
-    dim = denom_cyclo[1];
+    cout << "denom (cyclo)  : " << cdenom;
+    periode = lcm_of_keys(cdenom);
+    dim = cdenom[1];
     cout << "periode: " << periode << endl;
     i = periode;
-    while (!denom_cyclo.empty()) {
+    if (periode > 1000) {
+        errorOutput() << "WARNING: Periode is to big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
+        i = cdenom.rbegin()->first;
+    }
+    while (!cdenom.empty()) {
         //create a (1-t^i) factor out of all cyclotomic poly.
-
         denom[i]++;
         v_scalar_multiplication(num,(num_t) -1);
         for (long d = 1; d <= i; ++d) {
             if (i % d == 0) {
-                if (denom_cyclo.count(d) && denom_cyclo[d]>0) { //TODO eff
-                    denom_cyclo[d]--;
-                    if (denom_cyclo[d] == 0)
-                        denom_cyclo.erase(d);
+                if (cdenom.count(d) && cdenom[d]>0) { //TODO eff
+                    cdenom[d]--;
+                    if (cdenom[d] == 0)
+                        cdenom.erase(d);
                 } else {
                     num = poly_mult(num, cyclotomicPoly<num_t>(d));
                 }
             }
         }
-        i = lcm_of_keys(denom_cyclo);
-        //cout << "lcm = "<< i <<" of "<<denom_cyclo; 
+        i = lcm_of_keys(cdenom);
+        if (i > 1000) {
+            i = cdenom.rbegin()->first;
+        }
     }
 
     cout << "num (h-vector) : " << num;
@@ -214,6 +222,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
     simplify();
     if (periode > 1000) {
         errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the periode "<< periode <<" is to big!" <<endl;
+        return;
     }
     long i,j;
     //periode und dim encode the denominator
@@ -278,6 +287,17 @@ const vector<num_t>& HilbertSeries::getNumerator() const {
 }
 // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
 const map<long, denom_t>& HilbertSeries::getDenominator() const {
+    return denom;
+}
+
+// returns the numerator, repr. as vector of coefficients
+const vector<num_t>& HilbertSeries::getCyclotomicNumerator() {
+    simplify();
+    return num;
+}
+// returns the denominator, repr. as a map of the exponents of (1-t^i)^e
+const map<long, denom_t>& HilbertSeries::getCyclotomicDenominator() {
+    simplify();
     return denom;
 }
 
