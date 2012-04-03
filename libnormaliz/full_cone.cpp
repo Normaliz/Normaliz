@@ -1595,12 +1595,22 @@ void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {
     reset_tasks();
 }
 
-//-n
+//-n with -a
 template<typename Integer>
 void Full_Cone<Integer>::triangulation_hilbert_basis() {
     do_Hilbert_basis=true;
     do_triangulation=true;
     keep_triangulation=true;
+    primal_algorithm();
+    reset_tasks();
+}
+
+//-n without -a
+template<typename Integer>
+void Full_Cone<Integer>::multiplicity_hilbert_basis() {
+    do_Hilbert_basis=true;
+    do_triangulation=true;
+    // keep_triangulation=true;
     primal_algorithm();
     reset_tasks();
 }
