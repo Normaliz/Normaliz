@@ -1076,10 +1076,10 @@ void Full_Cone<Integer>::build_cone() {
     bool tri_recursion=false;
 
     // DECIDE WHETHER TO USE RECURSION
-    size_t RecBoundSuppHyp = dim*dim*dim;
+    long long RecBoundSuppHyp = dim*dim*dim;
     RecBoundSuppHyp *= RecBoundSuppHyp * 10; //dim^6 * 10
-    size_t bound_div = nr_gen-dim+1;
-    if(bound_div > 3*dim) bound_div = 3*dim;
+    int bound_div = nr_gen-dim+1;
+    if(bound_div > 3* (int) dim) bound_div = 3*dim;
     RecBoundSuppHyp /= bound_div;
 
     size_t RecBoundTriang = 1000000;  // 1 Mio      5000000; // 5Mio
@@ -1117,7 +1117,7 @@ void Full_Cone<Integer>::build_cone() {
 
         typename list< FACETDATA >::iterator l=Facets.begin();
 
-        size_t nr_pos=0; size_t nr_neg=0;
+        long long nr_pos=0; long long nr_neg=0;
         vector<Integer> L;
         size_t old_nr_supp_hyps=Facets.size();                
         
