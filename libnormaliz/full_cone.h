@@ -249,6 +249,7 @@ public:
     void support_hyperplanes_triangulation();
     void support_hyperplanes_triangulation_pyramid();
     void triangulation_hilbert_basis();
+    void multiplicity_hilbert_basis();
     void hilbert_basis();
     void hilbert_polynomial();
     void hilbert_polynomial_pyramid();
