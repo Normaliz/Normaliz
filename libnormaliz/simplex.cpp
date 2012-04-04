@@ -531,7 +531,9 @@ void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
         for (size_t i=1; i<dim; i++){
             deg_prod *= C.gen_degrees[key[i]];
         }
-        mult_sum += to_mpz(volume)/deg_prod;;
+        mpq_class mult = to_mpz(volume);
+        mult /= deg_prod;
+        mult_sum += mult;
     }
 }
 
