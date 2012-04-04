@@ -183,10 +183,6 @@ int main(int argc, char* argv[])
                 break;
         }
     }
-    //don't save the triangulation if the user doesn't want to see it
-    if (computation_mode == Mode::hilbertBasisTriangulation && !write_all_files) {
-        computation_mode = Mode::hilbertBasisMultiplicity;
-    }
 
     if (!filename_set) {
         cout<<"Normaliz 2.7"<<endl
@@ -264,6 +260,17 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
     map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput (in, Out);
 
     in.close();
+
+    //don't save the triangulation if the user doesn't want to see it
+    //and we don't need it for the primary multiplicity later
+    if (!write_all_files && input.count(Type::rees_algebra)==0) {
+        if (computation_mode == Mode::hilbertBasisTriangulation)
+            computation_mode  = Mode::hilbertBasisMultiplicity;
+        if (computation_mode == Mode::hilbertPolynomial)
+            computation_mode  = Mode::hilbertPolynomialLarge;
+        if (computation_mode == Mode::hilbertBasisPolynomial)
+            computation_mode  = Mode::hilbertBasisPolynomialLarge;
+    }
 
     if (verbose) {
         cout<<"\n************************************************************\n";

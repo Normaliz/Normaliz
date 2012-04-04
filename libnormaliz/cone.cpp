@@ -657,6 +657,7 @@ void Cone<Integer>::compute(ComputationMode mode) {
     if ( isComputed(ConeProperty::LinearForm) ) {
         FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
         FC.is_Computed.set(ConeProperty::LinearForm);
+        FC.set_degrees();
     }
 
     // Start computations in FC
