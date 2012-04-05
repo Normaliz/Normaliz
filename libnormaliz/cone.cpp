@@ -224,7 +224,7 @@ vector< vector<Integer> > Cone<Integer>::getHt1Elements() const {
 }
 
 template<typename Integer>
-HilbertSeries Cone<Integer>::getHilbertSeries() const {
+const HilbertSeries& Cone<Integer>::getHilbertSeries() const {
     return HSeries;
 }
 

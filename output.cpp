@@ -461,10 +461,12 @@ void Output<Integer>::write_files() const {
             out<<endl<<endl;
         }
         if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
-            vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
-            if (hilbert_polynomial.size() > 0) {
+            const HilbertSeries& HS = Result->getHilbertSeries();
+            long periode = HS.getPeriode();
+            if (periode == 1) {
+                vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
                 out<<"Hilbert polynomial:"<<endl;
-                mpz_class common_denom = permutations<mpz_class>(1,rank);
+                mpz_class common_denom = HS.getHilbertQuasiPolynomialDenominator();
                 mpz_class g;
                 for (i = 0; i < hilbert_polynomial.size(); i++) {
                     g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
@@ -472,24 +474,13 @@ void Output<Integer>::write_files() const {
                 }
                 out << endl<< endl;
             } else {
-                vector< vector<mpz_class> > hilbert_quasi_poly = Result->getHilbertQuasiPolynomial();
-                long p = hilbert_quasi_poly.size(); // periode
-                if (p > 0) { // == 0 means not computed
-                    mpz_class common_denom = 1;
-                    for (long i=0; i<(long)rank-1; ++i) common_denom *= p; //p^(dim-1)
-                    common_denom *= permutations<mpz_class>(1,rank); // * dim!
-                    long size;
-                    mpz_class g;
+                vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
+                if (hilbert_quasi_poly.size() > 0) { // == 0 means not computed
                     out<<"Hilbert quasi-polynomial:"<<endl;
-                    for (long j = 0; j< p; ++j) {
-                        size =  hilbert_quasi_poly[j].size();
-                        out << j <<": ";
-                        for (long i = 0; i < size; ++i) {
-                            g = gcd<mpz_class>(common_denom,hilbert_quasi_poly[j][i]);
-                            out<<hilbert_quasi_poly[j][i]/g<<"/"<<common_denom/g<<" ";
-                        }
-                        out << endl;
+                    for (long j = 0; j< periode; ++j) {
+                        out << j <<": "<<hilbert_quasi_poly[j];
                     }
+                    out<<"With common denominator: "<<HS.getHilbertQuasiPolynomialDenominator();
                     out << endl<< endl;
                 }
             }

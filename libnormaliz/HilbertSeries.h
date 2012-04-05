@@ -85,10 +85,9 @@ public:
 
 
     // simplify, see class description
-    void simplify();
-
-    //does compute it, if not available
-    vector< vector<mpz_class> > getHilbertQuasiPolynomial();
+    // it changes the representation of the series, but not the series itself
+    // therefore it is declared const
+    void simplify() const;
 
     // returns the numerator, repr. as vector of coefficients, the h-vector
     const vector<num_t>& getNumerator() const;
@@ -96,28 +95,33 @@ public:
     const map<long, denom_t>& getDenominator() const;
 
     // returns the numerator, repr. as vector of coefficients
-    const vector<num_t>& getCyclotomicNumerator();
+    const vector<num_t>& getCyclotomicNumerator() const;
     // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
-    const map<long, denom_t>& getCyclotomicDenominator();
+    const map<long, denom_t>& getCyclotomicDenominator() const;
+
+    long getPeriode() const;
+    vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
+    mpz_class getHilbertQuasiPolynomialDenominator() const;
 
 private:
     // the numerator, repr. as vector of coefficients, the h-vector
-    vector<num_t> num;
+    mutable vector<num_t> num;
     // the denominator, repr. as a map of the exponents of (1-t^i)^e
-    map<long, denom_t> denom;
+    mutable map<long, denom_t> denom;
 
     // the numerator, repr. as vector of coefficients
-    vector<num_t> cyclo_num;
+    mutable vector<num_t> cyclo_num;
     // the denominator, repr. as a map of the exponents of the cyclotomic polynomials
-    map<long, denom_t> cyclo_denom;
+    mutable map<long, denom_t> cyclo_denom;
 
-    bool is_simplified;
-    long dim;
-    long periode;
+    mutable bool is_simplified;
+    mutable long dim;
+    mutable long periode;
     // the quasi polynomial, can have big coefficients
-    vector< vector<mpz_class> > quasi_poly;
+    mutable vector< vector<mpz_class> > quasi_poly;
+    mutable mpz_class quasi_denom;
 
-    void computeHilbertQuasiPolynomial();
+    void computeHilbertQuasiPolynomial() const;
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 

@@ -24,6 +24,8 @@
 #include "integer.h"
 #include "vector_operations.cpp"
 
+#include "matrix.h"
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -99,7 +101,7 @@ HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
 
 
 // simplify, see class description
-void HilbertSeries::simplify() {
+void HilbertSeries::simplify() const {
     if (is_simplified)
         return;
     cout << "num (h-vector) : " << num;
@@ -209,16 +211,26 @@ void HilbertSeries::simplify() {
     is_simplified = true;
 }
 
+long HilbertSeries::getPeriode() const {
+    simplify();
+    return periode;
+}
 
-vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() {
+vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
     if(!is_simplified || quasi_poly.size()==0) {
         computeHilbertQuasiPolynomial();
     }
     return quasi_poly;
 }
 
+mpz_class HilbertSeries::getHilbertQuasiPolynomialDenominator() const {
+    if(!is_simplified || quasi_poly.size()==0) {
+        computeHilbertQuasiPolynomial();
+    }
+    return quasi_denom;
+}
 
-void HilbertSeries::computeHilbertQuasiPolynomial() {
+void HilbertSeries::computeHilbertQuasiPolynomial() const {
     simplify();
     if (periode > 1000) {
         errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the periode "<< periode <<" is to big!" <<endl;
@@ -272,13 +284,19 @@ void HilbertSeries::computeHilbertQuasiPolynomial() {
             quasi_poly[j][i] *= pp;
         }
     } //at the end pp=p^dim-1
-    //the common denominator for all coefficients
-    mpz_class common_denom = permutations<mpz_class>(1,dim) * pp;
+    //the common denominator for all coefficients, dim! * pp
+    quasi_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
     for (j=0; j<periode; ++j) {
         linear_substitution<mpz_class>(quasi_poly[j], j); // replaces quasi_poly[j]
     }
-
+    //divide by gcd //TODO unschoener umweg über matrix
+    Matrix<mpz_class> QP(quasi_poly);
+    mpz_class g = QP.matrix_gcd();
+    g = gcd(g,quasi_denom);
+    quasi_denom /= g;
+    QP.scalar_division(g);
+    quasi_poly = QP.get_elements();
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector
@@ -291,15 +309,17 @@ const map<long, denom_t>& HilbertSeries::getDenominator() const {
 }
 
 // returns the numerator, repr. as vector of coefficients
-const vector<num_t>& HilbertSeries::getCyclotomicNumerator() {
+const vector<num_t>& HilbertSeries::getCyclotomicNumerator() const {
     simplify();
     return num;
 }
 // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
-const map<long, denom_t>& HilbertSeries::getCyclotomicDenominator() {
+const map<long, denom_t>& HilbertSeries::getCyclotomicDenominator() const {
     simplify();
     return denom;
 }
+
+
 
 ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     out << "(";
