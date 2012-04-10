@@ -80,7 +80,7 @@ public:
     void write(size_t row, size_t col, Integer data);  // write data at (row,col)
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print(std::ostream& out) const;          // writes matrix to the stream
-    void pretty_print(std::ostream& out) const;  // writes matrix in a nice format to the stream
+    void pretty_print(std::ostream& out, bool with_row_nr=false) const;  // writes matrix in a nice format to the stream
     void read() const;                 // to be modified, just for tests
     vector<Integer> read(size_t row) const;                   // read a row
     Integer read (size_t row, size_t col) const;         // read data at (row,col)

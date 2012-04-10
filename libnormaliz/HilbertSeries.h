@@ -25,9 +25,8 @@
  * and the denominator is represented as a map d of the exponents of (1-t^i)
  * d vector repr.: product of (1-t^i)^d[i] over i in d
  *
- * The class offers basic operations on the series and a simplification which
- * transforms the series in the simplest presentation of such a form in terms
- * of the degrees of the numerator and denominator. //TODO correct
+ * The class offers basic operations on the series, a simplification and
+ * different forms of representation of the series.
  *
  * Furthermore this file include operations for the polynomials used.
  */

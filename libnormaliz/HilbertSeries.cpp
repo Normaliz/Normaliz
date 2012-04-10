@@ -190,10 +190,11 @@ void HilbertSeries::simplify() const {
         v_scalar_multiplication(num,(num_t) -1);
         for (long d = 1; d <= i; ++d) {
             if (i % d == 0) {
-                if (cdenom.count(d) && cdenom[d]>0) { //TODO eff
-                    cdenom[d]--;
-                    if (cdenom[d] == 0)
-                        cdenom.erase(d);
+                it = cdenom.find(d);
+                if (it != cdenom.end() && it->second>0) {
+                    it->second--;
+                    if (it->second == 0)
+                        cdenom.erase(it);
                 } else {
                     num = poly_mult(num, cyclotomicPoly<num_t>(d));
                 }
@@ -290,7 +291,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     for (j=0; j<periode; ++j) {
         linear_substitution<mpz_class>(quasi_poly[j], j); // replaces quasi_poly[j]
     }
-    //divide by gcd //TODO unschoener umweg über matrix
+    //divide by gcd //TODO operate directly on vector
     Matrix<mpz_class> QP(quasi_poly);
     mpz_class g = QP.matrix_gcd();
     g = gcd(g,quasi_denom);
@@ -311,12 +312,12 @@ const map<long, denom_t>& HilbertSeries::getDenominator() const {
 // returns the numerator, repr. as vector of coefficients
 const vector<num_t>& HilbertSeries::getCyclotomicNumerator() const {
     simplify();
-    return num;
+    return cyclo_num;
 }
 // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
 const map<long, denom_t>& HilbertSeries::getCyclotomicDenominator() const {
     simplify();
-    return denom;
+    return cyclo_denom;
 }
 
 

@@ -230,10 +230,17 @@ void Matrix<Integer>::print(ostream& out) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::pretty_print(ostream& out) const{
+void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     size_t i,j,k;
     size_t max_length = maximal_decimal_length();
+    size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
+        if (with_row_nr) {
+            for (k= 0; k <= max_index_length - decimal_length(i); k++) {
+                out<<" ";
+            }
+            out << i << ": ";
+        }
         for (j = 0; j < nc; j++) {
             for (k= 0; k <= max_length - decimal_length(elements[i][j]); k++) {
                 out<<" ";

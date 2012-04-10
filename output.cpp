@@ -451,38 +451,33 @@ void Output<Integer>::write_files() const {
                 out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
             }
         }
-        if ( Result->isComputed(ConeProperty::HVector) ) {
-            vector<num_t> h_vector=Result->getHVector64();
-            out<<"h-vector:"<<endl;
-            for (i = 0; i < h_vector.size(); i++) {
-                out<<h_vector[i]<<" ";
-            }
-            out<<endl<<"denominator:"<<endl<<Result->getHilbertSeries().getDenominator();
-            out<<endl<<endl;
-        }
-        if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
+        if ( Result->isComputed(ConeProperty::HVector) || Result->isComputed(ConeProperty::HilbertPolynomial)) {
             const HilbertSeries& HS = Result->getHilbertSeries();
+            out << "h-vector:"    << endl << HS.getNumerator();
+            out << "denominator:" << endl << HS.getDenominator();
+            out << endl;
             long periode = HS.getPeriode();
             if (periode == 1) {
-                vector<mpz_class> hilbert_polynomial = Result->getHilbertPolynomial();
-                out<<"Hilbert polynomial:"<<endl;
-                mpz_class common_denom = HS.getHilbertQuasiPolynomialDenominator();
-                mpz_class g;
-                for (i = 0; i < hilbert_polynomial.size(); i++) {
-                    g = gcd<mpz_class>(common_denom,hilbert_polynomial[i]);
-                    out<<hilbert_polynomial[i]/g<<"/"<<common_denom/g<<" ";
-                }
+                out << "Hilbert polynomial:" << endl;
+                out << Result->getHilbertPolynomial();
+                out << "With common denominator: ";
+                out << HS.getHilbertQuasiPolynomialDenominator();
                 out << endl<< endl;
             } else {
+                // output cyclonomic representation
+                out << "Hilbert series with cyclotomic denominator:" << endl;
+                out << HS.getCyclotomicNumerator();
+                out << HS.getCyclotomicDenominator();
+                out << endl;
+                // Hilbert quasi-polynomial
                 vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
                 if (hilbert_quasi_poly.size() > 0) { // == 0 means not computed
                     out<<"Hilbert quasi-polynomial:"<<endl;
-                    for (long j = 0; j< periode; ++j) {
-                        out << j <<": "<<hilbert_quasi_poly[j];
-                    }
+                    Matrix<mpz_class> HQP(hilbert_quasi_poly);
+                    HQP.pretty_print(out,true);
                     out<<"With common denominator: "<<HS.getHilbertQuasiPolynomialDenominator();
-                    out << endl<< endl;
                 }
+                out << endl<< endl;
             }
 
         }
