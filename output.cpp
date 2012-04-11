@@ -460,7 +460,7 @@ void Output<Integer>::write_files() const {
             if (periode == 1) {
                 out << "Hilbert polynomial:" << endl;
                 out << Result->getHilbertPolynomial();
-                out << "With common denominator: ";
+                out << "with common denominator = ";
                 out << HS.getHilbertQuasiPolynomialDenominator();
                 out << endl<< endl;
             } else {
@@ -475,7 +475,7 @@ void Output<Integer>::write_files() const {
                     out<<"Hilbert quasi-polynomial:"<<endl;
                     Matrix<mpz_class> HQP(hilbert_quasi_poly);
                     HQP.pretty_print(out,true);
-                    out<<"With common denominator: "<<HS.getHilbertQuasiPolynomialDenominator();
+                    out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenominator();
                 }
                 out << endl<< endl;
             }
@@ -504,6 +504,7 @@ void Output<Integer>::write_files() const {
         if (nr_orig_gens > 0) {
             out << nr_orig_gens <<" original generators:"<<endl;
             Matrix<Integer>(Result->getGeneratorsOfToricRing()).pretty_print(out);
+            out << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
@@ -521,11 +522,13 @@ void Output<Integer>::write_files() const {
             nr=Hilbert_Basis.nr_of_rows();
             out<<nr<<" Hilbert basis elements:"<<endl;
             Hilbert_Basis.pretty_print(out);
+            out << endl;
             if (type == OT_REES) {
                 out << rees_ideal_key.size() <<" generators of integral closure of the ideal:"<<endl;
                 Matrix<Integer> Ideal_Gens = Hilbert_Basis.submatrix(rees_ideal_key);
                 Ideal_Gens.cut_columns(dim-1);
                 Ideal_Gens.pretty_print(out);
+                out << endl;
             }
         }
         Matrix<Integer> Extreme_Rays;
@@ -536,12 +539,14 @@ void Output<Integer>::write_files() const {
             write_matrix_ext(Extreme_Rays);
             out<<nr_ex_rays<<" extreme rays:"<<endl;
             Extreme_Rays.pretty_print(out);
+            out << endl;
         }
 
         //write constrains (support hyperplanes, congruences, equations)
 
         out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
         Support_Hyperplanes.pretty_print(out);
+        out << endl;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             //equations
             size_t dim = Extreme_Rays.nr_of_columns();
@@ -550,6 +555,7 @@ void Output<Integer>::write_files() const {
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
                 Equations.pretty_print(out);
+                out << endl;
             }
 
     
@@ -559,6 +565,7 @@ void Output<Integer>::write_files() const {
             if (nr_of_cong > 0) {
                 out << nr_of_cong <<" congruences:" <<endl;
                 Congruences.pretty_print(out);
+                out << endl;
             }
 
             if(sup) {
@@ -584,6 +591,7 @@ void Output<Integer>::write_files() const {
                 nr=Hom.nr_of_rows();
                 out<<nr<<" Hilbert basis elements of height 1:"<<endl;
                 Hom.pretty_print(out);
+                out << endl;
             }
         }
         out.close();

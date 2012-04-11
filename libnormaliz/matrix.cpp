@@ -249,7 +249,6 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
         }
         out<<endl;
     }
-    out<<endl;
 }
 //---------------------------------------------------------------------------
 
