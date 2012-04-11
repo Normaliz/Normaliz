@@ -75,13 +75,17 @@ public:
     // add another HilbertSeries to this
     HilbertSeries& operator+=(const HilbertSeries& other);
 
+    // add another HilbertSeries to this
+    void add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
+        (*this) += HilbertSeries(num,gen_degrees);
+    }
+
     // add t^i to the numerator
     inline void add_to_num(size_t i) {
         if(num.size()<=i) num.resize(i+1);
         num[i]++;
         is_simplified = false;
     }
-
 
     // simplify, see class description
     // it changes the representation of the series, but not the series itself

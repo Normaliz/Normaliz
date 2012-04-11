@@ -184,6 +184,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   Excluded(dim),
   Indicator(dim),
   gen_degrees(dim),
+  hvector(dim+1),
   RS(dim,1)
 {
 }
@@ -247,6 +248,10 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             Ht1NonUni++;
     }
     
+    if (unimodular && !C.do_h_vector) {
+        addMult(key);
+        return volume;
+    }
 
     // we need the GDiag if not unimodular (to be computed from Gen)
     // if potentially unimodular, we combine its computation with that of the i-th support forms for Ind[i]==0
@@ -287,7 +292,6 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
     // for those i for which Gdiag[i]>1 combined with computation
     // of Indicator in case of potentially_unimodular==false (uses transpose of Gen)
-    
 
     vector<key_t> Last_key;
     Last_key.reserve(dim);       
@@ -355,11 +359,10 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
     
-    // compute degrees of the generators and prepare Hilbert series if necessary
-    HilbertSeries Hilbert_Series;
-    if (C.do_h_vector || C.do_ht1_elements) {
-        if (C.do_h_vector) {
-            Hilbert_Series = HilbertSeries(vector<num_t>(dim+1),gen_degrees);
+    // prepare h-vector if necessary
+    if (C.do_h_vector) {
+        for (i=0; i<hvector.size(); i++) {
+            hvector[i]=0;
         }
     }
     
@@ -389,11 +392,15 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
     }
     
-    if(C.do_h_vector)
-        Hilbert_Series.add_to_num(Deg); // count the 0-vector in k-vector with the right shift
+    if(C.do_h_vector) {
+        // count the 0-vector in h-vector with the right shift
+        if(Deg >= hvector.size())
+            hvector.resize(Deg+1);
+        hvector[Deg]++;
+    }
 
-    if(unimodular){  // do_h_vector==true automatically here
-        C.HS[omp_get_thread_num()] += Hilbert_Series;
+    if (unimodular) { // do_h_vector==true automatically here
+        Hilbert_Series.add(hvector,gen_degrees);
         return volume;
     } // the unimodular case has been taken care of
     
@@ -449,7 +456,10 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
                 }
             }
             
-            Hilbert_Series.add_to_num(Deg);
+            //count point in the h-vector
+            if(Deg >= hvector.size())
+                hvector.resize(Deg+1);
+            hvector[Deg]++;
         }
         
         // the case of Hilbert bases and height 1 elements, only added if height >=2
@@ -469,7 +479,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     
     if(C.do_h_vector) {
         // #pragma omp critical(HSERIES)
-        C.HS[omp_get_thread_num()] += Hilbert_Series;
+        Hilbert_Series.add(hvector,gen_degrees);
     }
     
     if(C.do_ht1_elements) {
@@ -540,6 +550,11 @@ void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
 template<typename Integer>
 mpq_class SimplexEvaluator<Integer>::getMultiplicitySum() const {
     return mult_sum;
+}
+
+template<typename Integer>
+const HilbertSeries& SimplexEvaluator<Integer>::getHilbertSeriesSum() const {
+    return Hilbert_Series;
 }
 
 } /* end namespace */

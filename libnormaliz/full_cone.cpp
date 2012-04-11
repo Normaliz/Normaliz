@@ -1272,7 +1272,7 @@ void Full_Cone<Integer>::set_degrees() {
 
 template<typename Integer>
 void Full_Cone<Integer>::sort_gens_by_degree() {
-    if(gen_degrees.size()==0)
+    if(gen_degrees.size()==0 || ht1_extreme_rays)
         return;
     
     list<vector<Integer> > genList;
@@ -1433,16 +1433,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 }
             }
         }
+        // get accumulated data from the SimplexEvaluator
         #pragma omp critical(MULTIPLICITY)
         multiplicity += simp.getMultiplicitySum(); 
-    }
-
-
-    HilbertSeries ZeroHS;
-    
-    for(int i=0;i<omp_get_max_threads();++i){
-        Hilbert_Series+=HS[i];
-        HS[i]=ZeroHS;
+        if (do_h_vector) {
+            #pragma omp critical(HSERIES)
+            Hilbert_Series += simp.getHilbertSeriesSum();
+        }
     }
 
     if (do_partial_triangulation) {
@@ -1682,15 +1679,10 @@ void Full_Cone<Integer>::dual_mode() {
     Support_Hyperplanes.remove(vector<Integer>(dim,0));
 
     if(dim>0) {            //correction needed to include the 0 cone;
-        Linear_Form = Generators.homogeneous(ht1_extreme_rays);
-        ht1_generated = ht1_extreme_rays;
-        is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-        is_Computed.set(ConeProperty::IsHt1Generated);
-
+        check_ht1_generated();
         if (ht1_extreme_rays) {
-            is_Computed.set(ConeProperty::LinearForm);
             if (verbose) { 
-                cout << "Find height 1 elements" << endl;
+                verboseOutput() << "Find height 1 elements" << endl;
             }
             typename list < vector <Integer> >::const_iterator h;
             for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
@@ -2387,7 +2379,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
     totalNrSimplices=0;
     TriangulationSize=0;
     
-    HS.resize(omp_get_max_threads());
     FS.resize(omp_get_max_threads());
     
     Pyramids.resize(1);  // prepare storage for pyramids

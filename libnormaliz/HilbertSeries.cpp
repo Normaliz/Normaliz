@@ -54,6 +54,7 @@ HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_
     num   = numerator;
     long s = gen_degrees.size();
     for (long i=0; i<s; ++i) {
+        assert(gen_degrees[i]>0);
         denom[gen_degrees[i]]++;
     }
 }
@@ -180,7 +181,7 @@ void HilbertSeries::simplify() const {
     dim = cdenom[1];
     cout << "periode: " << periode << endl;
     i = periode;
-    if (periode > 1000) {
+    if (periode > 2000) {
         errorOutput() << "WARNING: Periode is to big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         i = cdenom.rbegin()->first;
     }
@@ -201,7 +202,7 @@ void HilbertSeries::simplify() const {
             }
         }
         i = lcm_of_keys(cdenom);
-        if (i > 1000) {
+        if (i > 2000) {
             i = cdenom.rbegin()->first;
         }
     }
@@ -233,7 +234,7 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenominator() const {
 
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
     simplify();
-    if (periode > 1000) {
+    if (periode > 2000) {
         errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the periode "<< periode <<" is to big!" <<endl;
         return;
     }

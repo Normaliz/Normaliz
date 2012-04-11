@@ -90,7 +90,8 @@ class SimplexEvaluator {
     vector< bool > Excluded;
     vector< Integer > Indicator; 
     vector< long > gen_degrees;
-    HilbertSeries Hilbert_Series;
+    vector< long long > hvector;  //h-vector of the current evaluation
+    HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Hilbert_Basis;
     list< vector<Integer> > Candidates;
     list< vector<Integer> > Ht1_Elements;
@@ -104,7 +105,7 @@ class SimplexEvaluator {
 
     bool isDuplicate(const vector<Integer>& cand) const;
 
-	 void addMult(const vector<key_t>& key);
+	void addMult(const vector<key_t>& key);
 
 //---------------------------------------------------------------------------
 
@@ -115,8 +116,11 @@ public:
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
     Integer evaluate(const vector<key_t>& key, const Integer& height);
+
     // returns sum of the multiplicities of all evaluated simplices
     mpq_class getMultiplicitySum() const;
+    // returns sum of the Hilbert Series of all evaluated simplices
+    const HilbertSeries& getHilbertSeriesSum() const;
 };
 //class SimplexEvaluater end
 

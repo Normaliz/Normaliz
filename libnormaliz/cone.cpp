@@ -760,6 +760,7 @@ void Cone<Integer>::compute_dual() {
     if ( isComputed(ConeProperty::LinearForm) ) {
         FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
         FC.is_Computed.set(ConeProperty::LinearForm);
+        FC.set_degrees();
     }
     FC.dual_mode();
     extract_data(FC);
