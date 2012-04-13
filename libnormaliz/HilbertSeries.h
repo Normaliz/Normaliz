@@ -84,12 +84,12 @@ public:
     void simplify() const;
 
     // returns the numerator, repr. as vector of coefficients, the h-vector
-    const vector<num_t>& getNumerator() const;
+    const vector<mpz_class>& getNumerator() const;
     // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
     const map<long, denom_t>& getDenominator() const;
 
     // returns the numerator, repr. as vector of coefficients
-    const vector<num_t>& getCyclotomicNumerator() const;
+    const vector<mpz_class>& getCyclotomicNumerator() const;
     // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
     const map<long, denom_t>& getCyclotomicDenominator() const;
 
@@ -102,12 +102,12 @@ private:
     mutable map< vector<denom_t>, vector<num_t> > denom_classes;
 
     // the numerator, repr. as vector of coefficients, the h-vector
-    mutable vector<num_t> num;
+    mutable vector<mpz_class> num;
     // the denominator, repr. as a map of the exponents of (1-t^i)^e
     mutable map<long, denom_t> denom;
 
     // the numerator, repr. as vector of coefficients
-    mutable vector<num_t> cyclo_num;
+    mutable vector<mpz_class> cyclo_num;
     // the denominator, repr. as a map of the exponents of the cyclotomic polynomials
     mutable map<long, denom_t> cyclo_denom;
 
@@ -122,7 +122,7 @@ private:
     void collectData() const;
     // these are only const when used properly!!
     void performAdd(const vector<num_t>& num, const vector<denom_t>& gen_degrees) const;
-    void performAdd(const vector<num_t>& num, const map<long, denom_t>& denom) const;
+    void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
 
     void computeHilbertQuasiPolynomial() const;
 

@@ -92,10 +92,6 @@ public:
     vector< vector<Integer> > getHilbertBasis() const;
     vector< vector<Integer> > getHt1Elements() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
-    vector<num_t> getHVector64() const;
-    vector<Integer> getHVector() const;
-    vector<mpz_class> getHilbertPolynomial();
-    vector< vector<mpz_class> > getHilbertQuasiPolynomial();
     vector<Integer> getLinearForm() const;
     Integer getLinearFormDenom() const;
     mpq_class getMultiplicity() const;

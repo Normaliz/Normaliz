@@ -228,41 +228,6 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries() const {
     return HSeries;
 }
 
-//TODO remove everything depending on HilbertSeries?
-template<typename Integer>
-vector<num_t> Cone<Integer>::getHVector64() const {
-    return HSeries.getNumerator();
-}
-template<>
-vector<num_t> Cone<num_t>::getHVector() const {
-    return HSeries.getNumerator();
-}
-//TODO better conversion
-template<typename Integer>
-vector<Integer> Cone<Integer>::getHVector() const {
-    vector<num_t> h = HSeries.getNumerator();
-    vector<Integer> ret(h.size());
-    for(long i=h.size()-1; i>=0; --i) {
-        ret[i]=explicit_cast_to_long(h[i]);
-    }
-    return ret;
-}
-
-template<typename Integer>
-vector<mpz_class> Cone<Integer>::getHilbertPolynomial() {
-    if (HSeries.getHilbertQuasiPolynomial().size()==1) {
-        return HSeries.getHilbertQuasiPolynomial()[0];
-    } else {
-        //TODO don't know what to do
-        return vector<mpz_class>();
-    }
-}
-
-template<typename Integer>
-vector< vector<mpz_class> > Cone<Integer>::getHilbertQuasiPolynomial() {
-    return HSeries.getHilbertQuasiPolynomial();
-}
-
 template<typename Integer>
 vector<Integer> Cone<Integer>::getLinearForm() const {
     return LinearForm;

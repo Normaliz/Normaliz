@@ -317,17 +317,17 @@ void Output<Integer>::write_inv_file() const{
                 inv<<"integer multiplicity = "<<Result->getMultiplicity()<<endl;
             }
             if (Result->isComputed(ConeProperty::HilbertSeries)) {
-                vector<num_t> h_vector=Result->getHVector64();
+                const HilbertSeries& HS = Result->getHilbertSeries();
+                vector<mpz_class> h_vector=HS.getNumerator(); //TODO denom
                 inv<<"vector "<<h_vector.size()<<" h-vector = ";
                 for (i = 0; i < h_vector.size(); i++) {
                     inv<<h_vector[i]<<" ";
                 }
                 inv<<endl;
-            }
-            if (Result->isComputed(ConeProperty::HilbertSeries)) {
-                vector<mpz_class> hilbert_polynomial=Result->getHilbertPolynomial();
+
+                vector<mpz_class> hilbert_polynomial=HS.getHilbertQuasiPolynomial()[0];
                 inv<<"vector "<<hilbert_polynomial.size()<<" hilbert_polynomial = ";
-                inv<<hilbert_polynomial;
+                inv<<hilbert_polynomial; //TODO quasi-polynomial
             }
         }
         if (type == OT_REES) {
@@ -459,7 +459,7 @@ void Output<Integer>::write_files() const {
             long periode = HS.getPeriode();
             if (periode == 1) {
                 out << "Hilbert polynomial:" << endl;
-                out << Result->getHilbertPolynomial();
+                out << HS.getHilbertQuasiPolynomial()[0];
                 out << "with common denominator = ";
                 out << HS.getHilbertQuasiPolynomialDenominator();
                 out << endl<< endl;
