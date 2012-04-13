@@ -76,9 +76,7 @@ public:
     HilbertSeries& operator+=(const HilbertSeries& other);
 
     // add another HilbertSeries to this
-    void add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
-        (*this) += HilbertSeries(num,gen_degrees);
-    }
+    void add(const vector<num_t>& num, const vector<denom_t>& gen_degrees);
 
     // add t^i to the numerator
     inline void add_to_num(size_t i) {
@@ -107,6 +105,9 @@ public:
     mpz_class getHilbertQuasiPolynomialDenominator() const;
 
 private:
+    // collected data in denominator classes
+    mutable map< vector<denom_t>, vector<num_t> > denom_classes;
+
     // the numerator, repr. as vector of coefficients, the h-vector
     mutable vector<num_t> num;
     // the denominator, repr. as a map of the exponents of (1-t^i)^e
@@ -123,6 +124,12 @@ private:
     // the quasi polynomial, can have big coefficients
     mutable vector< vector<mpz_class> > quasi_poly;
     mutable mpz_class quasi_denom;
+
+    // collect data from the denom_classes
+    void collectData() const;
+    // these are only const when used properly!!
+    void performAdd(const vector<num_t>& num, const vector<denom_t>& gen_degrees) const;
+    void performAdd(const vector<num_t>& num, const map<long, denom_t>& denom) const;
 
     void computeHilbertQuasiPolynomial() const;
 

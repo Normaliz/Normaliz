@@ -33,7 +33,7 @@ using std::cout; using std::endl;
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
-    typename map<long, denom_t>::const_iterator it;
+    map<long, denom_t>::const_iterator it;
     for (it = m.begin(); it != m.end(); ++it) {
         if (it->second != 0)
             l = lcm(l,it->first);
@@ -67,14 +67,43 @@ void HilbertSeries::reset() {
     is_simplified = false;
 }
 
+// add another HilbertSeries to this
+void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
+    vector<denom_t> sorted_gd(gen_degrees);
+    sort(sorted_gd.begin(), sorted_gd.end());
+    poly_add_to(denom_classes[sorted_gd],  num);
+    is_simplified = false;
+}
+
 
 // add another HilbertSeries to this
 HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
-    vector<num_t> other_num = other.num;
-    map<long, denom_t> other_denom = other.denom;
+    // add denom_classes
+    map< vector<denom_t>, vector<num_t> >::const_iterator it;
+    for (it = other.denom_classes.begin(); it != other.denom_classes.end(); ++it) {
+        poly_add_to(denom_classes[it->first], it->second);
+    }
+    // add accumulated data
+    performAdd(other.num, other.denom);
+    return (*this);
+}
+
+void HilbertSeries::performAdd(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) const {
+    map<long, denom_t> other_denom;
+    long s = gen_degrees.size();
+    for (long i=0; i<s; ++i) {
+        assert(gen_degrees[i]>0);
+        other_denom[gen_degrees[i]]++;
+    }
+    performAdd(numerator, other_denom);
+}
+
+void HilbertSeries::performAdd(const vector<num_t>& oth_num, const map<long, denom_t>& oth_denom) const {
+    vector<num_t> other_num(oth_num); //TODO conversion to mpz
+    map<long, denom_t> other_denom(oth_denom);  //TODO redesign, dont change other_denom
     // adjust denominators
     denom_t diff;
-    typename map<long, denom_t>::iterator it;
+    map<long, denom_t>::iterator it;
     for (it = denom.begin(); it != denom.end(); ++it) {  // augment other
         denom_t& ref = other_denom[it->first];
         diff = it->second - ref;
@@ -97,14 +126,21 @@ HilbertSeries& HilbertSeries::operator+=(const HilbertSeries& other) {
     poly_add_to(num,other_num);
     remove_zeros(num);
     is_simplified = false;
-    return (*this);
 }
 
+void HilbertSeries::collectData() const {
+    map< vector<denom_t>, vector<num_t> >::iterator it;
+    for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
+        performAdd(it->second, it->first);
+    }
+    denom_classes.clear();
+}
 
 // simplify, see class description
 void HilbertSeries::simplify() const {
     if (is_simplified)
         return;
+    collectData();
     cout << "num (h-vector) : " << num;
     cout << "denom (1-t^i)  : " << denom;
     cout << *this;
@@ -114,7 +150,7 @@ void HilbertSeries::simplify() const {
     // where denom | cdenom are exponent vectors of (1-t^i) | i-th cyclotminc poly.
     map<long, denom_t> cdenom;
 
-    typename map<long, denom_t>::reverse_iterator rit;
+    map<long, denom_t>::reverse_iterator rit;
     long i;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
         // check if we can divide the numerator by (1-t^i)
@@ -146,7 +182,7 @@ void HilbertSeries::simplify() const {
     } // end for
     denom.clear();
  
-    typename map<long, denom_t>::iterator it = cdenom.begin(); 
+    map<long, denom_t>::iterator it = cdenom.begin(); 
     while (it != cdenom.end()) {
         // check if we can divide the numerator by i-th cyclotomic polynomial
         i = it->first;
@@ -246,7 +282,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     for (i = 0;  i < num_size;  ++i) {
         norm_num[i] = to_mpz(num[i]);
     }
-    typename map<long, denom_t>::reverse_iterator rit;
+    map<long, denom_t>::reverse_iterator rit;
     long d;
     vector<mpz_class> factor, r;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
@@ -333,7 +369,7 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
         else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i;
     }
     out << " ) / (";
-    typename map<long, denom_t>::const_iterator it;
+    map<long, denom_t>::const_iterator it;
     for (it = HS.denom.begin(); it != HS.denom.end(); ++it) { 
         if ( it->second != 0 ) out << " (1-t^"<< it->first <<")^" << it->second;
     }
