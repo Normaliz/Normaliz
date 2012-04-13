@@ -1548,7 +1548,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     if (do_h_vector) {
         Hilbert_Series.simplify();
-        is_Computed.set(ConeProperty::HVector);
+        is_Computed.set(ConeProperty::HilbertSeries);
     }
 
 }
@@ -2351,24 +2351,11 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
     reset_tasks();
     
     Extreme_Rays = vector<bool>(nr_gen,false);
-    // Support_Hyperplanes = list< vector<Integer> >();
-    // Triangulation = list<SHORTSIMPLEX>();
     in_triang = vector<bool> (nr_gen,false);
-    Facets = list<FACETDATA>();
-    // Hilbert_Basis = list< vector<Integer> >();
-    // Candidates = list< vector<Integer> >();
-    // Ht1_Elements = list< vector<Integer> >();  
-    if(dim>0){            //correction needed to include the 0 cone;
-        Hilbert_Polynomial = vector<Integer>(2*dim);
-        Hilbert_Series = HilbertSeries();
-    } else {
+    if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
-        Hilbert_Polynomial = vector<Integer>(2,1);
-        Hilbert_Polynomial[0] = 0;
-        Hilbert_Series = HilbertSeries();
-        Hilbert_Series.add_to_num(0);
-        is_Computed.set(ConeProperty::HilbertPolynomial);
-        is_Computed.set(ConeProperty::HVector);
+        Hilbert_Series.add(vector<num_t>(1,1),vector<denom_t>());
+        is_Computed.set(ConeProperty::HilbertSeries);
         is_Computed.set(ConeProperty::Triangulation);
     }
     pyr_level=-1;
@@ -2414,7 +2401,6 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     Extreme_Rays = vector<bool>(nr_gen,true); //all generators are extreme rays
     is_Computed.set(ConeProperty::ExtremeRays);
     Matrix<Integer> SH = C.SupportHyperplanes;
-    Support_Hyperplanes = list< vector<Integer> >();
     for (size_t i=0; i < SH.nr_of_rows(); i++) {
         Support_Hyperplanes.push_back(SH.read(i));
     }
@@ -2424,18 +2410,10 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     // Facets = list<FACETDATA>();
     Hilbert_Basis = C.Hilbert_Basis;
     is_Computed.set(ConeProperty::HilbertBasis);
-    Ht1_Elements = list< vector<Integer> >();
-    if(dim>0){            //correction needed to include the 0 cone;
-        Hilbert_Series = HilbertSeries();
-        Hilbert_Polynomial = vector<Integer>(2*dim);
-    } else {
+    if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
-        Hilbert_Series = HilbertSeries();
-        Hilbert_Series.add_to_num(0);
-        Hilbert_Polynomial = vector<Integer>(2,1);
-        Hilbert_Polynomial[0] = 0;
-        is_Computed.set(ConeProperty::HVector);
-        is_Computed.set(ConeProperty::HilbertPolynomial);
+        Hilbert_Series.add(vector<num_t>(1,1),vector<denom_t>());
+        is_Computed.set(ConeProperty::HilbertSeries);
     }
     pyr_level=-1;
     Top_Cone=this;
@@ -2463,21 +2441,13 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
         Top_Key[i]=C.Top_Key[Key[i]];
   
     multiplicity = 0;
-    is_Computed =  ConeProperties();
     
     Extreme_Rays = vector<bool>(nr_gen,false);
     is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
     if(isComputed(ConeProperty::ExtremeRays))
         for(size_t i=0;i<nr_gen;i++)
             Extreme_Rays[i]=C.Extreme_Rays[Key[i]];
-    /* Support_Hyperplanes = list< vector<Integer> >();
-    Triangulation = list<SHORTSIMPLEX>();
-    Hilbert_Basis = list< vector<Integer> >();
-    Ht1_Elements = list< vector<Integer> >();
-    Candidates = list< vector<Integer> >();
-    Hilbert_Series = HilbertSeries();*/
     in_triang = vector<bool> (nr_gen,false);
-    // Facets = list<FACETDATA>();
     
     Linear_Form=C.Linear_Form;
     is_Computed.set(ConeProperty::LinearForm, C.isComputed(ConeProperty::LinearForm));
@@ -2645,12 +2615,6 @@ Matrix<Integer> Full_Cone<Integer>::getHt1Elements()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::getHilbertPolynomial() const{
-    return Hilbert_Polynomial;
-}
-
-
-template<typename Integer>
 void Full_Cone<Integer>::error_msg(string s) const{
     errorOutput() <<"\nFull Cone "<< s<<"\n";
 }
@@ -2680,8 +2644,6 @@ void Full_Cone<Integer>::print()const{
     l_read(Ht1_Elements);
     verboseOutput()<<"\nHilbert Series  is:\n";
     verboseOutput()<<Hilbert_Series;
-    verboseOutput()<<"\nHilbert polynomial is:\n";
-    v_read(Hilbert_Polynomial);
 }
 
 } //end namespace

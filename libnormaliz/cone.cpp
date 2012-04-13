@@ -548,8 +548,7 @@ void Cone<Integer>::setLinearForm (vector<Integer> lf) {
     is_Computed.reset(ConeProperty::IsHt1ExtremeRays);
     is_Computed.reset(ConeProperty::IsHt1HilbertBasis);
     is_Computed.reset(ConeProperty::Ht1Elements);
-    is_Computed.reset(ConeProperty::HVector);
-    is_Computed.reset(ConeProperty::HilbertPolynomial);
+    is_Computed.reset(ConeProperty::HilbertSeries);
 }
 
 //---------------------------------------------------------------------------
@@ -566,11 +565,10 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::LinearForm))         ToCompute.set(ConeProperty::ExtremeRays);
     if(ToCompute.test(ConeProperty::ExtremeRays))        ToCompute.set(ConeProperty::SupportHyperplanes);
     if(ToCompute.test(ConeProperty::IsPointed))          ToCompute.set(ConeProperty::SupportHyperplanes);
-    if(ToCompute.test(ConeProperty::HilbertPolynomial))  ToCompute.set(ConeProperty::HVector);
 
 
     /* find correct mode */
-    if (ToCompute.test(ConeProperty::HVector) ) {
+    if (ToCompute.test(ConeProperty::HilbertSeries) ) {
         if(ToCompute.test(ConeProperty::HilbertBasis)) {
             compute(Mode::hilbertBasisPolynomial);
         } else {
@@ -819,11 +817,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         Ht1Elements = BasisChange.from_sublattice(FC.getHt1Elements()).get_elements();
         is_Computed.set(ConeProperty::Ht1Elements);
     }
-    if (FC.isComputed(ConeProperty::HVector)) {
-        //TODO HilbertSeries
+    if (FC.isComputed(ConeProperty::HilbertSeries)) {
         HSeries = FC.Hilbert_Series;
-        is_Computed.set(ConeProperty::HVector);
-        is_Computed.set(ConeProperty::HilbertPolynomial);
+        is_Computed.set(ConeProperty::HilbertSeries);
     }
     if (FC.isComputed(ConeProperty::IsPointed)) {
         pointed = FC.isPointed();

@@ -316,7 +316,7 @@ void Output<Integer>::write_inv_file() const{
             if (Result->isComputed(ConeProperty::Multiplicity)){
                 inv<<"integer multiplicity = "<<Result->getMultiplicity()<<endl;
             }
-            if (Result->isComputed(ConeProperty::HVector)) {
+            if (Result->isComputed(ConeProperty::HilbertSeries)) {
                 vector<num_t> h_vector=Result->getHVector64();
                 inv<<"vector "<<h_vector.size()<<" h-vector = ";
                 for (i = 0; i < h_vector.size(); i++) {
@@ -324,7 +324,7 @@ void Output<Integer>::write_inv_file() const{
                 }
                 inv<<endl;
             }
-            if (Result->isComputed(ConeProperty::HilbertPolynomial)) {
+            if (Result->isComputed(ConeProperty::HilbertSeries)) {
                 vector<mpz_class> hilbert_polynomial=Result->getHilbertPolynomial();
                 inv<<"vector "<<hilbert_polynomial.size()<<" hilbert_polynomial = ";
                 inv<<hilbert_polynomial;
@@ -451,7 +451,7 @@ void Output<Integer>::write_files() const {
                 out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
             }
         }
-        if ( Result->isComputed(ConeProperty::HVector) || Result->isComputed(ConeProperty::HilbertPolynomial)) {
+        if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
             const HilbertSeries& HS = Result->getHilbertSeries();
             out << "h-vector:"    << endl << HS.getNumerator();
             out << "denominator:" << endl << HS.getDenominator();

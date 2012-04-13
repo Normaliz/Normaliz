@@ -278,7 +278,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
-//    MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertPolynomial));
+//    MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
     MyCone.compute(computation_mode);
     Out.setCone(MyCone);
     Out.write_files();

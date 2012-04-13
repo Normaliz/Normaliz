@@ -80,7 +80,6 @@ class Full_Cone {
     list<vector<Integer> > Hilbert_Basis;
     list<vector<Integer> > Candidates;
     list<vector<Integer> > Ht1_Elements;
-    vector<Integer> Hilbert_Polynomial;
     HilbertSeries Hilbert_Series;
     vector<long> gen_degrees;  // will contain the degrees of the generators
 
@@ -234,7 +233,6 @@ public:
     Matrix<Integer> getHilbertBasis() const;
     Matrix<Integer> getHt1Elements() const;
     vector<Integer> getHVector() const;
-    vector<Integer> getHilbertPolynomial() const;
     
     bool isComputed(ConeProperty::Enum prop) const; 
 
