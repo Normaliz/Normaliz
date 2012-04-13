@@ -590,8 +590,6 @@ void Cone<Integer>::compute(ComputationMode mode) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
             Generators = BasisChange.from_sublattice(Extreme_Rays).get_elements();
-            //sort Generators to get deterministic triangulations
-            sort (Generators.begin(), Generators.end());
             is_Computed.set(ConeProperty::Generators);
             //get minmal set of support_hyperplanes
             Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
