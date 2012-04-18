@@ -118,6 +118,7 @@ private:
     vector< vector<Integer> > Generators;
     vector<bool> ExtremeRays;
     vector< vector<Integer> > SupportHyperplanes;
+    size_t TriangulationSize;
     vector< pair<vector<key_t>, Integer> > Triangulation;
     mpq_class multiplicity;
     vector< vector<Integer> > HilbertBasis;

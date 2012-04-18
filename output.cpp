@@ -584,15 +584,13 @@ void Output<Integer>::write_files() const {
             }    
         }
         
-        if (Result->isHt1ExtremeRays()) {
-            if ( Result->isComputed(ConeProperty::Ht1Elements) ) {
-                Matrix<Integer> Hom = Result->getHt1Elements();
-                write_matrix_ht1(Hom);
-                nr=Hom.nr_of_rows();
-                out<<nr<<" Hilbert basis elements of height 1:"<<endl;
-                Hom.pretty_print(out);
-                out << endl;
-            }
+        if ( Result->isComputed(ConeProperty::Ht1Elements) ) {
+            Matrix<Integer> Hom = Result->getHt1Elements();
+            write_matrix_ht1(Hom);
+            nr=Hom.nr_of_rows();
+            out<<nr<<" Hilbert basis elements of height 1:"<<endl;
+            Hom.pretty_print(out);
+            out << endl;
         }
         out.close();
     }

@@ -264,6 +264,8 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
     //don't save the triangulation if the user doesn't want to see it
     //and we don't need it for the primary multiplicity later
     if (!write_all_files && input.count(Type::rees_algebra)==0) {
+        if (computation_mode == Mode::volumeTriangulation)
+            computation_mode  = Mode::volumeLarge;
         if (computation_mode == Mode::hilbertBasisTriangulation)
             computation_mode  = Mode::hilbertBasisMultiplicity;
         if (computation_mode == Mode::hilbertPolynomial)

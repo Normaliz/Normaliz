@@ -56,12 +56,14 @@ class Full_Cone {
     bool pointed;
     bool ht1_generated;
     bool ht1_extreme_rays;
+    bool ht1_triangulation;
     bool ht1_hilbert_basis;
     bool integrally_closed;
     
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool do_triangulation;
     bool do_partial_triangulation;
+    bool do_evaluation;
     bool do_Hilbert_basis;
     bool do_ht1_elements;
     bool do_h_vector;
@@ -179,7 +181,7 @@ class Full_Cone {
     void compute_hilbert_basis_polynomial();
 
     void check_pointed();
-    void check_ht1_generated();
+    void ht1_check();
     void check_ht1_extreme_rays();
     void check_ht1_hilbert_basis();
     void check_integrally_closed();

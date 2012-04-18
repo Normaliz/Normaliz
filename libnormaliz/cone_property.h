@@ -32,6 +32,7 @@ namespace ConeProperty {
         Generators,
         ExtremeRays,
         SupportHyperplanes,
+        TriangulationSize,
         Triangulation,
         Multiplicity,
         HilbertBasis,

@@ -112,9 +112,13 @@ bool v_test_scalar_product(const vector<Integer>& a,const vector<Integer>& b, co
 //							   General vector operations
 //---------------------------------------------------------------------------
 
+//returns a new vector with the content of a extended by b
+template<typename T>
+vector<T> v_merge(const vector<T>& a, const T& b);
+
 //returns a new vector with the content of a and b
 template<typename T>
-vector<T> v_merge(const vector<T>& a,const vector<T>& b);
+vector<T> v_merge(const vector<T>& a, const vector<T>& b);
 
 //returns a new vector with the last size entries of v
 template<typename T>

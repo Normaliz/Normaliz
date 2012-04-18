@@ -406,7 +406,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     
 
     // now we create and evaluate the points in par
-    vector < Integer > norm(1);
+    Integer norm;
     Integer normG;
     list < vector<Integer> > Candidates;
     typename list <vector <Integer> >::iterator c;
@@ -438,10 +438,10 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             elements[i] = elements[last];
         }    
         
-        norm[0]=0; // norm[0] is just the sum of coefficients, = volume*degree for standard grading
+        norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
         normG = 0;
         for (i = 0; i < dim; i++) {  // since generators have degree 1
-            norm[0]+=elements[last][i];
+            norm+=elements[last][i];
             if(C.do_h_vector || C.do_ht1_elements) {
                 normG += elements[last][i]*gen_degrees[i];
             }
@@ -534,12 +534,14 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
-    if (C.ht1_extreme_rays || !C.isComputed(ConeProperty::LinearForm)) {
+    if (!C.isComputed(ConeProperty::LinearForm))
+        return;
+    if (C.ht1_triangulation) {
         mult_sum += to_mpz(volume);
     } else {
-        mpz_class deg_prod=C.gen_degrees[key[0]];
-        for (size_t i=1; i<dim; i++){
-            deg_prod *= C.gen_degrees[key[i]];
+        mpz_class deg_prod=gen_degrees[0];
+        for (size_t i=1; i<dim; i++) {
+            deg_prod *= gen_degrees[i];
         }
         mpq_class mult = to_mpz(volume);
         mult /= deg_prod;

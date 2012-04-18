@@ -395,6 +395,17 @@ bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, 
 //---------------------------------------------------------------------------
 
 template<typename T>
+vector<T> v_merge(const vector<T>& a, const T& b) {
+    size_t s=a.size();
+    vector<T> c(s+1);
+    c = a;
+    c.push_back(b);
+    return c;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename T>
 vector<T> v_merge(const vector<T>& a,const vector<T>& b){
     size_t s1=a.size(), s2=b.size(), i;
     vector<T> c(s1+s2);
