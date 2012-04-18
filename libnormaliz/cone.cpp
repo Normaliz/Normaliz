@@ -591,6 +591,8 @@ void Cone<Integer>::compute(ComputationMode mode) {
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
             Generators = BasisChange.from_sublattice(Extreme_Rays).get_elements();
             is_Computed.set(ConeProperty::Generators);
+            ExtremeRays = vector<bool>(Generators.size(),true);
+            is_Computed.set(ConeProperty::ExtremeRays);
             //get minmal set of support_hyperplanes
             Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
             SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp).get_elements();
@@ -615,6 +617,10 @@ void Cone<Integer>::compute(ComputationMode mode) {
     Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
     // Give extra data to FC
+    if ( isComputed(ConeProperty::ExtremeRays) ) {
+        FC.Extreme_Rays = ExtremeRays;
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    }
     if ( isComputed(ConeProperty::LinearForm) ) {
         FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
         FC.is_Computed.set(ConeProperty::LinearForm);
@@ -634,8 +640,7 @@ void Cone<Integer>::compute(ComputationMode mode) {
         break;
     case Mode::supportHyperplanes:
         // workaround for not dualizing twice
-        if (isComputed(ConeProperty::Generators)
-         && isComputed(ConeProperty::SupportHyperplanes)) {
+        if (isComputed(ConeProperty::SupportHyperplanes)) {
             vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
             FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
             FC.is_Computed.set(ConeProperty::SupportHyperplanes);
