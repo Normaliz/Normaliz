@@ -913,6 +913,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;
+        if (ht1_triangulation && isComputed(ConeProperty::LinearForm))
+            ht1_triangulation = (gen_degrees[i] == 1);
     }
        
     Matrix<Integer> H=S.read_support_hyperplanes();
@@ -1142,8 +1144,11 @@ void Full_Cone<Integer>::build_cone() {
         if(!new_generator)
             continue;
 
-        // if(!is_pyramid)
-        //    cout << nr_neg*nr_pos << endl;
+        // the i-th generator is used in the triangulation
+        in_triang[i]=true;
+        if (ht1_triangulation && isComputed(ConeProperty::LinearForm))
+            ht1_triangulation = (gen_degrees[i] == 1);
+        
             
         // Magic Bounds to decide whether to use pyramids
         if( supphyp_recursion || (recursion_allowed && nr_neg*nr_pos>RecBoundSuppHyp)){  // go to pyramids because of supphyps
@@ -1189,8 +1194,6 @@ void Full_Cone<Integer>::build_cone() {
                 l++;
             }
         }
-        
-        in_triang[i]=true;
 
         if (verbose && !is_pyramid) {
             verboseOutput() << "generator="<< i+1 <<" and "<<Facets.size()<<" hyperplanes... ";
@@ -1495,14 +1498,6 @@ void Full_Cone<Integer>::primal_algorithm(){
     set_degrees();
     sort_gens_by_degree();
 
-    //do we triangulate in ht1?
-    if (isComputed(ConeProperty::IsHt1ExtremeRays) && ht1_extreme_rays) {
-        //all gens are ht1 or we know the extreme rays and they are ht1
-        ht1_triangulation = true;
-    } else {
-        ht1_triangulation = false;
-    }
-
     /***** Main Work is done in build_cone() *****/
     build_cone();  // evaluates if keep_triangulation==false
     /***** Main Work is done in build_cone() *****/
@@ -1514,18 +1509,6 @@ void Full_Cone<Integer>::primal_algorithm(){
     if(!pointed) return;
 
     if (keep_triangulation) {
-        //check if we made a triangulation with ht1 elements
-        if (!ht1_triangulation && isComputed(ConeProperty::LinearForm)
-            && ht1_extreme_rays) {
-            ht1_triangulation = true;
-
-            for (size_t i=0; i<nr_gen; i++) {
-                if (in_triang[i] && gen_degrees[i]!=1) {
-                    ht1_triangulation = false;
-                    break;
-                }
-            }
-        }
         evaluate_triangulation();
     }
     FreeSimpl.clear();
@@ -2308,7 +2291,7 @@ void Full_Cone<Integer>::reset_tasks(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
+Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
@@ -2333,7 +2316,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
     pointed = false;
     ht1_extreme_rays = false;
     ht1_generated = false;
-    ht1_triangulation = false;
     ht1_hilbert_basis = false;
     integrally_closed = false;
     
@@ -2341,6 +2323,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cpne
     
     Extreme_Rays = vector<bool>(nr_gen,false);
     in_triang = vector<bool> (nr_gen,false);
+    ht1_triangulation = true;
     if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
         Hilbert_Series.add(vector<num_t>(1,1),vector<denom_t>());
@@ -2436,6 +2419,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
         for(size_t i=0;i<nr_gen;i++)
             Extreme_Rays[i]=C.Extreme_Rays[Key[i]];
     in_triang = vector<bool> (nr_gen,false);
+    ht1_triangulation = true;
     
     Linear_Form=C.Linear_Form;
     is_Computed.set(ConeProperty::LinearForm, C.isComputed(ConeProperty::LinearForm));
