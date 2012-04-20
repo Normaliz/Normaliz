@@ -184,9 +184,15 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   Excluded(dim),
   Indicator(dim),
   gen_degrees(dim),
-  hvector(dim+1),
   RS(dim,1)
 {
+    if (C.do_h_vector) {
+        // we need the generators to be sorted by degree
+        size_t hv_max=0;
+        for (size_t i=C.nr_gen-dim; i<C.nr_gen; i++)
+            hv_max += C.gen_degrees[i];
+        hvector.resize(hv_max);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -394,8 +400,6 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     
     if(C.do_h_vector) {
         // count the 0-vector in h-vector with the right shift
-        if(Deg >= hvector.size())
-            hvector.resize(Deg+1);
         hvector[Deg]++;
     }
 
@@ -457,8 +461,6 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             }
             
             //count point in the h-vector
-            if(Deg >= hvector.size())
-                hvector.resize(Deg+1);
             hvector[Deg]++;
         }
         
