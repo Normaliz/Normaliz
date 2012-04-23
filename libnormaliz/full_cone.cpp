@@ -913,7 +913,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;
-        if (ht1_triangulation && isComputed(ConeProperty::LinearForm))
+        if (ht1_triangulation && isComputed(ConeProperty::Grading))
             ht1_triangulation = (gen_degrees[i] == 1);
     }
        
@@ -1146,7 +1146,7 @@ void Full_Cone<Integer>::build_cone() {
 
         // the i-th generator is used in the triangulation
         in_triang[i]=true;
-        if (ht1_triangulation && isComputed(ConeProperty::LinearForm))
+        if (ht1_triangulation && isComputed(ConeProperty::Grading))
             ht1_triangulation = (gen_degrees[i] == 1);
         
             
@@ -1251,10 +1251,10 @@ void Full_Cone<Integer>::extreme_rays_and_ht1_check() {
 
 template<typename Integer>
 void Full_Cone<Integer>::set_degrees() {
-    if(gen_degrees.size()==0 && isComputed(ConeProperty::LinearForm)) // now we set the degrees
+    if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
-        vector<Integer> gen_degrees_Integer=Generators.MxV(Linear_Form);
+        vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
         for (size_t i=0; i<nr_gen; i++) {
             if (gen_degrees_Integer[i] < 1) {
                 errorOutput() << "Grading gives non-positive value " << gen_degrees_Integer[i] << " for generator " << i+1 << "." << endl;
@@ -1478,7 +1478,7 @@ template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
     // if keep_triangulation==false we must first find a grading if it is needed
-    if (!keep_triangulation && !isComputed(ConeProperty::LinearForm)
+    if (!keep_triangulation && !isComputed(ConeProperty::Grading)
         && (do_triangulation || do_ht1_elements || do_h_vector)) {
         ht1_check();
         if(!ht1_generated && !isComputed(ConeProperty::ExtremeRays)) {
@@ -1515,7 +1515,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     
     if (do_triangulation)
         is_Computed.set(ConeProperty::TriangulationSize,true);
-    if (isComputed(ConeProperty::LinearForm) && do_triangulation)
+    if (isComputed(ConeProperty::Grading) && do_triangulation)
         is_Computed.set(ConeProperty::Multiplicity,true);
         
     if (do_Hilbert_basis) {
@@ -1524,13 +1524,13 @@ void Full_Cone<Integer>::primal_algorithm(){
         check_integrally_closed();
     }
     
-    if (isComputed(ConeProperty::LinearForm) && do_Hilbert_basis) {
+    if (isComputed(ConeProperty::Grading) && do_Hilbert_basis) {
         select_ht1_elements();
         check_ht1_hilbert_basis();
     }
     if (do_ht1_elements) {
         for(size_t i=0;i<nr_gen;i++)
-            if(v_scalar_product(Linear_Form,Generators.read(i))==1)
+            if(v_scalar_product(Grading,Generators.read(i))==1)
                 Ht1_Elements.push_front(Generators.read(i));
         Ht1_Elements.sort();
         Ht1_Elements.unique();
@@ -1670,7 +1670,7 @@ void Full_Cone<Integer>::dual_mode() {
 
     if(dim>0) {            //correction needed to include the 0 cone;
         ht1_check();
-        if (isComputed(ConeProperty::LinearForm)) {
+        if (isComputed(ConeProperty::Grading)) {
             if (verbose) { 
                 verboseOutput() << "Find height 1 elements" << endl;
             }
@@ -1678,12 +1678,12 @@ void Full_Cone<Integer>::dual_mode() {
         }
     } else {
         ht1_extreme_rays = ht1_generated = true;
-        Linear_Form=vector<Integer>(dim);
+        Grading=vector<Integer>(dim);
         is_Computed.set(ConeProperty::IsHt1ExtremeRays);
         is_Computed.set(ConeProperty::IsHt1Generated);
-        is_Computed.set(ConeProperty::LinearForm);
+        is_Computed.set(ConeProperty::Grading);
     }
-    if (isComputed(ConeProperty::LinearForm)) check_ht1_hilbert_basis();
+    if (isComputed(ConeProperty::Grading)) check_ht1_hilbert_basis();
     check_integrally_closed();
 }
 
@@ -1859,7 +1859,7 @@ void Full_Cone<Integer>::select_ht1_elements() {
 
     typename list<vector<Integer> >::iterator h = Hilbert_Basis.begin();
     for(;h!=Hilbert_Basis.end();h++)
-        if(v_scalar_product(Linear_Form,*h)==1)
+        if(v_scalar_product(Grading,*h)==1)
             Ht1_Elements.push_back(*h);
     is_Computed.set(ConeProperty::Ht1Elements,true);
 }
@@ -1880,30 +1880,30 @@ void Full_Cone<Integer>::check_pointed() {
 
 template<typename Integer>
 void Full_Cone<Integer>::ht1_check() {
-    if (!isComputed(ConeProperty::LinearForm)          // we still need it and
+    if (!isComputed(ConeProperty::Grading)          // we still need it and
      && !isComputed(ConeProperty::IsHt1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
-            Linear_Form = Extreme.homogeneous(ht1_extreme_rays);
+            Grading = Extreme.homogeneous(ht1_extreme_rays);
             is_Computed.set(ConeProperty::IsHt1ExtremeRays);
             if (ht1_extreme_rays) {
-                is_Computed.set(ConeProperty::LinearForm);
+                is_Computed.set(ConeProperty::Grading);
             }
         } else // extreme rays not known
         if (!isComputed(ConeProperty::IsHt1Generated)) {
-            Linear_Form = Generators.homogeneous(ht1_generated);
+            Grading = Generators.homogeneous(ht1_generated);
             is_Computed.set(ConeProperty::IsHt1Generated);
             if (ht1_generated) {
                 ht1_extreme_rays=true;
                 is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-                is_Computed.set(ConeProperty::LinearForm);
+                is_Computed.set(ConeProperty::Grading);
             }
         }
     }
 
     //now we hopefully have a grading
 
-    if (!isComputed(ConeProperty::LinearForm)) {
+    if (!isComputed(ConeProperty::Grading)) {
         if (isComputed(ConeProperty::ExtremeRays)) {
             // there is no hope to find a grading later
             ht1_generated = false;
@@ -1954,7 +1954,7 @@ void Full_Cone<Integer>::check_ht1_hilbert_basis() {
     if (isComputed(ConeProperty::IsHt1HilbertBasis))
         return;
 
-    if ( !isComputed(ConeProperty::LinearForm) || !isComputed(ConeProperty::HilbertBasis)) {
+    if ( !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::HilbertBasis)) {
         errorOutput() << "WARNING: unsatisfied preconditions in check_ht1_hilbert_basis()!" <<endl;
         return;
     }
@@ -1965,7 +1965,7 @@ void Full_Cone<Integer>::check_ht1_hilbert_basis() {
         ht1_hilbert_basis = true;
         typename list< vector<Integer> >::iterator h;
         for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
-            if (v_scalar_product((*h),Linear_Form)!=1) {
+            if (v_scalar_product((*h),Grading)!=1) {
                 ht1_hilbert_basis = false;
                 break;
             }
@@ -2198,26 +2198,23 @@ void Full_Cone<Integer>::global_reduction() {
 
 template<typename Integer>
 vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
-    if(verbose) {
-        verboseOutput()<<"computing degree function... "<<flush;
-    }
     size_t i;  
     vector<Integer> degree_function(dim,0);
-    if(isComputed(ConeProperty::LinearForm)){ //use Linear_From if we have one
+    if (isComputed(ConeProperty::Grading)) { //use the grading if we have one
         for (i=0; i<dim; i++) {
-            degree_function[i] = Linear_Form[i];
-        }
-        if(verbose) {
-            verboseOutput()<<"using given or homogenous linear form."<<endl;
+            degree_function[i] = Grading[i];
         }
     } else { // add hyperplanes to get a degree function
+        if(verbose) {
+            verboseOutput()<<"computing degree function... "<<flush;
+        }
         typename list< vector<Integer> >::const_iterator h;
         for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); ++h) {
             for (i=0; i<dim; i++) {
                 degree_function[i]+=(*h)[i];
             }
         } 
-        v_make_prime(degree_function); //TODO maybe not needed
+        v_make_prime(degree_function);
         if(verbose) {
             verboseOutput()<<"done."<<endl;
         }
@@ -2421,8 +2418,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     in_triang = vector<bool> (nr_gen,false);
     ht1_triangulation = true;
     
-    Linear_Form=C.Linear_Form;
-    is_Computed.set(ConeProperty::LinearForm, C.isComputed(ConeProperty::LinearForm));
+    Grading=C.Grading;
+    is_Computed.set(ConeProperty::Grading, C.isComputed(ConeProperty::Grading));
     Order_Vector=C.Order_Vector;
     
     do_triangulation=C.do_triangulation;
@@ -2499,8 +2496,8 @@ bool Full_Cone<Integer>::isIntegrallyClosed() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::getLinearForm() const{
-    return Linear_Form;
+vector<Integer> Full_Cone<Integer>::getGrading() const{
+    return Grading;
 }
 
 //---------------------------------------------------------------------------
@@ -2599,8 +2596,8 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<"\nnr_gen="<<nr_gen<<".\n";
     verboseOutput()<<"\nhyp_size="<<hyp_size<<".\n";
     verboseOutput()<<"\nHomogeneous is "<<ht1_generated<<".\n";
-    verboseOutput()<<"\nLinear_Form is:\n";
-    v_read(Linear_Form);
+    verboseOutput()<<"\nGrading is:\n";
+    v_read(Grading);
     verboseOutput()<<"\nMultiplicity is "<<multiplicity<<".\n";
     verboseOutput()<<"\nGenerators are:\n";
     Generators.read();

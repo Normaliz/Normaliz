@@ -71,7 +71,7 @@ class Full_Cone {
     bool is_pyramid;
     
     ConeProperties is_Computed;
-    vector<Integer> Linear_Form;
+    vector<Integer> Grading;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
     vector<bool> Extreme_Rays;
@@ -222,7 +222,7 @@ public:
     bool isHt1ExtremeRays() const;
     bool isHt1HilbertBasis() const;
     bool isIntegrallyClosed() const;
-    vector<Integer> getLinearForm() const; //returns the linear form
+    vector<Integer> getGrading() const; //returns the linear form
     mpq_class getMultiplicity() const; //returns multiplicity
     const Matrix<Integer>& getGenerators() const;
     vector<bool> getExtremeRays() const;

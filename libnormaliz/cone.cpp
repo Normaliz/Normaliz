@@ -97,7 +97,7 @@ Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_dat
     
     //set the grading if one was in the map
     if ( lf.size() == 1 ) {
-        setLinearForm (lf[0]);
+        setGrading (lf[0]);
     }
 }
     
@@ -229,13 +229,13 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries() const {
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getLinearForm() const {
-    return LinearForm;
+vector<Integer> Cone<Integer>::getGrading() const {
+    return Grading;
 }
 
 template<typename Integer>
-Integer Cone<Integer>::getLinearFormDenom() const {
-    return LinearFormDenom;
+Integer Cone<Integer>::getGradingDenom() const {
+    return GradingDenom;
 }
 
 template<typename Integer>
@@ -483,14 +483,14 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::setLinearForm (vector<Integer> lf) {
+void Cone<Integer>::setGrading (vector<Integer> lf) {
     if (lf.size() != dim) {
         errorOutput() << "Linear form has wrong dimension " << lf.size()
                       << " (should be" << dim << ")" << endl;
         throw BadInputException();
     }
     //check if the linear forms are the same
-    if (isComputed(ConeProperty::Generators) && LinearForm == lf) {
+    if (isComputed(ConeProperty::Generators) && Grading == lf) {
         return;
     }
     if (isComputed(ConeProperty::Generators)) {
@@ -503,8 +503,8 @@ void Cone<Integer>::setLinearForm (vector<Integer> lf) {
             }
         }
     }
-    LinearForm = lf;
-    is_Computed.set(ConeProperty::LinearForm);
+    Grading = lf;
+    is_Computed.set(ConeProperty::Grading);
 
     //remove data that depends on the grading 
     Ht1Elements.clear();
@@ -527,7 +527,7 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::IsIntegrallyClosed)) ToCompute.set(ConeProperty::HilbertBasis);
     if(ToCompute.test(ConeProperty::IsHt1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
     if(ToCompute.test(ConeProperty::IsHt1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
-    if(ToCompute.test(ConeProperty::LinearForm))         ToCompute.set(ConeProperty::ExtremeRays);
+    if(ToCompute.test(ConeProperty::Grading))         ToCompute.set(ConeProperty::ExtremeRays);
     if(ToCompute.test(ConeProperty::ExtremeRays))        ToCompute.set(ConeProperty::SupportHyperplanes);
     if(ToCompute.test(ConeProperty::IsPointed))          ToCompute.set(ConeProperty::SupportHyperplanes);
 
@@ -621,9 +621,9 @@ void Cone<Integer>::compute(ComputationMode mode) {
         FC.Extreme_Rays = ExtremeRays;
         FC.is_Computed.set(ConeProperty::ExtremeRays);
     }
-    if ( isComputed(ConeProperty::LinearForm) ) {
-        FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
-        FC.is_Computed.set(ConeProperty::LinearForm);
+    if ( isComputed(ConeProperty::Grading) ) {
+        FC.Grading = BasisChange.to_sublattice_dual(Grading);
+        FC.is_Computed.set(ConeProperty::Grading);
         FC.set_degrees();
     }
 
@@ -723,9 +723,9 @@ void Cone<Integer>::compute_dual() {
     }
     Full_Cone<Integer> FC(ConeDM);
     // Give extra data to FC
-    if ( isComputed(ConeProperty::LinearForm) ) {
-        FC.Linear_Form = BasisChange.to_sublattice_dual(LinearForm);
-        FC.is_Computed.set(ConeProperty::LinearForm);
+    if ( isComputed(ConeProperty::Grading) ) {
+        FC.Grading = BasisChange.to_sublattice_dual(Grading);
+        FC.is_Computed.set(ConeProperty::Grading);
         FC.set_degrees();
     }
     FC.dual_mode();
@@ -799,14 +799,14 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         ht1_extreme_rays = FC.isHt1ExtremeRays();
         is_Computed.set(ConeProperty::IsHt1ExtremeRays);
     }
-    if (FC.isComputed(ConeProperty::LinearForm)) {
-        if (!isComputed(ConeProperty::LinearForm)) {
-            LinearForm = BasisChange.from_sublattice_dual(FC.getLinearForm());
-            is_Computed.set(ConeProperty::LinearForm);
+    if (FC.isComputed(ConeProperty::Grading)) {
+        if (!isComputed(ConeProperty::Grading)) {
+            Grading = BasisChange.from_sublattice_dual(FC.getGrading());
+            is_Computed.set(ConeProperty::Grading);
         }
-        //compute denominator of LinearForm
-        LinearFormDenom  = v_scalar_product(LinearForm,Generators[0]);
-        LinearFormDenom /= v_scalar_product(FC.getLinearForm(),FC.Generators[0]);
+        //compute denominator of Grading
+        GradingDenom  = v_scalar_product(Grading,Generators[0]);
+        GradingDenom /= v_scalar_product(FC.getGrading(),FC.Generators[0]);
     }
     if (FC.isComputed(ConeProperty::IsHt1HilbertBasis)) {
         ht1_hilbert_basis = FC.isHt1HilbertBasis();

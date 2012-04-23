@@ -307,7 +307,7 @@ void Output<Integer>::write_inv_file() const{
             if (Result->isComputed(ConeProperty::Ht1Elements)) {
                 inv<<"integer height_1_elements = "<<Result->getHt1Elements().size()<<endl;
             }
-            vector<Integer> Linear_Form = Result->getLinearForm();
+            vector<Integer> Linear_Form = Result->getGrading();
             inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
             for (i = 0; i < Linear_Form.size(); i++) {
                 inv<<Linear_Form[i]<<" ";
@@ -426,13 +426,13 @@ void Output<Integer>::write_files() const {
             } else {
                 out<<"extreme rays are not of height 1";
             }
-            if ( Result->isComputed(ConeProperty::LinearForm) ) {
+            if ( Result->isComputed(ConeProperty::Grading) ) {
                 out<<" via the linear form:"<<endl;
-                vector<Integer> Linear_Form = Result->getLinearForm();
+                vector<Integer> Linear_Form = Result->getGrading();
                 for (i = 0; i < Linear_Form.size(); i++) {
                     out<<Linear_Form[i]<<" ";
                 }
-                Integer denom = Result->getLinearFormDenom();
+                Integer denom = Result->getGradingDenom();
                 if (denom != 1) {
                     out << endl <<"with denominator = "<<denom;
                 }

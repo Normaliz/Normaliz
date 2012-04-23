@@ -59,7 +59,7 @@ public:
      * detection which can be in this method or later!
      * It will delete all data from the cone that depend on the grading!
      */
-    void setLinearForm (vector<Integer> lf);
+    void setGrading (vector<Integer> lf);
 
 
 //---------------------------------------------------------------------------
@@ -92,8 +92,8 @@ public:
     vector< vector<Integer> > getHilbertBasis() const;
     vector< vector<Integer> > getHt1Elements() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
-    vector<Integer> getLinearForm() const;
-    Integer getLinearFormDenom() const;
+    vector<Integer> getGrading() const;
+    Integer getGradingDenom() const;
     mpq_class getMultiplicity() const;
     bool isPointed() const;
     bool isHt1ExtremeRays() const;
@@ -125,8 +125,8 @@ private:
     vector< vector<Integer> > Ht1Elements;
     HilbertSeries HSeries;
     vector< vector<Integer> > HilbertQuasiPolynomial;
-    vector<Integer> LinearForm;
-    Integer LinearFormDenom;
+    vector<Integer> Grading;
+    Integer GradingDenom;
     bool pointed;
     bool ht1_extreme_rays;
     bool ht1_hilbert_basis;

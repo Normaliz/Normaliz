@@ -38,7 +38,7 @@ namespace ConeProperty {
         HilbertBasis,
         Ht1Elements,
         HilbertSeries,
-        LinearForm,
+        Grading,
         IsPointed,
         IsHt1Generated,
         IsHt1ExtremeRays,

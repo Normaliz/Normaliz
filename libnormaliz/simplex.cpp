@@ -211,7 +211,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         Generators[i] = C.Generators[key[i]];
         
     //degrees of the generators according to the Grading of C
-    if(C.isComputed(ConeProperty::LinearForm))
+    if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++)
             gen_degrees[i] = C.gen_degrees[key[i]];
     
@@ -225,7 +225,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     bool GDiag_computed=false;
     bool potentially_unimodular=(height==1);   
             
-    if(potentially_unimodular && C.isComputed(ConeProperty::LinearForm)){
+    if(potentially_unimodular && C.isComputed(ConeProperty::Grading)){
         long g=0;
         for(i=0;i<dim;++i){
             g=gcd(g,gen_degrees[i]);
@@ -536,7 +536,7 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
-    if (!C.isComputed(ConeProperty::LinearForm))
+    if (!C.isComputed(ConeProperty::Grading))
         return;
     if (C.ht1_triangulation) {
         mult_sum += to_mpz(volume);
