@@ -25,6 +25,15 @@ using namespace std;
 template<typename Integer>
 Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
     initialize();
+    if (!Input.empty()) {
+        dim = Input.front().size();
+        if (input_type == Type::rees_algebra || input_type == Type::polytope) {
+            dim++; // we add one component
+        }
+        if (input_type == Type::congruences) {
+            dim--; //congruences have one extra column
+        }
+    }
     single_matrix_input(Input, input_type);
 }
 
@@ -38,27 +47,34 @@ Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_dat
     if (it != multi_input_data.end()) {
         lf = it->second;
         if (lf.size() != 1) {
-            errorOutput() << "bad grading!"<<endl;
+            errorOutput() << "ERROR: bad grading!"<<endl;
             throw BadInputException();
         }
         multi_input_data.erase(it);
+    
+    }
+    //determine dimension
+    it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it) {
+        if (!it->second.empty()) {
+            dim = it->second.front().size();
+            if (it->first == Type::rees_algebra || it->first == Type::polytope) {
+                dim++; // we add one component
+            }
+            if (it->first == Type::congruences) {
+                dim--; //congruences have one extra column
+            }
+            break;
+        }
+    }
+    //set the grading if one was in the map
+    if ( lf.size() == 1 ) {
+        setGrading (lf[0]);
     }
 
     if (multi_input_data.size() == 1) { // use the "one-matrix-input" method
-        it = multi_input_data.begin();
         single_matrix_input(it->second,it->first);
     } else {               // now we have to have constraints!
-    
-        it = multi_input_data.begin();
-        for(; it != multi_input_data.end(); ++it) {
-            if (it->second.size() > 0) {
-                dim = it->second.begin()->size();
-                if (it->first == Type::congruences) {
-                    dim--; //congruences have one extra column
-                }
-                break;
-            }
-        }
         Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
         for (; it != multi_input_data.end(); ++it) {
             if (it->second.size() == 0) {
@@ -89,15 +105,10 @@ Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_dat
                 default:
                     errorOutput() << "This InputType combination is currently not supported!" << endl;
                     throw BadInputException();
-                }
+            }
         }
         if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
         prepare_input_type_456(Congruences, Equations, Inequalities);
-    }
-    
-    //set the grading if one was in the map
-    if ( lf.size() == 1 ) {
-        setGrading (lf[0]);
     }
 }
     
@@ -112,7 +123,6 @@ void Cone<Integer>::initialize() {
 
 template<typename Integer>
 void Cone<Integer>::single_matrix_input(const vector< vector<Integer> >& Input, InputType input_type) {
-    if (!Input.empty()) dim = Input.front().size();
 
     switch (input_type) {
         case Type::integral_closure: prepare_input_type_0(Input); break;
@@ -126,7 +136,6 @@ void Cone<Integer>::single_matrix_input(const vector< vector<Integer> >& Input, 
           prepare_input_type_45(Input, vector<vector<Integer> >());
           break;
         case Type::congruences:
-          dim--;
           prepare_input_type_456(Input, vector<vector<Integer> >(), vector<vector<Integer> >());
           break;
         case Type::lattice_ideal:    prepare_input_type_10(Input); break;
@@ -309,6 +318,7 @@ void Cone<Integer>::prepare_input_type_1(const vector< vector<Integer> >& Input)
 
 //---------------------------------------------------------------------------
 
+/* polytope input */
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input) {
     size_t j;
@@ -316,22 +326,26 @@ void Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input)
     if (nr == 0) {
         Generators = Input;
     } else { //append a column of 1
-        Generators = vector< vector<Integer> >(nr);
-        vector<Integer> row(dim+1);
-        row[dim]=1;
+        Generators = vector< vector<Integer> >(nr, vector<Integer>(dim));
         for (size_t i=0; i<nr; i++) {
-            for (j=0; j<dim; j++) row[j]=Input[i][j];
-            Generators[i]=row;
+            for (j=0; j<dim-1; j++) 
+                Generators[i][j] = Input[i][j];
+            Generators[i][dim-1]=1;
         }
-        dim++;
     }
     is_Computed.set(ConeProperty::Generators);
 
     compose_basis_change(Sublattice_Representation<Integer>(Matrix<Integer>(Generators),true));
+
+    // use the added last component as grading
+    Grading = vector<Integer>(dim,0);
+    Grading[dim-1] = 1;
+    is_Computed.set(ConeProperty::Grading);
 }
 
 //---------------------------------------------------------------------------
 
+/* rees input */
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV) {
     Matrix<Integer> Input(InputV);
@@ -374,10 +388,10 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
     }
     is_Computed.set(ConeProperty::ReesPrimary);
     Generators = Full_Cone_Generators.get_elements();
-    dim = Generators.begin()->size();
     is_Computed.set(ConeProperty::Generators);
 
     compose_basis_change(Sublattice_Representation<Integer>(Full_Cone_Generators.nr_of_columns()));
+
 }
 
 //---------------------------------------------------------------------------
@@ -486,11 +500,11 @@ template<typename Integer>
 void Cone<Integer>::setGrading (vector<Integer> lf) {
     if (lf.size() != dim) {
         errorOutput() << "Linear form has wrong dimension " << lf.size()
-                      << " (should be" << dim << ")" << endl;
+                      << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
     //check if the linear forms are the same
-    if (isComputed(ConeProperty::Generators) && Grading == lf) {
+    if (isComputed(ConeProperty::Grading) && Grading == lf) {
         return;
     }
     if (isComputed(ConeProperty::Generators)) {
@@ -514,6 +528,7 @@ void Cone<Integer>::setGrading (vector<Integer> lf) {
     is_Computed.reset(ConeProperty::IsHt1HilbertBasis);
     is_Computed.reset(ConeProperty::Ht1Elements);
     is_Computed.reset(ConeProperty::HilbertSeries);
+    is_Computed.reset(ConeProperty::Multiplicity);
 }
 
 //---------------------------------------------------------------------------
