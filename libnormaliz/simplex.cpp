@@ -31,9 +31,6 @@
 #include "list_operations.h"
 #include "HilbertSeries.h"
 
-#include "my_omp.h"
-
-
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {

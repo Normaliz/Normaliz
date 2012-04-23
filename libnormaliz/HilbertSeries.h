@@ -56,8 +56,6 @@ class HilbertSeries;
 // write a readable representation to the stream
 ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
-//typedef mpz_class num_t;    //integer type for numerator
-//we always want to use machine integers of at least 64bit
 typedef long long num_t;    //integer type for numerator
 typedef long denom_t;       //integer type for denominator
 

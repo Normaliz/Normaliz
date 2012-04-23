@@ -90,7 +90,7 @@ class SimplexEvaluator {
     vector< bool > Excluded;
     vector< Integer > Indicator; 
     vector< long > gen_degrees;
-    vector< long long > hvector;  //h-vector of the current evaluation
+    vector< num_t > hvector;  //h-vector of the current evaluation
     HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Hilbert_Basis;
     list< vector<Integer> > Candidates;

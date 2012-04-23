@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include <vector>
+#include <ostream>
 
 #include "libnormaliz.h"
 

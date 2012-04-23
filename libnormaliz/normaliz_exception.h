@@ -20,7 +20,7 @@
 #define NORMALIZ_EXEPTION_H_
 
 #include <exception>
-#include "libnormaliz.h"
+//#include "libnormaliz.h"
 
 namespace libnormaliz {
 

@@ -21,10 +21,6 @@
 #define OUTPUT_H
 //---------------------------------------------------------------------------
 
-#include "libnormaliz/integer.h"
-#include "libnormaliz/matrix.h"
-#include "libnormaliz/lineare_transformation.h"
-#include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/cone.h"
 
 using namespace std;

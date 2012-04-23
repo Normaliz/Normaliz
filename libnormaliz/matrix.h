@@ -27,9 +27,7 @@
 #include <iostream>
 #include <string>
 
-
 #include "libnormaliz.h"
-#include "integer.h"
 
 //---------------------------------------------------------------------------
 

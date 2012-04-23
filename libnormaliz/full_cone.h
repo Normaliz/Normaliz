@@ -21,12 +21,11 @@
 
 #include <list>
 #include <vector>
-#include <set>
+//#include <set>
 #include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz.h"
 #include "cone_property.h"
-#include "integer.h"
 #include "matrix.h"
 #include "simplex.h"
 #include "cone_dual_mode.h"
@@ -35,17 +34,11 @@
 namespace libnormaliz {
 using std::list;
 using std::vector;
-using std::set;
+//using std::set;
 using std::pair;
 using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
-template<typename Integer> class Full_Cone;
-
-//generates a lifted cone with the lower part simplicial, needed for computing the triangulation by lifting
-template<typename Integer>
-void lift(Full_Cone<Integer>& Lifted, Matrix<Integer> Extreme_Generators);
-
 
 template<typename Integer>
 class Full_Cone {
