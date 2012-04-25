@@ -18,6 +18,7 @@
 
 #include <list>
 #include "cone.h"
+#include "full_cone.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -220,6 +221,11 @@ map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () co
 template<typename Integer>
 vector< pair<vector<key_t>,Integer> > Cone<Integer>::getTriangulation() const {
     return Triangulation;
+}
+
+template<typename Integer>
+size_t Cone<Integer>::getTriangulationSize() const {
+    return TriangulationSize;
 }
 
 template<typename Integer>
@@ -570,6 +576,8 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
             } else { //no triangulation
                 if(ToCompute.test(ConeProperty::Ht1Elements)) {
                     compute(Mode::height1Elements);
+                } else if(ToCompute.test(ConeProperty::TriangulationSize)) {
+                    compute(Mode::volumeLarge);
                 } else if(ToCompute.test(ConeProperty::SupportHyperplanes)) {
                     compute(Mode::supportHyperplanes);
                 }
@@ -777,6 +785,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
+        is_Computed.set(ConeProperty::TriangulationSize);
     }
     if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();

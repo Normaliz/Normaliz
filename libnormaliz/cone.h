@@ -23,13 +23,14 @@
 #include <map>
 #include "libnormaliz.h"
 #include "cone_property.h"
-#include "full_cone.h"
 #include "sublattice_representation.h"
+#include "HilbertSeries.h"
 
 namespace libnormaliz {
 using std::vector;
 using std::map;
 
+template<typename Integer> class Full_Cone;
 
 template<typename Integer>
 class Cone {
@@ -89,6 +90,7 @@ public:
     vector< vector<Integer> > getCongruences() const;
     map< InputType , vector< vector<Integer> > > getConstraints() const;
     vector< pair<vector<key_t>, Integer> > getTriangulation() const;
+    size_t getTriangulationSize() const;
     vector< vector<Integer> > getHilbertBasis() const;
     vector< vector<Integer> > getHt1Elements() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object

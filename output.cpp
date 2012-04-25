@@ -419,7 +419,10 @@ void Output<Integer>::write_files() const {
             }
         }
         out << endl;
-        
+        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+            out << "size of triangulation = " << Result->getTriangulationSize()
+                << endl << endl;
+        }
         if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
             if ( Result->isHt1ExtremeRays() ) {
                 out<<"extreme rays are of height 1";
