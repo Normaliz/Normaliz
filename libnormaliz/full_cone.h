@@ -88,8 +88,9 @@ class Full_Cone {
     };
     
     // list<SHORTSIMPLEX> CheckTri;
-    list <SHORTSIMPLEX> Triangulation;      // triangulation of cone
-    size_t TriangulationSize;               // number of elements in Triangulation, for efficiency
+    list <SHORTSIMPLEX> Triangulation; // triangulation of cone
+    size_t TriangulationSize;          // number of elements in Triangulation, for efficiency
+    Integer detSum;                  // sum of the det
 
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list <SHORTSIMPLEX>::iterator> TriSectionLast;     // last simplex with lead vertex i

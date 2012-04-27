@@ -1444,6 +1444,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     {
         typename list<SHORTSIMPLEX>::iterator s = Triangulation.begin();
         size_t spos=0;
+        Integer priv_detSum = 0;
         SimplexEvaluator<Integer> simp(*this);
         #pragma omp for schedule(dynamic) 
         for(size_t i=0; i<TriangulationSize; i++){
@@ -1451,6 +1452,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             for(; i < spos; --spos, --s) ;
 
             s->height = simp.evaluate(s->key,s->height);
+            priv_detSum += s->height;
             if(keep_triangulation)
                 sort(s->key.begin(),s->key.end());
             if (verbose) {
@@ -1468,6 +1470,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             #pragma omp critical(HSERIES)
             Hilbert_Series += simp.getHilbertSeriesSum();
         }
+        #pragma omp critical(DETSUM)
+        detSum += priv_detSum;
     }
 
     if (do_partial_triangulation) { //TODO smarter sorting!

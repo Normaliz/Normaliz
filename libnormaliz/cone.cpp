@@ -229,6 +229,11 @@ size_t Cone<Integer>::getTriangulationSize() const {
 }
 
 template<typename Integer>
+Integer Cone<Integer>::getTriangulationDetSum() const {
+    return TriangulationDetSum;
+}
+
+template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
     return HilbertBasis;
 }
@@ -785,6 +790,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
+        TriangulationDetSum = FC.detSum;
         is_Computed.set(ConeProperty::TriangulationSize);
     }
     if (FC.isComputed(ConeProperty::Triangulation)) {

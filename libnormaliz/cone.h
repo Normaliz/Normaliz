@@ -91,6 +91,7 @@ public:
     map< InputType , vector< vector<Integer> > > getConstraints() const;
     vector< pair<vector<key_t>, Integer> > getTriangulation() const;
     size_t getTriangulationSize() const;
+    Integer getTriangulationDetSum() const;
     vector< vector<Integer> > getHilbertBasis() const;
     vector< vector<Integer> > getHt1Elements() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
@@ -121,6 +122,7 @@ private:
     vector<bool> ExtremeRays;
     vector< vector<Integer> > SupportHyperplanes;
     size_t TriangulationSize;
+    Integer TriangulationDetSum;
     vector< pair<vector<key_t>, Integer> > Triangulation;
     mpq_class multiplicity;
     vector< vector<Integer> > HilbertBasis;
