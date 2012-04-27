@@ -420,47 +420,61 @@ void Output<Integer>::write_files() const {
         }
         out << endl;
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
-            out << "size of triangulation = " << Result->getTriangulationSize()
-                << endl << endl;
+            out << "size of triangulation = " << Result->getTriangulationSize() << endl;
+            out << "resulting sum of |det|s = " << endl; //TODO sum
+            out << endl;
         }
-        if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
-            if ( Result->isHt1ExtremeRays() ) {
-                out<<"extreme rays are of height 1";
-            } else {
-                out<<"extreme rays are not of height 1";
+        if ( Result->isComputed(ConeProperty::Grading) ) {
+            out << "grading:" << endl
+                << Result->getGrading();
+            Integer denom = Result->getGradingDenom();
+            if (denom != 1) {
+                out << "with denominator = " << denom << endl;
             }
-            if ( Result->isComputed(ConeProperty::Grading) ) {
-                out<<" via the linear form:"<<endl;
-                vector<Integer> Linear_Form = Result->getGrading();
-                for (i = 0; i < Linear_Form.size(); i++) {
-                    out<<Linear_Form[i]<<" ";
+            out << endl;
+            if (Result->isComputed(ConeProperty::ExtremeRays)) {
+                out << "degrees of extreme rays:"<<endl;
+                map<Integer,long> deg_count;
+                vector<Integer> degs =
+                  Matrix<Integer>(Result->getExtremeRays()).MxV(Result->getGrading());
+                for (i=0; i<degs.size(); ++i) {
+                    deg_count[degs[i]]++;
                 }
-                Integer denom = Result->getGradingDenom();
-                if (denom != 1) {
-                    out << endl <<"with denominator = "<<denom;
-                }
+                out << deg_count;
+            }
+        }
+        else if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
+            if ( !Result->isHt1ExtremeRays() ) {
+                out << "extreme rays are not of height 1" << endl;
+            }
+        }     
+        out<<endl;
+        if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
+          && Result->isHt1ExtremeRays() ) {
+            if (Result->isHt1HilbertBasis()) {
+                out << "Hilbert basis elements are of height 1";
+            } else {
+                out << "Hilbert basis elements are not of height 1";
             }
             out<<endl<<endl;
-            if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
-              && Result->isHt1ExtremeRays() ) {
-                if (Result->isHt1HilbertBasis()) {
-                    out << "Hilbert basis elements are of height 1";
-                } else {
-                    out << "Hilbert basis elements are not of height 1";
-                }
-                out<<endl<<endl;
-            }
-            if ( Result->isComputed(ConeProperty::Multiplicity) ) {
-                out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
-            }
         }
+        if ( Result->isComputed(ConeProperty::Multiplicity) ) {
+            out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
+        }
+        
         if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
             const HilbertSeries& HS = Result->getHilbertSeries();
-            out << "h-vector:"    << endl << HS.getNumerator();
-            out << "denominator:" << endl << HS.getDenominator();
+            out << "Hilbert series:" << endl << HS.getNumerator();
+            map<long, long> HS_Denom = HS.getDenominator();
+            long nr_factors = 0;
+            for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
+                nr_factors += it->second;
+            }
+            out << "denominator with " << nr_factors << " factors:" << endl;
+            out << HS.getDenominator();
             out << endl;
-            long periode = HS.getPeriode();
-            if (periode == 1) {
+            long period = HS.getPeriod();
+            if (period == 1) {
                 out << "Hilbert polynomial:" << endl;
                 out << HS.getHilbertQuasiPolynomial()[0];
                 out << "with common denominator = ";
@@ -470,12 +484,13 @@ void Output<Integer>::write_files() const {
                 // output cyclonomic representation
                 out << "Hilbert series with cyclotomic denominator:" << endl;
                 out << HS.getCyclotomicNumerator();
+                out << "cyclotomic denominator:" << endl;
                 out << HS.getCyclotomicDenominator();
                 out << endl;
                 // Hilbert quasi-polynomial
                 vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
                 if (hilbert_quasi_poly.size() > 0) { // == 0 means not computed
-                    out<<"Hilbert quasi-polynomial:"<<endl;
+                    out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
                     Matrix<mpz_class> HQP(hilbert_quasi_poly);
                     HQP.pretty_print(out,true);
                     out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenominator();

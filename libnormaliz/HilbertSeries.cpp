@@ -144,9 +144,9 @@ void HilbertSeries::simplify() const {
     if (is_simplified)
         return;
     collectData();
-    cout << "num (h-vector) : " << num;
-    cout << "denom (1-t^i)  : " << denom;
-    cout << *this;
+    if (verbose) {
+        cout << "Hilbert series before simplification: "<< endl << *this;
+    }
     vector<mpz_class> q, r, poly; //polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
     // During this method the Hilbert series is given by num/(denom*cdenom)
@@ -214,14 +214,11 @@ void HilbertSeries::simplify() const {
     cyclo_denom = cdenom;
 
     // now collect the cyclotomic polynomials in (1-t^i) factors
-    cout << "num (h-vector) : " << num;
-    cout << "denom (cyclo)  : " << cdenom;
-    periode = lcm_of_keys(cdenom);
+    period = lcm_of_keys(cdenom);
     dim = cdenom[1];
-    cout << "periode: " << periode << endl;
-    i = periode;
-    if (periode > 2000) {
-        errorOutput() << "WARNING: Periode is to big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
+    i = period;
+    if (period > 2000) {
+        errorOutput() << "WARNING: Period is to big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         i = cdenom.rbegin()->first;
     }
     while (!cdenom.empty()) {
@@ -246,15 +243,15 @@ void HilbertSeries::simplify() const {
         }
     }
 
-    cout << "num (h-vector) : " << num;
-    cout << "denom (1-t^i)  : " << denom;
-    cout << *this;
+    if (verbose) {
+        cout << "Simplified Hilbert series: " << endl << *this;
+    }
     is_simplified = true;
 }
 
-long HilbertSeries::getPeriode() const {
+long HilbertSeries::getPeriod() const {
     simplify();
-    return periode;
+    return period;
 }
 
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
@@ -273,12 +270,12 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenominator() const {
 
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
     simplify();
-    if (periode > 2000) {
-        errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the periode "<< periode <<" is to big!" <<endl;
+    if (period > 2000) {
+        errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is to big!" <<endl;
         return;
     }
     long i,j;
-    //periode und dim encode the denominator
+    //period und dim encode the denominator
     //now adjust the numerator
     long num_size = num.size();
     vector<mpz_class> norm_num(num_size);  //normalized numerator
@@ -291,9 +288,9 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
         d = rit->first;
         //nothing to do if it already has the correct t-power
-        if (d != periode) {
+        if (d != period) {
             //norm_num *= (1-t^p / 1-t^d)^denom[d]
-            poly_div(factor, r, coeff_vector<mpz_class>(periode), coeff_vector<mpz_class>(d));
+            poly_div(factor, r, coeff_vector<mpz_class>(period), coeff_vector<mpz_class>(d));
             assert(r.size()==0); //assert rest r is 0
             //TODO more efficient method *=
             //TODO Exponentiation by squaring of factor, then *=
@@ -302,33 +299,33 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
             }
         }
     }
-    //cut numerator into periode many pieces and apply standard method
-    quasi_poly = vector< vector<mpz_class> >(periode);
+    //cut numerator into period many pieces and apply standard method
+    quasi_poly = vector< vector<mpz_class> >(period);
     long nn_size = norm_num.size();
-    for (j=0; j<periode; ++j) {
+    for (j=0; j<period; ++j) {
         quasi_poly[j].reserve(dim);
     }
     for (i=0; i<nn_size; ++i) {
-        quasi_poly[i%periode].push_back((norm_num[i]));
+        quasi_poly[i%period].push_back((norm_num[i]));
     }
 
-    for (j=0; j<periode; ++j) {
+    for (j=0; j<period; ++j) {
         quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
     }
     
-    //substitute t by t/periode:
-    //dividing by periode^dim and multipling the coeff with powers of periode
+    //substitute t by t/period:
+    //dividing by period^dim and multipling the coeff with powers of period
     mpz_class pp=1;
     for (i = dim-2; i >= 0; --i) {
-        pp *= periode; //p^i   ok, it is p^(dim-1-i)
-        for (j=0; j<periode; ++j) {
+        pp *= period; //p^i   ok, it is p^(dim-1-i)
+        for (j=0; j<period; ++j) {
             quasi_poly[j][i] *= pp;
         }
     } //at the end pp=p^dim-1
     //the common denominator for all coefficients, dim! * pp
     quasi_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
-    for (j=0; j<periode; ++j) {
+    for (j=0; j<period; ++j) {
         linear_substitution<mpz_class>(quasi_poly[j], j); // replaces quasi_poly[j]
     }
     //divide by gcd //TODO operate directly on vector
@@ -479,8 +476,6 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
     Integer divisor;
     size_t i=0;
 
-//  cout<<"poly_div: r_start="<<r;
-//  cout<<"poly_div: div="<<b;
     while (r.size() >= b_size) {
         
         divisor = r.back()/b.back();
@@ -490,8 +485,6 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
             r[i+degdiff] -= divisor * b[i];
         }
         remove_zeros(r);
-//      cout<<"r = "<<r;
-//      cout<<"q = "<<q;
         degdiff = r.size()-b_size;
     }
 
@@ -519,7 +512,7 @@ vector<Integer> cyclotomicPoly(long n) {
                     }
                 }
                 CyclotomicPoly[i] = poly;
-                cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
+                //cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
             }
         }
     }

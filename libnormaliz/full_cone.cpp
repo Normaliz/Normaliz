@@ -769,25 +769,23 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     
     if(skip_remaining_tri)
     {
-        // verboseOutput() << nr_done << " of " << listsize << " pyramids done. " << omp_get_level() << endl;
         Top_Cone->evaluate_triangulation();
     }
     if(skip_remaining_pyr){
-            if (verbose)
-                verboseOutput() << ">>>>>>>>>>  descending to level " << store_level << endl;
-                Top_Cone->evaluate_stored_pyramids(store_level);
+        if (verbose) {
+            verboseOutput() << "**************************************************" << endl;
+            verboseOutput() << "descending to level " << store_level << endl;
+        }
+        Top_Cone->evaluate_stored_pyramids(store_level);
     }    
     
     } while(skip_remaining_tri || skip_remaining_pyr);
     
-    //verboseOutput() << nr_done << " of " << listsize << " pyramids done." << endl;
-        
     if(check_evaluation_buffer()){
           Top_Cone->evaluate_triangulation();
     } 
     
     // cout << "Aus PP " << omp_get_level() << endl;
-
 }
 
 //---------------------------------------------------------------------------
@@ -974,11 +972,11 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 
     size_t nr_done=0;
     size_t nr_pyramids=nrPyramids[level];
-    vector<short> Done(nr_pyramids,0);
+    vector<char> Done(nr_pyramids,0);
     if (verbose) {
-        verboseOutput() << "************************************************" << endl;
+        verboseOutput() << "**************************************************" << endl;
         verboseOutput() << "Evaluating " << nr_pyramids << " pyramids on level " << level << endl;
-        verboseOutput() << "************************************************" << endl;
+        verboseOutput() << "**************************************************" << endl;
     }
     typename list<vector<key_t> >::iterator p;
     size_t ppos;
@@ -1023,34 +1021,66 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
                 
             if(nrPyramids[level+1]>200000 && nr_done < nr_pyramids) // CHOOSE SAME VALUE IN process_pytamids
                  skip_remaining_pyr=true;
-       }
+        }
        
-        if(skip_remaining_tri){
+        // remove done pyramids
+        p = Pyramids[level].begin();
+        for(size_t i=0; i<nr_pyramids; i++){
+            if (Done[i]) {
+                p=Pyramids[level].erase(p);
+                nr_pyramids--;
+                Done[i]=0;
+            } else {
+                ++p;
+            }
+        }
+        nr_done=0;
+        nrPyramids[level]=nr_pyramids;
+
+        if (skip_remaining_tri) {
             if (verbose)
-                verboseOutput() << nr_done << " of " << nr_pyramids << 
-                    " pyramids done on level " << level << ", ";
+                verboseOutput() << nr_pyramids <<
+                    " pyramids remaining on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
         }
 
         if(skip_remaining_pyr){
-            if (verbose)
-                verboseOutput() << ">>>>>>>>>>>>>>> " << nr_done << " of " << nr_pyramids << 
-                            " pyramids done, descending to level " << level+1 << endl;
+            if (verbose){
+                verboseOutput() << "**************************************************" << endl;
+
+                for (size_t l=0; l<=level; ++l) {
+                    if (nrPyramids[l]>0) {
+                        verboseOutput() << "level " << l << " pyramids remaining: "
+                                        << nrPyramids[l] << endl;
+                    }
+                }
+                verboseOutput() << "descending to level " << level+1 << endl;
+            }
             evaluate_stored_pyramids(level+1);
-       }
+        }
     
-     }while(skip_remaining_tri || skip_remaining_pyr);
+    } while(skip_remaining_tri || skip_remaining_pyr);
      
-     if (verbose)
-         verboseOutput() << nr_done << " of " << nr_pyramids << " pyramids on level "<< level << " done!"<<endl;
-     if(check_evaluation_buffer())
-     {
+    if (verbose) {
+        verboseOutput() << "**************************************************" << endl;
+        verboseOutput() << "all pyramids on level "<< level << " done!"<<endl;
+    }
+    if(check_evaluation_buffer())
+    {
         Top_Cone->evaluate_triangulation();
-     }
+    }
      
-     Pyramids[level].clear();
-     nrPyramids[level]=0;
-     evaluate_stored_pyramids(level+1);  
+    Pyramids[level].clear();
+    nrPyramids[level]=0;
+    if (verbose){
+        for (size_t l=0; l<=level; ++l) {
+             if (nrPyramids[l]>0) {
+                verboseOutput() << "level " << l << " pyramids remaining: "
+                                << nrPyramids[l] << endl;
+            }
+        }
+    }
+    evaluate_stored_pyramids(level+1);  
 }
 
 //---------------------------------------------------------------------------
@@ -1061,12 +1091,11 @@ template<typename Integer>
 void Full_Cone<Integer>::build_cone() {
     if(dim>0){            //correction needed to include the 0 cone;
     if (verbose && !is_pyramid) {
-        verboseOutput()<<"\n************************************************************\n";
+        verboseOutput()<<endl<<"************************************************************"<<endl;
         verboseOutput()<<"starting primal algorithm ";
         if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
         if (do_triangulation) {
             verboseOutput()<<"with full triangulation ";
-            if (!keep_triangulation) verboseOutput()<<"and direct evaluation ";
         }
         if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
         verboseOutput()<<"..."<<endl;
@@ -1196,10 +1225,12 @@ void Full_Cone<Integer>::build_cone() {
         }
 
         if (verbose && !is_pyramid) {
-            verboseOutput() << "generator="<< i+1 <<" and "<<Facets.size()<<" hyperplanes... ";
-            if(keep_triangulation)
-                verboseOutput() << TriangulationSize << " simplices ";
-            verboseOutput()<<endl;
+            verboseOutput() << "gen="<< i+1 <<", "<<Facets.size()<<" hyp";
+            if(nrPyramids[0]>0)
+                verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
+            if(do_triangulation||do_partial_triangulation)
+                verboseOutput() << ", " << TriangulationSize << " simpl";
+            verboseOutput()<< endl;
         }
     }
 
@@ -1304,10 +1335,10 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         i++;
     }
     
-    cout << "Degrees after sort" << endl;
-    for(size_t k=0;k<nr_gen;k++)
-        cout << gen_degrees[k] << " " ;
-    cout << endl;
+    if (verbose){
+        verboseOutput() << endl << "Degrees after sort" << endl;
+        verboseOutput() << gen_degrees;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -1439,10 +1470,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
     }
 
-    if (do_partial_triangulation) {
+    if (do_partial_triangulation) { //TODO smarter sorting!
         if (verbose) {
-            cout<<endl<<"ht1: "<<Ht1_Elements.size();
-            cout<<"   cand: "<<Candidates.size()<<flush;
+            verboseOutput() << endl << "ht1: " << Ht1_Elements.size()
+                            << "   cand: " << Candidates.size() << flush;
         }
         Ht1_Elements.sort();
         Ht1_Elements.unique();
@@ -1502,8 +1533,10 @@ void Full_Cone<Integer>::primal_algorithm(){
     build_cone();  // evaluates if keep_triangulation==false
     /***** Main Work is done in build_cone() *****/
     
-    cout << "TotPyr "<< totalNrPyr << endl;
-    cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
+    if (verbose) {
+        verboseOutput() << "Total number of pyramids = "<< totalNrPyr << endl;
+        cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
+    }
 
     extreme_rays_and_ht1_check();
     if(!pointed) return;
