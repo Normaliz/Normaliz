@@ -56,7 +56,7 @@ class Full_Cone {
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool do_triangulation;
     bool do_partial_triangulation;
-    bool do_evaluation;
+//    bool do_evaluation;
     bool do_Hilbert_basis;
     bool do_ht1_elements;
     bool do_h_vector;

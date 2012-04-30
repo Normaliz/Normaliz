@@ -2371,6 +2371,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    detSum = 0;
     
     FS.resize(omp_get_max_threads());
     
@@ -2427,6 +2428,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    detSum = 0;
     
     do_all_hyperplanes=true;
 }
@@ -2470,6 +2472,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     // pyr_level set by the calling routine
     
     totalNrSimplices=0;
+    detSum = 0;
     if(C.gen_degrees.size()>0){ // now we copy the degrees
     	gen_degrees.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
