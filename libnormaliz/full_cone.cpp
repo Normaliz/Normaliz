@@ -97,7 +97,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t subfacet_dim=dim-2; // NEW dimension of subfacet
     size_t facet_dim=dim-1; // NEW dimension of facet
     
-    const bool tv_verbose =  false; // true && !is_pyramid; //verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
+    const bool tv_verbose = false; // !is_pyramid; // verbose && Support_Hyperplanes.size()>10000; //verbose in this method call
     
         
     // preparing the computations
@@ -170,8 +170,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t nr_NeuSimp  = Neutral_Simp.size();
     size_t nr_NeuNonSimp = Neutral_Non_Simp.size();
     
-    bool ranktest=((nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp>dim*dim*dim/6));  
-
     if (tv_verbose) verboseOutput()<<"PS "<<nr_PosSimp<<" P "<<nr_PosNonSimp<<" NS "<<nr_NegSimp<<" N "<<nr_NegNonSimp<<" ZS "<<nr_NeuSimp<<" Z "<<nr_NeuNonSimp<<endl<<flush;
 
     if (tv_verbose) verboseOutput()<<"transform_values: create lst of pairs <subfacet,facet> of NS"<<endl<<flush;
@@ -403,18 +401,15 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     list<FACETDATA*> AllNonSimpHyp;
     typename list<FACETDATA*>::iterator a;
-    if(!ranktest){
-        for(i=0;i<nr_PosNonSimp;++i)
-            AllNonSimpHyp.push_back(&(*Pos_Non_Simp[i]));
-        for(i=0;i<nr_NegNonSimp;++i)
-            AllNonSimpHyp.push_back(&(*Neg_Non_Simp[i]));
-        for(i=0;i<nr_NeuNonSimp;++i)
-            AllNonSimpHyp.push_back(&(*Neutral_Non_Simp[i]));
-    }  
-    // cout << "ranktest " << ranktest << endl;   
-    
-    
-    bool exactly_two;
+
+    for(i=0;i<nr_PosNonSimp;++i)
+        AllNonSimpHyp.push_back(&(*Pos_Non_Simp[i]));
+    for(i=0;i<nr_NegNonSimp;++i)
+        AllNonSimpHyp.push_back(&(*Neg_Non_Simp[i]));
+    for(i=0;i<nr_NeuNonSimp;++i)
+        AllNonSimpHyp.push_back(&(*Neutral_Non_Simp[i])); 
+   
+    bool exactly_two, ranktest;
     FACETDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
     
     size_t missing_bound, nr_common_zero;
@@ -457,10 +452,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                     }
                  }
                  
-
                 if(common_subfacet){//intersection of *i and *j may be a subfacet
-                    common_zero=zero_i & hp_j->GenInHyp;
                     exactly_two=true;
+                    
+                    ranktest=((nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp>dim*dim*nr_common_zero/3)); 
 
                     if (ranktest) {
                         Matrix<Integer> Test(nr_common_zero,dim);
@@ -472,6 +467,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                         }
                     } // ranktest
                     else{                 // now the comparison test
+                        common_zero = zero_i & hp_j->GenInHyp;
                         for (a=AllNonSimpHyp.begin();a!=AllNonSimpHyp.end();++a){
                             hp_t=*a;
                             if ((hp_t!=hp_i) && (hp_t!=hp_j) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
