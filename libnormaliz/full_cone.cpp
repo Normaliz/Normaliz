@@ -43,7 +43,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative){
+void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
+                            list<FACETDATA>& NewHyps){
     size_t k;
     
     // NEW: indgen is the index of the generator being inserted    
@@ -69,17 +70,12 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
         }
     }
     v_make_prime(NewFacet.Hyp);
-    NewFacet.ValNewGen=0; // not really needed, only for completeness
+    NewFacet.ValNewGen=0; 
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     
-    if(parallel_in_pyramid){
-        #pragma omp critical(HYPERPLANE)
-        Facets.push_back(NewFacet);
-    }
-    else
-       Facets.push_back(NewFacet);
+    NewHyps.push_back(NewFacet);
 }
 
 
@@ -229,6 +225,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t nr_NegSubfMult = Neg_Subfacet_Multi_United.size();
     if (tv_verbose) verboseOutput()<<"transform_values: after discarding double subfacets of NS list size "<<nr_NegSubfMult<<endl<<flush;
     
+    vector<list<FACETDATA> > NewHypsSimp(nr_PosSimp);
+    vector<list<FACETDATA> > NewHypsNonSimp(nr_PosNonSimp);
+
     map < boost::dynamic_bitset<>, int > Neg_Subfacet;
     size_t nr_NegSubf=0;
     
@@ -242,8 +241,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     map < boost::dynamic_bitset<>, int > ::iterator last_inserted=Neg_Subfacet.begin(); // used to speedup insertion into the new map
     bool found;
     #pragma omp for schedule(dynamic)
-    for (size_t j=0; j<nr_NegSubfMult; ++j) {             // remove negative subfacets shared
-        for(;j > jjpos; ++jjpos, ++jj) ;                // by non-simpl neg or neutral facets 
+    for (size_t j=0; j<nr_NegSubfMult; ++j) {  // remove negative subfacets shared
+        for(;j > jjpos; ++jjpos, ++jj) ;       // by non-simpl neg or neutral facets 
         for(;j < jjpos; --jjpos, --jj) ;
 
         subfacet=(*jj).first;
@@ -258,7 +257,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                 found=subfacet.is_subset_of(Neutral_Non_Simp[i]->GenInHyp);
                 if(found)
                     break;                    
-                }
+            }
             if(!found) {
                 for (i = 0; i <nr_NegNonSimp; i++) {
                     found=subfacet.is_subset_of(Neg_Non_Simp[i]->GenInHyp);
@@ -295,7 +294,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> zero_i(nr_gen);
     map <boost::dynamic_bitset<>, int> ::iterator jj_map;
 
-    #pragma omp for schedule(dynamic) nowait           // Now matching positive and negative (sub)facets
+    #pragma omp for schedule(dynamic) // nowait   // Now matching positive and negative (sub)facets
     for (i =0; i<nr_PosSimp; i++){ //Positive Simp vs.Negative Simp
         zero_i=Pos_Simp[i]->GenInHyp & Zero_PN;
         nr_zero_i=0;
@@ -310,7 +309,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
             jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
             if (jj_map!=Neg_Subfacet.end()) {
-                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
+                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i]);
                 (*jj_map).second = -1;  // block subfacet in further searches
             }
         }
@@ -321,7 +320,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
                     jj_map=Neg_Subfacet.find(subfacet);
                     if (jj_map!=Neg_Subfacet.end()) {
-                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second]);
+                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i]);
                         (*jj_map).second = -1;
                     }
                 }
@@ -331,26 +330,26 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     #pragma omp single
     if (tv_verbose) {
-        verboseOutput()<<"transform_values: NS vs P"<<endl << flush;
+        verboseOutput()<<"transform_values: P vs NS"<<endl << flush;
     }
 
 
-    jj_map = Neg_Subfacet.begin();
-    jjpos=0;
-    #pragma omp for schedule(dynamic) nowait
-    for (size_t j=0; j<nr_NegSubf; ++j) {
-        for( ; j > jjpos; ++jjpos, ++jj_map) ;
-        for( ; j < jjpos; --jjpos, --jj_map) ;
+    #pragma omp for schedule(dynamic) // nowait
+    for (i = 0; i <nr_PosNonSimp; i++) {
+        jjpos=0;
+        jj_map = Neg_Subfacet.begin();
+        for (size_t j=0; j<nr_NegSubf; ++j) {
+            for( ; j > jjpos; ++jjpos, ++jj_map) ;
+            for( ; j < jjpos; --jjpos, --jj_map) ;
 
-        if ( (*jj_map).second != -1 ) {  // skip used subfacets
-            for (i = 0; i <nr_PosNonSimp; i++) {
+            if ( (*jj_map).second != -1 ) {  // skip used subfacets
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
-                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second]);
-                    break;
+                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i]);
+                    (*jj_map).second = -1; // has now been used
                 }
             }
         }
-    }
+    } // P vs NS
     
     #pragma omp single nowait
     if (tv_verbose) {
@@ -384,7 +383,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                  }
                     
                  if(common_subfacet){                 
-                    add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j]);
+                    add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j],NewHypsSimp[i]);
                     if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
                         break;
                  }
@@ -392,13 +391,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         }            
     } // PS vs N
 
-
-
     #pragma omp single nowait
     if (tv_verbose) {
         verboseOutput()<<"transform_values: P vs N"<<endl<<flush;
     }
-    
+
     list<FACETDATA*> AllNonSimpHyp;
     typename list<FACETDATA*>::iterator a;
 
@@ -416,7 +413,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> common_zero(nr_gen);
     vector<key_t> common_key(nr_gen);
     
-    #pragma omp for schedule(dynamic) nowait
+    #pragma omp for schedule(dynamic) // nowait
     for (size_t i =0; i<nr_PosNonSimp; i++){ //Positive Non Simp vs.Negative Non Simp
 
         hp_i=Pos_Non_Simp[i];
@@ -478,13 +475,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                         }                       
                     } // else
                     if (exactly_two) {  //intersection of i and j is a subfacet
-                        add_hyperplane(new_generator,*hp_i,*hp_j);
+                        add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i]);
                     }
                 }
             }
         }
     }
     } //END parallel
+
+    for(i=0;i<nr_PosSimp;i++)
+        Facets.splice(Facets.end(),NewHypsSimp[i]);
+
+    for(i=0;i<nr_PosNonSimp;i++)
+        Facets.splice(Facets.end(),NewHypsNonSimp[i]);
 
     //removing the negative hyperplanes
     // now done in build_cone
