@@ -27,6 +27,8 @@
 #include <algorithm>
 
 #include "output.h"
+#include "libnormaliz/general.h"
+#include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
 
@@ -438,7 +440,7 @@ void Output<Integer>::write_files() const {
                 vector<Integer> degs =
                   Matrix<Integer>(Result->getExtremeRays()).MxV(Result->getGrading());
                 for (i=0; i<degs.size(); ++i) {
-                    deg_count[degs[i]]++;
+                    deg_count[degs[i]/denom]++;
                 }
                 out << deg_count;
             }
@@ -447,7 +449,7 @@ void Output<Integer>::write_files() const {
             if ( !Result->isHt1ExtremeRays() ) {
                 out << "extreme rays are not of height 1" << endl;
             }
-        }     
+        }
         out<<endl;
         if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
           && Result->isHt1ExtremeRays() ) {

@@ -1159,13 +1159,12 @@ Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& de
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
+vector<Integer> Matrix<Integer>::find_linear_form() const {
     if (nc == 0 || nr == 0) { //return zero-vector as linear form
-        homogeneous=true;
         return vector<Integer>(nc,0);
     }
     size_t i;
-    Integer denom,buffer;
+    Integer denom;
     vector<key_t>  rows=max_rank_submatrix_lex();
     Matrix<Integer> Left_Side=submatrix(rows);
     assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
@@ -1173,32 +1172,28 @@ vector<Integer> Matrix<Integer>::homogeneous (bool& homogeneous) const{
     Matrix<Integer> Solution=Left_Side.solve(Right_Side, denom);
     vector<Integer> Linear_Form(nc);
     for (i = 0; i <nc; i++) {
-        buffer=Solution.read(i,0);
-        Linear_Form[i]=buffer/denom;
+        Linear_Form[i] = Solution.read(i,0);
     }
-    vector<Integer> test_homogeneous=MxV(Linear_Form);
+    v_make_prime(Linear_Form);
+    vector<Integer> test = MxV(Linear_Form);
     for (i = 0; i <nr; i++) {
-        if (test_homogeneous[i]!=1) {
-            homogeneous=false;
-            vector<Integer> F;
-            return F;
+        if (test[i]!=test[0]) {
+            return vector<Integer>();
         }
     }
-    homogeneous=true;
     return Linear_Form;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
+vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
     size_t rank=(*this).rank();
     if (rank == 0) { //return zero-vector as linear form
-        homogeneous=true;
         return vector<Integer>(nc,0);
     }
     if (rank == nc) { // basis change not necessary
-        return (*this).homogeneous(homogeneous);
+        return (*this).find_linear_form();
     }
 
     // prepare basis change
@@ -1218,26 +1213,13 @@ vector<Integer> Matrix<Integer>::homogeneous_low_dim (bool& homogeneous) const{
     //apply basis change
     Matrix<Integer> Full_Cone_Generators = Full_Rank_Matrix.multiplication(Change_To_Full_Emb);
     //compute linear form
-    vector<Integer> Linear_Form = Full_Cone_Generators.homogeneous(homogeneous);
-    if (homogeneous) {
+    vector<Integer> Linear_Form = Full_Cone_Generators.find_linear_form();
+    if (Linear_Form.size()==nc) {
         //lift linear form back
         Change_To_Full_Emb = Change_To_Full_Emb.transpose();  // preparing the matrix for transformation on the dual space
         vector<Integer> v;
-        Integer index=Basis_Change.get_index();
-        if (index != 1) { 
-            homogeneous = false;
-            return Linear_Form;
-        }
         Linear_Form = Change_To_Full_Emb.VxM(Linear_Form);
         v_make_prime(Linear_Form);
-
-        //check if all rows are in height 1
-        for (i=0; i<nr; i++) {
-            if (v_scalar_product(elements[i],Linear_Form) != 1) {
-                homogeneous=false;
-                return Linear_Form;
-            }
-        }
     }
     return Linear_Form;
 }

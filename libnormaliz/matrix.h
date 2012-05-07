@@ -230,12 +230,13 @@ public:
     //The diagonal of this after transformation into an upper triangular matrix
     //is saved in diagonal
 
-    vector<Integer> homogeneous (bool& homogeneous) const;// solves the system
-    //this*Solution=(1,1,...). this should be a   m x n , m>=n,
-    //matrix of maxinal rank. The existence of solution is marked in homogeneous
+    vector<Integer> find_linear_form () const;
+    // Tries to find a linear form which gives the same value an all rows of this
+    // this should be a m x n matrix (m>=n) of maxinal rank
+    // returns an empty vector if there does not exist such a linear form
   
-    vector<Integer> homogeneous_low_dim (bool& homogeneous) const;
-    //same as homogeneous but also works with not maximal rank
+    vector<Integer> find_linear_form_low_dim () const;
+    //same as find_linear_form but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix
 
 };

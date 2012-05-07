@@ -484,6 +484,17 @@ template<typename Integer>
 void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& BinomialsV) {
     Matrix<Integer> Binomials(BinomialsV);
     size_t i,j, nr_of_monoid_generators = dim;
+    if (isComputed(ConeProperty::Grading)) {
+        //check if binomials are homogeneous
+        vector<Integer> degrees = Matrix<Integer>(Generators).MxV(Grading);
+        for (size_t i=0; i<degrees.size(); ++i) {
+            if (degrees[i]!=0) {
+                errorOutput() << "Grading gives non-zero value " << degrees[i]
+                              << " for binomial " << i+1 << "." << endl;
+                throw BadInputException();
+            }
+        }
+    }
     Lineare_Transformation<Integer> Diagonalization=Transformation(Binomials);
     size_t rank=Diagonalization.get_rank();
     Matrix<Integer> Help=Diagonalization.get_right();
@@ -495,6 +506,7 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
     }
     Full_Cone<Integer> FC(Generators);
     //TODO verboseOutput(), what is happening here?
+
     FC.support_hyperplanes();
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
     Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
@@ -510,7 +522,7 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 template<typename Integer>
 void Cone<Integer>::setGrading (vector<Integer> lf) {
     if (lf.size() != dim) {
-        errorOutput() << "Linear form has wrong dimension " << lf.size()
+        errorOutput() << "Grading linear form has wrong dimension " << lf.size()
                       << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
@@ -522,7 +534,7 @@ void Cone<Integer>::setGrading (vector<Integer> lf) {
         vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
         for (size_t i=0; i<degrees.size(); ++i) {
             if (degrees[i]<1) {
-                errorOutput() << "Linear form gives non-positive value " << degrees[i]
+                errorOutput() << "Grading gives non-positive value " << degrees[i]
                               << " for generator " << i+1 << "." << endl;
                 throw BadInputException();
             }

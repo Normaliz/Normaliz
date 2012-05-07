@@ -1917,19 +1917,21 @@ void Full_Cone<Integer>::ht1_check() {
      && !isComputed(ConeProperty::IsHt1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
-            Grading = Extreme.homogeneous(ht1_extreme_rays);
-            is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-            if (ht1_extreme_rays) {
+            Grading = Extreme.find_linear_form();
+            if (Grading.size() == dim) {
                 is_Computed.set(ConeProperty::Grading);
+            } else {
+                ht1_extreme_rays = false;
+                is_Computed.set(ConeProperty::IsHt1ExtremeRays);
             }
         } else // extreme rays not known
         if (!isComputed(ConeProperty::IsHt1Generated)) {
-            Grading = Generators.homogeneous(ht1_generated);
-            is_Computed.set(ConeProperty::IsHt1Generated);
-            if (ht1_generated) {
-                ht1_extreme_rays=true;
-                is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+            Grading = Generators.find_linear_form();
+            if (Grading.size() == dim) {
                 is_Computed.set(ConeProperty::Grading);
+            } else {
+                ht1_generated = false;
+                is_Computed.set(ConeProperty::IsHt1Generated);
             }
         }
     }

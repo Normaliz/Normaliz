@@ -30,11 +30,14 @@
 #define SUBLATTICE_REPRESENTATION_H
 
 #include "libnormaliz.h"
-#include "lineare_transformation.h"
 
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+
+template<typename Integer> class Matrix;
+template<typename Integer> class Lineare_Transformation;
+
 
 template<typename Integer>
 class Sublattice_Representation {
