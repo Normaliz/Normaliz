@@ -129,7 +129,8 @@ class Full_Cone {
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
-    void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative);
+    void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
+                     list<FACETDATA>& NewHyps);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
