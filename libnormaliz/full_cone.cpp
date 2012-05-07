@@ -1024,14 +1024,14 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
         for(size_t i=0; i<nr_pyramids; i++){
             if (Done[i]) {
                 p=Pyramids[level].erase(p);
-                nr_pyramids--;
+                nrPyramids[level]--;
                 Done[i]=0;
             } else {
                 ++p;
             }
         }
         nr_done=0;
-        nrPyramids[level]=nr_pyramids;
+        nr_pyramids = nrPyramids[level];
 
         if (skip_remaining_tri) {
             if (verbose)
