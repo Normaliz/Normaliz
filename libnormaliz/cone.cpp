@@ -486,11 +486,16 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
     size_t i,j, nr_of_monoid_generators = dim;
     if (isComputed(ConeProperty::Grading)) {
         //check if binomials are homogeneous
-        vector<Integer> degrees = Matrix<Integer>(Generators).MxV(Grading);
+        vector<Integer> degrees = Binomials.MxV(Grading);
         for (size_t i=0; i<degrees.size(); ++i) {
             if (degrees[i]!=0) {
                 errorOutput() << "Grading gives non-zero value " << degrees[i]
                               << " for binomial " << i+1 << "." << endl;
+                throw BadInputException();
+            }
+            if (Grading[i] <= 0) {
+                errorOutput() << "Grading gives non-positive value " << Grading[i]
+                            << " for generator " << i+1 << "." << endl;
                 throw BadInputException();
             }
         }
@@ -514,6 +519,15 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
     GeneratorsOfToricRing = Positive_Embedded_Generators.get_elements();
     is_Computed.set(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
+
+    if (isComputed(ConeProperty::Grading)) {
+        // solve GeneratorsOfToricRing * grading = old_grading
+        Grading = Positive_Embedded_Generators.solve(Grading);
+        if (Grading.size() != dim) {
+            errorOutput() << "Grading could not be transfered!"<<endl;
+            is_Computed.set(ConeProperty::Grading, false);
+        }
+    }
     prepare_input_type_1(GeneratorsOfToricRing);
 }
 

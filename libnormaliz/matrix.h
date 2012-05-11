@@ -239,6 +239,9 @@ public:
     //same as find_linear_form but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix
 
+    vector<Integer> solve(vector<Integer> v) const;
+    // like find_linear_form, but for right side v
+
 };
 //class end *****************************************************************
 

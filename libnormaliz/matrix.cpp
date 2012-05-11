@@ -1159,8 +1159,8 @@ Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& de
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::find_linear_form() const {
-    if (nc == 0 || nr == 0) { //return zero-vector as linear form
+vector<Integer> Matrix<Integer>::solve(vector<Integer> v) const {
+    if (nc == 0 || nr == 0) { //return zero-vector as solution
         return vector<Integer>(nc,0);
     }
     size_t i;
@@ -1168,7 +1168,9 @@ vector<Integer> Matrix<Integer>::find_linear_form() const {
     vector<key_t>  rows=max_rank_submatrix_lex();
     Matrix<Integer> Left_Side=submatrix(rows);
     assert(nc == Left_Side.nr); //otherwise input hadn't full rank //TODO 
-    Matrix<Integer> Right_Side(nc,1,1);
+    Matrix<Integer> Right_Side(v.size(),1);
+    Right_Side.write_column(0,v);
+    Right_Side = Right_Side.submatrix(rows);
     Matrix<Integer> Solution=Left_Side.solve(Right_Side, denom);
     vector<Integer> Linear_Form(nc);
     for (i = 0; i <nc; i++) {
@@ -1176,12 +1178,20 @@ vector<Integer> Matrix<Integer>::find_linear_form() const {
     }
     v_make_prime(Linear_Form);
     vector<Integer> test = MxV(Linear_Form);
+    denom = test[0]/v[0];
+    //cout << denom << " v= " << v;
+    //cout << denom << " t= " << test; 
     for (i = 0; i <nr; i++) {
-        if (test[i]!=test[0]) {
+        if (test[i] != denom * v[i]){
             return vector<Integer>();
         }
     }
     return Linear_Form;
+}
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::find_linear_form() const {
+    return solve(vector<Integer>(nr,1));
 }
 
 //---------------------------------------------------------------------------
