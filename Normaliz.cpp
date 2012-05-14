@@ -132,6 +132,9 @@ int main(int argc, char* argv[])
             case 'S':
                 computation_mode = Mode::supportHyperplanes;
                 break;
+            case 't':
+                computation_mode = Mode::triangulationSize;
+                break;
             case 'v':
                 computation_mode = Mode::volumeTriangulation;
                 break;

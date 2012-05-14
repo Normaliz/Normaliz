@@ -56,7 +56,7 @@ class Full_Cone {
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool do_triangulation;
     bool do_partial_triangulation;
-//    bool do_evaluation;
+    bool do_evaluation;
     bool do_Hilbert_basis;
     bool do_ht1_elements;
     bool do_h_vector;
@@ -135,7 +135,7 @@ class Full_Cone {
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
     void process_pyramid(const vector<key_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
-                      const size_t new_generator,const bool recursive);
+                      const size_t new_generator, Integer height, const bool recursive);
     void evaluate_stored_pyramids(const size_t level);
 
     void find_and_evaluate_start_simplex();
@@ -240,6 +240,7 @@ public:
  */
     void dualize_cone();
     void support_hyperplanes();
+    void triangulation_size();
     void support_hyperplanes_triangulation();
     void support_hyperplanes_triangulation_pyramid();
     void triangulation_hilbert_basis();

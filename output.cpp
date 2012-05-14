@@ -423,6 +423,8 @@ void Output<Integer>::write_files() const {
         out << endl;
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             out << "size of triangulation = " << Result->getTriangulationSize() << endl;
+        }
+        if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
             out << "resulting sum of |det|s = " << Result->getTriangulationDetSum() << endl;
             out << endl;
         }

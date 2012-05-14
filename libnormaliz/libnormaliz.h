@@ -43,6 +43,7 @@ enum InputType {
 namespace Mode {
 enum ComputationMode {
     supportHyperplanes,
+    triangulationSize,
     volumeTriangulation,
     volumeLarge,
     height1Elements,

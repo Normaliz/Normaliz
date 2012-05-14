@@ -701,6 +701,9 @@ void Cone<Integer>::compute(ComputationMode mode) {
         }
         FC.support_hyperplanes();
         break;
+    case Mode::triangulationSize:
+        FC.triangulation_size();
+        break;
     case Mode::volumeTriangulation:
         FC.support_hyperplanes_triangulation();
         break;
@@ -816,8 +819,11 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
-        TriangulationDetSum = FC.detSum;
         is_Computed.set(ConeProperty::TriangulationSize);
+    }
+    if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
+        TriangulationDetSum = FC.detSum;
+        is_Computed.set(ConeProperty::TriangulationDetSum);
     }
     if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();
