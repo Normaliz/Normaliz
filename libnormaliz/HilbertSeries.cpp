@@ -144,9 +144,9 @@ void HilbertSeries::simplify() const {
     if (is_simplified)
         return;
     collectData();
-    if (verbose) {
+/*    if (verbose) {
         cout << "Hilbert series before simplification: "<< endl << *this;
-    }
+    }*/
     vector<mpz_class> q, r, poly; //polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
     // During this method the Hilbert series is given by num/(denom*cdenom)
@@ -243,9 +243,9 @@ void HilbertSeries::simplify() const {
         }
     }
 
-    if (verbose) {
+/*    if (verbose) {
         cout << "Simplified Hilbert series: " << endl << *this;
-    }
+    }*/
     is_simplified = true;
 }
 

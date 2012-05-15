@@ -41,13 +41,14 @@ void printHelp(char* command) {
     cout << "  -?\tprint this help text and exit"<<endl;
     cout << "  -s\tcomputation mode: support hyperplanes"<<endl;
     cout << "  -S\tcomputation mode: support hyperplanes (currently same as -s)"<<endl;
+    cout << "  -t\tcomputation mode: triangulation size"<<endl;
     cout << "  -v\tcomputation mode: volume triangulation"<<endl;
     cout << "  -V\tcomputation mode: volume large"<<endl;
     cout << "  -n\tcomputation mode: Hilbert basis triangulation (previously normal)"<<endl;
     cout << "  -N\tcomputation mode: Hilbert basis (using a partial triangulation)"<<endl;
     cout << "  -p\tcomputation mode: Hilbert polynomial"<<endl;
     cout << "  -P\tcomputation mode: Hilbert polynomial large"<<endl;
-    cout << "  -h\tcomputation mode: Hilbert basis polynomial"<<endl;
+    cout << "  -h\tcomputation mode: Hilbert basis polynomial (default)"<<endl;
     cout << "  -H\tcomputation mode: Hilbert basis polynomial large"<<endl;
     cout << "  -1\tcomputation mode: height 1 elements"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
     //libnormaliz::RecBoundFactor = 5000000;
     size_t i;       //used for iterations
     char c;
-    ComputationMode computation_mode = Mode::hilbertBasisTriangulation;
+    ComputationMode computation_mode = Mode::hilbertBasisSeries;
     //for available modes see libnormaliz/libnormaliz.h
     //it is set by the option from the command line
     string output_name;         //name of the output file(s) saved here
@@ -151,16 +152,16 @@ int main(int argc, char* argv[])
                 computation_mode = Mode::height1Elements;
                 break;
             case 'p':
-                computation_mode = Mode::hilbertPolynomial;
+                computation_mode = Mode::hilbertSeries;
                 break;
             case 'P':
-                computation_mode = Mode::hilbertPolynomialLarge;
+                computation_mode = Mode::hilbertSeriesLarge;
                 break;
             case 'h':
-                computation_mode = Mode::hilbertBasisPolynomial;
+                computation_mode = Mode::hilbertBasisSeries;
                 break;
             case 'H':
-                computation_mode = Mode::hilbertBasisPolynomialLarge;
+                computation_mode = Mode::hilbertBasisSeriesLarge;
                 break;
             case 'd':
                 computation_mode = Mode::dual;
@@ -271,10 +272,10 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
             computation_mode  = Mode::volumeLarge;
         if (computation_mode == Mode::hilbertBasisTriangulation)
             computation_mode  = Mode::hilbertBasisMultiplicity;
-        if (computation_mode == Mode::hilbertPolynomial)
-            computation_mode  = Mode::hilbertPolynomialLarge;
-        if (computation_mode == Mode::hilbertBasisPolynomial)
-            computation_mode  = Mode::hilbertBasisPolynomialLarge;
+        if (computation_mode == Mode::hilbertSeries)
+            computation_mode  = Mode::hilbertSeriesLarge;
+        if (computation_mode == Mode::hilbertBasisSeries)
+            computation_mode  = Mode::hilbertBasisSeriesLarge;
     }
 
     if (verbose) {

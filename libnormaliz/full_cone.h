@@ -172,8 +172,8 @@ class Full_Cone {
     void select_ht1_elements();
     void compute_hilbert_basis();
     void compute_ht1_elements();
-    void compute_hilbert_polynomial();
-    void compute_hilbert_basis_polynomial();
+    void compute_hilbert_series();
+    void compute_hilbert_basis_series();
 
     void check_pointed();
     void ht1_check();
@@ -246,10 +246,10 @@ public:
     void triangulation_hilbert_basis();
     void multiplicity_hilbert_basis();
     void hilbert_basis();
-    void hilbert_polynomial();
-    void hilbert_polynomial_pyramid();
-    void hilbert_basis_polynomial();
-    void hilbert_basis_polynomial_pyramid();
+    void hilbert_series();
+    void hilbert_series_pyramid();
+    void hilbert_basis_series();
+    void hilbert_basis_series_pyramid();
     void ht1_elements();
 
     /* computes the multiplicity of the ideal in case of a Rees algebra

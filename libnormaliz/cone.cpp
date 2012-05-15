@@ -587,9 +587,9 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     /* find correct mode */
     if (ToCompute.test(ConeProperty::HilbertSeries) ) {
         if(ToCompute.test(ConeProperty::HilbertBasis)) {
-            compute(Mode::hilbertBasisPolynomial);
+            compute(Mode::hilbertBasisSeries);
         } else {
-            compute(Mode::hilbertPolynomial);
+            compute(Mode::hilbertSeries);
         }
     } else { //no H-Vector
         if(ToCompute.test(ConeProperty::HilbertBasis)) {
@@ -713,17 +713,17 @@ void Cone<Integer>::compute(ComputationMode mode) {
     case Mode::height1Elements:
         FC.ht1_elements();
         break;
-    case Mode::hilbertPolynomial:
-        FC.hilbert_polynomial();
+    case Mode::hilbertSeries:
+        FC.hilbert_series();
         break;
-    case Mode::hilbertPolynomialLarge:
-        FC.hilbert_polynomial_pyramid();
+    case Mode::hilbertSeriesLarge:
+        FC.hilbert_series_pyramid();
         break;
-    case Mode::hilbertBasisPolynomial:
-        FC.hilbert_basis_polynomial();
+    case Mode::hilbertBasisSeries:
+        FC.hilbert_basis_series();
         break;
-    case Mode::hilbertBasisPolynomialLarge:
-        FC.hilbert_basis_polynomial_pyramid();
+    case Mode::hilbertBasisSeriesLarge:
+        FC.hilbert_basis_series_pyramid();
         break;
     default: //should not happen
         errorOutput()<<"Unknown computation mode: \""<<static_cast<int>(mode)<<"\"!"<<endl;

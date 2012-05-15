@@ -106,7 +106,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     bool simplex;
     
     if (tv_verbose) verboseOutput()<<"transform_values: create SZ,Z,PZ,P,NS,N"<<endl;
-    size_t ipos=0;
     
     typename list<FACETDATA>::iterator ii = Facets.begin();
     
@@ -1664,7 +1663,7 @@ void Full_Cone<Integer>::hilbert_basis() {
 
 // -h
 template<typename Integer>
-void Full_Cone<Integer>::hilbert_basis_polynomial() {
+void Full_Cone<Integer>::hilbert_basis_series() {
     do_Hilbert_basis=true;
     do_h_vector=true;
     do_triangulation=true;
@@ -1675,7 +1674,7 @@ void Full_Cone<Integer>::hilbert_basis_polynomial() {
 
 // -H
 template<typename Integer>
-void Full_Cone<Integer>::hilbert_basis_polynomial_pyramid() {
+void Full_Cone<Integer>::hilbert_basis_series_pyramid() {
     do_Hilbert_basis=true;
     do_h_vector=true;
     do_triangulation=true;
@@ -1685,7 +1684,7 @@ void Full_Cone<Integer>::hilbert_basis_polynomial_pyramid() {
 
 // -p
 template<typename Integer>
-void Full_Cone<Integer>::hilbert_polynomial() {
+void Full_Cone<Integer>::hilbert_series() {
     do_ht1_elements=true;
     do_h_vector=true;
     do_triangulation=true;
@@ -1696,7 +1695,7 @@ void Full_Cone<Integer>::hilbert_polynomial() {
 
 // -P
 template<typename Integer>
-void Full_Cone<Integer>::hilbert_polynomial_pyramid() {
+void Full_Cone<Integer>::hilbert_series_pyramid() {
     do_ht1_elements=true;
     do_h_vector=true;
     do_triangulation=true;

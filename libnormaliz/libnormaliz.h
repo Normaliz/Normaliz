@@ -50,10 +50,10 @@ enum ComputationMode {
     hilbertBasisTriangulation,
     hilbertBasisMultiplicity,
     hilbertBasisLarge,
-    hilbertPolynomial,
-    hilbertPolynomialLarge,
-    hilbertBasisPolynomial,
-    hilbertBasisPolynomialLarge,
+    hilbertSeries,
+    hilbertSeriesLarge,
+    hilbertBasisSeries,
+    hilbertBasisSeriesLarge,
     dual
 };
 } //end namespace Mode

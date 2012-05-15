@@ -29,8 +29,10 @@
 namespace libnormaliz {
 using std::vector;
 using std::map;
+using std::pair;
 
 template<typename Integer> class Full_Cone;
+template<typename Integer> class Matrix;
 
 template<typename Integer>
 class Cone {
@@ -67,7 +69,7 @@ public:
 //                           make computations
 //---------------------------------------------------------------------------
 
-    void compute(ComputationMode mode = Mode::hilbertBasisPolynomial); //default: everything
+    void compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
     void compute(ConeProperties ToCompute);
     void compute(ConeProperty::Enum prop);
 

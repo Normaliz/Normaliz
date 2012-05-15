@@ -29,7 +29,9 @@
 #ifndef SUBLATTICE_REPRESENTATION_H
 #define SUBLATTICE_REPRESENTATION_H
 
+#include <vector>
 #include "libnormaliz.h"
+#include "matrix.h"
 
 //---------------------------------------------------------------------------
 
@@ -37,6 +39,7 @@ namespace libnormaliz {
 
 template<typename Integer> class Matrix;
 template<typename Integer> class Lineare_Transformation;
+using std::vector;
 
 
 template<typename Integer>
