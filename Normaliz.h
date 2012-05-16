@@ -40,7 +40,7 @@ void printHelp(char* command);
 int main(int argc, char* argv[]);
 
 template<typename Integer> 
-int process_data(string& output_name, libnormaliz::ComputationMode computation_type, bool write_extra_files, bool write_all_files);
+int process_data(string& output_name, libnormaliz::ComputationMode computation_type, bool write_extra_files, bool write_tri_file, bool write_all_files);
 
 //---------------------------------------------------------------------------
 #endif

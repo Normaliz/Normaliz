@@ -409,10 +409,6 @@ void Output<Integer>::write_files() const {
         }
         out<<"index = "<< BasisChange.get_index() <<endl;
 
-        if (type == OT_POLYTOPE) {
-            out<<"dimension of the polytope = "<<rank-1<<endl;
-        }
-        
         if (Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
                 out << "original monoid is integrally closed"<<endl;
@@ -422,10 +418,12 @@ void Output<Integer>::write_files() const {
         }
         out << endl;
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
-            out << "size of triangulation = " << Result->getTriangulationSize() << endl;
+            out << "size of triangulation   = " << Result->getTriangulationSize() << endl;
         }
         if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
             out << "resulting sum of |det|s = " << Result->getTriangulationDetSum() << endl;
+        }
+        if (Result->isComputed(ConeProperty::TriangulationSize)) {
             out << endl;
         }
         if ( Result->isComputed(ConeProperty::Grading) ) {
@@ -532,7 +530,20 @@ void Output<Integer>::write_files() const {
             Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
             if (egn || typ) {
                 Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
-                write_matrix_egn(Hilbert_Basis_Full_Cone);
+                if (egn) {
+                    string egn_string = name+".egn";
+                    const char* egn_file = egn_string.c_str();
+                    ofstream egn_out(egn_file);
+        
+                    Hilbert_Basis_Full_Cone.print(egn_out);
+                    egn_out<<"integral_closure"<<endl;
+                    if (Result->isComputed(ConeProperty::Grading)) {
+                        egn_out << 1 << endl << rank << endl;
+                        egn_out << BasisChange.to_sublattice_dual(Result->getGrading());
+                        egn_out << "grading" << endl;
+                    }
+                    egn_out.close();
+                }    
 
                 if (typ) {
                     Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(BasisChange.to_sublattice_dual(Support_Hyperplanes).transpose());
@@ -601,7 +612,11 @@ void Output<Integer>::write_files() const {
                 cst_out<<"equations"<<endl;
                 Congruences.print(cst_out);
                 cst_out<<"congruences"<<endl;
-    
+                if (Result->isComputed(ConeProperty::Grading)) {
+                    cst_out << 1 << endl << dim << endl;
+                    cst_out << Result->getGrading();
+                    cst_out << "grading" << endl;
+                }
                 cst_out.close();
             }    
         }

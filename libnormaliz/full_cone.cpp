@@ -610,8 +610,6 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     VertInTri.push_back(new_generator);
     TriSectionFirst.push_back(++oldTriBack);
     TriSectionLast.push_back(--Triangulation.end());    
-    
-    // cout << " Aus extend Tri " << omp_get_level() <<  endl;
 } 
 
 //---------------------------------------------------------------------------
@@ -678,9 +676,6 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
 
 template<typename Integer>
 void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool recursive){
-          
-    // cout << "In PP" << endl;
-    
     size_t start_level=omp_get_level(); // allows us to check that we are on level 0
                                         // outside the loop and can therefore call evaluation
 
@@ -778,7 +773,6 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
           Top_Cone->evaluate_triangulation();
     } 
     
-    // cout << "Aus PP " << omp_get_level() << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -1468,11 +1462,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         #pragma omp critical(DETSUM)
         detSum += priv_detSum;
     }
+    if (verbose)
+        verboseOutput()  << endl;
 
     if (do_partial_triangulation) { //TODO smarter sorting!
         if (verbose) {
-            verboseOutput() << endl << "ht1: " << Ht1_Elements.size()
-                            << "   cand: " << Candidates.size() << flush;
+            verboseOutput() << "ht1: " << Ht1_Elements.size()
+                            << "   cand: " << Candidates.size() << endl;
         }
         Ht1_Elements.sort();
         Ht1_Elements.unique();
@@ -1483,7 +1479,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
     if (verbose)
     {
-        verboseOutput()  << endl  << totalNrSimplices << " simplices";
+        verboseOutput() << totalNrSimplices << " simplices";
         if(do_Hilbert_basis)
             verboseOutput() << ", " << Candidates.size() << " HB candidates";
         if(do_ht1_elements)
@@ -1537,7 +1533,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << endl;
-        cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
+        // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
     }
 
     extreme_rays_and_ht1_check();

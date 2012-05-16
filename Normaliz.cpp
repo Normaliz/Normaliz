@@ -53,6 +53,7 @@ void printHelp(char* command) {
     cout << "  -1\tcomputation mode: height 1 elements"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
     cout << "  -f\tthe files .out .gen .inv .typ .cst are written"<<endl;
+    cout << "  -T\tthe file .tri is written (Triangulation)"<<endl;
     cout << "  -a\tall output files are written"<<endl;
     cout << "  -e\tperform tests for arithmetic errors"<<endl;
     cout << "  -B\tuse indefinite precision arithmetic"<<endl;
@@ -110,7 +111,7 @@ int main(int argc, char* argv[])
 
 
     //Analyzing the command line options
-    bool write_extra_files = false, write_all_files = false;
+    bool write_extra_files = false, write_all_files = false, write_tri_file = false;
     bool use_Big_Integer = false;
 
     for (i = 1; i <option.size(); i++) {
@@ -123,6 +124,9 @@ int main(int argc, char* argv[])
                 break;
             case 'f':
                 write_extra_files = true;
+                break;
+            case 'T':
+                write_tri_file = true;
                 break;
             case 'a':
                 write_all_files = true;
@@ -209,10 +213,10 @@ int main(int argc, char* argv[])
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(output_name, computation_mode, write_extra_files, write_all_files);
+        returnvalue = process_data<mpz_class>(output_name, computation_mode, write_extra_files, write_tri_file, write_all_files);
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(output_name, computation_mode, write_extra_files, write_all_files);
+        returnvalue = process_data<long long int>(output_name, computation_mode, write_extra_files, write_tri_file, write_all_files);
     }
 
     //exit
@@ -225,7 +229,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_all_files ) {
+template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_tri_file, bool write_all_files ) {
     vector<Integer> Grading;
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
@@ -235,6 +239,10 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
     } else if (write_extra_files) {
         Out.set_write_extra_files();
     }
+    if (write_tri_file) {
+        Out.set_write_tri(true);
+    }
+
 
     string name_in=output_name+".in";
     const char* file_in=name_in.c_str();
@@ -267,7 +275,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 
     //don't save the triangulation if the user doesn't want to see it
     //and we don't need it for the primary multiplicity later
-    if (!write_all_files && input.count(Type::rees_algebra)==0) {
+    if (!write_all_files && !write_tri_file && input.count(Type::rees_algebra)==0) {
         if (computation_mode == Mode::volumeTriangulation)
             computation_mode  = Mode::volumeLarge;
         if (computation_mode == Mode::hilbertBasisTriangulation)
