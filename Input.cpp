@@ -1,4 +1,4 @@
-#include "output.h"
+#include "libnormaliz/libnormaliz.h"
 
 InputType to_type(string& type_string) {
     if (type_string=="0"||type_string=="integral_closure") {
@@ -36,7 +36,7 @@ InputType to_type(string& type_string) {
 
 
 template <typename Integer>
-map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in, Output<Integer>& O) {
+map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in) {
 
     string type_string;
     size_t i,j;
@@ -66,10 +66,6 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
         }
 
         input_type = to_type(type_string);
-        if (input_type == Type::polytope)
-            O.set_type(OT_POLYTOPE);
-        if (input_type == Type::rees_algebra)
-            O.set_type(OT_REES);
 
         //check if this type already exists and merge data then
         it = input_map.find(input_type);

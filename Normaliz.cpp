@@ -269,7 +269,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
     Out.set_name(output_name);
 
     //read the file
-    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput (in, Out);
+    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in);
 
     in.close();
 

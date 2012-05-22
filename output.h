@@ -28,14 +28,6 @@ using namespace libnormaliz;
 
 //---------------------------------------------------------------------------
 
-enum OutputType {
-    OT_CONE,
-    OT_POLYTOPE,
-    OT_REES
-};
-
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 class Output {
     string name;
@@ -50,8 +42,6 @@ class Output {
     bool tri;
     bool ht1;
     Cone<Integer>* Result;
-
-    OutputType type;
 
 //---------------------------------------------------------------------------
 public:
@@ -70,7 +60,6 @@ public:
     void read() const;                   // to be modified, just for tests
 
     void set_name(const string& n);
-    void set_type(OutputType t);
     void setCone(Cone<Integer> & C);
   
     void set_write_out(const bool& flag);             //sets the write .out flag
