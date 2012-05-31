@@ -50,11 +50,11 @@ void printHelp(char* command) {
     cout << "  -P\tcomputation mode: Hilbert polynomial large"<<endl;
     cout << "  -h\tcomputation mode: Hilbert basis polynomial (default)"<<endl;
     cout << "  -H\tcomputation mode: Hilbert basis polynomial large"<<endl;
-    cout << "  -1\tcomputation mode: height 1 elements"<<endl;
+    cout << "  -1\tcomputation mode: degree 1 elements"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
-    cout << "  -f\tthe files .out .gen .inv .typ .cst are written"<<endl;
+    cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
     cout << "  -T\tthe file .tri is written (Triangulation)"<<endl;
-    cout << "  -a\tall output files are written"<<endl;
+    cout << "  -a\tall output files are written (except .tri)"<<endl;
     cout << "  -e\tperform tests for arithmetic errors"<<endl;
     cout << "  -B\tuse indefinite precision arithmetic"<<endl;
     cout << "  -c\tverbose (prints control data)"<<endl;
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
                 computation_mode = Mode::hilbertBasisLarge;
                 break;
             case '1':
-                computation_mode = Mode::height1Elements;
+                computation_mode = Mode::degree1Elements;
                 break;
             case 'p':
                 computation_mode = Mode::hilbertSeries;
@@ -275,7 +275,7 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 
     //don't save the triangulation if the user doesn't want to see it
     //and we don't need it for the primary multiplicity later
-    if (!write_all_files && !write_tri_file && input.count(Type::rees_algebra)==0) {
+    if (!write_tri_file && input.count(Type::rees_algebra)==0) {
         if (computation_mode == Mode::volumeTriangulation)
             computation_mode  = Mode::volumeLarge;
         if (computation_mode == Mode::hilbertBasisTriangulation)

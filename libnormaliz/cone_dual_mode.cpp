@@ -193,11 +193,11 @@ void Cone_Dual_Mode<Integer>::print()const{
     verboseOutput()<<"nr_sh="<<nr_sh<<".\n";
     verboseOutput()<<"hyp_size="<<hyp_size<<".\n";
     verboseOutput()<<"GeneratorList are:\n";
-    l_read(GeneratorList);verboseOutput()<<endl;
+    verboseOutput()<<GeneratorList<<endl;
     verboseOutput()<<"Support Hyperplanes are:\n";
     SupportHyperplanes.read();verboseOutput()<<endl;
     verboseOutput()<<"Hilbert Basis is:\n";
-    l_read(Hilbert_Basis);verboseOutput()<<endl;
+    verboseOutput()<<Hilbert_Basis<<endl;
 }
 
 //---------------------------------------------------------------------------

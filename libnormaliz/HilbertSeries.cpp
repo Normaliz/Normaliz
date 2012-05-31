@@ -18,11 +18,11 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <algorithm>
 #include "HilbertSeries.h"
 #include "vector_operations.h"
 #include "map_operations.h"
 #include "integer.h"
-#include "vector_operations.cpp"
 
 #include "matrix.h"
 
@@ -261,7 +261,7 @@ vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
     return quasi_poly;
 }
 
-mpz_class HilbertSeries::getHilbertQuasiPolynomialDenominator() const {
+mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
     if(!is_simplified || quasi_poly.size()==0) {
         computeHilbertQuasiPolynomial();
     }
@@ -338,21 +338,21 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector
-const vector<mpz_class>& HilbertSeries::getNumerator() const {
+const vector<mpz_class>& HilbertSeries::getNum() const {
     return num;
 }
 // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
-const map<long, denom_t>& HilbertSeries::getDenominator() const {
+const map<long, denom_t>& HilbertSeries::getDenom() const {
     return denom;
 }
 
 // returns the numerator, repr. as vector of coefficients
-const vector<mpz_class>& HilbertSeries::getCyclotomicNumerator() const {
+const vector<mpz_class>& HilbertSeries::getCyclotomicNum() const {
     simplify();
     return cyclo_num;
 }
 // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
-const map<long, denom_t>& HilbertSeries::getCyclotomicDenominator() const {
+const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const {
     simplify();
     return cyclo_denom;
 }

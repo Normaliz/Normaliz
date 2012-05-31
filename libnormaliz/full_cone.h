@@ -47,10 +47,10 @@ class Full_Cone {
     size_t hyp_size;
     
     bool pointed;
-    bool ht1_generated;
-    bool ht1_extreme_rays;
-    bool ht1_triangulation;
-    bool ht1_hilbert_basis;
+    bool deg1_generated;
+    bool deg1_extreme_rays;
+    bool deg1_triangulation;
+    bool deg1_hilbert_basis;
     bool integrally_closed;
     
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
@@ -58,7 +58,7 @@ class Full_Cone {
     bool do_partial_triangulation;
     bool do_evaluation;
     bool do_Hilbert_basis;
-    bool do_ht1_elements;
+    bool do_deg1_elements;
     bool do_h_vector;
     bool keep_triangulation;
     bool is_pyramid;
@@ -74,7 +74,7 @@ class Full_Cone {
     
     list<vector<Integer> > Hilbert_Basis;
     list<vector<Integer> > Candidates;
-    list<vector<Integer> > Ht1_Elements;
+    list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<long> gen_degrees;  // will contain the degrees of the generators
 
@@ -153,7 +153,7 @@ class Full_Cone {
     
     Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
-    void extreme_rays_and_ht1_check();
+    void extreme_rays_and_deg1_check();
     void set_degrees();
     void sort_gens_by_degree();
     void compute_support_hyperplanes();
@@ -169,16 +169,16 @@ class Full_Cone {
     void compute_extreme_rays();
     void compute_extreme_rays_compare();
     void compute_extreme_rays_rank();
-    void select_ht1_elements();
+    void select_deg1_elements();
     void compute_hilbert_basis();
-    void compute_ht1_elements();
+    void compute_deg1_elements();
     void compute_hilbert_series();
     void compute_hilbert_basis_series();
 
     void check_pointed();
-    void ht1_check();
-    void check_ht1_extreme_rays();
-    void check_ht1_hilbert_basis();
+    void deg1_check();
+    void check_deg1_extreme_rays();
+    void check_deg1_hilbert_basis();
     void check_integrally_closed();
 
     void compute_multiplicity();
@@ -214,8 +214,8 @@ public:
     size_t getDimension() const;       //returns dimension
     size_t getNrGenerators() const;    //returns the number of generators
     bool isPointed() const;
-    bool isHt1ExtremeRays() const;
-    bool isHt1HilbertBasis() const;
+    bool isDeg1ExtremeRays() const;
+    bool isDeg1HilbertBasis() const;
     bool isIntegrallyClosed() const;
     vector<Integer> getGrading() const; //returns the linear form
     mpq_class getMultiplicity() const; //returns multiplicity
@@ -228,7 +228,7 @@ public:
      * cleares the lists first */
     void getTriangulation(list< vector<key_t> >& Triang, list<Integer>& TriangVol) const;
     Matrix<Integer> getHilbertBasis() const;
-    Matrix<Integer> getHt1Elements() const;
+    Matrix<Integer> getDeg1Elements() const;
     vector<Integer> getHVector() const;
     
     bool isComputed(ConeProperty::Enum prop) const; 
@@ -250,7 +250,7 @@ public:
     void hilbert_series_pyramid();
     void hilbert_basis_series();
     void hilbert_basis_series_pyramid();
-    void ht1_elements();
+    void deg1_elements();
 
     /* computes the multiplicity of the ideal in case of a Rees algebra
      * (not the same as the multiplicity of the semigroup) */

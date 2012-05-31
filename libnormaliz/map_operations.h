@@ -17,9 +17,9 @@
  */
 
 //---------------------------------------------------------------------------
+
 #ifndef MAP_OPERATIONS_H
 #define MAP_OPERATIONS_H
-
 
 //---------------------------------------------------------------------------
                   
@@ -37,6 +37,30 @@ ostream& operator<< (ostream& out, const map<key, T> M) {
     }
     out << std::endl;
     return out;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename key, typename T>
+map<key, T> count_in_map (const vector<key> v) {
+    map<key, T> m;
+    T size = v.size();
+    for (T i = 0; i < size; ++i) {
+        m[v[i]]++;
+    }
+    return m;
+}
+
+template<typename key, typename T>
+vector<key> to_vector (const map<key, T> M) {
+    vector<key> v;
+    typename map<key, T>::const_iterator it;
+    for (it = M.begin(); it != M.end(); ++it) {
+        for (T i = 0; i < it-> second; i++) {
+            v.push_back(it->first);
+        }
+    }
+    return v;
 }
 
 }  //end namespace

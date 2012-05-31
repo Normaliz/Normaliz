@@ -33,49 +33,6 @@
 namespace libnormaliz {
 using namespace std;
 
-template<typename Integer>
-int l_read(const list< vector<Integer> >& l){
-    typename list< vector<Integer> >::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        v_read(*i);
-    }
-    return l.size();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-int l_read(const list< vector<int> >& l){
-    typename list< vector<int> >::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        v_read(*i);
-    }
-    return l.size();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-int l_read(const list <pair<vector<size_t>,Integer> >& l){
-    typename list< Simplex<Integer> >::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        (*i).first;
-    }
-    return l.size();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-int l_read(const list< int >& l){
-    typename list< int >::const_iterator i;
-    for (i =l.begin(); i != l.end(); i++) {
-        std::cout<<(*i)<<" ";
-    }
-    std::cout<<std::endl;
-    return l.size();
-}
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>

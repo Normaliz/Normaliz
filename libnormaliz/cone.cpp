@@ -42,13 +42,14 @@ template<typename Integer>
 Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_data) {
     initialize();
     typename map< InputType , vector< vector<Integer> > >::iterator it;
-    vector< vector<Integer> > lf; //linear form / grading
+    vector< vector<Integer> > lf; //grading linear form
     //check for a grading and remove it from map
     it = multi_input_data.find(Type::grading);
     if (it != multi_input_data.end()) {
         lf = it->second;
         if (lf.size() != 1) {
-            errorOutput() << "ERROR: bad grading!"<<endl;
+            errorOutput() << "ERROR: Bad grading, has "
+                          << lf.size() << " rows (should be 1)!" << endl;
             throw BadInputException();
         }
         multi_input_data.erase(it);
@@ -239,8 +240,8 @@ vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
 }
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getHt1Elements() const {
-    return Ht1Elements;
+vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
+    return Deg1Elements;
 }
 
 template<typename Integer>
@@ -269,13 +270,13 @@ bool Cone<Integer>::isPointed() const {
 }
 
 template<typename Integer>
-bool Cone<Integer>::isHt1ExtremeRays() const {
-    return ht1_extreme_rays;
+bool Cone<Integer>::isDeg1ExtremeRays() const {
+    return deg1_extreme_rays;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isHt1HilbertBasis() const {
-    return ht1_hilbert_basis;
+bool Cone<Integer>::isDeg1HilbertBasis() const {
+    return deg1_hilbert_basis;
 }
 
 template<typename Integer>
@@ -558,12 +559,12 @@ void Cone<Integer>::setGrading (vector<Integer> lf) {
     is_Computed.set(ConeProperty::Grading);
 
     //remove data that depends on the grading 
-    Ht1Elements.clear();
+    Deg1Elements.clear();
     HilbertQuasiPolynomial.clear();
-    is_Computed.reset(ConeProperty::IsHt1Generated);
-    is_Computed.reset(ConeProperty::IsHt1ExtremeRays);
-    is_Computed.reset(ConeProperty::IsHt1HilbertBasis);
-    is_Computed.reset(ConeProperty::Ht1Elements);
+    is_Computed.reset(ConeProperty::IsDeg1Generated);
+    is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
+    is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
+    is_Computed.reset(ConeProperty::Deg1Elements);
     is_Computed.reset(ConeProperty::HilbertSeries);
     is_Computed.reset(ConeProperty::Multiplicity);
 }
@@ -577,8 +578,8 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     /* add preconditions */
     if(ToCompute.test(ConeProperty::Multiplicity))       ToCompute.set(ConeProperty::Triangulation);
     if(ToCompute.test(ConeProperty::IsIntegrallyClosed)) ToCompute.set(ConeProperty::HilbertBasis);
-    if(ToCompute.test(ConeProperty::IsHt1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
-    if(ToCompute.test(ConeProperty::IsHt1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
+    if(ToCompute.test(ConeProperty::IsDeg1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
+    if(ToCompute.test(ConeProperty::IsDeg1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
     if(ToCompute.test(ConeProperty::Grading))         ToCompute.set(ConeProperty::ExtremeRays);
     if(ToCompute.test(ConeProperty::ExtremeRays))        ToCompute.set(ConeProperty::SupportHyperplanes);
     if(ToCompute.test(ConeProperty::IsPointed))          ToCompute.set(ConeProperty::SupportHyperplanes);
@@ -601,12 +602,12 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
         } else { //no Hilbert basis
             if(ToCompute.test(ConeProperty::Triangulation)) {
                 compute(Mode::volumeTriangulation);
-                if(ToCompute.test(ConeProperty::Ht1Elements)) {
-                    compute(Mode::height1Elements);
+                if(ToCompute.test(ConeProperty::Deg1Elements)) {
+                    compute(Mode::degree1Elements);
                 }
             } else { //no triangulation
-                if(ToCompute.test(ConeProperty::Ht1Elements)) {
-                    compute(Mode::height1Elements);
+                if(ToCompute.test(ConeProperty::Deg1Elements)) {
+                    compute(Mode::degree1Elements);
                 } else if(ToCompute.test(ConeProperty::TriangulationSize)) {
                     compute(Mode::volumeLarge);
                 } else if(ToCompute.test(ConeProperty::SupportHyperplanes)) {
@@ -710,8 +711,8 @@ void Cone<Integer>::compute(ComputationMode mode) {
     case Mode::volumeLarge:
         FC.support_hyperplanes_triangulation_pyramid();
         break;
-    case Mode::height1Elements:
-        FC.ht1_elements();
+    case Mode::degree1Elements:
+        FC.deg1_elements();
         break;
     case Mode::hilbertSeries:
         FC.hilbert_series();
@@ -845,9 +846,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis()).get_elements();
         is_Computed.set(ConeProperty::HilbertBasis);
     }
-    if (FC.isComputed(ConeProperty::Ht1Elements)) {
-        Ht1Elements = BasisChange.from_sublattice(FC.getHt1Elements()).get_elements();
-        is_Computed.set(ConeProperty::Ht1Elements);
+    if (FC.isComputed(ConeProperty::Deg1Elements)) {
+        Deg1Elements = BasisChange.from_sublattice(FC.getDeg1Elements()).get_elements();
+        is_Computed.set(ConeProperty::Deg1Elements);
     }
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         HSeries = FC.Hilbert_Series;
@@ -857,9 +858,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         pointed = FC.isPointed();
         is_Computed.set(ConeProperty::IsPointed);
     }
-    if (FC.isComputed(ConeProperty::IsHt1ExtremeRays)) {
-        ht1_extreme_rays = FC.isHt1ExtremeRays();
-        is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+    if (FC.isComputed(ConeProperty::IsDeg1ExtremeRays)) {
+        deg1_extreme_rays = FC.isDeg1ExtremeRays();
+        is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
     }
     if (FC.isComputed(ConeProperty::Grading)) {
         if (!isComputed(ConeProperty::Grading)) {
@@ -870,9 +871,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         GradingDenom  = v_scalar_product(Grading,Generators[0]);
         GradingDenom /= v_scalar_product(FC.getGrading(),FC.Generators[0]);
     }
-    if (FC.isComputed(ConeProperty::IsHt1HilbertBasis)) {
-        ht1_hilbert_basis = FC.isHt1HilbertBasis();
-        is_Computed.set(ConeProperty::IsHt1HilbertBasis);
+    if (FC.isComputed(ConeProperty::IsDeg1HilbertBasis)) {
+        deg1_hilbert_basis = FC.isDeg1HilbertBasis();
+        is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::IsIntegrallyClosed)) {
         integrally_closed = FC.isIntegrallyClosed();

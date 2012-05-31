@@ -95,14 +95,14 @@ public:
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
     vector< vector<Integer> > getHilbertBasis() const;
-    vector< vector<Integer> > getHt1Elements() const;
+    vector< vector<Integer> > getDeg1Elements() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
     vector<Integer> getGrading() const;
     Integer getGradingDenom() const;
     mpq_class getMultiplicity() const;
     bool isPointed() const;
-    bool isHt1ExtremeRays() const;
-    bool isHt1HilbertBasis() const;
+    bool isDeg1ExtremeRays() const;
+    bool isDeg1HilbertBasis() const;
     bool isIntegrallyClosed() const;
     bool isReesPrimary() const;
     Integer getReesPrimaryMultiplicity() const;
@@ -128,14 +128,14 @@ private:
     vector< pair<vector<key_t>, Integer> > Triangulation;
     mpq_class multiplicity;
     vector< vector<Integer> > HilbertBasis;
-    vector< vector<Integer> > Ht1Elements;
+    vector< vector<Integer> > Deg1Elements;
     HilbertSeries HSeries;
     vector< vector<Integer> > HilbertQuasiPolynomial;
     vector<Integer> Grading;
     Integer GradingDenom;
     bool pointed;
-    bool ht1_extreme_rays;
-    bool ht1_hilbert_basis;
+    bool deg1_extreme_rays;
+    bool deg1_hilbert_basis;
     bool integrally_closed;
     bool rees_primary;
     Integer ReesPrimaryMultiplicity;

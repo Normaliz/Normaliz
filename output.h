@@ -38,7 +38,7 @@ class Output {
     bool typ;
     bool egn;
     bool gen;
-    bool sup;
+    bool cst;
     bool tri;
     bool ht1;
     Cone<Integer>* Result;
@@ -69,18 +69,18 @@ public:
     void set_write_typ(const bool& flag);             //sets the write .typ flag
     void set_write_egn(const bool& flag);             //sets the write .egn flag
     void set_write_gen(const bool& flag);             //sets the write .gen flag
-    void set_write_sup(const bool& flag);             //sets the write .sup flag
+    void set_write_cst(const bool& flag);             //sets the write .cst flag
     void set_write_tri(const bool& flag);             //sets the write .tri flag
     void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
-    void set_write_extra_files();                 //sets some flags to true
-    void set_write_all_files();                      //sets all flags to true
+    void set_write_extra_files();                     //sets some flags to true
+    void set_write_all_files();                       //sets most flags to true
   
     void write_matrix_ext(const Matrix<Integer>& M) const; //writes M to file name.ext
     void write_matrix_esp(const Matrix<Integer>& M) const; //writes M to file name.esp
     void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
     void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
     void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
-    void write_matrix_sup(const Matrix<Integer>& M) const; //writes M to file name.sup
+    void write_matrix_cst(const Matrix<Integer>& M) const; //writes M to file name.cst
     void write_tri() const; //writes the .tri file
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 

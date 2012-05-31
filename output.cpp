@@ -43,7 +43,7 @@ Output<Integer>::Output(){
     typ=false;
     egn=false;
     gen=false;
-    sup=false;
+    cst=false;
     tri=false;
     ht1=false;
 }
@@ -60,7 +60,7 @@ void Output<Integer>::read() const{
     cout<<"\ntyp="<<typ<<"\n";
     cout<<"\negn="<<egn<<"\n";
     cout<<"\ngen="<<gen<<"\n";
-    cout<<"\nsup="<<sup<<"\n";
+    cout<<"\ncst="<<cst<<"\n";
     cout<<"\ntri="<<tri<<"\n";
     cout<<"\nht1="<<ht1<<"\n";
     cout<<"\nResult is:\n";
@@ -133,8 +133,8 @@ void Output<Integer>::set_write_gen(const bool& flag){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Output<Integer>::set_write_sup(const bool& flag){
-    sup=flag;
+void Output<Integer>::set_write_cst(const bool& flag){
+    cst=flag;
 }
 
 //---------------------------------------------------------------------------
@@ -158,14 +158,8 @@ template<typename Integer>
 void Output<Integer>::set_write_extra_files(){
     out=true;
     inv=true;
-    ext=false;
-    esp=false;
-    typ=true;
-    egn=false;
     gen=true;
-    sup=true;
-    tri=false;
-    ht1=false;
+    cst=true;
 }
 
 //---------------------------------------------------------------------------
@@ -179,8 +173,7 @@ void Output<Integer>::set_write_all_files(){
     typ=true;
     egn=true;
     gen=true;
-    sup=true;
-    tri=true;
+    cst=true;
     ht1=true;
 }
 
@@ -232,9 +225,9 @@ void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Output<Integer>::write_matrix_sup(const Matrix<Integer>& M) const{
-    if (sup==true) {
-        M.print(name,"sup");
+void Output<Integer>::write_matrix_cst(const Matrix<Integer>& M) const{
+    if (cst==true) {
+        M.print(name,"cst");
     }
 }
 
@@ -292,36 +285,49 @@ void Output<Integer>::write_inv_file() const{
         inv<<"integer rank = "<<rank<<endl;
         inv<<"integer index = "<< Result->getBasisChange().get_index() <<endl;
         inv<<"integer number_support_hyperplanes = "<<Result->getSupportHyperplanes().size()<<endl;
+        if (Result->isComputed(ConeProperty::TriangulationSize)) {
+            inv << "integer size_triangulation = " << Result->getTriangulationSize() << endl;
+        }
+        if (Result->isComputed(ConeProperty::TriangulationDetSum)) {
+            inv << "integer sum_dets = " << Result->getTriangulationDetSum() << endl;
+        }
 
-        if (Result->isHt1ExtremeRays()==false) {
-            inv<<"boolean homogeneous = "<<"false"<<endl;
+        if (Result->isComputed(ConeProperty::Grading)==false) {
+            inv<<"boolean graded = "<<"false"<<endl;
         }
         else {
-            inv<<"boolean homogeneous = "<<"true"<<endl;
-            if (Result->isComputed(ConeProperty::Ht1Elements)) {
-                inv<<"integer height_1_elements = "<<Result->getHt1Elements().size()<<endl;
+            inv<<"boolean graded = "<<"true"<<endl;
+            if (Result->isComputed(ConeProperty::Deg1Elements)) {
+                inv<<"integer degree_1_elements = "<<Result->getDeg1Elements().size()<<endl;
             }
             vector<Integer> Linear_Form = Result->getGrading();
-            inv<<"vector "<<Linear_Form.size()<<" homogeneous_weights = ";
+            inv<<"vector "<<Linear_Form.size()<<" grading = ";
             for (i = 0; i < Linear_Form.size(); i++) {
                 inv<<Linear_Form[i]<<" ";
             }
             inv<<endl;
             if (Result->isComputed(ConeProperty::Multiplicity)){
-                inv<<"integer multiplicity = "<<Result->getMultiplicity()<<endl;
+                mpq_class mult = Result->getMultiplicity();
+                inv <<"integer multiplicity = "      << mult.get_num() << endl;
+                inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
             if (Result->isComputed(ConeProperty::HilbertSeries)) {
                 const HilbertSeries& HS = Result->getHilbertSeries();
-                vector<mpz_class> h_vector=HS.getNumerator(); //TODO denom
-                inv<<"vector "<<h_vector.size()<<" h-vector = ";
-                for (i = 0; i < h_vector.size(); i++) {
-                    inv<<h_vector[i]<<" ";
-                }
-                inv<<endl;
+                vector<mpz_class> HSnum = HS.getNum();
+                inv <<"vector "<< HSnum.size() <<" hilbert_series_num = ";
+                inv << HSnum;
+                vector<denom_t> HSdenom = to_vector(HS.getDenom());
+                inv <<"vector "<< HSdenom.size() <<" hilbert_series_denom = ";
+                inv << HSdenom;
 
-                vector<mpz_class> hilbert_polynomial=HS.getHilbertQuasiPolynomial()[0];
-                inv<<"vector "<<hilbert_polynomial.size()<<" hilbert_polynomial = ";
-                inv<<hilbert_polynomial; //TODO quasi-polynomial
+                vector< vector <mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
+                if (hqp.size()>0) {
+                    inv << "matrix " << hqp.size() << " " << hqp[0].size()
+                        << " hilbert_quasipolynomial = ";
+                    inv << endl << hqp;
+                    inv << "hilbert_quasipolynomial_denom = " 
+                        << HS.getHilbertQuasiPolynomialDenom() << endl;
+                }
             }
         }
         if (Result->isComputed(ConeProperty::ReesPrimary)) {
@@ -374,8 +380,8 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             out << Result->getHilbertBasis().size() <<" Hilbert basis elements"<<endl;
         }
-        if (Result->isComputed(ConeProperty::Ht1Elements)) {
-            out << Result->getHt1Elements().size() <<" Hilbert basis elements of height 1"<<endl;
+        if (Result->isComputed(ConeProperty::Deg1Elements)) {
+            out << Result->getDeg1Elements().size() <<" Hilbert basis elements of degree 1"<<endl;
         }
         if (Result->isComputed(ConeProperty::ReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
@@ -440,18 +446,18 @@ void Output<Integer>::write_files() const {
                 out << deg_count;
             }
         }
-        else if (Result->isComputed(ConeProperty::IsHt1ExtremeRays)) {
-            if ( !Result->isHt1ExtremeRays() ) {
-                out << "extreme rays are not of height 1" << endl;
+        else if (Result->isComputed(ConeProperty::IsDeg1ExtremeRays)) {
+            if ( !Result->isDeg1ExtremeRays() ) {
+                out << "No implicit grading found" << endl;
             }
         }
         out<<endl;
-        if ( Result->isComputed(ConeProperty::IsHt1HilbertBasis)
-          && Result->isHt1ExtremeRays() ) {
-            if (Result->isHt1HilbertBasis()) {
-                out << "Hilbert basis elements are of height 1";
+        if ( Result->isComputed(ConeProperty::IsDeg1HilbertBasis)
+          && Result->isDeg1ExtremeRays() ) {
+            if (Result->isDeg1HilbertBasis()) {
+                out << "Hilbert basis elements are of degree 1";
             } else {
-                out << "Hilbert basis elements are not of height 1";
+                out << "Hilbert basis elements are not of degree 1";
             }
             out<<endl<<endl;
         }
@@ -461,28 +467,28 @@ void Output<Integer>::write_files() const {
         
         if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
             const HilbertSeries& HS = Result->getHilbertSeries();
-            out << "Hilbert series:" << endl << HS.getNumerator();
-            map<long, long> HS_Denom = HS.getDenominator();
+            out << "Hilbert series:" << endl << HS.getNum();
+            map<long, long> HS_Denom = HS.getDenom();
             long nr_factors = 0;
             for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
                 nr_factors += it->second;
             }
             out << "denominator with " << nr_factors << " factors:" << endl;
-            out << HS.getDenominator();
+            out << HS.getDenom();
             out << endl;
             long period = HS.getPeriod();
             if (period == 1) {
                 out << "Hilbert polynomial:" << endl;
                 out << HS.getHilbertQuasiPolynomial()[0];
                 out << "with common denominator = ";
-                out << HS.getHilbertQuasiPolynomialDenominator();
+                out << HS.getHilbertQuasiPolynomialDenom();
                 out << endl<< endl;
             } else {
                 // output cyclonomic representation
                 out << "Hilbert series with cyclotomic denominator:" << endl;
-                out << HS.getCyclotomicNumerator();
+                out << HS.getCyclotomicNum();
                 out << "cyclotomic denominator:" << endl;
-                out << HS.getCyclotomicDenominator();
+                out << HS.getCyclotomicDenom();
                 out << endl;
                 // Hilbert quasi-polynomial
                 vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
@@ -490,7 +496,7 @@ void Output<Integer>::write_files() const {
                     out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
                     Matrix<mpz_class> HQP(hilbert_quasi_poly);
                     HQP.pretty_print(out,true);
-                    out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenominator();
+                    out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
                 }
                 out << endl<< endl;
             }
@@ -593,7 +599,7 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
 
-            if(sup) {
+            if(cst) {
                 string cst_string = name+".cst";
                 const char* cst_file = cst_string.c_str();
                 ofstream cst_out(cst_file);
@@ -613,11 +619,11 @@ void Output<Integer>::write_files() const {
             }    
         }
         
-        if ( Result->isComputed(ConeProperty::Ht1Elements) ) {
-            Matrix<Integer> Hom = Result->getHt1Elements();
+        if ( Result->isComputed(ConeProperty::Deg1Elements) ) {
+            Matrix<Integer> Hom = Result->getDeg1Elements();
             write_matrix_ht1(Hom);
             nr=Hom.nr_of_rows();
-            out<<nr<<" Hilbert basis elements of height 1:"<<endl;
+            out<<nr<<" Hilbert basis elements of degree 1:"<<endl;
             Hom.pretty_print(out);
             out << endl;
         }

@@ -82,18 +82,18 @@ public:
     void simplify() const;
 
     // returns the numerator, repr. as vector of coefficients, the h-vector
-    const vector<mpz_class>& getNumerator() const;
+    const vector<mpz_class>& getNum() const;
     // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
-    const map<long, denom_t>& getDenominator() const;
+    const map<long, denom_t>& getDenom() const;
 
     // returns the numerator, repr. as vector of coefficients
-    const vector<mpz_class>& getCyclotomicNumerator() const;
+    const vector<mpz_class>& getCyclotomicNum() const;
     // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
-    const map<long, denom_t>& getCyclotomicDenominator() const;
+    const map<long, denom_t>& getCyclotomicDenom() const;
 
     long getPeriod() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
-    mpz_class getHilbertQuasiPolynomialDenominator() const;
+    mpz_class getHilbertQuasiPolynomialDenom() const;
 
 private:
     // collected data in denominator classes

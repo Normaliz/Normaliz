@@ -30,37 +30,6 @@
 namespace libnormaliz {
 using namespace std;
 
-template <typename T>
-void v_write(vector<T>& v){
-    size_t i,s=v.size();
-    for (i=0; i <s; i++) {
-        cin>>v[i];
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template <typename T>
-size_t v_read(const vector<T>& v, std::ostream& out){
-    size_t i,s=v.size();
-    for (i=0; i <s; i++) {
-        out<<v[i]<<" ";
-    }
-    out<<endl;
-    return s;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename T>
-ostream& operator<< (ostream& out, const vector<T>& vec) {
-    for (size_t i=0; i<vec.size(); ++i) {
-        out << vec[i]<<" ";
-    }
-    out << endl;
-    return out;
-}
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -431,49 +400,6 @@ vector<T> v_cut_front(const vector<T>& v, size_t size){
 }
 
 //---------------------------------------------------------------------------
-
-/*
-int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v){
-   size_t i,j,k, s=u.size();
-   i=0;
-   // erste Stelle suchen, an der Unterschied
-   while (u[i]==v[i]){
-      i++ ;
-   }
-   j=s-1;
-   // letzte Stelle suchen, an der Unterschied
-   while (u[j]==v[j]){
-      j--;
-   }
-   if(i==j)
-      return u[i];
-
-   if(u[i]<v[i])    // bei "true" kommt u[i] nicht in v vor, sonst v[i] nicht in u
-   {
-      if(u[j]>v[j]) // bei "true" kommt auch u[j] nicht in v vor
-         return 0;  // jetzt u[i] und u[j] nicht in v
-      else
-      {
-         for(k=i+1;k<=j;k++)    // u[i] nicht in v und wir pruefen
-            if(u[k]!=v[k-1])  // ob u[i+1],...,u[j] in v
-               return 0;  // nein
-         return u[i];           // es fehlt wirklich nur u[i]
-      }
-   }
-   else  // v[i] nicht in u
-   {
-      if(u[j]<v[j]) // bei true kommt auch v[j] nicht in u vor
-         return 0;   // jetzt v[i] und v[j] nicht in u
-      else
-      {
-         for(k=i;k<=j-1;k++)        // v[i] nicht in u
-            if(u[k]!=v[k+1]) // und wir pruefen, ob v[i+1],...v[j] in u
-               return 0;  // nein
-         return u[j];         // es fehlt nur u[j] in v
-      }
-   }
-}
-*/
 
 template<typename Integer>
 vector<key_t> v_non_zero_pos(vector<Integer> v){

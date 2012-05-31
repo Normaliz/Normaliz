@@ -49,5 +49,6 @@ template mpz_class permutations<mpz_class>(const size_t& a, const size_t& b);
 
 template ostream& operator<< <long long>(ostream& out, const vector<long long>& v);
 template ostream& operator<< <mpz_class>(ostream& out, const vector<mpz_class>& v);
+template ostream& operator<< < vector<mpz_class> >(ostream& out, const vector< vector<mpz_class> >& v);
 
 }

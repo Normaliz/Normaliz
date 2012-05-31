@@ -31,6 +31,7 @@
 #include "vector_operations.h"
 #include "lineare_transformation.h"
 #include "list_operations.h"
+#include "map_operations.h"
 #include "my_omp.h"
 
 //---------------------------------------------------------------------------
@@ -899,8 +900,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;
-        if (ht1_triangulation && isComputed(ConeProperty::Grading))
-            ht1_triangulation = (gen_degrees[i] == 1);
+        if (deg1_triangulation && isComputed(ConeProperty::Grading))
+            deg1_triangulation = (gen_degrees[i] == 1);
     }
        
     Matrix<Integer> H=S.read_support_hyperplanes();
@@ -1163,8 +1164,8 @@ void Full_Cone<Integer>::build_cone() {
 
         // the i-th generator is used in the triangulation
         in_triang[i]=true;
-        if (ht1_triangulation && isComputed(ConeProperty::Grading))
-            ht1_triangulation = (gen_degrees[i] == 1);
+        if (deg1_triangulation && isComputed(ConeProperty::Grading))
+            deg1_triangulation = (gen_degrees[i] == 1);
         
             
         // Magic Bounds to decide whether to use pyramids
@@ -1259,11 +1260,11 @@ void Full_Cone<Integer>::build_cone() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::extreme_rays_and_ht1_check() {
+void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
     check_pointed();
     if(!pointed) return;
     compute_extreme_rays();
-    ht1_check();
+    deg1_check();
 }
 
 //---------------------------------------------------------------------------
@@ -1288,7 +1289,7 @@ void Full_Cone<Integer>::set_degrees() {
 
 template<typename Integer>
 void Full_Cone<Integer>::sort_gens_by_degree() {
-    if(gen_degrees.size()==0 || ht1_extreme_rays)
+    if(gen_degrees.size()==0 || deg1_extreme_rays)
         return;
     
     list<vector<Integer> > genList;
@@ -1323,9 +1324,9 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         i++;
     }
     
-    if (verbose){
+    if (verbose) {
         verboseOutput() << endl << "Degrees after sort" << endl;
-        verboseOutput() << gen_degrees;
+        verboseOutput() << count_in_map<long,long>(gen_degrees);
     }
 }
 
@@ -1338,18 +1339,18 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
     bool save_HB       = do_Hilbert_basis;
-    bool save_ht1_el   = do_ht1_elements;
+    bool save_deg1_el  = do_deg1_elements;
     bool save_h_vector = do_h_vector;
     do_triangulation         = false;
     do_partial_triangulation = false;
     do_Hilbert_basis         = false; 
-    do_ht1_elements          = false; 
+    do_deg1_elements         = false; 
     do_h_vector              = false;
     build_cone();
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
     do_Hilbert_basis         = save_HB;
-    do_ht1_elements          = save_ht1_el;
+    do_deg1_elements         = save_deg1_el;
     do_h_vector              = save_h_vector;
 }
 
@@ -1467,11 +1468,11 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
     if (do_partial_triangulation) { //TODO smarter sorting!
         if (verbose) {
-            verboseOutput() << "ht1: " << Ht1_Elements.size()
+            verboseOutput() << "deg1: " << Deg1_Elements.size()
                             << "   cand: " << Candidates.size() << endl;
         }
-        Ht1_Elements.sort();
-        Ht1_Elements.unique();
+        Deg1_Elements.sort();
+        Deg1_Elements.unique();
         Candidates.sort();
         Candidates.unique();
     }
@@ -1482,8 +1483,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << totalNrSimplices << " simplices";
         if(do_Hilbert_basis)
             verboseOutput() << ", " << Candidates.size() << " HB candidates";
-        if(do_ht1_elements)
-            verboseOutput() << ", " << Ht1_Elements.size()<< " ht1 vectors";
+        if(do_deg1_elements)
+            verboseOutput() << ", " << Deg1_Elements.size()<< " deg1 vectors";
         verboseOutput() << " accumulated." << endl;
     }
     
@@ -1504,18 +1505,18 @@ template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
     // set needed do_ vars
-    if (do_Hilbert_basis||do_ht1_elements||do_h_vector)
+    if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
         do_evaluation = true;
     // if keep_triangulation==false we must first find a grading if it is needed
     if (!keep_triangulation && !isComputed(ConeProperty::Grading)
-        && (do_triangulation || do_ht1_elements || do_h_vector)) {
-        ht1_check();
-        if(!ht1_generated && !isComputed(ConeProperty::ExtremeRays)) {
+        && (do_triangulation || do_deg1_elements || do_h_vector)) {
+        deg1_check();
+        if(!deg1_generated && !isComputed(ConeProperty::ExtremeRays)) {
             if (verbose) {
                 verboseOutput() << "Cannot find grading s.t. all generators have degree 1! Computing Extreme rays first:" << endl;
             }
             compute_support_hyperplanes();
-            extreme_rays_and_ht1_check();
+            extreme_rays_and_deg1_check();
             if(!pointed) return;
 
             Support_Hyperplanes.clear();  // will be computed again by build_cone
@@ -1536,10 +1537,13 @@ void Full_Cone<Integer>::primal_algorithm(){
         // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
     }
 
-    extreme_rays_and_ht1_check();
+    extreme_rays_and_deg1_check();
     if(!pointed) return;
 
     if (keep_triangulation) {
+        if (isComputed(ConeProperty::Grading) && !deg1_generated) {
+            deg1_triangulation = false;
+        }
         evaluate_triangulation();
     }
     FreeSimpl.clear();
@@ -1557,18 +1561,18 @@ void Full_Cone<Integer>::primal_algorithm(){
         is_Computed.set(ConeProperty::HilbertBasis,true);
         check_integrally_closed();
         if (isComputed(ConeProperty::Grading)) {
-            select_ht1_elements();
-            check_ht1_hilbert_basis();
+            select_deg1_elements();
+            check_deg1_hilbert_basis();
         }
     }
     
-    if (do_ht1_elements) {
+    if (do_deg1_elements) {
         for(size_t i=0;i<nr_gen;i++)
             if(v_scalar_product(Grading,Generators.read(i))==1)
-                Ht1_Elements.push_front(Generators.read(i));
-        Ht1_Elements.sort();
-        Ht1_Elements.unique();
-        is_Computed.set(ConeProperty::Ht1Elements,true);
+                Deg1_Elements.push_front(Generators.read(i));
+        Deg1_Elements.sort();
+        Deg1_Elements.unique();
+        is_Computed.set(ConeProperty::Deg1Elements,true);
     }
     if (do_h_vector) {
         Hilbert_Series.simplify();
@@ -1594,7 +1598,7 @@ template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes() {
     // recursion_allowed=true; 
     compute_support_hyperplanes();
-    extreme_rays_and_ht1_check();
+    extreme_rays_and_deg1_check();
     reset_tasks();
 }
 
@@ -1681,7 +1685,7 @@ void Full_Cone<Integer>::hilbert_basis_series_pyramid() {
 // -p
 template<typename Integer>
 void Full_Cone<Integer>::hilbert_series() {
-    do_ht1_elements=true;
+    do_deg1_elements=true;
     do_h_vector=true;
     do_triangulation=true;
     keep_triangulation=true;
@@ -1692,7 +1696,7 @@ void Full_Cone<Integer>::hilbert_series() {
 // -P
 template<typename Integer>
 void Full_Cone<Integer>::hilbert_series_pyramid() {
-    do_ht1_elements=true;
+    do_deg1_elements=true;
     do_h_vector=true;
     do_triangulation=true;
     primal_algorithm();
@@ -1701,8 +1705,8 @@ void Full_Cone<Integer>::hilbert_series_pyramid() {
 
 // -1
 template<typename Integer>
-void Full_Cone<Integer>::ht1_elements() {
-    do_ht1_elements=true;
+void Full_Cone<Integer>::deg1_elements() {
+    do_deg1_elements=true;
     do_partial_triangulation=true;
     primal_algorithm();
     reset_tasks();
@@ -1715,21 +1719,21 @@ void Full_Cone<Integer>::dual_mode() {
     Support_Hyperplanes.remove(vector<Integer>(dim,0));
 
     if(dim>0) {            //correction needed to include the 0 cone;
-        ht1_check();
+        deg1_check();
         if (isComputed(ConeProperty::Grading)) {
             if (verbose) { 
-                verboseOutput() << "Find height 1 elements" << endl;
+                verboseOutput() << "Find degree 1 elements" << endl;
             }
-            select_ht1_elements();
+            select_deg1_elements();
         }
     } else {
-        ht1_extreme_rays = ht1_generated = true;
+        deg1_extreme_rays = deg1_generated = true;
         Grading=vector<Integer>(dim);
-        is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-        is_Computed.set(ConeProperty::IsHt1Generated);
+        is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+        is_Computed.set(ConeProperty::IsDeg1Generated);
         is_Computed.set(ConeProperty::Grading);
     }
-    if (isComputed(ConeProperty::Grading)) check_ht1_hilbert_basis();
+    if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
     check_integrally_closed();
 }
 
@@ -1901,13 +1905,13 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::select_ht1_elements() {
+void Full_Cone<Integer>::select_deg1_elements() {
 
     typename list<vector<Integer> >::iterator h = Hilbert_Basis.begin();
     for(;h!=Hilbert_Basis.end();h++)
         if(v_scalar_product(Grading,*h)==1)
-            Ht1_Elements.push_back(*h);
-    is_Computed.set(ConeProperty::Ht1Elements,true);
+            Deg1_Elements.push_back(*h);
+    is_Computed.set(ConeProperty::Deg1Elements,true);
 }
 
 //---------------------------------------------------------------------------
@@ -1925,26 +1929,26 @@ void Full_Cone<Integer>::check_pointed() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::ht1_check() {
+void Full_Cone<Integer>::deg1_check() {
     if (!isComputed(ConeProperty::Grading)          // we still need it and
-     && !isComputed(ConeProperty::IsHt1ExtremeRays)) { // we have not tried it
+     && !isComputed(ConeProperty::IsDeg1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
             Grading = Extreme.find_linear_form();
             if (Grading.size() == dim) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
-                ht1_extreme_rays = false;
-                is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+                deg1_extreme_rays = false;
+                is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
             }
         } else // extreme rays not known
-        if (!isComputed(ConeProperty::IsHt1Generated)) {
+        if (!isComputed(ConeProperty::IsDeg1Generated)) {
             Grading = Generators.find_linear_form();
             if (Grading.size() == dim) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
-                ht1_generated = false;
-                is_Computed.set(ConeProperty::IsHt1Generated);
+                deg1_generated = false;
+                is_Computed.set(ConeProperty::IsDeg1Generated);
             }
         }
     }
@@ -1954,14 +1958,14 @@ void Full_Cone<Integer>::ht1_check() {
     if (!isComputed(ConeProperty::Grading)) {
         if (isComputed(ConeProperty::ExtremeRays)) {
             // there is no hope to find a grading later
-            ht1_generated = false;
-            ht1_extreme_rays = false;
-            is_Computed.set(ConeProperty::IsHt1ExtremeRays);
-            is_Computed.set(ConeProperty::IsHt1Generated);
-            if (do_ht1_elements || do_h_vector) {
+            deg1_generated = false;
+            is_Computed.set(ConeProperty::IsDeg1Generated);
+            deg1_extreme_rays = false;
+            is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+            if (do_deg1_elements || do_h_vector) {
                 errorOutput() << "No grading specified and cannot find one. "
                               << "Disabling some computations!" << endl;
-                do_ht1_elements = false;
+                do_deg1_elements = false;
                 do_h_vector = false;
             }
         }
@@ -1970,56 +1974,56 @@ void Full_Cone<Integer>::ht1_check() {
     
     set_degrees();
         
-    if (!isComputed(ConeProperty::IsHt1Generated)) {
-        ht1_generated = true;
+    if (!isComputed(ConeProperty::IsDeg1Generated)) {
+        deg1_generated = true;
         for (size_t i = 0; i < nr_gen; i++) {
             if (gen_degrees[i] != 1) {
-                ht1_generated = false;
+                deg1_generated = false;
                 break;
             }
         }
-        is_Computed.set(ConeProperty::IsHt1Generated);
-        if (ht1_generated) {
-            ht1_extreme_rays = true;
-            is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+        is_Computed.set(ConeProperty::IsDeg1Generated);
+        if (deg1_generated) {
+            deg1_extreme_rays = true;
+            is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
         }
     }
-    if (!isComputed(ConeProperty::IsHt1ExtremeRays)
+    if (!isComputed(ConeProperty::IsDeg1ExtremeRays)
       && isComputed(ConeProperty::ExtremeRays)) {
-        ht1_extreme_rays = true;
+        deg1_extreme_rays = true;
         for (size_t i = 0; i < nr_gen; i++) {
             if (Extreme_Rays[i] && gen_degrees[i] != 1) {
-                ht1_extreme_rays = false;
+                deg1_extreme_rays = false;
                 break;
             }
         }
-        is_Computed.set(ConeProperty::IsHt1ExtremeRays);
+        is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
     }
 }
 
 template<typename Integer>
-void Full_Cone<Integer>::check_ht1_hilbert_basis() {
-    if (isComputed(ConeProperty::IsHt1HilbertBasis))
+void Full_Cone<Integer>::check_deg1_hilbert_basis() {
+    if (isComputed(ConeProperty::IsDeg1HilbertBasis))
         return;
 
     if ( !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::HilbertBasis)) {
-        errorOutput() << "WARNING: unsatisfied preconditions in check_ht1_hilbert_basis()!" <<endl;
+        errorOutput() << "WARNING: unsatisfied preconditions in check_deg1_hilbert_basis()!" <<endl;
         return;
     }
     
-    if (isComputed(ConeProperty::Ht1Elements)) {
-        ht1_hilbert_basis = (Ht1_Elements.size() == Hilbert_Basis.size());
+    if (isComputed(ConeProperty::Deg1Elements)) {
+        deg1_hilbert_basis = (Deg1_Elements.size() == Hilbert_Basis.size());
     } else {
-        ht1_hilbert_basis = true;
+        deg1_hilbert_basis = true;
         typename list< vector<Integer> >::iterator h;
         for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
             if (v_scalar_product((*h),Grading)!=1) {
-                ht1_hilbert_basis = false;
+                deg1_hilbert_basis = false;
                 break;
             }
         }
     }
-    is_Computed.set(ConeProperty::IsHt1HilbertBasis);
+    is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
 }
 
 template<typename Integer>
@@ -2100,10 +2104,11 @@ void Full_Cone<Integer>::global_reduction() {
     if(verbose) verboseOutput()<<"done."<<endl;
 */  // Duplicates are avoided or removed earlier
     if (nr_gen == dim) { // cone is simplicial, therefore no global reduction is necessary
+        Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates);
         if (verbose) {
             verboseOutput()<<"Cone is simplicial, no global reduction necessary."<<endl;
+            verboseOutput()<<Hilbert_Basis.size()<< " Hilbert Basis elements"<<endl;
         }
-        Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates);
         return;
     }
     
@@ -2325,7 +2330,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_triangulation = false;
     do_partial_triangulation = false;
     do_Hilbert_basis = false;
-    do_ht1_elements = false;
+    do_deg1_elements = false;
     keep_triangulation = false;
     do_h_vector=false;
     is_pyramid = false;
@@ -2360,16 +2365,16 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
     pointed = false;
-    ht1_extreme_rays = false;
-    ht1_generated = false;
-    ht1_hilbert_basis = false;
+    deg1_extreme_rays = false;
+    deg1_generated = false;
+    deg1_hilbert_basis = false;
     integrally_closed = false;
     
     reset_tasks();
     
     Extreme_Rays = vector<bool>(nr_gen,false);
     in_triang = vector<bool> (nr_gen,false);
-    ht1_triangulation = true;
+    deg1_triangulation = true;
     if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
         Hilbert_Series.add(vector<num_t>(1,1),vector<denom_t>());
@@ -2410,10 +2415,10 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     is_Computed.set(ConeProperty::Generators);
     pointed = true;
     is_Computed.set(ConeProperty::IsPointed);
-    ht1_extreme_rays = false;
-    ht1_generated = false;
-    ht1_triangulation = false;
-    ht1_hilbert_basis = false;
+    deg1_extreme_rays = false;
+    deg1_generated = false;
+    deg1_triangulation = false;
+    deg1_hilbert_basis = false;
     integrally_closed = false;
     
     reset_tasks();
@@ -2467,7 +2472,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
         for(size_t i=0;i<nr_gen;i++)
             Extreme_Rays[i]=C.Extreme_Rays[Key[i]];
     in_triang = vector<bool> (nr_gen,false);
-    ht1_triangulation = true;
+    deg1_triangulation = true;
     
     Grading=C.Grading;
     is_Computed.set(ConeProperty::Grading, C.isComputed(ConeProperty::Grading));
@@ -2475,7 +2480,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     do_triangulation=C.do_triangulation;
     do_partial_triangulation=C.do_partial_triangulation;
-    do_ht1_elements=C.do_ht1_elements;
+    do_deg1_elements=C.do_deg1_elements;
     do_h_vector=C.do_h_vector;
     do_Hilbert_basis=C.do_Hilbert_basis;
     keep_triangulation=C.keep_triangulation;
@@ -2531,13 +2536,13 @@ bool Full_Cone<Integer>::isPointed()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Full_Cone<Integer>::isHt1ExtremeRays() const{
-    return ht1_extreme_rays;
+bool Full_Cone<Integer>::isDeg1ExtremeRays() const{
+    return deg1_extreme_rays;
 }
 
 template<typename Integer>
-bool Full_Cone<Integer>::isHt1HilbertBasis() const{
-    return ht1_hilbert_basis;
+bool Full_Cone<Integer>::isDeg1HilbertBasis() const{
+    return deg1_hilbert_basis;
 }
 
 template<typename Integer>
@@ -2621,12 +2626,12 @@ Matrix<Integer> Full_Cone<Integer>::getHilbertBasis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::getHt1Elements()const{
-    size_t s= Ht1_Elements.size();
+Matrix<Integer> Full_Cone<Integer>::getDeg1Elements()const{
+    size_t s= Deg1_Elements.size();
     Matrix<Integer> M(s,dim);
     size_t i=0;
     typename list< vector<Integer> >::const_iterator l;
-    for (l =Ht1_Elements.begin(); l != Ht1_Elements.end(); l++) {
+    for (l =Deg1_Elements.begin(); l != Deg1_Elements.end(); l++) {
         M.write(i,(*l));
         i++;
     }
@@ -2647,22 +2652,21 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<"\ndim="<<dim<<".\n";
     verboseOutput()<<"\nnr_gen="<<nr_gen<<".\n";
     verboseOutput()<<"\nhyp_size="<<hyp_size<<".\n";
-    verboseOutput()<<"\nHomogeneous is "<<ht1_generated<<".\n";
     verboseOutput()<<"\nGrading is:\n";
-    v_read(Grading);
+    verboseOutput()<< Grading;
     verboseOutput()<<"\nMultiplicity is "<<multiplicity<<".\n";
     verboseOutput()<<"\nGenerators are:\n";
     Generators.read();
     verboseOutput()<<"\nExtreme_rays are:\n";
-    v_read(Extreme_Rays);
+    verboseOutput()<< Extreme_Rays;
     verboseOutput()<<"\nSupport Hyperplanes are:\n";
-    l_read(Support_Hyperplanes);
+    verboseOutput()<< Support_Hyperplanes;
     verboseOutput()<<"\nTriangulation is:\n";
-    l_read(Triangulation);
+    verboseOutput()<< Triangulation;
     verboseOutput()<<"\nHilbert basis is:\n";
-    l_read(Hilbert_Basis);
-    verboseOutput()<<"\nHt1 elements are:\n";
-    l_read(Ht1_Elements);
+    verboseOutput()<< Hilbert_Basis;
+    verboseOutput()<<"\nDeg1 elements are:\n";
+    verboseOutput()<< Deg1_Elements;
     verboseOutput()<<"\nHilbert Series  is:\n";
     verboseOutput()<<Hilbert_Series;
 }

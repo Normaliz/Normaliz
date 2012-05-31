@@ -200,7 +200,7 @@ size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height) {
     bool do_only_multiplicity =
-        (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_ht1_elements)
+        (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_deg1_elements)
         || (height==1 && C.do_partial_triangulation && !C.do_h_vector);
     
     size_t i,j;
@@ -214,7 +214,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     
     if(do_only_multiplicity){
         volume=Generators.vol_destructive();
-        addMult(key);
+        addMult();
         return volume;         
     }  // done if only mult is asked for
 
@@ -252,7 +252,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     }
     
     if (unimodular && !C.do_h_vector) {
-        addMult(key);
+        addMult();
         return volume;
     }
 
@@ -289,7 +289,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
     }
 
-    addMult(key);
+    addMult();
 
 
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
@@ -440,10 +440,11 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }    
         
         norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
-        normG = 0;
+                // it is used to sort the Hilbert basis candidates
+        normG = 0;  // the degree according to the grading
         for (i = 0; i < dim; i++) {  // since generators have degree 1
-            norm+=elements[last][i];
-            if(C.do_h_vector || C.do_ht1_elements) {
+            norm+=elements[last][i]; 
+            if(C.do_h_vector || C.do_deg1_elements) {
                 normG += elements[last][i]*gen_degrees[i];
             }
         }
@@ -461,16 +462,16 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             hvector[Deg]++;
         }
         
-        // the case of Hilbert bases and height 1 elements, only added if height >=2
+        // the case of Hilbert bases and degree 1 elements, only added if height >=2
         if (!C.do_partial_triangulation || height >= 2) {
             if (C.do_Hilbert_basis) {
                 Candidates.push_back(v_merge(elements[last],norm));
                 continue;
             }
-            if(C.do_ht1_elements && normG==volume && !isDuplicate(elements[last])) {
+            if(C.do_deg1_elements && normG==volume && !isDuplicate(elements[last])) {
                 help=GenCopy.VxM(elements[last]);
                 v_scalar_division(help,volume);
-                Ht1_Elements.push_back(help);
+                Deg1_Elements.push_back(help);
             }
         }
     }
@@ -481,9 +482,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         Hilbert_Series.add(hvector,gen_degrees);
     }
     
-    if(C.do_ht1_elements) {
+    if(C.do_deg1_elements) {
         #pragma omp critical(HT1ELEMENTS)
-        C.Ht1_Elements.splice(C.Ht1_Elements.begin(),Ht1_Elements);
+        C.Deg1_Elements.splice(C.Deg1_Elements.begin(),Deg1_Elements);
     }
  
     if(!C.do_Hilbert_basis)
@@ -532,10 +533,10 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 }
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::addMult(const vector<key_t>& key) {
+void SimplexEvaluator<Integer>::addMult() {
     if (!C.isComputed(ConeProperty::Grading))
         return;
-    if (C.ht1_triangulation) {
+    if (C.deg1_triangulation) {
         mult_sum += to_mpz(volume);
     } else {
         mpz_class deg_prod=gen_degrees[0];
