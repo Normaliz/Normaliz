@@ -170,7 +170,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> zero_i(nr_gen);
     boost::dynamic_bitset<> subfacet(nr_gen);
 
-    #pragma omp parallel for firstprivate(zero_i,subfacet) private(k,nr_zero_i) schedule(dynamic)
+    #pragma omp parallel for firstprivate(zero_i,subfacet) private(k,nr_zero_i) schedule(dynamic)  if(!is_pyramid)
     for (i=0; i<nr_NegSimp;i++){
         zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
         
@@ -226,7 +226,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     map < boost::dynamic_bitset<>, int > Neg_Subfacet;
     size_t nr_NegSubf=0;
     
-    #pragma omp parallel private(jj)
+    #pragma omp parallel private(jj) if(nr_NegNonSimp+nr_NegSimp>10000)
     {
     size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
@@ -513,7 +513,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 
     typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
-    #pragma omp parallel private(i)
+    #pragma omp parallel private(i)  if(TriangulationSize>10000)
     {
     size_t k,l;
     bool one_not_in_i, not_in_facet;
@@ -709,7 +709,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     // you MUST change "false" to "true" in process_pyramid, Pyramid.parallel_in_pyramid=false;
     // (or commnent it out)
     
-    // #pragma omp parallel for private(i) firstprivate(lpos,l,Pyramid_key,in_Pyramid) schedule(dynamic) 
+    #pragma omp parallel for private(i) firstprivate(lpos,l,Pyramid_key,in_Pyramid) schedule(dynamic) if(!do_triangulation)
     for (size_t k=0; k<listsize; k++) {
     
         if(skip_remaining_tri || skip_remaining_pyr )
@@ -1141,7 +1141,7 @@ void Full_Cone<Integer>::build_cone() {
         size_t old_nr_supp_hyps=Facets.size();                
         
         size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic)
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic) if(old_nr_supp_hyps>10000)
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
             for(;k > lpos; lpos++, l++) ;
             for(;k < lpos; lpos--, l--) ;
@@ -1295,7 +1295,7 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
     list<vector<Integer> > genList;
     vector<Integer> v(dim+3);
     vector<Integer> w(dim);
-    size_t i,j;
+    unsigned long i,j;
     
     for(i=0;i<nr_gen;i++){
         v[0]=gen_degrees[i];
