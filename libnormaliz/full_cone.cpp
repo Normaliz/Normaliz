@@ -163,7 +163,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     if (tv_verbose) verboseOutput()<<"PS "<<nr_PosSimp<<" P "<<nr_PosNonSimp<<" NS "<<nr_NegSimp<<" N "<<nr_NegNonSimp<<" ZS "<<nr_NeuSimp<<" Z "<<nr_NeuNonSimp<<endl;
 
-    if (tv_verbose) verboseOutput()<<"transform_values: create lst of pairs <subfacet,facet> of NS"<<endl;
+    if (tv_verbose) verboseOutput()<<"transform_values: create list of pairs <subfacet,facet> of NS"<<endl;
     
     vector< list<pair < boost::dynamic_bitset<>, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
 
@@ -226,7 +226,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     map < boost::dynamic_bitset<>, int > Neg_Subfacet;
     size_t nr_NegSubf=0;
     
-    #pragma omp parallel private(jj) if(nr_NegNonSimp+nr_NegSimp>10000)
+    #pragma omp parallel private(jj) if(nr_NegNonSimp+nr_NegSimp>1000)
     {
     size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
@@ -513,7 +513,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 
     typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
-    #pragma omp parallel private(i)  if(TriangulationSize>10000)
+    #pragma omp parallel private(i)  if(TriangulationSize>1000)
     {
     size_t k,l;
     bool one_not_in_i, not_in_facet;
@@ -682,55 +682,56 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     vector<key_t> Pyramid_key;
     Pyramid_key.reserve(nr_gen);
-    boost::dynamic_bitset<> in_Pyramid(nr_gen); 
-     
+    boost::dynamic_bitset<> in_Pyramid(nr_gen);
 
     typename list< FACETDATA >::iterator l;
     size_t i,lpos, listsize=Facets.size();
     //use deque here to have independent entries
     deque<bool> done(listsize,false);
-    
+
     size_t nr_done=0;
     size_t store_level;
     if(recursion_allowed)
         store_level=0;
     else
         store_level=pyr_level+1;
-        
+
     bool skip_remaining_tri,skip_remaining_pyr;
 
-    do{    
+    do {
 
     lpos=0;
     skip_remaining_tri=skip_remaining_pyr=false;
     l=Facets.begin();
 
     // if the next loop is de-parallelized, then
-    // you MUST change "false" to "true" in process_pyramid, Pyramid.parallel_in_pyramid=false;
-    // (or commnent it out)
-    
-    #pragma omp parallel for private(i) firstprivate(lpos,l,Pyramid_key,in_Pyramid) schedule(dynamic) if(!do_triangulation)
+    // you MUST change "do_triangulation" to "true" in process_pyramid,
+    // Pyramid.parallel_in_pyramid=do_triangulation;
+
+    if(!do_triangulation)
+    {
+    #pragma omp parallel for private(i) firstprivate(lpos,l,Pyramid_key,in_Pyramid) schedule(dynamic) // if(!do_triangulation)
     for (size_t k=0; k<listsize; k++) {
-    
+
         if(skip_remaining_tri || skip_remaining_pyr )
             continue;
-            
+
         for(;k > lpos; lpos++, l++) ;
         for(;k < lpos; lpos--, l--) ;
-                
+
         if(done[lpos])
             continue;
-            
+
         done[lpos]=true;
-        
-        #pragma omp atomic 
+
+        #pragma omp atomic
         nr_done++;
-            
+
         if(l->ValNewGen>=0 ||(!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1)){
             continue;
         }
-            
-        boost::dynamic_bitset<> in_Pyramid(nr_gen,false);           
+
+        boost::dynamic_bitset<> in_Pyramid(nr_gen,false);
         Pyramid_key.push_back(new_generator);
         in_Pyramid.set(new_generator);
         for(i=0;i<nr_gen;i++){
@@ -739,23 +740,70 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
                 in_Pyramid.set(i);
             }
         }
-        
-        
+
+
         process_pyramid(Pyramid_key, in_Pyramid, new_generator, -l->ValNewGen, recursive);
         Pyramid_key.clear();
-        
-        if(check_evaluation_buffer_size() && start_level==0  && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
+
+        if(check_evaluation_buffer_size() && start_level==0 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
             skip_remaining_tri=true;
         }
-        
-        if(Top_Cone->nrPyramids[store_level] > 200000 && start_level==0  && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
+
+        if(Top_Cone->nrPyramids[store_level] > 200000 && start_level==0 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
                                                            //  to keep the triangulation buffer under control
             skip_remaining_pyr=true;                      // CHOOSE SAME VALUE IN evaluate_stored_pyramids
         }
-            
+
     } // end parallel for k
-    
+    } // if(!do_triangulation)
+    else //no parallel evaluation of the pyramids
+    for (size_t k=0; k<listsize; k++) {
+
+        if(skip_remaining_tri || skip_remaining_pyr )
+            continue;
+
+        for(;k > lpos; lpos++, l++) ;
+        for(;k < lpos; lpos--, l--) ;
+
+        if(done[lpos])
+            continue;
+
+        done[lpos]=true;
+
+        #pragma omp atomic
+        nr_done++;
+
+        if(l->ValNewGen>=0 ||(!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1)){
+            continue;
+        }
+
+        boost::dynamic_bitset<> in_Pyramid(nr_gen,false);
+        Pyramid_key.push_back(new_generator);
+        in_Pyramid.set(new_generator);
+        for(i=0;i<nr_gen;i++){
+            if(in_triang[i] && v_scalar_product(l->Hyp,Generators.read(i))==0){ // from the second extension on the incidence data
+                Pyramid_key.push_back(i);                                      // in Facets is no longer up-to-date
+                in_Pyramid.set(i);
+            }
+        }
+
+
+        process_pyramid(Pyramid_key, in_Pyramid, new_generator, -l->ValNewGen, recursive);
+        Pyramid_key.clear();
+
+        if(check_evaluation_buffer_size() && start_level==0 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
+                                                           //  to keep the triangulation buffer under control
+            skip_remaining_tri=true;
+        }
+
+        if(Top_Cone->nrPyramids[store_level] > 200000 && start_level==0 && nr_done < listsize){  // we interrupt parallel execution if it is really parallel
+                                                           //  to keep the triangulation buffer under control
+            skip_remaining_pyr=true;                      // CHOOSE SAME VALUE IN evaluate_stored_pyramids
+        }
+
+    } // end non-parallel for k
+
     if(skip_remaining_tri)
     {
         Top_Cone->evaluate_triangulation();
@@ -766,15 +814,15 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             verboseOutput() << "descending to level " << store_level << endl;
         }
         Top_Cone->evaluate_stored_pyramids(store_level);
-    }    
-    
+    }
+
     } while(skip_remaining_tri || skip_remaining_pyr);
-    
+
     if(check_evaluation_buffer()){
           Top_Cone->evaluate_triangulation();
-    } 
-    
-}
+    }
+
+} 
 
 //---------------------------------------------------------------------------
 
@@ -1141,7 +1189,7 @@ void Full_Cone<Integer>::build_cone() {
         size_t old_nr_supp_hyps=Facets.size();                
         
         size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic) if(old_nr_supp_hyps>10000)
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic) if(old_nr_supp_hyps>1000)
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
             for(;k > lpos; lpos++, l++) ;
             for(;k < lpos; lpos--, l--) ;
