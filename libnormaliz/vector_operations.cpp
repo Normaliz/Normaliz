@@ -41,120 +41,9 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 
     typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
 
-
-    if( n >= 64 )
-    {
-        for( i = 0; i < ( n >> 6 ); ++i, a += 64, b += 64 ){
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
-            ans += a[4] * b[4];
-            ans += a[5] * b[5];
-            ans += a[6] * b[6];
-            ans += a[7] * b[7];
-            ans += a[8] * b[8];
-            ans += a[9] * b[9];
-            ans += a[10] * b[10];
-            ans += a[11] * b[11];
-            ans += a[12] * b[12];
-            ans += a[13] * b[13];
-            ans += a[14] * b[14];
-            ans += a[15] * b[15];
-            ans += a[16] * b[16];
-            ans += a[17] * b[17];
-            ans += a[18] * b[18];
-            ans += a[19] * b[19];
-            ans += a[20] * b[20];
-            ans += a[21] * b[21];
-            ans += a[22] * b[22];
-            ans += a[23] * b[23];
-            ans += a[24] * b[24];
-            ans += a[25] * b[25];
-            ans += a[26] * b[26];
-            ans += a[27] * b[27];
-            ans += a[28] * b[28];
-            ans += a[29] * b[29];
-            ans += a[30] * b[30];
-            ans += a[31] * b[31];
-            ans += a[32] * b[32];
-            ans += a[33] * b[33];
-            ans += a[34] * b[34];
-            ans += a[35] * b[35];
-            ans += a[36] * b[36];
-            ans += a[37] * b[37];
-            ans += a[38] * b[38];
-            ans += a[39] * b[39];
-            ans += a[40] * b[40];
-            ans += a[41] * b[41];
-            ans += a[42] * b[42];
-            ans += a[43] * b[43];
-            ans += a[44] * b[44];
-            ans += a[45] * b[45];
-            ans += a[46] * b[46];
-            ans += a[47] * b[47];
-            ans += a[48] * b[48];
-            ans += a[49] * b[49];
-            ans += a[50] * b[50];
-            ans += a[51] * b[51];
-            ans += a[52] * b[52];
-            ans += a[53] * b[53];
-            ans += a[54] * b[54];
-            ans += a[55] * b[55];
-            ans += a[56] * b[56];
-            ans += a[57] * b[57];
-            ans += a[58] * b[58];
-            ans += a[59] * b[59];
-            ans += a[60] * b[60];
-            ans += a[61] * b[61];
-            ans += a[62] * b[62];
-            ans += a[63] * b[63];
-        }
-        n -= i << 6;
-    }
-
-
-    if( n >= 32 )
-    {
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
-            ans += a[4] * b[4];
-            ans += a[5] * b[5];
-            ans += a[6] * b[6];
-            ans += a[7] * b[7];
-            ans += a[8] * b[8];
-            ans += a[9] * b[9];
-            ans += a[10] * b[10];
-            ans += a[11] * b[11];
-            ans += a[12] * b[12];
-            ans += a[13] * b[13];
-            ans += a[14] * b[14];
-            ans += a[15] * b[15];
-            ans += a[16] * b[16];
-            ans += a[17] * b[17];
-            ans += a[18] * b[18];
-            ans += a[19] * b[19];
-            ans += a[20] * b[20];
-            ans += a[21] * b[21];
-            ans += a[22] * b[22];
-            ans += a[23] * b[23];
-            ans += a[24] * b[24];
-            ans += a[25] * b[25];
-            ans += a[26] * b[26];
-            ans += a[27] * b[27];
-            ans += a[28] * b[28];
-            ans += a[29] * b[29];
-            ans += a[30] * b[30];
-            ans += a[31] * b[31];
-
-        n -=32;
-        a +=32;
-        b+=32;
-    }
     if( n >= 16 )
     {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
             ans += a[0] * b[0];
             ans += a[1] * b[1];
             ans += a[2] * b[2];
@@ -171,47 +60,47 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
             ans += a[13] * b[13];
             ans += a[14] * b[14];
             ans += a[15] * b[15];
+        }
 
-        n -=16;
-        a +=16;
-        b+=16;
+        n -= i<<4;
     }
+
     if( n >= 8)
     {
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
-            ans += a[4] * b[4];
-            ans += a[5] * b[5];
-            ans += a[6] * b[6];
-            ans += a[7] * b[7];
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
 
-        n -=8;
-        a +=8;
-        b+=8;
+        n -= 8;
+        a += 8;
+        b += 8;
     }
 
     if( n >= 4)
     {
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
 
-        n -=4;
-        a +=4;
-        b+=4;
+        n -= 4;
+        a += 4;
+        b += 4;
     }
 
     if( n >= 2)
     {
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
 
-        n -=2;
-        a +=2;
-        b+=2;
+        n -= 2;
+        a += 2;
+        b += 2;
     }
 
     if(n>0)
@@ -366,98 +255,81 @@ template<typename Integer>
 bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const long& m){
     Integer ans = 0;
     size_t i,n=av.size();
-    typename vector<Integer>::const_iterator    a=av.begin(),b=bv.begin();
+    typename vector<Integer>::const_iterator a=av.begin(),b=bv.begin();
 
-    if( n >= 64 )
+    if( n >= 16 )
     {
-        for( i = 0; i < ( n >> 6 ); ++i, a += 64, b += 64 ){
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b += 16 ){
             ans += a[0] * b[0];
             ans += a[1] * b[1];
             ans += a[2] * b[2];
             ans += a[3] * b[3];
-            ans %=m;
+            ans %= m;
             ans += a[4] * b[4];
             ans += a[5] * b[5];
             ans += a[6] * b[6];
             ans += a[7] * b[7];
-            ans %=m;
+            ans %= m;
             ans += a[8] * b[8];
             ans += a[9] * b[9];
             ans += a[10] * b[10];
             ans += a[11] * b[11];
-            ans %=m;
+            ans %= m;
             ans += a[12] * b[12];
             ans += a[13] * b[13];
             ans += a[14] * b[14];
             ans += a[15] * b[15];
-            ans %=m;
-            ans += a[16] * b[16];
-            ans += a[17] * b[17];
-            ans += a[18] * b[18];
-            ans += a[19] * b[19];
-            ans %=m;
-            ans += a[20] * b[20];
-            ans += a[21] * b[21];
-            ans += a[22] * b[22];
-            ans += a[23] * b[23];
-            ans %=m;
-            ans += a[24] * b[24];
-            ans += a[25] * b[25];
-            ans += a[26] * b[26];
-            ans += a[27] * b[27];
-            ans %=m;
-            ans += a[28] * b[28];
-            ans += a[29] * b[29];
-            ans += a[30] * b[30];
-            ans += a[31] * b[31];
-            ans %=m;
-            ans += a[32] * b[32];
-            ans += a[33] * b[33];
-            ans += a[34] * b[34];
-            ans += a[35] * b[35];
-            ans %=m;
-            ans += a[36] * b[36];
-            ans += a[37] * b[37];
-            ans += a[38] * b[38];
-            ans += a[39] * b[39];
-            ans %=m;
-            ans += a[40] * b[40];
-            ans += a[41] * b[41];
-            ans += a[42] * b[42];
-            ans += a[43] * b[43];
-            ans %=m;
-            ans += a[44] * b[44];
-            ans += a[45] * b[45];
-            ans += a[46] * b[46];
-            ans += a[47] * b[47];
-            ans %=m;
-            ans += a[48] * b[48];
-            ans += a[49] * b[49];
-            ans += a[50] * b[50];
-            ans += a[51] * b[51];
-            ans %=m;
-            ans += a[52] * b[52];
-            ans += a[53] * b[53];
-            ans += a[54] * b[54];
-            ans += a[55] * b[55];
-            ans %=m;
-            ans += a[56] * b[56];
-            ans += a[57] * b[57];
-            ans += a[58] * b[58];
-            ans += a[59] * b[59];
-            ans %=m;
-            ans += a[60] * b[60];
-            ans += a[61] * b[61];
-            ans += a[62] * b[62];
-            ans += a[63] * b[63];
-            ans %=m;
+            ans %= m;
         }
-        n -= i << 6;
+        n -= i << 4;
     }
-    for( i = 0; i < n; ++i ){
-        ans += a[i] * b[i];
-        ans %=m;
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans %= m;
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+        ans %= m;
+
+        n -= 8;
+        a += 8;
+        b += 8;
     }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans %= m;
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+        
+    ans %= m;
+
     if (((result-ans) % m)!=0) {
         return false;
     }
@@ -519,4 +391,58 @@ vector<key_t> v_non_zero_pos(vector<Integer> v){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t& start){
+
+    size_t i,n=av.size();
+
+    typename vector<Integer>::const_iterator a=av.begin();
+    typename vector<Integer>::iterator b=bv.begin();
+
+    a += start;
+    b += start;
+    n -= start;
+
+
+    if( n >= 8 )
+    {
+        for( i = 0; i < ( n >> 3 ); ++i, a += 8, b += 8 ){
+            b[0] += F*a[0];
+            b[1] += F*a[1];
+            b[2] += F*a[2];
+            b[3] += F*a[3];
+            b[4] += F*a[4];
+            b[5] += F*a[5];
+            b[6] += F*a[6];
+            b[7] += F*a[7];
+        }
+        n -= i << 3;
+    }
+
+    if( n >= 4)
+    {
+        b[0] += F*a[0];
+        b[1] += F*a[1];
+        b[2] += F*a[2];
+        b[3] += F*a[3];
+
+        n -=4;
+        a +=4;
+        b +=4;
+    }
+
+    if( n >= 2)
+    {
+        b[0] += F*a[0];
+        b[1] += F*a[1];
+
+        n -=2;
+        a +=2;
+        b +=2;
+    }
+
+    if(n>0)
+        b[0] += F*a[0];
 }
+
+} // end namespace libnormaliz
