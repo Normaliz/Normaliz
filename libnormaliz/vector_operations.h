@@ -85,12 +85,18 @@ Integer v_make_prime(vector<Integer>& v);
 //							Scalar operations
 //---------------------------------------------------------------------------
 
+//v = v * scalar
 template<typename Integer>
-void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar); //v = v * scalar
+void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
+    size_t i,size=v.size();
+    for (i = 0; i <size; i++) {
+        v[i] *= scalar;
+    }
+}
 
+//returns v * scalar
 template<typename Integer>
 vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Integer& scalar);
-//returns v * scalar
 
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer& scalar);
