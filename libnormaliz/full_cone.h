@@ -241,6 +241,7 @@ public:
     void dualize_cone();
     void support_hyperplanes();
     void triangulation_size();
+    void triangulation();
     void support_hyperplanes_triangulation();
     void support_hyperplanes_triangulation_pyramid();
     void triangulation_hilbert_basis();

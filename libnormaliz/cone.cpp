@@ -705,6 +705,9 @@ void Cone<Integer>::compute(ComputationMode mode) {
     case Mode::triangulationSize:
         FC.triangulation_size();
         break;
+    case Mode::triangulation:
+        FC.triangulation();
+        break;
     case Mode::volumeTriangulation:
         FC.support_hyperplanes_triangulation();
         break;

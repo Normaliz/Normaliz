@@ -44,6 +44,7 @@ namespace Mode {
 enum ComputationMode {
     supportHyperplanes,
     triangulationSize,
+    triangulation,
     volumeTriangulation,
     volumeLarge,
     degree1Elements,

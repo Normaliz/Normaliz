@@ -247,7 +247,7 @@ void Output<Integer>::write_tri() const{
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
-                out << tit->first[i] << " ";
+                out << tit->first[i]+1 << " ";
             }
             out << tit->second << endl;
         }

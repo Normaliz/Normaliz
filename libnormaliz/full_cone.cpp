@@ -1510,14 +1510,14 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
         #pragma omp critical(DETSUM)
         detSum += priv_detSum;
-    }
+    } // end parallel
     if (verbose)
         verboseOutput()  << endl;
 
     if (do_partial_triangulation) { //TODO smarter sorting!
         if (verbose) {
-            verboseOutput() << "deg1: " << Deg1_Elements.size()
-                            << "   cand: " << Candidates.size() << endl;
+            verboseOutput() << "deg1: " << flush << Deg1_Elements.size()
+                         << "   cand: " << flush << Candidates.size() << endl;
         }
         Deg1_Elements.sort();
         Deg1_Elements.unique();
@@ -1655,6 +1655,16 @@ template<typename Integer>
 void Full_Cone<Integer>::triangulation_size() {
     do_triangulation=true;
     keep_triangulation=false;
+    do_evaluation=false;
+    primal_algorithm();
+    reset_tasks();
+}
+
+// -tT, triangulation without evaluation
+template<typename Integer>
+void Full_Cone<Integer>::triangulation() {
+    do_triangulation=true;
+    keep_triangulation=true;
     do_evaluation=false;
     primal_algorithm();
     reset_tasks();

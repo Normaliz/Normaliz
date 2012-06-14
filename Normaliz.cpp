@@ -41,7 +41,7 @@ void printHelp(char* command) {
     cout << "  -?\tprint this help text and exit"<<endl;
     cout << "  -s\tcomputation mode: support hyperplanes"<<endl;
     cout << "  -S\tcomputation mode: support hyperplanes (currently same as -s)"<<endl;
-    cout << "  -t\tcomputation mode: triangulation size"<<endl;
+    cout << "  -t\tcomputation mode: triangulation"<<endl;
     cout << "  -v\tcomputation mode: volume triangulation"<<endl;
     cout << "  -V\tcomputation mode: volume large"<<endl;
     cout << "  -n\tcomputation mode: Hilbert basis triangulation (previously normal)"<<endl;
@@ -53,7 +53,7 @@ void printHelp(char* command) {
     cout << "  -1\tcomputation mode: degree 1 elements"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
     cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
-    cout << "  -T\tthe file .tri is written (Triangulation)"<<endl;
+    cout << "  -T\tthe file .tri is written (triangulation)"<<endl;
     cout << "  -a\tall output files are written (except .tri)"<<endl;
     cout << "  -e\tperform tests for arithmetic errors"<<endl;
     cout << "  -B\tuse indefinite precision arithmetic"<<endl;
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
                 computation_mode = Mode::supportHyperplanes;
                 break;
             case 't':
-                computation_mode = Mode::triangulationSize;
+                computation_mode = Mode::triangulation;
                 break;
             case 'v':
                 computation_mode = Mode::volumeTriangulation;
@@ -276,6 +276,8 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
     //don't save the triangulation if the user doesn't want to see it
     //and we don't need it for the primary multiplicity later
     if (!write_tri_file && input.count(Type::rees_algebra)==0) {
+        if (computation_mode == Mode::triangulation)
+            computation_mode  = Mode::triangulationSize;
         if (computation_mode == Mode::volumeTriangulation)
             computation_mode  = Mode::volumeLarge;
         if (computation_mode == Mode::hilbertBasisTriangulation)
