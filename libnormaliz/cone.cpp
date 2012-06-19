@@ -576,43 +576,55 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed); // already computed
 
     /* add preconditions */
-    if(ToCompute.test(ConeProperty::Multiplicity))       ToCompute.set(ConeProperty::Triangulation);
-    if(ToCompute.test(ConeProperty::IsIntegrallyClosed)) ToCompute.set(ConeProperty::HilbertBasis);
-    if(ToCompute.test(ConeProperty::IsDeg1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
-    if(ToCompute.test(ConeProperty::IsDeg1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
-    if(ToCompute.test(ConeProperty::Grading))         ToCompute.set(ConeProperty::ExtremeRays);
-    if(ToCompute.test(ConeProperty::ExtremeRays))        ToCompute.set(ConeProperty::SupportHyperplanes);
-    if(ToCompute.test(ConeProperty::IsPointed))          ToCompute.set(ConeProperty::SupportHyperplanes);
+    if (ToCompute.test(ConeProperty::IsIntegrallyClosed))  ToCompute.set(ConeProperty::HilbertBasis);
+    if (ToCompute.test(ConeProperty::IsDeg1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
+    if (ToCompute.test(ConeProperty::IsDeg1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::Grading))             ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::IsPointed))           ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::Generators))          ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::ExtremeRays))         ToCompute.set(ConeProperty::SupportHyperplanes);
+    if (ToCompute.test(ConeProperty::TriangulationDetSum)) ToCompute.set(ConeProperty::Multiplicity);
+    
+    if (rees_primary && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
+        ToCompute.set(ConeProperty::Triangulation);
 
 
     /* find correct mode */
-    if (ToCompute.test(ConeProperty::HilbertSeries) ) {
-        if(ToCompute.test(ConeProperty::HilbertBasis)) {
+    if (ToCompute.test(ConeProperty::HilbertSeries)) {
+        if (ToCompute.test(ConeProperty::HilbertBasis)) {
             compute(Mode::hilbertBasisSeries);
         } else {
             compute(Mode::hilbertSeries);
         }
-    } else { //no H-Vector
-        if(ToCompute.test(ConeProperty::HilbertBasis)) {
-            if(ToCompute.test(ConeProperty::Triangulation)) {
+    } else { //no Hilbert Series
+        if (ToCompute.test(ConeProperty::HilbertBasis)) {
+            if (ToCompute.test(ConeProperty::Triangulation)) {
                 compute(Mode::hilbertBasisTriangulation);
+            } else if (ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::TriangulationSize)) {
+                compute(Mode::hilbertBasisMultiplicity);
             } else {
                 compute(Mode::hilbertBasisLarge);
             }
         } else { //no Hilbert basis
-            if(ToCompute.test(ConeProperty::Triangulation)) {
-                compute(Mode::volumeTriangulation);
-                if(ToCompute.test(ConeProperty::Deg1Elements)) {
-                    compute(Mode::degree1Elements);
-                }
-            } else { //no triangulation
-                if(ToCompute.test(ConeProperty::Deg1Elements)) {
-                    compute(Mode::degree1Elements);
-                } else if(ToCompute.test(ConeProperty::TriangulationSize)) {
+            if(ToCompute.test(ConeProperty::Multiplicity)) {
+                if (ToCompute.test(ConeProperty::Triangulation)) {
+                    compute(Mode::volumeTriangulation);
+                } else {
                     compute(Mode::volumeLarge);
-                } else if(ToCompute.test(ConeProperty::SupportHyperplanes)) {
-                    compute(Mode::supportHyperplanes);
                 }
+            } else { //no multiplicity
+                if (ToCompute.test(ConeProperty::Triangulation)) {
+                    compute(Mode::triangulation);
+                } else { //no triangulation
+                    if (ToCompute.test(ConeProperty::TriangulationSize)) {
+                        compute(Mode::triangulationSize);
+                    } else if (ToCompute.test(ConeProperty::SupportHyperplanes) && !ToCompute.test(ConeProperty::Deg1Elements)) {
+                        compute(Mode::supportHyperplanes);
+                    }
+                }
+            }
+            if(ToCompute.test(ConeProperty::Deg1Elements)) {
+                compute(Mode::degree1Elements);
             }
         }
     }

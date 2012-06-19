@@ -771,7 +771,6 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
         done[lpos]=true;
 
-        #pragma omp atomic
         nr_done++;
 
         if(l->ValNewGen>=0 ||(!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1)){
@@ -844,7 +843,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t> Pyramid_key, const 
             Matrix<Integer> H=S.read_support_hyperplanes();
             for (size_t i=0; i<dim;i++)
                 NewFacets.push_back(H.read(i));
-        }    
+        }
         if(do_triangulation || do_partial_triangulation){
             if(parallel_in_pyramid) {
                 #pragma omp critical(TRIANG) // critical only on top level
@@ -884,7 +883,7 @@ SEE ALSO evaluate_stored_pyramids
                 key_wrt_top[i]=Top_Key[Pyramid_key[i]];
            #pragma omp critical(STOREPYRAMIDS)
            {
-           if(recursion_allowed){    
+           if(recursion_allowed){
                 Top_Cone->Pyramids[0].push_back(key_wrt_top); // if we come from top cone
                 Top_Cone->nrPyramids[0]++;// Pyramids go level 0
            }
