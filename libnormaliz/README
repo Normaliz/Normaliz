@@ -2,7 +2,7 @@
 **********             The easiest way to use libnormaliz            **********
 *******************************************************************************
 
-This is the very first version of what will be a library for normaliz in a future version.
+This is an early version of what will be a library for normaliz in a future version.
 It may very well happen that the interface changes! Please contact us if you want to use the normaliz library.
 
 More information on normaliz:
@@ -27,71 +27,56 @@ Quick workflow overview:
 6) repeat 4+5 or 3+4+5
 
 1) The .cpp should be included since the whole library is templated, so you could use any integer type you want. We suggest (and only tested) 'long long int' and the gmp type 'mpz_class'.
-If you want to use only these two types it is enough to include the headers and link libnormaliz.o.
+If you want to use only these two types it is enough to include the headers and link libnormaliz.a.
 
 
 Example:
-//we discourage the use of "using namespace libnormaliz", but you may find these useful
+// we discourage the use of "using namespace libnormaliz", but you may find these useful
 using libnormaliz::Cone;
 using libnormaliz::ConeProperty;
 using libnormaliz::ConeProperties;
 
 
-//use your preferred integer type
+// use your preferred integer type
 typedef long long int Integer;
-//typedef mpz_class Integer;
+//typedef mpz_class Integer;   //if you need more than 64bit integers
 
-//get some input data
-list< vector <Integer> > Data = ...
-int type = ... 
+// get some input data
+vector< vector <Integer> > Data = ...
+libnormaliz::InputType type = integral_closure; // for all input types see below
 libnormaliz::Cone<Integer> MyCone = libnormaliz::Cone<Integer>(Data, type);
 
 libnormaliz::ConeProperties Wanted();
 Wanted.set(libnormaliz::ConeProperty::Triangulation).set(libnormaliz::ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 
-//old way to say what you want
-//string computation_type = "triangulation_hilbert_basis"
+// alternativ way to say what you want, see libnormaliz.h
+//libnormaliz Mode computation_mode = hilbertBasisTriangulation
 //MyCone.compute(computation_type);
 
 
 if(MyCone.isComputed(libnormaliz::ConeProperty::HilbertBasis)) {
-	list< vector< Integer> > HB& = MyCone.getHilbertBasis();
+	vector< vector< Integer> > HB& = MyCone.getHilbertBasis();
 	//use it
 }
 if(MyCone.isComputed(libnormaliz::ConeProperty::Multiplicity)) {
    cout << "MyCone has multiplicity " << MyCone.getMultiplicity();
 }
 
+input types (from libnormaliz.h):
+integral_closure
+normalization
+polytope
+rees_algebra
+hyperplanes
+equations
+congruences
+lattice_ideal
+grading
 
-
-input types:
-0  Generators, integral closure
-1  Generators, normalisation
-2  Polytope
-3  Rees
-4  Inequalities
-5  Equalities
-6  Congruences
-10 lattice ideal (toric ring of a binomial ideal)
-
-to combine types 4,5,6 use the second constructor
-Cone(Inequalities, Equations, Congruences);
-empty list arguments will be ignored
-
-
-computation modes:
-the computation mode is a string, which can be one of the following:
-support_hyperplanes_pyramid
-triangulation
-triangulation_pyramid
-triangulation_hilbert_basis
-hilbert_basis
-support_hyperplanes
-ht1_elements
-hilbert_polynomial
-hilbert_basis_polynomial
-dual
+to combine input types build a 
+std::map <libnormaliz::InputType, vector< vector<Integer> >
+and construct the libnormaliz::Cone from it
 
 Please see the Normaliz Documentation for more information on the input types and computation modes
-http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.7Documentation.pdf
+http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.8Documentation.pdf

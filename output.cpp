@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.7
- * Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz 2.8
+ * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -224,14 +224,6 @@ void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-void Output<Integer>::write_matrix_cst(const Matrix<Integer>& M) const{
-    if (cst==true) {
-        M.print(name,"cst");
-    }
-}
-
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Output<Integer>::write_tri() const{
@@ -587,8 +579,9 @@ void Output<Integer>::write_files() const {
                 out << nr_of_equ <<" equations:" <<endl;
                 Equations.pretty_print(out);
                 out << endl;
+            } else {
+                Equations = Matrix<Integer>(0,dim);
             }
-
     
             //congruences
             Matrix<Integer> Congruences = Result->getCongruences();
@@ -597,6 +590,8 @@ void Output<Integer>::write_files() const {
                 out << nr_of_cong <<" congruences:" <<endl;
                 Congruences.pretty_print(out);
                 out << endl;
+            } else {
+                Congruences = Matrix<Integer>(0,dim+1);
             }
 
             if(cst) {

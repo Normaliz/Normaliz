@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.7
- * Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz 2.8
+ * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -193,8 +193,8 @@ int main(int argc, char* argv[])
     }
 
     if (!filename_set) {
-        cout<<"Normaliz 2.7"<<endl
-            <<"Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+        cout<<"Normaliz 2.8"<<endl
+            <<"Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
             <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
             <<"and you are welcome to redistribute it under certain conditions;"<<endl
             <<"See COPYING for details."
