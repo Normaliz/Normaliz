@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.7
- * Copyright (C) 2007-2011  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz 2.8
+ * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -80,7 +80,6 @@ public:
     void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
     void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
     void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
-    void write_matrix_cst(const Matrix<Integer>& M) const; //writes M to file name.cst
     void write_tri() const; //writes the .tri file
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 
