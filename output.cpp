@@ -298,6 +298,7 @@ void Output<Integer>::write_inv_file() const{
                 inv<<Linear_Form[i]<<" ";
             }
             inv<<endl;
+            inv <<"integer grading_denom = " << Result->getGradingDenom() << endl;
             if (Result->isComputed(ConeProperty::Multiplicity)){
                 mpq_class mult = Result->getMultiplicity();
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
