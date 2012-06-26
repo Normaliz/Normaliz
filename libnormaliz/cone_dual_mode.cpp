@@ -469,9 +469,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
         }
         #pragma omp single nowait
-        for (c = Negative_Irred.begin(); c != Negative_Irred.end(); ++c){
-            if((*c)[nr_sh+1]>0) {
-                (*c)[nr_sh+1]--;
+        for (typename list < vector <Integer> >::iterator c2 = Negative_Irred.begin(); c2 != Negative_Irred.end(); ++c2){
+            if((*c2)[nr_sh+1]>0) {
+                (*c2)[nr_sh+1]--;
             }
         }
         } // END PARALLEL
