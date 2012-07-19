@@ -1255,8 +1255,8 @@ void Full_Cone<Integer>::build_cone() {
             for (size_t j=0; j<old_nr_supp_hyps;j++){
                 if (l->ValNewGen<0) 
                     l=Facets.erase(l);
-            else 
-                l++;
+                else 
+                    l++;
             }
         }
 

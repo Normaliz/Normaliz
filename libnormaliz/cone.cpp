@@ -39,22 +39,9 @@ Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type
 }
 
 template<typename Integer>
-Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_data) {
+Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_input_data) {
     initialize();
-    typename map< InputType , vector< vector<Integer> > >::iterator it;
-    vector< vector<Integer> > lf; //grading linear form
-    //check for a grading and remove it from map
-    it = multi_input_data.find(Type::grading);
-    if (it != multi_input_data.end()) {
-        lf = it->second;
-        if (lf.size() != 1) {
-            errorOutput() << "ERROR: Bad grading, has "
-                          << lf.size() << " rows (should be 1)!" << endl;
-            throw BadInputException();
-        }
-        multi_input_data.erase(it);
-    
-    }
+    typename map< InputType , vector< vector<Integer> > >::const_iterator it;
     //determine dimension
     it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
@@ -69,12 +56,23 @@ Cone<Integer>::Cone(map< InputType, vector< vector<Integer> > >& multi_input_dat
             break;
         }
     }
-    //set the grading if one was in the map
-    if ( lf.size() == 1 ) {
+    //check for a grading
+    it = multi_input_data.find(Type::grading);
+    if (it != multi_input_data.end()) {
+        vector< vector<Integer> > lf = it->second;
+        if (lf.size() != 1) {
+            errorOutput() << "ERROR: Bad grading, has "
+                          << lf.size() << " rows (should be 1)!" << endl;
+            throw BadInputException();
+        }
         setGrading (lf[0]);
     }
 
+    it = multi_input_data.begin();
     if (multi_input_data.size() == 1) { // use the "one-matrix-input" method
+        single_matrix_input(it->second,it->first);
+    } else if (multi_input_data.size() == 2 && isComputed(ConeProperty::Grading)) {
+        if (it->first == Type::grading) it++;
         single_matrix_input(it->second,it->first);
     } else {               // now we have to have constraints!
         Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
@@ -535,7 +533,7 @@ void Cone<Integer>::prepare_input_type_10(const vector< vector<Integer> >& Binom
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::setGrading (vector<Integer> lf) {
+void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     if (lf.size() != dim) {
         errorOutput() << "Grading linear form has wrong dimension " << lf.size()
                       << " (should be " << dim << ")" << endl;

@@ -50,7 +50,7 @@ public:
     Cone(const vector< vector<Integer> >& input_data,
          InputType type = Type::integral_closure);
     /* give multiple */ //TODO
-    Cone(map< InputType , vector< vector<Integer> > >& multi_input_data);
+    Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
 
 //---------------------------------------------------------------------------
 //                          give additional data
@@ -62,7 +62,7 @@ public:
      * detection which can be in this method or later!
      * It will delete all data from the cone that depend on the grading!
      */
-    void setGrading (vector<Integer> lf);
+    void setGrading (const vector<Integer>& lf);
 
 
 //---------------------------------------------------------------------------

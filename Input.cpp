@@ -1,40 +1,5 @@
 #include "libnormaliz/libnormaliz.h"
 
-InputType to_type(string& type_string) {
-    if (type_string=="0"||type_string=="integral_closure") {
-        return Type::integral_closure;
-    }
-    if (type_string=="1"||type_string=="normalization") {
-        return Type::normalization;
-    }
-    if (type_string=="2"||type_string=="polytope") {
-        return Type::polytope;
-    }
-    if (type_string=="3"||type_string=="rees_algebra") {
-        return Type::rees_algebra;
-    }
-    if (type_string=="4"||type_string=="hyperplanes") {
-        return Type::hyperplanes;
-    }
-    if (type_string=="5"||type_string=="equations") {
-        return Type::equations;
-    }
-    if (type_string=="6"||type_string=="congruences") {
-        return Type::congruences;
-    }
-    if (type_string=="10"||type_string=="lattice_ideal") {
-        return Type::lattice_ideal;
-    }
-    if (type_string=="grading") {
-        return Type::grading;
-    }
-    
-    cerr<<"ERROR: Unknown type \""<<type_string<<"\"!"<<endl;
-    throw BadInputException();
-    return Type::integral_closure;
-}
-
-
 template <typename Integer>
 map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in) {
 

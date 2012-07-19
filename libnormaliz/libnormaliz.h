@@ -20,6 +20,7 @@
 #define LIBNORMALIZ_H_
 
 #include <iostream>
+#include <string>
 
 namespace libnormaliz {
 
@@ -62,15 +63,18 @@ enum ComputationMode {
 using Type::InputType;
 using Mode::ComputationMode;
 
+/* converts a string to an InputType
+ * throws an BadInputException if the string cannot be converted */
+InputType to_type(const std::string& type_string);
+
 /* this type is used in the entries of keys
- * it has to be able to hold number of generators*/
+ * it has to be able to hold number of generators */
 typedef unsigned int key_t;
 
 extern bool verbose;
 
 /* if test_arithmetic_overflow is true, many operations are also done
- * modulo overflow_test_modulus to ensure the correctness of the calculations
- */
+ * modulo overflow_test_modulus to ensure the correctness of the calculations */
 extern bool test_arithmetic_overflow;
 extern long overflow_test_modulus;
 

@@ -15,5 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "libnormaliz/libnormaliz-all.cpp"
-#include "Normaliz.cpp"
+
+#include "libnormaliz.cpp"
+#include "integer.cpp"
+#include "vector_operations.cpp"
+#include "matrix.cpp"
+#include "simplex.cpp"
+#include "list_operations.cpp"
+#include "lineare_transformation.cpp"
+#include "sublattice_representation.cpp"
+#include "full_cone.cpp"
+#include "cone_dual_mode.cpp"
+#include "cone.cpp"
+#include "cone_property.cpp"
+#include "HilbertSeries.cpp"
+

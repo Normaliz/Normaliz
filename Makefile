@@ -14,7 +14,7 @@ default: linknormaliz
 all: lib normaliz normaliz1
 
 linknormaliz: lib
-	$(MAKE) normaliz
+	@$(MAKE) normaliz
 
 normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz/libnormaliz.a $(GMPFLAGS) -o normaliz

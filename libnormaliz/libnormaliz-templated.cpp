@@ -16,39 +16,7 @@
  *
  */
 
-#include "libnormaliz.h"
-#include "general.h"
-
-namespace libnormaliz {
-
-bool verbose = false;
-
-bool test_arithmetic_overflow = false;
-long overflow_test_modulus = 15401;
-
-namespace {
-    std::ostream* verbose_ostream_ptr = &std::cout;
-    std::ostream* error_ostream_ptr = &std::cerr;
-} // end anonymous namespace, only accessible in this file (and when it is included)
-
-void setVerboseOutput(std::ostream& v_out) {
-    verbose_ostream_ptr = &v_out;
-}
-
-void setErrorOutput(std::ostream& e_out) {
-    error_ostream_ptr = &e_out;
-}
-
-std::ostream& verboseOutput() {
-    return *verbose_ostream_ptr;
-}
-
-std::ostream& errorOutput() {
-    return *error_ostream_ptr;
-}
-
-} /* end namespace libnormaliz */
-
+#include "libnormaliz.cpp"
 #include "integer.cpp"
 #include "vector_operations.cpp"
 #include "matrix.cpp"
