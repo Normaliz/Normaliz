@@ -115,7 +115,7 @@ public:
 
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
-    Integer evaluate(const vector<key_t>& key, const Integer& height);
+    Integer evaluate(const vector<key_t>& key, const Integer& height,const Integer& vol_computed);
 
     // returns sum of the multiplicities of all evaluated simplices
     mpq_class getMultiplicitySum() const;

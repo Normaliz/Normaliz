@@ -33,6 +33,7 @@
 #include "list_operations.h"
 #include "map_operations.h"
 #include "my_omp.h"
+#include "integer.h"
 
 //---------------------------------------------------------------------------
 
@@ -551,9 +552,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
  
             if(parallel_in_pyramid) {
                 #pragma omp critical(TRIANG) // critical only on top level
-                store_key(key,-i->ValNewGen,Triangulation);
+                store_key(key,-i->ValNewGen,0,Triangulation);
             } else {
-                store_key(key,-i->ValNewGen,Triangulation);
+                store_key(key,-i->ValNewGen,0,Triangulation);
             }
             continue;
         }
@@ -592,7 +593,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                  continue;
               
               key[not_in_i]=new_generator;              
-              store_key(key,-i->ValNewGen,Triangulation_kk);
+              store_key(key,-i->ValNewGen,j->vol,Triangulation_kk);
                        
             } // j
             
@@ -617,14 +618,36 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 template<typename Integer>
 void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& height,
-                                list<SHORTSIMPLEX>& Triangulation){
+            const Integer& mother_vol, list<SHORTSIMPLEX>& Triangulation){
 
     SHORTSIMPLEX newsimplex;
     newsimplex.key=key;
     newsimplex.height=height;
+    newsimplex.vol=0;
     
     #pragma omp atomic
     TriangulationSize++;
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+    
+    if(do_only_multiplicity){
+        if(mother_vol==1)
+            newsimplex.vol=height;
+        else{
+            // if(height==1){ 
+                for(size_t i=0;i<dim;++i)
+                    Top_Cone->HelpMat[tn][i]= Generators[key[i]];
+                newsimplex.vol=Top_Cone->HelpMat[tn].vol_destructive();
+                #pragma omp atomic
+                TotDet++;
+           // }
+                      
+       }
+       addMult(newsimplex.vol,newsimplex.key,tn);
+    }
             
     
     if(keep_triangulation){
@@ -633,11 +656,9 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     }
     
     bool Simpl_available=true;
-    int tn;
-    if(omp_get_level()==0)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(1);
+
+    
+        
     typename list<SHORTSIMPLEX>::iterator F;
 
     if(Top_Cone->FS[tn].empty()){
@@ -671,6 +692,25 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     }
     else
         Triangulation.push_back(newsimplex);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::addMult(Integer& volume, const vector<key_t>& key, const int& tn) {
+    if (!Top_Cone->isComputed(ConeProperty::Grading))
+        return;
+    if (Top_Cone->deg1_triangulation) {
+        Top_Cone->mult_sum[tn] += to_mpz(volume);
+    } else {
+        mpz_class deg_prod=gen_degrees[key[0]];
+        for (size_t i=1; i<dim; i++) {
+            deg_prod *= gen_degrees[key[i]];
+        }
+        mpq_class mult = to_mpz(volume);
+        mult /= deg_prod;
+        Top_Cone->mult_sum[tn] += mult;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -771,6 +811,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
         done[lpos]=true;
 
+        #pragma omp atomic 
         nr_done++;
 
         if(l->ValNewGen>=0 ||(!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1)){
@@ -847,9 +888,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t> Pyramid_key, const 
         if(do_triangulation || do_partial_triangulation){
             if(parallel_in_pyramid) {
                 #pragma omp critical(TRIANG) // critical only on top level
-                store_key(Pyramid_key,height,Triangulation);
+                store_key(Pyramid_key,height,0,Triangulation);
             } else {
-                store_key(Pyramid_key,height,Triangulation);
+                store_key(Pyramid_key,height,0,Triangulation);
             }
         }
     }
@@ -858,20 +899,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t> Pyramid_key, const 
             Full_Cone<Integer> Pyramid(*this,Pyramid_key);
             Pyramid.pyr_level=0; // value is in principle irrelevant
             Pyramid.do_all_hyperplanes=true;
-
-/*          AT PRESENT WE DO NOT LIMIT THE RECURSION FOR PARTIAL TRIANGULATION HERE
-A REASONABLE SOLUTION WOULD REQUIRE BOOKKEEPING OF THE NATURAL LEVEL OF THE PYRAMIDS
-SEE ALSO evaluate_stored_pyramids
-            
-            // the next line has the effect that we fully triangulate the pyramid in order to avoid
-            // recursion down to simplices in case of partial triangulation
-            Pyramid.do_triangulation= (do_partial_triangulation && pyr_level >=1) || do_triangulation;
-            
-            // cout << "In py " << omp_get_level() << " " << omp_get_thread_num() << " tn " << Pyramid.thread_num << endl;
-            
-            if(Pyramid.do_triangulation)
-                Pyramid.do_partial_triangulation=false;
-*/
+            Pyramid.parallel_in_pyramid=do_triangulation;  // because of the conditional 
+                                                           // parallel in process_pyramids
 
             Pyramid.build_cone(); // build and evaluate pyramid
             // Pyramid.parallel_in_pyramid=false;
@@ -977,7 +1006,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     //the volume is an upper bound for the height
     if(do_triangulation || (do_partial_triangulation && S.read_volume()>1))
     {
-        store_key(key,S.read_volume(),Triangulation);  // height understood positive
+        store_key(key,S.read_volume(),1,Triangulation); 
+        #pragma omp atomic
+        TotDet++; 
     }
     
     if(do_triangulation){ // we must prepare the sections of the triangulation
@@ -1188,7 +1219,7 @@ void Full_Cone<Integer>::build_cone() {
         size_t old_nr_supp_hyps=Facets.size();                
         
         size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic) if(old_nr_supp_hyps>1000)
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic) if(old_nr_supp_hyps>10000)
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
             for(;k > lpos; lpos++, l++) ;
             for(;k < lpos; lpos--, l--) ;
@@ -1301,6 +1332,9 @@ void Full_Cone<Integer>::build_cone() {
 
     if(!is_pyramid && keep_triangulation)  // in this case triangulation now complete
         is_Computed.set(ConeProperty::Triangulation);  // and stored 
+    if(!is_pyramid && do_only_multiplicity)
+        for(int zi=0;zi<omp_get_max_threads();zi++)
+            multiplicity+=mult_sum[zi];
                
 }
 
@@ -1476,7 +1510,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     totalNrSimplices+=TriangulationSize;
 
-    if(do_evaluation) {
+    if(do_evaluation && !do_only_multiplicity) {
     #pragma omp parallel 
     {
         typename list<SHORTSIMPLEX>::iterator s = Triangulation.begin();
@@ -1488,7 +1522,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             for(; i > spos; ++spos, ++s) ;
             for(; i < spos; --spos, --s) ;
 
-            s->height = simp.evaluate(s->key,s->height);
+            s->height = simp.evaluate(s->key,s->height,s->vol);
             priv_detSum += s->height;
             if(keep_triangulation)
                 sort(s->key.begin(),s->key.end());
@@ -1551,6 +1585,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
+    do_Stanley_dec=true; // ONLY FOR EXPERIMENTS
     // set needed do_ vars
     if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
         do_evaluation = true;
@@ -1582,6 +1617,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << endl;
         // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
+        cout << "TotDet " << TotDet << endl;
     }
 
     extreme_rays_and_deg1_check();
@@ -1624,6 +1660,21 @@ void Full_Cone<Integer>::primal_algorithm(){
     if (do_h_vector) {
         Hilbert_Series.simplify();
         is_Computed.set(ConeProperty::HilbertSeries);
+    }
+    if(do_Stanley_dec){
+    
+        typename list<STANLEYDATA>::iterator S = StanleyDec.begin();
+        ofstream out("Stanley.dec"); 
+    
+        for(;S!=StanleyDec.end();++S){
+            for(size_t i=0;i<dim;++i)
+                S->key[i]++;      
+            out << S->key;
+            S->offsets.print(out);
+            out << endl;    
+        }
+        
+        out.close();; 
     }
 
 }
@@ -1684,6 +1735,7 @@ void Full_Cone<Integer>::support_hyperplanes_triangulation() {
 template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes_triangulation_pyramid() {   
     do_triangulation=true; 
+    do_only_multiplicity=true; 
     do_evaluation=true;
     primal_algorithm();
     reset_tasks();
@@ -1695,6 +1747,7 @@ void Full_Cone<Integer>::triangulation_hilbert_basis() {
     do_Hilbert_basis=true;
     do_triangulation=true;
     keep_triangulation=true;
+    do_only_multiplicity=true; 
     primal_algorithm();
     reset_tasks();
 }
@@ -2388,7 +2441,9 @@ void Full_Cone<Integer>::reset_tasks(){
     do_partial_triangulation = false;
     do_Hilbert_basis = false;
     do_deg1_elements = false;
+    do_only_multiplicity=false;
     keep_triangulation = false;
+    do_Stanley_dec=false;
     do_h_vector=false;
     is_pyramid = false;
     
@@ -2456,6 +2511,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     do_all_hyperplanes=true;
     parallel_in_pyramid=true;
+    for(int i=0; i<omp_get_max_threads();++i){
+        HelpMat.push_back(Matrix<Integer>(dim,dim));
+        mult_sum.push_back(0);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -2541,6 +2600,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_h_vector=C.do_h_vector;
     do_Hilbert_basis=C.do_Hilbert_basis;
     keep_triangulation=C.keep_triangulation;
+    do_only_multiplicity=C.do_only_multiplicity;
     is_pyramid=true;
     
     // pyr_level set by the calling routine

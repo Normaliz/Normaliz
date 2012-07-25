@@ -59,8 +59,10 @@ class Full_Cone {
     bool do_evaluation;
     bool do_Hilbert_basis;
     bool do_deg1_elements;
+    bool do_only_multiplicity;
     bool do_h_vector;
     bool keep_triangulation;
+    bool do_Stanley_dec;
     bool is_pyramid;
     
     ConeProperties is_Computed;
@@ -85,6 +87,7 @@ class Full_Cone {
     struct SHORTSIMPLEX{                   // type for simplex, short in contrast to class Simplex
         vector<key_t> key;                // full key of simplex
         Integer height;                    // height of last vertex over opposite facet
+        Integer vol;                      // volume if computed, 0 else
     };
     
     // list<SHORTSIMPLEX> CheckTri;
@@ -124,6 +127,13 @@ class Full_Cone {
     vector<size_t> nrPyramids; // number of pyramids on the various levels
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_in_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
+    vector< Matrix<Integer> > HelpMat; // prepared matrices for computations
+    vector<mpq_class> mult_sum;
+    struct STANLEYDATA{
+        vector<key_t> key;
+        Matrix<Integer> offsets;
+    };
+    list<STANLEYDATA> StanleyDec;
     
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -140,7 +150,8 @@ class Full_Cone {
 
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
-    void store_key(const vector<key_t>&, const Integer& height, list<SHORTSIMPLEX>& Triangulation);
+    void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
+                                  list<SHORTSIMPLEX>& Triangulation);
     
     void build_cone();
     
@@ -196,6 +207,7 @@ class Full_Cone {
     Full_Cone(Matrix<Integer> M, int i);
     
     void reset_tasks();
+    void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
 public:
 /*---------------------------------------------------------------------------
