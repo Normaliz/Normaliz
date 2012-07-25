@@ -1725,6 +1725,7 @@ template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes_triangulation() {
     do_triangulation=true;
     keep_triangulation=true;
+    do_only_multiplicity=true; 
     do_evaluation=true;
     primal_algorithm();
     reset_tasks();
@@ -1747,7 +1748,6 @@ void Full_Cone<Integer>::triangulation_hilbert_basis() {
     do_Hilbert_basis=true;
     do_triangulation=true;
     keep_triangulation=true;
-    do_only_multiplicity=true; 
     primal_algorithm();
     reset_tasks();
 }
