@@ -230,7 +230,6 @@ int main(int argc, char* argv[])
 //---------------------------------------------------------------------------
 
 template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_tri_file, bool write_all_files ) {
-    vector<Integer> Grading;
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 

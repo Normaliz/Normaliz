@@ -633,12 +633,12 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     else    
         tn = omp_get_ancestor_thread_num(1);
     
-    if(do_only_multiplicity){
-        if(mother_vol==1)
+    if (do_only_multiplicity) {
+        if (mother_vol==1)
             newsimplex.vol=height;
-        else{
+        else {
             // if(height==1){ 
-                for(size_t i=0;i<dim;++i)
+                for (size_t i=0;i<dim;++i)
                     Top_Cone->HelpMat[tn][i]= Generators[key[i]];
                 newsimplex.vol=Top_Cone->HelpMat[tn].vol_destructive();
                 #pragma omp atomic
@@ -650,15 +650,13 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     }
             
     
-    if(keep_triangulation){
+    if (keep_triangulation){
         Triangulation.push_back(newsimplex);
         return;  
     }
     
     bool Simpl_available=true;
 
-    
-        
     typename list<SHORTSIMPLEX>::iterator F;
 
     if(Top_Cone->FS[tn].empty()){
@@ -1417,22 +1415,16 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_support_hyperplanes(){
     if(isComputed(ConeProperty::SupportHyperplanes))
         return;
+
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
-    bool save_HB       = do_Hilbert_basis;
-    bool save_deg1_el  = do_deg1_elements;
-    bool save_h_vector = do_h_vector;
     do_triangulation         = false;
     do_partial_triangulation = false;
-    do_Hilbert_basis         = false; 
-    do_deg1_elements         = false; 
-    do_h_vector              = false;
+
     build_cone();
+
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
-    do_Hilbert_basis         = save_HB;
-    do_deg1_elements         = save_deg1_el;
-    do_h_vector              = save_h_vector;
 }
 
 //---------------------------------------------------------------------------
@@ -1585,7 +1577,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
-    do_Stanley_dec=true; // ONLY FOR EXPERIMENTS
+    //do_Stanley_dec=true; // ONLY FOR EXPERIMENTS
     // set needed do_ vars
     if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
         do_evaluation = true;
@@ -1595,7 +1587,7 @@ void Full_Cone<Integer>::primal_algorithm(){
         deg1_check();
         if(!deg1_generated && !isComputed(ConeProperty::ExtremeRays)) {
             if (verbose) {
-                verboseOutput() << "Cannot find grading s.t. all generators have degree 1! Computing Extreme rays first:" << endl;
+                verboseOutput() << "Cannot find grading s.t. all generators have the smae degree! Computing Extreme rays first:" << endl;
             }
             compute_support_hyperplanes();
             extreme_rays_and_deg1_check();
@@ -1662,7 +1654,7 @@ void Full_Cone<Integer>::primal_algorithm(){
         is_Computed.set(ConeProperty::HilbertSeries);
     }
     if(do_Stanley_dec){
-    
+        is_Computed.set(ConeProperty::StanleyDec);
         typename list<STANLEYDATA>::iterator S = StanleyDec.begin();
         ofstream out("Stanley.dec"); 
     
@@ -1690,6 +1682,45 @@ void Full_Cone<Integer>::dualize_cone() {
     compute_support_hyperplanes();
     reset_tasks();
 }
+
+// check the do_* bools, they must be set in advance
+// this method (de)activate them according to dependencies between them
+template<typename Integer>
+void Full_Cone<Integer>::do_vars_check() {
+
+    // activate implications
+    if (do_Stanley_dec)     keep_triangulation = true;
+    if (keep_triangulation) do_triangulation = true;
+    if (do_multiplicity)    do_triangulation = true;
+    if (do_h_vector)        do_triangulation = true;
+    if (do_deg1_elements)   do_partial_triangulation = true;
+    if (do_Hilbert_basis)   do_partial_triangulation = true;
+    // activate 
+    do_only_multiplicity = do_multiplicity;
+    if (do_Stanley_dec || do_h_vector || do_deg1_elements || do_Hilbert_basis) {
+        do_only_multiplicity = false;
+        do_evaluation = true;
+    }
+    if (do_multiplicity)    do_evaluation = true;
+
+    if (do_triangulation)   do_partial_triangulation = false;
+    if (do_Hilbert_basis)   do_deg1_elements = false; //they will be extracted later
+}
+
+
+// general purpose compute method
+// do_* bools must be set in advance, this method does sanity checks for it
+// if no bool is set it does support hyperplanes and extreme rays
+template<typename Integer>
+void Full_Cone<Integer>::compute() {
+    do_vars_check();
+
+    if (!do_triangulation && !do_partial_triangulation)
+        support_hyperplanes();
+    else
+        primal_algorithm();
+}
+
 
 // -s
 template<typename Integer>
@@ -2436,19 +2467,21 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
 
 template<typename Integer>
 void Full_Cone<Integer>::reset_tasks(){
-    do_evaluation = false;
     do_triangulation = false;
     do_partial_triangulation = false;
+    do_multiplicity=false;
     do_Hilbert_basis = false;
     do_deg1_elements = false;
-    do_only_multiplicity=false;
     keep_triangulation = false;
     do_Stanley_dec=false;
     do_h_vector=false;
-    is_pyramid = false;
     
-     nrSimplicialPyr=0;
-     totalNrPyr=0;
+    do_evaluation = false;
+    do_only_multiplicity=false;
+
+    nrSimplicialPyr=0;
+    totalNrPyr=0;
+    is_pyramid = false;
 }
 
 //---------------------------------------------------------------------------
@@ -2474,7 +2507,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         nr_gen=Generators.nr_of_rows();
     }
     multiplicity = 0;
-    is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
+    is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
     pointed = false;
     deg1_extreme_rays = false;
@@ -2596,11 +2629,13 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     do_triangulation=C.do_triangulation;
     do_partial_triangulation=C.do_partial_triangulation;
+    do_multiplicity=C.do_multiplicity;
     do_deg1_elements=C.do_deg1_elements;
     do_h_vector=C.do_h_vector;
     do_Hilbert_basis=C.do_Hilbert_basis;
     keep_triangulation=C.keep_triangulation;
     do_only_multiplicity=C.do_only_multiplicity;
+    do_evaluation=C.do_evaluation;
     is_pyramid=true;
     
     // pyr_level set by the calling routine

@@ -21,6 +21,7 @@
 
 #include <bitset>
 #include <iostream>
+#include "libnormaliz.h"
 
 namespace libnormaliz {
 
@@ -48,6 +49,7 @@ namespace ConeProperty {
         GeneratorsOfToricRing,
         ReesPrimary,
         ReesPrimaryMultiplicity,
+        StanleyDec,
         EnumSize //this has to be the last entry, to get the number of entries in the enum
     };
 }
@@ -67,6 +69,7 @@ public:
     ConeProperties& set(ConeProperty::Enum, bool value=true);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties& set(const ConeProperties&);
+    ConeProperties& set(Mode::ComputationMode mode);
 
     /* reset (=unset) properties */
     ConeProperties& reset(ConeProperty::Enum Property);

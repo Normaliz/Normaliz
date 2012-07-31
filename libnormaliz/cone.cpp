@@ -573,62 +573,106 @@ void Cone<Integer>::setGrading (vector<Integer> lf) {
 
 template<typename Integer>
 void Cone<Integer>::compute(ConeProperties ToCompute) {
+
+    /* preparation: get generators if necessary */
+    compute_generators();
+    if (!isComputed(ConeProperty::Generators)) {
+        errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
+        throw NormalizException();
+    }
+        ToCompute.print(cout);
+
     ToCompute.reset(is_Computed); // already computed
+    if (ToCompute.none()) {
+        return;
+    }
+
+    //TODO workaround for zero cones :(
+    //die dimension bleibt in der liste nicht gespeichert, wenn sie leer ist, darum passt es dann beim transformieren nicht
+    if(Generators.size()==0) {
+        return;
+    }
 
     /* add preconditions */
-    if (ToCompute.test(ConeProperty::IsIntegrallyClosed))  ToCompute.set(ConeProperty::HilbertBasis);
-    if (ToCompute.test(ConeProperty::IsDeg1HilbertBasis))  ToCompute.set(ConeProperty::HilbertBasis);
-    if (ToCompute.test(ConeProperty::IsDeg1ExtremeRays))   ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::Grading))             ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::IsPointed))           ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::Generators))          ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::ExtremeRays))         ToCompute.set(ConeProperty::SupportHyperplanes);
-    if (ToCompute.test(ConeProperty::TriangulationDetSum)) ToCompute.set(ConeProperty::Multiplicity);
+    if (ToCompute.test(ConeProperty::IsIntegrallyClosed))
+        ToCompute.set(ConeProperty::HilbertBasis);
+    if (ToCompute.test(ConeProperty::IsDeg1HilbertBasis))
+        ToCompute.set(ConeProperty::HilbertBasis);
+    if (ToCompute.test(ConeProperty::IsDeg1ExtremeRays))
+        ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::Grading))
+        ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::IsPointed))
+        ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::Generators))
+        ToCompute.set(ConeProperty::ExtremeRays);
+    if (ToCompute.test(ConeProperty::ExtremeRays))
+        ToCompute.set(ConeProperty::SupportHyperplanes);
+    if (ToCompute.test(ConeProperty::TriangulationDetSum))
+        ToCompute.set(ConeProperty::Multiplicity);
     
     if (rees_primary && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
         ToCompute.set(ConeProperty::Triangulation);
 
+    /* Create a Full_Cone FC */
+    Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
-    /* find correct mode */
+    /* activate bools in FC */
+    bool only_support_hyperplanes = true;
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
-        if (ToCompute.test(ConeProperty::HilbertBasis)) {
-            compute(Mode::hilbertBasisSeries);
-        } else {
-            compute(Mode::hilbertSeries);
-        }
-    } else { //no Hilbert Series
-        if (ToCompute.test(ConeProperty::HilbertBasis)) {
-            if (ToCompute.test(ConeProperty::Triangulation)) {
-                compute(Mode::hilbertBasisTriangulation);
-            } else if (ToCompute.test(ConeProperty::Multiplicity) || ToCompute.test(ConeProperty::TriangulationSize)) {
-                compute(Mode::hilbertBasisMultiplicity);
-            } else {
-                compute(Mode::hilbertBasisLarge);
-            }
-        } else { //no Hilbert basis
-            if(ToCompute.test(ConeProperty::Multiplicity)) {
-                if (ToCompute.test(ConeProperty::Triangulation)) {
-                    compute(Mode::volumeTriangulation);
-                } else {
-                    compute(Mode::volumeLarge);
-                }
-            } else { //no multiplicity
-                if (ToCompute.test(ConeProperty::Triangulation)) {
-                    compute(Mode::triangulation);
-                } else { //no triangulation
-                    if (ToCompute.test(ConeProperty::TriangulationSize)) {
-                        compute(Mode::triangulationSize);
-                    } else if (ToCompute.test(ConeProperty::SupportHyperplanes) && !ToCompute.test(ConeProperty::Deg1Elements)) {
-                        compute(Mode::supportHyperplanes);
-                    }
-                }
-            }
-            if(ToCompute.test(ConeProperty::Deg1Elements)) {
-                compute(Mode::degree1Elements);
-            }
-        }
+        FC.do_h_vector = true;
+        only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::HilbertBasis)) {
+        FC.do_Hilbert_basis = true;
+        only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::Triangulation)) {
+        FC.keep_triangulation = true;
+        only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::Multiplicity)) {
+        FC.do_multiplicity = true;
+        only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::TriangulationSize)) {
+        FC.do_triangulation = true;
+        only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::Deg1Elements)) {
+        FC.do_deg1_elements = true;
+        only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::StanleyDec)) {
+        FC.do_Stanley_dec = true;
+        only_support_hyperplanes = false;
     }
 
+    /* Give extra data to FC */
+    if ( isComputed(ConeProperty::ExtremeRays) ) {
+        FC.Extreme_Rays = ExtremeRays;
+        FC.is_Computed.set(ConeProperty::ExtremeRays);
+    }
+    if ( isComputed(ConeProperty::Grading) ) {
+        FC.Grading = BasisChange.to_sublattice_dual(Grading);
+        FC.is_Computed.set(ConeProperty::Grading);
+        FC.set_degrees();
+    }
+    /* Do the computation! */
+    if (only_support_hyperplanes) {
+        // workaround for not dualizing twice
+        if (isComputed(ConeProperty::SupportHyperplanes)) {
+            vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
+            FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
+            FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+        }
+        FC.support_hyperplanes();
+    } else {
+        FC.compute();
+    }
+    
+    extract_data(FC);
+    
     /* check if everything is computed*/
     ToCompute.reset(is_Computed); //remove what is now computed
     if (ToCompute.any()) {
@@ -638,14 +682,8 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
 }
 
 
-
 template<typename Integer>
-void Cone<Integer>::compute(ComputationMode mode) {
-    if (mode == Mode::dual) {
-        compute_dual();
-        return;
-    }
-
+void Cone<Integer>::compute_generators() {
     //create Generators from SupportHyperplanes
     if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
         if (verbose) {
@@ -660,92 +698,28 @@ void Cone<Integer>::compute(ComputationMode mode) {
             is_Computed.set(ConeProperty::Generators);
             ExtremeRays = vector<bool>(Generators.size(),true);
             is_Computed.set(ConeProperty::ExtremeRays);
-            //get minmal set of support_hyperplanes
-            Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
-            SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp).get_elements();
-
+            if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
+                //get minmal set of support_hyperplanes
+                Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
+                SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp).get_elements();
+            }
             Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
             compose_basis_change(Basis_Change);
         }
     }
+}
 
-    if (!isComputed(ConeProperty::Generators)) {
-        errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
-        throw NormalizException();
-    }
 
-    //TODO workaround for zero cones :((
-    //die dimension bleibt in der liste nicht gespeichert, wenn sie leer ist, darum passt es dann beim transformieren nicht
-    if(Generators.size()==0) {
-        return;
-    }
 
-    // Create a Full_Cone FC
-    Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
-
-    // Give extra data to FC
-    if ( isComputed(ConeProperty::ExtremeRays) ) {
-        FC.Extreme_Rays = ExtremeRays;
-        FC.is_Computed.set(ConeProperty::ExtremeRays);
+template<typename Integer>
+void Cone<Integer>::compute(ComputationMode mode) {
+    if (mode == Mode::dual) {
+        compute_dual();
+    } else {
+        ConeProperties cps;
+        cps.set(mode);
+        compute(cps);
     }
-    if ( isComputed(ConeProperty::Grading) ) {
-        FC.Grading = BasisChange.to_sublattice_dual(Grading);
-        FC.is_Computed.set(ConeProperty::Grading);
-        FC.set_degrees();
-    }
-
-    // Start computations in FC
-    switch (mode) {
-    case Mode::hilbertBasisTriangulation:
-        FC.triangulation_hilbert_basis();
-        break;
-    case Mode::hilbertBasisMultiplicity:
-        FC.multiplicity_hilbert_basis();
-        break;
-    case Mode::hilbertBasisLarge:
-        FC.hilbert_basis();
-        break;
-    case Mode::supportHyperplanes:
-        // workaround for not dualizing twice
-        if (isComputed(ConeProperty::SupportHyperplanes)) {
-            vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
-            FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
-            FC.is_Computed.set(ConeProperty::SupportHyperplanes);
-        }
-        FC.support_hyperplanes();
-        break;
-    case Mode::triangulationSize:
-        FC.triangulation_size();
-        break;
-    case Mode::triangulation:
-        FC.triangulation();
-        break;
-    case Mode::volumeTriangulation:
-        FC.support_hyperplanes_triangulation();
-        break;
-    case Mode::volumeLarge:
-        FC.support_hyperplanes_triangulation_pyramid();
-        break;
-    case Mode::degree1Elements:
-        FC.deg1_elements();
-        break;
-    case Mode::hilbertSeries:
-        FC.hilbert_series();
-        break;
-    case Mode::hilbertSeriesLarge:
-        FC.hilbert_series_pyramid();
-        break;
-    case Mode::hilbertBasisSeries:
-        FC.hilbert_basis_series();
-        break;
-    case Mode::hilbertBasisSeriesLarge:
-        FC.hilbert_basis_series_pyramid();
-        break;
-    default: //should not happen
-        errorOutput()<<"Unknown computation mode: \""<<static_cast<int>(mode)<<"\"!"<<endl;
-        throw NormalizException();
-    }
-    extract_data(FC);
 }
 
 template<typename Integer>

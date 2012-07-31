@@ -155,8 +155,9 @@ private:
     /* only used by the constructors */
     void initialize();
     void single_matrix_input(const vector< vector<Integer> >& Input, InputType input_type);
-
-    /* compute method for the dual_mode, used in compute(string) */
+    /* compute the generators using the support hyperplanes */
+    void compute_generators();
+    /* compute method for the dual_mode, used in compute(mode) */
     void compute_dual();
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/

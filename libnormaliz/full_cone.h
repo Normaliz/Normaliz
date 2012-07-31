@@ -53,17 +53,19 @@ class Full_Cone {
     bool deg1_hilbert_basis;
     bool integrally_closed;
     
-    bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
+    // control of what to compute
     bool do_triangulation;
     bool do_partial_triangulation;
-    bool do_evaluation;
+    bool do_multiplicity;
     bool do_Hilbert_basis;
     bool do_deg1_elements;
-    bool do_only_multiplicity;
     bool do_h_vector;
     bool keep_triangulation;
     bool do_Stanley_dec;
-    bool is_pyramid;
+
+    // internal helper control variables
+    bool do_only_multiplicity;
+    bool do_evaluation;
     
     ConeProperties is_Computed;
     vector<Integer> Grading;
@@ -117,6 +119,8 @@ class Full_Cone {
     vector<key_t> Top_Key;  // Indices of generators w.r.t Top_Cone
     
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
+    bool is_pyramid;
+    bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     
     size_t totalNrSimplices;   // total number of simplices evaluated
     
@@ -174,17 +178,10 @@ class Full_Cone {
     void transfer_triangulation_to_top();
     void primal_algorithm(); 
      
-    // void support_hyperplanes_partial_triangulation();
-    // void compute_support_hyperplanes_pyramid(const bool do_triang = false);
-
     void compute_extreme_rays();
     void compute_extreme_rays_compare();
     void compute_extreme_rays_rank();
     void select_deg1_elements();
-    void compute_hilbert_basis();
-    void compute_deg1_elements();
-    void compute_hilbert_series();
-    void compute_hilbert_basis_series();
 
     void check_pointed();
     void deg1_check();
@@ -193,19 +190,8 @@ class Full_Cone {
     void check_integrally_closed();
 
     void compute_multiplicity();
-    bool low_part_simplicial();
-    void line_shelling();
-    void triangulation_lift();
 
-    /* support hyperplanes computation for a dynamic lifting
-     * adjusts the lifting if necessary, used in dual algorithm */
-    void support_hyperplanes_dynamic();
-
-
-    /* constructor for recursively generated subcones
-     * int i is a dummy parameter to distinguish it from the standard constructor */
-    Full_Cone(Matrix<Integer> M, int i);
-    
+    void do_vars_check();
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
@@ -264,6 +250,9 @@ public:
     void hilbert_basis_series();
     void hilbert_basis_series_pyramid();
     void deg1_elements();
+
+    /* do computation after do_vars are set */
+    void compute();
 
     /* computes the multiplicity of the ideal in case of a Rees algebra
      * (not the same as the multiplicity of the semigroup) */
