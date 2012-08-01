@@ -195,17 +195,18 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 //---------------------------------------------------------------------------
 
 size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
+size_t TotDet=0;
     
 /* evaluates a simplex in regard to all data */
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height) {
+Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height,
+                           const Integer& vol_computed) {
     bool do_only_multiplicity =
         (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_deg1_elements)
         || (height==1 && C.do_partial_triangulation && !C.do_h_vector);
     
     size_t i,j;
-    for(i=0; i<dim; ++i)
-        Generators[i] = C.Generators[key[i]];
+
         
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
@@ -213,10 +214,20 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             gen_degrees[i] = C.gen_degrees[key[i]];
     
     if(do_only_multiplicity){
+        if(vol_computed!=0)
+            volume=vol_computed;
+        else{
+            for(i=0; i<dim; ++i)
+                Generators[i] = C.Generators[key[i]];
         volume=Generators.vol_destructive();
+                #pragma omp atomic
+                TotDet++;
+            }
         addMult();
         return volume;         
     }  // done if only mult is asked for
+    for(i=0; i<dim; ++i)
+        Generators[i] = C.Generators[key[i]];
 
     bool unimodular=false;
     bool GDiag_computed=false;
@@ -399,6 +410,24 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         // count the 0-vector in h-vector with the right shift
         hvector[Deg]++;
     }
+    Matrix<Integer>* StanleyMat=&GenCopy; //just to initialize it and make GCC happy
+
+    if(C.do_Stanley_dec){
+        typename Full_Cone<Integer>::STANLEYDATA SimplStanley;
+        SimplStanley.key=key;
+        Matrix<Integer> offsets(explicit_cast_to_long(volume),dim);
+        SimplStanley.offsets=offsets;
+        #pragma omp critical(STANLEY)
+        {
+        C.StanleyDec.push_back(SimplStanley);
+        StanleyMat= &C.StanleyDec.back().offsets;
+        }
+        for(i=0;i<dim;++i)
+            if(Excluded[i])
+                (*StanleyMat)[0][i]=volume;                   
+    }
+    
+    size_t StanIndex=1;  // 0 already filled if necessary
 
     if (unimodular) { // do_h_vector==true automatically here
         Hilbert_Series.add(hvector,gen_degrees);
@@ -460,6 +489,14 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             
             //count point in the h-vector
             hvector[Deg]++;
+        }
+        
+        if(C.do_Stanley_dec){
+            (*StanleyMat)[StanIndex]=elements[last];
+            for(i=0;i<dim;i++)
+                if(Excluded[i]&&elements[last][i]==0)
+                    (*StanleyMat)[StanIndex][i]+=volume;
+            StanIndex++;
         }
         
         // the case of Hilbert bases and degree 1 elements, only added if height >=2

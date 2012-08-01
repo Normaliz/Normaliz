@@ -17,6 +17,7 @@
  */
 
 #include "cone_property.h"
+#include "normaliz_exception.h"
 
 namespace libnormaliz {
 using std::bitset;
@@ -84,6 +85,56 @@ void ConeProperties::print(std::ostream& out) {
         if (CPs.test(i)) out << i << " ";
     }
     out << std::endl;
+}
+
+/* this method sets all fields that should be computed in that mode */
+ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
+    switch (mode) {
+    case Mode::supportHyperplanes:
+        set(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
+        break;
+    case Mode::triangulationSize:
+        set(ConeProperty::TriangulationSize);
+        break;
+    case Mode::triangulation:
+        set(ConeProperty::Triangulation);
+        break;
+    case Mode::volumeTriangulation:
+        set(ConeProperty::Triangulation, ConeProperty::Multiplicity);
+        break;
+    case Mode::volumeLarge:
+        set(ConeProperty::Multiplicity);
+        break;
+    case Mode::degree1Elements:
+        set(ConeProperty::Deg1Elements);
+        break;
+    case Mode::hilbertBasisTriangulation:
+        set(ConeProperty::HilbertBasis, ConeProperty::Triangulation);
+        break;
+    case Mode::hilbertBasisMultiplicity:
+        set(ConeProperty::HilbertBasis, ConeProperty::Multiplicity);
+        break;
+    case Mode::hilbertBasisLarge:
+        set(ConeProperty::HilbertBasis);
+        break;
+    case Mode::hilbertSeries:
+        set(ConeProperty::Triangulation);
+    case Mode::hilbertSeriesLarge:
+        set(ConeProperty::Deg1Elements, ConeProperty::HilbertSeries);
+        break;
+    case Mode::hilbertBasisSeries:
+        set(ConeProperty::Triangulation);
+    case Mode::hilbertBasisSeriesLarge:
+        set(ConeProperty::HilbertSeries, ConeProperty::HilbertBasis);
+        break;
+    case Mode::dual:
+        throw NormalizException();
+        break;
+    default:
+        throw NormalizException();
+        break;
+    }
+    return *this;
 }
 
 } /* end namespace libnormaliz */
