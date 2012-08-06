@@ -39,18 +39,14 @@ void printHelp(char* command) {
     cout << "  runs normaliz on PROJECT.in"<<endl;
     cout << "options:"<<endl;
     cout << "  -?\tprint this help text and exit"<<endl;
-    cout << "  -s\tcomputation mode: support hyperplanes"<<endl;
-    cout << "  -S\tcomputation mode: support hyperplanes (currently same as -s)"<<endl;
-    cout << "  -t\tcomputation mode: triangulation"<<endl;
-    cout << "  -v\tcomputation mode: volume triangulation"<<endl;
-    cout << "  -V\tcomputation mode: volume large"<<endl;
-    cout << "  -n\tcomputation mode: Hilbert basis triangulation (previously normal)"<<endl;
-    cout << "  -N\tcomputation mode: Hilbert basis (using a partial triangulation)"<<endl;
-    cout << "  -p\tcomputation mode: Hilbert polynomial"<<endl;
-    cout << "  -P\tcomputation mode: Hilbert polynomial large"<<endl;
-    cout << "  -h\tcomputation mode: Hilbert basis polynomial (default)"<<endl;
-    cout << "  -H\tcomputation mode: Hilbert basis polynomial large"<<endl;
-    cout << "  -1\tcomputation mode: degree 1 elements"<<endl;
+    cout << "  -s\tcompute support hyperplanes"<<endl;
+    cout << "  -t\tcompute triangulation"<<endl;
+    cout << "  -v\tcompute volume"<<endl;
+    cout << "  -n\tcompute Hilbert basis (with full triangulation)"<<endl;
+    cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
+    cout << "  -p\tcompute Hilbert polynomial"<<endl;
+    cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
+    cout << "  -1\tcompute degree 1 elements"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
     cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
     cout << "  -T\tthe file .tri is written (triangulation)"<<endl;
@@ -58,8 +54,6 @@ void printHelp(char* command) {
     cout << "  -e\tperform tests for arithmetic errors"<<endl;
     cout << "  -B\tuse indefinite precision arithmetic"<<endl;
     cout << "  -c\tverbose (prints control data)"<<endl;
-    cout << "  -m\tsave memory (currently has no effect)"<<endl;
-    cout << "  -i\tobsolete option"<<endl;
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
@@ -71,9 +65,6 @@ int main(int argc, char* argv[])
     //libnormaliz::RecBoundFactor = 5000000;
     size_t i;       //used for iterations
     char c;
-    ComputationMode computation_mode = Mode::hilbertBasisSeries;
-    //for available modes see libnormaliz/libnormaliz.h
-    //it is set by the option from the command line
     string output_name;         //name of the output file(s) saved here
 
     // read command line options
@@ -113,6 +104,7 @@ int main(int argc, char* argv[])
     //Analyzing the command line options
     bool write_extra_files = false, write_all_files = false, write_tri_file = false;
     bool use_Big_Integer = false;
+    ConeProperties to_compute;
 
     for (i = 1; i <option.size(); i++) {
         switch (option[i]) {
@@ -126,49 +118,44 @@ int main(int argc, char* argv[])
                 write_extra_files = true;
                 break;
             case 'T':
+                to_compute.set(ConeProperty::Triangulation);
                 write_tri_file = true;
                 break;
             case 'a':
                 write_all_files = true;
                 break;
             case 's':
-                computation_mode = Mode::supportHyperplanes;
-                break;
             case 'S':
-                computation_mode = Mode::supportHyperplanes;
+                to_compute.set(ConeProperty::SupportHyperplanes);
                 break;
             case 't':
-                computation_mode = Mode::triangulation;
+                to_compute.set(ConeProperty::TriangulationSize);
                 break;
             case 'v':
-                computation_mode = Mode::volumeTriangulation;
-                break;
             case 'V':
-                computation_mode = Mode::volumeLarge;
+                to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 'n':
-                computation_mode = Mode::hilbertBasisTriangulation;
+                to_compute.set(ConeProperty::HilbertBasis);
+                to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 'N':
-                computation_mode = Mode::hilbertBasisLarge;
+                to_compute.set(ConeProperty::HilbertBasis);
                 break;
             case '1':
-                computation_mode = Mode::degree1Elements;
+                to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'p':
-                computation_mode = Mode::hilbertSeries;
-                break;
             case 'P':
-                computation_mode = Mode::hilbertSeriesLarge;
+                to_compute.set(ConeProperty::HilbertSeries);
                 break;
             case 'h':
-                computation_mode = Mode::hilbertBasisSeries;
-                break;
             case 'H':
-                computation_mode = Mode::hilbertBasisSeriesLarge;
+                to_compute.set(ConeProperty::HilbertBasis);
+                to_compute.set(ConeProperty::HilbertSeries);
                 break;
             case 'd':
-                computation_mode = Mode::dual;
+                to_compute.set(ConeProperty::DualMode);
                 break;
             case 'e':  //check for arithmetic overflow
                 test_arithmetic_overflow=true;
@@ -190,6 +177,11 @@ int main(int argc, char* argv[])
                 cerr<<"Warning: Unknown option -"<<option[i]<<endl;
                 break;
         }
+    }
+    // activate default mode
+    if (to_compute.none()) {
+        to_compute.set(ConeProperty::HilbertBasis);
+        to_compute.set(ConeProperty::HilbertSeries);
     }
 
     if (!filename_set) {
@@ -213,10 +205,10 @@ int main(int argc, char* argv[])
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(output_name, computation_mode, write_extra_files, write_tri_file, write_all_files);
+        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_tri_file, write_all_files);
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(output_name, computation_mode, write_extra_files, write_tri_file, write_all_files);
+        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_tri_file, write_all_files);
     }
 
     //exit
@@ -229,7 +221,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, ComputationMode computation_mode, bool write_extra_files, bool write_tri_file, bool write_all_files ) {
+template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_tri_file, bool write_all_files ) {
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -272,29 +264,14 @@ template<typename Integer> int process_data(string& output_name, ComputationMode
 
     in.close();
 
-    //don't save the triangulation if the user doesn't want to see it
-    //and we don't need it for the primary multiplicity later
-    if (!write_tri_file && input.count(Type::rees_algebra)==0) {
-        if (computation_mode == Mode::triangulation)
-            computation_mode  = Mode::triangulationSize;
-        if (computation_mode == Mode::volumeTriangulation)
-            computation_mode  = Mode::volumeLarge;
-        if (computation_mode == Mode::hilbertBasisTriangulation)
-            computation_mode  = Mode::hilbertBasisMultiplicity;
-        if (computation_mode == Mode::hilbertSeries)
-            computation_mode  = Mode::hilbertSeriesLarge;
-        if (computation_mode == Mode::hilbertBasisSeries)
-            computation_mode  = Mode::hilbertBasisSeriesLarge;
-    }
-
     if (verbose) {
         cout<<"\n************************************************************\n";
-        cout<<"Running in computation mode "<<computation_mode<<"."<<endl;
+        cout<<"Compute: "<<to_compute<<"."<<endl;
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
 //    MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
-    MyCone.compute(computation_mode);
+    MyCone.compute(to_compute);
     Out.setCone(MyCone);
     Out.write_files();
 

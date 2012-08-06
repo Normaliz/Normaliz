@@ -39,6 +39,8 @@ namespace libnormaliz {
 using std::list;
 using std::vector;
 
+template<typename Integer> class Full_Cone;
+
 template<typename Integer>
 class Simplex {
     size_t dim;

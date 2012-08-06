@@ -571,6 +571,8 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 
 template<typename Integer>
 void Cone<Integer>::compute(ConeProperties ToCompute) {
+    if (ToCompute.test(ConeProperty::DualMode))
+        compute_dual();
 
     /* preparation: get generators if necessary */
     compute_generators();
@@ -578,7 +580,6 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
         errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
         throw NormalizException();
     }
-//    ToCompute.print(cout);
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
@@ -609,7 +610,7 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::TriangulationDetSum))
         ToCompute.set(ConeProperty::Multiplicity);
     
-    if (rees_primary && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
+    if (rees_primary) // && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
         ToCompute.set(ConeProperty::Triangulation);
 
     /* Create a Full_Cone FC */
@@ -675,7 +676,7 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed); //remove what is now computed
     if (ToCompute.any()) {
         errorOutput() << "Warning: Cone could not compute everything, that it was asked for!"<<endl;
-        errorOutput() << "Missing: "; ToCompute.print(errorOutput());
+        errorOutput() << "Missing: " << ToCompute << endl;
     }
 }
 
@@ -775,6 +776,7 @@ void Cone<Integer>::compute_dual() {
     }
     FC.dual_mode();
     extract_data(FC);
+    is_Computed.set(ConeProperty::DualMode);
 }
 
 template<typename Integer>

@@ -50,12 +50,10 @@ namespace ConeProperty {
         ReesPrimary,
         ReesPrimaryMultiplicity,
         StanleyDec,
+        DualMode,
         EnumSize //this has to be the last entry, to get the number of entries in the enum
     };
 }
-
-template<typename Integer> class Cone;
-template<typename Integer> class Full_Cone;
 
 class ConeProperties {
 public:
@@ -83,13 +81,15 @@ public:
 
 
     /* print it in a nice way */
-    void print(std::ostream& out);
+    friend std::ostream& operator<<(std::ostream&, const ConeProperties&);
 
 
 private:
     std::bitset<ConeProperty::EnumSize> CPs;
 
 };
+
+std::ostream& operator<<(std::ostream&, const ConeProperties&);
 
 }
 

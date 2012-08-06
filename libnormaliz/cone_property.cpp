@@ -80,11 +80,12 @@ size_t ConeProperties::count () const {
 }
 
 /* print it in a nice way */
-void ConeProperties::print(std::ostream& out) {
+std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
-        if (CPs.test(i)) out << i << " ";
+        if (CP.CPs.test(i)) out << i << " ";
     }
     out << std::endl;
+    return out;
 }
 
 /* this method sets all fields that should be computed in that mode */
@@ -128,7 +129,7 @@ ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
         set(ConeProperty::HilbertSeries, ConeProperty::HilbertBasis);
         break;
     case Mode::dual:
-        throw NormalizException();
+        set(ConeProperty::DualMode);
         break;
     default:
         throw NormalizException();
