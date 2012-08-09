@@ -79,6 +79,7 @@ void Output<Integer>::set_name(const string& n){
 template<typename Integer>
 void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
+    dim = Result->getDim();
 }
 
 //---------------------------------------------------------------------------
@@ -224,14 +225,13 @@ void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
 
 //---------------------------------------------------------------------------
 
-
 template<typename Integer>
 void Output<Integer>::write_tri() const{
     if (tri==true) {
         string file_name = name+".tri";
         ofstream out(file_name.c_str());
 
-        vector< pair<vector<libnormaliz::key_t>,Integer> > Tri = Result->getTriangulation();
+        const vector< pair<vector<libnormaliz::key_t>,Integer> >& Tri = Result->getTriangulation();
         typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();
 
         out << Tri.size() << endl;
@@ -242,6 +242,30 @@ void Output<Integer>::write_tri() const{
                 out << tit->first[i]+1 << " ";
             }
             out << tit->second << endl;
+        }
+        out.close();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void Output<Integer>::write_Stanley_dec() const {
+    if (Result->isComputed(ConeProperty::StanleyDec)) {
+//        string file_name = name+".dec";
+  //      ofstream out(file_name.c_str());
+        ofstream out(name+".dec");
+
+        const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
+        typename list<STANLEYDATA<Integer> >::const_iterator S = StanleyDec.begin();
+
+        for(;S!=StanleyDec.end();++S) {
+            for(long i=0;i<dim;++i)
+                out << S->key[i]+1 <<" ";
+            out << endl;
+            S->offsets.print(out);
+            out << endl;
         }
         out.close();
     }
@@ -627,5 +651,6 @@ void Output<Integer>::write_files() const {
     }
 
     write_inv_file();
+    write_Stanley_dec();
 }
 

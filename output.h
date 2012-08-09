@@ -42,6 +42,7 @@ class Output {
     bool tri;
     bool ht1;
     Cone<Integer>* Result;
+    long dim;
 
 //---------------------------------------------------------------------------
 public:
@@ -81,6 +82,7 @@ public:
     void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
     void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
     void write_tri() const; //writes the .tri file
+    void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 
     void write_inv_file() const;

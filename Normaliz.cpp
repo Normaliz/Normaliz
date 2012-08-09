@@ -47,6 +47,7 @@ void printHelp(char* command) {
     cout << "  -p\tcompute Hilbert polynomial"<<endl;
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
     cout << "  -1\tcompute degree 1 elements"<<endl;
+    cout << "  -y\tcompute Stanley decomposition"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
     cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
     cout << "  -T\tthe file .tri is written (triangulation)"<<endl;
@@ -153,6 +154,9 @@ int main(int argc, char* argv[])
             case 'H':
                 to_compute.set(ConeProperty::HilbertBasis);
                 to_compute.set(ConeProperty::HilbertSeries);
+                break;
+            case 'y':
+                to_compute.set(ConeProperty::StanleyDec);
                 break;
             case 'd':
                 to_compute.set(ConeProperty::DualMode);

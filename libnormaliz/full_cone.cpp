@@ -1577,7 +1577,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
-    //do_Stanley_dec=true; // ONLY FOR EXPERIMENTS
     // set needed do_ vars
     if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
         do_evaluation = true;
@@ -1655,18 +1654,6 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     if(do_Stanley_dec){
         is_Computed.set(ConeProperty::StanleyDec);
-        typename list<STANLEYDATA>::iterator S = StanleyDec.begin();
-        ofstream out("Stanley.dec"); 
-    
-        for(;S!=StanleyDec.end();++S){
-            for(size_t i=0;i<dim;++i)
-                S->key[i]++;      
-            out << S->key;
-            S->offsets.print(out);
-            out << endl;    
-        }
-        
-        out.close();; 
     }
 
 }

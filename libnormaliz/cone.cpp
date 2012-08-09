@@ -218,8 +218,13 @@ map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () co
 
 
 template<typename Integer>
-vector< pair<vector<key_t>,Integer> > Cone<Integer>::getTriangulation() const {
+const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() const {
     return Triangulation;
+}
+
+template<typename Integer>
+const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() const {
+    return StanleyDec;
 }
 
 template<typename Integer>
@@ -829,6 +834,11 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             FC.Triangulation.pop_front();
         }
         is_Computed.set(ConeProperty::Triangulation);
+    }
+    if (FC.isComputed(ConeProperty::StanleyDec)) {
+        StanleyDec.clear();
+        StanleyDec.splice(StanleyDec.end(),FC.StanleyDec);
+        is_Computed.set(ConeProperty::StanleyDec);
     }
     if (FC.isComputed(ConeProperty::Multiplicity)) {
         multiplicity = FC.getMultiplicity();

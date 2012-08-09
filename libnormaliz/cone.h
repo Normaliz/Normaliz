@@ -34,6 +34,11 @@ using std::pair;
 template<typename Integer> class Full_Cone;
 template<typename Integer> class Matrix;
 
+template<typename Integer> struct STANLEYDATA {
+    vector<key_t> key;
+    Matrix<Integer> offsets;
+};
+
 template<typename Integer>
 class Cone {
 
@@ -85,18 +90,17 @@ public:
 //          get the results, these methods do not start a computation
 //---------------------------------------------------------------------------
 
+    size_t getDim() const { return dim; };
     vector< vector<Integer> > getGenerators() const;
     vector< vector<Integer> > getExtremeRays() const;
     vector< vector<Integer> > getSupportHyperplanes() const;
     vector< vector<Integer> > getEquations() const;
     vector< vector<Integer> > getCongruences() const;
     map< InputType , vector< vector<Integer> > > getConstraints() const;
-    vector< pair<vector<key_t>, Integer> > getTriangulation() const;
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
     vector< vector<Integer> > getHilbertBasis() const;
     vector< vector<Integer> > getDeg1Elements() const;
-    const HilbertSeries& getHilbertSeries() const; //general purpose object
     vector<Integer> getGrading() const;
     Integer getGradingDenom() const;
     mpq_class getMultiplicity() const;
@@ -108,6 +112,10 @@ public:
     Integer getReesPrimaryMultiplicity() const;
     vector< vector<Integer> > getGeneratorsOfToricRing() const;
     Sublattice_Representation<Integer> getBasisChange() const;
+    // the following methods return const refs to avoid copying of big data objects
+    const HilbertSeries& getHilbertSeries() const; //general purpose object
+    const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
+    const list< STANLEYDATA<Integer> >& getStanleyDec() const;
     
 //---------------------------------------------------------------------------
 //                          private part
@@ -126,6 +134,7 @@ private:
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     vector< pair<vector<key_t>, Integer> > Triangulation;
+    list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
     vector< vector<Integer> > HilbertBasis;
     vector< vector<Integer> > Deg1Elements;

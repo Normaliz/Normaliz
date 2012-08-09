@@ -85,7 +85,6 @@ void setErrorOutput(std::ostream&);
 std::ostream& verboseOutput();
 std::ostream& errorOutput();
 
-
 } /* end namespace libnormaliz */
 
 #endif /* LIBNORMALIZ_H_ */

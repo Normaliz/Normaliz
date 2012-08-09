@@ -30,6 +30,7 @@
 #include "simplex.h"
 #include "list_operations.h"
 #include "HilbertSeries.h"
+#include "cone.h"
 
 //---------------------------------------------------------------------------
 
@@ -413,7 +414,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     Matrix<Integer>* StanleyMat=&GenCopy; //just to initialize it and make GCC happy
 
     if(C.do_Stanley_dec){
-        typename Full_Cone<Integer>::STANLEYDATA SimplStanley;
+        STANLEYDATA<Integer> SimplStanley;
         SimplStanley.key=key;
         Matrix<Integer> offsets(explicit_cast_to_long(volume),dim);
         SimplStanley.offsets=offsets;

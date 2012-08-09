@@ -39,6 +39,7 @@ using std::pair;
 using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
+template<typename Integer> struct STANLEYDATA;
 
 template<typename Integer>
 class Full_Cone {
@@ -133,11 +134,7 @@ class Full_Cone {
     bool parallel_in_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
     vector< Matrix<Integer> > HelpMat; // prepared matrices for computations
     vector<mpq_class> mult_sum;
-    struct STANLEYDATA{
-        vector<key_t> key;
-        Matrix<Integer> offsets;
-    };
-    list<STANLEYDATA> StanleyDec;
+    list< STANLEYDATA<Integer> > StanleyDec;
     
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
