@@ -203,8 +203,8 @@ template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height,
                            const Integer& vol_computed) {
     bool do_only_multiplicity =
-        (!C.do_h_vector && !C.do_Hilbert_basis && !C.do_deg1_elements)
-        || (height==1 && C.do_partial_triangulation && !C.do_h_vector);
+        C.do_only_multiplicity
+        || (height==1 && C.do_partial_triangulation);
     
     size_t i,j;
 
@@ -217,13 +217,13 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     if(do_only_multiplicity){
         if(vol_computed!=0)
             volume=vol_computed;
-        else{
+        else {
             for(i=0; i<dim; ++i)
                 Generators[i] = C.Generators[key[i]];
-        volume=Generators.vol_destructive();
+                volume=Generators.vol_destructive();
                 #pragma omp atomic
                 TotDet++;
-            }
+        }
         addMult();
         return volume;         
     }  // done if only mult is asked for
@@ -263,7 +263,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             Ht1NonUni++;
     }
     
-    if (unimodular && !C.do_h_vector) {
+    if (unimodular && !C.do_h_vector && !C.do_Stanley_dec) {
         addMult();
         return volume;
     }

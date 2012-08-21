@@ -253,9 +253,7 @@ void Output<Integer>::write_tri() const{
 template<typename Integer>
 void Output<Integer>::write_Stanley_dec() const {
     if (Result->isComputed(ConeProperty::StanleyDec)) {
-//        string file_name = name+".dec";
-  //      ofstream out(file_name.c_str());
-        ofstream out(name+".dec");
+        ofstream out((name+".dec").c_str());
 
         const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
         typename list<STANLEYDATA<Integer> >::const_iterator S = StanleyDec.begin();

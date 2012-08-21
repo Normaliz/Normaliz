@@ -2623,6 +2623,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     keep_triangulation=C.keep_triangulation;
     do_only_multiplicity=C.do_only_multiplicity;
     do_evaluation=C.do_evaluation;
+    do_Stanley_dec=C.do_Stanley_dec;
     is_pyramid=true;
     
     // pyr_level set by the calling routine
