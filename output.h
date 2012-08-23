@@ -40,7 +40,9 @@ class Output {
     bool gen;
     bool cst;
     bool tri;
+    bool tgn;
     bool ht1;
+    bool dec;
     Cone<Integer>* Result;
     long dim;
 
@@ -72,7 +74,9 @@ public:
     void set_write_gen(const bool& flag);             //sets the write .gen flag
     void set_write_cst(const bool& flag);             //sets the write .cst flag
     void set_write_tri(const bool& flag);             //sets the write .tri flag
+    void set_write_tgn(const bool& flag);             //sets the write .tgn flag
     void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
+    void set_write_dec(const bool& flag);             //sets the write .dec flag
     void set_write_extra_files();                     //sets some flags to true
     void set_write_all_files();                       //sets most flags to true
   

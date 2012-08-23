@@ -45,7 +45,9 @@ Output<Integer>::Output(){
     gen=false;
     cst=false;
     tri=false;
+    tgn=false;
     ht1=false;
+    dec=false;
 }
 
 //---------------------------------------------------------------------------
@@ -62,6 +64,7 @@ void Output<Integer>::read() const{
     cout<<"\ngen="<<gen<<"\n";
     cout<<"\ncst="<<cst<<"\n";
     cout<<"\ntri="<<tri<<"\n";
+    cout<<"\ntgn="<<tgn<<"\n";
     cout<<"\nht1="<<ht1<<"\n";
     cout<<"\nResult is:\n";
     Result->print();
@@ -148,8 +151,22 @@ void Output<Integer>::set_write_tri(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_write_tgn(const bool& flag) {
+    tgn=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::set_write_ht1(const bool& flag) {
     ht1=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_write_dec(const bool& flag) {
+    dec=flag;
 }
 
 
@@ -252,7 +269,7 @@ void Output<Integer>::write_tri() const{
 
 template<typename Integer>
 void Output<Integer>::write_Stanley_dec() const {
-    if (Result->isComputed(ConeProperty::StanleyDec)) {
+    if (dec && Result->isComputed(ConeProperty::StanleyDec)) {
         ofstream out((name+".dec").c_str());
 
         const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
@@ -377,9 +394,10 @@ void Output<Integer>::write_files() const {
         Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Support_Hyperplanes);
         Support_Hyperplanes_Full_Cone.print(name,"esp");
     }
+    if (tgn)
+        Generators.print(name,"tgn");
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
-        Generators.print(name,"tgn");
     }
 
     if (out==true) {  //printing .out file

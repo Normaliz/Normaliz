@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 
 
     //Analyzing the command line options
-    bool write_extra_files = false, write_all_files = false, write_tri_file = false;
+    bool write_extra_files = false, write_all_files = false;
     bool use_Big_Integer = false;
     ConeProperties to_compute;
 
@@ -118,12 +118,11 @@ int main(int argc, char* argv[])
             case 'f':
                 write_extra_files = true;
                 break;
-            case 'T':
-                to_compute.set(ConeProperty::Triangulation);
-                write_tri_file = true;
-                break;
             case 'a':
                 write_all_files = true;
+                break;
+            case 'T':
+                to_compute.set(ConeProperty::Triangulation);
                 break;
             case 's':
             case 'S':
@@ -209,10 +208,10 @@ int main(int argc, char* argv[])
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_tri_file, write_all_files);
+        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files);
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_tri_file, write_all_files);
+        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files);
     }
 
     //exit
@@ -225,7 +224,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_tri_file, bool write_all_files ) {
+template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files ) {
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -234,8 +233,15 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
     } else if (write_extra_files) {
         Out.set_write_extra_files();
     }
-    if (write_tri_file) {
+    if (to_compute.test(ConeProperty::Triangulation)) {
         Out.set_write_tri(true);
+        Out.set_write_tgn(true);
+        Out.set_write_inv(true);
+    }
+    if (to_compute.test(ConeProperty::StanleyDec)) {
+        Out.set_write_dec(true);
+        Out.set_write_tgn(true);
+        Out.set_write_inv(true);
     }
 
 
