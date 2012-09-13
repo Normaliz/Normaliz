@@ -1514,10 +1514,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             for(; i > spos; ++spos, ++s) ;
             for(; i < spos; --spos, --s) ;
 
+            if(keep_triangulation || do_Stanley_dec)
+                sort(s->key.begin(),s->key.end());
             s->height = simp.evaluate(s->key,s->height,s->vol);
             priv_detSum += s->height;
-            if(keep_triangulation)
-                sort(s->key.begin(),s->key.end());
             if (verbose) {
                 #pragma omp critical(VERBOSE)
                 while ((long)(i*VERBOSE_STEPS) >= step_x_size) {

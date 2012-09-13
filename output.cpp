@@ -310,9 +310,11 @@ void Output<Integer>::write_inv_file() const{
             inv<<"integer hilbert_basis_elements = "<<Result->getHilbertBasis().size()<<endl;
         }
 
-        size_t nr_ex_rays = Result->getExtremeRays().size();
+        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+            size_t nr_ex_rays = Result->getExtremeRays().size();
+            inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
+        }
 
-        inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
         inv<<"integer rank = "<<rank<<endl;
         inv<<"integer index = "<< Result->getBasisChange().get_index() <<endl;
         inv<<"integer number_support_hyperplanes = "<<Result->getSupportHyperplanes().size()<<endl;
