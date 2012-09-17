@@ -1,0 +1,27 @@
+# Makefile for genEhrhart
+
+COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99
+include $(COCOA_ROOT)/configuration/autoconf.mk
+
+include ../Makefile.configuration
+
+ALL_C=$(wildcard *.C)
+ALL_EXECS=$(ALL_C:.C=)
+
+.PHONY: default
+default: nmzIntegrate
+
+# Rule for compiling and linking C++ code in *.C files
+%: %.C
+	@echo "Compiling `basename $@`"
+	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(COCOA_LIB)  -lgmpxx -lgmp
+
+.PHONY: library
+library:
+	@(cd $(COCOA_ROOT); $(MAKE) library)
+
+.PHONY: clean
+clean:
+	@/bin/rm -f $(ALL_EXECS) *.o
+
+$(ALL_EXECS): $(COCOA_LIB)

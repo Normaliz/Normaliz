@@ -3,13 +3,13 @@
 ##
 CXX = g++ 
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
-CXXFLAGS += -Wall
-CXXFLAGS += -pedantic -Wno-long-long
+CXXFLAGS += -std=c++0x
+CXXFLAGS += -Wall -pedantic
 CXXFLAGS += -O3 -funroll-loops
 #CXXFLAGS += -I /usr/local/boost_1_45_0
 #CXXFLAGS += -g
 #CXXFLAGS += -pg
-#CXXFLAGS += -DNDEBUG
+#CXXFLAGS += -DNDEBUG ## disables asserts
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
@@ -19,7 +19,7 @@ else
 endif
 
 ##for mac link libgcc not static
-NORMFLAGS = -static
-#NORMFLAGS = -static-libgcc
+CXXFLAGS += -static
+#CXXFLAGS += -static-libgcc
 
 GMPFLAGS = -lgmpxx -lgmp
