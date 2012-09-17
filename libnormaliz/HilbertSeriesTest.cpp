@@ -1,27 +1,30 @@
-#include "HilbertSeries.cpp"
+#include "HilbertSeries.h"
+#include "vector_operations.h"
 #include <iostream>
 
-#include "integer.cpp"
-#include "vector_operations.cpp"
 
 using namespace std;
 using namespace libnormaliz;
 
 int main() {
 
-    vector<long long> anom(3);
-    anom[1]=1; anom[2]=1;
-    vector<long long> adenom(4);
-    adenom[2]=1; adenom[3]=1;
+    vector<num_t> anum(3);
+    anum[1]=1; anum[2]=1;
+    vector<denom_t> adenom(2);
+    adenom[0]=2; adenom[1]=3;
     
-    HilbertSeries A(anom,adenom);
+    cout << anum<<adenom;
+    HilbertSeries C;
+    C.add(anum,adenom);
+    cout << "C: " << C;
+    HilbertSeries A(anum,adenom);
 
-    vector<long long> bnom(5);
-    bnom[0]=1; bnom[2]=1; bnom[4]=1;
-    vector<long long> bdenom(4);
-    bdenom[3]=2;
+    vector<num_t> bnum(5);
+    bnum[0]=1; bnum[2]=1; bnum[4]=1;
+    vector<denom_t> bdenom(2);
+    bdenom[0]=3; bdenom[1]=3;
     
-    HilbertSeries B(bnom,bdenom);
+    HilbertSeries B(bnum,bdenom);
 
     HilbertSeries ABA = HilbertSeries();
     ABA += B;
@@ -38,12 +41,20 @@ int main() {
 
 
     cout << endl << endl << "         *********" << endl << endl;
-    vector<long long> p(4);
+/*    vector<long long> p(4);
     p[3]=5; p[2]=4; p[1]=1; p[0]=3; // 5 t^3 + 4 t^2 + 1 t + 3
     cout << p;
     linear_substitution<long long>(p, 2); //transform it to q, q(t)=p(t+2)
     cout << p;
+*/
 
+    cout << "reset a HS to 0/1 and simplify" << endl;
+    B.reset();
+    B.simplify();
+    cout << B;
+
+    cout << "creating empty HS" << endl;
+    cout << HilbertSeries();
 
     return 0;
 }

@@ -67,6 +67,7 @@ void HilbertSeries::reset() {
 void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
     vector<denom_t> sorted_gd(gen_degrees);
     sort(sorted_gd.begin(), sorted_gd.end());
+    assert(sorted_gd[0]>0); //TODO InputException?
     poly_add_to(denom_classes[sorted_gd],  num);
     is_simplified = false;
 }
@@ -214,8 +215,12 @@ void HilbertSeries::simplify() const {
     cyclo_denom = cdenom;
 
     // now collect the cyclotomic polynomials in (1-t^i) factors
+    it = cdenom.find(1);
+    if (it != cdenom.end())
+        dim = it->second;
+    else
+        dim = 0;
     period = lcm_of_keys(cdenom);
-    dim = cdenom[1];
     i = period;
     if (period > 2000) {
         errorOutput() << "WARNING: Period is to big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
@@ -291,7 +296,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         if (d != period) {
             //norm_num *= (1-t^p / 1-t^d)^denom[d]
             poly_div(factor, r, coeff_vector<mpz_class>(period), coeff_vector<mpz_class>(d));
-            assert(r.size()==0); //assert rest r is 0
+            assert(r.size()==0); //assert remainder r is 0
             //TODO more efficient method *=
             //TODO Exponentiation by squaring of factor, then *=
             for (i=0; i < rit->second; ++i) {
@@ -360,6 +365,7 @@ const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const {
 
 
 ostream& operator<< (ostream& out, const HilbertSeries& HS) {
+    HS.collectData();
     out << "(";
     if (HS.num.size()>0) out << " " << HS.num[0];
     for (size_t i=1; i<HS.num.size(); ++i) {
@@ -369,6 +375,9 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
         else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i;
     }
     out << " ) / (";
+    if (HS.denom.size()==0) {
+        out << " 1";
+    }
     map<long, denom_t>::const_iterator it;
     for (it = HS.denom.begin(); it != HS.denom.end(); ++it) { 
         if ( it->second != 0 ) out << " (1-t^"<< it->first <<")^" << it->second;
@@ -391,6 +400,7 @@ vector<Integer> coeff_vector(size_t i) {
     p[i] = -1;
     return p;
 }
+
 template<typename Integer>
 void remove_zeros(vector<Integer>& a) {
     size_t i=a.size();

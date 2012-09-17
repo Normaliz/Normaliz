@@ -24,6 +24,8 @@
  * h vector repr.: sum of h[i]*t^i
  * and the denominator is represented as a map d of the exponents of (1-t^i)
  * d vector repr.: product of (1-t^i)^d[i] over i in d
+ * Input of the denominator is also possible as a vector of degrees of the 
+ * generators.
  *
  * The class offers basic operations on the series, a simplification and
  * different forms of representation of the series.
@@ -80,6 +82,8 @@ public:
     // it changes the representation of the series, but not the series itself
     // therefore it is declared const
     void simplify() const;
+    // collect data from the denom_classes
+    void collectData() const;
 
     // returns the numerator, repr. as vector of coefficients, the h-vector
     const vector<mpz_class>& getNum() const;
@@ -116,8 +120,6 @@ private:
     mutable vector< vector<mpz_class> > quasi_poly;
     mutable mpz_class quasi_denom;
 
-    // collect data from the denom_classes
-    void collectData() const;
     // these are only const when used properly!!
     void performAdd(const vector<num_t>& num, const vector<denom_t>& gen_degrees) const;
     void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
