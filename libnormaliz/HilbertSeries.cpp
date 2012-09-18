@@ -67,7 +67,8 @@ void HilbertSeries::reset() {
 void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
     vector<denom_t> sorted_gd(gen_degrees);
     sort(sorted_gd.begin(), sorted_gd.end());
-    assert(sorted_gd[0]>0); //TODO InputException?
+    if (gen_degrees.size() > 0) 
+        assert(sorted_gd[0]>0); //TODO InputException?
     poly_add_to(denom_classes[sorted_gd],  num);
     is_simplified = false;
 }
@@ -557,6 +558,10 @@ vector<Integer> compute_e_vector(vector<Integer> Q, int dim){
 
 template<typename Integer>
 vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
+    // handle dimension 0
+    if (dim == 0)
+        return vector<Integer>(dim);
+
     vector<Integer> Hilbert_Polynomial = vector<Integer>(dim);
     int i,j;
     

@@ -828,7 +828,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
-                Triangulation[i].second = simp.height;
+                Triangulation[i].second = simp.vol;
             else
                 Triangulation[i].second = 0;
             FC.Triangulation.pop_front();

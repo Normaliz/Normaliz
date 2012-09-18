@@ -52,9 +52,14 @@ int main() {
     B.reset();
     B.simplify();
     cout << B;
+    cout << "quasi-poly of that HS" << endl;
+    cout << B.getHilbertQuasiPolynomial();
 
     cout << "creating empty HS" << endl;
     cout << HilbertSeries();
+
+    cout << "creating HS from empty vectors" << endl;
+    cout << HilbertSeries(vector<num_t>(), vector<denom_t>());
 
     return 0;
 }

@@ -79,6 +79,7 @@ class SimplexEvaluator {
     Full_Cone<Integer>& C;
     size_t dim;
     Integer volume;
+    Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
     Matrix<Integer> Generators;
     Matrix<Integer> TGenerators;
@@ -117,8 +118,10 @@ public:
 
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
-    Integer evaluate(const vector<key_t>& key, const Integer& height,const Integer& vol_computed);
+    Integer evaluate(const vector<key_t>& key, const Integer& height, const Integer& vol_computed);
 
+    // returns sum of the determinants of all evaluated simplices
+    Integer getDetSum() const;
     // returns sum of the multiplicities of all evaluated simplices
     mpq_class getMultiplicitySum() const;
     // returns sum of the Hilbert Series of all evaluated simplices

@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
                 break;
             case 'T':
                 to_compute.set(ConeProperty::Triangulation);
+                to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 's':
             case 'S':

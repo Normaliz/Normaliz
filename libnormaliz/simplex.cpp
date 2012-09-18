@@ -169,6 +169,7 @@ template<typename Integer>
 SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 : C(fc),
   dim(C.dim),
+  det_sum(0),
   mult_sum(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
@@ -201,7 +202,7 @@ size_t TotDet=0;
 /* evaluates a simplex in regard to all data */
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height,
-                           const Integer& vol_computed) {
+                         const Integer& vol_computed) {
     bool do_only_multiplicity =
         C.do_only_multiplicity
         || (height==1 && C.do_partial_triangulation);
@@ -572,6 +573,7 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::addMult() {
+    det_sum += volume;
     if (!C.isComputed(ConeProperty::Grading))
         return;
     if (C.deg1_triangulation) {
@@ -585,6 +587,11 @@ void SimplexEvaluator<Integer>::addMult() {
         mult /= deg_prod;
         mult_sum += mult;
     }
+}
+
+template<typename Integer>
+Integer SimplexEvaluator<Integer>::getDetSum() const {
+    return det_sum;
 }
 
 template<typename Integer>

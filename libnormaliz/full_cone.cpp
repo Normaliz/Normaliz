@@ -1005,8 +1005,10 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     if(do_triangulation || (do_partial_triangulation && S.read_volume()>1))
     {
         store_key(key,S.read_volume(),1,Triangulation); 
-        #pragma omp atomic
-        TotDet++; 
+        if(do_only_multiplicity) {
+            #pragma omp atomic
+            TotDet++;
+        }
     }
     
     if(do_triangulation){ // we must prepare the sections of the triangulation
@@ -1507,7 +1509,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     {
         typename list<SHORTSIMPLEX>::iterator s = Triangulation.begin();
         size_t spos=0;
-        Integer priv_detSum = 0;
         SimplexEvaluator<Integer> simp(*this);
         #pragma omp for schedule(dynamic) 
         for(size_t i=0; i<TriangulationSize; i++){
@@ -1516,8 +1517,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
             if(keep_triangulation || do_Stanley_dec)
                 sort(s->key.begin(),s->key.end());
-            s->height = simp.evaluate(s->key,s->height,s->vol);
-            priv_detSum += s->height;
+            s->vol = simp.evaluate(s->key, s->height, s->vol);
             if (verbose) {
                 #pragma omp critical(VERBOSE)
                 while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
@@ -1534,7 +1534,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             Hilbert_Series += simp.getHilbertSeriesSum();
         }
         #pragma omp critical(DETSUM)
-        detSum += priv_detSum;
+        detSum += simp.getDetSum();
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;
@@ -1608,7 +1608,8 @@ void Full_Cone<Integer>::primal_algorithm(){
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << endl;
         // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
-        cout << "TotDet " << TotDet << endl;
+        if(do_only_multiplicity)
+            verboseOutput() << "Determinantes computed = " << TotDet << endl;
     }
 
     extreme_rays_and_deg1_check();
