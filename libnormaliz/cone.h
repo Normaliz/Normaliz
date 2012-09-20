@@ -34,6 +34,13 @@ using std::pair;
 template<typename Integer> class Full_Cone;
 template<typename Integer> class Matrix;
 
+// type for simplex, short in contrast to class Simplex
+template<typename Integer> struct SHORTSIMPLEX {
+    vector<key_t> key;                // full key of simplex
+    Integer height;                   // height of last vertex over opposite facet
+    Integer vol;                      // volume if computed, 0 else
+};
+
 template<typename Integer> struct STANLEYDATA {
     vector<key_t> key;
     Matrix<Integer> offsets;

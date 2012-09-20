@@ -38,45 +38,6 @@ namespace libnormaliz {
 using namespace std;
 
 //---------------------------------------------------------------------------
-//Private
-//---------------------------------------------------------------------------
-template<typename Integer>
-bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& new_element){
-    // the norm is at position dim
-    if (new_element[dim]==0) {
-        return true; // new_element=0
-    }
-    else {
-        size_t i,c=0;
-        typename list< vector<Integer> >::iterator j;
-        for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); ++j) {
-            if (new_element[dim]<2*(*j)[dim]) {
-                break; //new_element is not reducible;
-            }
-            else  {
-                if ((*j)[c]<=new_element[c]){
-                    for (i = 0; i < dim; i++) {
-                        if ((*j)[i]>new_element[i]){
-                            c=i;
-                            break;
-                        }
-                    }
-                    if (i==dim) {
-                        // move the reducer to the begin
-                        Hilbert_Basis.splice(Hilbert_Basis.begin(), Hilbert_Basis, j);
-                        return true;
-                    }
-                    //new_element is not in the Hilbert Basis
-                }
-            }
-        }
-        return false;
-    }
-}
-
-//---------------------------------------------------------------------------
-//Public
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
@@ -164,11 +125,13 @@ Matrix<Integer> Simplex<Integer>::read_support_hyperplanes() const{
 }
 
 //---------------------------------------------------------------------------
+// SimplexEvaluator
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
-: C(fc),
-  dim(C.dim),
+: C_ptr(&fc),
+  dim(fc.dim),
   det_sum(0),
   mult_sum(0),
   Generators(dim,dim),
@@ -185,11 +148,11 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   gen_degrees(dim),
   RS(dim,1)
 {
-    if (C.do_h_vector) {
+    if (C_ptr->do_h_vector) {
         // we need the generators to be sorted by degree
         size_t hv_max=0;
-        for (size_t i=C.nr_gen-dim; i<C.nr_gen; i++)
-            hv_max += C.gen_degrees[i];
+        for (size_t i=C_ptr->nr_gen-dim; i<C_ptr->nr_gen; i++)
+            hv_max += C_ptr->gen_degrees[i];
         hvector.resize(hv_max);
     }
 }
@@ -198,56 +161,57 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 
 size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
 size_t TotDet=0;
-    
+
 /* evaluates a simplex in regard to all data */
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Integer& height,
-                         const Integer& vol_computed) {
+Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
+    Integer& volume = s.vol;
+    vector<key_t>& key = s.key;
+    Full_Cone<Integer>& C = *C_ptr;
+
     bool do_only_multiplicity =
         C.do_only_multiplicity
-        || (height==1 && C.do_partial_triangulation);
-    
+        || (s.height==1 && C.do_partial_triangulation);
+
     size_t i,j;
 
-        
+
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++)
             gen_degrees[i] = C.gen_degrees[key[i]];
-    
+
     if(do_only_multiplicity){
-        if(vol_computed!=0)
-            volume=vol_computed;
-        else {
+        if(volume == 0) { // not known in advance
             for(i=0; i<dim; ++i)
                 Generators[i] = C.Generators[key[i]];
-                volume=Generators.vol_destructive();
-                #pragma omp atomic
-                TotDet++;
+            volume=Generators.vol_destructive();
+            #pragma omp atomic
+            TotDet++;
         }
-        addMult();
-        return volume;         
+        addMult(volume);
+        return volume;
     }  // done if only mult is asked for
     for(i=0; i<dim; ++i)
         Generators[i] = C.Generators[key[i]];
 
     bool unimodular=false;
     bool GDiag_computed=false;
-    bool potentially_unimodular=(height==1);   
-            
+    bool potentially_unimodular=(s.height==1);
+
     if(potentially_unimodular && C.isComputed(ConeProperty::Grading)){
         long g=0;
         for(i=0;i<dim;++i){
             g=gcd(g,gen_degrees[i]);
             if(g==1)
-                break;        
+                break;
         }
         potentially_unimodular=(g==1);
     }
 
     if(potentially_unimodular){ // very likely unimodular, Indicator computed first uses transpose of Gen
         for(i=0; i<dim; ++i)
-            TGenerators.write_column(i,C.Generators[key[i]]); 
+            TGenerators.write_column(i,C.Generators[key[i]]);
         RS.write_column(0,C.Order_Vector);  // right hand side
         TGenerators.solve_destructive_Sol(RS,TDiag,volume,Sol);
         for (i=0; i<dim; i++)
@@ -263,9 +227,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             #pragma omp atomic
             Ht1NonUni++;
     }
-    
+
     if (unimodular && !C.do_h_vector && !C.do_Stanley_dec) {
-        addMult();
+        addMult(volume);
         return volume;
     }
 
@@ -273,15 +237,15 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     // if potentially unimodular, we combine its computation with that of the i-th support forms for Ind[i]==0
     // stored in InvSol (transferred to InvGenSelCols later)
     // if unimodular and all Ind[i] !=0, then nothing is done here
-  
-    vector<key_t> Ind0_key;  //contains the indices i as above 
+
+    vector<key_t> Ind0_key;  //contains the indices i as above
     Ind0_key.reserve(dim-1);
-    
+
     if(potentially_unimodular)
         for(i=0;i<dim;i++)
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
-    if(!unimodular || Ind0_key.size()>0){      
+    if(!unimodular || Ind0_key.size()>0){
         for(i=0; i<dim; ++i)  // (uses Gen)
             Generators[i] = C.Generators[key[i]];
         if(!unimodular)
@@ -292,7 +256,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
                 RSmult[Ind0_key[i]][i]=1;
             Generators.solve_destructive_Sol(RSmult,GDiag,volume,InvSol);
             v_abs(GDiag);
-            GDiag_computed=true;         
+            GDiag_computed=true;
         }
         if(!GDiag_computed){
             Matrix<Integer> RSmult(dim,Ind0_key.size());
@@ -302,7 +266,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
     }
 
-    addMult();
+    addMult(volume);
 
 
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
@@ -310,28 +274,28 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     // of Indicator in case of potentially_unimodular==false (uses transpose of Gen)
 
     vector<key_t> Last_key;
-    Last_key.reserve(dim);       
+    Last_key.reserve(dim);
     if (!unimodular) {
-        for(i=0; i<dim; ++i) { 
+        for(i=0; i<dim; ++i) {
             TGenerators.write_column(i,C.Generators[key[i]]);
             if(GDiag[i]>1)
                 Last_key.push_back(i);
         }
-        
+
         size_t RScol;
         if(potentially_unimodular)
             RScol=Last_key.size();
         else
             RScol=Last_key.size()+1;
         Matrix<Integer> RSmult(dim,RScol);
-            
+
         for(i=0;i<Last_key.size();i++) // insert unit vectors
             RSmult[Last_key[i]][i]=1;
         if(!potentially_unimodular) // insert order vector if necessary
             RSmult.write_column(Last_key.size(),C.Order_Vector);
         TGenerators.solve_destructive_Sol(RSmult,TDiag,volume,Sol);
                 // Sol.print(cout);
-           
+
         for(i=0;i<Last_key.size();i++) // write solutions as selected rows of InvDen
             for(j=0;j<dim;j++){
                 InvGenSelRows[Last_key[i]][j]=Sol[j][i]%volume; //makes reduction mod volume easier
@@ -342,46 +306,46 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             for (i=0; i<dim; i++)
                 Indicator[i]=Sol[i][Last_key.size()];
     }
-    
+
 
         // InvGenSelRows.print(cout);exit(0);
-    
+
     // if potentially_unimodular==false  it remains to compute support forms for i
     // with Ind[i]>0 (if there are any)
 
-    
+
     if(!potentially_unimodular){
         for(i=0;i<dim;i++)
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
-        if(Ind0_key.size()>0){  
+        if(Ind0_key.size()>0){
             Generators=GenCopy;
             Matrix<Integer> RSmult(dim,Ind0_key.size());
             for(i=0;i<Ind0_key.size();i++) // insert unit vectors
                     RSmult[Ind0_key[i]][i]=1;
-            Generators.solve_destructive_Sol(RSmult,TDiag,volume,InvSol);  // keep GDiag from above     
+            Generators.solve_destructive_Sol(RSmult,TDiag,volume,InvSol);  // keep GDiag from above
         }
     }
-    
+
     if(Ind0_key.size()>0){
         #pragma omp atomic
         NonDecided++;
         #pragma omp atomic
         NonDecidedHyp+=Ind0_key.size();
     }
-    
+
     for(i=0;i<Ind0_key.size();i++) // insert selected columns of InvGen at right place
         for(j=0;j<dim;j++){
             InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
-    
+
     // prepare h-vector if necessary
     if (C.do_h_vector) {
         for (i=0; i<hvector.size(); i++) {
             hvector[i]=0;
         }
     }
-    
+
     Integer Test;
     size_t Deg=0;
     for(i=0;i<dim;i++)
@@ -407,7 +371,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             }
         }
     }
-    
+
     if(C.do_h_vector) {
         // count the 0-vector in h-vector with the right shift
         hvector[Deg]++;
@@ -426,16 +390,16 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         }
         for(i=0;i<dim;++i)
             if(Excluded[i])
-                (*StanleyMat)[0][i]=volume;                   
+                (*StanleyMat)[0][i]=volume;
     }
-    
+
     size_t StanIndex=1;  // 0 already filled if necessary
 
     if (unimodular) { // do_h_vector==true automatically here
         Hilbert_Series.add(hvector,gen_degrees);
         return volume;
     } // the unimodular case has been taken care of
-    
+
 
     // now we create and evaluate the points in par
     Integer norm;
@@ -444,8 +408,8 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
     typename list <vector <Integer> >::iterator c;
     size_t last;
     vector<Integer> point(dim,0);
- 
-    Matrix<Integer> elements(dim,dim); //all 0 matrix 
+
+    Matrix<Integer> elements(dim,dim); //all 0 matrix
     vector<Integer> help;
 
 
@@ -468,13 +432,13 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
         for (i = last+1; i <dim; i++) {
             point[i]=0;
             elements[i] = elements[last];
-        }    
-        
+        }
+
         norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
                 // it is used to sort the Hilbert basis candidates
         normG = 0;  // the degree according to the grading
         for (i = 0; i < dim; i++) {  // since generators have degree 1
-            norm+=elements[last][i]; 
+            norm+=elements[last][i];
             if(C.do_h_vector || C.do_deg1_elements) {
                 normG += elements[last][i]*gen_degrees[i];
             }
@@ -488,11 +452,11 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
                     Deg += gen_degrees[i];
                 }
             }
-            
+
             //count point in the h-vector
             hvector[Deg]++;
         }
-        
+
         if(C.do_Stanley_dec){
             (*StanleyMat)[StanIndex]=elements[last];
             for(i=0;i<dim;i++)
@@ -500,9 +464,9 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
                     (*StanleyMat)[StanIndex][i]+=volume;
             StanIndex++;
         }
-        
+
         // the case of Hilbert bases and degree 1 elements, only added if height >=2
-        if (!C.do_partial_triangulation || height >= 2) {
+        if (!C.do_partial_triangulation || s.height >= 2) {
             if (C.do_Hilbert_basis) {
                 Candidates.push_back(v_merge(elements[last],norm));
                 continue;
@@ -514,18 +478,18 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             }
         }
     }
-        
-    
+
+
     if(C.do_h_vector) {
         // #pragma omp critical(HSERIES)
         Hilbert_Series.add(hvector,gen_degrees);
     }
-    
+
     if(C.do_deg1_elements) {
         #pragma omp critical(HT1ELEMENTS)
         C.Deg1_Elements.splice(C.Deg1_Elements.begin(),Deg1_Elements);
     }
- 
+
     if(!C.do_Hilbert_basis)
         return volume;  // no local reduction in this case
 
@@ -540,7 +504,7 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
 
     //inverse transformation
     //some test for arithmetic overflow may be implemented here
-    
+
     typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
     while (jj != Hilbert_Basis.end()) {
         if (isDuplicate(*jj)) { //delete the element
@@ -551,18 +515,18 @@ Integer SimplexEvaluator<Integer>::evaluate(const vector<key_t>& key, const Inte
             v_scalar_division(*jj,volume);
             ++jj;
         }
-    } 
+    }
 
-    
+
     #pragma omp critical(CANDIDATES)
     C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
-        
+
     return volume;
 }
 
 template<typename Integer>
 bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
-    if (C.do_partial_triangulation) // we cannot use the criterion then
+    if (C_ptr->do_partial_triangulation) // we cannot use the criterion then
         return false;
 
     for (size_t i=0; i<dim; i++)
@@ -571,12 +535,15 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
     return false;
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-void SimplexEvaluator<Integer>::addMult() {
+void SimplexEvaluator<Integer>::addMult(const Integer& volume) {
+    if (volume==0) throw volume;
     det_sum += volume;
-    if (!C.isComputed(ConeProperty::Grading))
+    if (!C_ptr->isComputed(ConeProperty::Grading))
         return;
-    if (C.deg1_triangulation) {
+    if (C_ptr->deg1_triangulation) {
         mult_sum += to_mpz(volume);
     } else {
         mpz_class deg_prod=gen_degrees[0];
@@ -588,6 +555,44 @@ void SimplexEvaluator<Integer>::addMult() {
         mult_sum += mult;
     }
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& new_element){
+    // the norm is at position dim
+    if (new_element[dim]==0) {
+        return true; // new_element=0
+    }
+    else {
+        size_t i,c=0;
+        typename list< vector<Integer> >::iterator j;
+        for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); ++j) {
+            if (new_element[dim]<2*(*j)[dim]) {
+                break; //new_element is not reducible;
+            }
+            else  {
+                if ((*j)[c]<=new_element[c]){
+                    for (i = 0; i < dim; i++) {
+                        if ((*j)[i]>new_element[i]){
+                            c=i;
+                            break;
+                        }
+                    }
+                    if (i==dim) {
+                        // move the reducer to the begin
+                        Hilbert_Basis.splice(Hilbert_Basis.begin(), Hilbert_Basis, j);
+                        return true;
+                    }
+                    //new_element is not in the Hilbert Basis
+                }
+            }
+        }
+        return false;
+    }
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::getDetSum() const {

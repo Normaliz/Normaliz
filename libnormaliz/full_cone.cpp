@@ -513,7 +513,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
 
 
-    typename list<SHORTSIMPLEX>::iterator oldTriBack = --Triangulation.end();
+    typename list< SHORTSIMPLEX<Integer> >::iterator oldTriBack = --Triangulation.end();
     #pragma omp parallel private(i)  if(TriangulationSize>1000)
     {
     size_t k,l;
@@ -521,9 +521,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     size_t not_in_i=0;
     size_t facet_dim=dim-1;
     size_t nr_in_i=0;
-    list<SHORTSIMPLEX> Triangulation_kk;
+    list< SHORTSIMPLEX<Integer> > Triangulation_kk;
     
-    typename list<SHORTSIMPLEX>::iterator j;
+    typename list< SHORTSIMPLEX<Integer> >::iterator j;
     
     vector<key_t> key(dim);
     
@@ -618,9 +618,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 template<typename Integer>
 void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& height,
-            const Integer& mother_vol, list<SHORTSIMPLEX>& Triangulation){
+            const Integer& mother_vol, list< SHORTSIMPLEX<Integer> >& Triangulation){
 
-    SHORTSIMPLEX newsimplex;
+    SHORTSIMPLEX<Integer> newsimplex;
     newsimplex.key=key;
     newsimplex.height=height;
     newsimplex.vol=0;
@@ -634,21 +634,19 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
         tn = omp_get_ancestor_thread_num(1);
     
     if (do_only_multiplicity) {
-        if (mother_vol==1)
-            newsimplex.vol=height;
-        else {
-            // if(height==1){ 
-                for (size_t i=0;i<dim;++i)
-                    Top_Cone->HelpMat[tn][i]= Generators[key[i]];
-                newsimplex.vol=Top_Cone->HelpMat[tn].vol_destructive();
-                #pragma omp atomic
-                TotDet++;
-           // }
-                      
-       }
-       addMult(newsimplex.vol,newsimplex.key,tn);
-    }
+        // directly compute the volume
+        if (mother_vol==1) {
+            newsimplex.vol = height;
+        } else { // the determinant is computed in SimplexEvaluator
+            for(size_t i=0; i<dim; i++) // and needs the key in TopCone numbers
+                newsimplex.key[i]=Top_Key[newsimplex.key[i]];
+        }
             
+        if (keep_triangulation)
+            sort(newsimplex.key.begin(),newsimplex.key.end());
+        Top_Cone->SimplexEval[tn].evaluate(newsimplex);
+        newsimplex.key=key;
+    }
     
     if (keep_triangulation){
         Triangulation.push_back(newsimplex);
@@ -657,7 +655,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     
     bool Simpl_available=true;
 
-    typename list<SHORTSIMPLEX>::iterator F;
+    typename list< SHORTSIMPLEX<Integer> >::iterator F;
 
     if(Top_Cone->FS[tn].empty()){
         #pragma omp critical(FREESIMPL)
@@ -690,25 +688,6 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     }
     else
         Triangulation.push_back(newsimplex);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::addMult(Integer& volume, const vector<key_t>& key, const int& tn) {
-    if (!Top_Cone->isComputed(ConeProperty::Grading))
-        return;
-    if (Top_Cone->deg1_triangulation) {
-        Top_Cone->mult_sum[tn] += to_mpz(volume);
-    } else {
-        mpz_class deg_prod=gen_degrees[key[0]];
-        for (size_t i=1; i<dim; i++) {
-            deg_prod *= gen_degrees[key[i]];
-        }
-        mpq_class mult = to_mpz(volume);
-        mult /= deg_prod;
-        Top_Cone->mult_sum[tn] += mult;
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -1332,10 +1311,7 @@ void Full_Cone<Integer>::build_cone() {
 
     if(!is_pyramid && keep_triangulation)  // in this case triangulation now complete
         is_Computed.set(ConeProperty::Triangulation);  // and stored 
-    if(!is_pyramid && do_only_multiplicity)
-        for(int zi=0;zi<omp_get_max_threads();zi++)
-            multiplicity+=mult_sum[zi];
-               
+
 }
 
 //---------------------------------------------------------------------------
@@ -1468,7 +1444,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
     // cout << "In pyramid " << endl;
   
-    typename list<SHORTSIMPLEX>::iterator pyr_simp=Triangulation.begin();
+    typename list< SHORTSIMPLEX<Integer> >::iterator pyr_simp=Triangulation.begin();
     for(;pyr_simp!=Triangulation.end();pyr_simp++)
         for(i=0;i<dim;i++)
             pyr_simp->key[i]=Top_Key[pyr_simp->key[i]];
@@ -1507,9 +1483,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     if(do_evaluation && !do_only_multiplicity) {
     #pragma omp parallel 
     {
-        typename list<SHORTSIMPLEX>::iterator s = Triangulation.begin();
+        typename list< SHORTSIMPLEX<Integer> >::iterator s = Triangulation.begin();
         size_t spos=0;
-        SimplexEvaluator<Integer> simp(*this);
+        int tn = omp_get_thread_num();
         #pragma omp for schedule(dynamic) 
         for(size_t i=0; i<TriangulationSize; i++){
             for(; i > spos; ++spos, ++s) ;
@@ -1517,7 +1493,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
             if(keep_triangulation || do_Stanley_dec)
                 sort(s->key.begin(),s->key.end());
-            s->vol = simp.evaluate(s->key, s->height, s->vol);
+            SimplexEval[tn].evaluate(*s);
             if (verbose) {
                 #pragma omp critical(VERBOSE)
                 while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
@@ -1526,15 +1502,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 }
             }
         }
-        // get accumulated data from the SimplexEvaluator
-        #pragma omp critical(MULTIPLICITY)
-        multiplicity += simp.getMultiplicitySum(); 
-        if (do_h_vector) {
-            #pragma omp critical(HSERIES)
-            Hilbert_Series += simp.getHilbertSeriesSum();
-        }
-        #pragma omp critical(DETSUM)
-        detSum += simp.getDetSum();
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;
@@ -1580,10 +1547,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     // set needed do_ vars
     if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
         do_evaluation = true;
-    // if keep_triangulation==false we must first find a grading if it is needed
-    if (!keep_triangulation && !isComputed(ConeProperty::Grading)
-        && (do_triangulation || do_deg1_elements || do_h_vector)) {
-        deg1_check();
+    // look for a grading if it is needed
+    deg1_check();
+    if (!isComputed(ConeProperty::Grading) && (do_multiplicity || do_deg1_elements || do_h_vector)) {
         if(!deg1_generated && !isComputed(ConeProperty::ExtremeRays)) {
             if (verbose) {
                 verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
@@ -1600,6 +1566,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     set_degrees();
     sort_gens_by_degree();
+
+    if (!is_pyramid)
+        SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
 
     /***** Main Work is done in build_cone() *****/
     build_cone();  // evaluates if keep_triangulation==false
@@ -1622,6 +1591,17 @@ void Full_Cone<Integer>::primal_algorithm(){
         evaluate_triangulation();
     }
     FreeSimpl.clear();
+
+    // collect accumulated data from the SimplexEvaluators
+    if(!is_pyramid) {
+        for (int zi=0; zi<omp_get_max_threads(); zi++) {
+            detSum += SimplexEval[zi].getDetSum();
+            multiplicity += SimplexEval[zi].getMultiplicitySum(); 
+            if (do_h_vector) {
+                Hilbert_Series += SimplexEval[zi].getHilbertSeriesSum();
+            }
+        }
+    }
     
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);
@@ -2418,7 +2398,7 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
         }
     }
     typename list< vector<Integer> >::const_iterator h;
-    typename list<SHORTSIMPLEX>::const_iterator t;
+    typename list< SHORTSIMPLEX<Integer> >::const_iterator t;
     for (h =Support_Hyperplanes.begin(); h != Support_Hyperplanes.end(); ++h){
         if ((*h)[dim-1]!=0) {
             for (t =Triangulation.begin(); t!=Triangulation.end(); ++t){
@@ -2532,10 +2512,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     do_all_hyperplanes=true;
     parallel_in_pyramid=true;
-    for(int i=0; i<omp_get_max_threads();++i){
-        HelpMat.push_back(Matrix<Integer>(dim,dim));
-        mult_sum.push_back(0);
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -2741,7 +2717,7 @@ void Full_Cone<Integer>::getTriangulation(list< vector<key_t> >& Triang, list<In
     Triang.clear();
     TriangVol.clear();
     vector<key_t> key(dim);
-    typename list<SHORTSIMPLEX>::const_iterator l;
+    typename list< SHORTSIMPLEX<Integer> >::const_iterator l;
     for (l =Triangulation.begin(); l != Triangulation.end(); l++) {
         key=l->key;
         Triang.push_back(key);

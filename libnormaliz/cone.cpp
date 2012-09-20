@@ -823,7 +823,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();
         Triangulation = vector< pair<vector<key_t>, Integer> >(tri_size);
-        typename Full_Cone<Integer>::SHORTSIMPLEX simp;
+        SHORTSIMPLEX<Integer> simp;
         for (size_t i = 0; i<tri_size; ++i) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);

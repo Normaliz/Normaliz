@@ -39,7 +39,6 @@ using std::pair;
 using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
-template<typename Integer> struct STANLEYDATA;
 
 template<typename Integer>
 class Full_Cone {
@@ -84,26 +83,19 @@ class Full_Cone {
     vector<long> gen_degrees;  // will contain the degrees of the generators
 
     friend class Cone<Integer>;
-    friend class Simplex<Integer>;
     friend class SimplexEvaluator<Integer>;
     
-    struct SHORTSIMPLEX{                   // type for simplex, short in contrast to class Simplex
-        vector<key_t> key;                // full key of simplex
-        Integer height;                    // height of last vertex over opposite facet
-        Integer vol;                      // volume if computed, 0 else
-    };
-    
-    // list<SHORTSIMPLEX> CheckTri;
-    list <SHORTSIMPLEX> Triangulation; // triangulation of cone
+    // list< SHORTSIMPLEX<Integer> > CheckTri;
+    list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
     size_t TriangulationSize;          // number of elements in Triangulation, for efficiency
     Integer detSum;                  // sum of the det
 
-    vector<typename list <SHORTSIMPLEX>::iterator> TriSectionFirst;   // first simplex with lead vertex i
-    vector<typename list <SHORTSIMPLEX>::iterator> TriSectionLast;     // last simplex with lead vertex i
+    vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionFirst;   // first simplex with lead vertex i
+    vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionLast;     // last simplex with lead vertex i
     vector<key_t> VertInTri;               // generators in the order in which they are inserted
     
-    list<SHORTSIMPLEX> FreeSimpl;           // list of short simplices no longer in use, kept for recycling
-    vector<list<SHORTSIMPLEX> > FS;
+    list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices no longer in use, kept for recycling
+    vector<list< SHORTSIMPLEX<Integer> > > FS;
        
     struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
@@ -132,8 +124,8 @@ class Full_Cone {
     vector<size_t> nrPyramids; // number of pyramids on the various levels
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_in_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
-    vector< Matrix<Integer> > HelpMat; // prepared matrices for computations
-    vector<mpq_class> mult_sum;
+
+    vector< SimplexEvaluator<Integer> > SimplexEval;
     list< STANLEYDATA<Integer> > StanleyDec;
     
 /* ---------------------------------------------------------------------------
@@ -152,7 +144,7 @@ class Full_Cone {
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
-                                  list<SHORTSIMPLEX>& Triangulation);
+                                  list< SHORTSIMPLEX<Integer> >& Triangulation);
     
     void build_cone();
     

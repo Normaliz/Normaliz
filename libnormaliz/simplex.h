@@ -31,6 +31,7 @@
 #include <list>
 
 #include "libnormaliz.h"
+#include "cone.h"
 #include "HilbertSeries.h"
 
 //---------------------------------------------------------------------------
@@ -76,9 +77,9 @@ public:
 
 template<typename Integer>
 class SimplexEvaluator {
-    Full_Cone<Integer>& C;
+    Full_Cone<Integer> * C_ptr;
     size_t dim;
-    Integer volume;
+    //Integer volume;
     Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
     Matrix<Integer> Generators;
@@ -88,7 +89,7 @@ class SimplexEvaluator {
     Matrix<Integer> InvGenSelCols; // selected columns of inverse of Gen
     Matrix<Integer> Sol;
     Matrix<Integer> InvSol;
-    vector< Integer > GDiag; // diagonal of generaor matrix after trigonalization
+    vector< Integer > GDiag; // diagonal of generator matrix after trigonalization
     vector< Integer > TDiag; // diagonal of transpose of generaor matrix after trigonalization
     vector< bool > Excluded;
     vector< Integer > Indicator; 
@@ -108,7 +109,7 @@ class SimplexEvaluator {
 
     bool isDuplicate(const vector<Integer>& cand) const;
 
-	void addMult();
+	void addMult(const Integer& volume);
 
 //---------------------------------------------------------------------------
 
@@ -118,7 +119,7 @@ public:
 
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
-    Integer evaluate(const vector<key_t>& key, const Integer& height, const Integer& vol_computed);
+    Integer evaluate(SHORTSIMPLEX<Integer>& s);
 
     // returns sum of the determinants of all evaluated simplices
     Integer getDetSum() const;
