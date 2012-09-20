@@ -5,7 +5,7 @@ class CyclRatFunct {
 // which is of course equivalent
 // the numerator is a polynomial in its ring
 // the denominator is an integer vector that at index i
-// gives the multiplicity of 1-t^i in the denominatoe
+// gives the multiplicity of 1-t^i in the denominator
 // (the entry at index 0 is not used and must always be equal to 0)
 public:
 

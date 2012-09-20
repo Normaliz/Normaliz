@@ -68,6 +68,8 @@ public:
     HilbertSeries();
     // Constructor, creates num/denom, see class description for format
     HilbertSeries(const vector<num_t>& num, const vector<denom_t>& gen_degrees);
+    // Constructor, creates num/denom, see class description for format
+    HilbertSeries(const vector<mpz_class>& num, const map<long, denom_t>& denom);
 
     // resets to 0/1
     void reset();

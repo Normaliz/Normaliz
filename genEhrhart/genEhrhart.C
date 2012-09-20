@@ -268,7 +268,7 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
         }
     }
     
-   size_t deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
+   long deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
    out  << endl << endl << "Degree of (quasi)polynomial: " << deg << endl;
 
    out << endl << "Expected degree:" << virtDeg << endl;
@@ -282,19 +282,8 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
    out << genMultQ << endl;
 }
 
-long long longLong(BigInt B){
-    string conv;
-    convert(conv,B);
-    const char* CS= conv.c_str();
-    long long r;
-    sscanf(CS,"%lld",&r);
-    return(r); 
-} 
-
-mpz_class mpz(BigInt B){
-    string conv;
-    convert(conv,B);
-    return(mpz_class(conv));  
+mpz_class mpz(BigInt B) {
+    return(mpz_class(mpzref(B)));  
 }
 
 libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& commonDen)
@@ -312,15 +301,15 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   commonDen=mpz(commonDenBI);   // convert it to mpz_class
   
   BigInt HC2;
-  vector<long long> HCoeff3;
+  vector<mpz_class> HCoeff3;
   HCoeff3.resize(HCoeff0.size()); 
   for(i=0;i<HCoeff1.size();++i){
     HC2=num(HCoeff1[i]*commonDenBI);        // to BigInt
-    HCoeff3[i]=longLong(HC2);               // to long long 
+    HCoeff3[i]=mpz_class(mpzref(HC2));      // to mpz_class 
   }
 
   vector<long> denomDeg=denom2degrees(H.denom);
-  libnormaliz::HilbertSeries HS(HCoeff3,denomDeg); 
+  libnormaliz::HilbertSeries HS(HCoeff3,count_in_map<long, long>(denomDeg)); 
   HS.simplify();
   return(HS);
 } 

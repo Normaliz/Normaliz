@@ -8,11 +8,8 @@ include ../Makefile.configuration
 ALL_C=$(wildcard *.C)
 ALL_EXECS=$(ALL_C:.C=)
 
-.PHONY: default
-default: nmzIntegrate
-
 # Rule for compiling and linking C++ code in *.C files
-%: %.C
+nmzIntegrate: nmzIntegrate.C nmzIntInput.C nmzIntPoly.C cyclRatFunct.C genEhrhart.C nmzIntegral.C 
 	@echo "Compiling `basename $@`"
 	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(COCOA_LIB)  -lgmpxx -lgmp
 

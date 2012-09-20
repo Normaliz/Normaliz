@@ -55,11 +55,19 @@ HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_
     add(numerator, gen_degrees);
 }
 
+// Constructor, creates num/denom, see class description for format
+HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long, denom_t>& denominator) {
+    num = numerator;
+    denom = denominator;
+    is_simplified = false;
+}
+
 
 void HilbertSeries::reset() {
     num.clear();
     num.push_back(0);
     denom.clear();
+    denom_classes.clear();
     is_simplified = false;
 }
 

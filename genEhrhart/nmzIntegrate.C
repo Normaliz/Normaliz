@@ -2,8 +2,6 @@
 
 #include "CoCoA/library.H"
 using namespace CoCoA;
-using namespace std;
-
 
 #include <fstream> 
 // #include <sstream>                
@@ -11,21 +9,18 @@ using namespace std;
 #include <omp.h>
 
 #include "../libnormaliz/HilbertSeries.h"
-// #include "../libnormaliz/general.h"
 #include "../libnormaliz/matrix.h"
 // #include "../libnormaliz/vector_operations.h"
 #include "../libnormaliz/map_operations.h"
-#include "../output.h"
  
-    
-#include "nmzIntInput.C"
+using namespace std;
+using namespace libnormaliz;
 
+#include "nmzIntInput.C"
 #include "nmzIntPoly.C"
 
 #include "cyclRatFunct.C"
-
 #include "genEhrhart.C"
-
 #include "nmzIntegral.C"                 
 
 
