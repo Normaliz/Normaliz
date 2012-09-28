@@ -132,7 +132,7 @@ ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
         set(ConeProperty::DualMode);
         break;
     default:
-        throw NormalizException();
+        throw FatalException();
         break;
     }
     return *this;

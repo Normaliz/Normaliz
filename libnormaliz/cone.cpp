@@ -583,7 +583,7 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_generators();
     if (!isComputed(ConeProperty::Generators)) {
         errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
-        throw NormalizException();
+        throw FatalException();
     }
 
     ToCompute.reset(is_Computed); // already computed
@@ -739,7 +739,7 @@ void Cone<Integer>::compute_dual() {
 
     if (!isComputed(ConeProperty::SupportHyperplanes)) {
         errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
-        throw NormalizException();
+        throw FatalException();
     }
 
     size_t i,j;

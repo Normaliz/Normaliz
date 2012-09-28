@@ -2459,13 +2459,13 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
-        throw NormalizException();
+        throw BadInputException();
     }
     Generators = M;
     nr_gen=Generators.nr_of_rows();
     if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {
         error_msg("To many generators to fit in range of key_t!");
-        throw NormalizException();
+        throw FatalException();
     }
     //make the generators coprime and remove 0 rows
     vector<Integer> gcds = Generators.make_prime();

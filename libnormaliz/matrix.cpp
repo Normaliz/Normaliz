@@ -1068,7 +1068,7 @@ void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
     }
 
     if (denom==0) { 
-        throw NormalizException(); //TODO welche Exception?
+        throw BadInputException(); //TODO welche Exception?
     }
 
     denom=Iabs(denom);
