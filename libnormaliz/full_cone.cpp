@@ -1925,6 +1925,8 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
     
     for(i=0;i<nr_gen;++i){
         Extreme_Rays[i]=false;
+        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
+            continue;
         j=0;
         gen_in_hyperplanes.clear();
         for(s=Support_Hyperplanes.begin();s!=Support_Hyperplanes.end();++s){
@@ -1966,6 +1968,8 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     for (i = 0; i <nr_gen; i++) {
         k=0;
         Extreme_Rays[i]=true;
+        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
+            continue;
         s=Support_Hyperplanes.begin();
         for (j = 0; j <nc; ++j,++s) {
             if (v_scalar_product(Generators[i],*s)==0) {
@@ -2204,7 +2208,8 @@ void Full_Cone<Integer>::global_reduction() {
     typename list <vector<Integer> >::iterator c;
     
     for (size_t i = 0; i <nr_gen; i++) {
-        Candidates.push_front(Generators.read(i));
+        if (in_triang[i])
+            Candidates.push_front(Generators.read(i));
     }
 /*    if(verbose) verboseOutput()<<"sorting the candidates... "<<flush;
     Candidates.sort();
@@ -2467,10 +2472,25 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         error_msg("To many generators to fit in range of key_t!");
         throw FatalException();
     }
-    //make the generators coprime and remove 0 rows
+    //make the generators coprime, remove 0 rows and duplicates
     vector<Integer> gcds = Generators.make_prime();
-    vector<key_t> key=v_non_zero_pos(gcds);
-    if (key.size() < nr_gen) {
+    bool remove_some = false;
+    vector<bool> key(nr_gen, true);
+    for (size_t i = 0; i<nr_gen; i++) {
+        if (gcds[i] == 0) {
+           key[i] = false;
+           remove_some = true;
+           continue;
+        }
+        for (size_t j=0; j<i; j++) {
+            if (Generators[i] == Generators[j]) {
+                key[i] = false;
+                remove_some = true;
+                break;
+            }
+        }
+    }
+    if (remove_some) {
         Generators=Generators.submatrix(key);
         nr_gen=Generators.nr_of_rows();
     }
