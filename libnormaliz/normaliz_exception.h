@@ -25,22 +25,26 @@
 namespace libnormaliz {
 
 class NormalizException: public std::exception {
+    public:
 	virtual const char* what() const throw() = 0;
 };
 
 class ArithmeticException: public NormalizException {
+    public:
 	virtual const char* what() const throw() {
 		return "Arithmetic Overflow detected, try a bigger integer type!";
 	}
 };
 
 class BadInputException: public NormalizException {
+    public:
 	virtual const char* what() const throw() {
 		return "Some error in the normaliz input data detected!";
 	}
 };
 
 class FatalException: public NormalizException {
+    public:
 	virtual const char* what() const throw() {
 		return "Fatal error! This should not happen, please contact the developers.";
 	}

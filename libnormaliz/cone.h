@@ -81,9 +81,11 @@ public:
 //                           make computations
 //---------------------------------------------------------------------------
 
-    void compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
-    void compute(ConeProperties ToCompute);
-    void compute(ConeProperty::Enum prop);
+    // return what was NOT computed
+    ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
+    ConeProperties compute(ConeProperties ToCompute);
+//is done by compiler throug creation of CPies   // return true iff it could be computed
+    ConeProperties compute(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
 //                         check what is computed
@@ -174,7 +176,7 @@ private:
     /* compute the generators using the support hyperplanes */
     void compute_generators();
     /* compute method for the dual_mode, used in compute(mode) */
-    void compute_dual();
+    ConeProperties compute_dual();
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     void extract_data(Full_Cone<Integer>& FC);
