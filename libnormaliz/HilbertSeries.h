@@ -104,6 +104,8 @@ public:
 private:
     // collected data in denominator classes
     mutable map< vector<denom_t>, vector<num_t> > denom_classes;
+    // add the classes if they get too many
+    static const size_t DENOM_CLASSES_BOUND = 50000;
 
     // the numerator, repr. as vector of coefficients, the h-vector
     mutable vector<mpz_class> num;
