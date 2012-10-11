@@ -1197,7 +1197,7 @@ void Full_Cone<Integer>::build_top_cone() {
     
     if(dim==0)
         return;
-    if (verbose && !is_pyramid) {
+    if (verbose) {
         verboseOutput()<<endl<<"************************************************************"<<endl;
         verboseOutput()<<"starting primal algorithm ";
         if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
@@ -1572,7 +1572,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     // look for a grading if it is needed
     deg1_check();
     if (!isComputed(ConeProperty::Grading) && (do_multiplicity || do_deg1_elements || do_h_vector)) {
-        if(!deg1_generated && !isComputed(ConeProperty::ExtremeRays)) {
+        if (!isComputed(ConeProperty::ExtremeRays)) {
             if (verbose) {
                 verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
             }
@@ -1584,6 +1584,8 @@ void Full_Cone<Integer>::primal_algorithm(){
             is_Computed.reset(ConeProperty::SupportHyperplanes);
             for(size_t i=0;i<nr_gen;i++)
                 in_triang[i]=false;
+            Done = false;
+            nextGen = -1;
         }
     }
     set_degrees();
@@ -1778,32 +1780,6 @@ void Full_Cone<Integer>::set_degrees() {
 }
     
 //---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
-    check_pointed();
-    if(!pointed) return;
-    compute_extreme_rays();
-    deg1_check();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::set_degrees() {
-    if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
-    {
-        gen_degrees.resize(nr_gen);
-        vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
-        for (size_t i=0; i<nr_gen; i++) {
-            if (gen_degrees_Integer[i] < 1) {
-                errorOutput() << "Grading gives non-positive value " << gen_degrees_Integer[i] << " for generator " << i+1 << "." << endl;
-                throw BadInputException();
-            }
-            gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
-        }
-    }
-}
 
 template<typename Integer>
 void Full_Cone<Integer>::sort_gens_by_degree() {

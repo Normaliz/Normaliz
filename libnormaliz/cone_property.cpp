@@ -192,7 +192,6 @@ std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CP.CPs.test(i)) out << toString(static_cast<ConeProperty::Enum>(i)) << " ";
     }
-    out << std::endl;
     return out;
 }
 
