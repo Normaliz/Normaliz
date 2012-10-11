@@ -165,13 +165,13 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
     if (dim!=M.rank()) {
         errorOutput()<<"Cone_Dual_Mode error: Matrix<Integer> with rank = number of columns needed in the constructor of the object Cone_Dual_Mode<Integer>.\nProbable reason: The Cone is not pointed!"<<endl;
         M.pretty_print(errorOutput());
-        throw NormalizException();
+        throw BadInputException();
     }
     SupportHyperplanes = M;
     nr_sh=SupportHyperplanes.nr_of_rows();
     if (nr_sh != static_cast<size_t>(static_cast<key_t>(nr_sh))) {
         errorOutput()<<"To many support hyperplanes to fit in range of key_t!"<<endl;
-        throw NormalizException();
+        throw FatalException();
     }
     //make the generators coprime and remove 0 rows
     vector<Integer> gcds = SupportHyperplanes.make_prime();

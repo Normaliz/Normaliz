@@ -193,6 +193,8 @@ vector<RingElem> homogComps(const RingElem& F){
     vector<RingElem> c(deg(F)+1,zero(P));
     long j,k;
 
+    //TODO there is a leading_term() function coming in cocoalib
+    //TODO maybe there will be even a "splice_leading_term"
     SparsePolyIter i=BeginIter(F);
     for (; !IsEnded(i); ++i){
         exponents(v,PP(i));

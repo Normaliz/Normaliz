@@ -575,7 +575,7 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::compute(ConeProperties ToCompute) {
+ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::DualMode))
         compute_dual();
 
@@ -583,18 +583,18 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
     compute_generators();
     if (!isComputed(ConeProperty::Generators)) {
         errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
-        throw NormalizException();
+        throw FatalException();
     }
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
-        return;
+        return ToCompute;
     }
 
     //TODO workaround for zero cones :(
     //die dimension bleibt in der liste nicht gespeichert, wenn sie leer ist, darum passt es dann beim transformieren nicht
     if(Generators.size()==0) {
-        return;
+        return ToCompute;
     }
 
     /* add preconditions */
@@ -683,6 +683,7 @@ void Cone<Integer>::compute(ConeProperties ToCompute) {
         errorOutput() << "Warning: Cone could not compute everything, that it was asked for!"<<endl;
         errorOutput() << "Missing: " << ToCompute << endl;
     }
+    return ToCompute;
 }
 
 
@@ -716,18 +717,18 @@ void Cone<Integer>::compute_generators() {
 
 
 template<typename Integer>
-void Cone<Integer>::compute(ComputationMode mode) {
+ConeProperties Cone<Integer>::compute(ComputationMode mode) {
     if (mode == Mode::dual) {
-        compute_dual();
+        return compute_dual();
     } else {
         ConeProperties cps;
         cps.set(mode);
-        compute(cps);
+        return compute(cps);
     }
 }
 
 template<typename Integer>
-void Cone<Integer>::compute_dual() {
+ConeProperties Cone<Integer>::compute_dual() {
     if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
         if (verbose) {
             verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
@@ -739,7 +740,7 @@ void Cone<Integer>::compute_dual() {
 
     if (!isComputed(ConeProperty::SupportHyperplanes)) {
         errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
-        throw NormalizException();
+        throw FatalException();
     }
 
     size_t i,j;
@@ -782,6 +783,7 @@ void Cone<Integer>::compute_dual() {
     FC.dual_mode();
     extract_data(FC);
     is_Computed.set(ConeProperty::DualMode);
+    return ConeProperties();
 }
 
 template<typename Integer>

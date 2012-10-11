@@ -16,11 +16,16 @@
  *
  */
 
+#include <vector>
+#include <string>
+
 #include "cone_property.h"
 #include "normaliz_exception.h"
 
 namespace libnormaliz {
 using std::bitset;
+using std::vector;
+using std::string;
 
 
 /* Constructors */
@@ -79,14 +84,6 @@ size_t ConeProperties::count () const {
     return CPs.count();
 }
 
-/* print it in a nice way */
-std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
-    for (size_t i=0; i<ConeProperty::EnumSize; i++) {
-        if (CP.CPs.test(i)) out << i << " ";
-    }
-    out << std::endl;
-    return out;
-}
 
 /* this method sets all fields that should be computed in that mode */
 ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
@@ -132,10 +129,72 @@ ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
         set(ConeProperty::DualMode);
         break;
     default:
-        throw NormalizException();
+        throw FatalException();
         break;
     }
     return *this;
 }
+
+/* conversion */
+namespace { 
+    // only to initialize the CPN in ConePropertyNames
+    vector<string> initializeCPN() {
+        vector<string> CPN(ConeProperty::EnumSize);
+        if (ConeProperty::EnumSize != 21) { //to detect changes in size of Enum
+            errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
+            throw FatalException();
+        }
+        CPN.at(ConeProperty::Generators) = "Generators";
+        CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
+        CPN.at(ConeProperty::SupportHyperplanes) = "SupportHyperplanes";
+        CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
+        CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
+        CPN.at(ConeProperty::Triangulation) = "Triangulation";
+        CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
+        CPN.at(ConeProperty::HilbertBasis) = "HilbertBasis";
+        CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
+        CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
+        CPN.at(ConeProperty::Grading) = "Grading";
+        CPN.at(ConeProperty::IsPointed) = "IsPointed";
+        CPN.at(ConeProperty::IsDeg1Generated) = "IsDeg1Generated";
+        CPN.at(ConeProperty::IsDeg1ExtremeRays) = "IsDeg1ExtremeRays";
+        CPN.at(ConeProperty::IsDeg1HilbertBasis) = "IsDeg1HilbertBasis";
+        CPN.at(ConeProperty::IsIntegrallyClosed) = "IsIntegrallyClosed";
+        CPN.at(ConeProperty::GeneratorsOfToricRing) = "GeneratorsOfToricRing";
+        CPN.at(ConeProperty::ReesPrimary) = "ReesPrimary";
+        CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
+        CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
+        CPN.at(ConeProperty::DualMode) = "DualMode";
+        return CPN;
+    }
+ 
+    const vector<string>& ConePropertyNames() {
+        static vector<string> CPN(initializeCPN());
+        return CPN;
+    }
+}
+
+ConeProperty::Enum toConeProperty(const std::string& s) {
+    const vector<string>& CPN = ConePropertyNames();
+    for (size_t i=0; i<ConeProperty::EnumSize; i++) {
+        if (CPN[i] == s) return static_cast<ConeProperty::Enum>(i);
+    }
+    errorOutput() << "Unknown ConeProperty string \"" << s << "\"" << std::endl;
+    throw BadInputException();
+}
+
+const std::string& toString(ConeProperty::Enum cp) {
+    return ConePropertyNames()[cp];
+}
+
+/* print it in a nice way */
+std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
+    for (size_t i=0; i<ConeProperty::EnumSize; i++) {
+        if (CP.CPs.test(i)) out << toString(static_cast<ConeProperty::Enum>(i)) << " ";
+    }
+    out << std::endl;
+    return out;
+}
+
 
 } /* end namespace libnormaliz */

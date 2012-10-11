@@ -70,8 +70,8 @@ public:
 
     /* Sets the linear form which is used to grade. 
      * It has to be an N-grading, i.e. all generators must have a value >=1.
-     * If it is not, a NormalizException will be thrown at the time of 
-     * detection which can be in this method or later!
+     * If it is not, a subclass of NormalizException will be thrown at the 
+     * time of detection which can be in this method or later!
      * It will delete all data from the cone that depend on the grading!
      */
     void setGrading (const vector<Integer>& lf);
@@ -81,9 +81,11 @@ public:
 //                           make computations
 //---------------------------------------------------------------------------
 
-    void compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
-    void compute(ConeProperties ToCompute);
-    void compute(ConeProperty::Enum prop);
+    // return what was NOT computed
+    ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
+    ConeProperties compute(ConeProperties ToCompute);
+//is done by compiler throug creation of CPies   // return true iff it could be computed
+    ConeProperties compute(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
 //                         check what is computed
@@ -174,7 +176,7 @@ private:
     /* compute the generators using the support hyperplanes */
     void compute_generators();
     /* compute method for the dual_mode, used in compute(mode) */
-    void compute_dual();
+    ConeProperties compute_dual();
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     void extract_data(Full_Cone<Integer>& FC);

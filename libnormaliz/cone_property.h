@@ -51,8 +51,8 @@ namespace ConeProperty {
         ReesPrimaryMultiplicity,
         StanleyDec,
         DualMode,
-        EnumSize //this has to be the last entry, to get the number of entries in the enum
-    };
+        EnumSize // this has to be the last entry, to get the number of entries in the enum
+    }; // remember to change also the string conversion function if you change this enum
 }
 
 class ConeProperties {
@@ -89,6 +89,9 @@ private:
 
 };
 
+// conversion to/from strings
+ConeProperty::Enum toConeProperty(const std::string&);
+const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
 
 }

@@ -77,7 +77,9 @@ void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_deg
     sort(sorted_gd.begin(), sorted_gd.end());
     if (gen_degrees.size() > 0) 
         assert(sorted_gd[0]>0); //TODO InputException?
-    poly_add_to(denom_classes[sorted_gd],  num);
+    poly_add_to(denom_classes[sorted_gd], num);
+    if (denom_classes.size() > DENOM_CLASSES_BOUND)
+        collectData();
     is_simplified = false;
 }
 
@@ -384,7 +386,7 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
         else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i;
     }
     out << " ) / (";
-    if (HS.denom.size()==0) {
+    if (HS.denom.empty()) {
         out << " 1";
     }
     map<long, denom_t>::const_iterator it;
