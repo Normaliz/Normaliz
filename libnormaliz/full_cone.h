@@ -42,9 +42,13 @@ template<typename Integer> class Cone;
 
 template<typename Integer>
 class Full_Cone {
+
+    friend class Cone<Integer>;
+    friend class SimplexEvaluator<Integer>;
+    
     size_t dim;
     size_t nr_gen;
-    size_t hyp_size;
+    size_t hyp_size; // not used at present
     
     bool pointed;
     bool deg1_generated;
@@ -77,13 +81,10 @@ class Full_Cone {
     vector<bool> in_triang;
     
     list<vector<Integer> > Hilbert_Basis;
-    list<vector<Integer> > Candidates;
+    list<vector<Integer> > Candidates;   // for the Hilbert basis
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<long> gen_degrees;  // will contain the degrees of the generators
-
-    friend class Cone<Integer>;
-    friend class SimplexEvaluator<Integer>;
     
     // list< SHORTSIMPLEX<Integer> > CheckTri;
     list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
@@ -92,42 +93,65 @@ class Full_Cone {
 
     vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionLast;     // last simplex with lead vertex i
-    vector<key_t> VertInTri;               // generators in the order in which they are inserted
+    vector<key_t> VertInTri;               // generators in the order in which they are inserted into the triangulation
     
-    list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices no longer in use, kept for recycling
-    vector<list< SHORTSIMPLEX<Integer> > > FS;
-       
+    list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
+    vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
+
+    vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
+           
     struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
-        Integer ValNewGen;                 // value of linear form on the generator to be added
-        // Integer ValPrevGen;                 // value on last generator added
+        Integer ValNewGen;                 // value of linear form on the generator to be added                 // value on last generator added
     };
     
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
     
-    vector<Integer> Order_Vector;  // vector for inclusion-exclusion
+    vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone 
 
-    Full_Cone<Integer>* Top_Cone;     // Reference to cone on top level
-    vector<key_t> Top_Key;  // Indices of generators w.r.t Top_Cone
+    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition 
+
+    Full_Cone<Integer>* Top_Cone;     // reference to cone on top level
+    vector<key_t> Top_Key;  // indices of generators w.r.t Top_Cone
     
+    // control of pyramids and recusrion
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
-    bool is_pyramid;
+
+    bool is_pyramid; // false for top cone
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
-    
-    size_t totalNrSimplices;   // total number of simplices evaluated
-    
-    size_t nrSimplicialPyr;
-    size_t totalNrPyr;
+    size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
+    bool recursion_allowed;  // to allow or block recursive formation of pytamids
+    bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid   
+
+    bool supphyp_recursion; // true if we have gone to pyramids because of support hyperplanes
+    bool tri_recursion; // true if we have gone to pyramids because of triangulation
     
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
     vector<size_t> nrPyramids; // number of pyramids on the various levels
-    bool recursion_allowed;  // to allow or block recursive formation of pytamids
-    bool parallel_in_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
 
-    vector< SimplexEvaluator<Integer> > SimplexEval;
-    list< STANLEYDATA<Integer> > StanleyDec;
+    long nextGen; // the next generator to be processed
+    size_t old_nr_supp_hyps; // must be remembered since we may leave extend_cone 
+                             // before discarding "negative" hyperplanes
     
+    Full_Cone<Integer>* Mother;       // reference to the mother of the pyramid
+    boost::dynamic_bitset<> in_Pyramid; // indicates which generators of the MOTHER are in pyramid
+    size_t new_generator; // indicates which generator of mother cone is apex of pyramid 
+       
+    vector<list<Full_Cone<Integer> > > RecPyrs; // storage for recursive pyramids
+    vector<size_t> nrRecPyrs;
+    
+    size_t nrRecPyramidsDue;  // number of recursive pyramids created from this at the current extension
+    size_t nrRecPyramidsDone; // number of recursive pyramids that have returned supphyps
+    bool allRecPyramidsBuilt; // indicates that all recursive pyramids from the current generator have been built    
+
+    bool Done; // true if this cone has been finished
+
+    // statistics
+    size_t totalNrSimplices;   // total number of simplices evaluated
+    size_t nrSimplicialPyr;
+    size_t totalNrPyr;
+
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
@@ -137,22 +161,25 @@ class Full_Cone {
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
-    void process_pyramid(const vector<key_t> Pyramid_key, const boost::dynamic_bitset<> in_Pyramid, 
-                      const size_t new_generator, Integer height, const bool recursive);
+    void process_pyramid(const vector<key_t>& Pyramid_key, const boost::dynamic_bitset<>& in_Pyramid, 
+                      const size_t new_generator, const size_t store_level, Integer height, const bool recursive);
+    void select_supphyps_from(list<vector<Integer> >& NewFacets, const size_t new_generator, 
+                      const boost::dynamic_bitset<>& in_Pyramid);
     void evaluate_stored_pyramids(const size_t level);
+    void evaluate_rec_pyramids(const size_t level);
 
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
     
-    void build_cone();
+    void build_top_cone(); 
+    void extend_cone();    
     
-    // Returns true if new_element is reducible versus the elements in Irred
+
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
-    // reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
     void global_reduction();
-    /* computes a degree function, s.t. every generator has value >0 */
+
     vector<Integer> compute_degree_function() const;
     
     Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
@@ -198,21 +225,17 @@ public:
  *---------------------------------------------------------------------------
  */
     void print() const;             //to be modified, just for tests
-    size_t getDimension() const;       //returns dimension
-    size_t getNrGenerators() const;    //returns the number of generators
+    size_t getDimension() const;       
+    size_t getNrGenerators() const;    
     bool isPointed() const;
     bool isDeg1ExtremeRays() const;
     bool isDeg1HilbertBasis() const;
     bool isIntegrallyClosed() const;
-    vector<Integer> getGrading() const; //returns the linear form
-    mpq_class getMultiplicity() const; //returns multiplicity
+    vector<Integer> getGrading() const; 
+    mpq_class getMultiplicity() const; 
     const Matrix<Integer>& getGenerators() const;
     vector<bool> getExtremeRays() const;
     Matrix<Integer> getSupportHyperplanes() const;
-    /* saves the triangulation and the volume of each simplex
-     * the vectors corresponding to the generators of each simplex are sorted and saved in Triang
-     * the volumes are saved in TriangVol 
-     * cleares the lists first */
     void getTriangulation(list< vector<key_t> >& Triang, list<Integer>& TriangVol) const;
     Matrix<Integer> getHilbertBasis() const;
     Matrix<Integer> getDeg1Elements() const;
@@ -227,27 +250,13 @@ public:
  */
     void dualize_cone();
     void support_hyperplanes();
-    void triangulation_size();
-    void triangulation();
-    void support_hyperplanes_triangulation();
-    void support_hyperplanes_triangulation_pyramid();
-    void triangulation_hilbert_basis();
-    void multiplicity_hilbert_basis();
-    void hilbert_basis();
-    void hilbert_series();
-    void hilbert_series_pyramid();
-    void hilbert_basis_series();
-    void hilbert_basis_series_pyramid();
-    void deg1_elements();
 
-    /* do computation after do_vars are set */
     void compute();
 
     /* computes the multiplicity of the ideal in case of a Rees algebra
      * (not the same as the multiplicity of the semigroup) */
     Integer primary_multiplicity() const;
 
-    /* completes the computation when a Cone_Dual_Mode is given */
     void dual_mode();
 
     void error_msg(string s) const;
