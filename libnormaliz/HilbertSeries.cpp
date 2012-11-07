@@ -29,7 +29,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
-using std::cout; using std::endl;
+using std::cout; using std::endl; using std::flush;
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
@@ -144,11 +144,13 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 }
 
 void HilbertSeries::collectData() const {
+	 if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
     map< vector<denom_t>, vector<num_t> >::iterator it;
     for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
         performAdd(it->second, it->first);
     }
     denom_classes.clear();
+	 if (verbose) verboseOutput() << " done." << endl;
 }
 
 // simplify, see class description
