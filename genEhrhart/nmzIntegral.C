@@ -37,7 +37,7 @@ void  writeIntegral(const string&  project,const factorization<RingElem>& FF,
     
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
     
     if(do_leadCoeff){
@@ -98,7 +98,7 @@ void integrate(const string& project, const bool do_leadCoeff){
   long nf=FF.myFactors.size();
   cout <<"Factorization" << endl;  // we show the factorization so that the user can check
   for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
   cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
 
   RingElem I(zero(RingQQ())); // accumulates the integral

@@ -221,7 +221,7 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
     
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
     
     out << "Generalized Ehrhart series:" << endl;
@@ -301,8 +301,7 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   commonDen=mpz(commonDenBI);   // convert it to mpz_class
   
   BigInt HC2;
-  vector<mpz_class> HCoeff3;
-  HCoeff3.resize(HCoeff0.size()); 
+  vector<mpz_class> HCoeff3(HCoeff0.size());
   for(i=0;i<HCoeff1.size();++i){
     HC2=num(HCoeff1[i]*commonDenBI);        // to BigInt
     HCoeff3[i]=mpz_class(mpzref(HC2));      // to mpz_class 
@@ -352,7 +351,7 @@ void generalizedEhrhartSeries(const string& project){
   long nf=FF.myFactors.size();
   cout <<"Factorization" << endl;  // we show the factorization so that the user can check
   for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
   cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
 
   

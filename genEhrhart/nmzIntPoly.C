@@ -149,7 +149,7 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     RingHom phi=PolyAlgebraHom(R,R,w1);
     RingElem G(phi(FF.myRemainingFactor));
     for(i=0;i<FF.myFactors.size();++i){
-        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+        G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
     }   
     return(G);   
 }
@@ -178,7 +178,7 @@ RingElem homogeneousLinearSubstitutionFL(const factorization<RingElem>& FF,const
     RingHom phi=PolyAlgebraHom(R,R,w1);
     RingElem G(phi(FF.myRemainingFactor));
     for(i=0;i<FF.myFactors.size();++i){
-        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+        G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
     }   
     return(G);   
 }
