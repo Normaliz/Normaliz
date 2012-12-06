@@ -221,7 +221,7 @@ public:
     // Right_side and this get destroyed!
     Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
 
-    // Returns the solutionm of the system in Solution (for efficiency)
+    // Returns the solution of the system in Solution (for efficiency)
     void solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution);
                    

@@ -571,7 +571,7 @@ bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& n
             if (new_element[dim]<2*(*j)[dim]) {
                 break; //new_element is not reducible;
             }
-            else  {
+            else {
                 if ((*j)[c]<=new_element[c]){
                     for (i = 0; i < dim; i++) {
                         if ((*j)[i]>new_element[i]){

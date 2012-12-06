@@ -607,10 +607,10 @@ vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim) {
 // substitutes t by (t-a), overwrites the polynomial!
 template<typename Integer>
 void linear_substitution(vector<Integer>& poly, const Integer& a) {
-    int dim = poly.size();
+    long deg = poly.size()-1;
     // Iterated division by (t+a)
-    for (int step=0; step<dim-1; ++step) {
-        for (int i = dim-2; i >= step; --i) {
+    for (long step=0; step<deg; ++step) {
+        for (long i = deg-1; i >= step; --i) {
             poly[i] -= a * poly[i+1];
         }
         //the remainders are the coefficients of the transformed polynomial
