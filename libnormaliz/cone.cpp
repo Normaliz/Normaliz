@@ -191,6 +191,8 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getEquations() const {
     size_t rank = BasisChange.get_rank();
     size_t nr_of_equ = dim-rank;
+    if (rank == 0)                   // the zero cone
+        return Matrix<Integer>(dim).get_elements(); // identity matrix
     Matrix<Integer> Equations(nr_of_equ,dim);
     if (nr_of_equ > 0) {
         Lineare_Transformation<Integer> NewLT = Transformation(Matrix<Integer>(getExtremeRays()));
@@ -872,8 +874,12 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             is_Computed.set(ConeProperty::Grading);
         }
         //compute denominator of Grading
-        GradingDenom  = v_scalar_product(Grading,Generators[0]);
-        GradingDenom /= v_scalar_product(FC.getGrading(),FC.Generators[0]);
+        if (Generators.size() > 0) {
+            GradingDenom  = v_scalar_product(Grading,Generators[0]);
+            GradingDenom /= v_scalar_product(FC.getGrading(),FC.Generators[0]);
+        } else {
+            GradingDenom = 1;
+        }
     }
     if (FC.isComputed(ConeProperty::IsDeg1HilbertBasis)) {
         deg1_hilbert_basis = FC.isDeg1HilbertBasis();
