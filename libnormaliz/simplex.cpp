@@ -474,7 +474,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             if(C.do_deg1_elements && normG==volume && !isDuplicate(elements[last])) {
                 help=GenCopy.VxM(elements[last]);
                 v_scalar_division(help,volume);
-                Deg1_Elements.push_back(help);
+                Collected_Elements.push_back(help);
             }
         }
     }
@@ -485,10 +485,6 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         Hilbert_Series.add(hvector,gen_degrees);
     }
 
-    if(C.do_deg1_elements) {
-        #pragma omp critical(HT1ELEMENTS)
-        C.Deg1_Elements.splice(C.Deg1_Elements.begin(),Deg1_Elements);
-    }
 
     if(!C.do_Hilbert_basis)
         return volume;  // no local reduction in this case
@@ -517,9 +513,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         }
     }
 
-
-    #pragma omp critical(CANDIDATES)
-    C.Candidates.splice(C.Candidates.begin(),Hilbert_Basis);
+    Collected_Elements.splice(Collected_Elements.end(),Hilbert_Basis);
 
     return volume;
 }
@@ -593,6 +587,33 @@ bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& n
 }
 
 //---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::transfer_candidates() {
+    if (C_ptr->do_partial_triangulation) {
+        Collected_Elements.sort();
+        Collected_Elements.unique();
+    }
+    if (C_ptr->do_deg1_elements) {
+        if (C_ptr->do_partial_triangulation) {
+            #pragma omp critical(HT1ELEMENTS)
+            C_ptr->Deg1_Elements.merge(Collected_Elements);
+        } else {
+            #pragma omp critical(HT1ELEMENTS)
+            C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(),Collected_Elements);
+        }
+    }
+    if (C_ptr->do_Hilbert_basis) {
+        if (C_ptr->do_partial_triangulation) {
+            #pragma omp critical(CANDIDATES)
+            C_ptr->Candidates.merge(Collected_Elements);
+        } else {
+            #pragma omp critical(CANDIDATES)
+            C_ptr->Candidates.splice(C_ptr->Candidates.begin(),Collected_Elements);
+        }
+    }
+}
 
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::getDetSum() const {

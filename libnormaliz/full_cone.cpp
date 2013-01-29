@@ -1525,6 +1525,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 }
             }
         }
+        SimplexEval[tn].transfer_candidates();
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;
@@ -1534,9 +1535,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             verboseOutput() << "deg1: " << flush << Deg1_Elements.size()
                          << "   cand: " << flush << Candidates.size() << endl;
         }
-        Deg1_Elements.sort();
+//        Deg1_Elements.sort();
         Deg1_Elements.unique();
-        Candidates.sort();
+//        Candidates.sort();
         Candidates.unique();
     }
     } // do_evaluation

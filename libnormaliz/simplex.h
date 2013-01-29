@@ -96,9 +96,9 @@ class SimplexEvaluator {
     vector< long > gen_degrees;
     vector< num_t > hvector;  //h-vector of the current evaluation
     HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
-    list< vector<Integer> > Hilbert_Basis;
     list< vector<Integer> > Candidates;
-    list< vector<Integer> > Deg1_Elements;
+    list< vector<Integer> > Hilbert_Basis;
+    list< vector<Integer> > Collected_Elements;
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides
@@ -121,6 +121,9 @@ public:
     // returns volume
     Integer evaluate(SHORTSIMPLEX<Integer>& s);
 
+    // moves the union of Hilbert basis / deg1 elements to the cone
+    // for partial triangulation it merges the sorted list
+    void transfer_candidates();
     // returns sum of the determinants of all evaluated simplices
     Integer getDetSum() const;
     // returns sum of the multiplicities of all evaluated simplices
