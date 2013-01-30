@@ -767,7 +767,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     // Therefore we must work with listsize.
     for (size_t kk=0; kk<listsize;++l, ++kk) {
 
-        if(l->ValNewGen>=0 ||(!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1)){
+        if (l->ValNewGen>=0 
+           || (!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1 )) { 
+//               && (v_scalar_product(l->Hyp,Order_Vector)>0))){ //is_pyramid
             continue;
         }
 
@@ -1529,19 +1531,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;
-
-    if (do_partial_triangulation) { //TODO smarter sorting!
-        if (verbose) {
-            verboseOutput() << "deg1: " << flush << Deg1_Elements.size()
-                         << "   cand: " << flush << Candidates.size() << endl;
-        }
-//        Deg1_Elements.sort();
-        Deg1_Elements.unique();
-//        Candidates.sort();
-        Candidates.unique();
-    }
     } // do_evaluation
 
+        Candidates.sort();
+        Candidates.unique();  //TODO sort, unique needed?
     if (verbose)
     {
         verboseOutput() << totalNrSimplices << " simplices";
@@ -1559,7 +1552,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         TriangulationSize=0;
     }
     
-} // TriangulationSize
+    } // TriangulationSize
 
 }
 
@@ -1652,7 +1645,7 @@ void Full_Cone<Integer>::primal_algorithm(){
             if(v_scalar_product(Grading,Generators[i])==1)
                 Deg1_Elements.push_front(Generators[i]);
         Deg1_Elements.sort();
-        Deg1_Elements.unique();
+        Deg1_Elements.unique();  //TODO sort, unique needed?
         is_Computed.set(ConeProperty::Deg1Elements,true);
     }
     if (do_h_vector) {
