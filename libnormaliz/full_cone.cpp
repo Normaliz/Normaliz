@@ -760,18 +760,38 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     typename list< FACETDATA >::iterator l=Facets.begin();
     size_t listsize=Facets.size();
+    Integer ov_sp; // Order_Vector scalar product
 
     // no need to parallelize the followqing loop since ALL pyramids
     // are now processed in parallel (see version 2.8 for parallel version)
     // BUT: new hyperplanes can be added before the loop has been finished.
     // Therefore we must work with listsize.
-    for (size_t kk=0; kk<listsize;++l, ++kk) {
+    for (size_t kk=0; kk<listsize; ++l, ++kk) {
 
-        if (l->ValNewGen>=0 
-           || (!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1 )) { 
-//               && (v_scalar_product(l->Hyp,Order_Vector)>0))){ //is_pyramid
+        if (l->ValNewGen>=0) // facet not visible
             continue;
-        }
+
+        if (!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1) { //ht1 criterion
+            if (!is_pyramid) // in the topcone we always have ov_sp > 0
+                continue;
+            //check if it would be an excluded hyperplane
+            ov_sp = v_scalar_product(l->Hyp,Order_Vector);
+            if (ov_sp > 0)
+                continue;
+            if (ov_sp == 0) {
+                bool skip = false;
+                for (size_t i=0; i<dim; i++) {
+                    if (l->Hyp[i]>0) {
+                        skip = true;
+                        break;
+                    } else if (l->Hyp[i]<0) {
+                        break;
+                    }
+                }
+                if (skip)
+                    continue;
+            }
+       }
 
         Pyramid_key.clear(); // make data of new pyramid
         Pyramid_key.push_back(new_generator);
@@ -1533,8 +1553,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput()  << endl;
     } // do_evaluation
 
-        Candidates.sort();
-        Candidates.unique();  //TODO sort, unique needed?
     if (verbose)
     {
         verboseOutput() << totalNrSimplices << " simplices";
@@ -2525,7 +2543,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     nrPyramids[0]=0;
     nrRecPyrs[0]=0;
     
-    recursion_allowed=true;
+    recursion_allowed=false;
     
     do_all_hyperplanes=true;
     parallel_inside_pyramid=true;
