@@ -251,8 +251,9 @@ int main(int argc, char* argv[])
     }
 
     if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
-        string nmz_int_exec(argv[0]); // nmz_integrate executable
-        cout << "argv[0] = "<< nmz_int_exec << endl;
+        cout << "argv[0] = "<< argv[0] << endl;
+        string nmz_int_exec("\"");
+        nmz_int_exec.append(argv[0]);
         size_t found = nmz_int_exec.rfind("normaliz");
         if (found!=std::string::npos) {
             nmz_int_exec.replace (found,8,"nmzIntegrate");
@@ -260,6 +261,8 @@ int main(int argc, char* argv[])
             cout << "ERROR: Could not start nmzIntegrate" << endl;
             return 2;
         }
+        nmz_int_exec.append("\"");
+
         if (verbose) {
             nmz_int_exec.append(" -c");
         }
@@ -272,8 +275,9 @@ int main(int argc, char* argv[])
         if (nmzInt_I) {
             nmz_int_exec.append(" -I");
         }
-        nmz_int_exec.append(" ");
+        nmz_int_exec.append(" \"");
         nmz_int_exec.append(output_name);
+        nmz_int_exec.append("\"");
 
         cout << "executing: "<< nmz_int_exec << endl;
         returnvalue = system(nmz_int_exec.c_str());
