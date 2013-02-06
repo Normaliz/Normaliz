@@ -44,7 +44,8 @@ void printHelp(char* command) {
     cout << "  -v\tcompute volume"<<endl;
     cout << "  -n\tcompute Hilbert basis (with full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
-    cout << "  -p\tcompute Hilbert polynomial"<<endl;
+    cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
+    cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements"<<endl;
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
     cout << "  -1\tcompute degree 1 elements"<<endl;
     cout << "  -y\tcompute Stanley decomposition"<<endl;
@@ -71,6 +72,7 @@ int main(int argc, char* argv[])
     // read command line options
     bool filename_set=false;
     string option;            //all options concatenated (including -)
+    
     for (i = 1; i < (unsigned int)argc; i++) {
         if (argv[i][0]=='-') {
             if (argv[i][1]!='\0') {
@@ -106,6 +108,7 @@ int main(int argc, char* argv[])
     bool write_extra_files = false, write_all_files = false;
     bool use_Big_Integer = false;
     ConeProperties to_compute;
+    bool nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
 
     for (i = 1; i <option.size(); i++) {
         switch (option[i]) {
@@ -146,9 +149,13 @@ int main(int argc, char* argv[])
             case '1':
                 to_compute.set(ConeProperty::Deg1Elements);
                 break;
+            case 'q':
+                to_compute.set(ConeProperty::HilbertSeries);
+                break;
             case 'p':
             case 'P':
                 to_compute.set(ConeProperty::HilbertSeries);
+                to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'h':
             case 'H':
@@ -177,6 +184,18 @@ int main(int argc, char* argv[])
             case 'x': //should be separated from other options
                 cerr<<"Warning: Option -x=<T> has to be separated from other options"<<endl;
                 break;
+            case 'I':  //nmzIntegrate -I (integrate)
+                nmzInt_I = true;
+                to_compute.set(ConeProperty::Triangulation);
+                break;
+            case 'L':  //nmzIntegrate -L (leading term)
+                nmzInt_L = true;
+                to_compute.set(ConeProperty::Triangulation);
+                break;
+            case 'E':  //nmzIntegrate -E (ehrhart series)
+                nmzInt_E = true;
+                to_compute.set(ConeProperty::StanleyDec);
+                break;
             default:
                 cerr<<"Warning: Unknown option -"<<option[i]<<endl;
                 break;
@@ -203,6 +222,22 @@ int main(int argc, char* argv[])
         }
     }
 
+    // check if we cand read the .in file
+    string name_in=output_name+".in";
+    const char* file_in=name_in.c_str();
+    ifstream in2;
+    in2.open(file_in,ifstream::in);
+    if (in2.is_open()==false) {
+        //check if user added ".in" and ignore it in this case
+        string suffix (".in");
+        size_t found = output_name.rfind(suffix);
+        if (found!=string::npos) {
+            output_name.erase(found);
+        }
+    } else {
+        in2.close();
+    }
+
     int returnvalue;
 
     if(use_Big_Integer) {
@@ -215,11 +250,40 @@ int main(int argc, char* argv[])
         returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files);
     }
 
+    if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
+        string nmz_int_exec(argv[0]); // nmz_integrate executable
+        cout << "argv[0] = "<< nmz_int_exec << endl;
+        size_t found = nmz_int_exec.rfind("normaliz");
+        if (found!=std::string::npos) {
+            nmz_int_exec.replace (found,8,"nmzIntegrate");
+        } else {
+            cout << "ERROR: Could not start nmzIntegrate" << endl;
+            return 2;
+        }
+        if (verbose) {
+            nmz_int_exec.append(" -c");
+        }
+        if (nmzInt_E) {
+            nmz_int_exec.append(" -E");
+        }
+        if (nmzInt_L) {
+            nmz_int_exec.append(" -L");
+        }
+        if (nmzInt_I) {
+            nmz_int_exec.append(" -I");
+        }
+        nmz_int_exec.append(" ");
+        nmz_int_exec.append(output_name);
+
+        cout << "executing: "<< nmz_int_exec << endl;
+        returnvalue = system(nmz_int_exec.c_str());
+    }
     //exit
     if (!filename_set) {
         cout<< "\nType something and press enter to exit.\n";
         cin >> c;
     }
+
     return returnvalue;
 }
 
@@ -248,20 +312,7 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
 
     string name_in=output_name+".in";
     const char* file_in=name_in.c_str();
-    ifstream in, in2;
-    in2.open(file_in,ifstream::in);
-    if (in2.is_open()==false) {
-        //check if user added ".in" and ignore it in this case
-        string suffix (".in");
-        size_t found = output_name.rfind(suffix);
-        if (found!=string::npos) {
-            output_name.erase(found);
-            name_in=output_name+".in";
-            file_in=name_in.c_str();
-        }
-    } else {
-        in2.close();
-    }
+    ifstream in;
     in.open(file_in,ifstream::in);
     if ( !in.is_open() ) {
         cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
