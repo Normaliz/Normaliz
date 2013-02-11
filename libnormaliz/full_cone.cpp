@@ -1271,7 +1271,7 @@ void Full_Cone<Integer>::extend_cone() {
     {
     
         // removing the negative hyperplanes if necessary
-        if(do_all_hyperplanes || i!=last_to_be_inserted){
+        if(do_all_hyperplanes || nextGen!=last_to_be_inserted){
             l=Facets.begin();
             for (size_t j=0; j<old_nr_supp_hyps;j++){
                 if (l->ValNewGen<0) 
