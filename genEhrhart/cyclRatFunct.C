@@ -182,7 +182,7 @@ void CyclRatFunct::set2(const RingElem& f, const vector<long>& d)
     denom=d;
 }
 
-void CyclRatFunct::CyclRatFunct::set2(const RingElem& f)
+void CyclRatFunct::set2(const RingElem& f)
 {
     num=f;
     denom.resize(1,0);
