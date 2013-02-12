@@ -253,6 +253,10 @@ int main(int argc, char* argv[])
     if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
         cout << "argv[0] = "<< argv[0] << endl;
         string nmz_int_exec("\"");
+        // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            nmz_int_exec.append("\"");
+        #endif	
         nmz_int_exec.append(argv[0]);
         size_t found = nmz_int_exec.rfind("normaliz");
         if (found!=std::string::npos) {
@@ -278,6 +282,9 @@ int main(int argc, char* argv[])
         nmz_int_exec.append(" \"");
         nmz_int_exec.append(output_name);
         nmz_int_exec.append("\"");
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            nmz_int_exec.append("\"");
+        #endif
 
         cout << "executing: "<< nmz_int_exec << endl;
         returnvalue = system(nmz_int_exec.c_str());
