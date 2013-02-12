@@ -1,6 +1,5 @@
 RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial){
 
-
     SparsePolyRing P=AsSparsePolyRing(owner(F));
     vector<long> v(NumIndets(P));
     long dim=v.size()-1;
@@ -48,24 +47,27 @@ void  writeIntegral(const string&  project,const factorization<RingElem>& FF,
        out << "Integral: " << I << endl;
 }
 
-void integrate(const string& project, const bool do_leadCoeff){
+void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous){
   GlobalManager CoCoAFoundations;
 
-  cout << "Integration for " << project << endl;
-  cout << "=======================================" << endl << endl;;
-
+  if(verbose_INT){
+    cout << "Integration for " << project << endl;
+    cout << "=======================================" << endl << endl;;
+  }
   vector<long> grading;
   long gradingDenom;
   getGrading(project,grading,gradingDenom);
 
   vector<vector<long> > gens;
   readGens(project,gens);
-  cout << "Generators read" << endl;
+  if(verbose_INT) 
+    cout << "Generators read" << endl;
   long dim=gens[0].size();
 
   list<TRIDATA> triang;
   readTri(project,dim,triang);
-  cout << "Triangulation read" << endl;
+  if(verbose_INT)
+     cout << "Triangulation read" << endl;
 
   SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
   // const RingElem& t=indets(R)[0];
@@ -76,14 +78,19 @@ void integrate(const string& project, const bool do_leadCoeff){
   RingElem F(one(R)); // to have something
 
   F=readPolynomial(project,R);
-  cout << "Polynomial read" << endl;
+  if(verbose_INT)
+    cout << "Polynomial read" << endl;
   
   if(do_leadCoeff){
     vector<RingElem> compsF= homogComps(F);
     // cout << "comps " << compsF << endl;
     if(F!=compsF[compsF.size()-1]){
-        cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << flush << endl;
+        homogeneous=false;
+        if(verbose_INT) 
+            cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << flush << endl;
         F=compsF[compsF.size()-1];
+        for(size_t i=0;i<compsF.size();++i) // no longer needed
+            compsF[i]=0;     
     }
   }
   
@@ -96,18 +103,23 @@ void integrate(const string& project, const bool do_leadCoeff){
 
   factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
-  cout <<"Factorization" << endl;  // we show the factorization so that the user can check
-  for(i=0;i<nf;++i)
+  if(verbose_INT) 
+    cout <<"Factorization" << endl;  // we show the factorization so that the user can check
+  if(verbose_INT)
+    for(i=0;i<nf;++i)
         cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-  cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  if(verbose_INT)
+    cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
 
   RingElem I(zero(RingQQ())); // accumulates the integral
 
   size_t tri_size=triang.size();
 
-  cout << "********************************************" << endl;
-  cout << tri_size <<" simplicial cones to be evaluated" << endl;
-  cout << "********************************************" << endl;
+  if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << tri_size <<" simplicial cones to be evaluated" << endl;
+    cout << "********************************************" << endl;
+  }
 
   #pragma omp parallel private(i)
   {
@@ -145,7 +157,7 @@ void integrate(const string& project, const bool do_leadCoeff){
 
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((s+1)%10==0)
+    if((s+1)%10==0 && verbose_INT)
         cout << "Simpl " << s+1 << " done" << endl << flush;
     }
 
@@ -158,11 +170,13 @@ void integrate(const string& project, const bool do_leadCoeff){
     result="(Virtual) leading coefficient of quasipol";
 
 
-   cout << "********************************************" << endl;
-   cout << result << " is " << endl << I << endl;
-   cout << "********************************************" << endl;
+   if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << result << " is " << endl << I << endl;
+    cout << "********************************************" << endl;
+   }
    
-   if(do_leadCoeff){
+   if(do_leadCoeff && verbose_INT){
     cout << "Virtual multiplicity  is " << endl << I*factorial(deg(F)+dim-1) << endl;
     cout << "********************************************" << endl;
    }

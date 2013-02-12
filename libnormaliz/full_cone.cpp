@@ -1237,7 +1237,7 @@ void Full_Cone<Integer>::extend_cone() {
     if(!allRecPyramidsBuilt || nrRecPyramidsDone < nrRecPyramidsDue) // must wait for completion of subpyramids
         return;                                        // of recursive pyramids built from previous generator
 
-    size_t i;
+    long i;
     typename list< FACETDATA >::iterator l;
     
     // DECIDE WHETHER TO BUILD RECURSIVE PYRAMIDS
@@ -1251,7 +1251,7 @@ void Full_Cone<Integer>::extend_cone() {
         find_and_evaluate_start_simplex();
         nextGen=0;
         last_to_be_inserted=nr_gen-1; 
-        for(int j=nr_gen-1;j>=0;--j){
+        for(long j=nr_gen-1;j>=0;--j){
             if(isComputed(ConeProperty::ExtremeRays)){
                 if(!in_triang[j] && Extreme_Rays[j]){
                     last_to_be_inserted=j;

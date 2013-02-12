@@ -125,6 +125,9 @@ void CyclRatFunct::multCRF(const CyclRatFunct& r){
 }
 
 void CyclRatFunct::showCRF(){
+    if(!verbose_INT)
+        return;
+
     cout << num << endl;
     for(size_t i=1;i<denom.size();++i)
         cout << denom[i] << " ";
@@ -134,6 +137,10 @@ void CyclRatFunct::showCRF(){
 void CyclRatFunct::showCoprimeCRF(){
 // shows *this also with coprime numerator and denominator
 // makes only sense if only x[0] appears in the numerator (not checked)
+
+    if(!verbose_INT)
+        return;
+
     cout << "--------------------------------------------" << endl << endl;
     cout << "Given form" << endl << endl;
     showCRF();
@@ -148,7 +155,7 @@ void CyclRatFunct::showCoprimeCRF(){
     RingElem h=gcd(f,g);
     f/=h;
     g/=h;
-    cout << "Coprime numerator (for denom with leading term 1)" << endl <<endl;
+    cout << "Coprime numerator (for denom with remaining factor 1)" << endl <<endl;
     factorization<RingElem> gf=factor(g);
     cout << f/gf.myRemainingFactor << endl << endl << "Factorization of denominator" << endl << endl;
     size_t nf=gf.myFactors.size();

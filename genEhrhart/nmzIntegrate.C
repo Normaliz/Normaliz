@@ -16,6 +16,8 @@ using namespace CoCoA;
 using namespace std;
 using namespace libnormaliz;
 
+bool verbose_INT;
+
 #include "nmzIntInput.C"
 #include "nmzIntPoly.C"
 
@@ -36,7 +38,6 @@ void printHelp(char* command) {
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
-bool verbose_INT;
 
 //----------------------------------------------------------------------
 // Use main() to analyze options, start computations and 
@@ -109,18 +110,15 @@ int main(int argc, char* argv[])
     if(!do_integral && !do_leadCoeff) // default is -E
         do_genEhrhart=true;
     
-    cout << "+++ " << option << " " << do_genEhrhart << " " << do_integral << " " << do_leadCoeff << endl;
+    // cout << "+++ " << option << " " << do_genEhrhart << " " << do_integral << " " << do_leadCoeff << endl;
 
+    bool homogeneous=false;
     if(do_genEhrhart)
-        generalizedEhrhartSeries(project);
-    else{
-        if(do_integral)
-            integrate(project,false);
-        else{
-            if(do_leadCoeff)
-                integrate(project,true);
-        }
-    }
+        generalizedEhrhartSeries(project,homogeneous);
+    if(do_leadCoeff && !do_genEhrhart)
+        integrate(project,true,homogeneous);
+    if(do_integral && !homogeneous)
+        integrate(project,false,homogeneous);
             
     return 0;
   }

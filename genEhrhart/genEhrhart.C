@@ -168,10 +168,14 @@ CyclRatFunct evaluateDenomClasses(const vector<vector<CyclRatFunct> >& GFP,
     // vector<CyclRatFunct> h(omp_get_max_threads(),CyclRatFunct(zero(R)));
     // vector<CyclRatFunct> h(1,CyclRatFunct(zero(R)));
     
-    long mapsize=denomClasses.size();    
-    cout << "--------------------------------------------" << endl;
-    cout << "Evaluatiing " << mapsize <<" denom classes" << endl;
-    cout << "--------------------------------------------" << endl;
+    long mapsize=denomClasses.size();
+
+    if(verbose_INT){
+        cout << "--------------------------------------------" << endl;
+        cout << "Evaluatiing " << mapsize <<" denom classes" << endl;
+        cout << "--------------------------------------------" << endl;
+    }
+
     #pragma omp parallel
     {
     
@@ -187,10 +191,12 @@ CyclRatFunct evaluateDenomClasses(const vector<vector<CyclRatFunct> >& GFP,
         h = genFunct(GFP,den->second,den->first);
         #pragma omp critical(CLASSES)
         {
-        cout << "Class ";
-        for(size_t i=0;i<den->first.size();++i)
-            cout << den->first[i] << " ";
-        cout  << "NumTerms " << NumTerms(den->second) << endl;
+        if(verbose_INT){
+            cout << "Class ";
+            for(size_t i=0;i<den->first.size();++i)
+                cout << den->first[i] << " ";
+            cout  << "NumTerms " << NumTerms(den->second) << endl;
+        }
         
         // h.showCoprimeCRF();
         h.simplifyCRF();
@@ -271,7 +277,7 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
    long deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
    out  << endl << endl << "Degree of (quasi)polynomial: " << deg << endl;
 
-   out << endl << "Expected degree:" << virtDeg << endl;
+   out << endl << "Expected degree: " << virtDeg << endl;
         
    out << endl << "Virtual multiplicity: ";
 
@@ -313,26 +319,30 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   return(HS);
 } 
 
-void generalizedEhrhartSeries(const string& project){
+void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   GlobalManager CoCoAFoundations;
   
-  cout << "Generalized Ehrhart series " << project << endl;
-  cout << "=======================================" << endl << endl;; 
-  
+  if(verbose_INT){
+    cout << "Generalized Ehrhart series " << project << endl;
+    cout << "=======================================" << endl << endl;
+  }
+
   vector<long> grading;
   long gradingDenom;
   getGrading(project,grading,gradingDenom);
   
   vector<vector<long> > gens;
   readGens(project,gens);
-  cout << "Generators read" << endl;
+  if(verbose_INT)
+    cout << "Generators read" << endl;
   long dim=gens[0].size();
   long maxDegGen=scalProd(gens[gens.size()-1],grading)/gradingDenom; 
   
   list<STANLEYDATA_INT> StanleyDec;
   readDec(project,dim,StanleyDec);
-  cout << "stanley decomposition read" << endl;
-  
+  if(verbose_INT)
+    cout << "stanley decomposition read" << endl;
+
   SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
   const RingElem& t=indets(R)[0];
   // const vector<RingElem>& x = indets(R);
@@ -342,18 +352,26 @@ void generalizedEhrhartSeries(const string& project){
   RingElem F(one(R)); // to have something
         
   F=readPolynomial(project,R);        
-  cout << "Polynomial read" << endl;
-  
+  if(verbose_INT)
+    cout << "Polynomial read" << endl;
 
   long i,j;
+
+  vector<RingElem> compsF= homogComps(F);
+  homogeneous=true;
+  if(F!=compsF[compsF.size()-1])
+    homogeneous=false;
+  for(int i=0;i< (long) compsF.size();++i) // no longer needed
+    compsF[i]=0;
   
   factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
-  cout <<"Factorization" << endl;  // we show the factorization so that the user can check
-  for(i=0;i<nf;++i)
+  if(verbose_INT){
+    cout <<"Factorization" << endl;  // we show the factorization so that the user can check
+    for(i=0;i<nf;++i)
         cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-  cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
-
+    cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  }
   
   vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
   vector<CyclRatFunct> DummyCRFVect; // for\sum i^n t^ki vor various values of k and n
@@ -374,9 +392,11 @@ void generalizedEhrhartSeries(const string& project){
   size_t dec_size=StanleyDec.size();
   bool skip_remaining=false;
   
-  cout << "********************************************" << endl;
-  cout << dec_size <<" simplicial cones remaining" << endl;
-  cout << "********************************************" << endl;
+  if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << dec_size <<" simplicial cones remaining" << endl;
+    cout << "********************************************" <<  endl;
+  }
     
   #pragma omp parallel private(i)
   {
@@ -426,18 +446,20 @@ void generalizedEhrhartSeries(const string& project){
     }
     else{
         denomClasses.insert(pair<vector<long>,RingElem>(degrees,h));
-        cout << "Denom class " << denomClasses.size() << 
+        if(verbose_INT){
+            cout << "Denom class " << denomClasses.size() <<
              " degrees ";
-        for(i=0;i<rank;++i)
-        cout << degrees[i] << " ";
-        cout << endl << flush;
+            for(i=0;i<rank;++i)
+                cout << degrees[i] << " ";
+            cout << endl << flush;
+        } // verbose_INT
     } // else
     } // critical
     S->done=true; // mark the finished ones
     
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((s+1)%10==0)
+    if((s+1)%10==0 && verbose_INT)
         cout << "Simpl " << s+1 << " done" << endl << flush;
     }
     if(denomClasses.size()>=50) // prepare for evaluation

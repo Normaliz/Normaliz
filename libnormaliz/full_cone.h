@@ -120,7 +120,7 @@ class Full_Cone {
 
     bool is_pyramid; // false for top cone
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
-    size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
+    long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid   
 
