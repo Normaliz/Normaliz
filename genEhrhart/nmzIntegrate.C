@@ -25,7 +25,9 @@ bool verbose_INT;
 #include "genEhrhart.C"
 #include "nmzIntegral.C"                 
 
-
+void printHeader() {
+    cout << "nmzIntegrate beta"<<endl;
+}
 void printHelp(char* command) {
     cout << "usage: "<<command<<" [-cEIL?] [-x=<T>] [PROJECT]"<<endl;
     cout << "  runs nmzIntegrate on PROJECT.in"<<endl;
@@ -95,6 +97,7 @@ int main(int argc, char* argv[])
                 do_leadCoeff=true;  
                 break;
             case '?':  //print help text and exit
+                printHeader();
                 printHelp(argv[0]);
                 exit(1);
                 break;
@@ -106,7 +109,11 @@ int main(int argc, char* argv[])
                 break;
         }
     }
-    
+
+    if (verbose_INT) {
+        printHeader();
+    }
+
     if(!do_integral && !do_leadCoeff) // default is -E
         do_genEhrhart=true;
     

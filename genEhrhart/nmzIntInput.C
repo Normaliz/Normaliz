@@ -69,7 +69,7 @@ void getGrading(const string& project, vector<long>& grading, long& gradingDenom
 }
 
 void readGens(const string& project, vector<vector<long> >& gens){
-// reads the generaors from the tgn file
+// reads the generators from the tgn file
     string name_in=project+".tgn";
     const char* file_in=name_in.c_str();
     ifstream in;

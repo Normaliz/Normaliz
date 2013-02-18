@@ -34,6 +34,9 @@ using namespace libnormaliz;
 
 
 
+void printHeader() {
+    cout << "Normaliz 2.9 beta"<<endl;
+}
 void printHelp(char* command) {
     cout << "usage: "<<command<<" [-sSvVnNpPhH1dBface?] [-x=<T>] [PROJECT]"<<endl;
     cout << "  runs normaliz on PROJECT.in"<<endl;
@@ -178,6 +181,7 @@ int main(int argc, char* argv[])
             //    optimize_speed=false;
                 break;
             case '?':  //print help text and exit
+                printHeader();
                 printHelp(argv[0]);
                 exit(1);
                 break;
@@ -207,9 +211,11 @@ int main(int argc, char* argv[])
         to_compute.set(ConeProperty::HilbertSeries);
     }
 
+    if (verbose || !filename_set) {
+        printHeader();
+    }
     if (!filename_set) {
-        cout<<"Normaliz 2.8"<<endl
-            <<"Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+        cout<<"Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
             <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
             <<"and you are welcome to redistribute it under certain conditions;"<<endl
             <<"See COPYING for details."
