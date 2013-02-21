@@ -817,7 +817,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
                 NewFacets.push_back(H[i]);
             select_supphyps_from(NewFacets,new_generator,in_Pyramid);  // SEE BELOW
         }
-        if(do_triangulation || do_partial_triangulation){
+        if (do_triangulation || (do_partial_triangulation && height > 1)) {
             //if(recursion_allowed) {                                   // AT PRESENT
             //    #pragma omp critical(TRIANG)                          // NO PARALLELIZATION
             //     store_key(Pyramid_key,height,0,Triangulation);       // HERE
@@ -832,6 +832,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
             Pyramid.Mother=this;
             Pyramid.in_Pyramid=in_Pyramid;    // need these data to give back supphyps
             Pyramid.new_generator=new_generator;
+            if (do_partial_triangulation && height <= 1) {
+                Pyramid.do_partial_triangulation = false;
+            }
             nrRecPyramidsDue++;
             #pragma omp critical(RECPYRAMIDS)
             {
@@ -1297,7 +1300,7 @@ void Full_Cone<Integer>::extend_cone() {
     bool is_new_generator;
 
 
-    for (i=nextGen;i<nr_gen;++i) {
+    for (i=nextGen;i<static_cast<long>(nr_gen);++i) {
     
         if(in_triang[i] || (isComputed(ConeProperty::ExtremeRays) && !Extreme_Rays[i]))
             continue;
