@@ -61,7 +61,7 @@ public:
     /* give a single matrix as input */
     Cone(const vector< vector<Integer> >& input_data,
          InputType type = Type::integral_closure);
-    /* give multiple */ //TODO
+    /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
 
 //---------------------------------------------------------------------------

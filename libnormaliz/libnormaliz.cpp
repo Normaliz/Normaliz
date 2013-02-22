@@ -69,6 +69,9 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="6"||type_string=="congruences") {
         return Type::congruences;
     }
+    if (type_string=="signs") {
+        return Type::signs;
+    }
     if (type_string=="10"||type_string=="lattice_ideal") {
         return Type::lattice_ideal;
     }

@@ -31,6 +31,7 @@ enum InputType {
     polytope,
     rees_algebra,
     hyperplanes,
+    signs,
     equations,
     congruences,
     inhomogeneous_hyperplanes,
