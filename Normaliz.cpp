@@ -35,7 +35,7 @@ using namespace libnormaliz;
 
 
 void printHeader() {
-    cout << "Normaliz 2.9 beta"<<endl;
+    cout << endl << "                    Normaliz 2.9 beta" << endl << endl;
 }
 void printHelp(char* command) {
     cout << "usage: "<<command<<" [-sSvVnNpPhH1dBface?] [-x=<T>] [PROJECT]"<<endl;
@@ -344,8 +344,8 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
     in.close();
 
     if (verbose) {
-        cout<<"\n************************************************************\n";
-        cout<<"Compute: "<<to_compute<<"."<<endl;
+        cout<<"************************************************************"<<endl;
+        cout<<"Compute: "<<to_compute;
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);

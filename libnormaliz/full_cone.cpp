@@ -45,7 +45,7 @@ const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices 
 
 const size_t EvalBoundPyr=200000;   // the same for stored pyramids
 
-const size_t EvalBoundRecPyr=50000;   // the same for stored RECURSIVE pyramids
+const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
 
 
 //---------------------------------------------------------------------------
@@ -976,11 +976,15 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
     if (verbose){
         verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 
-        for (size_t l=0; l<=level; ++l) {
+        for (size_t l=0; l<level; ++l) {
             if (nrRecPyrs[l]>0) {
                 verboseOutput() << "level " << l << " recursive pyramids remaining: "
                                 << nrRecPyrs[l] << endl;
             }
+        }
+        if (nrRecPyrs[level]>0) {
+            verboseOutput() << "Computing support hyperplanes of " << nrRecPyrs[level]
+                            << " level " << level << " recursive pyramids." << endl;
         }
         verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl; 
     }
@@ -1015,7 +1019,7 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
 
            p->extend_cone();
            if(check_evaluation_buffer_size())  // we interrupt parallel execution if it is really parallel
-                skip_remaining_tri=true;                         //  to keep the triangulation buffer under control
+                skip_remaining_tri=true;       //  to keep the triangulation buffer under control
                 
             if(nrRecPyrs[level+1]>EvalBoundRecPyr) 
                  skip_remaining_rec_pyr=true;
@@ -1047,12 +1051,15 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
         }
         
         if(skip_remaining_pyr){
+            if (verbose)
+                verboseOutput() << nr_pyramids <<
+                    " recursive pyramids remaining on level " << level << endl;
             evaluate_stored_pyramids(0);
         }
     
     } while(nr_pyramids>0); // indicates: not all pyramids done
      
-    if (verbose) {
+/*    if (verbose) {
         verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
         verboseOutput() << "all recursive pyramids on level "<< level << " done!"<<endl;
         for (size_t l=0; l<=level; ++l) {
@@ -1062,7 +1069,7 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
             }
         }
         verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-    }
+    } */
     if(check_evaluation_buffer())
     {
         Top_Cone->evaluate_triangulation();
