@@ -4,6 +4,7 @@ struct STANLEYDATA_INT{
         vector<key_type> key;
         vector<vector<long> > offsets;
         bool done;
+        size_t denomClass;
     };
     
 struct TRIDATA{

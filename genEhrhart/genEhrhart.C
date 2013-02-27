@@ -322,6 +322,8 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
 void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   GlobalManager CoCoAFoundations;
   
+  long i,j;
+  
   if(verbose_INT){
     cout << "Generalized Ehrhart series " << project << endl;
     cout << "=======================================" << endl << endl;
@@ -342,20 +344,75 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   readDec(project,dim,StanleyDec);
   if(verbose_INT)
     cout << "stanley decomposition read" << endl;
+    
+  // Now we sort the Stanley decomposition by denominator class (= degree class)
+
+  list<pair< vector<long>,size_t> > sortDec(StanleyDec.size());
+  list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
+  vector<list<STANLEYDATA_INT>::iterator > iterDec(StanleyDec.size());
+
+  size_t ss=0;
+  for(;S!=StanleyDec.end();++S){
+    iterDec[ss]=S;
+    ++ss;
+  }
+
+  //cout << "Hurra" << endl;
+
+  long rank=StanleyDec.begin()->key.size();
+
+  //cout << "rank " << rank << endl;
+
+  vector<long> degrees(rank);
+  vector<vector<long> > A(rank);
+
+  list<pair< vector<long>,size_t> >::iterator SD = sortDec.begin();
+  ss=0;
+  for(;SD!=sortDec.end();++SD){
+  // cout << "ss " << ss << endl;
+      for(i=0;i<rank;++i)    // select submatrix defined by key
+        A[i]=gens[iterDec[ss]->key[i]-1]; // will not be changed
+          degrees=MxV(A,grading);
+        // cout << "ss1 " << ss << endl;
+      for(i=0;i<rank;++i)
+        degrees[i]/=gradingDenom; // must be divisible
+        // cout << "ss2 " << ss << endl;
+      SD->first=degrees;
+      SD->second=ss;
+      ++ss;
+  }
+  sortDec.sort();
+
+  // cout << "Hurra1" << endl;
+
+  list<STANLEYDATA_INT> StanleyDecSorted;
+
+  for(SD = sortDec.begin();SD!=sortDec.end();++SD){
+    StanleyDecSorted.push_back(*iterDec[SD->second]);
+  }
+
+  // cout << "Hurra1" << endl;
+
+
+  StanleyDec.clear();
+  StanleyDec.splice(StanleyDec.begin(),StanleyDecSorted); 
+
+  if(verbose_INT)
+    cout << "stanley decomposition sorted" << endl; 
+
+  // exit(0); 
 
   SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
   const RingElem& t=indets(R)[0];
   // const vector<RingElem>& x = indets(R);
-  
+
   map<vector<long>,RingElem> denomClasses;
 
   RingElem F(one(R)); // to have something
-        
+
   F=readPolynomial(project,R);        
   if(verbose_INT)
     cout << "Polynomial read" << endl;
-
-  long i,j;
 
   vector<RingElem> compsF= homogComps(F);
   homogeneous=true;
@@ -363,7 +420,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     homogeneous=false;
   for(int i=0;i< (long) compsF.size();++i) // no longer needed
     compsF[i]=0;
-  
+
   factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
   if(verbose_INT){
@@ -372,7 +429,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
         cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
-  
+
   vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
   vector<CyclRatFunct> DummyCRFVect; // for\sum i^n t^ki vor various values of k and n
   CyclRatFunct DummyCRF(zero(R));
@@ -428,6 +485,11 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     degrees=MxV(A,grading);
     for(i=0;i<rank;++i)
         degrees[i]/=gradingDenom; // must be divisible
+        
+    /*for(i=0;i<rank;++i)
+        cout << degrees[i] << " ";
+    cout << endl;*/
+    
 
     h=0;
     long iS=S->offsets.size();       
@@ -460,7 +522,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
     if((s+1)%10==0 && verbose_INT)
-        cout << "Simpl " << s+1 << " done" << endl << flush;
+        cout << s+1 << " simplicial cones done" << endl << flush;
     }
     if(denomClasses.size()>=50) // prepare for evaluation
         skip_remaining=true;
