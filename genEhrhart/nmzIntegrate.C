@@ -6,7 +6,7 @@ using namespace CoCoA;
 #include <fstream> 
 // #include <sstream>                
 
-#include <omp.h>
+#include "../libnormaliz/my_omp.h"
 
 #include "../libnormaliz/HilbertSeries.h"
 #include "../libnormaliz/matrix.h"

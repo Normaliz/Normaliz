@@ -1,10 +1,9 @@
 typedef unsigned short key_type;
 
 struct STANLEYDATA_INT{
-        vector<key_type> key;
-        vector<vector<long> > offsets;
-        bool done;
-        size_t denomClass;
+        vector<key_type> key;  // read from dec file
+        vector<vector<long> > offsets;  // ditto
+        size_t classNr;  // number of class of this simplicial cone
     };
     
 struct TRIDATA{
@@ -309,7 +308,6 @@ void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& Stan
         for(i=0;i<det;++i)
             for(j=0;j<dim;++j)
                 in >> newSimpl.offsets[i][j];
-        newSimpl.done=false;
         StanleyDec.push_back(newSimpl);
     }
 }

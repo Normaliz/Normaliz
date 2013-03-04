@@ -28,23 +28,23 @@
 #include <omp.h>
 #else
 
-int omp_get_level(){
+inline int omp_get_level(){
     return 0;
 }
 
-int omp_get_active_level() {
+inline int omp_get_active_level() {
     return 0;
 }
 
-int omp_get_thread_num() {
+inline int omp_get_thread_num() {
     return 0;
 }
 
-int omp_get_max_threads() {
+inline int omp_get_max_threads() {
     return 1;
 }
 
-int omp_get_ancestor_thread_num(int level) {
+inline int omp_get_ancestor_thread_num(int level) {
     return 0;
 }
 
