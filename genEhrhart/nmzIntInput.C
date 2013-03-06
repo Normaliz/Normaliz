@@ -2,6 +2,7 @@ typedef unsigned short key_type;
 
 struct STANLEYDATA_INT{
         vector<key_type> key;  // read from dec file
+        vector<long> degrees;
         vector<vector<long> > offsets;  // ditto
         size_t classNr;  // number of class of this simplicial cone
     };

@@ -296,7 +296,12 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   libnormaliz::HilbertSeries HS(HCoeff3,count_in_map<long, long>(denomDeg)); 
   HS.simplify();
   return(HS);
-} 
+}
+
+bool compareDegrees(STANLEYDATA_INT& A, STANLEYDATA_INT& B){
+
+    return(A.degrees < B.degrees);
+}
 
 void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   GlobalManager CoCoAFoundations;
@@ -330,37 +335,24 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     
   // Now we sort the Stanley decomposition by denominator class (= degree class)
 
-  list<pair< vector<long>,size_t> > sortDec(dec_size);          // for sorting of Stanley decomposition
   list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
-  vector<list<STANLEYDATA_INT>::iterator > iterDec(dec_size);  // realizes random access
-                                                               // to Stanloey decomposition
-                                                               // via vector of iterators 
-  size_t ss=0;
-  for(;S!=StanleyDec.end();++S){
-    iterDec[ss]=S;
-    ++ss;
-  }
   
-  long rank=StanleyDec.begin()->key.size();
+  long rank=S->key.size();
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
   
   // prepare sorting by computing degrees of generators
-  
-  list<pair< vector<long>,size_t> >::iterator SD = sortDec.begin();
-  ss=0;
-  for(;SD!=sortDec.end();++SD){
+
+  for(;S!=StanleyDec.end();++S){
       for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[iterDec[ss]->key[i]-1]; 
+        A[i]=gens[S->key[i]-1];
           degrees=MxV(A,grading);
       for(i=0;i<rank;++i)
         degrees[i]/=gradingDenom; // must be divisible
-      SD->first=degrees;
-      SD->second=ss;
-      ++ss;
+      S->degrees=degrees;
   }
   
-  sortDec.sort();
+  StanleyDec.sort(compareDegrees);
 
 
   if(verbose_INT)
@@ -369,35 +361,34 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   vector<pair<denomClassData,RingElem> > denomClasses;
   denomClassData denomClass;
 
-  SD=sortDec.begin();  // we now make class 0 to get started
-  denomClass.degrees=SD->first;  // put degrees in class
+  // we now make class 0 to get started
+  S=StanleyDec.begin();
+  denomClass.degrees=S->degrees;  // put degrees in class
   denomClass.simplDone=0;
   denomClass.simplDue=1;           // already one simplex to be done 
   denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(R)));
-  list<pair< vector<long>,size_t> >::iterator prevSD = SD;
   size_t dc=0;
-  iterDec[SD->second]->classNr=dc; // assignment of class 0 to first simpl in sorted order
+  S->classNr=dc; // assignment of class 0 to first simpl in sorted order
 
-  for(++SD;SD!=sortDec.end();++SD,++prevSD){
-    if(SD->first==prevSD->first){                     // compare to predecessor
-        iterDec[SD->second]->classNr=dc;              // assign class to simplex
+  list<STANLEYDATA_INT>::iterator prevS = StanleyDec.begin();
+
+  for(++S;S!=StanleyDec.end();++S,++prevS){
+    if(S->degrees==prevS->degrees){                     // compare to predecessor
+        S->classNr=dc;              // assign class to simplex
         denomClasses[dc].first.simplDue++;         // number of simplices in class ++
     }
     else{
-        denomClass.degrees=SD->first;  // make new class
+        denomClass.degrees=S->degrees;  // make new class
         denomClass.simplDone=0;
         denomClass.simplDue=1;
         denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(R)));
         dc++;
-        iterDec[SD->second]->classNr=dc;
+        S->classNr=dc;
     }
   }
 
-  // Note: degrees are now doubly represented, via sortedDec and class.
-  // Not really necessary, but useful
-
   if(verbose_INT)
-    cout << "Denominator classes built" << endl;
+    cout << denomClasses.size() << " denominator classes built" << endl;
 
   const RingElem& t=indets(R)[0];
   // const vector<RingElem>& x = indets(R);
@@ -454,22 +445,20 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   bool evaluateClass;
   vector<long> degrees;
   vector<vector<long> > A(rank);
-  list<STANLEYDATA_INT>::iterator S;
+  list<STANLEYDATA_INT>::iterator S=StanleyDec.begin();
 
   RingElem h(zero(R));     // for use in a simplex
   CyclRatFunct HClass(zero(R)); // for single class
   
-  list<pair< vector<long>,size_t> >::iterator SD = sortDec.begin();
+
   size_t s,spos=0;  
   #pragma omp for schedule(dynamic) 
   for(s=0;s<dec_size;++s){
-    for(;spos<s;++spos,++SD);
-    for(;spos>s;--spos,--SD);
-         
-    S=iterDec[SD->second]; // go over simplices in sorted order
+    for(;spos<s;++spos,++S);
+    for(;spos>s;--spos,--S);
 
     det=S->offsets.size();
-    degrees=SD->first;
+    degrees=S->degrees;
     
     for(i=0;i<rank;++i)    // select submatrix defined by key
         A[i]=gens[S->key[i]-1];
