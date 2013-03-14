@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
                 if (argv[i][1]!='x') {
                     option = option + argv[i];
                 } else if (argv[i][2]=='=') {
+                    #ifdef _OPENMP
                     string Threads = argv[i];
                     Threads.erase(0,3);
                     size_t nr_threads;
@@ -67,6 +68,9 @@ int main(int argc, char* argv[])
                     } else {
                         cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
                     }
+                    #else
+                    cerr << "Warning: Compiled without OpenMP support, option "<<argv[i]<<" ignored."<<endl;
+                    #endif
                 } else {
                     cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
                 }
