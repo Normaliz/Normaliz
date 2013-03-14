@@ -206,7 +206,7 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
     
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+        out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
     out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
     
     out << "Generalized Ehrhart series:" << endl;
@@ -412,7 +412,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   if(verbose_INT){
     cout <<"Factorization" << endl;  // we show the factorization so that the user can check
     for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
     cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
 
