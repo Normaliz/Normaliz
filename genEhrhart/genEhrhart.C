@@ -88,7 +88,7 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees){
         PushFront(r,ord_mon->second,ord_mon->first);
     }
     return(r);
-} 
+}
 
 CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
 // computes the generating function for
@@ -144,14 +144,15 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
         for(i=0;i<mg;i++)     // now we replace the powers of var k
         {                      // by the corrseponding rational function,
                                // multiply, and sum the products
-            g=GFP[degrees[k-1]][i];
+            // g=GFP[degrees[k-1]][i];
             // g=genFunctPower1(P,degrees[k-1],i);
             // cout << "g "; g.showCRF(); cout << endl;
-            g.num*=c[i];
-            h.num=(1-power(t,degrees[k-1]))*h.num+g.num;
-            h.denom=g.denom;
+            // g.num*=c[i];
+            h.num=(1-power(t,degrees[k-1]))*h.num+GFP[degrees[k-1]][i].num*c[i];
+            h.denom=GFP[degrees[k-1]][i].denom;
         }
         s.num=h.num;
+        // cout << "genFunct NumTerms " << NumTerms(s.num) << endl;
         s.denom=prodDenom(s.denom,h.denom);
     }
     return(s);   
@@ -468,9 +469,9 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     for(i=0;i<iS;++i){
         degree_b=scalProd(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,F);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,F,degrees);
     }
-    h=orderExpos(h,degrees);
+    // h=orderExpos(h,degrees);
     // cout << "Simpl " << s+1 << " NumTerms " << NumTerms(h) << endl;
     
     evaluateClass=false; // necessary to evaluate class only once
@@ -492,14 +493,10 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
         
     }
     
-    #pragma omp atomic
-    nrSimplDone++; 
-    
-    
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((s+1)%10==0 && verbose_INT)
-        cout << nrSimplDone << " simplicial cones done" << endl << flush;
+    if((++nrSimplDone)%10==0 && verbose_INT)
+        cout << nrSimplDone << " simplicial cones done" << endl;
     }
  
   }  // Stanley dec

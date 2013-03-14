@@ -122,8 +122,10 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
 }
 */
 
+RingElem orderExpos(const RingElem& F, const vector<long>& degrees);
+
 RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
-                     const vector<long>& b, const long& denom, const RingElem& F){
+                     const vector<long>& b, const long& denom, const RingElem& F, vector<long>& degrees){
 // we need F to define the ring
 // applies linar substitution y --> A(y+b/denom) to all factors in FF 
 // and returns the product of the modified factors
@@ -150,7 +152,8 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     RingElem G(phi(FF.myRemainingFactor));
     for(i=0;i<FF.myFactors.size();++i){
         G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
-    }   
+    }
+    G=orderExpos(G,degrees);
     return(G);   
 }
 
@@ -179,7 +182,7 @@ RingElem homogeneousLinearSubstitutionFL(const factorization<RingElem>& FF,const
     RingElem G(phi(FF.myRemainingFactor));
     for(i=0;i<FF.myFactors.size();++i){
         G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
-    }   
+    }
     return(G);   
 }
 
