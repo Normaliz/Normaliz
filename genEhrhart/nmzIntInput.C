@@ -31,12 +31,12 @@ struct TRIDATA{
 };
 
 void fileMissing(const char* name_in){
-    cerr << "Could not open file " << name_in << endl << flush;
+    cerr << "Could not open file " << name_in << endl;
     exit(1);
 }
 
 void inputError(const char* name_in, const string message){
-    cerr << "File " << name_in << ": " << message << endl << flush;
+    cerr << "File " << name_in << ": " << message << endl;
     exit(1);
 } 
 
@@ -116,7 +116,7 @@ void readGens(const string& project, vector<vector<long> >& gens){
 }
 
 void polyError(const string& token){
-    cerr << "Error in polynomoial input at token " << token << endl << flush;
+    cerr << "Error in polynomoial input at token " << token << endl;
     exit(1);
 }
 
@@ -372,7 +372,7 @@ void readTri(const string& project, const long& dim, list <TRIDATA>& triang){
     ifstream in;
     in.open(file_in,ifstream::in);
     if (in.is_open()==false && verbose_INT) {
-      cout << "Cannot find File " << name_in << ". Trying to read triangulation from dec." << endl << flush;
+      cout << "Cannot find File " << name_in << ". Trying to read triangulation from dec." << endl;
       readTriFromDec(project,dim,triang);
       return;   
     }

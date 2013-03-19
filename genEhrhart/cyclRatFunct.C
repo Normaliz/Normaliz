@@ -149,7 +149,7 @@ void CyclRatFunct::showCRF(){
     cout << num << endl;
     for(size_t i=1;i<denom.size();++i)
         cout << denom[i] << " ";
-    cout << endl << flush;
+    cout << endl;
 }
 
 void CyclRatFunct::showCoprimeCRF(){

@@ -126,7 +126,7 @@ CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
         cout << endl;*/
         b=a[i]*factorial(i);
         g.set2(b,u); 
-        // cout << "g inner "; g.showCRF(); cout << endl << flush;  
+        // cout << "g inner "; g.showCRF(); cout << endl;
         h.addCRF(g);
     }
     return(h);

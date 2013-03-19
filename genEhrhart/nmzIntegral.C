@@ -107,7 +107,7 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
     if(F!=compsF[compsF.size()-1]){
         homogeneous=false;
         if(verbose_INT) 
-            cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << flush << endl;
+            cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << endl;
         F=compsF[compsF.size()-1];
         for(size_t i=0;i<compsF.size();++i) // no longer needed
             compsF[i]=0;     
@@ -141,6 +141,8 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
     cout << "********************************************" << endl;
   }
 
+  size_t nrSimplDone=0;
+
   #pragma omp parallel private(i)
   {
 
@@ -169,16 +171,16 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
         prodDeg*=degrees[i];
     }
 
-    h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
-    ISimpl=(det*IntegralUnitSimpl(h,Factorial))/prodDeg;
+    // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
+    ISimpl=(det*substituteAndIntegrate(FF,A,degrees,F,Factorial))/prodDeg;
 
     #pragma omp critical(INTEGRAL)
     I+=ISimpl;
 
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((s+1)%10==0 && verbose_INT)
-        cout << "Simpl " << s+1 << " done" << endl << flush;
+    if ((++nrSimplDone)%10==0 && verbose_INT)
+        cout << nrSimplDone << " simplicial cones done" << endl;
     }
 
   }  // triang

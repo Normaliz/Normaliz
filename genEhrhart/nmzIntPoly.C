@@ -141,6 +141,8 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
 */
 
 RingElem orderExpos(const RingElem& F, const vector<long>& degrees);
+RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial);
+
 
 RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
                      const vector<long>& b, const long& denom, const RingElem& F, vector<long>& degrees){
@@ -175,8 +177,8 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     return(G);   
 }
 
-RingElem homogeneousLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
-                     const vector<long>& degrees, const RingElem& F){
+RingElem substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vector<long> >& A,
+                     const vector<long>& degrees, const RingElem& F, vector<BigInt> Factorial){
 // we need F to define the ring
 // applies linar substitution y --> (A/degress)y to all factors in FF 
 // where row A[i] is divided by degrees[i]
@@ -201,7 +203,7 @@ RingElem homogeneousLinearSubstitutionFL(const factorization<RingElem>& FF,const
     for(i=0;i<FF.myFactors.size();++i){
         G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
     }
-    return(G);   
+    return(IntegralUnitSimpl(orderExpos(G,degrees),Factorial));
 }
 
 vector<RingElem> homogComps(const RingElem& F){
