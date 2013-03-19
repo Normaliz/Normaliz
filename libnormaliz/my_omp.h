@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2012 Christof Soeger
+ * Normaliz
+ * Copyright (C) 2012,2013 Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
