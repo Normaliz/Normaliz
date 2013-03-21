@@ -20,8 +20,8 @@
 #include "CoCoA/library.H"
 using namespace CoCoA;
 
-#include <fstream> 
-// #include <sstream>                
+#include <fstream>
+#include <sstream>
 
 #include "../libnormaliz/my_omp.h"
 
