@@ -18,8 +18,7 @@ else
  CXXFLAGS += -fopenmp
 endif
 
-##for mac link libgcc not static
-CXXFLAGS += -static
-#CXXFLAGS += -static-libgcc
+## for distributing the executables link static (does not work for mac)
+#CXXFLAGS += -static
 
 GMPFLAGS = -lgmpxx -lgmp

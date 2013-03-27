@@ -11,7 +11,7 @@ ALL_EXECS=$(ALL_C:.C=)
 # Rule for compiling and linking C++ code in *.C files
 nmzIntegrate: nmzIntegrate.C nmzIntInput.C nmzIntPoly.C cyclRatFunct.C genEhrhart.C nmzIntegral.C 
 	@echo "Compiling `basename $@`"
-	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(COCOA_LIB)  -lgmpxx -lgmp #-pthread
+	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(COCOA_LIB) $(GMPFLAGS) #-pthread
 
 .PHONY: library
 library:
