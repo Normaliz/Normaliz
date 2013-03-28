@@ -46,7 +46,6 @@ Matrix<Integer> sign_inequalities(const vector< vector<Integer> >& Signs) {
             throw BadInputException();
         }
     }
-    Inequ.pretty_print(cout);
     return Inequ;
 }
 
@@ -138,6 +137,8 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
                     }
                     Signs = sign_inequalities(it->second);
                     break;
+                case Type::grading:
+                    break; //skip the grading
                 default:
                     errorOutput() << "This InputType combination is currently not supported!" << endl;
                     throw BadInputException();

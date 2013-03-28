@@ -349,8 +349,8 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
     in.close();
 
     if (verbose) {
-        cout<<"************************************************************"<<endl;
-        cout<<"Compute: "<<to_compute;
+        cout << "************************************************************" << endl;
+        cout << "Compute: " << to_compute << endl;
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
