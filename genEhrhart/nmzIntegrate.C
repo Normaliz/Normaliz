@@ -146,13 +146,18 @@ int main(int argc, char* argv[])
     // cout << "+++ " << option << " " << do_genEhrhart << " " << do_integral << " " << do_leadCoeff << endl;
 
     bool homogeneous=false;
-    if(do_genEhrhart)
-        generalizedEhrhartSeries(project,homogeneous);
-    if(do_leadCoeff && !do_genEhrhart)
-        integrate(project,true,homogeneous);
-    if(do_integral && !homogeneous)
-        integrate(project,false,homogeneous);
-            
+    bool appendOutput=false;
+    if (do_genEhrhart) {
+    generalizedEhrhartSeries(project,homogeneous);
+        appendOutput=true;
+    }
+    if (do_leadCoeff && !do_genEhrhart) {
+        integrate(project,true,homogeneous,appendOutput);
+        appendOutput=true;
+    }
+    if (do_integral && !homogeneous) {
+        integrate(project,false,homogeneous,appendOutput);
+    }
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)

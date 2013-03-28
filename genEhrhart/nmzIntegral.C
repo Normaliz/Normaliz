@@ -46,13 +46,22 @@ RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial){
     return(I);
 }
 
-void  writeIntegral(const string&  project,const factorization<RingElem>& FF,
-                             const RingElem& I,const bool& do_leadCoeff, const long& virtDeg){
-                             
+void writeIntegral(const string& project, const factorization<RingElem>& FF,
+                   const RingElem& I, const bool& do_leadCoeff,
+                   const long& virtDeg, const bool& appendOutput) {
+
     string name_open=project+".intOut";                              
     const char* file=name_open.c_str();
-    ofstream out(file);
-    
+    ofstream out;
+    if(appendOutput){
+        out.open(file,ios_base::app);
+        out << endl
+            << "============================================================"
+            << endl << endl;
+    }
+    else {
+        out.open(file);
+    }
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
         out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
@@ -66,10 +75,10 @@ void  writeIntegral(const string&  project,const factorization<RingElem>& FF,
        out << "Integral: " << I << endl;
 }
 
-void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous){
+void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
   GlobalManager CoCoAFoundations;
 
-  if(verbose_INT){
+  if (verbose_INT) {
     cout << "============================================================" << endl;
     cout << "Integration for " << project << endl;
     cout << "============================================================" << endl << endl;
@@ -203,5 +212,5 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
     cout << "********************************************" << endl;
    }
    
-   writeIntegral(project,FF,I,do_leadCoeff,deg(F)+dim-1);
+   writeIntegral(project,FF,I,do_leadCoeff,deg(F)+dim-1,appendOutput);
 }
