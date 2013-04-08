@@ -76,6 +76,7 @@ int main(int argc, char* argv[])
     size_t i;       //used for iterations
     char c;
     string output_name;         //name of the output file(s) saved here
+    long nr_threads = 0;
 
     // read command line options
     bool filename_set=false;
@@ -90,7 +91,6 @@ int main(int argc, char* argv[])
                     #ifdef _OPENMP
                     string Threads = argv[i];
                     Threads.erase(0,3);
-                    size_t nr_threads;
                     if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
                         omp_set_num_threads(nr_threads);
                     } else {
@@ -262,7 +262,7 @@ int main(int argc, char* argv[])
     }
 
     if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
-        cout << "argv[0] = "<< argv[0] << endl;
+        //cout << "argv[0] = "<< argv[0] << endl;
         string nmz_int_exec("\"");
         // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
         #ifdef _WIN32 //for 32 and 64 bit windows
@@ -280,6 +280,12 @@ int main(int argc, char* argv[])
 
         if (verbose) {
             nmz_int_exec.append(" -c");
+        }
+        if (nr_threads > 0) {
+            nmz_int_exec.append(" -x=");
+            ostringstream convert;
+            convert << nr_threads;
+            nmz_int_exec.append(convert.str());
         }
         if (nmzInt_E) {
             nmz_int_exec.append(" -E");
