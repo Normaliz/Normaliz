@@ -19,6 +19,10 @@ else
 endif
 
 ## for distributing the executables link static (does not work for mac)
-#CXXFLAGS += -static
+CXXFLAGS += -static
+## for almost static compilation on Mac use
+#CXXFLAGS += -static-libgcc
+## make it compatible with older Mac versions
+#CXXFLAGS += -mmacosx-version-min=10.5
 
 GMPFLAGS = -lgmpxx -lgmp

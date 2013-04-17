@@ -36,7 +36,7 @@ using namespace libnormaliz;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                       Normaliz 2.9                  \\....|"<<endl;
+    cout << "                       Normaliz 2.9.1 (Dev)          \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "              (C) W. Bruns  B. Ichim  C. Soeger        \\..|"<<endl;
     cout << "                        March 2013                      \\.|"<<endl;
