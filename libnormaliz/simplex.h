@@ -99,6 +99,7 @@ class SimplexEvaluator {
     list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
     list< vector<Integer> > Collected_Elements;
+    size_t collected_elements_size;
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides

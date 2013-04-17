@@ -82,6 +82,7 @@ class Full_Cone {
     
     list<vector<Integer> > Hilbert_Basis;
     list<vector<Integer> > Candidates;   // for the Hilbert basis
+    size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<long> gen_degrees;  // will contain the degrees of the generators

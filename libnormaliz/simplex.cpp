@@ -475,6 +475,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
                 help=GenCopy.VxM(elements[last]);
                 v_scalar_division(help,volume);
                 Collected_Elements.push_back(help);
+                collected_elements_size++;
             }
 //        }
     }
@@ -510,6 +511,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             *jj = GenCopy.VxM(*jj);
             v_scalar_division(*jj,volume);
             ++jj;
+            collected_elements_size++;
         }
     }
 
@@ -590,13 +592,13 @@ bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& n
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::transfer_candidates() {
-    if (C_ptr->do_deg1_elements) {
-        #pragma omp critical(HT1ELEMENTS)
-        C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(),Collected_Elements);
-    }
-    if (C_ptr->do_Hilbert_basis) {
+    if ( (C_ptr->do_deg1_elements || C_ptr->do_Hilbert_basis)
+       && collected_elements_size > 0 ) {
         #pragma omp critical(CANDIDATES)
         C_ptr->Candidates.splice(C_ptr->Candidates.begin(),Collected_Elements);
+        #pragma omp atomic
+        C_ptr->CandidatesSize += collected_elements_size;
+        collected_elements_size = 0;
     }
 }
 

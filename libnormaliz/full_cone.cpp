@@ -1568,9 +1568,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     {
         verboseOutput() << totalNrSimplices << " simplices";
         if(do_Hilbert_basis)
-            verboseOutput() << ", " << Candidates.size() << " HB candidates";
+            verboseOutput() << ", " << CandidatesSize << " HB candidates";
         if(do_deg1_elements)
-            verboseOutput() << ", " << Deg1_Elements.size()<< " deg1 vectors";
+            verboseOutput() << ", " << CandidatesSize << " deg1 vectors";
         verboseOutput() << " accumulated." << endl;
     }
     
@@ -1670,8 +1670,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     
     if (do_deg1_elements) {
+        Deg1_Elements.splice(Deg1_Elements.begin(), Candidates);
         for(size_t i=0;i<nr_gen;i++)
-            if(v_scalar_product(Grading,Generators[i])==1)
+            if(in_triang[i] && v_scalar_product(Grading,Generators[i])==1)
                 Deg1_Elements.push_front(Generators[i]);
         Deg1_Elements.sort();
         Deg1_Elements.unique();  //TODO sort, unique needed?
@@ -2543,6 +2544,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    CandidatesSize=0;
     detSum = 0;
     
     FS.resize(omp_get_max_threads());
@@ -2616,6 +2618,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    CandidatesSize=0;
     detSum = 0;
     
     do_all_hyperplanes=true;
@@ -2683,6 +2686,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
         }
     }
     TriangulationSize=0;
+    CandidatesSize=0;
     
     recursion_allowed=C.recursion_allowed; // must be reset for non-recursive pyramids
     do_all_hyperplanes=true; //  must be reset for non-recursive pyramids
