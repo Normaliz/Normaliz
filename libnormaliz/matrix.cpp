@@ -1112,10 +1112,10 @@ void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector<
     Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
     // cout << RS_test.nr << " " << RS_test.nc << endl; 
     // RS_test.pretty_print(cout);
-    if(!RS_x_denom.equal(RS_test)){
-            errorOutput()<<"Arithmetic failure in solving a linear system. Most likely overflow.\n";
-                throw ArithmeticException();
-        }                    
+    if (!RS_x_denom.equal(RS_test)) {
+        errorOutput()<<"Arithmetic failure in solving a linear system. Most likely overflow.\n";
+        throw ArithmeticException();
+    }
 }
 
 //---------------------------------------------------------------------------

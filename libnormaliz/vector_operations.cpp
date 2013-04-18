@@ -334,8 +334,10 @@ template<typename T>
 vector<T> v_merge(const vector<T>& a, const T& b) {
     size_t s=a.size();
     vector<T> c(s+1);
-    c = a;
-    c.push_back(b);
+    for (size_t i = 0; i < s; i++) {
+        c[i]=a[i];
+    }
+    c[s] = b;
     return c;
 }
 

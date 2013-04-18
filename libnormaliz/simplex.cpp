@@ -134,6 +134,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   dim(fc.dim),
   det_sum(0),
   mult_sum(0),
+  collected_elements_size(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
   GenCopy(dim,dim),
