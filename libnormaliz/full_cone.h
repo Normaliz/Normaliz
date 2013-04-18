@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz
+ * Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -121,7 +121,7 @@ class Full_Cone {
 
     bool is_pyramid; // false for top cone
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
-    size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
+    long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid   
 

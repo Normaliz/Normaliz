@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz
+ * Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -60,8 +60,8 @@ template long permutations<long>(const size_t& a, const size_t& b);
 template long long gcd<long long>(const long long& a, const long long& b);
 template long long lcm<long long>(const long long& a, const long long& b);
 template long long permutations<long long>(const size_t& a, const size_t& b);
-template mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
-template mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b);
+//template mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
+//template mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b);
 template mpz_class permutations<mpz_class>(const size_t& a, const size_t& b);
 
 template ostream& operator<< <long>(ostream& out, const vector<long>& v);

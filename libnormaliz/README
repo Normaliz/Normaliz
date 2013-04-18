@@ -8,29 +8,26 @@ It may very well happen that the interface changes! Please contact us if you wan
 More information on normaliz:
 http://www.mathematik.uni-osnabrueck.de/normaliz/
 
-recommended compile flags:
--Wall                   # warnings
--lgmpxx -lgmp           # for gmp
--O3                     # for optimization
-also one of the following:
--fopenmp                # for openmp
--Wno-unknown-pragmas    # to suppress warnings about unknown pragmas when not using openmp
+Preperation:
+
+Check the configuration in the Makefile.configuration in the Normaliz source directory.
+Compile the normaliz library via a make in the libnormaliz directory. To compile a strictly serial version use "make OPENMP=no". 
+
+To use libnormaliz link libnormaliz.a in. It might be necessary to activate compilation  with OpenMP (in g++ use the -fopenmp flag).
 
 
 Quick workflow overview:
-1) include libnormaliz/Cone.h in your header when necessary
-   include libnormaliz/libnormaliz.cpp in your source
-2) create libnormaliz::Cone
+
+1) include libnormaliz/Cone.h in your source code
+2) create a libnormaliz::Cone object
 3) call one of the Cone.compute() methods
 4) check if the desired data is computed: isComputed( X )
 5) get the data: getX()
 6) repeat 4+5 or 3+4+5
 
-1) The .cpp should be included since the whole library is templated, so you could use any integer type you want. We suggest (and only tested) 'long long int' and the gmp type 'mpz_class'.
-If you want to use only these two types it is enough to include the headers and link libnormaliz.a.
-
 
 Example:
+
 // we discourage the use of "using namespace libnormaliz", but you may find these useful
 using libnormaliz::Cone;
 using libnormaliz::ConeProperty;
@@ -73,10 +70,18 @@ equations
 congruences
 lattice_ideal
 grading
+signs
 
 to combine input types build a 
 std::map <libnormaliz::InputType, vector< vector<Integer> >
 and construct the libnormaliz::Cone from it
 
 Please see the Normaliz Documentation for more information on the input types and computation modes
-http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.8Documentation.pdf
+http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.9Documentation.pdf
+
+
+
+Alternative Configuration
+
+The integer type in the libnormaliz library is templated. So in theory it is possible to use other integer types. Then you have to include libnormaliz-all.cpp. We suggest (and only tested) 'long long int' and the gmp type 'mpz_class'.
+In this case you do not need to link libnormaliz.a

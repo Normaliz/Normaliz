@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz
+ * Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,6 +34,14 @@ using namespace libnormaliz;
 
 
 
+void printHeader() {
+    cout << "                                                    \\.....|"<<endl;
+    cout << "                       Normaliz 2.9.1 (Dev)          \\....|"<<endl;
+    cout << "                                                      \\...|"<<endl;
+    cout << "              (C) W. Bruns  B. Ichim  C. Soeger        \\..|"<<endl;
+    cout << "                        March 2013                      \\.|"<<endl;
+    cout << "                                                         \\|"<<endl;
+}
 void printHelp(char* command) {
     cout << "usage: "<<command<<" [-sSvVnNpPhH1dBface?] [-x=<T>] [PROJECT]"<<endl;
     cout << "  runs normaliz on PROJECT.in"<<endl;
@@ -44,7 +52,8 @@ void printHelp(char* command) {
     cout << "  -v\tcompute volume"<<endl;
     cout << "  -n\tcompute Hilbert basis (with full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
-    cout << "  -p\tcompute Hilbert polynomial"<<endl;
+    cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
+    cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements"<<endl;
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
     cout << "  -1\tcompute degree 1 elements"<<endl;
     cout << "  -y\tcompute Stanley decomposition"<<endl;
@@ -67,10 +76,12 @@ int main(int argc, char* argv[])
     size_t i;       //used for iterations
     char c;
     string output_name;         //name of the output file(s) saved here
+    long nr_threads = 0;
 
     // read command line options
     bool filename_set=false;
     string option;            //all options concatenated (including -)
+    
     for (i = 1; i < (unsigned int)argc; i++) {
         if (argv[i][0]=='-') {
             if (argv[i][1]!='\0') {
@@ -80,7 +91,6 @@ int main(int argc, char* argv[])
                     #ifdef _OPENMP
                     string Threads = argv[i];
                     Threads.erase(0,3);
-                    size_t nr_threads;
                     if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
                         omp_set_num_threads(nr_threads);
                     } else {
@@ -106,6 +116,7 @@ int main(int argc, char* argv[])
     bool write_extra_files = false, write_all_files = false;
     bool use_Big_Integer = false;
     ConeProperties to_compute;
+    bool nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
 
     for (i = 1; i <option.size(); i++) {
         switch (option[i]) {
@@ -146,9 +157,13 @@ int main(int argc, char* argv[])
             case '1':
                 to_compute.set(ConeProperty::Deg1Elements);
                 break;
+            case 'q':
+                to_compute.set(ConeProperty::HilbertSeries);
+                break;
             case 'p':
             case 'P':
                 to_compute.set(ConeProperty::HilbertSeries);
+                to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'h':
             case 'H':
@@ -171,11 +186,24 @@ int main(int argc, char* argv[])
             //    optimize_speed=false;
                 break;
             case '?':  //print help text and exit
+                printHeader();
                 printHelp(argv[0]);
                 exit(1);
                 break;
             case 'x': //should be separated from other options
                 cerr<<"Warning: Option -x=<T> has to be separated from other options"<<endl;
+                break;
+            case 'I':  //nmzIntegrate -I (integrate)
+                nmzInt_I = true;
+                to_compute.set(ConeProperty::Triangulation);
+                break;
+            case 'L':  //nmzIntegrate -L (leading term)
+                nmzInt_L = true;
+                to_compute.set(ConeProperty::Triangulation);
+                break;
+            case 'E':  //nmzIntegrate -E (ehrhart series)
+                nmzInt_E = true;
+                to_compute.set(ConeProperty::StanleyDec);
                 break;
             default:
                 cerr<<"Warning: Unknown option -"<<option[i]<<endl;
@@ -188,9 +216,11 @@ int main(int argc, char* argv[])
         to_compute.set(ConeProperty::HilbertSeries);
     }
 
+    if (verbose || !filename_set) {
+        printHeader();
+    }
     if (!filename_set) {
-        cout<<"Normaliz 2.8"<<endl
-            <<"Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+        cout<<"Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
             <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
             <<"and you are welcome to redistribute it under certain conditions;"<<endl
             <<"See COPYING for details."
@@ -201,6 +231,22 @@ int main(int argc, char* argv[])
             printHelp(argv[0]);
             return 1;
         }
+    }
+
+    // check if we cand read the .in file
+    string name_in=output_name+".in";
+    const char* file_in=name_in.c_str();
+    ifstream in2;
+    in2.open(file_in,ifstream::in);
+    if (in2.is_open()==false) {
+        //check if user added ".in" and ignore it in this case
+        string suffix (".in");
+        size_t found = output_name.rfind(suffix);
+        if (found!=string::npos) {
+            output_name.erase(found);
+        }
+    } else {
+        in2.close();
     }
 
     int returnvalue;
@@ -215,11 +261,57 @@ int main(int argc, char* argv[])
         returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files);
     }
 
+    if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
+        //cout << "argv[0] = "<< argv[0] << endl;
+        string nmz_int_exec("\"");
+        // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            nmz_int_exec.append("\"");
+        #endif	
+        nmz_int_exec.append(argv[0]);
+        size_t found = nmz_int_exec.rfind("normaliz");
+        if (found!=std::string::npos) {
+            nmz_int_exec.replace (found,8,"nmzIntegrate");
+        } else {
+            cout << "ERROR: Could not start nmzIntegrate" << endl;
+            return 2;
+        }
+        nmz_int_exec.append("\"");
+
+        if (verbose) {
+            nmz_int_exec.append(" -c");
+        }
+        if (nr_threads > 0) {
+            nmz_int_exec.append(" -x=");
+            ostringstream convert;
+            convert << nr_threads;
+            nmz_int_exec.append(convert.str());
+        }
+        if (nmzInt_E) {
+            nmz_int_exec.append(" -E");
+        }
+        if (nmzInt_L) {
+            nmz_int_exec.append(" -L");
+        }
+        if (nmzInt_I) {
+            nmz_int_exec.append(" -I");
+        }
+        nmz_int_exec.append(" \"");
+        nmz_int_exec.append(output_name);
+        nmz_int_exec.append("\"");
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            nmz_int_exec.append("\"");
+        #endif
+
+        cout << "executing: "<< nmz_int_exec << endl;
+        returnvalue = system(nmz_int_exec.c_str());
+    }
     //exit
     if (!filename_set) {
         cout<< "\nType something and press enter to exit.\n";
         cin >> c;
     }
+
     return returnvalue;
 }
 
@@ -248,20 +340,7 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
 
     string name_in=output_name+".in";
     const char* file_in=name_in.c_str();
-    ifstream in, in2;
-    in2.open(file_in,ifstream::in);
-    if (in2.is_open()==false) {
-        //check if user added ".in" and ignore it in this case
-        string suffix (".in");
-        size_t found = output_name.rfind(suffix);
-        if (found!=string::npos) {
-            output_name.erase(found);
-            name_in=output_name+".in";
-            file_in=name_in.c_str();
-        }
-    } else {
-        in2.close();
-    }
+    ifstream in;
     in.open(file_in,ifstream::in);
     if ( !in.is_open() ) {
         cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
@@ -276,8 +355,8 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
     in.close();
 
     if (verbose) {
-        cout<<"\n************************************************************\n";
-        cout<<"Compute: "<<to_compute<<"."<<endl;
+        cout << "************************************************************" << endl;
+        cout << "Compute: " << to_compute << endl;
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);

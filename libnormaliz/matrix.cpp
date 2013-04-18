@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz
+ * Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -304,7 +304,8 @@ size_t Matrix<Integer>::nr_of_columns () const{
 
 template<typename Integer>
 void Matrix<Integer>::random (int mod) {
-    size_t i,j,k;
+    size_t i,j;
+    int k;
     for (i = 0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
             k = rand();

@@ -1,3 +1,20 @@
+/*
+ * nmzIntegrate
+ * Copyright (C) 2012-2013  Winfried Bruns, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 
 vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
@@ -88,7 +105,7 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees){
         PushFront(r,ord_mon->second,ord_mon->first);
     }
     return(r);
-} 
+}
 
 CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
 // computes the generating function for
@@ -109,7 +126,7 @@ CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
         cout << endl;*/
         b=a[i]*factorial(i);
         g.set2(b,u); 
-        // cout << "g inner "; g.showCRF(); cout << endl << flush;  
+        // cout << "g inner "; g.showCRF(); cout << endl;
         h.addCRF(g);
     }
     return(h);
@@ -144,65 +161,51 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
         for(i=0;i<mg;i++)     // now we replace the powers of var k
         {                      // by the corrseponding rational function,
                                // multiply, and sum the products
-            g=GFP[degrees[k-1]][i];
+            // g=GFP[degrees[k-1]][i];
             // g=genFunctPower1(P,degrees[k-1],i);
             // cout << "g "; g.showCRF(); cout << endl;
-            g.num*=c[i];
-            h.num=(1-power(t,degrees[k-1]))*h.num+g.num;
-            h.denom=g.denom;
+            // g.num*=c[i];
+            h.num=(1-power(t,degrees[k-1]))*h.num+GFP[degrees[k-1]][i].num*c[i];
+            h.denom=GFP[degrees[k-1]][i].denom;
         }
         s.num=h.num;
+        // cout << "genFunct NumTerms " << NumTerms(s.num) << endl;
         s.denom=prodDenom(s.denom,h.denom);
     }
     return(s);   
 }
 
+struct denomClassData{
+    vector<long> degrees;
+    size_t simplDue;
+    size_t simplDone;
+  };
 
-CyclRatFunct evaluateDenomClasses(const vector<vector<CyclRatFunct> >& GFP,
-                                    map<vector<long>,RingElem>& denomClasses){
-// computes the generating rational functions
-// for the denominator classes and returns the sum
+CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
+                                    pair<denomClassData,RingElem>& denomClass){
+// computes the generating rational function
+// for a denominator class and return it
 
-    SparsePolyRing R=AsSparsePolyRing(owner(denomClasses.begin()->second));
-    CyclRatFunct H(zero(R));
-    // vector<CyclRatFunct> h(omp_get_max_threads(),CyclRatFunct(zero(R)));
-    // vector<CyclRatFunct> h(1,CyclRatFunct(zero(R)));
+    SparsePolyRing R=AsSparsePolyRing(owner(denomClass.second));
     
-    long mapsize=denomClasses.size();    
-    cout << "--------------------------------------------" << endl;
-    cout << "Evaluatiing " << mapsize <<" denom classes" << endl;
-    cout << "--------------------------------------------" << endl;
-    #pragma omp parallel
+    if(verbose_INT){
+    #pragma omp critical(PROGRESS)
     {
-    
-    map<vector<long>,RingElem>::iterator den=denomClasses.begin();
-    long mpos=0;
-    CyclRatFunct h(zero(R));
-   
-    #pragma omp for schedule(dynamic)
-    for(long dc=0;dc<mapsize;++dc){
-        for(;mpos<dc;++mpos,++den);
-        for(;mpos>dc;--mpos,--den);
-        // cout << "mpos " << mpos << endl;
-        h = genFunct(GFP,den->second,den->first);
-        #pragma omp critical(CLASSES)
-        {
-        cout << "Class ";
-        for(size_t i=0;i<den->first.size();++i)
-            cout << den->first[i] << " ";
-        cout  << "NumTerms " << NumTerms(den->second) << endl;
-        
-        // h.showCoprimeCRF();
-        h.simplifyCRF();
-        H.addCRF(h);
-        }
+        // cout << "--------------------------------------------" << endl;
+        cout << "Evaluating denom class ";
+        for(size_t i=0;i<denomClass.first.degrees.size();++i)
+            cout << denomClass.first.degrees[i] << " ";
+        cout  << "NumTerms " << NumTerms(denomClass.second) << endl;
+        // cout << "--------------------------------------------" << endl;
     }
-    
-    } // parallel 
-    // cout << "Fertig" << endl;
-    denomClasses.clear();
-    H.simplifyCRF();
-    return(H);        
+    }
+
+    CyclRatFunct h(zero(R));
+    h = genFunct(GFP,denomClass.second,denomClass.first.degrees);
+
+    denomClass.second=0;  // to save memory
+    h.simplifyCRF();
+    return(h);
 }
 
 mpz_class ourFactorial(const long& n){
@@ -221,7 +224,7 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
     
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+        out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
     out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
     
     out << "Generalized Ehrhart series:" << endl;
@@ -271,7 +274,7 @@ void writeGenEhrhartSeries(const string& project, const factorization<RingElem>&
    long deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
    out  << endl << endl << "Degree of (quasi)polynomial: " << deg << endl;
 
-   out << endl << "Expected degree:" << virtDeg << endl;
+   out << endl << "Expected degree: " << virtDeg << endl;
         
    out << endl << "Virtual multiplicity: ";
 
@@ -311,50 +314,127 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   libnormaliz::HilbertSeries HS(HCoeff3,count_in_map<long, long>(denomDeg)); 
   HS.simplify();
   return(HS);
-} 
+}
 
-void generalizedEhrhartSeries(const string& project){
+bool compareDegrees(STANLEYDATA_INT& A, STANLEYDATA_INT& B){
+
+    return(A.degrees < B.degrees);
+}
+
+void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   GlobalManager CoCoAFoundations;
   
-  cout << "Generalized Ehrhart series " << project << endl;
-  cout << "=======================================" << endl << endl;; 
+  long i,j;
   
+  if(verbose_INT){
+    cout << "============================================================" << endl;
+    cout << "Generalized Ehrhart series " << project << endl;
+    cout << "============================================================" << endl << endl;
+  }
+
   vector<long> grading;
   long gradingDenom;
   getGrading(project,grading,gradingDenom);
   
   vector<vector<long> > gens;
   readGens(project,gens);
-  cout << "Generators read" << endl;
+  if(verbose_INT)
+    cout << "Generators read" << endl;
   long dim=gens[0].size();
   long maxDegGen=scalProd(gens[gens.size()-1],grading)/gradingDenom; 
   
+  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
+  
   list<STANLEYDATA_INT> StanleyDec;
   readDec(project,dim,StanleyDec);
-  cout << "stanley decomposition read" << endl;
+  if(verbose_INT)
+    cout << "Stanley decomposition read" << endl;
+    
+  size_t dec_size=StanleyDec.size();
+    
+  // Now we sort the Stanley decomposition by denominator class (= degree class)
+
+  list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
   
-  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
+  long rank=S->key.size();
+  vector<long> degrees(rank);
+  vector<vector<long> > A(rank);
+  
+  // prepare sorting by computing degrees of generators
+
+  for(;S!=StanleyDec.end();++S){
+      for(i=0;i<rank;++i)    // select submatrix defined by key
+        A[i]=gens[S->key[i]-1];
+          degrees=MxV(A,grading);
+      for(i=0;i<rank;++i)
+        degrees[i]/=gradingDenom; // must be divisible
+      S->degrees=degrees;
+  }
+  
+  StanleyDec.sort(compareDegrees);
+
+
+  if(verbose_INT)
+    cout << "Stanley decomposition sorted" << endl; 
+
+  vector<pair<denomClassData,RingElem> > denomClasses;
+  denomClassData denomClass;
+
+  // we now make class 0 to get started
+  S=StanleyDec.begin();
+  denomClass.degrees=S->degrees;  // put degrees in class
+  denomClass.simplDone=0;
+  denomClass.simplDue=1;           // already one simplex to be done 
+  denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(R)));
+  size_t dc=0;
+  S->classNr=dc; // assignment of class 0 to first simpl in sorted order
+
+  list<STANLEYDATA_INT>::iterator prevS = StanleyDec.begin();
+
+  for(++S;S!=StanleyDec.end();++S,++prevS){
+    if(S->degrees==prevS->degrees){                     // compare to predecessor
+        S->classNr=dc;              // assign class to simplex
+        denomClasses[dc].first.simplDue++;         // number of simplices in class ++
+    }
+    else{
+        denomClass.degrees=S->degrees;  // make new class
+        denomClass.simplDone=0;
+        denomClass.simplDue=1;
+        denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(R)));
+        dc++;
+        S->classNr=dc;
+    }
+  }
+
+  if(verbose_INT)
+    cout << denomClasses.size() << " denominator classes built" << endl;
+
   const RingElem& t=indets(R)[0];
   // const vector<RingElem>& x = indets(R);
-  
-  map<vector<long>,RingElem> denomClasses;
+
 
   RingElem F(one(R)); // to have something
-        
-  F=readPolynomial(project,R);        
-  cout << "Polynomial read" << endl;
-  
 
-  long i,j;
-  
+  F=readPolynomial(project,R);        
+  if(verbose_INT)
+    cout << "Polynomial read" << endl;
+
+  vector<RingElem> compsF= homogComps(F);
+  homogeneous=true;
+  if(F!=compsF[compsF.size()-1])
+    homogeneous=false;
+  for(int i=0;i< (long) compsF.size();++i) // no longer needed
+    compsF[i]=0;
+
   factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
-  cout <<"Factorization" << endl;  // we show the factorization so that the user can check
-  for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-  cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  if(verbose_INT){
+    cout <<"Factorization" << endl;  // we show the factorization so that the user can check
+    for(i=0;i<nf;++i)
+        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+    cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  }
 
-  
   vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
   vector<CyclRatFunct> DummyCRFVect; // for\sum i^n t^ki vor various values of k and n
   CyclRatFunct DummyCRF(zero(R));
@@ -368,104 +448,80 @@ void generalizedEhrhartSeries(const string& project){
 
   CyclRatFunct H(zero(R)); // accumulates the series
   
-  while(1) // the main loop for evaluation of the Stanley decomposition
-  {
-  
-  size_t dec_size=StanleyDec.size();
-  bool skip_remaining=false;
-  
-  cout << "********************************************" << endl;
-  cout << dec_size <<" simplicial cones remaining" << endl;
-  cout << "********************************************" << endl;
-    
+  if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << dec_size <<" simplicial cones to be evaluated" << endl;
+    cout << "********************************************" <<  endl;
+  }
+ 
+  size_t nrSimplDone=0;
+
   #pragma omp parallel private(i)
   {
 
   long degree_b;
-  list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
-  long det, rank=S->key.size();
-  vector<long> degrees(rank);
+  long det;
+  bool evaluateClass;
+  vector<long> degrees;
   vector<vector<long> > A(rank);
-  map<vector<long>,RingElem>::iterator den_found;
-  
-  
+  list<STANLEYDATA_INT>::iterator S=StanleyDec.begin();
+
   RingElem h(zero(R));     // for use in a simplex
-  CyclRatFunct hr(zero(R));
+  CyclRatFunct HClass(zero(R)); // for single class
   
-  size_t spos=0,s;  
-  #pragma omp for schedule(dynamic) // parallelization will be interrupted as soon as
-  for(s=0;s<dec_size;++s){          // 50 denominator classes have run up
-      for(;spos<s;++spos,++S);
-      for(;spos>s;--spos,--S);
-     if(skip_remaining)
-         continue;
+
+  size_t s,spos=0;  
+  #pragma omp for schedule(dynamic) 
+  for(s=0;s<dec_size;++s){
+    for(;spos<s;++spos,++S);
+    for(;spos>s;--spos,--S);
 
     det=S->offsets.size();
+    degrees=S->degrees;
     
     for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]-1]; // will not be changed
-        
-    degrees=MxV(A,grading);
-    for(i=0;i<rank;++i)
-        degrees[i]/=gradingDenom; // must be divisible
+        A[i]=gens[S->key[i]-1];
 
     h=0;
-    long iS=S->offsets.size();       
+    long iS=S->offsets.size();    // compute numerator for simplex being processed   
     for(i=0;i<iS;++i){
         degree_b=scalProd(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,F);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,F,degrees);
     }
-    h=orderExpos(h,degrees); 
+    // h=orderExpos(h,degrees);
+    // cout << "Simpl " << s+1 << " NumTerms " << NumTerms(h) << endl;
     
-    #pragma omp critical (NEWCLASS) // insert into denominator classes or add to existing
+    evaluateClass=false; // necessary to evaluate class only once
+    #pragma omp critical (ADDTOCLASS) 
     { 
-    den_found=denomClasses.find(degrees);
-    if(den_found!=denomClasses.end()){
-        den_found->second+=h;    
+        denomClasses[S->classNr].second+=h;
+        denomClasses[S->classNr].first.simplDone++;
+        
+        if(denomClasses[S->classNr].first.simplDone==denomClasses[S->classNr].first.simplDue)
+            evaluateClass=true;
     }
-    else{
-        denomClasses.insert(pair<vector<long>,RingElem>(degrees,h));
-        cout << "Denom class " << denomClasses.size() << 
-             " degrees ";
-        for(i=0;i<rank;++i)
-        cout << degrees[i] << " ";
-        cout << endl << flush;
-    } // else
-    } // critical
-    S->done=true; // mark the finished ones
+    if(evaluateClass)
+    {
+        HClass=evaluateDenomClass(GFP,denomClasses[S->classNr]);
+        #pragma omp critical(ACCUMULATE)
+        {
+            H.addCRF(HClass);
+        }
+        
+    }
     
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((s+1)%10==0)
-        cout << "Simpl " << s+1 << " done" << endl << flush;
+    if((++nrSimplDone)%10==0 && verbose_INT)
+        cout << nrSimplDone << " simplicial cones done" << endl;
     }
-    if(denomClasses.size()>=50) // prepare for evaluation
-        skip_remaining=true;
-        
+ 
   }  // Stanley dec
     
   } // parallel
   
-  if(skip_remaining)
-    H.addCRF(evaluateDenomClasses(GFP,denomClasses));
-    
-  list<STANLEYDATA_INT>::iterator T = StanleyDec.begin(); // delete the finished ones
-  dec_size=StanleyDec.size();
-  for(size_t ii=0;ii<dec_size;++ii){
-      if(T->done)
-          T=StanleyDec.erase(T);
-      else
-          ++T;
-  }
   
-  if(StanleyDec.empty())
-     break;  
-  
-  } // while(1)
-  
-  if(!denomClasses.empty())
-      H.addCRF(evaluateDenomClasses(GFP,denomClasses));  
   
   H.showCoprimeCRF();
   

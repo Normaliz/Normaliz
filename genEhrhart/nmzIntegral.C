@@ -1,5 +1,23 @@
-RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial){
+/*
+ * nmzIntegrate
+ * Copyright (C) 2012-2013  Winfried Bruns, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
+
+RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial){
 
     SparsePolyRing P=AsSparsePolyRing(owner(F));
     vector<long> v(NumIndets(P));
@@ -28,16 +46,25 @@ RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial){
     return(I);
 }
 
-void  writeIntegral(const string&  project,const factorization<RingElem>& FF,
-                             const RingElem& I,const bool& do_leadCoeff, const long& virtDeg){
-                             
+void writeIntegral(const string& project, const factorization<RingElem>& FF,
+                   const RingElem& I, const bool& do_leadCoeff,
+                   const long& virtDeg, const bool& appendOutput) {
+
     string name_open=project+".intOut";                              
     const char* file=name_open.c_str();
-    ofstream out(file);
-    
+    ofstream out;
+    if(appendOutput){
+        out.open(file,ios_base::app);
+        out << endl
+            << "============================================================"
+            << endl << endl;
+    }
+    else {
+        out.open(file);
+    }
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+        out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
     out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
     
     if(do_leadCoeff){
@@ -48,24 +75,28 @@ void  writeIntegral(const string&  project,const factorization<RingElem>& FF,
        out << "Integral: " << I << endl;
 }
 
-void integrate(const string& project, const bool do_leadCoeff){
+void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
   GlobalManager CoCoAFoundations;
 
-  cout << "Integration for " << project << endl;
-  cout << "=======================================" << endl << endl;;
-
+  if (verbose_INT) {
+    cout << "============================================================" << endl;
+    cout << "Integration for " << project << endl;
+    cout << "============================================================" << endl << endl;
+  }
   vector<long> grading;
   long gradingDenom;
   getGrading(project,grading,gradingDenom);
 
   vector<vector<long> > gens;
   readGens(project,gens);
-  cout << "Generators read" << endl;
+  if(verbose_INT) 
+    cout << "Generators read" << endl;
   long dim=gens[0].size();
 
   list<TRIDATA> triang;
   readTri(project,dim,triang);
-  cout << "Triangulation read" << endl;
+  if(verbose_INT)
+     cout << "Triangulation read" << endl;
 
   SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
   // const RingElem& t=indets(R)[0];
@@ -76,14 +107,19 @@ void integrate(const string& project, const bool do_leadCoeff){
   RingElem F(one(R)); // to have something
 
   F=readPolynomial(project,R);
-  cout << "Polynomial read" << endl;
+  if(verbose_INT)
+    cout << "Polynomial read" << endl;
   
   if(do_leadCoeff){
     vector<RingElem> compsF= homogComps(F);
     // cout << "comps " << compsF << endl;
     if(F!=compsF[compsF.size()-1]){
-        cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << flush << endl;
+        homogeneous=false;
+        if(verbose_INT) 
+            cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << endl;
         F=compsF[compsF.size()-1];
+        for(size_t i=0;i<compsF.size();++i) // no longer needed
+            compsF[i]=0;     
     }
   }
   
@@ -96,18 +132,25 @@ void integrate(const string& project, const bool do_leadCoeff){
 
   factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
-  cout <<"Factorization" << endl;  // we show the factorization so that the user can check
-  for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-  cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  if(verbose_INT) 
+    cout <<"Factorization" << endl;  // we show the factorization so that the user can check
+  if(verbose_INT)
+    for(i=0;i<nf;++i)
+        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+  if(verbose_INT)
+    cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
 
   RingElem I(zero(RingQQ())); // accumulates the integral
 
   size_t tri_size=triang.size();
 
-  cout << "********************************************" << endl;
-  cout << tri_size <<" simplicial cones to be evaluated" << endl;
-  cout << "********************************************" << endl;
+  if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << tri_size <<" simplicial cones to be evaluated" << endl;
+    cout << "********************************************" << endl;
+  }
+
+  size_t nrSimplDone=0;
 
   #pragma omp parallel private(i)
   {
@@ -137,16 +180,16 @@ void integrate(const string& project, const bool do_leadCoeff){
         prodDeg*=degrees[i];
     }
 
-    h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
-    ISimpl=(det*IntegralUnitSimpl(h,Factorial))/prodDeg;
+    // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
+    ISimpl=(det*substituteAndIntegrate(FF,A,degrees,F,Factorial))/prodDeg;
 
     #pragma omp critical(INTEGRAL)
     I+=ISimpl;
 
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((s+1)%10==0)
-        cout << "Simpl " << s+1 << " done" << endl << flush;
+    if ((++nrSimplDone)%10==0 && verbose_INT)
+        cout << nrSimplDone << " simplicial cones done" << endl;
     }
 
   }  // triang
@@ -158,14 +201,16 @@ void integrate(const string& project, const bool do_leadCoeff){
     result="(Virtual) leading coefficient of quasipol";
 
 
-   cout << "********************************************" << endl;
-   cout << result << " is " << endl << I << endl;
-   cout << "********************************************" << endl;
+   if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << result << " is " << endl << I << endl;
+    cout << "********************************************" << endl;
+   }
    
-   if(do_leadCoeff){
+   if(do_leadCoeff && verbose_INT){
     cout << "Virtual multiplicity  is " << endl << I*factorial(deg(F)+dim-1) << endl;
     cout << "********************************************" << endl;
    }
    
-   writeIntegral(project,FF,I,do_leadCoeff,deg(F)+dim-1);
+   writeIntegral(project,FF,I,do_leadCoeff,deg(F)+dim-1,appendOutput);
 }

@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz
+ * Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,6 +22,34 @@
 
 namespace libnormaliz {
 using namespace std;
+
+// adds the signs inequalities given by Signs to Inequalities
+template<typename Integer>
+Matrix<Integer> sign_inequalities(const vector< vector<Integer> >& Signs) {
+    if (Signs.size() != 1) {
+        errorOutput() << "ERROR: Bad signs matrix, has "
+                      << Signs.size() << " rows (should be 1)!" << endl;
+        throw BadInputException();
+    }
+    size_t dim = Signs[0].size();
+    Matrix<Integer> Inequ(0,dim);
+    vector<Integer> ineq(dim,0);
+    for (size_t i=0; i<dim; i++) {
+        Integer sign = Signs[0][i];
+        if (sign == 1 || sign == -1) {
+            ineq[i] = sign;
+            Inequ.append(ineq);
+            ineq[i] = 0;
+        } else if (sign != 0) {
+            errorOutput() << "ERROR: Bad signs matrix, has entry "
+                          << sign << " (should be -1, 1 or 0)!" << endl;
+            throw BadInputException();
+        }
+    }
+    return Inequ;
+}
+
+
 
 template<typename Integer>
 Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
@@ -75,7 +103,7 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
         if (it->first == Type::grading) it++;
         single_matrix_input(it->second,it->first);
     } else {               // now we have to have constraints!
-        Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1);
+        Matrix<Integer> Inequalities(0,dim), Equations(0,dim), Congruences(0,dim+1), Signs(0,dim);
         for (; it != multi_input_data.end(); ++it) {
             if (it->second.size() == 0) {
                 continue;
@@ -102,12 +130,22 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
                     }
                     Congruences = it->second;
                     break;
+                case Type::signs:
+                    if (it->second.begin()->size() != dim) {
+                        errorOutput() << "Dimensions of hyperplanes ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+                        throw BadInputException();
+                    }
+                    Signs = sign_inequalities(it->second);
+                    break;
+                case Type::grading:
+                    break; //skip the grading
                 default:
                     errorOutput() << "This InputType combination is currently not supported!" << endl;
                     throw BadInputException();
             }
         }
         if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
+        Inequalities.append(Signs);
         prepare_input_type_456(Congruences, Equations, Inequalities);
     }
 }
@@ -129,6 +167,9 @@ void Cone<Integer>::single_matrix_input(const vector< vector<Integer> >& Input, 
         case Type::normalization:    prepare_input_type_1(Input); break;
         case Type::polytope:         prepare_input_type_2(Input); break;
         case Type::rees_algebra:     prepare_input_type_3(Input); break;
+        case Type::signs:
+          prepare_input_type_45(vector<vector<Integer> >(), sign_inequalities(Input));
+          break;
         case Type::hyperplanes:
           prepare_input_type_45(vector<vector<Integer> >(), Input);
           break;

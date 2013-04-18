@@ -1,6 +1,6 @@
 /*
- * Normaliz 2.8
- * Copyright (C) 2007-2012  Winfried Bruns, Bogdan Ichim, Christof Soeger
+ * Normaliz
+ * Copyright (C) 2007-2013  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -68,6 +68,9 @@ InputType to_type(const std::string& type_string) {
     }
     if (type_string=="6"||type_string=="congruences") {
         return Type::congruences;
+    }
+    if (type_string=="signs") {
+        return Type::signs;
     }
     if (type_string=="10"||type_string=="lattice_ideal") {
         return Type::lattice_ideal;

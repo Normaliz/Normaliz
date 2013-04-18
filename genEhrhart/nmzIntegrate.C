@@ -1,12 +1,29 @@
+/*
+ * nmzIntegrate
+ * Copyright (C) 2012-2013  Winfried Bruns, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 
 #include "CoCoA/library.H"
 using namespace CoCoA;
 
-#include <fstream> 
-// #include <sstream>                
+#include <fstream>
+#include <sstream>
 
-#include <omp.h>
+#include "../libnormaliz/my_omp.h"
 
 #include "../libnormaliz/HilbertSeries.h"
 #include "../libnormaliz/matrix.h"
@@ -16,6 +33,8 @@ using namespace CoCoA;
 using namespace std;
 using namespace libnormaliz;
 
+bool verbose_INT;
+
 #include "nmzIntInput.C"
 #include "nmzIntPoly.C"
 
@@ -23,7 +42,14 @@ using namespace libnormaliz;
 #include "genEhrhart.C"
 #include "nmzIntegral.C"                 
 
-
+void printHeader() {
+    cout << "                                                    \\.....|"<<endl;
+    cout << "                     nmzIntegrate 1.0                \\....|"<<endl;
+    cout << "                                                      \\...|"<<endl;
+    cout << "                 (C) W. Bruns  C. Soeger               \\..|"<<endl;
+    cout << "                        March 2013                      \\.|"<<endl;
+    cout << "                                                         \\|"<<endl;
+}
 void printHelp(char* command) {
     cout << "usage: "<<command<<" [-cEIL?] [-x=<T>] [PROJECT]"<<endl;
     cout << "  runs nmzIntegrate on PROJECT.in"<<endl;
@@ -36,7 +62,6 @@ void printHelp(char* command) {
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
-bool verbose_INT;
 
 //----------------------------------------------------------------------
 // Use main() to analyze options, start computations and 
@@ -56,6 +81,7 @@ int main(int argc, char* argv[])
                 if (argv[i][1]!='x') {
                     option = option + argv[i];
                 } else if (argv[i][2]=='=') {
+                    #ifdef _OPENMP
                     string Threads = argv[i];
                     Threads.erase(0,3);
                     size_t nr_threads;
@@ -64,6 +90,9 @@ int main(int argc, char* argv[])
                     } else {
                         cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
                     }
+                    #else
+                    cerr << "Warning: Compiled without OpenMP support, option "<<argv[i]<<" ignored."<<endl;
+                    #endif
                 } else {
                     cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
                 }
@@ -94,6 +123,7 @@ int main(int argc, char* argv[])
                 do_leadCoeff=true;  
                 break;
             case '?':  //print help text and exit
+                printHeader();
                 printHelp(argv[0]);
                 exit(1);
                 break;
@@ -105,23 +135,29 @@ int main(int argc, char* argv[])
                 break;
         }
     }
-    
+
+    if (verbose_INT) {
+        printHeader();
+    }
+
     if(!do_integral && !do_leadCoeff) // default is -E
         do_genEhrhart=true;
     
-    cout << "+++ " << option << " " << do_genEhrhart << " " << do_integral << " " << do_leadCoeff << endl;
+    // cout << "+++ " << option << " " << do_genEhrhart << " " << do_integral << " " << do_leadCoeff << endl;
 
-    if(do_genEhrhart)
-        generalizedEhrhartSeries(project);
-    else{
-        if(do_integral)
-            integrate(project,false);
-        else{
-            if(do_leadCoeff)
-                integrate(project,true);
-        }
+    bool homogeneous=false;
+    bool appendOutput=false;
+    if (do_genEhrhart) {
+    generalizedEhrhartSeries(project,homogeneous);
+        appendOutput=true;
     }
-            
+    if (do_leadCoeff && !do_genEhrhart) {
+        integrate(project,true,homogeneous,appendOutput);
+        appendOutput=true;
+    }
+    if (do_integral && !homogeneous) {
+        integrate(project,false,homogeneous,appendOutput);
+    }
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)

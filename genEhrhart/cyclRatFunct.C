@@ -1,3 +1,21 @@
+/*
+ * nmzIntegrate
+ * Copyright (C) 2012-2013  Winfried Bruns, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 class CyclRatFunct {
 // class for rational functions whose denominator is a product
 // of cyclotomic polynomials
@@ -125,15 +143,22 @@ void CyclRatFunct::multCRF(const CyclRatFunct& r){
 }
 
 void CyclRatFunct::showCRF(){
+    if(!verbose_INT)
+        return;
+
     cout << num << endl;
     for(size_t i=1;i<denom.size();++i)
         cout << denom[i] << " ";
-    cout << endl << flush;
+    cout << endl;
 }
 
 void CyclRatFunct::showCoprimeCRF(){
 // shows *this also with coprime numerator and denominator
 // makes only sense if only x[0] appears in the numerator (not checked)
+
+    if(!verbose_INT)
+        return;
+
     cout << "--------------------------------------------" << endl << endl;
     cout << "Given form" << endl << endl;
     showCRF();
@@ -148,12 +173,12 @@ void CyclRatFunct::showCoprimeCRF(){
     RingElem h=gcd(f,g);
     f/=h;
     g/=h;
-    cout << "Coprime numerator (for denom with leading term 1)" << endl <<endl;
+    cout << "Coprime numerator (for denom with remaining factor 1)" << endl <<endl;
     factorization<RingElem> gf=factor(g);
     cout << f/gf.myRemainingFactor << endl << endl << "Factorization of denominator" << endl << endl;
     size_t nf=gf.myFactors.size();
     for(size_t i=0;i<nf;++i)
-        cout << gf.myFactors[i] << "  mult " << gf.myMultiplicities[i] << endl;
+        cout << gf.myFactors[i] << "  mult " << gf.myExponents[i] << endl;
     cout << "--------------------------------------------" << endl;
 
 }
@@ -182,7 +207,7 @@ void CyclRatFunct::set2(const RingElem& f, const vector<long>& d)
     denom=d;
 }
 
-void CyclRatFunct::CyclRatFunct::set2(const RingElem& f)
+void CyclRatFunct::set2(const RingElem& f)
 {
     num=f;
     denom.resize(1,0);

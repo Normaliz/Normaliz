@@ -1,3 +1,21 @@
+/*
+ * nmzIntegrate
+ * Copyright (C) 2012-2013  Winfried Bruns, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 RingElem binomial(const RingElem& f, long k)
 // computes binomial coefficient (f choose k)
 {
@@ -122,8 +140,12 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
 }
 */
 
+RingElem orderExpos(const RingElem& F, const vector<long>& degrees);
+RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial);
+
+
 RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
-                     const vector<long>& b, const long& denom, const RingElem& F){
+                     const vector<long>& b, const long& denom, const RingElem& F, vector<long>& degrees){
 // we need F to define the ring
 // applies linar substitution y --> A(y+b/denom) to all factors in FF 
 // and returns the product of the modified factors
@@ -149,13 +171,14 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     RingHom phi=PolyAlgebraHom(R,R,w1);
     RingElem G(phi(FF.myRemainingFactor));
     for(i=0;i<FF.myFactors.size();++i){
-        G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
-    }   
+        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+    }
+    G=orderExpos(G,degrees);
     return(G);   
 }
 
-RingElem homogeneousLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
-                     const vector<long>& degrees, const RingElem& F){
+RingElem substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vector<long> >& A,
+                     const vector<long>& degrees, const RingElem& F, vector<BigInt> Factorial){
 // we need F to define the ring
 // applies linar substitution y --> (A/degress)y to all factors in FF 
 // where row A[i] is divided by degrees[i]
@@ -178,9 +201,9 @@ RingElem homogeneousLinearSubstitutionFL(const factorization<RingElem>& FF,const
     RingHom phi=PolyAlgebraHom(R,R,w1);
     RingElem G(phi(FF.myRemainingFactor));
     for(i=0;i<FF.myFactors.size();++i){
-        G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
-    }   
-    return(G);   
+        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+    }
+    return(IntegralUnitSimpl(orderExpos(G,degrees),Factorial));
 }
 
 vector<RingElem> homogComps(const RingElem& F){

@@ -1,9 +1,28 @@
+/*
+ * nmzIntegrate
+ * Copyright (C) 2012-2013  Winfried Bruns, Christof Soeger
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 typedef unsigned short key_type;
 
 struct STANLEYDATA_INT{
-        vector<key_type> key;
-        vector<vector<long> > offsets;
-        bool done;
+        vector<key_type> key;  // read from dec file
+        vector<long> degrees;
+        vector<vector<long> > offsets;  // ditto
+        size_t classNr;  // number of class of this simplicial cone
     };
     
 struct TRIDATA{
@@ -12,12 +31,12 @@ struct TRIDATA{
 };
 
 void fileMissing(const char* name_in){
-    cerr << "Could not open file " << name_in << endl << flush;
+    cerr << "Could not open file " << name_in << endl;
     exit(1);
 }
 
 void inputError(const char* name_in, const string message){
-    cerr << "File " << name_in << ": " << message << endl << flush;
+    cerr << "File " << name_in << ": " << message << endl;
     exit(1);
 } 
 
@@ -69,7 +88,7 @@ void getGrading(const string& project, vector<long>& grading, long& gradingDenom
 }
 
 void readGens(const string& project, vector<vector<long> >& gens){
-// reads the generaors from the tgn file
+// reads the generators from the tgn file
     string name_in=project+".tgn";
     const char* file_in=name_in.c_str();
     ifstream in;
@@ -94,23 +113,23 @@ void readGens(const string& project, vector<vector<long> >& gens){
             in >> gens[i][j];
         }
     }
-
-    /*for(i=0; i<nrows; i++){
-        for(j=0; j<ncols; j++) {
-            cout << gens[i][j] << " ";
-        }
-        cout << endl;
-    }*/
 }
 
 void polyError(const string& token){
-    cerr << "Error in polynomoial input at token " << token << endl << flush;
+    cerr << "Error in polynomoial input at token " << token << endl;
     exit(1);
 }
 
 long analyzeToken(const string& token, BigRat& newCoeff, long& nrIndet, long& expo){
 // analyzes a token in the polynomial input
-// arguments 2-4 are used for returning values
+// arguments 2-4 are used for returning values if type = 4 or 5
+// types mof tokens:
+// 1: *
+// 2: +
+// 3: -
+// 4: (power of) indeterminate
+// 5: rational number
+
     if(token=="*")
         return(1);
     if(token=="+")
@@ -157,7 +176,11 @@ long analyzeToken(const string& token, BigRat& newCoeff, long& nrIndet, long& ex
 }
 
 void tokenize(const string& inString, vector<string>& Tokens){
-
+// cuts the instring into tokens
+// 
+// care must be taken since some characters that indicate the start of a new token
+// are themselves tokens and others only start the new token
+// oneback takes care of this problem
     bool first=true;
     size_t oneback=0;
 
@@ -204,41 +227,41 @@ RingElem readPolynomial(const string& project, const SparsePolyRing R){
     bool pm_preceding=false, first=true;
     newCoeff=1;
 
-    while(in.good()){
+    while(in.good() || current < Tokens.size()){  // end of file not yet reached or remaining tokens to be processed
 
-       if(current+1>Tokens.size()){
-           Tokens.clear();
-           in >> inString;
-           if(in.fail()){ // eof reached
-               if(first)
+       if(current+1>Tokens.size()){ // indicates that the tokens already read
+           Tokens.clear();          // have been completely processed
+           in >> inString;          // and we must read a new string.
+           if(in.fail()){           // eof reached: the last term must now be added to the current factor.
+               if(first)            // first indicates that a new term must follow
                    polyError(token);
                newPoly[newPoly.size()-1]+=monomial(R,newCoeff,newExpo);
                break;
            }
-           tokenize(inString,Tokens);
+           tokenize(inString,Tokens); // break the input string into tokens
            current=0;
         }
 
         token=Tokens[current];
         current++;
 
-        if(token.size()==0 || token=="(" || token==")")
+        if(token.size()==0 || token=="(" || token==")") // ( and ) are skipped
             continue;
 
         typ=analyzeToken(token,readCoeff,nrIndet,expo);
 
-        if((typ<=3 && pm_preceding) || (typ==1 && first))
-            polyError(token);
+        if((typ<=3 && pm_preceding) || (typ==1 && first)) // pm_preceding indicates that
+            polyError(token);               // the preceding token was + or -
 
-        if(typ==5){
-            if(!first)
+        if(typ==5){                 // rational coefficient
+            if(!first)              // must be the first token of the term
                 polyError(token);
-            newCoeff*=readCoeff;
+            newCoeff*=readCoeff;    // this takes care of the sign: the previous token has set it
             pm_preceding=false;
             first=false;
             continue;
         }
-        if(typ==4){
+        if(typ==4){  // (power) indeterminate
             if(nrIndet>dim)
                 polyError(token);
             newExpo[nrIndet]+=expo;
@@ -246,28 +269,28 @@ RingElem readPolynomial(const string& project, const SparsePolyRing R){
             first=false;
             continue;
         }
-        if(typ<=3 && !first){
+        if(typ<=3 && !first){ // term finished, must be added to factor
             newPoly[newPoly.size()-1]+=monomial(R,newCoeff,newExpo);
-            for(size_t i=0;i<newExpo.size();++i)
+            for(size_t i=0;i<newExpo.size();++i)  // reset exponent vector
                 newExpo[i]=0;
         }
-        if(typ==1){
+        if(typ==1){ // now even factor finished and we start a new one
             newPoly.push_back(zero(R));
         }
 
-        newCoeff=1;
+        newCoeff=1; // starting a new term
         first=true;
         pm_preceding=false;
-        if(typ==2 || typ==3)
-            pm_preceding=true;
-        if(typ==3)
+        if(typ==2 || typ==3)   // the current token is + or -
+            pm_preceding=true; 
+        if(typ==3)     // the current token is -
             newCoeff=-1;
 
-    } // while in.good
+    } // while in.good || current < Tokens.size()
 
 
     RingElem p(one(R));
-    for(size_t i=0;i<newPoly.size();++i)
+    for(size_t i=0;i<newPoly.size();++i)  // multiply the factors
         p*=newPoly[i];
     return(p);
 
@@ -304,7 +327,6 @@ void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& Stan
         for(i=0;i<det;++i)
             for(j=0;j<dim;++j)
                 in >> newSimpl.offsets[i][j];
-        newSimpl.done=false;
         StanleyDec.push_back(newSimpl);
     }
 }
@@ -349,8 +371,8 @@ void readTri(const string& project, const long& dim, list <TRIDATA>& triang){
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
-    if (in.is_open()==false) {
-      cout << "Cannot find File " << name_in << ". Trying to read triangulation from dec." << endl << flush;
+    if (in.is_open()==false && verbose_INT) {
+      cout << "Cannot find File " << name_in << ". Trying to read triangulation from dec." << endl;
       readTriFromDec(project,dim,triang);
       return;   
     }
