@@ -724,14 +724,14 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     The parameter recursive indicates whether the pyramids that will be created 
     in process_pyramid(s) are of type (i) or (ii).
     
-    We must also know whether "this" is of ytpe (i) or (ii). This is indicted by
+    We must also know whether "this" is of type (i) or (ii). This is indicted by
     do_all_hyperplanes.
     
     recursion_allowed indicates whether recursive pyramids can be created from "this". 
     It has the same value as do_all_hyperplanes, except possibly for the top cone.
     By setting recursion_allowed=false in the constructor of the top cone,
     one can suppress recursive pyramids completely, but do_all_hyperplanes
-    must be set to true for the ttop cone.
+    must be set to true for the top cone.
     
     Pyramids of type (ii) set recursion_allowed=false.
     
@@ -1444,13 +1444,13 @@ void Full_Cone<Integer>::extend_cone() {
     }
 
     // transfer Facets --> SupportHyperplanes
-    if(do_all_hyperplanes){
+    if (do_all_hyperplanes) {
         typename list<FACETDATA>::const_iterator IHV=Facets.begin();
         for(;IHV!=Facets.end();IHV++){
             Support_Hyperplanes.push_back(IHV->Hyp);
         }
     }
-        Facets.clear();
+    Facets.clear();
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
     if(is_pyramid && do_all_hyperplanes){ // must give supphyps back to maother
@@ -1611,8 +1611,10 @@ void Full_Cone<Integer>::primal_algorithm(){
             extreme_rays_and_deg1_check();
             if(!pointed) return;
 
-            Support_Hyperplanes.clear();  // will be computed again by build_cone
-            is_Computed.reset(ConeProperty::SupportHyperplanes);
+            // We keep the SupportHyperplanes, so we do not need to recompute them
+            // for the last generator, and use them to make a global reduction earlier
+            do_all_hyperplanes = false;
+            supphyp_recursion = false;
             for(size_t i=0;i<nr_gen;i++)
                 in_triang[i]=false;
             Done = false;
@@ -1622,8 +1624,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     set_degrees();
     sort_gens_by_degree();
 
-    if (!is_pyramid)
+    if (!is_pyramid) {
         SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
+    }
 
     /***** Main Work is done in build_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false
