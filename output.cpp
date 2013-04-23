@@ -83,6 +83,7 @@ template<typename Integer>
 void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
     dim = Result->getDim();
+    rank = Result->getBasisChange().get_rank();
 }
 
 //---------------------------------------------------------------------------
@@ -274,9 +275,10 @@ void Output<Integer>::write_Stanley_dec() const {
 
         const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
         typename list<STANLEYDATA<Integer> >::const_iterator S = StanleyDec.begin();
+        size_t i;
 
-        for(;S!=StanleyDec.end();++S) {
-            for(long i=0;i<dim;++i)
+        for (; S!=StanleyDec.end(); ++S) {
+            for (i=0; i<rank; ++i)
                 out << S->key[i]+1 <<" ";
             out << endl;
             S->offsets.print(out);
@@ -301,7 +303,6 @@ template<typename Integer>
 void Output<Integer>::write_inv_file() const{
     if (inv==true) {//printing .inv file
         size_t i;
-        size_t rank=Result->getBasisChange().get_rank();
         string name_open=name+".inv";                              //preparing output files
         const char* file=name_open.c_str();
         ofstream inv(file);
@@ -384,8 +385,6 @@ void Output<Integer>::write_inv_file() const{
 template<typename Integer>
 void Output<Integer>::write_files() const {
     const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
-    size_t dim  = BasisChange.get_dim();
-    size_t rank = BasisChange.get_rank();
     size_t i, nr;
     Matrix<Integer> Generators = Result->getGenerators();
     Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanes());

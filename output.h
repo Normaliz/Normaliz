@@ -44,7 +44,8 @@ class Output {
     bool ht1;
     bool dec;
     Cone<Integer>* Result;
-    long dim;
+    size_t dim;
+    size_t rank;
 
 //---------------------------------------------------------------------------
 public:
