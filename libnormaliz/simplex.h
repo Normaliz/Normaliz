@@ -82,6 +82,7 @@ class SimplexEvaluator {
     //Integer volume;
     Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
+    size_t collected_elements_size;
     Matrix<Integer> Generators;
     Matrix<Integer> TGenerators;
     Matrix<Integer> GenCopy;

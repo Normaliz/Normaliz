@@ -724,14 +724,14 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     The parameter recursive indicates whether the pyramids that will be created 
     in process_pyramid(s) are of type (i) or (ii).
     
-    We must also know whether "this" is of ytpe (i) or (ii). This is indicted by
+    We must also know whether "this" is of type (i) or (ii). This is indicted by
     do_all_hyperplanes.
     
     recursion_allowed indicates whether recursive pyramids can be created from "this". 
     It has the same value as do_all_hyperplanes, except possibly for the top cone.
     By setting recursion_allowed=false in the constructor of the top cone,
     one can suppress recursive pyramids completely, but do_all_hyperplanes
-    must be set to true for the ttop cone.
+    must be set to true for the top cone.
     
     Pyramids of type (ii) set recursion_allowed=false.
     
@@ -760,15 +760,41 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     typename list< FACETDATA >::iterator l=Facets.begin();
     size_t listsize=Facets.size();
+    Integer ov_sp; // Order_Vector scalar product
+    bool skip_triang; // make hyperplanes but skip triangulation (recursive pyramids only)
 
     // no need to parallelize the followqing loop since ALL pyramids
     // are now processed in parallel (see version 2.8 for parallel version)
     // BUT: new hyperplanes can be added before the loop has been finished.
     // Therefore we must work with listsize.
-    for (size_t kk=0; kk<listsize;++l, ++kk) {
+    for (size_t kk=0; kk<listsize; ++l, ++kk) {
 
-        if(l->ValNewGen>=0 ||(!recursive && Top_Cone->do_partial_triangulation && l->ValNewGen>=-1)){
+        if (l->ValNewGen>=0) // facet not visible
             continue;
+
+        skip_triang = false;
+        if (Top_Cone->do_partial_triangulation && l->ValNewGen>=-1) { //ht1 criterion
+            if (!is_pyramid) { // in the topcone we always have ov_sp > 0
+                skip_triang = true;
+            } else {
+                //check if it would be an excluded hyperplane
+                ov_sp = v_scalar_product(l->Hyp,Order_Vector);
+                if (ov_sp > 0) {
+                    skip_triang = true;
+                } else if (ov_sp == 0) {
+                    for (size_t i=0; i<dim; i++) {
+                        if (l->Hyp[i]>0) {
+                            skip_triang = true;
+                            break;
+                        } else if (l->Hyp[i]<0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (skip_triang && !recursive) {
+                continue;
+            }
         }
 
         Pyramid_key.clear(); // make data of new pyramid
@@ -783,7 +809,11 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         in_Pyramid.set(new_generator);
 
         // now we can store the new pyramid at the right place (or finish the simplicial ones)
-        process_pyramid(Pyramid_key, in_Pyramid, new_generator,store_level,-l->ValNewGen, recursive);
+        if (recursive && skip_triang) { // mark as "do not triangulate"
+            process_pyramid(Pyramid_key, in_Pyramid, new_generator,store_level,0, recursive);
+        } else { //default
+            process_pyramid(Pyramid_key, in_Pyramid, new_generator,store_level,-l->ValNewGen, recursive);
+        }
 
         if(Top_Cone->nrRecPyrs[store_level]>EvalBoundRecPyr && start_level==0){
             evaluate_rec_pyramids(store_level);
@@ -800,7 +830,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 template<typename Integer>
 void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const boost::dynamic_bitset<>& in_Pyramid, 
                           const size_t new_generator,const size_t store_level, Integer height, const bool recursive){
-// processes simplicial pytamids directly, stores other pyramids into their depots
+// processes simplicial pyramids directly, stores other pyramids into their depots
     
     #pragma omp atomic
     Top_Cone->totalNrPyr++;
@@ -817,7 +847,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
                 NewFacets.push_back(H[i]);
             select_supphyps_from(NewFacets,new_generator,in_Pyramid);  // SEE BELOW
         }
-        if (do_triangulation || (do_partial_triangulation && height > 1)) {
+        if (height != 0 && (do_triangulation || do_partial_triangulation)) {
             //if(recursion_allowed) {                                   // AT PRESENT
             //    #pragma omp critical(TRIANG)                          // NO PARALLELIZATION
             //     store_key(Pyramid_key,height,0,Triangulation);       // HERE
@@ -832,8 +862,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
             Pyramid.Mother=this;
             Pyramid.in_Pyramid=in_Pyramid;    // need these data to give back supphyps
             Pyramid.new_generator=new_generator;
-            if (do_partial_triangulation && height <= 1) {
+            if (height == 0) { //indicates "do not triangulate"
                 Pyramid.do_partial_triangulation = false;
+                Pyramid.do_Hilbert_basis = false;
             }
             nrRecPyramidsDue++;
             #pragma omp critical(RECPYRAMIDS)
@@ -841,8 +872,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
             Top_Cone->RecPyrs[store_level].push_back(Pyramid); 
             Top_Cone->nrRecPyrs[store_level]++;            
             } // critical
-       } 
-       else{
+       } else { //not recursive
            vector<key_t> key_wrt_top(Pyramid_key.size());
            for(size_t i=0;i<Pyramid_key.size();i++)
                 key_wrt_top[i]=Top_Key[Pyramid_key[i]];
@@ -1351,7 +1381,7 @@ void Full_Cone<Integer>::extend_cone() {
             deg1_triangulation = (gen_degrees[i] == 1);
         
             
-        // First we test whether to go to rwecursive pyramids because of too many supphyps
+        // First we test whether to go to recursive pyramids because of too many supphyps
         // Once we have done so, we must stay with it
         if( supphyp_recursion || (recursion_allowed && nr_neg*nr_pos>RecBoundSuppHyp)){  // go to pyramids because of supphyps
              if(check_evaluation_buffer()){
@@ -1367,12 +1397,12 @@ void Full_Cone<Integer>::extend_cone() {
             allRecPyramidsBuilt=true;
             nextGen=i+1; 
             return; // in recursive mode we stop at this point and come back later
-                    // to procedd with nextGen
+                    // to proceed with nextGen
         }
         else{ // now we check whether to go to pyramids because of the size of triangulation
             if( tri_recursion || (do_triangulation 
-                         && (nr_neg*TriangulationSize > RecBoundTriang 
-                                || 3*omp_get_max_threads()*TriangulationSize>EvalBoundTriang ))){ // go to pyramids because of triangulation
+                && (nr_neg*TriangulationSize > RecBoundTriang 
+                    || 3*omp_get_max_threads()*TriangulationSize>EvalBoundTriang ))){ // go to pyramids because of triangulation
                 if(check_evaluation_buffer()){
                     Top_Cone->evaluate_triangulation();
                 }
@@ -1414,13 +1444,13 @@ void Full_Cone<Integer>::extend_cone() {
     }
 
     // transfer Facets --> SupportHyperplanes
-    if(do_all_hyperplanes){
+    if (do_all_hyperplanes) {
         typename list<FACETDATA>::const_iterator IHV=Facets.begin();
         for(;IHV!=Facets.end();IHV++){
             Support_Hyperplanes.push_back(IHV->Hyp);
         }
     }
-        Facets.clear();
+    Facets.clear();
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
     if(is_pyramid && do_all_hyperplanes){ // must give supphyps back to maother
@@ -1539,26 +1569,15 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;
-
-    if (do_partial_triangulation) { //TODO smarter sorting!
-        if (verbose) {
-            verboseOutput() << "deg1: " << flush << Deg1_Elements.size()
-                         << "   cand: " << flush << Candidates.size() << endl;
-        }
-//        Deg1_Elements.sort();
-        Deg1_Elements.unique();
-//        Candidates.sort();
-        Candidates.unique();
-    }
     } // do_evaluation
 
     if (verbose)
     {
         verboseOutput() << totalNrSimplices << " simplices";
         if(do_Hilbert_basis)
-            verboseOutput() << ", " << Candidates.size() << " HB candidates";
+            verboseOutput() << ", " << CandidatesSize << " HB candidates";
         if(do_deg1_elements)
-            verboseOutput() << ", " << Deg1_Elements.size()<< " deg1 vectors";
+            verboseOutput() << ", " << CandidatesSize << " deg1 vectors";
         verboseOutput() << " accumulated." << endl;
     }
     
@@ -1569,7 +1588,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         TriangulationSize=0;
     }
     
-} // TriangulationSize
+    } // TriangulationSize
 
 }
 
@@ -1592,8 +1611,10 @@ void Full_Cone<Integer>::primal_algorithm(){
             extreme_rays_and_deg1_check();
             if(!pointed) return;
 
-            Support_Hyperplanes.clear();  // will be computed again by build_cone
-            is_Computed.reset(ConeProperty::SupportHyperplanes);
+            // We keep the SupportHyperplanes, so we do not need to recompute them
+            // for the last generator, and use them to make a global reduction earlier
+            do_all_hyperplanes = false;
+            supphyp_recursion = false;
             for(size_t i=0;i<nr_gen;i++)
                 in_triang[i]=false;
             Done = false;
@@ -1603,8 +1624,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     set_degrees();
     sort_gens_by_degree();
 
-    if (!is_pyramid)
+    if (!is_pyramid) {
         SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
+    }
 
     /***** Main Work is done in build_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false
@@ -1658,11 +1680,12 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     
     if (do_deg1_elements) {
+        Deg1_Elements.splice(Deg1_Elements.begin(), Candidates);
         for(size_t i=0;i<nr_gen;i++)
-            if(v_scalar_product(Grading,Generators[i])==1)
+            if(in_triang[i] && v_scalar_product(Grading,Generators[i])==1)
                 Deg1_Elements.push_front(Generators[i]);
         Deg1_Elements.sort();
-        Deg1_Elements.unique();
+        Deg1_Elements.unique();  //TODO sort, unique needed?
         is_Computed.set(ConeProperty::Deg1Elements,true);
     }
     if (do_h_vector) {
@@ -2253,7 +2276,9 @@ void Full_Cone<Integer>::global_reduction() {
         for(;j < cpos; --cpos, --c) ;
 
         norm=v_scalar_product(degree_function,(*c));
+        c->reserve(dim+1);
         c->push_back(norm);
+
     }
     if(verbose) {
         verboseOutput()<<"sorting the list... "<<endl;
@@ -2531,6 +2556,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    CandidatesSize=0;
     detSum = 0;
     
     FS.resize(omp_get_max_threads());
@@ -2604,6 +2630,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
         Top_Key[i]=i;
     totalNrSimplices=0;
     TriangulationSize=0;
+    CandidatesSize=0;
     detSum = 0;
     
     do_all_hyperplanes=true;
@@ -2671,6 +2698,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
         }
     }
     TriangulationSize=0;
+    CandidatesSize=0;
     
     recursion_allowed=C.recursion_allowed; // must be reset for non-recursive pyramids
     do_all_hyperplanes=true; //  must be reset for non-recursive pyramids

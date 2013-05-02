@@ -134,6 +134,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   dim(fc.dim),
   det_sum(0),
   mult_sum(0),
+  collected_elements_size(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
   GenCopy(dim,dim),
@@ -170,8 +171,8 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     Full_Cone<Integer>& C = *C_ptr;
 
     bool do_only_multiplicity =
-        C.do_only_multiplicity
-        || (s.height==1 && C.do_partial_triangulation);
+        C.do_only_multiplicity;
+//        || (s.height==1 && C.do_partial_triangulation);
 
     size_t i,j;
 
@@ -466,7 +467,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         }
 
         // the case of Hilbert bases and degree 1 elements, only added if height >=2
-        if (!C.do_partial_triangulation || s.height >= 2) {
+//        if (!C.do_partial_triangulation || s.height >= 2) {
             if (C.do_Hilbert_basis) {
                 Candidates.push_back(v_merge(elements[last],norm));
                 continue;
@@ -475,8 +476,9 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
                 help=GenCopy.VxM(elements[last]);
                 v_scalar_division(help,volume);
                 Collected_Elements.push_back(help);
+                collected_elements_size++;
             }
-        }
+//        }
     }
 
 
@@ -510,6 +512,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             *jj = GenCopy.VxM(*jj);
             v_scalar_division(*jj,volume);
             ++jj;
+            collected_elements_size++;
         }
     }
 
@@ -518,11 +521,10 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     return volume;
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
-    if (C_ptr->do_partial_triangulation) // we cannot use the criterion then
-        return false;
-
     for (size_t i=0; i<dim; i++)
         if (cand[i]==0 && Excluded[i])
             return true;
@@ -591,27 +593,13 @@ bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& n
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::transfer_candidates() {
-    if (C_ptr->do_partial_triangulation) {
-        Collected_Elements.sort();
-        Collected_Elements.unique();
-    }
-    if (C_ptr->do_deg1_elements) {
-        if (C_ptr->do_partial_triangulation) {
-            #pragma omp critical(HT1ELEMENTS)
-            C_ptr->Deg1_Elements.merge(Collected_Elements);
-        } else {
-            #pragma omp critical(HT1ELEMENTS)
-            C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(),Collected_Elements);
-        }
-    }
-    if (C_ptr->do_Hilbert_basis) {
-        if (C_ptr->do_partial_triangulation) {
-            #pragma omp critical(CANDIDATES)
-            C_ptr->Candidates.merge(Collected_Elements);
-        } else {
-            #pragma omp critical(CANDIDATES)
-            C_ptr->Candidates.splice(C_ptr->Candidates.begin(),Collected_Elements);
-        }
+    if ( (C_ptr->do_deg1_elements || C_ptr->do_Hilbert_basis)
+       && collected_elements_size > 0 ) {
+        #pragma omp critical(CANDIDATES)
+        C_ptr->Candidates.splice(C_ptr->Candidates.begin(),Collected_Elements);
+        #pragma omp atomic
+        C_ptr->CandidatesSize += collected_elements_size;
+        collected_elements_size = 0;
     }
 }
 
