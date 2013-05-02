@@ -196,10 +196,12 @@ int main(int argc, char* argv[])
             case 'I':  //nmzIntegrate -I (integrate)
                 nmzInt_I = true;
                 to_compute.set(ConeProperty::Triangulation);
+                to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 'L':  //nmzIntegrate -L (leading term)
                 nmzInt_L = true;
                 to_compute.set(ConeProperty::Triangulation);
+                to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 'E':  //nmzIntegrate -E (ehrhart series)
                 nmzInt_E = true;
