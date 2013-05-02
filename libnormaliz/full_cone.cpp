@@ -2276,7 +2276,9 @@ void Full_Cone<Integer>::global_reduction() {
         for(;j < cpos; --cpos, --c) ;
 
         norm=v_scalar_product(degree_function,(*c));
+        c->reserve(dim+1);
         c->push_back(norm);
+
     }
     if(verbose) {
         verboseOutput()<<"sorting the list... "<<endl;
