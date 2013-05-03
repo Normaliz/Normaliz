@@ -1322,7 +1322,12 @@ void Full_Cone<Integer>::extend_cone() {
         }
         
         if(verbose && !is_pyramid) {
-            verboseOutput() << "gen="<< nextGen <<", "<<Facets.size()<<" hyp";
+            verboseOutput() << "gen="<< nextGen <<", ";
+            if (do_all_hyperplanes || nextGen!=last_to_be_inserted) {
+                verboseOutput() << Facets.size()<<" hyp";
+            } else {
+                verboseOutput() << Support_Hyperplanes.size()<<" hyp";
+            }
             if(nrPyramids[0]>0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
                 if(do_triangulation||do_partial_triangulation)
@@ -1433,7 +1438,12 @@ void Full_Cone<Integer>::extend_cone() {
         }
         
         if(verbose && !is_pyramid) {
-            verboseOutput() << "gen="<< i+1 <<", "<<Facets.size()<<" hyp";
+            verboseOutput() << "gen="<< i+1 <<", ";
+            if (do_all_hyperplanes || i!=last_to_be_inserted) {
+                verboseOutput() << Facets.size()<<" hyp";
+            } else {
+                verboseOutput() << Support_Hyperplanes.size()<<" hyp";
+            }
             if(nrPyramids[0]>0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
             if(do_triangulation||do_partial_triangulation)
@@ -1590,6 +1600,22 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     } // TriangulationSize
 
+    // intermediate reduction //TODO better integration
+    if (do_Hilbert_basis && CandidatesSize >= 10000000) {
+        if (!isComputed(ConeProperty::SupportHyperplanes)) {
+            if (verbose) {
+                verboseOutput() << "**** Computing support hyperplanes for intermediate reduction:" << endl;
+            }
+            Full_Cone copy((*this).Generators); //TODO give more information
+            copy.compute_support_hyperplanes();
+            Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
+            is_Computed.set(ConeProperty::SupportHyperplanes);
+            do_all_hyperplanes = false;
+        }
+        global_reduction();
+        Candidates.splice(Candidates.begin(), Hilbert_Basis);
+    }
+
 }
 
 //---------------------------------------------------------------------------
@@ -1626,6 +1652,11 @@ void Full_Cone<Integer>::primal_algorithm(){
 
     if (!is_pyramid) {
         SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
+        // this is used when we want to make intermediate reductions
+        if (do_Hilbert_basis)
+        for (size_t i = 0; i <nr_gen; i++) {
+            Candidates.push_front(Generators[i]);
+        }
     }
 
     /***** Main Work is done in build_cone() *****/
@@ -1671,6 +1702,7 @@ void Full_Cone<Integer>::primal_algorithm(){
         is_Computed.set(ConeProperty::Multiplicity,true);
     if (do_Hilbert_basis) {
         global_reduction();
+        Hilbert_Basis.sort(); Hilbert_Basis.unique(); // TODO make it smarter!
         is_Computed.set(ConeProperty::HilbertBasis,true);
         check_integrally_closed();
         if (isComputed(ConeProperty::Grading)) {
@@ -2239,10 +2271,10 @@ void Full_Cone<Integer>::global_reduction() {
     list <vector<Integer> > HB;
     typename list <vector<Integer> >::iterator c;
     
-    for (size_t i = 0; i <nr_gen; i++) {
+/*    for (size_t i = 0; i <nr_gen; i++) {
         if (in_triang[i])
             Candidates.push_front(Generators[i]);
-    }
+    }*/ //now done earlier
 /*    if(verbose) verboseOutput()<<"sorting the candidates... "<<flush;
     Candidates.sort();
     if(verbose) verboseOutput()<<"make them unique... "<<flush;
