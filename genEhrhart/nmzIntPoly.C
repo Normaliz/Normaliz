@@ -89,13 +89,6 @@ vector<long> MxV(const vector<vector<long> >& M, vector<long> V){
     return(P);
 }
 
-long scalProd(const vector<long>& a, const vector<long>& b){
-    long s=0;
-    for(size_t i=0;i<a.size();++i)
-        s+=a[i]*b[i];
-    return(s);
-}
-
 vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<long> >& M){
 // vector*matrix
     SparsePolyRing R=AsSparsePolyRing(owner(V[0]));
@@ -314,7 +307,7 @@ RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, 
       RingElem G(factorsRead[i]);
       if(deg(G)==0){         
         remainingFactor*=G;  // constants go into remainingFactor
-        continue;       
+        continue;            // this extra treatment would not be necessary      
       }
       
     vector<RingElem> compsG= homogComps(G);
@@ -326,14 +319,14 @@ RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, 
        homogeneous=false;
        if(do_leadCoeff){
            G=compsG[compsG.size()-1];
-           factorsRead[i]=G;  // it may no longer be the factor read from input
+           factorsRead[i]=G;  // though it may no longer be the factor read from input
        }    
     }
      
     factorization<RingElem> FF=factor(G);              // now the factorization and transfer to integer coefficients
     for(j=0;j< (long) FF.myFactors.size();++j){
         primeFactorsNonhom.push_back(FF.myFactors[j]); // these are the factors of the polynomial to be integrated
-        primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors[j]),RZZ)); // these are the homogenized factors
+        primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors[j]),RZZ)); // the homogenized factors with ZZ coeff
         multiplicities.push_back(FF.myExponents[j]);                          // homogenized for substitution !
       }
       remainingFactor*=FF.myRemainingFactor;
@@ -341,7 +334,7 @@ RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, 
   
   // cout << "remainingFactor " << remainingFactor  << endl; 
   
- // it remains to collect multiple factors that can come from different input factors
+ // it remains to collect multiple factors that come from different input factors
   
   for(i=0;i< (long) primeFactors.size();++i)
     if(primeFactors[i]!=0)
@@ -358,8 +351,8 @@ RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, 
         resMultiplicities.push_back(multiplicities[i]);
   }
   
-  RingElem F(one(R));
-  for(i=0;i< (long) factorsRead.size();++i)  // multiply the factors
+  RingElem F(one(R));                        //th polynomial to be integrated
+  for(i=0;i< (long) factorsRead.size();++i)  // with QQ coefficients
         F*=factorsRead[i];
   
   // cout << "F= " << F << endl; 

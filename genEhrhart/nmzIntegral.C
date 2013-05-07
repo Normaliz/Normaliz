@@ -87,7 +87,7 @@ void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneou
   getRankAndGrading(project,rank,grading,gradingDenom);
 
   vector<vector<long> > gens;
-  readGens(project,gens);
+  readGens(project,gens,grading);
   if(verbose_INT) 
     cout << "Generators read" << endl;
   long dim=gens[0].size();
@@ -117,7 +117,7 @@ void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneou
   vector<RingElem> primeFactorsNonhom;
   vector<long> multiplicities;
   RingElem remainingFactor(one(R));
-  
+   
   RingElem F=processInputPolynomial(project,R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,do_leadCoeff);
                 

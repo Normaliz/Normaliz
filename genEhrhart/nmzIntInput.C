@@ -16,7 +16,7 @@
  *
  */
 
-typedef unsigned short key_type;
+typedef int key_type;
 
 struct STANLEYDATA_INT{
         vector<key_type> key;  // read from dec file
@@ -39,6 +39,13 @@ void inputError(const char* name_in, const string message){
     cerr << "File " << name_in << ": " << message << endl;
     exit(1);
 } 
+
+long scalProd(const vector<long>& a, const vector<long>& b){
+    long s=0;
+    for(size_t i=0;i<a.size();++i)
+        s+=a[i]*b[i];
+    return(s);
+}
 
 bool existsFile(const string& project, const string& suffix, const bool& mustExist){
 //n check whether file project.suffix exists
@@ -120,7 +127,7 @@ void getRankAndGrading(const string& project,long& rank,vector<long>& grading, l
     in.close();
 }
 
-void readGens(const string& project, vector<vector<long> >& gens){
+void readGens(const string& project, vector<vector<long> >& gens, const vector<long>& grading){
 // reads the generators from the tgn file
     string name_in=project+".tgn";
     const char* file_in=name_in.c_str();
@@ -131,7 +138,7 @@ void readGens(const string& project, vector<vector<long> >& gens){
     }
     long nrows, ncols;
     in >> nrows >> ncols;
-    if(nrows==0 || ncols==0){
+    if(nrows==0 || ncols!=(long) grading.size()){
         inputError(file_in,"seems corrupted.");
     }
 
@@ -141,10 +148,18 @@ void readGens(const string& project, vector<vector<long> >& gens){
     for(i=0;i<nrows;++i)
         gens[i].resize(ncols);
 
+    long degree,prevDegree=1;
     for(i=0; i<nrows; i++){
         for(j=0; j<ncols; j++) {
             in >> gens[i][j];
         }
+        degree=scalProd(gens[i],grading);
+        if(degree<prevDegree){
+               cerr << "Fatal error: degrees of generators not weakly ascending" << endl;
+               cerr << "PLEASE CONTACT THE AUTHORS" << endl;
+               exit(1);
+        }
+        prevDegree=degree;
     }
 }
 
@@ -396,13 +411,24 @@ void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& Stan
     STANLEYDATA_INT newSimpl;
     long i=0,j,det,dummy;
     newSimpl.key.resize(dim);
+    
+    long test;
 
     while(in.good()){
         in >> newSimpl.key[0];
         if(in.fail())
             break;
-        for(i=1;i<dim;++i)
+        test=-1;
+        for(i=1;i<dim;++i){
             in >> newSimpl.key[i];
+            if(newSimpl.key[i]<=test){
+                cerr << "Fatal error: Key of simplicial cone not ascending" << endl;
+                cerr << "PLEASE CONTACT THE AUTHORS" << endl;
+                exit(1);
+            }
+            test=newSimpl.key[i];
+        }
+        
         in >> det;
         in >> dummy;
         if(dummy!=dim){
@@ -438,6 +464,7 @@ void readTriFromDec(const string& project, const long& dim,list<TRIDATA>& triang
             break;
         for(i=1;i<dim;++i)
             in >> newSimpl.key[i];
+        sort(newSimpl.key.begin(),newSimpl.key.end()); // should come sorted, nevertheless for stability
         in >> det;
         newSimpl.vol=det;
         in >> dummy;
@@ -481,6 +508,7 @@ void readTri(const string& project, const long& dim, list <TRIDATA>& triang){
             break;    
         for(i=1;i<dim;++i)
             in >> newSimpl.key[i];
+        sort(newSimpl.key.begin(),newSimpl.key.end()); // should come sorted, nevertheless for stability
         in >> newSimpl.vol;
         triang.push_back(newSimpl);        
     }

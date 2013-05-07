@@ -335,7 +335,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   getRankAndGrading(project,rank,grading,gradingDenom);
   
   vector<vector<long> > gens;
-  readGens(project,gens);
+  readGens(project,gens,grading);
   if(verbose_INT)
     cout << "Generators read" << endl;
   long dim=gens[0].size();
