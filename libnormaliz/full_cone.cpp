@@ -664,6 +664,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
         if (keep_triangulation)
             sort(newsimplex.key.begin(),newsimplex.key.end());
         Top_Cone->SimplexEval[tn].evaluate(newsimplex);
+        // restore the local generator numbering, needed in extend_triangulation
         newsimplex.key=key;
     }
     

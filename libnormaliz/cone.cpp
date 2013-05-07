@@ -872,6 +872,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         for (size_t i = 0; i<tri_size; ++i) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
+            sort(Triangulation[i].first.begin(), Triangulation[i].first.end());
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
                 Triangulation[i].second = simp.vol;
             else
