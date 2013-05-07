@@ -161,10 +161,7 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
         for(i=0;i<mg;i++)     // now we replace the powers of var k
         {                      // by the corrseponding rational function,
                                // multiply, and sum the products
-            // g=GFP[degrees[k-1]][i];
-            // g=genFunctPower1(P,degrees[k-1],i);
-            // cout << "g "; g.showCRF(); cout << endl;
-            // g.num*=c[i];
+
             h.num=(1-power(t,degrees[k-1]))*h.num+GFP[degrees[k-1]][i].num*c[i];
             h.denom=GFP[degrees[k-1]][i].denom;
         }
@@ -307,7 +304,7 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   vector<mpz_class> HCoeff3(HCoeff0.size());
   for(i=0;i<HCoeff1.size();++i){
     HC2=num(HCoeff1[i]*commonDenBI);        // to BigInt
-    HCoeff3[i]=mpz_class(mpzref(HC2));      // to mpz_class 
+    HCoeff3[i]=mpz(HC2);      // to mpz_class 
   }
 
   vector<long> denomDeg=denom2degrees(H.denom);
@@ -327,14 +324,15 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   long i,j;
   
   if(verbose_INT){
-    cout << "============================================================" << endl;
+    cout << "==========================================================" << endl;
     cout << "Generalized Ehrhart series " << project << endl;
-    cout << "============================================================" << endl << endl;
+    cout << "==========================================================" << endl << endl;
   }
 
   vector<long> grading;
   long gradingDenom;
-  getGrading(project,grading,gradingDenom);
+  long rank;
+  getRankAndGrading(project,rank,grading,gradingDenom);
   
   vector<vector<long> > gens;
   readGens(project,gens);
@@ -343,10 +341,8 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   long dim=gens[0].size();
   long maxDegGen=scalProd(gens[gens.size()-1],grading)/gradingDenom; 
   
-  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
-  
   list<STANLEYDATA_INT> StanleyDec;
-  readDec(project,dim,StanleyDec);
+  readDec(project,rank,StanleyDec);
   if(verbose_INT)
     cout << "Stanley decomposition read" << endl;
     
@@ -355,13 +351,14 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   // Now we sort the Stanley decomposition by denominator class (= degree class)
 
   list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
-  
-  long rank=S->key.size();
+
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
   
   // prepare sorting by computing degrees of generators
 
+  BigInt lcmDets(1); // to become the lcm of all dets of simplicial cones
+  
   for(;S!=StanleyDec.end();++S){
       for(i=0;i<rank;++i)    // select submatrix defined by key
         A[i]=gens[S->key[i]-1];
@@ -369,10 +366,17 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
       for(i=0;i<rank;++i)
         degrees[i]/=gradingDenom; // must be divisible
       S->degrees=degrees;
+      lcmDets=lcm(lcmDets,S->offsets.size());
   }
   
+  if(verbose_INT)
+    cout << "lcm(dets)=" << lcmDets << endl;
+  
   StanleyDec.sort(compareDegrees);
-
+  
+  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
+  SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
+  const RingElem& t=indets(RZZ)[0];
 
   if(verbose_INT)
     cout << "Stanley decomposition sorted" << endl; 
@@ -385,7 +389,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   denomClass.degrees=S->degrees;  // put degrees in class
   denomClass.simplDone=0;
   denomClass.simplDue=1;           // already one simplex to be done 
-  denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(R)));
+  denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(RZZ)));
   size_t dc=0;
   S->classNr=dc; // assignment of class 0 to first simpl in sorted order
 
@@ -400,7 +404,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
         denomClass.degrees=S->degrees;  // make new class
         denomClass.simplDone=0;
         denomClass.simplDue=1;
-        denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(R)));
+        denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(RZZ)));
         dc++;
         S->classNr=dc;
     }
@@ -409,44 +413,41 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   if(verbose_INT)
     cout << denomClasses.size() << " denominator classes built" << endl;
 
-  const RingElem& t=indets(R)[0];
-  // const vector<RingElem>& x = indets(R);
+  vector<RingElem> primeFactors;
+  vector<RingElem> primeFactorsNonhom;
+  vector<long> multiplicities;
+  RingElem remainingFactor(one(R));
+  
+  RingElem F=processInputPolynomial(project,R,RZZ,primeFactors, primeFactorsNonhom,
+                multiplicities,remainingFactor,homogeneous,false);
+                
+  vector<BigInt> Factorial(deg(F)+dim); // precomputed values
+  for(i=0;i<deg(F)+dim;++i)
+      Factorial[i]=factorial(i);
+  
+  factorization<RingElem> FF(primeFactors,multiplicities,remainingFactor); // assembeles the data
+  factorization<RingElem> FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
 
-
-  RingElem F(one(R)); // to have something
-
-  F=readPolynomial(project,R);        
-  if(verbose_INT)
-    cout << "Polynomial read" << endl;
-
-  vector<RingElem> compsF= homogComps(F);
-  homogeneous=true;
-  if(F!=compsF[compsF.size()-1])
-    homogeneous=false;
-  for(int i=0;i< (long) compsF.size();++i) // no longer needed
-    compsF[i]=0;
-
-  factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
   if(verbose_INT){
     cout <<"Factorization" << endl;  // we show the factorization so that the user can check
     for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        cout << FFNonhom.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
     cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
 
   vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
   vector<CyclRatFunct> DummyCRFVect; // for\sum i^n t^ki vor various values of k and n
-  CyclRatFunct DummyCRF(zero(R));
+  CyclRatFunct DummyCRF(zero(RZZ));
   for(j=0;j<=deg(F);++j)
     DummyCRFVect.push_back(DummyCRF);
   for(i=0;i<=maxDegGen;++i){
     GFP.push_back(DummyCRFVect);
     for(j=0;j<=deg(F);++j)
-        GFP[i][j]=genFunctPower1(R,i,j);
+        GFP[i][j]=genFunctPower1(RZZ,i,j);
   }
 
-  CyclRatFunct H(zero(R)); // accumulates the series
+  CyclRatFunct H(zero(RZZ)); // accumulates the series
   
   if(verbose_INT){
     cout << "********************************************" << endl;
@@ -466,8 +467,8 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   vector<vector<long> > A(rank);
   list<STANLEYDATA_INT>::iterator S=StanleyDec.begin();
 
-  RingElem h(zero(R));     // for use in a simplex
-  CyclRatFunct HClass(zero(R)); // for single class
+  RingElem h(zero(RZZ));     // for use in a simplex
+  CyclRatFunct HClass(zero(RZZ)); // for single class
   
 
   size_t s,spos=0;  
@@ -487,9 +488,8 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     for(i=0;i<iS;++i){
         degree_b=scalProd(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,F,degrees);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets);
     }
-    // h=orderExpos(h,degrees);
     // cout << "Simpl " << s+1 << " NumTerms " << NumTerms(h) << endl;
     
     evaluateClass=false; // necessary to evaluate class only once
@@ -522,12 +522,20 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   } // parallel
   
   
+  // now we must return to rational coefficients 
+ 
+  CyclRatFunct HRat(zero(R));
+  HRat.denom=H.denom;
+  HRat.num=makeQQCoeff(H.num,R); 
+   
+  HRat.num*=FF.myRemainingFactor;
+  HRat.num/=power(lcmDets,deg(F));
   
-  H.showCoprimeCRF();
+  HRat.showCoprimeCRF();
   
   mpz_class commonDen; // common denominator of coefficients of numerator of H  
-  libnormaliz::HilbertSeries HS(nmzHilbertSeries(H,commonDen));
-  writeGenEhrhartSeries(project, FF,HS,deg(F)+dim-1,commonDen);
+  libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
+  writeGenEhrhartSeries(project, FFNonhom,HS,deg(F)+rank-1,commonDen);
 }
 
 

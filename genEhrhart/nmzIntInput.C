@@ -40,7 +40,25 @@ void inputError(const char* name_in, const string message){
     exit(1);
 } 
 
-void getGrading(const string& project, vector<long>& grading, long& gradingDenom){
+bool existsFile(const string& project, const string& suffix, const bool& mustExist){
+//n check whether file project.suffix exists
+
+    string name_in=project+"."+suffix;
+    // cout << name_in << endl;
+    const char* file_in=name_in.c_str();
+    ifstream in2;
+    in2.open(file_in,ifstream::in);
+    if (in2.is_open()==false){
+        if(mustExist)
+            fileMissing(file_in); //and exit ...
+        return(false);
+    }
+    in2.close();
+    return(true);
+}
+
+
+void getRankAndGrading(const string& project,long& rank,vector<long>& grading, long& gradingDenom){
 // reads the grading data ffrom the inv file
     string name_in=project+".inv";
     const char* file_in=name_in.c_str();
@@ -51,8 +69,23 @@ void getGrading(const string& project, vector<long>& grading, long& gradingDenom
     }
     string data;
     bool found=false;
+    
+    while(in.good()){
+        in >> data;
+        if(data=="rank"){
+            found=true;
+            in >> data; // skip = sign
+            in >> rank;
+            break;
+        }
+    }
+    if(!found){
+        inputError(file_in,"seems corrupted.");
+    }
+    
+    found=false;
     long vectorSize;
-    while(1){
+    while(in.good()){
         in >> data;
         if(data=="vector")
             in >> vectorSize;
@@ -72,7 +105,7 @@ void getGrading(const string& project, vector<long>& grading, long& gradingDenom
         grading.push_back(g);
     }
 
-    while(1){
+    while(in.good()){
         in >> data;
         if(data=="grading_denom"){
             found=true;
@@ -120,6 +153,15 @@ void polyError(const string& token){
     exit(1);
 }
 
+bool allDigits(const string& testString){
+
+    for(size_t i=0;i<testString.size();++i)
+        if(testString[i]<'0' || testString[i]>'9')
+            return(false);
+    return(true);
+
+}
+
 long analyzeToken(const string& token, BigRat& newCoeff, long& nrIndet, long& expo){
 // analyzes a token in the polynomial input
 // arguments 2-4 are used for returning values if type = 4 or 5
@@ -136,8 +178,10 @@ long analyzeToken(const string& token, BigRat& newCoeff, long& nrIndet, long& ex
         return(2);
     if(token=="-")
         return(3);
+        
     if(token[0]=='x'){
         bool opening=false,closing=false;
+        long openingAt=0,closingAt=0,expoAt=0;
         for(size_t i=1;i<token.size();++i){
             if(token[i]=='x')
                 polyError(token);
@@ -145,19 +189,38 @@ long analyzeToken(const string& token, BigRat& newCoeff, long& nrIndet, long& ex
                 if(opening)
                     polyError(token);
                 opening=true;
+                openingAt=i;
+                if(openingAt!=1)
+                    polyError(token);
             }
             if(token[i]==']'){
                 if(!opening || closing)
                     polyError(token);
                 closing=true;
+                closingAt=i;
             }
         }
         if(!opening || !closing)
             polyError(token);
         bool withexponent=false;
         for(size_t i=1;i<token.size();++i)
-            if(token[i]=='^')
+            if(token[i]=='^'){
                 withexponent=true;
+                expoAt=i;
+                if(expoAt!=closingAt+1)  // ^ must directly follow ]
+                    polyError(token);
+        }
+        string indetString=token.substr(openingAt+1,closingAt-openingAt-1);
+        if(!allDigits(indetString))
+            polyError(token);
+        if(!withexponent && token[token.size()-1]!=']')
+            polyError(token);
+        if(withexponent){
+            string expoString=token.substr(expoAt+1,token.size()-expoAt-1);
+            if(!allDigits(expoString))
+             polyError(token);
+        }
+
         const char* token_C=token.c_str();
         expo=0;
         nrIndet=0;
@@ -176,36 +239,35 @@ long analyzeToken(const string& token, BigRat& newCoeff, long& nrIndet, long& ex
 }
 
 void tokenize(const string& inString, vector<string>& Tokens){
-// cuts the instring into tokens
+// cuts the inString into tokens
 // 
 // care must be taken since some characters that indicate the start of a new token
-// are themselves tokens and others only start the new token
-// oneback takes care of this problem
-    bool first=true;
-    size_t oneback=0;
+// are themselves tokens and others only (at present only 'x') start the new token
 
-    for(size_t i=0;i<inString.size();){
-        size_t j;
-        for(j=i;j<inString.size();++j)
-            if(inString[j]=='(' || inString[j]==')' || inString[j]=='*' || inString[j]=='+' || inString[j]=='-' || (inString[j]=='x' && !first))
-                break;
-        first=false;
-        if(j>i)
-            Tokens.push_back(inString.substr(i-oneback,j-(i-oneback)));
-        i=j;
-        if(inString[j]!='x'){
-            Tokens.push_back(inString.substr(i,1));
-            oneback=0;
+    bool isFullToken;
+    string current;
+      
+    for(size_t i=0;i<inString.size();++i){
+        isFullToken=false;
+        if(inString[i]=='(' || inString[i]==')' || inString[i]=='*' || inString[i]=='+' || inString[i]=='-' || inString[i]=='x'){
+            if(current!="")
+                Tokens.push_back(current);
+            current="";
+            if(inString[i]!='x'){
+                Tokens.push_back(inString.substr(i,1));
+                isFullToken=true;    
+            }
         }
-        else
-           oneback=1;
-        i++;
+        if(!isFullToken)
+            current+=inString.substr(i,1);
     }
+    if(current!="")
+        Tokens.push_back(current);
 }
+           
 
-
-RingElem readPolynomial(const string& project, const SparsePolyRing R){
-// reads polynomial from file pnm
+vector<RingElem> readFactorList(const string& project, const SparsePolyRing& R){
+// reads factors of polynomial from file pnm
     string name_in=project+".pnm";
     const char* file_in=name_in.c_str();
     ifstream in;
@@ -219,34 +281,51 @@ RingElem readPolynomial(const string& project, const SparsePolyRing R){
     long dim=NumIndets(R)-1;
     vector<long> newExpo(dim+1);
     BigRat newCoeff, readCoeff;
-    string token, inString;
+    string token, inString,readString;
     long typ, nrIndet,expo;
     vector<string> Tokens;
-    size_t current=0;
+    size_t current;
 
     bool pm_preceding=false, first=true;
     newCoeff=1;
 
-    while(in.good() || current < Tokens.size()){  // end of file not yet reached or remaining tokens to be processed
-
-       if(current+1>Tokens.size()){ // indicates that the tokens already read
-           Tokens.clear();          // have been completely processed
-           in >> inString;          // and we must read a new string.
-           if(in.fail()){           // eof reached: the last term must now be added to the current factor.
-               if(first)            // first indicates that a new term must follow
-                   polyError(token);
-               newPoly[newPoly.size()-1]+=monomial(R,newCoeff,newExpo);
-               break;
-           }
-           tokenize(inString,Tokens); // break the input string into tokens
-           current=0;
+    while(in.good()){
+        in >> readString;;
+        if(in.fail())
+            break;
+        inString+=readString;
+    }
+    
+    // cout <<  inString << endl;
+    // exit(0);
+    tokenize(inString,Tokens);
+    
+    if(Tokens.size()==0){
+        cerr << "No polynomial given." << endl;
+        exit(1);
+    }
+    
+    
+    /* cout <<"Tok " << Tokens.size() << endl;
+    
+    for(size_t i=0;i< Tokens.size();++i)
+        cout << Tokens[i] << endl; */
+    
+    for(current=0;;++current){
+    
+        if(current==Tokens.size()){
+            newPoly[newPoly.size()-1]+=monomial(R,newCoeff,newExpo); // add the very last token
+            break;
         }
 
         token=Tokens[current];
-        current++;
+        // cout << "*** " << token << endl;
 
         if(token.size()==0 || token=="(" || token==")") // ( and ) are skipped
             continue;
+            
+        if(current==Tokens.size()-1 && (token=="+" || token=="-" || token=="*")) // cannot end with such a token
+            polyError(token);
 
         typ=analyzeToken(token,readCoeff,nrIndet,expo);
 
@@ -286,14 +365,22 @@ RingElem readPolynomial(const string& project, const SparsePolyRing R){
         if(typ==3)     // the current token is -
             newCoeff=-1;
 
-    } // while in.good || current < Tokens.size()
+    } // current
+    
+    /*for(size_t i=0;i<newPoly.size();++i)
+        cout << newPoly[i] << endl; */
 
 
+    return(newPoly);
+}
+
+RingElem readPolynomial(const string& project, const SparsePolyRing R){
+
+    vector<RingElem> newPoly=readFactorList(project,R);
     RingElem p(one(R));
     for(size_t i=0;i<newPoly.size();++i)  // multiply the factors
         p*=newPoly[i];
     return(p);
-
 }
 
 void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& StanleyDec){
