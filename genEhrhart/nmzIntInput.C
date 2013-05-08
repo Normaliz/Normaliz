@@ -418,11 +418,14 @@ void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& Stan
         in >> newSimpl.key[0];
         if(in.fail())
             break;
-        test=-1;
-        for(i=1;i<dim;++i){
+
+        for(i=1;i<dim;++i)
             in >> newSimpl.key[i];
+
+        test=0;
+        for(i=0;i<dim;++i){
             if(newSimpl.key[i]<=test){
-                cerr << "Fatal error: Key of simplicial cone not ascending" << endl;
+                cerr << "Fatal error: Key of simplicial cone not ascending or out of range" << endl;
                 cerr << "PLEASE CONTACT THE AUTHORS" << endl;
                 exit(1);
             }
