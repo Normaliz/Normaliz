@@ -60,7 +60,7 @@ using namespace std;
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                             list<FACETDATA>& NewHyps){
-// adds a new hyperplane found in fund:new_facets to this cone (restricted to generators processed)
+// adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed)
 
     size_t k;
     

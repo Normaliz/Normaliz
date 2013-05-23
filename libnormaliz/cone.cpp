@@ -602,6 +602,7 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
         }
     }
     Grading = lf;
+    GradingDenom = 1;
     is_Computed.set(ConeProperty::Grading);
 
     //remove data that depends on the grading 
@@ -753,6 +754,12 @@ void Cone<Integer>::compute_generators() {
             }
             Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
             compose_basis_change(Basis_Change);
+
+            //compute denominator of Grading
+            if (isComputed(ConeProperty::Grading) && Generators.size() > 0) {
+                GradingDenom  = v_scalar_product(Grading,Generators[0]);
+                GradingDenom /= v_scalar_product(BasisChange.to_sublattice_dual(Grading),BasisChange.to_sublattice(Generators[0])); //TODO in Sublattice Rep berechnen lassen
+            }
         }
     }
 }
@@ -919,8 +926,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         if (Generators.size() > 0) {
             GradingDenom  = v_scalar_product(Grading,Generators[0]);
             GradingDenom /= v_scalar_product(FC.getGrading(),FC.Generators[0]);
-        } else {
-            GradingDenom = 1;
         }
     }
     if (FC.isComputed(ConeProperty::IsDeg1HilbertBasis)) {
