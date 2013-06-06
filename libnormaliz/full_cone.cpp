@@ -128,20 +128,15 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     for (; ii != Facets.end(); ++ii) {
         simplex=true;
         nr_zero_i=0;
-        for(size_t j=0;j<nr_gen;j++){
-            if(ii->GenInHyp.test(j))
-                nr_zero_i++;
-            if(nr_zero_i>facet_dim){
-                simplex=false;
-                break;
+        for (size_t j=0; j<nr_gen; j++){
+            if (ii->GenInHyp.test(j)) {
+                if (++nr_zero_i > facet_dim) {
+                    simplex=false;
+                    break;
+                }
             }
         }
         
-        if(ii->ValNewGen>0)
-            Zero_Positive|=ii->GenInHyp;
-        else if(ii->ValNewGen<0)
-            Zero_Negative|=ii->GenInHyp;       
-            
         if (ii->ValNewGen==0) {
             ii->GenInHyp.set(new_generator);  // Must be set explicitly !!
             if (simplex) {
@@ -151,6 +146,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
         }
         else if (ii->ValNewGen>0) {
+            Zero_Positive |= ii->GenInHyp;
             if (simplex) {
                 Pos_Simp.push_back(&(*ii));
             } else {
@@ -158,6 +154,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
         } 
         else if (ii->ValNewGen<0) {
+            Zero_Negative |= ii->GenInHyp;
             if (simplex) {
                 Neg_Simp.push_back(&(*ii));
             } else {
@@ -167,7 +164,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     }
     
     boost::dynamic_bitset<> Zero_PN(nr_gen);
-    Zero_PN=Zero_Positive & Zero_Negative;
+    Zero_PN = Zero_Positive & Zero_Negative;
     
     size_t nr_PosSimp  = Pos_Simp.size();
     size_t nr_PosNonSimp = Pos_Non_Simp.size();
@@ -201,7 +198,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if(nr_zero_i==subfacet_dim) // NEW This case treated separately
             Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (zero_i,i));
             
-        else{       
+        else {
             for (k =0; k<nr_gen; k++) {  
                 if(zero_i.test(k)) {              
                     subfacet=zero_i;
@@ -415,6 +412,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         AllNonSimpHyp.push_back(&(*Neg_Non_Simp[i]));
     for(i=0;i<nr_NeuNonSimp;++i)
         AllNonSimpHyp.push_back(&(*Neutral_Non_Simp[i])); 
+    size_t nr_NonSimp = nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp;
    
     bool exactly_two, ranktest;
     FACETDATA *hp_i, *hp_j, *hp_t; // pointers to current hyperplanes
@@ -439,7 +437,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         
             missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
                                                   // to have a chance for common subfacet
-                for (j=0; j<nr_NegNonSimp; j++){
+            for (j=0; j<nr_NegNonSimp; j++){
                 hp_j=Neg_Non_Simp[j];
                 
                 nr_missing=0; 
@@ -462,7 +460,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                 if(common_subfacet){//intersection of *i and *j may be a subfacet
                     exactly_two=true;
                     
-                    ranktest=((nr_PosNonSimp+nr_NegNonSimp+nr_NeuNonSimp>dim*dim*nr_common_zero/3)); 
+                    ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
 
                     if (ranktest) {
                         Matrix<Integer> Test(nr_common_zero,dim);
