@@ -654,13 +654,12 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     
     if (do_only_multiplicity) {
         // directly compute the volume
-        if (mother_vol==1) {
+        if (mother_vol==1)
             newsimplex.vol = height;
-        } else { // the determinant is computed in SimplexEvaluator
-            for(size_t i=0; i<dim; i++) // and needs the key in TopCone numbers
-                newsimplex.key[i]=Top_Key[newsimplex.key[i]];
-        }
-            
+        // the multiplicity is computed in SimplexEvaluator
+        for(size_t i=0; i<dim; i++) // and needs the key in TopCone numbers
+            newsimplex.key[i]=Top_Key[newsimplex.key[i]];
+
         if (keep_triangulation)
             sort(newsimplex.key.begin(),newsimplex.key.end());
         Top_Cone->SimplexEval[tn].evaluate(newsimplex);
