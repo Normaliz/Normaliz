@@ -16,38 +16,34 @@
  *
  */
 
-
-RingElem IntegralUnitSimpl(RingElem F, vector<BigInt> Factorial){
+BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,const long& rank){
 
     SparsePolyRing P=AsSparsePolyRing(owner(F));
     vector<long> v(NumIndets(P));
-    long dim=v.size()-1;
-
-    RingElem I(zero(RingQQ()));
+    
+    BigRat Irat;
     long deg;
-    // RingElem facProd(one(RingQQ()));
-    BigInt facProd;
-    // RingElem dummy(zero(RingQQ()));
-    // vector<long> ONE(NumIndets(P),0);
+    BigInt facProd,I,maxFact;
+    I=0;
+    maxFact=Factorial[Factorial.size()-1];
 
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     for (; !IsEnded(mon); ++mon){
       exponents(v,PP(mon)); // this function gives the exponent vector back as v
       deg=0;
-      facProd=1;
-      for(long i=1;i<=dim;++i){
+      IsInteger(facProd,coeff(mon)); // start with coefficient and multipliy by Factorials
+      for(long i=1;i<=rank;++i){
           deg+=v[i];
           facProd*=Factorial[v[i]];
        }
-       // dummy=facProd*monomial(P,coeff(mon),ONE);
-       I+=facProd*coeff(mon)/Factorial[deg+dim-1];
+       I+=facProd*maxFact/Factorial[deg+rank-1];
     }
-
-    return(I);
+    Irat=I;
+    return(Irat/maxFact);
 }
 
 void writeIntegral(const string& project, const factorization<RingElem>& FF,
-                   const RingElem& I, const bool& do_leadCoeff,
+                   const BigRat& I, const bool& do_leadCoeff,
                    const long& virtDeg, const bool& appendOutput) {
 
     string name_open=project+".intOut";                              
@@ -75,72 +71,77 @@ void writeIntegral(const string& project, const factorization<RingElem>& FF,
        out << "Integral: " << I << endl;
 }
 
-void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
+void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
   GlobalManager CoCoAFoundations;
+  
+  long i;
 
   if (verbose_INT) {
-    cout << "============================================================" << endl;
+    cout << "==========================================================" << endl;
     cout << "Integration for " << project << endl;
-    cout << "============================================================" << endl << endl;
+    cout << "==========================================================" << endl << endl;
   }
   vector<long> grading;
   long gradingDenom;
-  getGrading(project,grading,gradingDenom);
+  long rank;
+  getRankAndGrading(project,rank,grading,gradingDenom);
 
   vector<vector<long> > gens;
-  readGens(project,gens);
+  readGens(project,gens,grading);
   if(verbose_INT) 
     cout << "Generators read" << endl;
   long dim=gens[0].size();
 
   list<TRIDATA> triang;
-  readTri(project,dim,triang);
+  readTri(project,rank,triang);
   if(verbose_INT)
      cout << "Triangulation read" << endl;
-
-  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
-  // const RingElem& t=indets(R)[0];
-  // const vector<RingElem>& x = indets(R);
-
-  map<vector<long>,RingElem> denomClasses;
-
-  RingElem F(one(R)); // to have something
-
-  F=readPolynomial(project,R);
-  if(verbose_INT)
-    cout << "Polynomial read" << endl;
-  
-  if(do_leadCoeff){
-    vector<RingElem> compsF= homogComps(F);
-    // cout << "comps " << compsF << endl;
-    if(F!=compsF[compsF.size()-1]){
-        homogeneous=false;
-        if(verbose_INT) 
-            cout << "Polynomial is inhomogeneous. Replacing it by highest hom comp." << endl;
-        F=compsF[compsF.size()-1];
-        for(size_t i=0;i<compsF.size();++i) // no longer needed
-            compsF[i]=0;     
+     
+  list<TRIDATA>::iterator S = triang.begin(); // first we compute the lcm of all generator degrees
+  vector<long> degrees(rank); 
+  BigInt lcmDegs(1);
+  vector<vector<long> > A(rank);
+  for(;S!=triang.end();++S){          
+    for(i=0;i<rank;++i)    // select submatrix defined by key
+        A[i]=gens[S->key[i]-1]; 
+    degrees=MxV(A,grading);
+    for(i=0;i<rank;++i){
+        degrees[i]/=gradingDenom;
+        lcmDegs=lcm(lcmDegs,degrees[i]);
     }
   }
-  
 
-  long i;
-
-  vector<BigInt> Factorial(deg(F)+dim);
+  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
+  SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
+  vector<RingElem> primeFactors;
+  vector<RingElem> primeFactorsNonhom;
+  vector<long> multiplicities;
+  RingElem remainingFactor(one(R));
+   
+  RingElem F=processInputPolynomial(project,R,RZZ,primeFactors, primeFactorsNonhom,
+                multiplicities,remainingFactor,homogeneous,do_leadCoeff);
+                
+  vector<BigInt> Factorial(deg(F)+dim); // precomputed values
   for(i=0;i<deg(F)+dim;++i)
       Factorial[i]=factorial(i);
+  
+  factorization<RingElem> FF(primeFactors,multiplicities,remainingFactor); // assembels the data
+  factorization<RingElem> FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
 
-  factorization<RingElem> FF=factor(F);
   long nf=FF.myFactors.size();
-  if(verbose_INT) 
+  if(verbose_INT){
     cout <<"Factorization" << endl;  // we show the factorization so that the user can check
-  if(verbose_INT)
     for(i=0;i<nf;++i)
-        cout << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
-  if(verbose_INT)
+        cout << FFNonhom.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
     cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  }
 
-  RingElem I(zero(RingQQ())); // accumulates the integral
+
+  if(verbose_INT)
+    cout << "Polynomial read" << endl;
+
+  BigRat I; // accumulates the integral
+  I=0;
 
   size_t tri_size=triang.size();
 
@@ -159,13 +160,13 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
   long det, rank=S->key.size();
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
-  RingElem ISimpl(RingQQ()); // integral over a simplex
+  BigRat ISimpl; // integral over a simplex
   BigInt prodDeg; // product of the degrees of the generators
   RingElem h(zero(R));
 
   size_t spos=0,s;
-  #pragma omp for schedule(dynamic) // parallelization will be interrupted as soon as
-  for(s=0;s<tri_size;++s){          // 50 denominator classes have run up
+  #pragma omp for schedule(dynamic) 
+  for(s=0;s<tri_size;++s){         
       for(;spos<s;++spos,++S);
       for(;spos>s;--spos,--S);
 
@@ -181,7 +182,7 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
     }
 
     // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
-    ISimpl=(det*substituteAndIntegrate(FF,A,degrees,F,Factorial))/prodDeg;
+    ISimpl=(det*substituteAndIntegrate(FF,A,degrees,RZZ,Factorial,lcmDegs))/prodDeg;
 
     #pragma omp critical(INTEGRAL)
     I+=ISimpl;
@@ -196,6 +197,11 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
 
   } // parallel
   
+  I/=power(lcmDegs,deg(F));
+  BigRat RFrat;
+  IsRational(RFrat,remainingFactor); // from RingQQ to BigRat
+  I*=RFrat;
+  
   string result="Integral";
   if(do_leadCoeff)
     result="(Virtual) leading coefficient of quasipol";
@@ -208,9 +214,9 @@ void integrate(const string& project, const bool do_leadCoeff, bool& homogeneous
    }
    
    if(do_leadCoeff && verbose_INT){
-    cout << "Virtual multiplicity  is " << endl << I*factorial(deg(F)+dim-1) << endl;
+    cout << "Virtual multiplicity  is " << endl << I*factorial(deg(F)+rank-1) << endl;
     cout << "********************************************" << endl;
    }
    
-   writeIntegral(project,FF,I,do_leadCoeff,deg(F)+dim-1,appendOutput);
+   writeIntegral(project,FFNonhom,I,do_leadCoeff,deg(F)+rank-1,appendOutput);
 }

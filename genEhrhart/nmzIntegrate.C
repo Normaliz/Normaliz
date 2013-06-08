@@ -44,10 +44,10 @@ bool verbose_INT;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                     nmzIntegrate 1.0                \\....|"<<endl;
+    cout << "                     nmzIntegrate 1.1                \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "                 (C) W. Bruns  C. Soeger               \\..|"<<endl;
-    cout << "                        March 2013                      \\.|"<<endl;
+    cout << "                         Mai 2013                       \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
@@ -71,7 +71,9 @@ int main(int argc, char* argv[])
   try
   {
     size_t i;   
-    string project;            
+    string project;
+    
+    string Threads;            
 
     bool filename_set=false;
     string option;            //all options concatenated (including -)
@@ -82,7 +84,7 @@ int main(int argc, char* argv[])
                     option = option + argv[i];
                 } else if (argv[i][2]=='=') {
                     #ifdef _OPENMP
-                    string Threads = argv[i];
+                    Threads = argv[i];
                     Threads.erase(0,3);
                     size_t nr_threads;
                     if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
@@ -139,21 +141,93 @@ int main(int argc, char* argv[])
     if (verbose_INT) {
         printHeader();
     }
+    
+    if(project==""){
+        cerr << "No project specified" << endl;
+        exit(1);
+     }
 
     if(!do_integral && !do_leadCoeff) // default is -E
         do_genEhrhart=true;
     
-    // cout << "+++ " << option << " " << do_genEhrhart << " " << do_integral << " " << do_leadCoeff << endl;
+    existsFile(project,"pnm",true); // true ==> will exit if polynomial does not exist
+
+    bool invExists=existsFile(project,"inv",false);
+    bool decExists=existsFile(project,"dec",false);
+    bool triExists=existsFile(project,"tri",false) || decExists;  // can read tri from dec
+    
+    // cout << "inv " << invExists << " dec " << decExists << " tri " << triExists << endl;
+
+    if(!invExists || (do_genEhrhart && !decExists) || (do_integral && !triExists)){
+        if(verbose_INT)
+            cout << "Cannot find all necessary input files. Trying to make them." << endl;
+        existsFile(project,"in",true); // true ==> will exit if project.in does not exist
+        
+        string normalizExec("\""); // start with "
+        
+        // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            normalizExec.append("\"");
+        #endif	
+        normalizExec.append(argv[0]);
+        size_t found = normalizExec.rfind("nmzIntegrate");
+        if (found!=std::string::npos) {
+            normalizExec.replace (found,12,"normaliz");
+        } else {
+            cout << "ERROR: Could not start nmzIntegrate" << endl;
+            return 2;
+        }
+        normalizExec.append("\"");
+        
+        if(do_genEhrhart)
+            normalizExec+=" -y";
+        else
+            normalizExec+=" -T";
+                
+        normalizExec+="e";  // error check always activated
+        
+
+        if(verbose_INT)
+            normalizExec+="c";
+        if(Threads!="")
+            normalizExec+=(" -x="+Threads);
+            
+        normalizExec+=(" \""); // enclose filename in by ""
+        normalizExec+=project;
+                    normalizExec+="\"";
+                    
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            normalizExec+="\"";
+        #endif
+        
+        if(verbose_INT){
+            cout << "executing: "<< normalizExec << endl;
+            cout << "==========================================================" << endl;
+        }        
+        
+        int returnvalue = system(normalizExec.c_str());
+        if(returnvalue!=0){
+            cerr <<  "Normaliz exited with error." << endl;
+            exit(1);
+        }
+    }
 
     bool homogeneous=false;
     bool appendOutput=false;
     if (do_genEhrhart) {
-    generalizedEhrhartSeries(project,homogeneous);
+        generalizedEhrhartSeries(project,homogeneous);
         appendOutput=true;
+        if(do_leadCoeff && verbose_INT){
+            cout << "Suppressing computation LC since result contained in ES."  << endl;
+        }
     }
+    // cout << "hom " << homogeneous << endl;
     if (do_leadCoeff && !do_genEhrhart) {
         integrate(project,true,homogeneous,appendOutput);
         appendOutput=true;
+    }
+    if(do_integral && homogeneous && verbose_INT){
+            cout << "Suppressing computation Int since result contained in ES or LC."  << endl;
     }
     if (do_integral && !homogeneous) {
         integrate(project,false,homogeneous,appendOutput);
