@@ -43,7 +43,7 @@ const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > Re
 const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
 
-const size_t EvalBoundPyr=200000;   // the same for stored pyramids
+const size_t EvalBoundPyr=500000;   // the same for stored pyramids
 
 const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
 
@@ -1599,7 +1599,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     } // TriangulationSize
 
     // intermediate reduction //TODO better integration
-    if (do_Hilbert_basis && CandidatesSize >= 10000000) {
+    if (do_Hilbert_basis && CandidatesSize >= 2000000) {
         if (!isComputed(ConeProperty::SupportHyperplanes)) {
             if (verbose) {
                 verboseOutput() << "**** Computing support hyperplanes for intermediate reduction:" << endl;
@@ -1612,6 +1612,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
         global_reduction();
         Candidates.splice(Candidates.begin(), Hilbert_Basis);
+        CandidatesSize = 0; //TODO is not 0
     }
 
 }
