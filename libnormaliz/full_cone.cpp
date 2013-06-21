@@ -767,7 +767,11 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     // Therefore we must work with listsize.
     for (size_t kk=0; kk<listsize; ++l, ++kk) {
 
-        if (l->ValNewGen>=0) // facet not visible
+        if (l->ValNewGen == 0) {
+            l->GenInHyp.set(new_generator);
+        }
+
+        if (l->ValNewGen >= 0) // facet not visible
             continue;
 
         skip_triang = false;
@@ -799,8 +803,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         Pyramid_key.push_back(new_generator);
         for(size_t i=0;i<nr_gen;i++){
             in_Pyramid.reset(i);
-            if(in_triang[i] && v_scalar_product(l->Hyp,Generators[i])==0){ //  incidence data may no longer exist
-                Pyramid_key.push_back(i);                                      
+            if(in_triang[i] && l->GenInHyp.test(i)) {
+                Pyramid_key.push_back(i);
                 in_Pyramid.set(i);
             }
         }
@@ -958,7 +962,8 @@ void Full_Cone<Integer>::select_supphyps_from(list<vector<Integer> >& NewFacets,
     typename list<vector<Integer> >::iterator pyr_hyp = NewFacets.begin();
     bool new_global_hyp;
     FACETDATA NewFacet;
-    Integer test;   
+    NewFacet.GenInHyp.resize(nr_gen);
+    Integer test;
     for(;pyr_hyp!= NewFacets.end();pyr_hyp++){
         if(v_scalar_product(Generators[new_generator],*pyr_hyp)>0)
             continue;
@@ -971,9 +976,20 @@ void Full_Cone<Integer>::select_supphyps_from(list<vector<Integer> >& NewFacets,
                 new_global_hyp=false;
                 break;
             }
+
         }
         if(new_global_hyp){
-            NewFacet.Hyp=*pyr_hyp;                
+            NewFacet.Hyp=*pyr_hyp;
+            NewFacet.GenInHyp.reset();
+            for (i=0; i<nr_gen; ++i) {
+                if (in_triang[i] && in_Pyr.test(i)) {
+                //TODO transfer incidence data from pyramid
+                    if (v_scalar_product(Generators[i],*pyr_hyp) == 0) {
+                        NewFacet.GenInHyp.set(i);
+                    }
+                }
+            }
+            NewFacet.GenInHyp.set(new_generator);
             if(recursion_allowed){
                 #pragma omp critical(GIVEBACKHYPS) 
                 Facets.push_back(NewFacet);
@@ -1381,13 +1397,11 @@ void Full_Cone<Integer>::extend_cone() {
             
         // First we test whether to go to recursive pyramids because of too many supphyps
         // Once we have done so, we must stay with it
-        if( supphyp_recursion || (recursion_allowed && nr_neg*nr_pos>RecBoundSuppHyp)){  // go to pyramids because of supphyps
+        if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
              if(check_evaluation_buffer()){
                 // cout << "Evaluation Build Mitte" << endl;
                     Top_Cone->evaluate_triangulation();
             }
-            // cout << "In SuppHyp Rec" << endl;   
-            supphyp_recursion=true;
             allRecPyramidsBuilt=false; // must lock extend_cone for this cone
             nrRecPyramidsDue=0;
             nrRecPyramidsDone=0;
@@ -1612,7 +1626,6 @@ void Full_Cone<Integer>::primal_algorithm(){
             // We keep the SupportHyperplanes, so we do not need to recompute them
             // for the last generator, and use them to make a global reduction earlier
             do_all_hyperplanes = false;
-            supphyp_recursion = false;
             for(size_t i=0;i<nr_gen;i++)
                 in_triang[i]=false;
             Done = false;
@@ -2571,7 +2584,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     do_all_hyperplanes=true;
     parallel_inside_pyramid=true;
     
-    supphyp_recursion=false; 
     tri_recursion=false;
     
     Done=false;
@@ -2633,7 +2645,6 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     
     do_all_hyperplanes=true;
     
-    supphyp_recursion=false; 
     tri_recursion=false;
     
     Done=false;
@@ -2702,7 +2713,6 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_all_hyperplanes=true; //  must be reset for non-recursive pyramids
     parallel_inside_pyramid=false; // no parallelization inside proper pyramids
     
-    supphyp_recursion=false; 
     tri_recursion=false;
     
     Done=false;

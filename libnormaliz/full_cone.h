@@ -125,7 +125,6 @@ class Full_Cone {
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid   
 
-    bool supphyp_recursion; // true if we have gone to pyramids because of support hyperplanes
     bool tri_recursion; // true if we have gone to pyramids because of triangulation
     
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
