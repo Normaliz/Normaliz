@@ -754,7 +754,6 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
                                         // because parallelization has been dropped        
     vector<key_t> Pyramid_key;
     Pyramid_key.reserve(nr_gen);
-    boost::dynamic_bitset<> in_Pyramid(nr_gen);
 
     typename list< FACETDATA >::iterator l=Facets.begin();
     size_t listsize=Facets.size();
@@ -802,19 +801,16 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         Pyramid_key.clear(); // make data of new pyramid
         Pyramid_key.push_back(new_generator);
         for(size_t i=0;i<nr_gen;i++){
-            in_Pyramid.reset(i);
             if(in_triang[i] && l->GenInHyp.test(i)) {
                 Pyramid_key.push_back(i);
-                in_Pyramid.set(i);
             }
         }
-        in_Pyramid.set(new_generator);
 
         // now we can store the new pyramid at the right place (or finish the simplicial ones)
         if (recursive && skip_triang) { // mark as "do not triangulate"
-            process_pyramid(Pyramid_key, in_Pyramid, new_generator,store_level,0, recursive);
+            process_pyramid(Pyramid_key, new_generator,store_level,0, recursive);
         } else { //default
-            process_pyramid(Pyramid_key, in_Pyramid, new_generator,store_level,-l->ValNewGen, recursive);
+            process_pyramid(Pyramid_key, new_generator,store_level,-l->ValNewGen, recursive);
         }
 
         if(Top_Cone->nrRecPyrs[store_level]>EvalBoundRecPyr && start_level==0){
@@ -830,7 +826,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const boost::dynamic_bitset<>& in_Pyramid, 
+void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,  
                           const size_t new_generator,const size_t store_level, Integer height, const bool recursive){
 // processes simplicial pyramids directly, stores other pyramids into their depots
     
@@ -844,10 +840,16 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
             Simplex<Integer> S(Pyramid_key, Generators);
             height = S.read_volume(); //update our lower bound for the volume
             Matrix<Integer> H=S.read_support_hyperplanes();
-            list<vector<Integer> > NewFacets;
-            for (size_t i=0; i<dim;i++)
-                NewFacets.push_back(H[i]);
-            select_supphyps_from(NewFacets,new_generator,in_Pyramid);  // SEE BELOW
+            list<FACETDATA> NewFacets;
+            FACETDATA NewFacet;
+            NewFacet.GenInHyp.resize(nr_gen);
+            for (size_t i=0; i<dim;i++) {
+                NewFacet.Hyp = H[i];
+                NewFacet.GenInHyp.set();
+                NewFacet.GenInHyp.reset(i);
+                NewFacets.push_back(NewFacet);
+            }
+            select_supphyps_from(NewFacets,new_generator,Pyramid_key);  // SEE BELOW
         }
         if (height != 0 && (do_triangulation || do_partial_triangulation)) {
             //if(recursion_allowed) {                                   // AT PRESENT
@@ -861,8 +863,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key, const
     else {  // non-simplicial
         if(recursive){
             Full_Cone<Integer> Pyramid(*this,Pyramid_key);
-            Pyramid.Mother=this;
-            Pyramid.in_Pyramid=in_Pyramid;    // need these data to give back supphyps
+            Pyramid.Mother = this;
+            Pyramid.Mother_Key = Pyramid_key;    // need these data to give back supphyps
             Pyramid.new_generator=new_generator;
             if (height == 0) { //indicates "do not triangulate"
                 Pyramid.do_partial_triangulation = false;
@@ -908,7 +910,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
        
     Matrix<Integer> H=S.read_support_hyperplanes();
     for (i = 0; i <dim; i++) {
-        FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);
+        FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H.read(i);
         for(j=0;j < dim;j++)
             if(j!=i)
@@ -953,25 +955,33 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::select_supphyps_from(list<vector<Integer> >& NewFacets, 
-                                 const size_t new_generator, const boost::dynamic_bitset<>& in_Pyr){
+void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets, 
+                    const size_t new_generator, const vector<key_t>& Pyramid_key){
 // the mother cone (=this) selects supphyps from the list NewFacets supplied by the daughter
 // the daughter provides the necessary information via the parameters
 
-    size_t i;                        
-    typename list<vector<Integer> >::iterator pyr_hyp = NewFacets.begin();
+    size_t i;
+    boost::dynamic_bitset<> in_Pyr(nr_gen);
+    for (i=0; i<Pyramid_key.size(); i++) {
+        in_Pyr.set(Pyramid_key[i]);
+    }
+    // the new generator is always the first in the pyramid
+    assert(Pyramid_key[0] == new_generator);
+
+
+    typename list<FACETDATA>::const_iterator pyr_hyp = NewFacets.begin();
     bool new_global_hyp;
     FACETDATA NewFacet;
     NewFacet.GenInHyp.resize(nr_gen);
     Integer test;
-    for(;pyr_hyp!= NewFacets.end();pyr_hyp++){
-        if(v_scalar_product(Generators[new_generator],*pyr_hyp)>0)
+    for (; pyr_hyp!=NewFacets.end(); ++pyr_hyp) {
+        if(!pyr_hyp->GenInHyp.test(0)) // new gen not in hyp
             continue;
         new_global_hyp=true;
-        for(i=0;i<nr_gen;i++){
+        for (i=0; i<nr_gen; ++i){
             if(in_Pyr.test(i) || !in_triang[i])
                 continue;
-            test=v_scalar_product(Generators[i],*pyr_hyp);
+            test=v_scalar_product(Generators[i],pyr_hyp->Hyp);
             if(test<=0){
                 new_global_hyp=false;
                 break;
@@ -979,14 +989,11 @@ void Full_Cone<Integer>::select_supphyps_from(list<vector<Integer> >& NewFacets,
 
         }
         if(new_global_hyp){
-            NewFacet.Hyp=*pyr_hyp;
+            NewFacet.Hyp=pyr_hyp->Hyp;
             NewFacet.GenInHyp.reset();
-            for (i=0; i<nr_gen; ++i) {
-                if (in_triang[i] && in_Pyr.test(i)) {
-                //TODO transfer incidence data from pyramid
-                    if (v_scalar_product(Generators[i],*pyr_hyp) == 0) {
-                        NewFacet.GenInHyp.set(i);
-                    }
+            for (i=0; i<Pyramid_key.size(); ++i) {
+                if (pyr_hyp->GenInHyp.test(i) && in_triang[Pyramid_key[i]]) {
+                    NewFacet.GenInHyp.set(Pyramid_key[i]);
                 }
             }
             NewFacet.GenInHyp.set(new_generator);
@@ -1375,7 +1382,6 @@ void Full_Cone<Integer>::extend_cone() {
 
             L=Generators[i];
             scalar_product=v_scalar_product(L,(*l).Hyp);            
-            // l->ValPrevGen=l->ValNewGen;  // last new generator is now previous generator
             l->ValNewGen=scalar_product;
             if (scalar_product<0) {
                 is_new_generator=true;
@@ -1455,6 +1461,12 @@ void Full_Cone<Integer>::extend_cone() {
         
     }
 
+    if (is_pyramid && do_all_hyperplanes) { // must give supphyps back to mother
+        Mother->select_supphyps_from(Facets, new_generator, Mother_Key);
+        #pragma omp atomic
+        Mother->nrRecPyramidsDone++;
+    }
+
     // transfer Facets --> SupportHyperplanes
     if (do_all_hyperplanes) {
         typename list<FACETDATA>::const_iterator IHV=Facets.begin();
@@ -1465,11 +1477,6 @@ void Full_Cone<Integer>::extend_cone() {
     Facets.clear();
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
-    if(is_pyramid && do_all_hyperplanes){ // must give supphyps back to maother
-        Mother->select_supphyps_from(Support_Hyperplanes,new_generator,in_Pyramid);
-        #pragma omp atomic
-        Mother->nrRecPyramidsDone++;
-    }
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
     if(check_evaluation_buffer()){
