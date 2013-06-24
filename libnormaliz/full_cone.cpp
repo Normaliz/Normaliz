@@ -1026,7 +1026,38 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
     size_t ppos;
     bool skip_remaining_tri,skip_remaining_pyr,skip_remaining_rec_pyr;
 
-    do
+    // STATISTIK
+
+    long quot; vector<size_t> pyr_size(11);
+
+    for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){
+        quot=p->nr_gen/dim;
+        if(quot<10)
+            pyr_size[quot]++;
+        else
+            pyr_size[10]++;
+    }
+    cout << "Pyr stats ";
+    for(size_t i=1;i<=10;++i)
+        cout << i << ": " << pyr_size[i] << "  ";
+    cout << endl;
+
+    // BIS HIER
+
+    size_t nr_large=0;
+
+    for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){
+        p->pyr_level=level;
+        if(2*p->nr_gen>5*dim){
+            p->large=true;   // we mark the large pyramids
+            p->parallel_inside_pyramid=true;
+            nr_large++;      // and count them
+        }
+        else
+            p->large=false;
+    }
+
+    do   // the main loop
     {
        p = RecPyrs[level].begin();
        ppos=0;
@@ -1043,7 +1074,10 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
            for(; i > ppos; ++ppos, ++p) ;
            for(; i < ppos; --ppos, --p) ;
            
-           p->pyr_level=level;
+           // p->pyr_level=level; // now done above, MUST NOT BE FORGOTTEN
+
+           if(p->large)  // large pyramids to be processed serially later on
+              continue;
 
            p->extend_cone();
            if(check_evaluation_buffer_size())  // we interrupt parallel execution if it is really parallel
@@ -1056,6 +1090,24 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
                  skip_remaining_pyr=true;
         }
         
+        verboseOutput() << nr_large << " large recursive pyramids on level "
+                        << level << "" << endl;
+
+        for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){ // do the large pyramids serially
+            if(p->large){
+                p->extend_cone();
+                if(check_evaluation_buffer())
+                    Top_Cone->evaluate_triangulation();  // we are allowed to do this since we are serial here
+                if(nrRecPyrs[level+1]>EvalBoundRecPyr)
+                    Top_Cone->evaluate_rec_pyramids(level+1);
+                if(nrPyramids[0]>EvalBoundPyr)
+                    Top_Cone->evaluate_stored_pyramids(0);
+            }
+        }
+
+        verboseOutput() << "All large recursive pyramids on level "
+                        << level << " done" << endl;
+
         if (!skip_remaining_tri && !skip_remaining_pyr) 
             evaluate_rec_pyramids(level+1);
        

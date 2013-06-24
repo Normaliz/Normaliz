@@ -147,6 +147,7 @@ class Full_Cone {
     bool allRecPyramidsBuilt; // indicates that all recursive pyramids from the current generator have been built    
 
     bool Done; // true if this cone has been finished
+    bool large; // large pyramids are handled serial
 
     // statistics
     size_t totalNrSimplices;   // total number of simplices evaluated
