@@ -113,9 +113,14 @@ class Full_Cone {
 
     list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition 
 
-    Full_Cone<Integer>* Top_Cone;     // reference to cone on top level
-    vector<key_t> Top_Key;  // indices of generators w.r.t Top_Cone
-    
+    Full_Cone<Integer>* Top_Cone; // reference to cone on top level
+    vector<key_t> Top_Key;        // indices of generators w.r.t Top_Cone
+
+    Full_Cone<Integer>* Mother;   // reference to the mother of the pyramid
+    vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
+    size_t new_generator; // indicates which generator of mother cone is apex of pyramid
+
+
     // control of pyramids and recusrion
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
 
@@ -125,7 +130,6 @@ class Full_Cone {
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid   
 
-    bool supphyp_recursion; // true if we have gone to pyramids because of support hyperplanes
     bool tri_recursion; // true if we have gone to pyramids because of triangulation
     
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
@@ -135,9 +139,6 @@ class Full_Cone {
     size_t old_nr_supp_hyps; // must be remembered since we may leave extend_cone 
                              // before discarding "negative" hyperplanes
     
-    Full_Cone<Integer>* Mother;       // reference to the mother of the pyramid
-    boost::dynamic_bitset<> in_Pyramid; // indicates which generators of the MOTHER are in pyramid
-    size_t new_generator; // indicates which generator of mother cone is apex of pyramid 
        
     vector<list<Full_Cone<Integer> > > RecPyrs; // storage for recursive pyramids
     vector<size_t> nrRecPyrs;
@@ -163,10 +164,10 @@ class Full_Cone {
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
-    void process_pyramid(const vector<key_t>& Pyramid_key, const boost::dynamic_bitset<>& in_Pyramid, 
+    void process_pyramid(const vector<key_t>& Pyramid_key, 
                       const size_t new_generator, const size_t store_level, Integer height, const bool recursive);
-    void select_supphyps_from(list<vector<Integer> >& NewFacets, const size_t new_generator, 
-                      const boost::dynamic_bitset<>& in_Pyramid);
+    void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
+                      const vector<key_t>& Pyramid_key);
     void evaluate_stored_pyramids(const size_t level);
     void evaluate_rec_pyramids(const size_t level);
 
