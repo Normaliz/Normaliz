@@ -816,7 +816,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         }
 
         if(Top_Cone->nrRecPyrs[store_level]>EvalBoundRecPyr && start_level==0){
-            evaluate_rec_pyramids(store_level);
+            Top_Cone->evaluate_rec_pyramids(store_level);
         }
         if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr && start_level==0){  
             Top_Cone->evaluate_stored_pyramids(store_level);
