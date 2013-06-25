@@ -1071,7 +1071,7 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
 
     for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){
         p->pyr_level=level;
-        if(2*p->nr_gen>5*dim){
+        if(p->nr_gen>4*dim){
             p->large=true;   // we mark the large pyramids
             p->parallel_inside_pyramid=true;
             nr_large++;      // and count them
@@ -1113,23 +1113,25 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
                  skip_remaining_pyr=true;
         }
         
-        verboseOutput() << nr_large << " large recursive pyramids on level "
-                        << level << "" << endl;
+        if (nr_large > 0) {
+            verboseOutput() << nr_large << " large recursive pyramids on level "
+                            << level << "" << endl;
 
-        for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){ // do the large pyramids serially
-            if(p->large){
-                p->extend_cone();
-                if(check_evaluation_buffer())
-                    Top_Cone->evaluate_triangulation();  // we are allowed to do this since we are serial here
-                if(nrRecPyrs[level+1]>EvalBoundRecPyr)
-                    Top_Cone->evaluate_rec_pyramids(level+1);
-                if(nrPyramids[0]>EvalBoundPyr)
-                    Top_Cone->evaluate_stored_pyramids(0);
+            for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){ // do the large pyramids serially
+                if(p->large){
+                    p->extend_cone();
+                    if(check_evaluation_buffer())
+                        Top_Cone->evaluate_triangulation();  // we are allowed to do this since we are serial here
+                    if(nrRecPyrs[level+1]>EvalBoundRecPyr)
+                        Top_Cone->evaluate_rec_pyramids(level+1);
+                    if(nrPyramids[0]>EvalBoundPyr)
+                        Top_Cone->evaluate_stored_pyramids(0);
+                }
             }
-        }
 
-        verboseOutput() << "All large recursive pyramids on level "
-                        << level << " done" << endl;
+            verboseOutput() << "All large recursive pyramids on level "
+                            << level << " done" << endl;
+        }
 
         if (!skip_remaining_tri && !skip_remaining_pyr) 
             evaluate_rec_pyramids(level+1);
