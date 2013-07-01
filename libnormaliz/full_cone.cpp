@@ -1463,9 +1463,11 @@ void Full_Cone<Integer>::extend_cone() {
         // First we test whether to go to recursive pyramids because of too many supphyps
         // Once we have done so, we must stay with it
         if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
-             if(check_evaluation_buffer()){
+            if (do_triangulation)
+                tri_recursion = true; // We can not go back to classical triangulation
+            if(check_evaluation_buffer()){
                 // cout << "Evaluation Build Mitte" << endl;
-                    Top_Cone->evaluate_triangulation();
+                Top_Cone->evaluate_triangulation();
             }
             allRecPyramidsBuilt=false; // must lock extend_cone for this cone
             nrRecPyramidsDue=0;

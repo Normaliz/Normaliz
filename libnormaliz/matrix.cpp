@@ -888,7 +888,7 @@ size_t Matrix<Integer>::rank_destructive(){
     }
 
     if(!test_arithmetic_overflow)
-            return rk;
+        return rk;
             
     Integer det=elements[0][0];
     for(i=1;i<rk;i++){
@@ -966,9 +966,9 @@ Integer Matrix<Integer>::vol_destructive(){
     if(test_det!=det%overflow_test_modulus){
         errorOutput()<<"Arithmetic failure in computing determinant. Most likely overflow.\n";
         throw ArithmeticException();
-    } 
+    }
     
-    return Iabs(det);                   
+    return Iabs(det);
         
 }
 
