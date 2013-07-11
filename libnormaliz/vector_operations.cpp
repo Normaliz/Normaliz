@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include<list>
 
 #include "integer.h"
 #include "vector_operations.h"
@@ -437,6 +438,51 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
 
     if(n>0)
         b[0] += F*a[0];
+}
+
+//---------------------------------------------------------------
+
+// computes approximating lattice simplex using the A_n dissection of the unit cube
+// q is a rational vector with the denominator in the FIRST component q[0]
+
+template<typename Integer>
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx){
+
+    long dim=q.size();
+    vector<Integer> quot(dim);
+    vector<pair<Integer,size_t> > remain(dim);
+    for(long i=0;i<dim;++i){
+        quot[i]=q[i]/q[0];          // write q[i]=quot*q[0]+remain
+        remain[i].first=q[i]%q[0];  // with 0 <= remain < q[0]
+        if(remain[i].first<0){
+            remain[i].first+=q[0];
+            quot[i]--;
+        }
+        remain[i].second=i;  // after sorting we must know where elements come from
+    }
+    
+
+    remain[0].first=q[0];  // helps to avoid special treatment of i=0
+    sort(remain.begin(),remain.end()); 
+    reverse(remain.begin(),remain.end()); // we sort remain into descending order
+    
+    /*for(long i=0;i<dim;++i){
+        cout << remain[i].first << " " << remain[i].second << endl;
+    } */
+    
+    for(long i=1;i<dim;++i){
+        if(remain[i].first<remain[i-1].first)
+        {
+            approx.push_back(quot);
+            // cout << i << " + " << remain[i].first << " + " << quot << endl;
+        }
+        quot[remain[i].second]++;    
+    }
+    if(remain[dim-1].first > 0){
+        // cout << "E " << quot << endl;
+        approx.push_back(quot);
+    }
+
 }
 
 } // end namespace libnormaliz

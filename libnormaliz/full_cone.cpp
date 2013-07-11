@@ -1622,33 +1622,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
-    // set needed do_ vars
-    if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
-        do_evaluation = true;
-    // look for a grading if it is needed
-    deg1_check();
-    if (!isComputed(ConeProperty::Grading) && (do_multiplicity || do_deg1_elements || do_h_vector)) {
-        if (!isComputed(ConeProperty::ExtremeRays)) {
-            if (verbose) {
-                verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
-            }
-            compute_support_hyperplanes();
-            extreme_rays_and_deg1_check();
-            if(!pointed) return;
-
-            // We keep the SupportHyperplanes, so we do not need to recompute them
-            // for the last generator, and use them to make a global reduction earlier
-            do_all_hyperplanes = false;
-            supphyp_recursion = false;
-            for(size_t i=0;i<nr_gen;i++)
-                in_triang[i]=false;
-            Done = false;
-            nextGen = -1;
-        }
-    }
-    set_degrees();
-    sort_gens_by_degree();
-
     if (!is_pyramid) {
         SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
         // this is used when we want to make intermediate reductions
@@ -1775,8 +1748,56 @@ void Full_Cone<Integer>::compute() {
 
     if (!do_triangulation && !do_partial_triangulation)
         support_hyperplanes();
-    else
-        primal_algorithm();
+    else{
+        // set needed do_ vars
+        if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
+        do_evaluation = true;
+        
+        // look for a grading if it is needed
+        find_grading();
+
+        set_degrees();
+        sort_gens_by_degree();
+        if(do_partial_triangulation && do_deg1_elements && !deg1_generated){
+            if(verbose)
+                verboseOutput() << "Approximating rational by lattice polytope" << endl;
+            compute_deg1_elements_via_approx();
+        }
+        else
+            primal_algorithm();
+    }
+}
+
+// -1
+template<typename Integer>
+void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
+
+    if (!isComputed(ConeProperty::Grading)){
+        support_hyperplanes(); // the only thing we can do now
+        return;
+    }
+
+    Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
+    C_approx.do_deg1_elements=true;    // for supercone C_approx that is generated in degree 1
+    if(verbose)
+        verboseOutput() << "Computing deg 1 elements in approximating cone" << endl;
+    C_approx.compute();
+    if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
+        cerr << "Wrong approximating cone. Fatal error. PLEASE CONTACT THE AUTHORS" << endl;
+        exit(1);
+    }
+
+    if(verbose)
+        verboseOutput() << "Sum of dets of simplicial cones evaluated in approximation = " << C_approx.detSum << endl;
+
+    if(verbose)
+        verboseOutput() << "Returning to original cone" << endl;
+    compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
+    if(verbose)
+        verboseOutput() << "Selecting deg 1 elements from approximating cone" << endl;
+    select_deg1_elements(C_approx);
+    if(verbose)
+        verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
 }
 
 
@@ -1824,6 +1845,32 @@ void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
     if(!pointed) return;
     compute_extreme_rays();
     deg1_check();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::find_grading(){
+    deg1_check();
+    if (!isComputed(ConeProperty::Grading) && (do_multiplicity || do_deg1_elements || do_h_vector)) {
+        if (!isComputed(ConeProperty::ExtremeRays)) {
+            if (verbose) {
+                verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
+            }
+            compute_support_hyperplanes();
+            extreme_rays_and_deg1_check();
+            if(!pointed) return;
+
+            // We keep the SupportHyperplanes, so we do not need to recompute them
+            // for the last generator, and use them to make a global reduction earlier
+            do_all_hyperplanes = false;
+            supphyp_recursion = false;
+            for(size_t i=0;i<nr_gen;i++)
+                in_triang[i]=false;
+            Done = false;
+            nextGen = -1;
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -2075,12 +2122,48 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::select_deg1_elements() {
+void Full_Cone<Integer>::select_deg1_elements() { // from the Hilbert basis
 
     typename list<vector<Integer> >::iterator h = Hilbert_Basis.begin();
     for(;h!=Hilbert_Basis.end();h++)
         if(v_scalar_product(Grading,*h)==1)
             Deg1_Elements.push_back(*h);
+    is_Computed.set(ConeProperty::Deg1Elements,true);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Full_Cone<Integer>::contains(const vector<Integer>& v) {
+    typename list<vector<Integer> >::iterator s;
+    for(s= Support_Hyperplanes.begin();s!= Support_Hyperplanes.end();++s)
+        if(v_scalar_product(*s,v)<0)
+            return(false);
+    return(true);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Full_Cone<Integer>::contains(const Full_Cone& C) {
+    for(size_t i=0;i<C.nr_gen;++i)
+        if(!contains(C.Generators[i])){
+            cerr << "Missing generator " << C.Generators[i] << endl;
+            return(false);
+    }
+    return(true);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vectors computed in 
+                                                              // the auxiliary cone C
+    assert(isComputed(ConeProperty::SupportHyperplanes));
+    assert(C.isComputed(ConeProperty::Deg1Elements));
+    typename list<vector<Integer> >::const_iterator h = C.Deg1_Elements.begin();
+    for(;h!=C.Deg1_Elements.end();++h){
+        if(contains(*h))
+            Deg1_Elements.push_back(*h);
+    }
     is_Computed.set(ConeProperty::Deg1Elements,true);
 }
 
@@ -2228,6 +2311,42 @@ void Full_Cone<Integer>::check_integrally_closed() {
     }
     is_Computed.set(ConeProperty::IsIntegrallyClosed);
 }
+
+//---------------------------------------------------------------------------
+
+// Computes the generators of a supercone approximating "this" by a cone over a lattice polytope
+template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::latt_approx() {
+    assert(isComputed(ConeProperty::Grading));
+    Matrix<Integer> G(1,dim);
+    G[0]=Grading;
+    
+    
+    Lineare_Transformation<Integer> NewBasis = Transformation(G); // gives a new basis
+    Matrix<Integer> U=NewBasis.get_right();   // the basis elements are the columns of U
+    Integer dummy_denom;                             
+    vector<Integer> dummy_diag(dim); 
+    Matrix<Integer> T=invert(U,dummy_diag,dummy_denom);       // T is the coordinate transformation
+                                                            // to the new basis: v --> Tv (in this case)
+                                                    // for which the grading is the FIRST coordinate  
+    
+    assert(dummy_denom==1);  // for safety 
+    
+    list<vector<Integer> > L; // collects the generators of the approximating cone
+    for(size_t i=0;i<nr_gen;++i){
+        list<vector<Integer> > approx;
+        approx_simplex(T.MxV(Generators[i]),approx);
+        L.splice(L.end(),approx);
+    }
+    
+    Matrix<Integer> M=Matrix<Integer>(L);
+    
+    for(size_t j=0;j<M.nr_of_rows();++j)  // reverse transformation
+        M[j]=U.MxV(M[j]);
+    
+    return(M);
+}        
+    
 
 //---------------------------------------------------------------------------
 // Global reduction

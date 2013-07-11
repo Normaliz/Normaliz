@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <ostream>
+#include<list>
 
 #include "libnormaliz.h"
 
@@ -147,8 +148,16 @@ bool compare_last (const vector<Integer>& a, const vector<Integer>& b)
 template<typename Integer>
 vector<key_t> v_non_zero_pos(vector<Integer> v);
 
+//---------------------------------------------------------------------------
+//							  Special
+//---------------------------------------------------------------------------
+
+// computes integral simplex containing a rational vector
+template<typename Integer>
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx);
 
 }
+
 
 //---------------------------------------------------------------------------
 #endif

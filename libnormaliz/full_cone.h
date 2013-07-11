@@ -173,6 +173,10 @@ class Full_Cone {
     Simplex<Integer> find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
+                                  
+    Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    void compute_deg1_elements_via_approx(); // uses the approximation
+    void select_deg1_elements(const Full_Cone& C);
     
     void build_top_cone(); 
     void extend_cone();    
@@ -185,7 +189,10 @@ class Full_Cone {
     
     Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
+    bool contains(const vector<Integer>& v);
+    bool contains(const Full_Cone& C);
     void extreme_rays_and_deg1_check();
+    void find_grading();
     void set_degrees();
     void sort_gens_by_degree();
     void compute_support_hyperplanes();
