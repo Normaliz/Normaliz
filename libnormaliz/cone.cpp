@@ -587,11 +587,7 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
                       << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
-    //check if the linear forms are the same
-    if (isComputed(ConeProperty::Grading) && Grading == lf) {
-        return;
-    }
-    if (isComputed(ConeProperty::Generators)) {
+    if (isComputed(ConeProperty::Generators) && Generators.size() > 0) {
         vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
         for (size_t i=0; i<degrees.size(); ++i) {
             if (degrees[i]<1) {
@@ -600,9 +596,15 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
                 throw BadInputException();
             }
         }
+        GradingDenom = degrees[0] / v_scalar_product(BasisChange.to_sublattice_dual(lf),BasisChange.to_sublattice(Generators[0])); //TODO in Sublattice Rep berechnen lassen
+    } else {
+        GradingDenom = 1;
+    }
+    //check if the linear forms are the same
+    if (isComputed(ConeProperty::Grading) && Grading == lf) {
+        return;
     }
     Grading = lf;
-    GradingDenom = 1;
     is_Computed.set(ConeProperty::Grading);
 
     //remove data that depends on the grading 
@@ -755,10 +757,9 @@ void Cone<Integer>::compute_generators() {
             Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
             compose_basis_change(Basis_Change);
 
-            //compute denominator of Grading
+            // check grading and compute denominator
             if (isComputed(ConeProperty::Grading) && Generators.size() > 0) {
-                GradingDenom  = v_scalar_product(Grading,Generators[0]);
-                GradingDenom /= v_scalar_product(BasisChange.to_sublattice_dual(Grading),BasisChange.to_sublattice(Generators[0])); //TODO in Sublattice Rep berechnen lassen
+                setGrading(Grading);
             }
         }
     }
