@@ -1835,6 +1835,8 @@ void Full_Cone<Integer>::compute() {
         
         // look for a grading if it is needed
         find_grading();
+        if(isComputed(ConeProperty::IsPointed) && !pointed) return;
+
 
         set_degrees();
         sort_gens_by_degree();
