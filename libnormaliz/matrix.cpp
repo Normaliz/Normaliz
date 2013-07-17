@@ -49,7 +49,7 @@ void Matrix<Integer>::max_rank_submatrix_lex(vector<key_t>& v, const size_t& ran
     }
     for (; v[level] < nr; v[level]++) {
         Matrix<Integer> S=submatrix(v);
-        if (S.rank()==S.nr_of_rows()) {
+        if (S.rank_destructive()==S.nr_of_rows()) {
             max_rank_submatrix_lex(v,rank);
             return;
         }
