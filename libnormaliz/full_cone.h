@@ -118,7 +118,8 @@ class Full_Cone {
 
     Full_Cone<Integer>* Mother;   // reference to the mother of the pyramid
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
-    size_t new_generator; // indicates which generator of mother cone is apex of pyramid
+    typename list< FACETDATA >::iterator Mother_hyp;   // indicates the support hyperplane of the mother over which the pyramid is built
+    size_t apex; // indicates which generator of mother cone is apex of pyramid
 
 
     // control of pyramids and recusrion
@@ -138,6 +139,7 @@ class Full_Cone {
     long nextGen; // the next generator to be processed
     size_t old_nr_supp_hyps; // must be remembered since we may leave extend_cone 
                              // before discarding "negative" hyperplanes
+                             // Moreover, needed for matches of a negative with the positive hyperplanes
     
        
     vector<list<Full_Cone<Integer> > > RecPyrs; // storage for recursive pyramids
@@ -161,14 +163,18 @@ class Full_Cone {
  */
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                      list<FACETDATA>& NewHyps);
+    bool potential_common_subfacet(const vector<key_t>& key_hyp1, size_t size_key_hyp1, size_t bound, const FACETDATA & hyp2);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
     void process_pyramid(const vector<key_t>& Pyramid_key, 
-                      const size_t new_generator, const size_t store_level, Integer height, const bool recursive);
+                      const size_t new_generator, const size_t store_level, Integer height, const bool recursive,
+                      typename list< FACETDATA >::iterator hyp);
     void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
                       const vector<key_t>& Pyramid_key);
     void evaluate_stored_pyramids(const size_t level);
+    void match_neg_hyp_with_pos_hyps(typename list< FACETDATA >::iterator hyp, size_t new_generator);
+    void match_with_pos_hyps_mother();
     void evaluate_rec_pyramids(const size_t level);
 
     void find_and_evaluate_start_simplex();
