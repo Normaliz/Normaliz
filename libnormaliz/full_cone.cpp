@@ -855,7 +855,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         Top_Cone->nrSimplicialPyr++;
         if(recursive){ // the facets may be facets of the mother cone and if recursive==true must be given back
             Simplex<Integer> S(Pyramid_key, Generators);
-            height = S.read_volume(); //update our lower bound for the volume
+            if (height != 0)
+                height = S.read_volume(); //update our lower bound for the volume
             Matrix<Integer> H=S.read_support_hyperplanes();
             list<FACETDATA> NewFacets;
             FACETDATA NewFacet;
@@ -891,8 +892,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             nrRecPyramidsDue++;
             #pragma omp critical(RECPYRAMIDS)
             {
-            Top_Cone->RecPyrs[store_level].push_back(Pyramid); 
-            Top_Cone->nrRecPyrs[store_level]++;            
+            Top_Cone->RecPyrs[store_level].push_back(Pyramid);
+            Top_Cone->nrRecPyrs[store_level]++;
             } // critical
        } else { //not recursive
            vector<key_t> key_wrt_top(Pyramid_key.size());
@@ -901,10 +902,10 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
            #pragma omp critical(STOREPYRAMIDS)
            {
            Top_Cone->Pyramids[store_level].push_back(key_wrt_top);
-           Top_Cone->nrPyramids[store_level]++;           
+           Top_Cone->nrPyramids[store_level]++;
            } // critical
        }
-    }   
+    }
 
 }
 
