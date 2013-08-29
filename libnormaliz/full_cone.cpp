@@ -1410,13 +1410,15 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     if (verbose) {
         verboseOutput() << "**************************************************" << endl;
         verboseOutput() << "all pyramids on level "<< level << " done!"<<endl;
-        for (size_t l=0; l<=level; ++l) {
-            if (nrPyramids[l]>0) {
-                verboseOutput() << "level " << l << " pyramids remaining: "
-                                << nrPyramids[l] << endl;
+        if (nrPyramids[level+1] == 0) {
+            for (size_t l=0; l<=level; ++l) {
+                if (nrPyramids[l]>0) {
+                    verboseOutput() << "level " << l << " pyramids remaining: "
+                                    << nrPyramids[l] << endl;
+                }
             }
+            verboseOutput() << "**************************************************" << endl;
         }
-        verboseOutput() << "**************************************************" << endl;
     }
     if(check_evaluation_buffer())
     {
