@@ -77,6 +77,10 @@ class Full_Cone {
     Matrix<Integer> Generators;
     vector<bool> Extreme_Rays;
     list<vector<Integer> > Support_Hyperplanes;
+    
+    vector<size_t> HypCounter; // counters used to give uniqoe number to jyperplane
+                               // must be defined thread wise to avoid critical
+                               
         
     vector<bool> in_triang;
     
@@ -94,7 +98,10 @@ class Full_Cone {
 
     vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionFirst;   // first simplex with lead vertex i
     vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionLast;     // last simplex with lead vertex i
-    vector<key_t> VertInTri;               // generators in the order in which they are inserted into the triangulation
+    vector<key_t> GensInCone;    // lists the generators completely built in
+    size_t nrGensInCone;    // their number        
+    
+    // size_t nr_inserted_generators;        // number of inserted generators EXCLUDING the current one
     
     list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
     vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
@@ -104,7 +111,10 @@ class Full_Cone {
     struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
-        Integer ValNewGen;                 // value of linear form on the generator to be added                 // value on last generator added
+        Integer ValNewGen;                 // value of linear form on the generator to be added
+        size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
+        size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
+        size_t Mother;                     // Ident of positive mother if known, 0 if unknown
     };
     
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
@@ -137,6 +147,7 @@ class Full_Cone {
     vector<size_t> nrPyramids; // number of pyramids on the various levels
 
     long nextGen; // the next generator to be processed
+    long lastGen; // the last generator processed
     size_t old_nr_supp_hyps; // must be remembered since we may leave extend_cone 
                              // before discarding "negative" hyperplanes
                              // Moreover, needed for matches of a negative with the positive hyperplanes
@@ -161,6 +172,7 @@ class Full_Cone {
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
  */
+    void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                      list<FACETDATA>& NewHyps);
     bool potential_common_subfacet(const vector<key_t>& key_hyp1, size_t size_key_hyp1, size_t bound, const FACETDATA & hyp2);
