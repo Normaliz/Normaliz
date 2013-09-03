@@ -873,21 +873,39 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
                                         // because parallelization has been dropped        
     vector<key_t> Pyramid_key;
     Pyramid_key.reserve(nr_gen);
-
-    typename list< FACETDATA >::iterator hyp=Facets.begin();
-    size_t listsize=old_nr_supp_hyps; // Facets.size();
     Integer ov_sp; // Order_Vector scalar product
     bool skip_triang; // make hyperplanes but skip triangulation (recursive pyramids only)
 
-    // no need to parallelize the followqing loop since ALL pyramids
-    // are now processed in parallel (see version 2.8 for parallel version)
-    // BUT: new hyperplanes can be added before the loop has been finished.
-    // Therefore we must work with listsize.
-    for (size_t kk=0; kk<listsize; ++hyp, ++kk) {
+    deque<bool> done(old_nr_supp_hyps,false);
+    bool skip_remaining_tri,skip_remaining_pyr,skip_remaining_rec_pyr;
+    typename list< FACETDATA >::iterator hyp;
+    size_t nr_done=0;
+    
+    do{  // repeats processing until all hyperplanes have been processed
 
-        if (hyp->ValNewGen == 0) {
+    hyp=Facets.begin();
+    size_t hyppos=0;
+    skip_remaining_tri=skip_remaining_pyr=skip_remaining_rec_pyr=false;
+
+
+    #pragma omp parallel for private(skip_triang,ov_sp) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic)
+    for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
+    
+        if(skip_remaining_tri || skip_remaining_pyr || skip_remaining_rec_pyr )
+            continue;
+
+        for(;kk > hyppos; hyppos++, hyp++) ;
+        for(;kk < hyppos; hyppos--, hyp--) ;
+
+        if(done[hyppos])
+            continue;
+
+        done[hyppos]=true;
+        #pragma omp atomic
+        nr_done++;
+
+        if (hyp->ValNewGen == 0)                     // MUST BE SET HERE 
             hyp->GenInHyp.set(new_generator);
-        }
 
         if (hyp->ValNewGen >= 0) // facet not visible
             continue;
@@ -932,13 +950,42 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             process_pyramid(Pyramid_key, new_generator,store_level,-hyp->ValNewGen, recursive,hyp);
         }
 
-        if(Top_Cone->nrRecPyrs[store_level]>EvalBoundRecPyr && start_level==0){
-            Top_Cone->evaluate_rec_pyramids(store_level);
+        if(check_evaluation_buffer_size() && start_level==0 && nr_done < old_nr_supp_hyps){  // we interrupt parallel execution if it is really parallel
+                                                           //  to keep the triangulation buffer under control
+            skip_remaining_tri=true;
         }
-        if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr && start_level==0){  
-            Top_Cone->evaluate_stored_pyramids(store_level);
+        
+        if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr && start_level==0 && nr_done < old_nr_supp_hyps){  // we interrupt parallel execution if it is really parallel
+                                                           //  to keep the pyramid buffer under control
+            skip_remaining_pyr=true;                      
         }
+        
+        if(Top_Cone->nrRecPyrs[store_level]>EvalBoundRecPyr && start_level==0 && nr_done < old_nr_supp_hyps){
+             skip_remaining_rec_pyr=true;
+        }
+        
     } // loop over hyperplanes
+    
+    if(skip_remaining_rec_pyr)
+    {
+        Top_Cone->evaluate_rec_pyramids(store_level);    
+    }
+    
+    if(skip_remaining_tri)
+    {
+        Top_Cone->evaluate_triangulation();
+    }
+    
+    if(skip_remaining_pyr){
+        if (verbose) {
+            verboseOutput() << "**************************************************" << endl;
+            verboseOutput() << "descending to level " << store_level << endl;
+        }
+        Top_Cone->evaluate_stored_pyramids(store_level);
+    }
+
+    } while(skip_remaining_tri || skip_remaining_pyr || skip_remaining_rec_pyr);
+    
     
     evaluate_large_rec_pyramids(new_generator);
 
@@ -972,15 +1019,15 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.GenInHyp.reset(i);
                 NewFacets.push_back(NewFacet);
             }
-            select_supphyps_from(NewFacets,new_generator,Pyramid_key);  // SEE BELOW
+            select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of parallel_inside_pyramid
         }
         if (height != 0 && (do_triangulation || do_partial_triangulation)) {
-            //if(recursion_allowed) {                                   // AT PRESENT
-            //    #pragma omp critical(TRIANG)                          // NO PARALLELIZATION
-            //     store_key(Pyramid_key,height,0,Triangulation);       // HERE
-            // } else {
+            if(parallel_inside_pyramid) {                                  
+                #pragma omp critical(TRIANG)                          
+                store_key(Pyramid_key,height,0,Triangulation); 
+            } else {
                 store_key(Pyramid_key,height,0,Triangulation);
-            // }
+            }
         }
     }
     else {  // non-simplicial
@@ -1143,7 +1190,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
             }
             NewFacet.GenInHyp.set(new_generator);
             number_hyperplane(NewFacet,nrGensInCone,0); //mother unknown
-            if(recursion_allowed){
+            if(parallel_inside_pyramid){
                 #pragma omp critical(GIVEBACKHYPS) 
                 Facets.push_back(NewFacet);
             } else {
@@ -1302,12 +1349,12 @@ void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
-
-    assert(omp_get_level()==0);
     
     size_t nrLargeRecPyrs=LargeRecPyrs.size();
     if(nrLargeRecPyrs==0)
         return;
+        
+    assert(omp_get_level()==0);
         
     if(verbose){
         verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
