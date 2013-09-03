@@ -51,6 +51,8 @@ const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements bef
                                               // intermediate reduction is called
                                               
 const int largePyramidFactor=4;  // pyramid is large if nr_gen > largePyramidFactor*dim
+
+const int SuppHypRecursionFactor=500; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
                                               
 // bool ReportPyr=false;
 
@@ -1153,7 +1155,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator){
+void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P){
 
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
@@ -1170,63 +1172,108 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     // cout << "Rein " << old_nr_supp_hyps << endl;
 
 
-    boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp;
+    boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
+    
     size_t nr_zero_hyp=0;
-    for(size_t j=0;j<nr_gen;j++)
+    vector<int> key_start(nrGensInCone);
+    size_t j;
+    int last_existing=-1;
+    for(size_t jj=0;jj<nrGensInCone;jj++)
+    {
+        j=GensInCone[jj];
         if(zero_hyp.test(j)){
             key[nr_zero_hyp]=j;
+            for(size_t kk= last_existing+1;kk<=jj;kk++)
+                key_start[kk]=nr_zero_hyp;
             nr_zero_hyp++;
+            last_existing= jj;
         }
+    }
+    if(last_existing< (int)nrGensInCone-1)
+        for(size_t kk=last_existing+1;kk<nrGensInCone;kk++)
+            key_start[kk]=nr_zero_hyp;
+            
+    if (nr_zero_hyp<dim-2) 
+        return;
     
     missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
-    typename list< FACETDATA >::iterator hp_j=Facets.begin();
-
-    for (size_t j =0; j< old_nr_supp_hyps; ++j,++hp_j){ //match hyp with the given list Pos
+                                          
+    typename list< FACETDATA*>::iterator hp_j_iterator=PosHyps.begin();
     
-        if(hp_j->ValNewGen<=0)
-            continue;
+    FACETDATA* hp_j;
+
+    for (;hp_j_iterator!=PosHyps.end();++hp_j_iterator){ //match hyp with the given Pos
+        hp_j=*hp_j_iterator;
 
 
-        nr_missing=0; 
-        nr_common_zero=0;
-        common_subfacet=true;               
-        for(size_t k=0;k<nr_zero_hyp;k++) {
-            if(!hp_j->GenInHyp.test(key[k])) {
-                nr_missing++;
-                if(nr_missing>missing_bound) {
-                    common_subfacet=false;
-                    break;
-                }
-            }
-            else {
-                common_key[nr_common_zero]=key[k];
-                nr_common_zero++;
-            }
+      if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
+           add_hyperplane(new_generator,*hp_j,hyp,NewHyps);  // their intersection is a subfacet
+           continue;           
+       }
+       
+       
+       bool extension_test=hyp.BornAt==hp_j->BornAt || (hyp.BornAt<hp_j->BornAt && hp_j->Mother!=0)
+                                                      || (hp_j->BornAt<hyp.BornAt && hyp.Mother!=0);
+                                                      
+       size_t both_existing_from=key_start[max(hyp.BornAt,hp_j->BornAt)];
+                  
+       nr_missing=0; 
+       nr_common_zero=0;
+       size_t second_loop_bound=nr_zero_hyp;
+       common_subfacet=true;  
+       
+       if(extension_test){
+           bool extended=false;
+           second_loop_bound=both_existing_from;
+           for(size_t k=both_existing_from;k<nr_zero_hyp;k++){
+               if(!hp_j->GenInHyp.test(key[k])) {
+                   nr_missing++;
+                   if(nr_missing>missing_bound) {
+                       common_subfacet=false;
+                       break;
+                   }
+               }
+               else {
+                   extended=true;
+                   common_key[nr_common_zero]=key[k];
+                   nr_common_zero++;
+               }
+           }
+
+           if(!extended || !common_subfacet) // 
+               continue;
+       }
+                
+       for(size_t k=0;k<second_loop_bound;k++) {
+           if(!hp_j->GenInHyp.test(key[k])) {
+               nr_missing++;
+               if(nr_missing>missing_bound) {
+                   common_subfacet=false;
+                   break;
+               }
+           }
+           else {
+               common_key[nr_common_zero]=key[k];
+               nr_common_zero++;
+           }
         }
         
-        if(!common_subfacet)
+       if(!common_subfacet)
             continue;
-
             
-        bool ranktest = true; // (nrNonSimp > dim*dim*nr_common_zero/3);
+        Matrix<Integer> Test(nr_common_zero,dim); // only rank test since we have many supphyps anyway
+        for (size_t k = 0; k < nr_common_zero; k++)
+            Test[k]=Generators[common_key[k]];
 
-        if (ranktest) {
-            Matrix<Integer> Test(nr_common_zero,dim);
-            for (size_t k = 0; k < nr_common_zero; k++)
-                Test[k]=Generators[common_key[k]];
-
-            if (Test.rank_destructive()<subfacet_dim) {
-                common_subfacet=false;     // don't make a hyperplane
-            }
-        } // ranktest
+        if (Test.rank_destructive()<subfacet_dim) 
+            common_subfacet=false;     // don't make a hyperplane
 
         
         if(common_subfacet)
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps); // if !common_subfacet this is skipped by continue
     } // for
 
-    
     if(parallel_inside_pyramid)
         #pragma omp critical(GIVEBACKHYPS)
         Facets.splice(Facets.end(),NewHyps);
@@ -1237,7 +1284,20 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
 }
 
-
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P){
+           
+    // positive facets are collected in a list
+    
+    typename list<FACETDATA>::iterator ii = Facets.begin();
+    
+    for (size_t ij=0; ij< old_nr_supp_hyps; ++ij, ++ii)
+        if (ii->ValNewGen>0) {
+            Zero_P |= ii->GenInHyp;
+            PosHyps.push_back(&(*ii));
+        }
+}
 
 //---------------------------------------------------------------------------
 template<typename Integer>
@@ -1254,6 +1314,10 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         verboseOutput() << "Computing support hyperplanes of " << nrLargeRecPyrs << " large recursive pyramids on level " << pyr_level+1 << endl;
         verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
     }
+    
+    list<FACETDATA*> PosHyps;
+    boost::dynamic_bitset<> Zero_P(nr_gen);
+    collect_pos_supphyps(PosHyps,Zero_P);
             
     #pragma omp parallel
     {                            
@@ -1264,12 +1328,12 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     for(size_t i=0; i<nrLargeRecPyrs; i++){
     for(; i > ppos; ++ppos, ++p) ;
     for(; i < ppos; --ppos, --p) ;
-        match_neg_hyp_with_pos_hyps(*p,new_generator);
+        match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
     }
     } // parallel
 
     if(verbose)
-        verboseOutput() << "All large recursive pyramids done" << endl;
+        verboseOutput() << "All large recursive pyramids done"  << endl;
     LargeRecPyrs.clear();
     
 }
@@ -1609,7 +1673,7 @@ void Full_Cone<Integer>::extend_cone() {
     
     // DECIDE WHETHER TO BUILD RECURSIVE PYRAMIDS
     long long RecBoundSuppHyp = dim*dim;
-    RecBoundSuppHyp *= RecBoundSuppHyp*3000; //dim^4 * 3000
+    RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
     // RecBoundSuppHyp=1000;
 //    int bound_div = nr_gen-dim+1;
 //    if(bound_div > 3* (int) dim) bound_div = 3*dim;
