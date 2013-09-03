@@ -101,8 +101,6 @@ class Full_Cone {
     vector<key_t> GensInCone;    // lists the generators completely built in
     size_t nrGensInCone;    // their number        
     
-    // size_t nr_inserted_generators;        // number of inserted generators EXCLUDING the current one
-    
     list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
     vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
 
@@ -138,7 +136,9 @@ class Full_Cone {
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
-    bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid   
+    bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid 
+    
+    size_t store_level; // the level on which daughters will be stored  
 
     bool tri_recursion; // true if we have gone to pyramids because of triangulation
     
@@ -151,17 +151,7 @@ class Full_Cone {
                              // before discarding "negative" hyperplanes
                              // Moreover, needed for matches of a negative with the positive hyperplanes
     
-       
-    vector<list<Full_Cone<Integer> > > RecPyrs; // storage for recursive pyramids
-    vector<size_t> nrRecPyrs;
     list<FACETDATA> LargeRecPyrs; // storage for large recusive pyramids given by basis of pyramid in mother cone
-    
-    size_t nrRecPyramidsDue;  // number of recursive pyramids created from this at the current extension
-    size_t nrRecPyramidsDone; // number of recursive pyramids that have returned supphyps
-    bool allRecPyramidsBuilt; // indicates that all recursive pyramids from the current generator have been built    
-
-    bool Done; // true if this cone has been finished
-    bool large; // large pyramids are handled serial
 
     // statistics
     size_t totalNrSimplices;   // total number of simplices evaluated
@@ -200,7 +190,7 @@ class Full_Cone {
     void select_deg1_elements(const Full_Cone& C);
     
     void build_top_cone(); 
-    void extend_cone();    
+    void build_cone();   
     
 
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
