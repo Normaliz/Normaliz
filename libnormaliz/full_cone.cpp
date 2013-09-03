@@ -50,6 +50,8 @@ const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
 const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before  // 2000000
                                               // intermediate reduction is called
                                               
+const int largePyramidFactor=4;  // pyramid is large if nr_gen > largePyramidFactor*dim
+                                              
 // bool ReportPyr=false;
 
 
@@ -934,7 +936,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr && start_level==0){  
             Top_Cone->evaluate_stored_pyramids(store_level);
         }
-    }
+    } // loop over hyperplanes
+    
+    evaluate_large_rec_pyramids(new_generator);
 
 } 
 
@@ -978,34 +982,50 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
     }
     else {  // non-simplicial
-        if(recursive){
-            Full_Cone<Integer> Pyramid(*this,Pyramid_key);
-            Pyramid.Mother = this;
-            Pyramid.Mother_Key = Pyramid_key;    // need these data to give back supphyps
-            Pyramid.Mother_hyp=hyp;
-            Pyramid.apex=new_generator;
-            if (height == 0) { //indicates "do not triangulate"
-                Pyramid.do_partial_triangulation = false;
-                Pyramid.do_Hilbert_basis = false;
-            }
-            nrRecPyramidsDue++;
-            #pragma omp critical(RECPYRAMIDS)
+    
+        bool large=Pyramid_key.size()>largePyramidFactor*dim;
+        
+        if(!recursive || (large && (do_triangulation || (do_partial_triangulation&& height!=0))) ){  // must also store for triangulation if recursive and large
+            vector<key_t> key_wrt_top(Pyramid_key.size());
+            for(size_t i=0;i<Pyramid_key.size();i++)
+            key_wrt_top[i]=Top_Key[Pyramid_key[i]];
+            #pragma omp critical(STOREPYRAMIDS)
             {
-            Top_Cone->RecPyrs[store_level].push_back(Pyramid); 
-            Top_Cone->nrRecPyrs[store_level]++;            
+            Top_Cone->Pyramids[store_level].push_back(key_wrt_top);
+            Top_Cone->nrPyramids[store_level]++;           
             } // critical
-       } else { //not recursive
-           vector<key_t> key_wrt_top(Pyramid_key.size());
-           for(size_t i=0;i<Pyramid_key.size();i++)
-                key_wrt_top[i]=Top_Key[Pyramid_key[i]];
-           #pragma omp critical(STOREPYRAMIDS)
-           {
-           Top_Cone->Pyramids[store_level].push_back(key_wrt_top);
-           Top_Cone->nrPyramids[store_level]++;           
-           } // critical
-       }
-    }   
-
+            if(!recursive)    // in this case we need only store for future triangulation
+                return;
+        }
+        // now we are in the recursive case and must store for computation of hyperplanes (and triangulation of small pyramids)
+        if(large){  // large recursive pyramid
+            if(parallel_inside_pyramid){
+                #pragma omp critical(LARGERECPYRS)
+                LargeRecPyrs.push_back(*hyp);  // LargeRecPyrs are kept and evaluated locally
+            }
+            else
+                LargeRecPyrs.push_back(*hyp);
+            return; // done with the large recusive pyramids
+        }
+            
+        // only recursive small ones left
+        
+        Full_Cone<Integer> Pyramid(*this,Pyramid_key);
+        Pyramid.Mother = this;
+        Pyramid.Mother_Key = Pyramid_key;    // need these data to give back supphyps
+        Pyramid.apex=new_generator;
+        if (height == 0) { //indicates "do not triangulate"
+            Pyramid.do_partial_triangulation = false;
+            Pyramid.do_Hilbert_basis = false;
+            Pyramid.do_deg1_elements=false;
+        }
+        #pragma omp critical(RECPYRAMIDS)
+        {
+        Top_Cone->RecPyrs[store_level].push_back(Pyramid); 
+        Top_Cone->nrRecPyrs[store_level]++;
+        nrRecPyramidsDue++;            
+        } // critical
+    }  // eles non-simplicial
 }
 
 //---------------------------------------------------------------------------
@@ -1133,7 +1153,7 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(typename list< FACETDATA >::iterator hyp, size_t new_generator){
+void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator){
 
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
@@ -1150,7 +1170,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(typename list< FACETDATA >:
     // cout << "Rein " << old_nr_supp_hyps << endl;
 
 
-    boost::dynamic_bitset<> zero_hyp=hyp->GenInHyp;
+    boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp;
     size_t nr_zero_hyp=0;
     for(size_t j=0;j<nr_gen;j++)
         if(zero_hyp.test(j)){
@@ -1203,7 +1223,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(typename list< FACETDATA >:
 
         
         if(common_subfacet)
-            add_hyperplane(new_generator,*hp_j,*hyp,NewHyps); // if !common_subfacet this is skipped by continue
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps); // if !common_subfacet this is skipped by continue
     } // for
 
     
@@ -1217,18 +1237,41 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(typename list< FACETDATA >:
 
 }
 
+
+
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::match_with_pos_hyps_mother(){
+void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 
-    bool save_parallel=Mother->parallel_inside_pyramid;
-    Mother->parallel_inside_pyramid=true;
-    Mother->match_neg_hyp_with_pos_hyps(Mother_hyp,apex);
-    Mother->parallel_inside_pyramid=save_parallel;
-    Done=true;
-    #pragma omp atomic
-    Mother->nrRecPyramidsDone++;  
+    assert(omp_get_level()==0);
+    
+    size_t nrLargeRecPyrs=LargeRecPyrs.size();
+    if(nrLargeRecPyrs==0)
+        return;
+        
+    if(verbose){
+        verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        verboseOutput() << "Computing support hyperplanes of " << nrLargeRecPyrs << " large recursive pyramids on level " << pyr_level+1 << endl;
+        verboseOutput() << "++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+    }
+            
+    #pragma omp parallel
+    {                            
+    size_t ppos=0;
+    typename list<FACETDATA>::iterator p=LargeRecPyrs.begin(); 
+    
+    #pragma omp for schedule(dynamic) 
+    for(size_t i=0; i<nrLargeRecPyrs; i++){
+    for(; i > ppos; ++ppos, ++p) ;
+    for(; i < ppos; --ppos, --p) ;
+        match_neg_hyp_with_pos_hyps(*p,new_generator);
+    }
+    } // parallel
 
+    if(verbose)
+        verboseOutput() << "All large recursive pyramids done" << endl;
+    LargeRecPyrs.clear();
+    
 }
 
 //---------------------------------------------------------------------------
@@ -1267,7 +1310,6 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
     nrRecPyrs.resize(level+2);
     nrRecPyrs[level+1]=0;
 
-    size_t nr_pyramids=nrRecPyrs[level];
 
     typename list<Full_Cone<Integer> >::iterator p;
     size_t ppos;
@@ -1291,18 +1333,8 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
 
     // BIS HIER
 
-    size_t nr_large=0;
-
-    for(p=RecPyrs[level].begin();p!=RecPyrs[level].end();++p){
-        p->pyr_level=level;
-        if(p->nr_gen>4*dim){
-            p->large=true;   // we mark the large pyramids
-            p->parallel_inside_pyramid=true;
-            nr_large++;      // and count them
-        }
-        else
-            p->large=false;
-    }
+    
+    size_t nr_pyramids=nrRecPyrs[level];
 
     do   // the main loop
     {
@@ -1323,9 +1355,6 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
            
            // p->pyr_level=level; // now done above, MUST NOT BE FORGOTTEN
 
-           if(p->large)  // large pyramids to be processed serially later on
-              continue;
-
            p->extend_cone();
            if(check_evaluation_buffer_size())  // we interrupt parallel execution if it is really parallel
                 skip_remaining_tri=true;       //  to keep the triangulation buffer under control
@@ -1337,30 +1366,6 @@ void Full_Cone<Integer>::evaluate_rec_pyramids(const size_t level){
                  skip_remaining_pyr=true;
         }
         
-        if (nr_large > 0) {
-            verboseOutput() << nr_large << " large recursive pyramids on level "
-                            << level << "" << endl;
-                            
-            p = RecPyrs[level].begin();
-            #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
-            for(size_t i=0; i<nr_pyramids; i++){
-            for(; i > ppos; ++ppos, ++p) ;
-            for(; i < ppos; --ppos, --p) ;
-                if(p->large){
-                    p->match_with_pos_hyps_mother();
-                    if(p->do_triangulation || p->do_partial_triangulation){
-                    #pragma omp critical(STOREPYRAMIDS)
-                    {
-                        Top_Cone->Pyramids[0].push_back(p->Top_Key);
-                        Top_Cone->nrPyramids[0]++;           
-                    }
-                    }
-                }
-            }
-
-            verboseOutput() << "All large recursive pyramids on level "
-                            << level << " done" << endl;
-        }
 
         if (!skip_remaining_tri && !skip_remaining_pyr) 
             evaluate_rec_pyramids(level+1);

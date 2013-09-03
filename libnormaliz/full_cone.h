@@ -128,7 +128,6 @@ class Full_Cone {
 
     Full_Cone<Integer>* Mother;   // reference to the mother of the pyramid
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
-    typename list< FACETDATA >::iterator Mother_hyp;   // indicates the support hyperplane of the mother over which the pyramid is built
     size_t apex; // indicates which generator of mother cone is apex of pyramid
 
 
@@ -155,6 +154,7 @@ class Full_Cone {
        
     vector<list<Full_Cone<Integer> > > RecPyrs; // storage for recursive pyramids
     vector<size_t> nrRecPyrs;
+    list<FACETDATA> LargeRecPyrs; // storage for large recusive pyramids given by basis of pyramid in mother cone
     
     size_t nrRecPyramidsDue;  // number of recursive pyramids created from this at the current extension
     size_t nrRecPyramidsDone; // number of recursive pyramids that have returned supphyps
@@ -185,9 +185,9 @@ class Full_Cone {
     void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
                       const vector<key_t>& Pyramid_key);
     void evaluate_stored_pyramids(const size_t level);
-    void match_neg_hyp_with_pos_hyps(typename list< FACETDATA >::iterator hyp, size_t new_generator);
-    void match_with_pos_hyps_mother();
+    void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator);
     void evaluate_rec_pyramids(const size_t level);
+    void evaluate_large_rec_pyramids(size_t new_generator);
 
     void find_and_evaluate_start_simplex();
     Simplex<Integer> find_start_simplex() const;
