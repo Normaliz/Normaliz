@@ -1103,7 +1103,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             if(j!=i)
                 NewFacet.GenInHyp.set(key[j]);
         NewFacet.ValNewGen=-1;         // must be taken negative since opposite facet
-        number_hyperplane(NewFacet,dim-1,0); // child of virgin
+        number_hyperplane(NewFacet,0,0); // created with gen 0
         Facets.push_back(NewFacet);    // was visible before adding this vertex
     }
     
