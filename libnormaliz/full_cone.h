@@ -48,7 +48,7 @@ class Full_Cone {
     
     size_t dim;
     size_t nr_gen;
-    size_t hyp_size; // not used at present
+    // size_t hyp_size; // not used at present
     
     bool pointed;
     bool deg1_generated;
@@ -70,42 +70,33 @@ class Full_Cone {
     // internal helper control variables
     bool do_only_multiplicity;
     bool do_evaluation;
-    
-    ConeProperties is_Computed;
+    ConeProperties is_Computed;    
+
+    // data of the cone (input or output)
     vector<Integer> Grading;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
     vector<bool> Extreme_Rays;
     list<vector<Integer> > Support_Hyperplanes;
-    
-    vector<size_t> HypCounter; // counters used to give uniqoe number to jyperplane
-                               // must be defined thread wise to avoid critical
-                               
-        
-    vector<bool> in_triang;
-    
     list<vector<Integer> > Hilbert_Basis;
     list<vector<Integer> > Candidates;   // for the Hilbert basis
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<long> gen_degrees;  // will contain the degrees of the generators
-    
-    // list< SHORTSIMPLEX<Integer> > CheckTri;
-    list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
     size_t TriangulationSize;          // number of elements in Triangulation, for efficiency
-    Integer detSum;                  // sum of the det
+    list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
+    Integer detSum;                  // sum of the determinants of the simplices
+    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition     
 
-    vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionFirst;   // first simplex with lead vertex i
-    vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionLast;     // last simplex with lead vertex i
+    // privare data controlling the computations
+    vector<size_t> HypCounter; // counters used to give uniqoe number to jyperplane
+                               // must be defined thread wise to avoid critical
+                               
+    vector<bool> in_triang;  // intriang[i]==true means that Generators[i] has been actively inserted
     vector<key_t> GensInCone;    // lists the generators completely built in
-    size_t nrGensInCone;    // their number        
-    
-    list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
-    vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
-
-    vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
-           
+    size_t nrGensInCone;    // their number
+        
     struct FACETDATA {
         vector<Integer> Hyp;               // linear form of the hyperplane
         boost::dynamic_bitset<> GenInHyp;  // incidence hyperplane/generators
@@ -114,44 +105,47 @@ class Full_Cone {
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
         size_t Mother;                     // Ident of positive mother if known, 0 if unknown
     };
-    
+
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
-    
-    vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone 
-
-    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition 
-
+    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished 
+        
+    // data relating a pyramid to its ancestores
     Full_Cone<Integer>* Top_Cone; // reference to cone on top level
     vector<key_t> Top_Key;        // indices of generators w.r.t Top_Cone
-
     Full_Cone<Integer>* Mother;   // reference to the mother of the pyramid
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
     size_t apex; // indicates which generator of mother cone is apex of pyramid
-
-
-    // control of pyramids and recusrion
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
 
+    // control of pyramids, recusrion and parallelization
     bool is_pyramid; // false for top cone
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
-    bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid 
+    bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
+    bool tri_recursion; // true if we have gone to pyramids because of triangulation 
     
+    // storage for subpyramids
     size_t store_level; // the level on which daughters will be stored  
-
-    bool tri_recursion; // true if we have gone to pyramids because of triangulation
-    
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
     vector<size_t> nrPyramids; // number of pyramids on the various levels
 
+    // data that can be used to go out of build_cone and return later (not done at present)
+    // but also useful at other places
     long nextGen; // the next generator to be processed
     long lastGen; // the last generator processed
-    size_t old_nr_supp_hyps; // must be remembered since we may leave extend_cone 
-                             // before discarding "negative" hyperplanes
-                             // Moreover, needed for matches of a negative with the positive hyperplanes
     
+    // Helpers for triangulation and Fourier-Motzkin
+    vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionFirst;   // first simplex with lead vertex i
+    vector<typename list < SHORTSIMPLEX<Integer> >::iterator> TriSectionLast;     // last simplex with lead vertex i
     list<FACETDATA> LargeRecPyrs; // storage for large recusive pyramids given by basis of pyramid in mother cone
+    
+    list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
+    vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
+    
+    // helpers for evaluation
+    vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
+    vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone 
 
     // statistics
     size_t totalNrSimplices;   // total number of simplices evaluated
@@ -165,7 +159,6 @@ class Full_Cone {
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                      list<FACETDATA>& NewHyps);
-    bool potential_common_subfacet(const vector<key_t>& key_hyp1, size_t size_key_hyp1, size_t bound, const FACETDATA & hyp2);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);

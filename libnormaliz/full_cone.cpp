@@ -124,23 +124,6 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     NewHyps.push_back(NewFacet);
 }
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool Full_Cone<Integer>::potential_common_subfacet(const vector<key_t>& key_hyp1, size_t size_key_hyp1, size_t bound, const FACETDATA & hyp2){
-
-    // return(true);
-
-    size_t nr_common=0;
-    for(size_t i=0;i<size_key_hyp1;++i)
-        if(hyp2.GenInHyp.test(key_hyp1[i])){
-            nr_common++;
-            if(nr_common>=bound)
-                return(true);
-        }
-    return(false);
-}
-
 
 //---------------------------------------------------------------------------
 
@@ -841,30 +824,32 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     The parameter "recursive" indicates whether the pyramids that will be created
     in process_pyramid(s) are of type (i) or (ii).
     
-    Every üyramid can create subpyramids of both types (not the case in version 2.8 - 2.10)
+    Every pyramid can create subpyramids of both types (not the case in version 2.8 - 2.10)
 
-    We Whether "this" is of type (i) or (ii) is indicted by do_all_hyperplanes.
+    Whether "this" is of type (i) or (ii) is indicted by do_all_hyperplanes.
     
     The creation of (sub)pyramids of type (i) can be blocked by setting recursion_allowed=false.
     (Not done in this version.)
+    
+    is_pyramid==false for the top_cone and ==true else
 
     parallel_inside_pyramid indictes whether parallelization takes place within the
     computation of a pyramid or whether it is computed in a single thread (defined in build_cone).
     
-    Recursie pyramids are processed ummediately after creation. However, in order
+    Recursie pyramids are processed ummediately after creation (as in 2.8). However, in order
     to avoid very long waiting times for the computation of the large ones, these are 
     treated as follows: the support hyperplanes of "this" coming from their bases 
     (as negative hyperplanes of "this") are computed by matching them with the 
-    positive hyperplanes of "this". This Fourier-Motzkin step is also more
+    positive hyperplanes of "this". This Fourier-Motzkin step is much more
     efficient if a pyramid is large. For triangulation a large recursive
     pyramid is then stored as a pyramid of type (ii).
 
-    Pyramids of type  in Pyramids. The store_level of the created pyramids is 0 
+    Pyramids of type (ii) are stpred in Pyramids. The store_level of the created pyramids is 0 
     for all pyramids created (possibly recursively) from the top cone. Pyramids created
     in evaluate_stored_pyramids get their store level in that routine.
 
     Note: the top cone has pyr_level=-1. The pyr_level has no algorithmic relevance
-    at present, but it shows the depth of the pyramid recursion at which the pyramid is
+    at present, but it shows the depth of the pyramid recursion at which the pyramid has been
     created.
 
     */
@@ -965,16 +950,11 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     } // loop over hyperplanes
 
     
-    if(skip_remaining_tri)
-    {
+    if(skip_remaining_tri)    {
         Top_Cone->evaluate_triangulation();
     }
     
     if(skip_remaining_pyr){
-        if (verbose) {
-            verboseOutput() << "**************************************************" << endl;
-            verboseOutput() << "descending to level " << store_level << endl;
-        }
         Top_Cone->evaluate_stored_pyramids(store_level);
     }
 
@@ -1063,13 +1043,13 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             Pyramid.do_Hilbert_basis = false;
             Pyramid.do_deg1_elements=false;
         }
-        /* #pragma omp critical(RECPYRAMIDS)
+        /* #pragma omp critical(RECPYRAMIDS)  // NOW BUILT DIRECLY 
         {
         Top_Cone->RecPyrs[store_level].push_back(Pyramid); 
         Top_Cone->nrRecPyrs[store_level]++;
         nrRecPyramidsDue++;            
         } // critical */
-        Pyramid.recursion_allowed=false;
+        // Pyramid.recursion_allowed=false;
         Pyramid.build_cone();
     }  // eles non-simplicial
 }
@@ -1379,6 +1359,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
+//
+// OBOLETE:
 // In contrast to the the recusrive pyramids, extend_cone is called
 // only once for every stored pyramid since we set recursion_allowed=false.
 
@@ -1440,7 +1422,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            nr_done++;
            
            Full_Cone<Integer> Pyramid(*this,*p);
-           Pyramid.recursion_allowed=false; // ABSOLUTELY NECESSARY HERE
+           // Pyramid.recursion_allowed=false;
            Pyramid.do_all_hyperplanes=false;
            if(level>=2 && do_partial_triangulation){ // limits the descent of do_partial_triangulation
                Pyramid.do_triangulation=true;
@@ -1522,6 +1504,15 @@ void Full_Cone<Integer>::build_cone() {
     tri_recursion=false; 
     
     parallel_inside_pyramid=(omp_get_level()==0);
+    
+    if(parallel_inside_pyramid){
+        HypCounter.resize(omp_get_max_threads());
+        for(size_t i=0;i<HypCounter.size();++i)
+            HypCounter[i]=i+1;
+    } else{
+        HypCounter.resize(1);
+        HypCounter[0]=1;    
+    }
 
     find_and_evaluate_start_simplex();
     
@@ -2954,9 +2945,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     do_all_hyperplanes=true;
     // parallel_inside_pyramid=true; now in build_cone where it is defined dynamically
-    HypCounter.resize(omp_get_max_threads());
-    for(size_t i=0;i<HypCounter.size();++i)
-        HypCounter[i]=i+1;
+
     
     nextGen=0;
     store_level=0;
@@ -3071,11 +3060,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     TriangulationSize=0;
     CandidatesSize=0;
     
-    recursion_allowed=C.recursion_allowed; // must be reset for non-recursive pyramids
+    recursion_allowed=C.recursion_allowed; // must be reset if necessary 
     do_all_hyperplanes=true; //  must be reset for non-recursive pyramids
     // parallel_inside_pyramid=false; // SEE ABOVE
-    HypCounter.resize(1);
-    HypCounter[0]=1;
     
     nextGen=0;
     store_level=0;
@@ -3229,7 +3216,7 @@ template<typename Integer>
 void Full_Cone<Integer>::print()const{
     verboseOutput()<<"\ndim="<<dim<<".\n";
     verboseOutput()<<"\nnr_gen="<<nr_gen<<".\n";
-    verboseOutput()<<"\nhyp_size="<<hyp_size<<".\n";
+    // verboseOutput()<<"\nhyp_size="<<hyp_size<<".\n";
     verboseOutput()<<"\nGrading is:\n";
     verboseOutput()<< Grading;
     verboseOutput()<<"\nMultiplicity is "<<multiplicity<<".\n";
