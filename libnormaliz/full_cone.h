@@ -123,8 +123,12 @@ class Full_Cone {
     long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
-    bool tri_recursion; // true if we have gone to pyramids because of triangulation 
+    bool tri_recursion; // true if we have gone to pyramids because of triangulation
     
+    vector<size_t> Comparisons; // at index i we note the total number of comparisons 
+                               // of positive and negative hyperplanes needed for the first i generators
+    size_t nrTotalComparisons; // counts the comparisons in the current computation
+   
     // storage for subpyramids
     size_t store_level; // the level on which daughters will be stored  
     vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
@@ -169,7 +173,7 @@ class Full_Cone {
                       const vector<key_t>& Pyramid_key);
     void evaluate_stored_pyramids(const size_t level);
     void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P);
-    void collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P);
+    void collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);
     void evaluate_rec_pyramids(const size_t level);
     void evaluate_large_rec_pyramids(size_t new_generator);
 
@@ -220,6 +224,7 @@ class Full_Cone {
     void compute_multiplicity();
 
     void do_vars_check();
+
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 

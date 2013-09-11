@@ -40,21 +40,19 @@
 const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
                                        // we pass to (non-recirsive) pyramids
 
-const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored  // 2500000
+const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
 
 const size_t EvalBoundPyr=200000;   // the same for stored pyramids
 
 const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
 
-const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before  // 2000000
+const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before 
                                               // intermediate reduction is called
                                               
-const int largePyramidFactor=4;  // pyramid is large if nr_gen > largePyramidFactor*dim
+const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
 
-const int SuppHypRecursionFactor=500; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
-                                              
-// bool ReportPyr=false;
+const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
 
 //---------------------------------------------------------------------------
@@ -280,6 +278,14 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     /* deque<bool> Indi(nr_NegNonSimp);
     for(size_t j=0;j<nr_NegNonSimp;++j)
         Indi[j]=false; */
+        
+    if(parallel_inside_pyramid){
+        #pragma omp atomic
+        nrTotalComparisons+=nr_NegNonSimp*nr_PosNonSimp;
+    }
+    else{
+        nrTotalComparisons+=nr_NegNonSimp*nr_PosNonSimp; 
+    } 
 
     
 //=====================================================================
@@ -441,7 +447,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     for (size_t i =0; i<nr_PosNonSimp; i++){ //Positive Non Simp vs.Negative Simp and Non Simp
 
         jj_map = Neg_Subfacet.begin();       // First the Simp
-        for (size_t j=0; j<nr_NegSubf; ++j,++jj_map) {
+        for (j=0; j<nr_NegSubf; ++j,++jj_map) {
             if ( (*jj_map).second != -1 ) {  // skip used subfacets
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
                     add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i]);
@@ -475,12 +481,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             continue;
         
        missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
-                                             // to have a chance for common subfacet
-       for (j=0; j<nr_NegNonSimp; j++){
+                                             // to have a chance for common subfacet                                            
        
-            
-            /*#pragma omp atomic
-            NrMatches++; */
+       for (j=0; j<nr_NegNonSimp; j++){
+    
         
            hp_j=Neg_Non_Simp[j];
            
@@ -608,13 +612,15 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 // extends the triangulation of this cone by including new_generator
 // simplicial facets save us from searching the "brother" in the existing triangulation
 // to which the new simplex gets attached
 
-    size_t listsize = Facets.size();
+    size_t listsize =old_nr_supp_hyps; // Facets.size();
     vector<typename list<FACETDATA>::iterator> visible;
     visible.reserve(listsize);
     typename list<FACETDATA>::iterator i = Facets.begin();
@@ -622,11 +628,14 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     // #pragma omp critical(VERBOSE)
     // verboseOutput() << "L " << pyr_level << " H " << listsize << " T " << TriangulationSize << endl;
     
+    listsize=0;
     for (; i!=Facets.end(); ++i) 
-        if (i->ValNewGen < 0) // visible facet
+        if (i->ValNewGen < 0){ // visible facet
             visible.push_back(i);
+            listsize++;
+        }
 
-    listsize = visible.size();
+    // listsize = visible.size(); // now acczmulated above
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
 
 
@@ -744,8 +753,13 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     newsimplex.height=height;
     newsimplex.vol=0;
     
-    #pragma omp atomic
-    TriangulationSize++;
+    if(parallel_inside_pyramid){
+        #pragma omp atomic
+        TriangulationSize++;
+    }
+    else {
+        TriangulationSize++;    
+    }
     int tn;
     if(omp_get_level()==0)
         tn=0;
@@ -997,16 +1011,20 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
         if (height != 0 && (do_triangulation || do_partial_triangulation)) {
             if(parallel_inside_pyramid) {                                  
-                #pragma omp critical(TRIANG)                          
+                #pragma omp critical(TRIANG)
+                {                          
                 store_key(Pyramid_key,height,0,Triangulation); 
+                nrTotalComparisons+=dim*dim/2;
+                }
             } else {
                 store_key(Pyramid_key,height,0,Triangulation);
+                nrTotalComparisons+=dim*dim/2;
             }
         }
     }
     else {  // non-simplicial
     
-        bool large=Pyramid_key.size()>largePyramidFactor*dim;
+        bool large=(largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps); // Pyramid_key.size()>largePyramidFactor*dim; ////                     Pyramid_key.size()>largePyramidFactor*dim;
         
         if(!recursive || (large && (do_triangulation || (do_partial_triangulation&& height!=0))) ){  // must also store for triangulation if recursive and large
             vector<key_t> key_wrt_top(Pyramid_key.size());
@@ -1051,6 +1069,11 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         } // critical */
         // Pyramid.recursion_allowed=false;
         Pyramid.build_cone();
+        if(parallel_inside_pyramid){
+            #pragma omp atomic
+            nrTotalComparisons+=Pyramid.nrTotalComparisons;
+        } else
+            nrTotalComparisons+=Pyramid.nrTotalComparisons;
     }  // eles non-simplicial
 }
 
@@ -1074,6 +1097,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     }
     
     nrGensInCone=dim;
+    
+    nrTotalComparisons=dim*dim/2;
+    Comparisons.push_back(nrTotalComparisons);
        
     Matrix<Integer> H=S.read_support_hyperplanes();
     for (i = 0; i <dim; i++) {
@@ -1310,16 +1336,18 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P){
+void Full_Cone<Integer>::collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos){
            
     // positive facets are collected in a list
     
     typename list<FACETDATA>::iterator ii = Facets.begin();
+    nr_pos=0;
     
     for (size_t ij=0; ij< old_nr_supp_hyps; ++ij, ++ii)
         if (ii->ValNewGen>0) {
             Zero_P |= ii->GenInHyp;
             PosHyps.push_back(&(*ii));
+            nr_pos++;
         }
 }
 
@@ -1330,11 +1358,17 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     size_t nrLargeRecPyrs=LargeRecPyrs.size();
     if(nrLargeRecPyrs==0)
         return;
+        
+    if(verbose && !is_pyramid)
+        verboseOutput() << "Large " << nrLargeRecPyrs << endl;
     
     list<FACETDATA*> PosHyps;
     boost::dynamic_bitset<> Zero_P(nr_gen);
-    collect_pos_supphyps(PosHyps,Zero_P);
-            
+    size_t nr_pos;
+    collect_pos_supphyps(PosHyps,Zero_P,nr_pos);
+    
+    nrTotalComparisons+=nr_pos*nrLargeRecPyrs;
+    
     #pragma omp parallel
     {                            
     size_t ppos=0;
@@ -1628,6 +1662,8 @@ void Full_Cone<Integer>::build_cone() {
         
         GensInCone.push_back(i);
         nrGensInCone++;
+        
+        Comparisons.push_back(nrTotalComparisons);
         
         if(verbose && !is_pyramid) {
             verboseOutput() << "gen="<< i+1 <<", ";
@@ -2949,6 +2985,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     nextGen=0;
     store_level=0;
+    
+    Comparisons.reserve(nr_gen);
+    nrTotalComparisons=0;
+
 
 }
 
@@ -3066,6 +3106,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     nextGen=0;
     store_level=0;
+    
+    Comparisons.reserve(nr_gen);
+    nrTotalComparisons=0;
 }
 
 //---------------------------------------------------------------------------
