@@ -78,6 +78,9 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="grading") {
         return Type::grading;
     }
+    if (type_string=="excluded_faces") {
+        return Type::excluded_faces;
+    }
     
     std::cerr<<"ERROR: Unknown type \""<<type_string<<"\"!"<<std::endl;
     throw BadInputException();

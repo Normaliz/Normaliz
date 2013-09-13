@@ -156,6 +156,8 @@ class Full_Cone {
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
 
+    Matrix<Integer> ExcludedFaces;
+
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------

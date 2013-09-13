@@ -137,6 +137,12 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
                     }
                     Signs = sign_inequalities(it->second);
                     break;
+                case Type::excluded_faces:
+                    if (it->second.begin()->size() != dim) {
+                        errorOutput() << "Dimensions of excluded faces ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+                        throw BadInputException();
+                    }
+                    ExcludedFaces = it->second;
                 case Type::grading:
                     break; //skip the grading
                 default:
@@ -145,7 +151,7 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
             }
         }
         if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
-        Inequalities.append(Signs);
+        Inequalities.append(Signs); //TODO besser anders herum?
         prepare_input_type_456(Congruences, Equations, Inequalities);
     }
 }
@@ -707,6 +713,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         FC.Grading = BasisChange.to_sublattice_dual(Grading);
         FC.is_Computed.set(ConeProperty::Grading);
         FC.set_degrees();
+    }
+    if (ExcludedFaces.size()!=0) {
+        FC.ExcludedFaces = BasisChange.to_sublattice_dual(Matrix<Integer>(ExcludedFaces));
     }
     /* Do the computation! */
     if (only_support_hyperplanes) {

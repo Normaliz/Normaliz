@@ -2006,6 +2006,7 @@ void Full_Cone<Integer>::do_vars_check() {
 // if no bool is set it does support hyperplanes and extreme rays
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
+ExcludedFaces.pretty_print(cout);
     do_vars_check();
 
     if (!do_triangulation && !do_partial_triangulation)

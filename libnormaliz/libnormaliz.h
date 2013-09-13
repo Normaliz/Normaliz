@@ -38,7 +38,8 @@ enum InputType {
     inhomogeneous_equations,
     inhomogeneous_congruences,
     lattice_ideal,
-    grading
+    grading,
+    excluded_faces
 };
 } //end namespace Type
 

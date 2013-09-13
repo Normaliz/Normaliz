@@ -140,6 +140,7 @@ private:
     vector< vector<Integer> > Generators;
     vector<bool> ExtremeRays;
     vector< vector<Integer> > SupportHyperplanes;
+    vector< vector<Integer> > ExcludedFaces;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     vector< pair<vector<key_t>, Integer> > Triangulation;
