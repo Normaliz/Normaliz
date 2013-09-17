@@ -30,6 +30,8 @@
 #include <vector>
 #include <list>
 
+#include <boost/dynamic_bitset.hpp>
+
 #include "libnormaliz.h"
 #include "cone.h"
 #include "HilbertSeries.h"
@@ -103,7 +105,16 @@ class SimplexEvaluator {
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides
-
+    
+    struct SIMPLINEXDATA{                    // local data of excluded faces
+        boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
+        vector< num_t > hvector;             // accumulates the h-vector of this face
+        long mult;                           // the multiplicity of this face 
+        bool touched;                        // indictes whether hvector != 0
+        vector< long > gen_degrees;          // degrees of generators in this face
+    };
+    vector<SIMPLINEXDATA> InExHilbData;
+    bool InExTouched;                        // indicates whether any hvector!=0
 
     //checks whether a new element is reducible by the local Hilbert basis
     bool is_reducible_interior(const vector< Integer >& new_element);
@@ -111,6 +122,9 @@ class SimplexEvaluator {
     bool isDuplicate(const vector<Integer>& cand) const;
 
 	void addMult(const Integer& volume);
+
+    void prepare_inclusion_exclusion_simpl(const vector<key_t>& key,size_t Deg);
+    void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
 
 //---------------------------------------------------------------------------
 

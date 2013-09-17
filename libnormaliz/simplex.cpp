@@ -160,6 +160,82 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void SimplexEvaluator<Integer>::add_to_inex_faces(const vector<Integer> offset, size_t Deg){
+
+    for(size_t i=0;i<InExHilbData.size();++i){
+        bool in_face=true;
+        for(size_t j=0;j<dim;++j)
+            if((offset[j]!=0) && !InExHilbData[i].GenInFace.test(j)){  //  || Excluded[j] superfluous
+                in_face=false;
+                break;
+            }
+        if(!in_face)
+            continue;
+        InExHilbData[i].touched=true;
+        InExTouched=true;
+        InExHilbData[i].hvector[Deg]+=InExHilbData[i].mult;            
+    }
+    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(const vector<key_t>& key,size_t Deg) {
+     
+     Full_Cone<Integer>& C = *C_ptr;
+     map<boost::dynamic_bitset<>, long> InExSimpl;      // local version of nExCollect   
+     map<boost::dynamic_bitset<>, long>::iterator F,G;
+     boost::dynamic_bitset<> intersection(dim);
+     
+     for(F=C.InExCollect.begin();F!=C.InExCollect.end();++F){
+        bool still_active=true;
+        for(size_t i=0;i<dim;++i)
+            if(Excluded[i] && !F->first.test(key[i])){
+                still_active=false;
+                break;
+            }
+        if(!still_active)
+            continue;
+        intersection.reset();
+        for(size_t i=0;i<dim;++i)
+            if(F->first.test(key[i]))
+                intersection.set(i);
+        G=InExSimpl.find(intersection);
+        if(G!=InExSimpl.end())
+            G->second+=F->second;
+        else
+            InExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F->second)); 
+     }
+     
+     SIMPLINEXDATA HilbData;
+     HilbData.hvector.resize(hvector.size());
+     for(size_t i=0;i<HilbData.hvector.size();++i)
+         HilbData.hvector[i]=0;  
+     HilbData.touched=false;
+     InExHilbData.clear();
+     
+     for(F=InExSimpl.begin();F!=InExSimpl.end();++F){
+        if(F->second!=0){
+            HilbData.GenInFace=F->first;
+            HilbData.mult=F->second;
+            HilbData.gen_degrees.clear();
+            for(size_t i=0;i<dim;++i)
+                if(F->first.test(i))
+                    HilbData.gen_degrees.push_back(gen_degrees[i]);
+            InExHilbData.push_back(HilbData);
+        }
+     }
+     
+     InExTouched=false;
+     
+     vector<Integer> ZeroV(dim,0);
+     add_to_inex_faces(ZeroV,Deg);
+}
+
+//---------------------------------------------------------------------------
+
 size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
 size_t TotDet=0;
 
@@ -340,13 +416,6 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
 
-    // prepare h-vector if necessary
-    if (C.do_h_vector) {
-        for (i=0; i<hvector.size(); i++) {
-            hvector[i]=0;
-        }
-    }
-
     Integer Test;
     size_t Deg=0;
     for(i=0;i<dim;i++)
@@ -372,32 +441,44 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             }
         }
     }
+    
 
-    if(C.do_h_vector) {
-        // count the 0-vector in h-vector with the right shift
+    // prepare h-vector and inclusion/exclusion scheme if necessary, insert 0+offset
+    if (C.do_h_vector) {
+        for (i=0; i<hvector.size(); i++) {
+            hvector[i]=0;
+        }
         hvector[Deg]++;
+        if(C.do_excluded_faces)
+            prepare_inclusion_exclusion_simpl(key,Deg);
     }
+
+
     Matrix<Integer>* StanleyMat=&GenCopy; //just to initialize it and make GCC happy
 
-    if(C.do_Stanley_dec){
-        STANLEYDATA<Integer> SimplStanley;
+    if(C.do_Stanley_dec){                          // prepare space for Stanley dec
+        STANLEYDATA<Integer> SimplStanley;         // key + matrix of offsets
         SimplStanley.key=key;
-        Matrix<Integer> offsets(explicit_cast_to_long(volume),dim);
+        Matrix<Integer> offsets(explicit_cast_to_long(volume),dim);  // volume rows, dim columns
         SimplStanley.offsets=offsets;
         #pragma omp critical(STANLEY)
         {
-        C.StanleyDec.push_back(SimplStanley);
-        StanleyMat= &C.StanleyDec.back().offsets;
+        C.StanleyDec.push_back(SimplStanley);      // extend the Stanley dec by a new matrix
+        StanleyMat= &C.StanleyDec.back().offsets;  // and use this matrix for storage
         }
-        for(i=0;i<dim;++i)
+        for(i=0;i<dim;++i)                   // the first vector is 0+offset
             if(Excluded[i])
                 (*StanleyMat)[0][i]=volume;
     }
 
-    size_t StanIndex=1;  // 0 already filled if necessary
+    size_t StanIndex=1;  // vector at 0 already filled if necessary
 
-    if (unimodular) { // do_h_vector==true automatically here
+    if (unimodular) { // do_h_vector==true automatically here if unimodular==true
         Hilbert_Series.add(hvector,gen_degrees);
+        if(C.do_excluded_faces && InExTouched)
+            for(size_t i=0;i<InExHilbData.size();++i)
+                Hilbert_Series.add(InExHilbData[i].hvector,InExHilbData[i].gen_degrees);
+                
         return volume;
     } // the unimodular case has been taken care of
 
@@ -456,6 +537,9 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
             //count point in the h-vector
             hvector[Deg]++;
+            
+            if(C.do_excluded_faces)
+                add_to_inex_faces(elements[last],Deg);
         }
 
         if(C.do_Stanley_dec){
@@ -485,6 +569,9 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(C.do_h_vector) {
         // #pragma omp critical(HSERIES)
         Hilbert_Series.add(hvector,gen_degrees);
+        if(C.do_excluded_faces &&InExTouched)
+            for(size_t i=0;i<InExHilbData.size();++i)
+                Hilbert_Series.add(InExHilbData[i].hvector,InExHilbData[i].gen_degrees);
     }
 
 

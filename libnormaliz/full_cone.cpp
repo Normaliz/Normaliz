@@ -1887,8 +1887,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
-    set_degrees();
-    sort_gens_by_degree();
+    // set_degrees(); // now done in compute()
+    // sort_gens_by_degree();
 
     if (!is_pyramid) {
         SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
@@ -1899,9 +1899,9 @@ void Full_Cone<Integer>::primal_algorithm(){
         }
     }
 
-    /***** Main Work is done in build_cone() *****/
+    /***** Main Work is done in build_top_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false
-    /***** Main Work is done in build_cone() *****/
+    /***** Main Work is done in build_top_cone() *****/
 
 
     extreme_rays_and_deg1_check();
@@ -2006,7 +2006,6 @@ void Full_Cone<Integer>::do_vars_check() {
 // if no bool is set it does support hyperplanes and extreme rays
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
-ExcludedFaces.pretty_print(cout);
     do_vars_check();
 
     if (!do_triangulation && !do_partial_triangulation)
@@ -2023,6 +2022,18 @@ ExcludedFaces.pretty_print(cout);
 
         set_degrees();
         sort_gens_by_degree();
+        
+        if(ExcludedFaces.nr_of_rows()>0){
+            if(!do_h_vector){
+                errorOutput() << endl << "Warning: exluded faces, but no h-vector computation" << endl
+                    << "Therefore excluded faces will be ignored" << endl;           
+            }
+            else {
+                do_excluded_faces=true;
+                prepare_inclusion_exclusion();
+            }
+        }
+            
         if(do_partial_triangulation && do_deg1_elements && !deg1_generated){
             if(verbose)
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
@@ -2608,8 +2619,116 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
         M[j]=U.MxV(M[j]);
     
     return(M);
-}        
+} 
+
+//---------------------------------------------------------------------------       
+template<typename Integer>
+void Full_Cone<Integer>::prepare_inclusion_exclusion(){
+ 
+    vector<boost::dynamic_bitset<> > GensInExcl(ExcludedFaces.nr_of_rows()); // indicates
+                                   // which generators lie in the excluded faces
+
+    for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){ // now we produce these indicators
+        bool first_neq_0=true;           // and check whether the inear forms in ExcludedFaces
+        bool non_zero=false;             // have the cone on one side
+        GensInExcl[j].resize(nr_gen,false);
+        for(size_t i=0; i< nr_gen;++i){
+            Integer test=v_scalar_product(ExcludedFaces[j],Generators[i]);
+            if(test==0){
+                GensInExcl[j].set(i);
+                continue;
+            }
+            non_zero=true;
+            if(first_neq_0){
+                first_neq_0=false;
+                if(test<0){
+                    for(size_t k=0;k<dim;++k)  // replace linear dorm by its negative
+                        ExcludedFaces[j][k]*=-1;  // to get cone in positive halfspace 
+                    test*=-1;                     // (only for error check)
+                }    
+             }
+            if(test<0){
+                errorOutput() << "Fatal error: excluded hyperplane does not define a face" << endl;
+                exit(1);
+            }            
+                
+        }
+        if(!non_zero){  // not impossible if the hyperplane contains the vector space spanned by the cone
+            errorOutput() << "Fatal error: excluded face contains the full cone" << endl;
+            exit(1);
+        }
+    }
     
+        cout << "--------------" << endl;
+    for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){
+        vector<key_t> key;
+        for(size_t i=0;i<nr_gen;++i)
+            if(GensInExcl[j].test(i))
+                key.push_back(i);
+        cout  << key;
+     }
+     cout << "--------------" << endl;
+    
+    vector< pair<boost::dynamic_bitset<> , long> > InExScheme;  // now we produce the formal 
+    boost::dynamic_bitset<> all_gens(nr_gen);             // inclusion-exclusion scheme
+    all_gens.set();                         // by forming all intersections of
+                                           // excluded faces
+    InExScheme.push_back(pair<boost::dynamic_bitset<> , long> (all_gens, 1));
+    size_t old_size=1;
+    
+    for(size_t i=0;i<ExcludedFaces.nr_of_rows();++i){
+        for(size_t j=0;j<old_size;++j)
+            InExScheme.push_back(pair<boost::dynamic_bitset<> , long>
+                   (InExScheme[j].first & GensInExcl[i], -InExScheme[j].second));
+        old_size*=2;
+    }
+    
+    vector<pair<boost::dynamic_bitset<>, long> >::iterator G;    
+     for(G=InExScheme.begin();G!=InExScheme.end();++G){
+        vector<key_t> key;
+        for(size_t i=0;i<nr_gen;++i)
+            if(G->first.test(i))
+                key.push_back(i);
+        cout << G->second << " || " << key;
+     }
+     cout << "--------------" << endl;
+    
+    
+    InExScheme.erase(InExScheme.begin()); // remove full cone
+    
+    // map<boost::dynamic_bitset<>, long> InExCollect;
+    map<boost::dynamic_bitset<>, long>::iterator F;
+    
+    for(size_t i=0;i<old_size-1;++i){               // we compactify the list of faces
+        F=InExCollect.find(InExScheme[i].first);    // obtained as intersections
+        if(F!=InExCollect.end())                    // by listing each face only once
+            F->second+=InExScheme[i].second;        // but with the right multiplicity
+        else
+            InExCollect.insert(InExScheme[i]);
+     }
+     
+     for(F=InExCollect.begin();F!=InExCollect.end();){   // faces with multiplicity 0
+        if(F->second==0)                                 // can be erased
+            InExCollect.erase(F++);
+        else{
+            ++F;
+        }    
+     }
+     
+     cout << endl;
+     for(F=InExCollect.begin();F!=InExCollect.end();++F){
+        vector<key_t> key;
+        for(size_t i=0;i<nr_gen;++i)
+            if(F->first.test(i))
+                key.push_back(i);
+        cout << F->second << " || " << key;
+     }
+     
+     cout << "--------------" << endl;
+     
+     // exit(0);
+         
+} 
 
 //---------------------------------------------------------------------------
 // Global reduction
@@ -2896,6 +3015,7 @@ void Full_Cone<Integer>::reset_tasks(){
     keep_triangulation = false;
     do_Stanley_dec=false;
     do_h_vector=false;
+    do_excluded_faces=false;
     
     do_evaluation = false;
     do_only_multiplicity=false;

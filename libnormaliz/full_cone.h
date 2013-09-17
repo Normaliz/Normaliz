@@ -66,6 +66,7 @@ class Full_Cone {
     bool do_h_vector;
     bool keep_triangulation;
     bool do_Stanley_dec;
+    bool do_excluded_faces;
 
     // internal helper control variables
     bool do_only_multiplicity;
@@ -149,14 +150,16 @@ class Full_Cone {
     
     // helpers for evaluation
     vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
-    vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone 
+    vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone
+    
+    // defining semiopen cones
+    Matrix<Integer> ExcludedFaces;
+    map<boost::dynamic_bitset<>, long> InExCollect;
 
     // statistics
     size_t totalNrSimplices;   // total number of simplices evaluated
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
-
-    Matrix<Integer> ExcludedFaces;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -224,9 +227,10 @@ class Full_Cone {
     void check_integrally_closed();
 
     void compute_multiplicity();
+    
+    void prepare_inclusion_exclusion();
 
     void do_vars_check();
-
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
