@@ -2099,10 +2099,12 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     typename list<vector<Integer> >::iterator s;
 
     for (i = 0; i <nr_gen; i++) {
+        if (isComputed(ConeProperty::Triangulation) && !in_triang[i]) {
+            Extreme_Rays[i]=false;
+            continue;
+        }
         k=0;
         Extreme_Rays[i]=true;
-        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
-            continue;
         s=Support_Hyperplanes.begin();
         for (j = 0; j <nc; ++j,++s) {
             if (v_scalar_product(Generators[i],*s)==0) {
