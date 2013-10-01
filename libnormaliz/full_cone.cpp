@@ -2024,8 +2024,8 @@ void Full_Cone<Integer>::compute() {
         sort_gens_by_degree();
         
         if(ExcludedFaces.nr_of_rows()>0){
-            if(!do_h_vector){
-                errorOutput() << endl << "Warning: exluded faces, but no h-vector computation" << endl
+            if(!do_h_vector && !do_Stanley_dec){
+                errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition" << endl
                     << "Therefore excluded faces will be ignored" << endl;           
             }
             else {
@@ -2659,7 +2659,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
         }
     }
     
-        cout << "--------------" << endl;
+        /* cout << "--------------" << endl;
     for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){
         vector<key_t> key;
         for(size_t i=0;i<nr_gen;++i)
@@ -2667,7 +2667,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
                 key.push_back(i);
         cout  << key;
      }
-     cout << "--------------" << endl;
+     cout << "--------------" << endl; */
     
     vector< pair<boost::dynamic_bitset<> , long> > InExScheme;  // now we produce the formal 
     boost::dynamic_bitset<> all_gens(nr_gen);             // inclusion-exclusion scheme
@@ -2684,14 +2684,15 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
     }
     
     vector<pair<boost::dynamic_bitset<>, long> >::iterator G;    
-     for(G=InExScheme.begin();G!=InExScheme.end();++G){
+     
+     /*for(G=InExScheme.begin();G!=InExScheme.end();++G){
         vector<key_t> key;
         for(size_t i=0;i<nr_gen;++i)
             if(G->first.test(i))
                 key.push_back(i);
         cout << G->second << " || " << key;
      }
-     cout << "--------------" << endl;
+     cout << "--------------" << endl; */
     
     
     InExScheme.erase(InExScheme.begin()); // remove full cone
@@ -2716,17 +2717,24 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
      }
      
      cout << endl;
+     cout << "in_ex_data" << endl;
+     cout << InExCollect.size() << endl;
      for(F=InExCollect.begin();F!=InExCollect.end();++F){
         vector<key_t> key;
         for(size_t i=0;i<nr_gen;++i)
             if(F->first.test(i))
                 key.push_back(i);
-        cout << F->second << " || " << key;
+        cout << key.size() << " ";
+        for(size_t i=0;i<key.size();++i)
+            cout << key[i]+1 << " ";
+        cout << F->second << endl;  
      }
      
-     cout << "--------------" << endl;
+     cout << "--------------------------------------------" << endl; 
      
      // exit(0);
+     
+     cout << "InEx complete, " << InExCollect.size() << " faces involved" << endl;
          
 } 
 

@@ -31,6 +31,7 @@
 #include "list_operations.h"
 #include "HilbertSeries.h"
 #include "cone.h"
+#include "my_omp.h"
 
 //---------------------------------------------------------------------------
 
@@ -147,14 +148,21 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   Excluded(dim),
   Indicator(dim),
   gen_degrees(dim),
-  RS(dim,1)
+  RS(dim,1),
+  InExSimplData(C_ptr->InExCollect.size())
 {
+    size_t hv_max=0;
     if (C_ptr->do_h_vector) {
         // we need the generators to be sorted by degree
-        size_t hv_max=0;
         for (size_t i=C_ptr->nr_gen-dim; i<C_ptr->nr_gen; i++)
             hv_max += C_ptr->gen_degrees[i];
         hvector.resize(hv_max);
+    }
+    
+    for(size_t i=0;i<fc.InExCollect.size();++i){
+        InExSimplData[i].GenInFace.resize(fc.dim);
+        InExSimplData[i].hvector.resize(hv_max);
+        InExSimplData[i].gen_degrees.reserve(fc.dim);
     }
 }
 
@@ -163,18 +171,16 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 template<typename Integer>
 void SimplexEvaluator<Integer>::add_to_inex_faces(const vector<Integer> offset, size_t Deg){
 
-    for(size_t i=0;i<InExHilbData.size();++i){
+    for(size_t i=0;i<nrInExSimplData;++i){
         bool in_face=true;
         for(size_t j=0;j<dim;++j)
-            if((offset[j]!=0) && !InExHilbData[i].GenInFace.test(j)){  //  || Excluded[j] superfluous
+            if((offset[j]!=0) && !InExSimplData[i].GenInFace.test(j)){  //  || Excluded[j] superfluous
                 in_face=false;
                 break;
             }
         if(!in_face)
             continue;
-        InExHilbData[i].touched=true;
-        InExTouched=true;
-        InExHilbData[i].hvector[Deg]+=InExHilbData[i].mult;            
+        InExSimplData[i].hvector[Deg]+=InExSimplData[i].mult;            
     }
     
 }
@@ -185,9 +191,10 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(const vector<key_t>& key,size_t Deg) {
      
      Full_Cone<Integer>& C = *C_ptr;
-     map<boost::dynamic_bitset<>, long> InExSimpl;      // local version of nExCollect   
-     map<boost::dynamic_bitset<>, long>::iterator F,G;
-     boost::dynamic_bitset<> intersection(dim);
+     // map<boost::dynamic_bitset<>, long> InExSimpl;      // local version of nExCollect   
+     map<boost::dynamic_bitset<>, long>::iterator F;
+     
+     nrInExSimplData=0;
      
      for(F=C.InExCollect.begin();F!=C.InExCollect.end();++F){
         bool still_active=true;
@@ -198,40 +205,26 @@ void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(const vector<k
             }
         if(!still_active)
             continue;
-        intersection.reset();
+        InExSimplData[nrInExSimplData].GenInFace.reset();
         for(size_t i=0;i<dim;++i)
             if(F->first.test(key[i]))
-                intersection.set(i);
-        G=InExSimpl.find(intersection);
-        if(G!=InExSimpl.end())
-            G->second+=F->second;
-        else
-            InExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F->second)); 
-     }
-     
-     SIMPLINEXDATA HilbData;
-     HilbData.hvector.resize(hvector.size());
-     for(size_t i=0;i<HilbData.hvector.size();++i)
-         HilbData.hvector[i]=0;  
-     HilbData.touched=false;
-     InExHilbData.clear();
-     
-     for(F=InExSimpl.begin();F!=InExSimpl.end();++F){
-        if(F->second!=0){
-            HilbData.GenInFace=F->first;
-            HilbData.mult=F->second;
-            HilbData.gen_degrees.clear();
+                InExSimplData[nrInExSimplData].GenInFace.set(i);
+        InExSimplData[nrInExSimplData].gen_degrees.clear();
             for(size_t i=0;i<dim;++i)
-                if(F->first.test(i))
-                    HilbData.gen_degrees.push_back(gen_degrees[i]);
-            InExHilbData.push_back(HilbData);
-        }
+                if(InExSimplData[nrInExSimplData].GenInFace.test(i))
+                    InExSimplData[nrInExSimplData].gen_degrees.push_back(gen_degrees[i]);
+        for(size_t i=0;i<InExSimplData[nrInExSimplData].hvector.size();++i)
+          InExSimplData[nrInExSimplData].hvector[i]=0;
+        InExSimplData[nrInExSimplData].mult=F->second;
+        nrInExSimplData++;  
      }
      
-     InExTouched=false;
+     if(C_ptr->do_h_vector){
+        vector<Integer> ZeroV(dim,0);
+        add_to_inex_faces(ZeroV,Deg);
+     }
      
-     vector<Integer> ZeroV(dim,0);
-     add_to_inex_faces(ZeroV,Deg);
+     // cout << "Start " << nrInExSimplData << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -449,9 +442,10 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             hvector[i]=0;
         }
         hvector[Deg]++;
-        if(C.do_excluded_faces)
-            prepare_inclusion_exclusion_simpl(key,Deg);
     }
+    
+    if(C.do_excluded_faces)
+        prepare_inclusion_exclusion_simpl(key,Deg);
 
 
     Matrix<Integer>* StanleyMat=&GenCopy; //just to initialize it and make GCC happy
@@ -473,12 +467,17 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     size_t StanIndex=1;  // vector at 0 already filled if necessary
 
-    if (unimodular) { // do_h_vector==true automatically here if unimodular==true
-        Hilbert_Series.add(hvector,gen_degrees);
-        if(C.do_excluded_faces && InExTouched)
-            for(size_t i=0;i<InExHilbData.size();++i)
-                Hilbert_Series.add(InExHilbData[i].hvector,InExHilbData[i].gen_degrees);
-                
+    if (unimodular) {
+        // cout << "Herein " << InExSimplData.size() << " " << nrInExSimplData << endl;
+        if(C.do_h_vector){
+            Hilbert_Series.add(hvector,gen_degrees);
+            if(C.do_excluded_faces)
+                for(size_t i=0;i<nrInExSimplData;++i){
+                    // cout << "Addiere " << i << endl;
+                    Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
+                }
+        //cout << "Heraus" << endl;
+        }
         return volume;
     } // the unimodular case has been taken care of
 
@@ -569,9 +568,9 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(C.do_h_vector) {
         // #pragma omp critical(HSERIES)
         Hilbert_Series.add(hvector,gen_degrees);
-        if(C.do_excluded_faces &&InExTouched)
-            for(size_t i=0;i<InExHilbData.size();++i)
-                Hilbert_Series.add(InExHilbData[i].hvector,InExHilbData[i].gen_degrees);
+        if(C.do_excluded_faces)
+            for(size_t i=0;i<nrInExSimplData;++i)
+                Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
     }
 
 

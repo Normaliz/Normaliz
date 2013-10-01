@@ -110,11 +110,12 @@ class SimplexEvaluator {
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
         vector< num_t > hvector;             // accumulates the h-vector of this face
         long mult;                           // the multiplicity of this face 
-        bool touched;                        // indictes whether hvector != 0
+        // bool touched;                        // indicates whether hvector != 0 // ALWAYS true, hence superfluous
         vector< long > gen_degrees;          // degrees of generators in this face
     };
-    vector<SIMPLINEXDATA> InExHilbData;
-    bool InExTouched;                        // indicates whether any hvector!=0
+    vector<SIMPLINEXDATA> InExSimplData;
+    size_t nrInExSimplData;
+    // bool InExTouched;                        // indicates whether any hvector!=0 // see above
 
     //checks whether a new element is reducible by the local Hilbert basis
     bool is_reducible_interior(const vector< Integer >& new_element);
