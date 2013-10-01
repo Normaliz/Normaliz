@@ -23,11 +23,20 @@ struct STANLEYDATA_INT{
         vector<long> degrees;
         vector<vector<long> > offsets;  // ditto
         size_t classNr;  // number of class of this simplicial cone
-    };
+};
     
 struct TRIDATA{
         vector<key_type> key;
         long vol;  
+};
+
+struct SIMPLINEXDATA_INT{                        // local data of excluded faces
+        boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
+        long mult;                           // multiplicity of this face
+        size_t card;                                // the cardinality of the face
+        bool done;                           // indicates that this face has been done for a given offset
+        vector<long> denom;
+        vector<long> degrees;
 };
 
 void fileMissing(const char* name_in){
@@ -398,7 +407,27 @@ RingElem readPolynomial(const string& project, const SparsePolyRing R){
     return(p);
 }
 
-void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& StanleyDec){
+void readInEx(ifstream& in, vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
+
+    size_t inExSize, keySize;
+    in >> inExSize;
+    key_type key;    
+    long mult;
+    boost::dynamic_bitset<> indicator(nrGen);
+    for(size_t i=0;i<inExSize;++i){
+        in >> keySize;
+        indicator.reset();
+        for(size_t j=0;j<keySize;++j){
+            in >> key;
+            indicator.set(key-1);
+        }
+        in >> mult;
+        inExCollect.push_back(pair<boost::dynamic_bitset<>, long>(indicator,mult));       
+    }
+}
+
+void readDecInEx(const string& project, const long& dim, list<STANLEYDATA_INT>& StanleyDec,
+                vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
 // rads Stanley decomposition from file dec
     string name_in=project+".dec";
     const char* file_in=name_in.c_str();
@@ -407,6 +436,26 @@ void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& Stan
     if (in.is_open()==false) {
         fileMissing(file_in);
     }
+    
+    string keyWord;
+    in >> keyWord;
+    if(keyWord!="in_ex_data" && keyWord!="Stanley_dec"){
+        cerr << "Fatal error: dec file does not start with \"in_ex_data\" or \"Stanley_dec\"" << endl;
+        cerr << "Potential reason: obsolete version of Normaliz" << endl;
+        exit(1);
+    }
+    
+    if(keyWord=="in_ex_data"){
+        readInEx(in, inExCollect,nrGen);
+        in >> keyWord;
+        if(keyWord!="Stanley_dec"){
+            cerr << "Fatal error: second keyword in dec file is not \"Stanley_dec\"" << endl;
+            exit(1);
+        }
+    }
+        
+    size_t decSize;
+    in >> decSize;
 
     STANLEYDATA_INT newSimpl;
     long i=0,j,det,dummy;
@@ -445,6 +494,12 @@ void readDec(const string& project, const long& dim, list<STANLEYDATA_INT>& Stan
                 in >> newSimpl.offsets[i][j];
         StanleyDec.push_back(newSimpl);
     }
+    
+    if(decSize!=StanleyDec.size()){
+        cerr << "Fatal error: Actual size of Stanley decomposition does not match announced size" << endl;
+        exit(1);
+    }
+    
 }
 
 void readTriFromDec(const string& project, const long& dim,list<TRIDATA>& triang){
@@ -460,6 +515,16 @@ void readTriFromDec(const string& project, const long& dim,list<TRIDATA>& triang
     TRIDATA newSimpl;
     long i=0,j,det,dummy;
     newSimpl.key.resize(dim);
+    
+    while(true){   // skip in_ex_data if present  
+        string dummy;
+        in >> dummy;
+        if(dummy=="Stanley_dec")
+            break;
+    }
+    
+    size_t decSize;
+    in >> decSize;
 
     while(in.good()){
         in >> newSimpl.key[0];
@@ -480,6 +545,11 @@ void readTriFromDec(const string& project, const long& dim,list<TRIDATA>& triang
                 in >> dummy;
         triang.push_back(newSimpl);
     }
+    if(decSize!=triang.size()){
+        cerr << "Fatal error: Actual size of Stanley decomposition does not match announced size" << endl;
+        exit(1);
+    }
+    
 }
 
 void readTri(const string& project, const long& dim, list <TRIDATA>& triang){

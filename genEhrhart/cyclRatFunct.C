@@ -39,6 +39,7 @@ public:
     void showCRF();
     void showCoprimeCRF();
     CyclRatFunct(const RingElem& c);
+    CyclRatFunct(const RingElem& c,const vector<long>& d);
 
 };
 //class end *****************************************************************
@@ -91,7 +92,7 @@ vector<long> degrees2denom(const vector<long>& d){
 // listing at position i the multiplicity of i in d
     long m=0;
     size_t i;
-    for(i=1;i<d.size();++i)
+    for(i=0;i<d.size();++i)
         m=max(m,d[i]);
     vector<long> e(m+1);
     for(i=0;i<d.size();++i)
@@ -219,4 +220,7 @@ CyclRatFunct::CyclRatFunct(const RingElem& c):num(c)
 // constructor
 {
     denom.resize(1,0);
+}
+
+CyclRatFunct::CyclRatFunct(const RingElem& c,const vector<long>& d):num(c),denom(d){
 }

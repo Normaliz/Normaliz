@@ -23,6 +23,8 @@ using namespace CoCoA;
 #include <fstream>
 #include <sstream>
 
+#include <boost/dynamic_bitset.hpp>
+
 #include "../libnormaliz/my_omp.h"
 
 #include "../libnormaliz/HilbertSeries.h"
@@ -36,9 +38,8 @@ using namespace libnormaliz;
 bool verbose_INT;
 
 #include "nmzIntInput.C"
-#include "nmzIntPoly.C"
-
 #include "cyclRatFunct.C"
+#include "nmzIntPoly.C"
 #include "genEhrhart.C"
 #include "nmzIntegral.C"                 
 

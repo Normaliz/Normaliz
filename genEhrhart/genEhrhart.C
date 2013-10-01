@@ -38,81 +38,13 @@ vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
     return(c);
 }
 
-RingElem orderExpos(const RingElem& F, const vector<long>& degrees){
- // orders the exponent vectors v of the terms of F
- // the exponents v[i] and v[j], i < j,  are swapped if
- // (1) degrees[i]==degrees[j] and (2) v[i] < v[j]
- // so that the exponents are descending in each degree block
- // the ordered exponent vectors are inserted into a map
- // and their coefficients are added
- // at the end the polynomial is rebuilt from the map
 
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
-    vector<long> v(NumIndets(P));
-
-    vector<long> denom=degrees2denom(degrees); // first we must find the blocks of equal degree
-    vector<long> St,End;
-    St.push_back(1);
-    for(size_t i=0;i<denom.size();++i)
-        if(denom[i]!=0){
-            End.push_back(St[St.size()-1]+denom[i]-1);
-            if(i<denom.size()-1)
-                St.push_back(End[End.size()-1]+1);
-        }
-
-    // now the main job
-
-    map<vector<long>,RingElem> orderedMons;  // will take the ordered exponent vectors
-    map<vector<long>,RingElem>::iterator ord_mon;
-    long p,s,pend,pst;
-    bool ordered;
-    SparsePolyIter mon=BeginIter(F); // go over the given polynomial
-    for (; !IsEnded(mon); ++mon){
-      exponents(v,PP(mon)); // this function gives the exponent vector back as v
-      for(size_t j=0;j<St.size();++j){  // now we go over the blocks
-        pst=St[j];
-        pend=End[j];
-        while(1){
-                ordered=true;
-                for(p=pst;p<pend;++p){
-                    if(v[p]<v[p+1]){
-                        ordered=false;
-                        s=v[p];
-                        v[p]=v[p+1];
-                        v[p+1]=s;
-                    }
-                }
-            if(ordered)
-                break;
-            pend--;
-        }
-      }
-        ord_mon=orderedMons.find(v); // insert into map or add coefficient
-        if(ord_mon!=orderedMons.end()){
-            ord_mon->second+=coeff(mon);
-        }
-        else{
-            orderedMons.insert(pair<vector<long>,RingElem>(v,coeff(mon)));
-        }
-    }
-
-    // now we must reconstruct the polynomial
-    // we use that the natural order of vectors in C++ STL is inverse
-    // to lex. Therefore push_front
-
-    RingElem r(zero(P));
-    for(ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
-        PushFront(r,ord_mon->second,ord_mon->first);
-    }
-    return(r);
-}
 
 CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
 // computes the generating function for
 //  \sum_j j^n (t^k)^j
 {
     vector<RingElem> a=power2ascFact(P,n);
-    // cout << a << endl;
     RingElem b(P);
     vector<long> u;
     CyclRatFunct g(zero(P)), h(zero(P));
@@ -120,13 +52,8 @@ CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
     for(i=0;i<s;++i)
     {
         u=makeDenom(k,i+1);
-        /* cout << "k " << k << " u ";
-        for(size_t j=0;j<u.size();++j)
-            cout << u[j]<< " "; 
-        cout << endl;*/
         b=a[i]*factorial(i);
         g.set2(b,u); 
-        // cout << "g inner "; g.showCRF(); cout << endl;
         h.addCRF(g);
     }
     return(h);
@@ -138,7 +65,6 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
 // under the specialization T_i --> t^g_i
 // as a rational function in t
 {
-    // cout << "Start genFunct" << endl;
     SparsePolyRing P=AsSparsePolyRing(owner(F));
     RingElem t=indets(P)[0];
     
@@ -152,7 +78,6 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
 
     for(k=1; k<=nd;k++)
     {
-        // cout << "k " << k<< endl;
         c=ourCoeffs(s.num,k); // we split the numerator according 
                                // to powers of var k
         mg=c.size(); // max degree+1 in  var k
@@ -166,10 +91,58 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
             h.denom=GFP[degrees[k-1]][i].denom;
         }
         s.num=h.num;
-        // cout << "genFunct NumTerms " << NumTerms(s.num) << endl;
         s.denom=prodDenom(s.denom,h.denom);
     }
     return(s);   
+}
+
+CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
+                                    map<vector<long>,RingElem>& faceClasses){
+// computes the generating rational functions
+// for the denominator classes collected from proper faces and returns the sum
+
+    SparsePolyRing R=AsSparsePolyRing(owner(faceClasses.begin()->second));
+    CyclRatFunct H(zero(R));
+    // vector<CyclRatFunct> h(omp_get_max_threads(),CyclRatFunct(zero(R)));
+    // vector<CyclRatFunct> h(1,CyclRatFunct(zero(R)));
+    
+    long mapsize=faceClasses.size();    
+    cout << "--------------------------------------------" << endl;
+    cout << "Evaluatiing " << mapsize <<" face classes" << endl;
+    cout << "--------------------------------------------" << endl;
+    #pragma omp parallel
+    {
+    
+    map<vector<long>,RingElem>::iterator den=faceClasses.begin();
+    long mpos=0;
+    CyclRatFunct h(zero(R));
+   
+    #pragma omp for schedule(dynamic)
+    for(long dc=0;dc<mapsize;++dc){
+        for(;mpos<dc;++mpos,++den);
+        for(;mpos>dc;--mpos,--den);
+        // cout << "mpos " << mpos << endl;
+        h = genFunct(GFP,den->second,den->first);
+        #pragma omp critical(CLASSES)
+        {
+        cout << "Class ";
+        for(size_t i=0;i<den->first.size();++i)
+            cout << den->first[i] << " ";
+        cout  << "NumTerms " << NumTerms(den->second) << endl;
+        
+        // cout << "input " << den->second << endl;
+        
+        // h.showCoprimeCRF();
+        h.simplifyCRF();
+        H.addCRF(h);
+        }
+    }
+    
+    } // parallel 
+    // cout << "Fertig" << endl;
+    faceClasses.clear();
+    H.simplifyCRF();
+    return(H);        
 }
 
 struct denomClassData{
@@ -181,19 +154,20 @@ struct denomClassData{
 CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
                                     pair<denomClassData,RingElem>& denomClass){
 // computes the generating rational function
-// for a denominator class and return it
+// for a denominator class and returns it
 
     SparsePolyRing R=AsSparsePolyRing(owner(denomClass.second));
     
     if(verbose_INT){
     #pragma omp critical(PROGRESS)
     {
-        // cout << "--------------------------------------------" << endl;
+        cout << "--------------------------------------------" << endl;
         cout << "Evaluating denom class ";
         for(size_t i=0;i<denomClass.first.degrees.size();++i)
             cout << denomClass.first.degrees[i] << " ";
         cout  << "NumTerms " << NumTerms(denomClass.second) << endl;
-        // cout << "--------------------------------------------" << endl;
+        // cout << denomClass.second << endl;
+        cout << "--------------------------------------------" << endl;
     }
     }
 
@@ -313,9 +287,83 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   return(HS);
 }
 
-bool compareDegrees(STANLEYDATA_INT& A, STANLEYDATA_INT& B){
+bool compareDegrees(const STANLEYDATA_INT& A, const STANLEYDATA_INT& B){
 
     return(A.degrees < B.degrees);
+}
+
+bool compareFaces(const SIMPLINEXDATA_INT& A, const SIMPLINEXDATA_INT& B){
+
+    return(A.card > B.card);
+}
+
+void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
+      const vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, 
+      vector<SIMPLINEXDATA_INT>& inExSimplData) {
+
+    size_t dim=S.key.size();
+    vector<key_type> key=S.key;
+    for(size_t i=0;i<dim;++i)  // BECAUSE OF INPUT
+        key[i]--;
+    
+    boost::dynamic_bitset<> intersection(dim), Excluded(dim);
+    
+    Excluded.set();
+    for(size_t j=0;j<dim;++j)  // enough to test the first offset (coming from the zero vector)
+        if(S.offsets[0][j]==0)
+            Excluded.reset(j); 
+
+    vector<pair<boost::dynamic_bitset<>, long> >::const_iterator F;    
+    map<boost::dynamic_bitset<>, long> inExSimpl;      // local version of nExCollect   
+    map<boost::dynamic_bitset<>, long>::iterator G;
+
+    for(F=inExCollect.begin();F!=inExCollect.end();++F){
+        // cout << "F " << F->first << endl;
+       bool still_active=true;
+       for(size_t i=0;i<dim;++i)
+           if(Excluded[i] && !F->first.test(key[i])){
+               still_active=false;
+               break;
+           }
+       if(!still_active)
+           continue;
+       intersection.reset();
+       for(size_t i=0;i<dim;++i){
+           if(F->first.test(key[i]))
+               intersection.set(i);
+       }    
+       G=inExSimpl.find(intersection);
+       if(G!=inExSimpl.end())
+           G->second+=F->second;
+       else
+           inExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F->second)); 
+    } 
+    
+    SIMPLINEXDATA_INT HilbData;
+    inExSimplData.clear();
+    vector<long> degrees;
+    
+    for(G=inExSimpl.begin();G!=inExSimpl.end();++G){
+       if(G->second!=0){
+           HilbData.GenInFace=G->first;
+           HilbData.mult=G->second;
+           HilbData.card=G->first.count();
+           degrees.clear();
+           for(size_t j=0;j<dim;++j)
+             if(G->first.test(j))
+                degrees.push_back(S.degrees[j]);
+           HilbData.degrees=degrees;
+           HilbData.denom=degrees2denom(degrees);
+           inExSimplData.push_back(HilbData);
+       }
+    }
+    
+    sort(inExSimplData.begin(),inExSimplData.end(),compareFaces);
+    
+    /* for(size_t i=0;i<inExSimplData.size();++i)
+        cout << inExSimplData[i].GenInFace << " ** " << inExSimplData[i].card << " || " << inExSimplData[i].mult << " ++ "<< inExSimplData[i].denom <<  endl;
+    cout << "InEx prepared" << endl; */
+        
 }
 
 void generalizedEhrhartSeries(const string& project, bool& homogeneous){
@@ -342,9 +390,10 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   long maxDegGen=scalProd(gens[gens.size()-1],grading)/gradingDenom; 
   
   list<STANLEYDATA_INT> StanleyDec;
-  readDec(project,rank,StanleyDec);
+  vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
+  readDecInEx(project,rank,StanleyDec,inExCollect,gens.size());
   if(verbose_INT)
-    cout << "Stanley decomposition read" << endl;
+    cout << "Stanley decomposition (and in/ex data) read" << endl;
     
   size_t dec_size=StanleyDec.size();
     
@@ -383,6 +432,9 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
 
   vector<pair<denomClassData,RingElem> > denomClasses;
   denomClassData denomClass;
+  
+  map<vector<long>,RingElem> faceClasses; // denominator classes for the faces
+                 // contrary to denomClasses these cannot be sorted beforehand
 
   // we now make class 0 to get started
   S=StanleyDec.begin();
@@ -482,15 +534,18 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     
     for(i=0;i<rank;++i)    // select submatrix defined by key
         A[i]=gens[S->key[i]-1];
+        
+    vector<SIMPLINEXDATA_INT> inExSimplData;
+    if(inExCollect.size()!=0)    
+        prepare_inclusion_exclusion_simpl(*S,inExCollect,inExSimplData);
 
     h=0;
     long iS=S->offsets.size();    // compute numerator for simplex being processed   
     for(i=0;i<iS;++i){
         degree_b=scalProd(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,inExSimplData, faceClasses);
     }
-    // cout << "Simpl " << s+1 << " NumTerms " << NumTerms(h) << endl;
     
     evaluateClass=false; // necessary to evaluate class only once
     #pragma omp critical (ADDTOCLASS) 
@@ -521,8 +576,13 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     
   } // parallel
   
+  // collect the contribution of proper fases from inclusion/exclusion
   
-  // now we must return to rational coefficients 
+  
+  // now we must return to rational coefficients
+  
+  if(!faceClasses.empty())
+    H.addCRF(evaluateFaceClasses(GFP,faceClasses)); 
  
   CyclRatFunct HRat(zero(R));
   HRat.denom=H.denom;
