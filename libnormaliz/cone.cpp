@@ -272,6 +272,11 @@ const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() c
 }
 
 template<typename Integer>
+const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() const {
+    return InExData;
+}
+
+template<typename Integer>
 const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() const {
     return StanleyDec;
 }
@@ -902,6 +907,22 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         StanleyDec.clear();
         StanleyDec.splice(StanleyDec.end(),FC.StanleyDec);
         is_Computed.set(ConeProperty::StanleyDec);
+    }
+    if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
+        InExData.clear();
+        InExData.reserve(FC.InExCollect.size());
+        map<boost::dynamic_bitset<>, long>::iterator F;
+        vector<key_t> key;
+        for (F=FC.InExCollect.begin(); F!=FC.InExCollect.end(); ++F) {
+            key.clear();
+            for (size_t i=0;i<FC.nr_gen;++i) {
+                if (F->first.test(i)) {
+                    key.push_back(i+1);
+                }
+            }
+            InExData.push_back(make_pair(key,F->second));
+        }
+        is_Computed.set(ConeProperty::InclusionExclusionData);
     }
     if (FC.isComputed(ConeProperty::Multiplicity)) {
         multiplicity = FC.getMultiplicity();

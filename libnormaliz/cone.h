@@ -21,6 +21,9 @@
 
 #include <vector>
 #include <map>
+#include <utility> //for pair
+#include <boost/dynamic_bitset.hpp>
+
 #include "libnormaliz.h"
 #include "cone_property.h"
 #include "sublattice_representation.h"
@@ -124,6 +127,7 @@ public:
     // the following methods return const refs to avoid copying of big data objects
     const HilbertSeries& getHilbertSeries() const; //general purpose object
     const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
+    const vector< pair<vector<key_t>, long> >& getInclusionExclusionData() const;
     const list< STANLEYDATA<Integer> >& getStanleyDec() const;
     
 //---------------------------------------------------------------------------
@@ -144,6 +148,7 @@ private:
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     vector< pair<vector<key_t>, Integer> > Triangulation;
+    vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
     vector< vector<Integer> > HilbertBasis;

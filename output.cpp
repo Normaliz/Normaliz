@@ -273,10 +273,25 @@ void Output<Integer>::write_Stanley_dec() const {
     if (dec && Result->isComputed(ConeProperty::StanleyDec)) {
         ofstream out((name+".dec").c_str());
 
+        if (Result->isComputed(ConeProperty::InclusionExclusionData)) {
+            const vector< pair<vector<libnormaliz::key_t>, long> >& InExData = Result->getInclusionExclusionData();
+            out << "in_ex_data" << endl;
+            out << InExData.size() << endl;
+            for (size_t i=0; i<InExData.size(); ++i) {
+                out << InExData[i].first.size() << " ";
+                for (size_t j=0; j<InExData[i].first.size(); ++j) {
+                    out << InExData[i].first[j] << " ";
+                }
+                out << InExData[i].second << endl;  
+            }
+        }
+
+        out << "Stanley_dec" << endl;
         const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
         typename list<STANLEYDATA<Integer> >::const_iterator S = StanleyDec.begin();
         size_t i;
 
+        out << StanleyDec.size() << endl; 
         for (; S!=StanleyDec.end(); ++S) {
             for (i=0; i<rank; ++i)
                 out << S->key[i]+1 <<" ";

@@ -2708,20 +2708,20 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
             F->second+=InExScheme[i].second;        // but with the right multiplicity
         else
             InExCollect.insert(InExScheme[i]);
-     }
+    }
      
-     for(F=InExCollect.begin();F!=InExCollect.end();){   // faces with multiplicity 0
+    for(F=InExCollect.begin();F!=InExCollect.end();){   // faces with multiplicity 0
         if(F->second==0)                                 // can be erased
             InExCollect.erase(F++);
         else{
             ++F;
         }    
-     }
+    }
      
-     cout << endl;
-     cout << "in_ex_data" << endl;
-     cout << InExCollect.size() << endl;
-     for(F=InExCollect.begin();F!=InExCollect.end();++F){
+    cout << endl;
+    cout << "in_ex_data" << endl;
+    cout << InExCollect.size() << endl;
+    for(F=InExCollect.begin();F!=InExCollect.end();++F){
         vector<key_t> key;
         for(size_t i=0;i<nr_gen;++i)
             if(F->first.test(i))
@@ -2730,14 +2730,15 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
         for(size_t i=0;i<key.size();++i)
             cout << key[i]+1 << " ";
         cout << F->second << endl;  
-     }
+    }
      
-     cout << "--------------------------------------------" << endl; 
+    cout << "--------------------------------------------" << endl; 
      
-     // exit(0);
+    // exit(0);
+
+    cout << "InEx complete, " << InExCollect.size() << " faces involved" << endl;
      
-     cout << "InEx complete, " << InExCollect.size() << " faces involved" << endl;
-         
+    is_Computed.set(ConeProperty::InclusionExclusionData);
 } 
 
 //---------------------------------------------------------------------------
