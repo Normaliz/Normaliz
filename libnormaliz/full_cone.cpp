@@ -214,10 +214,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     vector< list<pair < boost::dynamic_bitset<>, int> > > Neg_Subfacet_Multi(omp_get_max_threads()) ;
 
-    boost::dynamic_bitset<> zero_i(nr_gen);
-    boost::dynamic_bitset<> subfacet(nr_gen);
+    boost::dynamic_bitset<> zero_i, subfacet;
 
-    #pragma omp parallel for firstprivate(zero_i,subfacet) private(k,nr_zero_i) schedule(dynamic)
+    #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i) schedule(dynamic)
     for (i=0; i<nr_NegSimp;i++){
         zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
         
@@ -1424,8 +1423,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     size_t ppos;
     bool skip_remaining_tri,skip_remaining_pyr;
 
-    do
-    {
+    while (nr_pyramids > 0) {
 
        p = Pyramids[level].begin();
        ppos=0;
@@ -1496,7 +1494,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
             evaluate_stored_pyramids(level+1);
         }
     
-    } while(skip_remaining_tri || skip_remaining_pyr);
+    } //end while (nr_pyramid > 0)
      
     if (verbose) {
         verboseOutput() << "**************************************************" << endl;
