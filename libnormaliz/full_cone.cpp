@@ -134,6 +134,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     //to see if possible to replace the function .end with constant iterator since push-back is performed.
 
+    // for dimension 0 and 1 F-M is never necessary and can lead to problems
+    // when using dim-2
+    if (dim <= 1)
+        return;
+
     // NEW: new_generator is the index of the generator being inserted
 
     size_t i,k,nr_zero_i;
