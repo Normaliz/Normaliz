@@ -16,8 +16,11 @@ all: lib normaliz normaliz1
 linknormaliz: lib
 	@$(MAKE) normaliz
 
-normaliz: $(SOURCES) $(HEADERS) libnormaliz/libnormaliz.a
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz.cpp libnormaliz/libnormaliz.a $(GMPFLAGS) -o normaliz
+normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c Normaliz.cpp -o normaliz.o
+
+normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(GMPFLAGS) -o normaliz
 
 normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz-impl.cpp $(GMPFLAGS) -o normaliz1
