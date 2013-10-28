@@ -132,7 +132,7 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
                     break;
                 case Type::signs:
                     if (it->second.begin()->size() != dim) {
-                        errorOutput() << "Dimensions of hyperplanes ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
+                        errorOutput() << "Dimensions of signs ("<<it->second.begin()->size()<<") do not match dimension of other constraints ("<<dim<<")!"<<endl;
                         throw BadInputException();
                     }
                     Signs = sign_inequalities(it->second);
@@ -146,7 +146,7 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
                 case Type::grading:
                     break; //skip the grading
                 default:
-                    errorOutput() << "This InputType combination is currently not supported!" << endl;
+                    errorOutput() << "This InputType (" << it->first << ") combination is currently not supported!" << endl;
                     throw BadInputException();
             }
         }
