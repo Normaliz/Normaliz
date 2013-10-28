@@ -70,7 +70,7 @@ bool Cone_Dual_Mode<Integer>::reducible( list< vector< Integer >* >& Irred, cons
     vector<Integer> *reducer;
     for (j =Irred.begin(); j != Irred.end(); j++) {
         reducer=(*j);
-        if (ordered && new_element[0]<2*(*reducer)[0]) {
+        if (ordered && new_element[0]<(*reducer)[0]) {  // ordered && new_element[0]<2*(*reducer
             break; // if element is reducible, divisor of smallest degree will be found later
         }
         if (new_element[0]<=(*reducer)[0])
@@ -116,7 +116,7 @@ void Cone_Dual_Mode<Integer>::reduce_and_insert(const vector< Integer >& new_ele
     size_t i,c=1;
     typename list< vector<Integer> >::iterator j;
     for (j =Irred.begin(); j != Irred.end(); j++) {
-        if (new_element[0]<2*(*j)[0]) {
+        if (new_element[0]<(*j)[0]) {                    // new_element[0]<2*(*j)[0]
             break; // if element is reducible, divisor of smallest degree will be found later
         }
         else  {
