@@ -956,7 +956,7 @@ Integer Matrix<Integer>::vol_destructive(){
         det*=elements[i][i];
     }
 
-    if(!!test_arithmetic_overflow)
+    if(!test_arithmetic_overflow)
         return Iabs(det);
         
     Integer test_det=elements[0][0]%overflow_test_modulus;
