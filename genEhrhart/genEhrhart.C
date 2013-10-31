@@ -106,10 +106,12 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     // vector<CyclRatFunct> h(omp_get_max_threads(),CyclRatFunct(zero(R)));
     // vector<CyclRatFunct> h(1,CyclRatFunct(zero(R)));
     
-    long mapsize=faceClasses.size();    
-    cout << "--------------------------------------------" << endl;
-    cout << "Evaluatiing " << mapsize <<" face classes" << endl;
-    cout << "--------------------------------------------" << endl;
+    long mapsize=faceClasses.size();
+    if(verbose_INT){    
+        cout << "--------------------------------------------" << endl;
+        cout << "Evaluating " << mapsize <<" face classes" << endl;
+        cout << "--------------------------------------------" << endl;
+    }
     #pragma omp parallel
     {
     
@@ -122,24 +124,27 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
         for(;mpos<dc;++mpos,++den);
         for(;mpos>dc;--mpos,--den);
         // cout << "mpos " << mpos << endl;
-        h = genFunct(GFP,den->second,den->first);
-        #pragma omp critical(CLASSES)
-        {
-        cout << "Class ";
-        for(size_t i=0;i<den->first.size();++i)
-            cout << den->first[i] << " ";
-        cout  << "NumTerms " << NumTerms(den->second) << endl;
         
-        // cout << "input " << den->second << endl;
+        h = genFunct(GFP,den->second,den->first);
+        h.simplifyCRF();
+        if(verbose_INT){
+            #pragma omp critical(VERBOSE)
+            {
+            cout << "Class ";
+            for(size_t i=0;i<den->first.size();++i)
+                cout << den->first[i] << " ";
+            cout  << "NumTerms " << NumTerms(den->second) << endl;
+        
+            // cout << "input " << den->second << endl;
+            }
+        }
         
         // h.showCoprimeCRF();
-        h.simplifyCRF();
+        #pragma omp critical(ADDCLASSES)
         H.addCRF(h);
-        }
     }
     
     } // parallel 
-    // cout << "Fertig" << endl;
     faceClasses.clear();
     H.simplifyCRF();
     return(H);        
@@ -152,11 +157,11 @@ struct denomClassData{
   };
 
 CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
-                                    pair<denomClassData,RingElem>& denomClass){
+                                    pair<denomClassData,vector<RingElem> >& denomClass){
 // computes the generating rational function
 // for a denominator class and returns it
 
-    SparsePolyRing R=AsSparsePolyRing(owner(denomClass.second));
+    SparsePolyRing R=AsSparsePolyRing(owner(denomClass.second[0]));
     
     if(verbose_INT){
     #pragma omp critical(PROGRESS)
@@ -165,16 +170,16 @@ CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
         cout << "Evaluating denom class ";
         for(size_t i=0;i<denomClass.first.degrees.size();++i)
             cout << denomClass.first.degrees[i] << " ";
-        cout  << "NumTerms " << NumTerms(denomClass.second) << endl;
+        cout  << "NumTerms " << NumTerms(denomClass.second[0]) << endl;
         // cout << denomClass.second << endl;
         cout << "--------------------------------------------" << endl;
     }
     }
 
     CyclRatFunct h(zero(R));
-    h = genFunct(GFP,denomClass.second,denomClass.first.degrees);
+    h = genFunct(GFP,denomClass.second[0],denomClass.first.degrees);
 
-    denomClass.second=0;  // to save memory
+    denomClass.second[0]=0;  // to save memory
     h.simplifyCRF();
     return(h);
 }
@@ -185,6 +190,33 @@ mpz_class ourFactorial(const long& n){
         fact*=i;
     return(fact);
 }
+
+void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread, 
+                            map<vector<long>,RingElem>& faceClasses){
+
+
+    // cout << "In Transfer " << facePolysThread.size() << endl;
+    map<vector<long>,RingElem>::iterator den_found;                            
+    for(size_t i=0;i<facePolysThread.size();++i){
+        den_found=faceClasses.find(facePolysThread[i].first);
+        if(den_found!=faceClasses.end()){
+                den_found->second+=facePolysThread[i].second;    
+        }
+        else{
+            faceClasses.insert(facePolysThread[i]);
+            if(verbose_INT){
+                #pragma omp critical(VERBOSE)
+                {
+                    cout << "New face class " << faceClasses.size() <<    " degrees ";
+                    for(size_t j=0;j<facePolysThread[i].first.size();++j)
+                        cout << facePolysThread[i].first[j] << " ";
+                    cout << endl << flush;
+                    }
+            }
+        } // else
+    }
+    facePolysThread.clear();
+} 
 
 void writeGenEhrhartSeries(const string& project, const factorization<RingElem>& FF,
                    const libnormaliz::HilbertSeries& HS, const long& virtDeg, const mpz_class & commonDen){
@@ -430,18 +462,24 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   if(verbose_INT)
     cout << "Stanley decomposition sorted" << endl; 
 
-  vector<pair<denomClassData,RingElem> > denomClasses;
+  vector<pair<denomClassData, vector<RingElem> > > denomClasses;
   denomClassData denomClass;
+  vector<RingElem> ZeroVectRingElem;
+  for(int j=0;j<omp_get_max_threads();++j)
+    ZeroVectRingElem.push_back(zero(RZZ));
   
   map<vector<long>,RingElem> faceClasses; // denominator classes for the faces
                  // contrary to denomClasses these cannot be sorted beforehand
+                 
+  vector<deque<pair<vector<long>,RingElem> > > facePolys(omp_get_max_threads()); // intermediate storage
+  bool evaluationActive=false;
 
   // we now make class 0 to get started
   S=StanleyDec.begin();
   denomClass.degrees=S->degrees;  // put degrees in class
   denomClass.simplDone=0;
   denomClass.simplDue=1;           // already one simplex to be done 
-  denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(RZZ)));
+  denomClasses.push_back(pair<denomClassData,vector<RingElem> >(denomClass,ZeroVectRingElem));
   size_t dc=0;
   S->classNr=dc; // assignment of class 0 to first simpl in sorted order
 
@@ -456,7 +494,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
         denomClass.degrees=S->degrees;  // make new class
         denomClass.simplDone=0;
         denomClass.simplDue=1;
-        denomClasses.push_back(pair<denomClassData,RingElem>(denomClass,zero(RZZ)));
+        denomClasses.push_back(pair<denomClassData,vector<RingElem> >(denomClass,ZeroVectRingElem));
         dc++;
         S->classNr=dc;
     }
@@ -544,20 +582,37 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
     for(i=0;i<iS;++i){
         degree_b=scalProd(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,inExSimplData, faceClasses);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,inExSimplData, facePolys);
     }
     
     evaluateClass=false; // necessary to evaluate class only once
-    #pragma omp critical (ADDTOCLASS) 
+    
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+        
+    // #pragma omp critical (ADDTOCLASS) 
     { 
-        denomClasses[S->classNr].second+=h;
+        denomClasses[S->classNr].second[tn]+=h;
+        #pragma omp critical (ADDTOCLASS)
+        {
         denomClasses[S->classNr].first.simplDone++;
         
         if(denomClasses[S->classNr].first.simplDone==denomClasses[S->classNr].first.simplDue)
             evaluateClass=true;
+        }
     }
     if(evaluateClass)
     {
+    
+        for(int j=1;j<omp_get_max_threads();++j){
+            denomClasses[S->classNr].second[0]+=denomClasses[S->classNr].second[j];
+            denomClasses[S->classNr].second[j]=0;
+        }        
+            
+        // denomClasses[S->classNr].second=0;  // <------------------------------------- 
         HClass=evaluateDenomClass(GFP,denomClasses[S->classNr]);
         #pragma omp critical(ACCUMULATE)
         {
@@ -566,23 +621,35 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
         
     }
     
+    if(!evaluationActive && facePolys[tn].size() >= 20){
+        #pragma omp critical(FACEPOLYS)
+        {
+            evaluationActive=true;
+            transferFacePolys(facePolys[tn],faceClasses);
+            evaluationActive=false;
+        }
+     }
+    
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
     if((++nrSimplDone)%10==0 && verbose_INT)
-        cout << nrSimplDone << " simplicial cones done" << endl;
+        cout << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
+        // nrActiveFacesOld=nrActiveFaces;
     }
  
   }  // Stanley dec
     
   } // parallel
   
-  // collect the contribution of proper fases from inclusion/exclusion
+  // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
   
-  
-  // now we must return to rational coefficients
+    for(int i=0;i<omp_get_max_threads();++i)
+        transferFacePolys(facePolys[i],faceClasses);
   
   if(!faceClasses.empty())
-    H.addCRF(evaluateFaceClasses(GFP,faceClasses)); 
+    H.addCRF(evaluateFaceClasses(GFP,faceClasses));
+    
+    // now we must return to rational coefficients 
  
   CyclRatFunct HRat(zero(R));
   HRat.denom=H.denom;
