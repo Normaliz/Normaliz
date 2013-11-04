@@ -166,6 +166,7 @@ class Full_Cone {
  * ---------------------------------------------------------------------------
  */
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
+    bool is_hyperplane_included(FACETDATA& hyp);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                      list<FACETDATA>& NewHyps);
     void extend_triangulation(const size_t& new_generator);

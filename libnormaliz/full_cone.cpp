@@ -87,6 +87,30 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at,
 }
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
+    if (!is_pyramid) { // in the topcone we always have ov_sp > 0
+        return true;
+    }
+    //check if it would be an excluded hyperplane
+    Integer ov_sp = v_scalar_product(hyp.Hyp,Order_Vector);
+    if (ov_sp > 0) {
+        return true;
+    } else if (ov_sp == 0) {
+        for (size_t i=0; i<dim; i++) {
+            if (hyp.Hyp[i]>0) {
+                return true;
+            } else if (hyp.Hyp[i]<0) {
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
                             list<FACETDATA>& NewHyps){
@@ -877,7 +901,6 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
                                         // outside the loop and can therefore call evaluation      
     vector<key_t> Pyramid_key;
     Pyramid_key.reserve(nr_gen);
-    Integer ov_sp; // Order_Vector scalar product
     bool skip_triang; // make hyperplanes but skip triangulation (recursive pyramids only)
 
     deque<bool> done(old_nr_supp_hyps,false);
@@ -892,7 +915,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     skip_remaining_tri=skip_remaining_pyr=false;
 
 
-    #pragma omp parallel for private(skip_triang,ov_sp) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic)
+    #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic)
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
     
         if(skip_remaining_tri || skip_remaining_pyr)
@@ -916,24 +939,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
         skip_triang = false;
         if (Top_Cone->do_partial_triangulation && hyp->ValNewGen>=-1) { //ht1 criterion
-            if (!is_pyramid) { // in the topcone we always have ov_sp > 0
-                skip_triang = true;
-            } else {
-                //check if it would be an excluded hyperplane
-                ov_sp = v_scalar_product(hyp->Hyp,Order_Vector);
-                if (ov_sp > 0) {
-                    skip_triang = true;
-                } else if (ov_sp == 0) {
-                    for (size_t i=0; i<dim; i++) {
-                        if (hyp->Hyp[i]>0) {
-                            skip_triang = true;
-                            break;
-                        } else if (hyp->Hyp[i]<0) {
-                            break;
-                        }
-                    }
-                }
-            }
+            skip_triang = is_hyperplane_included(*hyp);
             if (skip_triang && !recursive) {
                 continue;
             }
