@@ -675,12 +675,16 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     size_t not_in_i=0;
     size_t facet_dim=dim-1;
     size_t nr_in_i=0;
+
     list< SHORTSIMPLEX<Integer> > Triangulation_kk;
-    
     typename list< SHORTSIMPLEX<Integer> >::iterator j;
     
     vector<key_t> key(dim);
     
+    // if we only want a partial triangulation but came here because of a deep level
+    // mark if this part of the triangulation has to be evaluated
+    bool skip_eval = false;
+
     #pragma omp for schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
         i=visible[kk];
@@ -693,6 +697,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                 break;
             }
         }
+        skip_eval = Top_Cone->do_partial_triangulation && i->ValNewGen == -1
+                    && is_hyperplane_included(*i);
 
         if (nr_in_i==facet_dim){  // simplicial
             l=0;
@@ -708,7 +714,10 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                 #pragma omp critical(TRIANG) // critical only on top level
                 store_key(key,-i->ValNewGen,0,Triangulation);
             } else {
-                store_key(key,-i->ValNewGen,0,Triangulation);
+                if (skip_eval)
+                    store_key(key,0,0,Triangulation);
+                else
+                    store_key(key,-i->ValNewGen,0,Triangulation);
             }
             continue;
         }
@@ -747,7 +756,10 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
                  continue;
               
               key[not_in_i]=new_generator;              
-              store_key(key,-i->ValNewGen,j->vol,Triangulation_kk);
+              if (skip_eval)
+                  store_key(key,0,j->vol,Triangulation_kk);
+              else
+                  store_key(key,-i->ValNewGen,j->vol,Triangulation_kk);
                        
             } // j
             
@@ -1791,9 +1803,16 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     // cout << "In pyramid " << endl;
   
     typename list< SHORTSIMPLEX<Integer> >::iterator pyr_simp=Triangulation.begin();
-    for(;pyr_simp!=Triangulation.end();pyr_simp++)
-        for(i=0;i<dim;i++)
-            pyr_simp->key[i]=Top_Key[pyr_simp->key[i]];
+    while (pyr_simp!=Triangulation.end()) {
+        if (pyr_simp->height == 0) { // it was marked to be skipped
+            pyr_simp = Triangulation.erase(pyr_simp); //TODO splice to FreeSimp?
+            --TriangulationSize;
+        } else {
+            for (i=0; i<dim; i++)  // adjust key to topcone generators
+                pyr_simp->key[i]=Top_Key[pyr_simp->key[i]];
+            ++pyr_simp;
+        }
+    }
 
     // cout << "Keys transferred " << endl;
     #pragma omp critical(TRIANG)
