@@ -38,6 +38,7 @@ lib:
 .PHONY : clean
 clean:
 	$(MAKE) --directory=libnormaliz clean
+	-rm -f normaliz.o
 	-rm -f normaliz
 	-rm -f normaliz?
 	-rm -f normaliz-pg

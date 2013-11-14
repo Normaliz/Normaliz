@@ -848,7 +848,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
                     Top_Cone->FreeSimpl);
             else
                 Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                              Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),++F);
+                              Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),F);
         } // else
         } // critical
     } // if empty
