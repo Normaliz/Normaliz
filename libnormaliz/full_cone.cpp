@@ -682,7 +682,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     vector<key_t> key(dim);
     
     // if we only want a partial triangulation but came here because of a deep level
-    // mark if this part of the triangulation has to be evaluated
+    // mark if this part of the triangulation has not to be evaluated
     bool skip_eval = false;
 
     #pragma omp for schedule(dynamic)
