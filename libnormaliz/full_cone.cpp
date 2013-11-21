@@ -245,7 +245,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     boost::dynamic_bitset<> zero_i, subfacet;
 
-    #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i) schedule(dynamic)
+    #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i)
     for (i=0; i<nr_NegSimp;i++){
         zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
         
@@ -668,7 +668,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 
     typename list< SHORTSIMPLEX<Integer> >::iterator oldTriBack = --Triangulation.end();
-    #pragma omp parallel private(i)  if(TriangulationSize>1000)
+    #pragma omp parallel private(i)  if(TriangulationSize>100)
     {
     size_t k,l;
     bool one_not_in_i, not_in_facet;
@@ -710,17 +710,12 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
             }
             key[dim-1]=new_generator;
  
-            if(parallel_inside_pyramid) {
-                #pragma omp critical(TRIANG) // critical only on top level
-                store_key(key,-i->ValNewGen,0,Triangulation);
-            } else {
-                if (skip_eval)
-                    store_key(key,0,0,Triangulation);
-                else
-                    store_key(key,-i->ValNewGen,0,Triangulation);
-            }
+           if (skip_eval)
+                store_key(key,0,0,Triangulation_kk);
+            else
+                store_key(key,-i->ValNewGen,0,Triangulation_kk);
             continue;
-        }
+        } // end simplicial
         
         size_t irrelevant_vertices=0;
         for(size_t vertex=0;vertex<nrGensInCone;++vertex){
@@ -765,13 +760,13 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
             
         } // for vertex
 
-        if(parallel_inside_pyramid) { 
-            #pragma omp critical(TRIANG)
-                Triangulation.splice(Triangulation.end(),Triangulation_kk);
-            }
-        else 
-            Triangulation.splice(Triangulation.end(),Triangulation_kk);
     } // for kk
+
+    if(parallel_inside_pyramid) {
+        #pragma omp critical(TRIANG)
+        Triangulation.splice(Triangulation.end(),Triangulation_kk);
+    } else
+        Triangulation.splice(Triangulation.end(),Triangulation_kk);
 
     } // parallel
 
@@ -927,7 +922,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     skip_remaining_tri=skip_remaining_pyr=false;
 
 
-    #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic)
+    #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
     
         if(skip_remaining_tri || skip_remaining_pyr)
@@ -940,7 +935,6 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             continue;
 
         done[hyppos]=true;
-        #pragma omp atomic
         nr_done++;
 
         if (hyp->ValNewGen == 0)                     // MUST BE SET HERE 
@@ -972,29 +966,26 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             process_pyramid(Pyramid_key, new_generator,store_level,-hyp->ValNewGen, recursive,hyp);
         }
 
-        if(check_evaluation_buffer_size() && start_level==0 && nr_done < old_nr_supp_hyps){  // we interrupt parallel execution if it is really parallel
-                                                           //  to keep the triangulation buffer under control
-            skip_remaining_tri=true;
-        }
-        
-        if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr && start_level==0 && nr_done < old_nr_supp_hyps){  // we interrupt parallel execution if it is really parallel
-                                                           //  to keep the pyramid buffer under control
-            skip_remaining_pyr=true;                      
+        if (start_level==0) {  // interrupt parallel execution if it is really parallel
+            if(check_evaluation_buffer_size())
+                skip_remaining_tri=true;  // keep the triangulation buffer under control
+            if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr)
+                skip_remaining_pyr=true;  // keep the pyramid buffer under control
         }
         
         
-    } // loop over hyperplanes
+    } // end parallel loop over hyperplanes
 
     
-    if(skip_remaining_tri)    {
+    if (skip_remaining_tri) {
         Top_Cone->evaluate_triangulation();
     }
     
-    if(skip_remaining_pyr){
+    if (skip_remaining_pyr) {
         Top_Cone->evaluate_stored_pyramids(store_level);
     }
 
-    } while(skip_remaining_tri || skip_remaining_pyr);
+    } while (nr_done < old_nr_supp_hyps);
     
     
     evaluate_large_rec_pyramids(new_generator);
@@ -1609,7 +1600,7 @@ void Full_Cone<Integer>::build_cone() {
         vector<Integer> L;           
         
         size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg) schedule(dynamic) if(old_nr_supp_hyps>10000)
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
             for(;k > lpos; lpos++, l++) ;
             for(;k < lpos; lpos--, l--) ;
@@ -1802,11 +1793,15 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     // now we are in a pyramid
 
     // cout << "In pyramid " << endl;
+    int tn = 0;
+    if (omp_in_parallel())
+        tn = omp_get_ancestor_thread_num(1);
   
     typename list< SHORTSIMPLEX<Integer> >::iterator pyr_simp=Triangulation.begin();
     while (pyr_simp!=Triangulation.end()) {
         if (pyr_simp->height == 0) { // it was marked to be skipped
-            pyr_simp = Triangulation.erase(pyr_simp); //TODO splice to FreeSimp?
+//            pyr_simp = Triangulation.erase(pyr_simp); //TODO splice to FreeSimp?
+            Top_Cone->FS[tn].splice(Top_Cone->FS[tn].end(), Triangulation, pyr_simp++);
             --TriangulationSize;
         } else {
             for (i=0; i<dim; i++)  // adjust key to topcone generators
@@ -2931,20 +2926,21 @@ void Full_Cone<Integer>::global_reduction() {
             }
 
             if (verbose) {
-                #pragma omp critical(VERBOSE)
-                {
+                #pragma omp atomic
                 counter++;
 
-                while (counter*VERBOSE_STEPS >= step_x_size) {
-                    steps_done++;
-                    step_x_size += csize;
-                    verboseOutput() << "|" <<flush;
-                    if(VERBOSE_STEPS > 50 && steps_done%50 == 0) {
-                        verboseOutput() << "  " << (steps_done) << "000" << endl;
+                if (counter*VERBOSE_STEPS >= step_x_size){
+                    #pragma omp critical(VERBOSE)
+                    while (counter*VERBOSE_STEPS >= step_x_size) {
+                        steps_done++;
+                        step_x_size += csize;
+                        verboseOutput() << "|" <<flush;
+                        if(VERBOSE_STEPS > 50 && steps_done%50 == 0) {
+                            verboseOutput() << "  " << (steps_done) << "000" << endl;
+                        }
                     }
-                }
-                } //end critical(VERBOSE)
-            }
+                } //end if
+            } //end verbose
         } //end for
         } //end parallel
         if (verbose) verboseOutput() << endl;
