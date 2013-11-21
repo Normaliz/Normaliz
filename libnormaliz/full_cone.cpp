@@ -1046,9 +1046,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
     }
     else {  // non-simplicial
     
-        bool large=(largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps); // Pyramid_key.size()>largePyramidFactor*dim; ////                     Pyramid_key.size()>largePyramidFactor*dim;
+        bool large=(largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps); // Pyramid_key.size()>largePyramidFactor*dim;
         
-        if(!recursive || (large && (do_triangulation || (do_partial_triangulation&& height!=0))) ){  // must also store for triangulation if recursive and large
+        if (!recursive || (large && (do_triangulation || do_partial_triangulation) && height!=0) ) {  // must also store for triangulation if recursive and large
             vector<key_t> key_wrt_top(Pyramid_key.size());
             for(size_t i=0;i<Pyramid_key.size();i++)
             key_wrt_top[i]=Top_Key[Pyramid_key[i]];
@@ -1079,6 +1079,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         Pyramid.Mother_Key = Pyramid_key;    // need these data to give back supphyps
         Pyramid.apex=new_generator;
         if (height == 0) { //indicates "do not triangulate"
+            Pyramid.do_triangulation = false;
             Pyramid.do_partial_triangulation = false;
             Pyramid.do_Hilbert_basis = false;
             Pyramid.do_deg1_elements=false;
@@ -1096,7 +1097,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
             nrTotalComparisons+=Pyramid.nrTotalComparisons;
         } else
             nrTotalComparisons+=Pyramid.nrTotalComparisons;
-    }  // eles non-simplicial
+    }  // else non-simplicial
 }
 
 //---------------------------------------------------------------------------
@@ -1635,7 +1636,6 @@ void Full_Cone<Integer>::build_cone() {
         
             
         // First we test whether to go to recursive pyramids because of too many supphyps
-        // Once we have done so, we must stay with it
         if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
             if (do_triangulation)
                 tri_recursion = true; // We can not go back to classical triangulation
@@ -1649,6 +1649,7 @@ void Full_Cone<Integer>::build_cone() {
             nextGen=i+1; 
         }
         else{ // now we check whether to go to pyramids because of the size of triangulation
+              // once we have done so, we must stay with it
             if( tri_recursion || (do_triangulation 
                 && (nr_neg*TriangulationSize > RecBoundTriang 
                     || 3*omp_get_max_threads()*TriangulationSize>EvalBoundTriang ))){ // go to pyramids because of triangulation
