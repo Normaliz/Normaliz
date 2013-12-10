@@ -242,6 +242,10 @@ public:
     vector<Integer> solve(vector<Integer> v) const;
     // like find_linear_form, but for right side v
 
+    Matrix<Integer> kernel() const;
+    // computes a ZZ-basis of the solutions of (*this)x=0
+    // the basis is formed by the ROWS of the returned matrix
+
 };
 //class end *****************************************************************
 

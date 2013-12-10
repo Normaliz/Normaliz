@@ -1238,6 +1238,26 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer> Matrix<Integer>::kernel() const {
+// computes a ZZ-basis of the solutions of (*this)x=0
+// the basis is formed by the ROWS of the returned matrix
+
+    size_t dim=nc;
+    if(nr==0)
+        return(Matrix<Integer>(dim));
+    Lineare_Transformation<Integer> NewLT = Transformation(*this);
+    size_t rank = NewLT.get_rank();
+    Matrix<Integer> ker_basis(dim-rank,dim);
+    Matrix<Integer> Help = NewLT.get_right().transpose();
+    for (size_t i = rank; i < dim; i++)
+            ker_basis[i-rank]=Help[i];
+    return(ker_basis);
+
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom){
     return Left_side.solve(Right_side,denom);
 }
