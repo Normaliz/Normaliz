@@ -123,7 +123,7 @@ class Full_Cone {
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
-    bool parallel_inside_pyramid; // indicates that paralleization is taking place INSIDE the pyramid
+    bool multithreaded_pyramid; // indicates that this cone is computed in parallel threads
     bool tri_recursion; // true if we have gone to pyramids because of triangulation
     
     vector<size_t> Comparisons; // at index i we note the total number of comparisons 
@@ -173,7 +173,7 @@ class Full_Cone {
     void process_pyramids(const size_t new_generator,const bool recursive);
     void process_pyramid(const vector<key_t>& Pyramid_key, 
                       const size_t new_generator, const size_t store_level, Integer height, const bool recursive,
-                      typename list< FACETDATA >::iterator hyp);
+                      typename list< FACETDATA >::iterator hyp, size_t start_level);
     void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
                       const vector<key_t>& Pyramid_key);
     void evaluate_stored_pyramids(const size_t level);
