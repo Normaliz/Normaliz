@@ -58,22 +58,22 @@ class Cone {
 public:
 
 //---------------------------------------------------------------------------
-//                    Constructors, they preprocess the input 
+//                    Constructors, they preprocess the input
 //---------------------------------------------------------------------------
 
     /* give a single matrix as input */
     Cone(const vector< vector<Integer> >& input_data,
          InputType type = Type::integral_closure);
     /* give multiple input */
-    Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
+    Cone(map< InputType , vector< vector<Integer> > >& multi_input_data);
 
 //---------------------------------------------------------------------------
 //                          give additional data
 //---------------------------------------------------------------------------
 
-    /* Sets the linear form which is used to grade. 
+    /* Sets the linear form which is used to grade.
      * It has to be an N-grading, i.e. all generators must have a value >=1.
-     * If it is not, a subclass of NormalizException will be thrown at the 
+     * If it is not, a subclass of NormalizException will be thrown at the
      * time of detection which can be in this method or later!
      * It will delete all data from the cone that depend on the grading!
      */
@@ -129,12 +129,12 @@ public:
     const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData() const;
     const list< STANLEYDATA<Integer> >& getStanleyDec() const;
-    
+
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------
 
-private:    
+private:
     size_t dim;
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
@@ -167,20 +167,27 @@ private:
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
 
-    /* Progress input, depending on input_type */
+    // main input processing
+    void process_multi_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void prepare_input_lattice_ideal(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void prepare_input_generators(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+
+    /* Progress input for subtypes */
     void prepare_input_type_0(const vector< vector<Integer> >& Input);
     void prepare_input_type_1(const vector< vector<Integer> >& Input);
     void prepare_input_type_2(const vector< vector<Integer> >& Input);
     void prepare_input_type_3(const vector< vector<Integer> >& Input);
-    void prepare_input_type_10(const vector< vector<Integer> >& Binomials);
+
     void prepare_input_type_456(const Matrix<Integer>& Congruences, const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
     void prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
 
     /* only used by the constructors */
     void initialize();
-    void single_matrix_input(const vector< vector<Integer> >& Input, InputType input_type);
+
     /* compute the generators using the support hyperplanes */
     void compute_generators();
+
     /* compute method for the dual_mode, used in compute(mode) */
     ConeProperties compute_dual();
 
@@ -188,6 +195,12 @@ private:
     void extract_data(Full_Cone<Integer>& FC);
 
 };
+
+// helpers
+
+template<typename Integer>
+vector<vector<Integer> > find_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data,
+                               const InputType type);
 
 }  //end namespace libnormaliz
 
