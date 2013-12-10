@@ -37,6 +37,7 @@ struct SIMPLINEXDATA_INT{                        // local data of excluded faces
         bool done;                           // indicates that this face has been done for a given offset
         vector<long> denom;
         vector<long> degrees;
+        vector<long> key;
 };
 
 void fileMissing(const char* name_in){

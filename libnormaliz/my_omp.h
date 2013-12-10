@@ -28,6 +28,10 @@
 #include <omp.h>
 #else
 
+inline int omp_in_parallel() {
+    return false;
+}
+
 inline int omp_get_level(){
     return 0;
 }

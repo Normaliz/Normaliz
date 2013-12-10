@@ -16,16 +16,17 @@
  *
  */
 
-BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,const long& rank){
+BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
+                const vector<BigInt>& factQuot, const long& rank){
 
     SparsePolyRing P=AsSparsePolyRing(owner(F));
     vector<long> v(NumIndets(P));
     
     BigRat Irat;
     long deg;
-    BigInt facProd,I,maxFact;
+    BigInt facProd,I;
     I=0;
-    maxFact=Factorial[Factorial.size()-1];
+    //BigInt maxFact=Factorial[Factorial.size()-1];
 
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     for (; !IsEnded(mon); ++mon){
@@ -36,10 +37,10 @@ BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,cons
           deg+=v[i];
           facProd*=Factorial[v[i]];
        }
-       I+=facProd*maxFact/Factorial[deg+rank-1];
+       I+=facProd*factQuot[deg+rank-1];// maxFact/Factorial[deg+rank-1];
     }
     Irat=I;
-    return(Irat/maxFact);
+    return(Irat/Factorial[Factorial.size()-1]);
 }
 
 void writeIntegral(const string& project, const factorization<RingElem>& FF,
@@ -124,6 +125,10 @@ void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneou
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
   for(i=0;i<deg(F)+dim;++i)
       Factorial[i]=factorial(i);
+      
+  vector<BigInt> factQuot(deg(F)+dim); // precomputed values
+  for(i=0;i<deg(F)+dim;++i)
+      factQuot[i]=Factorial[Factorial.size()-1]/Factorial[i];
   
   factorization<RingElem> FF(primeFactors,multiplicities,remainingFactor); // assembels the data
   factorization<RingElem> FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
@@ -182,7 +187,7 @@ void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneou
     }
 
     // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
-    ISimpl=(det*substituteAndIntegrate(FF,A,degrees,RZZ,Factorial,lcmDegs))/prodDeg;
+    ISimpl=(det*substituteAndIntegrate(FF,A,degrees,RZZ,Factorial,factQuot,lcmDegs))/prodDeg;
 
     #pragma omp critical(INTEGRAL)
     I+=ISimpl;

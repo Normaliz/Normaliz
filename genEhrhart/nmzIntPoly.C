@@ -77,50 +77,6 @@ vector<RingElem> ourCoeffs(const RingElem& F, const long j){
     return(c);
 }
 
-void restrict(const RingElem& F, const boost::dynamic_bitset<>& indicator, RingElem& c){
-// computes result by deleting all monomials that involve an indeterminate
-// appearing in indicator
-// attention: indices in indicator must be shifted by 1
-
-    if(F==0){
-        c=0;
-        return;
-    }
-
-    size_t dim=indicator.size();
-    boost::dynamic_bitset<> complement=indicator;
-    complement.flip();
-    
-    vector<key_type> key;
-    key.reserve(dim);
-    for(size_t i=0;i<dim;++i)
-        if(complement[i])
-            key.push_back(i+1);  // here e add 1
-    size_t ks=key.size();
-
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
-
-    vector<long> v(NumIndets(P));
-    bool alive;
-
-    SparsePolyIter i=BeginIter(F);
-    for (; !IsEnded(i); ++i){
-        exponents(v,PP(i));
-        alive=true;
-        for(size_t j=0;j<ks;++j){
-            if(v[key[j]]!=0){
-                alive=false;
-                break;
-            }
-        }
-        if(!alive)
-            continue;
-        PushBack(c,coeff(i),v);
-    }
-    
-}
-
-
 vector<long> MxV(const vector<vector<long> >& M, vector<long> V){
 // matrix*vector
     vector<long> P(M.size());
@@ -177,6 +133,8 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
 }
 */
 
+bool DDD=false;
+
 vector<long> shiftVars(const vector<long>& v, const vector<long>& key){
 // selects components of v and reorders them according to key
     vector<long> w(v.size(),0);
@@ -184,6 +142,56 @@ vector<long> shiftVars(const vector<long>& v, const vector<long>& key){
         w[i]=v[key[i]];
     }
     return(w);
+}
+
+void  makeLocalDegreesAndKey(const boost::dynamic_bitset<>& indicator,const vector<long>& degrees, vector<long>& localDeg,vector<long>& key){
+
+    localDeg.clear();
+    key.clear();
+    key.push_back(0);
+    for(size_t i=0;i<indicator.size();++i)
+        if(indicator.test(i))
+            key.push_back(i+1);
+    for(size_t i=0;i<key.size()-1;++i)
+        localDeg.push_back(degrees[key[i+1]-1]);  
+}
+
+void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& End){
+
+    vector<long> denom=degrees2denom(localDeg); // first we must find the blocks of equal degree
+    St.push_back(1);
+    for(size_t i=0;i<denom.size();++i)
+        if(denom[i]!=0){
+            End.push_back(St[St.size()-1]+denom[i]-1);
+            if(i<denom.size()-1)
+                St.push_back(End[End.size()-1]+1);
+        }
+}
+
+vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<long>& End){
+
+    vector<long> v=vin;
+    long p,s,pend,pst;
+    bool ordered;
+    for(size_t j=0;j<St.size();++j){  // now we go over the blocks
+        pst=St[j];
+        pend=End[j];
+        while(1){
+            ordered=true;
+            for(p=pst;p<pend;++p){
+                if(v[p]<v[p+1]){
+                    ordered=false;
+                    s=v[p];
+                    v[p]=v[p+1];
+                    v[p+1]=s;
+                }
+            }
+        if(ordered)
+            break;
+        pend--;
+        }
+    }
+    return(v);
 }
 
 RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost::dynamic_bitset<>& indicator, bool compactify){
@@ -194,6 +202,9 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
  // the ordered exponent vectors are inserted into a map
  // and their coefficients are added
  // at the end the polynomial is rebuilt from the map
+ // If compactify==true, the exponents will be shifted to the left in order to keep the correspondence
+ // of variables to degrees
+ // compactification not used at present (occurs only in restrictToFaces) 
 
     SparsePolyRing P=AsSparsePolyRing(owner(F));
     vector<long> v(NumIndets(P));
@@ -202,88 +213,33 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
     localDeg.reserve(degrees.size()+1);
     
     if(compactify){
-        key.push_back(0);
-        for(size_t i=0;i<indicator.size();++i)
-            if(indicator.test(i))
-                key.push_back(i+1);
-        for(size_t i=0;i<key.size()-1;++i)
-            localDeg.push_back(degrees[key[i+1]-1]);
-        /*cout << "------------" << endl;
-        cout << degrees << endl;
-        cout << indicator << endl;
-        cout << key << endl;
-        cout << localDeg << endl;         
-        // cout << F << endl;
-        cout  << "------------" << endl; */     
+        makeLocalDegreesAndKey(indicator,degrees,localDeg,key);  
     }
     else{
         localDeg=degrees;
     }
-
-    vector<long> denom=degrees2denom(localDeg); // first we must find the blocks of equal degree
+    
     vector<long> St,End;
-    St.push_back(1);
-    for(size_t i=0;i<denom.size();++i)
-        if(denom[i]!=0){
-            End.push_back(St[St.size()-1]+denom[i]-1);
-            if(i<denom.size()-1)
-                St.push_back(End[End.size()-1]+1);
-        }
+    makeStartEnd(localDeg,St,End);
 
     // now the main job
 
     map<vector<long>,RingElem> orderedMons;  // will take the ordered exponent vectors
     map<vector<long>,RingElem>::iterator ord_mon;
-    long p,s,pend,pst;
-    bool ordered;
+
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     for (; !IsEnded(mon); ++mon){
       exponents(v,PP(mon)); // this function gives the exponent vector back as v
-      vector<long> oldv=v;
-      long oldDeg=0;
-      for(size_t i=1;i<v.size();++i)
-        oldDeg+=v[i]*degrees[i-1];
       if(compactify)
-        v=shiftVars(v,key);
-        long newDeg=0;
-        for(size_t i=0;i<localDeg.size();++i)
-            newDeg+=v[i+1]*localDeg[i];
-      /* if(oldDeg!=newDeg){
-        cout << "ALARM ALAEM ALARM " << oldDeg << " " << newDeg << endl;
-        cout << degrees << endl;
-        cout << localDeg << endl;
-        cout << oldv << endl;
-        cout << v << endl;
-        cout << F << endl;
-        exit(1);
-      
-      } */
-        
-      for(size_t j=0;j<St.size();++j){  // now we go over the blocks
-        pst=St[j];
-        pend=End[j];
-        while(1){
-                ordered=true;
-                for(p=pst;p<pend;++p){
-                    if(v[p]<v[p+1]){
-                        ordered=false;
-                        s=v[p];
-                        v[p]=v[p+1];
-                        v[p+1]=s;
-                    }
-                }
-            if(ordered)
-                break;
-            pend--;
-        }
+          v=shiftVars(v,key);
+      v=orderExposInner(v,St,End);
+      ord_mon=orderedMons.find(v); // insert into map or add coefficient
+      if(ord_mon!=orderedMons.end()){
+          ord_mon->second+=coeff(mon);
       }
-        ord_mon=orderedMons.find(v); // insert into map or add coefficient
-        if(ord_mon!=orderedMons.end()){
-            ord_mon->second+=coeff(mon);
-        }
-        else{
-            orderedMons.insert(pair<vector<long>,RingElem>(v,coeff(mon)));
-        }
+      else{
+          orderedMons.insert(pair<vector<long>,RingElem>(v,coeff(mon)));
+      }
     }
 
     // now we must reconstruct the polynomial
@@ -297,68 +253,135 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
     return(r);
 }
 
-void all_contained_faces(const RingElem& G, const vector<long>& degrees, boost::dynamic_bitset<>& indicator, long Deg, 
-                     vector<SIMPLINEXDATA_INT>& inExSimplData, const long start,map<vector<long>,RingElem>& faceClasses){
-                     
-    const SparsePolyRing R=AsSparsePolyRing(owner(G));
-    RingElem h(zero(R));
-    RingElem Gface(zero(R));
-    size_t dim=indicator.size();
-    boost::dynamic_bitset<> thisFace(dim);
-    
-    // cout << "Start " << start << " Indicator " << indicator<< endl;
-    
-    if(start!=-1){  // we must compite the contribution of the face with index start
-        thisFace=inExSimplData[start].GenInFace;
-        restrict(G,thisFace,Gface);  // TO DO: nur mit Differenzmenge arbeiten
 
-        h=power(indets(R)[0],Deg)*inExSimplData[start].mult*orderExpos(Gface,degrees,thisFace,true);
-        inExSimplData[start].done=true;
-        // cout << "h " << h << endl;
+void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest,const vector<long> degrees, const vector<SIMPLINEXDATA_INT>& inExSimplData){
+// Computesd the restrictions of G to the faces in inclusion-exclusion.
+// All terms are simultaneously compactified and exponentwise ordered
+// Polynomials returned in GRest
+// Ordering is also applied to G itself, returned in GOrder
+// Note: degrees are given for the full simplex. Therefore "local" degreees must be made 
+// (depend only on face and not on offset, but generation here is cheap)
 
-        vector<long> faceDegrees=inExSimplData[start].degrees;                
-        #pragma omp critical (NEWCLASS) // insert into denominator classes or add to existing
-        { 
-            map<vector<long>,RingElem>::iterator den_found=faceClasses.find(faceDegrees);
-            if(den_found!=faceClasses.end()){
-                den_found->second+=h;    
-            }
-            else{
-                faceClasses.insert(pair<vector<long>,RingElem>(faceDegrees,h));
-                if(verbose_INT){
-                    #pragma omp critical(VERBOSE)
-                    {
-                    cout << "New face class " << faceClasses.size() <<    " degrees ";
-                    for(size_t i=0;i<faceDegrees.size();++i)
-                        cout << faceDegrees[i] << " ";
-                    cout << endl << flush;
-                    }
+    SparsePolyRing P=AsSparsePolyRing(owner(G));
+
+    vector<long> v(NumIndets(P));
+    vector<long> w(NumIndets(P));
+    vector<long> localDeg;
+    localDeg.reserve(v.size());
+    size_t dim=NumIndets(P)-1;
+ 
+    // first we make the facewise data that are needed for the compactification and otrdering
+    // of exponent vectors    
+    vector<vector<long> > St(inExSimplData.size()),End(inExSimplData.size()),key(inExSimplData.size());
+    vector<long> active;
+    for(size_t i=0;i<inExSimplData.size();++i)
+        if(!inExSimplData[i].done){
+            active.push_back(i);
+            makeLocalDegreesAndKey(inExSimplData[i].GenInFace ,degrees,localDeg,key[i]);
+            makeStartEnd(localDeg,St[i],End[i]);
+        }
+    
+    // now the same for the full simplex (localDeg=degrees)
+    boost::dynamic_bitset<> fullSimpl(dim);
+    fullSimpl.set();
+    vector<long> StSimpl,EndSimpl;
+    makeStartEnd(degrees,StSimpl,EndSimpl);
+    
+    vector<map<vector<long>,RingElem> > orderedMons(inExSimplData.size());  // will take the ordered exponent vectors
+    map<vector<long>,RingElem> orderedMonsSimpl; 
+    map<vector<long>,RingElem>::iterator ord_mon;
+    boost::dynamic_bitset<> indicator(dim);
+
+    // now we go over the terms of G
+    SparsePolyIter term=BeginIter(G);
+    for (; !IsEnded(term); ++term){
+
+        exponents(v,PP(term));
+        w=v;
+        indicator.reset();
+        for(size_t j=0;j<dim;++j)
+            if(v[j+1]!=0)               // we must add 1 since the 0-th indeterminate is irrelevant here
+                indicator.set(j);
+        for(size_t i=0;i<active.size();++i){
+            int j=active[i];
+            if(indicator.is_subset_of(inExSimplData[j].GenInFace)){
+                w=shiftVars(v,key[j]);
+                w=orderExposInner(w,St[j],End[j]);
+                // w=shiftVars(v,key[j]);
+                ord_mon=orderedMons[j].find(w); // insert into map or add coefficient
+                if(ord_mon!=orderedMons[j].end()){
+                    ord_mon->second+=coeff(term);
                 }
-            } // else
-        } // critical
+                else{
+                    orderedMons[j].insert(pair<vector<long>,RingElem>(w,coeff(term)));
+                }
+             }
+        } // for i
+        
+        v=orderExposInner(v,StSimpl,EndSimpl);
+        ord_mon=orderedMonsSimpl.find(v); // insert into map or add coefficient
+        if(ord_mon!=orderedMonsSimpl.end()){
+            ord_mon->second+=coeff(term);
+        }
+        else{
+            orderedMonsSimpl.insert(pair<vector<long>,RingElem>(v,coeff(term)));
+        }
+    } // loop over term
+    
+    // now we must make the resulting polynomials from the maps
+    
+    for(size_t i=0;i<active.size();++i){
+        int j=active[i];
+        for(ord_mon=orderedMons[j].begin();ord_mon!=orderedMons[j].end();++ord_mon){
+            PushFront(GRest[j],ord_mon->second,ord_mon->first);
+        }
+        // cout << "GRest[j] " << j << " " << NumTerms(GRest[j]) << endl;
     }
-    else{  // in this case we start from the full simplex already computed, Accu already set outside
-        Gface=G;    // TO DO: avoid duplicate
-        for(size_t i=0;i<inExSimplData.size();++i) // mark all faces
-            if(!indicator.is_subset_of(inExSimplData[i].GenInFace))  
-                 inExSimplData[i].done=true;       // done if face cannot contribute for this offset
-            else
-                inExSimplData[i].done=false;       // not done otherwise
-        thisFace.set();
+            
+    for(ord_mon=orderedMonsSimpl.begin();ord_mon!=orderedMonsSimpl.end();++ord_mon){
+        PushFront(GOrder,ord_mon->second,ord_mon->first);
     }
-
-    for(size_t i=start+1;i<inExSimplData.size();++i){  // go over potential proper faces
-            if(inExSimplData[i].done || !inExSimplData[i].GenInFace.is_subset_of(thisFace))  // has already been taken care of or not a face 
-            continue;
-        all_contained_faces(Gface,degrees,indicator,Deg, inExSimplData,i,faceClasses); 
-    }                      
+    
 }
 
+long nrActiveFaces=0; 
+long nrActiveFacesOld=0;
 
-
+void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>& degrees, boost::dynamic_bitset<>& indicator, long Deg, 
+                     vector<SIMPLINEXDATA_INT>& inExSimplData, vector<deque<pair<vector<long>,RingElem> > >& facePolys){
+                     
+    const SparsePolyRing R=AsSparsePolyRing(owner(G));
+    vector<RingElem> GRest;
+    // size_t dim=indicator.size();
+    for(size_t i=0;i<inExSimplData.size();++i){
+        GRest.push_back(zero(R));
+        
+        if(!indicator.is_subset_of(inExSimplData[i].GenInFace))  
+            inExSimplData[i].done=true;       // done if face cannot contribute to result for this offset
+        else
+            inExSimplData[i].done=false;       // not done otherwise
+    }
+    restrictToFaces(G,GOrder,GRest,degrees,inExSimplData);
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+    for(size_t j=0;j<inExSimplData.size();++j){
+        if(inExSimplData[j].done)
+            continue;
+        #pragma omp atomic
+        nrActiveFaces++;
+        // cout << "Push back " << NumTerms(GRest[j]);
+        GRest[j]=power(indets(R)[0],Deg)*inExSimplData[j].mult*GRest[j];  // shift by degree of offset amd multiply by mult of face
+        facePolys[tn].push_back(pair<vector<long>,RingElem>(inExSimplData[j].degrees,GRest[j]));
+        // cout << " Now " << facePolys[tn].size() << endl;
+    }
+}
+        
 RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
                      const vector<long>& b, const long& denom, const SparsePolyRing& R, const vector<long>& degrees, const BigInt& lcmDets,
-                     vector<SIMPLINEXDATA_INT>& inExSimplData,map<vector<long>,RingElem>& faceClasses){
+                     vector<SIMPLINEXDATA_INT>& inExSimplData,vector<deque<pair<vector<long>,RingElem> > >& facePolys){
 // applies linar substitution y --> lcmDets*A(y+b/denom) to all factors in FF 
 // and returns the product of the modified factorsafter ordering the exponent vectors
 
@@ -381,6 +404,7 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
         w1[i]=w[i-1]; 
     
     RingHom phi=PolyAlgebraHom(R,R,w1);
+    
     RingElem G(one(R));
     for(i=0;i<FF.myFactors.size();++i){
         if(FF.myExponents[i]==1)
@@ -389,7 +413,12 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
             G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
     }
     
-    if(inExSimplData.size()!=0){
+    if(inExSimplData.size()==0){    // not really necesary, but a slight shortcut
+        boost::dynamic_bitset<> dummyInd;
+        return(orderExpos(G,degrees,dummyInd,false));
+    }
+    
+    // if(inExSimplData.size()!=0){
         long Deg=0;
         boost::dynamic_bitset<> indicator(dim); // indicates the non-zero components of b
         indicator.reset();
@@ -398,20 +427,19 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
                 indicator.set(i);
                 Deg+=degrees[i]*b[i];
             }
-        Deg/=denom;            
-        all_contained_faces(G,degrees,indicator, Deg, inExSimplData, -1,faceClasses);
-    }
-    
-    boost::dynamic_bitset<> dummyInd;
-
-    return(orderExpos(G,degrees,dummyInd,false));    
+        Deg/=denom;
+        RingElem Gorder(zero(R));            
+        all_contained_faces(G,Gorder,degrees,indicator, Deg, inExSimplData,facePolys);
+        return(Gorder);
+    // }  
 }
 
-BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial, const long& dim);
+BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
+                const vector<BigInt>& factQuot, const long& rank);
 
 BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vector<long> >& A,
                      const vector<long>& degrees, const SparsePolyRing& R, const vector<BigInt>& Factorial, 
-                     const BigInt& lcmDegs){
+                     const vector<BigInt>& factQuot,const BigInt& lcmDegs){
 // we need F to define the ring
 // applies linar substitution y --> lcmDegs*(A/degrees)y to all factors in FF 
 // where row A[i] is divided by degrees[i]
@@ -439,10 +467,15 @@ BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vec
     
     RingElem G(one(R));
     for(i=0;i<FF.myFactors.size();++i){
+        // cout << "Multiplying by (power of) factor " << i+1 << ": " << NumTerms(phi(FF.myFactors[i])) << " terms in transformed factor" << endl;
+        // RingElem Pow(power(phi(FF.myFactors[i]),FF.myExponents[i]));
+        // cout << "Power has " << NumTerms(Pow) << " terms" << endl;
         G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+        // cout << "Result has " << NumTerms(G) << " terms" << endl;
     }
+    // cout << "Evaluating integral over unit simplex" << endl;
     boost::dynamic_bitset<> dummyInd;
-    return(IntegralUnitSimpl(orderExpos(G,degrees,dummyInd,false),Factorial,rank));
+    return(IntegralUnitSimpl(orderExpos(G,degrees,dummyInd,false),Factorial,factQuot,rank));
 }
 
 vector<RingElem> homogComps(const RingElem& F){
