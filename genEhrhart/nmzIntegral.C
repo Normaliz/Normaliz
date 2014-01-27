@@ -16,7 +16,7 @@
  *
  */
 
-BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
+/* BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
                 const vector<BigInt>& factQuot, const long& rank){
 
     SparsePolyRing P=AsSparsePolyRing(owner(F));
@@ -41,6 +41,92 @@ BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
     }
     Irat=I;
     return(Irat/Factorial[Factorial.size()-1]);
+} */
+
+BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
+                const vector<BigInt>& factQuot, const long& rank){
+                
+    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    long dim=NumIndets(P);
+    vector<long> v(dim);
+    
+    SparsePolyIter mon=BeginIter(F); // go over the given polynomial
+    map<vector<long>,RingElem> orderedMons;  // will take the ordered exponent vectors
+    map<vector<long>,RingElem>::iterator ord_mon;
+
+    for (; !IsEnded(mon); ++mon){
+      exponents(v,PP(mon)); // this function gives the exponent vector back as v
+      sort(v.begin()++,v.end());
+      ord_mon=orderedMons.find(v); // insert into map or add coefficient
+      if(ord_mon!=orderedMons.end()){
+          ord_mon->second+=coeff(mon);
+      }
+      else{
+          orderedMons.insert(pair<vector<long>,RingElem>(v,coeff(mon)));
+      }
+    }
+
+
+    long deg;
+    BigInt facProd,I;
+    I=0;
+    for(ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
+      deg=0;
+      v=ord_mon->first;
+      IsInteger(facProd,ord_mon->second); // start with coefficient and multipliy by Factorials
+      for(long i=1;i<=rank;++i){
+          deg+=v[i];
+          facProd*=Factorial[v[i]];
+       }
+       I+=facProd*factQuot[deg+rank-1];// maxFact/Factorial[deg+rank-1];
+    }   
+    
+    BigRat Irat;
+    Irat=I;
+    return(Irat/Factorial[Factorial.size()-1]);            
+}
+
+BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vector<long> >& A,
+                     const vector<long>& degrees, const SparsePolyRing& R, const vector<BigInt>& Factorial, 
+                     const vector<BigInt>& factQuot,const BigInt& lcmDegs){
+// we need F to define the ring
+// applies linar substitution y --> y*(lcmDegs*A/degrees) to all factors in FF 
+// where row A[i] is divided by degrees[i]
+// After substitution the polynomial is integrated over the unit simplex
+// and the integral is returned
+
+
+    size_t i;
+    size_t m=A.size();
+    long rank=(long) m; // we prefer rank to be of type long
+    vector<RingElem> v(m,zero(R));
+    
+    BigInt quot;
+    for(i=0;i<m;i++){
+        quot=lcmDegs/degrees[i];
+        v[i]=indets(R)[i+1]*quot;
+    }
+    vector<RingElem> w=VxM(v,A);
+    vector<RingElem> w1(w.size()+1,zero(R));
+    w1[0]=lcmDegs*one(R);
+    for(i=1;i<w1.size();++i) // we have to shift w since the (i+1)st variable
+        w1[i]=w[i-1];        // corresponds to coordinate i (counted from 0)
+        
+    
+    RingHom phi=PolyAlgebraHom(R,R,w1);
+    
+    RingElem G(one(R));
+    for(i=0;i<FF.myFactors.size();++i){
+        // cout << "Multiplying by (power of) factor " << i+1 << ": " << NumTerms(phi(FF.myFactors[i])) << " terms in transformed factor" << endl;
+        // RingElem Pow(power(phi(FF.myFactors[i]),FF.myExponents[i]));
+        // cout << "Power has " << NumTerms(Pow) << " terms" << endl;
+        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+        // cout << "Result has " << NumTerms(G) << " terms" << endl;
+    }
+    // cout << "Evaluating integral over unit simplex" << endl;
+    // boost::dynamic_bitset<> dummyInd;
+    // vector<long> dummyDeg(degrees.size(),1);
+    return(IntegralUnitSimpl(G,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
 void writeIntegral(const string& project, const factorization<RingElem>& FF,
@@ -72,7 +158,7 @@ void writeIntegral(const string& project, const factorization<RingElem>& FF,
        out << "Integral: " << I << endl;
 }
 
-void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
+void integrate(const string& project, const string& pnm, const bool& do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
   GlobalManager CoCoAFoundations;
   
   long i;
@@ -119,7 +205,7 @@ void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneou
   vector<long> multiplicities;
   RingElem remainingFactor(one(R));
    
-  RingElem F=processInputPolynomial(project,R,RZZ,primeFactors, primeFactorsNonhom,
+  RingElem F=processInputPolynomial(fullPnmName(project,pnm),R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,do_leadCoeff);
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
@@ -223,5 +309,11 @@ void integrate(const string& project, const bool& do_leadCoeff, bool& homogeneou
     cout << "********************************************" << endl;
    }
    
-   writeIntegral(project,FFNonhom,I,do_leadCoeff,deg(F)+rank-1,appendOutput);
+  string outputName;
+  if(pnm==pureName(project))
+    outputName=project;
+  else
+    outputName=project+"."+pnm;
+
+   writeIntegral(outputName,FFNonhom,I,do_leadCoeff,deg(F)+rank-1,appendOutput);
 }

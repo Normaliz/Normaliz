@@ -398,7 +398,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
         
 }
 
-void generalizedEhrhartSeries(const string& project, bool& homogeneous){
+void generalizedEhrhartSeries(const string& project, const string& pnm, bool& homogeneous){
   GlobalManager CoCoAFoundations;
   
   long i,j;
@@ -457,6 +457,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   
   SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
   SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
+  //SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
   const RingElem& t=indets(RZZ)[0];
 
   if(verbose_INT)
@@ -508,7 +509,7 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   vector<long> multiplicities;
   RingElem remainingFactor(one(R));
   
-  RingElem F=processInputPolynomial(project,R,RZZ,primeFactors, primeFactorsNonhom,
+  RingElem F=processInputPolynomial(fullPnmName(project,pnm),R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,false);
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
@@ -662,7 +663,14 @@ void generalizedEhrhartSeries(const string& project, bool& homogeneous){
   
   mpz_class commonDen; // common denominator of coefficients of numerator of H  
   libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
-  writeGenEhrhartSeries(project, FFNonhom,HS,deg(F)+rank-1,commonDen);
+  
+  string outputName;
+  if(pnm==pureName(project))
+    outputName=project;
+  else
+    outputName=project+"."+pnm;
+    
+  writeGenEhrhartSeries(outputName, FFNonhom,HS,deg(F)+rank-1,commonDen);
 }
 
 

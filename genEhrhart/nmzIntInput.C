@@ -57,21 +57,65 @@ long scalProd(const vector<long>& a, const vector<long>& b){
     return(s);
 }
 
+
+bool existsFile(const string& project, const string& suffix, const bool& mustExist, time_t& fileDate){
+//n check whether file project.suffix exists and retrieve last access time
+
+    string name_in=project+"."+suffix;
+    const char* file_in=name_in.c_str();
+    
+    struct stat fileStat;
+    if(stat(file_in,&fileStat) < 0){
+        if(mustExist)
+            fileMissing(file_in);
+         return(false); 
+    }
+    fileDate=fileStat.st_mtime;
+    return(true);
+}
+
 bool existsFile(const string& project, const string& suffix, const bool& mustExist){
 //n check whether file project.suffix exists
 
-    string name_in=project+"."+suffix;
-    // cout << name_in << endl;
-    const char* file_in=name_in.c_str();
-    ifstream in2;
-    in2.open(file_in,ifstream::in);
-    if (in2.is_open()==false){
-        if(mustExist)
-            fileMissing(file_in); //and exit ...
-        return(false);
-    }
-    in2.close();
-    return(true);
+    time_t dummy;
+    return(existsFile(project,suffix,mustExist,dummy));
+}
+
+string pureName(const string& fullName){
+// extracts the pure filename
+
+    string slash="/";
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        slash="\\";
+    #endif
+    size_t found = fullName.rfind(slash);
+    if(found==std::string::npos)
+        return(fullName);
+    found++;
+    size_t length=fullName.size()-found;
+    
+    // cout << "**************************** " << fullName.substr(found,length) << endl;
+    // exit(1);
+    return(fullName.substr(found,length));  	
+
+}
+
+string fullPnmName(const string& project, const string& pnm){
+
+    string name=project;
+    string slash="/";
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        slash="\\";
+    #endif
+    size_t found = name.rfind(slash);
+    if(found==std::string::npos)
+        return(pnm);
+    found++;
+    size_t length=project.size()-found;
+    name.replace(found,length,pnm);
+    // cout << "**************************** " << name << endl;
+    // exit(1);
+    return(name);  	
 }
 
 

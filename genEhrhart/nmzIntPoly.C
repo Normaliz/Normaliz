@@ -247,9 +247,16 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
     // to lex. Therefore push_front
 
     RingElem r(zero(P));
+ //JAA   cout << "Loop start " << orderedMons.size() <<  endl;
+ //JAA   size_t counter=0;
     for(ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
+ //JAA       cout << counter++ << ord_mon->first << endl;
+ //JAA       try {
         PushFront(r,ord_mon->second,ord_mon->first);
+//JAA        }
+ //JAA       catch(const std::exception& exc){cout << "Caught exception: " << exc.what() << endl;}
     }
+//JAA    cout << "Loop end" << endl;
     return(r);
 }
 
@@ -290,12 +297,15 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
     vector<map<vector<long>,RingElem> > orderedMons(inExSimplData.size());  // will take the ordered exponent vectors
     map<vector<long>,RingElem> orderedMonsSimpl; 
     map<vector<long>,RingElem>::iterator ord_mon;
+
+
     boost::dynamic_bitset<> indicator(dim);
 
     // now we go over the terms of G
     SparsePolyIter term=BeginIter(G);
+    //PPMonoid TT = PPM(AsSparsePolyRing(owner(G)));
     for (; !IsEnded(term); ++term){
-
+        //PPMonoidElem mon(PP(term));
         exponents(v,PP(term));
         w=v;
         indicator.reset();
@@ -434,49 +444,6 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     // }  
 }
 
-BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
-                const vector<BigInt>& factQuot, const long& rank);
-
-BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vector<long> >& A,
-                     const vector<long>& degrees, const SparsePolyRing& R, const vector<BigInt>& Factorial, 
-                     const vector<BigInt>& factQuot,const BigInt& lcmDegs){
-// we need F to define the ring
-// applies linar substitution y --> lcmDegs*(A/degrees)y to all factors in FF 
-// where row A[i] is divided by degrees[i]
-// and returns the product of the modified factors
-
-
-    size_t i;
-    size_t m=A.size();
-    long rank=(long) m; // we prefer rank to be of type long
-    vector<RingElem> v(m,zero(R));
-    
-    BigInt quot;
-    for(i=0;i<m;i++){
-        quot=lcmDegs/degrees[i];
-        v[i]=indets(R)[i+1]*quot;
-    }
-    vector<RingElem> w=VxM(v,A);
-    vector<RingElem> w1(w.size()+1,zero(R));
-    w1[0]=lcmDegs*one(R);
-    for(i=1;i<w1.size();++i) // we have to shift w since the zeroth variable
-        w1[i]=w[i-1];        // must not be touched
-        
-    
-    RingHom phi=PolyAlgebraHom(R,R,w1);
-    
-    RingElem G(one(R));
-    for(i=0;i<FF.myFactors.size();++i){
-        // cout << "Multiplying by (power of) factor " << i+1 << ": " << NumTerms(phi(FF.myFactors[i])) << " terms in transformed factor" << endl;
-        // RingElem Pow(power(phi(FF.myFactors[i]),FF.myExponents[i]));
-        // cout << "Power has " << NumTerms(Pow) << " terms" << endl;
-        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
-        // cout << "Result has " << NumTerms(G) << " terms" << endl;
-    }
-    // cout << "Evaluating integral over unit simplex" << endl;
-    boost::dynamic_bitset<> dummyInd;
-    return(IntegralUnitSimpl(orderExpos(G,degrees,dummyInd,false),Factorial,factQuot,rank));
-}
 
 vector<RingElem> homogComps(const RingElem& F){
 // returns the vector of homogeneous components of F
@@ -550,13 +517,16 @@ RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing R){
 
 // the next routine reads the input polynomail in factiored form,
 // factorizes the factors, makes them integral,
-// passes to the highest homogeneous if necessary
-// and homogenizes for substitution with integral coefficients
+// passes to the highest homogeneous component if necessary
+// and homogenizes for substitution with integral coefficients if necessary
+// 0-th variable used for homogenization
 // the return value is the polynomial defined by the input
  
 RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, const SparsePolyRing& RZZ,
                 vector<RingElem>& resPrimeFactors, vector<RingElem>& resPrimeFactorsNonhom, vector<long>& resMultiplicities,
                 RingElem& remainingFactor, bool& homogeneous,const bool& do_leadCoeff){
+// "res" stands for "result"
+// resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
    
   long i,j;
   vector<RingElem> factorsRead=readFactorList(project,R); // read factors of F

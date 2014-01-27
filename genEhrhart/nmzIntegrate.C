@@ -22,6 +22,8 @@ using namespace CoCoA;
 
 #include <fstream>
 #include <sstream>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -35,7 +37,7 @@ using namespace CoCoA;
 using namespace std;
 using namespace libnormaliz;
 
-bool verbose_INT;
+bool verbose_INT=false;
 
 #include "nmzIntInput.C"
 #include "cyclRatFunct.C"
@@ -45,10 +47,10 @@ bool verbose_INT;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                     nmzIntegrate 1.1                \\....|"<<endl;
+    cout << "                     nmzIntegrate 1.2                \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "                 (C) W. Bruns  C. Soeger               \\..|"<<endl;
-    cout << "                         Mai 2013                       \\.|"<<endl;
+    cout << "                        March 2014                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
@@ -61,6 +63,7 @@ void printHelp(char* command) {
     cout << "  -L\tcompute lead coefficient of quasipolynomial"<<endl;
     cout << "  -c\tverbose (prints control data)"<<endl;
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
+    cout << "  -F=<pnm>\tspecifies file name <pnm> of polynomial" << endl;
 }
 
 
@@ -72,47 +75,83 @@ int main(int argc, char* argv[])
   try
   {
     size_t i;   
-    string project;
+    string project="",pnm="";
     
     string Threads;            
 
-    bool filename_set=false;
     string option;            //all options concatenated (including -)
     for (i = 1; i < (unsigned int)argc; i++) {
-        if (argv[i][0]=='-') {
-            if (argv[i][1]!='\0') {
-                if (argv[i][1]!='x') {
-                    option = option + argv[i];
-                } else if (argv[i][2]=='=') {
-                    #ifdef _OPENMP
-                    Threads = argv[i];
-                    Threads.erase(0,3);
-                    size_t nr_threads;
-                    if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                        omp_set_num_threads(nr_threads);
-                    } else {
-                        cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
-                    }
-                    #else
-                    cerr << "Warning: Compiled without OpenMP support, option "<<argv[i]<<" ignored."<<endl;
-                    #endif
-                } else {
-                    cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
-                }
-            }
-        } else if (!filename_set) {
-            string s(argv[i]);
-            project=s;
-            filename_set=true;
+        
+        string argument(argv[i]);
+    
+        if(argument=="-"){
+            cerr << "Warning: empty option." << endl;
+            continue;
         }
-    }    
+
+        if (argument[0]!='-') {
+            if(project!=""){
+                    cerr << "Fatal error: second project " << argument <<" specified." << endl;
+                    exit(1);
+            }
+            project=argument;
+            continue;
+        }
+        
+        if(argument[1]=='x'){
+            if(argument.size()<=2 || argument[2]!='='){
+                cerr << "Fatal error: -x not followed by =." << endl;
+                exit(1);
+            }
+            #ifdef _OPENMP
+            Threads = argument;
+            Threads.erase(0,3);
+            size_t nr_threads;
+            if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
+                omp_set_num_threads(nr_threads);
+            } else {
+                cerr<<"Fatal error: Invalid string following -x in "<< argument << endl;
+                exit(1);
+            }
+            #else
+            cerr << "Warning: Compiled without OpenMP support, option "<<argument<<" ignored."<<endl;
+            #endif
+            continue;
+        }
+        
+        if(argument[1]=='F'){
+            if(argument.size()<=2 || argument[2]!='='){
+                cerr << "Fatal error: -F not followed by =." << endl;
+                exit(1);
+            }
+            if(pnm!=""){
+                    cerr << "Fatal error: second polynomial specified by " << argument << endl;
+                    exit(1);
+            }
+            pnm=argument;
+            pnm.erase(0,3);
+            if(pnm==""){
+                cerr << "Fatal error: option -F= without filename." << endl;
+                exit(1);
+            }
+            if(pnm!=pureName(pnm)){
+                cerr << "Fatal error: no path allowed in filename for polynomial." << endl;
+                exit(1);
+            }
+            continue;        
+        }
+
+        option+=argument;
+    } 
+    
+    // cout << "Options *****************************" << option << endl;   
     
 
     bool do_genEhrhart=false, do_integral=false, do_leadCoeff=false;
     
     for (i = 1; i <option.size(); i++) {
         switch (option[i]) {
-            case '-':
+            case '-': break;
             case 'c':
                 verbose_INT=true;
                 break;
@@ -131,11 +170,14 @@ int main(int argc, char* argv[])
                 exit(1);
                 break;
             case 'x': //should be separated from other options
-                cerr<<"Warning: Option -x=<T> has to be separated from other options"<<endl;
-                break;
+                cerr<<"Fatal error : Option -x=<T> has to be separated from other options"<<endl;
+                exit(1);
+            case 'F': //should be separated from other options
+                cerr<<"Fatal error: Option -F=<pnm> has to be separated from other options"<<endl;
+                exit(1);
             default:
-                cerr<<"Warning: Unknown option -"<<option[i]<<endl;
-                break;
+                cerr<<"Fatal error: Unknown option -"<<option[i]<<endl;
+                exit(1);
         }
     }
 
@@ -144,25 +186,54 @@ int main(int argc, char* argv[])
     }
     
     if(project==""){
-        cerr << "No project specified" << endl;
+        cerr << "Fatal error: No project specified" << endl;
         exit(1);
      }
+     
+     if(pnm==""){
+        pnm=pureName(project);     
+     }
+     
+     fullPnmName(project,pnm);
 
     if(!do_integral && !do_leadCoeff) // default is -E
         do_genEhrhart=true;
+    bool do_int_or_lead=do_integral || do_leadCoeff;
     
-    existsFile(project,"pnm",true); // true ==> will exit if polynomial does not exist
+    time_t pnmDate,mnz_inDate,invDate,tgnDate,decDate,triDate;
+    
+    existsFile(fullPnmName(project,pnm),"pnm",true,pnmDate); // true means: will exit if polynomial does not exist
+                                                             // pnmDate irreleveant, only for completeness
 
-    bool invExists=existsFile(project,"inv",false);
-    bool decExists=existsFile(project,"dec",false);
-    bool triExists=existsFile(project,"tri",false) || decExists;  // can read tri from dec
+    bool nmz_inExists=existsFile(project,"in",false,mnz_inDate); // checks if input file to Normaliz exusts
+    bool invExists=existsFile(project,"inv",false,invDate);
+    bool decExists=existsFile(project,"dec",false,decDate);
+    bool triExists=existsFile(project,"tri",false,triDate); 
+    bool tgnExists=existsFile(project,"tgn",false,tgnDate);
+    
+    bool makeInputFiles=!invExists || !tgnExists || (do_genEhrhart && !decExists)
+                              || (do_int_or_lead && !triExists && ! decExists);
+                              
+    
+    if(do_int_or_lead && !triExists)
+        triDate=decDate;   
+                              
+    bool outdatedInputFiles= !makeInputFiles && nmz_inExists; // nevessary conditions
+    if(outdatedInputFiles){
+        outdatedInputFiles=invDate<mnz_inDate ||  tgnDate<mnz_inDate;
+        if(!outdatedInputFiles && do_int_or_lead)
+            outdatedInputFiles=triDate<mnz_inDate;
+        if(!outdatedInputFiles && do_genEhrhart)
+            outdatedInputFiles=decDate<mnz_inDate;
+    }            
+    
     
     // cout << "inv " << invExists << " dec " << decExists << " tri " << triExists << endl;
 
-    if(!invExists || (do_genEhrhart && !decExists) || (do_integral && !triExists)){
+    if(makeInputFiles || outdatedInputFiles){
         if(verbose_INT)
-            cout << "Cannot find all necessary input files. Trying to make them." << endl;
-        existsFile(project,"in",true); // true ==> will exit if project.in does not exist
+            cout << "Input file(s) missing or  outdated. Trying to make them." << endl;
+        existsFile(project,"in",true,mnz_inDate); // true ==> will exit if project.in does not exist
         
         string normalizExec("\""); // start with "
         
@@ -216,7 +287,7 @@ int main(int argc, char* argv[])
     bool homogeneous=false;
     bool appendOutput=false;
     if (do_genEhrhart) {
-        generalizedEhrhartSeries(project,homogeneous);
+        generalizedEhrhartSeries(project,pnm,homogeneous);
         appendOutput=true;
         if(do_leadCoeff && verbose_INT){
             cout << "Suppressing computation LC since result contained in ES."  << endl;
@@ -224,14 +295,14 @@ int main(int argc, char* argv[])
     }
     // cout << "hom " << homogeneous << endl;
     if (do_leadCoeff && !do_genEhrhart) {
-        integrate(project,true,homogeneous,appendOutput);
+        integrate(project,pnm,true,homogeneous,appendOutput);
         appendOutput=true;
     }
     if(do_integral && homogeneous && verbose_INT){
             cout << "Suppressing computation Int since result contained in ES or LC."  << endl;
     }
     if (do_integral && !homogeneous) {
-        integrate(project,false,homogeneous,appendOutput);
+        integrate(project,pnm,false,homogeneous,appendOutput);
     }
     return 0;
   }
