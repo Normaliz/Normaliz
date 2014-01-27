@@ -85,7 +85,7 @@ size_t ConeProperties::count () const {
 }
 
 
-/* this method sets all fields that should be computed in that mode */
+/* this method sets all fields that should be computed in that mode 
 ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
     switch (mode) {
     case Mode::supportHyperplanes:
@@ -133,7 +133,7 @@ ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
         break;
     }
     return *this;
-}
+} */
 
 /* conversion */
 namespace { 

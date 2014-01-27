@@ -37,8 +37,14 @@ public:
     size_t nr_sh;
     size_t hyp_size;
     
+    bool inhomogeneous;
+    bool do_only_Deg1_Elements;
+    bool truncate;  // = inhomogeneous || do_only_Deg1_Elements
+    bool first_pointed; // indicates in the course of the algorithm the first ppointed cone
+    
     Matrix<Integer> SupportHyperplanes;
     Matrix<Integer> Generators;
+    vector<bool> ExtremeRays;
     list<vector<Integer> > GeneratorList; //only temporarily used
     list<vector<Integer> > Hilbert_Basis;
 
@@ -73,7 +79,7 @@ public:
     /* reduces a list against itself
      * the list must be sorted  sorted by total degree as used for dual algorithm
      * The irreducible elements are reurned in ascendingorder */
-    void auto_reduce(list< vector< Integer> >& To_Reduce, const size_t& size);
+    void auto_reduce(list< vector< Integer> >& To_Reduce, const size_t& size,bool no_pos_in_deg0);
 
 
     /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
@@ -87,8 +93,22 @@ public:
     
     /* computes the extreme rays using rank test, used for the dual algorithm */
     void extreme_rays_rank();
+    
+    void record_reducers(vector<list<vector<Integer> > >& Register, list< vector< Integer >* >& Order);
+    
+    void record_partners(vector<list<vector<Integer> > >& Register, 
+                 list< vector< Integer >* >& partners, size_t& nr_partners, size_t deg);
 
     void relevant_support_hyperplanes();
+    void insert_into_Register(vector<list<vector<Integer> > >& Register,
+                    list<vector<Integer> >& HB, typename list< vector<Integer> >::iterator h);
+    void insert_all_into_Register(vector<list<vector<Integer> > >& Register,
+                    list<vector<Integer> >& HB);
+    bool reducible_pointed( list< vector< Integer >* >& Irred, const vector< Integer >& new_element, 
+                              const size_t& size);
+    void cut_with_halfspace_hilbert_basis_pointed(const size_t& hyp_counter);
+    
+    void unique_vectors(list< vector< Integer > >& HB);
 
     Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
 
@@ -99,6 +119,7 @@ public:
     void print() const;                //to be modified, just for tests
     Matrix<Integer> get_support_hyperplanes() const;
     Matrix<Integer> get_generators() const;
+    vector<bool> get_extreme_rays() const;
     Matrix<Integer> read_hilbert_basis() const;
 
 

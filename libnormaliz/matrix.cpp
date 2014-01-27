@@ -25,6 +25,7 @@
 #include "vector_operations.h"
 #include "lineare_transformation.h"
 #include "normaliz_exception.h"
+#include "sublattice_representation.h"
 
 //---------------------------------------------------------------------------
 
@@ -112,6 +113,7 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
         //check if all rows have the same length
         for (size_t i=1; i<nr; i++) {
             if (elements[i].size() != nc) {
+                errorOutput() << "Inconsistent lengths of rows in matrix!" << endl;
                 throw BadInputException();
             }
         }
@@ -403,6 +405,21 @@ void Matrix<Integer>::append(const Matrix<Integer>& M) {
 }
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
+    if(M.size()==0)
+        return;
+    assert (nc == M[0].size());
+    elements.reserve(nr+M.size());
+    for (size_t i=0; i<M.size(); i++) {
+        elements.push_back(M[i]);
+    }
+    nr += M.size();
+}
+
+//---------------------------------------------------------------------------
+
 
 template<typename Integer>
 void Matrix<Integer>::append(const vector<Integer>& V) {
@@ -1177,9 +1194,8 @@ vector<Integer> Matrix<Integer>::solve(vector<Integer> v) const {
     for (i = 0; i <nc; i++) {
         Linear_Form[i] = Solution.read(i,0);
     }
-    v_make_prime(Linear_Form);
+    denom/=v_make_prime(Linear_Form);
     vector<Integer> test = MxV(Linear_Form);
-    denom = test[0]/v[0];
     //cout << denom << " v= " << v;
     //cout << denom << " t= " << test; 
     for (i = 0; i <nr; i++) {
@@ -1207,38 +1223,18 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
         return (*this).find_linear_form();
     }
 
-    // prepare basis change
-    vector <key_t> key = max_rank_submatrix_lex(rank);
-    Matrix<Integer> Full_Rank_Matrix = submatrix(key);  // has maximal number of linear independent lines
-    Lineare_Transformation<Integer> Basis_Change = Transformation(Full_Rank_Matrix);
-    rank=Basis_Change.get_rank();
-    Matrix<Integer> V=Basis_Change.get_right();
-    Matrix<Integer> Change_To_Full_Emb(nc,rank);
-    size_t i,j;
-    for (i = 0; i <nc; i++) {
-        for (j = 0; j < rank; j++) {
-            Change_To_Full_Emb.write(i,j,V.read(i,j));
-        }
-    }
-    
-    //apply basis change
-    Matrix<Integer> Full_Cone_Generators = Full_Rank_Matrix.multiplication(Change_To_Full_Emb);
-    //compute linear form
-    vector<Integer> Linear_Form = Full_Cone_Generators.find_linear_form();
-    if (Linear_Form.size()==nc) {
-        //lift linear form back
-        Change_To_Full_Emb = Change_To_Full_Emb.transpose();  // preparing the matrix for transformation on the dual space
-        vector<Integer> v;
-        Linear_Form = Change_To_Full_Emb.VxM(Linear_Form);
-        v_make_prime(Linear_Form);
-    }
+    Sublattice_Representation<Integer> Basis_Change(*this,true);
+    vector<Integer> Linear_Form=Basis_Change.to_sublattice(*this).find_linear_form();
+    if(Linear_Form.size()!=0)
+        Linear_Form=Basis_Change.from_sublattice_dual(Linear_Form);
+
     return Linear_Form;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::kernel() const {
+Matrix<Integer> Matrix<Integer>::kernel () const{
 // computes a ZZ-basis of the solutions of (*this)x=0
 // the basis is formed by the ROWS of the returned matrix
 
@@ -1249,7 +1245,7 @@ Matrix<Integer> Matrix<Integer>::kernel() const {
     size_t rank = NewLT.get_rank();
     Matrix<Integer> ker_basis(dim-rank,dim);
     Matrix<Integer> Help = NewLT.get_right().transpose();
-    for (size_t i = rank; i < dim; i++)
+    for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
     return(ker_basis);
 

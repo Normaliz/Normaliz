@@ -99,6 +99,7 @@ public:
                                       //needed to write an entry
 
     void append(const Matrix& M); // appends the rows of M to this
+    void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
     void append(const vector<Integer>& v); // append the row v to this
     void cut_columns(size_t c); // remove columns, only the first c columns will survive
 
@@ -241,8 +242,8 @@ public:
 
     vector<Integer> solve(vector<Integer> v) const;
     // like find_linear_form, but for right side v
-
-    Matrix<Integer> kernel() const;
+    
+    Matrix<Integer> kernel () const;
     // computes a ZZ-basis of the solutions of (*this)x=0
     // the basis is formed by the ROWS of the returned matrix
 

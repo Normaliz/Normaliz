@@ -97,7 +97,10 @@ class SimplexEvaluator {
     vector< bool > Excluded;
     vector< Integer > Indicator; 
     vector< long > gen_degrees;
+    vector< long > level0_gen_degrees; // degrees of the generaors in level 0
+    vector< long > gen_levels;
     vector< num_t > hvector;  //h-vector of the current evaluation
+    vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case wqe want to compute two h-vectors
     HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
@@ -126,6 +129,9 @@ class SimplexEvaluator {
 
     void prepare_inclusion_exclusion_simpl(const vector<key_t>& key,size_t Deg);
     void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
+    void update_inhom_hvector(long level_offset, size_t Deg);
+    void update_mult_inhom(Integer volume);
+    void addMult_inner(const Integer& volume);
 
 //---------------------------------------------------------------------------
 

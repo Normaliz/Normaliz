@@ -27,43 +27,47 @@ namespace libnormaliz {
 namespace Type {
 enum InputType {
     integral_closure,
+    polyhedron,
     normalization,
     polytope,
     rees_algebra,
-    hyperplanes,
+    inequalities,
+    // strict_inequalities,
     signs,
+    strict_signs,
     equations,
     congruences,
-    inhomogeneous_hyperplanes,
-    inhomogeneous_equations,
-    inhomogeneous_congruences,
+    inhom_inequalities,
+    interior,
+    inhom_equations,
+    inhom_congruences,
     lattice_ideal,
     grading,
     excluded_faces
 };
 } //end namespace Type
 
-namespace Mode {
+/*namespace Mode {
 enum ComputationMode {
     supportHyperplanes,
     triangulationSize,
     triangulation,
     volumeTriangulation,
-    volumeLarge,
+    // volumeLarge,
     degree1Elements,
     hilbertBasisTriangulation,
     hilbertBasisMultiplicity,
     hilbertBasisLarge,
     hilbertSeries,
-    hilbertSeriesLarge,
+    // hilbertSeriesLarge,
     hilbertBasisSeries,
-    hilbertBasisSeriesLarge,
+    // hilbertBasisSeriesLarge,
     dual
 };
-} //end namespace Mode
+} //end namespace Mode */
 
 using Type::InputType;
-using Mode::ComputationMode;
+// using Mode::ComputationMode;
 
 /* converts a string to an InputType
  * throws an BadInputException if the string cannot be converted */

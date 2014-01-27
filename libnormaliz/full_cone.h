@@ -30,6 +30,7 @@
 #include "simplex.h"
 #include "cone_dual_mode.h"
 #include "HilbertSeries.h"
+// #include "sublattice_representation.h"
 
 namespace libnormaliz {
 using std::list;
@@ -47,6 +48,8 @@ class Full_Cone {
     friend class SimplexEvaluator<Integer>;
     
     size_t dim;
+    size_t level0_dim; // dim of cone in level 0 of the inhomogeneous case
+    size_t module_rank;  // rank of solution module over level 0 monoid in the inhomogeneous case
     size_t nr_gen;
     // size_t hyp_size; // not used at present
     
@@ -56,6 +59,7 @@ class Full_Cone {
     bool deg1_triangulation;
     bool deg1_hilbert_basis;
     bool integrally_closed;
+    bool inhomogeneous; 
     
     // control of what to compute
     bool do_triangulation;
@@ -74,6 +78,7 @@ class Full_Cone {
     ConeProperties is_Computed;    
 
     // data of the cone (input or output)
+    vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
     vector<Integer> Grading;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
@@ -85,6 +90,8 @@ class Full_Cone {
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
     vector<long> gen_degrees;  // will contain the degrees of the generators
+    Integer shift; // needed in the inhomogeneous case to make degrees positive
+    vector<long> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationSize;          // number of elements in Triangulation, for efficiency
     list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
     Integer detSum;                  // sum of the determinants of the simplices
@@ -207,7 +214,12 @@ class Full_Cone {
     bool contains(const Full_Cone& C);
     void extreme_rays_and_deg1_check();
     void find_grading();
+    void find_grading_inhom();
+    void disable_grading_dep_comp();
     void set_degrees();
+    void set_levels(); // for truncation in the inhomogeneous case
+    void find_module_rank(); // finds the module rank in the inhom case
+    void find_level0_dim(); // ditto for the level 0 dimension 
     void sort_gens_by_degree();
     void compute_support_hyperplanes();
     bool check_evaluation_buffer();
@@ -256,7 +268,9 @@ public:
     bool isDeg1HilbertBasis() const;
     bool isIntegrallyClosed() const;
     vector<Integer> getGrading() const; 
-    mpq_class getMultiplicity() const; 
+    mpq_class getMultiplicity() const;
+    Integer getShift()const;
+    size_t getModuleRank()const;
     const Matrix<Integer>& getGenerators() const;
     vector<bool> getExtremeRays() const;
     Matrix<Integer> getSupportHyperplanes() const;
@@ -264,6 +278,7 @@ public:
     Matrix<Integer> getHilbertBasis() const;
     Matrix<Integer> getDeg1Elements() const;
     vector<Integer> getHVector() const;
+    Matrix<Integer> getExcludedFaces()const;
     
     bool isComputed(ConeProperty::Enum prop) const; 
 

@@ -549,17 +549,26 @@ vector<Integer> cyclotomicPoly(long n) {
 // computing the Hilbert polynomial from h-vector
 //---------------------------------------------------------------------------
 
+// The algorithm follows "Cohen-Macaulay rings", 4.1.5 and 4.1.9.
+// The E_vector is the vector of higher multiplicities.
+// It is assumed that (d-1)! is used as a common denominator in the calling routine.
+
 template<typename Integer>
 vector<Integer> compute_e_vector(vector<Integer> Q, int dim){
-    int i,j;
-    vector <Integer> E_Vector(dim,0);
-    Q.resize(dim+1);
-    for (i = 0; i <dim; i++) {
-        for (j = 0; j <dim; j++) {
+    size_t j;
+    int i;
+    vector <Integer> E_Vector(dim,0); 
+    // cout << "QQQ " << Q;  
+    // Q.resize(dim+1);
+    int bound=Q.size();
+    if(bound>dim)
+        bound=dim;  
+    for (i = 0; i <bound; i++) {
+        for (j = 0; j < Q.size()-i; j++) {  
             E_Vector[i] += Q[j];
         }
         E_Vector[i]/=permutations<Integer>(1,i);
-        for (j = 1; j <=dim; j++) {
+        for (j = 1; j <Q.size()-i; j++) {
             Q[j-1]=j*Q[j];
         }
     }

@@ -37,6 +37,8 @@ namespace ConeProperty {
         TriangulationDetSum,
         Triangulation,
         Multiplicity,
+        Shift,
+        ModuleRank,
         HilbertBasis,
         Deg1Elements,
         HilbertSeries,
@@ -68,7 +70,7 @@ public:
     ConeProperties& set(ConeProperty::Enum, bool value=true);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties& set(const ConeProperties&);
-    ConeProperties& set(Mode::ComputationMode mode);
+    // ConeProperties& set(Mode::ComputationMode mode);
 
     /* reset (=unset) properties */
     ConeProperties& reset(ConeProperty::Enum Property);
