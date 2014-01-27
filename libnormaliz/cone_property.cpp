@@ -140,7 +140,7 @@ namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 22) { //to detect changes in size of Enum
+        if (ConeProperty::EnumSize != 24) { //to detect changes in size of Enum
             errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
             errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
             throw FatalException();
@@ -152,6 +152,8 @@ namespace {
         CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
         CPN.at(ConeProperty::Triangulation) = "Triangulation";
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
+        CPN.at(ConeProperty::Shift) = "Shift";
+        CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
         CPN.at(ConeProperty::HilbertBasis) = "HilbertBasis";
         CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
         CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
