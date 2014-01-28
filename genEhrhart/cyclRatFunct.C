@@ -179,7 +179,7 @@ void CyclRatFunct::showCoprimeCRF(){
     cout << f/gf.myRemainingFactor << endl << endl << "Factorization of denominator" << endl << endl;
     size_t nf=gf.myFactors.size();
     for(size_t i=0;i<nf;++i)
-        cout << gf.myFactors[i] << "  mult " << gf.myExponents[i] << endl;
+        cout << gf.myFactors[i] << "  mult " << gf.myMultiplicities[i] << endl;
     cout << "--------------------------------------------" << endl;
 
 }

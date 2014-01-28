@@ -1,6 +1,6 @@
 # Makefile for genEhrhart
 
-COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.9951
+COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99
 include $(COCOA_ROOT)/configuration/autoconf.mk
 
 include ../Makefile.configuration

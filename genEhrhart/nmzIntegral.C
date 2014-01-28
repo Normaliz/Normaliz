@@ -118,9 +118,9 @@ BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vec
     RingElem G(one(R));
     for(i=0;i<FF.myFactors.size();++i){
         // cout << "Multiplying by (power of) factor " << i+1 << ": " << NumTerms(phi(FF.myFactors[i])) << " terms in transformed factor" << endl;
-        // RingElem Pow(power(phi(FF.myFactors[i]),FF.myExponents[i]));
+        // RingElem Pow(power(phi(FF.myFactors[i]),FF.myMultiplicities[i]));
         // cout << "Power has " << NumTerms(Pow) << " terms" << endl;
-        G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+        G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
         // cout << "Result has " << NumTerms(G) << " terms" << endl;
     }
     // cout << "Evaluating integral over unit simplex" << endl;
@@ -147,7 +147,7 @@ void writeIntegral(const string& project, const factorization<RingElem>& FF,
     }
     out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
     for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
     
     if(do_leadCoeff){
@@ -223,7 +223,7 @@ void integrate(const string& project, const string& pnm, const bool& do_leadCoef
   if(verbose_INT){
     cout <<"Factorization" << endl;  // we show the factorization so that the user can check
     for(i=0;i<nf;++i)
-        cout << FFNonhom.myFactors[i] << "  mult " << FF.myExponents[i] << endl;
+        cout << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
 

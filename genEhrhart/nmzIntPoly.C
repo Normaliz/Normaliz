@@ -417,10 +417,10 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     
     RingElem G(one(R));
     for(i=0;i<FF.myFactors.size();++i){
-        if(FF.myExponents[i]==1)
+        if(FF.myMultiplicities[i]==1)
             G*=phi(FF.myFactors[i]);
         else           
-            G*=power(phi(FF.myFactors[i]),FF.myExponents[i]);
+            G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
     }
     
     if(inExSimplData.size()==0){    // not really necesary, but a slight shortcut
@@ -568,7 +568,7 @@ RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, 
     for(j=0;j< (long) FF.myFactors.size();++j){
         primeFactorsNonhom.push_back(FF.myFactors[j]); // these are the factors of the polynomial to be integrated
         primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors[j]),RZZ)); // the homogenized factors with ZZ coeff
-        multiplicities.push_back(FF.myExponents[j]);                          // homogenized for substitution !
+        multiplicities.push_back(FF.myMultiplicities[j]);                          // homogenized for substitution !
       }
       remainingFactor*=FF.myRemainingFactor;
   }
