@@ -65,7 +65,7 @@ public:
     Cone(const vector< vector<Integer> >& input_data,
          InputType type = Type::integral_closure);
     /* give multiple input */
-    Cone(map< InputType , vector< vector<Integer> > >& multi_input_data);
+    Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
 
 //---------------------------------------------------------------------------
 //                          give additional data
@@ -172,7 +172,7 @@ private:
     
 
     // main input processing     
-    void process_multi_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_lattice_ideal(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(const map< InputType, vector< vector<Integer> > >& multi_input_data);
