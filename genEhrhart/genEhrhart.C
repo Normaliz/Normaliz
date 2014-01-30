@@ -455,9 +455,8 @@ void generalizedEhrhartSeries(const string& project, const string& pnm, bool& ho
   
   StanleyDec.sort(compareDegrees);
   
-  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
-  SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
-  //SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
+  SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
+  SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
   const RingElem& t=indets(RZZ)[0];
 
   if(verbose_INT)

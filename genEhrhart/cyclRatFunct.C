@@ -165,7 +165,7 @@ void CyclRatFunct::showCoprimeCRF(){
     showCRF();
     cout << endl;
     SparsePolyRing R=AsSparsePolyRing(owner(num));
-    SparsePolyRing P=NewPolyRing(RingQQ(),symbols("t"));
+    SparsePolyRing P=NewPolyRing_DMPI(RingQQ(),symbols("t"));
     vector<RingElem> Im(NumIndets(R),zero(P));
     Im[0]=indets(P)[0];
     RingHom phi=PolyAlgebraHom(R,P,Im);

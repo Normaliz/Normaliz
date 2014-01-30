@@ -198,8 +198,8 @@ void integrate(const string& project, const string& pnm, const bool& do_leadCoef
     }
   }
 
-  SparsePolyRing R=NewPolyRing(RingQQ(),dim+1,lex);
-  SparsePolyRing RZZ=NewPolyRing(RingZZ(),dim+1,lex);
+  SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
+  SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
   vector<RingElem> primeFactors;
   vector<RingElem> primeFactorsNonhom;
   vector<long> multiplicities;
