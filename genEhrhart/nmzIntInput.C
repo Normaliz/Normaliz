@@ -218,7 +218,7 @@ void readGens(const string& project, vector<vector<long> >& gens, const vector<l
 }
 
 void polyError(const string& token){
-    cerr << "Error in polynomoial input at token " << token << endl;
+    cerr << "Error in polynomial input at token " << token << endl;
     exit(1);
 }
 
@@ -603,8 +603,10 @@ void readTri(const string& project, const long& dim, list <TRIDATA>& triang){
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
-    if (in.is_open()==false && verbose_INT) {
-      cout << "Cannot find File " << name_in << ". Trying to read triangulation from dec." << endl;
+    if (in.is_open()==false){
+        if(verbose_INT) {
+            cout << "Cannot find File " << name_in << ". Trying to read triangulation from dec." << endl;
+        }
       readTriFromDec(project,dim,triang);
       return;   
     }
