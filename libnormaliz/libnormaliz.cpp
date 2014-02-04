@@ -66,18 +66,18 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="4"||type_string=="hyperplanes" ||type_string=="inequalities") {
         return Type::inequalities;
     }
-    // if (type_string=="strict_inequalities") {
-    //     return Type::strict_inequalities;
-    // }
+    if (type_string=="strict_inequalities") {
+         return Type::strict_inequalities;
+    }
     if (type_string=="strict_signs") {
         return Type::strict_signs;
     }
     if (type_string=="inhom_inequalities") {
         return Type::inhom_inequalities;
     }
-    if (type_string=="interior") {
-        return Type::interior;
-    }
+    // if (type_string=="interior") {
+    //     return Type::interior;
+    // }
     if (type_string=="5"||type_string=="equations") {
         return Type::equations;
     }

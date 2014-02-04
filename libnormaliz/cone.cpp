@@ -117,7 +117,6 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
     it = multi_input_data.begin();
     for(;it!=multi_input_data.end();++it){
         switch(it->first){
-            // case Type::strict_inequalities:
             case Type::excluded_faces:
                 errorOutput() << "This InputType combination is currently not supported!"<< endl;
                 throw BadInputException();
@@ -127,7 +126,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
             case Type::inhom_congruences:  // ditto
             case Type::grading:  // already taken care of
                 break;
-            case Type::interior:
+            case Type::strict_inequalities:
                 insert_column<Integer>(it->second,dim-1,-1);
                 break;
             default:  // is correct for signs and strict_signs !
@@ -177,12 +176,11 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             case Type::inhom_inequalities:
             case Type::inhom_equations:
             case Type::inhom_congruences:
-            case Type::interior:
+            case Type::strict_inequalities:
             case Type::strict_signs:
                 inhomogeneous=true;
             case Type::signs:
             case Type::inequalities:
-            // case Type::strict_inequalities:
             case Type::equations:
             case Type::congruences:
                 if(!constraints_input)
@@ -239,7 +237,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     if(inhomogeneous){
         for(; it != multi_input_data.end(); ++it) { // there must be at least one inhomogeneous type
             switch(it->first){
-                case Type::interior:
+                case Type::strict_inequalities:
                 case Type::strict_signs:
                     dim = it->second.front().size()+1;
                     break;
@@ -368,7 +366,7 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     for (; it != multi_input_data.end(); ++it) {
 
         switch (it->first) {
-            case Type::interior:
+            case Type::strict_inequalities:
             case Type::inequalities:
             case Type::inhom_inequalities:
             case Type::excluded_faces:
@@ -397,12 +395,7 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(StrictSigns);   // then strict signs
     Help.append(Inequalities);
     Inequalities=Help;
-    /* Help=find_input_matrix(multi_input_data,Type::strict_inequalities);
-    if(Help.nr_of_rows()>0){
-        Inequalities.append(Help);
-        for(size_t i=0;i<Help.nr_of_rows();++i)
-            ExcludedFaces.push_back(Help[i]);
-    } */
+
     prepare_input_type_456(Congruences, Equations, Inequalities);
 }
 
