@@ -2026,7 +2026,7 @@ void Full_Cone<Integer>::primal_algorithm(){
 template<typename Integer>
 void Full_Cone<Integer>::dualize_cone() {  
     compute_support_hyperplanes();
-    reset_tasks();
+    // reset_tasks();
 }
 
 // check the do_* bools, they must be set in advance
@@ -2098,10 +2098,18 @@ void Full_Cone<Integer>::compute() {
             }
         }
             
-        if(do_partial_triangulation && do_deg1_elements && !deg1_generated){
+        if(do_approximation && !deg1_generated){
+            if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes))
+                support_hyperplanes();
             if(verbose)
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
             compute_deg1_elements_via_approx();
+            if(do_triangulation){
+                do_deg1_elements=false;
+                do_partial_triangulation=false;
+                do_only_multiplicity = do_multiplicity;
+                primal_algorithm();            
+            }
         }
         else
             primal_algorithm();
@@ -2138,10 +2146,11 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
 
     if(verbose)
         verboseOutput() << "Returning to original cone" << endl;
-    compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
+    // compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
     if(verbose)
         verboseOutput() << "Selecting deg 1 elements from approximating cone" << endl;
     select_deg1_elements(C_approx);
+    
     if(verbose)
         verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
 }
@@ -2153,7 +2162,7 @@ void Full_Cone<Integer>::support_hyperplanes() {
     // recursion_allowed=true;
     compute_support_hyperplanes();
     extreme_rays_and_deg1_check();
-    reset_tasks();
+    // reset_tasks();
 }
 
 /*template<typename Integer>  // now in constructor
@@ -2800,11 +2809,12 @@ void Full_Cone<Integer>::check_integrally_closed() {
 template<typename Integer>
 Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     assert(isComputed(ConeProperty::Grading));
+    assert(isComputed(ConeProperty::ExtremeRays));
     Matrix<Integer> G(1,dim);
     G[0]=Grading;
     
     
-    Lineare_Transformation<Integer> NewBasis = Transformation(G); // gives a new basis
+    Lineare_Transformation<Integer> NewBasis = Transformation(G); // gives a new basis in which the grading is a coordinate
     Matrix<Integer> U=NewBasis.get_right();   // the basis elements are the columns of U
     Integer dummy_denom;                             
     vector<Integer> dummy_diag(dim); 
@@ -2816,9 +2826,11 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     
     list<vector<Integer> > L; // collects the generators of the approximating cone
     for(size_t i=0;i<nr_gen;++i){
-        list<vector<Integer> > approx;
-        approx_simplex(T.MxV(Generators[i]),approx);
-        L.splice(L.end(),approx);
+        if(Extreme_Rays[i]){
+            list<vector<Integer> > approx;
+            approx_simplex(T.MxV(Generators[i]),approx);
+            L.splice(L.end(),approx);
+        }
     }
     
     Matrix<Integer> M=Matrix<Integer>(L);
@@ -3239,6 +3251,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_Stanley_dec=false;
     do_h_vector=false;
     do_excluded_faces=false;
+    do_approximation=false;
     
     do_evaluation = false;
     do_only_multiplicity=false;
@@ -3260,7 +3273,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     Generators = M;
     nr_gen=Generators.nr_of_rows();
     if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {
-        error_msg("To many generators to fit in range of key_t!");
+        error_msg("Too many generators to fit in range of key_t!");
         throw FatalException();
     }
     //make the generators coprime, remove 0 rows and duplicates
@@ -3333,7 +3346,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
 
-
+    inhomogeneous=false;
 }
 
 //---------------------------------------------------------------------------

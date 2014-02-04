@@ -140,7 +140,7 @@ namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 24) { //to detect changes in size of Enum
+        if (ConeProperty::EnumSize != 25) { //to detect changes in size of Enum
             errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
             errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
             throw FatalException();
@@ -169,6 +169,7 @@ namespace {
         CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
         CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
         CPN.at(ConeProperty::DualMode) = "DualMode";
+        CPN.at(ConeProperty::ApproximateRatPolytope) = "ApproximateRatPolytope";
         return CPN;
     }
  

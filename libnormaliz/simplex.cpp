@@ -311,6 +311,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         }
         else
             addMult(volume);
+        return volume;
     }  // done if only mult is asked for
     
     for(i=0; i<dim; ++i)

@@ -71,6 +71,7 @@ class Full_Cone {
     bool keep_triangulation;
     bool do_Stanley_dec;
     bool do_excluded_faces;
+    bool do_approximation;
 
     // internal helper control variables
     bool do_only_multiplicity;

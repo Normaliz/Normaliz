@@ -715,6 +715,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
 //---------------------------------------------------------------------------
 
+// not used at present
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis_pointed(const size_t& hyp_counter){
     if (verbose==true) {
@@ -1030,7 +1031,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
     if(Basis_Max_Subspace.nr_of_rows()>=0)
         cut_with_halfspace_hilbert_basis(hyp_counter, lifting,old_lin_subspace_half);
     else{
-        cut_with_halfspace_hilbert_basis_pointed(hyp_counter);
+        cut_with_halfspace_hilbert_basis_pointed(hyp_counter); // not used at present
         first_pointed=false;
     }
     return New_Basis_Max_Subspace;

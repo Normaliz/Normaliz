@@ -879,17 +879,31 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.set(ConeProperty::HilbertBasis);    // -d without -1 means: compute Hilbert basis in dual mode
     }
     
-    if (ToCompute.test(ConeProperty::DualMode) && (ToCompute.test(ConeProperty::HilbertSeries) 
-         || ToCompute.test(ConeProperty::StanleyDec))&& !ToCompute.test(ConeProperty::HilbertBasis)){
-        ToCompute.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode if the
+    if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::HilbertBasis))
+        ToCompute.reset(ConeProperty::ApproximateRatPolytope); // dual mode has priority, approximation makes no sense if HB is computed       
+    
+    if ((ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::ApproximateRatPolytope)) 
+        && (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::StanleyDec))
+         && !ToCompute.test(ConeProperty::HilbertBasis)){
+        ToCompute.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode 
+        ToCompute.reset(ConeProperty::ApproximateRatPolytope); // or by approximation if the
     }                                            // Stanley decomposition must be computed anyway
     
     if(inhomogeneous && ToCompute.test(ConeProperty::Deg1Elements)){
             errorOutput() << "Degree 1 elements not computable in the inhomogeneous case." << endl;
+            throw BadInputException();
+    }
+    if(inhomogeneous && ToCompute.test(ConeProperty::StanleyDec)){
+            errorOutput() << "Stanley decomposition not computable in the inhomogeneous case." << endl;
             throw BadInputException();        
-        
-        // WEITERE SACHEN ABSCHALTEN IM INHOMOGENEN FALL: -yT WO IEL abschalten
-        // ODER GENERELL BEI INKONSISTENTER EINGABE UND OPTIONEN: ENDE
+    }
+    if(inhomogeneous && ToCompute.test(ConeProperty::Triangulation)){
+            errorOutput() << "Triangulation not computable in the inhomogeneous case." << endl;
+            throw BadInputException();        
+    }
+    if(inhomogeneous && ToCompute.test(ConeProperty::ApproximateRatPolytope)){
+            errorOutput() << "Approximation of rational polytope not computable in the inhomogeneous case." << endl;
+            throw BadInputException();        
     }
     
     if(inhomogeneous){
@@ -975,6 +989,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
         only_support_hyperplanes = false;
+    }
+    if (ToCompute.test(ConeProperty::ApproximateRatPolytope)) {
+        FC.do_approximation = true;
+        only_support_hyperplanes = false;
+        is_Computed.set(ConeProperty::ApproximateRatPolytope);
     }
 
     /* Give extra data to FC */

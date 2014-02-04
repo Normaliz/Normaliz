@@ -58,6 +58,7 @@ void printHelp(char* command) {
     cout << "  -1\tcompute degree 1 elements"<<endl;
     cout << "  -y\tcompute Stanley decomposition"<<endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
+    cout << "  -r\tcomputation mode: approximate rational polytope"<<endl;
     cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
     cout << "  -T\tthe file .tri is written (triangulation)"<<endl;
     cout << "  -a\tall output files are written (except .tri)"<<endl;
@@ -175,6 +176,10 @@ int main(int argc, char* argv[])
                 break;
             case 'd':
                 to_compute.set(ConeProperty::DualMode);
+                break;
+            case 'r':
+                to_compute.set(ConeProperty::ApproximateRatPolytope);
+                to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'e':  //check for arithmetic overflow
                 test_arithmetic_overflow=true;
