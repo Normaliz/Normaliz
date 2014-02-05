@@ -625,6 +625,11 @@ bool Cone<Integer>::isPointed() const {
 }
 
 template<typename Integer>
+bool Cone<Integer>::isInhomogeneous() const {
+    return inhomogeneous;
+}
+
+template<typename Integer>
 bool Cone<Integer>::isDeg1ExtremeRays() const {
     return deg1_extreme_rays;
 }
@@ -647,6 +652,17 @@ bool Cone<Integer>::isReesPrimary() const {
 template<typename Integer>
 Integer Cone<Integer>::getReesPrimaryMultiplicity() const {
     return ReesPrimaryMultiplicity;
+}
+
+
+template<typename Integer>
+Integer Cone<Integer>::getShift() const {
+    return shift;
+}
+
+template<typename Integer>
+size_t Cone<Integer>::getModuleRank() const {
+    return module_rank;
 }
 
 //---------------------------------------------------------------------------
@@ -1206,8 +1222,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         FC.is_Computed.set(ConeProperty::Grading);
         FC.set_degrees();
     }
-    // FC.inhomogeneous=inhomogeneous; // now in constructor
-    // FC.dual_mode();                 // dito
+    FC.dual_mode();
     extract_data(FC);
     is_Computed.set(ConeProperty::DualMode);
     return ConeProperties();

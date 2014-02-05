@@ -3354,16 +3354,16 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
+    is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
+
     dim = C.dim;
     Generators = C.get_generators();
     nr_gen = Generators.nr_of_rows();
-    Extreme_Rays=C.get_extreme_rays();
     is_Computed.set(ConeProperty::Generators);
+    Extreme_Rays=C.get_extreme_rays();
     is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
-    is_Computed =  bitset<ConeProperty::EnumSize>();  //initialized to false
-    is_Computed.set(ConeProperty::Generators);
     in_triang = vector<bool>(nr_gen,false);
     
     pointed = true;
@@ -3411,9 +3411,10 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     nextGen=0;
     
     inhomogeneous=C.inhomogeneous;
-    
-    // the old dual_mode()
-    
+}
+
+template<typename Integer>
+void Full_Cone<Integer>::dual_mode() {
     Support_Hyperplanes.sort();
     Support_Hyperplanes.unique();
     Support_Hyperplanes.remove(vector<Integer>(dim,0));
@@ -3438,8 +3439,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
         if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
         check_integrally_closed();
     }
-    
 }
+
 //---------------------------------------------------------------------------
 
 /* constructor for pyramids */

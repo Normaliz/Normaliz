@@ -117,11 +117,14 @@ public:
     Integer getGradingDenom() const;
     mpq_class getMultiplicity() const;
     bool isPointed() const;
+    bool isInhomogeneous() const;
     bool isDeg1ExtremeRays() const;
     bool isDeg1HilbertBasis() const;
     bool isIntegrallyClosed() const;
     bool isReesPrimary() const;
     Integer getReesPrimaryMultiplicity() const;
+    Integer getShift() const;
+    size_t getModuleRank() const;
     vector< vector<Integer> > getGeneratorsOfToricRing() const;
     Sublattice_Representation<Integer> getBasisChange() const;
     // the following methods return const refs to avoid copying of big data objects
