@@ -140,13 +140,14 @@ namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 25) { //to detect changes in size of Enum
+        if (ConeProperty::EnumSize != 27) { //to detect changes in size of Enum
             errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
             errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
             throw FatalException();
         }
         CPN.at(ConeProperty::Generators) = "Generators";
         CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
+        CPN.at(ConeProperty::VerticesOfPolyhedron) = "ModuleGenerators";
         CPN.at(ConeProperty::SupportHyperplanes) = "SupportHyperplanes";
         CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
         CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
@@ -155,6 +156,7 @@ namespace {
         CPN.at(ConeProperty::Shift) = "Shift";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
         CPN.at(ConeProperty::HilbertBasis) = "HilbertBasis";
+        CPN.at(ConeProperty::ModuleGenerators) = "ModuleGenerators";
         CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
         CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
         CPN.at(ConeProperty::Grading) = "Grading";

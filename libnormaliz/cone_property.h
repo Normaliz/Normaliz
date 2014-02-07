@@ -32,6 +32,7 @@ namespace ConeProperty {
     enum Enum {
         Generators,
         ExtremeRays,
+        VerticesOfPolyhedron,
         SupportHyperplanes,
         TriangulationSize,
         TriangulationDetSum,
@@ -40,6 +41,7 @@ namespace ConeProperty {
         Shift,
         ModuleRank,
         HilbertBasis,
+        ModuleGenerators,
         Deg1Elements,
         HilbertSeries,
         Grading,

@@ -105,6 +105,7 @@ public:
     size_t getDim() const { return dim; };
     vector< vector<Integer> > getGenerators() const;
     vector< vector<Integer> > getExtremeRays() const;
+    vector< vector<Integer> > getVerticesOfPolyhedron() const;
     vector< vector<Integer> > getSupportHyperplanes() const;
     vector< vector<Integer> > getEquations() const;
     vector< vector<Integer> > getCongruences() const;
@@ -112,6 +113,7 @@ public:
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
     vector< vector<Integer> > getHilbertBasis() const;
+    vector< vector<Integer> > getModuleGenerators() const;
     vector< vector<Integer> > getDeg1Elements() const;
     vector<Integer> getGrading() const;
     Integer getGradingDenom() const;
@@ -146,6 +148,7 @@ private:
     vector< vector<Integer> > GeneratorsOfToricRing;
     vector< vector<Integer> > Generators;
     vector<bool> ExtremeRays;
+    vector<bool> VerticesOfPolyhedron;
     vector< vector<Integer> > SupportHyperplanes;
     vector< vector<Integer> > ExcludedFaces;
     size_t TriangulationSize;
@@ -170,6 +173,7 @@ private:
     Integer ReesPrimaryMultiplicity;
     Integer shift; // needed in the inhomogeneous case to make degrees positive
     size_t module_rank; // for the inhomogeneous case
+    vector< vector<Integer> > ModuleGenerators;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
     

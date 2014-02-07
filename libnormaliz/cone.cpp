@@ -137,6 +137,9 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
 
 }
 
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
     initialize();
@@ -244,10 +247,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
                 case Type::inhom_inequalities:
                 case Type::inhom_equations:
                 case Type::polyhedron:
-                dim = it->second.front().size();
+                    dim = it->second.front().size();
                     break;
                 case Type::inhom_congruences:
-                dim = it->second.front().size()-1; //congruences have one extra column
+                    dim = it->second.front().size()-1; //congruences have one extra column
                     break;
                 default: break;
             }
@@ -531,7 +534,18 @@ vector< vector<Integer> > Cone<Integer>::getGenerators() const {
 
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
-    return Matrix<Integer>(Generators).submatrix(ExtremeRays).get_elements();
+    if (!inhomogeneous) {
+        return Matrix<Integer>(Generators).submatrix(ExtremeRays).get_elements();
+    } else {
+        Matrix<Integer> Rays = Matrix<Integer>(Generators).submatrix(ExtremeRays);
+        Rays.cut_columns(dim-1);
+        return Rays.get_elements();
+    }
+}
+
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getVerticesOfPolyhedron() const {
+    return Matrix<Integer>(Generators).submatrix(VerticesOfPolyhedron).get_elements();
 }
 
 template<typename Integer>
@@ -595,6 +609,11 @@ vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
 }
 
 template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
+    return ModuleGenerators;
+}
+
+template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
     return Deg1Elements;
 }
@@ -606,6 +625,11 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries() const {
 
 template<typename Integer>
 vector<Integer> Cone<Integer>::getGrading() const {
+    if (inhomogeneous) { // remove last entry
+        vector<Integer> Grading_cut(Grading);
+        Grading_cut.pop_back();
+        return Grading_cut;
+    } // else
     return Grading;
 }
 
@@ -1228,6 +1252,8 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     return ConeProperties();
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     //this function extracts ALL available data from the Full_Cone
@@ -1236,6 +1262,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
     if(verbose) {
         verboseOutput() << "transforming data..."<<flush;
+        cout << "inhom "<<inhomogeneous<<endl;
     }
     
     if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {
@@ -1250,9 +1277,30 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     if (FC.isComputed(ConeProperty::ExtremeRays)) {
         ExtremeRays = FC.getExtremeRays();
+        assert(ExtremeRays.size() == Generators.size());
+        if (inhomogeneous) {
+            // separate extreme rays to rays of the level 0 cone
+            // and the verticies of the polyhedron, which are in level >=1
+            size_t nr_gen = Generators.size();
+            VerticesOfPolyhedron = vector<bool>(nr_gen);
+            for (size_t i=0; i<nr_gen; i++) {
+                if (ExtremeRays[i] && Generators[i].back() != 0) {
+                    ExtremeRays[i] = false;
+                    VerticesOfPolyhedron[i] = true;
+                }
+            }
+            is_Computed.set(ConeProperty::VerticesOfPolyhedron);
+        }
         is_Computed.set(ConeProperty::ExtremeRays);
     }
     if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
+        if (inhomogeneous) {
+            // remove irrelevant support hyperplane 0 ... 0 1
+            vector<Integer> irr_hyp(dim);
+            irr_hyp.back() = 1;
+            vector<Integer> irr_hyp_subl = BasisChange.to_sublattice_dual(irr_hyp);
+            FC.Support_Hyperplanes.remove(irr_hyp_subl);
+        }
         SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes()).get_elements();
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
@@ -1314,7 +1362,26 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         is_Computed.set(ConeProperty::ModuleRank);
     }
     if (FC.isComputed(ConeProperty::HilbertBasis)) {
-        HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis()).get_elements();
+        if (inhomogeneous) {
+            // separate (capped) Hilbert basis to the Hilbert basis of the level 0 cone
+            // and the module generators in level 1
+            HilbertBasis = vector< vector<Integer> >();     // row length dim-1
+            ModuleGenerators = vector< vector<Integer> >(); // row length dim
+            typename list< vector<Integer> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
+            vector<Integer> tmp;
+            for (; FCHB != FC.Hilbert_Basis.end(); ++FCHB) {
+                tmp = BasisChange.from_sublattice(*FCHB);
+                if (tmp.back() == 0) { // Hilbert basis element of the cone at level 0
+                    tmp.pop_back();
+                    HilbertBasis.push_back(tmp);
+                } else {              // module generator
+                    ModuleGenerators.push_back(tmp);
+                }
+            }
+            is_Computed.set(ConeProperty::ModuleGenerators);
+        } else { // homogeneous
+            HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis()).get_elements();
+        }
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {

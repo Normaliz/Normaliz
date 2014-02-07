@@ -51,7 +51,7 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="0"||type_string=="integral_closure") {
         return Type::integral_closure;
     }
-        if (type_string=="polyhedron") {
+    if (type_string=="polyhedron") {
         return Type::polyhedron;
     }
     if (type_string=="1"||type_string=="normalization") {

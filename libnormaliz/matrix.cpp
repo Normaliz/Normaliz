@@ -136,6 +136,7 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
             nc = (*it).size();
         } else {
             if ((*it).size() != nc) {
+                errorOutput() << "Inconsistent lengths of rows in matrix!" << endl;
                 throw BadInputException();
             }
         }
