@@ -27,6 +27,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
         in>>type_string;
 
         if ( in.fail() ) {
+            cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
             throw BadInputException();
         }
 

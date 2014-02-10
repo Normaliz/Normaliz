@@ -2034,20 +2034,26 @@ void Full_Cone<Integer>::dualize_cone() {
 template<typename Integer>
 void Full_Cone<Integer>::do_vars_check() {
 
+    if (do_default_mode) {
+        do_Hilbert_basis = true;
+        do_h_vector = true;
+    }
+
     // activate implications
     if (do_Stanley_dec)     keep_triangulation = true;
     if (keep_triangulation) do_triangulation = true;
-    if (do_multiplicity)    do_triangulation = true;
+    if (do_multiplicity)    do_determinants = true;
+    if (do_determinants)    do_triangulation = true;
     if (do_h_vector)        do_triangulation = true;
     if (do_deg1_elements)   do_partial_triangulation = true;
     if (do_Hilbert_basis)   do_partial_triangulation = true;
     // activate 
-    do_only_multiplicity = do_multiplicity;
+    do_only_multiplicity = do_determinants;
     if (do_Stanley_dec || do_h_vector || do_deg1_elements || do_Hilbert_basis) {
         do_only_multiplicity = false;
         do_evaluation = true;
     }
-    if (do_multiplicity)    do_evaluation = true;
+    if (do_determinants)    do_evaluation = true;
 
     if (do_triangulation)   do_partial_triangulation = false;
     if (do_Hilbert_basis)   do_deg1_elements = false; //they will be extracted later
@@ -2107,7 +2113,7 @@ void Full_Cone<Integer>::compute() {
             if(do_triangulation){
                 do_deg1_elements=false;
                 do_partial_triangulation=false;
-                do_only_multiplicity = do_multiplicity;
+                do_only_multiplicity = do_determinants;
                 primal_algorithm();            
             }
         }
@@ -2137,8 +2143,8 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
         verboseOutput() << "Computing deg 1 elements in approximating cone" << endl;
     C_approx.compute();
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
-        cerr << "Wrong approximating cone. Fatal error. PLEASE CONTACT THE AUTHORS" << endl;
-        exit(1);
+        errorOutput() << "Wrong approximating cone. Fatal error. PLEASE CONTACT THE AUTHORS" << endl;
+        throw FatalException();
     }
 
     if(verbose)
@@ -2663,12 +2669,19 @@ void Full_Cone<Integer>::check_pointed() {
 template<typename Integer>
 void Full_Cone<Integer>::disable_grading_dep_comp() {
 
-  if (do_deg1_elements || do_h_vector) {
-      errorOutput() << "No grading specified and cannot find one. "
-                    << "Disabling some computations!" << endl;
-      do_deg1_elements = false;
-      do_h_vector = false;
-  }
+    if (do_multiplicity || do_deg1_elements || do_h_vector) {
+        if (do_default_mode) {
+            if (verbose)
+                verboseOutput() << "No grading specified and cannot find one. "
+                                << "Disabling some computations!" << endl;
+            do_deg1_elements = false;
+            do_h_vector = false;
+        } else {
+            errorOutput() << "No grading specified and cannot find one. "
+                          << "Cannot compute some requested properties!" << endl;
+            throw BadInputException();
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -2869,13 +2882,13 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
              }
             if(test<0){
                 errorOutput() << "Fatal error: excluded hyperplane does not define a face" << endl;
-                exit(1);
+                throw FatalException();
             }            
                 
         }
         if(!non_zero){  // not impossible if the hyperplane contains the vector space spanned by the cone
             errorOutput() << "Fatal error: excluded face contains the full cone" << endl;
-            exit(1);
+            throw FatalException();
         }
     }
     
@@ -2956,8 +2969,6 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
          
         verboseOutput() << "--------------------------------------------" << endl; 
          
-        // exit(0);
-        
         verboseOutput() << "InEx complete, " << InExCollect.size() << " faces involved" << endl;
     }
      
@@ -3244,6 +3255,7 @@ template<typename Integer>
 void Full_Cone<Integer>::reset_tasks(){
     do_triangulation = false;
     do_partial_triangulation = false;
+    do_determinants = false;
     do_multiplicity=false;
     do_Hilbert_basis = false;
     do_deg1_elements = false;
@@ -3252,6 +3264,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_h_vector=false;
     do_excluded_faces=false;
     do_approximation=false;
+    do_default_mode=false;
     
     do_evaluation = false;
     do_only_multiplicity=false;
@@ -3439,6 +3452,10 @@ void Full_Cone<Integer>::dual_mode() {
         if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
         check_integrally_closed();
     }
+    if(inhomogeneous){
+       find_module_rank();
+       cout << "module rank " << module_rank << endl;
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -3472,6 +3489,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     do_triangulation=C.do_triangulation;
     do_partial_triangulation=C.do_partial_triangulation;
+    do_determinants=C.do_determinants;
     do_multiplicity=C.do_multiplicity;
     do_deg1_elements=C.do_deg1_elements;
     do_h_vector=C.do_h_vector;

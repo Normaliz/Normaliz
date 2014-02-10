@@ -73,7 +73,6 @@ void printHelp(char* command) {
 int main(int argc, char* argv[])
 {
 
-    //libnormaliz::RecBoundFactor = 5000000;
     size_t i;       //used for iterations
     char c;
     string output_name;         //name of the output file(s) saved here
@@ -219,8 +218,7 @@ int main(int argc, char* argv[])
     }
     // activate default mode
     if (to_compute.none()) {
-        to_compute.set(ConeProperty::HilbertBasis);
-        to_compute.set(ConeProperty::HilbertSeries);
+        to_compute.set(ConeProperty::DefaultMode);
     }
 
     if (verbose || !filename_set) {

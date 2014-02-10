@@ -855,7 +855,7 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
     } else {
         SupportHyperplanes = Inequalities.get_elements();
     }
-    is_Computed.set(ConeProperty::SupportHyperplanes);
+    // is_Computed.set(ConeProperty::SupportHyperplanes);
 
     if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 
@@ -915,42 +915,15 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
-    if (ToCompute.test(ConeProperty::DualMode) && !ToCompute.test(ConeProperty::Deg1Elements)){
-        ToCompute.set(ConeProperty::HilbertBasis);    // -d without -1 means: compute Hilbert basis in dual mode
-    }
-    
-    if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::HilbertBasis))
-        ToCompute.reset(ConeProperty::ApproximateRatPolytope); // dual mode has priority, approximation makes no sense if HB is computed       
-    
-    if ((ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::ApproximateRatPolytope)) 
-        && (ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::StanleyDec))
-         && !ToCompute.test(ConeProperty::HilbertBasis)){
-        ToCompute.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode 
-        ToCompute.reset(ConeProperty::ApproximateRatPolytope); // or by approximation if the
-    }                                            // Stanley decomposition must be computed anyway
-    
-    if(inhomogeneous && ToCompute.test(ConeProperty::Deg1Elements)){
-            errorOutput() << "Degree 1 elements not computable in the inhomogeneous case." << endl;
-            throw BadInputException();
-    }
-    if(inhomogeneous && ToCompute.test(ConeProperty::StanleyDec)){
-            errorOutput() << "Stanley decomposition not computable in the inhomogeneous case." << endl;
-            throw BadInputException();        
-    }
-    if(inhomogeneous && ToCompute.test(ConeProperty::Triangulation)){
-            errorOutput() << "Triangulation not computable in the inhomogeneous case." << endl;
-            throw BadInputException();        
-    }
-    if(inhomogeneous && ToCompute.test(ConeProperty::ApproximateRatPolytope)){
-            errorOutput() << "Approximation of rational polytope not computable in the inhomogeneous case." << endl;
-            throw BadInputException();        
-    }
-    
-    if(inhomogeneous){
+    if (inhomogeneous) {//TODO in den constructor verlagern
         Truncation.resize(dim),
         Truncation[dim-1]=1;
     }                                            
-    
+
+    ToCompute.set_preconditions();
+    ToCompute.prepare_compute_options();
+    ToCompute.check_sanity(inhomogeneous);
+
     if (ToCompute.test(ConeProperty::DualMode))
         compute_dual(ToCompute);
 
@@ -972,24 +945,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
 
-    /* add preconditions */
-    if (ToCompute.test(ConeProperty::IsIntegrallyClosed))
-        ToCompute.set(ConeProperty::HilbertBasis);
-    if (ToCompute.test(ConeProperty::IsDeg1HilbertBasis))
-        ToCompute.set(ConeProperty::HilbertBasis);
-    if (ToCompute.test(ConeProperty::IsDeg1ExtremeRays))
-        ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::Grading))
-        ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::IsPointed))
-        ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::Generators))
-        ToCompute.set(ConeProperty::ExtremeRays);
-    if (ToCompute.test(ConeProperty::ExtremeRays))
-        ToCompute.set(ConeProperty::SupportHyperplanes);
-    if (ToCompute.test(ConeProperty::TriangulationDetSum))
-        ToCompute.set(ConeProperty::Multiplicity);
-    
     if (rees_primary) // && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
         ToCompute.set(ConeProperty::Triangulation);
 
@@ -997,43 +952,37 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
 
     /* activate bools in FC */
-    
 
     FC.inhomogeneous=inhomogeneous;
     
-    bool only_support_hyperplanes = true;
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::HilbertBasis)) {
         FC.do_Hilbert_basis = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::Triangulation)) {
         FC.keep_triangulation = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::Multiplicity)) {
         FC.do_multiplicity = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::TriangulationSize)) {
         FC.do_triangulation = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_deg1_elements = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
-        only_support_hyperplanes = false;
     }
     if (ToCompute.test(ConeProperty::ApproximateRatPolytope)) {
         FC.do_approximation = true;
-        only_support_hyperplanes = false;
         is_Computed.set(ConeProperty::ApproximateRatPolytope);
+    }
+    if (ToCompute.test(ConeProperty::DefaultMode)) {
+        FC.do_default_mode = true;
+        is_Computed.set(ConeProperty::DefaultMode);
     }
 
     /* Give extra data to FC */
@@ -1045,29 +994,26 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         FC.ExcludedFaces = BasisChange.to_sublattice_dual(Matrix<Integer>(ExcludedFaces));
     }
     
-    if(inhomogeneous){
+    if (inhomogeneous){
         FC.Truncation = BasisChange.to_sublattice_dual_no_div(Truncation);
     }
     if ( isComputed(ConeProperty::Grading) ) {  // IMPORTANT: Truncation must be set before Grading
         FC.Grading = BasisChange.to_sublattice_dual(Grading);
         FC.is_Computed.set(ConeProperty::Grading);
-        if(inhomogeneous)
+        if (inhomogeneous)
             FC.find_grading_inhom();
         FC.set_degrees();
     }
     
-    /* Do the computation! */
-    if (only_support_hyperplanes) {
-        // workaround for not dualizing twice
-        if (isComputed(ConeProperty::SupportHyperplanes)) {
-            vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
-            FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
-            FC.is_Computed.set(ConeProperty::SupportHyperplanes);
-        }
-        FC.support_hyperplanes();
-    } else {
-        FC.compute();
+    if (isComputed(ConeProperty::SupportHyperplanes)) {
+        vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
+        FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
+        FC.is_Computed.set(ConeProperty::SupportHyperplanes);
+        FC.do_all_hyperplanes = false;
     }
+
+    /* do the computation */
+    FC.compute();
     
     extract_data(FC);
     
@@ -1084,7 +1030,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template<typename Integer>
 void Cone<Integer>::compute_generators() {
     //create Generators from SupportHyperplanes
-    if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
+    //if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
+    if (!isComputed(ConeProperty::Generators) && SupportHyperplanes.size()!=0) {
         if (verbose) {
             verboseOutput() <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
         }
@@ -1101,6 +1048,7 @@ void Cone<Integer>::compute_generators() {
                 //get minmal set of support_hyperplanes
                 Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
                 SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp).get_elements();
+                is_Computed.set(ConeProperty::SupportHyperplanes);
             }
             Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
             compose_basis_change(Basis_Change);
@@ -1113,23 +1061,14 @@ void Cone<Integer>::compute_generators() {
     }
 }
 
-/*template<typename Integer>
-ConeProperties Cone<Integer>::compute(ComputationMode mode) {
-    if (mode == Mode::dual) {
-        return compute_dual();
-    } else {
-        ConeProperties cps;
-        cps.set(mode);
-        return compute(cps);
-    }
-}*/
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
 
     bool do_only_Deg1_Elements=ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
         
-    if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
+    //if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
+    if(isComputed(ConeProperty::Generators) && SupportHyperplanes.size()==0){
         if (verbose) {
             verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
         }
@@ -1168,7 +1107,8 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         }  
     }
     
-    if (!isComputed(ConeProperty::SupportHyperplanes)) {
+    //if (!isComputed(ConeProperty::SupportHyperplanes)) {
+    if (SupportHyperplanes.size()==0) {
         errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
         throw FatalException();
     }
@@ -1349,10 +1289,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         }
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
-    if (FC.isComputed(ConeProperty::Multiplicity)) {
-        multiplicity = FC.getMultiplicity();
-        is_Computed.set(ConeProperty::Multiplicity);
-    }
     if (FC.isComputed(ConeProperty::Shift)) {
         shift = FC.getShift();
         is_Computed.set(ConeProperty::Shift);
@@ -1360,6 +1296,15 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     if (FC.isComputed(ConeProperty::ModuleRank)) {
         module_rank = FC.getModuleRank();
         is_Computed.set(ConeProperty::ModuleRank);
+    }
+    if (FC.isComputed(ConeProperty::Multiplicity)) {
+        if(!inhomogeneous) {
+            multiplicity = FC.getMultiplicity();
+            is_Computed.set(ConeProperty::Multiplicity);
+        } else if (isComputed(ConeProperty::ModuleRank)) {
+            multiplicity = FC.getMultiplicity()*module_rank;
+            is_Computed.set(ConeProperty::Multiplicity);
+        }
     }
     if (FC.isComputed(ConeProperty::HilbertBasis)) {
         if (inhomogeneous) {

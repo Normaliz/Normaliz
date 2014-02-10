@@ -26,6 +26,7 @@ namespace libnormaliz {
 using std::bitset;
 using std::vector;
 using std::string;
+using std::endl;
 
 
 /* Constructors */
@@ -80,67 +81,90 @@ bool ConeProperties::any() const {
 bool ConeProperties::none() const {
     return CPs.none();
 }
-size_t ConeProperties::count () const {
+size_t ConeProperties::count() const {
     return CPs.count();
 }
 
 
-/* this method sets all fields that should be computed in that mode 
-ConeProperties& ConeProperties::set(Mode::ComputationMode mode) {
-    switch (mode) {
-    case Mode::supportHyperplanes:
-        set(ConeProperty::SupportHyperplanes, ConeProperty::ExtremeRays);
-        break;
-    case Mode::triangulationSize:
-        set(ConeProperty::TriangulationSize);
-        break;
-    case Mode::triangulation:
-        set(ConeProperty::Triangulation);
-        break;
-    case Mode::volumeTriangulation:
-        set(ConeProperty::Triangulation, ConeProperty::Multiplicity);
-        break;
-    case Mode::volumeLarge:
-        set(ConeProperty::Multiplicity);
-        break;
-    case Mode::degree1Elements:
-        set(ConeProperty::Deg1Elements);
-        break;
-    case Mode::hilbertBasisTriangulation:
-        set(ConeProperty::HilbertBasis, ConeProperty::Triangulation);
-        break;
-    case Mode::hilbertBasisMultiplicity:
-        set(ConeProperty::HilbertBasis, ConeProperty::Multiplicity);
-        break;
-    case Mode::hilbertBasisLarge:
-        set(ConeProperty::HilbertBasis);
-        break;
-    case Mode::hilbertSeries:
-        set(ConeProperty::Triangulation);
-    case Mode::hilbertSeriesLarge:
-        set(ConeProperty::Deg1Elements, ConeProperty::HilbertSeries);
-        break;
-    case Mode::hilbertBasisSeries:
-        set(ConeProperty::Triangulation);
-    case Mode::hilbertBasisSeriesLarge:
-        set(ConeProperty::HilbertSeries, ConeProperty::HilbertBasis);
-        break;
-    case Mode::dual:
-        set(ConeProperty::DualMode);
-        break;
-    default:
-        throw FatalException();
-        break;
+/* add preconditions */
+void ConeProperties::set_preconditions() {
+    if (CPs.test(ConeProperty::IsIntegrallyClosed))
+        CPs.set(ConeProperty::HilbertBasis);
+
+    if (CPs.test(ConeProperty::IsDeg1HilbertBasis)) {
+        CPs.set(ConeProperty::HilbertBasis);
+        CPs.set(ConeProperty::Grading);
     }
-    return *this;
-} */
+    if (CPs.test(ConeProperty::IsDeg1ExtremeRays)) {
+        CPs.set(ConeProperty::ExtremeRays);
+        CPs.set(ConeProperty::Grading);
+    }
+    if (CPs.test(ConeProperty::Grading))
+        CPs.set(ConeProperty::ExtremeRays);
+
+    if (CPs.test(ConeProperty::IsPointed))
+        CPs.set(ConeProperty::ExtremeRays);
+
+    if (CPs.test(ConeProperty::Generators))
+        CPs.set(ConeProperty::ExtremeRays);
+
+    if (CPs.test(ConeProperty::ExtremeRays))
+        CPs.set(ConeProperty::SupportHyperplanes);
+}
+
+/* removes ignored compute options and sets implications */
+void ConeProperties::prepare_compute_options() {
+    // -d without -1 means: compute Hilbert basis in dual mode
+    if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
+        CPs.set(ConeProperty::HilbertBasis);  
+    }
+
+    // dual mode has priority, approximation makes no sense if HB is computed 
+    if(CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::HilbertBasis))
+        CPs.reset(ConeProperty::ApproximateRatPolytope);
+    
+    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::ApproximateRatPolytope)) 
+        && (CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::StanleyDec))
+         && !CPs.test(ConeProperty::HilbertBasis)){
+        CPs.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode 
+        CPs.reset(ConeProperty::ApproximateRatPolytope); // or by approximation if the
+    }                                            // Stanley decomposition must be computed anyway
+}
+
+
+void ConeProperties::check_sanity(bool inhomogeneous) {
+    ConeProperty::Enum prop;
+    for (size_t i=0; i<ConeProperty::EnumSize; i++) {
+        if (CPs.test(i)) {
+            prop = static_cast<ConeProperty::Enum>(i);
+            if (inhomogeneous) {
+                if ( prop == ConeProperty::Deg1Elements
+                  || prop == ConeProperty::StanleyDec
+                  || prop == ConeProperty::Triangulation
+                  || prop == ConeProperty::ApproximateRatPolytope ) {
+                    errorOutput() << prop << " not computable in the inhomogeneous case." << endl;
+                    throw BadInputException();
+                }
+            } else { // homgeneous
+                if ( prop == ConeProperty::VerticesOfPolyhedron
+                  || prop == ConeProperty::Shift
+                  || prop == ConeProperty::ModuleRank
+                  || prop == ConeProperty::ModuleGenerators ) {
+                    errorOutput() << prop << " only computable in the inhomogeneous case." << endl;
+                    throw BadInputException();
+                }
+            }
+        }  //end if test(i)
+    }
+}
+
 
 /* conversion */
-namespace { 
+namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 27) { //to detect changes in size of Enum
+        if (ConeProperty::EnumSize != 28) { //to detect changes in size of Enum
             errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
             errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
             throw FatalException();
@@ -171,6 +195,7 @@ namespace {
         CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
         CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
         CPN.at(ConeProperty::DualMode) = "DualMode";
+        CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
         CPN.at(ConeProperty::ApproximateRatPolytope) = "ApproximateRatPolytope";
         return CPN;
     }

@@ -57,6 +57,7 @@ namespace ConeProperty {
         InclusionExclusionData,
         DualMode,
         ApproximateRatPolytope,
+        DefaultMode,
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }
@@ -73,7 +74,6 @@ public:
     ConeProperties& set(ConeProperty::Enum, bool value=true);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties& set(const ConeProperties&);
-    // ConeProperties& set(Mode::ComputationMode mode);
 
     /* reset (=unset) properties */
     ConeProperties& reset(ConeProperty::Enum Property);
@@ -85,6 +85,10 @@ public:
     bool none() const;
     size_t count () const;
 
+    /* the following methods are used internally */
+    void set_preconditions();    // activate properties which are needed implicitily
+    void prepare_compute_options();
+    void check_sanity(bool inhomogeneous);
 
     /* print it in a nice way */
     friend std::ostream& operator<<(std::ostream&, const ConeProperties&);

@@ -64,6 +64,7 @@ class Full_Cone {
     // control of what to compute
     bool do_triangulation;
     bool do_partial_triangulation;
+    bool do_determinants;
     bool do_multiplicity;
     bool do_Hilbert_basis;
     bool do_deg1_elements;
@@ -72,10 +73,12 @@ class Full_Cone {
     bool do_Stanley_dec;
     bool do_excluded_faces;
     bool do_approximation;
+    bool do_default_mode;
 
     // internal helper control variables
     bool do_only_multiplicity;
     bool do_evaluation;
+    bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     ConeProperties is_Computed;    
 
     // data of the cone (input or output)
@@ -128,7 +131,6 @@ class Full_Cone {
 
     // control of pyramids, recusrion and parallelization
     bool is_pyramid; // false for top cone
-    bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     long last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     bool recursion_allowed;  // to allow or block recursive formation of pytamids
     bool multithreaded_pyramid; // indicates that this cone is computed in parallel threads
