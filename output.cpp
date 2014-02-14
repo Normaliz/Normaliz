@@ -401,7 +401,7 @@ template<typename Integer>
 void Output<Integer>::write_files() const {
     const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
     size_t i, nr;
-    Matrix<Integer> Generators = Result->getGenerators();
+    Matrix<Integer> Generators(Result->getGenerators());
     Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanes());
     vector<libnormaliz::key_t> rees_ideal_key;
 
@@ -487,8 +487,7 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::ExtremeRays)) {
                 out << "degrees of extreme rays:"<<endl;
                 map<Integer,long> deg_count;
-                vector<Integer> degs =
-                  Matrix<Integer>(Result->getExtremeRays()).MxV(Result->getGrading());
+                vector<Integer> degs = Result->getExtremeRaysMatrix().MxV(Result->getGrading());
                 for (i=0; i<degs.size(); ++i) {
                     deg_count[degs[i]/denom]++;
                 }
@@ -570,7 +569,7 @@ void Output<Integer>::write_files() const {
 
         if (nr_orig_gens > 0) {
             out << nr_orig_gens <<" original generators:"<<endl;
-            Matrix<Integer>(Result->getGeneratorsOfToricRing()).pretty_print(out);
+            Result->getGeneratorsOfToricRingMatrix().pretty_print(out);
             out << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
@@ -593,8 +592,7 @@ void Output<Integer>::write_files() const {
                 }    
 
                 if (typ) {
-                    Matrix<Integer> V=Hilbert_Basis_Full_Cone.multiplication(BasisChange.to_sublattice_dual(Support_Hyperplanes).transpose());
-                    write_matrix_typ(V);
+                    write_matrix_typ(Hilbert_Basis_Full_Cone.multiplication(BasisChange.to_sublattice_dual(Support_Hyperplanes).transpose()));
                 }
             }
 
@@ -613,7 +611,7 @@ void Output<Integer>::write_files() const {
         }
         Matrix<Integer> Extreme_Rays;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
-            Extreme_Rays = Result->getExtremeRays();          //write extreme rays
+            Extreme_Rays = Result->getExtremeRaysMatrix();          //write extreme rays
             size_t nr_ex_rays = Extreme_Rays.nr_of_rows();
 
             write_matrix_ext(Extreme_Rays);
@@ -631,7 +629,7 @@ void Output<Integer>::write_files() const {
             //equations
             size_t dim = Extreme_Rays.nr_of_columns();
             size_t nr_of_equ = dim-rank;
-            Matrix<Integer> Equations = Result->getEquations();
+            Matrix<Integer> Equations = Result->getEquationsMatrix();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
                 Equations.pretty_print(out);
@@ -641,7 +639,7 @@ void Output<Integer>::write_files() const {
             }
     
             //congruences
-            Matrix<Integer> Congruences = Result->getCongruences();
+            Matrix<Integer> Congruences = Result->getCongruencesMatrix();
             size_t nr_of_cong = Congruences.nr_of_rows();
             if (nr_of_cong > 0) {
                 out << nr_of_cong <<" congruences:" <<endl;
@@ -672,7 +670,7 @@ void Output<Integer>::write_files() const {
         }
         
         if ( Result->isComputed(ConeProperty::Deg1Elements) ) {
-            Matrix<Integer> Hom = Result->getDeg1Elements();
+            Matrix<Integer> Hom = Result->getDeg1ElementsMatrix();
             write_matrix_ht1(Hom);
             nr=Hom.nr_of_rows();
             out<<nr<<" Hilbert basis elements of degree 1:"<<endl;

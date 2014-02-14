@@ -431,7 +431,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                 prepare_input_type_2(it->second); 
                 break;
             case Type::rees_algebra: 
-                if(ExcludedFaces.size()>0){
+                if(ExcludedFaces.nr_of_rows()>0){
                     errorOutput() << "excluded_faces not allowed for rees_algebra!" << endl;
                     throw BadInputException();
                 }
@@ -447,7 +447,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
 template<typename Integer>
 void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< vector<Integer> > >& multi_input_data) {
 
-    if(ExcludedFaces.size()>0){
+    if(ExcludedFaces.nr_of_rows()>0){
         errorOutput() << "Excluded faces not allowed for lattice ideal input!" << endl;
         throw BadInputException();
     }
@@ -479,7 +479,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
     Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Integer> Positive_Embedded_Generators=Generators.multiplication(Selected_Supp_Hyp_Trans);
-    GeneratorsOfToricRing = Positive_Embedded_Generators.get_elements();
+    GeneratorsOfToricRing = Positive_Embedded_Generators;
     is_Computed.set(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
 
@@ -491,7 +491,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
             is_Computed.set(ConeProperty::Grading, false);
         }
     }
-    prepare_input_type_1(GeneratorsOfToricRing);
+    prepare_input_type_1(GeneratorsOfToricRing.get_elements()); //TODO
 }
 
 /* only used by the constructors */
@@ -523,46 +523,73 @@ Sublattice_Representation<Integer> Cone<Integer>::getBasisChange() const{
 }
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getGeneratorsOfToricRing() const {
+Matrix<Integer> Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
     return GeneratorsOfToricRing;
 }
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getGeneratorsOfToricRing() const {
+    return GeneratorsOfToricRing.get_elements();
+}
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getGenerators() const {
+Matrix<Integer> Cone<Integer>::getGeneratorsMatrix() const {
     return Generators;
 }
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getGenerators() const {
+    return Generators.get_elements();
+}
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
+Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
     if (!inhomogeneous) {
-        return Matrix<Integer>(Generators).submatrix(ExtremeRays).get_elements();
+        return Generators.submatrix(ExtremeRays);
     } else {
-        Matrix<Integer> Rays = Matrix<Integer>(Generators).submatrix(ExtremeRays);
+        Matrix<Integer> Rays = Generators.submatrix(ExtremeRays);
         Rays.cut_columns(dim-1);
-        return Rays.get_elements();
+        return Rays;
     }
 }
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
+    return getExtremeRaysMatrix().get_elements();
+}
 
+template<typename Integer>
+Matrix<Integer> Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
+    return Generators.submatrix(VerticesOfPolyhedron);
+}
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getVerticesOfPolyhedron() const {
-    return Matrix<Integer>(Generators).submatrix(VerticesOfPolyhedron).get_elements();
+    return Generators.submatrix(VerticesOfPolyhedron).get_elements();
 }
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
+Matrix<Integer> Cone<Integer>::getSupportHyperplanesMatrix() const {
    return SupportHyperplanes;
 }
-
-//TODO gehts nicht auch in der SR?
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getEquations() const {
-    size_t rank = BasisChange.get_rank();
-    if (rank == 0)                   // the zero cone
-        return Matrix<Integer>(dim).get_elements(); // identity matrix
-    Matrix<Integer> Equations=Matrix<Integer>(getExtremeRays()).kernel();
-    return Equations.get_elements();
+vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
+   return SupportHyperplanes.get_elements();
 }
 
+template<typename Integer>
+Matrix<Integer> Cone<Integer>::getEquationsMatrix() const {
+    size_t rank = BasisChange.get_rank();
+    if (rank == 0)                   // the zero cone
+        return Matrix<Integer>(dim); // identity matrix
+    else 
+        return getExtremeRaysMatrix().kernel();
+}
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getEquations() const {
+    return getEquationsMatrix().get_elements();
+}
+
+template<typename Integer>
+Matrix<Integer> Cone<Integer>::getCongruencesMatrix() const {
+    return BasisChange.get_congruences();
+}
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getCongruences() const {
     return BasisChange.get_congruences().get_elements();
@@ -571,9 +598,9 @@ vector< vector<Integer> > Cone<Integer>::getCongruences() const {
 template<typename Integer>
 map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
     map<InputType, vector< vector<Integer> > > c;
-    c.insert(pair< InputType,vector< vector<Integer> > >(Type::inequalities,SupportHyperplanes));
-    c.insert(pair< InputType,vector< vector<Integer> > >(Type::equations,getEquations()));
-    c.insert(pair< InputType,vector< vector<Integer> > >(Type::congruences,getCongruences()));
+    c[Type::inequalities] = SupportHyperplanes.get_elements();
+    c[Type::equations] = getEquations();
+    c[Type::congruences] = getCongruences();
     return c;
 }
 
@@ -604,18 +631,30 @@ Integer Cone<Integer>::getTriangulationDetSum() const {
 }
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
+Matrix<Integer> Cone<Integer>::getHilbertBasisMatrix() const {
     return HilbertBasis;
 }
-
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
-    return ModuleGenerators;
+vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
+    return HilbertBasis.get_elements();
 }
 
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
+Matrix<Integer> Cone<Integer>::getModuleGeneratorsMatrix() const {
+    return ModuleGenerators;
+}
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
+    return ModuleGenerators.get_elements();
+}
+
+template<typename Integer>
+Matrix<Integer> Cone<Integer>::getDeg1ElementsMatrix() const {
     return Deg1Elements;
+}
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
+    return Deg1Elements.get_elements();
 }
 
 template<typename Integer>
@@ -707,7 +746,7 @@ template<typename Integer>
 void Cone<Integer>::prepare_input_type_0(const vector< vector<Integer> >& Input) {
     Generators = Input;
     is_Computed.set(ConeProperty::Generators);
-    Sublattice_Representation<Integer> Basis_Change(Matrix<Integer>(Input),true);
+    Sublattice_Representation<Integer> Basis_Change(Generators,true);
     compose_basis_change(Basis_Change);
 }
 
@@ -718,7 +757,7 @@ void Cone<Integer>::prepare_input_type_1(const vector< vector<Integer> >& Input)
     Generators = Input;
     is_Computed.set(ConeProperty::Generators);
 
-    Sublattice_Representation<Integer> Basis_Change(Matrix<Integer>(Input),false);
+    Sublattice_Representation<Integer> Basis_Change(Generators,false);
     compose_basis_change(Basis_Change);
 }
 
@@ -729,19 +768,16 @@ template<typename Integer>
 void Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input) {
     size_t j;
     size_t nr = Input.size();
-    if (nr == 0) {
-        Generators = Input;
-    } else { //append a column of 1
-        Generators = vector< vector<Integer> >(nr, vector<Integer>(dim));
-        for (size_t i=0; i<nr; i++) {
-            for (j=0; j<dim-1; j++) 
-                Generators[i][j] = Input[i][j];
-            Generators[i][dim-1]=1;
-        }
+    //append a column of 1
+    Generators = Matrix<Integer>(nr, dim);
+    for (size_t i=0; i<nr; i++) {
+        for (j=0; j<dim-1; j++) 
+            Generators[i][j] = Input[i][j];
+        Generators[i][dim-1]=1;
     }
     is_Computed.set(ConeProperty::Generators);
 
-    compose_basis_change(Sublattice_Representation<Integer>(Matrix<Integer>(Generators),true));
+    compose_basis_change(Sublattice_Representation<Integer>(Generators,true));
 
     // use the added last component as grading
     Grading = vector<Integer>(dim,0);
@@ -793,7 +829,7 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
         }
     }
     is_Computed.set(ConeProperty::ReesPrimary);
-    Generators = Full_Cone_Generators.get_elements();
+    Generators = Full_Cone_Generators;
     is_Computed.set(ConeProperty::Generators);
 
     compose_basis_change(Sublattice_Representation<Integer>(Full_Cone_Generators.nr_of_columns()));
@@ -851,9 +887,9 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, cons
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
-        SupportHyperplanes = (Matrix<Integer>(dim)).get_elements();
+        SupportHyperplanes = Matrix<Integer>(dim);
     } else {
-        SupportHyperplanes = Inequalities.get_elements();
+        SupportHyperplanes = Inequalities;
     }
     // is_Computed.set(ConeProperty::SupportHyperplanes);
 
@@ -877,8 +913,8 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
                       << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
-    if (isComputed(ConeProperty::Generators) && Generators.size() > 0) {
-        vector<Integer> degrees = Matrix<Integer>(Generators).MxV(lf);
+    if (isComputed(ConeProperty::Generators) && Generators.nr_of_rows() > 0) {
+        vector<Integer> degrees = Generators.MxV(lf);
         for (size_t i=0; i<degrees.size(); ++i) {
             if (degrees[i]<1 && (!inhomogeneous || Generators[i][dim-1]==0)) { // in the inhomogeneous case: test only generators of tail cone
                 errorOutput() << "Grading gives non-positive value " << degrees[i]
@@ -890,7 +926,7 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
         vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(lf);
         GradingDenom=v_make_prime(test_grading);
     } else {
-        GradingDenom = 1;                               
+        GradingDenom = 1;
     }
     //check if the linear forms are the same
     if (isComputed(ConeProperty::Grading) && Grading == lf) {
@@ -900,14 +936,14 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     is_Computed.set(ConeProperty::Grading);
 
     //remove data that depend on the grading 
-    Deg1Elements.clear();
-    HilbertQuasiPolynomial.clear();
     is_Computed.reset(ConeProperty::IsDeg1Generated);
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
     is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
     is_Computed.reset(ConeProperty::Deg1Elements);
+    Deg1Elements = Matrix<Integer>(0,dim);
     is_Computed.reset(ConeProperty::HilbertSeries);
     is_Computed.reset(ConeProperty::Multiplicity);
+
 }
 
 //---------------------------------------------------------------------------
@@ -915,6 +951,13 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    // handle zero cone as special case, makes our life easier
+    if (BasisChange.get_rank() == 0) {
+        set_zero_cone();
+        ToCompute.reset(is_Computed);
+        return ToCompute;
+    }
+
     if (inhomogeneous) {//TODO in den constructor verlagern
         Truncation.resize(dim),
         Truncation[dim-1]=1;
@@ -929,27 +972,27 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* preparation: get generators if necessary */
     compute_generators();
+    if (BasisChange.get_rank() == 0) {
+        set_zero_cone();
+        ToCompute.reset(is_Computed);
+        return ToCompute;
+    }
     if (!isComputed(ConeProperty::Generators)) {
         errorOutput()<<"FATAL ERROR: Could not get Generators. This should not happen!"<<endl;
         throw FatalException();
     }
+
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
         return ToCompute;  
     }
 
-    //TODO workaround for zero cones :(
-    //die dimension bleibt in der liste nicht gespeichert, wenn sie leer ist, darum passt es dann beim transformieren nicht
-    if(Generators.size()==0) {
-        return ToCompute;
-    }
-
     if (rees_primary) // && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
         ToCompute.set(ConeProperty::Triangulation);
 
     /* Create a Full_Cone FC */
-    Full_Cone<Integer> FC(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
+    Full_Cone<Integer> FC(BasisChange.to_sublattice(Generators));
 
     /* activate bools in FC */
 
@@ -990,8 +1033,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         FC.Extreme_Rays = ExtremeRays;
         FC.is_Computed.set(ConeProperty::ExtremeRays);
     }
-    if (ExcludedFaces.size()!=0) {
-        FC.ExcludedFaces = BasisChange.to_sublattice_dual(Matrix<Integer>(ExcludedFaces));
+    if (ExcludedFaces.nr_of_rows()!=0) {
+        FC.ExcludedFaces = BasisChange.to_sublattice_dual(ExcludedFaces);
     }
     
     if (inhomogeneous){
@@ -1006,7 +1049,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     if (isComputed(ConeProperty::SupportHyperplanes)) {
-        vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)).get_elements();
+        vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(SupportHyperplanes).get_elements();
         FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
         FC.is_Computed.set(ConeProperty::SupportHyperplanes);
         FC.do_all_hyperplanes = false;
@@ -1031,30 +1074,30 @@ template<typename Integer>
 void Cone<Integer>::compute_generators() {
     //create Generators from SupportHyperplanes
     //if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
-    if (!isComputed(ConeProperty::Generators) && SupportHyperplanes.size()!=0) {
+    if (!isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()!=0) {
         if (verbose) {
             verboseOutput() <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
         }
-        Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes)));
+        Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(SupportHyperplanes));
         Dual_Cone.support_hyperplanes();
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
-            Generators = BasisChange.from_sublattice(Extreme_Rays).get_elements();
+            Generators = BasisChange.from_sublattice(Extreme_Rays);
             is_Computed.set(ConeProperty::Generators);
-            ExtremeRays = vector<bool>(Generators.size(),true);
+            ExtremeRays = vector<bool>(Generators.nr_of_rows(),true);
             is_Computed.set(ConeProperty::ExtremeRays);
             if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
                 //get minmal set of support_hyperplanes
                 Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
-                SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp).get_elements();
+                SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp);
                 is_Computed.set(ConeProperty::SupportHyperplanes);
             }
             Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
             compose_basis_change(Basis_Change);
 
             // check grading and compute denominator
-            if (isComputed(ConeProperty::Grading) && Generators.size() > 0) {
+            if (isComputed(ConeProperty::Grading) && Generators.nr_of_rows() > 0) {
                 setGrading(Grading);
             }
         }
@@ -1068,15 +1111,14 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     bool do_only_Deg1_Elements=ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
         
     //if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
-    if(isComputed(ConeProperty::Generators) && SupportHyperplanes.size()==0){
+    if(isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()==0){
         if (verbose) {
             verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
         }
-        Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Matrix<Integer>(Generators)));
+        Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Generators));
         Tmp_Cone.inhomogeneous=inhomogeneous;  // necessary to prevent computation of grading in the inhomogeneous case
         Tmp_Cone.support_hyperplanes();        // also marks extreme rays
         extract_data(Tmp_Cone);
-        // (Matrix<Integer>(SupportHyperplanes)).print(cout);
         
     }
     
@@ -1091,13 +1133,15 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
             verboseOutput() <<endl<< "Computing extreme rays for the dual mode:";
         }
         compute_generators();   // computes extreme rays, but does not find grading ! 
+        if (BasisChange.get_rank() == 0) {
+            set_zero_cone();
+            ToCompute.reset(is_Computed);
+            return ToCompute;
+        }
     }
-    // cout << "grad " << isComputed(ConeProperty::Grading) << endl;
-    // Matrix<Integer>(Generators).print(cout);
     
     if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
-        vector<Integer> lf=Matrix<Integer>(Generators).submatrix(ExtremeRays).find_linear_form_low_dim();
-        // Matrix<Integer>(Generators).submatrix(ExtremeRays).print(cout);
+        vector<Integer> lf= Generators.submatrix(ExtremeRays).find_linear_form_low_dim();
         cout << "lf " << lf;
         if(lf.size()==dim)
             setGrading(lf); 
@@ -1108,13 +1152,13 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     }
     
     //if (!isComputed(ConeProperty::SupportHyperplanes)) {
-    if (SupportHyperplanes.size()==0) {
+    if (SupportHyperplanes.nr_of_rows()==0) {
         errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
         throw FatalException();
     }
 
     size_t i,j;
-    Matrix<Integer> Inequ_on_Ker = BasisChange.to_sublattice_dual(Matrix<Integer>(SupportHyperplanes));
+    Matrix<Integer> Inequ_on_Ker = BasisChange.to_sublattice_dual(SupportHyperplanes);
     size_t newdim = Inequ_on_Ker.nr_of_columns();
     //now sort the inequalities, hopefully this makes the computation faster
     Integer norm;
@@ -1168,7 +1212,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     ConeDM.inhomogeneous=inhomogeneous;
     ConeDM.do_only_Deg1_Elements=do_only_Deg1_Elements;
     if(isComputed(ConeProperty::Generators))
-        ConeDM.Generators=BasisChange.to_sublattice(Matrix<Integer>(Generators));
+        ConeDM.Generators=BasisChange.to_sublattice(Generators);
     if(isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRays=ExtremeRays;
     ConeDM.hilbert_basis_dual();
@@ -1178,6 +1222,12 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
         ConeDM.to_sublattice(SR);
         compose_basis_change(SR);
+        // handle zero cone as special case, makes our life easier
+        if (BasisChange.get_rank() == 0) {
+            set_zero_cone();
+            ToCompute.reset(is_Computed);
+            return ToCompute;
+        }
     }
     Full_Cone<Integer> FC(ConeDM);
     // Give extra data to FC
@@ -1212,16 +1262,16 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     
     if (FC.isComputed(ConeProperty::Generators)) {
-        Generators = BasisChange.from_sublattice(FC.getGenerators()).get_elements();
+        Generators = BasisChange.from_sublattice(FC.getGenerators());
         is_Computed.set(ConeProperty::Generators);
     }
     if (FC.isComputed(ConeProperty::ExtremeRays)) {
         ExtremeRays = FC.getExtremeRays();
-        assert(ExtremeRays.size() == Generators.size());
+        assert(ExtremeRays.size() == Generators.nr_of_rows());
         if (inhomogeneous) {
             // separate extreme rays to rays of the level 0 cone
             // and the verticies of the polyhedron, which are in level >=1
-            size_t nr_gen = Generators.size();
+            size_t nr_gen = Generators.nr_of_rows();
             VerticesOfPolyhedron = vector<bool>(nr_gen);
             for (size_t i=0; i<nr_gen; i++) {
                 if (ExtremeRays[i] && Generators[i].back() != 0) {
@@ -1241,7 +1291,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             vector<Integer> irr_hyp_subl = BasisChange.to_sublattice_dual(irr_hyp);
             FC.Support_Hyperplanes.remove(irr_hyp_subl);
         }
-        SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes()).get_elements();
+        SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes());
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
@@ -1310,27 +1360,27 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         if (inhomogeneous) {
             // separate (capped) Hilbert basis to the Hilbert basis of the level 0 cone
             // and the module generators in level 1
-            HilbertBasis = vector< vector<Integer> >();     // row length dim-1
-            ModuleGenerators = vector< vector<Integer> >(); // row length dim
+            HilbertBasis = Matrix<Integer>(0,dim-1);     // row length dim-1
+            ModuleGenerators = Matrix<Integer>(0,dim);   // row length dim
             typename list< vector<Integer> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
             vector<Integer> tmp;
             for (; FCHB != FC.Hilbert_Basis.end(); ++FCHB) {
                 tmp = BasisChange.from_sublattice(*FCHB);
                 if (tmp.back() == 0) { // Hilbert basis element of the cone at level 0
                     tmp.pop_back();
-                    HilbertBasis.push_back(tmp);
+                    HilbertBasis.append(tmp);
                 } else {              // module generator
-                    ModuleGenerators.push_back(tmp);
+                    ModuleGenerators.append(tmp);
                 }
             }
             is_Computed.set(ConeProperty::ModuleGenerators);
         } else { // homogeneous
-            HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis()).get_elements();
+            HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis());
         }
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
-        Deg1Elements = BasisChange.from_sublattice(FC.getDeg1Elements()).get_elements();
+        Deg1Elements = BasisChange.from_sublattice(FC.getDeg1Elements());
         is_Computed.set(ConeProperty::Deg1Elements);
     }
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
@@ -1346,7 +1396,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
     }
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
-        ExcludedFaces = BasisChange.from_sublattice_dual(FC.getExcludedFaces()).get_elements();
+        ExcludedFaces = BasisChange.from_sublattice_dual(FC.getExcludedFaces());
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
     // Matrix<Integer>(ExcludedFaces).print(cout);
@@ -1378,6 +1428,91 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
     if (verbose) {
         verboseOutput() << " done." <<endl;
+    }
+}
+
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::set_zero_cone() {
+    // Generators and GeneratorsOfToricRing need no handling
+    ExtremeRays = vector<bool>(Generators.nr_of_rows(), false);
+    is_Computed.set(ConeProperty::ExtremeRays);
+
+    SupportHyperplanes = Matrix<Integer>(0,dim);
+    is_Computed.set(ConeProperty::SupportHyperplanes);
+
+    TriangulationSize = 0;
+    is_Computed.set(ConeProperty::TriangulationSize);
+
+    TriangulationDetSum = 0;
+    is_Computed.set(ConeProperty::TriangulationDetSum);
+
+    Triangulation.clear();
+    is_Computed.set(ConeProperty::Triangulation);
+
+    StanleyDec.clear();
+    is_Computed.set(ConeProperty::StanleyDec);
+
+    multiplicity = 1;
+    is_Computed.set(ConeProperty::Multiplicity);
+
+    HilbertBasis = Matrix<Integer>(0,dim);
+    is_Computed.set(ConeProperty::HilbertBasis);
+
+    Deg1Elements = Matrix<Integer>(0,dim);
+    is_Computed.set(ConeProperty::Deg1Elements);
+
+    HSeries = HilbertSeries(vector<num_t>(1,1),vector<denom_t>()); // 1/1
+    is_Computed.set(ConeProperty::HilbertSeries);
+
+    if (!is_Computed.test(ConeProperty::Grading)) {
+        Grading = vector<Integer>(dim);
+        GradingDenom = 1;
+        is_Computed.set(ConeProperty::Grading);
+    }
+
+    pointed = true;
+
+    deg1_extreme_rays = true;
+    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+
+    deg1_hilbert_basis = true;
+    is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
+
+    integrally_closed = true;
+    is_Computed.set(ConeProperty::IsIntegrallyClosed);
+
+
+    if (ExcludedFaces.nr_of_rows() != 0) {
+        InExData.clear();
+        InExData.push_back(make_pair(vector<key_t>(),-1)); //TODO ist das der richtige Faktor?
+        is_Computed.set(ConeProperty::InclusionExclusionData);
+    }
+
+    if (inhomogeneous) {  // empty set of solutions
+        VerticesOfPolyhedron = vector<bool>(Generators.nr_of_rows(), false);
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);
+
+        shift = 0;
+        is_Computed.set(ConeProperty::Shift);
+
+        module_rank = 0;
+        is_Computed.set(ConeProperty::ModuleRank);
+
+        ModuleGenerators = Matrix<Integer>(0,dim);
+        is_Computed.set(ConeProperty::ModuleGenerators);
+    }
+
+    if (inhomogeneous || ExcludedFaces.nr_of_rows() != 0) {
+        multiplicity = 0;
+        is_Computed.set(ConeProperty::Multiplicity);
+
+        HSeries.reset(); // 0/1
+        is_Computed.set(ConeProperty::HilbertSeries);
+
     }
 }
 

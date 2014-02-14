@@ -87,7 +87,7 @@ public:
     // return what was NOT computed
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
     ConeProperties compute(ConeProperties ToCompute);
-//is done by compiler throug creation of CPies   // return true iff it could be computed
+    //is done by compiler through creation of CPies
     ConeProperties compute(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
@@ -103,17 +103,26 @@ public:
 //---------------------------------------------------------------------------
 
     size_t getDim() const { return dim; };
+    Matrix<Integer> getGeneratorsMatrix() const;
     vector< vector<Integer> > getGenerators() const;
+    Matrix<Integer> getExtremeRaysMatrix() const;
     vector< vector<Integer> > getExtremeRays() const;
+    Matrix<Integer> getVerticesOfPolyhedronMatrix() const;
     vector< vector<Integer> > getVerticesOfPolyhedron() const;
+    Matrix<Integer> getSupportHyperplanesMatrix() const;
     vector< vector<Integer> > getSupportHyperplanes() const;
+    Matrix<Integer> getEquationsMatrix() const;
     vector< vector<Integer> > getEquations() const;
+    Matrix<Integer> getCongruencesMatrix() const;
     vector< vector<Integer> > getCongruences() const;
-    map< InputType , vector< vector<Integer> > > getConstraints() const;
+    map< InputType, vector< vector<Integer> > > getConstraints() const;
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
+    Matrix<Integer> getHilbertBasisMatrix() const;
     vector< vector<Integer> > getHilbertBasis() const;
+    Matrix<Integer> getModuleGeneratorsMatrix() const;
     vector< vector<Integer> > getModuleGenerators() const;
+    Matrix<Integer> getDeg1ElementsMatrix() const;
     vector< vector<Integer> > getDeg1Elements() const;
     vector<Integer> getGrading() const;
     Integer getGradingDenom() const;
@@ -127,6 +136,7 @@ public:
     Integer getReesPrimaryMultiplicity() const;
     Integer getShift() const;
     size_t getModuleRank() const;
+    Matrix<Integer> getGeneratorsOfToricRingMatrix() const;
     vector< vector<Integer> > getGeneratorsOfToricRing() const;
     Sublattice_Representation<Integer> getBasisChange() const;
     // the following methods return const refs to avoid copying of big data objects
@@ -145,22 +155,21 @@ private:
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     bool BC_set;
     ConeProperties is_Computed;
-    vector< vector<Integer> > GeneratorsOfToricRing;
-    vector< vector<Integer> > Generators;
+    Matrix<Integer> GeneratorsOfToricRing;
+    Matrix<Integer> Generators;
     vector<bool> ExtremeRays;
     vector<bool> VerticesOfPolyhedron;
-    vector< vector<Integer> > SupportHyperplanes;
-    vector< vector<Integer> > ExcludedFaces;
+    Matrix<Integer> SupportHyperplanes;
+    Matrix<Integer> ExcludedFaces;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
-    vector< vector<Integer> > HilbertBasis;
-    vector< vector<Integer> > Deg1Elements;
+    Matrix<Integer> HilbertBasis;
+    Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
-    vector< vector<Integer> > HilbertQuasiPolynomial;
     vector<Integer> Grading;
     vector<Integer> Truncation;
     Integer GradingDenom;
@@ -173,7 +182,7 @@ private:
     Integer ReesPrimaryMultiplicity;
     Integer shift; // needed in the inhomogeneous case to make degrees positive
     size_t module_rank; // for the inhomogeneous case
-    vector< vector<Integer> > ModuleGenerators;
+    Matrix<Integer> ModuleGenerators;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
     
@@ -206,6 +215,8 @@ private:
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     void extract_data(Full_Cone<Integer>& FC);
 
+    /* set this object to the zero cone */
+    void set_zero_cone();
 };
 
 // helpers
