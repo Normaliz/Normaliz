@@ -222,6 +222,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     // remove empty matrices
+    it = multi_input_data.begin();
     for(; it != multi_input_data.end();) {    
         if (it->second.size() == 0)
             multi_input_data.erase(it++); 
@@ -967,8 +968,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.prepare_compute_options();
     ToCompute.check_sanity(inhomogeneous);
 
-    if (ToCompute.test(ConeProperty::DualMode))
+    if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
+        if (ToCompute.none())
+            return ToCompute;
+    }
 
     /* preparation: get generators if necessary */
     compute_generators();
@@ -1437,7 +1441,11 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
 template<typename Integer>
 void Cone<Integer>::set_zero_cone() {
-    // Generators and GeneratorsOfToricRing need no handling
+    // GeneratorsOfToricRing needs no handling
+
+    Generators = Matrix<Integer>(0,dim);
+    is_Computed.set(ConeProperty::Generators);
+
     ExtremeRays = vector<bool>(Generators.nr_of_rows(), false);
     is_Computed.set(ConeProperty::ExtremeRays);
 

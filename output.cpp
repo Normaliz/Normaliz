@@ -401,8 +401,8 @@ template<typename Integer>
 void Output<Integer>::write_files() const {
     const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
     size_t i, nr;
-    Matrix<Integer> Generators(Result->getGenerators());
-    Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanes());
+    Matrix<Integer> Generators(Result->getGeneratorsMatrix());
+    Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanesMatrix());
     vector<libnormaliz::key_t> rees_ideal_key;
 
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
@@ -434,7 +434,7 @@ void Output<Integer>::write_files() const {
         }
         if (Result->isComputed(ConeProperty::ReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
-            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
+            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
             nr = Hilbert_Basis.nr_of_rows();
             for (i = 0; i < nr; i++) {
                 if (Hilbert_Basis.read(i,dim-1)==1) {
@@ -573,7 +573,7 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
-            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasis();
+            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
             if (egn || typ) {
                 Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
                 if (egn) {
