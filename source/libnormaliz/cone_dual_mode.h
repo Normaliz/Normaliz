@@ -83,7 +83,8 @@ public:
 
 
     /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm */
-    void cut_with_halfspace_hilbert_basis(const size_t & hyp_counter, const bool & lifting, vector<Integer> & halfspace);
+    void cut_with_halfspace_hilbert_basis(const size_t & hyp_counter, const bool  lifting, 
+            vector<Integer> & halfspace, bool pointed);
     
     /* computes the Hilbert basis after adding a support hyperplane with the dual algorithm , general case */
     Matrix<Integer> cut_with_halfspace(const size_t & hyp_counter, const Matrix<Integer>& Basis_Max_Subspace);

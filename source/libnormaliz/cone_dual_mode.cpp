@@ -389,7 +389,8 @@ size_t counter=0,counter1=0;
 // and the production of new elements can be skipped.
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp_counter, const bool& lifting, vector<Integer>& old_lin_subspace_half){
+void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp_counter, 
+         const bool lifting, vector<Integer>& old_lin_subspace_half, bool pointed){
     if (verbose==true) {
         verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
     }
@@ -431,19 +432,22 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         hyp_element[hyp_counter]=orientation;
         hyp_element[0]=orientation;
         if (orientation==0){ //never
+            // Hilbert_Basis.push_front(hyp_element); //
             Neutral_Irred.push_back(hyp_element);
         }
         else{
+            // Hilbert_Basis.push_front(hyp_element); // 
             Positive_Irred.push_back(hyp_element);
             v_scalar_multiplication<Integer>(hyp_element,-1);
             hyp_element[hyp_counter]=orientation;
             hyp_element[0]=orientation;
+            // Hilbert_Basis.push_front(hyp_element); //
             Negative_Irred.push_back(hyp_element);
         }
     } //end lifting
     
-    bool no_pos_in_level0=true;
-    bool all_positice_level=true;
+    bool no_pos_in_level0=pointed;
+    bool all_positice_level=pointed;
     for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) { //dividing into negative and positive
         (*h)[hyp_counter]=v_scalar_product_unequal_vectors_end<Integer>(hyperplane,(*h));
         if ((*h)[hyp_counter]>0) {
@@ -993,6 +997,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis_pointed(const siz
 template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
     size_t i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
+    // cout << "Dim Unterraum vorher" << Basis_Max_Subspace.nr_of_rows() << endl;
     vector <Integer> scalar_product,hyperplane=SupportHyperplanes.read(hyp_counter-1),old_lin_subspace_half;
     bool lifting=false;
     Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace;
@@ -1028,12 +1033,15 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
             old_lin_subspace_half=Basis_Max_Subspace.VxM(Lifted_Basis_Factor_Space_over_Ker_and_Ker.read(0));
         }
     }
-    if(Basis_Max_Subspace.nr_of_rows()>=0)
-        cut_with_halfspace_hilbert_basis(hyp_counter, lifting,old_lin_subspace_half);
+    bool pointed=(Basis_Max_Subspace.nr_of_rows()==0);
+    // if(Basis_Max_Subspace.nr_of_rows()>0){
+        cut_with_halfspace_hilbert_basis(hyp_counter, lifting,old_lin_subspace_half,pointed);
+        // cout << "Dim Unterraum nachher " << New_Basis_Max_Subspace.nr_of_rows() << endl;
+    /*}
     else{
         cut_with_halfspace_hilbert_basis_pointed(hyp_counter); // not used at present
         first_pointed=false;
-    }
+    }*/
     return New_Basis_Max_Subspace;
 }
 
