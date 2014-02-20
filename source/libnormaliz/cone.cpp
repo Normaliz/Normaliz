@@ -1222,7 +1222,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     ConeDM.hilbert_basis_dual();
     
     //create a Full_Cone out of ConeDM
-    if ( ConeDM.Generators.rank() < ConeDM.dim ) {
+    //if ( ConeDM.Generators.rank() < ConeDM.dim ) {
         Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
         ConeDM.to_sublattice(SR);
         compose_basis_change(SR);
@@ -1232,7 +1232,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
             ToCompute.reset(is_Computed);
             return ToCompute;
         }
-    }
+    //}
     Full_Cone<Integer> FC(ConeDM);
     // Give extra data to FC
     if ( isComputed(ConeProperty::Grading) ) {
