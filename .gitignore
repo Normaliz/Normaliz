@@ -1,9 +1,38 @@
+*~
+
+# ignore normaliz executables
 norm32*
 norm64*
 normbig*
 normaliz
 normaliz-*
 nmzIntegrate
+
+# ignore object files
 obj*
-*~
-*.o
+*.[ao]
+
+# ignore normaliz output files
+*.out
+*.intOut
+*.gen
+*.egn
+*cst
+*ht1
+*esp
+*ext
+*typ
+*tri
+*tgn
+*dec
+*inv
+
+# ignore latex output files
+*.pdf
+*.ps
+*.dvi
+*.aux
+*.idx
+*.toc
+*.log
+*.backup
