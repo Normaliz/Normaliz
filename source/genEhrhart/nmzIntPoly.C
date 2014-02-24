@@ -397,7 +397,7 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
 
     size_t i;
     size_t m=A.size();
-    size_t dim=m;                    // TO DO: eliminate thsi duplication
+    size_t dim=m;                    // TO DO: eliminate this duplication
     vector<RingElem> v(m,zero(R));
     RingElem g(zero(R));
     
@@ -408,19 +408,22 @@ RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vect
     }
     vector<RingElem> w=VxM(v,A);
     vector<RingElem> w1(w.size()+1,zero(R));
-    w1[0]=one(R);
-    w1[0]*=lcmDets;
+    w1[0]=RingElem(R,lcmDets);
     for(i=1;i<w1.size();++i) 
         w1[i]=w[i-1]; 
     
     RingHom phi=PolyAlgebraHom(R,R,w1);
     
     RingElem G(one(R));
+    RingElem G1(zero(R));
     for(i=0;i<FF.myFactors.size();++i){
         if(FF.myMultiplicities[i]==1)
             G*=phi(FF.myFactors[i]);
-        else           
-            G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
+        else{
+            G1=phi(FF.myFactors[i]);
+            for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
+                G*=G1;
+        }
     }
     
     if(inExSimplData.size()==0){    // not really necesary, but a slight shortcut
@@ -488,28 +491,20 @@ RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing RZZ){
 
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     RingElem G(zero(RZZ));
-    BigRat QQCoeff;
-    vector<long> v;
     for (; !IsEnded(mon); ++mon){
-        IsRational(QQCoeff,coeff(mon));
-        exponents(v,PP(mon));
-        PushBack(G,LC(num(QQCoeff)*one(RZZ)),v);
+         PushBack(G,num(coeff(mon)),PP(mon));
     }
     return(G);
 }
 
+
 RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing R){
 // F is a polynomial over RingZZ
 // This function converts it into a polynomial over RingQQ
-
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
     RingElem G(zero(R));
-    BigInt ZZCoeff;
-    vector<long> v;
     for (; !IsEnded(mon); ++mon){
-        IsInteger(ZZCoeff,coeff(mon));
-        exponents(v,PP(mon));
-        PushBack(G,LC(ZZCoeff*one(R)),v);
+        PushBack(G,RingElem(RingQQ(),coeff(mon)),PP(mon));  
     }
     return(G);
 }

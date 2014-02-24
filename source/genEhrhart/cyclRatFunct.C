@@ -115,7 +115,7 @@ RingElem denom2poly(const SparsePolyRing& P, const vector<long>& d){
     RingElem t=indets(P)[0];
     RingElem f(one(P));
     for(size_t i=1;i<d.size();++i)
-        f=f*power(1-power(t,i),d[i]);
+        f*=power(1-power(t,i),d[i]);
     return(f);
 }
 

@@ -108,7 +108,7 @@ BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vec
     }
     vector<RingElem> w=VxM(v,A);
     vector<RingElem> w1(w.size()+1,zero(R));
-    w1[0]=lcmDegs*one(R);
+    w1[0]=RingElem(R,lcmDegs);
     for(i=1;i<w1.size();++i) // we have to shift w since the (i+1)st variable
         w1[i]=w[i-1];        // corresponds to coordinate i (counted from 0)
         
@@ -116,13 +116,17 @@ BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vec
     RingHom phi=PolyAlgebraHom(R,R,w1);
     
     RingElem G(one(R));
+    RingElem G1(zero(R));
     for(i=0;i<FF.myFactors.size();++i){
-        // cout << "Multiplying by (power of) factor " << i+1 << ": " << NumTerms(phi(FF.myFactors[i])) << " terms in transformed factor" << endl;
-        // RingElem Pow(power(phi(FF.myFactors[i]),FF.myMultiplicities[i]));
-        // cout << "Power has " << NumTerms(Pow) << " terms" << endl;
-        G*=power(phi(FF.myFactors[i]),FF.myMultiplicities[i]);
-        // cout << "Result has " << NumTerms(G) << " terms" << endl;
+        if(FF.myMultiplicities[i]==1)
+            G*=phi(FF.myFactors[i]);
+        else{
+            G1=phi(FF.myFactors[i]);
+            for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
+                G*=G1;
+        }
     }
+
     // cout << "Evaluating integral over unit simplex" << endl;
     // boost::dynamic_bitset<> dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
