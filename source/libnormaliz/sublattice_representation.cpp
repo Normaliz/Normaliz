@@ -144,7 +144,7 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     assert(rank == SR.dim); //TODO vielleicht doch exception?
 
     rank = SR.rank;
-    index = index * SR.index;
+    index = SR.index;
     // A = SR.A * A
     A = SR.A.multiplication(A);
     // B = B * SR.B
