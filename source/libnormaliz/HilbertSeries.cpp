@@ -144,13 +144,14 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 }
 
 void HilbertSeries::collectData() const {
-	 if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
+    if (denom_classes.empty()) return;
+	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
     map< vector<denom_t>, vector<num_t> >::iterator it;
     for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
         performAdd(it->second, it->first);
     }
     denom_classes.clear();
-	 if (verbose) verboseOutput() << " done." << endl;
+	if (verbose) verboseOutput() << " done." << endl;
 }
 
 // simplify, see class description
@@ -159,7 +160,7 @@ void HilbertSeries::simplify() const {
         return;
     collectData();
 /*    if (verbose) {
-        cout << "Hilbert series before simplification: "<< endl << *this;
+        verboseOutput() << "Hilbert series before simplification: "<< endl << *this;
     }*/
     vector<mpz_class> q, r, poly; //polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
@@ -262,7 +263,7 @@ void HilbertSeries::simplify() const {
     }
 
 /*    if (verbose) {
-        cout << "Simplified Hilbert series: " << endl << *this;
+        verboseOutput() << "Simplified Hilbert series: " << endl << *this;
     }*/
     is_simplified = true;
 }
@@ -311,7 +312,6 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
             poly_div(factor, r, coeff_vector<mpz_class>(period), coeff_vector<mpz_class>(d));
             assert(r.size()==0); //assert remainder r is 0
             //TODO more efficient method *=
-            //TODO Exponentiation by squaring of factor, then *=
             for (i=0; i < rit->second; ++i) {
                 norm_num = poly_mult(norm_num, factor);
             }
@@ -357,10 +357,12 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
 
 // returns the numerator, repr. as vector of coefficients, the h-vector
 const vector<mpz_class>& HilbertSeries::getNum() const {
+    simplify();
     return num;
 }
 // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
 const map<long, denom_t>& HilbertSeries::getDenom() const {
+    simplify();
     return denom;
 }
 
