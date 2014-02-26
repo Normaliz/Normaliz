@@ -2826,16 +2826,27 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     Matrix<Integer> G(1,dim);
     G[0]=Grading;
     
-    
     Lineare_Transformation<Integer> NewBasis = Transformation(G); // gives a new basis in which the grading is a coordinate
     Matrix<Integer> U=NewBasis.get_right();   // the basis elements are the columns of U
+
     Integer dummy_denom;                             
     vector<Integer> dummy_diag(dim); 
     Matrix<Integer> T=invert(U,dummy_diag,dummy_denom);       // T is the coordinate transformation
                                                             // to the new basis: v --> Tv (in this case)
-                                                    // for which the grading is the FIRST coordinate  
-    
+                                                    // for which the grading is the FIRST coordinate
+
     assert(dummy_denom==1);  // for safety 
+
+    // It can happen that -Grading has become the first row of T, but we want Grading. If necessary we replace the
+    // first row by its negative, and correspondingly the first column of U by its negative
+
+    if(T[0]!=Grading){
+        for(size_t i=0;i<dim;++i){
+            U[i][0]*=-1;
+            T[0][i]*=-1;
+        }
+    }
+    assert(T[0] == Grading);
     
     list<vector<Integer> > L; // collects the generators of the approximating cone
     for(size_t i=0;i<nr_gen;++i){
