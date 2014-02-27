@@ -84,6 +84,16 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
     dim = Result->getDim();
     rank = Result->getBasisChange().get_rank();
+    homogeneous = !Result->isInhomogeneous();
+    if (homogeneous) {
+        of_cone       = "";
+        of_monoid     = "";
+        of_polyhedron = "";
+    } else {
+        of_cone       = " of recession cone";
+        of_monoid     = " of recession monoid";
+        of_polyhedron = " of polyhedron";
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -426,10 +436,15 @@ void Output<Integer>::write_files() const {
         if (nr_orig_gens > 0) {
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
-        if (Result->isComputed(ConeProperty::HilbertBasis)) {
-            out << Result->getHilbertBasis().size() <<" Hilbert basis elements"<<endl;
+        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+            size_t nr_module_gen = Result->getModuleGeneratorsMatrix().nr_of_rows();
+            out << nr_module_gen <<" module generators" << endl;
         }
-        if (Result->isComputed(ConeProperty::Deg1Elements)) {
+        if (Result->isComputed(ConeProperty::HilbertBasis)) {
+            out << Result->getHilbertBasis().size() <<" Hilbert basis elements"
+                << of_monoid << endl;
+        }
+        if (homogeneous && Result->isComputed(ConeProperty::Deg1Elements)) {
             out << Result->getDeg1Elements().size() <<" Hilbert basis elements of degree 1"<<endl;
         }
         if (Result->isComputed(ConeProperty::ReesPrimary)
@@ -443,23 +458,36 @@ void Output<Integer>::write_files() const {
             }
             out << rees_ideal_key.size() <<" generators of integral closure of the ideal"<<endl;
         }
+        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+            size_t nr_vert = Result->getVerticesOfPolyhedronMatrix().nr_of_rows();
+            out << nr_vert <<" vertices of polyhedron" << endl;
+        }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getExtremeRays().size();
-            out << nr_ex_rays <<" extreme rays"<<endl;
+            out << nr_ex_rays <<" extreme rays" << of_cone << endl;
         }
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
-            out << Result->getSupportHyperplanes().size() <<" support hyperplanes"<<endl;
+            out << Result->getSupportHyperplanes().size() <<" support hyperplanes"
+                << of_polyhedron << endl;
         }
         out<<endl;
-        if (rank == dim){                   //write rank and index
-            out<<"rank = "<<rank<<" (maximal)"<<endl;
+/*        if (Result->isComputed(ConeProperty::ExcludedFaces)) {
+            out << Result->getExcludedFaces().size() <<" excluded faces"<<endl;
+            out << endl;
+        }*/
+        if (homogeneous) {
+            if (rank == dim){                   //write rank and index
+                out<<"rank = "<<rank<<" (maximal)"<<endl;
+            }
+            else {
+                out<<"rank = "<<rank<<endl;
+            }
+                out<<"index = "<< BasisChange.get_index() <<endl;
+        } else { // now inhomogeneous case //TODO richtige werte!!!!
+            out << "dim = "  << dim  << endl;
+            out << "rank = " << rank << endl;
         }
-        else {
-            out<<"rank = "<<rank<<endl;
-        }
-        out<<"index = "<< BasisChange.get_index() <<endl;
-
-        if (Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
+        if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
                 out << "original monoid is integrally closed"<<endl;
             } else {
@@ -484,7 +512,7 @@ void Output<Integer>::write_files() const {
                 out << "with denominator = " << denom << endl;
             }
             out << endl;
-            if (Result->isComputed(ConeProperty::ExtremeRays)) {
+            if (homogeneous && Result->isComputed(ConeProperty::ExtremeRays)) {
                 out << "degrees of extreme rays:"<<endl;
                 map<Integer,long> deg_count;
                 vector<Integer> degs = Result->getExtremeRaysMatrix().MxV(Result->getGrading());
@@ -500,7 +528,7 @@ void Output<Integer>::write_files() const {
             }
         }
         out<<endl;
-        if ( Result->isComputed(ConeProperty::IsDeg1HilbertBasis)
+        if (homogeneous && Result->isComputed(ConeProperty::IsDeg1HilbertBasis)
           && Result->isDeg1ExtremeRays() ) {
             if (Result->isDeg1HilbertBasis()) {
                 out << "Hilbert basis elements are of degree 1";
@@ -508,6 +536,9 @@ void Output<Integer>::write_files() const {
                 out << "Hilbert basis elements are not of degree 1";
             }
             out<<endl<<endl;
+        }
+        if ( Result->isComputed(ConeProperty::ModuleRank) ) {
+            out << "module rank = " << Result->getModuleRank() << endl;
         }
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
             out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
@@ -524,6 +555,10 @@ void Output<Integer>::write_files() const {
             out << "denominator with " << nr_factors << " factors:" << endl;
             out << HS.getDenom();
             out << endl;
+            if (Result->isComputed(ConeProperty::Shift)) {
+                out << "shift = " << Result->getShift() << endl << endl;
+            }
+
             long period = HS.getPeriod();
             if (period == 1) {
                 out << "Hilbert polynomial:" << endl;
@@ -572,6 +607,12 @@ void Output<Integer>::write_files() const {
             Result->getGeneratorsOfToricRingMatrix().pretty_print(out);
             out << endl;
         }
+        if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+            Matrix<Integer> Module_Gen = Result->getModuleGeneratorsMatrix();
+            out << Module_Gen.nr_of_rows() <<" module generators:" << endl;
+            Module_Gen.pretty_print(out);
+            out << endl;
+        }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
             if (egn || typ) {
@@ -598,7 +639,7 @@ void Output<Integer>::write_files() const {
 
             write_matrix_gen(Hilbert_Basis);
             nr=Hilbert_Basis.nr_of_rows();
-            out<<nr<<" Hilbert basis elements:"<<endl;
+            out << nr << " Hilbert basis elements" << of_monoid << ":" << endl;
             Hilbert_Basis.pretty_print(out);
             out << endl;
             if (Result->isComputed(ConeProperty::ReesPrimary)) {
@@ -609,35 +650,39 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
+        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+            Matrix<Integer> Vert_Polyh = Result->getVerticesOfPolyhedronMatrix();
+            out << Vert_Polyh.nr_of_rows() <<" vertices of polyhedron:" << endl;
+            Vert_Polyh.pretty_print(out);
+            out << endl;
+        }
         Matrix<Integer> Extreme_Rays;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             Extreme_Rays = Result->getExtremeRaysMatrix();          //write extreme rays
             size_t nr_ex_rays = Extreme_Rays.nr_of_rows();
 
             write_matrix_ext(Extreme_Rays);
-            out<<nr_ex_rays<<" extreme rays:"<<endl;
+            out << nr_ex_rays << " extreme rays" << of_cone << ":" << endl;
             Extreme_Rays.pretty_print(out);
             out << endl;
         }
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes:"<<endl;
+        out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
+            << of_polyhedron << ":" << endl;
         Support_Hyperplanes.pretty_print(out);
         out << endl;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             //equations
-            size_t dim = Extreme_Rays.nr_of_columns();
-            size_t nr_of_equ = dim-rank;
             Matrix<Integer> Equations = Result->getEquationsMatrix();
+            size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
                 Equations.pretty_print(out);
                 out << endl;
-            } else {
-                Equations = Matrix<Integer>(0,dim);
             }
-    
+
             //congruences
             Matrix<Integer> Congruences = Result->getCongruencesMatrix();
             size_t nr_of_cong = Congruences.nr_of_rows();
