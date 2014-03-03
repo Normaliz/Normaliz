@@ -36,3 +36,10 @@ obj*
 *.toc
 *.log
 *.backup
+*.gz
+
+# ignore WinEdt etc. backup files
+
+*.bak
+*.sav
+
