@@ -135,6 +135,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   dim(fc.dim),
   det_sum(0),
   mult_sum(0),
+  candidates_size(0),
   collected_elements_size(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
@@ -558,6 +559,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     Integer norm;
     Integer normG;
     Candidates.clear();
+    candidates_size = 0;
     typename list <vector <Integer> >::iterator c;
     size_t last;
     vector<Integer> point(dim,0);
@@ -655,6 +657,10 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 //        if (!C.do_partial_triangulation || s.height >= 2) {
             if (C.do_Hilbert_basis) {
                 Candidates.push_back(v_merge(elements[last],norm));
+                candidates_size++;
+                if (candidates_size >= 1000000) {
+                    local_reduction();
+                }
                 continue;
             }
             if(C.do_deg1_elements && normG==volume && !isDuplicate(elements[last])) {
@@ -772,6 +778,7 @@ void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction() {
+    Candidates.splice(Candidates.begin(), Hilbert_Basis); //start reduction from scratch
     Candidates.sort(compare_last<Integer>);
     typename list <vector <Integer> >::iterator cand=Candidates.begin();
     while(cand != Candidates.end()) {
@@ -780,6 +787,7 @@ void SimplexEvaluator<Integer>::local_reduction() {
         else // move it to the Hilbert basis
             Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, cand++);
     }
+    candidates_size = 0;
 }
 
 template<typename Integer>
