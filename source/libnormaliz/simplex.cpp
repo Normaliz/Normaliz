@@ -557,7 +557,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     // now we create and evaluate the points in par
     Integer norm;
     Integer normG;
-    list < vector<Integer> > Candidates;
+    Candidates.clear();
     typename list <vector <Integer> >::iterator c;
     size_t last;
     vector<Integer> point(dim,0);
@@ -686,18 +686,10 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(!C.do_Hilbert_basis)
         return volume;  // no local reduction in this case
 
-    Candidates.sort(compare_last<Integer>);
-    typename list <vector <Integer> >::iterator cand=Candidates.begin();
-    while(cand != Candidates.end()) {
-        if (is_reducible_interior(*cand)) // erase the candidate
-            cand = Candidates.erase(cand);
-        else // move it to the Hilbert basis
-            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, cand++);
-    }
+    local_reduction();
 
     //inverse transformation
     //some test for arithmetic overflow may be implemented here
-
     typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
     while (jj != Hilbert_Basis.end()) {
         if (isDuplicate(*jj)) { //delete the element
@@ -777,6 +769,18 @@ void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
 }
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::local_reduction() {
+    Candidates.sort(compare_last<Integer>);
+    typename list <vector <Integer> >::iterator cand=Candidates.begin();
+    while(cand != Candidates.end()) {
+        if (is_reducible_interior(*cand)) // erase the candidate
+            cand = Candidates.erase(cand);
+        else // move it to the Hilbert basis
+            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, cand++);
+    }
+}
 
 template<typename Integer>
 bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& new_element){

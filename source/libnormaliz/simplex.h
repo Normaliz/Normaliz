@@ -120,6 +120,7 @@ class SimplexEvaluator {
     size_t nrInExSimplData;
     // bool InExTouched;                        // indicates whether any hvector!=0 // see above
 
+    void local_reduction();
     //checks whether a new element is reducible by the local Hilbert basis
     bool is_reducible_interior(const vector< Integer >& new_element);
 
