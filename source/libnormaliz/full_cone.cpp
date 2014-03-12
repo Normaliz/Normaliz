@@ -2219,7 +2219,7 @@ void Full_Cone<Integer>::find_grading(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::find_level0_dim(){
+void Full_Cone<Integer>::find_level0_dim(){  // TO DO: use information of find_module_rank
 
     if(!isComputed(ConeProperty::Generators)){
         errorOutput() << "Missing Generators. THIS SOULD NOT HAPPEN!"  << endl;
@@ -3475,6 +3475,7 @@ void Full_Cone<Integer>::dual_mode() {
     if(inhomogeneous){
        set_levels();
        find_module_rank();
+       find_level0_dim();
        cout << "module rank " << module_rank << endl;
     }
 }

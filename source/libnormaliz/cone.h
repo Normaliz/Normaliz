@@ -182,6 +182,8 @@ private:
     Integer ReesPrimaryMultiplicity;
     Integer shift; // needed in the inhomogeneous case to make degrees positive
     size_t module_rank; // for the inhomogeneous case
+    int affine_dim; //dimension of polyhedron
+    size_t recession_rank; // rank of recession monoid
     Matrix<Integer> ModuleGenerators;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
