@@ -56,7 +56,7 @@ BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
 
     for (; !IsEnded(mon); ++mon){
       exponents(v,PP(mon)); // this function gives the exponent vector back as v
-      sort(v.begin()++,v.end());
+      sort(v.begin()+1,v.begin()+rank+1);
       ord_mon=orderedMons.find(v); // insert into map or add coefficient
       if(ord_mon!=orderedMons.end()){
           ord_mon->second+=coeff(mon);
