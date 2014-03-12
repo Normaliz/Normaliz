@@ -2369,7 +2369,7 @@ void Full_Cone<Integer>::set_levels() {
 
 template<typename Integer>
 void Full_Cone<Integer>::sort_gens_by_degree() {
-    if(gen_degrees.size()==0 || deg1_extreme_rays)
+    if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
         return;
     
     list<vector<Integer> > genList;
@@ -2382,7 +2382,14 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
     unsigned long i,j;
     
     for(i=0;i<nr_gen;i++){
-        v[0]=gen_degrees[i];
+        if(isComputed(ConeProperty::Grading))
+            v[0]=gen_degrees[i];
+        else{
+            v[0]=0;
+            for(j=0;j<dim;++j)
+                v[0]+=Iabs(Generators[i][j]);       
+        }
+                
         v[1]=i;                // keep the input order as far as possible
         w=Generators[i];
         for(j=0;j<dim;j++)
@@ -2400,7 +2407,8 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
     typename list<vector<Integer> >::iterator g=genList.begin();
     for(;g!=genList.end();++g){
         v=*g;
-        gen_degrees[i]=explicit_cast_to_long<Integer>(v[0]);
+        if(isComputed(ConeProperty::Grading))
+            gen_degrees[i]=explicit_cast_to_long<Integer>(v[0]);
         if(inhomogeneous)
             gen_levels[i]=explicit_cast_to_long<Integer>(v[dim+3]);
         Extreme_Rays[i]=false;
@@ -2440,6 +2448,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
 
 template<typename Integer>
 Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
+
     if (isComputed(ConeProperty::ExtremeRays)) {
         vector<key_t> marked_extreme_rays(0);
         for (size_t i=0; i<nr_gen; i++) {
