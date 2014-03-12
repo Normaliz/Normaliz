@@ -516,16 +516,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         //generating new elements
         
         list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
-        size_t psize=0;
-        #pragma omp parallel
+        size_t psize=Positive_Irred.size();
+        #pragma omp parallel if (Negative_Irred.size()*psize>10000)
         {
         #pragma omp single nowait
         record_order(Negative_Irred,Negative);
         
         #pragma omp single nowait
         record_order(Positive_Irred,Positive);
-        #pragma omp single nowait
-        psize=Positive_Irred.size();
         
         #pragma omp single nowait
         record_order(Neutral_Irred,Neutral);

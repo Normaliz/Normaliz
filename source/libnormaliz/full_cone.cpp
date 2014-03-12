@@ -320,7 +320,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 //=====================================================================
 // parallel from here
 
-    #pragma omp parallel private(jj) //if(nr_NegNonSimp+nr_NegSimp>1000)
+    #pragma omp parallel private(jj) if(nr_NegNonSimp+nr_NegSimp>1000)
     {
     size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
@@ -2041,7 +2041,7 @@ void Full_Cone<Integer>::do_vars_check() {
 
     // activate implications
     if (do_Stanley_dec)     keep_triangulation = true;
-    if (keep_triangulation) do_triangulation = true;
+    if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
     if (do_determinants)    do_triangulation = true;
     if (do_h_vector)        do_triangulation = true;
@@ -3464,6 +3464,7 @@ void Full_Cone<Integer>::dual_mode() {
         check_integrally_closed();
     }
     if(inhomogeneous){
+       set_levels();
        find_module_rank();
        cout << "module rank " << module_rank << endl;
     }

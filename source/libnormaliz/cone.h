@@ -200,8 +200,8 @@ private:
     void prepare_input_type_2(const vector< vector<Integer> >& Input);
     void prepare_input_type_3(const vector< vector<Integer> >& Input);
 
-    void prepare_input_type_456(const Matrix<Integer>& Congruences, const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
-    void prepare_input_type_45(const Matrix<Integer>& Equations, const Matrix<Integer>& Inequalities);
+    void prepare_input_type_456(const Matrix<Integer>& Congruences, const Matrix<Integer>& Equations, Matrix<Integer>& Inequalities);
+    void prepare_input_type_45(const Matrix<Integer>& Equations, Matrix<Integer>& Inequalities);
 
     /* only used by the constructors */
     void initialize();
