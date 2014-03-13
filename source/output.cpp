@@ -82,8 +82,8 @@ void Output<Integer>::set_name(const string& n){
 template<typename Integer>
 void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
-    dim = Result->getDim();
-    rank = Result->getBasisChange().get_rank();
+    dim = Result->getEmbeddingDim();
+    rank = Result->getRank();
     homogeneous = !Result->isInhomogeneous();
     if (homogeneous) {
         of_cone       = "";
@@ -324,6 +324,12 @@ void Output<Integer>::write_matrix_ht1(const Matrix<Integer>& M) const{
 
 //---------------------------------------------------------------------------
 
+string is_maximal(long a, long b) {
+    return (a == b) ? " (maximal)" : "";
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Output<Integer>::write_inv_file() const{
     if (inv==true) {//printing .inv file
@@ -476,16 +482,15 @@ void Output<Integer>::write_files() const {
             out << endl;
         }*/
         if (homogeneous) {
-            if (rank == dim){                   //write rank and index
-                out<<"rank = "<<rank<<" (maximal)"<<endl;
-            }
-            else {
-                out<<"rank = "<<rank<<endl;
-            }
-                out<<"index = "<< BasisChange.get_index() <<endl;
-        } else { // now inhomogeneous case //TODO richtige werte!!!!
-            out << "dim = "  << dim  << endl;
-            out << "rank = " << rank << endl;
+            // out << "embedding dimension = " << dim << endl;
+            out << "rank = "<< rank << is_maximal(rank,dim) << endl;
+            out << "index = "<< BasisChange.get_index() << endl;
+        } else { // now inhomogeneous case
+            if (Result->isComputed(ConeProperty::AffineDim))
+                out << "affine dimension of the polyedron = "
+                    << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
+            if (Result->isComputed(ConeProperty::RecessionRank))
+                out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
         }
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
@@ -538,10 +543,13 @@ void Output<Integer>::write_files() const {
             out<<endl<<endl;
         }
         if ( Result->isComputed(ConeProperty::ModuleRank) ) {
-            out << "module rank = " << Result->getModuleRank() << endl;
+            out << "module rank = "<< Result->getModuleRank() << endl;
         }
         if ( Result->isComputed(ConeProperty::Multiplicity) ) {
-            out<<"multiplicity = "<<Result->getMultiplicity()<<endl<<endl;
+            out << "multiplicity = "<< Result->getMultiplicity() << endl;
+        }
+        if ( Result->isComputed(ConeProperty::ModuleRank) || Result->isComputed(ConeProperty::Multiplicity)) {
+            out << endl;
         }
         
         if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
@@ -581,7 +589,7 @@ void Output<Integer>::write_files() const {
                     HQP.pretty_print(out,true);
                     out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
                 }
-                out << endl<< endl;
+                out << endl << endl;
             }
 
         }

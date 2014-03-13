@@ -39,6 +39,8 @@ namespace ConeProperty {
         Triangulation,
         Multiplicity,
         Shift,
+        RecessionRank,
+        AffineDim,
         ModuleRank,
         HilbertBasis,
         ModuleGenerators,

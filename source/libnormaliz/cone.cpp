@@ -512,6 +512,21 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
 
 /* getter */
 template<typename Integer>
+size_t Cone<Integer>::getRank() const {
+    return BasisChange.get_rank();
+}
+
+template<typename Integer>
+size_t Cone<Integer>::getRecessionRank() const {
+    return recession_rank;
+}
+
+template<typename Integer>
+long Cone<Integer>::getAffineDim() const {
+    return affine_dim;
+}
+
+template<typename Integer>
 Sublattice_Representation<Integer> Cone<Integer>::getBasisChange() const{
     return BasisChange;
 }
@@ -1360,6 +1375,16 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     if (FC.isComputed(ConeProperty::Shift)) {
         shift = FC.getShift();
         is_Computed.set(ConeProperty::Shift);
+    }
+    if (FC.isComputed(ConeProperty::RecessionRank)) {
+        recession_rank = FC.level0_dim;
+        is_Computed.set(ConeProperty::RecessionRank);
+        if (getRank() == recession_rank) {
+            affine_dim = -1;
+        } else {
+            affine_dim = getRank()-1;
+        }
+        is_Computed.set(ConeProperty::AffineDim);
     }
     if (FC.isComputed(ConeProperty::ModuleRank)) {
         module_rank = FC.getModuleRank();

@@ -102,13 +102,24 @@ public:
 //          get the results, these methods do not start a computation
 //---------------------------------------------------------------------------
 
-    size_t getDim() const { return dim; };
+    // dimension and rank invariants
+    size_t getEmbeddingDim() const { return dim; };   // is always known
+    size_t getRank() const;                           // depends on ExtremeRays
+    // only for inhomogeneous case:
+    size_t getRecessionRank() const;
+    long getAffineDim() const;
+    size_t getModuleRank() const;
+
     Matrix<Integer> getGeneratorsMatrix() const;
     vector< vector<Integer> > getGenerators() const;
+
     Matrix<Integer> getExtremeRaysMatrix() const;
     vector< vector<Integer> > getExtremeRays() const;
+
     Matrix<Integer> getVerticesOfPolyhedronMatrix() const;
     vector< vector<Integer> > getVerticesOfPolyhedron() const;
+
+    // The following constraints depend all on ConeProperty::SupportHyperplanes
     Matrix<Integer> getSupportHyperplanesMatrix() const;
     vector< vector<Integer> > getSupportHyperplanes() const;
     Matrix<Integer> getEquationsMatrix() const;
@@ -116,17 +127,25 @@ public:
     Matrix<Integer> getCongruencesMatrix() const;
     vector< vector<Integer> > getCongruences() const;
     map< InputType, vector< vector<Integer> > > getConstraints() const;
+
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
+
     Matrix<Integer> getHilbertBasisMatrix() const;
     vector< vector<Integer> > getHilbertBasis() const;
+
     Matrix<Integer> getModuleGeneratorsMatrix() const;
     vector< vector<Integer> > getModuleGenerators() const;
+
     Matrix<Integer> getDeg1ElementsMatrix() const;
     vector< vector<Integer> > getDeg1Elements() const;
+
+    // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading() const;
     Integer getGradingDenom() const;
+
     mpq_class getMultiplicity() const;
+
     bool isPointed() const;
     bool isInhomogeneous() const;
     bool isDeg1ExtremeRays() const;
@@ -135,7 +154,6 @@ public:
     bool isReesPrimary() const;
     Integer getReesPrimaryMultiplicity() const;
     Integer getShift() const;
-    size_t getModuleRank() const;
     Matrix<Integer> getGeneratorsOfToricRingMatrix() const;
     vector< vector<Integer> > getGeneratorsOfToricRing() const;
     Sublattice_Representation<Integer> getBasisChange() const;
@@ -144,12 +162,12 @@ public:
     const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData() const;
     const list< STANLEYDATA<Integer> >& getStanleyDec() const;
-    
+
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------
 
-private:    
+private:
     size_t dim;
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
@@ -181,15 +199,15 @@ private:
     bool rees_primary;
     Integer ReesPrimaryMultiplicity;
     Integer shift; // needed in the inhomogeneous case to make degrees positive
-    size_t module_rank; // for the inhomogeneous case
     int affine_dim; //dimension of polyhedron
     size_t recession_rank; // rank of recession monoid
+    size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
-    
 
-    // main input processing     
+
+    // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_lattice_ideal(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
@@ -207,10 +225,10 @@ private:
 
     /* only used by the constructors */
     void initialize();
-    
+
     /* compute the generators using the support hyperplanes */
     void compute_generators();
-    
+
     /* compute method for the dual_mode, used in compute(mode) */
     ConeProperties compute_dual(ConeProperties ToCompute);
 
@@ -227,7 +245,7 @@ template<typename Integer>
 vector<vector<Integer> > find_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data, 
                                const InputType type);
 
-template<typename Integer>                               
+template<typename Integer>
 void insert_zero_column(vector< vector<Integer> >& mat, size_t col);
 
 template<typename Integer>

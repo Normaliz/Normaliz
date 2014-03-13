@@ -2231,6 +2231,7 @@ void Full_Cone<Integer>::find_level0_dim(){  // TO DO: use information of find_m
         if(gen_levels[i]==0)
             Help[i]=Generators[i];
     level0_dim=Help.rank();
+    is_Computed.set(ConeProperty::RecessionRank);
 }
 
 //---------------------------------------------------------------------------
@@ -2240,6 +2241,7 @@ void Full_Cone<Integer>::find_module_rank(){
 
      if(level0_dim==dim-1){
         module_rank=1;
+        is_Computed.set(ConeProperty::ModuleRank);
         return;
      }      
     
