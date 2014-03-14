@@ -477,10 +477,10 @@ void Output<Integer>::write_files() const {
                 << of_polyhedron << endl;
         }
         out<<endl;
-/*        if (Result->isComputed(ConeProperty::ExcludedFaces)) {
+        if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getExcludedFaces().size() <<" excluded faces"<<endl;
             out << endl;
-        }*/
+        }
         if (homogeneous) {
             // out << "embedding dimension = " << dim << endl;
             out << "rank = "<< rank << is_maximal(rank,dim) << endl;
@@ -702,17 +702,32 @@ void Output<Integer>::write_files() const {
                 Congruences = Matrix<Integer>(0,dim+1);
             }
 
+            //excluded faces
+            Matrix<Integer> ExFaces;
+            size_t nr_of_exfaces = 0;
+            if (Result->isComputed(ConeProperty::ExcludedFaces)) {
+                ExFaces = Result->getExcludedFacesMatrix();
+                nr_of_exfaces = ExFaces.nr_of_rows();
+                out << nr_of_exfaces <<" excluded faces:" <<endl;
+                ExFaces.pretty_print(out);
+                out << endl;
+            } else {
+                ExFaces = Matrix<Integer>(0,dim);
+            }
+
             if(cst) {
                 string cst_string = name+".cst";
                 const char* cst_file = cst_string.c_str();
                 ofstream cst_out(cst_file);
     
                 Support_Hyperplanes.print(cst_out);
-                cst_out<<"hyperplanes"<<endl;
+                cst_out<<"inequalities"<<endl;
                 Equations.print(cst_out);
                 cst_out<<"equations"<<endl;
                 Congruences.print(cst_out);
                 cst_out<<"congruences"<<endl;
+                ExFaces.print(cst_out);
+                cst_out<<"excluded_faces"<<endl;
                 if (Result->isComputed(ConeProperty::Grading)) {
                     cst_out << 1 << endl << dim << endl;
                     cst_out << Result->getGrading();

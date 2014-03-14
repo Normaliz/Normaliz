@@ -2934,8 +2934,8 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
             if(essential[i])
                 Help.append(ExcludedFaces[i]);
         ExcludedFaces=Help;
-    }   
-    
+    }
+    is_Computed.set(ConeProperty::ExcludedFaces);
     
     vector< pair<boost::dynamic_bitset<> , long> > InExScheme;  // now we produce the formal 
     boost::dynamic_bitset<> all_gens(nr_gen);             // inclusion-exclusion scheme

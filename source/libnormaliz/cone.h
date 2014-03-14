@@ -128,6 +128,9 @@ public:
     vector< vector<Integer> > getCongruences() const;
     map< InputType, vector< vector<Integer> > > getConstraints() const;
 
+    Matrix<Integer> getExcludedFacesMatrix() const;
+    vector< vector<Integer> > getExcludedFaces() const;
+
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
 

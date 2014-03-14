@@ -613,6 +613,14 @@ map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () co
     return c;
 }
 
+template<typename Integer>
+Matrix<Integer> Cone<Integer>::getExcludedFacesMatrix() const {
+    return ExcludedFaces;
+}
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getExcludedFaces() const {
+    return ExcludedFaces.get_elements();
+}
 
 template<typename Integer>
 const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() const {
@@ -1438,12 +1446,11 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         deg1_extreme_rays = FC.isDeg1ExtremeRays();
         is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
     }
-    if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
+    if (FC.isComputed(ConeProperty::ExcludedFaces)) {
         ExcludedFaces = BasisChange.from_sublattice_dual(FC.getExcludedFaces());
-        is_Computed.set(ConeProperty::InclusionExclusionData);
+        is_Computed.set(ConeProperty::ExcludedFaces);
     }
-    // Matrix<Integer>(ExcludedFaces).print(cout);
-    
+
     if (FC.isComputed(ConeProperty::Grading)) {
         if (!isComputed(ConeProperty::Grading)) {
             Grading = BasisChange.from_sublattice_dual(FC.getGrading());
@@ -1534,8 +1541,9 @@ void Cone<Integer>::set_zero_cone() {
 
 
     if (ExcludedFaces.nr_of_rows() != 0) {
+        is_Computed.set(ConeProperty::ExcludedFaces);
         InExData.clear();
-        InExData.push_back(make_pair(vector<key_t>(),-1)); //TODO ist das der richtige Faktor?
+        InExData.push_back(make_pair(vector<key_t>(),-1));
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
 
