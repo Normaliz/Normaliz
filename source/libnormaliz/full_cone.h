@@ -99,7 +99,9 @@ class Full_Cone {
     size_t TriangulationSize;          // number of elements in Triangulation, for efficiency
     list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
     Integer detSum;                  // sum of the determinants of the simplices
-    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition     
+    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition
+    
+    Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    
 
     // privare data controlling the computations
     vector<size_t> HypCounter; // counters used to give uniqoe number to jyperplane

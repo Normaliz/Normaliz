@@ -2219,7 +2219,7 @@ void Full_Cone<Integer>::find_grading(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::find_level0_dim(){  // TO DO: use information of find_module_rank
+void Full_Cone<Integer>::find_level0_dim(){
 
     if(!isComputed(ConeProperty::Generators)){
         errorOutput() << "Missing Generators. THIS SOULD NOT HAPPEN!"  << endl;
@@ -2230,7 +2230,10 @@ void Full_Cone<Integer>::find_level0_dim(){  // TO DO: use information of find_m
     for(size_t i=0; i<nr_gen;++i)
         if(gen_levels[i]==0)
             Help[i]=Generators[i];
-    level0_dim=Help.rank();
+        
+    ProjToLevel0Quot=Help.kernel();
+    
+    level0_dim=dim-ProjToLevel0Quot.nr_of_rows();
     is_Computed.set(ConeProperty::RecessionRank);
 }
 
@@ -2247,21 +2250,18 @@ void Full_Cone<Integer>::find_module_rank(){
     
     if(!isComputed(ConeProperty::HilbertBasis))
         return;
-        
-    Matrix<Integer> Help(nr_gen,dim);
-    for(size_t i=0; i<nr_gen;++i)
-        if(gen_levels[i]==0)
-            Help[i]=Generators[i];
-        
-    Matrix<Integer> QuotientEmbedding=Help.kernel();
     
     set<vector<Integer> > Quotient;
     vector<Integer> v;
     
+    cout << "=======================" << endl;
+    ProjToLevel0Quot.print(cout);
+    cout << "=======================" << endl;
+    
     typename list<vector<Integer> >::iterator h;
     
     for(h=Hilbert_Basis.begin();h!=Hilbert_Basis.end();++h){
-        v=QuotientEmbedding.MxV(*h);
+        v=ProjToLevel0Quot.MxV(*h);
         bool zero=true;
         for(size_t j=0;j<v.size();++j)
             if(v[j]!=0){
@@ -3446,6 +3446,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     nextGen=0;
     
     inhomogeneous=C.inhomogeneous;
+    
+    level0_dim=0; // must always be defined
 }
 
 template<typename Integer>
@@ -3476,10 +3478,12 @@ void Full_Cone<Integer>::dual_mode() {
     }
     if(inhomogeneous){
        set_levels();
-       find_module_rank();
        find_level0_dim();
+       find_module_rank();
        cout << "module rank " << module_rank << endl;
     }
+    
+    level0_dim=0; // must always be defined
 }
 
 //---------------------------------------------------------------------------
@@ -3553,6 +3557,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
+    
+    level0_dim=0; // must always be defined
 }
 
 //---------------------------------------------------------------------------
