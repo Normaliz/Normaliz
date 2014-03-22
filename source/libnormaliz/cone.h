@@ -78,6 +78,8 @@ public:
      * It will delete all data from the cone that depend on the grading!
      */
     void setGrading (const vector<Integer>& lf);
+    void setTruncation (const vector<Integer>& lf);
+    void check_trunc_nonneg(const vector< vector<Integer> >& input_gens);
 
 
 //---------------------------------------------------------------------------

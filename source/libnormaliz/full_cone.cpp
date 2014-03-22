@@ -2323,6 +2323,10 @@ void Full_Cone<Integer>::find_grading_inhom(){
 
 template<typename Integer>
 void Full_Cone<Integer>::set_degrees() {
+
+    cout << "Grading " << Grading;
+    cout << "---------" << endl;
+    Generators.print(cout);
     if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
@@ -3382,6 +3386,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     nrTotalComparisons=0;
 
     inhomogeneous=false;
+    
+    level0_dim=dim; // must always be defined
 }
 
 //---------------------------------------------------------------------------
@@ -3447,7 +3453,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     
     inhomogeneous=C.inhomogeneous;
     
-    level0_dim=0; // must always be defined
+    level0_dim=dim; // must always be defined
 }
 
 template<typename Integer>
@@ -3483,7 +3489,7 @@ void Full_Cone<Integer>::dual_mode() {
        cout << "module rank " << module_rank << endl;
     }
     
-    level0_dim=0; // must always be defined
+    level0_dim=dim; // must always be defined
 }
 
 //---------------------------------------------------------------------------

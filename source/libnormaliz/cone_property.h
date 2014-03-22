@@ -57,6 +57,7 @@ namespace ConeProperty {
         ReesPrimaryMultiplicity,
         StanleyDec,
         ExcludedFaces,
+        Truncation,
         InclusionExclusionData,
         DualMode,
         ApproximateRatPolytope,

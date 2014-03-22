@@ -118,6 +118,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
     for(;it!=multi_input_data.end();++it){
         switch(it->first){
             case Type::excluded_faces:
+            case Type::truncation:
                 errorOutput() << "This InputType combination is currently not supported!"<< endl;
                 throw BadInputException();
                 break;
@@ -171,7 +172,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // find basic input type
     bool constraints_input=false, generators_input=false, lattice_ideal_input=false;
     size_t nr_types=0;
-    size_t nr_strict_input=0; // grading and excluded_faces are non-strict input
+    size_t nr_strict_input=0; // grading, truncation and excluded_faces are non-strict input
+    bool inhom_input=false;
     
     it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
@@ -181,8 +183,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             case Type::inhom_congruences:
             case Type::strict_inequalities:
             case Type::strict_signs:
-                inhomogeneous=true;
-            case Type::signs:
+                inhom_input=true;             
+            case Type::signs:              
             case Type::inequalities:
             case Type::equations:
             case Type::congruences:
@@ -198,7 +200,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
                 lattice_ideal_input=true;
                 break;
             case Type::polyhedron:
-                inhomogeneous=true;
+                inhom_input=true;
             case Type::integral_closure:
             case Type::normalization:
             case Type::rees_algebra:
@@ -217,7 +219,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         errorOutput() << "(1) This InputType combination is currently not supported!"<< endl;
         throw BadInputException();
     }
-    if(nr_types==0){  // we have only a grading or excluded faces
+    if(nr_types==0){  // we have only a grading, truncation or excluded faces
         constraints_input=true;       
     }
     
@@ -238,8 +240,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     //determine dimension
     it = multi_input_data.begin();
     
-    if(inhomogeneous){
-        for(; it != multi_input_data.end(); ++it) { // there must be at least one inhomogeneous type
+    if(inhom_input){
+        for(; it != multi_input_data.end(); ++it) { // there must be at least one inhom_input type
             switch(it->first){
                 case Type::strict_inequalities:
                 case Type::strict_signs:
@@ -270,7 +272,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }
     }
     
-    // cout << "inhom " << inhomogeneous << " dim " << dim << endl;
+    // cout << "inhom " << inhom_input << " dim " << dim << endl;
 
     // for generators we can have only one strict input
     if(generators_input && nr_strict_input >1){
@@ -292,15 +294,26 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             throw BadInputException();
         }
     if(lf.size()==1){
-        if(inhomogeneous)
+        if(inhom_input)
             lf[0].push_back(0); // first we extend grading trivially to have the right dimension
         setGrading (lf[0]);     // will eveantually be set in full_cone.cpp
         
     }
     
+    // check for a truncation
+    lf = find_input_matrix(multi_input_data,Type::truncation);
+    if (lf.size() > 1) {
+            errorOutput() << "ERROR: Bad truncation, has "
+                          << lf.size() << " rows (should be 1)!" << endl;
+            throw BadInputException();
+        }
+    if(lf.size()==1){
+        setTruncation(lf[0]);       
+    }
+    
     // check consistence of dimension
-    size_t inhom_corr=0; // coorection in the inhomogeneous case
-    if(inhomogeneous)
+    size_t inhom_corr=0; // coorection in the inhom_input case
+    if(inhom_input)
         inhom_corr=1;
     it = multi_input_data.begin();
     size_t current_dim, test_dim;
@@ -330,8 +343,23 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }
     }
     
-    if(inhomogeneous && constraints_input)
+    if(inhom_input && constraints_input)
         homogenize_input(multi_input_data);
+        
+    // now we can unify implicit and explicit truncation
+    // Note: implicit and explicit truncation have already been excluded
+    if (inhom_input) {
+        Truncation.resize(dim),
+        Truncation[dim-1]=1;
+        is_Computed.set(ConeProperty::Truncation);
+    }        
+    if(isComputed(ConeProperty::Truncation))
+        inhomogeneous=true;
+        
+    if(inhomogeneous && ExcludedFaces.nr_of_rows()>0){
+        errorOutput() << "This InputType combination is currently not supported!"<< endl;
+        throw BadInputException();
+    }
     
     if(lattice_ideal_input){
         prepare_input_lattice_ideal(multi_input_data);
@@ -397,7 +425,19 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::check_trunc_nonneg(const vector< vector<Integer> >& input_gens){
 
+    if(!inhomogeneous)
+        return;
+    for(size_t i=0;i<input_gens.size();++i)
+        if(v_scalar_product(input_gens[i],Truncation)<0){
+            errorOutput() << "Negative value of truncation on generator " << i+1 << " !" << endl;
+            throw BadInputException();
+        }
+}
+
+//---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vector<Integer> > >& multi_input_data) {
 
@@ -406,15 +446,13 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::polyhedron:
-                for(size_t i=0;i<it->second.size();++i)
-                    if(it->second[i][dim-1]<0){
-                        errorOutput() << "Negative last coordinate in polyhedron not allowed!" << endl;
-                        throw BadInputException();
-                    }
-            case Type::integral_closure: 
+                check_trunc_nonneg(it->second);
+            case Type::integral_closure:
+                check_trunc_nonneg(it->second);
                 prepare_input_type_0(it->second); 
                 break;
-            case Type::normalization:    
+            case Type::normalization:
+                check_trunc_nonneg(it->second);     
                 prepare_input_type_1(it->second); 
                 break;
             case Type::polytope:         
@@ -422,11 +460,19 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                     errorOutput() << "Explicit grading not allowed for polytope!" << endl;
                     throw BadInputException();
                 }
+                if(inhomogeneous){
+                    errorOutput() << "Truncation not allowed for polytope!" << endl;
+                    throw BadInputException();
+                }
                 prepare_input_type_2(it->second); 
                 break;
             case Type::rees_algebra: 
                 if(ExcludedFaces.nr_of_rows()>0){
                     errorOutput() << "excluded_faces not allowed for rees_algebra!" << endl;
+                    throw BadInputException();
+                }
+                if(inhomogeneous){
+                    errorOutput() << "Truncation not allowed for rees_algrebra!" << endl;
                     throw BadInputException();
                 }
                 prepare_input_type_3(it->second); 
@@ -443,6 +489,10 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
 
     if(ExcludedFaces.nr_of_rows()>0){
         errorOutput() << "Excluded faces not allowed for lattice ideal input!" << endl;
+        throw BadInputException();
+    }
+    if(inhomogeneous){ // if true and not yet caught, a truncation must have appeared explicitly
+        errorOutput() << "Truncation not allowed for lattice ideal input!" << endl;
         throw BadInputException();
     }
         
@@ -900,31 +950,31 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, Matr
 
     // use positive orthant if no inequalities are given
     
-    SupportHyperplanes=Matrix<Integer>(0,dim);  //we need the number of columns to be dim
-    
-    bool implicit_inequ=(Inequalities.nr_of_rows() == 0);
-    if (implicit_inequ) {
+    if(inhomogeneous){
+        SupportHyperplanes=Matrix<Integer>(1,dim);  // insert truncation as first inequality
+        SupportHyperplanes[0]=Truncation;
+    }
+    else
+       SupportHyperplanes=Matrix<Integer>(0,dim); // here we start from the empty matrix
+
+    if (Inequalities.nr_of_rows() == 0) {
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
-        Inequalities = Matrix<Integer>(dim);
+        if(inhomogeneous){
+            vector<Integer> test(dim);
+            test[dim-1]=1;
+            size_t matsize=dim;
+            if(test==Truncation) // in this case "last coordinate >= 0" is already there
+                matsize=dim-1;   // we don't check for any other coincidence
+            Inequalities= Matrix<Integer>(matsize,dim);
+            for(size_t j=0;j<matsize;++j)
+                Inequalities[j][j]=1;    
+        }  
+        else
+            Inequalities = Matrix<Integer>(dim);
     }
-    
-    if(inhomogeneous){
-        if(implicit_inequ){                        // exchange first and last inequality to bring truncation to the front
-            /* Inequalities[0][0]=0;                  // truncation is first row
-            Inequalities[0][dim-1]=1;
-            Inequalities[dim-1][dim-1]=0;
-            Inequalities[dim-1][0]=1;*/
-            swap(Inequalities[0],Inequalities[dim-1]);
-        }
-        else{                                       // in this case truncation must be inserted explicitly                                    
-            Matrix<Integer> Help(1,dim);
-            Help[0][dim-1]=1;  // put truncation into Hypwerplanes as the first inequality
-            SupportHyperplanes.append(Help);
-        }     
-    }
-    
+
     SupportHyperplanes.append(Inequalities);  // now the (remaining) inequalities are inserted 
     
     // is_Computed.set(ConeProperty::SupportHyperplanes);
@@ -985,6 +1035,19 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::setTruncation (const vector<Integer>& lf) {
+    if (lf.size() != dim) {
+        errorOutput() << "Truncating linear form has wrong dimension " << lf.size()
+                      << " (should be " << dim << ")" << endl;
+        throw BadInputException();
+    }
+    Truncation=lf;
+    is_Computed.set(ConeProperty::Truncation);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // handle zero cone as special case, makes our life easier
@@ -992,12 +1055,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         set_zero_cone();
         ToCompute.reset(is_Computed);
         return ToCompute;
-    }
-
-    if (inhomogeneous) {//TODO in den constructor verlagern
-        Truncation.resize(dim),
-        Truncation[dim-1]=1;
-    }                                            
+    }                                    
 
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options();
@@ -1271,6 +1329,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     if ( isComputed(ConeProperty::Grading) ) {
         FC.Grading = BasisChange.to_sublattice_dual(Grading);
         FC.is_Computed.set(ConeProperty::Grading);
+        
         if(!inhomogeneous)
             FC.set_degrees();
     }
