@@ -38,7 +38,7 @@ enum InputType {
     equations,
     congruences,
     inhom_inequalities,
-    truncation,
+    dehomogenization,
     inhom_equations,
     inhom_congruences,
     lattice_ideal,

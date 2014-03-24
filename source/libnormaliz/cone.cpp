@@ -118,7 +118,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
     for(;it!=multi_input_data.end();++it){
         switch(it->first){
             case Type::excluded_faces:
-            case Type::truncation:
+            case Type::dehomogenization:
                 errorOutput() << "This InputType combination is currently not supported!"<< endl;
                 throw BadInputException();
                 break;
@@ -172,7 +172,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // find basic input type
     bool constraints_input=false, generators_input=false, lattice_ideal_input=false;
     size_t nr_types=0;
-    size_t nr_strict_input=0; // grading, truncation and excluded_faces are non-strict input
+    size_t nr_strict_input=0; // grading, dehomogenization and excluded_faces are non-strict input
     bool inhom_input=false;
     
     it = multi_input_data.begin();
@@ -219,7 +219,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         errorOutput() << "(1) This InputType combination is currently not supported!"<< endl;
         throw BadInputException();
     }
-    if(nr_types==0){  // we have only a grading, truncation or excluded faces
+    if(nr_types==0){  // we have only a grading, dehomogenization or excluded faces
         constraints_input=true;       
     }
     
@@ -300,10 +300,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         
     }
     
-    // check for a truncation
-    lf = find_input_matrix(multi_input_data,Type::truncation);
+    // check for a dehomogenization
+    lf = find_input_matrix(multi_input_data,Type::dehomogenization);
     if (lf.size() > 1) {
-            errorOutput() << "ERROR: Bad truncation, has "
+            errorOutput() << "ERROR: Bad dehomogenization, has "
                           << lf.size() << " rows (should be 1)!" << endl;
             throw BadInputException();
         }
@@ -432,7 +432,7 @@ void Cone<Integer>::check_trunc_nonneg(const vector< vector<Integer> >& input_ge
         return;
     for(size_t i=0;i<input_gens.size();++i)
         if(v_scalar_product(input_gens[i],Truncation)<0){
-            errorOutput() << "Negative value of truncation on generator " << i+1 << " !" << endl;
+            errorOutput() << "Negative value of dehomogenization on generator " << i+1 << " !" << endl;
             throw BadInputException();
         }
 }
@@ -452,7 +452,10 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                 prepare_input_type_0(it->second); 
                 break;
             case Type::normalization:
-                check_trunc_nonneg(it->second);     
+                if(inhomogeneous){
+                    errorOutput() << "Dehomogenization not allowed for polytope!" << endl;
+                    throw BadInputException();
+                }    
                 prepare_input_type_1(it->second); 
                 break;
             case Type::polytope:         
@@ -461,7 +464,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                     throw BadInputException();
                 }
                 if(inhomogeneous){
-                    errorOutput() << "Truncation not allowed for polytope!" << endl;
+                    errorOutput() << "Dehomogenization not allowed for polytope!" << endl;
                     throw BadInputException();
                 }
                 prepare_input_type_2(it->second); 
@@ -472,7 +475,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                     throw BadInputException();
                 }
                 if(inhomogeneous){
-                    errorOutput() << "Truncation not allowed for rees_algrebra!" << endl;
+                    errorOutput() << "Dehomogenization not allowed for rees_algrebra!" << endl;
                     throw BadInputException();
                 }
                 prepare_input_type_3(it->second); 
@@ -491,8 +494,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
         errorOutput() << "Excluded faces not allowed for lattice ideal input!" << endl;
         throw BadInputException();
     }
-    if(inhomogeneous){ // if true and not yet caught, a truncation must have appeared explicitly
-        errorOutput() << "Truncation not allowed for lattice ideal input!" << endl;
+    if(inhomogeneous){ // if true and not yet caught, a dehomogenization must have appeared explicitly
+        errorOutput() << "Dehomogenization not allowed for lattice ideal input!" << endl;
         throw BadInputException();
     }
         
@@ -1037,7 +1040,7 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 template<typename Integer>
 void Cone<Integer>::setTruncation (const vector<Integer>& lf) {
     if (lf.size() != dim) {
-        errorOutput() << "Truncating linear form has wrong dimension " << lf.size()
+        errorOutput() << "Dehomogenizing linear form has wrong dimension " << lf.size()
                       << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
