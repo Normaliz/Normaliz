@@ -128,7 +128,49 @@ Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
     }
     return P;
 }
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer int_max_value_half(){
+    Integer k=sizeof(Integer)*8-2;  // number of bytes convetred to number of bits
+    Integer test=1;
+    test = test << k;  // (maximal positive number)/2
+    return test;
+}
 
 //---------------------------------------------------------------------------
+
+template<>
+mpz_class int_max_value_half<mpz_class>(){
+    assert(false);
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void check_size(const list<vector<Integer> >& ll){
+
+    if (!test_arithmetic_overflow)
+        return;
+        
+    typename list<vector<Integer> >::const_iterator v=ll.begin();
+    
+    Integer test=int_max_value_half<Integer>();
+    // cout << "test " << test << endl;
+    
+    for(;v!=ll.end();++v){
+        for(size_t i=0;i<v->size();++i)
+            if(Iabs((*v)[i])>= test){
+            // cout << *v;
+            // cout << "i " << i << " " << Iabs((*v)[i]) << endl;
+                errorOutput()<<"Vector out of range. Imminent danger of arithmetic overflow.\n";
+                throw ArithmeticException();
+            }
+                    
+    }
+    
+
+}
 
 }

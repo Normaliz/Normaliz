@@ -56,6 +56,8 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 //returns the addition a + b, vectors must be of equal size
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b);
+template<typename Integer>
+vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integer>& b);
 
 //adds b to a reduces the result modulo m, a and b must be reduced modulo m!
 template<typename Integer>
