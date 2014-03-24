@@ -780,18 +780,26 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction() {
     Candidates.splice(Candidates.begin(), Hilbert_Basis); //start reduction from scratch
     Candidates.sort(compare_last<Integer>);
-    typename list <vector <Integer> >::iterator cand=Candidates.begin();
-    while(cand != Candidates.end()) {
-        if (is_reducible_interior(*cand)) // erase the candidate
-            cand = Candidates.erase(cand);
-        else // move it to the Hilbert basis
-            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, cand++);
-    }
+    reduce(Candidates, Candidates);
+    Hilbert_Basis.splice(Hilbert_Basis.begin(), Candidates); //start reduction from scratch
+
     candidates_size = 0;
 }
 
 template<typename Integer>
-bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& new_element){
+void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< vector<Integer> >& Reducers){
+    typename list <vector <Integer> >::iterator cand=Candi.begin();
+    while (cand != Candi.end()) {
+        if (is_reducible(*cand, Reducers)) // erase the candidate
+            cand = Candidates.erase(cand);
+        else // continue
+            ++cand;
+    }
+}
+
+
+template<typename Integer>
+bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_element, list< vector<Integer> >& Reducers){
     // the norm is at position dim
     if (new_element[dim]==0) {
         return true; // new_element=0
@@ -799,7 +807,7 @@ bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& n
     else {
         size_t i,c=0;
         typename list< vector<Integer> >::iterator j;
-        for (j =Hilbert_Basis.begin(); j != Hilbert_Basis.end(); ++j) {
+        for (j = Reducers.begin(); j != Reducers.end(); ++j) {
             if (new_element[dim]<2*(*j)[dim]) {
                 break; //new_element is not reducible;
             }
@@ -813,7 +821,7 @@ bool SimplexEvaluator<Integer>::is_reducible_interior(const vector< Integer >& n
                     }
                     if (i==dim) {
                         // move the reducer to the begin
-                        Hilbert_Basis.splice(Hilbert_Basis.begin(), Hilbert_Basis, j);
+                        //Reducers.splice(Reducers.begin(), Reducers, j);
                         return true;
                     }
                     //new_element is not in the Hilbert Basis
