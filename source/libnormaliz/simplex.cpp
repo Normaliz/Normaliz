@@ -658,7 +658,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             if (C.do_Hilbert_basis) {
                 Candidates.push_back(v_merge(elements[last],norm));
                 candidates_size++;
-                if (candidates_size >= 1000000) {
+                if (candidates_size >= 10000) {
                     local_reduction();
                 }
                 continue;
@@ -778,11 +778,17 @@ void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction() {
-    Candidates.splice(Candidates.begin(), Hilbert_Basis); //start reduction from scratch
+    // reduce new against old elements
+    reduce(Candidates, Hilbert_Basis);
+cout << Candidates.size() << endl;
+
+    // interreduce
     Candidates.sort(compare_last<Integer>);
     reduce(Candidates, Candidates);
-    Hilbert_Basis.splice(Hilbert_Basis.begin(), Candidates); //start reduction from scratch
 
+    // reduce old elements
+    reduce(Hilbert_Basis, Candidates);
+    Hilbert_Basis.merge(Candidates,compare_last<Integer>);
     candidates_size = 0;
 }
 
