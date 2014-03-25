@@ -656,10 +656,13 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         // the case of Hilbert bases and degree 1 elements, only added if height >=2
 //        if (!C.do_partial_triangulation || s.height >= 2) {
             if (C.do_Hilbert_basis) {
-                Candidates.push_back(v_merge(elements[last],norm));
-                candidates_size++;
-                if (candidates_size >= 10000) {
-                    local_reduction();
+                vector<Integer> candi = v_merge(elements[last],norm);
+                if (!is_reducible(candi, Hilbert_Basis)) {
+                    Candidates.push_back(candi);
+                    candidates_size++;
+                    if (candidates_size >= 1000) {
+                        local_reduction();
+                    }
                 }
                 continue;
             }
@@ -779,12 +782,12 @@ void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
 template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction() {
     // reduce new against old elements
-    reduce(Candidates, Hilbert_Basis);
-cout << Candidates.size() << endl;
+//now done directly    reduce(Candidates, Hilbert_Basis);
 
     // interreduce
     Candidates.sort(compare_last<Integer>);
     reduce(Candidates, Candidates);
+//cout << Candidates.size() << endl;
 
     // reduce old elements
     reduce(Hilbert_Basis, Candidates);
