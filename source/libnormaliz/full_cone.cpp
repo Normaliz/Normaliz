@@ -2086,7 +2086,7 @@ void Full_Cone<Integer>::compute() {
             
         if(inhomogeneous){
             find_level0_dim();
-            cout << "level0 dim " << level0_dim << endl;
+            // cout << "level0 dim " << level0_dim << endl;
         }
 
         set_degrees();
@@ -2122,7 +2122,7 @@ void Full_Cone<Integer>::compute() {
             
         if(inhomogeneous){
             find_module_rank();
-            cout << "module rank " << module_rank << endl;
+            // cout << "module rank " << module_rank << endl;
         }
         
     }
@@ -2315,8 +2315,8 @@ void Full_Cone<Integer>::find_grading_inhom(){
     
     is_Computed.set(ConeProperty::Shift);
         
-    cout << "Shlft " << shift << endl;  
-    cout << Grading;
+    // cout << "Shlft " << shift << endl;  
+    // cout << Grading;
 }
 
 //---------------------------------------------------------------------------

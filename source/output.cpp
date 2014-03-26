@@ -361,9 +361,9 @@ void Output<Integer>::write_inv_file() const{
             inv << "integer index = " << Result->getBasisChange().get_index() << endl;
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
-                inv << "affine_dim_polyedron = " << Result->getAffineDim() << endl;
+                inv << "integer affine_dim_polyhedron = " << Result->getAffineDim() << endl;
             if (Result->isComputed(ConeProperty::RecessionRank))
-                inv << "recession_rank = "  << Result->getRecessionRank() << endl;
+                inv << "integer recession_rank = "  << Result->getRecessionRank() << endl;
         }
 
         inv<<"integer number_support_hyperplanes = "<<Result->getSupportHyperplanes().size()<<endl;
@@ -418,7 +418,7 @@ void Output<Integer>::write_inv_file() const{
                     inv << "matrix " << hqp.size() << " " << hqp[0].size()
                         << " hilbert_quasipolynomial = ";
                     inv << endl << hqp;
-                    inv << "hilbert_quasipolynomial_denom = " 
+                    inv << "integer hilbert_quasipolynomial_denom = " 
                         << HS.getHilbertQuasiPolynomialDenom() << endl;
                 }
             }
@@ -514,7 +514,7 @@ void Output<Integer>::write_files() const {
             out << "index = "<< BasisChange.get_index() << endl;
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
-                out << "affine dimension of the polyedron = "
+                out << "affine dimension of the polyhedron = "
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
             if (Result->isComputed(ConeProperty::RecessionRank))
                 out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
@@ -678,6 +678,11 @@ void Output<Integer>::write_files() const {
                         egn_out << BasisChange.to_sublattice_dual(Result->getGrading());
                         egn_out << "grading" << endl;
                     }
+                    if (Result->isComputed(ConeProperty::Dehomogenization)) {
+                        egn_out << 1 << endl << rank << endl;
+                        egn_out << BasisChange.to_sublattice_dual(Result->getDehomogenization());
+                        egn_out << "dehomogenization" << endl;
+                    }                    
                     egn_out.close();
                 }    
 

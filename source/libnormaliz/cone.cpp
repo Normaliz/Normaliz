@@ -1353,7 +1353,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
     if(verbose) {
         verboseOutput() << "transforming data..."<<flush;
-        cout << "inhom "<<inhomogeneous<<endl;
+        // cout << "inhom "<<inhomogeneous<<endl;
     }
     
     if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {

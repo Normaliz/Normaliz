@@ -142,7 +142,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
                   || prop == ConeProperty::ApproximateRatPolytope ) {
-                    errorOutput() << prop << " not computable in the inhomogeneous case." << endl;
+                    errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
                 }
             } else { // homgeneous
@@ -150,7 +150,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Shift
                   || prop == ConeProperty::ModuleRank
                   || prop == ConeProperty::ModuleGenerators ) {
-                    errorOutput() << prop << " only computable in the inhomogeneous case." << endl;
+                    errorOutput() << toString(prop) << " only computable in the inhomogeneous case." << endl;
                     throw BadInputException();
                 }
             }
