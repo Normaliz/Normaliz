@@ -143,6 +143,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   InvGenSelRows(dim,dim),
   InvGenSelCols(dim,dim),
   Sol(dim,dim+1),
+  // ProjGen(dim-fc.level0_dim,dim-fc.level0_dim),
   InvSol(dim,dim+1),
   GDiag(dim),
   TDiag(dim),
@@ -161,6 +162,9 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
         hvector.resize(hv_max);
         inhom_hvector.resize(hv_max);
     }
+    
+    if(fc.inhomogeneous)
+        ProjGen=Matrix<Integer>(dim-fc.level0_dim,dim-fc.level0_dim);    
     
     level0_gen_degrees.reserve(fc.dim);
     
@@ -307,7 +311,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             TotDet++;
         }
         if(C.inhomogeneous){
-            if(nr_level0_gens==C.dim-1)
+            if(nr_level0_gens==C.level0_dim)
                 update_mult_inhom(volume);
         }
         else
@@ -353,7 +357,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     if (unimodular && !C.do_h_vector && !C.do_Stanley_dec) {
         if(C.inhomogeneous){
-            if(nr_level0_gens==C.dim-1)
+            if(nr_level0_gens==C.level0_dim)
                 update_mult_inhom(volume);
         }
         else
@@ -395,7 +399,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     }
 
     if(C.inhomogeneous){
-        if(nr_level0_gens==C.dim-1)
+        if(nr_level0_gens==C.level0_dim)
                 update_mult_inhom(volume);
         }
     else
@@ -732,19 +736,38 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 template<typename Integer>
 void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
 
+    // cout << "Update " << volume << endl;
+
     if (volume==0) throw volume;
     det_sum += volume;
         if (!C_ptr->isComputed(ConeProperty::Grading))
-        return;
-    size_t i;    
-    for(i=0;i<dim;++i)
-        if(gen_levels[i]>0){
-            break;
-        }
-    assert(i<dim);
-    volume*=gen_degrees[i];
-    volume/=gen_levels[i];
-    addMult_inner(volume);
+            return;
+    if(C_ptr->level0_dim==dim-1){ // the case of codimension 1
+        size_t i;    
+        for(i=0;i<dim;++i)
+            if(gen_levels[i]>0){
+                break;
+            }
+        assert(i<dim);
+        volume*=gen_degrees[i];  // to correct division in addMult_inner
+        volume/=gen_levels[i];
+        addMult_inner(volume);
+    } 
+    else{ 
+        size_t i,j=0;
+        Integer corr_fact=1;
+        for(i=0;i<dim;++i)
+            if(gen_levels[i]>0){
+                // cout << "i " << i << " j " << j << endl;
+                ProjGen[j]=C_ptr->ProjToLevel0Quot.MxV(Generators[i]);
+                corr_fact*=gen_degrees[i];
+                j++;
+            }
+        volume/=ProjGen.vol_destructive();
+        volume*=corr_fact;
+        // cout << "After corr "  << volume << endl;      
+        addMult_inner(volume);
+    }
 }
 
 //---------------------------------------------------------------------------

@@ -142,7 +142,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
                   || prop == ConeProperty::ApproximateRatPolytope ) {
-                    errorOutput() << prop << " not computable in the inhomogeneous case." << endl;
+                    errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
                 }
             } else { // homgeneous
@@ -150,7 +150,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Shift
                   || prop == ConeProperty::ModuleRank
                   || prop == ConeProperty::ModuleGenerators ) {
-                    errorOutput() << prop << " only computable in the inhomogeneous case." << endl;
+                    errorOutput() << toString(prop) << " only computable in the inhomogeneous case." << endl;
                     throw BadInputException();
                 }
             }
@@ -164,7 +164,7 @@ namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 28) { //to detect changes in size of Enum
+        if (ConeProperty::EnumSize != 32) { //to detect changes in size of Enum
             errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
             errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
             throw FatalException();
@@ -178,6 +178,8 @@ namespace {
         CPN.at(ConeProperty::Triangulation) = "Triangulation";
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
         CPN.at(ConeProperty::Shift) = "Shift";
+        CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
+        CPN.at(ConeProperty::AffineDim) = "AffineDim";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
         CPN.at(ConeProperty::HilbertBasis) = "HilbertBasis";
         CPN.at(ConeProperty::ModuleGenerators) = "ModuleGenerators";
@@ -193,6 +195,8 @@ namespace {
         CPN.at(ConeProperty::ReesPrimary) = "ReesPrimary";
         CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
         CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
+        CPN.at(ConeProperty::ExcludedFaces) = "ExcludedFaces";
+        CPN.at(ConeProperty::Dehomogenization) = "Dehomogenization";
         CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";

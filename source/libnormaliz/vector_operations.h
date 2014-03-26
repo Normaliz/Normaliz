@@ -56,6 +56,8 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 //returns the addition a + b, vectors must be of equal size
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b);
+template<typename Integer>
+vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integer>& b);
 
 //adds b to a reduces the result modulo m, a and b must be reduced modulo m!
 template<typename Integer>
@@ -146,7 +148,13 @@ bool compare_last (const vector<Integer>& a, const vector<Integer>& b)
 
 //returns a key vector containing the positions of non-zero entrys of v
 template<typename Integer>
-vector<key_t> v_non_zero_pos(vector<Integer> v);
+vector<key_t> v_non_zero_pos(const vector<Integer>& v);
+
+//---------------------------------------------------------------------------
+//							   bool vector operations
+//---------------------------------------------------------------------------
+
+vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
 
 //---------------------------------------------------------------------------
 //							  Special

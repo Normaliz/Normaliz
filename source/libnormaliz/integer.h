@@ -20,6 +20,7 @@
 #define INTEGER_H_
 
 #include "general.h"
+#include <list>
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs
@@ -56,6 +57,12 @@ template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
     }
     return a.get_si();
 }
+
+template<typename Integer>
+Integer int_max_value_half();
+
+template<typename Integer>
+void check_size(const std::list<std::vector<Integer> >& ll);
 
 //---------------------------------------------------------------------------
 //                     Basic functions

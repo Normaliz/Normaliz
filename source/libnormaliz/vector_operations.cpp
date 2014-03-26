@@ -125,8 +125,30 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integer>& b){
+    size_t i,s=a.size();
+    Integer test;
+    vector<Integer> d(s);
+    for (i = 0; i <s; i++) {
+        d[i]=a[i]+b[i];
+        test=(a[i]%overflow_test_modulus + b[i]%overflow_test_modulus); // %overflow_test_modulus;
+        if((d[i]-test) % overflow_test_modulus !=0){
+            errorOutput()<<"Arithmetic failure in vector addition. Moat likely arithmetic overflow.\n";
+            throw ArithmeticException();
+        }
+    }
+    return d;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size());
+   /* if (test_arithmetic_overflow) {  // does arithmetic tests
+       return(v_add_overflow_check(a,b));
+   } */
     size_t i,s=a.size();
     vector<Integer> d(s);
     for (i = 0; i <s; i++) {
@@ -372,7 +394,7 @@ vector<T> v_cut_front(const vector<T>& v, size_t size){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<key_t> v_non_zero_pos(vector<Integer> v){
+vector<key_t> v_non_zero_pos(const vector<Integer>& v){
     vector<key_t> key;
     size_t size=v.size();
     key.reserve(size);
@@ -439,6 +461,19 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
     if(n>0)
         b[0] += F*a[0];
 }
+
+//---------------------------------------------------------------
+
+vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b) {
+    assert(a.size() == b.size());
+    vector<bool> result(a);
+    for (size_t i=0; i<b.size(); ++i) {
+        if (b[i])
+            result[i]=false;
+    }
+    return result;
+}
+
 
 //---------------------------------------------------------------
 

@@ -320,7 +320,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 //=====================================================================
 // parallel from here
 
-    #pragma omp parallel private(jj) //if(nr_NegNonSimp+nr_NegSimp>1000)
+    #pragma omp parallel private(jj) if(nr_NegNonSimp+nr_NegSimp>1000)
     {
     size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
@@ -1400,7 +1400,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         return;
         
     if(verbose && !is_pyramid)
-        verboseOutput() << "Large " << nrLargeRecPyrs << endl;
+        verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
     
     list<FACETDATA*> PosHyps;
     boost::dynamic_bitset<> Zero_P(nr_gen);
@@ -2041,7 +2041,7 @@ void Full_Cone<Integer>::do_vars_check() {
 
     // activate implications
     if (do_Stanley_dec)     keep_triangulation = true;
-    if (keep_triangulation) do_triangulation = true;
+    if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
     if (do_determinants)    do_triangulation = true;
     if (do_h_vector)        do_triangulation = true;
@@ -2086,7 +2086,7 @@ void Full_Cone<Integer>::compute() {
             
         if(inhomogeneous){
             find_level0_dim();
-            cout << "level0 dim " << level0_dim << endl;
+            // cout << "level0 dim " << level0_dim << endl;
         }
 
         set_degrees();
@@ -2122,7 +2122,7 @@ void Full_Cone<Integer>::compute() {
             
         if(inhomogeneous){
             find_module_rank();
-            cout << "module rank " << module_rank << endl;
+            // cout << "module rank " << module_rank << endl;
         }
         
     }
@@ -2230,7 +2230,11 @@ void Full_Cone<Integer>::find_level0_dim(){
     for(size_t i=0; i<nr_gen;++i)
         if(gen_levels[i]==0)
             Help[i]=Generators[i];
-    level0_dim=Help.rank();
+        
+    ProjToLevel0Quot=Help.kernel();
+    
+    level0_dim=dim-ProjToLevel0Quot.nr_of_rows();
+    is_Computed.set(ConeProperty::RecessionRank);
 }
 
 //---------------------------------------------------------------------------
@@ -2240,26 +2244,24 @@ void Full_Cone<Integer>::find_module_rank(){
 
      if(level0_dim==dim-1){
         module_rank=1;
+        is_Computed.set(ConeProperty::ModuleRank);
         return;
      }      
     
     if(!isComputed(ConeProperty::HilbertBasis))
         return;
-        
-    Matrix<Integer> Help(nr_gen,dim);
-    for(size_t i=0; i<nr_gen;++i)
-        if(gen_levels[i]==0)
-            Help[i]=Generators[i];
-        
-    Matrix<Integer> QuotientEmbedding=Help.kernel();
     
     set<vector<Integer> > Quotient;
     vector<Integer> v;
     
+    // cout << "=======================" << endl;
+    // ProjToLevel0Quot.print(cout);
+    // cout << "=======================" << endl;
+    
     typename list<vector<Integer> >::iterator h;
     
     for(h=Hilbert_Basis.begin();h!=Hilbert_Basis.end();++h){
-        v=QuotientEmbedding.MxV(*h);
+        v=ProjToLevel0Quot.MxV(*h);
         bool zero=true;
         for(size_t j=0;j<v.size();++j)
             if(v[j]!=0){
@@ -2313,14 +2315,18 @@ void Full_Cone<Integer>::find_grading_inhom(){
     
     is_Computed.set(ConeProperty::Shift);
         
-    cout << "Shlft " << shift << endl;  
-    cout << Grading;
+    // cout << "Shlft " << shift << endl;  
+    // cout << Grading;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::set_degrees() {
+
+    // cout << "Grading " << Grading;
+    // cout << "---------" << endl;
+    // Generators.print(cout);
     if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
@@ -2932,8 +2938,8 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
             if(essential[i])
                 Help.append(ExcludedFaces[i]);
         ExcludedFaces=Help;
-    }   
-    
+    }
+    is_Computed.set(ConeProperty::ExcludedFaces);
     
     vector< pair<boost::dynamic_bitset<> , long> > InExScheme;  // now we produce the formal 
     boost::dynamic_bitset<> all_gens(nr_gen);             // inclusion-exclusion scheme
@@ -3380,6 +3386,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     nrTotalComparisons=0;
 
     inhomogeneous=false;
+    
+    level0_dim=dim; // must always be defined
 }
 
 //---------------------------------------------------------------------------
@@ -3444,6 +3452,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     nextGen=0;
     
     inhomogeneous=C.inhomogeneous;
+    
+    level0_dim=dim; // must always be defined
 }
 
 template<typename Integer>
@@ -3473,9 +3483,13 @@ void Full_Cone<Integer>::dual_mode() {
         check_integrally_closed();
     }
     if(inhomogeneous){
+       set_levels();
+       find_level0_dim();
        find_module_rank();
-       cout << "module rank " << module_rank << endl;
+       // cout << "module rank " << module_rank << endl;
     }
+    
+    level0_dim=dim; // must always be defined
 }
 
 //---------------------------------------------------------------------------
@@ -3549,6 +3563,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
+    
+    level0_dim=0; // must always be defined
 }
 
 //---------------------------------------------------------------------------

@@ -496,9 +496,25 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
     }
     
-    Neutral_Irred.sort();
-    Positive_Irred.sort();
-    Negative_Irred.sort();
+    #pragma omp parallel
+    {
+        
+        #pragma omp single nowait
+        {
+        check_size(Negative_Irred);
+        Negative_Irred.sort();
+        }
+        
+        #pragma omp single nowait
+        {
+        check_size(Positive_Irred);
+        Positive_Irred.sort();
+        }
+        
+        #pragma omp single nowait    
+        Neutral_Irred.sort();
+    }
+    
     //long int counter=0;
     list < vector <Integer> > New_Positive,New_Negative,New_Neutral,Pos,Neg,Neu;
     vector<list< vector< Integer > > > New_Positive_thread(omp_get_max_threads()),
@@ -516,16 +532,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         //generating new elements
         
         list < vector<Integer>* > Positive,Negative,Neutral; // pointer lists, used to move reducers to the front
-        size_t psize=0;
-        #pragma omp parallel
-        {
+        size_t psize=Positive_Irred.size();
+        #pragma omp parallel if (Negative_Irred.size()*psize>10000)
+        {        
         #pragma omp single nowait
         record_order(Negative_Irred,Negative);
         
         #pragma omp single nowait
         record_order(Positive_Irred,Positive);
-        #pragma omp single nowait
-        psize=Positive_Irred.size();
         
         #pragma omp single nowait
         record_order(Neutral_Irred,Neutral);
@@ -666,12 +680,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             not_done=true;
             if(!(truncate && no_pos_in_level0))
                 reduce(New_Positive,Positive_Irred, hyp_counter);
+            check_size(New_Positive);
             Positive_Irred.merge(New_Positive);
         }
         #pragma omp single nowait
         if (New_Negative.size()!=0) {
             not_done=true;
             reduce(New_Negative,Negative_Irred, hyp_counter);
+            check_size(New_Negative);
             Negative_Irred.merge(New_Negative);
         }
         } // PARALLEL
