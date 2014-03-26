@@ -2427,8 +2427,12 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
     }
     
     if (verbose) {
-        verboseOutput() << endl << "Degrees after sort" << endl;
-        verboseOutput() << count_in_map<long,long>(gen_degrees);
+        if(isComputed(ConeProperty::Grading)){
+            verboseOutput() << endl << "Degrees after sort" << endl;
+            verboseOutput() << count_in_map<long,long>(gen_degrees);
+        }
+        else
+            verboseOutput() << endl << "Generators sorted by 1-norm" << endl;
     }
 }
 
@@ -2686,9 +2690,9 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
 
     if (do_multiplicity || do_deg1_elements || do_h_vector) {
         if (do_default_mode) {
-            if (verbose)
-                verboseOutput() << "No grading specified and cannot find one. "
-                                << "Disabling some computations!" << endl;
+            // if (verbose)
+            //    verboseOutput() << "No grading specified and cannot find one. "
+            //                    << "Disabling some computations!" << endl;
             do_deg1_elements = false;
             do_h_vector = false;
         } else {
