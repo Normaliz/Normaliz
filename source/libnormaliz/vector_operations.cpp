@@ -394,7 +394,7 @@ vector<T> v_cut_front(const vector<T>& v, size_t size){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<key_t> v_non_zero_pos(vector<Integer> v){
+vector<key_t> v_non_zero_pos(const vector<Integer>& v){
     vector<key_t> key;
     size_t size=v.size();
     key.reserve(size);
@@ -461,6 +461,19 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
     if(n>0)
         b[0] += F*a[0];
 }
+
+//---------------------------------------------------------------
+
+vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b) {
+    assert(a.size() == b.size());
+    vector<bool> result(a);
+    for (size_t i=0; i<b.size(); ++i) {
+        if (b[i])
+            result[i]=false;
+    }
+    return result;
+}
+
 
 //---------------------------------------------------------------
 
