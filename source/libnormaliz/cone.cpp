@@ -289,10 +289,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // check for a grading
     vector< vector<Integer> > lf = find_input_matrix(multi_input_data,Type::grading);
     if (lf.size() > 1) {
-            errorOutput() << "ERROR: Bad grading, has "
-                          << lf.size() << " rows (should be 1)!" << endl;
-            throw BadInputException();
-        }
+        errorOutput() << "ERROR: Bad grading, has "
+                      << lf.size() << " rows (should be 1)!" << endl;
+        throw BadInputException();
+    }
     if(lf.size()==1){
         if(inhom_input)
             lf[0].push_back(0); // first we extend grading trivially to have the right dimension
@@ -303,12 +303,12 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // check for a dehomogenization
     lf = find_input_matrix(multi_input_data,Type::dehomogenization);
     if (lf.size() > 1) {
-            errorOutput() << "ERROR: Bad dehomogenization, has "
-                          << lf.size() << " rows (should be 1)!" << endl;
-            throw BadInputException();
-        }
+        errorOutput() << "ERROR: Bad dehomogenization, has "
+                      << lf.size() << " rows (should be 1)!" << endl;
+        throw BadInputException();
+    }
     if(lf.size()==1){
-        setTruncation(lf[0]);       
+        setDehomogenization(lf[0]);
     }
     
     // check consistence of dimension
@@ -338,7 +338,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
                 break;        
         }
         if(test_dim!=dim){
-            errorOutput() << "Incosisistent dimensions in input!"<< endl;
+            errorOutput() << "Inconsistent dimensions in input!"<< endl;
             throw BadInputException();           
         }
     }
@@ -349,11 +349,11 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // now we can unify implicit and explicit truncation
     // Note: implicit and explicit truncation have already been excluded
     if (inhom_input) {
-        Truncation.resize(dim),
-        Truncation[dim-1]=1;
-        is_Computed.set(ConeProperty::Truncation);
+        Dehomogenization.resize(dim),
+        Dehomogenization[dim-1]=1;
+        is_Computed.set(ConeProperty::Dehomogenization);
     }        
-    if(isComputed(ConeProperty::Truncation))
+    if(isComputed(ConeProperty::Dehomogenization))
         inhomogeneous=true;
         
     if(inhomogeneous && ExcludedFaces.nr_of_rows()>0){
@@ -431,7 +431,7 @@ void Cone<Integer>::check_trunc_nonneg(const vector< vector<Integer> >& input_ge
     if(!inhomogeneous)
         return;
     for(size_t i=0;i<input_gens.size();++i)
-        if(v_scalar_product(input_gens[i],Truncation)<0){
+        if(v_scalar_product(input_gens[i],Dehomogenization)<0){
             errorOutput() << "Negative value of dehomogenization on generator " << i+1 << " !" << endl;
             throw BadInputException();
         }
@@ -453,7 +453,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                 break;
             case Type::normalization:
                 if(inhomogeneous){
-                    errorOutput() << "Dehomogenization not allowed for polytope!" << endl;
+                    errorOutput() << "Dehomogenization not allowed for normalization!" << endl;
                     throw BadInputException();
                 }    
                 prepare_input_type_1(it->second); 
@@ -604,13 +604,11 @@ vector< vector<Integer> > Cone<Integer>::getGenerators() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
-    if (!inhomogeneous) {
-        return Generators.submatrix(ExtremeRays);
-    } else {
-        Matrix<Integer> Rays = Generators.submatrix(ExtremeRays);
-        Rays.cut_columns(dim-1);
-        return Rays;
+    if (inhomogeneous) { // return only the rays of the recession cone
+        return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron));
     }
+    // homogeneous case
+    return Generators.submatrix(ExtremeRays);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
@@ -641,7 +639,7 @@ Matrix<Integer> Cone<Integer>::getEquationsMatrix() const {
     if (rank == 0)                   // the zero cone
         return Matrix<Integer>(dim); // identity matrix
     else 
-        return getExtremeRaysMatrix().kernel();
+        return Generators.submatrix(ExtremeRays).kernel();
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getEquations() const {
@@ -734,17 +732,17 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries() const {
 
 template<typename Integer>
 vector<Integer> Cone<Integer>::getGrading() const {
-    if (inhomogeneous) { // remove last entry
-        vector<Integer> Grading_cut(Grading);
-        Grading_cut.pop_back();
-        return Grading_cut;
-    } // else
     return Grading;
 }
 
 template<typename Integer>
 Integer Cone<Integer>::getGradingDenom() const {
     return GradingDenom;
+}
+
+template<typename Integer>
+vector<Integer> Cone<Integer>::getDehomogenization() const {
+    return Dehomogenization;
 }
 
 template<typename Integer>
@@ -955,7 +953,7 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, Matr
     
     if(inhomogeneous){
         SupportHyperplanes=Matrix<Integer>(1,dim);  // insert truncation as first inequality
-        SupportHyperplanes[0]=Truncation;
+        SupportHyperplanes[0]=Dehomogenization;
     }
     else
        SupportHyperplanes=Matrix<Integer>(0,dim); // here we start from the empty matrix
@@ -968,7 +966,7 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, Matr
             vector<Integer> test(dim);
             test[dim-1]=1;
             size_t matsize=dim;
-            if(test==Truncation) // in this case "last coordinate >= 0" is already there
+            if(test==Dehomogenization) // in this case "last coordinate >= 0" is already there
                 matsize=dim-1;   // we don't check for any other coincidence
             Inequalities= Matrix<Integer>(matsize,dim);
             for(size_t j=0;j<matsize;++j)
@@ -1038,14 +1036,14 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::setTruncation (const vector<Integer>& lf) {
+void Cone<Integer>::setDehomogenization (const vector<Integer>& lf) {
     if (lf.size() != dim) {
         errorOutput() << "Dehomogenizing linear form has wrong dimension " << lf.size()
                       << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
-    Truncation=lf;
-    is_Computed.set(ConeProperty::Truncation);
+    Dehomogenization=lf;
+    is_Computed.set(ConeProperty::Dehomogenization);
 }
 
 //---------------------------------------------------------------------------
@@ -1138,7 +1136,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     if (inhomogeneous){
-        FC.Truncation = BasisChange.to_sublattice_dual_no_div(Truncation);
+        FC.Truncation = BasisChange.to_sublattice_dual_no_div(Dehomogenization);
     }
     if ( isComputed(ConeProperty::Grading) ) {  // IMPORTANT: Truncation must be set before Grading
         FC.Grading = BasisChange.to_sublattice_dual(Grading);
@@ -1220,8 +1218,8 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         Tmp_Cone.support_hyperplanes();        // also marks extreme rays
         extract_data(Tmp_Cone);
         if(inhomogeneous){
-            Matrix<Integer> Help(SupportHyperplanes.nr_of_rows()+1,dim);  // make Truncation the first inequality
-            Help[0]=Truncation;
+            Matrix<Integer> Help(SupportHyperplanes.nr_of_rows()+1,dim);  // make Dehomogenization the first inequality
+            Help[0]=Dehomogenization;
             Help.append(SupportHyperplanes);
             SupportHyperplanes=Help;
         }
@@ -1282,7 +1280,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         i_start=1;
         // cout << "Trunc " << BasisChange.to_sublattice_dual_no_div(Truncation);
         //cout << "First " << Inequ_on_Ker[0];
-        assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual_no_div(Truncation));
+        assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual_no_div(Dehomogenization));
     }
     for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
         hyperplane=Inequ_on_Ker[i];
@@ -1297,7 +1295,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         inhom_corr=1;
     Matrix<Integer> Inequ_Ordered(Inequ_on_Ker.nr_of_rows()+inhom_corr,newdim);
     if(inhomogeneous)
-        Inequ_Ordered[0]=BasisChange.to_sublattice_dual_no_div(Truncation);   // inseert truncation as the first inequality
+        Inequ_Ordered[0]=BasisChange.to_sublattice_dual_no_div(Dehomogenization);   // inseert truncation as the first inequality
     if(do_only_Deg1_Elements)
         Inequ_Ordered[0]=BasisChange.to_sublattice_dual(Grading);           // in this case the grading acts as truncation and it is a NEW inrquality       
     i=inhom_corr;
@@ -1337,7 +1335,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
             FC.set_degrees();
     }
     if(inhomogeneous)
-        FC.Truncation=BasisChange.to_sublattice_dual(Truncation);
+        FC.Truncation=BasisChange.to_sublattice_dual(Dehomogenization);
     FC.dual_mode();
     extract_data(FC);
     
@@ -1377,8 +1375,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             size_t nr_gen = Generators.nr_of_rows();
             VerticesOfPolyhedron = vector<bool>(nr_gen);
             for (size_t i=0; i<nr_gen; i++) {
-                if (ExtremeRays[i] && Generators[i].back() != 0) {
-                    ExtremeRays[i] = false;
+                if (ExtremeRays[i] && v_scalar_product(Generators[i],Dehomogenization) != 0) {
                     VerticesOfPolyhedron[i] = true;
                 }
             }
@@ -1389,9 +1386,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
         if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
-            vector<Integer> irr_hyp(dim);
-            irr_hyp.back() = 1;
-            vector<Integer> irr_hyp_subl = BasisChange.to_sublattice_dual(irr_hyp);
+            vector<Integer> irr_hyp_subl = BasisChange.to_sublattice_dual(Dehomogenization);
             FC.Support_Hyperplanes.remove(irr_hyp_subl);
         }
         SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes());
@@ -1473,14 +1468,13 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         if (inhomogeneous) {
             // separate (capped) Hilbert basis to the Hilbert basis of the level 0 cone
             // and the module generators in level 1
-            HilbertBasis = Matrix<Integer>(0,dim-1);     // row length dim-1
-            ModuleGenerators = Matrix<Integer>(0,dim);   // row length dim
+            HilbertBasis = Matrix<Integer>(0,dim);
+            ModuleGenerators = Matrix<Integer>(0,dim);
             typename list< vector<Integer> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
             vector<Integer> tmp;
             for (; FCHB != FC.Hilbert_Basis.end(); ++FCHB) {
                 tmp = BasisChange.from_sublattice(*FCHB);
-                if (tmp.back() == 0) { // Hilbert basis element of the cone at level 0
-                    tmp.pop_back();
+                if (v_scalar_product(tmp,Dehomogenization) == 0) { // Hilbert basis element of the cone at level 0
                     HilbertBasis.append(tmp);
                 } else {              // module generator
                     ModuleGenerators.append(tmp);
