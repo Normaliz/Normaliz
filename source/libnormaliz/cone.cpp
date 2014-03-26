@@ -1253,7 +1253,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     
     if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
         vector<Integer> lf= Generators.submatrix(ExtremeRays).find_linear_form_low_dim();
-        cout << "lf " << lf;
+        // cout << "lf " << lf;
         if(lf.size()==dim)
             setGrading(lf); 
         else{

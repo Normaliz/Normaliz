@@ -1400,7 +1400,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
         return;
         
     if(verbose && !is_pyramid)
-        verboseOutput() << "Large " << nrLargeRecPyrs << endl;
+        verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
     
     list<FACETDATA*> PosHyps;
     boost::dynamic_bitset<> Zero_P(nr_gen);
@@ -2254,9 +2254,9 @@ void Full_Cone<Integer>::find_module_rank(){
     set<vector<Integer> > Quotient;
     vector<Integer> v;
     
-    cout << "=======================" << endl;
-    ProjToLevel0Quot.print(cout);
-    cout << "=======================" << endl;
+    // cout << "=======================" << endl;
+    // ProjToLevel0Quot.print(cout);
+    // cout << "=======================" << endl;
     
     typename list<vector<Integer> >::iterator h;
     
@@ -2324,9 +2324,9 @@ void Full_Cone<Integer>::find_grading_inhom(){
 template<typename Integer>
 void Full_Cone<Integer>::set_degrees() {
 
-    cout << "Grading " << Grading;
-    cout << "---------" << endl;
-    Generators.print(cout);
+    // cout << "Grading " << Grading;
+    // cout << "---------" << endl;
+    // Generators.print(cout);
     if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
@@ -3486,7 +3486,7 @@ void Full_Cone<Integer>::dual_mode() {
        set_levels();
        find_level0_dim();
        find_module_rank();
-       cout << "module rank " << module_rank << endl;
+       // cout << "module rank " << module_rank << endl;
     }
     
     level0_dim=dim; // must always be defined

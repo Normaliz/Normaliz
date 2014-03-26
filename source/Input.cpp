@@ -4,8 +4,8 @@ template <typename Integer>
 map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in) {
 
     string type_string;
-    size_t i,j;
-    size_t nr_rows,nr_columns;;
+    long i,j;
+    long nr_rows,nr_columns;;
     InputType input_type = Type::integral_closure;
     Integer number;
     map<Type::InputType, vector< vector<Integer> > > input_map;
@@ -16,6 +16,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
         if(in.fail())
             break;
         in >> nr_columns;
+        if((nr_rows <0) || (nr_columns < 0)){
+            cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
+            throw BadInputException();        
+        }
         vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
         for(i=0; i<nr_rows; i++){
             for(j=0; j<nr_columns; j++) {
