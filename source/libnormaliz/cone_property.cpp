@@ -196,7 +196,7 @@ namespace {
         CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
         CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
         CPN.at(ConeProperty::ExcludedFaces) = "ExcludedFaces";
-        CPN.at(ConeProperty::Truncation) = "Dehomogenization";
+        CPN.at(ConeProperty::Dehomogenization) = "Dehomogenization";
         CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";

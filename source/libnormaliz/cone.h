@@ -78,8 +78,7 @@ public:
      * It will delete all data from the cone that depend on the grading!
      */
     void setGrading (const vector<Integer>& lf);
-    void setTruncation (const vector<Integer>& lf);
-    void check_trunc_nonneg(const vector< vector<Integer> >& input_gens);
+    void setDehomogenization (const vector<Integer>& lf);
 
 
 //---------------------------------------------------------------------------
@@ -149,6 +148,8 @@ public:
     vector<Integer> getGrading() const;
     Integer getGradingDenom() const;
 
+    vector<Integer> getDehomogenization() const;
+
     mpq_class getMultiplicity() const;
 
     bool isPointed() const;
@@ -194,7 +195,7 @@ private:
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
     vector<Integer> Grading;
-    vector<Integer> Truncation;
+    vector<Integer> Dehomogenization;
     Integer GradingDenom;
     bool pointed;
     bool inhomogeneous;
@@ -218,6 +219,7 @@ private:
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void check_trunc_nonneg(const vector< vector<Integer> >& input_gens);
 
     /* Progress input for subtypes */
     void prepare_input_type_0(const vector< vector<Integer> >& Input);
