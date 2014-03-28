@@ -2070,6 +2070,7 @@ void Full_Cone<Integer>::compute() {
     if (!do_triangulation && !do_partial_triangulation)
         support_hyperplanes();
     else{
+        minimize_support_hyperplanes();
         // set needed do_ vars
         if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
         do_evaluation = true;
@@ -2166,11 +2167,9 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
 template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes() {
     // recursion_allowed=true;
-    if(Support_Hyperplanes.empty())
-        compute_support_hyperplanes();
-    else{
-        if(!isComputed(ConeProperty::SupportHyperplanes)) // support hyperplanes not yet minimized
-            minimize_support_hyperplanes();
+    minimize_support_hyperplanes();
+    if(!isComputed(ConeProperty::SupportHyperplanes)){
+        compute_support_hyperplanes();           
     }
     extreme_rays_and_deg1_check();
     // reset_tasks();
@@ -2511,6 +2510,8 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
 template<typename Integer>
 
 void Full_Cone<Integer>::minimize_support_hyperplanes(){
+    if(Support_Hyperplanes.empty() || isComputed(ConeProperty::SupportHyperplanes))
+        return;
     Full_Cone<Integer> Dual(Support_Hyperplanes);
     Dual.Support_Hyperplanes=list<vector<Integer> >
                    (Generators.get_elements().begin(),Generators.get_elements().end());
@@ -2520,6 +2521,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
     Support_Hyperplanes=list<vector<Integer> >
                    (Essential_Hyperplanes.get_elements().begin(),Essential_Hyperplanes.get_elements().end());
     is_Computed.set(ConeProperty::SupportHyperplanes);
+    do_all_hyperplanes=false;
 }
     
 
