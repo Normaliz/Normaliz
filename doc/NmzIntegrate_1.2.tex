@@ -19,7 +19,8 @@
 
 \usepackage[scaled=0.8]{beramono}
 
-\usepackage{fancyvrb} \RecustomVerbatimEnvironment{Verbatim}{Verbatim} {xleftmargin=15pt}
+\usepackage{fancyvrb} \RecustomVerbatimEnvironment{Verbatim}{Verbatim} 
+{xleftmargin=15pt, frame=single, fontsize=\small}
 
 
 \newcounter{listi}
@@ -34,7 +35,7 @@
     {\usecounter{listi}\stdli}}{\end{list}}
 \renewenvironment{itemize}{\begin{list}{{$\bullet$}}{\stdli}}{\end{list}}
 \newenvironment{myverb}{\begin{small}}{\end{small}\pagebreak[2]}  %%%%%  \vspace{-0.8\baselineskip}
-
+\newenvironment{yourverb}{\begin{small}\begin{Verbatim}}{\end{Verbatim}\end{small}\pagebreak[2]}
 
 
 
@@ -95,7 +96,7 @@
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf NmzIntegrate 1.1} \vspace*{1cm}
+ \centerline{\Large\bf NmzIntegrate 1.2} \vspace*{1cm}
  %\vspace*{1cm}
 
 
@@ -110,7 +111,7 @@ csoeger@uos.de
 \vspace*{1cm}
 
 
-%\tableofcontents
+\tableofcontents
 
 %\newpage
 
@@ -123,15 +124,14 @@ csoeger@uos.de
 
 We assume in the following that the reader is familiar with
 \Normaliz+, in particular with its treatment of Ehrhart series
-and quasipolynomials. \NmzIntegrate+ requires \Normaliz+ 2.9 or
-higher.
+and quasipolynomials. \NmzIntegrate+ 1,2 requires \Normaliz+ 2.12.
 
 \Normaliz+ computes certain data for a monoid $$ M=C\cap L $$
 where $C\subset\RR^n$ is a rational, polyhedral and pointed
 cone, and $L\subset \ZZ^n$ is a sublattice. These data are
 defined by the input to \Normaliz+. \NmzIntegrate+ requires
 that $M$ has been endowed with a grading $\deg$ (see the manual
-of \Normaliz+).
+of \Normaliz+ 2.12).
 
 For such graded monoids \Normaliz+ can compute the volume of
 the rational polytope
@@ -175,6 +175,17 @@ $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account and the algorithm used by \NmzIntegrate+.
 
+\NmzIntegrate+ 1.2, like \Normaliz+ 2.12 can compute Ehrhart series for
+\emph{semiopen} cones. For them the monoid $M$ is replaced by the set
+$$
+M'=C'\cap L
+$$
+where $C'=C\setminus \mathcal F$ and $\mathcal F$ is the union of a set of
+faces
+(not necessarily facets) of $C$. What has been said above about the structure
+of the generalized Ehrhart series remains true. We discuss an example in
+Section \ref{output}.
+
 It follows from the general theory of rational generating
 functions that there exists a quasipolynomial $q(k)$ with
 rational coefficients and of degree $\le \totdeg f+\rank M-1$ that
@@ -212,7 +223,11 @@ $$
 $$
 the \emph{virtual multiplicity} of $M$ and $f$. It is an
 integer if $f_m$ has integral coefficients and $P$ is a lattice
-polytope. \pagebreak[3]
+polytope.
+
+Since a semiopen cone $C'$ differs from its closure in a set of measure $0$,
+the passage to $C'$ does not change the Lebesgue integrals just mentioned, and
+is therefore irrelevant for their computation.
 
 \NmzIntegrate+ computes
 \begin{itemize}
@@ -234,6 +249,16 @@ support we received from John Abbott and Anna Bigatti in using
 CoCoALib, on which the multivariate polynomial algebra in
 \NmzIntegrate+ is based.
 
+\section{Major changes in this version}
+
+\begin{enumerate}
+\item Generalized Ehrhart series of semiopen cones.
+
+\item More flexible input of polynomials.
+
+\item \NmzIntegrate+ 1.2 requires \Normaliz+ 2.12.
+\end{enumerate}
+
 \section{Input files}
 
 \NmzIntegrate+ can be used in two ways:
@@ -245,17 +270,25 @@ CoCoALib, on which the multivariate polynomial algebra in
 
 If \NmzIntegrate+ misses an input file that should have been
 produced by \Normaliz+, it calls \Normaliz+ and makes it
-produce the missing file(s).
+produce the missing file(s). \Normaliz+ is also called
+if a file produced by it is older than the \Normaliz+ input file,
+provided the latter is accessible.
 
 For mutual calls it is necessary that the executables of
 \Normaliz+ and \NmzIntegrate+ reside in the same directory.
 
+
 \subsection{Basic input files}
 
-The files \verb+<project>.in+ and \verb+<project>.pnm+ must be
+The files \verb+<project>.in+ and \verb+<polynomial>.pnm+ must be
 provided by the user. \Normaliz+ needs \verb+<project>.in+ in
 order to produce the files read by \NmzIntegrate+. The file
-\verb+<project>.pnm+ contains the polynomial to be integrated.
+\verb+<polynomial>.pnm+ contains the polynomial to be integrated.
+
+Unless the user defines \verb+<polynomial>+ explicitly (see below), \NmzIntegrate+
+sets \verb+<polymomial>=+ \verb+<project>+. The explicit choice of the
+\verb+<polynomial>+ is only possible if \NmzIntegrate+ is called from the
+command line.
 
 \subsection{Auxiliary files produced by \Normaliz+}
 
@@ -288,50 +321,36 @@ tasks (Int) or (LC), \NmzIntegrate+ checks for the existence of
 \verb+<project>.dec+ and reads the triangulation from it.
 
 \NmzIntegrate+ does itself not read \ttt{<project>.in} nor any
-other output file of \Normaliz+.
+other output file of \Normaliz+ than those just mentioned.
 
 \subsection{The polynomial}
 
-The polynomial is read from the file \verb+<project>.pnm+. The
-input format is defined by the following rules:
+The polynomial is read from the file \verb+<polynomial>.pnm+. The polynomial
+can be defined by a usual polynomial expression using rational coefficients,
+addition, subtraction, multiplication and exponentiation, following the
+standard precedence rules for the evaluation of such expressions.
+
+Note:
 \begin{enumerate}
-\item The polynomial is a product of \emph{nonzero}
-    factors.
-\item The factors are separated by the character \ttt{*}.
-\item A factor is a sum of terms.
-\item A term is a product of a rational number and a
-    monomial. The number $1$ can of course be omitted.
-\item A monomial is a (possibly empty) product of
-    indeterminates \verb+x[<i>]+ or powers
-    \verb+x[<i>]^<j>+ of indeterminates where \verb+<i>+
-    represents an index between $1$ and $n$ and \verb+<j>+
-    represents a positive integer.
-\item Spaces, line breaks, and the brackets \ttt{(} and
-    \ttt{)} can be used for visual structuring. They have
-    no mathematical meaning (so far), and will be removed
-    before the computation of the polynomial.
+\item  The names of the variables are fixed:
+\verb+x[1]+,\dots,\verb+x[<n>]+ where \ttt{<n>} represents the
+number~$n$.
+\item An explicit multiplication sign \verb+*+ is necessary for all multiplications, in particular between a coefficient and an indeterminate or between indeterminates.
 \end{enumerate}
 
-Note that the names of the variables are fixed:
-\verb+x[1]+,\dots,\verb+x[<n>]+ where \ttt{<n>} represents the
-number $n$.
-
-An example:
-\begin{myverb}
+Examples:
 \begin{Verbatim}
-1/120*(x[1]+x[2]^2)*(-2x[3]x[4])
+1/120*(x[1]+x[2]^2)*(-2*x[3]*x[4])^2+x[3]
 \end{Verbatim}
-\end{myverb}
 is a well formed input polynomial, but
-\begin{myverb}
-\begin{Verbatim}
-1/120 * x[1]+x[ 2]^2* -2x[3]  x[4]
-\end{Verbatim}
-\end{myverb}
-represents the same polynomial.
 
-Most likely, the syntax check is not 100\% nonsense proof. Note
-that some input errors will cause CoCoA exceptions.
+\begin{Verbatim}
+1/120(x[1]+x[2]^2)*(-2x[3]*x[4])^2+x[3]
+\end{Verbatim}
+
+is not allowed.
+
+\NmzIntegrate+ is now using the CoCoALib input function for polynomials. In the previous version some multiplication signs that are now necessary had to be omitted.
 
 \section{Running NmzIntegrate}
 
@@ -343,14 +362,14 @@ There are three ways to run \NmzIntegrate+:
 \end{enumerate}
 
 The shortest possible command to start \NmzIntegrate+ is
-\begin{center}
-\tt nmzIntegrate <project>
-\end{center}
+\begin{Verbatim}
+nmzIntegrate <project>
+\end{Verbatim}
 This will run the default computation (ES) on the
 \verb+<project>+. The full input syntax is
-\begin{center}
-\tt nmzIntegrate [-cEIL] [-x=<T>] <project>
-\end{center}
+\begin{Verbatim}
+nmzIntegrate [-cEIL] [-x=<T>] [-F=<polynomial>] <project>
+\end{Verbatim}
 where \ttt{-c} and \ttt{-x=<T>} have the same meaning as for
 \Normaliz+:
 \begin{itemize}
@@ -360,7 +379,7 @@ where \ttt{-c} and \ttt{-x=<T>} have the same meaning as for
     \ttt{<T>}.
 \end{itemize}
 
-The remaining options control the type of computation:
+The following options control the type of computation:
 \begin{itemize}
 \itemtt[-E] activates the computation (ES) (the default
     mode, can be omitted),
@@ -374,12 +393,21 @@ following rules:
 \item If \ttt{-E} is present, \ttt{-L} will be suppressed since
 its result is contained in that of \ttt{-E}.
 \item If \ttt{-I} is present, then it will be suppressed if
-    one of \ttt{-E} or \ttt{L} is set and the polynomial is
+    one of \ttt{-E} or \ttt{-L} is set and the polynomial is
     homogeneous since \ttt{-L} and \ttt{-I} are identical
     for homogeneous polynomials.
 \end{itemize}
 If two different computations are carried out, then their
 output will appear consecutively in the output file.
+
+If \verb+-F=<polynomial>+ appears, then the polynomial is read from the file
+\verb+<polynomial>.pnm+. Note that \verb+<polynomial>.pnm+ must reside in the
+directory defined by \verb+<project>+. It is not possible to prefix
+\verb+<polynomial>+ by a path name (which may be necessary for
+\verb+<project>+.
+
+If the option \verb+-F=<polynomial>+ is omitted, the
+polynomial is read from \verb+<project>.pnm+.
 
 The options \verb+-c+ and \verb+-x=<T>+ are passed form
 \Normaliz+ to \NmzIntegrate+ and vice versa. \NmzIntegrate+
@@ -390,16 +418,21 @@ priori clear that 64 bit precision is not sufficient for
 (and \verb+-T+ or \verb+-y+). \NmzIntegrate+ itself works
 always with infinite precision.
 
+It is not possible (presently) to use the option \verb+<polynomial>.pnm+ if
+\NmzIntegrate+ is called from \Normaliz+.
+
 Note that \NmzIntegrate+ may need much more memory than
 \Normaliz+, especially with a high number of parallel threads.
 This is due to the fact that it may have to cope with very long
 polynomials.
 
-\section{The output file}
+\section{The output file}\label{output}
 
-The output will be written to the file \ttt{<project>.intOut}
-(so that it can be clearly distinguished from the \Normaliz+
-output file).
+If the option \verb+-F=<polynomial>+ is not set, the output is written to
+the file \ttt{<project>.intOut}
+(so that it is clearly distinguished from the \Normaliz+
+output file). If \verb+-F=<polynomial>+ appears, the output is
+written to \ttt{<project>.<polynomial>.intOut}.
 
 \NmzIntegrate+ factors the polynomial, and the factorization is
 written to the output file. For the computation (LC) the
@@ -407,11 +440,8 @@ polynomial is first replaced by its leading form, and the
 output file then contains the factorization of the leading
 form.
 
-The output file is self explanatory, but see the \Normaliz+
-documentation for the interpretation of the format in which the
-generalized Ehrhart series and the quasipolynomial are printed.
-
-Please have a look at the files
+The output file is essentially self explanatory. Nevertheless we have added two
+examples below. In addition you can have a look at the files
 \begin{center}
 \ttt{rationalES.intOut},\quad \ttt{rationalInt.intOut}\quad and\quad
 \ttt{rationalLC.intOut}.
@@ -421,8 +451,192 @@ in the \Normaliz+ distribution and the file \ttt{rational.pnm},
 and \ttt{rational.intOut} was suitably renamed.
 
 The directory \ttt{example} contains further input files suited
-for \NmzIntegrate+. Look out for files with the suffix
+for \NmzIntegrate+ --- look out for files with the suffix
 \ttt{pnm}.
+
+\subsection{A generalized Ehrhart series}
+
+We choose an example from combinatorial voting theory which is discussed in
+more detail in \cite{BS}. The file \ttt{CondParSymm.in} from the directory
+\ttt{examples} contains the following (typeset in two
+columns):
+
+\begin{Verbatim}
+1                                      3
+8                                      8
+1 1 1 1 1 1 1 1                        1 -1 1 1 1 -1 -1 -1
+signs                                  1 1 -1 1 -1 1 -1 -1
+1                                      1 1 1 -1 -1 -1 1 -1
+8                                      inequalities
+1 1 1 1 1 1 1 1
+grading
+\end{Verbatim}
+
+
+The \ttt{signs} describe the nonnegative orthant in $\RR^8$ and the linear
+forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{grading} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
+$$
+f(x)=\binom{x_1+5}{5}(x_2+1)(x_3+1)(x_4+1)(x_5+1)(x_6+1)(x_7+1)\binom{x_8+5}{5}.
+$$
+It is given in \ttt{CondParSymm.pnm} by
+
+\begin{Verbatim}
+1/120*(x[1]+5)*(x[1]+4)*(x[1]+3)*(x[1]+2)*(x[1]+1)*
+(x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
+1/120*(x[8]+5)*(x[8]+4)*(x[8]+3)*(x[8]+2)*(x[8]+1)
+\end{Verbatim}
+
+
+From the \Normaliz+ directory we invoke \NmzIntegrate+ by
+
+\begin{Verbatim}
+nmzIntegrate -c example/CondParSymm
+\end{Verbatim}
+
+ (replace the slash by a backslash in MS Windows, and similarly
+ below).
+The file \ttt{CondParSymm.intOut} starts with the factorization:
+
+\begin{Verbatim}
+Factorization of polynomial:
+x[8] +5  mult 1
+x[8] +4  mult 1
+...
+x[1] +1  mult 1
+Remaining factor 1/14400
+\end{Verbatim}
+
+Next we find the information on the Hilbert series:
+
+\begin{Verbatim}
+Generalized Ehrhart series:
+1 5 133 363 ... 481 15 6
+Common denominator of coefficients: 1
+Series denominator with 24 factors:
+1: 1  2: 14  4: 9
+\end{Verbatim}
+
+It is to be read as follows:
+$$
+H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
+$$
+Next we find the presentation of $H_{M,f}(t)$ as a rational function with
+coprime numerator and denominator (which in this case is the same as the
+previous one, except that the denominator is factored differently):
+
+\begin{Verbatim}
+Generalized Ehrhart series with cyclotomic denominator:
+1 5 133 363 ... 481 15 6
+Common denominator of coefficients: 1
+Series cyclotomic denominator:
+1: 24  2: 23  4: 9
+\end{Verbatim}
+
+This means
+$$
+H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1\zeta_2^{23}\zeta_4^{9}}
+$$
+where $\zeta_i$ is the $i$-th caclotomic polynomial. Now the quasipolynomial:
+
+
+\begin{Verbatim}
+Generalized Ehrhart quasi-polynomial of period 4:
+ 0:   6939597901822221635907747840000 20899225148336747959025664000000 ... 56262656
+ 1:   2034750310223351797008092160000  7092764342142539187142971648000 ... 56262656
+ 2:   6933081849299152199775682560000 20892455311735756236854919168000 ... 56262656
+ 3:   2034750310223351797008092160000  7092764342142539187142971648000 ... 56262656
+with common denominator: 6939597901822221635907747840000
+\end{Verbatim}
+
+The left most common indicates the residue class modulo the period, and the
+numbers in line $k$ are the coefficients of the $k$-th polynomial after
+division by the common denominator. The list starts with $q_0^{(k)}$ and ends
+with (the constant) $q_{23}^{(k)}$.
+The interpretation of the remaining data is obvious:
+
+\begin{Verbatim}
+Degree of (quasi)polynomial: 23
+
+Expected degree: 23
+
+Virtual multiplicity: 1717/8192
+\end{Verbatim}
+
+
+Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
+customary in voting theory (in order to exclude draws). Then we replace
+\ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
+\ttt{CondParSmmSemi.in}. the polynomial hasn't changed, and so \NmzIntegrate+
+is called by
+
+\begin{Verbatim}
+nmzIntegrate -c -F=CondParSymm example/CondParSymmSemi
+\end{Verbatim}
+
+The output file is now in \ttt{CondParSymmSemi.CondParSymm.intOut}.
+
+\subsection{An integral}
+The paper \cite{JMV} asks for the computation of the integral
+$$
+\int\limits_{\substack{[0,1]^m \\ \sum{x}= t}}(x_1\cdots x_{m})^{n-m}\prod_{1\le i<j \le m}(x_j-x_i)^2 \mathrm d{\mu}\
+$$
+taken over the intersection of the unit cube in $\RR^m$ and the hyperplane of constant coordinate sum $t$. It is supposed that $t\le m \le n$. We compute the integral for $t=2$, $m=4$ and $n=6$.
+
+The polytope is specified in the input file \ttt{j462.in} (typeset in 3 
+columns):
+
+\begin{Verbatim}
+8                  0 0 0 1 0              1
+5                  -1 0 0 0 1             5
+1 0 0 0 0          0 -1 0 0 1             -1 -1 -1 -1 2
+0 1 0 0 0          0 0 -1 0 1             equations
+0 0 1 0 0          0 0 0 -1 1
+                   inequalities
+\end{Verbatim}
+
+The $8$ inequalities describe the unit cube in $\RR^4$ by the $0\le z_i\le 1$ 
+and the equation gives the hyperplane $z_1+\dots+z_4=2$. There is no need to 
+specify the grading since \Normaliz+ finds it because the polytope is a lattice 
+polytope. If one doesn't know this in advance, it is better to give the grading 
+explicitly by
+
+\begin{Verbatim}
+1
+5
+0 0 0 0 1
+grading
+\end{Verbatim}
+
+See the \Normaliz+ documentation, Section XXX how to define rational polytopes
+by inequalities and equations.
+
+The polynomial does not depend on $t$ so that we can use the same polynomial
+for various $t$. It is contained in \ttt{j46.pnm}:
+
+\begin{Verbatim}
+(x[1]*x[2]*x[3]*x[4])^2*(x[1]-x[2])^2*(x[1]-x[3])^2*
+(x[1]-x[4])^2*(x[2]-x[3])^2*(x[2]-x[4])^2*(x[3]-x[4])^2
+\end{Verbatim}
+
+\NmzIntegrate+ is called by
+
+\begin{Verbatim}
+nmzIntegrate -cI -F=j46 example/j462
+\end{Verbatim}
+
+It produces the output in \ttt{j462.j46.intOut}:
+
+\begin{Verbatim}
+Factorization of polynomial:
+x[1]  mult 2                    x[2] -x[3]  mult 2
+x[2]  mult 2                    x[2] -x[4]  mult 2
+x[3]  mult 2                    x[3] -x[4]  mult 2
+x[4]  mult 2                    Remaining factor 1
+x[1] -x[2]  mult 2
+x[1] -x[3]  mult 2              Integral: 27773/29515186701000
+x[1] -x[4]  mult 2
+\end{Verbatim}
+
 
 
 \section{Distribution and installation}
@@ -437,14 +651,13 @@ that you can download from
 The installation is described in the \Normaliz+ documentation.
 
 Likewise the executable of \NmzIntegrate+ is contained in the
-\Normaliz+ executable package for your system.
-
+\Normaliz+ executable package for your system. 
 Therefore \NmzIntegrate+ does not need a separate installation.
 
 \section{Compilation}\label{Comp}
 
 Before the compilation of \NmzIntegrate+ you must compile
-\Normaliz+ 2.9 (or higher) and install CoCoLib 0.9951 \cite{CoC} (not
+\Normaliz+ 2.9 and install CoCoALib 0.99XXX \cite{CoC} (not
 contained in the \Normaliz+ distribution). \NmzIntegrate+ will
 not compile with later versions of CoCoALib or earlier versions
 of \Normaliz+.
@@ -501,7 +714,9 @@ rational cones and affine monoids. Available from
 You can add a reference to \cite{BS} in order to indicate that
 \NmzIntegrate+ has been used.
 
-\section{Changes relative to version 1.0}
+\section{History}
+
+\subsection{1.0 $\to$ 1.1}
 
 \begin{enumerate}
 \item \NmzIntegrate+ can now be used on objects that do not
@@ -515,6 +730,16 @@ You can add a reference to \cite{BS} in order to indicate that
     rational arithmetic.
 \end{enumerate}
 
+\subsection{1.1 $\to$ 1.2}
+
+\begin{enumerate}
+\item Use of the (now existing) CoCoALib function for input of polynomials and
+other small changes reflecting the development of CoCoALib.
+\item Extension to semiopen cones.
+\item Name of file with suffix \ttt{pnm} can be specified independently of the name of the
+project.
+\end{enumerate}
+
 \begin{thebibliography}{15.}
 
 \bibitem{CoC} J. Abbott and A. Bigatti, \emph{CoCoALib}. A GPL
@@ -522,7 +747,10 @@ You can add a reference to \cite{BS} in order to indicate that
     Available from \url{http://cocoa.dima.unige.it/cocoalib/}
 
 \bibitem{BS} W. Bruns and C. Söger, \emph{Generalized Ehrhart
-    series and integration in Normaliz}.  \url{arXiv:1211.5178}
+    series and integration in Normaliz}.  \url{http://arxiv.org/abs/1211.5178}
+
+\bibitem{JMV} J. Jeffries, J. Montaño and M. Varbaro, \emph{Multiplicities of
+classical varieties}. \url{http://arxiv.org/abs/1308.0582}
 
 
 \end{thebibliography}
