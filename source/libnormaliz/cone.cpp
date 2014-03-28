@@ -1200,6 +1200,14 @@ void Cone<Integer>::compute_generators() {
             if (isComputed(ConeProperty::Grading) && Generators.nr_of_rows() > 0) {
                 setGrading(Grading);
             }
+            // compute grading, so that it is also known if nothing else is done afterwards
+            if (!isComputed(ConeProperty::Grading)) {
+                // Generators = ExtremeRays
+                vector<Integer> lf = BasisChange.to_sublattice(Generators).find_linear_form();
+                if (lf.size() == BasisChange.get_rank()) {
+                    setGrading(BasisChange.from_sublattice_dual(lf));
+                }
+            }
         }
     }
 }
