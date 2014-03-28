@@ -232,7 +232,8 @@ class Full_Cone {
     void evaluate_triangulation();
     void transfer_triangulation_to_top();
     void primal_algorithm(); 
-     
+
+    void minimize_support_hyperplanes();   
     void compute_extreme_rays();
     void compute_extreme_rays_compare();
     void compute_extreme_rays_rank();

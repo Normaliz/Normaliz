@@ -160,6 +160,22 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void v_add_result(vector<Integer>& result, const vector<Integer>& a,const vector<Integer>& b){
+   assert(a.size() == b.size() && a.size() == result.size());
+   /* if (test_arithmetic_overflow) {  // does arithmetic tests
+       return(v_add_overflow_check(a,b));
+   } */
+    size_t i,s=a.size();
+    // vector<Integer> d(s);
+    for (i = 0; i <s; i++) {
+        result[i]=a[i]+b[i];
+    }
+    // return d;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m) {
 //  assert(a.size() == b.size());
     size_t i, s=a.size();

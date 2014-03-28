@@ -2166,7 +2166,12 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
 template<typename Integer>
 void Full_Cone<Integer>::support_hyperplanes() {
     // recursion_allowed=true;
-    compute_support_hyperplanes();
+    if(Support_Hyperplanes.empty())
+        compute_support_hyperplanes();
+    else{
+        if(!isComputed(ConeProperty::SupportHyperplanes)) // support hyperplanes not yet minimized
+            minimize_support_hyperplanes();
+    }
     extreme_rays_and_deg1_check();
     // reset_tasks();
 }
@@ -2500,6 +2505,23 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
     }
     return M;
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+
+void Full_Cone<Integer>::minimize_support_hyperplanes(){
+    Full_Cone<Integer> Dual(Support_Hyperplanes);
+    Dual.Support_Hyperplanes=list<vector<Integer> >
+                   (Generators.get_elements().begin(),Generators.get_elements().end());
+    Dual.is_Computed.set(ConeProperty::SupportHyperplanes);
+    Dual.compute_extreme_rays();
+    Matrix<Integer> Essential_Hyperplanes=Dual.Generators.submatrix(Dual.Extreme_Rays);
+    Support_Hyperplanes=list<vector<Integer> >
+                   (Essential_Hyperplanes.get_elements().begin(),Essential_Hyperplanes.get_elements().end());
+    is_Computed.set(ConeProperty::SupportHyperplanes);
+}
+    
 
 //---------------------------------------------------------------------------
 
@@ -3323,20 +3345,19 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     vector<Integer> gcds = Generators.make_prime();
     bool remove_some = false;
     vector<bool> key(nr_gen, true);
+    
+    set<vector<Integer> > SortedGens;
+    typename set<vector<Integer> >::iterator found;
     for (size_t i = 0; i<nr_gen; i++) {
-        if (gcds[i] == 0) {
-           key[i] = false;
-           remove_some = true;
-           continue;
+        found=SortedGens.find(Generators[i]);
+        if(gcds[i] == 0 || found!=SortedGens.end()){
+            key[i] = false;
+            remove_some = true;
         }
-        for (size_t j=0; j<i; j++) {
-            if (Generators[i] == Generators[j]) {
-                key[i] = false;
-                remove_some = true;
-                break;
-            }
-        }
+        else
+            SortedGens.insert(found,Generators[i]);   
     }
+    
     if (remove_some) {
         Generators=Generators.submatrix(key);
         nr_gen=Generators.nr_of_rows();

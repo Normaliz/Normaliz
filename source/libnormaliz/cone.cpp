@@ -1146,9 +1146,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         FC.set_degrees();
     }
     
-    if (isComputed(ConeProperty::SupportHyperplanes)) {
+    if (SupportHyperplanes.nr_of_rows()!=0) {
         vector< vector<Integer> > vvSH = BasisChange.to_sublattice_dual(SupportHyperplanes).get_elements();
         FC.Support_Hyperplanes = list< vector<Integer> >(vvSH.begin(), vvSH.end());
+    }
+    if (isComputed(ConeProperty::SupportHyperplanes)){
         FC.is_Computed.set(ConeProperty::SupportHyperplanes);
         FC.do_all_hyperplanes = false;
     }

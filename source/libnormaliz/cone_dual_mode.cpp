@@ -581,7 +581,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     #pragma omp atomic                    
                     counter++;
                     diff=(*p)[hyp_counter]-(*n)[hyp_counter];
-                    new_candidate=v_add((*p),(*n));
+                    v_add_result(new_candidate,(*p),(*n));   // new_candidate=v_add
 
                     if (diff>0) {
                         new_candidate[hyp_counter]=diff;
