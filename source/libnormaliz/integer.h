@@ -21,6 +21,7 @@
 
 #include "general.h"
 #include <list>
+#include <vector>
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs
