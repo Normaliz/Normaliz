@@ -1,0 +1,25 @@
+6 extreme rays
+5 support hyperplanes
+
+rank = 4 (maximal)
+index = 1
+
+No implicit grading found
+
+***********************************************************************
+
+6 extreme rays:
+ 1 0 0 0
+ 0 1 0 0
+ 0 0 1 0
+ 3 0 0 1
+ 0 5 0 1
+ 0 0 1 1
+
+5 support hyperplanes:
+   0   1   0   0
+   0   0   1   0
+   0   0   0   1
+   1   0   0   0
+   5   3  15 -15
+

@@ -1,0 +1,31 @@
+0 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+rank = 2
+index = 8
+
+size of triangulation   = 1
+resulting sum of |det|s = 8
+
+grading:
+-1 -2 0 
+
+degrees of extreme rays:
+4: 2  
+
+***********************************************************************
+
+2 extreme rays:
+ -2 -1  0
+  2 -3  0
+
+2 support hyperplanes:
+ -3 -2  0
+  1 -2  0
+
+1 equations:
+ 0 0 1
+
+0 Hilbert basis elements of degree 1:
+

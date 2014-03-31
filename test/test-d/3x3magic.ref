@@ -1,0 +1,55 @@
+5 Hilbert basis elements
+5 Hilbert basis elements of degree 1
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 9
+rank = 3
+index = 2
+original monoid is not integrally closed
+
+grading:
+1 1 1 0 0 0 0 0 0 
+with denominator = 3
+
+degrees of extreme rays:
+1: 4  
+
+Hilbert basis elements are of degree 1
+
+***********************************************************************
+
+5 Hilbert basis elements:
+ 1 2 0 0 1 2 2 0 1
+ 2 0 1 0 1 2 1 2 0
+ 1 1 1 1 1 1 1 1 1
+ 0 2 1 2 1 0 1 0 2
+ 1 0 2 2 1 0 0 2 1
+
+4 extreme rays:
+ 1 2 0 0 1 2 2 0 1
+ 2 0 1 0 1 2 1 2 0
+ 0 2 1 2 1 0 1 0 2
+ 1 0 2 2 1 0 0 2 1
+
+4 support hyperplanes:
+  0 -1 -2  0  4  0  0  0  0
+  0  1  0  0  0  0  0  0  0
+  0 -1  0  0  2  0  0  0  0
+  0  1  2  0 -2  0  0  0  0
+
+6 equations:
+ -2  1  4 -3  0  0  0  0  0
+ -1  0  1 -1  1  0  0  0  0
+ -2  0  2 -1  0  1  0  0  0
+ -2  0  3 -2  0  0  1  0  0
+  0  0 -2  1  0  0  0  1  0
+ -1  0  2 -2  0  0  0  0  1
+
+5 Hilbert basis elements of degree 1:
+ 1 2 0 0 1 2 2 0 1
+ 2 0 1 0 1 2 1 2 0
+ 1 1 1 1 1 1 1 1 1
+ 0 2 1 2 1 0 1 0 2
+ 1 0 2 2 1 0 0 2 1
+

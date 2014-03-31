@@ -1,0 +1,54 @@
+3 Hilbert basis elements
+0 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+index = 1
+original monoid is integrally closed
+
+size of triangulation   = 2
+resulting sum of |det|s = 2
+
+grading:
+1 1 
+
+degrees of extreme rays:
+3: 2  
+
+multiplicity = 1/3
+
+Hilbert series:
+1 -1 1 
+denominator with 2 factors:
+1: 1  3: 1  
+
+Hilbert series with cyclotomic denominator:
+1 -1 1 
+cyclotomic denominator:
+1: 2  3: 1  
+
+Hilbert quasi-polynomial of period 3:
+ 0:   3  1
+ 1:  -1  1
+ 2:   1  1
+with common denominator = 3
+
+***********************************************************************
+
+3 Hilbert basis elements:
+ 1 1
+ 1 2
+ 2 1
+
+2 extreme rays:
+ 2 1
+ 1 2
+
+2 support hyperplanes:
+ -1  2
+  2 -1
+
+0 Hilbert basis elements of degree 1:
+

@@ -17,15 +17,16 @@ obj*
 *.intOut
 *.gen
 *.egn
-*cst
-*ht1
-*esp
-*ext
-*typ
-*tri
-*tgn
-*dec
-*inv
+*.cst
+*.ht1
+*.esp
+*.ext
+*.typ
+*.tri
+*.tgn
+*.dec
+*.inv
+
 
 # ignore latex output files
 *.pdf
@@ -39,7 +40,7 @@ obj*
 *.gz
 
 # ignore WinEdt etc. backup files
-
 *.bak
 *.sav
-
+.*.swp
+*.diff
