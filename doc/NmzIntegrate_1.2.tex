@@ -124,7 +124,7 @@ csoeger@uos.de
 
 We assume in the following that the reader is familiar with
 \Normaliz+, in particular with its treatment of Ehrhart series
-and quasipolynomials. \NmzIntegrate+ 1,2 requires \Normaliz+ 2.12.
+and quasipolynomials. \NmzIntegrate+ 1.2 requires \Normaliz+ 2.12.
 
 \Normaliz+ computes certain data for a monoid $$ M=C\cap L $$
 where $C\subset\RR^n$ is a rational, polyhedral and pointed
@@ -536,7 +536,7 @@ This means
 $$
 H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1\zeta_2^{23}\zeta_4^{9}}
 $$
-where $\zeta_i$ is the $i$-th caclotomic polynomial. Now the quasipolynomial:
+where $\zeta_i$ is the $i$-th cyclotomic polynomial. Now the quasipolynomial:
 
 
 \begin{Verbatim}
@@ -548,7 +548,7 @@ Generalized Ehrhart quasi-polynomial of period 4:
 with common denominator: 6939597901822221635907747840000
 \end{Verbatim}
 
-The left most common indicates the residue class modulo the period, and the
+The left most column indicates the residue class modulo the period, and the
 numbers in line $k$ are the coefficients of the $k$-th polynomial after
 division by the common denominator. The list starts with $q_0^{(k)}$ and ends
 with (the constant) $q_{23}^{(k)}$.
@@ -657,7 +657,7 @@ Therefore \NmzIntegrate+ does not need a separate installation.
 \section{Compilation}\label{Comp}
 
 Before the compilation of \NmzIntegrate+ you must compile
-\Normaliz+ 2.9 and install CoCoALib 0.99XXX \cite{CoC} (not
+\Normaliz+ 2.11 and install CoCoALib 0.99XXX \cite{CoC} (not
 contained in the \Normaliz+ distribution). \NmzIntegrate+ will
 not compile with later versions of CoCoALib or earlier versions
 of \Normaliz+.
