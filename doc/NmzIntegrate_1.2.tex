@@ -19,7 +19,7 @@
 
 \usepackage[scaled=0.8]{beramono}
 
-\usepackage{fancyvrb} \RecustomVerbatimEnvironment{Verbatim}{Verbatim} 
+\usepackage{fancyvrb} \RecustomVerbatimEnvironment{Verbatim}{Verbatim}
 {xleftmargin=15pt, frame=single, fontsize=\small}
 
 
@@ -241,7 +241,7 @@ The user controls the type of computation by a command line
 option. (ES) contains (LC), and (LC) is just the evaluation of
 (Int) on the highest homogeneous component of $f$. It is
 presently not possible to compute the Ehrhart series and the
-integral together if $f$ is not homogeneous, but the two 
+integral together if $f$ is not homogeneous, but the two
 computations can be combined in one run of NmzIntegrate.
 \bigskip
 
@@ -427,7 +427,7 @@ It is not possible (presently) to use the option \verb+<polynomial>.pnm+ if
 NmzIntegrate is called from Normaliz.
 
 Note that NmzIntegrate may need much more memory than
-Normaliz, especially with a high number of parallel threads, 
+Normaliz, especially with a high number of parallel threads,
 due to the fact that it may have to cope with very long
 polynomials.
 
@@ -541,7 +541,7 @@ This means
 $$
 H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1\zeta_2^{23}\zeta_4^{9}}
 $$
-where $\zeta_i$ is the $i$-th caclotomic polynomial. Now the quasipolynomial:
+where $\zeta_i$ is the $i$-th cyclotomic polynomial. Now the quasipolynomial:
 
 
 \begin{Verbatim}
@@ -553,7 +553,7 @@ Generalized Ehrhart quasi-polynomial of period 4:
 with common denominator: 6939597901822221635907747840000
 \end{Verbatim}
 
-The left most common indicates the residue class modulo the period, and the
+The left most column indicates the residue class modulo the period, and the
 numbers in line $k$ are the coefficients of the $k$-th polynomial after
 division by the common denominator. The list starts with $q_0^{(k)}$ and ends
 with (the constant) $q_{23}^{(k)}$.
@@ -585,7 +585,7 @@ $$
 $$
 taken over the intersection of the unit cube in $\RR^m$ and the hyperplane of constant coordinate sum $t$. It is supposed that $t\le m \le n$. We compute the integral for $t=2$, $m=4$ and $n=6$.
 
-The polytope is specified in the input file \ttt{j462.in} (typeset in 3 
+The polytope is specified in the input file \ttt{j462.in} (typeset in 3
 columns):
 
 \begin{Verbatim}
@@ -597,10 +597,10 @@ columns):
                    inequalities
 \end{Verbatim}
 
-The $8$ inequalities describe the unit cube in $\RR^4$ by the $0\le z_i\le 1$ 
-and the equation gives the hyperplane $z_1+\dots+z_4=2$. There is no need to 
-specify the grading since Normaliz finds it because the polytope is a lattice 
-polytope. If one doesn't know this in advance, it is better to give the grading 
+The $8$ inequalities describe the unit cube in $\RR^4$ by the $0\le z_i\le 1$
+and the equation gives the hyperplane $z_1+\dots+z_4=2$. There is no need to
+specify the grading since Normaliz finds it because the polytope is a lattice
+polytope. If one doesn't know this in advance, it is better to give the grading
 explicitly by
 
 \begin{Verbatim}
@@ -630,12 +630,12 @@ nmzIntegrate -cI -F=j46 example/j462
 It produces the output in \ttt{j462.j46.intOut}:
 
 \begin{Verbatim}
-Factorization of polynomial:          x[1]  mult 2                   
-x[4]  mult 2                          x[1] -x[2]  mult 2             
-x[3]  mult 2                          x[1] -x[3]  mult 2             
-x[3] -x[4]  mult 2                    x[1] -x[4]  mult 2             
-x[2]  mult 2                          Remaining factor 1             
-x[2] -x[3]  mult 2                                                   
+Factorization of polynomial:          x[1]  mult 2
+x[4]  mult 2                          x[1] -x[2]  mult 2
+x[3]  mult 2                          x[1] -x[3]  mult 2
+x[3] -x[4]  mult 2                    x[1] -x[4]  mult 2
+x[2]  mult 2                          Remaining factor 1
+x[2] -x[3]  mult 2
 x[2] -x[4]  mult 2                    Integral: 27773/29515186701000
 \end{Verbatim}
 
@@ -653,16 +653,16 @@ that you can download from
 The installation is described in the Normaliz documentation.
 
 Likewise the executable of NmzIntegrate is contained in the
-Normaliz executable package for your system. 
+Normaliz executable package for your system.
 Therefore NmzIntegrate does not need a separate installation.
 
 \section{Compilation}\label{Comp}
 
 Before the compilation of NmzIntegrate you must compile
-Normaliz 2.9 and install CoCoALib 0.99XXX \cite{CoC} (not
-contained in the Normaliz distribution). NmzIntegrate will
-not compile with later versions of CoCoALib or earlier versions
-of Normaliz.
+Normaliz 2.11 and install CoCoALib 0.99XXX \cite{CoC} (not
+contained in the Normaliz distribution). NmzIntegrate will not
+compile with later versions of CoCoALib or earlier versions of
+Normaliz.
 
 Important: \textbf{after} the configuration of CoCoALib, but
 \textbf{before} its compilation via \ttt{make} you must modify
