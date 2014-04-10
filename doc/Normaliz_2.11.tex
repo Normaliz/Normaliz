@@ -134,7 +134,7 @@ Söger\\[14pt]
 \subsection{The objectives of Normaliz}
 
 The program Normaliz, version 2.11, is a tool for computing
-the Hilbert bases and enumerative data of rational cones, and more generally, sets of lattice points in rational polyhedra. The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment  mathematics involved we refer the reader to
+the Hilbert bases and enumerative data of rational cones, and more generally, sets of lattice points in rational polyhedra. The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
 \cite{BG} and \cite{BH}. The terminology follows \cite{BG}. For
 algorithms of Normaliz see \cite{BHIKS}, \cite{BI},
 \cite{BIS} and \cite{BK02}.
@@ -300,7 +300,7 @@ several matrices. Each matrix is built as follows:
     specifying the type of input the matrix presents.
 \end{arab}
 
-The line structure is irrelevant for the interpretation of the input, and only meant as a suggestion for a transparent structure of the file. The examples below are often typeset in two columns. It should always be obvious how to read it properly.
+The line structure is irrelevant for the interpretation of the input, and only meant as a suggestion for a transparent structure of the file. The examples below are often typeset in two columns. It should always be obvious how to read them properly.
 
 At the moment there are three major classes of input matrices,
 namely \emph{generators}, \emph{constraints}, and
@@ -314,6 +314,8 @@ Generators and constraints themselves fall into two subclasses:
 \end{arab}
 
 Additional classes are \emph{grading} and \emph{dehomogenization}.
+
+\emph{Remark}.\enspace Normaliz 2.11 (in contrast to previous versions) allows inhomogeneous input types. While polytopes are defined by inhomogeneous data, one usually wants to compute the cone over the polytope, its Hilbert basis and the Ehrhart series. These computations require \emph{homogeneous} input types, and their application to polytopes is explained below. Also see Section \ref{po_vs_po}.
 
 Rules for the combination of input types:
 
@@ -424,7 +426,7 @@ Example input files: \ttt{polytop.in}, \ttt{FortuneCookie.in},
 \subsubsection{Rational polytopes}\label{rat_pol_in}
 
 Normaliz has no special input type for rational polytopes.
-In order to process them one uses type \verb|generators| together with a
+In order to process them one uses type \verb|integral_closure| together with a
 grading. Suppose the polytope is given by vertices
 $$
 v_i=(r_{i1},\dots,r_{in}),\qquad i=1,\dots,m,\ r_{ij}\in\QQ.
@@ -440,7 +442,7 @@ $$
 $$
 We must add a grading since Normaliz cannot recognize it
 without help (unless all the $q_i$ are equal). The grading
-vector has coordinates $(0,\dots,0,1)$. See \ref{grading} below
+linear form has coordinates $(0,\dots,0,1)$. See \ref{grading} below
 for general information on gradings.
 
 Let us look at a concrete example (contained in \ttt{rational.in}),
@@ -499,7 +501,7 @@ Homogeneous inequalities, equations, and congruences defining the cone and
 the lattice are called \emph{homogeneous constraints}. Matrices
 representing them are of types \verb|equations|, \verb|inequalities|, \verb|signs|, \verb|congruences| and \verb|excluded_faces|.
 
-In previous versions \verb|inequalities| were called \verb|hyperplanes|. The name is still allowed.
+In previous versions \verb|inequalities| were called \verb|hyperplanes|. The name is still allowed, but no longer recommended.
 
 The numbers of columns must of
 course match: for the ambient lattice $\AA=\ZZ^n$ the matrices of equations and inequalities must have $n$ columns, and matrices of congruences must
@@ -573,8 +575,7 @@ Then we homogenize the inequalities in the form
 $$
 \alpha_{i1}x_1+\dots+\alpha_{in}x_n-\beta_ix_{n+1}\ge0,
 $$
-and use type \verb|inequalities| for them in connection with the grading vector
-$(0,\dots,0,1)$.
+and use type \verb|inequalities| for them in connection with the grading $(0,\dots,0,1)$.
 
 The file \ttt{poly\_ineq.in} contains
 
@@ -727,7 +728,7 @@ The rows of the input matrix of this type are interpreted as
 generators of a subgroup $U\subset\ZZ^n$, and Normaliz computes an affine monoid and its normalization  as explained in Section \ref{binomials}.
 
 Set $G=\ZZ^n/U$ and $L=G/\textup{torsion}(G)$. Then the ambient lattice
-is then $\AA=\ZZ^r$, $r=\rank U$, and the essential lattice is $L$, realized
+is $\AA=\ZZ^r$, $r=\rank U$, and the essential lattice is $L$, realized
 as a sublattice of $\AA$. Normaliz computes the image of $\ZZ^n_+$ in $L$ and its normalization.
 
 \subsubsection{Type \ttt{lattice\_ideal}}
@@ -749,7 +750,7 @@ of the vectors in the input matrix by a nonzero integral
 multiple without changing the result.
 
 The type \ttt{lattice\_ideal} cannot be combined with any other input type (except
-\ttt{grading})---such a combination would not make sense.
+\ttt{grading})---such a combination would not make sense. (See Section \ref{grad_lattid} for the use of a grading in this case.)
 
 Example input file: \ttt{lattice\_ideal.in}.
 
@@ -757,10 +758,10 @@ Example input file: \ttt{lattice\_ideal.in}.
 
 \subsubsection{Type polyhedron}
 
-A matrix of type polyhedron contains both the generators of the recession cone $C$ and (a superset of) the vertices of the polyhedron. For a polyhedron in $\RR^n$ the vectors have $n+1$ entries in $\ZZ$. The last component must be nonnegative. It are interpreted as follows:
+A matrix of type polyhedron contains both the generators of the recession cone $C$ and (a superset of) the vertices of the polyhedron. For a polyhedron in $\RR^n$ the vectors have $n+1$ entries in $\ZZ$. The last component must be nonnegative. It is interpreted as follows:
 \begin{arab}
-\item If the last entry is $0$, the vector is part of the system of generators of $C$.
-\item If the last entry is a positive integer, it is considered as the denominator for the first $n$ entries, which together define a (potential) vertex of $P$ in $\QQ^n$.
+\item If it is $0$, the vector is part of the system of generators of $C$.
+\item If it is a positive integer, it is considered as the denominator for the first $n$ entries, which together define a (potential) vertex of $P$ in $\QQ^n$.
 \end{arab}
 The order of the input vectors is irrelevant.
 \begin{Verbatim}
@@ -803,7 +804,7 @@ $$
 $$
 and then represented by the input vector
 $$
-\xi_1,\dots,\xi_n,-\eta.
+(\xi_1,\dots,\xi_n,-\eta).
 $$
 \begin{Verbatim}
 2
@@ -1006,7 +1007,7 @@ if all the monomials have the same total degree, say $g$. Then
 the grading vector chosen automatically is
 $(1,\dots,1,-(g-1))$.
 
-\subsubsection{\ttt{lattice\_ideal}}
+\subsubsection{\ttt{lattice\_ideal}} \label{grad_lattid}
 
 In this case the unit vectors correspond to generators of the
 monoid. Therefore the degrees assigned to them must be
@@ -1054,7 +1055,7 @@ This input is equivalent to
 inhom_inequalities
 \end{Verbatim}
 
-But the dehomogenization can be any linear form $\delta$. It must satisfy the condition $\delta(x)\ge 0$ on the cone that is truncated. (In combination with constraints, the condition $\delta(x)\ge 0$ is automatically satisfied since $\delta$ is added to the constraints.)
+But the dehomogenization can be any linear form $\delta$  satisfying the condition $\delta(x)\ge 0$ on the cone that is truncated. (In combination with constraints, the condition $\delta(x)\ge 0$ is automatically satisfied since $\delta$ is added to the constraints.)
 
 Since inhomogeneous input defines a dehomogenization implicitly, the type \verb|dehomogenization| cannot be combined with any of the inhomogeneous input types. It is also forbidden for
 \begin{center}
@@ -1147,11 +1148,15 @@ in the menus of jNormaliz which allows you to choose options
 interactively. Note that not all combinations of options can be set by
 jNormaliz.
 
-{\bf The default computation mode Normaliz will try to compute all data
+{\bf In the default computation mode Normaliz will try to compute all data
 accessible to it, using the triangulation based \emph{primal} algorithm. All
 options that
 can be activated are switched off by default.}
 
+The default mode is broken by any option that asks for a specific computation. These are all \emph{except}
+\begin{center}
+\ttt{ceBfax}.
+\end{center}
 \subsection{Full syntax and basic rules}
 
 The full syntax for calling Normaliz from the command line is
@@ -1250,7 +1255,7 @@ computation of the degree $1$ elements.
 Moreover, the approximation of rational polytopes is available for this
 purpose; see Section \ref{approx}.
 
-(3) The options \ttt{-1vq} require the presence of a grading.
+(3) The options \ttt{-1vq} require the presence of a grading (implicit or explicit).
 
 (4) \ttt{-N} and \ttt{-1} only need a partial triangulation, whereas \ttt{-vq}
 require a full triangulation.
@@ -1645,7 +1650,7 @@ cone, and those with last component $>0$ represent a rational point in the
 polyhedron with denominator given by the last coordinate.
 In constraints the last coordinate represents the negative of the right hand side, as in the input.
 
-If the dehomogenization is another coordinate, the interpretation is analogous. If the dehomogenization $\delta$ is not a coordinate, one must compute it by applying the truncating linear form to the vectors given: the denominator is $\delta(x)$ for the points of the polyhedron. Solving the linear equation $\delta(x)=1$ for one coordinate and substituting the result into the constraints, one obtains inhomogeneous versions of the constraints if such should be needed.
+If the dehomogenization is another coordinate, the interpretation is analogous. If the dehomogenization $\delta$ is not a coordinate, one must compute it by applying the truncating linear form to the vectors given: the denominator is $\delta(x)$ for the points of the polyhedron. Solving the linear equation $\delta(x)=1$ for one coordinate and substituting the result into the constraints, one obtains inhomogeneous versions of the constraints if they should be needed.
 
 In the inhomogeneous case we compute a polyhedron $P$. We can find the following lists of vectors in the output file describing the solution monoid:
 \begin{itemize}
@@ -1691,7 +1696,7 @@ Note that the output you get by running the examples may differ from the one giv
 
 \subsection{Generators of cones and lattices}
 
-\subsubsection{\ttt{integral\_closure}}
+\subsubsection{Type \ttt{integral\_closure}}
 
 The file \ttt{rproj2.in} contains the following:
 
@@ -1707,7 +1712,7 @@ The file \ttt{rproj2.in} contains the following:
  0 0 0 0 0 1 0             0 1 0 0 1 1 1
  1 1 1 0 0 0 1             0 0 1 1 1 0 1
  1 1 0 1 0 0 1             0 0 1 1 0 1 1
-                           0
+                           integral_closure
 \end{Verbatim}
 
 
@@ -1718,8 +1723,8 @@ $$
 (0,0,1,1,0,1,1)
 $$
 in $\RR^7$ with respect to the full lattice $\ZZ^7$, as indicated by
-the final digit that specifies the type. (Actually, the vectors
-generate the full lattice so that a replacement of type \verb|generators| by type \verb|normalization|
+the type \verb|integral_closure|. (Actually, the vectors
+generate the full lattice so that a replacement of type \verb|integral_closure| by type \verb|normalization|
 would not change anything.)
 
 Running \ttt{normaliz} with no option (or option \ttt{-h},
@@ -2327,7 +2332,7 @@ squares can be described by $4$ inequalities and $6$ linear
 relations. The number of equations becomes clear when we look
 at the rank.
 
-The input degree is the magic constant. However. as the
+The input degree is the magic constant. However, as the
 denominator $3$ shows, the magic constant is always divisible
 by $3$, and therefore the effective degree is $\mathcal M/3$.
 This degree is used for the multiplicity and the Hilbert
@@ -2635,14 +2640,14 @@ grading:
  1 0 0 2                            0  0  1  0                            
  \end{Verbatim}
 
-We see that the vertices of $P$ and the extreme rays and the Hilbert basis of
-the recession cone are as expected. The only comment they need is that they are given in homogenized coordinates wit last component $0$, although they are vectors in $\RR^3$.
+We see that the vertices of $P$, and the extreme rays and the Hilbert basis of
+the recession cone are as expected. The only comment they need is that they are given in homogenized coordinates with last component $0$, although they are vectors in $\RR^3$.
 
 The vertices of the polyhedron are exactly as expected, (A priori it may not be clear whether each of the points in the input is a vertex of the polyhedron.)
 
 Also the interpretation of the support hyperplanes should be obvious. For example, \verb|2  2  0 -1| represents the inequality
 $$
-2\xi_1+2\xi_2-1\ge.
+2\xi_1+2\xi_2-1\ge 0.
 $$
 (Which of the support hyperplanes define(s) a compact face?)
 
@@ -2929,10 +2934,31 @@ writes \ttt{inv} and the triangulation data:
     The file \ttt{tgn} contains a matrix of vectors (in the
     coordinates of $\AA$) spanning the simplicial cones in
     the triangulation.
-
-    Note that these files are not generated with the modes
-    \ttt{-d}, \ttt{-1} or \ttt{-N}.
 \end{itemize}
+
+The following example is the $2$-dimensional cross polytope with one excluded face (\verb|cross2.in|)
+
+\begin{Verbatim}
+4 2                 1 3            
+ 1  0               1  1 -1         
+ 0  1               excluded_faces 
+-1  0
+ 0 -1
+polytope                        
+\end{Verbatim}
+
+Its \verb|tgn| and \verb|tri| files are
+\begin{Verbatim}
+tgn             tri
+4               2
+3               4
+1 0 1           1 2 3 2
+0 1 1           1 3 4 2
+-1 0 1 
+0 -1 1                 
+\end{Verbatim}
+
+We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$.
 
 The option \ttt{-y} (independently from \ttt{-f} or \ttt{-a})
 writes \ttt{inv}, \ttt{tgn} and the Stanley decomposition:
@@ -2957,7 +2983,7 @@ triangulation.
 	For each simplicial cone $\Delta$ in the
     triangulation this file contains a block of data:
 
-    (i) a line listing the indices $i_1,\dots.i_m$ of the
+    (i) a line listing the indices $i_1,\dots,i_m$ of the
     generators $v_{i_1},\dots,v_{i_m}$ relative to the
     order in \ttt{tgn} (as in \ttt{tri}, $m=\rank \EE$);
 
@@ -2974,8 +3000,27 @@ triangulation.
 
 \end{itemize}
 
+The \verb|dec| file of the example above is
+\begin{Verbatim}
+in_ex_data
+1
+2 1 2 -1
+Stanley_dec
+2
+1 3 4              1 2 3 
+2                  2     
+3                  3     
+0 0 2              0 0 0 
+1 1 2              1 0 1
+\end{Verbatim}
+
+There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_1$ and $v_2$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
+$$
+\frac12 (1v_1+0v_2+1v_3)=(0,0,1).
+$$ 
+
 The file \ttt{3x3magiceven.in} has been processed with the
-option \ttt{-aTy} activated. We recommend you to inspect all
+option \ttt{-ahTy} activated. We recommend you to inspect all
 the output files in the subdirectory \ttt{example} of the
 distribution.
 
@@ -3014,7 +3059,7 @@ The paper \cite{BIS} contains computation times for many examples that can help 
 
 \subsection{Polytope vs.\ polyhedron}\label{po_vs_po}
 
-Every polytope is a polyhedron, and therefore the input type \verb|polyhedron| or inhomogeneous constraints seems to be a reasonable choice in order to compute polytopes. In general it is not since in homogenized coordinates all computations are truncated at level $1$, and the information hidden in the cone over the polytope cannot be obtained.
+Every polytope is a polyhedron, and therefore the input type \verb|polyhedron| or inhomogeneous constraints seems to be a reasonable choice in order to compute polytopes. In general it is not since in homogenized coordinates all computations are truncated at degree $1$, and the information hidden in the cone over the polytope cannot be obtained.
 
 If a polytope is defined via inhomogeneous data, the computations are essentially limited to the lattice points in the polytope, and the multiplicity computed this way is their number.
 
@@ -3028,7 +3073,7 @@ If only the lattice points in a rational polytope are to be computed, there are 
 \end{itemize}
 For lattice polytopes \verb|-1| and \verb|-r| are identical. The choice between the primal and the dual algorithm has been discussed above. Note that \verb|-d1| is \emph{not} a Hilbert basis computation via \verb|-d| with a subsequent selection of degree $1$ elements. On the contrary, all computations are truncated in degree $1$.
 
-In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution): with \verb|-r| it is a matter of seconds, with \verb|-d1| it is doable with some patience, and \verb|-1| seems to be out of reach presently. (On a powerful machine \verb|-d| is doable.)
+In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-r| it is a matter of seconds, with \verb|-d1| it is doable with some patience, and \verb|-1| seems to be out of reach presently. (On a powerful machine \verb|-d| is doable.)
 
 \subsection{Semiopen vs. inhomogeneous}
 
@@ -3135,7 +3180,7 @@ be the number of support hyperplanes, Hilbert basis candidates,
 or degree $1$ elements.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Distribution and Installation}\label{Distr}
+\section{Distribution and installation}\label{Distr}
 
 In order to install Normaliz you should first download the
 basic package containing the documentation, examples, source
@@ -3163,7 +3208,7 @@ self-explanatory. Nevertheless we give an overview:
     reading and further documentation.
 
 \item In the subdirectory \ttt{example} are the input
-    and output files for some examples It contains all
+    and output files for some examples. It contains all
     input files of examples of this documentation, except the toy
     examples of Section \ref{input}. Some very large output files
     are contained in an extra zip file accessible from the
@@ -3320,7 +3365,7 @@ A \emph{affine halfspace} of $\RR^d$ is a subset given as
 $$
 H_\lambda^+=\{x: \lambda(x)\ge 0\},
 $$
-where $\lambda$ is an affine form, i.e., a non-constant map $\lambda:\RR^d\to\RR$, $\lambda(x)=\alpha_1x_1+\dots+\alpha_dx_d+\beta$ with $\alpha_1,\dots,\alpha_d,\beta\in\RR$. If $\beta=0$ and $\lambda$ is linear, then the halfspace is called \emph{linear}. The halfspace is \emph{rational} if $\lambda$ is \emph{rational},  i.e., has rational coordinates. If $\lambda$ is rational, we can assume that it is even \emph{integral}, i.e., has integral coordinates, and, moreover, that these are coprime. Then $\lambda$ is uniquely determined by $H_\lambda^+$. Such integral  forms are called \emph{primitive}, and the same terminology applies to vectors.
+where $\lambda$ is an affine form, i.e., a non-constant map $\lambda:\RR^d\to\RR$, $\lambda(x)=\alpha_1x_1+\dots+\alpha_dx_d+\beta$ with $\alpha_1,\dots,\alpha_d,\beta\in\RR$. If $\beta=0$ and $\lambda$ is therefore linear, then the halfspace is called \emph{linear}. The halfspace is \emph{rational} if $\lambda$ is \emph{rational},  i.e., has rational coordinates. If $\lambda$ is rational, we can assume that it is even \emph{integral}, i.e., has integral coordinates, and, moreover, that these are coprime. Then $\lambda$ is uniquely determined by $H_\lambda^+$. Such integral  forms are called \emph{primitive}, and the same terminology applies to vectors.
 
 \begin{definition}
 A (rational) \emph{polyhedron} $P$ is the intersection of finitely many rational halfspaces. If it is bounded, then it is called a \emph{polytope}. If all the halfspaces are linear, then $P$ is a cone.
@@ -3591,7 +3636,7 @@ $$
 $$
 The \emph{multiplicity} of $N$ is $\mrank(N)\vol(Q)$.
 
-Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by adding constant, called the \emph{shift}. (The shift may also be negative.)
+Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by adding a constant, called the \emph{shift}. (The shift may also be negative.)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CHANGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Changes relative to version 2.5}
@@ -3718,9 +3763,9 @@ Algorithms and implementation:
 \begin{thebibliography}{15.}
 \small
 
-\bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.4}.
+\bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.5}.
 Available from\\
-    {\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.11/jNormaliz1.4Documentation.pdf}}
+    {\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.11/jNormaliz1.5Documentation.pdf}}
 
 \bibitem{BG} W.Bruns and J. Gubeladze. {\em Polytopes, rings, and K-theory}.
 Springer 2009.
@@ -3737,7 +3782,7 @@ rational cones and affine monoids.}
 J. Algebra {\bf 324} (2010) 1098--1113.
 
 \bibitem{BIS} W.Bruns, B. Ichim and C. Söger. {\em The power of
-    pyramid decompositions in Normaliz}. Preprint arXiv:1206.1916v1.
+    pyramid decompositions in Normaliz}. Preprint arXiv:1206.1916.
 
 \bibitem{BK02} W.Bruns and R. Koch. {\em Computing the integral
     closure of an affine semigroup}. Univ. Iagell. Acta Math.
@@ -3745,7 +3790,11 @@ J. Algebra {\bf 324} (2010) 1098--1113.
 
 \bibitem{NmzInt} W.Bruns and C. Söger. {\em NmzIntegrate
     1.2.} Available from\\
-    {\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.11/NmzIntegrate1.2Documentation.pdf}}
+    {\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.11/NmzIntegrate_1.2.pdf}}
+    
+\bibitem{LatInt} J.A. De Loera, M. Köppe et al., \emph{LattE
+    integrale}. Available at\\
+    \url{http://www.math.ucdavis.edu/\~latte/}
 
 \bibitem{KV} M. Köppe and S. Verdoolaege. {\em  Computing
     parametric rational generating functions with a primal
