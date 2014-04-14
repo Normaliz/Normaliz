@@ -176,10 +176,10 @@ void CyclRatFunct::showCoprimeCRF(){
     g/=h;
     cout << "Coprime numerator (for denom with remaining factor 1)" << endl <<endl;
     factorization<RingElem> gf=factor(g);
-    cout << f/gf.myRemainingFactor << endl << endl << "Factorization of denominator" << endl << endl;
-    size_t nf=gf.myFactors.size();
+    cout << f/gf.myRemainingFactor() << endl << endl << "Factorization of denominator" << endl << endl;
+    size_t nf=gf.myFactors().size();
     for(size_t i=0;i<nf;++i)
-        cout << gf.myFactors[i] << "  mult " << gf.myMultiplicities[i] << endl;
+        cout << gf.myFactors()[i] << "  mult " << gf.myMultiplicities()[i] << endl;
     cout << "--------------------------------------------" << endl;
 
 }

@@ -560,12 +560,12 @@ RingElem processInputPolynomial(const string& project, const SparsePolyRing& R, 
     }
      
     factorization<RingElem> FF=factor(G);              // now the factorization and transfer to integer coefficients
-    for(j=0;j< (long) FF.myFactors.size();++j){
-        primeFactorsNonhom.push_back(FF.myFactors[j]); // these are the factors of the polynomial to be integrated
-        primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors[j]),RZZ)); // the homogenized factors with ZZ coeff
-        multiplicities.push_back(FF.myMultiplicities[j]);                          // homogenized for substitution !
+    for(j=0;j< (long) FF.myFactors().size();++j){
+        primeFactorsNonhom.push_back(FF.myFactors()[j]); // these are the factors of the polynomial to be integrated
+        primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]),RZZ)); // the homogenized factors with ZZ coeff
+        multiplicities.push_back(FF.myMultiplicities()[j]);                          // homogenized for substitution !
       }
-      remainingFactor*=FF.myRemainingFactor;
+      remainingFactor*=FF.myRemainingFactor();
   }
 
   

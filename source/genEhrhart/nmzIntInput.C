@@ -64,7 +64,7 @@ ourFactorization::ourFactorization(const vector<RingElem>& myFactors,
 
 ourFactorization::ourFactorization(const factorization<RingElem>& FF){
 
-    ourFactorization(FF.myFactors,FF.myMultiplicities,FF.myRemainingFactor);
+    ourFactorization(FF.myFactors(),FF.myMultiplicities(),FF.myRemainingFactor());
 
 }
 
@@ -260,7 +260,7 @@ vector<RingElem> readFactorList(const string& project, const SparsePolyRing& R){
 
     vector<RingElem> newPoly;
     RingElem InPoly(zero(R));
-    InPoly=ReadExpr(in,R);
+    InPoly=ReadExpr(R,in);
     newPoly.push_back(InPoly);
     return(newPoly);
 }
