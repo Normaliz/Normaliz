@@ -218,7 +218,7 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
     facePolysThread.clear();
 } 
 
-void writeGenEhrhartSeries(const string& project, const factorization<RingElem>& FF,
+void writeGenEhrhartSeries(const string& project, const ourFactorization& FF,
                    const libnormaliz::HilbertSeries& HS, const long& virtDeg, const mpz_class & commonDen){
                             
     string name_open=project+".intOut";                              
@@ -515,8 +515,8 @@ void generalizedEhrhartSeries(const string& project, const string& pnm, bool& ho
   for(i=0;i<deg(F)+dim;++i)
       Factorial[i]=factorial(i);
   
-  factorization<RingElem> FF(primeFactors,multiplicities,remainingFactor); // assembeles the data
-  factorization<RingElem> FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
+  ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembeles the data
+  ourFactorization FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
 
   long nf=FF.myFactors.size();
   if(verbose_INT){

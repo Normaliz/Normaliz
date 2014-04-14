@@ -86,7 +86,7 @@ BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
     return(Irat/Factorial[Factorial.size()-1]);            
 }
 
-BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vector<long> >& A,
+BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<long> >& A,
                      const vector<long>& degrees, const SparsePolyRing& R, const vector<BigInt>& Factorial, 
                      const vector<BigInt>& factQuot,const BigInt& lcmDegs){
 // we need F to define the ring
@@ -133,7 +133,7 @@ BigRat substituteAndIntegrate(const factorization<RingElem>& FF,const vector<vec
     return(IntegralUnitSimpl(G,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
-void writeIntegral(const string& project, const factorization<RingElem>& FF,
+void writeIntegral(const string& project, const ourFactorization& FF,
                    const BigRat& I, const bool& do_leadCoeff,
                    const long& virtDeg, const bool& appendOutput) {
 
@@ -220,8 +220,8 @@ void integrate(const string& project, const string& pnm, const bool& do_leadCoef
   for(i=0;i<deg(F)+dim;++i)
       factQuot[i]=Factorial[Factorial.size()-1]/Factorial[i];
   
-  factorization<RingElem> FF(primeFactors,multiplicities,remainingFactor); // assembels the data
-  factorization<RingElem> FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
+  ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembels the data
+  ourFactorization FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
 
   long nf=FF.myFactors.size();
   if(verbose_INT){

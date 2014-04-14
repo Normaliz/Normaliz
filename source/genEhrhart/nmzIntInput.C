@@ -40,6 +40,34 @@ struct SIMPLINEXDATA_INT{                        // local data of excluded faces
         vector<long> key;
 };
 
+class ourFactorization{
+public:
+
+    vector<RingElem> myFactors;
+    vector<long> myMultiplicities;
+    RingElem myRemainingFactor;
+    
+    ourFactorization(const vector<RingElem>& myFactors, 
+             const  vector<long>& myMultiplicities, const RingElem& myRemainingFactor);
+    ourFactorization(const factorization<RingElem>& FF);
+
+};
+// end class
+
+ourFactorization::ourFactorization(const vector<RingElem>& myFactors, 
+        const  vector<long>& myMultiplicities, const RingElem& myRemainingFactor){
+
+    this->myFactors=myFactors;
+    this->myMultiplicities=myMultiplicities;
+    this->myRemainingFactor=myRemainingFactor;
+}
+
+ourFactorization::ourFactorization(const factorization<RingElem>& FF){
+
+    ourFactorization(FF.myFactors,FF.myMultiplicities,FF.myRemainingFactor);
+
+}
+
 void fileMissing(const char* name_in){
     cerr << "Could not open file " << name_in << endl;
     exit(1);

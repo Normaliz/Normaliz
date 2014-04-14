@@ -389,7 +389,7 @@ void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>&
     }
 }
         
-RingElem affineLinearSubstitutionFL(const factorization<RingElem>& FF,const vector<vector<long> >& A,
+RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vector<long> >& A,
                      const vector<long>& b, const long& denom, const SparsePolyRing& R, const vector<long>& degrees, const BigInt& lcmDets,
                      vector<SIMPLINEXDATA_INT>& inExSimplData,vector<deque<pair<vector<long>,RingElem> > >& facePolys){
 // applies linar substitution y --> lcmDets*A(y+b/denom) to all factors in FF 
