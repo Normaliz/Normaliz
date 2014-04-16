@@ -653,20 +653,26 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             #pragma omp parallel
             {
             #pragma omp single nowait
+            {
             if(!(truncate && no_pos_in_level0))
                 reduce(New_Neutral,New_Positive, hyp_counter-1);
-                
+            }
+
             #pragma omp single nowait
             reduce(New_Neutral,New_Negative, hyp_counter-1);
             
             #pragma omp single nowait
+            {
             if(!(truncate && no_pos_in_level0))
                 reduce(New_Neutral,Neutral_Irred, hyp_counter-1);
-                
+            }
+
             #pragma omp single nowait
+            {
             if(!(truncate && no_pos_in_level0))
                 reduce(New_Neutral,Positive_Irred, hyp_counter-1);
-                
+            }
+
             #pragma omp single nowait
             reduce(New_Neutral,Negative_Irred, hyp_counter-1);
             } // END PARALLEL
