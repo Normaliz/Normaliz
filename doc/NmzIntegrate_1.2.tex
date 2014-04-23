@@ -251,7 +251,7 @@ CoCoALib, on which the multivariate polynomial algebra in
 NmzIntegrate is based.
 \medskip
 
- The development of Normaliz is currently supported by the DFG SPP ``Ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
+ The development of Normaliz is currently supported by the DFG SPP 1489 ``Ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
 
 \section{Major changes in this version}
@@ -361,8 +361,8 @@ NmzIntegrate is now using the CoCoALib input function for polynomials. In the pr
 
 There are three ways to run NmzIntegrate:
 \begin{enumerate}
-\item direct call from the command line
-\item call from Normaliz (see Normaliz manual)
+\item direct call from the command line,
+\item call from Normaliz (see Normaliz manual),
 \item from jNormaliz via Normaliz.
 \end{enumerate}
 
@@ -500,7 +500,7 @@ nmzIntegrate -c example/CondParSymm
 
  (replace the slash by a backslash in MS Windows, and similarly
  below).
-The file \ttt{CondParSymm.intOut} starts with the factorization:
+The file \ttt{CondParSymm.} \ttt{intOut} starts with the factorization:
 
 \begin{Verbatim}
 Factorization of polynomial:
@@ -659,22 +659,28 @@ Therefore NmzIntegrate does not need a separate installation.
 \section{Compilation}\label{Comp}
 
 Before the compilation of NmzIntegrate you must compile
-Normaliz 2.11 and install CoCoALib 0.99XXX \cite{CoC} (not
-contained in the Normaliz distribution). NmzIntegrate will not
-compile with later versions of CoCoALib or earlier versions of
-Normaliz.
+Normaliz 2.11 and CoCoALib 0.99533 \cite{CoC} (not
+contained in the Normaliz distribution).
+%NmzIntegrate will not compile with earlier versions of CoCoALib or Normaliz.
 
-Important: \textbf{after} the configuration of CoCoALib, but
-\textbf{before} its compilation via \ttt{make} you must modify
-the file \ttt{configuration/autoconf.mk} in the following way:
-add the flag
-\begin{center}
-   \ttt{-DCoCoA\_THREADSAFE\_HACK}
-\end{center}
-to the definition of \ttt{CXXFLAGS\_COMMON} (probably near line
-24 of \ttt{configuration/autoconf.mk}).
+First compile Normaliz including libnormaliz by running \ttt{make} in the source directory.
+For the compilation of CoCoALib run
 
-Under Linux or Mac OS navigate to the directory
+\centerline{\ttt{./configure -{}-threadsafe-hack}}
+
+in the CoCoA root directory. The option \ttt{threadsafe-hack} is necessary to ensure correct parallel execution of nmzIntegrate.
+If you want to use Normaliz inside CoCoA or CoCoALib also add
+
+\centerline{\ttt{-{}-with-libnormaliz=/path/to/Normaliz2.11/source/libnormaliz/libnormaliz.a}}
+
+to the configuration call, where the path to Normaliz has to be adjusted to your system. If the configuration was successful,
+
+\centerline{\ttt{make library}}
+
+will compile CoCoALib.
+
+At last compile nmzIntegrate.
+Navigate to the directory
 \ttt{genEhrhart} and run \ttt{make}. You should move the
 executable \ttt{nmzIntegrate} to the directory that contains
 \ttt{normaliz}.
@@ -683,8 +689,9 @@ Depending on the location of CoCoALib, you may have to adjust
 the path leading to it in the \ttt{Makefile} in
 \ttt{genEhrhart}.
 
-If you should want to compile NmzIntegrate under MS Windows,
+These instructions apply for Linux and Mac OS. If you should want to compile NmzIntegrate under MS Windows,
 please contact the authors.
+
 
 
 \section{Copyright and how to cite}
@@ -708,7 +715,7 @@ http://www.gnu.org/licenses/.
 Please refer to Normaliz in any publication for which
 NmzIntegrate it has been used:
 \begin{center}
-W. Bruns, B. Ichim and C. Söger: Normaliz. Algorithms for
+W. Bruns, B. Ichim, T. Römer and C. Söger: Normaliz. Algorithms for
 rational cones and affine monoids. Available from
 \url{http://www.math.uos.de/normaliz}.
 \end{center}
