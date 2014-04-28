@@ -54,6 +54,10 @@ RingElem descFact(const RingElem& f, long k)
     return(g);
 }
 
+bool compareLength(const RingElem& p, const RingElem& q){
+    return(NumTerms(p)>NumTerms(q));
+}
+
 vector<RingElem> ourCoeffs(const RingElem& F, const long j){
 // our version of expanding a poly nomial wrt to indeterminate j
 // The return value is the vector of coefficients of x[j]^i
@@ -419,17 +423,21 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vect
     
     RingHom phi=PolyAlgebraHom(R,R,w1);
     
-    RingElem G(one(R));
-    RingElem G1(zero(R));
+    RingElem G1(zero(R));    
+    list<RingElem> sortedFactors;
     for(i=0;i<FF.myFactors.size();++i){
-        if(FF.myMultiplicities[i]==1)
-            G*=phi(FF.myFactors[i]);
-        else{
-            G1=phi(FF.myFactors[i]);
-            for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
-                G*=G1;
-        }
+        G1=phi(FF.myFactors[i]);
+        for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
+                sortedFactors.push_back(G1);
     }
+    
+    list<RingElem>::iterator sf;
+    sortedFactors.sort(compareLength);
+    
+    RingElem G(one(R));
+    
+    for(sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
+        G*=*sf;
     
     if(inExSimplData.size()==0){    // not really necesary, but a slight shortcut
         boost::dynamic_bitset<> dummyInd;

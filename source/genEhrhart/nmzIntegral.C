@@ -120,17 +120,21 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
     
     RingHom phi=PolyAlgebraHom(R,R,w1);
     
-    RingElem G(one(R));
-    RingElem G1(zero(R));
+    RingElem G1(zero(R));    
+    list<RingElem> sortedFactors;
     for(i=0;i<FF.myFactors.size();++i){
-        if(FF.myMultiplicities[i]==1)
-            G*=phi(FF.myFactors[i]);
-        else{
-            G1=phi(FF.myFactors[i]);
-            for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
-                G*=G1;
-        }
+        G1=phi(FF.myFactors[i]);
+        for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
+                sortedFactors.push_back(G1);
     }
+    
+    list<RingElem>::iterator sf;
+    sortedFactors.sort(compareLength);
+    
+    RingElem G(one(R));
+    
+    for(sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
+        G*=*sf;
 
     // cout << "Evaluating integral over unit simplex" << endl;
     // boost::dynamic_bitset<> dummyInd;
