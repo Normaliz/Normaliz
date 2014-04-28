@@ -3013,21 +3013,6 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
      
     if(verbose){
         verboseOutput() << endl;
-        verboseOutput() << "in_ex_data" << endl;
-        verboseOutput() << InExCollect.size() << endl;
-        for(F=InExCollect.begin();F!=InExCollect.end();++F){
-            vector<key_t> key;
-            for(size_t i=0;i<nr_gen;++i)
-                if(F->first.test(i))
-                    key.push_back(i);
-            verboseOutput() << key.size() << " ";
-            for(size_t i=0;i<key.size();++i)
-                verboseOutput() << key[i]+1 << " ";
-            verboseOutput() << F->second << endl;  
-        }
-         
-        verboseOutput() << "--------------------------------------------" << endl; 
-         
         verboseOutput() << "InEx complete, " << InExCollect.size() << " faces involved" << endl;
     }
      

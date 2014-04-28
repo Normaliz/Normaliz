@@ -52,10 +52,10 @@ bool verbose_INT=false;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                     nmzIntegrate 1.2                \\....|"<<endl;
+    cout << "                    nmzIntegrate 1.2                 \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
-    cout << "                 (C) W. Bruns  C. Soeger               \\..|"<<endl;
-    cout << "                        March 2014                      \\.|"<<endl;
+    cout << "                (C) W. Bruns  C. Soeger                \\..|"<<endl;
+    cout << "                       April 2014                       \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
