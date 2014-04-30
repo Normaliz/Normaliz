@@ -1151,7 +1151,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
                 for(key_t i=0;i<test.size();++i)
                     if(test[i]==0)
                         key.push_back(i);
-                if(Generators.submatrix(key).rank()>=realdim-1)
+                if (key.size() >= realdim-1 && Generators.submatrix(key).rank() >= realdim-1)
                     relevant_sh.push_back(h);
             }    
             SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
