@@ -913,13 +913,13 @@ size_t Matrix<Integer>::rank_destructive(){
     if(!test_arithmetic_overflow)
         return rk;
             
-    Integer det=elements[0][0];
-    for(i=1;i<rk;i++){
+    Integer det = 1;
+    for (i=0; i<rk; i++){
         det*=elements[i][i];
     }
         
-    Integer test_det=elements[0][0]%overflow_test_modulus;
-    for(i=1;i<rk;i++){
+    Integer test_det = 1;
+    for (i=0; i<rk; i++) {
         test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
     }
     if(test_det!=det%overflow_test_modulus){
@@ -974,16 +974,16 @@ Integer Matrix<Integer>::vol_destructive(){
         return 0;
     
     
-    Integer det=elements[0][0];
-    for(i=1;i<nr;i++){
+    Integer det = 1;
+    for (i=0; i<nr; i++){
         det*=elements[i][i];
     }
 
     if(!test_arithmetic_overflow)
         return Iabs(det);
         
-    Integer test_det=elements[0][0]%overflow_test_modulus;
-    for(i=1;i<nr;i++){
+    Integer test_det = 1;
+    for (i=0; i<nr; i++){
         test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
     }
     if(test_det!=det%overflow_test_modulus){
