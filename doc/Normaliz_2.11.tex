@@ -3420,7 +3420,7 @@ In order to transfer the Minkowski-Weyl theorem to polyhedra it is useful to hom
 $$
 \kappa:\RR^d\to\RR^{d+1},\qquad \kappa(x)=(x,1).
 $$
-If $P$ is a (rational) polyhedron, then the closure of the union of the rays from $0$ through the points of $\kappa(P)$ is a (rational) cone $C(P)$, called the \emph{cone over} $P$. The intersection $C(P)\cap(\RR^d\times\{0\}$ can be identified with the \emph{recession} (or tail) \emph{cone}
+If $P$ is a (rational) polyhedron, then the closure of the union of the rays from $0$ through the points of $\kappa(P)$ is a (rational) cone $C(P)$, called the \emph{cone over} $P$. The intersection $C(P)\cap(\RR^d\times\{0\})$ can be identified with the \emph{recession} (or tail) \emph{cone}
 $$
 \rec(P)=\{x\in\RR^d: y+x\in P\text{ for all } y\in P\}.
 $$
@@ -3568,9 +3568,9 @@ monoid $M$ is simply a homomorphism $\deg:M\to\ZZ^g$ where
 $\ZZ^g$ contains the degrees. The \emph{Hilbert series} of $M$
 with respect to the grading is the formal Laurent series
 $$
-H(T)=\sum_{u\in \ZZ^g} \#\{x\in M: \deg x=u\}T_1^{u_1}\cdots T_g^{u_g}=\sum_{x\in M}T^{\deg x},
+H(t)=\sum_{u\in \ZZ^g} \#\{x\in M: \deg x=u\}t_1^{u_1}\cdots t_g^{u_g}=\sum_{x\in M}t^{\deg x},
 $$
-provided all sets $\{x\in M: \deg x=d\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly.)
+provided all sets $\{x\in M: \deg x=u\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly.)
 
 The basic fact about $H(t)$ in the $\ZZ$-graded case is that it
 is the Laurent expansion of a rational function at the origin:
@@ -3599,10 +3599,10 @@ A rational cone $C$ and a grading together define the rational
 polytope $Q=C\cap A_1$ where $A_1=\{x:\deg x=1\}$. In this
 sense the Hilbert series is nothing but the Ehrhart series of
 $Q$.
- The following description of the Hilbert function $H(k)=\#\{x\in M: \deg x=k\}$ is equivalent to the previous theorem:
+The following description of the Hilbert function $H(M,k)=\#\{x\in M: \deg x=k\}$ is equivalent to the previous theorem:
 
 \begin{theorem}
-There exists a quasipolynomial $q$ with rational coefficients, degree $\rank M-1$ and period $\pi$ dividing $e$ such that $H(k)=q(k)$ for all $q\ge0$.
+There exists a quasipolynomial $q$ with rational coefficients, degree $\rank M-1$ and period $\pi$ dividing $e$ such that $H(M,k)=q(k)$ for all $q\ge0$.
 \end{theorem}
 
 The statement about the quasipolynomial means that there exist
@@ -3620,7 +3620,7 @@ q_{r-1}=\frac{\vol(Q)}{(r-1)!},
 $$
 where $\vol$ is the lattice normalized volume of $Q$ (a lattice simplex of smallest possible volume has volume $1$). It is called the \emph{multiplicity} of $M$.
 
-Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. If $\ZZ^d$ is endowed with a grading whose restriction to $M$ satisfies our conditions, then the Hilbert series
+Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. If $\ZZ^d$ is endowed with a grading whose restriction to $M$ satisfies our conditions, then the Hilbert series
 $$
 H_N(t)=\sum_{x\in N} t^{\deg x}
 $$
