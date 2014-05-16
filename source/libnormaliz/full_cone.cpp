@@ -1730,9 +1730,12 @@ void Full_Cone<Integer>::build_cone() {
     
     // transfer Facets --> SupportHyperplanes
     if (do_all_hyperplanes) {
+        nrSupport_Hyperplanes=0;
         typename list<FACETDATA>::const_iterator IHV=Facets.begin();
-        for(;IHV!=Facets.end();IHV++)
+        for(;IHV!=Facets.end();IHV++){
+            nrSupport_Hyperplanes++;
             Support_Hyperplanes.push_back(IHV->Hyp);
+        }
     }  
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
@@ -1857,7 +1860,30 @@ template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
     assert(omp_get_level()==0);
-   
+    
+    // prepare reduction //TODO better integration
+    if (do_Hilbert_basis) {
+        if(!isComputed(ConeProperty::SupportHyperplanes)){
+            if (verbose) {
+                verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
+            }
+            Full_Cone copy((*this).Generators); //TODO give more information
+            copy.compute_support_hyperplanes();
+            Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
+            nrSupport_Hyperplanes=copy.nrSupport_Hyperplanes;
+            is_Computed.set(ConeProperty::SupportHyperplanes);
+            do_all_hyperplanes = false;
+        }
+        Sorting=compute_degree_function();
+        for (size_t i = 0; i <nr_gen; i++) {               
+            // cout << gen_levels[i] << " ** " << Generators[i];
+            if(!inhomogeneous || gen_levels[i]<=1)
+                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+        }
+        OldCandidates.sort_it();
+        OldCandidates.auto_reduce();
+    }
+
     if(TriangulationSize>0)
     {
     const long VERBOSE_STEPS = 50;
@@ -1897,7 +1923,19 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     if (verbose)
         verboseOutput()  << endl;
     } // do_evaluation
-
+    
+    if(do_Hilbert_basis){
+        NewCandidates.sort_it(); 
+        cout << "Nach sort" << endl;
+        NewCandidates.auto_reduce();
+        cout << "Nach auto" << endl; 
+        OldCandidates.reduce_by(NewCandidates);
+        cout << "Nach reduce_by" << endl;
+        OldCandidates.merge(NewCandidates);
+        cout << "Nach merge" << endl;
+        CandidatesSize=OldCandidates.Candidates.size();
+    }  
+    
     if (verbose)
     {
         verboseOutput() << totalNrSimplices << " simplices";
@@ -1917,24 +1955,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     } // TriangulationSize
 
-    // intermediate reduction //TODO better integration
-    if (do_Hilbert_basis && CandidatesSize >= IntermedRedBoundHB) {                    // 2000000
-        if (!isComputed(ConeProperty::SupportHyperplanes)) {
-            if (verbose) {
-                verboseOutput() << "**** Computing support hyperplanes for intermediate reduction:" << endl;
-            }
-            Full_Cone copy((*this).Generators); //TODO give more information
-            copy.compute_support_hyperplanes();
-            Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
-            is_Computed.set(ConeProperty::SupportHyperplanes);
-            do_all_hyperplanes = false;
-        }
-        global_reduction();
-        Candidates.splice(Candidates.begin(), Hilbert_Basis);
-        CandidatesSize = 0; //TODO is not 0
-        // ReportPyr=true;
-    }
-
 }
 
 //---------------------------------------------------------------------------
@@ -1942,20 +1962,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
-    // set_degrees(); // now done in compute()
-    // sort_gens_by_degree();
-    
-
-    if (!is_pyramid) {
-        SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
-        // this is used when we want to make intermediate reductions
-        if (do_Hilbert_basis)
-        for (size_t i = 0; i <nr_gen; i++) {
-            // cout << gen_levels[i] << " ** " << Generators[i];
-            if(!inhomogeneous || gen_levels[i]<=1)
-                Candidates.push_front(Generators[i]);
-        }
-    }
+    SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
 
     /***** Main Work is done in build_top_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false
@@ -1992,9 +1999,13 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     if (do_triangulation && do_evaluation && isComputed(ConeProperty::Grading))
         is_Computed.set(ConeProperty::Multiplicity,true);
+        
     if (do_Hilbert_basis) {
-        global_reduction();
-        Hilbert_Basis.sort(); Hilbert_Basis.unique(); // TODO make it smarter!
+        // global_reduction(); // no longer necessary
+        OldCandidates.extract(Hilbert_Basis);
+        OldCandidates.Candidates.clear();
+        Hilbert_Basis.sort(); // TODO make it smarter! The only duplicates can be re-generated generators
+        Hilbert_Basis.unique(); //  The only duplicates can be re-generated generators
         is_Computed.set(ConeProperty::HilbertBasis,true);
         check_integrally_closed();
         if (isComputed(ConeProperty::Grading)) {
@@ -2004,7 +2015,6 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     
     if (do_deg1_elements) {
-        Deg1_Elements.splice(Deg1_Elements.begin(), Candidates);
         for(size_t i=0;i<nr_gen;i++)
             if(in_triang[i] && v_scalar_product(Grading,Generators[i])==1)
                 Deg1_Elements.push_front(Generators[i]);
@@ -3019,202 +3029,6 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
     is_Computed.set(ConeProperty::InclusionExclusionData);
 } 
 
-//---------------------------------------------------------------------------
-// Global reduction
-//---------------------------------------------------------------------------
-
-// Returns true if new_element is reducible versus the elements in Irred
-template<typename Integer>
-bool Full_Cone<Integer>::is_reducible(list< vector<Integer>* >& Irred, const vector< Integer >& new_element){
-    size_t i;
-    size_t s=Support_Hyperplanes.size();
-    // new_element can be longer than dim (it has one extra entry for the norm)
-    // the scalar product function just takes the first dim entries
-    vector <Integer> scalar_product=l_multiplication(Support_Hyperplanes,new_element);
-    typename list< vector<Integer>* >::iterator j;
-    vector<Integer> *reducer;
-    for (j =Irred.begin(); j != Irred.end(); j++) {
-        reducer=(*j);
-        for (i = 0; i < s; i++) {
-            if ((*reducer)[i]>scalar_product[i]){
-                break;
-            }
-        }
-        if (i==s) {
-            //found a "reducer" and move it to the front
-            Irred.push_front(*j);
-            Irred.erase(j);
-            return true;
-        }
-    }
-    return false;
-}
-
-//---------------------------------------------------------------------------
-
-// reduce the Candidates against itself and stores the remaining elements in Hilbert_Basis */
-template<typename Integer>
-void Full_Cone<Integer>::global_reduction() {
-    Integer norm;
-    
-    list <vector<Integer> > HB;
-    typename list <vector<Integer> >::iterator c;
-    
-/*    for (size_t i = 0; i <nr_gen; i++) {
-        if (in_triang[i])
-            Candidates.push_front(Generators[i]);
-    }*/ //now done earlier
-/*    if(verbose) verboseOutput()<<"sorting the candidates... "<<flush;
-    Candidates.sort();
-    if(verbose) verboseOutput()<<"make them unique... "<<flush;
-    Candidates.unique();
-    if(verbose) verboseOutput()<<"done."<<endl;
-*/  // Duplicates are avoided or removed earlier
-    if (nr_gen == dim) { // cone is simplicial, therefore no global reduction is necessary
-        Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates);
-        if (verbose) {
-            verboseOutput()<<"Cone is simplicial, no global reduction necessary."<<endl;
-            verboseOutput()<<Hilbert_Basis.size()<< " Hilbert Basis elements"<<endl;
-        }
-        return;
-    }
-    
-
-    vector<Integer> degree_function=compute_degree_function();
-
-    c = Candidates.begin();
-    size_t cpos = 0;
-    size_t csize=Candidates.size();
-    
-    if(verbose) {
-        verboseOutput()<<"computing the degrees of the candidates... "<<flush;
-    }
-    //go over candidates: do single scalar product and save it at the end of the candidate
-    //for (c = Candidates.begin(); c != Candidates.end(); c++) 
-    vector<Integer> scalar_product;
-    for (size_t j=0; j<csize; ++j) {
-        for(;j > cpos; ++cpos, ++c) ;
-        for(;j < cpos; --cpos, --c) ;
-
-        norm=v_scalar_product(degree_function,(*c));
-        c->reserve(dim+1);
-        c->push_back(norm);
-
-    }
-    if(verbose) {
-        verboseOutput()<<"sorting the list... "<<endl;
-    }
-    Candidates.sort(compare_last<Integer>);
-    if (verbose) {
-        verboseOutput()<< csize <<" candidate vectors sorted."<<endl;
-    }
-    
-    // do global reduction
-    list< vector<Integer> > HBtmp;
-    Integer norm_crit;
-    while ( !Candidates.empty() ) {
-        //use norm criterion to find irreducible elements
-        c=Candidates.begin();
-        norm_crit=(*c)[dim]*2;  //candidates with smaller norm are irreducible
-        if ( Candidates.back()[dim] < norm_crit) { //all candidates are irreducible
-            if (verbose) {
-                verboseOutput()<<Hilbert_Basis.size()+Candidates.size();
-                verboseOutput()<<" Hilbert Basis elements of degree <= "<<norm_crit-1<<"; done"<<endl;
-            }
-            for (; c!=Candidates.end(); ++c) {
-                c->pop_back();
-            }
-            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates);
-            break;
-        }
-        while ( (*c)[dim] < norm_crit ) { //can't go over the end because of the previous if
-            // remove norm
-            c->pop_back();
-            // push the scalar products to the reducer list
-            HBtmp.push_back(l_multiplication(Support_Hyperplanes, *c));
-            // and the candidate itself to the Hilbert basis
-            Hilbert_Basis.splice(Hilbert_Basis.end(), Candidates, c++);
-        }
-        csize = Candidates.size();
-        if (verbose) {
-            verboseOutput()<<Hilbert_Basis.size()<< " Hilbert Basis elements of degree <= "<<norm_crit-1<<"; "<<csize<<" candidates left"<<endl;
-        }
-
-        // reduce candidates against HBtmp
-        // fill pointer list
-        list < vector <Integer>* >  HBpointers;  // used to put "reducer" to the front
-        c = HBtmp.begin();
-        while (c != HBtmp.end()) {
-            HBpointers.push_back(&(*(c++)));
-        }
-
-        long VERBOSE_STEPS = 50;      //print | for 2%
-        if (verbose && csize>50000) { //print | for 1000 candidates
-            VERBOSE_STEPS=csize/1000;
-        }
-        long step_x_size = csize-VERBOSE_STEPS;
-        long counter = 0;
-        long steps_done = 0;
-        if (verbose) {
-            verboseOutput() << "---------+---------+---------+---------+---------+";
-            if (VERBOSE_STEPS == 50) {
-                verboseOutput() << " (one | per 2%)" << endl;
-            } else { 
-                verboseOutput() << " (one | per 1000 candidates)" << endl;
-            }
-        }
-
-
-        #pragma omp parallel private(c,cpos) firstprivate(HBpointers)
-        {
-        
-        c=Candidates.begin();
-        cpos=0;
-        #pragma omp for schedule(dynamic)
-        for (size_t k=0; k<csize; ++k) {
-            for(;k > cpos; ++cpos, ++c) ;
-            for(;k < cpos; --cpos, --c) ;
-            
-            if ( is_reducible(HBpointers, *c) ) {
-                (*c)[dim]=-1; //mark as reducible
-            }
-
-            if (verbose) {
-                #pragma omp atomic
-                counter++;
-
-                if (counter*VERBOSE_STEPS >= step_x_size){
-                    #pragma omp critical(VERBOSE)
-                    while (counter*VERBOSE_STEPS >= step_x_size) {
-                        steps_done++;
-                        step_x_size += csize;
-                        verboseOutput() << "|" <<flush;
-                        if(VERBOSE_STEPS > 50 && steps_done%50 == 0) {
-                            verboseOutput() << "  " << (steps_done) << "000" << endl;
-                        }
-                    }
-                } //end if
-            } //end verbose
-        } //end for
-        } //end parallel
-        if (verbose) verboseOutput() << endl;
-
-        // delete reducible candidates
-        c = Candidates.begin();
-        while (c != Candidates.end()) {
-            if ((*c)[dim]==-1) {
-                c = Candidates.erase(c);
-            } else {
-                ++c;
-            }
-        }
-        HBtmp.clear();
-    }
-
-    if (verbose) {
-        verboseOutput()<<Hilbert_Basis.size()<< " Hilbert Basis elements"<<endl;
-    }
-}
 
 
 //---------------------------------------------------------------------------

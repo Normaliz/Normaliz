@@ -35,6 +35,7 @@
 #include "simplex.h"
 #include "cone_dual_mode.h"
 #include "HilbertSeries.h"
+#include "reduction.h"
 // #include "sublattice_representation.h"
 
 namespace libnormaliz {
@@ -45,12 +46,18 @@ using std::pair;
 using boost::dynamic_bitset;
 
 template<typename Integer> class Cone;
+template<typename Integer> class SimplexEvaluator;
+template<typename Integer> class CandidateList;
+template<typename Integer> class Candidate;
+template<typename Integer> class Simplex;
 
 template<typename Integer>
 class Full_Cone {
 
     friend class Cone<Integer>;
     friend class SimplexEvaluator<Integer>;
+    friend class CandidateList<Integer>;
+    friend class Candidate<Integer>;
     
     size_t dim;
     size_t level0_dim; // dim of cone in level 0 of the inhomogeneous case
@@ -89,12 +96,14 @@ class Full_Cone {
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
     vector<Integer> Grading;
+    vector<Integer> Sorting;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
     vector<bool> Extreme_Rays;
     list<vector<Integer> > Support_Hyperplanes;
+    size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
-    list<vector<Integer> > Candidates;   // for the Hilbert basis
+    CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
@@ -109,7 +118,7 @@ class Full_Cone {
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    
 
     // privare data controlling the computations
-    vector<size_t> HypCounter; // counters used to give uniqoe number to jyperplane
+    vector<size_t> HypCounter; // counters used to give unique number to hyperplane
                                // must be defined thread wise to avoid critical
                                
     vector<bool> in_triang;  // intriang[i]==true means that Generators[i] has been actively inserted
@@ -258,7 +267,7 @@ class Full_Cone {
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
-public:
+// public:
 /*---------------------------------------------------------------------------
  *                      Constructors
  *---------------------------------------------------------------------------

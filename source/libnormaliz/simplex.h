@@ -40,6 +40,7 @@
 #include "libnormaliz.h"
 #include "cone.h"
 #include "HilbertSeries.h"
+#include "reduction.h"
 
 //---------------------------------------------------------------------------
 
@@ -111,7 +112,8 @@ class SimplexEvaluator {
     HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
-    list< vector<Integer> > Collected_Elements;
+    CandidateList<Integer> Collected_HB_Elements;
+    list< vector<Integer> > Collected_Deg1_Elements;
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides

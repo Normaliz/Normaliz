@@ -678,7 +678,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
             if(C.do_deg1_elements && normG==volume && !isDuplicate(elements[last])) {
                 help=GenCopy.VxM(elements[last]);
                 v_scalar_division(help,volume);
-                Collected_Elements.push_back(help);
+                Collected_Deg1_Elements.push_back(help);
                 collected_elements_size++;
             }
 //        }
@@ -708,20 +708,21 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     //inverse transformation
     //some test for arithmetic overflow may be implemented here
+    bool inserted;
     typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
-    while (jj != Hilbert_Basis.end()) {
-        if (isDuplicate(*jj)) { //delete the element
-            jj = Hilbert_Basis.erase(jj);
-        } else {
+    for(;jj != Hilbert_Basis.end();++jj) {
+        if (!isDuplicate(*jj)) { //skip the element
             jj->pop_back(); //remove the norm entry at the end
             *jj = GenCopy.VxM(*jj);
             v_scalar_division(*jj,volume);
-            ++jj;
-            collected_elements_size++;
+                      
+            inserted=Collected_HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
+            if(inserted)
+                collected_elements_size++;
         }
     }
-
-    Collected_Elements.splice(Collected_Elements.end(),Hilbert_Basis);
+    
+    Hilbert_Basis.clear();
 
     return volume;
 }
@@ -810,12 +811,12 @@ void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
 template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction() {
     // reduce new against old elements
-//now done directly    reduce(Candidates, Hilbert_Basis);
+    //now done directly    reduce(Candidates, Hilbert_Basis);
 
     // interreduce
     Candidates.sort(compare_last<Integer>);
     reduce(Candidates, Candidates);
-//cout << Candidates.size() << endl;
+    //cout << Candidates.size() << endl;
 
     // reduce old elements
     reduce(Hilbert_Basis, Candidates);
@@ -874,14 +875,20 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::transfer_candidates() {
-    if ( (C_ptr->do_deg1_elements || C_ptr->do_Hilbert_basis)
-       && collected_elements_size > 0 ) {
+    if(collected_elements_size==0)
+        return;
+    if (C_ptr->do_Hilbert_basis) {
         #pragma omp critical(CANDIDATES)
-        C_ptr->Candidates.splice(C_ptr->Candidates.begin(),Collected_Elements);
+        C_ptr->NewCandidates.splice(Collected_HB_Elements);
         #pragma omp atomic
         C_ptr->CandidatesSize += collected_elements_size;
-        collected_elements_size = 0;
     }
+    if (C_ptr->do_Hilbert_basis){
+        C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(), Collected_Deg1_Elements);
+        C_ptr->CandidatesSize += collected_elements_size;
+    }
+    
+    collected_elements_size = 0;
 }
 
 template<typename Integer>
