@@ -1861,9 +1861,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
     assert(omp_get_level()==0);
     
-    // prepare reduction //TODO better integration
-    if (do_Hilbert_basis) {
-        if(!isComputed(ConeProperty::SupportHyperplanes)){
+    // prepare reduction 
+    if (do_Hilbert_basis && OldCandidates.Candidates.empty()) {
+        if(!isComputed(ConeProperty::SupportHyperplanes)){    //TODO better integration
             if (verbose) {
                 verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
             }
