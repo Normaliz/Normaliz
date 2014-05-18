@@ -32,30 +32,23 @@ template<typename Integer>
 Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd){
     cand(v);
     values(val);
-    sort_deg(sd);    
+    sort_deg(sd);
+    irred(false);    
 }
 
 template<typename Integer>
 Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C){
     cand=v;
     values.resize(C.nrSupport_Hyperplanes);
-    // cout << "size " << values.size();
     typename list<vector<Integer> >::const_iterator h;
     size_t i=0;
     for(h=C.Support_Hyperplanes.begin();h!=C.Support_Hyperplanes.end();++h){
-    // cout << "*h " << *h;
-    // cout << " v " << v;
         values[i]=v_scalar_product(v,*h);
         ++i;
     }
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
 }
 
-/* template<typename Integer>
-Candidate<Integer>::Candidate(const vector<Integer>& v, size_t nrSuppHyps){
-    cand(v);
-    values.resize(nrSuppHyps);   
-} */
 
 template<typename Integer>
 CandidateList<Integer>::CandidateList(){
@@ -98,36 +91,31 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
 
     long sd=sort_deg/2;
     size_t kk=0;
-    // cout << "-----------------" << endl << "Reduziere " << v << "sd " << sd << endl;
     typename list<Candidate<Integer> >::const_iterator r;
     for(r=Candidates.begin();r!=Candidates.end();++r){
-        // cout << "gegen " << r->cand  << "sd " << r->sort_deg << endl;
         if(sd < r->sort_deg){
-            // cout << "Ausgang 1 " << sort_deg << " " << sd << " " << r->sort_deg << endl;
             return(false);
         }
         size_t i=0;
         if(values[kk]<r->values[kk])
                 continue;
-        // cout << "cc " << values;
-        // cout << "rr " << r->values;
         for(;i<values.size();++i)
             if(values[i]<r->values[i]){
                 kk=i;
                 break;
             }
         if(i==values.size()){
-            // cout << "Ausgang 2" << endl;
             return(true);
         }
-   }
-   // cout << "Ausgang 3" << endl;    
+   }   
    return(false);    
 }
 
 template<typename Integer>
-bool CandidateList<Integer>::is_reducible(const Candidate<Integer>& c) const {
-    return((*this).is_reducible(c.cand, c.values, c.sort_deg));
+bool CandidateList<Integer>::is_reducible(Candidate<Integer>& c) const {
+    c.irred=is_reducible(c.cand, c.values, c.sort_deg);
+    // return((*this).is_reducible(c.cand, c.values, c.sort_deg));
+    return(c.irred);
 }
 
 template<typename Integer>
@@ -139,10 +127,8 @@ bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& 
 template<typename Integer>
 void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 
-        // size_t ii=0;
         typename list<Candidate<Integer> >::iterator c;
         for(c=Candidates.begin();c!=Candidates.end();){
-            // cout << ii << " " << c->cand; ++ii;
             if(Reducers.is_reducible(*c))
                 c=Candidates.erase(c);
             else // continue
@@ -176,7 +162,7 @@ void CandidateList<Integer>::auto_reduce(){
 }
 
 template<typename Integer>
-bool CandidateList<Integer>::reduce_by_and_insert(const Candidate<Integer>& cand, const CandidateList<Integer>& Reducers){
+bool CandidateList<Integer>::reduce_by_and_insert(Candidate<Integer>& cand, const CandidateList<Integer>& Reducers){
     bool irred=!Reducers.is_reducible(cand);
     if(irred)
         Candidates.push_back(cand);

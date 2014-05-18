@@ -49,9 +49,10 @@ friend class CandidateList<Integer>;
 
 public:
 
-vector<Integer> cand;
-vector<Integer> values;
-long sort_deg;
+vector<Integer> cand;  // the vector
+vector<Integer> values; // values under support forms
+long sort_deg;  // the sorting degree
+bool irred;    // indicates irreducibility
 
 Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd);
 Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C);
@@ -76,12 +77,12 @@ CandidateList();
 CandidateList(const list<vector<Integer> >& V_List, Full_Cone<Integer>& C);
 
 bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const;
-bool is_reducible(const Candidate<Integer>& c) const;
+bool is_reducible(Candidate<Integer>& c) const;
 bool is_reducible(vector<Integer> v,Candidate<Integer>& cand, const Full_Cone<Integer>& C) const;
 
 
 bool reduce_by_and_insert(const vector<Integer>& v, Full_Cone<Integer>& C, CandidateList<Integer>& Reducers); //returns true if inserted
-bool reduce_by_and_insert(const Candidate<Integer>& cand, const CandidateList<Integer>& Reducers);
+bool reduce_by_and_insert(Candidate<Integer>& cand, const CandidateList<Integer>& Reducers);
 
 void auto_reduce();
 void reduce_by(CandidateList<Integer>& Reducers);
