@@ -43,7 +43,7 @@ template<typename Integer> class CandidateList;
 template<typename Integer> class Full_Cone;
 
 template<typename Integer>
-class Candidate {
+class Candidate { // for reduction
 
 friend class CandidateList<Integer>;
 
@@ -52,9 +52,12 @@ public:
 vector<Integer> cand;  // the vector
 vector<Integer> values; // values under support forms
 long sort_deg;  // the sorting degree
-bool irred;    // indicates irreducibility
+bool reducible;    // indicates reducibility
 
+// construct candidate from given components
 Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd);
+
+// construct candidate from a vector and the support forms of C
 Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C);
 
 }; //end class
@@ -73,19 +76,25 @@ list <Candidate<Integer> > Candidates;
 
 
 CandidateList();
-
+// not used at present:
 CandidateList(const list<vector<Integer> >& V_List, Full_Cone<Integer>& C);
 
-bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const;
+// Checks for irreducibility
+bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const; // basic function
 bool is_reducible(Candidate<Integer>& c) const;
+// including construction of candidate
 bool is_reducible(vector<Integer> v,Candidate<Integer>& cand, const Full_Cone<Integer>& C) const;
 
-
-bool reduce_by_and_insert(const vector<Integer>& v, Full_Cone<Integer>& C, CandidateList<Integer>& Reducers); //returns true if inserted
+// reduction against Reducers and insertion into *this. returns true if inserted
 bool reduce_by_and_insert(Candidate<Integer>& cand, const CandidateList<Integer>& Reducers);
+// including construction of candidate
+bool reduce_by_and_insert(const vector<Integer>& v, Full_Cone<Integer>& C, CandidateList<Integer>& Reducers); 
 
-void auto_reduce();
+// reduce *this against Reducers
 void reduce_by(CandidateList<Integer>& Reducers);
+// reduce *this against itself
+void auto_reduce();
+
 
 void sort_it();
 void merge(CandidateList<Integer>& NewCand);
@@ -94,6 +103,21 @@ void extract(list<vector<Integer> >& V_List);
 
 }; // end class
 
+template<typename Integer>
+class CandidateTable {  // for parallelized reduction with moving of reducer to the front
+
+friend class CandidateList<Integer>;
+
+public:
+
+list <Candidate<Integer>* > CandidatePointers;
+
+CandidateTable(CandidateList<Integer>& CandList);
+
+bool is_reducible(Candidate<Integer>& c);
+bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg);
+
+}; // end class
 
 
 } // namespace libnormaliz

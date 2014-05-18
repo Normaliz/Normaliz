@@ -33,7 +33,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& v
     cand(v);
     values(val);
     sort_deg(sd);
-    irred(false);    
+    reducible(true);    
 }
 
 template<typename Integer>
@@ -113,9 +113,8 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
 
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(Candidate<Integer>& c) const {
-    c.irred=is_reducible(c.cand, c.values, c.sort_deg);
-    // return((*this).is_reducible(c.cand, c.values, c.sort_deg));
-    return(c.irred);
+    c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
+    return(c.reducible);
 }
 
 template<typename Integer>
@@ -124,6 +123,10 @@ bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& 
     return((*this).is_reducible(cand));
 }
 
+
+/*
+
+// First version with immediate deletion
 template<typename Integer>
 void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 
@@ -135,6 +138,98 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
                 ++c;
         }   
 }
+*/
+
+
+/*
+// Second version with delayed deletion to prepare parallelization
+template<typename Integer>
+void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
+
+        typename list<Candidate<Integer> >::iterator c;
+        for(c=Candidates.begin();c!=Candidates.end();++c){
+            Reducers.is_reducible(*c);
+        }
+        
+        // erase reducibles
+        for(c=Candidates.begin();c!=Candidates.end();){
+            if((*c).reducible)
+                c=Candidates.erase(c);
+            else // continue
+                ++c;
+        }      
+}
+*/
+
+
+/*
+// Third version with parallelization, but not yet using tables
+template<typename Integer>
+void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
+
+        typename list<Candidate<Integer> >::iterator c;
+        size_t cpos,csize=Candidates.size();
+        
+        #pragma omp parallel private(c,cpos)
+        {
+        
+        c=Candidates.begin();
+        cpos=0;
+        
+        #pragma omp for schedule(dynamic)
+        for (size_t k=0; k<csize; ++k) {
+            for(;k > cpos; ++cpos, ++c) ;
+            for(;k < cpos; --cpos, --c) ;
+        
+            Reducers.is_reducible(*c);
+        }
+        
+        }// end parallel
+        
+        // erase reducibles
+        for(c=Candidates.begin();c!=Candidates.end();){
+            if((*c).reducible)
+                c=Candidates.erase(c);
+            else // continue
+                ++c;
+        }      
+}
+*/
+
+
+// Fourth version with parallelization and tables
+template<typename Integer>
+void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
+
+        typename list<Candidate<Integer> >::iterator c;
+        size_t cpos,csize=Candidates.size();
+        
+        CandidateTable<Integer> ReducerTable(Reducers);
+        
+        #pragma omp parallel private(c,cpos) firstprivate(ReducerTable)
+        {
+        
+        c=Candidates.begin();
+        cpos=0;
+        
+        #pragma omp for schedule(dynamic)
+        for (size_t k=0; k<csize; ++k) {
+            for(;k > cpos; ++cpos, ++c) ;
+            for(;k < cpos; --cpos, --c) ;
+        
+            ReducerTable.is_reducible(*c);
+        }
+        
+        }// end parallel
+        
+        // erase reducibles
+        for(c=Candidates.begin();c!=Candidates.end();){
+            if((*c).reducible)
+                c=Candidates.erase(c);
+            else // continue
+                ++c;
+        }      
+}
 
 /*template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
@@ -144,6 +239,7 @@ cout << "Size " << Candidates.size() << endl;
 
 template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
+// uses generations defined by degrees
 
     CandidateList<Integer> Irreducibles, CurrentReducers;
     long irred_degree;
@@ -202,6 +298,45 @@ void CandidateList<Integer>::extract(list<vector<Integer> >& V_List){
 template<typename Integer>
 void CandidateList<Integer>::splice(CandidateList<Integer>& NewCand){
     Candidates.splice(Candidates.begin(),NewCand.Candidates);
+}
+
+template<typename Integer>
+CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
+    typename list<Candidate<Integer> >::iterator c;
+    for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
+        CandidatePointers.push_back(&(*c));
+}
+
+template<typename Integer>
+bool CandidateTable<Integer>::is_reducible(Candidate<Integer>& c){
+    c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
+    return(c.reducible);
+}
+
+template<typename Integer>
+bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) {
+
+    long sd=sort_deg/2;
+    size_t kk=0;
+    typename list<Candidate<Integer>* >::iterator r;
+    for(r=CandidatePointers.begin();r!=CandidatePointers.end();++r){
+        if(sd < (*r)->sort_deg){
+            return(false);
+        }
+        size_t i=0;
+        if(values[kk]<(*r)->values[kk])
+                continue;
+        for(;i<values.size();++i)
+            if(values[i]<(*r)->values[i]){
+                kk=i;
+                break;
+            }
+        if(i==values.size()){
+            CandidatePointers.splice(CandidatePointers.begin(),CandidatePointers,r);
+            return(true);
+        }
+   }   
+   return(false);    
 }
 
  
