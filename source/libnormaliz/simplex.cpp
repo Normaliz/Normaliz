@@ -883,7 +883,7 @@ void SimplexEvaluator<Integer>::transfer_candidates() {
         #pragma omp atomic
         C_ptr->CandidatesSize += collected_elements_size;
     }
-    if (C_ptr->do_Hilbert_basis){
+    if (C_ptr->do_deg1_elements){
         C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(), Collected_Deg1_Elements);
         C_ptr->CandidatesSize += collected_elements_size;
     }

@@ -97,6 +97,7 @@ template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const {
 
     long sd=sort_deg/2;
+    size_t kk=0;
     // cout << "-----------------" << endl << "Reduziere " << v << "sd " << sd << endl;
     typename list<Candidate<Integer> >::const_iterator r;
     for(r=Candidates.begin();r!=Candidates.end();++r){
@@ -106,11 +107,15 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
             return(false);
         }
         size_t i=0;
+        if(values[kk]<r->values[kk])
+                continue;
         // cout << "cc " << values;
         // cout << "rr " << r->values;
         for(;i<values.size();++i)
-            if(values[i]<r->values[i])
+            if(values[i]<r->values[i]){
+                kk=i;
                 break;
+            }
         if(i==values.size()){
             // cout << "Ausgang 2" << endl;
             return(true);
@@ -145,10 +150,29 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         }   
 }
 
-template<typename Integer>
+/*template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
 cout << "Size " << Candidates.size() << endl;
     reduce_by(*this);
+}*/
+
+template<typename Integer>
+void CandidateList<Integer>::auto_reduce(){
+
+    CandidateList<Integer> Irreducibles, CurrentReducers;
+    long irred_degree;
+    cout << "autoreduce " << Candidates.size() << endl;;
+    
+    typename list<Candidate<Integer> >::iterator c;
+    while(!Candidates.empty()){
+        irred_degree=Candidates.begin()->sort_deg*2-1;
+        cout << "irred_degree " << irred_degree << endl;
+        for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c);
+        CurrentReducers.Candidates.splice(CurrentReducers.Candidates.begin(),Candidates,Candidates.begin(),c);
+        reduce_by(CurrentReducers);
+        Irreducibles.Candidates.splice(Irreducibles.Candidates.end(),CurrentReducers.Candidates);
+    }
+    Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
 }
 
 template<typename Integer>
