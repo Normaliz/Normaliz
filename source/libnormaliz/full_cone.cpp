@@ -1583,16 +1583,18 @@ void Full_Cone<Integer>::build_cone() {
     
     multithreaded_pyramid=(omp_get_level()==0);
     
-    if(multithreaded_pyramid){
-        HypCounter.resize(omp_get_max_threads());
-        for(size_t i=0;i<HypCounter.size();++i)
-            HypCounter[i]=i+1;
-    } else{
-        HypCounter.resize(1);
-        HypCounter[0]=1;    
+    if(!use_existing_facets){
+        if(multithreaded_pyramid){
+            HypCounter.resize(omp_get_max_threads());
+            for(size_t i=0;i<HypCounter.size();++i)
+                HypCounter[i]=i+1;
+        } else{
+            HypCounter.resize(1);
+            HypCounter[0]=1;    
+        }
+        
+        find_and_evaluate_start_simplex();
     }
-
-    find_and_evaluate_start_simplex();
     
     size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     last_to_be_inserted=nr_gen-1;  // because we don't need to compute support hyperplanes in this case 
@@ -1614,7 +1616,9 @@ void Full_Cone<Integer>::build_cone() {
     typename list< FACETDATA >::iterator l;
 
 
-    for (size_t i=0;i<nr_gen;++i) {
+    for (size_t i=start_from;i<nr_gen;++i) { 
+    
+        start_from=i;
     
         if(in_triang[i] || (isComputed(ConeProperty::ExtremeRays) && !Extreme_Rays[i]))
             continue;
@@ -1652,7 +1656,7 @@ void Full_Cone<Integer>::build_cone() {
             continue;
 
         // the i-th generator is used in the triangulation
-        in_triang[i]=true;
+        // in_triang[i]=true; // now at end of loop
         if (deg1_triangulation && isComputed(ConeProperty::Grading))
             deg1_triangulation = (gen_degrees[i] == 1);
         
@@ -1723,7 +1727,11 @@ void Full_Cone<Integer>::build_cone() {
             verboseOutput()<< endl;
         }
         
+        in_triang[i]=true;
+        
     }  // loop over i
+    
+    start_from=nr_gen;
     
     if (is_pyramid && do_all_hyperplanes)  // must give supphyps back to mother
         Mother->select_supphyps_from(Facets, apex, Mother_Key);
@@ -1855,6 +1863,30 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::transfer_computed_facets(Full_Cone& copy) const{
+
+    copy.start_from=start_from;
+    copy.use_existing_facets=true;
+    copy.HypCounter=HypCounter;
+    copy.Extreme_Rays=Extreme_Rays;
+    copy.in_triang=in_triang;
+    copy.old_nr_supp_hyps=old_nr_supp_hyps;
+    if(isComputed(ConeProperty::ExtremeRays))
+        copy.is_Computed.set(ConeProperty::ExtremeRays);
+    copy.GensInCone=GensInCone;
+    copy.nrGensInCone=nrGensInCone;
+    
+    typename list< FACETDATA >::const_iterator l=Facets.begin();
+    
+    for(size_t i=0;i<old_nr_supp_hyps;++i){
+        copy.Facets.push_back(*l);
+        ++l;
+    }
+    cout << "Starting with " << old_nr_supp_hyps;   
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
@@ -1868,11 +1900,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
             }
             Full_Cone copy((*this).Generators); //TODO give more information
+            transfer_computed_facets(copy);
             copy.compute_support_hyperplanes();
             Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
             nrSupport_Hyperplanes=copy.nrSupport_Hyperplanes;
             is_Computed.set(ConeProperty::SupportHyperplanes);
             do_all_hyperplanes = false;
+            // exit(1);
         }
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
@@ -2180,8 +2214,8 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
 
 // -s
 template<typename Integer>
-void Full_Cone<Integer>::support_hyperplanes() {
-    // recursion_allowed=true;
+void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support hyperplanes
+    // recursion_allowed=true;                    // are known, it just discards the redundant ones
     minimize_support_hyperplanes();
     if(!isComputed(ConeProperty::SupportHyperplanes)){
         compute_support_hyperplanes();           
@@ -3219,6 +3253,9 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     inhomogeneous=false;
     
     level0_dim=dim; // must always be defined
+    
+    use_existing_facets=false;
+    start_from=0;
 }
 
 //---------------------------------------------------------------------------
@@ -3285,10 +3322,17 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     inhomogeneous=C.inhomogeneous;
     
     level0_dim=dim; // must always be defined
+    
+    use_existing_facets=false;
+    start_from=0;
 }
 
 template<typename Integer>
 void Full_Cone<Integer>::dual_mode() {
+
+    use_existing_facets=false; // completely irrelevant here
+    start_from=0;
+    
     Support_Hyperplanes.sort();
     Support_Hyperplanes.unique();
     Support_Hyperplanes.remove(vector<Integer>(dim,0));
@@ -3321,6 +3365,9 @@ void Full_Cone<Integer>::dual_mode() {
     }
     
     level0_dim=dim; // must always be defined
+    
+    use_existing_facets=false;
+    start_from=0;
 }
 
 //---------------------------------------------------------------------------
@@ -3396,6 +3443,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     nrTotalComparisons=0;
     
     level0_dim=0; // must always be defined
+    
+    use_existing_facets=false;
+    start_from=0;
 }
 
 //---------------------------------------------------------------------------

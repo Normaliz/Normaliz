@@ -186,6 +186,9 @@ class Full_Cone {
     size_t totalNrSimplices;   // total number of simplices evaluated
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
+    
+    bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
+    size_t start_from;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -219,7 +222,8 @@ class Full_Cone {
     void select_deg1_elements(const Full_Cone& C);
     
     void build_top_cone(); 
-    void build_cone();   
+    void build_cone();
+    void transfer_computed_facets(Full_Cone& copy) const;   
     
 
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);

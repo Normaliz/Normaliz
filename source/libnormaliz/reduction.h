@@ -40,12 +40,14 @@ using std::vector;
 using std::string;
 
 template<typename Integer> class CandidateList;
+template<typename Integer> class CandidateTable;
 template<typename Integer> class Full_Cone;
 
 template<typename Integer>
 class Candidate { // for reduction
 
 friend class CandidateList<Integer>;
+friend class CandidateTable<Integer>;
 
 public:
 
@@ -53,6 +55,8 @@ vector<Integer> cand;  // the vector
 vector<Integer> values; // values under support forms
 long sort_deg;  // the sorting degree
 bool reducible;    // indicates reducibility
+
+
 
 // construct candidate from given components
 Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd);
