@@ -206,6 +206,7 @@ class Full_Cone {
                       typename list< FACETDATA >::iterator hyp, size_t start_level);
     void select_supphyps_from(const list<FACETDATA>& NewFacets, const size_t new_generator, 
                       const vector<key_t>& Pyramid_key);
+    bool check_pyr_buffer(const size_t level);
     void evaluate_stored_pyramids(const size_t level);
     void match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t new_generator,list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P);
     void collect_pos_supphyps(list<FACETDATA*>& PosHyps, boost::dynamic_bitset<>& Zero_P, size_t& nr_pos);

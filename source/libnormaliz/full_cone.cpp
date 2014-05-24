@@ -49,11 +49,13 @@ const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > Re
 const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
 
-const size_t EvalBoundPyr=200000;   // the same for stored pyramids
+const size_t EvalBoundPyr=200000;   // the same for stored pyramids of level > 0
 
-const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
+const size_t EvalBoundLevel0Pyr=1000000;   // the same for stored level 0 pyramids
 
-const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before 
+// const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
+
+// const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before 
                                               // intermediate reduction is called
                                               
 const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
@@ -988,7 +990,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         if (start_level==0) {  // interrupt parallel execution if it is really parallel
             if(check_evaluation_buffer_size())
                 skip_remaining_tri=true;  // keep the triangulation buffer under control
-            if(Top_Cone->nrPyramids[store_level] > EvalBoundPyr)
+            if(Top_Cone->check_pyr_buffer(store_level))
                 skip_remaining_pyr=true;  // keep the pyramid buffer under control
         }
         
@@ -1434,6 +1436,15 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Full_Cone<Integer>::check_pyr_buffer(const size_t level){
+    if(level==0)
+        return(nrPyramids[0] > EvalBoundLevel0Pyr);
+    else
+        return(nrPyramids[level] > EvalBoundPyr);
+}
 
 
 //---------------------------------------------------------------------------
@@ -1514,7 +1525,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            if(check_evaluation_buffer_size() && nr_done < nr_pyramids)  // we interrupt parallel execution if it is really parallel
                 skip_remaining_tri=true;                         //  to keep the triangulation buffer under control
                 
-            if(nrPyramids[level+1]>EvalBoundPyr && nr_done < nr_pyramids) 
+            if(Top_Cone->check_pyr_buffer(level+1)  && nr_done < nr_pyramids) 
                  skip_remaining_pyr=true;
         }
        
