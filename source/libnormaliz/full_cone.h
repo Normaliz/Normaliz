@@ -223,7 +223,7 @@ class Full_Cone {
     
     void build_top_cone(); 
     void build_cone();
-    void transfer_computed_facets(Full_Cone& copy) const;   
+    void get_supphyps_from_copy();   // if evealuation starts before support hyperplanes are fully computed
     
 
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);

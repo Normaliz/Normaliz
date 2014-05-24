@@ -1864,8 +1864,13 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::transfer_computed_facets(Full_Cone& copy) const{
+void Full_Cone<Integer>::get_supphyps_from_copy(){
 
+    if (verbose) {
+        verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
+    }
+    
+    Full_Cone copy((*this).Generators); //TODO give more informatio
     copy.start_from=start_from;
     copy.use_existing_facets=true;
     copy.HypCounter=HypCounter;
@@ -1883,7 +1888,15 @@ void Full_Cone<Integer>::transfer_computed_facets(Full_Cone& copy) const{
         copy.Facets.push_back(*l);
         ++l;
     }
-    cout << "Starting with " << old_nr_supp_hyps;   
+    cout << "Starting with " << old_nr_supp_hyps;
+    
+    copy.compute_support_hyperplanes();
+    
+    Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
+    nrSupport_Hyperplanes=copy.nrSupport_Hyperplanes;
+    is_Computed.set(ConeProperty::SupportHyperplanes);
+    do_all_hyperplanes = false;
+    // exit(1);   
 }
 
 //---------------------------------------------------------------------------
@@ -1895,19 +1908,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     // prepare reduction 
     if (do_Hilbert_basis && OldCandidates.Candidates.empty()) {
-        if(!isComputed(ConeProperty::SupportHyperplanes)){    //TODO better integration
-            if (verbose) {
-                verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
-            }
-            Full_Cone copy((*this).Generators); //TODO give more information
-            transfer_computed_facets(copy);
-            copy.compute_support_hyperplanes();
-            Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
-            nrSupport_Hyperplanes=copy.nrSupport_Hyperplanes;
-            is_Computed.set(ConeProperty::SupportHyperplanes);
-            do_all_hyperplanes = false;
-            // exit(1);
-        }
+    
+        if(!isComputed(ConeProperty::SupportHyperplanes))
+            get_supphyps_from_copy();
+        
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
