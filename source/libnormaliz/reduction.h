@@ -55,6 +55,7 @@ vector<Integer> cand;  // the vector
 vector<Integer> values; // values under support forms
 long sort_deg;  // the sorting degree
 bool reducible;    // indicates reducibility
+bool original_generator; //
 
 
 

@@ -28,13 +28,18 @@
 namespace libnormaliz {
 using namespace std;
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd){
     cand(v);
     values(val);
     sort_deg(sd);
-    reducible(true);    
+    reducible(true);
+    original_generator(false);    
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C){
@@ -47,8 +52,10 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>
         ++i;
     }
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
+    original_generator=false; 
 }
 
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 CandidateList<Integer>::CandidateList(){
@@ -64,11 +71,14 @@ CandidateList<Integer>::CandidateList(const list<vector<Integer> >& V_List, Full
     sort_it();
 }
 
+//---------------------------------------------------------------------------
 
 /*template<typename Integer>
 void CandidateList<Integer>::insert(const vector<Integer>& v, Full_Cone<Integer>& C){
     insert(v,C.Hyperplanes,C.Sorting);
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void CandidateList<Integer>::insert(const vector<Integer>& v, const list<vector<Integer> >& SuppHyps, 
@@ -85,6 +95,8 @@ void CandidateList<Integer>::insert(const vector<Integer>& v, const list<vector<
     sd=explicit_cast_to_long<Integer>(v_scalar_product(*v,Sorting));
     Candidates.push_back(Candidate(v,val,sd));
 } */
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const {
@@ -111,11 +123,15 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
    return(false);    
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(Candidate<Integer>& c) const {
     c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
     return(c.reducible);
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& cand, const Full_Cone<Integer>& C) const {
@@ -123,6 +139,7 @@ bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& 
     return((*this).is_reducible(cand));
 }
 
+//---------------------------------------------------------------------------
 
 /*
 
@@ -140,6 +157,7 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 }
 */
 
+//---------------------------------------------------------------------------
 
 /*
 // Second version with delayed deletion to prepare parallelization
@@ -161,6 +179,7 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 }
 */
 
+//---------------------------------------------------------------------------
 
 /*
 // Third version with parallelization, but not yet using tables
@@ -197,6 +216,8 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 */
 
 
+//---------------------------------------------------------------------------
+
 // Fourth version with parallelization and tables
 template<typename Integer>
 void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
@@ -231,6 +252,8 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         }      
 }
 
+//---------------------------------------------------------------------------
+
 /*template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
 cout << "Size " << Candidates.size() << endl;
@@ -257,6 +280,8 @@ void CandidateList<Integer>::auto_reduce(){
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool CandidateList<Integer>::reduce_by_and_insert(Candidate<Integer>& cand, const CandidateList<Integer>& Reducers){
     bool irred=!Reducers.is_reducible(cand);
@@ -265,16 +290,22 @@ bool CandidateList<Integer>::reduce_by_and_insert(Candidate<Integer>& cand, cons
     return irred;
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool CandidateList<Integer>::reduce_by_and_insert(const vector<Integer>& v, Full_Cone<Integer>& C, CandidateList<Integer>& Reducers){
     Candidate<Integer> cand(v,C);
     return reduce_by_and_insert(cand,Reducers);
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool cand_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
     return(a.sort_deg < b.sort_deg);
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void CandidateList<Integer>::sort_it(){
@@ -282,10 +313,14 @@ void CandidateList<Integer>::sort_it(){
 
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void CandidateList<Integer>::merge(CandidateList<Integer>& NewCand){
     Candidates.merge(NewCand.Candidates,cand_compare<Integer>);
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void CandidateList<Integer>::extract(list<vector<Integer> >& V_List){
@@ -295,10 +330,14 @@ void CandidateList<Integer>::extract(list<vector<Integer> >& V_List){
                 
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void CandidateList<Integer>::splice(CandidateList<Integer>& NewCand){
     Candidates.splice(Candidates.begin(),NewCand.Candidates);
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
@@ -307,11 +346,15 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
         CandidatePointers.push_back(&(*c));
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool CandidateTable<Integer>::is_reducible(Candidate<Integer>& c){
     c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
     return(c.reducible);
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) {
@@ -339,5 +382,6 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vecto
    return(false);    
 }
 
+//---------------------------------------------------------------------------
  
 } // namespace

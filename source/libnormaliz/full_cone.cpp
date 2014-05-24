@@ -1951,6 +1951,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             // cout << gen_levels[i] << " ** " << Generators[i];
             if(!inhomogeneous || gen_levels[i]<=1)
                 OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+                OldCandidates.Candidates.back().original_generator=true;
         }
         OldCandidates.sort_it();
         OldCandidates.auto_reduce();
@@ -2049,6 +2050,40 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
+
+    set<vector<Integer> > Duplicates;
+    for (size_t i = 0; i <nr_gen; i++) {               
+        if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i])
+            Duplicates.insert(Generators[i]);
+            // cout << in_triang[i] <<" Dupl " << Generators[i];
+    }
+    size_t nrDuplicates=Duplicates.size();
+    if(nrDuplicates==0)
+        return;
+    
+    size_t nrRemoved=0;
+    typename list<Candidate<Integer> >:: iterator c=OldCandidates.Candidates.begin();
+    typename set<vector<Integer> >:: iterator found;
+    for(;nrRemoved < nrDuplicates && c!=OldCandidates.Candidates.end();){
+        // cout << c->original_generator << " Suche " << c->cand;
+        if(!c->original_generator)
+            continue;
+        found=Duplicates.find(c->cand);
+        if(found!=Duplicates.end()){
+            c=OldCandidates.Candidates.erase(c);
+            // cout << "Entferne " << c->cand;
+            nrRemoved++;
+        }
+        else
+            ++c;    
+    }
+    assert(nrRemoved==nrDuplicates);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
@@ -2091,10 +2126,9 @@ void Full_Cone<Integer>::primal_algorithm(){
         
     if (do_Hilbert_basis) {
         // global_reduction(); // no longer necessary
+        remove_duplicate_ori_gens_ftom_HB();
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
-        Hilbert_Basis.sort(); // TODO make it smarter! The only duplicates can be re-generated generators
-        Hilbert_Basis.unique(); //  The only duplicates can be re-generated generators
         is_Computed.set(ConeProperty::HilbertBasis,true);
         check_integrally_closed();
         if (isComputed(ConeProperty::Grading)) {
