@@ -224,6 +224,7 @@ class Full_Cone {
     void build_top_cone(); 
     void build_cone();
     void get_supphyps_from_copy();   // if evealuation starts before support hyperplanes are fully computed
+    void update_reducers();   // update list of reducers after evaluation of simplices
     
 
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);

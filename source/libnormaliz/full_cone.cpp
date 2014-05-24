@@ -60,6 +60,8 @@ const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comp
 
 const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
+const size_t UpdateReducersBound=10000; // reducers updated if one thread has collected more candidates
+
 
 //---------------------------------------------------------------------------
 
@@ -951,6 +953,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             continue;
 
         done[hyppos]=true;
+        
         nr_done++;
 
         if (hyp->ValNewGen == 0)                     // MUST BE SET HERE
@@ -1899,6 +1902,26 @@ void Full_Cone<Integer>::get_supphyps_from_copy(){
     // exit(1);   
 }
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::update_reducers(){
+
+    if(NewCandidates.Candidates.empty())
+        return;
+
+    NewCandidates.sort_it(); 
+    cout << "Nach sort" << endl;
+    NewCandidates.auto_reduce();
+    cout << "Nach auto" << endl; 
+    OldCandidates.reduce_by(NewCandidates);
+    cout << "Nach reduce_by" << endl;
+    OldCandidates.merge(NewCandidates);
+    cout << "Nach merge" << endl;
+    CandidatesSize=OldCandidates.Candidates.size();
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1935,6 +1958,14 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     totalNrSimplices+=TriangulationSize;
 
     if(do_evaluation && !do_only_multiplicity) {
+    
+    deque<bool> done(TriangulationSize,false);
+    bool skip_remaining;
+    
+    do{ // allows multiple run of loop below in case of interruption for the update of reducers
+    
+    skip_remaining=false;
+    
     #pragma omp parallel 
     {
         typename list< SHORTSIMPLEX<Integer> >::iterator s = Triangulation.begin();
@@ -1944,6 +1975,14 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         for(size_t i=0; i<TriangulationSize; i++){
             for(; i > spos; ++spos, ++s) ;
             for(; i < spos; --spos, --s) ;
+            
+            if(skip_remaining)
+                continue;
+            
+            if(done[spos])
+                continue;
+                
+            done[spos]=true;
 
             if(keep_triangulation || do_Stanley_dec)
                 sort(s->key.begin(),s->key.end());
@@ -1955,25 +1994,26 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                     verboseOutput() << "|" <<flush;
                 }
             }
+            
+            if(do_Hilbert_basis && SimplexEval[tn].get_collected_elements_size() > UpdateReducersBound)
+                skip_remaining=true;
+            
         }
         SimplexEval[tn].transfer_candidates();
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;
+        
+    if(do_Hilbert_basis)
+        update_reducers();
+        
+    } while(skip_remaining);
+        
     } // do_evaluation
     
-    if(do_Hilbert_basis){
-        NewCandidates.sort_it(); 
-        cout << "Nach sort" << endl;
-        NewCandidates.auto_reduce();
-        cout << "Nach auto" << endl; 
-        OldCandidates.reduce_by(NewCandidates);
-        cout << "Nach reduce_by" << endl;
-        OldCandidates.merge(NewCandidates);
-        cout << "Nach merge" << endl;
-        CandidatesSize=OldCandidates.Candidates.size();
-    }  
-    
+    if(do_Hilbert_basis)
+        update_reducers();
+            
     if (verbose)
     {
         verboseOutput() << totalNrSimplices << " simplices";

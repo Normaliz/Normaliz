@@ -897,6 +897,11 @@ Integer SimplexEvaluator<Integer>::getDetSum() const {
 }
 
 template<typename Integer>
+size_t SimplexEvaluator<Integer>::get_collected_elements_size(){
+     return collected_elements_size;
+}
+
+template<typename Integer>
 mpq_class SimplexEvaluator<Integer>::getMultiplicitySum() const {
     return mult_sum;
 }

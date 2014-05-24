@@ -165,6 +165,8 @@ public:
     mpq_class getMultiplicitySum() const;
     // returns sum of the Hilbert Series of all evaluated simplices
     const HilbertSeries& getHilbertSeriesSum() const;
+    
+    size_t get_collected_elements_size();
 };
 //class SimplexEvaluater end
 
