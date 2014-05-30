@@ -767,6 +767,8 @@ template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     start_evaluation(s);
+    if(volume==1 || C_ptr->do_only_multiplicity)
+        return volume;
     evaluation_loop_sequential();
     conclude_evaluation();
 
