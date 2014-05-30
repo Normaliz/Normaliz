@@ -51,7 +51,7 @@ const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices 
 
 const size_t EvalBoundPyr=200000;   // the same for stored pyramids of level > 0
 
-const size_t EvalBoundLevel0Pyr=1000000;   // the same for stored level 0 pyramids
+const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored level 0 pyramids
 
 // const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
 
@@ -1895,6 +1895,8 @@ void Full_Cone<Integer>::get_supphyps_from_copy(){
         copy.is_Computed.set(ConeProperty::ExtremeRays);
     copy.GensInCone=GensInCone;
     copy.nrGensInCone=nrGensInCone;
+    copy.Comparisons=Comparisons;
+    copy.nrTotalComparisons=nrTotalComparisons;
     
     typename list< FACETDATA >::const_iterator l=Facets.begin();
     

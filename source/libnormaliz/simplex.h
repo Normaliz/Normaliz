@@ -87,7 +87,7 @@ template<typename Integer>
 class SimplexEvaluator {
     Full_Cone<Integer> * C_ptr;
     size_t dim;
-    //Integer volume;
+    Integer volume;
     Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
     size_t candidates_size;
@@ -117,6 +117,9 @@ class SimplexEvaluator {
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides
+    
+    Matrix<Integer>* StanleyMat;
+    size_t StanIndex;
     
     struct SIMPLINEXDATA{                    // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
@@ -155,6 +158,10 @@ public:
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
     Integer evaluate(SHORTSIMPLEX<Integer>& s);
+    Integer start_evaluation(SHORTSIMPLEX<Integer>& s);
+    void evaluation_loop_sequential();
+    void evaluate_element(const vector<Integer>& element);
+    void conclude_evaluation();
 
     // moves the union of Hilbert basis / deg1 elements to the cone
     // for partial triangulation it merges the sorted list
