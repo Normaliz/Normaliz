@@ -121,6 +121,10 @@ class SimplexEvaluator {
     Matrix<Integer>* StanleyMat;
     size_t StanIndex;
     
+    bool full_cone_simplicial;
+    bool is_complete_simplex;
+    SimplexEvaluator<Integer>* mother_simplex; 
+    
     struct SIMPLINEXDATA{                    // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
         vector< num_t > hvector;             // accumulates the h-vector of this face

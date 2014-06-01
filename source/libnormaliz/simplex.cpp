@@ -178,6 +178,10 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
         InExSimplData[i].hvector.resize(hv_max);
         InExSimplData[i].gen_degrees.reserve(fc.dim);
     }
+    
+    full_cone_simplicial=(C_ptr->nr_gen==C_ptr->dim);
+    is_complete_simplex=true; // to be changed later if necessrary
+    mother_simplex=this; // to be changed later if necessrary
 }
 
 //---------------------------------------------------------------------------
@@ -692,7 +696,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element)
                 if (!is_reducible(candi, Hilbert_Basis)) {
                     Candidates.push_back(candi);
                     candidates_size++;
-                    if (candidates_size >= 1000) {
+                    if (candidates_size >= 1000 && is_complete_simplex) {
                         local_reduction();
                     }
                 }
@@ -730,8 +734,8 @@ void SimplexEvaluator<Integer>::conclude_evaluation() {
     // cout << Hilbert_Series << endl;
 
 
-    if(!C.do_Hilbert_basis)
-        return;  // no local reduction in this case
+    if(!C.do_Hilbert_basis || !is_complete_simplex)
+        return;  // no further reduction in this case
 
     local_reduction();
 
@@ -747,8 +751,11 @@ void SimplexEvaluator<Integer>::conclude_evaluation() {
             *jj = GenCopy.VxM(*jj);
             v_scalar_division(*jj,volume);
             
-            // reduce against global reducers in C.OldCandidates and insert into Collected_HB_Elements          
-            inserted=Collected_HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
+            // reduce against global reducers in C.OldCandidates and insert into Collected_HB_Elements
+            if(full_cone_simplicial) // no global reduction necessary
+                inserted=true;
+            else         
+                inserted=Collected_HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
             if(inserted)
                 collected_elements_size++;
         }
