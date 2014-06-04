@@ -2652,8 +2652,12 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
 template<typename Integer>
 
 void Full_Cone<Integer>::minimize_support_hyperplanes(){
-    if(Support_Hyperplanes.empty() || isComputed(ConeProperty::SupportHyperplanes))
+    if(Support_Hyperplanes.empty())
         return;
+    if(isComputed(ConeProperty::SupportHyperplanes)){
+        nrSupport_Hyperplanes=Support_Hyperplanes.size();
+        return;
+    }
     Full_Cone<Integer> Dual(Support_Hyperplanes);
     Dual.Support_Hyperplanes=list<vector<Integer> >
                    (Generators.get_elements().begin(),Generators.get_elements().end());
@@ -2663,6 +2667,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
     Support_Hyperplanes=list<vector<Integer> >
                    (Essential_Hyperplanes.get_elements().begin(),Essential_Hyperplanes.get_elements().end());
     is_Computed.set(ConeProperty::SupportHyperplanes);
+    nrSupport_Hyperplanes=Support_Hyperplanes.size();
     do_all_hyperplanes=false;
 }
     
