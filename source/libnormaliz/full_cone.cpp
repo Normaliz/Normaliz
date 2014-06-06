@@ -1269,9 +1269,6 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     // FACETDATA *hp_t;
     list<FACETDATA> NewHyps;
     
-    // cout << "Rein " << old_nr_supp_hyps << endl;
-
-
     boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
     
     size_t nr_zero_hyp=0;
@@ -1379,8 +1376,6 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         Facets.splice(Facets.end(),NewHyps);
     else
         Facets.splice(Facets.end(),NewHyps);
-        
-       // cout << "Raus" << endl;
 
 }
 
@@ -1680,7 +1675,6 @@ void Full_Cone<Integer>::build_cone() {
             if (do_triangulation)
                 tri_recursion = true; // We can not go back to classical triangulation
             if(check_evaluation_buffer()){
-                // cout << "Evaluation Build Mitte" << endl;
                 Top_Cone->evaluate_triangulation();
             }
 
@@ -1762,8 +1756,6 @@ void Full_Cone<Integer>::build_cone() {
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
     if(check_evaluation_buffer()){
-        // cout << "Evaluating in build_cone at end, pyr level " << pyr_level << endl;
-        // cout << "Evaluation Build Ende " << is_pyramid << endl;
         Top_Cone->evaluate_triangulation();
     }  
 
@@ -1878,33 +1870,33 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::get_supphyps_from_copy(){
+void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
 
-    if (verbose) {
-        verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
+    if(isComputed(ConeProperty::SupportHyperplanes)) // we have them already
+        return;
+    
+    Full_Cone copy((*this).Generators);
+    if(!from_scratch){
+        copy.start_from=start_from;
+        copy.use_existing_facets=true;
+        copy.HypCounter=HypCounter;
+        copy.Extreme_Rays=Extreme_Rays;
+        copy.in_triang=in_triang;
+        copy.old_nr_supp_hyps=old_nr_supp_hyps;
+        if(isComputed(ConeProperty::ExtremeRays))
+            copy.is_Computed.set(ConeProperty::ExtremeRays);
+        copy.GensInCone=GensInCone;
+        copy.nrGensInCone=nrGensInCone;
+        copy.Comparisons=Comparisons;
+        copy.nrTotalComparisons=nrTotalComparisons;
+        
+        typename list< FACETDATA >::const_iterator l=Facets.begin();
+        
+        for(size_t i=0;i<old_nr_supp_hyps;++i){
+            copy.Facets.push_back(*l);
+            ++l;
+        }
     }
-    
-    Full_Cone copy((*this).Generators); //TODO give more informatio
-    copy.start_from=start_from;
-    copy.use_existing_facets=true;
-    copy.HypCounter=HypCounter;
-    copy.Extreme_Rays=Extreme_Rays;
-    copy.in_triang=in_triang;
-    copy.old_nr_supp_hyps=old_nr_supp_hyps;
-    if(isComputed(ConeProperty::ExtremeRays))
-        copy.is_Computed.set(ConeProperty::ExtremeRays);
-    copy.GensInCone=GensInCone;
-    copy.nrGensInCone=nrGensInCone;
-    copy.Comparisons=Comparisons;
-    copy.nrTotalComparisons=nrTotalComparisons;
-    
-    typename list< FACETDATA >::const_iterator l=Facets.begin();
-    
-    for(size_t i=0;i<old_nr_supp_hyps;++i){
-        copy.Facets.push_back(*l);
-        ++l;
-    }
-    cout << "Starting with " << old_nr_supp_hyps;
     
     copy.compute_support_hyperplanes();
     
@@ -1942,13 +1934,20 @@ void Full_Cone<Integer>::update_reducers(){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
+    if(TriangulationSize==0)
+        return;
+
     assert(omp_get_level()==0);
-    
+
     // prepare reduction 
     if (do_Hilbert_basis && OldCandidates.Candidates.empty()) {
     
-        if(!isComputed(ConeProperty::SupportHyperplanes))
-            get_supphyps_from_copy();
+        if(!isComputed(ConeProperty::SupportHyperplanes)){
+            if (verbose) {
+                verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
+            }
+            get_supphyps_from_copy(false);
+        }
         
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
@@ -1961,8 +1960,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         OldCandidates.auto_reduce();
     }
 
-    if(TriangulationSize>0)
-    {
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
     if (verbose) {
@@ -2046,8 +2043,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
         TriangulationSize=0;
     }
-    
-    } // TriangulationSize
 
 }
 
@@ -2234,8 +2229,7 @@ void Full_Cone<Integer>::compute() {
 
         set_degrees();
         sort_gens_by_degree();
-
-        
+                
         if(ExcludedFaces.nr_of_rows()>0){
             if(!do_h_vector && !do_Stanley_dec){
                 errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition" << endl
@@ -2348,16 +2342,12 @@ void Full_Cone<Integer>::find_grading(){
             if (verbose) {
                 verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
             }
-            compute_support_hyperplanes();
+            get_supphyps_from_copy(true);
             extreme_rays_and_deg1_check();
             if(!pointed) return;
 
             // We keep the SupportHyperplanes, so we do not need to recompute them
             // for the last generator, and use them to make a global reduction earlier
-            do_all_hyperplanes = false;
-            for(size_t i=0;i<nr_gen;i++)
-                in_triang[i]=false;
-            nextGen = 0;
         }
     }
 }
@@ -3354,6 +3344,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     use_existing_facets=false;
     start_from=0;
+    old_nr_supp_hyps=0;
 }
 
 //---------------------------------------------------------------------------
@@ -3423,6 +3414,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     
     use_existing_facets=false;
     start_from=0;
+    old_nr_supp_hyps=0;
 }
 
 template<typename Integer>
@@ -3430,6 +3422,7 @@ void Full_Cone<Integer>::dual_mode() {
 
     use_existing_facets=false; // completely irrelevant here
     start_from=0;
+    old_nr_supp_hyps=0;
     
     Support_Hyperplanes.sort();
     Support_Hyperplanes.unique();
@@ -3544,6 +3537,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     use_existing_facets=false;
     start_from=0;
+    old_nr_supp_hyps=0;
 }
 
 //---------------------------------------------------------------------------
