@@ -2053,9 +2053,10 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
 
     set<vector<Integer> > Duplicates;
     for (size_t i = 0; i <nr_gen; i++) {               
-        if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i])
+        if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i]){
             Duplicates.insert(Generators[i]);
             // cout << in_triang[i] <<" Dupl " << Generators[i];
+        }
     }
     size_t nrDuplicates=Duplicates.size();
     if(nrDuplicates==0)
@@ -2066,8 +2067,10 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
     typename set<vector<Integer> >:: iterator found;
     for(;nrRemoved < nrDuplicates && c!=OldCandidates.Candidates.end();){
         // cout << c->original_generator << " Suche " << c->cand;
-        if(!c->original_generator)
+        if(!c->original_generator){
+            ++c;
             continue;
+        }
         found=Duplicates.find(c->cand);
         if(found!=Duplicates.end()){
             c=OldCandidates.Candidates.erase(c);
@@ -2077,7 +2080,6 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
         else
             ++c;    
     }
-    assert(nrRemoved==nrDuplicates);
 }
 
 //---------------------------------------------------------------------------

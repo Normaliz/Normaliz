@@ -583,7 +583,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_sequential() {
     vector<Integer> point(dim,0);
 
     Matrix<Integer> elements(dim,dim); //all 0 matrix
-    vector<Integer> help;
+    // vector<Integer> help;
 
 
     //now we need to create the candidates
@@ -774,6 +774,7 @@ template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     start_evaluation(s);
+    s.vol=volume;
     if(volume==1 || C_ptr->do_only_multiplicity)
         return volume;
     evaluation_loop_sequential();
