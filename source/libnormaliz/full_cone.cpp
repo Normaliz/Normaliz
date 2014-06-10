@@ -1888,7 +1888,8 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
         copy.GensInCone=GensInCone;
         copy.nrGensInCone=nrGensInCone;
         copy.Comparisons=Comparisons;
-        copy.nrTotalComparisons=Comparisons[Comparisons.size()-1];
+        if(!Comparisons.empty())
+            copy.nrTotalComparisons=Comparisons[Comparisons.size()-1];
         
         typename list< FACETDATA >::const_iterator l=Facets.begin();
         
