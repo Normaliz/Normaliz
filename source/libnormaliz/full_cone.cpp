@@ -1789,12 +1789,6 @@ void Full_Cone<Integer>::build_top_cone() {
     build_cone();
         
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids                    
-    
-    if(!keep_triangulation) // force evaluation of remaining simplices
-        evaluate_triangulation();          
-        
-    if(keep_triangulation)  // in this case triangulation now complete and stored
-        is_Computed.set(ConeProperty::Triangulation);
         
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
@@ -2102,8 +2096,11 @@ void Full_Cone<Integer>::primal_algorithm(){
         if (isComputed(ConeProperty::Grading) && !deg1_generated) {
             deg1_triangulation = false;
         }
-        evaluate_triangulation();
+
+        is_Computed.set(ConeProperty::Triangulation);
     }
+    
+    evaluate_triangulation();
     FreeSimpl.clear();
 
     // collect accumulated data from the SimplexEvaluators
