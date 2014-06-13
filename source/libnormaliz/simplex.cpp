@@ -752,8 +752,10 @@ void SimplexEvaluator<Integer>::conclude_evaluation() {
             v_scalar_division(*jj,volume);
             
             // reduce against global reducers in C.OldCandidates and insert into Collected_HB_Elements
-            if(full_cone_simplicial) // no global reduction necessary
+            if(full_cone_simplicial){ // no global reduction necessary
+                Collected_HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
                 inserted=true;
+            }
             else         
                 inserted=Collected_HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
             if(inserted)
@@ -940,7 +942,9 @@ void SimplexEvaluator<Integer>::transfer_candidates() {
         C_ptr->CandidatesSize += collected_elements_size;
     }
     if (C_ptr->do_deg1_elements){
+        #pragma omp critical(CANDIDATES)
         C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(), Collected_Deg1_Elements);
+        #pragma omp atomic
         C_ptr->CandidatesSize += collected_elements_size;
     }
     
