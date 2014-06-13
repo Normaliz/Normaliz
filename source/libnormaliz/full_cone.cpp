@@ -1935,9 +1935,6 @@ void Full_Cone<Integer>::update_reducers(){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
-    if(TriangulationSize==0)
-        return;
-
     assert(omp_get_level()==0);
 
     // prepare reduction 
@@ -1960,6 +1957,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         OldCandidates.sort_it();
         OldCandidates.auto_reduce();
     }
+    
+    if(TriangulationSize==0)
+        return;
 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
@@ -2143,8 +2143,8 @@ void Full_Cone<Integer>::primal_algorithm(){
         for(size_t i=0;i<nr_gen;i++)
             if(in_triang[i] && v_scalar_product(Grading,Generators[i])==1)
                 Deg1_Elements.push_front(Generators[i]);
-        Deg1_Elements.sort();
-        Deg1_Elements.unique();  //TODO sort, unique needed?
+        // Deg1_Elements.sort();
+        // Deg1_Elements.unique();  //TODO sort, unique needed?
         is_Computed.set(ConeProperty::Deg1Elements,true);
     }
     if (do_h_vector) {
