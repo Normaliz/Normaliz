@@ -46,8 +46,8 @@ test-1/%.out: $(NORMALIZ) test-1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -1 test-1/$*
 test-n/%.out: $(NORMALIZ) test-n/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -n test-n/$*
-test-N/%.out: $(NORMALIZ) test-N/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -N test-N/$*
+test-nn/%.out: $(NORMALIZ) test-nn/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -N test-nn/$*
 test-p/%.out: $(NORMALIZ) test-p/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -p test-p/$*
 test-d/%.out: $(NORMALIZ) test-d/%.in
@@ -73,7 +73,7 @@ distclean: clean
 .PRECIOUS: test-v/%.out
 .PRECIOUS: test-1/%.out
 .PRECIOUS: test-n/%.out
-.PRECIOUS: test-N/%.out
+.PRECIOUS: test-nn/%.out
 .PRECIOUS: test-p/%.out
 .PRECIOUS: test-d/%.out
 .PRECIOUS: test-d1/%.out
