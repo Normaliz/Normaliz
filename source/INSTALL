@@ -1,0 +1,82 @@
+
+
+For compiling Normaliz the following libraries are needed:
+* gmp with gmpxx
+* boost (headers only)
+* openmp enabled compiler (to use parallelization)
+
+On Ubuntu the following packages should be installed:
+g++ libgmp-dev libboost-dev
+
+
+We offer two options for compilation
+
+
+
+A) Use the supplied Makefile:
+A1) Go to the source directory
+A2) Check the configurations in Makefile.configuration
+A3) Say "make"
+It should work without changing the Makefile on many systems that have a system installation of the needed librarys.
+
+
+
+
+B) Use cmake:
+This has better capabilities to find libraries and allow to change settings with a nice interface and so on. ... TODO
+
+
+We assume you start in the normaliz root dir (with subdirs source, examples, ...).
+
+B1) Create a build directory where normaliz will be build and cd into it, e.g.
+  mkdir BUILD; cd BUILD
+
+B2) Initial configuration
+(can be skipped, but it shows some information about what compiler, libraries, etc. it uses)
+  cmake ../source
+
+B3) Check configuration and maybe edit something
+  ccmake ../source
+In the ccmake interface you can use this workflow:
+* c  (for configure)
+* change entries if you like, then press c again
+* g  (generate and exit)
+
+B4) compile
+  make
+This make has dependency checking included and other nice features. If you want to see what happens behind the scenes use
+  make VERBOSE=1
+
+Additionally for cmake:
+If you want to overide system defaults you can change values with ccmake or set enviroment variables.
+IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. If you want to change it later clean your build directory first.
+Some examples:
+Different compiler:
+  CC=gcc-4 CXX=g++-4  cmake  ../source/
+
+To specify search paths for gmp you can add before the cmake
+GMP_INC_DIR=/path/to/include  (for headers)
+GMP_LIB_DIR=/path/to/lib     (for libs)
+GMP_DIR=/path/to/gmp        (for both)
+
+e.g. on my linux laptop I can do
+GMP_DIR=~/usr/local/   cmake   ../source/
+to use my locally installed gmp version
+
+Change architecture:
+For MacOS you can set CMAKE_OSX_ARCHITECTURES eigther with the cmake command-line option
+-DCMAKE_OSX_ARCHITECTURES=x86_64
+or by setting it in ccmake to x86_64.
+See also: http://stackoverflow.com/questions/5334095/cmake-multiarchitecture-compilation
+
+
+Specify Boost dirs
+BOOST_ROOT                 - Preferred installation prefix
+ (or BOOSTROOT)
+BOOST_INCLUDEDIR           - Preferred include directory e.g. <prefix>/include
+BOOST_LIBRARYDIR           - Preferred library directory e.g. <prefix>/lib
+Boost_NO_SYSTEM_PATHS      - Set to ON to disable searching in locations not
+                             specified by these hint variables. Default is OFF.
+Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
+                             (Boost install locations may contain the version)
+See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html

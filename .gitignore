@@ -15,6 +15,7 @@ transpose
 # ignore object files
 obj*
 *.[ao]
+BUILD*
 
 # ignore normaliz output files
 *.out
