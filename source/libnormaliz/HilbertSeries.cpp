@@ -21,6 +21,10 @@
  * terms of service.
  */
 
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (push, target(mic))
+#endif
+
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -635,3 +639,7 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
 }
 
 } //end namespace libnormaliz
+
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (pop)
+#endif

@@ -21,6 +21,10 @@
  * terms of service.
  */
 
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (push, target(mic))
+#endif
+
 #include "libnormaliz.cpp"
 #include "integer.cpp"
 #include "vector_operations.cpp"
@@ -71,3 +75,7 @@ template ostream& operator<< <long long>(ostream& out, const vector<long long>& 
 template ostream& operator<< <mpz_class>(ostream& out, const vector<mpz_class>& v);
 
 }
+
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (pop)
+#endif

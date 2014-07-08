@@ -141,6 +141,35 @@ IF (GMPXX_FOUND)
   MESSAGE(STATUS "GMPXX found with static lib : ${GMPXX_STATIC_LIBRARIES}")
 ENDIF()
 
+# handle offload to mic (intel xeon phi)
+SET (NMZ_MIC_OFFLOAD "NO" CACHE BOOL "Use offload to mic (intel xeon phi)")
+IF (NMZ_MIC_OFFLOAD)
+  IF ( NOT UNIX OR APPLE )
+    MESSAGE (FATAL_ERROR "Offload to mic only supported on Linux")
+  ENDIF()
+
+  # find gmp for mic
+  FIND_PACKAGE(MIC_GMP REQUIRED)
+  INCLUDE_DIRECTORIES(${MIC_GMP_INCLUDE_DIR})  #probably not the correct place
+  IF (MIC_GMP_FOUND)
+    MESSAGE(STATUS "MIC_GMP found with include dir: ${MIC_GMP_INCLUDE_DIR}")
+    MESSAGE(STATUS "MIC_GMP found with lib dir: ${MIC_GMP_LIBRARIES_DIR}")
+    MESSAGE(STATUS "MIC_GMP found with lib : ${MIC_GMP_LIBRARIES}")
+    MESSAGE(STATUS "MIC_GMP found with static lib : ${MIC_GMP_STATIC_LIBRARIES}")
+  ENDIF()
+  FIND_PACKAGE(MIC_GMPXX REQUIRED)
+  INCLUDE_DIRECTORIES(${MIC_GMPXX_INCLUDE_DIR}) #probably not the correct place
+  IF (MIC_GMPXX_FOUND)
+    MESSAGE(STATUS "MIC_GMPXX found with include dir: ${MIC_GMPXX_INCLUDE_DIR}")
+    MESSAGE(STATUS "MIC_GMPXX found with lib : ${MIC_GMPXX_LIBRARIES}")
+    MESSAGE(STATUS "MIC_GMPXX found with static lib : ${MIC_GMPXX_STATIC_LIBRARIES}")
+  ENDIF()
+  SET (NMZ_MIC_FLAGS "-offload-option,mic,compiler,\"-L${MIC_GMP_LIBRARIES_DIR} -lgmpxx -lgmp\" -DNMZ_MIC_OFFLOAD")
+  MESSAGE(STATUS "Adding to compiler flags NMZ_MIC_FLAGS=${NMZ_MIC_FLAGS}")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NMZ_MIC_FLAGS}")
+ENDIF (NMZ_MIC_OFFLOAD)
+
+
 ADD_SUBDIRECTORY(libnormaliz)
 
 # add the normaliz executable

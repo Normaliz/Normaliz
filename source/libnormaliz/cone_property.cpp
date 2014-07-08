@@ -21,6 +21,10 @@
  * terms of service.
  */
 
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (push, target(mic))
+#endif
+
 #include <vector>
 #include <string>
 
@@ -255,3 +259,7 @@ std::ostream& operator<< (std::ostream& out, const ConeProperties& CP){
 
 
 } /* end namespace libnormaliz */
+
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (pop)
+#endif
