@@ -1,5 +1,5 @@
 # libnormaliz source files
-SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp)
+SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp offload.cpp)
 # libnormaliz header files
 SET(headers cone.h cone_property.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h)
 
