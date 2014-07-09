@@ -266,12 +266,12 @@ void CandidateList<Integer>::auto_reduce(){
 
     CandidateList<Integer> Irreducibles, CurrentReducers;
     long irred_degree;
-    cout << "autoreduce " << Candidates.size() << endl;;
+    // cout << "autoreduce " << Candidates.size() << endl;;
     
     typename list<Candidate<Integer> >::iterator c;
     while(!Candidates.empty()){
         irred_degree=Candidates.begin()->sort_deg*2-1;
-        cout << "irred_degree " << irred_degree << endl;
+        // cout << "irred_degree " << irred_degree << endl;
         for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c);
         CurrentReducers.Candidates.splice(CurrentReducers.Candidates.begin(),Candidates,Candidates.begin(),c);
         reduce_by(CurrentReducers);

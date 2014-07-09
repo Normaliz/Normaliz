@@ -8,6 +8,10 @@ normaliz
 normaliz-*
 nmzIntegrate
 
+# ignore executable tools
+collectcols
+transpose
+
 # ignore object files
 obj*
 *.[ao]

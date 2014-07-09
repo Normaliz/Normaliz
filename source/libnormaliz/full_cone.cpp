@@ -1912,15 +1912,15 @@ void Full_Cone<Integer>::update_reducers(){
         return;
 
     NewCandidates.sort_it(); 
-    cout << "Nach sort" << endl;
+    // cout << "Nach sort" << endl;
     if(nr_gen!=dim){
         NewCandidates.auto_reduce();
-        cout << "Nach auto" << endl; 
+        // cout << "Nach auto" << endl; 
         OldCandidates.reduce_by(NewCandidates);
         cout << "Nach reduce_by" << endl;
     }
     OldCandidates.merge(NewCandidates);
-    cout << "Nach merge" << endl;
+    // cout << "Nach merge" << endl;
     CandidatesSize=OldCandidates.Candidates.size();
 }
 

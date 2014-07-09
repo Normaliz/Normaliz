@@ -108,7 +108,7 @@ class SimplexEvaluator {
     vector< long > level0_gen_degrees; // degrees of the generaors in level 0
     vector< long > gen_levels;
     vector< num_t > hvector;  //h-vector of the current evaluation
-    vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case wqe want to compute two h-vectors
+    vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
     HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
