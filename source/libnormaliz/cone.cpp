@@ -1069,9 +1069,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
-        if (ToCompute.none())
-            return ToCompute;
     }
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none())
+        return ToCompute;
 
     /* preparation: get generators if necessary */
     compute_generators();

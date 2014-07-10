@@ -1917,7 +1917,7 @@ void Full_Cone<Integer>::update_reducers(){
         NewCandidates.auto_reduce();
         // cout << "Nach auto" << endl; 
         OldCandidates.reduce_by(NewCandidates);
-        cout << "Nach reduce_by" << endl;
+        if (verbose) cout << "Nach reduce_by" << endl;
     }
     OldCandidates.merge(NewCandidates);
     // cout << "Nach merge" << endl;
