@@ -1,9 +1,13 @@
-NORMALIZ = ../source/normaliz
-#NORMALIZ = ~/bin/normaliz
+## default normaliz bin
+ifndef (NORMALIZ)
+  NORMALIZ = ../source/normaliz
+endif
+
+
 #NORMPARA += -c
 #NORMPARA += -x=1
 DIFF = ./sortdiff
-NICE = nice -n19
+#NICE = nice -n19
 
 
 TEST_FILES_S = $(patsubst %.in,%.diff,$(wildcard test-s/*.in))

@@ -6,7 +6,7 @@ For compiling Normaliz the following libraries are needed:
 * openmp enabled compiler (to use parallelization)
 
 On Ubuntu the following packages should be installed:
-g++ libgmp-dev libboost-dev
+apt-get install g++ libgmp-dev libboost-dev cmake
 
 
 We offer two options for compilation
@@ -32,10 +32,10 @@ B1) Create a build directory where normaliz will be build and cd into it, e.g.
   mkdir BUILD; cd BUILD
 
 B2) Initial configuration
-(can be skipped, but it shows some information about what compiler, libraries, etc. it uses)
+(can be skipped if step B3 is done, but it shows some information about what compiler, libraries, etc. it uses)
   cmake ../source
 
-B3) Check configuration and maybe edit something
+B3) (Optional) Check configuration and maybe edit something
   ccmake ../source
 In the ccmake interface you can use this workflow:
 * c  (for configure)

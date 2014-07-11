@@ -103,6 +103,9 @@ ADD_EXECUTABLE (normaliz Normaliz.cpp)
 IF (NMZ_BUILD_STATIC)
   TARGET_LINK_LIBRARIES (normaliz normaliz-static)
   TARGET_LINK_LIBRARIES (normaliz ${GMPXX_STATIC_LIBRARIES} ${GMP_STATIC_LIBRARIES})
+  #Static start and end
+  SET_TARGET_PROPERTIES(normaliz PROPERTIES LINK_SEARCH_START_STATIC 1)
+  SET_TARGET_PROPERTIES(normaliz PROPERTIES LINK_SEARCH_END_STATIC 1)
 ELSE (NMZ_BUILD_STATIC)
   TARGET_LINK_LIBRARIES (normaliz normaliz-shared)
   TARGET_LINK_LIBRARIES (normaliz ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
@@ -120,7 +123,6 @@ IF (UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "uninstall package"
     COMMAND xargs ARGS rm < install_manifest.txt
-
     TARGET  uninstall
   )
 ELSE(UNIX)
@@ -141,5 +143,20 @@ ELSE(UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "make package dependencies only implemented in unix"
     TARGET  dep
+  )
+ENDIF(UNIX)
+
+ADD_CUSTOM_TARGET (check @echo run tests)
+IF (UNIX)
+  ADD_CUSTOM_COMMAND(
+    COMMENT "run tests"
+    COMMAND make --directory=../test/ NORMALIZ=${CMAKE_CURRENT_BINARY_DIR}/normaliz
+    TARGET  check
+    DEPENDS normaliz
+  )
+ELSE(UNIX)
+  ADD_CUSTOM_COMMAND(
+    COMMENT "check only implemented in unix"
+    TARGET  check
   )
 ENDIF(UNIX)
