@@ -31,6 +31,7 @@
 #include <string>
 
 #include "full_cone.h"
+#include "list_operations.h"
 
 //---------------------------------------------------------------------------
 
@@ -70,6 +71,17 @@ Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C);
 template<typename Integer>
 bool cand_compare(const Candidate<Integer>& a, const Candidate<Integer>& b);
 
+
+template <typename Integer>
+ostream& operator<< (ostream& out, const Candidate<Integer>& c) {
+    out << "cand=" << c.cand;
+    out << ", values=" << c.values;
+    out << ", sort_deg=" << c.sort_deg;
+    out << ", reducible=" << c.reducible;
+    out << ", original_generator=" << c.original_generator;
+    return out;
+}
+
 template<typename Integer>
 class CandidateList {
 
@@ -107,6 +119,12 @@ void splice(CandidateList<Integer>& NewCand);
 void extract(list<vector<Integer> >& V_List);
 
 }; // end class
+
+template <typename Integer>
+ostream& operator<< (ostream& out, const CandidateList<Integer>& cl) {
+    out << cl.Candidates;
+    return out;
+}
 
 template<typename Integer>
 class CandidateTable {  // for parallelized reduction with moving of reducer to the front
