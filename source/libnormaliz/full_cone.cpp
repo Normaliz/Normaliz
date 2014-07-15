@@ -1944,9 +1944,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
-            if(!inhomogeneous || gen_levels[i]<=1)
+            if(!inhomogeneous || gen_levels[i]<=1) {
                 OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
                 OldCandidates.Candidates.back().original_generator=true;
+            }
         }
         OldCandidates.sort_it();
         OldCandidates.auto_reduce();
