@@ -1392,7 +1392,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
             vector<Integer> irr_hyp_subl = BasisChange.to_sublattice_dual(Dehomogenization);
-            FC.Support_Hyperplanes.remove(irr_hyp_subl);
+            FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         }
         SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes());
         is_Computed.set(ConeProperty::SupportHyperplanes);

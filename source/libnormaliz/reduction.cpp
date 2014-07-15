@@ -45,13 +45,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& v
 template<typename Integer>
 Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C){
     cand=v;
-    values.resize(C.nrSupport_Hyperplanes);
-    typename list<vector<Integer> >::const_iterator h;
-    size_t i=0;
-    for(h=C.Support_Hyperplanes.begin();h!=C.Support_Hyperplanes.end();++h){
-        values[i]=v_scalar_product(v,*h);
-        ++i;
-    }
+    values = C.Support_Hyperplanes.MxV(v);
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
     original_generator=false;
     // in_HB=false;

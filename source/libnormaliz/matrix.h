@@ -200,6 +200,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
     void append(const vector<Integer>& v); // append the row v to this
     void cut_columns(size_t c); // remove columns, only the first c columns will survive
+    void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
+    void remove_duplicate_and_zero_rows();
 
     inline const Integer& get_elem(size_t row, size_t col) const {
         return elem[row][col];

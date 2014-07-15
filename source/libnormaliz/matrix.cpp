@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 
 #include <fstream>
+#include <set>
 #include <algorithm>
 #include <math.h>
 
@@ -464,6 +465,44 @@ void Matrix<Integer>::cut_columns(size_t c) {
         elem[i].resize(c);
     }
     nc = c;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::remove_row(const vector<Integer>& row) {
+    size_t tmp_nr = nr;
+    for (size_t i = 1; i <= tmp_nr; ++i) {
+        if (elem[tmp_nr-i] == row) {
+            elem.erase(elem.begin()+(tmp_nr-i));
+            nr--;
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::remove_duplicate_and_zero_rows() {
+    bool remove_some = false;
+    vector<bool> key(nr, true);
+
+    set<vector<Integer> > SortedRows;
+    SortedRows.insert( vector<Integer>(nc,0) );
+    typename set<vector<Integer> >::iterator found;
+    for (size_t i = 0; i<nr; i++) {
+        found = SortedRows.find(elem[i]);
+        if (found != SortedRows.end()) {
+            key[i] = false;
+            remove_some = true;
+        }
+        else
+            SortedRows.insert(found,elem[i]);
+    }
+
+    if (remove_some) {
+        *this = submatrix(key);
+    }
 }
 
 //---------------------------------------------------------------------------
