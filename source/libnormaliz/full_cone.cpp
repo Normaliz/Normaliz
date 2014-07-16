@@ -2225,7 +2225,6 @@ void Full_Cone<Integer>::compute() {
             
         if(inhomogeneous){
             find_level0_dim();
-            // cout << "level0 dim " << level0_dim << endl;
         }
 
         set_degrees();
@@ -2312,11 +2311,6 @@ void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support 
     // reset_tasks();
 }
 
-/*template<typename Integer>  // now in constructor
-void Full_Cone<Integer>::dual_mode() {
-
-} */
-
 //---------------------------------------------------------------------------
 // Checks and auxiliary algorithms
 //---------------------------------------------------------------------------
@@ -2359,8 +2353,8 @@ template<typename Integer>
 void Full_Cone<Integer>::find_level0_dim(){
 
     if(!isComputed(ConeProperty::Generators)){
-        errorOutput() << "Missing Generators. THIS SOULD NOT HAPPEN!"  << endl;
-        throw BadInputException();   
+        errorOutput() << "Missing Generators. THIS SHOULD NOT HAPPEN!"  << endl;
+        throw FatalException();
     }
     
     Matrix<Integer> Help(nr_gen,dim);
@@ -3449,14 +3443,12 @@ void Full_Cone<Integer>::dual_mode() {
         if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
         check_integrally_closed();
     }
+
     if(inhomogeneous){
        set_levels();
        find_level0_dim();
        find_module_rank();
-       // cout << "module rank " << module_rank << endl;
     }
-    
-    level0_dim=dim; // must always be defined
     
     use_existing_facets=false;
     start_from=0;
@@ -3534,7 +3526,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
     
-    level0_dim=0; // must always be defined
+    level0_dim = C.level0_dim; // must always be defined
     
     use_existing_facets=false;
     start_from=0;
