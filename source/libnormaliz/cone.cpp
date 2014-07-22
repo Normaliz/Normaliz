@@ -537,7 +537,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
 
     if (isComputed(ConeProperty::Grading)) {
         // solve GeneratorsOfToricRing * grading = old_grading
-        Grading = Positive_Embedded_Generators.solve(Grading);
+        Integer dummyDenom;
+        Grading = Positive_Embedded_Generators.solve(Grading,dummyDenom);
         if (Grading.size() != dim) {
             errorOutput() << "Grading could not be transfered!"<<endl;
             is_Computed.set(ConeProperty::Grading, false);

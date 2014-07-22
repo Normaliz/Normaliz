@@ -2373,14 +2373,53 @@ void Full_Cone<Integer>::find_level0_dim(){
 template<typename Integer>
 void Full_Cone<Integer>::find_module_rank(){
 
-     if(level0_dim==dim-1){
-        module_rank=1;
+    if(level0_dim==dim){
+        module_rank=0;
         is_Computed.set(ConeProperty::ModuleRank);
         return;
-     }      
+    } 
     
-    if(!isComputed(ConeProperty::HilbertBasis))
+    if(isComputed(ConeProperty::HilbertBasis)){
+        find_module_rank_from_HB();
         return;
+    }
+    
+    find_module_rank_from_proj();
+    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::find_module_rank_from_proj(){
+    
+    if(verbose){
+        verboseOutput() << "Computing projection to quotient mod level 0" << endl;
+    } 
+
+    Matrix<Integer> ProjGen(nr_gen,dim-level0_dim);
+    for(size_t i=0;i<nr_gen;++i){
+        ProjGen[i]=ProjToLevel0Quot.MxV(Generators[i]);
+    }
+    
+    vector<Integer> GradingProj=ProjToLevel0Quot.transpose().solve(Truncation);
+    
+    Full_Cone<Integer> Cproj(ProjGen);
+    Cproj.Grading=GradingProj;
+    Cproj.is_Computed.set(ConeProperty::Grading);
+    Cproj.do_deg1_elements=true;
+    Cproj.compute();
+    
+    module_rank=Cproj.Deg1_Elements.size();
+    is_Computed.set(ConeProperty::ModuleRank);
+    return;
+}
+        
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::find_module_rank_from_HB(){
+
     
     set<vector<Integer> > Quotient;
     vector<Integer> v;

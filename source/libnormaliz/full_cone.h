@@ -244,6 +244,8 @@ class Full_Cone {
     void set_degrees();
     void set_levels(); // for truncation in the inhomogeneous case
     void find_module_rank(); // finds the module rank in the inhom case
+    void find_module_rank_from_HB();
+    void find_module_rank_from_proj();  // used if Hilbert basis is not computed
     void find_level0_dim(); // ditto for the level 0 dimension 
     void sort_gens_by_degree();
     void compute_support_hyperplanes();
