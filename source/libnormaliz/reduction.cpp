@@ -274,7 +274,7 @@ void CandidateList<Integer>::auto_reduce(){
     while(!Candidates.empty()){
         irred_degree=Candidates.begin()->sort_deg*2-1;
         if(verbose){
-            verboseOutput() << irred_degree << " ";
+            verboseOutput() << irred_degree << " " << flush;
         }
         for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c);
         CurrentReducers.Candidates.splice(CurrentReducers.Candidates.begin(),Candidates,Candidates.begin(),c);

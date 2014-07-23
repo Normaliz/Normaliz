@@ -788,9 +788,6 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 template<typename Integer>
 void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
 
-    // cout << "Update " << volume << endl;
-
-    if (volume==0) throw volume;
     if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation)
             return;
     if(C_ptr->level0_dim==dim-1){ // the case of codimension 1
@@ -826,7 +823,7 @@ void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
 template<typename Integer>
 void SimplexEvaluator<Integer>::addMult(const Integer& volume) {
 
-    if (volume==0) throw volume;
+    assert(volume != 0);
     det_sum += volume;
     if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation)
         return;

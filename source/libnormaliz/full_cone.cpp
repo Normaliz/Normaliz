@@ -1977,6 +1977,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     do{ // allows multiple run of loop below in case of interruption for the update of reducers
     
     skip_remaining=false;
+    step_x_size = TriangulationSize-VERBOSE_STEPS;
     
     #pragma omp parallel 
     {
@@ -2382,14 +2383,13 @@ void Full_Cone<Integer>::find_module_rank(){
         return;
     } 
     
-    size_t HBrank;
-    
     if(isComputed(ConeProperty::HilbertBasis)){
         find_module_rank_from_HB();
-        HBrank=module_rank;
         // return;
     }
-    
+
+    size_t HBrank = module_rank;
+
     find_module_rank_from_proj();
     
     if(isComputed(ConeProperty::HilbertBasis))
