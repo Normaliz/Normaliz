@@ -1916,8 +1916,11 @@ void Full_Cone<Integer>::update_reducers(){
     if(nr_gen!=dim){
         NewCandidates.auto_reduce();
         // cout << "Nach auto" << endl; 
+        if(verbose){
+            verboseOutput() << "reducing " << OldCandidates.Candidates.size() << " candidates by " << NewCandidates.Candidates.size() << " reducers" << endl;
+        }
         OldCandidates.reduce_by(NewCandidates);
-        if (verbose) cout << "Nach reduce_by" << endl;
+        // if (verbose) cout << "Nach reduce_by" << endl;
     }
     OldCandidates.merge(NewCandidates);
     // cout << "Nach merge" << endl;
@@ -2051,7 +2054,7 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
     for (size_t i = 0; i <nr_gen; i++) {               
         if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i]){
             Duplicates.insert(Generators[i]);
-            cout << in_triang[i] <<" Dupl " << Generators[i];
+            // cout << in_triang[i] <<" Dupl " << Generators[i];
         }
     }
     size_t nrDuplicates=Duplicates.size();
@@ -2379,12 +2382,18 @@ void Full_Cone<Integer>::find_module_rank(){
         return;
     } 
     
+    size_t HBrank;
+    
     if(isComputed(ConeProperty::HilbertBasis)){
         find_module_rank_from_HB();
-        return;
+        HBrank=module_rank;
+        // return;
     }
     
     find_module_rank_from_proj();
+    
+    if(isComputed(ConeProperty::HilbertBasis))
+        assert(HBrank==module_rank);
     
 }
 
