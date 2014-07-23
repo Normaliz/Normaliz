@@ -1632,6 +1632,12 @@ void Cone<Integer>::set_zero_cone() {
 
         ModuleGenerators = Matrix<Integer>(0,dim);
         is_Computed.set(ConeProperty::ModuleGenerators);
+
+        affine_dim = -1;
+        is_Computed.set(ConeProperty::AffineDim);
+
+        recession_rank = 0;
+        is_Computed.set(ConeProperty::RecessionRank);
     }
 
     if (inhomogeneous || ExcludedFaces.nr_of_rows() != 0) {
