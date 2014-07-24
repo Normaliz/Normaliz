@@ -2114,7 +2114,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     // collect accumulated data from the SimplexEvaluators
     if(!is_pyramid) {
         for (int zi=0; zi<omp_get_max_threads(); zi++) {
-            detSum += SimplexEval[zi].getDetSum();
+            detSum += Results[zi].getDetSum();
             multiplicity += SimplexEval[zi].getMultiplicitySum(); 
             if (do_h_vector) {
                 Hilbert_Series += SimplexEval[zi].getHilbertSeriesSum();

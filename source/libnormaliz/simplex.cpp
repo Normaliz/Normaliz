@@ -138,7 +138,7 @@ template<typename Integer>
 SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 : C_ptr(&fc),
   dim(fc.dim),
-  det_sum(0),
+  // det_sum(0),
   mult_sum(0),
   key(dim),
   candidates_size(0),
@@ -280,7 +280,7 @@ size_t TotDet=0;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s) {
+Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll) {
 
     volume = s.vol;
     key = s.key;
@@ -320,7 +320,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s) {
             #pragma omp atomic
             TotDet++;
         }
-        addMult(volume);
+        addMult(volume,Coll);
         return volume;
     }  // done if only mult is asked for
     
@@ -399,7 +399,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s) {
     // Can't be done earlier since volume is not always known earlier
 
 
-    addMult(volume);
+    addMult(volume,Coll);
         
     if (unimodular && !C.do_h_vector && !C.do_Stanley_dec) { // in this case done
         return volume;
@@ -764,7 +764,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation() {
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
-    start_evaluation(s);
+    start_evaluation(s,C_ptr->Results[tn]);
     s.vol=volume;
     if(volume==1 || C_ptr->do_only_multiplicity)
         return volume;
@@ -822,10 +822,10 @@ void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::addMult(const Integer& volume) {
+void SimplexEvaluator<Integer>::addMult(const Integer& volume, Collector<Integer>& Coll) {
 
     assert(volume != 0);
-    det_sum += volume;
+    Coll.det_sum += volume;
     if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation)
         return;
         
@@ -946,10 +946,6 @@ void SimplexEvaluator<Integer>::transfer_candidates() {
     collected_elements_size = 0;
 }
 
-template<typename Integer>
-Integer SimplexEvaluator<Integer>::getDetSum() const {
-    return det_sum;
-}
 
 template<typename Integer>
 size_t SimplexEvaluator<Integer>::get_collected_elements_size(){
@@ -969,14 +965,19 @@ const HilbertSeries& SimplexEvaluator<Integer>::getHilbertSeriesSum() const {
 // Collector
 
 template<typename Integer>
-Collector<Integer>::Collector(Full_Cone<Integer>& fc)
-: C_ptr(&fc),
+Collector<Integer>::Collector(Full_Cone<Integer>& fc):
+  C_ptr(&fc),
   dim(fc.dim),
   det_sum(0),
   mult_sum(0),
   candidates_size(0),
   collected_elements_size(0)
 {
+}
+
+template<typename Integer>
+Integer Collector<Integer>::getDetSum() const {
+    return det_sum;
 }
 
 } /* end namespace */

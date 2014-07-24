@@ -49,6 +49,7 @@ using std::list;
 using std::vector;
 
 template<typename Integer> class Full_Cone;
+template<typename Integer> class Collector;
 
 template<typename Integer>
 class Simplex {
@@ -88,7 +89,7 @@ class SimplexEvaluator {
     Full_Cone<Integer> * C_ptr;
     size_t dim;
     Integer volume;
-    Integer det_sum; // sum of the determinants of all evaluated simplices
+    // Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
     vector<key_t> key; 
     size_t candidates_size;
@@ -147,7 +148,7 @@ class SimplexEvaluator {
 
     bool isDuplicate(const vector<Integer>& cand) const;
 
-	void addMult(const Integer& volume);
+	void addMult(const Integer& volume, Collector<Integer>& Coll);
 
     void prepare_inclusion_exclusion_simpl(size_t Deg);
     void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
@@ -166,7 +167,7 @@ public:
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
     Integer evaluate(SHORTSIMPLEX<Integer>& s);
-    Integer start_evaluation(SHORTSIMPLEX<Integer>& s);
+    Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
     void evaluation_loop_sequential();
     void evaluate_element(const vector<Integer>& element);
     void conclude_evaluation();
@@ -174,8 +175,6 @@ public:
     // moves the union of Hilbert basis / deg1 elements to the cone
     // for partial triangulation it merges the sorted list
     void transfer_candidates();
-    // returns sum of the determinants of all evaluated simplices
-    Integer getDetSum() const;
     // returns sum of the multiplicities of all evaluated simplices
     mpq_class getMultiplicitySum() const;
     // returns sum of the Hilbert Series of all evaluated simplices
@@ -207,6 +206,9 @@ class Collector {
     public:
 
     Collector(Full_Cone<Integer>& fc);
+    
+    // returns sum of the determinants of all evaluated simplices
+    Integer getDetSum() const;
 
 };
 // class end Collector
