@@ -966,4 +966,17 @@ const HilbertSeries& SimplexEvaluator<Integer>::getHilbertSeriesSum() const {
     return Hilbert_Series;
 }
 
+// Collector
+
+template<typename Integer>
+Collector<Integer>::Collector(Full_Cone<Integer>& fc)
+: C_ptr(&fc),
+  dim(fc.dim),
+  det_sum(0),
+  mult_sum(0),
+  candidates_size(0),
+  collected_elements_size(0)
+{
+}
+
 } /* end namespace */

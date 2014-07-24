@@ -2088,6 +2088,9 @@ template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
+    for(size_t i=0;i<SimplexEval.size();++i)
+        SimplexEval[i].tn=i;
+    Results = vector< Collector<Integer> >(omp_get_max_threads(),Collector<Integer>(*this));
 
     /***** Main Work is done in build_top_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false

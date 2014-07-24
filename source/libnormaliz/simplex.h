@@ -158,6 +158,8 @@ class SimplexEvaluator {
 //---------------------------------------------------------------------------
 
 public:
+    int tn; //number of associated thread in parallelization of evaluators
+            // to be set by Full_Cone
 
     SimplexEvaluator(Full_Cone<Integer>& fc);
 
@@ -187,6 +189,9 @@ template<typename Integer>
 class Collector {
     
     friend class SimplexEvaluator<Integer>;
+    
+    Full_Cone<Integer> * C_ptr;
+    size_t dim;
 
     Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
@@ -198,6 +203,11 @@ class Collector {
     list< vector<Integer> > Candidates;
         CandidateList<Integer> Collected_HB_Elements;
     list< vector<Integer> > Collected_Deg1_Elements;
+    
+    public:
+
+    Collector(Full_Cone<Integer>& fc);
+
 };
 // class end Collector
 

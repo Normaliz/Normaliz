@@ -177,6 +177,7 @@ class Full_Cone {
     
     // helpers for evaluation
     vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
+    vector< Collector<Integer> > Results; // one per thread
     vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone
     
     // defining semiopen cones
