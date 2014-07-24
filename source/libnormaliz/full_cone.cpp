@@ -2385,15 +2385,16 @@ void Full_Cone<Integer>::find_module_rank(){
     
     if(isComputed(ConeProperty::HilbertBasis)){
         find_module_rank_from_HB();
-        // return;
+        return;
     }
 
-    size_t HBrank = module_rank;
+    // size_t HBrank = module_rank;
 
     find_module_rank_from_proj();
     
-    if(isComputed(ConeProperty::HilbertBasis))
+    /* if(isComputed(ConeProperty::HilbertBasis))
         assert(HBrank==module_rank);
+    */
     
 }
 
