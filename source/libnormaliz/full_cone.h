@@ -50,6 +50,7 @@ template<typename Integer> class SimplexEvaluator;
 template<typename Integer> class CandidateList;
 template<typename Integer> class Candidate;
 template<typename Integer> class Simplex;
+template<typename Integer> class Collector;
 
 template<typename Integer>
 class Full_Cone {
@@ -58,6 +59,7 @@ class Full_Cone {
     friend class SimplexEvaluator<Integer>;
     friend class CandidateList<Integer>;
     friend class Candidate<Integer>;
+    friend class Collector<Integer>;
     
     size_t dim;
     size_t level0_dim; // dim of cone in level 0 of the inhomogeneous case

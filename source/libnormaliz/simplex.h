@@ -181,7 +181,25 @@ public:
     
     size_t get_collected_elements_size();
 };
-//class SimplexEvaluater end
+//class SimplexEvaluator end
+
+template<typename Integer>
+class Collector {
+    
+    friend class SimplexEvaluator<Integer>;
+
+    Integer det_sum; // sum of the determinants of all evaluated simplices
+    mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
+    size_t candidates_size;
+    size_t collected_elements_size;
+    vector< num_t > hvector;  //h-vector of the current evaluation
+    vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
+    HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
+    list< vector<Integer> > Candidates;
+        CandidateList<Integer> Collected_HB_Elements;
+    list< vector<Integer> > Collected_Deg1_Elements;
+};
+// class end Collector
 
 }
 
