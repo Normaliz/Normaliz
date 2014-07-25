@@ -111,7 +111,7 @@ class SimplexEvaluator {
     vector< long > gen_levels;
     vector< num_t > hvector;  //h-vector of the current evaluation
     vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
-    HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
+    // HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
     CandidateList<Integer> Collected_HB_Elements;
@@ -169,13 +169,11 @@ public:
     Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
     void evaluation_loop_sequential();
     void evaluate_element(const vector<Integer>& element);
-    void conclude_evaluation();
+    void conclude_evaluation(Collector<Integer>& Coll);
 
     // moves the union of Hilbert basis / deg1 elements to the cone
     // for partial triangulation it merges the sorted list
     void transfer_candidates();
-    // returns sum of the Hilbert Series of all evaluated simplices
-    const HilbertSeries& getHilbertSeriesSum() const;
     
     size_t get_collected_elements_size();
 };
@@ -209,6 +207,9 @@ class Collector {
     
     // returns sum of the multiplicities of all evaluated simplices
     mpq_class getMultiplicitySum() const;
+    
+    // returns sum of the Hilbert Series of all evaluated simplices
+    const HilbertSeries& getHilbertSeriesSum() const;
 
 };
 // class end Collector

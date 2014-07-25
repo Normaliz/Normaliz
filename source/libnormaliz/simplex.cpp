@@ -543,12 +543,12 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (unimodular) {    // conclusion in the unimodular case
         if(C.do_h_vector){
             if(C.inhomogeneous)
-                Hilbert_Series.add(inhom_hvector,level0_gen_degrees);    
+                Coll.Hilbert_Series.add(inhom_hvector,level0_gen_degrees);    
             else{
-                Hilbert_Series.add(hvector,gen_degrees);
+                Coll.Hilbert_Series.add(hvector,gen_degrees);
                 if(C.do_excluded_faces)
                     for(size_t i=0;i<nrInExSimplData;++i){
-                        Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
+                        Coll.Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
                 }
             }
         }
@@ -703,24 +703,24 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::conclude_evaluation() {
+void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 
     Full_Cone<Integer>& C = *C_ptr;
 
     if(C.do_h_vector) {
         if(C.inhomogeneous){
-            Hilbert_Series.add(inhom_hvector,level0_gen_degrees);
+            Coll.Hilbert_Series.add(inhom_hvector,level0_gen_degrees);
             // cout << "WAU " << endl;
             }
         else{
-            Hilbert_Series.add(hvector,gen_degrees);
+            Coll.Hilbert_Series.add(hvector,gen_degrees);
             if(C.do_excluded_faces)
                 for(size_t i=0;i<nrInExSimplData;++i)
-                    Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
+                    Coll.Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
         }
     }
     
-    // cout << Hilbert_Series << endl;
+    // cout << Coll.Hilbert_Series << endl;
 
 
     if(!C.do_Hilbert_basis || !is_complete_simplex)
@@ -769,7 +769,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(volume==1 || C_ptr->do_only_multiplicity)
         return volume;
     evaluation_loop_sequential();
-    conclude_evaluation();
+    conclude_evaluation(C_ptr->Results[tn]);
 
     return volume;
 }
@@ -939,11 +939,6 @@ size_t SimplexEvaluator<Integer>::get_collected_elements_size(){
 }
 
 
-template<typename Integer>
-const HilbertSeries& SimplexEvaluator<Integer>::getHilbertSeriesSum() const {
-    return Hilbert_Series;
-}
-
 // Collector
 
 template<typename Integer>
@@ -966,5 +961,11 @@ template<typename Integer>
 mpq_class Collector<Integer>::getMultiplicitySum() const {
     return mult_sum;
 }
+
+template<typename Integer>
+const HilbertSeries& Collector<Integer>::getHilbertSeriesSum() const {
+    return Hilbert_Series;
+}
+
 
 } /* end namespace */

@@ -2117,7 +2117,7 @@ void Full_Cone<Integer>::primal_algorithm(){
             detSum += Results[zi].getDetSum();
             multiplicity += Results[zi].getMultiplicitySum(); 
             if (do_h_vector) {
-                Hilbert_Series += SimplexEval[zi].getHilbertSeriesSum();
+                Hilbert_Series += Results[zi].getHilbertSeriesSum();
             }
         }
     }
