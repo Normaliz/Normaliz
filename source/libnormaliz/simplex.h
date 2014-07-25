@@ -148,12 +148,12 @@ class SimplexEvaluator {
 
     bool isDuplicate(const vector<Integer>& cand) const;
 
-	void addMult(const Integer& volume, Collector<Integer>& Coll);
+	void addMult( Integer multiplicity, Collector<Integer>& Coll);
 
     void prepare_inclusion_exclusion_simpl(size_t Deg);
     void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
     void update_inhom_hvector(long level_offset, size_t Deg);
-    void update_mult_inhom(Integer volume);
+    void update_mult_inhom(Integer& multiplicity);
     
     Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
     void evaluation_loop_sequential(Collector<Integer>& Coll);

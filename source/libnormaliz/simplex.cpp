@@ -773,7 +773,7 @@ bool SimplexEvaluator<Integer>::isDuplicate(const vector<Integer>& cand) const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
+void SimplexEvaluator<Integer>::update_mult_inhom(Integer& multiplicity){
 
     if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation)
             return;
@@ -783,49 +783,48 @@ void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
             if(gen_levels[i]>0){
                 break;
             }
-        assert(i<dim);
-        volume*=gen_degrees[i];  // to correct division in addMult_inner
-        volume/=gen_levels[i];
+        assert(i<dim);        
+        multiplicity*=gen_degrees[i];  // to correct division in addMult_inner
+        multiplicity/=gen_levels[i];
     } 
     else{ 
         size_t i,j=0;
         Integer corr_fact=1;
         for(i=0;i<dim;++i)
             if(gen_levels[i]>0){
-                // cout << "i " << i << " j " << j << " level " << gen_levels[i] << endl;
                 ProjGen[j]=C_ptr->ProjToLevel0Quot.MxV(C_ptr->Generators[key[i]]); // Generators of evaluator may be destroyed
                 corr_fact*=gen_degrees[i];
                 j++;
             }
-        volume*=corr_fact;
-        volume/=ProjGen.vol_destructive();
-        // cout << "After corr "  << volume << endl;      
+        multiplicity*=corr_fact;
+        multiplicity/=ProjGen.vol_destructive();
+        // cout << "After corr "  << multiplicity << endl;      
     }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::addMult(const Integer& volume, Collector<Integer>& Coll) {
+void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>& Coll) {
 
-    assert(volume != 0);
-    Coll.det_sum += volume;
-    if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation)
+    assert(multiplicity != 0);
+    Coll.det_sum += multiplicity;
+    if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation ||
+                    (C_ptr->inhomogeneous && nr_level0_gens!=C_ptr->level0_dim))
         return;
     
-    // Now we are in the inhomogeneous case
-    if(nr_level0_gens==C_ptr->level0_dim){
-        update_mult_inhom(volume);
+    if(C_ptr->inhomogeneous){
+        update_mult_inhom(multiplicity);
     }
     
     if (C_ptr->deg1_triangulation) {
-        Coll.mult_sum += to_mpz(volume);
+        Coll.mult_sum += to_mpz(multiplicity);
     } else {
         mpz_class deg_prod=gen_degrees[0];
         for (size_t i=1; i<dim; i++) {
             deg_prod *= gen_degrees[i];
         }
-        mpq_class mult = to_mpz(volume);
+        mpq_class mult = to_mpz(multiplicity);
         mult /= deg_prod;
         Coll.mult_sum += mult;
     }  
