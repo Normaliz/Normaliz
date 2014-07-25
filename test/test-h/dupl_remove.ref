@@ -1,0 +1,60 @@
+7 Hilbert basis elements
+7 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+index = 1
+original monoid is not integrally closed
+
+size of triangulation   = 1
+resulting sum of |det|s = 6
+
+grading:
+0 1 
+
+degrees of extreme rays:
+1: 2  
+
+Hilbert basis elements are of degree 1
+
+multiplicity = 6
+
+Hilbert series:
+1 5 
+denominator with 2 factors:
+1: 2  
+
+Hilbert polynomial:
+1 6 
+with common denominator = 1
+
+***********************************************************************
+
+7 Hilbert basis elements:
+ 0 1
+ 6 1
+ 1 1
+ 2 1
+ 3 1
+ 4 1
+ 5 1
+
+2 extreme rays:
+ 0 1
+ 6 1
+
+2 support hyperplanes:
+ -1  6
+  1  0
+
+7 Hilbert basis elements of degree 1:
+ 0 1
+ 6 1
+ 1 1
+ 2 1
+ 3 1
+ 4 1
+ 5 1
+

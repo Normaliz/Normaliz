@@ -16,6 +16,7 @@ TEST_FILES_N = $(patsubst %.in,%.diff,$(wildcard test-n/*.in))
 TEST_FILES_NN = $(patsubst %.in,%.diff,$(wildcard test-nn/*.in))
 TEST_FILES_H = $(patsubst %.in,%.diff,$(wildcard test-h/*.in))
 TEST_FILES_P = $(patsubst %.in,%.diff,$(wildcard test-p/*.in))
+TEST_FILES_Q = $(patsubst %.in,%.diff,$(wildcard test-q/*.in))
 TEST_FILES_1 = $(patsubst %.in,%.diff,$(wildcard test-1/*.in))
 TEST_FILES_D = $(patsubst %.in,%.diff,$(wildcard test-d/*.in))
 TEST_FILES_D1 = $(patsubst %.in,%.diff,$(wildcard test-d1/*.in))
@@ -24,13 +25,14 @@ TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
 
 
 #fehlen noch: tests testr1
-all: testv testn test1 testN testp testd testh testdefault testd1
+all: testv testn test1 testN testq testp testd testh testdefault testd1
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)
 testn: $(TEST_FILES_N)
 testh: $(TEST_FILES_H)
 testp: $(TEST_FILES_P)
+testq: $(TEST_FILES_Q)
 test1: $(TEST_FILES_1)
 testdefault: $(TEST_FILES_DEFAULT)
 testd: $(TEST_FILES_D)
@@ -54,6 +56,8 @@ test-nn/%.out: $(NORMALIZ) test-nn/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -N test-nn/$*
 test-p/%.out: $(NORMALIZ) test-p/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -p test-p/$*
+test-q/%.out: $(NORMALIZ) test-q/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -q test-q/$*
 test-d/%.out: $(NORMALIZ) test-d/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -d test-d/$*
 test-h/%.out: $(NORMALIZ) test-h/%.in
@@ -79,6 +83,7 @@ distclean: clean
 .PRECIOUS: test-n/%.out
 .PRECIOUS: test-nn/%.out
 .PRECIOUS: test-p/%.out
+.PRECIOUS: test-q/%.out
 .PRECIOUS: test-d/%.out
 .PRECIOUS: test-d1/%.out
 .PRECIOUS: test-r1/%.out

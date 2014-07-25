@@ -1,0 +1,23 @@
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+index = 1
+
+grading:
+0 1 
+
+degrees of extreme rays:
+1: 2  
+
+***********************************************************************
+
+2 extreme rays:
+ 0 1
+ 6 1
+
+2 support hyperplanes:
+ -1  6
+  1  0
+
