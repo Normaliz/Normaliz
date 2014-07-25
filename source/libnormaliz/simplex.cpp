@@ -881,7 +881,7 @@ void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< v
     typename list <vector <Integer> >::iterator cand=Candi.begin();
     while (cand != Candi.end()) {
         if (is_reducible(*cand, Reducers)) // erase the candidate
-            cand = Candidates.erase(cand);
+            cand = Candi.erase(cand);
         else // continue
             ++cand;
     }
