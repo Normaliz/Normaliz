@@ -2051,7 +2051,7 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
     for (size_t i = 0; i <nr_gen; i++) {               
         if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i]){
             Duplicates.insert(Generators[i]);
-            // cout << in_triang[i] <<" Dupl " << Generators[i];
+            cout << in_triang[i] <<" Dupl " << Generators[i];
         }
     }
     size_t nrDuplicates=Duplicates.size();
@@ -2123,7 +2123,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     }
     if (do_triangulation && do_evaluation && isComputed(ConeProperty::Grading))
         is_Computed.set(ConeProperty::Multiplicity,true);
-        
+                
     if (do_Hilbert_basis) {
         // global_reduction(); // no longer necessary
         remove_duplicate_ori_gens_ftom_HB();

@@ -90,6 +90,7 @@ class SimplexEvaluator {
     Integer volume;
     Integer det_sum; // sum of the determinants of all evaluated simplices
     mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
+    vector<key_t> key; 
     size_t candidates_size;
     size_t collected_elements_size;
     Matrix<Integer> Generators;
@@ -120,6 +121,7 @@ class SimplexEvaluator {
     
     Matrix<Integer>* StanleyMat;
     size_t StanIndex;
+    size_t nr_level0_gens; // counts the number of level 0 vectors among the generators
     
     bool full_cone_simplicial;
     bool is_complete_simplex;
@@ -147,7 +149,7 @@ class SimplexEvaluator {
 
 	void addMult(const Integer& volume);
 
-    void prepare_inclusion_exclusion_simpl(const vector<key_t>& key,size_t Deg);
+    void prepare_inclusion_exclusion_simpl(size_t Deg);
     void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
     void update_inhom_hvector(long level_offset, size_t Deg);
     void update_mult_inhom(Integer volume);

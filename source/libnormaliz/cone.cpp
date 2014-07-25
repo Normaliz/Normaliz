@@ -1207,7 +1207,7 @@ void Cone<Integer>::compute_generators() {
                 setGrading(Grading);
             }
             // compute grading, so that it is also known if nothing else is done afterwards
-            if (!isComputed(ConeProperty::Grading)) {
+            if (!isComputed(ConeProperty::Grading) && !inhomogeneous) {
                 // Generators = ExtremeRays
                 vector<Integer> lf = BasisChange.to_sublattice(Generators).find_linear_form();
                 if (lf.size() == BasisChange.get_rank()) {
