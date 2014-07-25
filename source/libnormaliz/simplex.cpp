@@ -539,21 +539,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     }
 
     StanIndex=1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
-
-    if (unimodular) {    // conclusion in the unimodular case
-        if(C.do_h_vector){
-            if(C.inhomogeneous)
-                Coll.Hilbert_Series.add(inhom_hvector,level0_gen_degrees);    
-            else{
-                Coll.Hilbert_Series.add(hvector,gen_degrees);
-                if(C.do_excluded_faces)
-                    for(size_t i=0;i<nrInExSimplData;++i){
-                        Coll.Hilbert_Series.add(InExSimplData[i].hvector,InExSimplData[i].gen_degrees);
-                }
-            }
-        }
-        return volume;
-    } // the unimodular case has been taken care of
     
     Candidates.clear();
     candidates_size = 0;
@@ -723,8 +708,8 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
     // cout << Coll.Hilbert_Series << endl;
 
 
-    if(!C.do_Hilbert_basis || !is_complete_simplex)
-        return;  // no further reduction in this case
+    if(volume==1 || !C.do_Hilbert_basis || !is_complete_simplex)
+        return;  // no further action in this case
 
     local_reduction();
 
@@ -766,9 +751,10 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     start_evaluation(s,C_ptr->Results[tn]);
     s.vol=volume;
-    if(volume==1 || C_ptr->do_only_multiplicity)
+    if(C_ptr->do_only_multiplicity)
         return volume;
-    evaluation_loop_sequential();
+    if(volume!=1)
+        evaluation_loop_sequential();
     conclude_evaluation(C_ptr->Results[tn]);
 
     return volume;
