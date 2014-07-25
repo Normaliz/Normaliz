@@ -2008,11 +2008,11 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 }
             }
             
-            if(do_Hilbert_basis && SimplexEval[tn].get_collected_elements_size() > UpdateReducersBound)
+            if(do_Hilbert_basis && Results[tn].get_collected_elements_size() > UpdateReducersBound)
                 skip_remaining=true;
             
         }
-        SimplexEval[tn].transfer_candidates();
+        Results[tn].transfer_candidates();
     } // end parallel
     if (verbose)
         verboseOutput()  << endl;

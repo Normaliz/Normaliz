@@ -93,7 +93,7 @@ class SimplexEvaluator {
     // mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices --> Collector
     vector<key_t> key; 
     size_t candidates_size;
-    size_t collected_elements_size;
+    // size_t collected_elements_size;
     Matrix<Integer> Generators;
     Matrix<Integer> TGenerators;
     Matrix<Integer> GenCopy;
@@ -112,10 +112,10 @@ class SimplexEvaluator {
     vector< num_t > hvector;  //h-vector of the current evaluation
     vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
     // HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
-    list< vector<Integer> > Candidates;
+    // list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
-    CandidateList<Integer> Collected_HB_Elements;
-    list< vector<Integer> > Collected_Deg1_Elements;
+    // CandidateList<Integer> Collected_HB_Elements;
+    // list< vector<Integer> > Collected_Deg1_Elements;
     //temporary objects are kept to prevent repeated alloc and dealloc
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides
@@ -139,7 +139,7 @@ class SimplexEvaluator {
     size_t nrInExSimplData;
     // bool InExTouched;                        // indicates whether any hvector!=0 // see above
 
-    void local_reduction();
+    void local_reduction(Collector<Integer>& Coll);
 
     //checks whether new_element is reducible by the Reducers list
     bool is_reducible(const vector< Integer >& new_element, list< vector<Integer> >& Reducers);
@@ -154,6 +154,12 @@ class SimplexEvaluator {
     void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
     void update_inhom_hvector(long level_offset, size_t Deg);
     void update_mult_inhom(Integer volume);
+    
+    Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
+    void evaluation_loop_sequential(Collector<Integer>& Coll);
+    void evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll);
+    void conclude_evaluation(Collector<Integer>& Coll);
+
 
 //---------------------------------------------------------------------------
 
@@ -166,16 +172,6 @@ public:
     // full evaluation of the simplex, writes data back to the cone,
     // returns volume
     Integer evaluate(SHORTSIMPLEX<Integer>& s);
-    Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
-    void evaluation_loop_sequential();
-    void evaluate_element(const vector<Integer>& element);
-    void conclude_evaluation(Collector<Integer>& Coll);
-
-    // moves the union of Hilbert basis / deg1 elements to the cone
-    // for partial triangulation it merges the sorted list
-    void transfer_candidates();
-    
-    size_t get_collected_elements_size();
 };
 //class SimplexEvaluator end
 
@@ -195,8 +191,8 @@ class Collector {
     vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
     HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     list< vector<Integer> > Candidates;
-        CandidateList<Integer> Collected_HB_Elements;
-    list< vector<Integer> > Collected_Deg1_Elements;
+    CandidateList<Integer> HB_Elements;
+    list< vector<Integer> > Deg1_Elements;
     
     public:
 
@@ -210,6 +206,12 @@ class Collector {
     
     // returns sum of the Hilbert Series of all evaluated simplices
     const HilbertSeries& getHilbertSeriesSum() const;
+    
+    // moves the union of Hilbert basis / deg1 elements to the cone
+    // for partial triangulation it merges the sorted list
+    void transfer_candidates();
+    
+    size_t get_collected_elements_size();
 
 };
 // class end Collector

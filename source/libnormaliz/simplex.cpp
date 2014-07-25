@@ -142,7 +142,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   // mult_sum(0),
   key(dim),
   candidates_size(0),
-  collected_elements_size(0),
+  // collected_elements_size(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
   GenCopy(dim,dim),
@@ -540,8 +540,8 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     StanIndex=1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
     
-    Candidates.clear();
-    candidates_size = 0;
+    Coll.Candidates.clear();
+    Coll.candidates_size = 0;
     
     return(volume);
     
@@ -551,7 +551,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::evaluation_loop_sequential() {
+void SimplexEvaluator<Integer>::evaluation_loop_sequential(Collector<Integer>& Coll) {
 
     size_t last;
     vector<Integer> point(dim,0);
@@ -581,7 +581,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_sequential() {
             elements[i] = elements[last];
         }
         
-        evaluate_element(elements[last]);
+        evaluate_element(elements[last],Coll);
     }
 
 }
@@ -589,7 +589,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_sequential() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element){
+void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
 
     // now we create and evaluate the points in par
     Integer norm;
@@ -668,10 +668,10 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element)
             if (C.do_Hilbert_basis) {
                 vector<Integer> candi = v_merge(element,norm);
                 if (!is_reducible(candi, Hilbert_Basis)) {
-                    Candidates.push_back(candi);
+                    Coll.Candidates.push_back(candi);
                     candidates_size++;
                     if (candidates_size >= 1000 && is_complete_simplex) {
-                        local_reduction();
+                        local_reduction(Coll);
                     }
                 }
                 return;
@@ -679,8 +679,8 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element)
             if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
                 vector<Integer> help=GenCopy.VxM(element);
                 v_scalar_division(help,volume);
-                Collected_Deg1_Elements.push_back(help);
-                collected_elements_size++;
+                Coll.Deg1_Elements.push_back(help);
+                Coll.collected_elements_size++;
             }
 }
 
@@ -711,7 +711,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
     if(volume==1 || !C.do_Hilbert_basis || !is_complete_simplex)
         return;  // no further action in this case
 
-    local_reduction();
+    local_reduction(Coll);
 
     //inverse transformation and reduction against global reducers
     //some test for arithmetic overflow may be implemented here
@@ -725,15 +725,15 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
             *jj = GenCopy.VxM(*jj);
             v_scalar_division(*jj,volume);
             
-            // reduce against global reducers in C.OldCandidates and insert into Collected_HB_Elements
+            // reduce against global reducers in C.OldCandidates and insert into HB_Elements
             if(full_cone_simplicial){ // no global reduction necessary
-                Collected_HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
+                Coll.HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
                 inserted=true;
             }
             else         
-                inserted=Collected_HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
+                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
             if(inserted)
-                collected_elements_size++;
+                Coll.collected_elements_size++;
         }
     }
     
@@ -754,7 +754,7 @@ Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(C_ptr->do_only_multiplicity)
         return volume;
     if(volume!=1)
-        evaluation_loop_sequential();
+        evaluation_loop_sequential(C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
     return volume;
@@ -834,18 +834,18 @@ void SimplexEvaluator<Integer>::addMult(const Integer& volume, Collector<Integer
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::local_reduction() {
+void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // reduce new against old elements
-    //now done directly    reduce(Candidates, Hilbert_Basis);
+    //now done directly    reduce(Coll.Candidates, Hilbert_Basis);
 
     // interreduce
-    Candidates.sort(compare_last<Integer>);
-    reduce(Candidates, Candidates);
-    //cout << Candidates.size() << endl;
+    Coll.Candidates.sort(compare_last<Integer>);
+    reduce(Coll.Candidates, Coll.Candidates);
+    //cout << Coll.Candidates.size() << endl;
 
     // reduce old elements
-    reduce(Hilbert_Basis, Candidates);
-    Hilbert_Basis.merge(Candidates,compare_last<Integer>);
+    reduce(Hilbert_Basis, Coll.Candidates);
+    Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
     candidates_size = 0;
 }
 
@@ -898,33 +898,6 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
 //---------------------------------------------------------------------------
 
 
-template<typename Integer>
-void SimplexEvaluator<Integer>::transfer_candidates() {
-    if(collected_elements_size==0)
-        return;
-    if (C_ptr->do_Hilbert_basis) {
-        #pragma omp critical(CANDIDATES)
-        C_ptr->NewCandidates.splice(Collected_HB_Elements);
-        #pragma omp atomic
-        C_ptr->CandidatesSize += collected_elements_size;
-    }
-    if (C_ptr->do_deg1_elements){
-        #pragma omp critical(CANDIDATES)
-        C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(), Collected_Deg1_Elements);
-        #pragma omp atomic
-        C_ptr->CandidatesSize += collected_elements_size;
-    }
-    
-    collected_elements_size = 0;
-}
-
-
-template<typename Integer>
-size_t SimplexEvaluator<Integer>::get_collected_elements_size(){
-     return collected_elements_size;
-}
-
-
 // Collector
 
 template<typename Integer>
@@ -952,6 +925,33 @@ template<typename Integer>
 const HilbertSeries& Collector<Integer>::getHilbertSeriesSum() const {
     return Hilbert_Series;
 }
+
+template<typename Integer>
+void Collector<Integer>::transfer_candidates() {
+    if(collected_elements_size==0)
+        return;
+    if (C_ptr->do_Hilbert_basis) {
+        #pragma omp critical(CANDIDATES)
+        C_ptr->NewCandidates.splice(HB_Elements);
+        #pragma omp atomic
+        C_ptr->CandidatesSize += collected_elements_size;
+    }
+    if (C_ptr->do_deg1_elements){
+        #pragma omp critical(CANDIDATES)
+        C_ptr->Deg1_Elements.splice(C_ptr->Deg1_Elements.begin(),Deg1_Elements);
+        #pragma omp atomic
+        C_ptr->CandidatesSize += collected_elements_size;
+    }
+    
+    collected_elements_size = 0;
+}
+
+
+template<typename Integer>
+size_t Collector<Integer>::get_collected_elements_size(){
+     return collected_elements_size;
+}
+
 
 
 } /* end namespace */
