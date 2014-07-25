@@ -89,8 +89,8 @@ class SimplexEvaluator {
     Full_Cone<Integer> * C_ptr;
     size_t dim;
     Integer volume;
-    // Integer det_sum; // sum of the determinants of all evaluated simplices
-    mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices
+    // Integer det_sum; // sum of the determinants of all evaluated simplices --> Collector
+    // mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices --> Collector
     vector<key_t> key; 
     size_t candidates_size;
     size_t collected_elements_size;
@@ -154,7 +154,6 @@ class SimplexEvaluator {
     void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
     void update_inhom_hvector(long level_offset, size_t Deg);
     void update_mult_inhom(Integer volume);
-    void addMult_inner(const Integer& volume);
 
 //---------------------------------------------------------------------------
 
@@ -175,8 +174,6 @@ public:
     // moves the union of Hilbert basis / deg1 elements to the cone
     // for partial triangulation it merges the sorted list
     void transfer_candidates();
-    // returns sum of the multiplicities of all evaluated simplices
-    mpq_class getMultiplicitySum() const;
     // returns sum of the Hilbert Series of all evaluated simplices
     const HilbertSeries& getHilbertSeriesSum() const;
     
@@ -209,6 +206,9 @@ class Collector {
     
     // returns sum of the determinants of all evaluated simplices
     Integer getDetSum() const;
+    
+    // returns sum of the multiplicities of all evaluated simplices
+    mpq_class getMultiplicitySum() const;
 
 };
 // class end Collector

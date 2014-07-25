@@ -139,7 +139,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 : C_ptr(&fc),
   dim(fc.dim),
   // det_sum(0),
-  mult_sum(0),
+  // mult_sum(0),
   key(dim),
   candidates_size(0),
   collected_elements_size(0),
@@ -800,7 +800,6 @@ void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
         assert(i<dim);
         volume*=gen_degrees[i];  // to correct division in addMult_inner
         volume/=gen_levels[i];
-        addMult_inner(volume);
     } 
     else{ 
         size_t i,j=0;
@@ -815,7 +814,6 @@ void SimplexEvaluator<Integer>::update_mult_inhom(Integer volume){
         volume*=corr_fact;
         volume/=ProjGen.vol_destructive();
         // cout << "After corr "  << volume << endl;      
-        addMult_inner(volume);
     }
 }
 
@@ -828,26 +826,14 @@ void SimplexEvaluator<Integer>::addMult(const Integer& volume, Collector<Integer
     Coll.det_sum += volume;
     if (!C_ptr->isComputed(ConeProperty::Grading) || !C_ptr->do_triangulation)
         return;
-        
-    // the homogeneous case
-    if(!C_ptr->inhomogeneous){
-        addMult_inner(volume);
-        return;
-    }
     
     // Now we are in the inhomogeneous case
     if(nr_level0_gens==C_ptr->level0_dim){
         update_mult_inhom(volume);
-    }     
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
-
+    }
+    
     if (C_ptr->deg1_triangulation) {
-        mult_sum += to_mpz(volume);
+        Coll.mult_sum += to_mpz(volume);
     } else {
         mpz_class deg_prod=gen_degrees[0];
         for (size_t i=1; i<dim; i++) {
@@ -855,8 +841,8 @@ void SimplexEvaluator<Integer>::addMult_inner(const Integer& volume) {
         }
         mpq_class mult = to_mpz(volume);
         mult /= deg_prod;
-        mult_sum += mult;
-    }
+        Coll.mult_sum += mult;
+    }  
 }
 
 //---------------------------------------------------------------------------
@@ -952,10 +938,6 @@ size_t SimplexEvaluator<Integer>::get_collected_elements_size(){
      return collected_elements_size;
 }
 
-template<typename Integer>
-mpq_class SimplexEvaluator<Integer>::getMultiplicitySum() const {
-    return mult_sum;
-}
 
 template<typename Integer>
 const HilbertSeries& SimplexEvaluator<Integer>::getHilbertSeriesSum() const {
@@ -978,6 +960,11 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
 template<typename Integer>
 Integer Collector<Integer>::getDetSum() const {
     return det_sum;
+}
+
+template<typename Integer>
+mpq_class Collector<Integer>::getMultiplicitySum() const {
+    return mult_sum;
 }
 
 } /* end namespace */
