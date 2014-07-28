@@ -64,7 +64,6 @@ const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg
 
 const size_t UpdateReducersBound=10000; // reducers updated if one thread has collected more candidates
 
-
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -1958,6 +1957,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     if(TriangulationSize==0)
         return;
+        
+    list<SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
@@ -1978,6 +1979,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     skip_remaining=false;
     step_x_size = TriangulationSize-VERBOSE_STEPS;
+
     
     #pragma omp parallel 
     {
@@ -1999,7 +2001,10 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
             if(keep_triangulation || do_Stanley_dec)
                 sort(s->key.begin(),s->key.end());
-            SimplexEval[tn].evaluate(*s);
+            if(!SimplexEval[tn].evaluate(*s)){
+                #pragma omp critical(LARGESIMPLEX)
+                LargeSimplices.push_back(SimplexEval[tn]);
+            }
             if (verbose) {
                 #pragma omp critical(VERBOSE)
                 while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
@@ -2024,8 +2029,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         
     } // do_evaluation
     
-    if(do_Hilbert_basis)
-        update_reducers();
+    /* if(do_Hilbert_basis)  // moved further down
+        update_reducers(); */
             
     if (verbose)
     {
@@ -2036,6 +2041,21 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             verboseOutput() << ", " << CandidatesSize << " deg1 vectors";
         verboseOutput() << " accumulated." << endl;
     }
+    
+    // cout << "************* " << LargeSimplices.size() << endl;
+
+    typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
+    for(;LS!=LargeSimplices.end();++LS){
+        LS->Simplex_parallel_evaluation();
+        if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){          
+            Results[0].transfer_candidates();
+            update_reducers();
+        }
+    }
+    
+    Results[0].transfer_candidates(); // any remaining ones
+    if(do_Hilbert_basis)
+        update_reducers();
     
     if(!keep_triangulation){
         // Triangulation.clear();

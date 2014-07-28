@@ -127,8 +127,7 @@ class SimplexEvaluator {
     size_t nr_level0_gens; // counts the number of level 0 vectors among the generators
     
     bool full_cone_simplicial;
-    bool is_complete_simplex;
-    SimplexEvaluator<Integer>* mother_simplex; 
+    bool sequential_evaluation; // indicates whether the simplex is evaluated by a single thread
     
     struct SIMPLINEXDATA{                    // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
@@ -167,13 +166,16 @@ class SimplexEvaluator {
 
 public:
 
-    SimplexEvaluator(Full_Cone<Integer>& fc);
+    SimplexEvaluator(Full_Cone<Integer>& fc); 
     
-    // sets the thread number of the evaluator (needed to associate a collector)
+        // sets the thread number of the evaluator (needed to associate a collector)
     void set_evaluator_tn(int threadnum);
 
-    // full evaluation of the simplex, delivers results to to a collector
-    void evaluate(SHORTSIMPLEX<Integer>& s);
+    // full evaluation of the simplex in a single thread, delivers results to to a collector
+    bool evaluate(SHORTSIMPLEX<Integer>& s);
+    
+    // evaluation in parallel threads
+    void Simplex_parallel_evaluation(); 
     
 };
 //class SimplexEvaluator end

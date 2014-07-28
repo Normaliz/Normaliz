@@ -181,8 +181,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
     }
     
     full_cone_simplicial=(C_ptr->nr_gen==C_ptr->dim);
-    is_complete_simplex=true; // to be changed later if necessrary
-    mother_simplex=this; // to be changed later if necessrary
+    sequential_evaluation=true; // to be changed later if necessrary
 }
 
 template<typename Integer>
@@ -545,9 +544,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     StanIndex=1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
     
-    Coll.Candidates.clear();
-    Coll.candidates_size = 0;
-    
     return(volume);
     
 }
@@ -675,7 +671,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
                 if (!is_reducible(candi, Hilbert_Basis)) {
                     Coll.Candidates.push_back(candi);
                     candidates_size++;
-                    if (candidates_size >= 1000 && is_complete_simplex) {
+                    if (candidates_size >= 1000 && sequential_evaluation) {
                         local_reduction(Coll);
                     }
                 }
@@ -713,7 +709,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
     // cout << Coll.Hilbert_Series << endl;
 
 
-    if(volume==1 || !C.do_Hilbert_basis || !is_complete_simplex)
+    if(volume==1 || !C.do_Hilbert_basis || !sequential_evaluation)
         return;  // no further action in this case
 
     local_reduction(Coll);
@@ -746,23 +742,39 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
     
 }
 
+//---------------------------------------------------------------------------
+
+
+const size_t SimplexParallelEvaluationBound=1; // larger simplices are evaluated by parallel threads
 
 //---------------------------------------------------------------------------
 
 
-/* evaluates a simplex in regard to all data */
+/* evaluates a simplex in regard to all data in a single thread*/
 template<typename Integer>
-void SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
+bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     start_evaluation(s,C_ptr->Results[tn]);
     s.vol=volume;
     if(C_ptr->do_only_multiplicity)
-        return;
+        return true;
+    if(volume>SimplexParallelEvaluationBound && !C_ptr->do_Stanley_dec) // to be postponed for parallel evaluation
+        return false;
     if(volume!=1)
         evaluation_loop_sequential(C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
-    return;
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+/* evaluates a simplex in parallel threads */
+template<typename Integer>
+void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
+
+    evaluation_loop_sequential(C_ptr->Results[0]);
+    conclude_evaluation(C_ptr->Results[0]);    
 }
 
 //---------------------------------------------------------------------------
@@ -847,7 +859,7 @@ void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     reduce(Coll.Candidates, Coll.Candidates);
     //cout << Coll.Candidates.size() << endl;
 
-    // reduce old elements
+    // reduce old elements by new ones
     reduce(Hilbert_Basis, Coll.Candidates);
     Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
     candidates_size = 0;
