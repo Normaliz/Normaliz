@@ -1,4 +1,4 @@
-
+**** PREPARATION ****
 
 For compiling Normaliz the following libraries are needed:
 * gmp with gmpxx
@@ -8,12 +8,12 @@ For compiling Normaliz the following libraries are needed:
 On Ubuntu the following packages should be installed:
 apt-get install g++ libgmp-dev libboost-dev cmake
 
-
-We offer two options for compilation
-
+We offer two ways of compilation, eighter use the supplied makefile or use cmake to create a more powerfull makefile. cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
 
 
-A) Use the supplied Makefile:
+
+**** MAKE ****
+
 A1) Go to the source directory
 A2) Check the configurations in Makefile.configuration
 A3) Say "make"
@@ -21,9 +21,9 @@ It should work without changing the Makefile on many systems that have a system 
 
 
 
+**** CMAKE ****
 
-B) Use cmake:
-This has better capabilities to find libraries and allow to change settings with a nice interface and so on. ... TODO
+This has better capabilities to find libraries and allow to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
 
 
 We assume you start in the normaliz root dir (with subdirs source, examples, ...).
@@ -31,7 +31,7 @@ We assume you start in the normaliz root dir (with subdirs source, examples, ...
 B1) Create a build directory where normaliz will be build and cd into it, e.g.
   mkdir BUILD; cd BUILD
 
-B2) Initial configuration
+B2) Initial configuration, have a look at the end of the file for further config infos.
 (can be skipped if step B3 is done, but it shows some information about what compiler, libraries, etc. it uses)
   cmake ../source
 
@@ -44,12 +44,17 @@ In the ccmake interface you can use this workflow:
 
 B4) compile
   make
-This make has dependency checking included and other nice features. If you want to see what happens behind the scenes use
+This make has dependency checking included and other nice features.
+If you want to see what happens behind the scenes use
   make VERBOSE=1
 
-Additionally for cmake:
+
+
+
+**** ADDITIONALLY CMAKE CONFIGURATION ****
+
 If you want to overide system defaults you can change values with ccmake or set enviroment variables.
-IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. If you want to change it later clean your build directory first.
+IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. If you want to change it later clean your build directory first, or use another fresh build directory.
 Some examples:
 Different compiler:
   CC=gcc-4 CXX=g++-4  cmake  ../source/
@@ -72,7 +77,6 @@ See also: http://stackoverflow.com/questions/5334095/cmake-multiarchitecture-com
 
 Specify Boost dirs
 BOOST_ROOT                 - Preferred installation prefix
- (or BOOSTROOT)
 BOOST_INCLUDEDIR           - Preferred include directory e.g. <prefix>/include
 BOOST_LIBRARYDIR           - Preferred library directory e.g. <prefix>/lib
 Boost_NO_SYSTEM_PATHS      - Set to ON to disable searching in locations not
