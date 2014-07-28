@@ -87,6 +87,8 @@ public:
 template<typename Integer>
 class SimplexEvaluator {
     Full_Cone<Integer> * C_ptr;
+    int tn; //number of associated thread in parallelization of evaluators
+            // to be set by Full_Cone
     size_t dim;
     Integer volume;
     // Integer det_sum; // sum of the determinants of all evaluated simplices --> Collector
@@ -164,14 +166,15 @@ class SimplexEvaluator {
 //---------------------------------------------------------------------------
 
 public:
-    int tn; //number of associated thread in parallelization of evaluators
-            // to be set by Full_Cone
 
     SimplexEvaluator(Full_Cone<Integer>& fc);
+    
+    // sets the thread number of the evaluator (needed to associate a collector)
+    void set_evaluator_tn(int threadnum);
 
-    // full evaluation of the simplex, writes data back to the cone,
-    // returns volume
-    Integer evaluate(SHORTSIMPLEX<Integer>& s);
+    // full evaluation of the simplex, delivers results to to a collector
+    void evaluate(SHORTSIMPLEX<Integer>& s);
+    
 };
 //class SimplexEvaluator end
 

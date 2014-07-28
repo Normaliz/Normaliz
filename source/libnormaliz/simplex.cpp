@@ -185,6 +185,11 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
     mother_simplex=this; // to be changed later if necessrary
 }
 
+template<typename Integer>
+void SimplexEvaluator<Integer>::set_evaluator_tn(int threadnum){
+    tn=threadnum;   
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -747,17 +752,17 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 
 /* evaluates a simplex in regard to all data */
 template<typename Integer>
-Integer SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
+void SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
     start_evaluation(s,C_ptr->Results[tn]);
     s.vol=volume;
     if(C_ptr->do_only_multiplicity)
-        return volume;
+        return;
     if(volume!=1)
         evaluation_loop_sequential(C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
-    return volume;
+    return;
 }
 
 //---------------------------------------------------------------------------

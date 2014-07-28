@@ -2089,7 +2089,7 @@ void Full_Cone<Integer>::primal_algorithm(){
 
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
     for(size_t i=0;i<SimplexEval.size();++i)
-        SimplexEval[i].tn=i;
+        SimplexEval[i].set_evaluator_tn(i);
     Results = vector< Collector<Integer> >(omp_get_max_threads(),Collector<Integer>(*this));
 
     /***** Main Work is done in build_top_cone() *****/
