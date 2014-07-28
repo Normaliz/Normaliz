@@ -91,6 +91,7 @@ class SimplexEvaluator {
             // to be set by Full_Cone
     size_t dim;
     Integer volume;
+    size_t Deg0_offset; // the degree of 0+offset
     // Integer det_sum; // sum of the determinants of all evaluated simplices --> Collector
     // mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices --> Collector
     vector<key_t> key; 
@@ -111,8 +112,8 @@ class SimplexEvaluator {
     vector< long > gen_degrees;
     vector< long > level0_gen_degrees; // degrees of the generaors in level 0
     vector< long > gen_levels;
-    vector< num_t > hvector;  //h-vector of the current evaluation
-    vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
+    // vector< num_t > hvector;  //h-vector of the current evaluation
+    // vector< num_t > inhom_hvector; // separate vector in the inhomogeneous case in case we want to compute two h-vectors
     // HilbertSeries Hilbert_Series; //this is the summed Hilbert Series
     // list< vector<Integer> > Candidates;
     list< vector<Integer> > Hilbert_Basis;
@@ -131,7 +132,7 @@ class SimplexEvaluator {
     
     struct SIMPLINEXDATA{                    // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
-        vector< num_t > hvector;             // accumulates the h-vector of this face
+        // vector< num_t > hvector;             // accumulates the h-vector of this face
         long mult;                           // the multiplicity of this face 
         // bool touched;                        // indicates whether hvector != 0 // ALWAYS true, hence superfluous
         vector< long > gen_degrees;          // degrees of generators in this face
@@ -151,12 +152,13 @@ class SimplexEvaluator {
 
 	void addMult( Integer multiplicity, Collector<Integer>& Coll);
 
-    void prepare_inclusion_exclusion_simpl(size_t Deg);
-    void add_to_inex_faces(const vector<Integer> offset, size_t Deg);
-    void update_inhom_hvector(long level_offset, size_t Deg);
+    void prepare_inclusion_exclusion_simpl(size_t Deg, Collector<Integer>& Coll);
+    void add_to_inex_faces(const vector<Integer> offset, size_t Deg, Collector<Integer>& Coll);
+    void update_inhom_hvector(long level_offset, size_t Deg, Collector<Integer>& Coll);
     void update_mult_inhom(Integer& multiplicity);
     
     Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
+    void take_care_of_0vector(Collector<Integer>& Coll);
     void evaluation_loop_sequential(Collector<Integer>& Coll);
     void evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll);
     void conclude_evaluation(Collector<Integer>& Coll);
@@ -198,6 +200,7 @@ class Collector {
     list< vector<Integer> > Candidates;
     CandidateList<Integer> HB_Elements;
     list< vector<Integer> > Deg1_Elements;
+    vector<vector< num_t> > InEx_hvector;
     
     public:
 
