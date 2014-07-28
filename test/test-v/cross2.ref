@@ -1,0 +1,32 @@
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+index = 2
+
+size of triangulation   = 2
+resulting sum of |det|s = 4
+
+grading:
+0 0 1 
+
+degrees of extreme rays:
+1: 4  
+
+multiplicity = 4
+
+***********************************************************************
+
+4 extreme rays:
+  1  0  1
+  0  1  1
+ -1  0  1
+  0 -1  1
+
+4 support hyperplanes:
+  1 -1  1
+ -1 -1  1
+  1  1  1
+ -1  1  1
+

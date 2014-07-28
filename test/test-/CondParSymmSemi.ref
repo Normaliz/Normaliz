@@ -1,0 +1,100 @@
+17 Hilbert basis elements
+1 Hilbert basis elements of degree 1
+16 extreme rays
+11 support hyperplanes
+
+3 excluded faces
+
+embedding dimension = 8
+rank = 8 (maximal)
+index = 1
+original monoid is not integrally closed
+
+size of triangulation   = 17
+resulting sum of |det|s = 21
+
+grading:
+1 1 1 1 1 1 1 1 
+
+degrees of extreme rays:
+1: 1  2: 13  4: 2  
+
+multiplicity = 1/8
+
+Hilbert series:
+0 1 0 8 0 14 1 7 0 1 
+denominator with 8 factors:
+1: 1  2: 6  4: 1  
+
+Hilbert series with cyclotomic denominator:
+0 1 0 8 0 14 1 7 0 1 
+cyclotomic denominator:
+1: 8  2: 7  4: 1  
+
+Hilbert quasi-polynomial of period 4:
+ 0:       0  16896  25312  24304  11830   2884    343     16
+ 1:   80640 209088 210112 108304  31360   5152    448     16
+ 2:   10080  16896  25312  24304  11830   2884    343     16
+ 3:   80640 209088 210112 108304  31360   5152    448     16
+with common denominator = 645120
+
+***********************************************************************
+
+17 Hilbert basis elements:
+ 0 0 0 1 0 0 1 0
+ 0 0 1 0 0 1 0 0
+ 0 0 1 1 0 0 0 0
+ 0 1 0 0 1 0 0 0
+ 0 1 0 1 0 0 0 0
+ 0 1 1 0 0 0 0 0
+ 0 1 1 1 0 0 0 0
+ 0 1 1 1 0 0 0 1
+ 1 0 0 0 0 0 0 0
+ 1 0 0 0 0 0 0 1
+ 1 0 0 0 0 0 1 0
+ 1 0 0 0 0 1 0 0
+ 1 0 0 0 1 0 0 0
+ 1 0 0 0 1 1 1 0
+ 1 0 0 1 0 0 0 0
+ 1 0 1 0 0 0 0 0
+ 1 1 0 0 0 0 0 0
+
+16 extreme rays:
+ 1 0 0 0 0 0 0 0
+ 1 1 0 0 0 0 0 0
+ 1 0 0 0 0 1 0 0
+ 1 0 0 0 0 0 1 0
+ 1 0 0 0 0 0 0 1
+ 0 1 1 0 0 0 0 0
+ 0 0 1 0 0 1 0 0
+ 0 1 0 1 0 0 0 0
+ 0 0 0 1 0 0 1 0
+ 0 1 0 0 1 0 0 0
+ 1 0 1 0 0 0 0 0
+ 1 0 0 0 1 0 0 0
+ 0 0 1 1 0 0 0 0
+ 1 0 0 1 0 0 0 0
+ 1 0 0 0 1 1 1 0
+ 0 1 1 1 0 0 0 1
+
+11 support hyperplanes:
+  1  0  0  0  0  0  0  0
+  0  1  0  0  0  0  0  0
+  0  0  1  0  0  0  0  0
+  0  0  0  1  0  0  0  0
+  0  0  0  0  1  0  0  0
+  0  0  0  0  0  1  0  0
+  0  0  0  0  0  0  1  0
+  0  0  0  0  0  0  0  1
+  1 -1  1  1  1 -1 -1 -1
+  1  1 -1  1 -1  1 -1 -1
+  1  1  1 -1 -1 -1  1 -1
+
+3 excluded faces:
+  1 -1  1  1  1 -1 -1 -1
+  1  1 -1  1 -1  1 -1 -1
+  1  1  1 -1 -1 -1  1 -1
+
+1 Hilbert basis elements of degree 1:
+ 1 0 0 0 0 0 0 0
+

@@ -1,0 +1,32 @@
+4 extreme rays
+4 support hyperplanes
+
+1 excluded faces
+
+embedding dimension = 3
+rank = 3 (maximal)
+index = 2
+
+grading:
+0 0 1 
+
+degrees of extreme rays:
+1: 4  
+
+***********************************************************************
+
+4 extreme rays:
+  1  0  1
+  0  1  1
+ -1  0  1
+  0 -1  1
+
+4 support hyperplanes:
+  1 -1  1
+ -1 -1  1
+  1  1  1
+ -1  1  1
+
+1 excluded faces:
+ -1 -1  1
+
