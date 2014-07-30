@@ -2047,7 +2047,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
     for(;LS!=LargeSimplices.end();++LS){
         LS->Simplex_parallel_evaluation();
-        if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){          
+        if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){       
             Results[0].transfer_candidates();
             update_reducers();
         }

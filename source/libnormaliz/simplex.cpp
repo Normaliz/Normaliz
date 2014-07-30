@@ -553,44 +553,6 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::evaluation_loop_sequential(Collector<Integer>& Coll) {
-
-    size_t last;
-    vector<Integer> point(dim,0);
-
-    Matrix<Integer> elements(dim,dim); //all 0 matrix
-    // vector<Integer> help;
-
-
-    //now we need to create the candidates
-    while (true) {
-        last = dim;
-        for (int k = dim-1; k >= 0; k--) {
-            if (point[k] < GDiag[k]-1) {
-                last = k;
-                break;
-            }
-        }
-        if (last >= dim) {
-            break;
-        }
-
-        point[last]++;
-        v_add_to_mod(elements[last], InvGenSelRows[last], volume);
-
-        for (size_t i = last+1; i <dim; i++) {
-            point[i]=0;
-            elements[i] = elements[last];
-        }
-        
-        evaluate_element(elements[last],Coll);
-    }
-
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
 
     // now we create and evaluate the points in par
@@ -720,9 +682,9 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 
     if(volume==1 || !C.do_Hilbert_basis || !sequential_evaluation)
         return;  // no further action in this case
-
+        
     local_reduction(Coll);
-
+    
     //inverse transformation and reduction against global reducers
     //some test for arithmetic overflow may be implemented here
     bool inserted;
@@ -747,8 +709,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
         }
     }
     
-    Hilbert_Basis.clear(); // this is not a local variable !!
-    
+    Hilbert_Basis.clear(); // this is not a local variable !!    
 }
 
 //---------------------------------------------------------------------------
@@ -771,10 +732,111 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         return false;
     take_care_of_0vector(C_ptr->Results[tn]);
     if(volume!=1)
-        evaluation_loop_sequential(C_ptr->Results[tn]);
+        evaluate_block(1,explicit_cast_to_long(volume)-1,C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
     return true;
+}
+
+//---------------------------------------------------------------------------
+
+const size_t ParallelBlockLength=10; // the length of the block of elements to be processed by a thread
+const size_t MaxNrBlocks=10; // maximum number of blocks
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
+
+    size_t block_length=ParallelBlockLength;
+    size_t nr_elements=explicit_cast_to_long(volume)-1; // 0-vector already taken care of
+    size_t nr_blocks=nr_elements/ParallelBlockLength;
+    if(nr_elements%ParallelBlockLength != 0)
+        ++nr_blocks;
+    if(nr_blocks>MaxNrBlocks){
+        block_length=nr_elements/MaxNrBlocks;
+        if(nr_elements%MaxNrBlocks != 0)
+            ++block_length;
+        nr_blocks=MaxNrBlocks;
+    }
+    
+    for(size_t i=0; i<nr_blocks;++i){
+        long block_start=i*block_length+1;  // we start at 1
+        long block_end=block_start+block_length-1;
+        if(block_end>nr_elements)
+            block_end=nr_elements;
+        evaluate_block(block_start, block_end,C_ptr->Results[0]);
+    }
+}
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end, Collector<Integer>& Coll) {
+
+
+    size_t last;
+    vector<Integer> point(dim,0); // represents the lattice element whose residue class is to be processed
+
+    Matrix<Integer> elements(dim,dim); //all 0 matrix
+
+    size_t one_back=block_start-1;
+    size_t counter=one_back;
+    
+    // cout << "ONE BACK " << one_back << endl;
+    
+    if(one_back>0){                           // define the last point processed before if it isn't 0
+        for(size_t i=1;i<=dim;++i){               
+            point[dim-i]=one_back % GDiag[dim-i];
+            one_back/= explicit_cast_to_long(GDiag[dim-i]);
+        }
+        
+        for(size_t i=0;i<dim;++i){  // put elements into the state at the end of the previous block
+            elements[i]=v_add(elements[i],v_scalar_multiplication_two(InvGenSelRows[i],point[i]));
+            v_reduction_modulo(elements[i],volume);
+            for(size_t j=i+1;j<dim;++j)
+                elements[j]=elements[i];
+        }
+    }
+    
+    // cout << "VOl " << volume << " " << counter << " " << block_end << endl;
+    // cout << point;
+    // cout << GDiag;
+    
+
+    //now we  create the elements in par
+    while (true) {
+        last = dim;
+        for (int k = dim-1; k >= 0; k--) {
+            if (point[k] < GDiag[k]-1) {
+                last = k;
+                break;
+            }
+        }
+        if (counter >= block_end) {
+            break;
+        }
+        
+        counter++;
+        
+        // cout << "COUNTER " << counter << " LAST " << last << endl;
+
+        point[last]++;
+        v_add_to_mod(elements[last], InvGenSelRows[last], volume);
+
+        for (size_t i = last+1; i <dim; i++) {
+            point[i]=0;
+            elements[i] = elements[last];
+        }
+        
+        // cout << "COUNTER " << counter << " LAST " << elements[last];
+
+        
+        evaluate_element(elements[last],Coll);
+    }
+
 }
 
 //---------------------------------------------------------------------------
@@ -784,7 +846,7 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
     take_care_of_0vector(C_ptr->Results[0]);
-    evaluation_loop_sequential(C_ptr->Results[0]);
+    evaluation_loop_parallel();
     conclude_evaluation(C_ptr->Results[0]);    
 }
 
@@ -868,7 +930,6 @@ void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // interreduce
     Coll.Candidates.sort(compare_last<Integer>);
     reduce(Coll.Candidates, Coll.Candidates);
-    //cout << Coll.Candidates.size() << endl;
 
     // reduce old elements by new ones
     reduce(Hilbert_Basis, Coll.Candidates);

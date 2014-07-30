@@ -159,9 +159,11 @@ class SimplexEvaluator {
     
     Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
     void take_care_of_0vector(Collector<Integer>& Coll);
-    void evaluation_loop_sequential(Collector<Integer>& Coll);
+    // void evaluation_loop_sequential(Collector<Integer>& Coll);
     void evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll);
     void conclude_evaluation(Collector<Integer>& Coll);
+    void evaluation_loop_parallel();
+    void evaluate_block(long block_start, long block_end, Collector<Integer>& Coll);
 
 
 //---------------------------------------------------------------------------
