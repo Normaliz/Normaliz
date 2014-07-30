@@ -684,11 +684,11 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
     if(volume==1 || !C.do_Hilbert_basis || !sequential_evaluation)
         return;  // no further action in this case
 
-    cout << "Starting local reduction" << endl;
+    // cout << "Starting local reduction" << endl;
         
     local_reduction(Coll);
 
-    cout << "local HB " << Hilbert_Basis.size() << endl;
+    // cout << "local HB " << Hilbert_Basis.size() << endl;
     
     //inverse transformation and reduction against global reducers
     //some test for arithmetic overflow may be implemented here
@@ -713,7 +713,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
                 Coll.collected_elements_size++;
         }
     }
-	cout << "local reduction finished " << Coll.collected_elements_size << endl;
+	// cout << "local reduction finished " << Coll.collected_elements_size << endl;
     
 
     Hilbert_Basis.clear(); // this is not a local variable !!    
@@ -722,7 +722,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const size_t SimplexParallelEvaluationBound=1000000; // larger simplices are evaluated by parallel threads
+const size_t SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
 
 //---------------------------------------------------------------------------
 
@@ -747,9 +747,9 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
 //---------------------------------------------------------------------------
 
-const size_t ParallelBlockLength=1000; // the length of the block of elements to be processed by a thread
+const size_t ParallelBlockLength=100000; // the length of the block of elements to be processed by a thread
 const size_t MaxNrBlocks=20000; // maximum number of blocks
-const size_t LocalReductionBound= 10000; // maximum number of blocks
+const size_t LocalReductionBound= 10000; // number of candidates in a thread starting local reduction
 
 
 //---------------------------------------------------------------------------
@@ -773,11 +773,11 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 
     bool skip_remaining;
     deque<bool> done(nr_blocks,false);
-    do{
     skip_remaining=false;
     #pragma omp parallel
     {
     int tn = omp_get_thread_num();
+    do{
     #pragma omp for schedule(dynamic)
     for(size_t i=0; i<nr_blocks;++i){
     
@@ -793,17 +793,18 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
             skip_remaining=true;
     } // for
     
-    } // parallel
     
+    #pragma omp single
+    {
     if(skip_remaining){
-        // cout << "INTERMEDIATE REDUCTION" << endl;
-        collect_vectors();
-        sequential_evaluation=true;    
-        conclude_evaluation(C_ptr->Results[0]);
-        sequential_evaluation=false; 
-    
+        collect_vectors(); 
+        cout << "INTERMEDIATE REDUCTION" << endl;   
+        local_reduction(C_ptr->Results[0]);
+    }    
     }
     }while(skip_remaining);
+    
+    } // parallel
 }
 
 //---------------------------------------------------------------------------
@@ -882,8 +883,12 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::collect_vectors(){
 
     if(C_ptr->do_Hilbert_basis){
-        for(size_t i=1;i<C_ptr->Results.size();++i)
+        for(size_t i=1;i<C_ptr->Results.size();++i){
             C_ptr->Results[0].Candidates.splice(C_ptr->Results[0].Candidates.end(),C_ptr->Results[i].Candidates);
+            C_ptr->Results[0].candidates_size+=C_ptr->Results[i].candidates_size;
+            C_ptr->Results[i].candidates_size = 0;
+        }
+            
     }
 }
 
