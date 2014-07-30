@@ -2043,6 +2043,12 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     }
     
     // cout << "************* " << LargeSimplices.size() << endl;
+    
+    if(verbose){
+        size_t lss=LargeSimplices.size();
+        if(lss>0)
+            verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
+    }
 
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
     for(;LS!=LargeSimplices.end();++LS){
