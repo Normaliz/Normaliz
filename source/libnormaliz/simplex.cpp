@@ -773,11 +773,11 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 
     bool skip_remaining;
     deque<bool> done(nr_blocks,false);
+    do{
     skip_remaining=false;
     #pragma omp parallel
     {
     int tn = omp_get_thread_num();
-    do{
     #pragma omp for schedule(dynamic)
     for(size_t i=0; i<nr_blocks;++i){
     
@@ -793,18 +793,14 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
             skip_remaining=true;
     } // for
     
+    } // parallel
     
-    #pragma omp single
-    {
     if(skip_remaining){
         collect_vectors(); 
         cout << "INTERMEDIATE REDUCTION" << endl;   
-        local_reduction(C_ptr->Results[0]);
-    }    
+        local_reduction(C_ptr->Results[0]);    
     }
     }while(skip_remaining);
-    
-    } // parallel
 }
 
 //---------------------------------------------------------------------------
