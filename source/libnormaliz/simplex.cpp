@@ -141,7 +141,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   // det_sum(0),
   // mult_sum(0),
   key(dim),
-  candidates_size(0),
+  // candidates_size(0),
   // collected_elements_size(0),
   Generators(dim,dim),
   TGenerators(dim,dim),
@@ -633,8 +633,8 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
                 vector<Integer> candi = v_merge(element,norm);
                 if (!is_reducible(candi, Hilbert_Basis)) {
                     Coll.Candidates.push_back(candi);
-                    candidates_size++;
-                    if (candidates_size >= 1000 && sequential_evaluation) {
+                    Coll.candidates_size++;
+                    if (Coll.candidates_size >= 1000 && sequential_evaluation) {
                         local_reduction(Coll);
                     }
                 }
@@ -761,12 +761,18 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         nr_blocks=MaxNrBlocks;
     }
     
+
+    #pragma omp parallel
+    {
+    int tn = omp_get_thread_num();
+    #pragma omp for schedule(dynamic)
     for(size_t i=0; i<nr_blocks;++i){
         long block_start=i*block_length+1;  // we start at 1
         long block_end=block_start+block_length-1;
         if(block_end>nr_elements)
             block_end=nr_elements;
-        evaluate_block(block_start, block_end,C_ptr->Results[0]);
+        evaluate_block(block_start, block_end,C_ptr->Results[tn]);
+    }
     }
 }
 
@@ -841,12 +847,31 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
 
 //---------------------------------------------------------------------------
 
+/* transfer the vector lists in the collectors to  C_ptr->Results[0] */
+template<typename Integer>
+void SimplexEvaluator<Integer>::collect_vectors(){
+
+    if(C_ptr->do_Hilbert_basis){
+        for(size_t i=1;i<C_ptr->Results.size();++i)
+            C_ptr->Results[0].Candidates.splice(C_ptr->Results[0].Candidates.end(),C_ptr->Results[i].Candidates);
+    }
+}
+
+//---------------------------------------------------------------------------
+
 /* evaluates a simplex in parallel threads */
 template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
     take_care_of_0vector(C_ptr->Results[0]);
+    sequential_evaluation=false;
+
     evaluation_loop_parallel();
+    
+    collect_vectors();
+    for(size_t i=1;i<C_ptr->Results.size();++i)
+        conclude_evaluation(C_ptr->Results[i]);
+    sequential_evaluation=true;    
     conclude_evaluation(C_ptr->Results[0]);    
 }
 
@@ -934,7 +959,7 @@ void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // reduce old elements by new ones
     reduce(Hilbert_Basis, Coll.Candidates);
     Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
-    candidates_size = 0;
+    Coll.candidates_size = 0;
 }
 
 template<typename Integer>

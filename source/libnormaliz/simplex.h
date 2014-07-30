@@ -95,7 +95,7 @@ class SimplexEvaluator {
     // Integer det_sum; // sum of the determinants of all evaluated simplices --> Collector
     // mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices --> Collector
     vector<key_t> key; 
-    size_t candidates_size;
+    // size_t candidates_size;
     // size_t collected_elements_size;
     Matrix<Integer> Generators;
     Matrix<Integer> TGenerators;
@@ -164,6 +164,7 @@ class SimplexEvaluator {
     void conclude_evaluation(Collector<Integer>& Coll);
     void evaluation_loop_parallel();
     void evaluate_block(long block_start, long block_end, Collector<Integer>& Coll);
+    void collect_vectors();
 
 
 //---------------------------------------------------------------------------

@@ -2053,7 +2053,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
     }
     
-    Results[0].transfer_candidates(); // any remaining ones
+    for(size_t i=0;i<Results.size();++i)
+        Results[i].transfer_candidates(); // any remaining ones
     if(do_Hilbert_basis)
         update_reducers();
     
