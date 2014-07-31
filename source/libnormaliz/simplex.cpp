@@ -747,7 +747,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 
 //---------------------------------------------------------------------------
 
-const size_t ParallelBlockLength=100000; // the length of the block of elements to be processed by a thread
+const size_t ParallelBlockLength=10000; // the length of the block of elements to be processed by a thread
 const size_t MaxNrBlocks=20000; // maximum number of blocks
 const size_t LocalReductionBound= 10000; // number of candidates in a thread starting local reduction
 
@@ -773,11 +773,15 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 
     bool skip_remaining;
     deque<bool> done(nr_blocks,false);
+    
     do{
     skip_remaining=false;
+
     #pragma omp parallel
     {
     int tn = omp_get_thread_num();
+
+    
     #pragma omp for schedule(dynamic)
     for(size_t i=0; i<nr_blocks;++i){
     
@@ -796,11 +800,18 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     } // parallel
     
     if(skip_remaining){
+        /* #pragma omp parallel for schedule(dynamic)
+        for(size_t i=0;i<C_ptr->Results.size();++i)
+            reduce(C_ptr->Results[i].Candidates,C_ptr->Results[i].Candidates); */
         collect_vectors(); 
         cout << "INTERMEDIATE REDUCTION" << endl;   
-        local_reduction(C_ptr->Results[0]);    
+        local_reduction(C_ptr->Results[0]);
+        cout << "END" << endl;    
     }
+
     }while(skip_remaining);
+    
+    
 }
 
 //---------------------------------------------------------------------------
@@ -906,7 +917,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     collect_vectors();
     for(size_t i=1;i<C_ptr->Results.size();++i)
         conclude_evaluation(C_ptr->Results[i]);
-    sequential_evaluation=true;    
+    sequential_evaluation=true;
+    cout << "FINAL REDUCTION" << endl;    
     conclude_evaluation(C_ptr->Results[0]);    
 }
 
