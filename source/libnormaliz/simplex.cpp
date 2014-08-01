@@ -735,7 +735,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     s.vol=volume;
     if(C_ptr->do_only_multiplicity)
         return true;
-    if(volume>SimplexParallelEvaluationBound && !C_ptr->do_Stanley_dec) // to be postponed for parallel evaluation
+    if(volume>SimplexParallelEvaluationBound && !C_ptr->do_Stanley_dec && omp_get_max_threads()>1) // to be postponed for parallel evaluation
         return false;
     take_care_of_0vector(C_ptr->Results[tn]);
     if(volume!=1)
@@ -793,7 +793,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         if(block_end>nr_elements)
             block_end=nr_elements;
         evaluate_block(block_start, block_end,C_ptr->Results[tn]);
-        if(C_ptr->Results[tn].candidates_size> LocalReductionBound)
+        if(C_ptr->Results[tn].candidates_size>= LocalReductionBound)
             skip_remaining=true;
     } // for
     
@@ -804,9 +804,9 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         for(size_t i=0;i<C_ptr->Results.size();++i)
             reduce(C_ptr->Results[i].Candidates,C_ptr->Results[i].Candidates); */
         collect_vectors(); 
-        cout << "INTERMEDIATE REDUCTION" << endl;   
+        // cout << "INTERMEDIATE REDUCTION" << endl;   
         local_reduction(C_ptr->Results[0]);
-        cout << "END" << endl;    
+        // cout << "END" << endl;    
     }
 
     }while(skip_remaining);
@@ -918,7 +918,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     for(size_t i=1;i<C_ptr->Results.size();++i)
         conclude_evaluation(C_ptr->Results[i]);
     sequential_evaluation=true;
-    cout << "FINAL REDUCTION" << endl;    
+    // cout << "FINAL REDUCTION" << endl;    
     conclude_evaluation(C_ptr->Results[0]);    
 }
 
@@ -1024,14 +1024,11 @@ void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< v
 template<typename Integer>
 bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_element, list< vector<Integer> >& Reducers){
     // the norm is at position dim
-    if (new_element[dim]==0) {
-        return true; // new_element=0
-    }
-    else {
+
         size_t i,c=0;
         typename list< vector<Integer> >::iterator j;
         for (j = Reducers.begin(); j != Reducers.end(); ++j) {
-            if (new_element[dim]<2*(*j)[dim]) {
+            if (new_element[dim]< 2*(*j)[dim]) {
                 break; //new_element is not reducible;
             }
             else {
@@ -1052,7 +1049,7 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
             }
         }
         return false;
-    }
+
 }
 
 //---------------------------------------------------------------------------
