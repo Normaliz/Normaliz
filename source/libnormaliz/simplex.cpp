@@ -722,7 +722,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const size_t SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
+const long SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
 
 //---------------------------------------------------------------------------
 
@@ -774,6 +774,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     bool skip_remaining;
     deque<bool> done(nr_blocks,false);
     
+    size_t progess_report=nr_blocks/50;
+    
     do{
     skip_remaining=false;
 
@@ -787,10 +789,14 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
         if(skip_remaining || done[i])
             continue;
+        if(verbose){
+            if(i>0 && i%progess_report==0)
+                verboseOutput() <<"." << flush;        
+        }
         done[i]=true;
         long block_start=i*block_length+1;  // we start at 1
         long block_end=block_start+block_length-1;
-        if(block_end>nr_elements)
+        if(block_end>(long) nr_elements)
             block_end=nr_elements;
         evaluate_block(block_start, block_end,C_ptr->Results[tn]);
         if(C_ptr->Results[tn].candidates_size>= LocalReductionBound)
@@ -800,9 +806,15 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     } // parallel
     
     if(skip_remaining){
+    
         /* #pragma omp parallel for schedule(dynamic)
         for(size_t i=0;i<C_ptr->Results.size();++i)
-            reduce(C_ptr->Results[i].Candidates,C_ptr->Results[i].Candidates); */
+            reduce(C_ptr->Results[i].Candidates,C_ptr->Results[i].Candidates); 
+        */
+            
+        if(verbose){
+                verboseOutput() << "r" << flush;
+            }
         collect_vectors(); 
         // cout << "INTERMEDIATE REDUCTION" << endl;   
         local_reduction(C_ptr->Results[0]);
@@ -827,7 +839,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     Matrix<Integer> elements(dim,dim); //all 0 matrix
 
     size_t one_back=block_start-1;
-    size_t counter=one_back;
+    long counter=one_back;
     
     // cout << "ONE BACK " << one_back << endl;
     
@@ -919,7 +931,11 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         conclude_evaluation(C_ptr->Results[i]);
     sequential_evaluation=true;
     // cout << "FINAL REDUCTION" << endl;    
-    conclude_evaluation(C_ptr->Results[0]);    
+    conclude_evaluation(C_ptr->Results[0]);
+    
+    if(verbose){
+        verboseOutput() << endl;
+    }    
 }
 
 //---------------------------------------------------------------------------
