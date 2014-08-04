@@ -146,7 +146,8 @@ class SimplexEvaluator {
     //checks whether new_element is reducible by the Reducers list
     bool is_reducible(const vector< Integer >& new_element, list< vector<Integer> >& Reducers);
     // removes elements from Candi which are reducible by Reducers, Reducers must be sorted by compare_last!
-    void reduce(list< vector<Integer> >& Candi, list< vector<Integer> >& Reducers);
+    void reduce(list< vector<Integer> >& Candi, list< vector<Integer> >& Reducers, size_t& Candi_size);
+    void count_and_reduce(list< vector<Integer> >& Candi, list< vector<Integer> >& Reducers);
 
     bool isDuplicate(const vector<Integer>& cand) const;
 

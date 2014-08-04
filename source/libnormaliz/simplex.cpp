@@ -748,7 +748,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 //---------------------------------------------------------------------------
 
 const size_t ParallelBlockLength=10000; // the length of the block of elements to be processed by a thread
-const size_t MaxNrBlocks=20000; // maximum number of blocks
+// const size_t MaxNrBlocks=20000; // maximum number of blocks
 const size_t LocalReductionBound= 10000; // number of candidates in a thread starting local reduction
 
 
@@ -763,12 +763,13 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     size_t nr_blocks=nr_elements/ParallelBlockLength;
     if(nr_elements%ParallelBlockLength != 0)
         ++nr_blocks;
-    if(nr_blocks>MaxNrBlocks){
+
+    /*if(nr_blocks>MaxNrBlocks){
         block_length=nr_elements/MaxNrBlocks;
         if(nr_elements%MaxNrBlocks != 0)
             ++block_length;
         nr_blocks=MaxNrBlocks;
-    }
+    }*/
     
 
     bool skip_remaining;
@@ -1017,21 +1018,46 @@ void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
 
     // interreduce
     Coll.Candidates.sort(compare_last<Integer>);
-    reduce(Coll.Candidates, Coll.Candidates);
+    reduce(Coll.Candidates, Coll.Candidates,Coll.candidates_size);
 
     // reduce old elements by new ones
-    reduce(Hilbert_Basis, Coll.Candidates);
+    count_and_reduce(Hilbert_Basis, Coll.Candidates);
     Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
     Coll.candidates_size = 0;
 }
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< vector<Integer> >& Reducers){
+void SimplexEvaluator<Integer>::count_and_reduce(list< vector< Integer > >& Candi, list< vector<Integer> >& Reducers){
+    size_t dummy=Candi.size();
+    reduce(Candi,Reducers,dummy);
+}
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< vector<Integer> >& Reducers, size_t& Candi_size){
+
+    #pragma omp parallel
+    {
     typename list <vector <Integer> >::iterator cand=Candi.begin();
-    while (cand != Candi.end()) {
-        if (is_reducible(*cand, Reducers)) // erase the candidate
-            cand = Candi.erase(cand);
-        else // continue
+    size_t jjpos=0;
+    
+    #pragma omp for schedule(dynamic)
+    for (size_t j=0; j<Candi_size; ++j) {  // remove negative subfacets shared
+        for(;j > jjpos; ++jjpos, ++cand) ;       // by non-simpl neg or neutral facets 
+        for(;j < jjpos; --jjpos, --cand) ;
+        
+        if (is_reducible(*cand, Reducers)) 
+            (*cand)[dim]=0;                 // mark the candidate
+    }
+    
+    } // parallel
+    
+    typename list <vector <Integer> >::iterator cand=Candi.begin(); // remove reducibles
+    while(cand!=Candi.end()){
+        if((*cand)[dim]==0){
+            cand=Candi.erase(cand);
+            --Candi_size;
+        }
+        else
             ++cand;
     }
 }
