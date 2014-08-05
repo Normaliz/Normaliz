@@ -851,10 +851,12 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
         }
         
         for(size_t i=0;i<dim;++i){  // put elements into the state at the end of the previous block
-            elements[i]=v_add(elements[i],v_scalar_multiplication_two(InvGenSelRows[i],point[i]));
-            v_reduction_modulo(elements[i],volume);
-            for(size_t j=i+1;j<dim;++j)
-                elements[j]=elements[i];
+            if(point[i]!=0){
+                elements[i]=v_add(elements[i],v_scalar_multiplication_two(InvGenSelRows[i],point[i]));
+                v_reduction_modulo(elements[i],volume);
+                for(size_t j=i+1;j<dim;++j)
+                    elements[j]=elements[i];
+            }
         }
     }
     
