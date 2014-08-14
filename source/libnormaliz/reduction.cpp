@@ -36,7 +36,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& v
     values(val);
     sort_deg(sd);
     reducible(true);
-    original_generator(false);    
+    original_generator(false);   
 }
 
 //---------------------------------------------------------------------------
@@ -52,23 +52,46 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>
         ++i;
     }
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
-    original_generator=false; 
+    original_generator=false;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Candidate<Integer>::Candidate(const vector<Integer>& v, size_t max_size){
+    cand=v;
+    values.resize(max_size,0);
+    sort_deg=0;
+    reducible=true;
+    original_generator=false;   
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Candidate<Integer>::Candidate(size_t max_size){
+    // cand=v;
+    values.resize(max_size,0);
+    sort_deg=0;
+    reducible=true;
+    original_generator=false;  
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 CandidateList<Integer>::CandidateList(){
+    dual(false);
+    relevant_size(0);
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-CandidateList<Integer>::CandidateList(const list<vector<Integer> >& V_List, Full_Cone<Integer>& C){
-                 
-    typename list<vector<Integer> >::const_iterator v;
-    
-    for(v=V_List.begin();v!=V_List.end();++v)
-        push_back(Candudate(*v,C));
-    sort_it();
+CandidateList<Integer>::CandidateList(size_t current_size){
+
+    dual(true);
+    relevant_size(current_size);    
 }
 
 //---------------------------------------------------------------------------
@@ -215,7 +238,6 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 }
 */
 
-
 //---------------------------------------------------------------------------
 
 // Fourth version with parallelization and tables
@@ -276,7 +298,7 @@ void CandidateList<Integer>::auto_reduce(){
         if(verbose){
             verboseOutput() << irred_degree << " " << flush;
         }
-        for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c);
+        for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c); // find location for splicing
         CurrentReducers.Candidates.splice(CurrentReducers.Candidates.begin(),Candidates,Candidates.begin(),c);
         reduce_by(CurrentReducers);
         Irreducibles.Candidates.splice(Irreducibles.Candidates.end(),CurrentReducers.Candidates);
@@ -285,6 +307,16 @@ void CandidateList<Integer>::auto_reduce(){
             verboseOutput() << endl;
     }
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void CandidateList<Integer>::::unique_auto_reduce(bool no_pos_in_level0){
+
+    To_Reduce.unique();
+    if(truncate && no_pos_in_level0) // in this case we have only to make unique
+            return;
+    ToReduce.auto_reduce(relevant_length);        
 }
 
 //---------------------------------------------------------------------------
@@ -308,6 +340,30 @@ bool CandidateList<Integer>::reduce_by_and_insert(const vector<Integer>& v, Full
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void CandidateList<Integer>::unique_vectors(){
+
+    if(Candidates.empty())
+        return;
+        
+    sort_it();
+
+    typename list<Cand<Integer> >::iterator h,h_start,prev;
+    h_start=Candidates.begin();
+
+    h_start++;    
+    for(h=h_start;h!=Candidates.end();){
+        prev=h;
+        prev--;
+        if(h>cand=prev->cand)
+            h=Candidates.erase(h);
+        else
+            ++h;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 bool cand_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
     return(a.sort_deg < b.sort_deg);
 }
@@ -323,8 +379,37 @@ void CandidateList<Integer>::sort_it(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void CandidateList<Integer>::clear(){
+    Candidates.clear();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t CandidateList<Integer>::size(){
+    return Candidates.size();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool CandidateList<Integer>::empty(){
+    return Candidates.empty();
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void CandidateList<Integer>::merge(CandidateList<Integer>& NewCand){
     Candidates.merge(NewCand.Candidates,cand_compare<Integer>);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void CandidateList<Integer>::push_back(const Candidate<Integer>& cand){
+    this ->Candidates.push_back(cand);
 }
 
 //---------------------------------------------------------------------------
@@ -389,6 +474,5 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vecto
    return(false);    
 }
 
-//---------------------------------------------------------------------------
  
 } // namespace

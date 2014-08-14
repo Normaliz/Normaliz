@@ -782,9 +782,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 
     #pragma omp parallel
     {
-    int tn = omp_get_thread_num();
+    int tn = omp_get_thread_num();  // chooses the associated collector Results[tn]
 
-    
     #pragma omp for schedule(dynamic)
     for(size_t i=0; i<nr_blocks;++i){
     
@@ -800,8 +799,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         if(block_end>(long) nr_elements)
             block_end=nr_elements;
         evaluate_block(block_start, block_end,C_ptr->Results[tn]);
-        if(C_ptr->Results[tn].candidates_size>= LocalReductionBound)
-            skip_remaining=true;
+        if(C_ptr->Results[tn].candidates_size>= LocalReductionBound) // >= (not > !! ) if 
+            skip_remaining=true;                            // LocalReductionBound==ParallelBlockLength
     } // for
     
     } // parallel
@@ -816,10 +815,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         if(verbose){
                 verboseOutput() << "r" << flush;
             }
-        collect_vectors(); 
-        // cout << "INTERMEDIATE REDUCTION" << endl;   
+        collect_vectors();   
         local_reduction(C_ptr->Results[0]);
-        // cout << "END" << endl;    
     }
 
     }while(skip_remaining);
@@ -841,8 +838,6 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
 
     size_t one_back=block_start-1;
     long counter=one_back;
-    
-    // cout << "ONE BACK " << one_back << endl;
     
     if(one_back>0){                           // define the last point processed before if it isn't 0
         for(size_t i=1;i<=dim;++i){               
@@ -929,12 +924,11 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
     evaluation_loop_parallel();
     
-    collect_vectors();
-    for(size_t i=1;i<C_ptr->Results.size();++i)
+    collect_vectors();   // --> Results[0]
+    for(size_t i=1;i<C_ptr->Results.size();++i)  // takes care of h-vectors
         conclude_evaluation(C_ptr->Results[i]);
-    sequential_evaluation=true;
-    // cout << "FINAL REDUCTION" << endl;    
-    conclude_evaluation(C_ptr->Results[0]);
+    sequential_evaluation=true;   
+    conclude_evaluation(C_ptr->Results[0]);  // h-vector in Results[0] and collected elements
     
     if(verbose){
         verboseOutput() << endl;

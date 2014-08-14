@@ -155,7 +155,14 @@ mpz_class int_max_value_half<mpz_class>(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void check_size(const list<vector<Integer> >& ll){
+void check_range(CandidateList<Integer>& ll){
+    check_range(ll.Candidates)
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void check_range(const list<vector<Integer> >& ll){
 
     if (!test_arithmetic_overflow)
         return;

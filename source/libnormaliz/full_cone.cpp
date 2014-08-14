@@ -1943,6 +1943,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             get_supphyps_from_copy(false);
         }
         
+        OldCandidates.relevant_size=nrSupport_Hyperplanes;
+        NewCandidates.relevant_size=nrSupport_Hyperplanes;
+        
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];

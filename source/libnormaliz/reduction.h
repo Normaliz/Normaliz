@@ -43,6 +43,7 @@ using std::string;
 template<typename Integer> class CandidateList;
 template<typename Integer> class CandidateTable;
 template<typename Integer> class Full_Cone;
+template<typename Integer> class Cone_Dual_Mode;
 
 template<typename Integer>
 class Candidate { // for reduction
@@ -56,15 +57,23 @@ vector<Integer> cand;  // the vector
 vector<Integer> values; // values under support forms
 long sort_deg;  // the sorting degree
 bool reducible;    // indicates reducibility
-bool original_generator; //
 
+bool dual;
+Integer mother;   // for the dual algorithm
+size_t generation;  // ditto
+size_t relevant_size; // relevant length of values
 
+bool original_generator; // marks the original generaors in the primal algorithm
 
 // construct candidate from given components
 Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd);
 
 // construct candidate from a vector and the support forms of C
 Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C);
+
+// construct candidate for dual algorithm
+Candidate(const vector<Integer>& v, size_t max_size);
+Candidate(size_t max_size);
 
 }; //end class
 
@@ -86,15 +95,19 @@ template<typename Integer>
 class CandidateList {
 
 friend class Full_Cone<Integer>;
+friend class Cone_Dual_Mode<Integer>;
 
 public:
 
 list <Candidate<Integer> > Candidates;
+bool dual;
+size_t relevant_size;
 
 
 CandidateList();
-// not used at present:
-CandidateList(const list<vector<Integer> >& V_List, Full_Cone<Integer>& C);
+
+// additional constructor for dual algorithm
+CandidateList(size_t max_size);
 
 // Checks for irreducibility
 bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const; // basic function
@@ -111,12 +124,19 @@ bool reduce_by_and_insert(const vector<Integer>& v, Full_Cone<Integer>& C, Candi
 void reduce_by(CandidateList<Integer>& Reducers);
 // reduce *this against itself
 void auto_reduce();
+void unique_auto_reduce(bool no_pos_in_level0);
 
+// erases dupicate elements in Candidates
+void unique_vectors();
 
 void sort_it();
 void merge(CandidateList<Integer>& NewCand);
 void splice(CandidateList<Integer>& NewCand);
 void extract(list<vector<Integer> >& V_List);
+bool push_back(Candidate<Integer>& c);
+void clear();
+size_t size();
+bool empty();
 
 }; // end class
 
