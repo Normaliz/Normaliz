@@ -43,7 +43,7 @@ class Cone_Dual_Mode {
 public:
     size_t dim;
     size_t nr_sh;
-    size_t hyp_size;
+    // size_t hyp_size;
     
     bool inhomogeneous;
     bool do_only_Deg1_Elements;
@@ -62,7 +62,7 @@ public:
  * ---------------------------------------------------------------------------
  */
     /* splices a vector of lists into a total list*/
-    void splice_them(list< vector< Integer > >& Total, vector<list< vector< Integer > > >& Parts);
+    void splice_them(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts);
 
     /* Returns true if new_element is reducible versus the elements in Irred used for dual algorithm
      *  ATTENTION: this is "random access" for new_element if ordered==false. 

@@ -1943,9 +1943,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             get_supphyps_from_copy(false);
         }
         
-        OldCandidates.relevant_size=nrSupport_Hyperplanes;
-        NewCandidates.relevant_size=nrSupport_Hyperplanes;
-        
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
@@ -3394,6 +3391,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
+    OldCandidates.dual=false;
+    NewCandidates.dual=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3463,6 +3462,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
+    OldCandidates.dual=false;
+    NewCandidates.dual=false;
 }
 
 template<typename Integer>
@@ -3583,6 +3584,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
+    OldCandidates.dual=false;
+    NewCandidates.dual=false;
 }
 
 //---------------------------------------------------------------------------

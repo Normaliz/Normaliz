@@ -101,13 +101,10 @@ public:
 
 list <Candidate<Integer> > Candidates;
 bool dual;
-size_t relevant_size;
 
+CandidateList(); 
+CandidateList(bool dual_algorithm); 
 
-CandidateList();
-
-// additional constructor for dual algorithm
-CandidateList(size_t max_size);
 
 // Checks for irreducibility
 bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const; // basic function
@@ -133,7 +130,7 @@ void sort_it();
 void merge(CandidateList<Integer>& NewCand);
 void splice(CandidateList<Integer>& NewCand);
 void extract(list<vector<Integer> >& V_List);
-bool push_back(Candidate<Integer>& c);
+void push_back(const Candidate<Integer>& c);
 void clear();
 size_t size();
 bool empty();
@@ -154,6 +151,7 @@ friend class CandidateList<Integer>;
 public:
 
 list <Candidate<Integer>* > CandidatePointers;
+bool dual;
 
 CandidateTable(CandidateList<Integer>& CandList);
 

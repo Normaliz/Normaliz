@@ -77,21 +77,22 @@ Candidate<Integer>::Candidate(size_t max_size){
     original_generator=false;  
 }
 
+
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 CandidateList<Integer>::CandidateList(){
-    dual(false);
-    relevant_size(0);
+
 }
+
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-CandidateList<Integer>::CandidateList(size_t current_size){
+CandidateList<Integer>::CandidateList(bool dual_algorithm){
 
-    dual(true);
-    relevant_size(current_size);    
+    dual=dual_algorithm;  
 }
 
 //---------------------------------------------------------------------------
@@ -124,7 +125,11 @@ void CandidateList<Integer>::insert(const vector<Integer>& v, const list<vector<
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const {
 
-    long sd=sort_deg/2;
+    long sd;
+    if(dual)
+        sd=sort_deg;
+    else
+        sd=sort_deg/2;
     size_t kk=0;
     typename list<Candidate<Integer> >::const_iterator r;
     for(r=Candidates.begin();r!=Candidates.end();++r){
@@ -286,7 +291,7 @@ template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
 // uses generations defined by degrees
 
-    CandidateList<Integer> Irreducibles, CurrentReducers;
+    CandidateList<Integer> Irreducibles(dual), CurrentReducers(dual);
     long irred_degree;
     if(verbose){
             verboseOutput() << "auto-reduce " << Candidates.size() << " candidates, degrees <= "; 
@@ -311,12 +316,12 @@ void CandidateList<Integer>::auto_reduce(){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void CandidateList<Integer>::::unique_auto_reduce(bool no_pos_in_level0){
+void CandidateList<Integer>::unique_auto_reduce(bool only_unique){
 
-    To_Reduce.unique();
-    if(truncate && no_pos_in_level0) // in this case we have only to make unique
+    unique_vectors();
+    if(only_unique) // in this case we have only to make unique
             return;
-    ToReduce.auto_reduce(relevant_length);        
+    auto_reduce();        
 }
 
 //---------------------------------------------------------------------------
@@ -347,14 +352,14 @@ void CandidateList<Integer>::unique_vectors(){
         
     sort_it();
 
-    typename list<Cand<Integer> >::iterator h,h_start,prev;
+    typename list<Candidate<Integer> >::iterator h,h_start,prev;
     h_start=Candidates.begin();
 
     h_start++;    
     for(h=h_start;h!=Candidates.end();){
         prev=h;
         prev--;
-        if(h>cand=prev->cand)
+        if(h->cand==prev->cand)
             h=Candidates.erase(h);
         else
             ++h;
@@ -436,6 +441,7 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
     typename list<Candidate<Integer> >::iterator c;
     for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
         CandidatePointers.push_back(&(*c));
+        dual=CandList.dual;
 }
 
 //---------------------------------------------------------------------------
@@ -451,7 +457,11 @@ bool CandidateTable<Integer>::is_reducible(Candidate<Integer>& c){
 template<typename Integer>
 bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) {
 
-    long sd=sort_deg/2;
+    long sd;
+    if(dual)
+        sd=sort_deg;
+    else
+        sd=sort_deg/2;
     size_t kk=0;
     typename list<Candidate<Integer>* >::iterator r;
     for(r=CandidatePointers.begin();r!=CandidatePointers.end();++r){
