@@ -37,6 +37,7 @@ using std::list;
 using std::vector;
 
 template<typename Integer> class CandidateList;
+template<typename Integer> class Candidate;
 
 template<typename Integer>
 class Cone_Dual_Mode {
@@ -53,7 +54,7 @@ public:
     Matrix<Integer> SupportHyperplanes;
     Matrix<Integer> Generators;
     vector<bool> ExtremeRays;
-    CandidateList<Integer> GeneratorList; //only temporarily used
+    list<Candidate<Integer>* > ExtremeRayList; //only temporarily used
     CandidateList<Integer> Intermediate_HB; // intermediate Hilbert basis
     list<vector<Integer> > Hilbert_Basis; //the final result
 

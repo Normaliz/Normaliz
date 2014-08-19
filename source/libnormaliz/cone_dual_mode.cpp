@@ -108,7 +108,7 @@ size_t counter=0,counter1=0;
 
 // PARTLY OBSOLETE because if new data structure
 
-// The vectors in GeneratorList are composed as follows:
+// The vectors in ExtremeRayList are composed as follows:
 // [0]: current total degree (sum of linear forms applied to vector so far)
 // [1.. nr_sh]: values under the linear forms
 // [nr_sh+1]: generation (in the sense of creation): we match vectors of which at least one has gen >=1
@@ -537,7 +537,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         if(ExtremeRays.size()==0){  // no precomputed generators
             extreme_rays_rank();
             relevant_support_hyperplanes();
-            GeneratorList.clear();
+            ExtremeRayList.clear();
             
         }
         else{  // must produce the relevant support hyperplanes from the generators
@@ -589,16 +589,16 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
 
             Matrix<Integer> Test=SupportHyperplanes.submatrix(zero_list);
             if (Test.rank_destructive()>=dim-1) {
-                GeneratorList.push_back((*c));
+                ExtremeRayList.push_back(&(*c));
             }
         }
     }
-    size_t s = GeneratorList.size();
+    size_t s = ExtremeRayList.size();
     Generators = Matrix<Integer>(s,dim);
    
-    typename  list< Candidate<Integer> >::const_iterator l;
-    for (i=0, l=GeneratorList.Candidates.begin(); l != GeneratorList.Candidates.end(); ++l, ++i) {
-        Generators[i]= l->cand;
+    typename  list< Candidate<Integer>* >::const_iterator l;
+    for (i=0, l=ExtremeRayList.begin(); l != ExtremeRayList.end(); ++l, ++i) {
+        Generators[i]= (*l)->cand;
     }
     ExtremeRays=vector<bool>(s,true);
 }
@@ -611,7 +611,7 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
         verboseOutput() << "Find relevant support hyperplanes" << endl;
     }
     list <key_t> zero_list;
-    typename list<Candidate<Integer> >::iterator gen_it;
+    typename list<Candidate<Integer>* >::iterator gen_it;
     vector <key_t> relevant_sh;
     relevant_sh.reserve(nr_sh);
     size_t i,k;
@@ -621,9 +621,9 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     for (i = 0; i < nr_sh; ++i) {
         Matrix<Integer> Test(0,dim);
         k = 0;
-        for (gen_it = GeneratorList.Candidates.begin(); gen_it != GeneratorList.Candidates.end(); ++gen_it) {
-            if (gen_it->values[i]==0) {
-                Test.append(gen_it->cand);
+        for (gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it) {
+            if ((*gen_it)->values[i]==0) {
+                Test.append((*gen_it)->cand);
                 k++;
             }
         }
