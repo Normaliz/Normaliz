@@ -61,7 +61,6 @@ bool reducible;    // indicates reducibility
 bool dual;
 Integer mother;   // for the dual algorithm
 size_t generation;  // ditto
-size_t relevant_size; // relevant length of values
 
 bool original_generator; // marks the original generaors in the primal algorithm
 
@@ -73,13 +72,12 @@ Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C);
 
 // construct candidate for dual algorithm
 Candidate(const vector<Integer>& v, size_t max_size);
-Candidate(size_t max_size);
+Candidate(size_t cand_size, size_t val_size);
 
 }; //end class
 
 template<typename Integer>
 bool cand_compare(const Candidate<Integer>& a, const Candidate<Integer>& b);
-
 
 template <typename Integer>
 ostream& operator<< (ostream& out, const Candidate<Integer>& c) {

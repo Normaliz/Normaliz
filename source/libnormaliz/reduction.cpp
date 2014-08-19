@@ -69,9 +69,10 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, size_t max_size){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Candidate<Integer>::Candidate(size_t max_size){
+Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
     // cand=v;
-    values.resize(max_size,0);
+    values.resize(val_size,0);
+    cand.resize(cand_size,0);
     sort_deg=0;
     reducible=true;
     original_generator=false;  
@@ -291,6 +292,9 @@ template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
 // uses generations defined by degrees
 
+    if(empty())
+        return;
+
     CandidateList<Integer> Irreducibles(dual), CurrentReducers(dual);
     long irred_degree;
     if(verbose){
@@ -347,6 +351,8 @@ bool CandidateList<Integer>::reduce_by_and_insert(const vector<Integer>& v, Full
 template<typename Integer>
 void CandidateList<Integer>::unique_vectors(){
 
+    assert(dual);
+
     if(Candidates.empty())
         return;
         
@@ -359,9 +365,9 @@ void CandidateList<Integer>::unique_vectors(){
     for(h=h_start;h!=Candidates.end();){
         prev=h;
         prev--;
-        if(h->cand==prev->cand)
-            h=Candidates.erase(h);
-        else
+        if(h->values==prev->values)  // since cone may not be pointed in the dual , vectors
+            h=Candidates.erase(h);   // must be made unique modulo the unit group
+        else                         // values gives standard embedding
             ++h;
     }
 }
@@ -414,7 +420,8 @@ void CandidateList<Integer>::merge(CandidateList<Integer>& NewCand){
 
 template<typename Integer>
 void CandidateList<Integer>::push_back(const Candidate<Integer>& cand){
-    this ->Candidates.push_back(cand);
+    // cout << cand;
+    Candidates.push_back(cand);
 }
 
 //---------------------------------------------------------------------------
