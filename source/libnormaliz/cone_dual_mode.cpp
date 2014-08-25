@@ -176,6 +176,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         Candidate<Integer> halfspace_gen_as_cand(old_lin_subspace_half,nr_sh);
         halfspace_gen_as_cand.generation=0;
+        halfspace_gen_as_cand.mother=0;
         (halfspace_gen_as_cand.values)[hyp_counter-1]=orientation; // value under the new linear form
         halfspace_gen_as_cand.sort_deg=explicit_cast_to_long(orientation);
         assert(orientation!=0);
@@ -251,21 +252,19 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         #pragma omp single nowait
         {
         check_range(Negative_Irred);
-        Negative_Irred.sort_it();
+        Negative_Irred.sort_by_deg();
         }
 
         #pragma omp single nowait
         {
         check_range(Positive_Irred);
-        Positive_Irred.sort_it();
+        Positive_Irred.sort_by_deg();
         }
 
         #pragma omp single nowait
-        Neutral_Irred.sort_it();
+        Neutral_Irred.sort_by_deg();
     }
     
-
-    //long int counter=0;
     CandidateList<Integer> New_Positive(true),New_Negative(true),New_Neutral(true);
     vector<CandidateList<Integer> > New_Positive_thread(omp_get_max_threads()),
                       New_Negative_thread(omp_get_max_threads()),
@@ -292,7 +291,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         if (verbose) {
             size_t nsize=Negative_Irred.size();
             size_t zsize=Neutral_Irred.size();
-            if (psize*nsize>1000000)
+            // if (psize*nsize>1000000)
                 verboseOutput()<<"Positive: "<<psize<<"  Negative: "<<nsize<<"  Neutral: "<<zsize<<endl;
         }
         
@@ -336,7 +335,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
                 if (diff>0) {
                     new_candidate.values[hyp_counter-1]=diff;
-                    new_candidate.sort_deg-=2*explicit_cast_to_long(neg_val);
+                    new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(neg_val);
                     if(!(truncate && no_pos_in_level0) && (Positive_Irred.is_reducible(new_candidate) ||
                                 Neutral_Irred.is_reducible(new_candidate)))
                         continue;
@@ -349,7 +348,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     if(truncate && no_pos_in_level0) // don't need new negative elements anymore
                         continue;
                     new_candidate.values[hyp_counter-1]=-diff;
-                    new_candidate.sort_deg-=2*explicit_cast_to_long(pos_val);
+                    new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);
                     if(Negative_Irred.is_reducible(new_candidate)) {
                         continue;
                     }
@@ -363,7 +362,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 }
                 if (diff==0) {
                     new_candidate.values[hyp_counter-1]=0;
-                    new_candidate.sort_deg-=2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
+                    new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
                     if(!(truncate && no_pos_in_level0) && Neutral_Irred.is_reducible(new_candidate)) {
                         continue;
                     }
@@ -378,7 +377,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         } //END PARALLEL
 
 
-        splice_them(New_Neutral,New_Neutral_thread);
+        splice_them(New_Neutral,New_Neutral_thread);        
         New_Neutral.unique_auto_reduce(truncate && no_pos_in_level0);
         
         splice_them(New_Positive,New_Positive_thread);
@@ -430,17 +429,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         #pragma omp single nowait
         for (typename list < Candidate <Integer> >::iterator c2 = Negative_Irred.Candidates.begin(); c2 != Negative_Irred.Candidates.end(); ++c2){
-            if(c->generation>0) {
-                c->generation--;
+            if(c2->generation>0) {
+                c2->generation--;
             }
         }        
         } // END PARALLEL
 
 //      verboseOutput()<<not_done;
     }
-    
-    cout << "Pos " << Positive_Irred.size();
-    cout << "neu " << Neutral_Irred.size();
 
 
     Intermediate_HB.clear();
@@ -448,15 +444,13 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     Intermediate_HB.Candidates.splice(Intermediate_HB.Candidates.end(),Neutral_Irred.Candidates);
     
     if (verbose) {
-        verboseOutput()<<"Hilbert basis size before unique ="<<Intermediate_HB.size()<<endl;
+        // verboseOutput()<<"Hilbert basis size before unique ="<<Intermediate_HB.size()<<endl;
     }
     
 
     //still possible to have double elements in the Hilbert basis, coming from different generation    
     Intermediate_HB.unique_vectors();
     
-
-    // (Matrix<Integer>(Intermediate_HB)).print(cout);
 
     if (verbose) {
         verboseOutput()<<"Hilbert basis size="<<Intermediate_HB.size()<<endl;
@@ -470,7 +464,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
     size_t i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
-    // cout << "Dim Unterraum vorher" << Basis_Max_Subspace.nr_of_rows() << endl;
+
     vector <Integer> scalar_product,hyperplane=SupportHyperplanes[hyp_counter-1],old_lin_subspace_half;
     bool lifting=false;
     Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace;
@@ -562,7 +556,6 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
             verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl;
             
         Intermediate_HB.extract(Hilbert_Basis);
-        cout << "HB " << Hilbert_Basis.size() << endl;
     }
 }
 

@@ -294,17 +294,20 @@ void CandidateList<Integer>::auto_reduce(){
 
     if(empty())
         return;
+        
+    sort_by_deg();
 
     CandidateList<Integer> Irreducibles(dual), CurrentReducers(dual);
     long irred_degree;
-    if(verbose){
-            verboseOutput() << "auto-reduce " << Candidates.size() << " candidates, degrees <= "; 
+    size_t cs=Candidates.size();
+    if(verbose && cs > 1000){
+            verboseOutput() << "auto-reduce " << cs << " candidates, degrees <= "; 
     }
     
     typename list<Candidate<Integer> >::iterator c;
     while(!Candidates.empty()){
         irred_degree=Candidates.begin()->sort_deg*2-1;
-        if(verbose){
+        if(verbose && cs > 1000){
             verboseOutput() << irred_degree << " " << flush;
         }
         for(c=Candidates.begin();c!=Candidates.end() && c->sort_deg <=irred_degree;++c); // find location for splicing
@@ -312,7 +315,7 @@ void CandidateList<Integer>::auto_reduce(){
         reduce_by(CurrentReducers);
         Irreducibles.Candidates.splice(Irreducibles.Candidates.end(),CurrentReducers.Candidates);
     }
-    if(verbose){
+    if(verbose && cs > 1000){
             verboseOutput() << endl;
     }
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
@@ -353,10 +356,10 @@ void CandidateList<Integer>::unique_vectors(){
 
     assert(dual);
 
-    if(Candidates.empty())
+    if(empty())
         return;
         
-    sort_it();
+    sort_by_val();
 
     typename list<Candidate<Integer> >::iterator h,h_start,prev;
     h_start=Candidates.begin();
@@ -375,15 +378,32 @@ void CandidateList<Integer>::unique_vectors(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool cand_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
+bool deg_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
     return(a.sort_deg < b.sort_deg);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void CandidateList<Integer>::sort_it(){
-    Candidates.sort(cand_compare<Integer>);
+bool val_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
+    return(a.values < b.values);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void CandidateList<Integer>::sort_by_deg(){
+
+    Candidates.sort(deg_compare<Integer>);
+
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void CandidateList<Integer>::sort_by_val(){
+
+    Candidates.sort(val_compare<Integer>);
 
 }
 
@@ -413,7 +433,7 @@ bool CandidateList<Integer>::empty(){
 
 template<typename Integer>
 void CandidateList<Integer>::merge(CandidateList<Integer>& NewCand){
-    Candidates.merge(NewCand.Candidates,cand_compare<Integer>);
+    Candidates.merge(NewCand.Candidates,deg_compare<Integer>);
 }
 
 //---------------------------------------------------------------------------

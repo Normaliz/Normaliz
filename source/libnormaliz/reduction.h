@@ -77,7 +77,10 @@ Candidate(size_t cand_size, size_t val_size);
 }; //end class
 
 template<typename Integer>
-bool cand_compare(const Candidate<Integer>& a, const Candidate<Integer>& b);
+bool deg_compare(const Candidate<Integer>& a, const Candidate<Integer>& b);
+
+template<typename Integer>
+bool val_compare(const Candidate<Integer>& a, const Candidate<Integer>& b);
 
 template <typename Integer>
 ostream& operator<< (ostream& out, const Candidate<Integer>& c) {
@@ -124,7 +127,8 @@ void unique_auto_reduce(bool no_pos_in_level0);
 // erases dupicate elements in Candidates
 void unique_vectors();
 
-void sort_it();
+void sort_by_deg();
+void sort_by_val();
 void merge(CandidateList<Integer>& NewCand);
 void splice(CandidateList<Integer>& NewCand);
 void extract(list<vector<Integer> >& V_List);

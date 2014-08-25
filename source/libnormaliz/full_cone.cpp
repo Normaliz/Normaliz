@@ -1910,9 +1910,10 @@ void Full_Cone<Integer>::update_reducers(){
     if(NewCandidates.Candidates.empty())
         return;
 
-    NewCandidates.sort_it(); 
+    if(nr_gen==dim)  // no global reduction in the simplicial case
+        NewCandidates.sort_by_deg(); 
     // cout << "Nach sort" << endl;
-    if(nr_gen!=dim){
+    if(nr_gen!=dim){  // global reduction in the nonsimplicial case
         NewCandidates.auto_reduce();
         // cout << "Nach auto" << endl; 
         if(verbose){
@@ -1951,7 +1952,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 OldCandidates.Candidates.back().original_generator=true;
             }
         }
-        OldCandidates.sort_it();
+        // OldCandidates.sort_by_deg(); // now in auto_reduce
         OldCandidates.auto_reduce();
     }
     
