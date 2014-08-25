@@ -58,9 +58,10 @@ vector<Integer> values; // values under support forms
 long sort_deg;  // the sorting degree
 bool reducible;    // indicates reducibility
 
-bool dual;
 Integer mother;   // for the dual algorithm
-size_t generation;  // ditto
+char generation;  // ditto
+size_t old_tot_deg;
+bool in_HB;  
 
 bool original_generator; // marks the original generaors in the primal algorithm
 
@@ -89,6 +90,10 @@ ostream& operator<< (ostream& out, const Candidate<Integer>& c) {
     out << ", sort_deg=" << c.sort_deg;
     out << ", reducible=" << c.reducible;
     out << ", original_generator=" << c.original_generator;
+    out << ", generation=" << c.generation;
+    out << ", mother=" << c.mother;
+    out << ", old_tot_deg=" << c.old_tot_deg;
+    out << ", in_HB=" << c.in_HB;
     return out;
 }
 

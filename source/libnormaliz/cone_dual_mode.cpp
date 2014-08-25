@@ -139,6 +139,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
          const bool lifting, vector<Integer>& old_lin_subspace_half, bool pointed){
     if (verbose==true) {
         verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
+        verboseOutput()<<"=======================================" << endl;
     }
     truncate=inhomogeneous || do_only_Deg1_Elements;
     
@@ -177,6 +178,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Candidate<Integer> halfspace_gen_as_cand(old_lin_subspace_half,nr_sh);
         halfspace_gen_as_cand.generation=0;
         halfspace_gen_as_cand.mother=0;
+        halfspace_gen_as_cand.old_tot_deg=0;
+        halfspace_gen_as_cand.in_HB=true;
         (halfspace_gen_as_cand.values)[hyp_counter-1]=orientation; // value under the new linear form
         halfspace_gen_as_cand.sort_deg=explicit_cast_to_long(orientation);
         assert(orientation!=0);
@@ -186,6 +189,17 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
     } //end lifting
     
+    size_t gen0_mindeg;  // minimal degree of a generator
+    if(lifting)
+        gen0_mindeg=0;  // sort_deg has already been set > 0 for half_space_gen
+    else
+        gen0_mindeg=Intermediate_HB.Candidates.begin()->sort_deg;
+    typename list<Candidate<Integer> >::const_iterator hh;
+    for(hh=Intermediate_HB.Candidates.begin();hh!=Intermediate_HB.Candidates.end();++hh)
+        if(hh->sort_deg < gen0_mindeg)
+            gen0_mindeg=hh->sort_deg;
+        
+    
     bool no_pos_in_level0=pointed;
     bool all_positice_level=pointed;
     for (h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //dividing into negative and positive
@@ -194,6 +208,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         h->generation=1;
         h->reducible=false;
         h->mother=0;
+        h->in_HB=true;
+        h->old_tot_deg=h->sort_deg;
         if (new_val>0) {
             h->values[hyp_counter-1]=new_val;
             h->sort_deg+=new_val_long;
@@ -280,9 +296,38 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     bool not_done=true;
     while(not_done && !(truncate && all_positice_level)) {
         not_done=false;
-        New_Positive.clear();
+        /* New_Positive.clear();
         New_Negative.clear();
-        New_Neutral.clear();
+        New_Neutral.clear(); */
+        assert(New_Positive.empty());
+        assert(New_Negative.empty());
+        assert(New_Neutral.empty());
+        
+        size_t gen1_mindeg=0;  // minimaldegree of a generation 1 element
+        
+        bool first=true;
+        for(p = Positive_Irred.Candidates.begin();p!=Positive_Irred.Candidates.end();++p){
+            if(first && p->generation==1){
+                first=false;
+                gen1_mindeg=p->old_tot_deg;
+            }
+            if(p->old_tot_deg<gen1_mindeg && p->generation==1)
+                gen1_mindeg=p->old_tot_deg;
+        }
+        
+        for(p = Negative_Irred.Candidates.begin();p!=Negative_Irred.Candidates.end();++p){
+            if(first && p->generation==1){
+                first=false;
+                gen1_mindeg=p->old_tot_deg;
+            }
+            if(p->old_tot_deg<gen1_mindeg && p->generation==1)
+                gen1_mindeg=p->old_tot_deg;
+
+        }
+        
+        size_t min_deg_new=gen0_mindeg+gen1_mindeg;
+        
+        cout << "lifting " << lifting << "  min_deg " <<  min_deg_new << endl;
 
         //generating new elements
 
@@ -298,6 +343,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         #pragma omp parallel private(p,n,diff)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
+        new_candidate.generation=2;  // the new generation
         size_t ppos=0;
         p = Positive_Irred.Candidates.begin();
         #pragma omp for schedule(dynamic)
@@ -313,8 +359,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 if(truncate && p->values[0]+n->values[0] >=2) // in the inhomogeneous case we truncate at level 1
                     continue;
                     
-                assert(p->generation<=1);
-                assert(n->generation<=1);
+                // assert(p->generation<=1);
+                // assert(n->generation<=1);
                 
                 Integer neg_val=n->values[hyp_counter-1];
                 Integer pos_val=p->values[hyp_counter-1];
@@ -330,6 +376,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 
                 #pragma omp atomic
                 counter++;
+                
+                new_candidate.old_tot_deg=p->old_tot_deg+n->old_tot_deg;
                 diff=pos_val-neg_val;
                 v_add_result(new_candidate.values,p->values,n->values);   // new_candidate=v_add
 
@@ -340,7 +388,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                                 Neutral_Irred.is_reducible(new_candidate)))
                         continue;
                     v_add_result(new_candidate.cand,p->cand,n->cand);
-                    new_candidate.generation=2;  // the new generation
                     new_candidate.mother=pos_val;                    
                     New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
@@ -356,7 +403,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                         continue;
                     }
                     v_add_result(new_candidate.cand,p->cand,n->cand);
-                    new_candidate.generation=2;
                     new_candidate.mother=neg_val;;
                     New_Negative_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
@@ -367,8 +413,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                         continue;
                     }
                     v_add_result(new_candidate.cand,p->cand,n->cand);
-                    new_candidate.mother=0;
-                    new_candidate.generation=0;
+                    new_candidate.mother=0; // irrelevant
                     New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
             }
