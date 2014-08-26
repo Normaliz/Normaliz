@@ -112,6 +112,12 @@ void ConeProperties::set_preconditions() {
 
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
+
+    // inhomogenous preconditions
+    if (CPs.test(ConeProperty::ModuleGenerators))
+        CPs.set(ConeProperty::HilbertBasis);
+    //TODO what else?
+
 }
 
 /* removes ignored compute options and sets implications */
@@ -173,7 +179,7 @@ namespace {
         }
         CPN.at(ConeProperty::Generators) = "Generators";
         CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
-        CPN.at(ConeProperty::VerticesOfPolyhedron) = "ModuleGenerators";
+        CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
         CPN.at(ConeProperty::SupportHyperplanes) = "SupportHyperplanes";
         CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
         CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
