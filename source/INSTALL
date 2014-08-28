@@ -6,7 +6,7 @@ For compiling Normaliz the following libraries are needed:
 * openmp enabled compiler (to use parallelization)
 
 On Ubuntu the following packages should be installed:
-apt-get install g++ libgmp-dev libboost-dev cmake
+apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 
 We offer two ways of compilation, eighter use the supplied makefile or use cmake to create a more powerfull makefile. cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
 
@@ -48,7 +48,10 @@ This make has dependency checking included and other nice features.
 If you want to see what happens behind the scenes use
   make VERBOSE=1
 
-
+B5) install it
+  make install
+This will install the produced libnormaliz and the normaliz executable.
+The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
 
 
 **** ADDITIONALLY CMAKE CONFIGURATION ****
