@@ -129,7 +129,7 @@ void CandidateList<Integer>::insert(const vector<Integer>& v, const list<vector<
 
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const {
-
+ 
     long sd;
     /* if(dual)
         sd=sort_deg;
@@ -160,7 +160,11 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
 
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(Candidate<Integer>& c) const {
-    c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
+
+    if(dual && c.in_HB)
+        c.reducible=false;
+    else
+        c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
     return(c.reducible);
 }
 
