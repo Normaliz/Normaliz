@@ -132,6 +132,9 @@ void unique_auto_reduce(bool no_pos_in_level0);
 // erases dupicate elements in Candidates
 void unique_vectors();
 
+// mark canmdidates of old_tot_deg <= guaranteed_HB_deg as guaranteed HB elements
+void set_HB(size_t guaranteed_HB_deg);
+
 void sort_by_deg();
 void sort_by_val();
 void merge(CandidateList<Integer>& NewCand);

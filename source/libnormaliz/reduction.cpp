@@ -36,7 +36,8 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& v
     values(val);
     sort_deg(sd);
     reducible(true);
-    original_generator(false);   
+    original_generator(false);
+    in_HB(false);   
 }
 
 //---------------------------------------------------------------------------
@@ -53,6 +54,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>
     }
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
     original_generator=false;
+    in_HB=false;
 }
 
 //---------------------------------------------------------------------------
@@ -63,7 +65,8 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, size_t max_size){
     values.resize(max_size,0);
     sort_deg=0;
     reducible=true;
-    original_generator=false;   
+    original_generator=false;
+    in_HB=false;   
 }
 
 //---------------------------------------------------------------------------
@@ -75,7 +78,8 @@ Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
     cand.resize(cand_size,0);
     sort_deg=0;
     reducible=true;
-    original_generator=false;  
+    original_generator=false;
+    in_HB=false; 
 }
 
 
@@ -373,6 +377,18 @@ void CandidateList<Integer>::unique_vectors(){
         else                         // values gives standard embedding
             ++h;
     }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void CandidateList<Integer>::set_HB(size_t guaranteed_HB_deg){
+
+    typename list<Candidate<Integer> >::iterator h;
+    for(h=Candidates.begin(); h!=Candidates.end();++h)
+        if(h->old_tot_deg<=guaranteed_HB_deg)
+            h->in_HB=true;
+
 }
 
 //---------------------------------------------------------------------------

@@ -199,7 +199,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         if(hh->sort_deg < gen0_mindeg)
             gen0_mindeg=hh->sort_deg;
         
-    
+    bool gen1_pos=false, gen1_neg=false;    
     bool no_pos_in_level0=pointed;
     bool all_positice_level=pointed;
     for (h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //dividing into negative and positive
@@ -211,6 +211,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         h->in_HB=true;
         h->old_tot_deg=h->sort_deg;
         if (new_val>0) {
+            gen1_pos=true;
             h->values[hyp_counter-1]=new_val;
             h->sort_deg+=new_val_long;
             Positive_Irred.Candidates.push_back(*h); // could be spliced
@@ -220,6 +221,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
         }
         if (new_val<0) {
+            gen1_neg=true;
             h->values[hyp_counter-1]=-new_val;
             h->sort_deg+=-new_val_long;
             Negative_Irred.Candidates.push_back(*h);
@@ -293,7 +295,13 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
     typename list<Candidate<Integer> >::const_iterator n,p;
     typename list<Candidate<Integer> >::iterator c;
-    bool not_done=true;
+    
+    bool not_done;
+    if(lifting)
+        not_done=gen1_pos || gen1_neg;
+    else
+        not_done=gen1_pos && gen1_neg;
+    
     while(not_done && !(truncate && all_positice_level)) {
         not_done=false;
         /* New_Positive.clear();
@@ -304,9 +312,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         assert(New_Neutral.empty());
         
         size_t gen1_mindeg=0;  // minimaldegree of a generation 1 element
-        
+        size_t psize=0;        
         bool first=true;
+
         for(p = Positive_Irred.Candidates.begin();p!=Positive_Irred.Candidates.end();++p){
+            psize++;
             if(first && p->generation==1){
                 first=false;
                 gen1_mindeg=p->old_tot_deg;
@@ -326,12 +336,19 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         
         size_t min_deg_new=gen0_mindeg+gen1_mindeg;
+        assert(min_deg_new>0);
+        size_t all_known_deg=min_deg_new-1;
+        size_t guaranteed_HB_deg=2*all_known_deg+1;
+        
+        Positive_Irred.set_HB(guaranteed_HB_deg);
+        Negative_Irred.set_HB(guaranteed_HB_deg);
+        Neutral_Irred.set_HB(guaranteed_HB_deg);
         
         cout << "lifting " << lifting << "  min_deg " <<  min_deg_new << endl;
 
         //generating new elements
 
-        size_t psize=Positive_Irred.size();
+        // size_t psize=Positive_Irred.size();  // now counhted in loop above
 
         if (verbose) {
             size_t nsize=Negative_Irred.size();
@@ -343,17 +360,23 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         #pragma omp parallel private(p,n,diff)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
-        new_candidate.generation=2;  // the new generation
+        new_candidate.generation=1;  // the new generation
         size_t ppos=0;
         p = Positive_Irred.Candidates.begin();
         #pragma omp for schedule(dynamic)
         for(i = 0; i<psize; ++i){
             for(;i > ppos; ++ppos, ++p) ;
             for(;i < ppos; --ppos, --p) ;
+            
+            if(!p->in_HB)
+                continue;
 
             for (n = Negative_Irred.Candidates.begin(); n != Negative_Irred.Candidates.end(); ++n){
 
                 // cout << "In Schleife " << endl;
+                
+                if(!n->in_HB)
+                    continue;
 
 
                 if(truncate && p->values[0]+n->values[0] >=2) // in the inhomogeneous case we truncate at level 1
@@ -447,7 +470,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
 
         if (!New_Positive.empty()) {
-            not_done=true;
+            // not_done=true;
             if(!(truncate && no_pos_in_level0))
                 Positive_Irred.reduce_by(New_Positive);
             check_range(New_Positive);  // check for danger of overflow
@@ -455,7 +478,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         #pragma omp single nowait
         if (!New_Negative.empty()) {
-            not_done=true;
+            // not_done=true;
             Negative_Irred.reduce_by(New_Negative);
             check_range(New_Negative);
             Negative_Irred.merge(New_Negative);
@@ -463,22 +486,30 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
 
         // adjust generation
+        
+        bool pos_complete=true,neg_complete=true;
 
         #pragma omp parallel
         {
         #pragma omp single nowait
         for (c = Positive_Irred.Candidates.begin(); c != Positive_Irred.Candidates.end(); ++c){
-            if(c->generation>0) {
-                c->generation--;
+            if(c->in_HB) {
+                c->generation=0;
             }
+            else
+                pos_complete=false;
         }
         #pragma omp single nowait
         for (typename list < Candidate <Integer> >::iterator c2 = Negative_Irred.Candidates.begin(); c2 != Negative_Irred.Candidates.end(); ++c2){
-            if(c2->generation>0) {
-                c2->generation--;
+            if(c2->in_HB) {
+                c2->generation=0;
             }
+            else
+                neg_complete=false;
         }        
         } // END PARALLEL
+        
+        not_done=!(pos_complete && neg_complete);
 
 //      verboseOutput()<<not_done;
     }
