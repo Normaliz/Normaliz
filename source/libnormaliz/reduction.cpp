@@ -131,9 +131,9 @@ template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const {
 
     long sd;
-    if(dual)
+    /* if(dual)
         sd=sort_deg;
-    else
+    else */
         sd=sort_deg/2;
     size_t kk=0;
     typename list<Candidate<Integer> >::const_iterator r;
@@ -501,9 +501,9 @@ template<typename Integer>
 bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) {
 
     long sd;
-    if(dual)
+    /* if(dual)
         sd=sort_deg;
-    else
+    else */
         sd=sort_deg/2;
     size_t kk=0;
     typename list<Candidate<Integer>* >::iterator r;
