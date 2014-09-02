@@ -127,7 +127,8 @@ bool reduce_by_and_insert(const vector<Integer>& v, Full_Cone<Integer>& C, Candi
 void reduce_by(CandidateList<Integer>& Reducers);
 // reduce *this against itself
 void auto_reduce();
-void unique_auto_reduce(bool no_pos_in_level0);
+void auto_reduce_sorted();
+// void unique_auto_reduce(bool no_pos_in_level0);
 
 // erases dupicate elements in Candidates
 void unique_vectors();

@@ -46,14 +46,13 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::splice_them_sort_unique(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts){
+void Cone_Dual_Mode<Integer>::splice_them_sort(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts){
 
     CandidateList<Integer> New;
     for(int i=0;i<omp_get_max_threads();i++)
         Total.Candidates.splice(New.Candidates.end(),Parts[i].Candidates);
     New.sort_by_val();
     Total.merge_by_val(New);
-    Total.unique_vectors();
 }
 
 //---------------------------------------------------------------------------
@@ -156,8 +155,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
     }
     
-    if(hyp_counter==22)
-        exit(1); 
+    /* if(hyp_counter==22)
+        exit(1);  */
     truncate=inhomogeneous || do_only_Deg1_Elements;
     
     size_t i;
@@ -415,28 +414,39 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         } //END PARALLEL
 
 
-        splice_them(Neutral_Depot,New_Neutral_thread); 
+        splice_them_sort(Neutral_Depot,New_Neutral_thread); // sort by sort_deg and values
         
-        cout << "NeutrDep " << Neutral_Depot.size() << endl;       
+        // cout << "NeutrDep " << Neutral_Depot.size() << endl;       
         
-        splice_them(Positive_Depot,New_Positive_thread);
+        splice_them_sort(Positive_Depot,New_Positive_thread);
         // cout << "PosDep " << Positive_Depot.size() << endl; 
 
-        splice_them(Negative_Depot,New_Negative_thread);
+        splice_them_sort(Negative_Depot,New_Negative_thread);
         // cout << "NegDep " << Negative_Depot.size() << endl; 
         
         if(Positive_Depot.empty() && Negative_Depot.empty())
             not_done=false;
             
-        size_t gen1_mindeg=0;  // minimal degree of a generation 1 HB element
-        if(!Positive_Depot.empty()){
-            gen1_mindeg=Positive_Depot.Candidates.begin()->old_tot_deg;
-                if(!Positive_Depot.empty())
-                    gen1_mindeg=min(gen1_mindeg,Negative_Depot.Candidates.begin()->old_tot_deg);
+        // Attention: the element with smallest old_tot_gen need not be the first in the list which is ordered by sort_deg
+        size_t gen1_mindeg=0;  // minimal old_tot_deg of a new element used for generation
+        bool first=true;
+        for(p = Positive_Depot.Candidates.begin();p!=Positive_Depot.Candidates.end();++p){
+            if(first){
+                first=false;
+                gen1_mindeg=p->old_tot_deg;
+            }
+            if(p->old_tot_deg<gen1_mindeg)
+                gen1_mindeg=p->old_tot_deg;
         }
-        else{
-            if(!Negative_Depot.empty())
-                    gen1_mindeg=Negative_Depot.Candidates.begin()->old_tot_deg;
+        
+        for(p = Negative_Depot.Candidates.begin();p!=Negative_Depot.Candidates.end();++p){
+            if(first){
+                first=false;
+                gen1_mindeg=p->old_tot_deg;
+            }
+            if(p->old_tot_deg<gen1_mindeg)
+                gen1_mindeg=p->old_tot_deg;
+
         }
         
         size_t min_deg_new=gen0_mindeg+gen1_mindeg;
@@ -445,7 +455,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             assert(min_deg_new>0);
 
         size_t all_known_deg=min_deg_new-1;
-        size_t guaranteed_HB_deg=2*all_known_deg+1;
+        size_t guaranteed_HB_deg=2*all_known_deg+1;  // the degree up to which we can decide whether an element belongs to the HB
         
         // cout << "guar HB " << guaranteed_HB_deg << endl;
         
@@ -461,19 +471,19 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         else{
             Neutral_Depot.auto_reduce();                    // in this case new elements will not be produced anymore
             // cout << "NeutralDepot " << Neutral_Depot.size() << endl;
-            Neutral_Irred.merge(Neutral_Depot);             // and there is nothing to do for positive or negative elements
+            Neutral_Irred.merge_by_val(Neutral_Depot);
+            Neutral_Irred.unique_vectors();             // and there is nothing to do for positive or negative elements
        }
        
                                                           // but the remaining neutral elements must be auto-reduced. 
-            
-        
         if (!New_Neutral_Irred.empty()) {
             if(!(truncate && no_pos_in_level0)){
                 Positive_Depot.reduce_by(New_Neutral_Irred);                
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
             }
             Negative_Depot.reduce_by(New_Neutral_Irred);
-            Neutral_Irred.merge(New_Neutral_Irred);
+            Neutral_Irred.merge_by_val(New_Neutral_Irred);
+            Neutral_Irred.unique_vectors();
         }
         
         set_generation_0(Positive_Irred);
@@ -481,14 +491,16 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             if(!(truncate && no_pos_in_level0))
                 Positive_Depot.reduce_by(New_Positive_Irred);
             check_range(New_Positive_Irred);  // check for danger of overflow
-            Positive_Irred.merge(New_Positive_Irred);
+            Positive_Irred.merge_by_val(New_Positive_Irred);
+            Positive_Irred.unique_vectors();
         }
 
         set_generation_0(Negative_Irred);
         if (!New_Negative_Irred.empty()) {
             Negative_Depot.reduce_by(New_Negative_Irred);
             check_range(New_Negative_Irred);
-            Negative_Irred.merge(New_Negative_Irred);
+            Negative_Irred.merge_by_val(New_Negative_Irred);
+            Negative_Irred.unique_vectors();
         }
 
     }  // while(not_done)

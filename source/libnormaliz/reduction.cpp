@@ -298,12 +298,20 @@ cout << "Size " << Candidates.size() << endl;
 
 template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
-// uses generations defined by degrees
 
     if(empty())
         return;
         
     sort_by_deg();
+    auto_reduce_sorted();
+}
+
+template<typename Integer>
+void CandidateList<Integer>::auto_reduce_sorted(){
+// uses generations defined by degrees
+
+    if(empty())
+        return;
 
     CandidateList<Integer> Irreducibles(dual), CurrentReducers(dual);
     long irred_degree;
@@ -329,6 +337,7 @@ void CandidateList<Integer>::auto_reduce(){
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
 }
 
+/*
 //---------------------------------------------------------------------------
 template<typename Integer>
 void CandidateList<Integer>::unique_auto_reduce(bool only_unique){
@@ -338,6 +347,7 @@ void CandidateList<Integer>::unique_auto_reduce(bool only_unique){
             return;
     auto_reduce();        
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -402,7 +412,7 @@ void CandidateList<Integer>::select_HB(size_t guaranteed_HB_deg, CandidateList<I
             ++h;
         }
     }
-    Irred.auto_reduce();  // necessary since the guaranteed HB degree only determines 
+    Irred.auto_reduce_sorted();  // necessary since the guaranteed HB degree only determines 
                           // in which degrees we can already decide whether an element belongs to the HB            
 }
 

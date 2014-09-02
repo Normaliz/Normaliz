@@ -63,7 +63,7 @@ public:
  * ---------------------------------------------------------------------------
  */
     /* splices a vector of lists into a total list*/
-    void splice_them_sort_unique(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts);
+    void splice_them_sort(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts);
     void set_generation_0(CandidateList< Integer>& L);
 
     /* Returns true if new_element is reducible versus the elements in Irred used for dual algorithm
