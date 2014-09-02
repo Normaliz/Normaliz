@@ -37,7 +37,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& v
     sort_deg(sd);
     reducible(true);
     original_generator(false);
-    in_HB(false);   
+    // in_HB(false);   
 }
 
 //---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>
     }
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
     original_generator=false;
-    in_HB=false;
+    // in_HB=false;
 }
 
 //---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, size_t max_size){
     sort_deg=0;
     reducible=true;
     original_generator=false;
-    in_HB=false;   
+    // in_HB=false;   
 }
 
 //---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
     sort_deg=0;
     reducible=true;
     original_generator=false;
-    in_HB=false; 
+    // in_HB=false; 
 }
 
 
@@ -161,9 +161,9 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(Candidate<Integer>& c) const {
 
-    if(dual && c.in_HB)
+    /*if(dual && c.in_HB)
         c.reducible=false;
-    else
+    else */
         c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
     return(c.reducible);
 }
@@ -367,7 +367,7 @@ void CandidateList<Integer>::unique_vectors(){
     if(empty())
         return;
         
-    sort_by_val();
+    // sort_by_val();
 
     typename list<Candidate<Integer> >::iterator h,h_start,prev;
     h_start=Candidates.begin();
@@ -386,7 +386,31 @@ void CandidateList<Integer>::unique_vectors(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void CandidateList<Integer>::set_HB(size_t guaranteed_HB_deg){
+void CandidateList<Integer>::select_HB(size_t guaranteed_HB_deg, CandidateList<Integer>& Irred){
+
+    typename list<Candidate<Integer> >::iterator h;
+    /* cout << "------------" << endl;
+    cout << "guar HB " << guaranteed_HB_deg << endl;
+    cout << *this;
+    cout << "------------" << endl; */
+    for(h=Candidates.begin(); h!=Candidates.end();){
+        // cout << *h;
+        if(h->old_tot_deg<=guaranteed_HB_deg){
+            Irred.Candidates.splice(Irred.Candidates.end(),Candidates,h++);
+        }
+        else{
+            ++h;
+        }
+    }
+    Irred.auto_reduce();  // necessary since the guaranteed HB degree only determines 
+                          // in which degrees we can already decide whether an element belongs to the HB            
+}
+
+
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+void CandidateList<Integer>::select_HB(size_t guaranteed_HB_deg){
 
     typename list<Candidate<Integer> >::iterator h;
     for(h=Candidates.begin(); h!=Candidates.end();++h)
@@ -394,6 +418,7 @@ void CandidateList<Integer>::set_HB(size_t guaranteed_HB_deg){
             h->in_HB=true;
 
 }
+*/
 
 //---------------------------------------------------------------------------
 
@@ -406,7 +431,11 @@ bool deg_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
 
 template<typename Integer>
 bool val_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
-    return(a.values < b.values);
+    if(a.sort_deg<b.sort_deg)
+        return(true);
+    if(a.sort_deg==b.sort_deg)
+        return(a.values < b.values);
+    return false;
 }
 
 //---------------------------------------------------------------------------
@@ -454,6 +483,13 @@ bool CandidateList<Integer>::empty(){
 template<typename Integer>
 void CandidateList<Integer>::merge(CandidateList<Integer>& NewCand){
     Candidates.merge(NewCand.Candidates,deg_compare<Integer>);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void CandidateList<Integer>::merge_by_val(CandidateList<Integer>& NewCand){
+    Candidates.merge(NewCand.Candidates,val_compare<Integer>);
 }
 
 //---------------------------------------------------------------------------

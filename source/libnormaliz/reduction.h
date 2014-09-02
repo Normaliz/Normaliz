@@ -61,7 +61,7 @@ bool reducible;    // indicates reducibility
 Integer mother;   // for the dual algorithm
 char generation;  // ditto
 size_t old_tot_deg;
-bool in_HB;  
+// bool in_HB;  
 
 bool original_generator; // marks the original generaors in the primal algorithm
 
@@ -93,7 +93,7 @@ ostream& operator<< (ostream& out, const Candidate<Integer>& c) {
     out << ", generation=" << c.generation;
     out << ", mother=" << c.mother;
     out << ", old_tot_deg=" << c.old_tot_deg;
-    out << ", in_HB=" << c.in_HB;
+    // out << ", in_HB=" << c.in_HB;
     return out;
 }
 
@@ -132,12 +132,13 @@ void unique_auto_reduce(bool no_pos_in_level0);
 // erases dupicate elements in Candidates
 void unique_vectors();
 
-// mark canmdidates of old_tot_deg <= guaranteed_HB_deg as guaranteed HB elements
-void set_HB(size_t guaranteed_HB_deg);
+// move canmdidates of old_tot_deg <= guaranteed_HB_deg to Irred
+void select_HB(size_t guaranteed_HB_deg, CandidateList<Integer>& Irred);
 
 void sort_by_deg();
 void sort_by_val();
 void merge(CandidateList<Integer>& NewCand);
+void merge_by_val(CandidateList<Integer>& NewCand);
 void splice(CandidateList<Integer>& NewCand);
 void extract(list<vector<Integer> >& V_List);
 void push_back(const Candidate<Integer>& c);
