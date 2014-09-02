@@ -277,8 +277,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }
     }
     
-    // cout << "inhom " << inhom_input << " dim " << dim << endl;
-
     // for generators we can have only one strict input
     if(generators_input && nr_strict_input >1){
         errorOutput() << "This InputType combination is currently not supported!"<< endl;
@@ -611,6 +609,8 @@ vector< vector<Integer> > Cone<Integer>::getGenerators() const {
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
     if (inhomogeneous) { // return only the rays of the recession cone
+        assert(isComputed(ConeProperty::ExtremeRays));
+        assert(isComputed(ConeProperty::VerticesOfPolyhedron));
         return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron));
     }
     // homogeneous case
@@ -1192,8 +1192,7 @@ void Cone<Integer>::compute_generators() {
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
             Generators = BasisChange.from_sublattice(Extreme_Rays);
             is_Computed.set(ConeProperty::Generators);
-            ExtremeRays = vector<bool>(Generators.nr_of_rows(),true);
-            is_Computed.set(ConeProperty::ExtremeRays);
+            set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
             if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
                 //get minmal set of support_hyperplanes
                 Matrix<Integer> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
@@ -1384,21 +1383,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         is_Computed.set(ConeProperty::Generators);
     }
     if (FC.isComputed(ConeProperty::ExtremeRays)) {
-        ExtremeRays = FC.getExtremeRays();
-        assert(ExtremeRays.size() == Generators.nr_of_rows());
-        if (inhomogeneous) {
-            // separate extreme rays to rays of the level 0 cone
-            // and the verticies of the polyhedron, which are in level >=1
-            size_t nr_gen = Generators.nr_of_rows();
-            VerticesOfPolyhedron = vector<bool>(nr_gen);
-            for (size_t i=0; i<nr_gen; i++) {
-                if (ExtremeRays[i] && v_scalar_product(Generators[i],Dehomogenization) != 0) {
-                    VerticesOfPolyhedron[i] = true;
-                }
-            }
-            is_Computed.set(ConeProperty::VerticesOfPolyhedron);
-        }
-        is_Computed.set(ConeProperty::ExtremeRays);
+        set_extreme_rays(FC.getExtremeRays());
     }
     if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
         if (inhomogeneous) {
@@ -1555,6 +1540,26 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 }
 
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
+    assert(ext.size() == Generators.nr_of_rows());
+    ExtremeRays = ext;
+    if (inhomogeneous) {
+        // separate extreme rays to rays of the level 0 cone
+        // and the verticies of the polyhedron, which are in level >=1
+        size_t nr_gen = Generators.nr_of_rows();
+        VerticesOfPolyhedron = vector<bool>(nr_gen);
+        for (size_t i=0; i<nr_gen; i++) {
+            if (ExtremeRays[i] && v_scalar_product(Generators[i],Dehomogenization) != 0) {
+                VerticesOfPolyhedron[i] = true;
+            }
+        }
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);
+    }
+    is_Computed.set(ConeProperty::ExtremeRays);
+}
 
 //---------------------------------------------------------------------------
 

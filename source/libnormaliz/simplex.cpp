@@ -354,6 +354,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s) {
             Unimod++;
             for(i=0;i<dim;i++)
                 GDiag[i]=1;
+            GDiag_computed=true;
         }
         else
             #pragma omp atomic

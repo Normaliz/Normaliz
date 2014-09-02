@@ -248,6 +248,9 @@ private:
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     void extract_data(Full_Cone<Integer>& FC);
 
+    /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron */
+    void set_extreme_rays(const vector<bool>&);
+
     /* set this object to the zero cone */
     void set_zero_cone();
 };

@@ -1421,8 +1421,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     
     #pragma omp for schedule(dynamic) 
     for(size_t i=0; i<nrLargeRecPyrs; i++){
-    for(; i > ppos; ++ppos, ++p) ;
-    for(; i < ppos; --ppos, --p) ;
+        for(; i > ppos; ++ppos, ++p) ;
+        for(; i < ppos; --ppos, --p) ;
         match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
     }
     } // parallel
