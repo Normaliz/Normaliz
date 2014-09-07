@@ -332,9 +332,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
         #pragma omp parallel private(p,n,diff)
         {
-        
-        CandidateList<Integer> Positive_Children(true), Negative_Children(true), Neutral_Children(true);
-            
         Candidate<Integer> new_candidate(dim,nr_sh);
         new_candidate.generation=1;  // the new generation
         size_t ppos=0;
@@ -367,49 +364,44 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 new_candidate.old_tot_deg=p->old_tot_deg+n->old_tot_deg;
                 diff=pos_val-neg_val;
                 v_add_result(new_candidate.values,p->values,n->values);   // new_candidate=v_add
-                v_add_result(new_candidate.cand,p->cand,n->cand);
 
                 if (diff>0) {
                     new_candidate.values[hyp_counter]=diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(neg_val);
+                    if(!(truncate && no_pos_in_level0) && (Positive_Irred.is_reducible(new_candidate) ||
+                                Neutral_Irred.is_reducible(new_candidate)))
+                        continue;
+                    v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=pos_val;                    
-                    Positive_Children.push_back(new_candidate);
+                    New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
                 if (diff<0) {
                     if(truncate && no_pos_in_level0) // don't need new negative elements anymore
                         continue;
                     new_candidate.values[hyp_counter]=-diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);
+                    if(Negative_Irred.is_reducible(new_candidate)) {
+                        continue;
+                    }
+                    if(Neutral_Irred.is_reducible(new_candidate)) {
+                        continue;
+                    }
+                    v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=neg_val;;
-                    Negative_Children.push_back(new_candidate);
+                    New_Negative_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
                 if (diff==0) {
                     new_candidate.values[hyp_counter]=0;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
+                    if(!(truncate && no_pos_in_level0) && Neutral_Irred.is_reducible(new_candidate)) {
+                        continue;
+                    }
+                    v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=0; // irrelevant
-                    Neutral_Children.push_back(new_candidate);
+                    New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
-            } // inner loop over neg
-            
-            // Now we must reduce and collect the children
-            
-            if(!(truncate && no_pos_in_level0)){
-                Neutral_Children.sort_by_val();
-                Positive_Children.sort_by_val();
-                Negative_Children.sort_by_val();
-                
-                Neutral_Children.reduce_by(Neutral_Irred);
-                Positive_Children.reduce_by(Neutral_Irred);
-                Negative_Children.reduce_by(Neutral_Irred);
-                Positive_Children.reduce_by(Positive_Irred);
-                Negative_Children.reduce_by(Negative_Irred);            
             }
-            
-            New_Neutral_thread[omp_get_thread_num()].splice(Neutral_Children);
-            New_Positive_thread[omp_get_thread_num()].splice(Positive_Children);
-            New_Negative_thread[omp_get_thread_num()].splice(Negative_Children);
-            
-        } //end generation of new elements, loop over pos
+        } //end generation of new elements
 
         } //END PARALLEL
 
