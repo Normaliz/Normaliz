@@ -65,6 +65,32 @@ void Cone_Dual_Mode<Integer>::set_generation_0(CandidateList< Integer>& L){
         c->generation=0;
 }
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t guaranteed_HB_deg, 
+                    CandidateList<Integer>& Irred, bool all_irreducible){
+
+    if(all_irreducible){
+        Irred.merge_by_val(Cand);
+        return;
+    }
+
+    typename list<Candidate<Integer> >::iterator h;
+    for(h=Cand.Candidates.begin(); h!=Cand.Candidates.end();){
+        if(h->old_tot_deg<=guaranteed_HB_deg){
+            Irred.Candidates.splice(Irred.Candidates.end(),Cand.Candidates,h++);
+        }
+        else{
+            ++h;
+        }
+    }
+    Irred.auto_reduce_sorted();  // necessary since the guaranteed HB degree only determines 
+                          // in which degrees we can already decide whether an element belongs to the HB            
+}
+
+
 //---------------------------------------------------------------------------
 
 
@@ -119,27 +145,13 @@ size_t counter=0,counter1=0;
 
 //---------------------------------------------------------------------------
 
-// PARTLY OBSOLETE because if new data structure
-
-// The vectors in ExtremeRayList are composed as follows:
-// [0]: current total degree (sum of linear forms applied to vector so far)
-// [1.. nr_sh]: values under the linear forms
-// [nr_sh+1]: generation (in the sense of creation): we match vectors of which at least one has gen >=1
-//            and the sum gets gen = 2.
-// [nr_sh+2]: value of "mother" under the current linear form (given to newly produced vector)
-// last dim coordinates: original coordinates of vector
-//
-// [nr_sh+1] is used as the degree function as soon as a pointed cone is to be split
-// into two halfs. [0] is the total degree in each of the two halves, and not additive 
-// in the whole cone.//
-//
 // In the inhomogeneous case or when only degree 1 elements are to be found,
 // we truncate the Hilbert basis at level 1. The level is the ordinaryl degree in
 // for degree 1 elements and the degree of the homogenizing variable 
 // in the inhomogeneous case.
 //
 // As soon as there are no positive or neutral (with respect to the current hyperplane)
-// elements in the cirrent Hilbert basis and truncate==true, new elements can only 
+// elements in the current Hilbert basis and truncate==true, new elements can only 
 // be produced as sums of positive irreds of level 1 and negative irreds of level 0.
 // In particular no new negative elements can be produced, and the only type of
 // reduction on the positive side is the elimination of duplicates.
@@ -152,11 +164,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
          const bool lifting, vector<Integer>& old_lin_subspace_half, bool pointed){
     if (verbose==true) {
         verboseOutput()<<"=======================================" << endl;
-        verboseOutput()<<"cut with halfspace "<<hyp_counter<<" ..."<<endl;
+        verboseOutput()<<"cut with halfspace "<<hyp_counter+1 <<" ..."<<endl;
     }
     
-    /* if(hyp_counter==22)
-        exit(1);  */
     truncate=inhomogeneous || do_only_Deg1_Elements;
     
     size_t i;
@@ -164,7 +174,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
     CandidateList<Integer> Positive_Irred(true),Negative_Irred(true),Neutral_Irred(true);
     Integer orientation, scalar_product,diff,factor;
-    vector <Integer> hyperplane=SupportHyperplanes[hyp_counter-1]; // the current hyperplane dividing the old cone
+    vector <Integer> hyperplane=SupportHyperplanes[hyp_counter]; // the current hyperplane dividing the old cone
     typename list<Candidate<Integer> >::iterator h;
 
     if (lifting==true) {
@@ -195,7 +205,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         halfspace_gen_as_cand.generation=0;
         halfspace_gen_as_cand.mother=0;
         halfspace_gen_as_cand.old_tot_deg=0;
-        (halfspace_gen_as_cand.values)[hyp_counter-1]=orientation; // value under the new linear form
+        (halfspace_gen_as_cand.values)[hyp_counter]=orientation; // value under the new linear form
         halfspace_gen_as_cand.sort_deg=explicit_cast_to_long(orientation);
         assert(orientation!=0);
         Positive_Irred.push_back(halfspace_gen_as_cand);
@@ -204,7 +214,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
     } //end lifting
     
-    size_t gen0_mindeg;  // minimal degree of a generator
+    long gen0_mindeg;  // minimal degree of a generator
     if(lifting)
         gen0_mindeg=0;  // sort_deg has already been set > 0 for half_space_gen
     else
@@ -226,7 +236,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         h->old_tot_deg=h->sort_deg;
         if (new_val>0) {
             gen1_pos=true;
-            h->values[hyp_counter-1]=new_val;
+            h->values[hyp_counter]=new_val;
             h->sort_deg+=new_val_long;
             Positive_Irred.Candidates.push_back(*h); // could be spliced
             if(h->values[0]==0){
@@ -236,7 +246,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         if (new_val<0) {
             gen1_neg=true;
-            h->values[hyp_counter-1]=-new_val;
+            h->values[hyp_counter]=-new_val;
             h->sort_deg+=-new_val_long;
             Negative_Irred.Candidates.push_back(*h);
             if(h->values[0]==0){
@@ -251,18 +261,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
         }       
     }
-    
-/*    cout << "------------- Pos " << endl;
-    cout << Positive_Irred;
-    cout << "------------- Neg " << endl;
-    cout << Negative_Irred;
-    cout << "------------- Neutral " << endl;
-    cout << Neutral_Irred;
-    cout << "------------" << endl;*/
-    
-    
-    // cout << "no_pos_in_level0 = " << no_pos_in_level0 <<endl;
-    // cout << "all_positive_level = " << all_positice_level <<endl;
+   
 
     if((truncate && (no_pos_in_level0 && !all_positice_level))){
         if(verbose){
@@ -303,7 +302,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     vector<CandidateList<Integer> > New_Positive_thread(omp_get_max_threads()),
                       New_Negative_thread(omp_get_max_threads()),
                       New_Neutral_thread(omp_get_max_threads());
-    for(size_t i=0;i<omp_get_max_threads();++i){
+    for(long i=0;i<omp_get_max_threads();++i){
         New_Positive_thread[i].dual=true;
         New_Negative_thread[i].dual=true;   
         New_Neutral_thread[i].dual=true;
@@ -317,8 +316,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         not_done=gen1_pos || gen1_neg;
     else
         not_done=gen1_pos && gen1_neg;
-        
-        // cout << "not_done " << not_done << endl;
     
     while(not_done && !(truncate && all_positice_level)) {
 
@@ -335,6 +332,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
         #pragma omp parallel private(p,n,diff)
         {
+        
+        CandidateList<Integer> Positive_Children(true), Negative_Children(true), Neutral_Children(true);
+            
         Candidate<Integer> new_candidate(dim,nr_sh);
         new_candidate.generation=1;  // the new generation
         size_t ppos=0;
@@ -346,16 +346,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
             for (n = Negative_Irred.Candidates.begin(); n != Negative_Irred.Candidates.end(); ++n){
 
-                // cout << "In Schleife " << endl;
-
                 if(truncate && p->values[0]+n->values[0] >=2) // in the inhomogeneous case we truncate at level 1
                     continue;
-                    
-                // assert(p->generation<=1);
-                // assert(n->generation<=1);
                 
-                Integer neg_val=n->values[hyp_counter-1];
-                Integer pos_val=p->values[hyp_counter-1];
+                Integer neg_val=n->values[hyp_counter];
+                Integer pos_val=p->values[hyp_counter];
 
                 if (p->generation==0 && n->generation==0)
                     continue; // two "old" candidates have been paired already
@@ -372,57 +367,58 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 new_candidate.old_tot_deg=p->old_tot_deg+n->old_tot_deg;
                 diff=pos_val-neg_val;
                 v_add_result(new_candidate.values,p->values,n->values);   // new_candidate=v_add
+                v_add_result(new_candidate.cand,p->cand,n->cand);
 
                 if (diff>0) {
-                    new_candidate.values[hyp_counter-1]=diff;
+                    new_candidate.values[hyp_counter]=diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(neg_val);
-                    if(!(truncate && no_pos_in_level0) && (Positive_Irred.is_reducible(new_candidate) ||
-                                Neutral_Irred.is_reducible(new_candidate)))
-                        continue;
-                    v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=pos_val;                    
-                    New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
+                    Positive_Children.push_back(new_candidate);
                 }
                 if (diff<0) {
                     if(truncate && no_pos_in_level0) // don't need new negative elements anymore
                         continue;
-                    new_candidate.values[hyp_counter-1]=-diff;
+                    new_candidate.values[hyp_counter]=-diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);
-                    if(Negative_Irred.is_reducible(new_candidate)) {
-                        continue;
-                    }
-                    if(Neutral_Irred.is_reducible(new_candidate)) {
-                        continue;
-                    }
-                    v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=neg_val;;
-                    New_Negative_thread[omp_get_thread_num()].push_back(new_candidate);
+                    Negative_Children.push_back(new_candidate);
                 }
                 if (diff==0) {
-                    new_candidate.values[hyp_counter-1]=0;
+                    new_candidate.values[hyp_counter]=0;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
-                    if(!(truncate && no_pos_in_level0) && Neutral_Irred.is_reducible(new_candidate)) {
-                        continue;
-                    }
-                    v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=0; // irrelevant
-                    New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
+                    Neutral_Children.push_back(new_candidate);
                 }
+            } // inner loop over neg
+            
+            // Now we must reduce and collect the children
+            
+            if(!(truncate && no_pos_in_level0)){
+                Neutral_Children.sort_by_val();
+                Positive_Children.sort_by_val();
+                Negative_Children.sort_by_val();
+                
+                Neutral_Children.reduce_by(Neutral_Irred);
+                Positive_Children.reduce_by(Neutral_Irred);
+                Negative_Children.reduce_by(Neutral_Irred);
+                Positive_Children.reduce_by(Positive_Irred);
+                Negative_Children.reduce_by(Negative_Irred);            
             }
-        } //end generation of new elements
+            
+            New_Neutral_thread[omp_get_thread_num()].splice(Neutral_Children);
+            New_Positive_thread[omp_get_thread_num()].splice(Positive_Children);
+            New_Negative_thread[omp_get_thread_num()].splice(Negative_Children);
+            
+        } //end generation of new elements, loop over pos
 
         } //END PARALLEL
 
 
-        splice_them_sort(Neutral_Depot,New_Neutral_thread); // sort by sort_deg and values
-        
-        // cout << "NeutrDep " << Neutral_Depot.size() << endl;       
+        splice_them_sort(Neutral_Depot,New_Neutral_thread); // sort by sort_deg and values   
         
         splice_them_sort(Positive_Depot,New_Positive_thread);
-        // cout << "PosDep " << Positive_Depot.size() << endl; 
 
         splice_them_sort(Negative_Depot,New_Negative_thread);
-        // cout << "NegDep " << Negative_Depot.size() << endl; 
         
         if(Positive_Depot.empty() && Negative_Depot.empty())
             not_done=false;
@@ -450,42 +446,40 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
         
         size_t min_deg_new=gen0_mindeg+gen1_mindeg;
-        // cout << "lifting " << lifting << "  min_deg " <<  min_deg_new << endl;
         if(not_done)
             assert(min_deg_new>0);
 
         size_t all_known_deg=min_deg_new-1;
         size_t guaranteed_HB_deg=2*all_known_deg+1;  // the degree up to which we can decide whether an element belongs to the HB
         
-        // cout << "guar HB " << guaranteed_HB_deg << endl;
-        
-        Positive_Depot.select_HB(guaranteed_HB_deg,New_Positive_Irred);
-        // cout << "NPosIrred " << New_Positive_Irred.size() << endl;
-        Negative_Depot.select_HB(guaranteed_HB_deg,New_Negative_Irred);
-        // cout << "NNegIrred " << New_Negative_Irred.size() << endl;
         if(not_done){
-            Neutral_Depot.select_HB(guaranteed_HB_deg,New_Neutral_Irred);
-             // cout << "NewNeutrIrred " << New_Neutral_Irred.size() << endl;
-            
+            select_HB(Neutral_Depot,guaranteed_HB_deg,New_Neutral_Irred,truncate && no_pos_in_level0);         
         }
         else{
             Neutral_Depot.auto_reduce();                    // in this case new elements will not be produced anymore
-            // cout << "NeutralDepot " << Neutral_Depot.size() << endl;
-            Neutral_Irred.merge_by_val(Neutral_Depot);
-            Neutral_Irred.unique_vectors();             // and there is nothing to do for positive or negative elements
+            Neutral_Irred.merge_by_val(Neutral_Depot);      // and there is nothing to do for positive or negative elements
+            Neutral_Irred.unique_vectors();                 // but the remaining neutral elements must be auto-reduced.             
        }
        
-                                                          // but the remaining neutral elements must be auto-reduced. 
-        if (!New_Neutral_Irred.empty()) {
+        // There is a subtle point in the 3 merge operations that follow.
+        // In order to have the generations correct, it is important that an
+        // element of the Irred lits precede equivalent elements of the New_Irred.
+        // This is guaranteed in C++ STL list merge (see Josutis, 2nd ed., p.423)
+
+       if (!New_Neutral_Irred.empty()) {
             if(!(truncate && no_pos_in_level0)){
                 Positive_Depot.reduce_by(New_Neutral_Irred);                
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
             }
             Negative_Depot.reduce_by(New_Neutral_Irred);
-            Neutral_Irred.merge_by_val(New_Neutral_Irred);
+            Neutral_Irred.merge_by_val(New_Neutral_Irred); 
             Neutral_Irred.unique_vectors();
-        }
-        
+        }                                                 
+       
+        select_HB(Positive_Depot,guaranteed_HB_deg,New_Positive_Irred,truncate && no_pos_in_level0);
+
+        select_HB(Negative_Depot,guaranteed_HB_deg,New_Negative_Irred,truncate && no_pos_in_level0);
+                                                                 
         set_generation_0(Positive_Irred);
         if (!New_Positive_Irred.empty()) {
             if(!(truncate && no_pos_in_level0))
@@ -505,48 +499,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
     }  // while(not_done)
 
-     /* if (verbose) {
-        verboseOutput()<<"Pos Irred size="<<Positive_Irred.size()<<endl;
-    }    
-    Positive_Irred.auto_reduce();
-    
-        if (verbose) {
-        verboseOutput()<<"Pos Irred size nach auto ="<<Positive_Irred.size()<<endl;
-    }
-    
-        if (verbose) {
-        verboseOutput()<<"Neu Irred size="<<Neutral_Irred.size()<<endl;
-    }    
-    Neutral_Irred.auto_reduce();
-    
-        if (verbose) {
-        verboseOutput()<<"Neu Irred size nach auto ="<<Neutral_Irred.size()<<endl;
-    } */
-
-
     Intermediate_HB.clear();
     Intermediate_HB.Candidates.splice(Intermediate_HB.Candidates.begin(),Positive_Irred.Candidates);
-    Intermediate_HB.Candidates.splice(Intermediate_HB.Candidates.end(),Neutral_Irred.Candidates);
-    
-    if (verbose) {
-        verboseOutput()<<"Hilbert basis size before unique ="<<Intermediate_HB.size()<<endl;
-    }
-    
-
-    //still possible to have double elements in the Hilbert basis, coming from different generation
-    Intermediate_HB.sort_by_val();    
-    Intermediate_HB.unique_vectors();
-    
+    Intermediate_HB.Candidates.splice(Intermediate_HB.Candidates.end(),Neutral_Irred.Candidates);    
+    Intermediate_HB.sort_by_val();       
 
     if (verbose) {
         verboseOutput()<<"Hilbert basis size="<<Intermediate_HB.size()<<endl;
     }
-    
-    Intermediate_HB.auto_reduce();
-    if (verbose) {
-        verboseOutput()<<"Hilbert basis size auto ="<<Intermediate_HB.size()<<endl;
-    }
-
 }
 
 //---------------------------------------------------------------------------
@@ -555,7 +515,7 @@ template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
     size_t i,j,rank_subspace=Basis_Max_Subspace.nr_of_rows();
 
-    vector <Integer> scalar_product,hyperplane=SupportHyperplanes[hyp_counter-1],old_lin_subspace_half;
+    vector <Integer> scalar_product,hyperplane=SupportHyperplanes[hyp_counter],old_lin_subspace_half;
     bool lifting=false;
     Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace;
     if (rank_subspace!=0) {
@@ -614,7 +574,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         
         size_t hyp_counter;      // current hyperplane
         Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
-        for (hyp_counter = 1; hyp_counter <= nr_sh; hyp_counter++) {
+        for (hyp_counter = 0; hyp_counter < nr_sh; hyp_counter++) {
             Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
         }
         

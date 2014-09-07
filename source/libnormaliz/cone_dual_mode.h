@@ -106,6 +106,10 @@ public:
     void relevant_support_hyperplanes();
     
     void unique_vectors(list< vector< Integer > >& HB);
+    
+    // move canmdidates of old_tot_deg <= guaranteed_HB_deg to Irred
+    void select_HB(CandidateList<Integer>& Cand, size_t guaranteed_HB_deg, 
+                                CandidateList<Integer>& Irred, bool all_irreducible);
 
     Cone_Dual_Mode(const Matrix<Integer>& M);            //main constructor
 

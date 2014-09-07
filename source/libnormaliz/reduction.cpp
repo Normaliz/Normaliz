@@ -178,83 +178,7 @@ bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& 
 
 //---------------------------------------------------------------------------
 
-/*
-
-// First version with immediate deletion
-template<typename Integer>
-void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
-
-        typename list<Candidate<Integer> >::iterator c;
-        for(c=Candidates.begin();c!=Candidates.end();){
-            if(Reducers.is_reducible(*c))
-                c=Candidates.erase(c);
-            else // continue
-                ++c;
-        }   
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/*
-// Second version with delayed deletion to prepare parallelization
-template<typename Integer>
-void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
-
-        typename list<Candidate<Integer> >::iterator c;
-        for(c=Candidates.begin();c!=Candidates.end();++c){
-            Reducers.is_reducible(*c);
-        }
-        
-        // erase reducibles
-        for(c=Candidates.begin();c!=Candidates.end();){
-            if((*c).reducible)
-                c=Candidates.erase(c);
-            else // continue
-                ++c;
-        }      
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/*
-// Third version with parallelization, but not yet using tables
-template<typename Integer>
-void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
-
-        typename list<Candidate<Integer> >::iterator c;
-        size_t cpos,csize=Candidates.size();
-        
-        #pragma omp parallel private(c,cpos)
-        {
-        
-        c=Candidates.begin();
-        cpos=0;
-        
-        #pragma omp for schedule(dynamic)
-        for (size_t k=0; k<csize; ++k) {
-            for(;k > cpos; ++cpos, ++c) ;
-            for(;k < cpos; --cpos, --c) ;
-        
-            Reducers.is_reducible(*c);
-        }
-        
-        }// end parallel
-        
-        // erase reducibles
-        for(c=Candidates.begin();c!=Candidates.end();){
-            if((*c).reducible)
-                c=Candidates.erase(c);
-            else // continue
-                ++c;
-        }      
-}
-*/
-
-//---------------------------------------------------------------------------
-
-// Fourth version with parallelization and tables
+// Fourth version with parallelization and tables (older versions avaulable in 2.11.2)
 template<typename Integer>
 void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 
@@ -391,29 +315,6 @@ void CandidateList<Integer>::unique_vectors(){
         else                         // values gives standard embedding
             ++h;
     }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void CandidateList<Integer>::select_HB(size_t guaranteed_HB_deg, CandidateList<Integer>& Irred){
-
-    typename list<Candidate<Integer> >::iterator h;
-    /* cout << "------------" << endl;
-    cout << "guar HB " << guaranteed_HB_deg << endl;
-    cout << *this;
-    cout << "------------" << endl; */
-    for(h=Candidates.begin(); h!=Candidates.end();){
-        // cout << *h;
-        if(h->old_tot_deg<=guaranteed_HB_deg){
-            Irred.Candidates.splice(Irred.Candidates.end(),Candidates,h++);
-        }
-        else{
-            ++h;
-        }
-    }
-    Irred.auto_reduce_sorted();  // necessary since the guaranteed HB degree only determines 
-                          // in which degrees we can already decide whether an element belongs to the HB            
 }
 
 

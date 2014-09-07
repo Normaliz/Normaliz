@@ -133,8 +133,7 @@ void auto_reduce_sorted();
 // erases dupicate elements in Candidates
 void unique_vectors();
 
-// move canmdidates of old_tot_deg <= guaranteed_HB_deg to Irred
-void select_HB(size_t guaranteed_HB_deg, CandidateList<Integer>& Irred);
+
 
 void sort_by_deg();
 void sort_by_val();
