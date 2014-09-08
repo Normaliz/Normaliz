@@ -284,19 +284,26 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         {
         check_range(Negative_Irred);
         Negative_Irred.sort_by_val();
+        Negative_Irred.last_hyp=hyp_counter;
         }
 
         #pragma omp single nowait
         {
         check_range(Positive_Irred);
         Positive_Irred.sort_by_val();
+        Positive_Irred.last_hyp=hyp_counter;
         }
 
         #pragma omp single nowait
         Neutral_Irred.sort_by_val();
+        Neutral_Irred.last_hyp=hyp_counter;
     }
     
     CandidateList<Integer> New_Positive_Irred(true),New_Negative_Irred(true),New_Neutral_Irred(true);
+    New_Negative_Irred.last_hyp=hyp_counter;
+    New_Positive_Irred.last_hyp=hyp_counter;
+    New_Neutral_Irred.last_hyp=hyp_counter;
+    
     CandidateList<Integer> Positive_Depot(true),Negative_Depot(true),Neutral_Depot(true);
     
     vector<CandidateList<Integer> > New_Positive_thread(omp_get_max_threads()),
@@ -368,7 +375,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 if (diff>0) {
                     new_candidate.values[hyp_counter]=diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(neg_val);
-                    if(!(truncate && no_pos_in_level0) && (Positive_Irred.is_reducible(new_candidate) ||
+                    if(!(truncate && no_pos_in_level0) && (Positive_Irred.is_reducible_last_hyp(new_candidate) ||
                                 Neutral_Irred.is_reducible(new_candidate)))
                         continue;
                     v_add_result(new_candidate.cand,p->cand,n->cand);
@@ -380,7 +387,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                         continue;
                     new_candidate.values[hyp_counter]=-diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);
-                    if(Negative_Irred.is_reducible(new_candidate)) {
+                    if(Negative_Irred.is_reducible_last_hyp(new_candidate)) {
                         continue;
                     }
                     if(Neutral_Irred.is_reducible(new_candidate)) {

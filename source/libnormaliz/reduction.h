@@ -107,15 +107,18 @@ public:
 
 list <Candidate<Integer> > Candidates;
 bool dual;
+size_t last_hyp;
 
 CandidateList(); 
 CandidateList(bool dual_algorithm); 
 
 
 // Checks for irreducibility
-bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const; // basic function
-bool is_reducible(Candidate<Integer>& c) const;
+bool is_reducible(const vector<Integer>& values, const long sort_deg) const; // basic function
+bool is_reducible_last_hyp(const vector<Integer>& values, const long sort_deg) const;
 // including construction of candidate
+bool is_reducible(Candidate<Integer>& c) const;
+bool is_reducible_last_hyp(Candidate<Integer>& c) const;
 bool is_reducible(vector<Integer> v,Candidate<Integer>& cand, const Full_Cone<Integer>& C) const;
 
 // reduction against Reducers and insertion into *this. returns true if inserted
@@ -167,7 +170,7 @@ bool dual;
 CandidateTable(CandidateList<Integer>& CandList);
 
 bool is_reducible(Candidate<Integer>& c);
-bool is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg);
+bool is_reducible(const vector<Integer>& values, const long sort_deg);
 
 }; // end class
 

@@ -128,7 +128,7 @@ void CandidateList<Integer>::insert(const vector<Integer>& v, const list<vector<
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) const {
+bool CandidateList<Integer>::is_reducible(const vector<Integer>& values, const long sort_deg) const {
  
     long sd;
     /* if(dual)
@@ -159,12 +159,60 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& v, const vector
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool CandidateList<Integer>::is_reducible_last_hyp(const vector<Integer>& values, const long sort_deg) const {
+ 
+    long sd;
+    /* if(dual)
+        sd=sort_deg;
+    else */
+        sd=sort_deg/2;
+    size_t kk=0;
+    typename list<Candidate<Integer> >::const_iterator r;
+    for(r=Candidates.begin();r!=Candidates.end();++r){
+        if(sd < r->sort_deg){
+            return(false);
+        }
+        size_t i=0;
+        
+        if(values[last_hyp]<r->values[last_hyp])
+                continue;
+        
+        if(values[kk]<r->values[kk])
+                continue;
+        for(;i<values.size();++i)
+            if(values[i]<r->values[i]){
+                kk=i;
+                break;
+            }
+        if(i==values.size()){
+            return(true);
+        }
+   }   
+   return(false);    
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool CandidateList<Integer>::is_reducible_last_hyp(Candidate<Integer>& c) const {
+
+    /*if(dual && c.in_HB)
+        c.reducible=false;
+    else */
+        c.reducible=is_reducible_last_hyp(c.values, c.sort_deg);
+    return(c.reducible);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 bool CandidateList<Integer>::is_reducible(Candidate<Integer>& c) const {
 
     /*if(dual && c.in_HB)
         c.reducible=false;
     else */
-        c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
+        c.reducible=is_reducible(c.values, c.sort_deg);
     return(c.reducible);
 }
 
@@ -175,82 +223,6 @@ bool CandidateList<Integer>::is_reducible(vector<Integer> v,Candidate<Integer>& 
     cand=Candidate<Integer>(v,C);
     return((*this).is_reducible(cand));
 }
-
-//---------------------------------------------------------------------------
-
-/*
-
-// First version with immediate deletion
-template<typename Integer>
-void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
-
-        typename list<Candidate<Integer> >::iterator c;
-        for(c=Candidates.begin();c!=Candidates.end();){
-            if(Reducers.is_reducible(*c))
-                c=Candidates.erase(c);
-            else // continue
-                ++c;
-        }   
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/*
-// Second version with delayed deletion to prepare parallelization
-template<typename Integer>
-void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
-
-        typename list<Candidate<Integer> >::iterator c;
-        for(c=Candidates.begin();c!=Candidates.end();++c){
-            Reducers.is_reducible(*c);
-        }
-        
-        // erase reducibles
-        for(c=Candidates.begin();c!=Candidates.end();){
-            if((*c).reducible)
-                c=Candidates.erase(c);
-            else // continue
-                ++c;
-        }      
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/*
-// Third version with parallelization, but not yet using tables
-template<typename Integer>
-void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
-
-        typename list<Candidate<Integer> >::iterator c;
-        size_t cpos,csize=Candidates.size();
-        
-        #pragma omp parallel private(c,cpos)
-        {
-        
-        c=Candidates.begin();
-        cpos=0;
-        
-        #pragma omp for schedule(dynamic)
-        for (size_t k=0; k<csize; ++k) {
-            for(;k > cpos; ++cpos, ++c) ;
-            for(;k < cpos; --cpos, --c) ;
-        
-            Reducers.is_reducible(*c);
-        }
-        
-        }// end parallel
-        
-        // erase reducibles
-        for(c=Candidates.begin();c!=Candidates.end();){
-            if((*c).reducible)
-                c=Candidates.erase(c);
-            else // continue
-                ++c;
-        }      
-}
-*/
 
 //---------------------------------------------------------------------------
 
@@ -518,14 +490,14 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
 
 template<typename Integer>
 bool CandidateTable<Integer>::is_reducible(Candidate<Integer>& c){
-    c.reducible=is_reducible(c.cand, c.values, c.sort_deg);
+    c.reducible=is_reducible(c.values, c.sort_deg);
     return(c.reducible);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool CandidateTable<Integer>::is_reducible(const vector<Integer>& v, const vector<Integer>& values, const long sort_deg) {
+bool CandidateTable<Integer>::is_reducible(const vector<Integer>& values, const long sort_deg) {
 
     long sd;
     /* if(dual)
