@@ -340,6 +340,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         #pragma omp parallel private(p,n,diff)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
+        
+        CandidateTable<Integer> Pos_Table(Positive_Irred), Neg_Table(Negative_Irred), Neutr_Table(Neutral_Irred);
+        
         new_candidate.generation=1;  // the new generation
         size_t ppos=0;
         p = Positive_Irred.Candidates.begin();
@@ -375,8 +378,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 if (diff>0) {
                     new_candidate.values[hyp_counter]=diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(neg_val);
-                    if(!(truncate && no_pos_in_level0) && (Positive_Irred.is_reducible_last_hyp(new_candidate) ||
-                                Neutral_Irred.is_reducible(new_candidate)))
+                    if(!(truncate && no_pos_in_level0) && (Pos_Table.is_reducible_unordered(new_candidate) ||
+                                Neutr_Table.is_reducible_unordered(new_candidate)))
                         continue;
                     v_add_result(new_candidate.cand,p->cand,n->cand);
                     new_candidate.mother=pos_val;                    
@@ -387,10 +390,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                         continue;
                     new_candidate.values[hyp_counter]=-diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);
-                    if(Negative_Irred.is_reducible_last_hyp(new_candidate)) {
+                    if(Neg_Table.is_reducible_unordered(new_candidate)) {
                         continue;
                     }
-                    if(Neutral_Irred.is_reducible(new_candidate)) {
+                    if(Neutr_Table.is_reducible_unordered(new_candidate)) {
                         continue;
                     }
                     v_add_result(new_candidate.cand,p->cand,n->cand);
@@ -400,7 +403,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 if (diff==0) {
                     new_candidate.values[hyp_counter]=0;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
-                    if(!(truncate && no_pos_in_level0) && Neutral_Irred.is_reducible(new_candidate)) {
+                    if(!(truncate && no_pos_in_level0) && Neutr_Table.is_reducible_unordered(new_candidate)) {
                         continue;
                     }
                     v_add_result(new_candidate.cand,p->cand,n->cand);

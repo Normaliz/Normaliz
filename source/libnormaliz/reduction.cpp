@@ -484,6 +484,7 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
     for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
         CandidatePointers.push_back(&(*c));
         dual=CandList.dual;
+        last_hyp=CandList.last_hyp;
 }
 
 //---------------------------------------------------------------------------
@@ -510,6 +511,48 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& values, const 
         if(sd < (*r)->sort_deg){
             return(false);
         }
+        size_t i=0;
+        if(values[kk]<(*r)->values[kk])
+                continue;
+        for(;i<values.size();++i)
+            if(values[i]<(*r)->values[i]){
+                kk=i;
+                break;
+            }
+        if(i==values.size()){
+            CandidatePointers.splice(CandidatePointers.begin(),CandidatePointers,r);
+            return(true);
+        }
+   }   
+   return(false);    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool CandidateTable<Integer>::is_reducible_unordered(Candidate<Integer>& c){
+    c.reducible=is_reducible_unordered(c.values, c.sort_deg);
+    return(c.reducible);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& values, const long sort_deg) {
+
+    long sd;
+    /* if(dual)
+        sd=sort_deg;
+    else */
+        sd=sort_deg/2;
+    size_t kk=0;
+    typename list<Candidate<Integer>* >::iterator r;
+    for(r=CandidatePointers.begin();r!=CandidatePointers.end();++r){
+        if(sd < (*r)->sort_deg){
+            continue;     // in the ordered version we can say: return(false);
+        }
+        if(values[last_hyp]<(*r)->values[last_hyp])
+                continue;
         size_t i=0;
         if(values[kk]<(*r)->values[kk])
                 continue;

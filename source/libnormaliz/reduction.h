@@ -166,11 +166,14 @@ public:
 
 list <Candidate<Integer>* > CandidatePointers;
 bool dual;
+size_t last_hyp;
 
 CandidateTable(CandidateList<Integer>& CandList);
 
 bool is_reducible(Candidate<Integer>& c);
 bool is_reducible(const vector<Integer>& values, const long sort_deg);
+bool is_reducible_unordered(Candidate<Integer>& c);
+bool is_reducible_unordered(const vector<Integer>& values, const long sort_deg);
 
 }; // end class
 
