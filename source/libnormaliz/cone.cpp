@@ -523,7 +523,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
     
     Matrix<Integer> Generators=Binomials.kernel().transpose();
     Full_Cone<Integer> FC(Generators);
-    //TODO verboseOutput(), what is happening here?
+    if (verbose) verboseOutput() << endl << "Computing a positive embedding..." << endl;
 
     FC.support_hyperplanes();
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
