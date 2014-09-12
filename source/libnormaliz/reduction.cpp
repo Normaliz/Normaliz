@@ -482,7 +482,7 @@ template<typename Integer>
 CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
     typename list<Candidate<Integer> >::iterator c;
     for(c=CandList.Candidates.begin();c!=CandList.Candidates.end();++c)
-        CandidatePointers.push_back(&(*c));
+        ValPointers.push_back(pair< size_t, vector<Integer>* >(c->sort_deg,&(c->values)) );
         dual=CandList.dual;
         last_hyp=CandList.last_hyp;
 }
@@ -506,21 +506,21 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& values, const 
     else */
         sd=sort_deg/2;
     size_t kk=0;
-    typename list<Candidate<Integer>* >::iterator r;
-    for(r=CandidatePointers.begin();r!=CandidatePointers.end();++r){
-        if(sd < (*r)->sort_deg){
+    typename list < pair<size_t, vector<Integer>* > >::iterator r;
+    for(r=ValPointers.begin();r!=ValPointers.end();++r){
+        if(sd < r->first){
             return(false);
         }
         size_t i=0;
-        if(values[kk]<(*r)->values[kk])
+        if(values[kk] < (*(r->second))[kk])
                 continue;
         for(;i<values.size();++i)
-            if(values[i]<(*r)->values[i]){
+            if(values[i] < (*(r->second))[i]){
                 kk=i;
                 break;
             }
         if(i==values.size()){
-            CandidatePointers.splice(CandidatePointers.begin(),CandidatePointers,r);
+            ValPointers.splice(ValPointers.begin(),ValPointers,r);
             return(true);
         }
    }   
@@ -546,27 +546,27 @@ bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& valu
     else */
         sd=sort_deg/2;
     size_t kk=0;
-    typename list<Candidate<Integer>* >::iterator r;
-    for(r=CandidatePointers.begin();r!=CandidatePointers.end();++r){
-        if(sd < (*r)->sort_deg){
+    typename list < pair<size_t, vector<Integer>* > >::iterator r;
+    for(r=ValPointers.begin();r!=ValPointers.end();++r){
+        if(sd < r->first){
             continue;     // in the ordered version we can say: return(false);
         }
-        if(values[last_hyp]<(*r)->values[last_hyp])
+        if(values[last_hyp]< (*(r->second))[last_hyp])
                 continue;
         size_t i=0;
-        if(values[kk]<(*r)->values[kk])
+        if(values[kk] < (*(r->second))[kk])
                 continue;
         for(;i<values.size();++i)
-            if(values[i]<(*r)->values[i]){
+            if(values[i] < (*(r->second))[i]){
                 kk=i;
                 break;
             }
         if(i==values.size()){
-            CandidatePointers.splice(CandidatePointers.begin(),CandidatePointers,r);
+            ValPointers.splice(ValPointers.begin(),ValPointers,r);
             return(true);
         }
    }   
-   return(false);    
+   return(false);       
 }
 
  

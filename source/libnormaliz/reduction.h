@@ -164,7 +164,7 @@ friend class CandidateList<Integer>;
 
 public:
 
-list <Candidate<Integer>* > CandidatePointers;
+list < pair< size_t, vector<Integer>* > > ValPointers;
 bool dual;
 size_t last_hyp;
 
