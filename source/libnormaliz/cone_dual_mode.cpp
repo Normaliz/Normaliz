@@ -323,8 +323,12 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         not_done=gen1_pos || gen1_neg;
     else
         not_done=gen1_pos && gen1_neg;
+        
+    bool do_reduction=!(truncate && no_pos_in_level0);
     
-    while(not_done && !(truncate && all_positice_level)) {
+    bool do_only_selection=truncate && all_positice_level;
+    
+    while(not_done && !do_only_selection) {
 
         //generating new elements
 
@@ -338,7 +342,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 verboseOutput()<<"Positive: "<<psize<<"  Negative: "<<nsize<<"  Neutral: "<<zsize<<endl;
         }
         
-        #pragma omp parallel private(p,n,diff)
+        #pragma omp parallel private(p,n,diff) firstprivate(do_reduction)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
         
@@ -358,17 +362,18 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 }
             
             }
+            
+            Integer pos_val=p->values[hyp_counter];
 
             for (n = Negative_Irred.Candidates.begin(); n != Negative_Irred.Candidates.end(); ++n){
 
                 if(truncate && p->values[0]+n->values[0] >=2) // in the inhomogeneous case we truncate at level 1
                     continue;
-                
-                Integer neg_val=n->values[hyp_counter];
-                Integer pos_val=p->values[hyp_counter];
 
                 if (p->generation==0 && n->generation==0)
                     continue; // two "old" candidates have been paired already
+                    
+                Integer neg_val=n->values[hyp_counter];
                 
                 if ( (p->mother!=0 && p->mother<=neg_val)|| (n->mother!=0 && n->mother<=pos_val) ){  
                     #pragma omp atomic     // sum would be irreducible by mother + the vector on the opposite side
@@ -386,7 +391,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 if (diff>0) {
                     new_candidate.values[hyp_counter]=diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(neg_val);
-                    if(!(truncate && no_pos_in_level0) && (Pos_Table.is_reducible_unordered(new_candidate) ||
+                    if(do_reduction && (Pos_Table.is_reducible_unordered(new_candidate) ||
                                 Neutr_Table.is_reducible_unordered(new_candidate)))
                         continue;
                     v_add_result(new_candidate.cand,p->cand,n->cand);
@@ -394,7 +399,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
                 if (diff<0) {
-                    if(truncate && no_pos_in_level0) // don't need new negative elements anymore
+                    if(!do_reduction) // don't need new negative elements anymore
                         continue;
                     new_candidate.values[hyp_counter]=-diff;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);
@@ -411,7 +416,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 if (diff==0) {
                     new_candidate.values[hyp_counter]=0;
                     new_candidate.sort_deg=p->sort_deg+n->sort_deg-2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
-                    if(!(truncate && no_pos_in_level0) && Neutr_Table.is_reducible_unordered(new_candidate)) {
+                    if(do_reduction && Neutr_Table.is_reducible_unordered(new_candidate)) {
                         continue;
                     }
                     v_add_result(new_candidate.cand,p->cand,n->cand);
@@ -483,7 +488,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         // This is guaranteed in C++ STL list merge (see Josutis, 2nd ed., p.423)
 
        if (!New_Neutral_Irred.empty()) {
-            if(!(truncate && no_pos_in_level0)){
+            if(do_reduction){
                 Positive_Depot.reduce_by(New_Neutral_Irred);                
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
             }
@@ -498,7 +503,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                                                                  
         set_generation_0(Positive_Irred);
         if (!New_Positive_Irred.empty()) {
-            if(!(truncate && no_pos_in_level0))
+            if(do_reduction)
                 Positive_Depot.reduce_by(New_Positive_Irred);
             check_range(New_Positive_Irred);  // check for danger of overflow
             Positive_Irred.merge_by_val(New_Positive_Irred);
