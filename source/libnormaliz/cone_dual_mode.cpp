@@ -329,6 +329,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         //generating new elements
 
         size_t psize=Positive_Irred.size();
+        size_t report_size=psize/50;
 
         if (verbose) {
             size_t nsize=Negative_Irred.size();
@@ -350,6 +351,13 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         for(i = 0; i<psize; ++i){
             for(;i > ppos; ++ppos, ++p) ;
             for(;i < ppos; --ppos, --p) ;
+            
+            if(verbose){
+                if( psize > 1000 && (i+1)%report_size == 0){
+                    verboseOutput() << "." <<flush;
+                }
+            
+            }
 
             for (n = Negative_Irred.Candidates.begin(); n != Negative_Irred.Candidates.end(); ++n){
 
@@ -412,6 +420,12 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 }
             }
         } //end generation of new elements
+        
+        #pragma omp single
+        {
+        if(verbose && psize>1000)
+            verboseOutput() << endl;
+        }
 
         } //END PARALLEL
 
