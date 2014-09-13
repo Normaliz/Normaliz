@@ -141,7 +141,7 @@ vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
 }
 
 
-size_t counter=0,counter1=0;
+// size_t counter=0,counter1=0;
 
 //---------------------------------------------------------------------------
 
@@ -366,23 +366,23 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             Integer pos_val=p->values[hyp_counter];
 
             for (n = Negative_Irred.Candidates.begin(); n != Negative_Irred.Candidates.end(); ++n){
-
-                if(truncate && p->values[0]+n->values[0] >=2) // in the inhomogeneous case we truncate at level 1
-                    continue;
-
+            
                 if (p->generation==0 && n->generation==0)
                     continue; // two "old" candidates have been paired already
                     
+                if(truncate && p->values[0]+n->values[0] >=2) // in the inhomogeneous case we truncate at level 1
+                    continue;
+
                 Integer neg_val=n->values[hyp_counter];
                 
                 if ( (p->mother!=0 && p->mother<=neg_val)|| (n->mother!=0 && n->mother<=pos_val) ){  
-                    #pragma omp atomic     // sum would be irreducible by mother + the vector on the opposite side
-                    counter1++;
+                    // #pragma omp atomic     // sum would be irreducible by mother + the vector on the opposite side
+                    // counter1++;
                     continue;
                 }
                 
-                #pragma omp atomic
-                counter++;
+                // #pragma omp atomic
+                // counter++;
                 
                 new_candidate.old_tot_deg=p->old_tot_deg+n->old_tot_deg;
                 diff=pos_val-neg_val;
@@ -623,9 +623,10 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
             SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
         }
             
-        if(verbose)
-            verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl;
-            
+        /* if(verbose)
+            verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << "comparisons = " << redcounter << endl;
+        */
+           
         Intermediate_HB.extract(Hilbert_Basis);
     }
 }
