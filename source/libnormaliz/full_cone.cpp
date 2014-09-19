@@ -2134,7 +2134,6 @@ void Full_Cone<Integer>::primal_algorithm(){
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
         is_Computed.set(ConeProperty::HilbertBasis,true);
-        check_integrally_closed();
         if (isComputed(ConeProperty::Grading)) {
             select_deg1_elements();
             check_deg1_hilbert_basis();
@@ -3011,37 +3010,6 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-void Full_Cone<Integer>::check_integrally_closed() {
-    if (isComputed(ConeProperty::IsIntegrallyClosed))
-        return;
-
-    if ( !isComputed(ConeProperty::HilbertBasis)) {
-        errorOutput() << "WARNING: unsatisfied preconditions in check_integrally_closed()!" <<endl;
-        return;
-    }
-    integrally_closed = false;
-    if (Hilbert_Basis.size() <= nr_gen) {
-        integrally_closed = true;
-        typename list< vector<Integer> >::iterator h;
-        for (h = Hilbert_Basis.begin(); h != Hilbert_Basis.end(); ++h) {
-            integrally_closed = false;
-            for (size_t i=0; i< nr_gen; i++) {
-                if ((*h) == Generators[i]) {
-                    integrally_closed = true;
-                    break;
-                }
-            }
-            if (!integrally_closed) {
-                break;
-            }
-        }
-    }
-    is_Computed.set(ConeProperty::IsIntegrallyClosed);
-}
-
-//---------------------------------------------------------------------------
-
 // Computes the generators of a supercone approximating "this" by a cone over a lattice polytope
 template<typename Integer>
 Matrix<Integer> Full_Cone<Integer>::latt_approx() {
@@ -3341,7 +3309,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     deg1_extreme_rays = false;
     deg1_generated = false;
     deg1_hilbert_basis = false;
-    integrally_closed = false;
     
     reset_tasks();
     
@@ -3414,7 +3381,6 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     deg1_generated = false;
     deg1_triangulation = false;
     deg1_hilbert_basis = false;
-    integrally_closed = false;
     
     reset_tasks();
     
@@ -3490,7 +3456,6 @@ void Full_Cone<Integer>::dual_mode() {
     }
     if(!inhomogeneous && isComputed(ConeProperty::HilbertBasis)){
         if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
-        check_integrally_closed();
     }
 
     if(inhomogeneous){
@@ -3622,11 +3587,6 @@ bool Full_Cone<Integer>::isDeg1ExtremeRays() const{
 template<typename Integer>
 bool Full_Cone<Integer>::isDeg1HilbertBasis() const{
     return deg1_hilbert_basis;
-}
-
-template<typename Integer>
-bool Full_Cone<Integer>::isIntegrallyClosed() const{
-    return integrally_closed;
 }
 
 //---------------------------------------------------------------------------

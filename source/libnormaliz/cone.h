@@ -251,6 +251,8 @@ private:
     /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron */
     void set_extreme_rays(const vector<bool>&);
 
+    void check_integrally_closed();
+
     /* set this object to the zero cone */
     void set_zero_cone();
 };

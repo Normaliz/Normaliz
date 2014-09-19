@@ -1529,16 +1529,43 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         deg1_hilbert_basis = FC.isDeg1HilbertBasis();
         is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
     }
-    if (FC.isComputed(ConeProperty::IsIntegrallyClosed)) {
-        integrally_closed = FC.isIntegrallyClosed();
-        is_Computed.set(ConeProperty::IsIntegrallyClosed);
-    }
+
+    check_integrally_closed();
 
     if (verbose) {
         verboseOutput() << " done." <<endl;
     }
 }
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::check_integrally_closed() {
+    if (isComputed(ConeProperty::IsIntegrallyClosed) || !isComputed(ConeProperty::HilbertBasis))
+        return;
+
+    integrally_closed = false;
+    long nr_gen = Generators.nr_of_rows();
+    long nr_hilb = HilbertBasis.nr_of_rows();
+    if (nr_hilb <= nr_gen) {
+        integrally_closed = true;
+        typename list< vector<Integer> >::iterator h;
+        for (long h = 0; h < nr_hilb; ++h) {
+            integrally_closed = false;
+            for (long i = 0; i < nr_gen; ++i) {
+                if (HilbertBasis[h] == Generators[i]) {
+                    integrally_closed = true;
+                    break;
+                }
+            }
+            if (!integrally_closed) {
+                break;
+            }
+        }
+    }
+    is_Computed.set(ConeProperty::IsIntegrallyClosed);
+}
 
 //---------------------------------------------------------------------------
 

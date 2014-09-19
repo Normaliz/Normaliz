@@ -70,7 +70,6 @@ class Full_Cone {
     bool deg1_extreme_rays;
     bool deg1_triangulation;
     bool deg1_hilbert_basis;
-    bool integrally_closed;
     bool inhomogeneous; 
     
     // control of what to compute
@@ -266,7 +265,6 @@ class Full_Cone {
     void deg1_check();
     void check_deg1_extreme_rays();
     void check_deg1_hilbert_basis();
-    void check_integrally_closed();
 
     void compute_multiplicity();
     
@@ -295,7 +293,6 @@ class Full_Cone {
     bool isPointed() const;
     bool isDeg1ExtremeRays() const;
     bool isDeg1HilbertBasis() const;
-    bool isIntegrallyClosed() const;
     vector<Integer> getGrading() const; 
     mpq_class getMultiplicity() const;
     Integer getShift()const;
