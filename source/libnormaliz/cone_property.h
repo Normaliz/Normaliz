@@ -57,6 +57,7 @@ namespace ConeProperty {
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
+        OriginalMonoidGenerators,
         GeneratorsOfToricRing,
         ReesPrimary,
         ReesPrimaryMultiplicity,

@@ -589,6 +589,15 @@ Sublattice_Representation<Integer> Cone<Integer>::getBasisChange() const{
 }
 
 template<typename Integer>
+Matrix<Integer> Cone<Integer>::getOriginalMonoidGeneratorsMatrix() const {
+    return OriginalMonoidGenerators;
+}
+template<typename Integer>
+vector< vector<Integer> > Cone<Integer>::getOriginalMonoidGenerators() const {
+    return OriginalMonoidGenerators.get_elements();
+}
+
+template<typename Integer>
 Matrix<Integer> Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
     return GeneratorsOfToricRing;
 }
@@ -818,8 +827,7 @@ void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer
 
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_0(const vector< vector<Integer> >& Input) {
-    Generators = Input;
-    is_Computed.set(ConeProperty::Generators);
+    set_original_monoid_generators(Input);
     Sublattice_Representation<Integer> Basis_Change(Generators,true);
     compose_basis_change(Basis_Change);
 }
@@ -828,8 +836,7 @@ void Cone<Integer>::prepare_input_type_0(const vector< vector<Integer> >& Input)
 
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_1(const vector< vector<Integer> >& Input) {
-    Generators = Input;
-    is_Computed.set(ConeProperty::Generators);
+    set_original_monoid_generators(Input);
 
     Sublattice_Representation<Integer> Basis_Change(Generators,false);
     compose_basis_change(Basis_Change);
@@ -849,7 +856,7 @@ void Cone<Integer>::prepare_input_type_2(const vector< vector<Integer> >& Input)
             Generators[i][j] = Input[i][j];
         Generators[i][dim-1]=1;
     }
-    is_Computed.set(ConeProperty::Generators);
+    set_original_monoid_generators(Generators);
 
     compose_basis_change(Sublattice_Representation<Integer>(Generators,true));
 
@@ -903,8 +910,7 @@ void Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV
         }
     }
     is_Computed.set(ConeProperty::ReesPrimary);
-    Generators = Full_Cone_Generators;
-    is_Computed.set(ConeProperty::Generators);
+    set_original_monoid_generators(Full_Cone_Generators);
 
     compose_basis_change(Sublattice_Representation<Integer>(Full_Cone_Generators.nr_of_columns()));
 
@@ -984,8 +990,6 @@ void Cone<Integer>::prepare_input_type_45(const Matrix<Integer>& Equations, Matr
 
     SupportHyperplanes.append(Inequalities);  // now the (remaining) inequalities are inserted 
     
-    // is_Computed.set(ConeProperty::SupportHyperplanes);
-
     if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
 
     if (Equations.nr_of_rows()>0) {
@@ -1180,7 +1184,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 template<typename Integer>
 void Cone<Integer>::compute_generators() {
     //create Generators from SupportHyperplanes
-    //if (!isComputed(ConeProperty::Generators) && isComputed(ConeProperty::SupportHyperplanes)) {
     if (!isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()!=0) {
         if (verbose) {
             verboseOutput() <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
@@ -1190,8 +1193,7 @@ void Cone<Integer>::compute_generators() {
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
-            Generators = BasisChange.from_sublattice(Extreme_Rays);
-            is_Computed.set(ConeProperty::Generators);
+            set_original_monoid_generators(BasisChange.from_sublattice(Extreme_Rays));
             set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
             if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
                 //get minmal set of support_hyperplanes
@@ -1224,7 +1226,6 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
 
     bool do_only_Deg1_Elements=ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
         
-    //if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::SupportHyperplanes)){
     if(isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()==0){
         if (verbose) {
             verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
@@ -1276,7 +1277,6 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         }  
     }
     
-    //if (!isComputed(ConeProperty::SupportHyperplanes)) {
     if (SupportHyperplanes.nr_of_rows()==0) {
         errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
         throw FatalException();
@@ -1379,8 +1379,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     
     if (FC.isComputed(ConeProperty::Generators)) {
-        Generators = BasisChange.from_sublattice(FC.getGenerators());
-        is_Computed.set(ConeProperty::Generators);
+        set_original_monoid_generators(BasisChange.from_sublattice(FC.getGenerators()));
     }
     if (FC.isComputed(ConeProperty::ExtremeRays)) {
         set_extreme_rays(FC.getExtremeRays());
@@ -1515,10 +1514,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             is_Computed.set(ConeProperty::Grading);
         }
         //compute denominator of Grading
-        /* if (Generators.size() > 0) {
-            GradingDenom  = v_scalar_product(Grading,Generators[0]);
-            GradingDenom /= v_scalar_product(FC.getGrading(),FC.Generators[0]);
-        } */
         if(BasisChange.get_rank()!=0){
             vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(Grading);
             GradingDenom=v_make_prime(test_grading);
@@ -1546,7 +1541,7 @@ void Cone<Integer>::check_integrally_closed() {
         return;
 
     integrally_closed = false;
-    long nr_gen = Generators.nr_of_rows();
+    long nr_gen = OriginalMonoidGenerators.nr_of_rows();
     long nr_hilb = HilbertBasis.nr_of_rows();
     if (nr_hilb <= nr_gen) {
         integrally_closed = true;
@@ -1554,7 +1549,7 @@ void Cone<Integer>::check_integrally_closed() {
         for (long h = 0; h < nr_hilb; ++h) {
             integrally_closed = false;
             for (long i = 0; i < nr_gen; ++i) {
-                if (HilbertBasis[h] == Generators[i]) {
+                if (HilbertBasis[h] == OriginalMonoidGenerators[i]) {
                     integrally_closed = true;
                     break;
                 }
@@ -1565,6 +1560,18 @@ void Cone<Integer>::check_integrally_closed() {
         }
     }
     is_Computed.set(ConeProperty::IsIntegrallyClosed);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input) {
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
+        OriginalMonoidGenerators = Input;
+        is_Computed.set(ConeProperty::OriginalMonoidGenerators);
+    }
+    Generators = Input;
+    is_Computed.set(ConeProperty::Generators);
 }
 
 //---------------------------------------------------------------------------
@@ -1594,8 +1601,7 @@ template<typename Integer>
 void Cone<Integer>::set_zero_cone() {
     // GeneratorsOfToricRing needs no handling
 
-    Generators = Matrix<Integer>(0,dim);
-    is_Computed.set(ConeProperty::Generators);
+    set_original_monoid_generators(Matrix<Integer>(0,dim));
 
     ExtremeRays = vector<bool>(Generators.nr_of_rows(), false);
     is_Computed.set(ConeProperty::ExtremeRays);
