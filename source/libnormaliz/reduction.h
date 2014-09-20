@@ -142,6 +142,9 @@ void sort_by_deg();
 void sort_by_val();
 void merge(CandidateList<Integer>& NewCand);
 void merge_by_val(CandidateList<Integer>& NewCand);
+void merge_by_val(CandidateList<Integer>& NewCand,list<Candidate<Integer>* >& New_Elements);
+void merge_by_val_inner(CandidateList<Integer>& NewCand, bool collect_new_elements, 
+                      list<Candidate<Integer>* >& New_Elements);
 void splice(CandidateList<Integer>& NewCand);
 void extract(list<vector<Integer> >& V_List);
 void push_back(const Candidate<Integer>& c);

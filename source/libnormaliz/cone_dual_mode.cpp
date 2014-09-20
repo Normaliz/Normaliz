@@ -49,9 +49,11 @@ template<typename Integer>
 void Cone_Dual_Mode<Integer>::splice_them_sort(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts){
 
     CandidateList<Integer> New;
+    New.dual=true;
     for(int i=0;i<omp_get_max_threads();i++)
         Total.Candidates.splice(New.Candidates.end(),Parts[i].Candidates);
     New.sort_by_val();
+    New.unique_vectors();
     Total.merge_by_val(New);
 }
 
@@ -385,7 +387,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             neg_size=neg_gen1_size;      
         }
         
-        cout << "Step " << step << " pos " << pos_size << " neg " << neg_size << endl;
+        // cout << "Step " << step << " pos " << pos_size << " neg " << neg_size << endl;
         
         if(pos_size==0 || neg_size==0)
             continue;
@@ -555,7 +557,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         else{
             Neutral_Depot.auto_reduce();                    // in this case new elements will not be produced anymore
             Neutral_Irred.merge_by_val(Neutral_Depot);      // and there is nothing to do for positive or negative elements
-            Neutral_Irred.unique_vectors();                 // but the remaining neutral elements must be auto-reduced.             
+            // Neutral_Irred.unique_vectors();                 // but the remaining neutral elements must be auto-reduced.             
        }
        
         // There is a subtle point in the 3 merge operations that follow.
@@ -563,55 +565,55 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         // element of the Irred lits precede equivalent elements of the New_Irred.
         // This is guaranteed in C++ STL list merge (see Josutis, 2nd ed., p.423)
         
-        CandidateTable<Integer> New_Pos_Table(true,hyp_counter), New_Neg_Table(true,hyp_counter), New_Neutr_Table(true,hyp_counter); 
+       CandidateTable<Integer> New_Pos_Table(true,hyp_counter), New_Neg_Table(true,hyp_counter), New_Neutr_Table(true,hyp_counter); 
                  // for new elements
-
-       set_generation_0(Neutral_Irred);
+                 
+       list<Candidate<Integer>* > New_Elements;
+       // set_generation_0(Neutral_Irred);
        if (!New_Neutral_Irred.empty()) {
             if(do_reduction){
                 Positive_Depot.reduce_by(New_Neutral_Irred);                
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
             }
             Negative_Depot.reduce_by(New_Neutral_Irred);
-            Neutral_Irred.merge_by_val(New_Neutral_Irred); 
-            Neutral_Irred.unique_vectors();
-            for(h=Neutral_Irred.Candidates.begin(); h!=Neutral_Irred.Candidates.end(); ++h)
-                if(h->generation==1){
-                    New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >(h->sort_deg,&(h->values)));
-                }
+            Neutral_Irred.merge_by_val(New_Neutral_Irred,New_Elements); 
+            // Neutral_Irred.unique_vectors();
+            typename list<Candidate<Integer>* >::iterator c;
+            for(c=New_Elements.begin(); c!=New_Elements.end(); ++c){
+                New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
+            }
+            New_Elements.clear();
         }                                                 
        
         select_HB(Positive_Depot,guaranteed_HB_deg,New_Positive_Irred,!do_reduction);
 
         select_HB(Negative_Depot,guaranteed_HB_deg,New_Negative_Irred,!do_reduction);
                                                                  
-        set_generation_0(Positive_Irred);
+        // set_generation_0(Positive_Irred);
         if (!New_Positive_Irred.empty()) {
             if(do_reduction)
                 Positive_Depot.reduce_by(New_Positive_Irred);
             check_range(New_Positive_Irred);  // check for danger of overflow
-            Positive_Irred.merge_by_val(New_Positive_Irred);
-            Positive_Irred.unique_vectors();
-            for(h=Positive_Irred.Candidates.begin(); h!=Positive_Irred.Candidates.end(); ++h)
-                if(h->generation==1){
-                    Pos_Gen1.push_back(&(*h));
-                    New_Pos_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >(h->sort_deg,&(h->values)));
-                    pos_gen1_size++;
-                }
+            Positive_Irred.merge_by_val(New_Positive_Irred,Pos_Gen1);
+            // Positive_Irred.unique_vectors();
+            typename list<Candidate<Integer>* >::iterator c;
+            for(c=Pos_Gen1.begin(); c!=Pos_Gen1.end(); ++c){
+                New_Pos_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
+                pos_gen1_size++;
+            }
         }
 
-        set_generation_0(Negative_Irred);
+        // set_generation_0(Negative_Irred);
         if (!New_Negative_Irred.empty()) {
             Negative_Depot.reduce_by(New_Negative_Irred);
             check_range(New_Negative_Irred);
-            Negative_Irred.merge_by_val(New_Negative_Irred);
-            Negative_Irred.unique_vectors();
-            for(h=Negative_Irred.Candidates.begin(); h!=Negative_Irred.Candidates.end(); ++h)
-                if(h->generation==1){
-                    Neg_Gen1.push_back(&(*h));
-                    New_Neg_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >(h->sort_deg,&(h->values)));
-                    neg_gen1_size++;
-                }
+            Negative_Irred.merge_by_val(New_Negative_Irred,Neg_Gen1);
+            // Negative_Irred.unique_vectors();
+            typename list<Candidate<Integer>* >::iterator c;
+            for(c=Neg_Gen1.begin(); c!=Neg_Gen1.end(); ++c){
+                New_Neg_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
+                neg_gen1_size++;
+            }
         }
     
         CandidateTable<Integer> Help(true,hyp_counter);
@@ -737,6 +739,10 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         */
            
         Intermediate_HB.extract(Hilbert_Basis);
+        
+        if(verbose)
+            verboseOutput() << "Hilbert basis " << Hilbert_Basis.size() << endl;
+    
     }
 }
 
