@@ -169,6 +169,7 @@ bool dual;
 size_t last_hyp;
 
 CandidateTable(CandidateList<Integer>& CandList);
+CandidateTable(bool dual, size_t last_hyp);
 
 bool is_reducible(Candidate<Integer>& c);
 bool is_reducible(const vector<Integer>& values, const long sort_deg);

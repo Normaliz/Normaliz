@@ -490,6 +490,14 @@ CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+CandidateTable<Integer>::CandidateTable(bool dual, size_t last_hyp){
+        this->dual=dual;
+        this->last_hyp=last_hyp;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 bool CandidateTable<Integer>::is_reducible(Candidate<Integer>& c){
     c.reducible=is_reducible(c.values, c.sort_deg);
     return(c.reducible);
