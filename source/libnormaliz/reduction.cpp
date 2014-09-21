@@ -102,31 +102,6 @@ CandidateList<Integer>::CandidateList(bool dual_algorithm){
 
 //---------------------------------------------------------------------------
 
-/*template<typename Integer>
-void CandidateList<Integer>::insert(const vector<Integer>& v, Full_Cone<Integer>& C){
-    insert(v,C.Hyperplanes,C.Sorting);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void CandidateList<Integer>::insert(const vector<Integer>& v, const list<vector<Integer> >& SuppHyps, 
-            const size_t& nrSuppHyps, const vector<Integer>& Sorting){
-
-    typename list<vector<Integer> >::const_iterator h;
-    Integer sd;
-    vector<Integer> val(nrSuppHyps);
-    size_t i=0;
-    for(h=SuppHyps.begin();h!=SuppHyps.end();++h){
-        val[i]=v_scalar_product(v,*h);
-        ++i;
-    }
-    sd=explicit_cast_to_long<Integer>(v_scalar_product(*v,Sorting));
-    Candidates.push_back(Candidate(v,val,sd));
-} */
-
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& values, const long sort_deg) const {
  
@@ -156,53 +131,6 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& values, const l
    return(false);    
 }
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool CandidateList<Integer>::is_reducible_last_hyp(const vector<Integer>& values, const long sort_deg) const {
- 
-    long sd;
-    /* if(dual)
-        sd=sort_deg;
-    else */
-        sd=sort_deg/2;
-    size_t kk=0;
-    typename list<Candidate<Integer> >::const_iterator r;
-    for(r=Candidates.begin();r!=Candidates.end();++r){
-        if(sd < r->sort_deg){
-            return(false);
-        }
-        size_t i=0;
-        
-        if(values[last_hyp]<r->values[last_hyp])
-                continue;
-        
-        if(values[kk]<r->values[kk])
-                continue;
-        for(;i<values.size();++i)
-            if(values[i]<r->values[i]){
-                kk=i;
-                break;
-            }
-        if(i==values.size()){
-            return(true);
-        }
-   }   
-   return(false);    
-}
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool CandidateList<Integer>::is_reducible_last_hyp(Candidate<Integer>& c) const {
-
-    /*if(dual && c.in_HB)
-        c.reducible=false;
-    else */
-        c.reducible=is_reducible_last_hyp(c.values, c.sort_deg);
-    return(c.reducible);
-}
 
 //---------------------------------------------------------------------------
 
@@ -262,12 +190,6 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
 
 //---------------------------------------------------------------------------
 
-/*template<typename Integer>
-void CandidateList<Integer>::auto_reduce(){
-cout << "Size " << Candidates.size() << endl;
-    reduce_by(*this);
-}*/
-
 template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
 
@@ -277,6 +199,8 @@ void CandidateList<Integer>::auto_reduce(){
     sort_by_deg();
     auto_reduce_sorted();
 }
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void CandidateList<Integer>::auto_reduce_sorted(){
@@ -308,18 +232,6 @@ void CandidateList<Integer>::auto_reduce_sorted(){
     }
     Candidates.splice(Candidates.begin(),Irreducibles.Candidates);
 }
-
-/*
-//---------------------------------------------------------------------------
-template<typename Integer>
-void CandidateList<Integer>::unique_auto_reduce(bool only_unique){
-
-    unique_vectors();
-    if(only_unique) // in this case we have only to make unique
-            return;
-    auto_reduce();        
-}
-*/
 
 //---------------------------------------------------------------------------
 
@@ -364,20 +276,6 @@ void CandidateList<Integer>::unique_vectors(){
             ++h;
     }
 }
-
-
-//---------------------------------------------------------------------------
-/*
-template<typename Integer>
-void CandidateList<Integer>::select_HB(size_t guaranteed_HB_deg){
-
-    typename list<Candidate<Integer> >::iterator h;
-    for(h=Candidates.begin(); h!=Candidates.end();++h)
-        if(h->old_tot_deg<=guaranteed_HB_deg)
-            h->in_HB=true;
-
-}
-*/
 
 //---------------------------------------------------------------------------
 

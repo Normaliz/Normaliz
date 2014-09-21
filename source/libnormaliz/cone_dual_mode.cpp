@@ -60,17 +60,6 @@ void Cone_Dual_Mode<Integer>::splice_them_sort(CandidateList< Integer>& Total, v
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::set_generation_0(CandidateList< Integer>& L){
-
-    typename list<Candidate<Integer> >::iterator c;
-    for(c=L.Candidates.begin();c!=L.Candidates.end();++c)
-        c->generation=0;
-}
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t guaranteed_HB_deg, 
                     CandidateList<Integer>& Irred, bool all_irreducible){
 
@@ -207,7 +196,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         // ABSOLUTELY NECESSARY since we need a monoid system of generators of the full "old" cone
 
         Candidate<Integer> halfspace_gen_as_cand(old_lin_subspace_half,nr_sh);
-        halfspace_gen_as_cand.generation=0;
         halfspace_gen_as_cand.mother=0;
         halfspace_gen_as_cand.old_tot_deg=0;
         (halfspace_gen_as_cand.values)[hyp_counter]=orientation; // value under the new linear form
@@ -238,7 +226,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     for (h = Intermediate_HB.Candidates.begin(); h != Intermediate_HB.Candidates.end(); ++h) { //dividing into negative and positive
         Integer new_val=v_scalar_product<Integer>(hyperplane,h->cand);
         long new_val_long=explicit_cast_to_long(new_val);
-        h->generation=1;
         h->reducible=false;
         h->mother=0;
         h->old_tot_deg=h->sort_deg;
@@ -409,7 +396,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         #pragma omp parallel private(p,n,diff,p_cand,n_cand) // if(neg_size >= 100)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
-        new_candidate.generation=1;  // the new generation
         
         size_t ppos=0;
         p = pos_begin;
@@ -425,24 +411,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             
             }
             
-            // cout << "i "  << i << endl;
-            
             p_cand=*p;
-            
-            // size_t jjj=0;
             
             Integer pos_val=p_cand->values[hyp_counter];
 
             for (n= neg_begin; n!= neg_end; ++n){
             
-                // cout << "jjj " << jjj<< endl;
-                // jjj++;
-            
                 n_cand=*n;
             
-                // if (p_cand->generation==0 && n_cand->generation==0)
-                // continue; // two "old" candidates have been paired already
-                    
                 if(truncate && p_cand->values[0]+n_cand->values[0] >=2) // in the inhomogeneous case we truncate at level 1
                     continue;
 
@@ -560,29 +536,22 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             select_HB(Neutral_Depot,guaranteed_HB_deg,New_Neutral_Irred,!do_reduction);         
         }
         else{
-            Neutral_Depot.auto_reduce();                    // in this case new elements will not be produced anymore
+            Neutral_Depot.auto_reduce_sorted();                    // in this case new elements will not be produced anymore
             Neutral_Irred.merge_by_val(Neutral_Depot);      // and there is nothing to do for positive or negative elements
-            // Neutral_Irred.unique_vectors();                 // but the remaining neutral elements must be auto-reduced.             
+                                                        // but the remaining neutral elements must be auto-reduced.             
        }
        
-        // There is a subtle point in the 3 merge operations that follow.
-        // In order to have the generations correct, it is important that an
-        // element of the Irred lits precede equivalent elements of the New_Irred.
-        // This is guaranteed in C++ STL list merge (see Josutis, 2nd ed., p.423)
-        
        CandidateTable<Integer> New_Pos_Table(true,hyp_counter), New_Neg_Table(true,hyp_counter), New_Neutr_Table(true,hyp_counter); 
                  // for new elements
                  
-       list<Candidate<Integer>* > New_Elements;
-       // set_generation_0(Neutral_Irred);
        if (!New_Neutral_Irred.empty()) {
             if(do_reduction){
                 Positive_Depot.reduce_by(New_Neutral_Irred);                
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
             }
             Negative_Depot.reduce_by(New_Neutral_Irred);
+            list<Candidate<Integer>* > New_Elements;
             Neutral_Irred.merge_by_val(New_Neutral_Irred,New_Elements); 
-            // Neutral_Irred.unique_vectors();
             typename list<Candidate<Integer>* >::iterator c;
             for(c=New_Elements.begin(); c!=New_Elements.end(); ++c){
                 New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
@@ -594,13 +563,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         select_HB(Negative_Depot,guaranteed_HB_deg,New_Negative_Irred,!do_reduction);
                                                                  
-        // set_generation_0(Positive_Irred);
         if (!New_Positive_Irred.empty()) {
             if(do_reduction)
                 Positive_Depot.reduce_by(New_Positive_Irred);
             check_range(New_Positive_Irred);  // check for danger of overflow
             Positive_Irred.merge_by_val(New_Positive_Irred,Pos_Gen1);
-            // Positive_Irred.unique_vectors();
             typename list<Candidate<Integer>* >::iterator c;
             for(c=Pos_Gen1.begin(); c!=Pos_Gen1.end(); ++c){
                 New_Pos_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
@@ -608,12 +575,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
         }
 
-        // set_generation_0(Negative_Irred);
         if (!New_Negative_Irred.empty()) {
             Negative_Depot.reduce_by(New_Negative_Irred);
             check_range(New_Negative_Irred);
             Negative_Irred.merge_by_val(New_Negative_Irred,Neg_Gen1);
-            // Negative_Irred.unique_vectors();
             typename list<Candidate<Integer>* >::iterator c;
             for(c=Neg_Gen1.begin(); c!=Neg_Gen1.end(); ++c){
                 New_Neg_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));

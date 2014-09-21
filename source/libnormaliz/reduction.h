@@ -59,7 +59,7 @@ long sort_deg;  // the sorting degree
 bool reducible;    // indicates reducibility
 
 Integer mother;   // for the dual algorithm
-char generation;  // ditto
+// char generation;  // ditto
 size_t old_tot_deg;
 // bool in_HB;  
 
@@ -115,10 +115,10 @@ CandidateList(bool dual_algorithm);
 
 // Checks for irreducibility
 bool is_reducible(const vector<Integer>& values, const long sort_deg) const; // basic function
-bool is_reducible_last_hyp(const vector<Integer>& values, const long sort_deg) const;
+// bool is_reducible_last_hyp(const vector<Integer>& values, const long sort_deg) const;
 // including construction of candidate
 bool is_reducible(Candidate<Integer>& c) const;
-bool is_reducible_last_hyp(Candidate<Integer>& c) const;
+// bool is_reducible_last_hyp(Candidate<Integer>& c) const;
 bool is_reducible(vector<Integer> v,Candidate<Integer>& cand, const Full_Cone<Integer>& C) const;
 
 // reduction against Reducers and insertion into *this. returns true if inserted
