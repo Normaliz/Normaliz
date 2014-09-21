@@ -279,11 +279,16 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         if(verbose){
             verboseOutput() << "Eliminating negative generators of level > 0" << endl;
         }
+        Neg_Gen1.clear();
+        neg_gen1_size=0;
         for (h = Negative_Irred.Candidates.begin(); h != Negative_Irred.Candidates.end();){
             if(h->values[0]>0)
                 h=Negative_Irred.Candidates.erase(h);
-            else
+            else{
+                Neg_Gen1.push_back(&(*h));
+                neg_gen1_size++;   
                 ++h;
+            }
         }
     }
     
@@ -397,7 +402,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         if (verbose) {
             // size_t neg_size=Negative_Irred.size();
             size_t zsize=Neutral_Irred.size();
-            // if (pos_size*neg_size>1000000)
+            if (pos_size*neg_size>10000)
                 verboseOutput()<<"Positive: "<<pos_size<<"  Negative: "<<neg_size<<"  Neutral: "<<zsize<<endl;
         }
         

@@ -479,8 +479,6 @@ void CandidateList<Integer>::merge_by_val_inner(CandidateList<Integer>& NewCand,
             break;        
         }
         
-        // cout << "Step 1 " << size() << " " << NewCand.size() << endl;
-        
         if(empty()){
             typename list<Candidate<Integer> >::reverse_iterator h;
             if(collect_new_elements){
@@ -491,14 +489,10 @@ void CandidateList<Integer>::merge_by_val_inner(CandidateList<Integer>& NewCand,
             break;       
         }
         
-        // cout << "Step 2 " << size() << " " << NewCand.size() << endl;
-        
         if(NewCand.Candidates.back().values==Candidates.back().values){  // if equal, new is erased
             NewCand.Candidates.pop_back();
             continue;
         }
-        
-        // cout << "Step 3 " << size() << " " << NewCand.size() << " " << Coll.size() << endl;
         
         if(val_compare<Integer>(Candidates.back(),NewCand.Candidates.back())){ // old is smaller, new must be inserteed
             if(collect_new_elements){
@@ -507,9 +501,7 @@ void CandidateList<Integer>::merge_by_val_inner(CandidateList<Integer>& NewCand,
             Coll.Candidates.splice(Coll.Candidates.begin(),NewCand.Candidates,--NewCand.Candidates.end());
             continue;
         }
-        
-        // cout << "Step 4 " << size() << " " << NewCand.size() << " " << Coll.size() << endl;
-            
+          
         Coll.Candidates.splice(Coll.Candidates.begin(), Candidates,--Candidates.end()); // the remaining case              
     
     }
