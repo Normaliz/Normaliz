@@ -114,9 +114,11 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::SupportHyperplanes);
 
     // inhomogenous preconditions
+    if (CPs.test(ConeProperty::VerticesOfPolyhedron))
+        CPs.set(ConeProperty::ExtremeRays);
+
     if (CPs.test(ConeProperty::ModuleGenerators))
         CPs.set(ConeProperty::HilbertBasis);
-    //TODO what else?
 
 }
 

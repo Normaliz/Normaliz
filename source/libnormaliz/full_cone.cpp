@@ -2312,6 +2312,11 @@ void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support 
     }
     extreme_rays_and_deg1_check();
     // reset_tasks();
+    if(inhomogeneous){
+       set_levels();
+       find_level0_dim();
+       find_module_rank();
+    }
 }
 
 //---------------------------------------------------------------------------

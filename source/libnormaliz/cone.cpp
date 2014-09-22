@@ -542,7 +542,9 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
             is_Computed.set(ConeProperty::Grading, false);
         }
     }
-    prepare_input_type_1(GeneratorsOfToricRing.get_elements()); //TODO
+    prepare_input_type_1(GeneratorsOfToricRing.get_elements()); //TODO keep matrix
+    // GeneratorsOfToricRing duplicates OriginalMonoidGenerators now,
+    // it is only kept to decide if we print it in the .out file
 }
 
 /* only used by the constructors */
@@ -1068,6 +1070,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }                                    
 
+    ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options();
     ToCompute.check_sanity(inhomogeneous);
@@ -1116,8 +1119,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::Triangulation)) {
         FC.keep_triangulation = true;
     }
-    if (ToCompute.test(ConeProperty::Multiplicity)) {
+    if (ToCompute.test(ConeProperty::Multiplicity) ) {
         FC.do_multiplicity = true;
+    }
+    if (ToCompute.test(ConeProperty::TriangulationDetSum) ) {
+        FC.do_determinants = true;
     }
     if (ToCompute.test(ConeProperty::TriangulationSize)) {
         FC.do_triangulation = true;
