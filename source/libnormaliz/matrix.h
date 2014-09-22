@@ -172,6 +172,7 @@ public:
 //---------------------------------------------------------------------------
 
     void reduce_row(size_t corner);      //reduction by the corner-th row
+    void reduce_row (size_t row, size_t col); // corner at position (row,col)
     void reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
     //for saving or copying the linear transformations
     void reduce_column(size_t corner);  //reduction by the corner-th column
@@ -189,6 +190,8 @@ public:
     long pivot_column(size_t col);  //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
     //described by an int col
+    
+    long pivot_column(size_t row,size_t col); //in column col starting from row
 
 //---------------------------------------------------------------------------
 //                          Matrices operations
@@ -196,6 +199,7 @@ public:
 //---------------------------------------------------------------------------
 
     size_t diagonalize(); //computes rank and diagonalizes this, destructive
+    size_t row_echelon(); // transforms this into row echelon form and returns rank
 
     size_t rank() const; //returns rank, nondestructive
     

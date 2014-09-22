@@ -739,6 +739,26 @@ void Matrix<Integer>::reduce_row (size_t corner) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::reduce_row (size_t row, size_t col) {
+    assert(col >= 0);
+    assert(col < nc);
+    assert(row < nr);
+    assert(row >= 0);
+    size_t i,j;
+    Integer help;
+    for (i =row+1; i < nr; i++) {
+        if (elements[i][col]!=0) {
+            help=elements[i][col] / elements[row][col];
+            for (j = col; j < nc; j++) {
+                elements[i][j] -= help*elements[row][j];
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     assert(corner >= 0);
     assert(corner < nc);
@@ -839,10 +859,36 @@ long Matrix<Integer>::pivot_column(size_t col){
     assert(col >= 0);
     assert(col < nc);
     assert(col < nr);
-    size_t i,j=-1;
+    size_t i;
+    long j=-1;
     Integer help=0;
 
     for (i = col; i < nr; i++) {
+        if (elements[i][col]!=0) {
+            if ((help==0)||(Iabs(elements[i][col])<help)) {
+                help=Iabs(elements[i][col]);
+                j=i;
+                if (help == 1) return j;
+            }
+        }
+    }
+
+    return j;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+long Matrix<Integer>::pivot_column(size_t row,size_t col){
+    assert(col >= 0);
+    assert(col < nc);
+    assert(row < nr);
+    assert(row >= 0);
+    size_t i;
+    long j=-1;
+    Integer help=0;
+
+    for (i = row; i < nr; i++) {
         if (elements[i][col]!=0) {
             if ((help==0)||(Iabs(elements[i][col])<help)) {
                 help=Iabs(elements[i][col]);
@@ -889,6 +935,60 @@ size_t Matrix<Integer>::rank() const{
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon(){
+
+    size_t pc=0, rk=0;
+    long piv=0;
+    
+    for (rk = 0; rk < nr; rk++){
+        for(;pc<nc;pc++){
+            piv=pivot_column(rk,pc);
+            if(piv>=0)
+                break;
+        }
+        if(pc==nc)
+            break;
+        do{
+            exchange_rows (rk,piv);
+            reduce_row(rk,pc);
+            piv=pivot_column(rk,pc);
+        }while (piv>rk);
+    }
+    
+    return rk;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank_destructive(){
+    
+    
+    if(!test_arithmetic_overflow)
+        return row_echelon();
+        
+    size_t rk=row_echelon();
+    Integer det=1, test_det=1;
+    for(size_t i=0;i<rk;++i){
+        size_t j=i;
+        for(;j<nc;j++)
+            if(elements[i][j]!=0)
+                break;
+        det*=elements[i][j];
+        test_det=(test_det *(elements[i][j]%overflow_test_modulus))%overflow_test_modulus;
+    }
+    
+    if(test_det!=det%overflow_test_modulus){
+        errorOutput()<<"Arithmetic failure in computing rank. Most likely overflow.\n";
+        throw ArithmeticException();
+    }
+    
+    return rk; 
+}
+
+//---------------------------------------------------------------------------
+/*
 template<typename Integer>
 size_t Matrix<Integer>::rank_destructive(){
     size_t rk,i,j,Min_Row, rk_max=min(nr,nc);
@@ -946,10 +1046,39 @@ size_t Matrix<Integer>::rank_destructive(){
     
     return rk;         
 }
+*/
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Integer Matrix<Integer>::vol_destructive(){
+
+    row_echelon();
+    Integer det = 1;
+    for (size_t i=0; i<nr; i++){
+        det*=elements[i][i];
+    }
+    
+    if(!test_arithmetic_overflow)
+        return Iabs(det);
+        
+    Integer test_det = 1;
+    for (size_t i=0; i<nr; i++){
+        test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
+    }
+    if(test_det!=det%overflow_test_modulus){
+        errorOutput()<<"Arithmetic failure in computing determinant. Most likely overflow.\n";
+        throw ArithmeticException();
+    }
+    
+    return Iabs(det);
+
+}
+
+//---------------------------------------------------------------------------
+
+
+/* template<typename Integer>
 Integer Matrix<Integer>::vol_destructive(){
     size_t rk,i,j,Min_Row, rk_max=nr; // we assume nr==nc
     bool empty;
@@ -1010,7 +1139,7 @@ Integer Matrix<Integer>::vol_destructive(){
     
     return Iabs(det);
         
-}
+} */
 
 //---------------------------------------------------------------------------
 
