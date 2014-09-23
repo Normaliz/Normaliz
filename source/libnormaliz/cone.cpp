@@ -1542,7 +1542,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
 template<typename Integer>
 void Cone<Integer>::check_integrally_closed() {
-    if (isComputed(ConeProperty::IsIntegrallyClosed) || !isComputed(ConeProperty::HilbertBasis))
+    if (isComputed(ConeProperty::IsIntegrallyClosed) || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
 
     integrally_closed = false;
