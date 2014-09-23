@@ -2680,7 +2680,7 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
             if (Extreme_Rays[i])
                 marked_extreme_rays.push_back(i);
         }
-        vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex(dim);
+        vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex();
         assert(key_extreme.size() == dim);
         vector<key_t> key(dim);
         for (key_t i=0; i<dim; i++) {

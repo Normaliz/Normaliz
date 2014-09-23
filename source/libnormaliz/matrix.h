@@ -49,11 +49,6 @@ template<typename Integer> class Matrix {
 //---------------------------------------------------------------------------
 //              Private routines, used in the public routines
 //---------------------------------------------------------------------------
-
-    void max_rank_submatrix_lex(vector<key_t>& v, const size_t& rank) const;
-    //v will be a vector with entries the indices of the first rows in lexicographic
-    //order of this forming a submatrix of maximal rank.
-    //v shoud be a vector of size 0 by call!!!
     
     // Does the computation for the solution of linear systems
     void solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
@@ -100,7 +95,7 @@ public:
 
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
-    vector<Integer> diagonale() const;     //returns the diagonale of this
+    vector<Integer> diagonal() const;     //returns the diagonale of this
                                   //this should be a quadratic matrix
     size_t maximal_decimal_length() const;    //return the maximal number of decimals
                                       //needed to write an entry
@@ -198,7 +193,6 @@ public:
 //           --- this are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
-    size_t diagonalize(); //computes rank and diagonalizes this, destructive
     size_t row_echelon(); // transforms this into row echelon form and returns rank
 
     size_t rank() const; //returns rank, nondestructive
@@ -207,17 +201,9 @@ public:
 
     size_t rank_destructive(); //returns rank, destructive
 
-    vector<key_t> max_rank_submatrix() const; //returns a vector with entries the
-    //indices of the rows of this forming a submatrix of maximal rank
-
     vector<key_t>  max_rank_submatrix_lex() const; //returns a vector with entries
     //the indices of the first rows in lexicographic order of this forming
     //a submatrix of maximal rank.
-
-    vector<key_t>  max_rank_submatrix_lex(const size_t& rank) const;
-    //returns a vector with entries the indices of the first rows in lexicographic
-    //order of this forming a submatrix of maximal rank, assuming that
-    //the rank of this is known.
   
     // In the following routines denom is the absolute value of the determinant of the
     // left side matrix ( =this).

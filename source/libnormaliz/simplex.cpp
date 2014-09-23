@@ -49,7 +49,7 @@ using namespace std;
 template<typename Integer>
 Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
     dim=Map.nr_of_columns();
-    key=Map.max_rank_submatrix_lex(dim);
+    key=Map.max_rank_submatrix_lex();
     Generators=Map.submatrix(key);
     diagonal = vector< Integer >(dim);
     Support_Hyperplanes=invert(Generators, diagonal, volume); //test for arithmetic
