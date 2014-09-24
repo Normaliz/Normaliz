@@ -113,6 +113,9 @@ void ConeProperties::set_preconditions() {
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
 
+    if (CPs.test(ConeProperty::HilbertFunction))
+        CPs.set(ConeProperty::HilbertSeries);
+
     // inhomogenous preconditions
     if (CPs.test(ConeProperty::VerticesOfPolyhedron))
         CPs.set(ConeProperty::ExtremeRays);
@@ -174,7 +177,7 @@ namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 33) { //to detect changes in size of Enum
+        if (ConeProperty::EnumSize != 34) { //to detect changes in size of Enum
             errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
             errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
             throw FatalException();
@@ -195,6 +198,7 @@ namespace {
         CPN.at(ConeProperty::ModuleGenerators) = "ModuleGenerators";
         CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
         CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
+        CPN.at(ConeProperty::HilbertFunction) = "HilbertFunction";
         CPN.at(ConeProperty::Grading) = "Grading";
         CPN.at(ConeProperty::IsPointed) = "IsPointed";
         CPN.at(ConeProperty::IsDeg1Generated) = "IsDeg1Generated";

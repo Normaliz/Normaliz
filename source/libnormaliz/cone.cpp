@@ -1041,7 +1041,9 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     is_Computed.reset(ConeProperty::Deg1Elements);
     Deg1Elements = Matrix<Integer>(0,dim);
     is_Computed.reset(ConeProperty::HilbertSeries);
+    is_Computed.reset(ConeProperty::HilbertFunction);
     is_Computed.reset(ConeProperty::Multiplicity);
+    is_Computed.reset(ConeProperty::Shift);
 
 }
 
@@ -1500,6 +1502,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         HSeries = FC.Hilbert_Series;
         is_Computed.set(ConeProperty::HilbertSeries);
+        if (HSeries.getPeriod() <= 2000) is_Computed.set(ConeProperty::HilbertFunction);
     }
     if (FC.isComputed(ConeProperty::IsPointed)) {
         pointed = FC.isPointed();
