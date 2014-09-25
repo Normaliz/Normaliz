@@ -98,6 +98,8 @@ public:
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
 
+    Matrix& remove_zero_rows(); // remove zero rows, modifies this
+
     vector<Integer> diagonale() const;     //returns the diagonale of this
                                   //this should be a quadratic matrix
     size_t maximal_decimal_length() const;    //return the maximal number of decimals

@@ -1302,9 +1302,9 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     size_t i_start=0;
     if(inhomogeneous){  // in the inhomogeneous case the truncation will be inserted below
         i_start=1;
-        // cout << "Trunc " << BasisChange.to_sublattice_dual_no_div(Truncation);
+        //cout << "Dehom " << BasisChange.to_sublattice_dual_no_div(Dehomogenization);
         //cout << "First " << Inequ_on_Ker[0];
-        assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual_no_div(Dehomogenization));
+        assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual(Dehomogenization));
     }
     for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
         hyperplane=Inequ_on_Ker[i];

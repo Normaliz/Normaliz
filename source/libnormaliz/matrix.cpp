@@ -376,6 +376,23 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
+    size_t from = 0, to = 0; // maintain to <= from
+    while (from < nr && v_is_zero(elements[from])) from++; //skip zero rows
+    while (from < nr) {  // go over matrix
+        // now from is a non-zero row
+        if (to != from) swap(elements[to],elements[from]);
+        ++to; ++from;
+        while (from < nr && v_is_zero(elements[from])) from++; //skip zero rows
+    }
+    nr = to;
+    elements.resize(nr);
+    return *this;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 vector<Integer> Matrix<Integer>::diagonale() const{
     assert(nr == nc); 
     vector<Integer> diag(nr);

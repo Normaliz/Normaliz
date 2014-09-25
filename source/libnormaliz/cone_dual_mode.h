@@ -116,7 +116,7 @@ public:
     
     void unique_vectors(list< vector< Integer > >& HB);
 
-    Cone_Dual_Mode(Matrix<Integer> M);            //main constructor
+    Cone_Dual_Mode(const Matrix<Integer>& M);            //main constructor
 
 /*---------------------------------------------------------------------------
  *                      Data access
@@ -137,7 +137,7 @@ public:
     void hilbert_basis_dual();
 
     /* transforms all data to the sublattice */
-    void to_sublattice(Sublattice_Representation<Integer> SR);
+    void to_sublattice(const Sublattice_Representation<Integer>& SR);
 
 };
 //class end *****************************************************************

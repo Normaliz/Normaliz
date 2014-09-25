@@ -289,7 +289,7 @@ void Cone_Dual_Mode<Integer>::auto_reduce(list< vector< Integer> >& To_Reduce, c
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(const Matrix<Integer>& M){
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
         errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
@@ -297,21 +297,17 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer> M){
         throw BadInputException();
     }
     SupportHyperplanes = M;
-    nr_sh=SupportHyperplanes.nr_of_rows();
+    // support hyperplanes are already coprime (except for truncation/grading)
+    // so just remove 0 rows
+    SupportHyperplanes.remove_zero_rows();
+    nr_sh = SupportHyperplanes.nr_of_rows();
+    hyp_size = dim + nr_sh;
+    first_pointed = true;
+
     if (nr_sh != static_cast<size_t>(static_cast<key_t>(nr_sh))) {
         errorOutput()<<"Too many support hyperplanes to fit in range of key_t!"<<endl;
         throw FatalException();
     }
-    //make the generators coprime and remove 0 rows
-    vector<Integer> gcds = SupportHyperplanes.make_prime();
-    vector<key_t> key=v_non_zero_pos(gcds);
-    if (key.size() < nr_sh) {
-        SupportHyperplanes=SupportHyperplanes.submatrix(key);
-        nr_sh=SupportHyperplanes.nr_of_rows();
-    }
-    hyp_size=dim+nr_sh;
-    first_pointed=true;
-
 }
 
 //---------------------------------------------------------------------------
@@ -1197,7 +1193,7 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone_Dual_Mode<Integer>::to_sublattice(Sublattice_Representation<Integer> SR) {
+void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Integer>& SR) {
     assert(SR.get_dim() == dim);
 
     dim = SR.get_rank();
