@@ -62,7 +62,7 @@ const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comp
 
 const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
-const size_t UpdateReducersBound=10000; // reducers updated if one thread has collected more candidates
+const size_t UpdateReducersBound=200000; // reducers updated if one thread has collected more candidates
 
 //---------------------------------------------------------------------------
 
@@ -2014,7 +2014,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 }
             }
             
-            if(do_Hilbert_basis && Results[tn].get_collected_elements_size() > UpdateReducersBound)
+            if(do_Hilbert_basis && Results[tn].get_collected_elements_size() > AdjustedReductionBound)
                 skip_remaining=true;
             
         }
@@ -3394,6 +3394,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     old_nr_supp_hyps=0;
     OldCandidates.dual=false;
     NewCandidates.dual=false;
+    
+    AdjustedReductionBound=UpdateReducersBound/omp_get_max_threads();
+    if(AdjustedReductionBound < 10000)
+        AdjustedReductionBound=10000;
 }
 
 //---------------------------------------------------------------------------

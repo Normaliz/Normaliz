@@ -191,6 +191,8 @@ class Full_Cone {
     
     bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
     size_t start_from;
+    
+    size_t AdjustedReductionBound;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
