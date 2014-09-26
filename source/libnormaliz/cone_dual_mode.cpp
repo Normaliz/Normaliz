@@ -134,6 +134,8 @@ vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
 
 // size_t counter=0,counter1=0;
 
+const size_t ReportBound=100000;
+
 //---------------------------------------------------------------------------
 
 // In the inhomogeneous case or when only degree 1 elements are to be found,
@@ -154,7 +156,7 @@ template<typename Integer>
 void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp_counter, 
          const bool lifting, vector<Integer>& old_lin_subspace_half, bool pointed){
     if (verbose==true) {
-        verboseOutput()<<"=======================================" << endl;
+        verboseOutput()<<"==================================================" << endl;
         verboseOutput()<<"cut with halfspace "<<hyp_counter+1 <<" ..."<<endl;
     }
     
@@ -383,20 +385,21 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
         if(pos_size==0 || neg_size==0)
             continue;
-        
-        size_t report_size=pos_size/50;
 
         if (verbose) {
             // size_t neg_size=Negative_Irred.size();
-            size_t zsize=Neutral_Irred.size();
-            if (pos_size*neg_size>10000)
-                verboseOutput()<<"Positive: "<<pos_size<<"  Negative: "<<neg_size<<"  Neutral: "<<zsize<<endl;
+            // size_t zsize=Neutral_Irred.size();
+            if (pos_size*neg_size>=ReportBound)
+                verboseOutput()<<"Positive: "<<pos_size<<"  Negative: "<<neg_size<< endl;
         }
+        
+        const long VERBOSE_STEPS = 50;
+        long step_x_size = pos_size-VERBOSE_STEPS;
         
         #pragma omp parallel private(p,n,diff,p_cand,n_cand) // if(neg_size >= 100)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
-        
+                
         size_t ppos=0;
         p = pos_begin;
         #pragma omp for schedule(dynamic)
@@ -404,11 +407,13 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             for(;i > ppos; ++ppos, ++p) ;
             for(;i < ppos; --ppos, --p) ;
             
-            if(verbose){
-                if( pos_size > 1000 && (i+1)%report_size == 0){
+            if(verbose && pos_size*neg_size>=ReportBound){
+                #pragma omp critical(VERBOSE)
+                while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
+                    step_x_size += pos_size;
                     verboseOutput() << "." <<flush;
                 }
-            
+
             }
             
             p_cand=*p;
@@ -478,7 +483,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
         #pragma omp single
         {
-        if(verbose && pos_size>1000)
+        if(verbose && pos_size*neg_size>=ReportBound)
             verboseOutput() << endl;
         }
 
