@@ -919,10 +919,10 @@ size_t Matrix<Integer>::rank() const{
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon(){
 
-    size_t pc=0, rk=0;
-    long piv=0;
+    size_t pc=0;
+    long piv=0, rk=0;
     
-    for (rk = 0; rk < nr; rk++){
+    for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
             piv=pivot_column(rk,pc);
             if(piv>=0)

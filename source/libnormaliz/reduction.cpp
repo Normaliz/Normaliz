@@ -290,8 +290,12 @@ template<typename Integer>
 bool val_compare(const Candidate<Integer>& a, const Candidate<Integer>& b){
     if(a.sort_deg<b.sort_deg)
         return(true);
-    if(a.sort_deg==b.sort_deg)
-        return(a.values < b.values);
+    if(a.sort_deg==b.sort_deg){
+        if(a.values < b.values)
+            return true;
+        if(a.values==b.values)
+            return a.mother<b.mother;
+    }
     return false;
 }
 
@@ -388,6 +392,8 @@ void CandidateList<Integer>::merge_by_val_inner(CandidateList<Integer>& NewCand,
         }
         
         if(NewCand.Candidates.back().values==Candidates.back().values){  // if equal, new is erased
+            if(NewCand.Candidates.back().mother<Candidates.back().mother)
+                Candidates.back().mother=NewCand.Candidates.back().mother;
             NewCand.Candidates.pop_back();
             continue;
         }
@@ -472,7 +478,7 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& values, const 
     size_t kk=0;
     typename list < pair<size_t, vector<Integer>* > >::iterator r;
     for(r=ValPointers.begin();r!=ValPointers.end();++r){
-        if(sd < r->first){
+        if(sd < (long) r->first){
             return(false);
         }
         size_t i=0;
@@ -512,7 +518,7 @@ bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& valu
     size_t kk=0;
     typename list < pair<size_t, vector<Integer>* > >::iterator r;
     for(r=ValPointers.begin();r!=ValPointers.end();++r){
-        if(sd < r->first){
+        if(sd < (long) r->first){
             continue;     // in the ordered version we can say: return(false);
         }
         // #pragma omp atomic
