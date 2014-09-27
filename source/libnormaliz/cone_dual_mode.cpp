@@ -132,7 +132,7 @@ vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
 }
 
 
-// size_t counter=0,counter1=0;
+// size_t counter=0,counter1=0, counter2=0;
 
 const size_t ReportBound=100000;
 
@@ -199,6 +199,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         Candidate<Integer> halfspace_gen_as_cand(old_lin_subspace_half,nr_sh);
         halfspace_gen_as_cand.mother=0;
+        // halfspace_gen_as_cand.father=0;
         halfspace_gen_as_cand.old_tot_deg=0;
         (halfspace_gen_as_cand.values)[hyp_counter]=orientation; // value under the new linear form
         halfspace_gen_as_cand.sort_deg=explicit_cast_to_long(orientation);
@@ -230,6 +231,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         long new_val_long=explicit_cast_to_long(new_val);
         h->reducible=false;
         h->mother=0;
+        // h->father=0;
         h->old_tot_deg=h->sort_deg;
         if (new_val>0) {
             gen1_pos=true;
@@ -342,11 +344,15 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
     bool do_reduction=!(truncate && no_pos_in_level0);
     
-    bool do_only_selection=truncate && all_positice_level;         
+    bool do_only_selection=truncate && all_positice_level;
+    
+    size_t round=0;        
     
     while(not_done && !do_only_selection) {
 
         //generating new elements
+        
+        round++;
         
         typename list<Candidate<Integer>* >::iterator pos_begin, pos_end, neg_begin, neg_end;
         size_t pos_size, neg_size;
@@ -391,6 +397,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             // size_t zsize=Neutral_Irred.size();
             if (pos_size*neg_size>=ReportBound)
                 verboseOutput()<<"Positive: "<<pos_size<<"  Negative: "<<neg_size<< endl;
+            else{
+                if(round%100==0)
+                    verboseOutput() << "Round " << round << endl;
+            }
         }
         
         const long VERBOSE_STEPS = 50;
@@ -428,9 +438,35 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     continue;
 
                 Integer neg_val=n_cand->values[hyp_counter];
+                diff=pos_val-neg_val;
                 
-                if ( (p_cand->mother!=0 && p_cand->mother<=neg_val)|| (n_cand->mother!=0 && n_cand->mother<=pos_val) ){  
+                // prediction of reducibility
+                
+                if (diff >0 && n_cand->mother!=0 && 
+                    ( 
+                    n_cand->mother<=pos_val // sum of p_cand and n_cand would be irreducible by mother + the vector on the opposite side
+                    || (p_cand->mother >= n_cand->mother && p_cand->mother-n_cand->mother <=diff) // sum would reducible ny mother + mother
+                    ) 
+                    ){  
+                    // #pragma omp atomic     
+                    // counter1++;
+                    continue;
+                }
+                
+                                
+                if ( diff <0 && p_cand->mother!=0 && 
+                    (
+                    p_cand->mother<=neg_val
+                    || (n_cand->mother >= p_cand->mother && n_cand->mother-p_cand->mother <= -diff)
+                    )
+                    ){  
                     // #pragma omp atomic     // sum would be irreducible by mother + the vector on the opposite side
+                    // counter1++;
+                    continue;
+                }
+                
+                if(diff==0 && p_cand->mother!=0 && n_cand->mother == p_cand->mother){
+                    // #pragma omp atomic
                     // counter1++;
                     continue;
                 }
@@ -439,7 +475,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 // counter++;
                 
                 new_candidate.old_tot_deg=p_cand->old_tot_deg+n_cand->old_tot_deg;
-                diff=pos_val-neg_val;
                 v_add_result(new_candidate.values,p_cand->values,n_cand->values);   // new_candidate=v_add
 
                 if (diff>0) {
@@ -449,10 +484,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                                 Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)))
                         continue;
                     v_add_result(new_candidate.cand,p_cand->cand,n_cand->cand);
-                    new_candidate.mother=pos_val;                    
+                    new_candidate.mother=pos_val;
+                    // new_candidate.father=neg_val;                    
                     New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
-                if (diff<0) {
+                if (diff<0) {                    
                     if(!do_reduction) // don't need new negative elements anymore
                         continue;
                     new_candidate.values[hyp_counter]=-diff;
@@ -464,17 +500,18 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                         continue;
                     }
                     v_add_result(new_candidate.cand,p_cand->cand,n_cand->cand);
-                    new_candidate.mother=neg_val;;
+                    new_candidate.mother=neg_val;
+                    // new_candidate.father=pos_val;
                     New_Negative_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
-                if (diff==0) {
+                if (diff==0) {                  
                     new_candidate.values[hyp_counter]=0;
                     new_candidate.sort_deg=p_cand->sort_deg+n_cand->sort_deg-2*explicit_cast_to_long(pos_val);  //pos_val==neg_val
                     if(do_reduction && Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)) {
                         continue;
                     }
                     v_add_result(new_candidate.cand,p_cand->cand,n_cand->cand);
-                    new_candidate.mother=0; // irrelevant
+                    // new_candidate.mother=0; // irrelevant
                     New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
             }
@@ -710,7 +747,8 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         }
             
         /* if(verbose)
-            verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << "comparisons = " << redcounter << endl;
+           //  verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << "comparisons = " << redcounter << endl;
+           verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << "add avoided " << counter2 << endl;
         */
            
         Intermediate_HB.extract(Hilbert_Basis);

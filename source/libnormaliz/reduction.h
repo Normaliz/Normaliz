@@ -59,6 +59,7 @@ long sort_deg;  // the sorting degree
 bool reducible;    // indicates reducibility
 
 Integer mother;   // for the dual algorithm
+// Integer father;
 // char generation;  // ditto
 size_t old_tot_deg;
 // bool in_HB;  
