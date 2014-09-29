@@ -524,7 +524,7 @@ bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& valu
         // #pragma omp atomic
         // redcounter++;
         if(values[last_hyp]< (*(r->second))[last_hyp])
-                continue;
+            continue;
         size_t i=0;
         if(values[kk] < (*(r->second))[kk])
                 continue;

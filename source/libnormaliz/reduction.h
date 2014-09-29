@@ -182,7 +182,7 @@ bool is_reducible_unordered(const vector<Integer>& values, const long sort_deg);
 
 }; // end class
 
-// size_t redcounter=0;
+size_t redcounter=0;
 
 
 } // namespace libnormaliz

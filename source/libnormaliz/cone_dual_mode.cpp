@@ -132,7 +132,7 @@ vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
 }
 
 
-// size_t counter=0,counter1=0, counter2=0;
+size_t counter=0,counter1=0, counter2=0;
 
 const size_t ReportBound=100000;
 
@@ -747,8 +747,9 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         }
             
         /* if(verbose)
-           //  verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << "comparisons = " << redcounter << endl;
-           verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << "add avoided " << counter2 << endl;
+           verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << 
+                "comparisons = " << redcounter << endl << "comp/match " << (float) redcounter/(float) counter << endl;
+           // verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl; //  << "add avoided " << counter2 << endl;
         */
            
         Intermediate_HB.extract(Hilbert_Basis);
