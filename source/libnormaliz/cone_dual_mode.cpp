@@ -406,7 +406,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         const long VERBOSE_STEPS = 50;
         long step_x_size = pos_size-VERBOSE_STEPS;
         
-        #pragma omp parallel private(p,n,diff,p_cand,n_cand) // if(neg_size >= 100)
+        #pragma omp parallel private(p,n,diff,p_cand,n_cand)
         {
         Candidate<Integer> new_candidate(dim,nr_sh);
                 

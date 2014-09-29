@@ -328,7 +328,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 //=====================================================================
 // parallel from here
 
-    #pragma omp parallel private(jj) if(nr_NegNonSimp+nr_NegSimp>1000)
+    #pragma omp parallel private(jj)
     {
     size_t i,j,k,nr_zero_i;
     boost::dynamic_bitset<> subfacet(dim-2);
@@ -677,7 +677,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 
     typename list< SHORTSIMPLEX<Integer> >::iterator oldTriBack = --Triangulation.end();
-    #pragma omp parallel private(i)  if(TriangulationSize>100)
+    #pragma omp parallel private(i)
     {
     size_t k,l;
     bool one_not_in_i, not_in_facet;
