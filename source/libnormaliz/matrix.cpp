@@ -734,11 +734,16 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
     assert(row >= 0);
     size_t i,j;
     Integer help;
+    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
     for (i =row+1; i < nr; i++) {
         if (elements[i][col]!=0) {
             help=elements[i][col] / elements[row][col];
             for (j = col; j < nc; j++) {
                 elements[i][j] -= help*elements[row][j];
+                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
             }
         }
     }
@@ -788,14 +793,23 @@ void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     assert(Left.nr == nr);
     size_t i,j;
     Integer help1, help2=elements[corner][corner];
+    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
     for ( i = corner+1; i < nr; i++) {
         help1=elements[i][corner] / help2;
         if (help1!=0) {
             for (j = corner; j < nc; j++) {
                 elements[i][j] -= help1*elements[corner][j];
+                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
             }
             for (j = 0; j < Left.nc; j++) {
                 Left.elements[i][j] -= help1*Left.elements[corner][j];
+                if (test_arithmetic_overflow && Iabs(Left.elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
             }
         }
     }
@@ -1067,7 +1081,8 @@ void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
     }
 
     if (denom==0) { 
-        throw BadInputException(); //TODO welche Exception?
+        errorOutput() << "Cannot solve system (denom=0)!" << endl;
+        throw ArithmeticException(); //TODO welche Exception?
     }
 
     denom=Iabs(denom);
