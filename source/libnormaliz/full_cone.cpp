@@ -2311,7 +2311,8 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
     C_approx.do_deg1_elements=true;    // for supercone C_approx that is generated in degree 1
     if(verbose)
-        verboseOutput() << "Computing deg 1 elements in approximating cone" << endl;
+        verboseOutput() << "Computing deg 1 elements in approximating cone with "
+                        << C_approx.Generators.nr_of_rows() << " generators." << endl;
     C_approx.compute();
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
         errorOutput() << "Wrong approximating cone. Fatal error. PLEASE CONTACT THE AUTHORS" << endl;
@@ -2750,10 +2751,11 @@ void Full_Cone<Integer>::compute_extreme_rays(){
         return;
     assert(isComputed(ConeProperty::SupportHyperplanes));
 
-    if(dim*Support_Hyperplanes.size() < nr_gen)
+    if(dim*Support_Hyperplanes.size() < nr_gen) {
          compute_extreme_rays_rank();
-    else
+    } else {
          compute_extreme_rays_compare();
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -2761,7 +2763,9 @@ void Full_Cone<Integer>::compute_extreme_rays(){
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays_rank(){
 
-        size_t i,j;
+    if (verbose) verboseOutput() << "Select extreme rays via rank ... " << flush;
+
+    size_t i,j;
     typename list<vector<Integer> >::iterator s;
     vector<size_t> gen_in_hyperplanes;
     gen_in_hyperplanes.reserve(Support_Hyperplanes.size());
@@ -2786,12 +2790,15 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
     }
 
     is_Computed.set(ConeProperty::ExtremeRays);
+    if (verbose) verboseOutput() << "done." << endl;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays_compare(){
+
+    if (verbose) verboseOutput() << "Select extreme rays via comparison ... " << flush;
 
     size_t i,j,k,l,t;
     // Matrix<Integer> SH=getSupportHyperplanes().transpose();
@@ -2859,6 +2866,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     }
 
     is_Computed.set(ConeProperty::ExtremeRays);
+    if (verbose) verboseOutput() << "done." << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -2918,9 +2926,11 @@ void Full_Cone<Integer>::check_pointed() {
     assert(isComputed(ConeProperty::SupportHyperplanes));
     if (isComputed(ConeProperty::IsPointed))
         return;
+    if (verbose) verboseOutput() << "Checking for pointed ... " << flush;
     Matrix<Integer> SH = getSupportHyperplanes();
     pointed = (SH.rank_destructive() == dim);
     is_Computed.set(ConeProperty::IsPointed);
+    if (verbose) verboseOutput() << "done." << endl;
 }
 
 
