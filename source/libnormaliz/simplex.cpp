@@ -754,6 +754,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
 const size_t ParallelBlockLength=10000; // the length of the block of elements to be processed by a thread
 // const size_t MaxNrBlocks=20000; // maximum number of blocks
 const size_t LocalReductionBound= 10000; // number of candidates in a thread starting local reduction
+const size_t SuperBlockLength=1000000; // number of blocks in a super block
 
 
 //---------------------------------------------------------------------------
@@ -767,6 +768,10 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     size_t nr_blocks=nr_elements/ParallelBlockLength;
     if(nr_elements%ParallelBlockLength != 0)
         ++nr_blocks;
+        
+    size_t nr_superblocks=nr_blocks/SuperBlockLength;
+    if(nr_blocks%SuperBlockLength != 0)
+        nr_superblocks++;
 
     /*if(nr_blocks>MaxNrBlocks){
         block_length=nr_elements/MaxNrBlocks;
@@ -774,12 +779,31 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
             ++block_length;
         nr_blocks=MaxNrBlocks;
     }*/
+    // cout << "nr super " << nr_superblocks;
     
-
+    for(size_t sbi=0;sbi < nr_superblocks;sbi++){
+    
+    if(verbose && nr_superblocks>1){
+        if(sbi >0)
+            verboseOutput() << endl;
+        verboseOutput() << "Superblock " << sbi+1 << " ";
+    }
+    
+    size_t actual_nr_blocks;
+    
+    if(sbi==nr_superblocks-1 && nr_blocks%SuperBlockLength!=0) // the last round of smaller length
+        actual_nr_blocks=nr_blocks%SuperBlockLength;
+    else
+        actual_nr_blocks=SuperBlockLength;
+        
+    // cout << "actual " << actual_nr_blocks << endl;
+    
+    size_t progess_report=actual_nr_blocks/50;
+    if(progess_report==0)
+        progess_report=1;
+    
     bool skip_remaining;
-    deque<bool> done(nr_blocks,false);
-    
-    size_t progess_report=nr_blocks/50;
+    deque<bool> done(actual_nr_blocks,false);
     
     do{
     skip_remaining=false;
@@ -789,7 +813,9 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     int tn = omp_get_thread_num();  // chooses the associated collector Results[tn]
 
     #pragma omp for schedule(dynamic)
-    for(size_t i=0; i<nr_blocks;++i){
+    for(size_t i=0; i<actual_nr_blocks;++i){
+    
+        // cout << "i " << i << endl;
     
         if(skip_remaining || done[i])
             continue;
@@ -798,7 +824,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
                 verboseOutput() <<"." << flush;        
         }
         done[i]=true;
-        long block_start=i*block_length+1;  // we start at 1
+        long block_start=(sbi*SuperBlockLength+i)*block_length+1;  // we start at 1
         long block_end=block_start+block_length-1;
         if(block_end>(long) nr_elements)
             block_end=nr_elements;
@@ -824,6 +850,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     }
 
     }while(skip_remaining);
+    
+    } // superblock loop
     
     
 }
