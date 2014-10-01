@@ -166,6 +166,10 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
         // we need the generators to be sorted by degree
         for (size_t i=C_ptr->nr_gen-dim; i<C_ptr->nr_gen; i++)
             hv_max += C_ptr->gen_degrees[i];
+        if (hv_max > 1000000) {
+            errorOutput() << "Error: generator degrees are to huge, h-vector would contain more than 10^6 entires." << endl;
+            throw BadInputException();
+        }
         // hvector.resize(hv_max);
         // inhom_hvector.resize(hv_max);
     }
