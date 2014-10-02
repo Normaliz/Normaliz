@@ -105,7 +105,7 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::Grading);
     }
     if (CPs.test(ConeProperty::Grading))
-        CPs.set(ConeProperty::ExtremeRays);
+        CPs.set(ConeProperty::Generators);
 
     if (CPs.test(ConeProperty::IsPointed))
         CPs.set(ConeProperty::ExtremeRays);

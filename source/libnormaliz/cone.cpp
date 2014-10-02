@@ -1072,7 +1072,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }                                    
 
-    ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options();
     ToCompute.check_sanity(inhomogeneous);
