@@ -197,7 +197,7 @@ Normaliz can be accessed from the following systems:
 \item \textsc{Macaulay 2} via the package
     \ttt{Normaliz.m2},
 \item \textsc{CoCoA} via an external library,
-\item \textsc{GAP} via ...
+\item \textsc{GAP} via the GAP package \textsc{NormalizInterface} \cite{GAP-NmzInterface} which uses libnormaliz,
 \item \textsc{polymake} (thanks to the \textsc{polymake}
     team),
 \item \textsc{Sage} via an optional package by A.
@@ -215,7 +215,7 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 \begin{arab}
 \item Complete revision of the dual algorithm towards better performance in arithmetically complex situations.
 
-\item Additional internal parallelization of simplicial cones with latge determinants.
+\item Additional internal parallelization of simplicial cones with large determinants.
 
 \item Linear algebra accelerated.
 
@@ -1109,7 +1109,7 @@ For historical reasons some of the input types can be represented by numbers ins
 
 \begin{enumerate}
 \item[0:] \verb|integral closure|
-\item[1:] \verb|nomalization|
+\item[1:] \verb|normalization|
 \item[2:] \verb|polytope|
 \item[3:] \verb|rees_algebra|
 \item[4:] \verb|inequalties| (or \verb|hyperplanes|)
@@ -3064,7 +3064,7 @@ If only the lattice points in a rational polytope are to be computed, there are 
 \end{itemize}
 For lattice polytopes \verb|-1| and \verb|-r| are identical. The choice between the primal and the dual algorithm has been discussed above. Note that \verb|-d1| is \emph{not} a Hilbert basis computation via \verb|-d| with a subsequent selection of degree $1$ elements. On the contrary, all computations are truncated in degree $1$.
 
-In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-rB| it is a matter of minutes, with \verb|-d1| it is doable with some patience, and \verb|-1B| seems to be out of reach presently. (Note that \verb|-r| needs the incluseion of \verb|B|. On a powerful machine \verb|-d| is doable.)
+In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-rB| it is a matter of minutes, with \verb|-d1| it is doable with some patience, and \verb|-1B| seems to be out of reach presently. (Note that \verb|-r| needs the inclusion of \verb|B|. On a powerful machine \verb|-d| is doable.)
 
 \subsection{Semiopen vs. inhomogeneous}
 
@@ -3817,6 +3817,10 @@ J. Algebra {\bf 324} (2010) 1098--1113.
 \bibitem{LatInt} J.A. De Loera, M. Köppe et al., \emph{LattE
     integrale}. Available at\\
     \url{http://www.math.ucdavis.edu/\~latte/}
+    
+\bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~Söger,
+    \emph{NormalizInterface for GAP}. 
+    Available at \url{https://github.com/fingolfin/NormalizInterface}.
 
 \bibitem{KV} M. Köppe and S. Verdoolaege. {\em  Computing
     parametric rational generating functions with a primal
