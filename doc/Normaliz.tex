@@ -113,7 +113,7 @@
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf Normaliz 2.11} \vspace*{1cm}
+ \centerline{\Large\bf Normaliz 2.12} \vspace*{1cm}
 
 
 \begin{center}Winfried Bruns, Bogdan Ichim, Tim Römer and Christof
@@ -197,6 +197,7 @@ Normaliz can be accessed from the following systems:
 \item \textsc{Macaulay 2} via the package
     \ttt{Normaliz.m2},
 \item \textsc{CoCoA} via an external library,
+\item \textsc{GAP} via ...
 \item \textsc{polymake} (thanks to the \textsc{polymake}
     team),
 \item \textsc{Sage} via an optional package by A.
@@ -209,21 +210,20 @@ Normaliz distribution. At present, their functionality is limited to Normaliz 2.
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina}.
 
-\subsection{Major changes relative to version 2.10}
+\subsection{Major changes relative to version 2.11}
 
 \begin{arab}
-\item Computation of (lattice points in possibly unbounded) polyhedra.
+\item Complete revision of the dual algorithm towards better performance in arithmetically complex situations.
 
-\item Hilbert series of semiopen cones.
+\item Additional internal parallelization of simplicial cones with latge determinants.
 
-\item Integral approximation for rational polytopes.
+\item Linear algebra accelerated.
 
-\item Computation of lattice points in polytopes via the dual algorithm.
+\item Overflow checks improved.
 
-\item Substantial improvement of computations with simplicial cones of large determinant.
-
-\item Improved version of pyramid decomposition in Fourier-Motzkin elimination.
 \end{arab}
+
+There are no changes in the user interface.
 
 
 \subsection{Future extensions}
@@ -250,7 +250,7 @@ from the Normaliz website\medskip
 \centerline{\url{http://www.math.uos.de/normaliz}}\medskip
 
 and unzip both in the same directory of your choice. In it, a
-directory \ttt{Normaliz2.11} (called Normaliz directory in the
+directory \ttt{Normaliz2.12} (called Normaliz directory in the
 following) is created with several subdirectories. (Some
 versions of the Windows executables may need the installation
 of a runtime library; see our website.)
@@ -315,7 +315,7 @@ Generators and constraints themselves fall into two subclasses:
 
 Additional classes are \emph{grading} and \emph{dehomogenization}.
 
-\emph{Remark}.\enspace Normaliz 2.11 (in contrast to previous versions) allows inhomogeneous input types. While polytopes are defined by inhomogeneous data, one usually wants to compute the cone over the polytope, its Hilbert basis and the Ehrhart series. These computations require \emph{homogeneous} input types, and their application to polytopes is explained below. Also see Section \ref{po_vs_po}.
+\emph{Remark}.\enspace Normaliz 2.12 (like Normaliz 2.11) allows inhomogeneous input types. While polytopes are defined by inhomogeneous data, one usually wants to compute the cone over the polytope, its Hilbert basis and the Ehrhart series. These computations require \emph{homogeneous} input types, and their application to polytopes is explained below. Also see Section \ref{po_vs_po}.
 
 Rules for the combination of input types:
 
@@ -957,9 +957,6 @@ attribute \ttt{grading}, for example
 3 2
 grading
 \end{Verbatim}
-
-We have not assigned a numerical type to matrices (effectively,
-vectors) specifying the grading.
 
 Normaliz checks whether all generators of the monoid have
 positive degree.
@@ -3049,6 +3046,8 @@ It has been pointed out several times above that the dual algorithm can be much 
 
 The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm.
 
+Note that the dual algorithm is arithmetically much more stable than the primal algorithm since it basically only requires addition of vectors.
+
 \subsection{Polytope vs.\ polyhedron}\label{po_vs_po}
 
 Every polytope is a polyhedron, and therefore the input type \verb|polyhedron| or inhomogeneous constraints seems to be a reasonable choice in order to compute polytopes. In general it is not since in homogenized coordinates all computations are truncated at degree $1$, and the information hidden in the cone over the polytope cannot be obtained.
@@ -3065,7 +3064,7 @@ If only the lattice points in a rational polytope are to be computed, there are 
 \end{itemize}
 For lattice polytopes \verb|-1| and \verb|-r| are identical. The choice between the primal and the dual algorithm has been discussed above. Note that \verb|-d1| is \emph{not} a Hilbert basis computation via \verb|-d| with a subsequent selection of degree $1$ elements. On the contrary, all computations are truncated in degree $1$.
 
-In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-r| it is a matter of seconds, with \verb|-d1| it is doable with some patience, and \verb|-1| seems to be out of reach presently. (On a powerful machine \verb|-d| is doable.)
+In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-rB| it is a matter of minutes, with \verb|-d1| it is doable with some patience, and \verb|-1B| seems to be out of reach presently. (Note that \verb|-r| needs the incluseion of \verb|B|. On a powerful machine \verb|-d| is doable.)
 
 \subsection{Semiopen vs. inhomogeneous}
 
@@ -3077,6 +3076,24 @@ The user may have noticed that the type \verb|excluded_faces| is in principle su
 \end{arab}
 
 As a rule of thumb, \verb|excluded_faces| should be preferred if only few faces are excluded. Moreover, at present they present the only way for applying NmzIntegrate to semiopen cones.
+
+\subsection{Using the bidual}
+
+ At present, Normaliz sorts the input vector only to (hopefully) keep he determinants of the simplicial cones small. The sum of these determinants is independent from the order if the extreme integral generators lie in a hyperplane, and therefore the sorting is omitted in this case. As experiments have shown, the order of the generators has little influence in computations based on full triangulations of, say, lattice polytopes.
+ 
+ However, the complexity of the Fourier-Motzkin elimination that Normaliz uses to compute support hyperplanes depends crucially on the order in which the input vectors are inserted into the algorithm. Not surprisingly, the size of partial triangulations may also depend strongly on the order. As we have observed the order of the generators that is created by applying Fourier-Motzkin elimination to the dual of our input cone, is often quite good.
+ 
+ A useful strategy for for the computation of Hilbert bases with the primal algorithm is the following:
+ \begin{arab}
+ \item Compute the dual of the input cone using option \ttt{-s}.
+ \item Now use the constraints found in step (1) as input and compute the Hilbert basis with \ttt{-N}.
+ \end{arab}  
+It is clear that this strategy makes only sense  if the number of support hyperplanes is not too large. 
+
+A good example demonstrating the benefit of this strategy is \verb|cut_poly_7.in|. Just run it with \ttt{-N} directly, \ttt{-d}, and finally with the bidualization strategy suggested above.
+
+Future versions of Normaliz may contain an option for bidualization.
+  
 
 \subsection{Performance and parallelization}\label{PerPar}
 
@@ -3111,7 +3128,7 @@ Limiting the number of threads to $1$ forces a strictly serial
 execution of Normaliz.
 
 The paper \cite{BIS} contains extensive data on the effect of parallelization. On the whole Normaliz scales very well.
-
+However, the dual algorithm often performs best with mild parallelization, say with $4$ or $6$ threads.
 
 \subsection{Running large computations}\label{Large}
 
@@ -3178,16 +3195,16 @@ In order to install Normaliz you should first download the
 basic package containing the documentation, examples, source
 code, jNormaliz, NmzIntegrate and the packages for Singular
 and Macaulay2. Then unzip the downloaded file
-\ttt{Normaliz2.11.zip} in a directory of your choice. (Any other
+\ttt{Normaliz2.12.zip} in a directory of your choice. (Any other
 downloaded zip file for Normaliz should be unzipped in this
 directory, too.)
 
-This process will create a directory \ttt{Normaliz2.11} (called
+This process will create a directory \ttt{Normaliz2.12} (called
 Normaliz directory) and several subdirectories in
-\ttt{Normaliz2.11}. The names of the subdirectories created are
+\ttt{Normaliz2.12}. The names of the subdirectories created are
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
-\item In the main directory \ttt{Normaliz2.11} you should
+\item In the main directory \ttt{Normaliz2.12} you should
     find \ttt{jNormaliz.jar}, \ttt{Copying} and
     subdirectories.
 
@@ -3218,10 +3235,10 @@ documentation.
 
 We provide executables for Windows, Linux (each in a 32 bit and
 a 64 bit version) and Mac. Download the archive file
-corresponding to your system \ttt{Normaliz2.11<systemname>.zip}
+corresponding to your system \ttt{Normaliz2.12<systemname>.zip}
 and unzip it. This process will store the executables of
 Normaliz and NmzIntegrate in the directory
-\ttt{Normaliz2.11}. In case you want to run Normaliz from the
+\ttt{Normaliz2.12}. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.
@@ -3315,7 +3332,7 @@ The source files for Visual Studio are identical to those for GCC.
 
 \section{Copyright and how to cite}
 
-Normaliz 2.11 is free software licensed under the GNU General
+Normaliz 2.12 is free software licensed under the GNU General
 Public License, version 3. You can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3 of
@@ -3752,6 +3769,17 @@ Algorithms and implementation:
 \item Substantial improvement in computing ``large'' simplicial cones.
 \end{enumerate}
 
+Versions 2.11.1 and 2.11.2 are mainly bug fixes.
+
+\textbf{Changes in version 2.12:}
+
+Algorithms and implementation:
+
+\begin{enumerate}
+\item Dual algorithm thoroughly revised.
+\item Internal parallelization of simplicial cones with large determinants.
+\item Improvement of linear algebra.
+\end{enumerate}
 } %%%%%%%%%% small
 
 \begin{thebibliography}{15.}
