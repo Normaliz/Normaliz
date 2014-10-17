@@ -3089,18 +3089,20 @@ If the extreme rays have different degrees, then it is desirable to cover as muc
 
 In mode \ttt{-s} Normaliz does not sort the generators in any way. Especially in combinatorial situations the user may have found a clever order of the generators, and it would be foolish to destroy it.
 
-It can helpful to order the generators lexicographically if no better order is a priori available. Lexicographic ordering can easily be done by a text editor. In particular for \ttt{-s} one may not have a better choice. If \ttt{-s} has been run successfully and the number of support hyperplanes is not too large, then bidualization makes sense:
+It can be helpful to order the generators lexicographically if no better order is a priori available. Lexicographic ordering can easily be done by a text editor. In particular for \ttt{-s} one may not have a better choice. If \ttt{-s} has been run successfully and the number of support hyperplanes is not too large, then bidualization makes sense:
 \begin{arab}
  \item Compute the dual of the input cone using option \ttt{-s}.
  \item Now use the constraints found in step (1) as input and compute the Hilbert basis with \ttt{-N}.
 \end{arab}  
-Mnay examples support our view that the order of the generators in step (2) is rather ``regular'', even if it is not always optimal.
+Many examples support our view that the order of the generators in step (2) is rather ``regular'', even if it is not always optimal.
 
 As a case study, the user may compute the examples 
 \begin{center}
 \verb|cut_poly_7.in, cut_poly_7_lex.in, cut_poly_7_bidual.in, cut_poly_7_mysort.in.|
 \end{center}
-with \ttt{-s} and \ttt{-N}.  
+with \ttt{-s} and \ttt{-N}. Start with \verb|cut_poly_7_bidual.in|.
+
+After step (1) above, one can of course also consider the dual algorithm for the computation of the Hilbert basis. It is instructive to apply \ttt{-d} to one of the input files above and compare computation times.   
 
 \subsection{Performance and parallelization}\label{PerPar}
 
