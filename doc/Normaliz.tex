@@ -3077,22 +3077,32 @@ The user may have noticed that the type \verb|excluded_faces| is in principle su
 
 As a rule of thumb, \verb|excluded_faces| should be preferred if only few faces are excluded. Moreover, at present they present the only way for applying NmzIntegrate to semiopen cones.
 
-\subsection{Using the bidual}
+\subsection{Ordering the generators}
 
- At present, Normaliz sorts the input vector only to (hopefully) keep he determinants of the simplicial cones small. The sum of these determinants is independent from the order if the extreme integral generators lie in a hyperplane, and therefore the sorting is omitted in this case. As experiments have shown, the order of the generators has little influence in computations based on full triangulations of, say, lattice polytopes.
- 
- However, the complexity of the Fourier-Motzkin elimination that Normaliz uses to compute support hyperplanes depends crucially on the order in which the input vectors are inserted into the algorithm. Not surprisingly, the size of partial triangulations may also depend strongly on the order. As we have observed the order of the generators that is created by applying Fourier-Motzkin elimination to the dual of our input cone, is often quite good.
- 
- A useful strategy for for the computation of Hilbert bases with the primal algorithm is the following:
- \begin{arab}
- \item Compute the dual of the input cone using option \ttt{-s}.
- \item Now use the constraints found in step (1) as input and compute the Hilbert basis with \ttt{-N}.
- \end{arab}  
-It is clear that this strategy makes only sense  if the number of support hyperplanes is not too large. 
+The computation time of Normaliz for input of type generators depends often on the order of the generators. The following discussion may help to deal with this problem. 
 
-A good example demonstrating the benefit of this strategy is \verb|cut_poly_7.in|. Just run it with \ttt{-N} directly, \ttt{-d}, and finally with the bidualization strategy suggested above.
+In computations with partial or full triangulation the crucial measure of complexity is the sum of the determinants of the simplicial cones in the (partial) triangulation.
 
-Future versions of Normaliz may contain an option for bidualization.
+If a grading is defined and all extreme rays have the same degree, then the determinant sum of a full triangulation is independent of the order of the generators. The typical example is a lattice polytope given by (a superset of) its vertices.  In such a case the order can only influence the combinatorial complexity of the triangulation. But the latter is impossible to predict, and since it plays no essential role, Normaliz processes the generators in the input order.
+
+If the extreme rays have different degrees, then it is desirable to cover as much ground as possible by the generators of low degree, and Normaliz therefore orders the generators by ascending degree, for full triangulations as well as for partial ones. (In the absence of a grading, the $L_1$-norm is used.) This strategy has proved very useful. In addition to keeping the determinants small, it also helps to find a small partial triangulation.
+
+In mode \ttt{-s} Normaliz does not sort the generators in any way. Especially in combinatorial situations the user may have found a clever order of the generators, and it would be foolish to destroy it.
+
+It can be helpful to order the generators lexicographically if no better order is a priori available. Lexicographic ordering can easily be done by a text editor. In particular for \ttt{-s} one may not have a better choice. The following bidualization strategy often makes sense:
+\begin{arab}
+ \item Compute the dual of the input cone using option \ttt{-s}. 
+ \item If the number of support hyperplanes is not too large, use the constraints found in step (1) as input and compute the Hilbert basis with \ttt{-N}.
+\end{arab}  
+Many examples support our view that the order of the generators in step (2) is rather ``regular'', even if it is not always optimal.
+
+As a case study, the user may compute the examples 
+\begin{center}
+\verb|cut_poly_7.in, cut_poly_7_lex.in, cut_poly_7_bidual.in, cut_poly_7_mysort.in.|
+\end{center}
+with \ttt{-s} and \ttt{-N}. Start with \verb|cut_poly_7_bidual.in|.
+
+After step (1) above, one can of course also consider the dual algorithm for the computation of the Hilbert basis. It is instructive to apply \ttt{-d} to one of the input files above and compare computation times.
   
 
 \subsection{Performance and parallelization}\label{PerPar}
