@@ -1,2 +1,2 @@
 #!/bin/bash
-diff <(sort $1) <(sort $2) $3 $4 $5
+diff -Z <(sort $1) <(sort $2) $3 $4 $5

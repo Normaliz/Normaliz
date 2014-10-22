@@ -10,6 +10,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0042 NEW)  # MACOSX_RPATH enabled by default
   endif(POLICY CMP0042)
 endif(COMMAND cmake_policy)
+set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 
 # The project name and the type of project
 PROJECT(libnormaliz)
