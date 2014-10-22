@@ -17,9 +17,8 @@ IF (NMZ_BUILD_BOTH OR NOT NMZ_BUILD_STATIC)
   # create the shared library
   ADD_LIBRARY(normaliz-shared SHARED ${sources})
   SET_TARGET_PROPERTIES(normaliz-shared PROPERTIES OUTPUT_NAME normaliz VERSION ${VERSION} SOVERSION 0)
-  IF (${APPLE}) #for some reason needed on mac
-    TARGET_LINK_LIBRARIES (normaliz-shared ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
-  ENDIF ()
+  # set the dependency on gmp
+  TARGET_LINK_LIBRARIES (normaliz-shared ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
   INSTALL(TARGETS normaliz-shared
     LIBRARY DESTINATION lib${LIB_SUFFIX}
     COMPONENT sharedlibs
