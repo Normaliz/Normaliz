@@ -351,7 +351,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     while(not_done && !do_only_selection) {
 
         //generating new elements
-        
         round++;
         
         typename list<Candidate<Integer>* >::iterator pos_begin, pos_end, neg_begin, neg_end;
@@ -585,10 +584,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
        
        CandidateTable<Integer> New_Pos_Table(true,hyp_counter), New_Neg_Table(true,hyp_counter), New_Neutr_Table(true,hyp_counter); 
                  // for new elements
-                 
+
        if (!New_Neutral_Irred.empty()) {
             if(do_reduction){
-                Positive_Depot.reduce_by(New_Neutral_Irred);                
+                Positive_Depot.reduce_by(New_Neutral_Irred);
                 Neutral_Depot.reduce_by(New_Neutral_Irred);
             }
             Negative_Depot.reduce_by(New_Neutral_Irred);
@@ -599,7 +598,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 New_Neutr_Table.ValPointers.push_back(pair< size_t, vector<Integer>* >((*c)->sort_deg,&((*c)->values)));
             }
             New_Elements.clear();
-        }                                                 
+        } 
        
         select_HB(Positive_Depot,guaranteed_HB_deg,New_Positive_Irred,!do_reduction);
 

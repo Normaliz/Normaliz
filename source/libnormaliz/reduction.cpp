@@ -88,7 +88,8 @@ Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
 
 template<typename Integer>
 CandidateList<Integer>::CandidateList(){
-
+    dual = false;
+    last_hyp = 0;
 }
 
 
@@ -96,8 +97,8 @@ CandidateList<Integer>::CandidateList(){
 
 template<typename Integer>
 CandidateList<Integer>::CandidateList(bool dual_algorithm){
-
-    dual=dual_algorithm;  
+    dual = dual_algorithm;  
+    last_hyp = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -185,14 +186,13 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
                 c=Candidates.erase(c);
             else // continue
                 ++c;
-        }      
+        }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void CandidateList<Integer>::auto_reduce(){
-
     if(empty())
         return;
         
