@@ -51,7 +51,7 @@ void Cone_Dual_Mode<Integer>::splice_them_sort(CandidateList< Integer>& Total, v
     CandidateList<Integer> New;
     New.dual=true;
     for(int i=0;i<omp_get_max_threads();i++)
-        Total.Candidates.splice(New.Candidates.end(),Parts[i].Candidates);
+        New.Candidates.splice(New.Candidates.end(),Parts[i].Candidates);
     New.sort_by_val();
     New.unique_vectors();
     Total.merge_by_val(New);
