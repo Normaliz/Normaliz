@@ -991,17 +991,22 @@ size_t Matrix<Integer>::rank_destructive(){
 template<typename Integer>
 Integer Matrix<Integer>::vol_destructive(){
 
-    /* print(cout);
-    cout << "--------------------" << endl; */
+    //cout << "--------vol_destructive start------------" << endl;
+    //pretty_print(cout);
 
     row_echelon();
-    Integer det = 1;
+    //cout << "-------- row_echolon done ------------" << endl;
+    //pretty_print(cout);
+
+	Integer det = 1;
     for (size_t i=0; i<nr; i++){
         det*=elements[i][i];
+        #ifdef _WIN32 //for 32 and 64 bit windows to workaround a bug in intel compiler
+            if (nr != nc) cout << flush;
+        #endif
     }
     
-    /* print(cout);
-    cout << "===================" << endl;*/
+    //cout << "==========vol_destructive end=========" << endl;
     
     if(!test_arithmetic_overflow)
         return Iabs(det);
