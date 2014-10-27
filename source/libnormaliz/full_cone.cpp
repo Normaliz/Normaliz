@@ -270,7 +270,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if(nr_zero_i==subfacet_dim) // NEW This case treated separately
             Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (zero_i,i));
             
-        else {
+        if(nr_zero_i==facet_dim){
             for (k =0; k<nr_gen; k++) {  
                 if(zero_i.test(k)) {              
                     subfacet=zero_i;
