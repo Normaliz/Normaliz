@@ -270,7 +270,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if(nr_zero_i==subfacet_dim) // NEW This case treated separately
             Neg_Subfacet_Multi[omp_get_thread_num()].push_back(pair <boost::dynamic_bitset<>, int> (zero_i,i));
             
-        else {
+        if(nr_zero_i==facet_dim){
             for (k =0; k<nr_gen; k++) {  
                 if(zero_i.test(k)) {              
                     subfacet=zero_i;
@@ -3099,6 +3099,10 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     
     for(size_t j=0;j<M.nr_of_rows();++j)  // reverse transformation
         M[j]=U.MxV(M[j]);
+        
+    // cout << "-------" << endl;
+    // M.print(cout);
+    // cout << "-------" << endl;
     
     return(M);
 } 
