@@ -184,8 +184,6 @@ class CandidateTable {  // for parallelized reduction with moving of reducer to 
 
 }; // end class
 
-size_t redcounter=0;
-
 
 } // namespace libnormaliz
 

@@ -542,5 +542,6 @@ bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& valu
    return(false);       
 }
 
+size_t redcounter=0;
  
 } // namespace

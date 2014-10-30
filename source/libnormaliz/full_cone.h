@@ -61,6 +61,7 @@ class Full_Cone {
     friend class Candidate<Integer>;
     friend class Collector<Integer>;
     
+public:
     size_t dim;
     size_t level0_dim; // dim of cone in level 0 of the inhomogeneous case
     size_t module_rank;  // rank of solution module over level 0 monoid in the inhomogeneous case
@@ -281,7 +282,6 @@ class Full_Cone {
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
-// public:
 /*---------------------------------------------------------------------------
  *                      Constructors
  *---------------------------------------------------------------------------
