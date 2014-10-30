@@ -48,15 +48,16 @@ void fill_plain(Integer* data, long rows, long cols, const Matrix<Integer>& M)
 //---------------------begin-class-implementation----------------------------
 
 template<typename Integer>
-OffloadHandler<Integer>::OffloadHandler(const Full_Cone<Integer>& fc, int mic_number)
-  : mic_nr(mic_number)
+OffloadHandler<Integer>::OffloadHandler(Full_Cone<Integer>& fc, int mic_number)
+  : mic_nr(mic_number),
+    local_fc_ref(fc)
 {
-  create_full_cone(fc);
+  create_full_cone();
 
-  transfer_bools(fc);
-  transfer_support_hyperplanes(fc);
-  transfer_grading(fc);            // including truncation and shift
-  //TODO transfer_triangulation_info(fc); // extreme rays, deg1_triangulation, Order_Vector
+  transfer_bools();
+  transfer_support_hyperplanes();
+  transfer_grading();            // including truncation and shift
+  transfer_triangulation_info(); // extreme rays, deg1_triangulation, Order_Vector
 
   //prepare_pyramid_evaluation();    //
 }
@@ -64,48 +65,52 @@ OffloadHandler<Integer>::OffloadHandler(const Full_Cone<Integer>& fc, int mic_nu
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void OffloadHandler<Integer>::create_full_cone(const Full_Cone<Integer>& fc)
+void OffloadHandler<Integer>::create_full_cone()
 {
-  const Matrix<Integer>& M = fc.Generators;
+  const Matrix<Integer>& M = local_fc_ref.Generators;
   long nr = M.nr_of_rows();
   long nc = M.nr_of_columns();
   long size = nr*nc;
   Integer *data = new Integer[size];
   fill_plain(data, nr, nc, M);
 
-  cout << "Offload data to mic, fc_ptr value on cpu " << fc_ptr << endl;
+  cout << "Offload data to mic, offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created C++ matrix
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
     Matrix<Integer> gens(nr, nc);
     fill_matrix(gens, nr, nc, data);
-    fc_ptr = new Full_Cone<Integer>(gens);
-    cout << "fc_ptr value on mic " << fc_ptr << endl;
+    offload_fc_ptr = new Full_Cone<Integer>(gens);
+    cout << "offload_fc_ptr value on mic " << offload_fc_ptr << endl;
   }
-  cout << "After offload fc_ptr value on cpu " << fc_ptr << endl;
+  cout << "After offload offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
   delete[] data;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void OffloadHandler<Integer>::transfer_bools(const Full_Cone<Integer>& fc)
+void OffloadHandler<Integer>::transfer_bools()
 {
   cout << "transfer_bools" << endl;
+  Full_Cone<Integer>& foo_loc = local_fc_ref;  // prevents segfault
+  //TODO segfaults should be resolved in intel compiler version 2015
   #pragma offload target(mic:mic_nr)
   {
-    bool foo = fc_ptr->inhomogeneous;  // prevents segfault
-    fc_ptr->inhomogeneous = fc.inhomogeneous;
-    fc_ptr->do_Hilbert_basis = fc.do_Hilbert_basis;
-    fc_ptr->do_h_vector = fc.do_h_vector;
-    fc_ptr->keep_triangulation = fc.keep_triangulation;
-    fc_ptr->do_multiplicity = fc.do_multiplicity;
-    fc_ptr->do_determinants = fc.do_determinants;
-    fc_ptr->do_triangulation = fc.do_triangulation;
-    fc_ptr->do_deg1_elements = fc.do_deg1_elements;
-    fc_ptr->do_Stanley_dec = fc.do_Stanley_dec;
-    fc_ptr->do_approximation = fc.do_approximation;
-    fc_ptr->do_default_mode = fc.do_default_mode;
+    bool foo = offload_fc_ptr->inhomogeneous;  // prevents segfault
+    offload_fc_ptr->inhomogeneous      = foo_loc.inhomogeneous;
+    offload_fc_ptr->do_Hilbert_basis   = foo_loc.do_Hilbert_basis;
+    offload_fc_ptr->do_h_vector        = foo_loc.do_h_vector;
+    offload_fc_ptr->keep_triangulation = foo_loc.keep_triangulation;
+    offload_fc_ptr->do_multiplicity    = foo_loc.do_multiplicity;
+    offload_fc_ptr->do_determinants    = foo_loc.do_determinants;
+    offload_fc_ptr->do_triangulation   = foo_loc.do_triangulation;
+    offload_fc_ptr->do_deg1_elements   = foo_loc.do_deg1_elements;
+    offload_fc_ptr->do_Stanley_dec     = foo_loc.do_Stanley_dec;
+    offload_fc_ptr->do_approximation   = foo_loc.do_approximation;
+    offload_fc_ptr->do_default_mode    = foo_loc.do_default_mode;
+    // deg1_generated could be set more precise
+    offload_fc_ptr->deg1_triangulation = foo_loc.deg1_generated;
   }
   cout << "transfer_bools done" << endl;
 }
@@ -113,10 +118,10 @@ void OffloadHandler<Integer>::transfer_bools(const Full_Cone<Integer>& fc)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void OffloadHandler<Integer>::transfer_support_hyperplanes(const Full_Cone<Integer>& fc)
+void OffloadHandler<Integer>::transfer_support_hyperplanes()
 {
   cout << "transfer_support_hyperplanes" << endl;
-  const Matrix<Integer>& M = fc.Support_Hyperplanes;
+  const Matrix<Integer>& M = local_fc_ref.Support_Hyperplanes;
   long nr = M.nr_of_rows();
   long nc = M.nr_of_columns();
   long size = nr*nc;
@@ -124,17 +129,17 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes(const Full_Cone<Integ
   Integer *data = new Integer[size];
   fill_plain(data, nr, nc, M);
 
-  cout << "Offload data to mic, fc_ptr value on cpu " << fc_ptr << endl;
+  cout << "Offload data to mic, offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created C++ matrix
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
-    cout << "fc_ptr value on mic " << fc_ptr << endl;
-    fc_ptr->Support_Hyperplanes = Matrix<Integer>(nr, nc);
-    fill_matrix(fc_ptr->Support_Hyperplanes, nr, nc, data);
-    fc_ptr->is_Computed.set(ConeProperty::SupportHyperplanes);
-    fc_ptr->do_all_hyperplanes = false;
+    cout << "offload_fc_ptr value on mic " << offload_fc_ptr << endl;
+    offload_fc_ptr->Support_Hyperplanes = Matrix<Integer>(nr, nc);
+    fill_matrix(offload_fc_ptr->Support_Hyperplanes, nr, nc, data);
+    offload_fc_ptr->is_Computed.set(ConeProperty::SupportHyperplanes);
+    offload_fc_ptr->do_all_hyperplanes = false;
   }
-  cout << "After offload fc_ptr value on cpu " << fc_ptr << endl;
+  cout << "After offload offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
   delete[] data;
 
   cout << "transfer_support_hyperplanes done" << endl;
@@ -143,48 +148,96 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes(const Full_Cone<Integ
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void OffloadHandler<Integer>::transfer_grading(const Full_Cone<Integer>& fc)
+void OffloadHandler<Integer>::transfer_grading()
 {
   cout << "transfer_grading" << endl;
-  long dim = fc.dim;
-  if (fc.inhomogeneous) 
+  long dim = local_fc_ref.dim;
+  if (local_fc_ref.inhomogeneous)
   {
     Integer *data = new Integer[dim];
-    fill_plain_vector(data, dim, fc.Truncation);
+    fill_plain_vector(data, dim, local_fc_ref.Truncation);
 
     #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
     {
-      fc_ptr->Truncation = vector<Integer>(dim);
-      fill_vector(fc_ptr->Truncation, dim, data);
+      offload_fc_ptr->Truncation = vector<Integer>(dim);
+      fill_vector(offload_fc_ptr->Truncation, dim, data);
     }
     delete[] data;
   }
 
-  if (fc.isComputed(ConeProperty::Grading))
+  if (local_fc_ref.isComputed(ConeProperty::Grading))
   {
     Integer *data = new Integer[dim];
-    fill_plain_vector(data, dim, fc.Grading);
+    fill_plain_vector(data, dim, local_fc_ref.Grading);
 
     #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
     {
-      fc_ptr->Grading = vector<Integer>(dim);
-      fill_vector(fc_ptr->Grading, dim, data);
-      fc_ptr->is_Computed.set(ConeProperty::Grading);
-      fc_ptr->set_degrees();
+      offload_fc_ptr->Grading = vector<Integer>(dim);
+      fill_vector(offload_fc_ptr->Grading, dim, data);
+      offload_fc_ptr->is_Computed.set(ConeProperty::Grading);
+      offload_fc_ptr->set_degrees();
     }
     delete[] data;
   }
 
-  if (fc.isComputed(ConeProperty::Shift))
+  if (local_fc_ref.isComputed(ConeProperty::Shift))
   {
     #pragma offload target(mic:mic_nr)
     {
-      fc_ptr->shift = fc.shift;
-      fc_ptr->is_Computed.set(ConeProperty::Shift);
+      offload_fc_ptr->shift = local_fc_ref.shift;
+      offload_fc_ptr->is_Computed.set(ConeProperty::Shift);
     }
   }
 
   cout << "transfer_grading done" << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::transfer_triangulation_info()
+{
+  cout << "transfer_triangulation_info" << endl;
+  long dim = local_fc_ref.dim;
+  long nr_gen = local_fc_ref.nr_gen;
+
+  if (local_fc_ref.isComputed(ConeProperty::ExtremeRays))
+  {
+    bool *data = new bool[nr_gen];
+    fill_plain_vector(data, nr_gen, local_fc_ref.Extreme_Rays);
+
+    #pragma offload target(mic:mic_nr) in(nr_gen) in(data: length(nr_gen) ONCE)
+    {
+
+      offload_fc_ptr->Extreme_Rays = vector<bool>(nr_gen);
+      fill_vector(offload_fc_ptr->Extreme_Rays, nr_gen, data);
+    }
+    delete[] data;
+  }
+
+  // always transfer the order vector  //TODO ensure it is computed!
+  {
+    Integer *data = new Integer[dim];
+    fill_plain_vector(data, dim, local_fc_ref.Order_Vector);
+
+    #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
+    {
+      offload_fc_ptr->Order_Vector = vector<Integer>(dim);
+      fill_vector(offload_fc_ptr->Order_Vector, dim, data);
+    }
+    delete[] data;
+  }
+
+  if (local_fc_ref.isComputed(ConeProperty::Shift))
+  {
+    #pragma offload target(mic:mic_nr)
+    {
+      offload_fc_ptr->shift = local_fc_ref.shift;
+      offload_fc_ptr->is_Computed.set(ConeProperty::Shift);
+    }
+  }
+
+  cout << "transfer_triangulation_info done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -195,7 +248,7 @@ void OffloadHandler<Integer>::print_on_mic() const
   cout << "Offloaded print" << endl;
   #pragma offload target(mic:mic_nr)
   {
-    fc_ptr->Generators.pretty_print(cout);
+    offload_fc_ptr->Generators.pretty_print(cout);
   }
 }
 
@@ -205,7 +258,7 @@ void OffloadHandler<Integer>::compute_on_mic(long a, long b)
   cout << "Offloaded computation" << endl;
   #pragma offload target(mic:mic_nr)
   {
-    cout << "Rank computed on mic " << fc_ptr->Generators.rank() << endl;
+    cout << "Rank computed on mic " << offload_fc_ptr->Generators.rank() << endl;
   }
 }
 
@@ -225,8 +278,8 @@ Matrix<Integer> OffloadHandler<Integer>::transfer_from_mic()
   long a,b;
   #pragma offload target(mic:mic_nr) out(a) out(b)
   {
-    a = fc_ptr->Generators.nr_of_rows();
-    b = fc_ptr->Generators.nr_of_columns();
+    a = offload_fc_ptr->Generators.nr_of_rows();
+    b = offload_fc_ptr->Generators.nr_of_columns();
   }
 
   cout << "transfer matrix of size a = " << a << " by  b = " << b << endl;
@@ -234,7 +287,7 @@ Matrix<Integer> OffloadHandler<Integer>::transfer_from_mic()
   Integer *ret = new Integer[size];
   #pragma offload target(mic:mic_nr) out(ret : length(size))
   {
-    fill_plain(ret, a, b, fc_ptr->Generators);
+    fill_plain(ret, a, b, offload_fc_ptr->Generators);
   }
   Matrix<Integer> M (a, b);
   fill_matrix(M, a, b, ret);
@@ -248,7 +301,7 @@ OffloadHandler<Integer>::~OffloadHandler()
   cout << "OffloadHandler destructor" << endl;
   #pragma offload target(mic:mic_nr)
   {
-    delete fc_ptr;
+    delete offload_fc_ptr;
   }
 }
 
@@ -285,12 +338,14 @@ void offload_test()
   // offload the full cones
   Full_Cone<Integer> fc1(m1);
   fc1.get_supphyps_from_copy(true);          // from_scratch = true
+  fc1.Order_Vector = vector<Integer>(b);
   OffloadHandler<Integer> fc1_off(fc1);
   cout << "first offload completed" << endl;
   fc1_off.print_on_mic();
 
   Full_Cone<Integer> fc2(m2);
   fc2.get_supphyps_from_copy(true);          // from_scratch = true
+  fc2.Order_Vector = vector<Integer>(b+1);
   OffloadHandler<Integer> fc2_off(fc2);
   fc2_off.print_on_mic();
 

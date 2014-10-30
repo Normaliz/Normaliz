@@ -20,7 +20,7 @@ class OffloadHandler
 {
 public:
   // transfers Full_Cone to mic:mic_nr and keeps handle
-  OffloadHandler(const Full_Cone<Integer>&, int mic_number = 0);
+  OffloadHandler(Full_Cone<Integer>&, int mic_number = 0);
 
   // destructor deletes Full_Cone on mic
   ~OffloadHandler();
@@ -39,13 +39,15 @@ public:
 
 private:
   const int mic_nr;
-  Full_Cone<Integer>* fc_ptr;
+  Full_Cone<Integer>& local_fc_ref;
+  Full_Cone<Integer>* offload_fc_ptr;
 
   // init routines
-  void create_full_cone(const Full_Cone<Integer>& fc);
-  void transfer_bools(const Full_Cone<Integer>& fc);
-  void transfer_support_hyperplanes(const Full_Cone<Integer>& fc);
-  void transfer_grading(const Full_Cone<Integer>& fc);
+  void create_full_cone();
+  void transfer_bools();
+  void transfer_support_hyperplanes();
+  void transfer_grading();
+  void transfer_triangulation_info();
 
 };
 
