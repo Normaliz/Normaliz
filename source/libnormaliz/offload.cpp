@@ -331,11 +331,9 @@ void offload_test()
   for (long i=0; i<SIZE; i++) data[i] = i+1;
 
   Matrix<Integer> m1(a,b);
-  Matrix<Integer> m2(a+1,b+1);
   m1.random(10);
-  m2.random(10);
 
-  // offload the full cones
+  // offload the full cone
   Full_Cone<Integer> fc1(m1);
   fc1.get_supphyps_from_copy(true);          // from_scratch = true
   fc1.Order_Vector = vector<Integer>(b);
@@ -343,21 +341,10 @@ void offload_test()
   cout << "first offload completed" << endl;
   fc1_off.print_on_mic();
 
-  Full_Cone<Integer> fc2(m2);
-  fc2.get_supphyps_from_copy(true);          // from_scratch = true
-  fc2.Order_Vector = vector<Integer>(b+1);
-  OffloadHandler<Integer> fc2_off(fc2);
-  fc2_off.print_on_mic();
-
-  // work with m1
+  // work with fc1
   fc1_off.print_on_mic();
   fc1_off.compute_on_mic(1,2);
   fc1_off.compute_on_mic(0,2);
-
-  // work with m2
-  fc2_off.print_on_mic();
-  fc2_off.compute_on_mic(1,2);
-  fc2_off.compute_on_mic(2,1);
 
   // get results back
   Matrix<Integer> ret = fc1_off.transfer_from_mic();

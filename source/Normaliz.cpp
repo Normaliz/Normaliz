@@ -262,10 +262,15 @@ int main(int argc, char* argv[])
     int returnvalue;
 
     if(use_Big_Integer) {
+#ifndef NMZ_MIC_OFFLOAD
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         test_arithmetic_overflow=false;
         //Read and process Input
         returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files);
+#else // NMZ_MIC_OFFLOAD*/
+      cerr << "Error: option \"-B\" not supported with mic offload!" << endl;
+      exit(1);
+#endif // NMZ_MIC_OFFLOAD
     } else {
         //Read and process Input
         returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files);
