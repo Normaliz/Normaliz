@@ -170,7 +170,6 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
-    initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
     typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
     

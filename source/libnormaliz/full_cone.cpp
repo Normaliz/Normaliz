@@ -1539,7 +1539,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
                 
             if(Top_Cone->check_pyr_buffer(level+1)  && nr_done < nr_pyramids) 
                  skip_remaining_pyr=true;
-        }
+        } //end parallel for
        
         // remove done pyramids
         p = Pyramids[level].begin();
@@ -1858,7 +1858,6 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     typename list< SHORTSIMPLEX<Integer> >::iterator pyr_simp=Triangulation.begin();
     while (pyr_simp!=Triangulation.end()) {
         if (pyr_simp->height == 0) { // it was marked to be skipped
-//            pyr_simp = Triangulation.erase(pyr_simp); //TODO splice to FreeSimp?
             Top_Cone->FS[tn].splice(Top_Cone->FS[tn].end(), Triangulation, pyr_simp++);
             --TriangulationSize;
         } else {
@@ -1911,7 +1910,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     
     copy.compute_support_hyperplanes();
     
-    Support_Hyperplanes = copy.Support_Hyperplanes;  //TODO move instead of copy
+    std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
     is_Computed.set(ConeProperty::SupportHyperplanes);
     do_all_hyperplanes = false;
