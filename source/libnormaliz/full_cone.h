@@ -51,6 +51,9 @@ template<typename Integer> class CandidateList;
 template<typename Integer> class Candidate;
 template<typename Integer> class Simplex;
 template<typename Integer> class Collector;
+#ifdef NMZ_MIC_OFFLOAD
+template<typename Integer> class MicOffloader;
+#endif
 
 template<typename Integer>
 class Full_Cone {
@@ -181,7 +184,10 @@ public:
     vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
     vector< Collector<Integer> > Results; // one per thread
     vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone
-    
+#ifdef NMZ_MIC_OFFLOAD
+    MicOffloader<Integer> mic_offloader;
+#endif
+
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;
     map<boost::dynamic_bitset<>, long> InExCollect;
@@ -260,7 +266,9 @@ public:
     bool check_evaluation_buffer_size();
     void evaluate_triangulation();
     void transfer_triangulation_to_top();
-    void primal_algorithm(); 
+    void primal_algorithm();
+    void primal_algorithm_initialize();
+    void primal_algorithm_finalize();
     void remove_duplicate_ori_gens_from_HB();
 
     void minimize_support_hyperplanes();   

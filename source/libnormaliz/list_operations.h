@@ -44,7 +44,7 @@ template <typename T>
 ostream& operator<< (ostream& out, const list<T>& l) {
     typename list<T>::const_iterator i;
     for (i =l.begin(); i != l.end(); i++) {
-        out << *i <<" ";
+        out << *i << " ";
     }
     out << endl;
     return out;

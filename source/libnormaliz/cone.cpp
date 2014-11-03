@@ -26,8 +26,6 @@
 #include "full_cone.h"
 // #include "vector_operations.h"
 
-#include "offload.h"
-
 namespace libnormaliz {
 using namespace std;
 
@@ -619,7 +617,6 @@ void Cone<Integer>::initialize() {
     dim = 0;
     inhomogeneous=false;
     rees_primary = false;
-    offload_test();
 }
 
 /* check what is computed */

@@ -40,6 +40,7 @@
 #include "my_omp.h"
 #include "integer.h"
 // #include "sublattice_representation.h"
+#include "offload.h"
 
 //---------------------------------------------------------------------------
 
@@ -1469,6 +1470,15 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // only once for every stored pyramid since we set recursion_allowed=false.
 
     assert(omp_get_level()==0);
+#ifdef NMZ_MIC_OFFLOAD
+    if (_Offload_get_device_number() < 0 // dynamic check for being on CPU (-1)
+        && level == 0)
+    {
+        // init OffloadHandler
+        cout << "Offloading ..." << endl;
+        mic_offloader.offload_pyramids(*this);
+    }
+#endif // NMZ_MIC_OFFLOAD
 
     if(Pyramids[level].empty())
         return;
@@ -2110,15 +2120,30 @@ void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
 
-    SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
-    for(size_t i=0;i<SimplexEval.size();++i)
-        SimplexEval[i].set_evaluator_tn(i);
-    Results = vector< Collector<Integer> >(omp_get_max_threads(),Collector<Integer>(*this));
+    primal_algorithm_initialize();
 
     /***** Main Work is done in build_top_cone() *****/
     build_top_cone();  // evaluates if keep_triangulation==false
     /***** Main Work is done in build_top_cone() *****/
 
+    primal_algorithm_finalize();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::primal_algorithm_initialize() {
+
+    SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
+    for(size_t i=0;i<SimplexEval.size();++i)
+        SimplexEval[i].set_evaluator_tn(i);
+    Results = vector< Collector<Integer> >(omp_get_max_threads(),Collector<Integer>(*this));
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::primal_algorithm_finalize() {
 
     extreme_rays_and_deg1_check();
     if(!pointed) return;
@@ -2235,9 +2260,6 @@ void Full_Cone<Integer>::compute() {
         support_hyperplanes();
     else{
         minimize_support_hyperplanes();
-        // set needed do_ vars
-        if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
-        do_evaluation = true;
         
         if(inhomogeneous)
             set_levels();

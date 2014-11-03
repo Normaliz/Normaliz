@@ -4,12 +4,15 @@
 #include "offload.h"
 #include "matrix.h"
 #include "full_cone.h"
+#include "list_operations.h"
+#include "vector_operations.h"
 #include <iostream>
 
 namespace libnormaliz {
 
 using namespace std;
 
+// transfering vector
 template<typename Integer>
 void fill_vector(vector<Integer>& v, long size, Integer* data)
 {
@@ -18,21 +21,20 @@ void fill_vector(vector<Integer>& v, long size, Integer* data)
 }
 
 template<typename Integer>
-void fill_plain_vector(Integer* data, long size, const vector<Integer>& v)
+void fill_plain(Integer* data, long size, const vector<Integer>& v)
 {
   for (long i=0; i<size; i++)
       data[i] = v[i];
 
 }
 
+// transfering Matrix
 template<typename Integer>
 void fill_matrix(Matrix<Integer>& M, long rows, long cols, Integer* data)
 {
   for (long i=0; i<rows; i++)
     for (long j=0; j<cols; j++)
-    {
       M[i][j] = data[i*cols+j];
-    }
 }
 
 template<typename Integer>
@@ -41,11 +43,49 @@ void fill_plain(Integer* data, long rows, long cols, const Matrix<Integer>& M)
   for (long i=0; i<rows; i++)
     for (long j=0; j<cols; j++)
       data[i*cols+j] = M[i][j];
+}
 
+// transfering list<vector>
+// the vectors may have different lengths
+// fill_list_vector also creates the list entries and appendes them to the list!
+template<typename Integer>
+void fill_list_vector(list< vector<Integer> >& l, long plain_size, Integer* data)
+{
+  Integer* data_end = data + plain_size; // position after last entry
+  while (data < data_end)
+  {
+    l.push_back(vector<Integer>(*data));
+    fill_vector(l.back(), *data, data+1);
+    data += *data + 1;
+  }
+}
+
+template<typename Integer>
+void fill_plain(Integer* data, long size, const list< vector<Integer> >& l)
+{
+  long v_size;
+  typename list< vector<Integer> >::const_iterator it;
+  for (it = l.begin(); it != l.end(); it++)
+  {
+    v_size = it->size();
+    *data = v_size;
+    fill_plain(++data, v_size, *it);
+    data += v_size;
+  }
+}
+
+template<typename Integer>
+long plain_size(const list< vector<Integer> >& l)
+{
+  long size = 0;
+  typename list< vector<Integer> >::const_iterator it;
+  for (it = l.begin(); it != l.end(); it++)
+    size += it->size() + 1;
+  return size;
 }
 #pragma offload_attribute (pop)
 
-//---------------------begin-class-implementation----------------------------
+//-------------------------- OffloadHandler ---------------------------------
 
 template<typename Integer>
 OffloadHandler<Integer>::OffloadHandler(Full_Cone<Integer>& fc, int mic_number)
@@ -59,7 +99,7 @@ OffloadHandler<Integer>::OffloadHandler(Full_Cone<Integer>& fc, int mic_number)
   transfer_grading();            // including truncation and shift
   transfer_triangulation_info(); // extreme rays, deg1_triangulation, Order_Vector
 
-  //prepare_pyramid_evaluation();    //
+  primal_algorithm_initialize();
 }
 
 //---------------------------------------------------------------------------
@@ -136,6 +176,7 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes()
     cout << "offload_fc_ptr value on mic " << offload_fc_ptr << endl;
     offload_fc_ptr->Support_Hyperplanes = Matrix<Integer>(nr, nc);
     fill_matrix(offload_fc_ptr->Support_Hyperplanes, nr, nc, data);
+    offload_fc_ptr->nrSupport_Hyperplanes = nr;
     offload_fc_ptr->is_Computed.set(ConeProperty::SupportHyperplanes);
     offload_fc_ptr->do_all_hyperplanes = false;
   }
@@ -155,7 +196,7 @@ void OffloadHandler<Integer>::transfer_grading()
   if (local_fc_ref.inhomogeneous)
   {
     Integer *data = new Integer[dim];
-    fill_plain_vector(data, dim, local_fc_ref.Truncation);
+    fill_plain(data, dim, local_fc_ref.Truncation);
 
     #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
     {
@@ -168,7 +209,7 @@ void OffloadHandler<Integer>::transfer_grading()
   if (local_fc_ref.isComputed(ConeProperty::Grading))
   {
     Integer *data = new Integer[dim];
-    fill_plain_vector(data, dim, local_fc_ref.Grading);
+    fill_plain(data, dim, local_fc_ref.Grading);
 
     #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
     {
@@ -204,13 +245,14 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
   if (local_fc_ref.isComputed(ConeProperty::ExtremeRays))
   {
     bool *data = new bool[nr_gen];
-    fill_plain_vector(data, nr_gen, local_fc_ref.Extreme_Rays);
+    fill_plain(data, nr_gen, local_fc_ref.Extreme_Rays);
 
     #pragma offload target(mic:mic_nr) in(nr_gen) in(data: length(nr_gen) ONCE)
     {
 
       offload_fc_ptr->Extreme_Rays = vector<bool>(nr_gen);
       fill_vector(offload_fc_ptr->Extreme_Rays, nr_gen, data);
+      offload_fc_ptr->is_Computed.set(ConeProperty::ExtremeRays);
     }
     delete[] data;
   }
@@ -218,7 +260,7 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
   // always transfer the order vector  //TODO ensure it is computed!
   {
     Integer *data = new Integer[dim];
-    fill_plain_vector(data, dim, local_fc_ref.Order_Vector);
+    fill_plain(data, dim, local_fc_ref.Order_Vector);
 
     #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
     {
@@ -243,12 +285,73 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void OffloadHandler<Integer>::primal_algorithm_initialize()
+{
+  #pragma offload target(mic:mic_nr)
+  {
+    //TODO handle also inhomogeneous, excluded_faces, approx, ...
+    offload_fc_ptr->do_vars_check();
+    offload_fc_ptr->primal_algorithm_initialize();
+  }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyramids)
+{
+  cout << "transfer_pyramids" << endl;
+  long size = plain_size(pyramids);
+
+  key_t *data = new key_t[size];
+  fill_plain(data, size, pyramids);
+
+  #pragma offload target(mic:mic_nr) in(size) in(data: length(size) ONCE)
+  {
+    fill_list_vector(offload_fc_ptr->Pyramids[0], size, data);
+    offload_fc_ptr->nrPyramids[0] = offload_fc_ptr->Pyramids[0].size();
+  }
+  delete[] data;
+
+  cout << "transfer_pyramids done" << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::evaluate_pyramids()
+{
+  cout << "evaluate_pyramids" << endl;
+  #pragma offload target(mic:mic_nr)
+  {
+    //offload_fc_ptr->compute();
+    offload_fc_ptr->evaluate_stored_pyramids(0);
+  }
+  cout << "evaluate_pyramids done" << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::finalize_evaluation()
+{
+  cout << "finalize_evaluation" << endl;
+  #pragma offload target(mic:mic_nr)
+  {
+    offload_fc_ptr->primal_algorithm_finalize();
+  }
+  cout << "finalize_evaluation done" << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void OffloadHandler<Integer>::print_on_mic() const
 {
   cout << "Offloaded print" << endl;
   #pragma offload target(mic:mic_nr)
   {
-    offload_fc_ptr->Generators.pretty_print(cout);
+    cout << offload_fc_ptr->Pyramids;
   }
 }
 
@@ -305,12 +408,66 @@ OffloadHandler<Integer>::~OffloadHandler()
   }
 }
 
+//-------------------------- MicOffloader -----------------------------------
+
+template<typename Integer>
+MicOffloader<Integer>::MicOffloader()
+: is_init(false),
+  nr_mic(0),
+  handler_ptr(NULL)
+{
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+MicOffloader<Integer>::~MicOffloader()
+{
+  if (is_init) delete handler_ptr;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
+{
+  if (!is_init)
+  {
+cout << "_Offload_get_device_number()" << _Offload_get_device_number() << endl;
+cout << "_Offload_number_of_devices()" << _Offload_number_of_devices() << endl;
+    //TODO check preconditions
+    assert(fc.Order_Vector.size() == fc.dim);
+    fc.get_supphyps_from_copy(true);          // from_scratch = true
+
+    // create handler
+    handler_ptr = new OffloadHandler<Integer>(fc);
+    is_init = true;
+  }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
+{
+    if (!is_init) init(fc);
+
+    //offload some pyramids //TODO move only a part
+    handler_ptr->transfer_pyramids(fc.Pyramids[0]);
+    fc.Pyramids[0].clear();
+    fc.nrPyramids[0] = 0;
+
+    //compute on mics
+    handler_ptr->evaluate_pyramids();
+    handler_ptr->finalize_evaluation(); //TODO move in separate function with collect data?
+
+}
+
 
 /***************** Instantiation for template parameter long long *****************/
 
+template class MicOffloader<long long int>;
 template class OffloadHandler<long long int>;
-//template class OffloadHandler<mpz_class>;
-
 
 /***************** Offload test *****************/
 
@@ -356,11 +513,6 @@ void offload_test()
 } // end namespace libnormaliz
 
 
-#else //NMZ_MIC_OFFLOAD
 
-// no offloading available
-namespace libnormaliz {
-void offload_test() {}
-} // end namespace libnormaliz
 
 #endif //NMZ_MIC_OFFLOAD

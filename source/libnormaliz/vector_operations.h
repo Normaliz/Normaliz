@@ -27,7 +27,7 @@
 
 #include <vector>
 #include <ostream>
-#include<list>
+#include <list>
 
 #include "libnormaliz.h"
 #include "integer.h"
@@ -43,7 +43,7 @@ using std::ostream;
 template <typename T>
 ostream& operator<< (ostream& out, const vector<T>& vec) {
     for (size_t i=0; i<vec.size(); ++i) {
-        out << vec[i]<<" ";
+        out << vec[i] << " ";
     }
     out << std::endl;
     return out;
