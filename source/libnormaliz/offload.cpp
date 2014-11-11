@@ -151,6 +151,8 @@ void OffloadHandler<Integer>::transfer_bools()
     offload_fc_ptr->do_default_mode    = foo_loc.do_default_mode;
     // deg1_generated could be set more precise
     offload_fc_ptr->deg1_triangulation = foo_loc.deg1_generated;
+    offload_fc_ptr->pointed = foo_loc.pointed;  // was locally computed in MicOffloader
+    offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
   }
   cout << "transfer_bools done" << endl;
 }
@@ -437,7 +439,9 @@ cout << "_Offload_get_device_number()" << _Offload_get_device_number() << endl;
 cout << "_Offload_number_of_devices()" << _Offload_number_of_devices() << endl;
     //TODO check preconditions
     assert(fc.Order_Vector.size() == fc.dim);
-    fc.get_supphyps_from_copy(true);          // from_scratch = true
+    fc.get_supphyps_from_copy(false);          // (bool from_scratch)
+    fc.extreme_rays_and_deg1_check();
+    fc.check_pointed();
 
     // create handler
     handler_ptr = new OffloadHandler<Integer>(fc);
