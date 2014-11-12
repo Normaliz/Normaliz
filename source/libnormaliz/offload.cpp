@@ -281,6 +281,21 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
     }
   }
 
+  if (!local_fc_ref.Comparisons.empty())
+  {
+    long size = local_fc_ref.Comparisons.size();
+
+    size_t *data = new size_t[size];
+    fill_plain(data, size, local_fc_ref.Comparisons);
+
+    #pragma offload target(mic:mic_nr) in(size) in(data: length(size) ONCE)
+    {
+      offload_fc_ptr->Comparisons.resize(size);
+      fill_vector(offload_fc_ptr->Comparisons, size, data);
+      offload_fc_ptr->nrTotalComparisons = offload_fc_ptr->Comparisons[size-1];
+    }
+    delete[] data;
+  }
   cout << "transfer_triangulation_info done" << endl;
 }
 
