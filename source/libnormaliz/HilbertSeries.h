@@ -48,6 +48,7 @@
 #include <vector>
 #include <map>
 #include <ostream>
+#include <string>
 
 #include "general.h"
 
@@ -57,6 +58,7 @@ namespace libnormaliz {
 using std::vector;
 using std::map;
 using std::ostream;
+using std::string;
 
 class HilbertSeries;
 
@@ -75,6 +77,8 @@ public:
     HilbertSeries(const vector<num_t>& num, const vector<denom_t>& gen_degrees);
     // Constructor, creates num/denom, see class description for format
     HilbertSeries(const vector<mpz_class>& num, const map<long, denom_t>& denom);
+    // Constructor, string as created by to_string_rep
+    HilbertSeries(const string& str);
 
     // resets to 0/1
     void reset();
@@ -105,6 +109,10 @@ public:
     long getPeriod() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
+
+    // methods for textual transfer of a Hilbert Series
+    string to_string_rep() const;
+    void from_string_rep(const string&);
 
 private:
     // collected data in denominator classes

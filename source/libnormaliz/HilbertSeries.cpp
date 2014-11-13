@@ -27,8 +27,10 @@
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <map>
 #include <algorithm>
+
 #include "HilbertSeries.h"
 #include "vector_operations.h"
 #include "map_operations.h"
@@ -40,6 +42,7 @@
 
 namespace libnormaliz {
 using std::cout; using std::endl; using std::flush;
+using std::istringstream; using std::ostringstream;
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
@@ -70,6 +73,11 @@ HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long,
     num = numerator;
     denom = denominator;
     is_simplified = false;
+}
+
+// Constructor, string as created by to_string_rep
+HilbertSeries::HilbertSeries(const string& str) {
+    from_string_rep(str);
 }
 
 
@@ -388,7 +396,43 @@ const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const {
 }
 
 
+// methods for textual transfer of a Hilbert Series
+string HilbertSeries::to_string_rep() const {
 
+    collectData();
+    ostringstream s;
+
+    s << num.size() << " ";
+    s << num;
+    vector<denom_t> denom_vector(to_vector(denom));
+    s << denom_vector.size() << " ";
+    s << denom_vector;
+    return s.str();
+}
+
+void HilbertSeries::from_string_rep(const string& input) {
+
+    istringstream s(input);
+    long i,size;
+
+    s >> size;
+    num.resize(size);
+    for (i = 0; i < size; ++i) {
+        s >> num[i];
+    }
+
+    vector<denom_t> denom_vector;
+    s >> size;
+    denom_vector.resize(size);
+    for (i = 0; i < size; ++i) {
+        s >> denom_vector[i];
+    }
+
+    denom = count_in_map<long,denom_t>(denom_vector);
+    is_simplified = false;
+}
+
+// writes in a human readable format
 ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     HS.collectData();
     out << "(";
