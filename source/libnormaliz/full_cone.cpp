@@ -1470,7 +1470,11 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // only once for every stored pyramid since we set recursion_allowed=false.
 
     assert(omp_get_level()==0);
+
 #ifdef NMZ_MIC_OFFLOAD
+    if(Pyramids[level].empty())
+        return;
+
     if (_Offload_get_device_number() < 0 // dynamic check for being on CPU (-1)
         && level == 0)
     {
@@ -2127,6 +2131,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     /***** Main Work is done in build_top_cone() *****/
 
     primal_algorithm_finalize();
+    primal_algorithm_set_computed();
 }
 
 //---------------------------------------------------------------------------
@@ -2167,8 +2172,18 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
                 Hilbert_Series += Results[zi].getHilbertSeriesSum();
             }
         }
+        if (do_h_vector) {
+            Hilbert_Series.collectData();
+        }
     }
+}
     
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::primal_algorithm_set_computed() {
+
+    if(!pointed) return;
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);
         if (do_evaluation) {

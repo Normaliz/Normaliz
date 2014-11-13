@@ -6,6 +6,7 @@
 #include "full_cone.h"
 #include "list_operations.h"
 #include "vector_operations.h"
+#include "HilbertSeries.h"
 #include <iostream>
 
 namespace libnormaliz {
@@ -115,7 +116,7 @@ void OffloadHandler<Integer>::create_full_cone()
   fill_plain(data, nr, nc, M);
 
   cout << "Offload data to mic, offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
-  // offload to mic, copy data and free it afterwards, but keep a pointer to the created C++ matrix
+  // offload to mic, copy data and free it afterwards, but keep a pointer to the created Full_Cone
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
     Matrix<Integer> gens(nr, nc);
@@ -358,6 +359,7 @@ void OffloadHandler<Integer>::finalize_evaluation()
     offload_fc_ptr->primal_algorithm_finalize();
   }
   cout << "finalize_evaluation done" << endl;
+  collect_data();
 }
 
 //---------------------------------------------------------------------------
@@ -382,11 +384,100 @@ void OffloadHandler<Integer>::compute_on_mic(long a, long b)
   }
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-long OffloadHandler<Integer>::collect_data()
+void OffloadHandler<Integer>::collect_data()
 {
-//  #pragma offload target(mic:mic_nr) out()
-	return 0;
+  cout << "collect_data" << endl;
+  collect_integers(); // TriangulationSize, DetSum, Multiplicity, ...
+  collect_hilbert_series();
+  collect_candidates(); // Hilbert basis, degree 1 elements
+  cout << "collect_data done" << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::collect_integers()
+{
+  {
+    size_t col_totalNrSimplices, col_nrSimplicialPyr, col_totalNrPyr;
+    Integer col_detSum;
+    #pragma offload target(mic:mic_nr) out(col_totalNrSimplices) out(col_nrSimplicialPyr) out(col_totalNrPyr) out(col_detSum)
+    {
+      col_totalNrSimplices = offload_fc_ptr->totalNrSimplices;
+      col_nrSimplicialPyr  = offload_fc_ptr->nrSimplicialPyr;
+      col_totalNrPyr       = offload_fc_ptr->totalNrPyr;
+      col_detSum           = offload_fc_ptr->detSum;
+    }
+    local_fc_ref.totalNrSimplices += col_totalNrSimplices;
+    local_fc_ref.nrSimplicialPyr  += col_nrSimplicialPyr;
+    local_fc_ref.totalNrPyr       += col_totalNrPyr;
+    local_fc_ref.detSum           += col_detSum;
+  }
+
+  if (local_fc_ref.do_triangulation && local_fc_ref.do_evaluation
+      && local_fc_ref.isComputed(ConeProperty::Grading))
+  {
+    cout << "collecting multiplicity ..." << endl;
+    long size;
+    std::string* str_ptr;
+    #pragma offload target(mic:mic_nr) out(size) nocopy(str_ptr: length(0))
+    {
+      str_ptr = new std::string(offload_fc_ptr->multiplicity.get_str());
+      size = str_ptr->length()+1;
+    }
+
+    char* c_str = new char[size];
+    #pragma offload target(mic:mic_nr) in(size) out(c_str: length(size)) nocopy(str_ptr: length(0))
+    {
+      std::strcpy (c_str, str_ptr->c_str());
+      delete str_ptr;
+    }
+    mpq_class coll_mult(c_str);
+    delete c_str;
+    local_fc_ref.multiplicity += coll_mult;
+    cout << "collecting multiplicity done" << endl;
+  }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::collect_hilbert_series()
+{
+
+  if (local_fc_ref.do_h_vector)
+  {
+    cout << "collecting Hilbert series ..." << endl;
+    long size;
+    std::string* str_ptr;
+    #pragma offload target(mic:mic_nr) out(size) nocopy(str_ptr: length(0))
+    {
+      str_ptr = new std::string(offload_fc_ptr->Hilbert_Series.to_string_rep());
+      size = str_ptr->length()+1;
+    }
+
+    char* c_str = new char[size];
+    #pragma offload target(mic:mic_nr) in(size) out(c_str: length(size)) nocopy(str_ptr: length(0))
+    {
+      std::strcpy (c_str, str_ptr->c_str());
+      delete str_ptr;
+    }
+    HilbertSeries col_HS = HilbertSeries(string(c_str));
+    delete c_str;
+    local_fc_ref.Hilbert_Series += col_HS;
+    cout << "collecting Hilbert series done" << endl;
+  }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::collect_candidates()
+{
+  //TODO Hilbert basis, degree 1 elements
 }
 
 //---------------------------------------------------------------------------

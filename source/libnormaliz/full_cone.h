@@ -269,6 +269,7 @@ public:
     void primal_algorithm();
     void primal_algorithm_initialize();
     void primal_algorithm_finalize();
+    void primal_algorithm_set_computed();
     void remove_duplicate_ori_gens_from_HB();
 
     void minimize_support_hyperplanes();   

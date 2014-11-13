@@ -38,9 +38,6 @@ public:
   // does a test computation on the mic and prints the result
   void compute_on_mic(long a, long b);
 
-  // gets a result back from the mic
-  long collect_data();
-
   // transfer the generator matrix back
   Matrix<Integer> transfer_from_mic();
 
@@ -56,6 +53,12 @@ private:
   void transfer_grading();
   void transfer_triangulation_info();
   void primal_algorithm_initialize();
+
+  // collect data routines
+  void collect_data();
+  void collect_integers(); // TriangulationSize, DetSum, Multiplicity
+  void collect_hilbert_series();
+  void collect_candidates(); // Hilbert basis, degree 1 elements
 
 };
 
