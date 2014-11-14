@@ -235,7 +235,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     // TO DO: Negativliste mit Zero_Positive verfeinern, also die aussondern, die nicht genug positive Erz enthalten
     // Eventuell sogar Rang-Test einbauen.
-    // Letzteres könnte man auch bei den positiven machen, bevor sie verearbeitet werden
+    // Letzteres kÃ¶nnte man auch bei den positiven machen, bevor sie verarbeitet werden
     
     boost::dynamic_bitset<> Zero_PN(nr_gen);
     Zero_PN = Zero_Positive & Zero_Negative;
@@ -839,36 +839,40 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     typename list< SHORTSIMPLEX<Integer> >::iterator F;
 
     if(Top_Cone->FS[tn].empty()){
-        #pragma omp critical(FREESIMPL)
-        {
-        if(Top_Cone->FreeSimpl.empty())
+        if (Top_Cone->FreeSimpl.empty()) {
             Simpl_available=false;
-        else{
-            F=Top_Cone->FreeSimpl.begin();  // take 100 simplices from FreeSimpl
-            size_t q; for(q=0;q<1000;++q){            // or what you can get
-                if(F==Top_Cone->FreeSimpl.end())
-                    break;
-                ++F;
-            }
-        
-            if(q<1000)
-                Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                    Top_Cone->FreeSimpl);
-            else
-                Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                              Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),F);
-        } // else
-        } // critical
-    } // if empty
-          
+        } else {
+            #pragma omp critical(FREESIMPL)
+            {
+            if (Top_Cone->FreeSimpl.empty()) {
+                Simpl_available=false;
+            } else {
+                // take 1000 simplices from FreeSimpl or what you can get
+                F = Top_Cone->FreeSimpl.begin();
+                size_t q;
+                for (q = 0; q < 1000; ++q, ++F) {
+                    if (F == Top_Cone->FreeSimpl.end())
+                        break;
+                }
 
-    if(Simpl_available){
+                if(q<1000)
+                    Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                        Top_Cone->FreeSimpl);
+                else
+                    Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                                  Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),F);
+            } // if empty global (critical)
+            } // critical
+        } // if empty global
+    } // if empty thread
+
+    if (Simpl_available) {
         Triangulation.splice(Triangulation.end(),Top_Cone->FS[tn],
                         Top_Cone->FS[tn].begin());
-        Triangulation.back()=newsimplex;
-    }
-    else
+        Triangulation.back() = newsimplex;
+    } else {
         Triangulation.push_back(newsimplex);
+    }
 }
 
 //---------------------------------------------------------------------------
