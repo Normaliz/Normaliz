@@ -31,6 +31,7 @@ public:
   void transfer_pyramids(const std::list< std::vector<key_t> >& pyramids);
   void evaluate_pyramids();
   void finalize_evaluation();
+  void collect_data();
 
   // prints the offloaded generators
   void print_on_mic() const;
@@ -55,7 +56,6 @@ private:
   void primal_algorithm_initialize();
 
   // collect data routines
-  void collect_data();
   void collect_integers(); // TriangulationSize, DetSum, Multiplicity
   void collect_hilbert_series();
   void collect_candidates(); // Hilbert basis, degree 1 elements
@@ -70,6 +70,7 @@ public:
   ~MicOffloader();
 
   void offload_pyramids(Full_Cone<Integer>& fc);
+  void finalize();
 
 private:
   bool is_init;

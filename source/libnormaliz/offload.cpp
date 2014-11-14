@@ -358,6 +358,14 @@ void OffloadHandler<Integer>::evaluate_pyramids()
 
 //---------------------------------------------------------------------------
 
+#pragma offload_attribute (push, target(mic))
+template<typename Integer>
+bool is_ori_gen(const Candidate<Integer>& c)
+{
+  return c.original_generator;
+}
+#pragma offload_attribute (push, target(mic))
+
 template<typename Integer>
 void OffloadHandler<Integer>::finalize_evaluation()
 {
@@ -365,9 +373,17 @@ void OffloadHandler<Integer>::finalize_evaluation()
   #pragma offload target(mic:mic_nr)
   {
     offload_fc_ptr->primal_algorithm_finalize();
+    // remove all original generators, they are also inserted on the host
+    if (offload_fc_ptr->do_Hilbert_basis)
+    {
+      offload_fc_ptr->OldCandidates.Candidates.remove_if(is_ori_gen<Integer>);
+// or with lambda function
+//      offload_fc_ptr->OldCandidates.Candidates.remove_if([](const Candidate<Integer>& c){ return c.original_generator; });
+    }
+    offload_fc_ptr->OldCandidates.extract(offload_fc_ptr->Hilbert_Basis);
+    offload_fc_ptr->OldCandidates.Candidates.clear();
   }
   cout << "finalize_evaluation done" << endl;
-  collect_data();
 }
 
 //---------------------------------------------------------------------------
@@ -485,7 +501,53 @@ void OffloadHandler<Integer>::collect_hilbert_series()
 template<typename Integer>
 void OffloadHandler<Integer>::collect_candidates()
 {
-  //TODO Hilbert basis, degree 1 elements
+  if (local_fc_ref.do_Hilbert_basis)
+  {
+    cout << "collect Hilbert basis" << endl;
+    long size;
+
+    #pragma offload target(mic:mic_nr) out(size)
+    {
+      // using the same methods as for pyramids
+      // handling list of vectors of possible different lenghts
+      size = offload_fc_ptr->Hilbert_Basis.size() * (offload_fc_ptr->dim + 1);
+    }
+    if (size > 0) {
+      Integer *data = new Integer[size];
+
+      #pragma offload target(mic:mic_nr) in(size) out(data: length(size) ONCE)
+      {
+        fill_plain(data, size, offload_fc_ptr->Hilbert_Basis);
+      }
+      fill_list_vector(local_fc_ref.Hilbert_Basis, size, data);
+      delete[] data;
+    }
+    cout << "collect Hilbert basis done" << endl;
+  }
+
+  if (local_fc_ref.do_deg1_elements)
+  {
+    cout << "collect degree 1 elements" << endl;
+    long size;
+
+    #pragma offload target(mic:mic_nr) out(size)
+    {
+      // using the same methods as for pyramids
+      // handling list of vectors of possible different lenghts
+      size = offload_fc_ptr->Deg1_Elements.size() * (offload_fc_ptr->dim + 1);
+    }
+    if (size > 0) {
+      Integer *data = new Integer[size];
+
+      #pragma offload target(mic:mic_nr) in(size) out(data: length(size) ONCE)
+      {
+        fill_plain(data, size, offload_fc_ptr->Deg1_Elements);
+      }
+      fill_list_vector(local_fc_ref.Deg1_Elements, size, data);
+      delete[] data;
+    }
+    cout << "collect degree 1 elements done" << endl;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -577,8 +639,19 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 
     //compute on mics
     handler_ptr->evaluate_pyramids();
-    handler_ptr->finalize_evaluation(); //TODO move in separate function with collect data?
+}
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void MicOffloader<Integer>::finalize()
+{
+  if (is_init)
+  {
+    handler_ptr->finalize_evaluation();
+    handler_ptr->collect_data();
+  }
 }
 
 

@@ -1797,8 +1797,17 @@ void Full_Cone<Integer>::build_top_cone() {
 
     build_cone();
         
-    evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids                    
-        
+    evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
+
+#ifdef NMZ_MIC_OFFLOAD
+    if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
+    {
+        cout << "Offload finalize..." << endl;
+        mic_offloader.finalize();
+    }
+#endif // NMZ_MIC_OFFLOAD
+
+
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
         // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
@@ -2159,7 +2168,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     if (keep_triangulation) {
         is_Computed.set(ConeProperty::Triangulation);
     }
-    
+
     evaluate_triangulation();
     FreeSimpl.clear();
 
