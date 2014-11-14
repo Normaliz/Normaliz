@@ -310,6 +310,14 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
     //TODO handle also inhomogeneous, excluded_faces, approx, ...
     offload_fc_ptr->do_vars_check();
     offload_fc_ptr->primal_algorithm_initialize();
+
+    cout << "create 4 mio empty simplices ..." << flush;
+    SHORTSIMPLEX<Integer> simp;
+    simp.key = vector<key_t>(offload_fc_ptr->dim);
+    simp.height = 0;
+    simp.vol = 0;
+    offload_fc_ptr->FreeSimpl.insert(offload_fc_ptr->FreeSimpl.end(), 4000000, simp);
+    cout << "done" << endl;
   }
 }
 
