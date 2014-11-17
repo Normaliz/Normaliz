@@ -191,6 +191,11 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
+    // resizes the matrix to the given number of rows
+    // if the size shrinks it will keep all its allocated memory
+    // useful when the size varies
+    void resize(size_t nr_rows);
+
     vector<Integer> diagonal() const;     //returns the diagonale of this
                                   //this should be a quadratic matrix
     size_t maximal_decimal_length() const;    //return the maximal number of decimals

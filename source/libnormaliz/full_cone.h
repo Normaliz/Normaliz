@@ -174,6 +174,7 @@ class Full_Cone {
     
     list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
     vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
+    vector< Matrix<Integer> > RankTest;                // helper matrices for rank test
     
     // helpers for evaluation
     vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread

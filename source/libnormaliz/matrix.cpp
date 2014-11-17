@@ -394,6 +394,16 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     return *this;
 }
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::resize(size_t nr_rows) {
+    if (nr_rows > elem.size()) {
+        elem.resize(nr_rows, vector<Integer>(nc));
+    }
+    nr = nr_rows;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>

@@ -335,7 +335,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> subfacet(dim-2);
     jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
-    Matrix<Integer> Test(0,dim);
+    int tn = omp_get_ancestor_thread_num(1);
 
     bool found;
     #pragma omp for schedule(dynamic)
@@ -597,10 +597,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
             NrRank++; */
             
-               /* Matrix<Integer> Test(nr_common_zero,dim);
-               for (k = 0; k < nr_common_zero; k++)
-                   Test.write(k,Generators[common_key[k]]);*/
-
+               Matrix<Integer>& Test = Top_Cone->RankTest[tn];
                if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) {
                    common_subfacet=false;
                }
@@ -1312,6 +1309,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     if (nr_zero_hyp<dim-2) 
         return;
     
+    int tn = omp_get_ancestor_thread_num(1);
     missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
                                           
@@ -1379,10 +1377,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        if(!common_subfacet)
             continue;
             
-        /* Matrix<Integer> Test(nr_common_zero,dim); // only rank test since we have many supphyps anyway
-        for (size_t k = 0; k < nr_common_zero; k++)
-            Test[k]=Generators[common_key[k]];*/
-
+        // only rank test since we have many supphyps anyway
+        Matrix<Integer>& Test = Top_Cone->RankTest[tn];
         if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) 
             common_subfacet=false;     // don't make a hyperplane
 
@@ -3405,9 +3401,12 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     OldCandidates.dual=false;
     NewCandidates.dual=false;
     
-    AdjustedReductionBound=UpdateReducersBound/omp_get_max_threads();
+    int max_threads = omp_get_max_threads();
+    AdjustedReductionBound=UpdateReducersBound/max_threads;
     if(AdjustedReductionBound < 10000)
         AdjustedReductionBound=10000;
+
+    RankTest = vector< Matrix<Integer> >(max_threads, Matrix<Integer>(0,dim));
 }
 
 //---------------------------------------------------------------------------
