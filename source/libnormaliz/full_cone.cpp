@@ -1802,7 +1802,6 @@ void Full_Cone<Integer>::build_top_cone() {
 #ifdef NMZ_MIC_OFFLOAD
     if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
     {
-        cout << "Offload finalize..." << endl;
         mic_offloader.finalize();
     }
 #endif // NMZ_MIC_OFFLOAD
@@ -2139,6 +2138,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     build_top_cone();  // evaluates if keep_triangulation==false
     /***** Main Work is done in build_top_cone() *****/
 
+    check_pointed();
+    if(!pointed) return;
+
     primal_algorithm_finalize();
     primal_algorithm_set_computed();
 }
@@ -2158,9 +2160,6 @@ void Full_Cone<Integer>::primal_algorithm_initialize() {
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_finalize() {
-
-    extreme_rays_and_deg1_check();
-    if(!pointed) return;
 
     if (isComputed(ConeProperty::Grading) && !deg1_generated) {
         deg1_triangulation = false;
@@ -2192,6 +2191,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_set_computed() {
 
+    extreme_rays_and_deg1_check();
     if(!pointed) return;
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);

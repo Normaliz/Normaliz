@@ -350,7 +350,6 @@ void OffloadHandler<Integer>::evaluate_pyramids()
   cout << "evaluate_pyramids" << endl;
   #pragma offload target(mic:mic_nr)
   {
-    //offload_fc_ptr->compute();
     offload_fc_ptr->evaluate_stored_pyramids(0);
   }
   cout << "evaluate_pyramids done" << endl;
@@ -616,7 +615,6 @@ cout << "_Offload_number_of_devices()" << _Offload_number_of_devices() << endl;
     //TODO check preconditions
     assert(fc.Order_Vector.size() == fc.dim);
     fc.get_supphyps_from_copy(false);          // (bool from_scratch)
-    fc.extreme_rays_and_deg1_check();
     fc.check_pointed();
 
     // create handler
