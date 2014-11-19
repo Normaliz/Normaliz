@@ -30,7 +30,7 @@ public:
 
   void transfer_pyramids(const std::list< std::vector<key_t> >& pyramids);
   void evaluate_pyramids();
-  void finalize_evaluation();
+  void complete_evaluation();
   void collect_data();
 
   // prints the offloaded generators
@@ -69,7 +69,13 @@ public:
   MicOffloader();
   ~MicOffloader();
 
+  // on the first call it inits the offloaded cones
   void offload_pyramids(Full_Cone<Integer>& fc);
+
+  // evaluates remaining triangulation
+  void complete_evaluation();
+
+  // collects the results and destructs the offloaded cones
   void finalize();
 
 private:

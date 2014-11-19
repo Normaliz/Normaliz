@@ -1802,7 +1802,7 @@ void Full_Cone<Integer>::build_top_cone() {
 #ifdef NMZ_MIC_OFFLOAD
     if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
     {
-        mic_offloader.finalize();
+        mic_offloader.complete_evaluation();
     }
 #endif // NMZ_MIC_OFFLOAD
 
@@ -2180,6 +2180,13 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
                 Hilbert_Series += Results[zi].getHilbertSeriesSum();
             }
         }
+#ifdef NMZ_MIC_OFFLOAD
+        // collect accumulated data from mics
+        if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
+        {
+            mic_offloader.finalize();
+        }
+#endif // NMZ_MIC_OFFLOAD
         if (do_h_vector) {
             Hilbert_Series.collectData();
         }

@@ -357,32 +357,15 @@ void OffloadHandler<Integer>::evaluate_pyramids()
 
 //---------------------------------------------------------------------------
 
-#pragma offload_attribute (push, target(mic))
 template<typename Integer>
-bool is_ori_gen(const Candidate<Integer>& c)
+void OffloadHandler<Integer>::complete_evaluation()
 {
-  return c.original_generator;
-}
-#pragma offload_attribute (push, target(mic))
-
-template<typename Integer>
-void OffloadHandler<Integer>::finalize_evaluation()
-{
-  cout << "finalize_evaluation" << endl;
+  cout << "complete_evaluation" << endl;
   #pragma offload target(mic:mic_nr)
   {
     offload_fc_ptr->primal_algorithm_finalize();
-    // remove all original generators, they are also inserted on the host
-    if (offload_fc_ptr->do_Hilbert_basis)
-    {
-      offload_fc_ptr->OldCandidates.Candidates.remove_if(is_ori_gen<Integer>);
-// or with lambda function
-//      offload_fc_ptr->OldCandidates.Candidates.remove_if([](const Candidate<Integer>& c){ return c.original_generator; });
-    }
-    offload_fc_ptr->OldCandidates.extract(offload_fc_ptr->Hilbert_Basis);
-    offload_fc_ptr->OldCandidates.Candidates.clear();
   }
-  cout << "finalize_evaluation done" << endl;
+  cout << "complete_evaluation done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -497,6 +480,17 @@ void OffloadHandler<Integer>::collect_hilbert_series()
 
 //---------------------------------------------------------------------------
 
+#pragma offload_attribute (push, target(mic))
+template<typename Integer>
+bool is_ori_gen(const Candidate<Integer>& c)
+{
+  return c.original_generator;
+}
+#pragma offload_attribute (push, target(mic))
+
+//---------------------------------------------------------------------------
+
+
 template<typename Integer>
 void OffloadHandler<Integer>::collect_candidates()
 {
@@ -507,6 +501,13 @@ void OffloadHandler<Integer>::collect_candidates()
 
     #pragma offload target(mic:mic_nr) out(size)
     {
+      // remove all original generators, they are also inserted on the host
+      offload_fc_ptr->OldCandidates.Candidates.remove_if(is_ori_gen<Integer>);
+      // or in c++11 with lambda function
+      // offload_fc_ptr->OldCandidates.Candidates.remove_if([](const Candidate<Integer>& c){ return c.original_generator; });
+      offload_fc_ptr->OldCandidates.extract(offload_fc_ptr->Hilbert_Basis);
+      offload_fc_ptr->OldCandidates.Candidates.clear();
+
       // using the same methods as for pyramids
       // handling list of vectors of possible different lenghts
       size = offload_fc_ptr->Hilbert_Basis.size() * (offload_fc_ptr->dim + 1);
@@ -518,9 +519,24 @@ void OffloadHandler<Integer>::collect_candidates()
       {
         fill_plain(data, size, offload_fc_ptr->Hilbert_Basis);
       }
-      fill_list_vector(local_fc_ref.Hilbert_Basis, size, data);
+//      fill_list_vector(local_fc_ref.Hilbert_Basis, size, data);
+      list< vector<Integer> > coll_HB;
+      fill_list_vector(coll_HB, size, data);
       delete[] data;
-    }
+      CandidateList<Integer> cand_l;
+      while (!coll_HB.empty())
+      {
+        cand_l.push_back(Candidate<Integer>(coll_HB.front(),local_fc_ref));
+        coll_HB.pop_front();
+      }
+      cout << "CandidateList complete" << endl;
+//      #pragma omp critical(CANDIDATES)
+      local_fc_ref.NewCandidates.splice(cand_l);
+
+      local_fc_ref.NewCandidates.reduce_by(local_fc_ref.OldCandidates);
+      local_fc_ref.update_reducers();
+
+    } // if (size > 0)
     cout << "collect Hilbert basis done" << endl;
   }
 
@@ -542,8 +558,10 @@ void OffloadHandler<Integer>::collect_candidates()
       {
         fill_plain(data, size, offload_fc_ptr->Deg1_Elements);
       }
-      fill_list_vector(local_fc_ref.Deg1_Elements, size, data);
+      list< vector<Integer> > coll_Deg1;
+      fill_list_vector(coll_Deg1, size, data);
       delete[] data;
+      local_fc_ref.Deg1_Elements.splice(local_fc_ref.Deg1_Elements.end(),coll_Deg1);
     }
     cout << "collect degree 1 elements done" << endl;
   }
@@ -643,12 +661,26 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void MicOffloader<Integer>::complete_evaluation()
+{
+  if (is_init)
+  {
+    handler_ptr->complete_evaluation();
+  }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void MicOffloader<Integer>::finalize()
 {
   if (is_init)
   {
-    handler_ptr->finalize_evaluation();
+    handler_ptr->complete_evaluation();
     handler_ptr->collect_data();
+    delete handler_ptr;
+    handler_ptr = NULL;
+    is_init = false;
   }
 }
 
