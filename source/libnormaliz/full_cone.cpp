@@ -40,7 +40,7 @@
 #include "my_omp.h"
 #include "integer.h"
 // #include "sublattice_representation.h"
-#include "offload.h"
+#include "offload_handler.h"
 
 //---------------------------------------------------------------------------
 

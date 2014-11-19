@@ -1,11 +1,13 @@
 #ifdef NMZ_MIC_OFFLOAD
 
 #pragma offload_attribute (push, target(mic))
-#include "offload.h"
+#include "offload_handler.h"
+#include "offload.h"  // offload system header
 #include "matrix.h"
 #include "full_cone.h"
 #include "list_operations.h"
 #include "vector_operations.h"
+#include "my_omp.h"
 #include "HilbertSeries.h"
 #include <iostream>
 
@@ -26,7 +28,6 @@ void fill_plain(Integer* data, long size, const vector<Integer>& v)
 {
   for (long i=0; i<size; i++)
       data[i] = v[i];
-
 }
 
 // transfering Matrix
@@ -119,6 +120,7 @@ void OffloadHandler<Integer>::create_full_cone()
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created Full_Cone
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
+    //omp_set_num_threads(118);
     Matrix<Integer> gens(nr, nc);
     fill_matrix(gens, nr, nc, data);
     offload_fc_ptr = new Full_Cone<Integer>(gens);
@@ -154,6 +156,7 @@ void OffloadHandler<Integer>::transfer_bools()
     offload_fc_ptr->deg1_triangulation = foo_loc.deg1_generated;
     offload_fc_ptr->pointed = foo_loc.pointed;  // was locally computed in MicOffloader
     offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
+    verbose = true;
   }
   cout << "transfer_bools done" << endl;
 }
@@ -260,7 +263,7 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
     delete[] data;
   }
 
-  // always transfer the order vector  //TODO ensure it is computed!
+  // always transfer the order vector
   {
     Integer *data = new Integer[dim];
     fill_plain(data, dim, local_fc_ref.Order_Vector);
@@ -649,9 +652,16 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
     if (!is_init) init(fc);
 
     //offload some pyramids //TODO move only a part
-    handler_ptr->transfer_pyramids(fc.Pyramids[0]);
-    fc.Pyramids[0].clear();
-    fc.nrPyramids[0] = 0;
+    list< vector<key_t> > pyrs;
+    size_t nr_transfer = fc.nrPyramids[0]/2;
+    //pyrs.splice(pyrs.end(), fc.Pyramids[0]);
+    typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[0].begin());
+    for (size_t i = 0; i < nr_transfer; ++i, ++transfer_end) ;
+    pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
+    fc.nrPyramids[0] -= nr_transfer;
+    handler_ptr->transfer_pyramids(pyrs);
+    cout << "offload: transfered " << pyrs.size() << " pyramids to mic." << endl;
+    pyrs.clear();
 
     //compute on mics
     handler_ptr->evaluate_pyramids();

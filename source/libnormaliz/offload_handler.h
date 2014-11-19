@@ -1,5 +1,5 @@
-#ifndef OFFLOAD_H
-#define OFFLOAD_H
+#ifndef OFFLOAD_HANDLER_H
+#define OFFLOAD_HANDLER_H
 
 #ifdef NMZ_MIC_OFFLOAD
 #define ONCE alloc_if(1) free_if(1)
@@ -92,4 +92,4 @@ void offload_test();
 
 #endif //NMZ_MIC_OFFLOAD
 
-#endif //OFFLOAD_H
+#endif //OFFLOAD_HANDLER_H
