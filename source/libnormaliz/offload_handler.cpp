@@ -92,6 +92,7 @@ long plain_size(const list< vector<Integer> >& l)
 template<typename Integer>
 OffloadHandler<Integer>::OffloadHandler(Full_Cone<Integer>& fc, int mic_number)
   : mic_nr(mic_number),
+    running(false),
     local_fc_ref(fc)
 {
   create_full_cone();
@@ -308,7 +309,7 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
 template<typename Integer>
 void OffloadHandler<Integer>::primal_algorithm_initialize()
 {
-  #pragma offload target(mic:mic_nr)
+  #pragma offload target(mic:mic_nr) signal(&running)
   {
     //TODO handle also inhomogeneous, excluded_faces, approx, ...
     offload_fc_ptr->do_vars_check();
@@ -322,6 +323,7 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
     offload_fc_ptr->FreeSimpl.insert(offload_fc_ptr->FreeSimpl.end(), 4000000, simp);
     cout << "done" << endl;
   }
+  running = true;
 }
 
 //---------------------------------------------------------------------------
@@ -335,6 +337,7 @@ void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyr
   key_t *data = new key_t[size];
   fill_plain(data, size, pyramids);
 
+  wait();
   #pragma offload target(mic:mic_nr) in(size) in(data: length(size) ONCE)
   {
     fill_list_vector(offload_fc_ptr->Pyramids[0], size, data);
@@ -351,10 +354,12 @@ template<typename Integer>
 void OffloadHandler<Integer>::evaluate_pyramids()
 {
   cout << "evaluate_pyramids" << endl;
-  #pragma offload target(mic:mic_nr)
+  wait();
+  #pragma offload target(mic:mic_nr) signal(&running)
   {
     offload_fc_ptr->evaluate_stored_pyramids(0);
   }
+  running = true;
   cout << "evaluate_pyramids done" << endl;
 }
 
@@ -364,10 +369,12 @@ template<typename Integer>
 void OffloadHandler<Integer>::complete_evaluation()
 {
   cout << "complete_evaluation" << endl;
-  #pragma offload target(mic:mic_nr)
+  wait();
+  #pragma offload target(mic:mic_nr) signal(&running)
   {
     offload_fc_ptr->primal_algorithm_finalize();
   }
+  running = true;
   cout << "complete_evaluation done" << endl;
 }
 
@@ -398,6 +405,7 @@ void OffloadHandler<Integer>::compute_on_mic(long a, long b)
 template<typename Integer>
 void OffloadHandler<Integer>::collect_data()
 {
+  wait();
   cout << "collect_data" << endl;
   collect_integers(); // TriangulationSize, DetSum, Multiplicity, ...
   collect_hilbert_series();
@@ -567,6 +575,32 @@ void OffloadHandler<Integer>::collect_candidates()
       local_fc_ref.Deg1_Elements.splice(local_fc_ref.Deg1_Elements.end(),coll_Deg1);
     }
     cout << "collect degree 1 elements done" << endl;
+  }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool OffloadHandler<Integer>::is_running()
+{
+#ifndef __MIC__
+  if (running)
+  {
+    running = ! _Offload_signaled(mic_nr, &running);
+  }
+#endif
+  return running;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::wait()
+{
+  if (is_running())
+  {
+    #pragma offload_wait target(mic:mic_nr) wait(&running)
+    running = false;
   }
 }
 

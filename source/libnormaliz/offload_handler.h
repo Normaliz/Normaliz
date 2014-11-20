@@ -33,6 +33,11 @@ public:
   void complete_evaluation();
   void collect_data();
 
+  // checks if a previous asynchronous offload is still running
+  bool is_running();
+  // waits until previous asynchronous offload has finished
+  void wait();
+
   // prints the offloaded generators
   void print_on_mic() const;
 
@@ -44,6 +49,7 @@ public:
 
 private:
   const int mic_nr;
+  bool running; // used to see if we still have a wait lock open
   Full_Cone<Integer>& local_fc_ref;
   Full_Cone<Integer>* offload_fc_ptr;
 
@@ -59,7 +65,6 @@ private:
   void collect_integers(); // TriangulationSize, DetSum, Multiplicity
   void collect_hilbert_series();
   void collect_candidates(); // Hilbert basis, degree 1 elements
-
 };
 
 template<typename Integer>
