@@ -750,7 +750,8 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
 }
 
 //---------------------------------------------------------------------------
-/* 
+
+/*
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t row, size_t col) {
     assert(col >= 0);

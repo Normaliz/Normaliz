@@ -3321,6 +3321,7 @@ void Full_Cone<Integer>::reset_tasks(){
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     dim=M.nr_of_columns();
+    
     if (dim!=M.rank()) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
         throw BadInputException();
