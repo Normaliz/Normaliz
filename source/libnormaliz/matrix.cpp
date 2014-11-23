@@ -725,7 +725,9 @@ void Matrix<Integer>::reduce_row (size_t corner) {
 }
 
 //---------------------------------------------------------------------------
+ /*
  
+// version without minimal remainder
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t row, size_t col) {
     assert(col >= 0);
@@ -748,44 +750,12 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
         }
     }
 }
-
-//---------------------------------------------------------------------------
-
-/*
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t row, size_t col) {
-    assert(col >= 0);
-    assert(col < nc);
-    assert(row < nr);
-    assert(row >= 0);
-    size_t i,j;
-    Integer div, quot, rem;
-    for (i =row+1; i < nr; i++) {
-        if (elements[i][col]!=0) {
-            div=elements[row][col];
-            quot=elements[i][col] / div;
-            rem=elements[i][col]-quot*div;
-            if(2*Iabs(rem)>Iabs(elements[row][col])){
-                if((rem<0 && div>0) || (rem >0 && div <0)){                
-                    rem+=elements[row][col];
-                    quot--;
-                }
-                else{
-                    rem-=elements[row][col];
-                    quot++;                
-                }
-            }
-            elements[i][col]=rem;            
-            for (j = col+1; j < nc; j++) {
-                elements[i][j] -= quot*elements[row][j];
-            }
-        }
-    }
-}
 */
 
 //---------------------------------------------------------------------------
 
+/*
+// version without minimal remainder
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     assert(corner >= 0);
@@ -815,6 +785,84 @@ void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
         }
     }
 }
+*/
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
+
+    quot=a/b;
+    rem=a-quot*b;
+    if(2*Iabs(rem)>Iabs(b)){
+        if((rem<0 && b>0) || (rem >0 && b<0)){                
+            rem+=b;
+            quot--;
+        }
+        else{
+            rem-=b;
+            quot++;                
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void Matrix<Integer>::reduce_row (size_t row, size_t col) {
+    assert(col >= 0);
+    assert(col < nc);
+    assert(row < nr);
+    assert(row >= 0);
+    size_t i,j;
+    Integer quot, rem;
+    for (i =row+1; i < nr; i++) {
+        if (elements[i][col]!=0) {        
+            minimal_remainder(elements[i][col], elements[row][col], quot, rem);
+            elements[i][col]=rem;            
+            for (j = col+1; j < nc; j++) {
+                elements[i][j] -= quot*elements[row][j];
+            }
+        }
+    }
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    assert(Left.nr == nr);
+    size_t i,j;
+    Integer help2=elements[corner][corner],quot,rem;
+    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
+    for ( i = corner+1; i < nr; i++) {
+        if (elements[i][corner]!=0) {
+            minimal_remainder(elements[i][corner],help2,quot,rem);
+            elements[i][corner]=rem;
+            for (j = corner+1; j < nc; j++) {
+                elements[i][j] -= quot*elements[corner][j];
+                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
+            }
+            for (j = 0; j < Left.nc; j++) {
+                Left.elements[i][j] -= quot*Left.elements[corner][j];
+                if (test_arithmetic_overflow && Iabs(Left.elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
+            }
+        }
+    }
+}
+
+
 
 //---------------------------------------------------------------------------
 
