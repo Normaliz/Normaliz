@@ -30,6 +30,8 @@
 
 #include "bottom.h"
 #include "libnormaliz.h"
+#include "vector_operations.h"
+#include "integer.h"
 
 #include "scip/scip.h"
 #include "scip/scipdefplugins.h"  //TODO needed?
@@ -40,15 +42,20 @@
 namespace libnormaliz {
 using namespace std;
 
+const long ScipBound = 1000;
+
+// don't do it with mpz_class TODO
+template<> void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens) {}
+
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) {
 
     vector<Integer>  grading = gens.find_linear_form();
     Integer volume;
-    vector<Integer> diagonal = vector< Integer >(dim);
-    Matrix<Integer> Support_Hyperplanes=invert(gens, diagonal, volume);
+    int dim = gens[0].size();
+    Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
 
-    if (volume < 100000000) // 100 mio
+    if (volume < ScipBound)
         return;
 
     Support_Hyperplanes = Support_Hyperplanes.transpose();
@@ -63,7 +70,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) {
         new_points.push_back(new_point);
         Matrix<Integer> stellar_gens(gens);
 
-        for (i=0; i<dim; ++i) {
+        for (int i=0; i<dim; ++i) {
             if (v_scalar_product(Support_Hyperplanes[i], new_point) != 0) {
                 stellar_gens[i] = new_point;
                 bottom_points(new_points, stellar_gens);
@@ -98,7 +105,7 @@ vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
 	// create constraints
     // vector< vector<Integer> > SuppHyp(MyCone.getSupportHyperplanes());
     double* ineq = new double[dim];
-    long nrSuppHyp = SuppHyp.size();
+    long nrSuppHyp = SuppHyp.nr_of_rows();
     for( long i = 0; i < nrSuppHyp; ++i )
     {
         SCIP_CONS* cons;
@@ -144,7 +151,6 @@ vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
 
 template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens);
 template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens);
 
 } // namespace
 

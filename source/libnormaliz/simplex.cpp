@@ -654,7 +654,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const long SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
+const long SimplexParallelEvaluationBound=1000; // larger simplices are evaluated by parallel threads
 
 //---------------------------------------------------------------------------
 
@@ -864,15 +864,16 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     }
 
     #ifdef NMZ_SCIP
-    if (volume >= 100000000)
+    if (volume >= ScipBound)
     {
         Full_Cone<Integer>& C = *C_ptr;
 
-        for (int i=0; i<dim; ++i)
+        for (size_t i=0; i<dim; ++i)
             Generators[i] = C.Generators[key[i]];
 
         list< vector<Integer> > new_points;
         bottom_points(new_points, Generators);
+cout << "new_points:" << endl << new_points;
         if (!new_points.empty()) {
             int nr_new_points = new_points.size();
             // temporarily add new_points to the Top_Cone generators
@@ -887,7 +888,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             for (int i=0; i<nr_new_points; ++i) {
                 subcone_key[i] = nr_old_gen + i;
             }
-            for (int i=0; i<C.dim; ++i) {
+            for (size_t i=0; i<C.dim; ++i) {
                 subcone_key[nr_new_points + i] = key[i];
             }
 

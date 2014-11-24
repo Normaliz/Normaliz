@@ -3571,10 +3571,10 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     multiplicity = 0;
     
     Extreme_Rays = vector<bool>(nr_gen,false);
-    is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
+/*    is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
     if(isComputed(ConeProperty::ExtremeRays))
         for(size_t i=0;i<nr_gen;i++)
-            Extreme_Rays[i]=C.Extreme_Rays[Key[i]];
+            Extreme_Rays[i]=C.Extreme_Rays[Key[i]];*/
     in_triang = vector<bool> (nr_gen,false);
     deg1_triangulation = true;
     

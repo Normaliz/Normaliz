@@ -34,6 +34,8 @@
 namespace libnormaliz {
 using namespace std;
 
+extern const long ScipBound;
+
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens);
 
