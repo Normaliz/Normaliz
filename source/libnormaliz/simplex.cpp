@@ -862,6 +862,28 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         verboseOutput() << "simplex volume " << volume << endl;
     }
 
+    #ifdef NMZ_SCIP
+    if (volume >= 100000000)
+    {
+        Full_Cone<Integer>& C = *C_ptr;
+
+        for(i=0; i<dim; ++i)  // (uses Gen)
+            Generators[i] = C.Generators[key[i]];
+
+        list< vector<Integer> > new_points;
+        bottom_points(new_points, Generators);
+        if (!new_points.empty()) {
+            Matrix<Integer> new_gens(new_points).append(Generators);
+
+            Full_Cone<Integer> new_cone(C, new_gens);
+            new_cone.do_all_hyperplanes=false;
+
+            new_cone.build_cone();
+            return;
+        }
+    }
+    #endif // NMZ_SCIP
+
     take_care_of_0vector(C_ptr->Results[0]);
     sequential_evaluation=false;
 
