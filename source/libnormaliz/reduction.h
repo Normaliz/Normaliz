@@ -57,14 +57,11 @@ class Candidate { // for reduction
   vector<Integer> values; // values under support forms
   long sort_deg;  // the sorting degree
   bool reducible;    // indicates reducibility
+  bool original_generator; // marks the original generators in the primal algorithm
 
   Integer mother;   // for the dual algorithm
-  // Integer father;
-  // char generation;  // ditto
   size_t old_tot_deg;
-  // bool in_HB;  
 
-  bool original_generator; // marks the original generaors in the primal algorithm
 
   // construct candidate from given components
   Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd);
@@ -76,6 +73,8 @@ class Candidate { // for reduction
   Candidate(const vector<Integer>& v, size_t max_size);
   Candidate(size_t cand_size, size_t val_size);
 
+  // compute values and sort deg, cand must be set beforehand
+  void compute_values_deg(const Full_Cone<Integer>& C);
 }; //end class
 
 template<typename Integer>
@@ -109,6 +108,7 @@ class CandidateList {
   list <Candidate<Integer> > Candidates;
   bool dual;
   size_t last_hyp;
+  Candidate<Integer> tmp_candidate; // buffer to avoid reallocation
 
   CandidateList(); 
   CandidateList(bool dual_algorithm); 

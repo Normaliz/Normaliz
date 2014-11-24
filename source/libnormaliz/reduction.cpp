@@ -31,24 +31,22 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd){
-    cand(v);
-    values(val);
-    sort_deg(sd);
-    reducible(true);
-    original_generator(false);
-    // in_HB(false);   
-}
+Candidate<Integer>::Candidate(const vector<Integer>& v, const vector<Integer>& val, long sd)
+:   cand(v),
+    values(val),
+    sort_deg(sd),
+    reducible(true),
+    original_generator(false)
+{ }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C){
-    cand=v;
-    values = C.Support_Hyperplanes.MxV(v);
-    sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(v,C.Sorting));
+Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>& C)
+: cand(v)
+{
+    compute_values_deg(C);
     original_generator=false;
-    // in_HB=false;
 }
 
 //---------------------------------------------------------------------------
@@ -60,7 +58,6 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, size_t max_size){
     sort_deg=0;
     reducible=true;
     original_generator=false;
-    // in_HB=false;   
 }
 
 //---------------------------------------------------------------------------
@@ -73,15 +70,23 @@ Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
     sort_deg=0;
     reducible=true;
     original_generator=false;
-    // in_HB=false; 
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
+    C.Support_Hyperplanes.MxV(values, cand);
+    sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(cand,C.Sorting));
+}
 
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-CandidateList<Integer>::CandidateList(){
+CandidateList<Integer>::CandidateList()
+: tmp_candidate(0,0)
+{
     dual = false;
     last_hyp = 0;
 }
@@ -90,7 +95,9 @@ CandidateList<Integer>::CandidateList(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-CandidateList<Integer>::CandidateList(bool dual_algorithm){
+CandidateList<Integer>::CandidateList(bool dual_algorithm)
+: tmp_candidate(0,0)
+{
     dual = dual_algorithm;  
     last_hyp = 0;
 }

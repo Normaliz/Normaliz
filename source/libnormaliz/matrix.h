@@ -263,6 +263,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 //                          Vector operations
 //---------------------------------------------------------------------------
 
+   void MxV(vector<Integer>& result, const vector<Integer>& v) const;//result = this*V
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
 

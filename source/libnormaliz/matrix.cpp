@@ -730,12 +730,20 @@ Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const{ 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
+void Matrix<Integer>::MxV(vector<Integer>& result, const vector<Integer>& v) const{
     assert (nc == v.size());
-    vector<Integer> w(nr);
+    result.resize(nr);
     for(size_t i=0; i<nr;i++){
-        w[i]=v_scalar_product(elem[i],v);
+        result[i]=v_scalar_product(elem[i],v);
     }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
+    vector<Integer> w(nr);
+    MxV(w, v);
     return w;
 }
 
