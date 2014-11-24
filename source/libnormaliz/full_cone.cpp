@@ -2083,8 +2083,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         verboseOutput() << " accumulated." << endl;
     }
     
-    // cout << "************* " << LargeSimplices.size() << endl;
-    
+    if(!keep_triangulation){
+        // Triangulation.clear();
+        // #pragma omp critical(FREESIMPL)
+        FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
+        TriangulationSize=0;
+    }
+
     if(verbose){
         size_t lss=LargeSimplices.size();
         if(lss>0)
@@ -2105,12 +2110,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     if(do_Hilbert_basis)
         update_reducers();
     
-    if(!keep_triangulation){
-        // Triangulation.clear();
-        // #pragma omp critical(FREESIMPL)
-        FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
-        TriangulationSize=0;
-    }
 
 }
 
@@ -2608,11 +2607,9 @@ void Full_Cone<Integer>::find_grading_inhom(){
 template<typename Integer>
 void Full_Cone<Integer>::set_degrees() {
 
-    // cout << "Grading " << Grading;
-    // cout << "---------" << endl;
     // Generators.pretty_print(cout);
     // cout << "Grading " << Grading;
-    if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
+    if (gen_degrees.size() != nr_gen && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
         vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);

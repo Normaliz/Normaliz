@@ -23,16 +23,13 @@
 
 #ifdef NMZ_SCIP
 #include <stdlib.h>
-#include <vector>
-#include <list>
 
-#include <sstream>
+#include <iostream>
+//#include <sstream>
 #include <algorithm>
 
-#include "Normaliz.h"
+#include "bottom.h"
 #include "libnormaliz.h"
-#include "cone.h"
-//#include "libnormaliz.cpp"
 
 #include "scip/scip.h"
 #include "scip/scipdefplugins.h"  //TODO needed?
@@ -43,6 +40,7 @@
 namespace libnormaliz {
 using namespace std;
 
+template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) {
 
     vector<Integer>  grading = gens.find_linear_form();
@@ -79,7 +77,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) {
   return;
 }
 
-template<typename Integer> vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
+template<typename Integer>
+vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
 	long dim = grading.size();
 	cout << "grading " << grading;
 	// setup scip enviorenment
@@ -142,6 +141,10 @@ template<typename Integer> vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vect
 	SCIPfree(&scip);
 	return sol_vec; 
 }
+
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens);
 
 } // namespace
 

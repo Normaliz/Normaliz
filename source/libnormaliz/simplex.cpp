@@ -38,6 +38,7 @@
 #include "HilbertSeries.h"
 #include "cone.h"
 #include "my_omp.h"
+#include "bottom.h"
 
 //---------------------------------------------------------------------------
 
@@ -867,18 +868,43 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     {
         Full_Cone<Integer>& C = *C_ptr;
 
-        for(i=0; i<dim; ++i)  // (uses Gen)
+        for (int i=0; i<dim; ++i)
             Generators[i] = C.Generators[key[i]];
 
         list< vector<Integer> > new_points;
         bottom_points(new_points, Generators);
         if (!new_points.empty()) {
-            Matrix<Integer> new_gens(new_points).append(Generators);
+            int nr_new_points = new_points.size();
+            // temporarily add new_points to the Top_Cone generators
+            C.Generators.append(Matrix<Integer>(new_points));
+            int nr_old_gen = C.nr_gen;
+            C.nr_gen += nr_new_points;
+            bool tmp_keep_triang = C.keep_triangulation;
+            C.keep_triangulation =  false;
 
-            Full_Cone<Integer> new_cone(C, new_gens);
-            new_cone.do_all_hyperplanes=false;
+            // create "pyramid" key
+            vector<key_t> subcone_key(C.dim + nr_new_points);
+            for (int i=0; i<nr_new_points; ++i) {
+                subcone_key[i] = nr_old_gen + i;
+            }
+            for (int i=0; i<C.dim; ++i) {
+                subcone_key[nr_new_points + i] = key[i];
+            }
 
-            new_cone.build_cone();
+
+            Full_Cone<Integer> subcone(C, subcone_key);
+            subcone.do_all_hyperplanes=false;
+
+            subcone.build_cone();
+            // evaluate created simplices
+            // TODO evaluate_stored_pyramids?
+            C.evaluate_triangulation();
+
+            // restore Top_Cone
+            C.Generators.resize(nr_old_gen);
+            C.nr_gen = nr_old_gen;
+            gen_degrees.resize(nr_old_gen);
+            C.keep_triangulation = tmp_keep_triang;
             return;
         }
     }
