@@ -46,7 +46,7 @@ mpz_class to_mpz(long long a);
 inline mpz_class to_mpz(const mpz_class& a) {return a;}
 
 
-template<typename Integer> inline long explicit_cast_to_long(const Integer& a) {
+template<typename Integer> inline long explicit_cast_to_long(const Integer& a) { // only used for Integer = long long
     // check for overflow
     if (!fits_long_range(a)) {
         throw ArithmeticException();
@@ -62,6 +62,22 @@ template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
         throw ArithmeticException();
     }
     return a.get_si();
+}
+
+template<typename Integer> 
+inline Integer to_Int(const mpz_class& a) { // only used for Integer = long long
+
+    return (long long)explicit_cast_to_long(a);
+}
+
+template<> 
+inline long to_Int(const mpz_class& a) {
+    return explicit_cast_to_long(a);
+}
+
+template<> 
+inline mpz_class to_Int(const mpz_class& a) {
+    return a;
 }
 
 template<typename Integer>
