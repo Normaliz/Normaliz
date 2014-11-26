@@ -45,6 +45,13 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
     Integer ans = 0;
     size_t i,n=av.size();
 
+
+#ifdef __MIC__
+    // this version seems to be better vectorizable on the mic
+    for (i=0; i<n; ++i)
+        ans += av[i]*bv[i];
+
+#else // __MIC__
     typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
 
     if( n >= 16 )
@@ -111,7 +118,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 
     if(n>0)
         ans += a[0]*b[0];
-        
+#endif // __MIC__
         
     if(!check_range(ans)){
     
