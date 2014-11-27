@@ -126,8 +126,8 @@ public:
 //                  Conversion between integer types
 //---------------------------------------------------------------------------
 
-    void mat_to_mpz(Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
-    void mat_to_Int(Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
+    void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
+    void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
 
 //---------------------------------------------------------------------------
 //                  Basic matrices operations

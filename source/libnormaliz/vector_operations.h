@@ -182,10 +182,10 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 
 
 template<typename Integer>
-void vect_to_Int(vector<mpz_class>& mpz_vect, vector<Integer>& vect);
+void vect_to_Int(const vector<mpz_class>& mpz_vect, vector<Integer>& vect);
 
 template<typename Integer>
-void vect_to_mpz(vector<Integer>& vect, vector<mpz_class>& mpz_vect);
+void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect);
 
 
 }

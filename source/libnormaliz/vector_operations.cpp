@@ -554,13 +554,13 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 // conversion between different integer types
 
 template<typename Integer>
-void vect_to_Int(vector<mpz_class>& mpz_vect, vector<Integer>& vect){
+void vect_to_Int(const vector<mpz_class>& mpz_vect, vector<Integer>& vect){
     for(size_t i=0; i<mpz_vect.size();++i)
         vect[i]=to_Int<Integer>(mpz_vect[i]);
 }
 
 template<typename Integer>
-void vect_to_mpz(vector<Integer>& vect, vector<mpz_class>& mpz_vect){
+void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect){
     for(size_t i=0; i<mpz_vect.size();++i)
         mpz_vect[i]=to_mpz(vect[i]);
 }

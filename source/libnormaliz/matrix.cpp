@@ -786,33 +786,6 @@ bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     return true;
 }
 
-
-//---------------------------------------------------------------------------
-
-/*
-// version with minimal remainder
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t row, size_t col) {
-    assert(col >= 0);
-    assert(col < nc);
-    assert(row < nr);
-    assert(row >= 0);
-    size_t i,j;
-    Integer quot, rem;
-    for (i =row+1; i < nr; i++) {
-        if (elements[i][col]!=0) {        
-            minimal_remainder(elements[i][col], elements[row][col], quot, rem);
-            elements[i][col]=rem;            
-            for (j = col+1; j < nc; j++) {
-                elements[i][j] -= quot*elements[row][j];
-            }
-        }
-    }
-}
-*/
-
-
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1070,14 +1043,14 @@ bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::mat_to_mpz(Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
+void Matrix<Integer>::mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
     for(size_t i=0; i<mat.nr;++i)
         for(size_t j=0; j<mat.nc;++j)
             mpz_mat[i][j]=to_mpz(mat[i][j]);
 }
 
 template<typename Integer>
-void Matrix<Integer>::mat_to_Int(Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
+void Matrix<Integer>::mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
     for(size_t i=0; i<mat.nr;++i)
         for(size_t j=0; j<mat.nc;++j)
             mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
@@ -1097,13 +1070,15 @@ void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector<
     
     // now with do_arithmetic_check<Integer>()
     Matrix LS_Copy=*this;
-    Matrix RS_x_denom=Right_side;
+    Matrix RS_x_denom=Right_side; // we use this for the test and as a copy
     bool success=solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
     if(success){    
         RS_x_denom.scalar_multiplication(denom);
         Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
-        if (!RS_x_denom.equal(RS_test))
+        if (!RS_x_denom.equal(RS_test)){
             success=false;
+            RS_x_denom.scalar_division(denom); // must restore the copy
+        }
     }
     
     if(!success){
@@ -1307,6 +1282,31 @@ void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     }
 }
 */
+
+//---------------------------------------------------------------------------
+
+/*
+// version with minimal remainder
+template<typename Integer>
+void Matrix<Integer>::reduce_row (size_t row, size_t col) {
+    assert(col >= 0);
+    assert(col < nc);
+    assert(row < nr);
+    assert(row >= 0);
+    size_t i,j;
+    Integer quot, rem;
+    for (i =row+1; i < nr; i++) {
+        if (elements[i][col]!=0) {        
+            minimal_remainder(elements[i][col], elements[row][col], quot, rem);
+            elements[i][col]=rem;            
+            for (j = col+1; j < nc; j++) {
+                elements[i][j] -= quot*elements[row][j];
+            }
+        }
+    }
+}
+*/
+
 
 
 //---------------------------------------------------------------------------
