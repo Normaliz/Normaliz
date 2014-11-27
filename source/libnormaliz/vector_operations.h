@@ -30,6 +30,7 @@
 #include<list>
 
 #include "libnormaliz.h"
+#include "integer.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -175,7 +176,20 @@ vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
 template<typename Integer>
 void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx);
 
+//---------------------------------------------------------------------------
+//							  Conversion between integer types
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void vect_to_Int(vector<mpz_class>& mpz_vect, vector<Integer>& vect);
+
+template<typename Integer>
+void vect_to_mpz(vector<Integer>& vect, vector<mpz_class>& mpz_vect);
+
+
 }
+
 
 
 //---------------------------------------------------------------------------

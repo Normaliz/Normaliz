@@ -186,4 +186,24 @@ void check_range(const std::list<Candidate<Integer> >& ll){
 
 }
 
+//---------------------------------------------------------------------------
+ template<typename Integer>
+void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
+
+    quot=a/b;
+    rem=a-quot*b;
+    if(2*Iabs(rem)>Iabs(b)){
+        if((rem<0 && b>0) || (rem >0 && b<0)){                
+            rem+=b;
+            quot--;
+        }
+        else{
+            rem-=b;
+            quot++;                
+        }
+    }
+}
+
+
+
 }

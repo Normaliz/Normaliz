@@ -33,6 +33,7 @@
 #include <string>
 
 #include "libnormaliz.h"
+#include "integer.h"
 
 //---------------------------------------------------------------------------
 
@@ -50,12 +51,14 @@ template<typename Integer> class Matrix {
 //              Private routines, used in the public routines
 //---------------------------------------------------------------------------
     
+public:
+
     // Does the computation for the solution of linear systems
-    void solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
+    bool solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution);     
   
 //---------------------------------------------------------------------------
-public:
+
 //---------------------------------------------------------------------------
 //                      Construction and destruction
 //---------------------------------------------------------------------------
@@ -119,6 +122,12 @@ public:
     }
 
 
+//---------------------------------------------------------------------------
+//                  Conversion between integer types
+//---------------------------------------------------------------------------
+
+    void mat_to_mpz(Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
+    void mat_to_Int(Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
 
 //---------------------------------------------------------------------------
 //                  Basic matrices operations
@@ -165,11 +174,11 @@ public:
 //              Rows and columns reduction  in  respect to
 //          the right-lower submatrix of this described by an int corner
 //---------------------------------------------------------------------------
-
-    void reduce_row(size_t corner);      //reduction by the corner-th row
-    void reduce_row (size_t row, size_t col); // corner at position (row,col)
-    void reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
-    //for saving or copying the linear transformations
+    // return value false undicates failure
+    bool reduce_row(size_t corner);      //reduction by the corner-th row
+    bool reduce_row (size_t row, size_t col); // corner at position (row,col)
+    bool reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
+    //for saving or copying the linear transformations AND for linear systems where Left is the RHS
     void reduce_column(size_t corner);  //reduction by the corner-th column
     void reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv);
     //column reduction,  Right used for saving or copying the linear
@@ -193,7 +202,8 @@ public:
 //           --- this are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
-    size_t row_echelon(); // transforms this into row echelon form and returns rank
+    size_t row_echelon(bool compute_vol); // transforms this into row echelon form and returns rank
+    size_t row_echelon_inner(bool& success); // does the work and checks for overflows
 
     size_t rank() const; //returns rank, nondestructive
     

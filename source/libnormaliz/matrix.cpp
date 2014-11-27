@@ -720,34 +720,35 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t corner) {
-    reduce_row(corner,corner);
+bool  Matrix<Integer>::reduce_row (size_t corner) {
+    return reduce_row(corner,corner);
 }
 
 //---------------------------------------------------------------------------
  
 // version without minimal remainder
 template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t row, size_t col) {
+bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
     assert(col >= 0);
     assert(col < nc);
     assert(row < nr);
     assert(row >= 0);
     size_t i,j;
     Integer help;
-    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
     for (i =row+1; i < nr; i++) {
         if (elements[i][col]!=0) {
             help=elements[i][col] / elements[row][col];
             for (j = col; j < nc; j++) {
                 elements[i][j] -= help*elements[row][j];
-                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
+                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
                     errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
+                    return false; // throw ArithmeticException();
                 }
             }
         }
     }
+    return true;
 }
 
 //---------------------------------------------------------------------------
@@ -755,54 +756,36 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
 
 // version without minimal remainder
 template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
+bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     assert(Left.nr == nr);
     size_t i,j;
     Integer help1, help2=elements[corner][corner];
-    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
     for ( i = corner+1; i < nr; i++) {
         if (elements[i][corner]!=0) {
             help1=elements[i][corner] / help2;
             for (j = corner; j < nc; j++) {
                 elements[i][j] -= help1*elements[corner][j];
-                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
+                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
                     errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
+                    return false; //throw ArithmeticException();
                 }
             }
             for (j = 0; j < Left.nc; j++) {
                 Left.elements[i][j] -= help1*Left.elements[corner][j];
-                if (test_arithmetic_overflow && Iabs(Left.elements[i][j]) >= max_half) {
+                if (do_arithmetic_check<Integer>() && Iabs(Left.elements[i][j]) >= max_half) {
                     errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
+                    return false; // throw ArithmeticException();
                 }
             }
         }
     }
+    return true;
 }
 
-
-//---------------------------------------------------------------------------
- 
-template<typename Integer>
-void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
-
-    quot=a/b;
-    rem=a-quot*b;
-    if(2*Iabs(rem)>Iabs(b)){
-        if((rem<0 && b>0) || (rem >0 && b<0)){                
-            rem+=b;
-            quot--;
-        }
-        else{
-            rem-=b;
-            quot++;                
-        }
-    }
-}
 
 //---------------------------------------------------------------------------
 
@@ -829,87 +812,6 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
 */
 
 
-//---------------------------------------------------------------------------
-/*
-// version with minimal remainder
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    assert(Left.nr == nr);
-    size_t i,j;
-    Integer help2=elements[corner][corner],quot,rem;
-    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
-    for ( i = corner+1; i < nr; i++) {
-        if (elements[i][corner]!=0) {
-            minimal_remainder(elements[i][corner],help2,quot,rem);
-            elements[i][corner]=rem;
-            for (j = corner+1; j < nc; j++) {
-                elements[i][j] -= quot*elements[corner][j];
-                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
-                }
-            }
-            for (j = 0; j < Left.nc; j++) {
-                Left.elements[i][j] -= quot*Left.elements[corner][j];
-                if (test_arithmetic_overflow && Iabs(Left.elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
-                }
-            }
-        }
-    }
-}
-*/
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::reduce_column (size_t corner) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    size_t i,j;
-    Integer help1, help2=elements[corner][corner];
-    for ( j = corner+1; j < nc; j++) {
-        help1=elements[corner][j] / help2;
-        if (help1!=0) {
-            for (i = corner; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner];
-            }
-        }
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    assert(Right.nr == nc);
-    assert(Right.nc == nc);
-    assert(Right_Inv.nr == nc);
-    assert(Right_Inv.nc ==nc);
-    size_t i,j;
-    Integer help1, help2=elements[corner][corner];
-    for ( j = corner+1; j < nc; j++) {
-        help1=elements[corner][j] / help2;
-        if (help1!=0) {
-            for (i = corner; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner];
-            }
-            for (i = 0; i < nc; i++) {
-                Right.elements[i][j] -= help1*Right.elements[i][corner];
-                Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
-            }
-        }
-    }
-}
 
 //---------------------------------------------------------------------------
 
@@ -981,10 +883,11 @@ size_t Matrix<Integer>::rank() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::row_echelon(){
+size_t Matrix<Integer>::row_echelon_inner(bool& success){
 
     size_t pc=0;
     long piv=0, rk=0;
+    success=true;
     
     for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
@@ -996,11 +899,10 @@ size_t Matrix<Integer>::row_echelon(){
             break;
         do{
             exchange_rows (rk,piv);
-            /* print(cout);
-                cout << "++++++++++++++++++++++++" << endl; */
-            reduce_row(rk,pc);
-                /* print(cout);
-                 cout << "**********************" << endl; */
+            if(!reduce_row(rk,pc)){
+                success=false;
+                return rk;
+            }
             piv=pivot_column(rk,pc);
         }while (piv>rk);
     }
@@ -1011,29 +913,58 @@ size_t Matrix<Integer>::row_echelon(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::rank_destructive(){
-    
-    
-    if(!test_arithmetic_overflow)
-        return row_echelon();
+size_t Matrix<Integer>::row_echelon(bool compute_vol){
+
+    bool success;
+    long rk=0;
+    if(!do_arithmetic_check<Integer>()){
+        rk=row_echelon_inner(success);       
+    }
+    else{
+        Matrix<Integer> Copy=*this;
+        // cout << "test" << endl;
+        rk=row_echelon_inner(success);
+        if(!success){
+            Matrix<mpz_class> mpz_this(nr,nc);
+            mat_to_mpz(Copy,mpz_this);
+            rk=mpz_this.row_echelon_inner(success);
         
-    size_t rk=row_echelon();
-    Integer det=1, test_det=1;
-    for(size_t i=0;i<rk;++i){
-        size_t j=i;
-        for(;j<nc;j++)
-            if(elements[i][j]!=0)
-                break;
-        det*=elements[i][j];
-        test_det=(test_det *(elements[i][j]%overflow_test_modulus))%overflow_test_modulus;
+            if(compute_vol){              // return diagonal for det
+                for(size_t i=0;i<nr;++i){
+                // cout << i << " " << mpz_this[i][i] << endl;
+                    elements[i][i]=to_Int<Integer>(mpz_this[i][i]);
+                }
+            }
+        }
     }
     
-    if(test_det!=det%overflow_test_modulus){
-        errorOutput()<<"Arithmetic failure in computing rank. Most likely overflow.\n";
-        throw ArithmeticException();
-    }
+    if(compute_vol){
+        Integer test_det = 1;
+        if(do_arithmetic_check<Integer>())
+            for (size_t i=0; i<nr; i++){
+                test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
+          test_det=Iabs(test_det);  
+        }
     
-    return rk; 
+        for(size_t i=1;i<nr;++i)
+            elements[0][0]*=elements[i][i];           
+        elements[0][0]=Iabs(elements[0][0]);
+        
+        if(do_arithmetic_check<Integer>() && test_det!=elements[0][0]%overflow_test_modulus){
+            errorOutput()<<"Arithmetic failure in computing determinant. Most likely overflow.\n";
+            throw ArithmeticException();
+        }
+    }
+     
+    return rk;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank_destructive(){
+         
+    return row_echelon(false);
 }
 
 //---------------------------------------------------------------------------
@@ -1041,31 +972,11 @@ size_t Matrix<Integer>::rank_destructive(){
 template<typename Integer>
 Integer Matrix<Integer>::vol_destructive(){
 
-    /* print(cout);
-    cout << "--------------------" << endl; */
-
-    row_echelon();
-    Integer det = 1;
-    for (size_t i=0; i<nr; i++){
-        det*=elements[i][i];
-    }
+    if(nr==0)
+        return 1;
     
-    /* print(cout);
-    cout << "===================" << endl;*/
-    
-    if(!test_arithmetic_overflow)
-        return Iabs(det);
-        
-    Integer test_det = 1;
-    for (size_t i=0; i<nr; i++){
-        test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
-    }
-    if(test_det!=det%overflow_test_modulus){
-        errorOutput()<<"Arithmetic failure in computing determinant. Most likely overflow.\n";
-        throw ArithmeticException();
-    }
-    
-    return Iabs(det);
+    row_echelon(true);
+    return elements[0][0];
 }
 
 //---------------------------------------------------------------------------
@@ -1077,12 +988,14 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
     size_t max_rank=min(nr,nc);
     size_t rk;
     Matrix<Integer> Test(max_rank,nc);
+    Matrix<Integer> TestCopy(max_rank,nc);
     Test.nr=1;
     
     for(size_t i=0;i<nr;++i){
     
         Test[Test.nr-1]=elements[i];
-        rk=Test.row_echelon();
+        TestCopy=Test;
+        rk=TestCopy.row_echelon(false);
         if(rk==Test.nr){
             v.push_back(i);
             Test.nr++;
@@ -1098,7 +1011,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
     size_t nr_sys=Right_side.nc;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
@@ -1117,9 +1030,10 @@ void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
         piv=(*this).pivot_column(rk);
         if (piv>=0) {
             do {
-                (*this).exchange_rows (rk,piv);
+                exchange_rows (rk,piv);
                 Right_side.exchange_rows (rk,piv);
-                (*this).reduce_row(rk, Right_side);
+                if(!reduce_row(rk, Right_side))
+                    return false;
                 piv=(*this).pivot_column(rk);
             } while (piv>rk);
         }
@@ -1132,7 +1046,10 @@ void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
 
     if (denom==0) { 
         errorOutput() << "Cannot solve system (denom=0)!" << endl;
-        throw ArithmeticException(); //TODO welche Exception?
+        if(test_arithmetic_overflow)
+            return false; 
+        else
+            throw ArithmeticException();
     }
 
     denom=Iabs(denom);
@@ -1147,8 +1064,24 @@ void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
             Solution.elements[j][i]=S/(*this).elements[j][j];
         }
     }
+    return true;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::mat_to_mpz(Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
+    for(size_t i=0; i<mat.nr;++i)
+        for(size_t j=0; j<mat.nc;++j)
+            mpz_mat[i][j]=to_mpz(mat[i][j]);
+}
+
+template<typename Integer>
+void Matrix<Integer>::mat_to_Int(Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
+    for(size_t i=0; i<mat.nr;++i)
+        for(size_t j=0; j<mat.nc;++j)
+            mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
+}
 
     
 //---------------------------------------------------------------------------
@@ -1157,28 +1090,37 @@ template<typename Integer>
 void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution) {
                     
-    if(!test_arithmetic_overflow){
+    if(!do_arithmetic_check<Integer>()){
         solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
         return;
     }
     
-    // now with test_arithmetic_overflow
+    // now with do_arithmetic_check<Integer>()
     Matrix LS_Copy=*this;
     Matrix RS_x_denom=Right_side;
-    solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
-    RS_x_denom.scalar_multiplication(denom);
-    // cout << endl;
-    // cout << RS_x_denom.nr << " " << RS_x_denom.nc << endl;  
-    // RS_x_denom.pretty_print(cout);
-    // cout << endl;
-
-    Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
-    // cout << RS_test.nr << " " << RS_test.nc << endl; 
-    // RS_test.pretty_print(cout);
-    if (!RS_x_denom.equal(RS_test)) {
-        errorOutput()<<"Arithmetic failure in solving a linear system. Most likely overflow.\n";
-        throw ArithmeticException();
+    bool success=solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
+    if(success){    
+        RS_x_denom.scalar_multiplication(denom);
+        Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
+        if (!RS_x_denom.equal(RS_test))
+            success=false;
     }
+    
+    if(!success){
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mat_to_mpz(LS_Copy,mpz_this);
+        Matrix<mpz_class> mpz_RS(Right_side.nr,Right_side.nc);
+        Matrix<mpz_class> mpz_Sol(Right_side.nr,Right_side.nc);
+        mat_to_mpz(RS_x_denom,mpz_RS);
+        mpz_class mpz_denom;
+        vector<mpz_class> mpz_diag(diagonal.size());
+        mpz_this.solve_destructive_Sol_inner(mpz_RS,mpz_diag,mpz_denom,mpz_Sol);
+        vect_to_Int(mpz_diag,diagonal);
+        denom=to_Int<Integer>(mpz_denom);
+        mat_to_Int(mpz_Sol,Solution);
+    }
+    
+
 }
 
 //---------------------------------------------------------------------------
@@ -1330,6 +1272,89 @@ Matrix<Integer> invert(const Matrix<Integer>& Left_side, vector< Integer >& diag
 }
 
 //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+/*
+// version with minimal remainder
+template<typename Integer>
+void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    assert(Left.nr == nr);
+    size_t i,j;
+    Integer help2=elements[corner][corner],quot,rem;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
+    for ( i = corner+1; i < nr; i++) {
+        if (elements[i][corner]!=0) {
+            minimal_remainder(elements[i][corner],help2,quot,rem);
+            elements[i][corner]=rem;
+            for (j = corner+1; j < nc; j++) {
+                elements[i][j] -= quot*elements[corner][j];
+                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
+            }
+            for (j = 0; j < Left.nc; j++) {
+                Left.elements[i][j] -= quot*Left.elements[corner][j];
+                if (do_arithmetic_check<Integer>() && Iabs(Left.elements[i][j]) >= max_half) {
+                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    throw ArithmeticException();
+                }
+            }
+        }
+    }
+}
+*/
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::reduce_column (size_t corner) {
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    size_t i,j;
+    Integer help1, help2=elements[corner][corner];
+    for ( j = corner+1; j < nc; j++) {
+        help1=elements[corner][j] / help2;
+        if (help1!=0) {
+            for (i = corner; i < nr; i++) {
+                elements[i][j] -= help1*elements[i][corner];
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    assert(Right.nr == nc);
+    assert(Right.nc == nc);
+    assert(Right_Inv.nr == nc);
+    assert(Right_Inv.nc ==nc);
+    size_t i,j;
+    Integer help1, help2=elements[corner][corner];
+    for ( j = corner+1; j < nc; j++) {
+        help1=elements[corner][j] / help2;
+        if (help1!=0) {
+            for (i = corner; i < nr; i++) {
+                elements[i][j] -= help1*elements[i][corner];
+            }
+            for (i = 0; i < nc; i++) {
+                Right.elements[i][j] -= help1*Right.elements[i][corner];
+                Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
+            }
+        }
+    }
+}
+
 
 
 }  // namespace

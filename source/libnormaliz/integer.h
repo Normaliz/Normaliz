@@ -81,6 +81,16 @@ inline mpz_class to_Int(const mpz_class& a) {
 }
 
 template<typename Integer>
+inline bool do_arithmetic_check() {
+  return test_arithmetic_overflow;
+}
+
+template<>
+inline bool do_arithmetic_check<mpz_class>() {
+  return false;
+} 
+
+template<typename Integer>
 Integer int_max_value_half();
 
 template<typename Integer>
@@ -110,6 +120,11 @@ template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
 //returns lcm of a and b,   returns 0 if one is 0
 template<typename Integer> Integer lcm(const Integer& a, const Integer& b);
 template<> mpz_class lcm(const mpz_class& a, const mpz_class& b);
+
+// integer division a/b. Returns quot and rem = minimal remainder <= |b|/2
+ template<typename Integer>
+void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem);
+
 //---------------------------------------------------------------------------
 //                     Special functions
 //---------------------------------------------------------------------------
