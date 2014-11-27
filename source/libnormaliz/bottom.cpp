@@ -23,6 +23,7 @@
 
 #ifdef NMZ_SCIP
 #include <stdlib.h>
+#include <math.h>
 
 #include <iostream>
 //#include <sstream>
@@ -60,7 +61,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) {
 
     Support_Hyperplanes = Support_Hyperplanes.transpose();
     Support_Hyperplanes.make_prime();
-
+/*
+	cout << "gens " << endl;
+	gens.pretty_print(cout);
+	cout << "supp hyps " << endl;
+	Support_Hyperplanes.pretty_print(cout);
+	cout << "grading " << grading;
+*/
     // call scip
     vector<Integer> new_point = opt_sol(Support_Hyperplanes, grading);
 
@@ -87,12 +94,11 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) {
 template<typename Integer>
 vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
 	long dim = grading.size();
-	cout << "grading " << grading;
 	// setup scip enviorenment
     SCIP* scip;
     SCIPcreate(& scip);
     SCIPincludeDefaultPlugins(scip);
-    SCIPsetMessagehdlr(scip,NULL);
+    SCIPsetMessagehdlr(scip,NULL);  // deactivate scip output
     // create variables
     SCIP_VAR** x = new SCIP_VAR*[dim];
     char name[SCIP_MAXSTRLEN];
@@ -123,9 +129,9 @@ vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
     SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, 1.0, SCIPinfinity(scip));
     SCIPaddCons(scip, cons);
     SCIPreleaseCons(scip, &cons);
-        
-//   SCIPinfoMessage(scip, NULL, "Original problem:\n");
-//   SCIP_CALL( SCIPprintOrigProblem(scip, NULL, "cip", FALSE) );
+       
+    SCIPinfoMessage(scip, NULL, "Original problem:\n");
+    SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
 //   SCIPinfoMessage(scip, NULL, "\nSolving...\n");
     SCIPsolve(scip);
     SCIPfreeTransform(scip);
@@ -134,10 +140,13 @@ vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading){
 	if( SCIPgetNSols(scip) > 0 )
     {
       SCIP_SOL* sol = SCIPgetBestSol(scip);
-//   SCIP_CALL( SCIPprintSol(scip, SCIPgetBestSol(scip), NULL, FALSE) );
+   SCIPprintSol(scip, SCIPgetBestSol(scip), NULL, FALSE) ;
 	  
-	  for (int i=0;i<dim;i++) sol_vec[i] = SCIPgetSolVal(scip,sol,x[i]);
-	  
+	  for (int i=0;i<dim;i++) {
+		// TODO nicht ueberzeugend!
+		sol_vec[i] = round(SCIPgetSolVal(scip,sol,x[i]));
+		
+	  }
 	  cout << "solution " << sol_vec;
 	  
     } else {
