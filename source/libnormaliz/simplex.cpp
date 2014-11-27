@@ -880,6 +880,11 @@ cout << "new_points:" << endl << new_points;
             C.Generators.append(Matrix<Integer>(new_points));
             int nr_old_gen = C.nr_gen;
             C.nr_gen += nr_new_points;
+            C.set_degrees();
+            C.Top_Key.resize(C.nr_gen);
+            for (size_t i=nr_old_gen; i<C.nr_gen; ++i) {
+                C.Top_Key[i] = i;
+            }
             bool tmp_keep_triang = C.keep_triangulation;
             C.keep_triangulation =  false;
 
@@ -891,7 +896,6 @@ cout << "new_points:" << endl << new_points;
             for (size_t i=0; i<C.dim; ++i) {
                 subcone_key[nr_new_points + i] = key[i];
             }
-
 
             Full_Cone<Integer> subcone(C, subcone_key);
             subcone.do_all_hyperplanes=false;
