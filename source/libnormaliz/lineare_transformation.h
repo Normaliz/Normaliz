@@ -43,6 +43,7 @@
 #include <string>
 
 #include "libnormaliz.h"
+#include "integer.h"
 #include "matrix.h"
 
 //---------------------------------------------------------------------------
@@ -51,6 +52,11 @@ namespace libnormaliz {
 
 template<typename Integer>
 class Lineare_Transformation {
+
+    template<typename> friend class Lineare_Transformation;
+    
+public:
+
   long rk;
   string status;
   Integer index;
@@ -58,7 +64,7 @@ class Lineare_Transformation {
   Matrix<Integer> Right;
   Matrix<Integer> Right_Inv;
 //---------------------------------------------------------------------------
-public:
+// public:
 //---------------------------------------------------------------------------
 //                      Construction and destruction
 //---------------------------------------------------------------------------
@@ -97,15 +103,15 @@ public:
 //                  Rows and columns reduction
 //---------------------------------------------------------------------------
 
-  void reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
-  void reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
+  bool reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
+  bool reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
 
 //---------------------------------------------------------------------------
 //                   Algorithms
 //---------------------------------------------------------------------------
 
-  void transformation(); //makes the main computation
-                        //no tests for errors
+  bool transformation(); //makes the main computation
+                        
 //---------------------------------------------------------------------------
 //Tests
 //---------------------------------------------------------------------------
@@ -114,7 +120,7 @@ public:
   /* test the main computation for arithmetic overflow
    * uses multiplication mod m
    */
-  bool test_transformation(const Matrix<Integer>& M, const size_t& m) const;
+  bool test_transformation(const size_t& m) const;
 
 
 };

@@ -1316,26 +1316,32 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::reduce_column (size_t corner) {
+bool Matrix<Integer>::reduce_column (size_t corner) {
     assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     size_t i,j;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
     Integer help1, help2=elements[corner][corner];
     for ( j = corner+1; j < nc; j++) {
         help1=elements[corner][j] / help2;
         if (help1!=0) {
             for (i = corner; i < nr; i++) {
                 elements[i][j] -= help1*elements[i][corner];
+                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; //throw ArithmeticException();
+                }
             }
         }
     }
+    return true;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
+bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
     assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
@@ -1344,19 +1350,30 @@ void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matr
     assert(Right_Inv.nr == nc);
     assert(Right_Inv.nc ==nc);
     size_t i,j;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
     Integer help1, help2=elements[corner][corner];
     for ( j = corner+1; j < nc; j++) {
         help1=elements[corner][j] / help2;
         if (help1!=0) {
             for (i = corner; i < nr; i++) {
                 elements[i][j] -= help1*elements[i][corner];
+                    if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; //throw ArithmeticException();
+                }
             }
             for (i = 0; i < nc; i++) {
                 Right.elements[i][j] -= help1*Right.elements[i][corner];
                 Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
+                if (do_arithmetic_check<Integer>() && (Iabs(Right.elements[i][j]) >= max_half ||
+                        Iabs(Right_Inv.elements[corner][i]) >= max_half) ) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; //throw ArithmeticException();
+               } 
             }
         }
     }
+    return true;
 }
 
 

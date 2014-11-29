@@ -45,7 +45,10 @@ using std::string;
 template<typename Integer> class Matrix {
 
     template<typename> friend class Matrix;
+    template<typename> friend class Lineare_Transformation;
     
+    public:
+
     size_t nr;
     size_t nc;
     vector< vector<Integer> > elements;
@@ -54,11 +57,12 @@ template<typename Integer> class Matrix {
 //              Private routines, used in the public routines
 //---------------------------------------------------------------------------
     
-public:
 
     // Does the computation for the solution of linear systems
     bool solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution);     
+                    Integer& denom, Matrix<Integer>& Solution); 
+                    
+// public:    
   
 //---------------------------------------------------------------------------
 
@@ -182,8 +186,8 @@ public:
     bool reduce_row (size_t row, size_t col); // corner at position (row,col)
     bool reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
     //for saving or copying the linear transformations AND for linear systems where Left is the RHS
-    void reduce_column(size_t corner);  //reduction by the corner-th column
-    void reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv);
+    bool reduce_column(size_t corner);  //reduction by the corner-th column
+    bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv);
     //column reduction,  Right used for saving or copying the linear
     //transformations, Right_Inv used for saving the inverse linear transformations
 

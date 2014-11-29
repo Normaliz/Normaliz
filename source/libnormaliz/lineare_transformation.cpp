@@ -31,6 +31,7 @@
 
 #include "lineare_transformation.h"
 #include "integer.h"
+#include "matrix.h"
 
 //---------------------------------------------------------------------------
 
@@ -162,21 +163,21 @@ void Lineare_Transformation<Integer>::exchange_columns(size_t col1, size_t col2)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::reduce_row(size_t corner){
-    Center.reduce_row(corner);
+bool Lineare_Transformation<Integer>::reduce_row(size_t corner){
+    return Center.reduce_row(corner);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::reduce_column(size_t corner){
-    Center.reduce_column(corner, Right, Right_Inv);
+bool Lineare_Transformation<Integer>::reduce_column(size_t corner){
+    return Center.reduce_column(corner, Right, Right_Inv);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Lineare_Transformation<Integer>::transformation(){
+bool Lineare_Transformation<Integer>::transformation(){
     long r;
     long rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
     vector<long> piv(2,0);
@@ -186,8 +187,10 @@ void Lineare_Transformation<Integer>::transformation(){
             do {
                 exchange_rows (r,piv[0]);
                 exchange_columns (r,piv[1]);
-                reduce_row (r);
-                reduce_column (r);
+                if(!reduce_row (r))
+                    return false;
+                if(!reduce_column (r))
+                    return false;
                 piv=Center.pivot(r);
             } while ((piv[0]>r)||(piv[1]>r));
         }
@@ -200,12 +203,13 @@ void Lineare_Transformation<Integer>::transformation(){
     }
     index=Iabs(index);
     status="initialized, after transformation";
+    return true;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Lineare_Transformation<Integer>::test_transformation(const Matrix<Integer>& M,const size_t& m) const{
+bool Lineare_Transformation<Integer>::test_transformation(const size_t& m) const{
     size_t nc=Center.nr_of_columns();
     Matrix<Integer> N=Right.multiplication(Right_Inv, m);
     Matrix<Integer> I(nc);
@@ -217,13 +221,21 @@ bool Lineare_Transformation<Integer>::test_transformation(const Matrix<Integer>&
 template<typename Integer>
 Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
     Lineare_Transformation<Integer> LT(M);
-    LT.transformation();
-    if (test_arithmetic_overflow==true) {
-        bool test=LT.test_transformation(M,overflow_test_modulus);
-        if (test==false) {
-            errorOutput()<<"Arithmetic failure in linear transformation. Most likely overflow.\n";
-            throw ArithmeticException();
-        }
+    bool success=LT.transformation();
+    if(success && !using_GMP<Integer>()){
+        success=LT.test_transformation(overflow_test_modulus);
+    }
+    if(!success){
+        Matrix<mpz_class> mpz_M(M.nr,M.nc);
+        mat_to_mpz(M,mpz_M);
+        Lineare_Transformation<mpz_class> mpz_LT(mpz_M);
+        mpz_LT.transformation();
+        mat_to_Int(mpz_LT.Center,LT.Center);
+        mat_to_Int(mpz_LT.Right,LT.Right);
+        mat_to_Int(mpz_LT.Right_Inv,LT.Right_Inv);
+        LT.rk=mpz_LT.rk;
+        LT.index=to_Int<Integer>(mpz_LT.index);
+        LT.status=mpz_LT.status;       
     }
     return LT;
 }
@@ -231,3 +243,10 @@ Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
 //---------------------------------------------------------------------------
 
 }
+
+
+/*
+                if (test==false) {
+                errorOutput()<<"Arithmetic failure in linear transformation. Most likely overflow.\n";
+                throw ArithmeticException();
+*/
