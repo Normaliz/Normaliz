@@ -67,7 +67,7 @@ template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
 template<typename Integer> 
 inline Integer to_Int(const mpz_class& a) { // only used for Integer = long long
 
-    return (long long)explicit_cast_to_long(a);
+    return (long long)explicit_cast_to_long<mpz_class>(a);
 }
 
 template<> 
@@ -88,6 +88,16 @@ inline bool do_arithmetic_check() {
 template<>
 inline bool do_arithmetic_check<mpz_class>() {
   return false;
+} 
+
+template<typename Integer>
+inline bool using_GMP() {
+  return false;
+}
+
+template<>
+inline bool using_GMP<mpz_class>() {
+  return true;
 } 
 
 template<typename Integer>

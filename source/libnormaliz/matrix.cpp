@@ -742,7 +742,7 @@ bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
             for (j = col; j < nc; j++) {
                 elements[i][j] -= help*elements[row][j];
                 if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
                     return false; // throw ArithmeticException();
                 }
             }
@@ -770,14 +770,14 @@ bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
             for (j = corner; j < nc; j++) {
                 elements[i][j] -= help1*elements[corner][j];
                 if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
                     return false; //throw ArithmeticException();
                 }
             }
             for (j = 0; j < Left.nc; j++) {
                 Left.elements[i][j] -= help1*Left.elements[corner][j];
                 if (do_arithmetic_check<Integer>() && Iabs(Left.elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
                     return false; // throw ArithmeticException();
                 }
             }
@@ -1019,10 +1019,10 @@ bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
 
     if (denom==0) { 
         errorOutput() << "Cannot solve system (denom=0)!" << endl;
-        if(test_arithmetic_overflow)
-            return false; 
-        else
+        if(!do_arithmetic_check<Integer>())
             throw ArithmeticException();
+        else
+            return false;            
     }
 
     denom=Iabs(denom);
@@ -1044,15 +1044,19 @@ bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
 
 template<typename Integer>
 void Matrix<Integer>::mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
-    for(size_t i=0; i<mat.nr;++i)
-        for(size_t j=0; j<mat.nc;++j)
+    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nc,mpz_mat.nc);
+    for(size_t i=0; i<nrows;++i)
+        for(size_t j=0; j<ncols;++j)
             mpz_mat[i][j]=to_mpz(mat[i][j]);
 }
 
 template<typename Integer>
 void Matrix<Integer>::mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
-    for(size_t i=0; i<mat.nr;++i)
-        for(size_t j=0; j<mat.nc;++j)
+    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nc,mpz_mat.nc);
+    for(size_t i=0; i<nrows;++i)
+        for(size_t j=0; j<ncols;++j)
             mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
 }
 

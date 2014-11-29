@@ -43,6 +43,9 @@ using std::vector;
 using std::string;
 
 template<typename Integer> class Matrix {
+
+    template<typename> friend class Matrix;
+    
     size_t nr;
     size_t nc;
     vector< vector<Integer> > elements;
