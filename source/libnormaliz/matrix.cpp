@@ -1039,27 +1039,6 @@ bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
     }
     return true;
 }
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
-    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
-    size_t ncols=min(mat.nc,mpz_mat.nc);
-    for(size_t i=0; i<nrows;++i)
-        for(size_t j=0; j<ncols;++j)
-            mpz_mat[i][j]=to_mpz(mat[i][j]);
-}
-
-template<typename Integer>
-void Matrix<Integer>::mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
-    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
-    size_t ncols=min(mat.nc,mpz_mat.nc);
-    for(size_t i=0; i<nrows;++i)
-        for(size_t j=0; j<ncols;++j)
-            mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
-}
-
     
 //---------------------------------------------------------------------------
 
@@ -1375,6 +1354,29 @@ bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matr
     }
     return true;
 }
+
+//---------------------------------------------------------------------------
+// Classless conversion routines
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
+    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nc,mpz_mat.nc);
+    for(size_t i=0; i<nrows;++i)
+        for(size_t j=0; j<ncols;++j)
+            mpz_mat[i][j]=to_mpz(mat[i][j]);
+}
+
+template<typename Integer>
+void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
+    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nc,mpz_mat.nc);
+    for(size_t i=0; i<nrows;++i)
+        for(size_t j=0; j<ncols;++j)
+            mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
+}
+
 
 
 

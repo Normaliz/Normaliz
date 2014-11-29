@@ -82,7 +82,7 @@ inline mpz_class to_Int(const mpz_class& a) {
 
 template<typename Integer>
 inline bool do_arithmetic_check() {
-  return test_arithmetic_overflow;
+  return test_arithmetic_overflow; // true;
 }
 
 template<>

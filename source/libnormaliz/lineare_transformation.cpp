@@ -222,14 +222,18 @@ template<typename Integer>
 Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
     Lineare_Transformation<Integer> LT(M);
     bool success=LT.transformation();
+    // cout << "Success " << success << endl;
     if(success && !using_GMP<Integer>()){
         success=LT.test_transformation(overflow_test_modulus);
+        // if(!success)
+        //    cout << "Test daneben!!" << endl;
     }
     if(!success){
         Matrix<mpz_class> mpz_M(M.nr,M.nc);
         mat_to_mpz(M,mpz_M);
         Lineare_Transformation<mpz_class> mpz_LT(mpz_M);
         mpz_LT.transformation();
+        // mpz_LT.read();
         mat_to_Int(mpz_LT.Center,LT.Center);
         mat_to_Int(mpz_LT.Right,LT.Right);
         mat_to_Int(mpz_LT.Right_Inv,LT.Right_Inv);

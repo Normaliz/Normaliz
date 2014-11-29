@@ -128,14 +128,6 @@ template<typename Integer> class Matrix {
         return elements[row];
     }
 
-
-//---------------------------------------------------------------------------
-//                  Conversion between integer types
-//---------------------------------------------------------------------------
-
-    void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
-    void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
-
 //---------------------------------------------------------------------------
 //                  Basic matrices operations
 //---------------------------------------------------------------------------
@@ -272,6 +264,16 @@ template<typename Integer> class Matrix {
 
 };
 //class end *****************************************************************
+
+//---------------------------------------------------------------------------
+//                  Conversion between integer types
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
+
+template<typename Integer>
+void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
 
 } // namespace
 
