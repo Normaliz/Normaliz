@@ -363,6 +363,20 @@ void OffloadHandler<Integer>::evaluate_pyramids()
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void OffloadHandler<Integer>::evaluate_triangulation()
+{
+  wait();
+  cout << "mic " << mic_nr<< ": evaluate_triangulation" << endl;
+  #pragma offload target(mic:mic_nr) signal(&running)
+  {
+    offload_fc_ptr->evaluate_triangulation();
+  }
+  running = true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void OffloadHandler<Integer>::complete_evaluation()
 {
   wait();
@@ -655,11 +669,11 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void MicOffloader<Integer>::complete_evaluation()
+void MicOffloader<Integer>::evaluate_triangulation()
 {
   if (is_init)
   {
-    handler_ptr->complete_evaluation();
+    handler_ptr->evaluate_triangulation();
   }
 }
 

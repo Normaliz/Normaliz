@@ -30,8 +30,9 @@ public:
 
   void transfer_pyramids(const std::list< std::vector<key_t> >& pyramids);
   void evaluate_pyramids();
-  void complete_evaluation();
-  void collect_data();
+  void evaluate_triangulation();
+  void complete_evaluation(); // call only once!
+  void collect_data();        // call only once!
 
   // checks if a previous asynchronous offload is still running
   bool is_running();
@@ -69,14 +70,14 @@ public:
   void offload_pyramids(Full_Cone<Integer>& fc);
 
   // evaluates remaining triangulation
-  void complete_evaluation();
+  void evaluate_triangulation();
 
   // collects the results and destructs the offloaded cones
   void finalize();
 
 private:
   bool is_init;
-  int nr_mic;
+  int nr_mics;
   OffloadHandler<Integer>* handler_ptr;
 
   void init(Full_Cone<Integer>& fc);
