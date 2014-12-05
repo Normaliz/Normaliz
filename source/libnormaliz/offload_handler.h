@@ -38,15 +38,6 @@ public:
   // waits until previous asynchronous offload has finished
   void wait();
 
-  // prints the offloaded generators
-  void print_on_mic() const;
-
-  // does a test computation on the mic and prints the result
-  void compute_on_mic(long a, long b);
-
-  // transfer the generator matrix back
-  Matrix<Integer> transfer_from_mic();
-
 private:
   const int mic_nr;
   bool running; // used to see if we still have a wait lock open
@@ -90,8 +81,6 @@ private:
 
   void init(Full_Cone<Integer>& fc);
 };
-
-void offload_test();
 
 } // end namespace libnormaliz
 

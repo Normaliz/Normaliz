@@ -95,6 +95,7 @@ OffloadHandler<Integer>::OffloadHandler(Full_Cone<Integer>& fc, int mic_number)
     running(false),
     local_fc_ref(fc)
 {
+  cout << "mic " << mic_nr<< ": Offload and initialize Full_Cone..." << endl;
   create_full_cone();
 
   transfer_bools();
@@ -103,6 +104,7 @@ OffloadHandler<Integer>::OffloadHandler(Full_Cone<Integer>& fc, int mic_number)
   transfer_triangulation_info(); // extreme rays, deg1_triangulation, Order_Vector
 
   primal_algorithm_initialize();
+  cout << "mic " << mic_nr<< ": Full_Cone initialized." << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -117,7 +119,7 @@ void OffloadHandler<Integer>::create_full_cone()
   Integer *data = new Integer[size];
   fill_plain(data, nr, nc, M);
 
-  cout << "Offload data to mic, offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
+//  cout << "mic " << mic_nr<< ": Offload Full_Cone..." << endl;
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created Full_Cone
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
@@ -125,9 +127,8 @@ void OffloadHandler<Integer>::create_full_cone()
     Matrix<Integer> gens(nr, nc);
     fill_matrix(gens, nr, nc, data);
     offload_fc_ptr = new Full_Cone<Integer>(gens);
-    cout << "offload_fc_ptr value on mic " << offload_fc_ptr << endl;
   }
-  cout << "After offload offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
+//  cout << "mic " << mic_nr<< ": Offload Full_Cone completed." << endl;
   delete[] data;
 }
 
@@ -136,7 +137,7 @@ void OffloadHandler<Integer>::create_full_cone()
 template<typename Integer>
 void OffloadHandler<Integer>::transfer_bools()
 {
-  cout << "transfer_bools" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_bools" << endl;
   Full_Cone<Integer>& foo_loc = local_fc_ref;  // prevents segfault
   //TODO segfaults should be resolved in intel compiler version 2015
   #pragma offload target(mic:mic_nr)
@@ -159,7 +160,7 @@ void OffloadHandler<Integer>::transfer_bools()
     offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
     verbose = true;
   }
-  cout << "transfer_bools done" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_bools done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -167,7 +168,7 @@ void OffloadHandler<Integer>::transfer_bools()
 template<typename Integer>
 void OffloadHandler<Integer>::transfer_support_hyperplanes()
 {
-  cout << "transfer_support_hyperplanes" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_support_hyperplanes" << endl;
   const Matrix<Integer>& M = local_fc_ref.Support_Hyperplanes;
   long nr = M.nr_of_rows();
   long nc = M.nr_of_columns();
@@ -176,21 +177,18 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes()
   Integer *data = new Integer[size];
   fill_plain(data, nr, nc, M);
 
-  cout << "Offload data to mic, offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created C++ matrix
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
-    cout << "offload_fc_ptr value on mic " << offload_fc_ptr << endl;
     offload_fc_ptr->Support_Hyperplanes = Matrix<Integer>(nr, nc);
     fill_matrix(offload_fc_ptr->Support_Hyperplanes, nr, nc, data);
     offload_fc_ptr->nrSupport_Hyperplanes = nr;
     offload_fc_ptr->is_Computed.set(ConeProperty::SupportHyperplanes);
     offload_fc_ptr->do_all_hyperplanes = false;
   }
-  cout << "After offload offload_fc_ptr value on cpu " << offload_fc_ptr << endl;
   delete[] data;
 
-  cout << "transfer_support_hyperplanes done" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_support_hyperplanes done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -198,7 +196,7 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes()
 template<typename Integer>
 void OffloadHandler<Integer>::transfer_grading()
 {
-  cout << "transfer_grading" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_grading" << endl;
   long dim = local_fc_ref.dim;
   if (local_fc_ref.inhomogeneous)
   {
@@ -237,7 +235,7 @@ void OffloadHandler<Integer>::transfer_grading()
     }
   }
 
-  cout << "transfer_grading done" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_grading done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -245,7 +243,7 @@ void OffloadHandler<Integer>::transfer_grading()
 template<typename Integer>
 void OffloadHandler<Integer>::transfer_triangulation_info()
 {
-  cout << "transfer_triangulation_info" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_triangulation_info" << endl;
   long dim = local_fc_ref.dim;
   long nr_gen = local_fc_ref.nr_gen;
 
@@ -301,7 +299,7 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
     }
     delete[] data;
   }
-  cout << "transfer_triangulation_info done" << endl;
+//  cout << "mic " << mic_nr<< ": transfer_triangulation_info done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -315,13 +313,13 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
     offload_fc_ptr->do_vars_check();
     offload_fc_ptr->primal_algorithm_initialize();
 
-    cout << "create 4 mio empty simplices ..." << flush;
+    cout << "mic " << mic_nr<< ": create 4 mio empty simplices ..." << endl;
     SHORTSIMPLEX<Integer> simp;
     simp.key = vector<key_t>(offload_fc_ptr->dim);
     simp.height = 0;
     simp.vol = 0;
     offload_fc_ptr->FreeSimpl.insert(offload_fc_ptr->FreeSimpl.end(), 4000000, simp);
-    cout << "done" << endl;
+    cout << "mic " << mic_nr<< ": creating simplices done." << endl;
   }
   running = true;
 }
@@ -331,13 +329,13 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
 template<typename Integer>
 void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyramids)
 {
-  cout << "transfer_pyramids" << endl;
   long size = plain_size(pyramids);
 
   key_t *data = new key_t[size];
   fill_plain(data, size, pyramids);
 
   wait();
+  cout << "mic " << mic_nr<< ": transfer_pyramids" << endl;
   #pragma offload target(mic:mic_nr) in(size) in(data: length(size) ONCE)
   {
     fill_list_vector(offload_fc_ptr->Pyramids[0], size, data);
@@ -345,7 +343,7 @@ void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyr
   }
   delete[] data;
 
-  cout << "transfer_pyramids done" << endl;
+  cout << "mic " << mic_nr<< ": transfer_pyramids done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -353,14 +351,13 @@ void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyr
 template<typename Integer>
 void OffloadHandler<Integer>::evaluate_pyramids()
 {
-  cout << "evaluate_pyramids" << endl;
   wait();
+  cout << "mic " << mic_nr<< ": evaluate_pyramids" << endl;
   #pragma offload target(mic:mic_nr) signal(&running)
   {
     offload_fc_ptr->evaluate_stored_pyramids(0);
   }
   running = true;
-  cout << "evaluate_pyramids done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -368,36 +365,13 @@ void OffloadHandler<Integer>::evaluate_pyramids()
 template<typename Integer>
 void OffloadHandler<Integer>::complete_evaluation()
 {
-  cout << "complete_evaluation" << endl;
   wait();
+  cout << "mic " << mic_nr<< ": complete_evaluation" << endl;
   #pragma offload target(mic:mic_nr) signal(&running)
   {
     offload_fc_ptr->primal_algorithm_finalize();
   }
   running = true;
-  cout << "complete_evaluation done" << endl;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void OffloadHandler<Integer>::print_on_mic() const
-{
-  cout << "Offloaded print" << endl;
-  #pragma offload target(mic:mic_nr)
-  {
-    cout << offload_fc_ptr->Pyramids;
-  }
-}
-
-template<typename Integer>
-void OffloadHandler<Integer>::compute_on_mic(long a, long b)
-{
-  cout << "Offloaded computation" << endl;
-  #pragma offload target(mic:mic_nr)
-  {
-    cout << "Rank computed on mic " << offload_fc_ptr->Generators.rank() << endl;
-  }
 }
 
 //---------------------------------------------------------------------------
@@ -406,11 +380,11 @@ template<typename Integer>
 void OffloadHandler<Integer>::collect_data()
 {
   wait();
-  cout << "collect_data" << endl;
+  cout << "mic " << mic_nr<< ": collect_data" << endl;
   collect_integers(); // TriangulationSize, DetSum, Multiplicity, ...
   collect_hilbert_series();
   collect_candidates(); // Hilbert basis, degree 1 elements
-  cout << "collect_data done" << endl;
+  cout << "mic " << mic_nr<< ": collect_data done" << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -437,7 +411,7 @@ void OffloadHandler<Integer>::collect_integers()
   if (local_fc_ref.do_triangulation && local_fc_ref.do_evaluation
       && local_fc_ref.isComputed(ConeProperty::Grading))
   {
-    cout << "collecting multiplicity ..." << endl;
+//    cout << "mic " << mic_nr<< ": collecting multiplicity ..." << endl;
     long size;
     std::string* str_ptr;
     #pragma offload target(mic:mic_nr) out(size) nocopy(str_ptr: length(0))
@@ -455,7 +429,7 @@ void OffloadHandler<Integer>::collect_integers()
     mpq_class coll_mult(c_str);
     delete c_str;
     local_fc_ref.multiplicity += coll_mult;
-    cout << "collecting multiplicity done" << endl;
+//    cout << "mic " << mic_nr<< ": collecting multiplicity done" << endl;
   }
 }
 
@@ -467,7 +441,7 @@ void OffloadHandler<Integer>::collect_hilbert_series()
 
   if (local_fc_ref.do_h_vector)
   {
-    cout << "collecting Hilbert series ..." << endl;
+//    cout << "mic " << mic_nr<< ": collecting Hilbert series ..." << endl;
     long size;
     std::string* str_ptr;
     #pragma offload target(mic:mic_nr) out(size) nocopy(str_ptr: length(0))
@@ -485,7 +459,7 @@ void OffloadHandler<Integer>::collect_hilbert_series()
     HilbertSeries col_HS = HilbertSeries(string(c_str));
     delete c_str;
     local_fc_ref.Hilbert_Series += col_HS;
-    cout << "collecting Hilbert series done" << endl;
+//    cout << "mic " << mic_nr<< ": collecting Hilbert series done" << endl;
   }
 }
 
@@ -507,7 +481,7 @@ void OffloadHandler<Integer>::collect_candidates()
 {
   if (local_fc_ref.do_Hilbert_basis)
   {
-    cout << "collect Hilbert basis" << endl;
+//    cout << "mic " << mic_nr<< ": collect Hilbert basis" << endl;
     long size;
 
     #pragma offload target(mic:mic_nr) out(size)
@@ -540,7 +514,7 @@ void OffloadHandler<Integer>::collect_candidates()
         cand_l.push_back(Candidate<Integer>(coll_HB.front(),local_fc_ref));
         coll_HB.pop_front();
       }
-      cout << "CandidateList complete" << endl;
+//      cout << "mic " << mic_nr<< ": CandidateList complete" << endl;
 //      #pragma omp critical(CANDIDATES)
       local_fc_ref.NewCandidates.splice(cand_l);
 
@@ -548,12 +522,12 @@ void OffloadHandler<Integer>::collect_candidates()
       local_fc_ref.update_reducers();
 
     } // if (size > 0)
-    cout << "collect Hilbert basis done" << endl;
+//    cout << "mic " << mic_nr<< ": collect Hilbert basis done" << endl;
   }
 
   if (local_fc_ref.do_deg1_elements)
   {
-    cout << "collect degree 1 elements" << endl;
+//    cout << "mic " << mic_nr<< ": collect degree 1 elements" << endl;
     long size;
 
     #pragma offload target(mic:mic_nr) out(size)
@@ -574,7 +548,7 @@ void OffloadHandler<Integer>::collect_candidates()
       delete[] data;
       local_fc_ref.Deg1_Elements.splice(local_fc_ref.Deg1_Elements.end(),coll_Deg1);
     }
-    cout << "collect degree 1 elements done" << endl;
+//    cout << "mic " << mic_nr<< ": collect degree 1 elements done" << endl;
   }
 }
 
@@ -599,41 +573,19 @@ void OffloadHandler<Integer>::wait()
 {
   if (is_running())
   {
+    cout << "mic " << mic_nr<< ": waiting ..." << endl;
     #pragma offload_wait target(mic:mic_nr) wait(&running)
     running = false;
+    cout << "mic " << mic_nr<< ": waiting completed." << endl;
   }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> OffloadHandler<Integer>::transfer_from_mic()
-{
-  cout << "Transfer data back to cpu" << endl;
-  long a,b;
-  #pragma offload target(mic:mic_nr) out(a) out(b)
-  {
-    a = offload_fc_ptr->Generators.nr_of_rows();
-    b = offload_fc_ptr->Generators.nr_of_columns();
-  }
-
-  cout << "transfer matrix of size a = " << a << " by  b = " << b << endl;
-  long size = a*b;
-  Integer *ret = new Integer[size];
-  #pragma offload target(mic:mic_nr) out(ret : length(size))
-  {
-    fill_plain(ret, a, b, offload_fc_ptr->Generators);
-  }
-  Matrix<Integer> M (a, b);
-  fill_matrix(M, a, b, ret);
-  delete[] ret;
-  return M;
-}
-
-template<typename Integer>
 OffloadHandler<Integer>::~OffloadHandler()
 {
-  cout << "OffloadHandler destructor" << endl;
+  cout << "mic " << mic_nr<< ": OffloadHandler destructor" << endl;
   #pragma offload target(mic:mic_nr)
   {
     delete offload_fc_ptr;
@@ -665,15 +617,13 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
 {
   if (!is_init)
   {
-cout << "_Offload_get_device_number()" << _Offload_get_device_number() << endl;
-cout << "_Offload_number_of_devices()" << _Offload_number_of_devices() << endl;
     //TODO check preconditions
     assert(fc.Order_Vector.size() == fc.dim);
     fc.get_supphyps_from_copy(false);          // (bool from_scratch)
     fc.check_pointed();
 
     // create handler
-    handler_ptr = new OffloadHandler<Integer>(fc);
+    handler_ptr = new OffloadHandler<Integer>(fc,0);
     is_init = true;
   }
 }
@@ -694,7 +644,7 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
     pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
     fc.nrPyramids[0] -= nr_transfer;
     handler_ptr->transfer_pyramids(pyrs);
-    cout << "offload: transfered " << pyrs.size() << " pyramids to mic." << endl;
+    cout << "mic " << 0 << ": transfered " << pyrs.size() << " pyramids." << endl;
     pyrs.clear();
 
     //compute on mics
@@ -733,47 +683,6 @@ void MicOffloader<Integer>::finalize()
 
 template class MicOffloader<long long int>;
 template class OffloadHandler<long long int>;
-
-/***************** Offload test *****************/
-
-void offload_test()
-{
-  typedef long long Integer;
-
-  // initial offload for better timing comparisons of the following offloads
-  cout << "initial offload for better timing comparisons of the following offloads"
-       << endl;
-  #pragma offload target(mic:0)
-  { }
-  cout << "done." << endl;
-
-  int a = 4, b = 3;
-  long SIZE = a*b;
-  Integer data[SIZE];
-  for (long i=0; i<SIZE; i++) data[i] = i+1;
-
-  Matrix<Integer> m1(a,b);
-  m1.random(10);
-
-  // offload the full cone
-  Full_Cone<Integer> fc1(m1);
-  fc1.get_supphyps_from_copy(true);          // from_scratch = true
-  fc1.Order_Vector = vector<Integer>(b);
-  OffloadHandler<Integer> fc1_off(fc1);
-  cout << "first offload completed" << endl;
-  fc1_off.print_on_mic();
-
-  // work with fc1
-  fc1_off.print_on_mic();
-  fc1_off.compute_on_mic(1,2);
-  fc1_off.compute_on_mic(0,2);
-
-  // get results back
-  Matrix<Integer> ret = fc1_off.transfer_from_mic();
-  ret.read();
-
-  // destructor of Offload handler will clear data on mic
-}
 
 } // end namespace libnormaliz
 
