@@ -140,6 +140,7 @@ void OffloadHandler<Integer>::transfer_bools()
 //  cout << "mic " << mic_nr<< ": transfer_bools" << endl;
   Full_Cone<Integer>& foo_loc = local_fc_ref;  // prevents segfault
   //TODO segfaults should be resolved in intel compiler version 2015
+  bool is_computed_pointed = local_fc_ref.isComputed(ConeProperty::IsPointed);
   #pragma offload target(mic:mic_nr)
   {
     bool foo = offload_fc_ptr->inhomogeneous;  // prevents segfault
@@ -154,10 +155,14 @@ void OffloadHandler<Integer>::transfer_bools()
     offload_fc_ptr->do_Stanley_dec     = foo_loc.do_Stanley_dec;
     offload_fc_ptr->do_approximation   = foo_loc.do_approximation;
     offload_fc_ptr->do_default_mode    = foo_loc.do_default_mode;
+    offload_fc_ptr->do_all_hyperplanes = false;
     // deg1_generated could be set more precise
     offload_fc_ptr->deg1_triangulation = foo_loc.deg1_generated;
-    offload_fc_ptr->pointed = foo_loc.pointed;  // was locally computed in MicOffloader
-    offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
+    if (is_computed_pointed)
+    {
+      offload_fc_ptr->pointed = foo_loc.pointed;
+      offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
+    }
     verbose = true;
   }
 //  cout << "mic " << mic_nr<< ": transfer_bools done" << endl;
@@ -168,6 +173,9 @@ void OffloadHandler<Integer>::transfer_bools()
 template<typename Integer>
 void OffloadHandler<Integer>::transfer_support_hyperplanes()
 {
+  if (!local_fc_ref.isComputed(ConeProperty::SupportHyperplanes))
+    return;
+
 //  cout << "mic " << mic_nr<< ": transfer_support_hyperplanes" << endl;
   const Matrix<Integer>& M = local_fc_ref.Support_Hyperplanes;
   long nr = M.nr_of_rows();
@@ -184,7 +192,6 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes()
     fill_matrix(offload_fc_ptr->Support_Hyperplanes, nr, nc, data);
     offload_fc_ptr->nrSupport_Hyperplanes = nr;
     offload_fc_ptr->is_Computed.set(ConeProperty::SupportHyperplanes);
-    offload_fc_ptr->do_all_hyperplanes = false;
   }
   delete[] data;
 
@@ -633,8 +640,10 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
   {
     //TODO check preconditions
     assert(fc.Order_Vector.size() == fc.dim);
-    fc.get_supphyps_from_copy(false);          // (bool from_scratch)
-    fc.check_pointed();
+    if (fc.do_Hilbert_basis) {
+      fc.get_supphyps_from_copy(false);          // (bool from_scratch)
+      fc.check_pointed();
+    }
 
     // create handler
     handler_ptr = new OffloadHandler<Integer>(fc,0);
