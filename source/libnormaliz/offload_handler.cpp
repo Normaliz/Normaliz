@@ -123,7 +123,7 @@ void OffloadHandler<Integer>::create_full_cone()
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created Full_Cone
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
-    //omp_set_num_threads(118);
+    omp_set_num_threads(118);
     Matrix<Integer> gens(nr, nc);
     fill_matrix(gens, nr, nc, data);
     offload_fc_ptr = new Full_Cone<Integer>(gens);
@@ -618,9 +618,9 @@ OffloadHandler<Integer>::~OffloadHandler()
 template<typename Integer>
 MicOffloader<Integer>::MicOffloader()
 : is_init(false),
-  nr_mic(0),
-  handler_ptr(NULL)
+  nr_mics(_Offload_number_of_devices())
 {
+  handlers.resize(nr_mics);
 }
 
 //---------------------------------------------------------------------------
@@ -628,7 +628,9 @@ MicOffloader<Integer>::MicOffloader()
 template<typename Integer>
 MicOffloader<Integer>::~MicOffloader()
 {
-  if (is_init) delete handler_ptr;
+  if (is_init)
+    for (int i=0; i<nr_mics; ++i)
+      delete handlers[i];
 }
 
 //---------------------------------------------------------------------------
@@ -646,7 +648,8 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
     }
 
     // create handler
-    handler_ptr = new OffloadHandler<Integer>(fc,0);
+    for (int i=0; i<nr_mics; ++i)
+      handlers[i] = new OffloadHandler<Integer>(fc,i);
     is_init = true;
   }
 }
@@ -660,18 +663,21 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 
     //offload some pyramids //TODO move only a part
     list< vector<key_t> > pyrs;
-    size_t nr_transfer = fc.nrPyramids[0]/2;
-    //pyrs.splice(pyrs.end(), fc.Pyramids[0]);
-    typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[0].begin());
-    for (size_t i = 0; i < nr_transfer; ++i, ++transfer_end) ;
-    pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
-    fc.nrPyramids[0] -= nr_transfer;
-    handler_ptr->transfer_pyramids(pyrs);
-    cout << "mic " << 0 << ": transfered " << pyrs.size() << " pyramids." << endl;
-    pyrs.clear();
+    size_t nr_transfer = fc.nrPyramids[0]/nr_mics;
+    for (int i=0; i<nr_mics; ++i)
+    {
+      typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[0].begin());
+      for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
+      pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
+      fc.nrPyramids[0] -= nr_transfer;
+      handlers[i]->transfer_pyramids(pyrs);
+      cout << "mic " << i << ": transfered " << pyrs.size() << " pyramids." << endl;
+      pyrs.clear();
+    }
 
     //compute on mics
-    handler_ptr->evaluate_pyramids();
+    for (int i=0; i<nr_mics; ++i)
+      handlers[i]->evaluate_pyramids();
 }
 
 
@@ -682,7 +688,8 @@ void MicOffloader<Integer>::evaluate_triangulation()
 {
   if (is_init)
   {
-    handler_ptr->evaluate_triangulation();
+    for (int i=0; i<nr_mics; ++i)
+      handlers[i]->evaluate_triangulation();
   }
 }
 
@@ -693,11 +700,15 @@ void MicOffloader<Integer>::finalize()
 {
   if (is_init)
   {
-    handler_ptr->complete_evaluation();
-    handler_ptr->collect_data();
-    delete handler_ptr;
-    handler_ptr = NULL;
-    is_init = false;
+    for (int i=0; i<nr_mics; ++i)
+      handlers[i]->complete_evaluation();
+    for (int i=0; i<nr_mics; ++i)
+    {
+      handlers[i]->collect_data();
+      delete handlers[i];
+      handlers[i] = NULL;
+      is_init = false;
+    }
   }
 }
 
