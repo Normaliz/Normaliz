@@ -159,8 +159,8 @@ class Full_Cone {
    
     // storage for subpyramids
     size_t store_level; // the level on which daughters will be stored  
-    vector< list<vector<key_t> > > Pyramids;  //storage for pyramids
-    vector<size_t> nrPyramids; // number of pyramids on the various levels
+    deque< list<vector<key_t> > > Pyramids;  //storage for pyramids
+    deque<size_t> nrPyramids; // number of pyramids on the various levels
 
     // data that can be used to go out of build_cone and return later (not done at present)
     // but also useful at other places
