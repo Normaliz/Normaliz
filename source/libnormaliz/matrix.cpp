@@ -810,7 +810,7 @@ vector<long> Matrix<Integer>::pivot(size_t corner){
             }
         }
     }
-
+    
     return v;
 }
 

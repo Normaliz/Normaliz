@@ -52,10 +52,6 @@ template class Lineare_Transformation<long>;
 template class Lineare_Transformation<long long int>;
 template class Lineare_Transformation<mpz_class>;
 
-template Lineare_Transformation<long> Transformation(const Matrix<long>& M);
-template Lineare_Transformation<long long int> Transformation(const Matrix<long long int>& M);
-template Lineare_Transformation<mpz_class> Transformation(const Matrix<mpz_class>& M);
-
 template size_t decimal_length<long>(long);
 template size_t decimal_length<long long int>(long long int);
 template size_t decimal_length<mpz_class>(mpz_class);

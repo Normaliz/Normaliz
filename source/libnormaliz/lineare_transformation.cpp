@@ -62,14 +62,14 @@ Lineare_Transformation<Integer>::Lineare_Transformation(const Matrix<Integer>& M
     // cout << "Success " << success << endl;
     if(success && !using_GMP<Integer>()){
         success=test_transformation(overflow_test_modulus);
-        // if(!success)
-        //    cout << "Test daneben!!" << endl;
+        //  if(!success)
+        //  cout << endl << "******** Test daneben!!" << endl;
     }
     if(!success){
         Matrix<mpz_class> mpz_M(M.nr_of_rows(),M.nr_of_columns());
         mat_to_mpz(M,mpz_M);
         Lineare_Transformation<mpz_class> mpz_LT(mpz_M);
-        mpz_LT.transformation();
+        // mpz_LT.transformation();
         // mpz_LT.read();
         mat_to_Int(mpz_LT.Center,Center);
         mat_to_Int(mpz_LT.Right,Right);
@@ -235,14 +235,6 @@ bool Lineare_Transformation<Integer>::test_transformation(const size_t& m) const
     Matrix<Integer> N=Right.multiplication(Right_Inv, m);
     Matrix<Integer> I(nc);
     return I.equal(N,m);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
-    Lineare_Transformation<Integer> LT(M);
-    return LT;
 }
 
 //---------------------------------------------------------------------------

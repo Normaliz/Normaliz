@@ -125,11 +125,6 @@ public:
 
 };
 //class end *****************************************************************
-//---------------------------------------------------------------------------
-
-//makes the main computation, test for errors
-template<typename Integer>
-Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M);
 
 } /* end namespace libnormaliz */
 
