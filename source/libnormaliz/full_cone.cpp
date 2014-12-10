@@ -3385,6 +3385,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
     pointed = false;
+    is_simplicial = nr_gen == dim;
     deg1_extreme_rays = false;
     deg1_generated = false;
     deg1_hilbert_basis = false;
@@ -3463,6 +3464,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     in_triang = vector<bool>(nr_gen,false);
     
     pointed = true;
+    is_simplicial = nr_gen == dim;
     is_Computed.set(ConeProperty::IsPointed);
     deg1_extreme_rays = false;
     deg1_generated = false;
@@ -3562,6 +3564,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     Generators = C.Generators.submatrix(Key);
     dim = Generators.nr_of_columns();
     nr_gen = Generators.nr_of_rows();
+    is_simplicial = nr_gen == dim;
     
     Top_Cone=C.Top_Cone; // relate to top cone
     Top_Key.resize(nr_gen);

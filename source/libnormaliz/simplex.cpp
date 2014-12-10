@@ -83,7 +83,6 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
         InExSimplData[i].gen_degrees.reserve(fc.dim);
     }
     
-    full_cone_simplicial=(C_ptr->nr_gen==C_ptr->dim);
     sequential_evaluation=true; // to be changed later if necessrary
 }
 
@@ -635,7 +634,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
             v_scalar_division(*jj,volume);
             
             // reduce against global reducers in C.OldCandidates and insert into HB_Elements
-            if(full_cone_simplicial){ // no global reduction necessary
+            if (C.is_simplicial) { // no global reduction necessary
                 Coll.HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
                 inserted=true;
             }
@@ -889,6 +888,7 @@ cout << "new_points:" << endl << new_points;
                 ++it;
 	    }
             // temporarily add new_points to the Top_Cone generators
+            C.is_simplicial = false; 
             C.Generators.append(Matrix<Integer>(new_points));
             int nr_old_gen = C.nr_gen;
             C.nr_gen += nr_new_points;

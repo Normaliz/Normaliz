@@ -94,7 +94,6 @@ class SimplexEvaluator {
     size_t StanIndex;
     size_t nr_level0_gens; // counts the number of level 0 vectors among the generators
     
-    bool full_cone_simplicial;
     bool sequential_evaluation; // indicates whether the simplex is evaluated by a single thread
     
     struct SIMPLINEXDATA{                    // local data of excluded faces
