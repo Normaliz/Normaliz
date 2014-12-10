@@ -3064,7 +3064,7 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     Matrix<Integer> G(1,dim);
     G[0]=Grading;
     
-    Lineare_Transformation<Integer> NewBasis = Transformation(G); // gives a new basis in which the grading is a coordinate
+    Lineare_Transformation<Integer> NewBasis(G); // gives a new basis in which the grading is a coordinate
     Matrix<Integer> U=NewBasis.get_right();   // the basis elements are the columns of U
 
     Integer dummy_denom;                             

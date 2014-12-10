@@ -739,13 +739,14 @@ bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
     for (i =row+1; i < nr; i++) {
         if (elements[i][col]!=0) {
             help=elements[i][col] / elements[row][col];
-            for (j = col; j < nc; j++) {
+            /* for (j = col; j < nc; j++) {
                 elements[i][j] -= help*elements[row][j];
                 if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
                     // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
                     return false; // throw ArithmeticException();
                 }
-            }
+            }*/
+            v_el_trans<Integer>(elements[row],elements[i],-help,col);
         }
     }
     return true;
@@ -1205,7 +1206,7 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     size_t dim=nc;
     if(nr==0)
         return(Matrix<Integer>(dim));
-    Lineare_Transformation<Integer> NewLT = Transformation(*this);
+    Lineare_Transformation<Integer> NewLT(*this);
     size_t rank = NewLT.get_rank();
     Matrix<Integer> ker_basis(dim-rank,dim);
     Matrix<Integer> Help = NewLT.get_right().transpose();
@@ -1361,8 +1362,8 @@ bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matr
 
 template<typename Integer>
 void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
-    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
-    size_t ncols=min(mat.nc,mpz_mat.nc);
+    size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
     for(size_t i=0; i<nrows;++i)
         for(size_t j=0; j<ncols;++j)
             mpz_mat[i][j]=to_mpz(mat[i][j]);
@@ -1370,8 +1371,8 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
 
 template<typename Integer>
 void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
-    size_t nrows=min(mat.nr,mpz_mat.nr); // we allow the matrices to have different sizes
-    size_t ncols=min(mat.nc,mpz_mat.nc);
+    size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
     for(size_t i=0; i<nrows;++i)
         for(size_t j=0; j<ncols;++j)
             mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);

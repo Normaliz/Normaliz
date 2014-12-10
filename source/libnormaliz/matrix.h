@@ -47,7 +47,7 @@ template<typename Integer> class Matrix {
     template<typename> friend class Matrix;
     template<typename> friend class Lineare_Transformation;
     
-    public:
+    // public:
 
     size_t nr;
     size_t nc;
@@ -62,7 +62,7 @@ template<typename Integer> class Matrix {
     bool solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution); 
                     
-// public:    
+public:    
   
 //---------------------------------------------------------------------------
 

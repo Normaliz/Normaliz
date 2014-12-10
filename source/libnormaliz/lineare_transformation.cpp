@@ -57,6 +57,27 @@ Lineare_Transformation<Integer>::Lineare_Transformation(const Matrix<Integer>& M
     Center    = Matrix<Integer>(M);
     Right     = Matrix<Integer>(M.nr_of_columns());
     Right_Inv = Matrix<Integer>(M.nr_of_columns());
+    
+    bool success=transformation();
+    // cout << "Success " << success << endl;
+    if(success && !using_GMP<Integer>()){
+        success=test_transformation(overflow_test_modulus);
+        // if(!success)
+        //    cout << "Test daneben!!" << endl;
+    }
+    if(!success){
+        Matrix<mpz_class> mpz_M(M.nr_of_rows(),M.nr_of_columns());
+        mat_to_mpz(M,mpz_M);
+        Lineare_Transformation<mpz_class> mpz_LT(mpz_M);
+        mpz_LT.transformation();
+        // mpz_LT.read();
+        mat_to_Int(mpz_LT.Center,Center);
+        mat_to_Int(mpz_LT.Right,Right);
+        mat_to_Int(mpz_LT.Right_Inv,Right_Inv);
+        rk=mpz_LT.rk;
+        index=to_Int<Integer>(mpz_LT.index);
+        status=mpz_LT.status;       
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -221,26 +242,6 @@ bool Lineare_Transformation<Integer>::test_transformation(const size_t& m) const
 template<typename Integer>
 Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M) {
     Lineare_Transformation<Integer> LT(M);
-    bool success=LT.transformation();
-    // cout << "Success " << success << endl;
-    if(success && !using_GMP<Integer>()){
-        success=LT.test_transformation(overflow_test_modulus);
-        // if(!success)
-        //    cout << "Test daneben!!" << endl;
-    }
-    if(!success){
-        Matrix<mpz_class> mpz_M(M.nr,M.nc);
-        mat_to_mpz(M,mpz_M);
-        Lineare_Transformation<mpz_class> mpz_LT(mpz_M);
-        mpz_LT.transformation();
-        // mpz_LT.read();
-        mat_to_Int(mpz_LT.Center,LT.Center);
-        mat_to_Int(mpz_LT.Right,LT.Right);
-        mat_to_Int(mpz_LT.Right_Inv,LT.Right_Inv);
-        LT.rk=mpz_LT.rk;
-        LT.index=to_Int<Integer>(mpz_LT.index);
-        LT.status=mpz_LT.status;       
-    }
     return LT;
 }
 

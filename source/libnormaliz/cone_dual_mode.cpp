@@ -674,7 +674,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
             Matrix<Integer> M(1,rank_subspace); // this is the restriction of the new linear form to Max_Subspace
             M[0]=scalar_product;
  
-            Lineare_Transformation<Integer> LT=Transformation(M);
+            Lineare_Transformation<Integer> LT(M);
             Matrix<Integer> Lifted_Basis_Factor_Space_over_Ker_and_Ker=LT.get_right();
             // the coordinate transfprmation yields a splitting of Max_Subspace into the direct sum of the kernel
             // of the linear form (columns 1^,..) and a complementary 1-dimensional space (column 0)

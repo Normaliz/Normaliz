@@ -64,7 +64,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
  */
 template<typename Integer>
 Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& M, bool direct_summand) {
-    Lineare_Transformation<Integer> Basis_Change = Transformation(M);
+    Lineare_Transformation<Integer> Basis_Change(M);
     initialize(Basis_Change, direct_summand);
 }
 

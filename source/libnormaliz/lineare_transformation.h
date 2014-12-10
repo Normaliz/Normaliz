@@ -53,9 +53,9 @@ namespace libnormaliz {
 template<typename Integer>
 class Lineare_Transformation {
 
-    template<typename> friend class Lineare_Transformation;
+  template<typename> friend class Lineare_Transformation;
     
-public:
+// public:
 
   long rk;
   string status;
@@ -64,7 +64,7 @@ public:
   Matrix<Integer> Right;
   Matrix<Integer> Right_Inv;
 //---------------------------------------------------------------------------
-// public:
+public:
 //---------------------------------------------------------------------------
 //                      Construction and destruction
 //---------------------------------------------------------------------------
