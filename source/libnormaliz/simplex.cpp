@@ -876,6 +876,18 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 cout << "new_points:" << endl << new_points;
         if (!new_points.empty()) {
             int nr_new_points = new_points.size();
+	    // remove this simplex from det_sum and multiplicity
+            addMult(-volume,C.Results[0]);
+	    // add new points to HilbertBasis
+	    typename list< vector<Integer> >::const_iterator it = new_points.begin();
+            while (it != new_points.end()) {
+                bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(*it,C,C.OldCandidates);
+                if(inserted) {
+		   C.Results[0].collected_elements_size++;
+	           C.Results[0].HB_Elements.Candidates.back().original_generator = true; //TODO @Bruns ist das richtig so? wird es auch in OldCandidates uebernommen?
+                }
+                ++it;
+	    }
             // temporarily add new_points to the Top_Cone generators
             C.Generators.append(Matrix<Integer>(new_points));
             int nr_old_gen = C.nr_gen;
