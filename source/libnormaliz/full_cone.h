@@ -291,6 +291,14 @@ public:
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
+
+#ifdef NMZ_MIC_OFFLOAD
+    void try_offload();
+#else
+    void try_offload() {};
+#endif
+
+
 /*---------------------------------------------------------------------------
  *                      Constructors
  *---------------------------------------------------------------------------

@@ -1002,6 +1002,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         
     } // end parallel loop over hyperplanes
 
+    if (!omp_in_parallel())
+        try_offload();
     
     if (skip_remaining_tri) {
         Top_Cone->evaluate_triangulation();
@@ -1458,6 +1460,22 @@ bool Full_Cone<Integer>::check_pyr_buffer(const size_t level){
         return(nrPyramids[level] > EvalBoundPyr);
 }
 
+//---------------------------------------------------------------------------
+
+#ifdef NMZ_MIC_OFFLOAD
+template<typename Integer>
+void Full_Cone<Integer>::try_offload() {
+    if(Pyramids[0].empty())
+        return;
+
+    if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
+    {
+        cout << "Offloading ..." << endl;
+        mic_offloader.offload_pyramids(*this);
+    }
+}
+//else it is implemented in the header
+#endif // NMZ_MIC_OFFLOAD
 
 //---------------------------------------------------------------------------
 
@@ -1470,19 +1488,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // only once for every stored pyramid since we set recursion_allowed=false.
 
     assert(omp_get_level()==0);
-
-#ifdef NMZ_MIC_OFFLOAD
-    if(Pyramids[level].empty())
-        return;
-
-    if (_Offload_get_device_number() < 0 // dynamic check for being on CPU (-1)
-        && level == 0)
-    {
-        // init OffloadHandler
-        cout << "Offloading ..." << endl;
-        mic_offloader.offload_pyramids(*this);
-    }
-#endif // NMZ_MIC_OFFLOAD
+    if (level == 0) try_offload();
 
     if(Pyramids[level].empty())
         return;
@@ -1678,7 +1684,10 @@ void Full_Cone<Integer>::build_cone() {
         // in_triang[i]=true; // now at end of loop
         if (deg1_triangulation && isComputed(ConeProperty::Grading))
             deg1_triangulation = (gen_degrees[i] == 1);
-
+        
+        if (!omp_in_parallel())
+            try_offload();
+            
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
             if (do_triangulation)

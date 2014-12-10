@@ -342,15 +342,13 @@ void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyr
   fill_plain(data, size, pyramids);
 
   wait();
-  cout << "mic " << mic_nr<< ": transfer_pyramids" << endl;
   #pragma offload target(mic:mic_nr) in(size) in(data: length(size) ONCE)
   {
     fill_list_vector(offload_fc_ptr->Pyramids[0], size, data);
     offload_fc_ptr->nrPyramids[0] = offload_fc_ptr->Pyramids[0].size();
   }
   delete[] data;
-
-  cout << "mic " << mic_nr<< ": transfer_pyramids done" << endl;
+  cout << "mic " << mic_nr << ": transfered " << pyramids.size() << " pyramids." << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -651,6 +649,9 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
     for (int i=0; i<nr_mics; ++i)
       handlers[i] = new OffloadHandler<Integer>(fc,i);
     is_init = true;
+    // wait for completed creation // TODO keep it?
+    for (int i=0; i<nr_mics; ++i)
+      handlers[i]->wait();
   }
 }
 
@@ -663,21 +664,28 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 
     //offload some pyramids //TODO move only a part
     list< vector<key_t> > pyrs;
+    vector<bool> started(nr_mics, false);
     size_t nr_transfer = fc.nrPyramids[0]/nr_mics;
+    if (nr_transfer == 0) return;
+
     for (int i=0; i<nr_mics; ++i)
     {
-      typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[0].begin());
-      for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
-      pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
-      fc.nrPyramids[0] -= nr_transfer;
-      handlers[i]->transfer_pyramids(pyrs);
-      cout << "mic " << i << ": transfered " << pyrs.size() << " pyramids." << endl;
-      pyrs.clear();
+      if (!handlers[i]->is_running())
+      {
+        started[i] = true;
+        typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[0].begin());
+        for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
+        pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
+        fc.nrPyramids[0] -= nr_transfer;
+        handlers[i]->transfer_pyramids(pyrs);
+        pyrs.clear();
+      }
     }
 
     //compute on mics
     for (int i=0; i<nr_mics; ++i)
-      handlers[i]->evaluate_pyramids();
+      if (started[i])
+        handlers[i]->evaluate_pyramids();
 }
 
 
