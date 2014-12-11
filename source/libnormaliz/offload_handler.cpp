@@ -697,7 +697,8 @@ void MicOffloader<Integer>::evaluate_triangulation()
   if (is_init)
   {
     for (int i=0; i<nr_mics; ++i)
-      handlers[i]->evaluate_triangulation();
+      if (!handlers[i]->is_running())
+        handlers[i]->evaluate_triangulation();
   }
 }
 
@@ -708,15 +709,44 @@ void MicOffloader<Integer>::finalize()
 {
   if (is_init)
   {
+    list<int> to_complete, to_collect;
+    list<int>::iterator it;
+
     for (int i=0; i<nr_mics; ++i)
-      handlers[i]->complete_evaluation();
-    for (int i=0; i<nr_mics; ++i)
+      to_complete.push_back(i);
+    // first start it on all idle mics
+    while (!to_complete.empty() || !to_collect.empty())
     {
-      handlers[i]->collect_data();
-      delete handlers[i];
-      handlers[i] = NULL;
-      is_init = false;
+      for (it = to_complete.begin(); it != to_complete.end(); )
+      {
+        if (!handlers[*it]->is_running())
+        {
+          handlers[*it]->complete_evaluation();
+          to_collect.push_back(*it);
+          it = to_complete.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
+      for (it = to_collect.begin(); it != to_collect.end(); )
+      {
+        if (!handlers[*it]->is_running())
+        {
+          handlers[*it]->collect_data();
+          delete handlers[*it];
+          handlers[*it] = NULL;
+          it = to_collect.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
     }
+    is_init = false;
   }
 }
 
