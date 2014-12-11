@@ -1009,7 +1009,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
         Top_Cone->evaluate_triangulation();
     }
     
-    if (skip_remaining_pyr) {
+    if (start_level==0 && Top_Cone->check_pyr_buffer(store_level)) {
         Top_Cone->evaluate_stored_pyramids(store_level);
     }
 
@@ -1465,7 +1465,7 @@ bool Full_Cone<Integer>::check_pyr_buffer(const size_t level){
 #ifdef NMZ_MIC_OFFLOAD
 template<typename Integer>
 void Full_Cone<Integer>::try_offload() {
-    if(Pyramids[0].empty())
+    if(nrPyramids[0] < 100)
         return;
 
     if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
@@ -1487,7 +1487,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // In contrast to the the recusrive pyramids, extend_cone is called
 // only once for every stored pyramid since we set recursion_allowed=false.
 
-    assert(omp_get_level()==0);
+    assert(!omp_in_parallel());
 
     if(Pyramids[level].empty())
         return;
@@ -1495,6 +1495,17 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
         Pyramids.resize(level+2);      // provide space for a new generation
         nrPyramids.resize(level+2, 0);
     }
+
+    size_t eval_down_to = 0;
+
+#ifdef NMZ_MIC_OFFLOAD
+#ifndef __MIC__
+    // only on host and if offload is available
+    if (level == 0 && nrPyramids[0] > EvalBoundLevel0Pyr) {
+        eval_down_to = EvalBoundLevel0Pyr;
+    }
+#endif
+#endif
 
     vector<char> Done(nrPyramids[level],0);
     if (verbose) {
@@ -1512,7 +1523,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     size_t ppos;
     bool skip_remaining;
 
-    while (nrPyramids[level] > 0) {
+    while (nrPyramids[level] > eval_down_to) {
 
        p = Pyramids[level].begin();
        ppos=0;
@@ -1803,12 +1814,14 @@ void Full_Cone<Integer>::build_top_cone() {
     }
 
     build_cone();
-        
+
+    try_offload();
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
 #ifdef NMZ_MIC_OFFLOAD
     if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
     {
+        evaluate_stored_pyramids(0);  // previous run could have left over pyramids
         mic_offloader.evaluate_triangulation();
     }
 #endif // NMZ_MIC_OFFLOAD
