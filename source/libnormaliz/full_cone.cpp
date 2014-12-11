@@ -1488,7 +1488,6 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // only once for every stored pyramid since we set recursion_allowed=false.
 
     assert(omp_get_level()==0);
-    if (level == 0) try_offload();
 
     if(Pyramids[level].empty())
         return;
@@ -1497,8 +1496,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
         nrPyramids.resize(level+2, 0);
     }
 
-    size_t nr_pyramids=nrPyramids[level];
-    vector<char> Done(nr_pyramids,0);
+    vector<char> Done(nrPyramids[level],0);
     if (verbose) {
         verboseOutput() << "**************************************************" << endl;
 
@@ -1514,14 +1512,14 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     size_t ppos;
     bool skip_remaining;
 
-    while (nr_pyramids > 0) {
+    while (nrPyramids[level] > 0) {
 
        p = Pyramids[level].begin();
        ppos=0;
        skip_remaining = false;
     
        #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
-       for(size_t i=0; i<nr_pyramids; i++){
+       for(size_t i=0; i<nrPyramids[level]; i++){
        
            if (skip_remaining)
                 continue;
@@ -1550,7 +1548,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 
         // remove done pyramids
         p = Pyramids[level].begin();
-        for(size_t i=0; i<nr_pyramids; i++){
+        for(size_t i=0; p != Pyramids[level].end(); i++){
             if (Done[i]) {
                 p=Pyramids[level].erase(p);
                 nrPyramids[level]--;
@@ -1559,20 +1557,22 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
                 ++p;
             }
         }
-        nr_pyramids = nrPyramids[level];
+
+        try_offload();
 
         if (check_evaluation_buffer_size()) {
             if (verbose)
-                verboseOutput() << nr_pyramids <<
+                verboseOutput() << nrPyramids[level] <<
                     " pyramids remaining on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
+            try_offload();
         }
 
         if (Top_Cone->check_pyr_buffer(level+1)) {
             evaluate_stored_pyramids(level+1);
         }
     
-    } //end while (nr_pyramid > 0)
+    } //end while (nrPyramids[level] > 0)
      
     if (verbose) {
         verboseOutput() << "**************************************************" << endl;
@@ -1592,8 +1592,6 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
         Top_Cone->evaluate_triangulation();
     }
      
-    Pyramids[level].clear();
-    nrPyramids[level]=0;
     evaluate_stored_pyramids(level+1);
 }
     

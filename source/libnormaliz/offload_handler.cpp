@@ -163,7 +163,7 @@ void OffloadHandler<Integer>::transfer_bools()
       offload_fc_ptr->pointed = foo_loc.pointed;
       offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
     }
-    verbose = true;
+    //verbose = true;
   }
 //  cout << "mic " << mic_nr<< ": transfer_bools done" << endl;
 }
