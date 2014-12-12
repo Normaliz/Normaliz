@@ -665,7 +665,7 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
     //offload some pyramids //TODO move only a part
     list< vector<key_t> > pyrs;
     vector<bool> started(nr_mics, false);
-    size_t nr_transfer = fc.nrPyramids[0]/nr_mics;
+    size_t nr_transfer = min(fc.nrPyramids[0]/2, 25000ul);
     if (nr_transfer == 0) return;
 
     for (int i=0; i<nr_mics; ++i)
@@ -679,6 +679,8 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
         fc.nrPyramids[0] -= nr_transfer;
         handlers[i]->transfer_pyramids(pyrs);
         pyrs.clear();
+        nr_transfer = min(fc.nrPyramids[0]/2, 25000ul);
+        if (nr_transfer == 0) break;
       }
     }
 
