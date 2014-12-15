@@ -96,15 +96,18 @@ public:
 //                    Rows and columns exchange
 //---------------------------------------------------------------------------
 
-  void exchange_rows(size_t row1, size_t row2);     //similar to Matrix<Integer>::exchange_rows
-  void exchange_columns(size_t col1, size_t col2); //similar to Matrix<Integer>::exchange_columns
+  // void exchange_rows(size_t row1, size_t row2);     //similar to Matrix<Integer>::exchange_rows
+  // void exchange_columns(size_t col1, size_t col2); //similar to Matrix<Integer>::exchange_columns
 
 //---------------------------------------------------------------------------
 //                  Rows and columns reduction
 //---------------------------------------------------------------------------
 
-  bool reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
-  bool reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
+  // bool reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
+  // bool reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
+
+  // bool gcd_reduce_row(size_t corner);
+  // bool gcd_reduce_column(size_t corner);
 
 //---------------------------------------------------------------------------
 //                   Algorithms

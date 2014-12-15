@@ -726,7 +726,6 @@ bool  Matrix<Integer>::reduce_row (size_t corner) {
 
 //---------------------------------------------------------------------------
  
-// version without minimal remainder
 template<typename Integer>
 bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
     assert(col >= 0);
@@ -739,14 +738,118 @@ bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
     for (i =row+1; i < nr; i++) {
         if (elements[i][col]!=0) {
             help=elements[i][col] / elements[row][col];
-            /* for (j = col; j < nc; j++) {
+            for (j = col; j < nc; j++) {
                 elements[i][j] -= help*elements[row][j];
                 if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
                     // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
                     return false; // throw ArithmeticException();
                 }
-            }*/
-            v_el_trans<Integer>(elements[row],elements[i],-help,col);
+            }
+            // v_el_trans<Integer>(elements[row],elements[i],-help,col);
+        }
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::linear_comb_rows(const size_t& row,const size_t& i,
+            const Integer& u,const Integer& v,const Integer& w,const Integer&  z){
+
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;              
+    for(size_t j=0;j<nc;++j){
+        Integer rescue=elements[row][j];
+        elements[row][j]=u*elements[row][j]+v*elements[i][j];
+        elements[i][j]=w*rescue+z*elements[i][j];
+        if (do_arithmetic_check<Integer>() && (Iabs(elements[row][j]) >= max_half || Iabs(elements[i][j]) >= max_half)) {
+            // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+            return false; // throw ArithmeticException();
+        }    
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::linear_comb_columns(const size_t& col,const size_t& j,
+            const Integer& u,const Integer& w,const Integer& v,const Integer& z){
+            
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;              
+    for(size_t i=0;i<nr;++i){
+        Integer rescue=elements[i][col];
+        elements[i][col]=u*elements[i][col]+v*elements[i][j];
+        elements[i][j]=w*rescue+z*elements[i][j];
+        if (do_arithmetic_check<Integer>() && (Iabs(elements[i][col]) >= max_half || Iabs(elements[i][j]) >= max_half)) {
+            // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+            return false; // throw ArithmeticException();
+        }        
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::gcd_reduce_row (size_t row, size_t col) {
+
+    Integer u,v,w,z,d;      
+    for(size_t i=row+1;i<nr;++i){
+        d=ext_gcd(elements[row][col],elements[i][col],u,v);
+        w=-elements[i][col]/d;
+        z=elements[row][col]/d; 
+        // Now we multiply the submatrix formed by rows "row" and "i" and columns
+        // col,...,nc from the left  by the 2x2 matrix
+        // | u v |
+        // | w z |      
+        if(!linear_comb_rows(row,i,u,v,w,z))
+            return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::gcd_reduce_row (size_t corner) {
+    return gcd_reduce_row(corner,corner);
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::reduce_rows_upwards () {
+// assumes that "this" is in row echelon form
+// and reduces eevery column in which the rank jumps 
+// by its lowest element
+
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
+
+    for(size_t row=1;row<nr;++row){
+        size_t col;
+        for(col=0;col<nc;++col)
+            if(elements[row][col]!=0)
+                break;
+        if(col==nc)
+            continue;
+        if(elements[row][col]<0)
+            v_scalar_multiplication<Integer>(elements[row],-1);
+        
+        for(long i=row-1;i>=0;--i){
+            Integer quot, rem;
+            
+            minimal_remainder(elements[i][col],elements[row][col],quot,rem);
+            // cout << "Zahlen " << elements[row][col] << " " << elements[i][col] << " " << quot << " " << rem << endl;
+            elements[i][col]=rem;
+            for(size_t j=col+1;j<nc;++j){
+                elements[i][j]-=quot* elements[row][j];
+                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; // throw ArithmeticException();
+                }
+            }                            
+            // cout << "Nach Abzug " << elements[i];                  
         }
     }
     return true;
@@ -754,8 +857,111 @@ bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+bool Matrix<Integer>::gcd_reduce_column (size_t corner, Matrix<Integer>& Right){
 
-// version without minimal remainder
+     Integer d,u,w,z,v;
+     for(size_t j=corner+1;j<nc;++j){
+        d=ext_gcd(elements[corner][corner],elements[corner][j],u,v);
+        w=-elements[corner][j]/d;
+        z=elements[corner][corner]/d;
+        // Now we multiply the submatrix formed by columns "corner" and "j" 
+        // and rows corner,...,nr from the right by the 2x2 matrix
+        // | u w |
+        // | v z |              
+        if(!linear_comb_columns(corner,j,u,w,v,z))
+            return false; 
+        if(!Right.linear_comb_columns(corner,j,u,w,v,z))
+            return false;  
+    }   
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::reduce_column (size_t corner) {
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    size_t i,j;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
+    Integer help1, help2=elements[corner][corner];
+    for ( j = corner+1; j < nc; j++) {
+        help1=elements[corner][j] / help2;
+        if (help1!=0) {
+            for (i = corner; i < nr; i++) {
+                elements[i][j] -= help1*elements[i][corner];
+                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; //throw ArithmeticException();
+                }
+            }
+        }
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    assert(Right.nr == nc);
+    assert(Right.nc == nc);
+    assert(Right_Inv.nr == nc);
+    assert(Right_Inv.nc ==nc);
+    size_t i,j;
+    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
+    Integer help1, help2=elements[corner][corner];
+    for ( j = corner+1; j < nc; j++) {
+        help1=elements[corner][j] / help2;
+        if (help1!=0) {
+            for (i = corner; i < nr; i++) {
+                elements[i][j] -= help1*elements[i][corner];
+                    if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; //throw ArithmeticException();
+                }
+            }
+            for (i = 0; i < nc; i++) {
+                Right.elements[i][j] -= help1*Right.elements[i][corner];
+                Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
+                if (do_arithmetic_check<Integer>() && (Iabs(Right.elements[i][j]) >= max_half ||
+                        Iabs(Right_Inv.elements[corner][i]) >= max_half) ) {
+                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
+                    return false; //throw ArithmeticException();
+               } 
+            }
+        }
+    }
+    return true;
+}
+*/
+
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+bool Matrix<Integer>::column_triangulate(long rk, Matrix<Integer>& Right) { 
+
+    vector<long> piv(2,0);       
+    for(size_t j=0;j<rk;++j){
+            piv=pivot(j);
+            assert(piv[0]>=0); // pritect against wrong rank
+            exchange_rows (j,piv[0]);
+            exchange_columns (j,piv[1]);
+            Right.exchange_columns(j,piv[1]);
+            if(!gcd_reduce_column(j, Right))
+                return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+
 template<typename Integer>
 bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
     assert(corner >= 0);
@@ -802,6 +1008,33 @@ vector<long> Matrix<Integer>::pivot(size_t corner){
         for (j = corner; j < nc; j++) {
             if (elements[i][j]!=0) {
                 if ((help==0)||(Iabs(elements[i][j])<help)) {
+                    help=Iabs(elements[i][j]);
+                    v[0]=i;
+                    v[1]=j;
+                    if (help == 1) return v;
+                }
+            }
+        }
+    }
+    
+    return v;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<long> Matrix<Integer>::max_pivot(size_t corner){
+    assert(corner >= 0);
+    assert(corner < nc);
+    assert(corner < nr);
+    size_t i,j;
+    Integer help=0;
+    vector<long> v(2,-1);
+
+    for (i = corner; i < nr; i++) {
+        for (j = corner; j < nc; j++) {
+            if (elements[i][j]!=0) {
+                if ((help==0)||(Iabs(elements[i][j])>help)) {
                     help=Iabs(elements[i][j]);
                     v[0]=i;
                     v[1]=j;
@@ -1290,71 +1523,6 @@ void Matrix<Integer>::reduce_row (size_t row, size_t col) {
     }
 }
 */
-
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool Matrix<Integer>::reduce_column (size_t corner) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    size_t i,j;
-    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
-    Integer help1, help2=elements[corner][corner];
-    for ( j = corner+1; j < nc; j++) {
-        help1=elements[corner][j] / help2;
-        if (help1!=0) {
-            for (i = corner; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner];
-                if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
-                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    return false; //throw ArithmeticException();
-                }
-            }
-        }
-    }
-    return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    assert(Right.nr == nc);
-    assert(Right.nc == nc);
-    assert(Right_Inv.nr == nc);
-    assert(Right_Inv.nc ==nc);
-    size_t i,j;
-    const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
-    Integer help1, help2=elements[corner][corner];
-    for ( j = corner+1; j < nc; j++) {
-        help1=elements[corner][j] / help2;
-        if (help1!=0) {
-            for (i = corner; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner];
-                    if (do_arithmetic_check<Integer>() && Iabs(elements[i][j]) >= max_half) {
-                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    return false; //throw ArithmeticException();
-                }
-            }
-            for (i = 0; i < nc; i++) {
-                Right.elements[i][j] -= help1*Right.elements[i][corner];
-                Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
-                if (do_arithmetic_check<Integer>() && (Iabs(Right.elements[i][j]) >= max_half ||
-                        Iabs(Right_Inv.elements[corner][i]) >= max_half) ) {
-                    // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    return false; //throw ArithmeticException();
-               } 
-            }
-        }
-    }
-    return true;
-}
 
 //---------------------------------------------------------------------------
 // Classless conversion routines

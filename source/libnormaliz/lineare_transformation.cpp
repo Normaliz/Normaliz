@@ -166,66 +166,118 @@ void Lineare_Transformation<Integer>::set_right_inv(const Matrix<Integer>& M){
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 void Lineare_Transformation<Integer>::exchange_rows(size_t row1, size_t row2){
     Center.exchange_rows(row1,row2);
 }
-
+*/
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 void Lineare_Transformation<Integer>::exchange_columns(size_t col1, size_t col2){
     Center.exchange_columns(col1,col2);
     Right.exchange_columns(col1,col2);
     Right_Inv.exchange_rows(col1,col2);
 }
-
+*/
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 bool Lineare_Transformation<Integer>::reduce_row(size_t corner){
     return Center.reduce_row(corner);
 }
-
+*/
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
-bool Lineare_Transformation<Integer>::reduce_column(size_t corner){
-    return Center.reduce_column(corner, Right, Right_Inv);
+bool Lineare_Transformation<Integer>::gcd_reduce_row(size_t corner){
+    return Center.gcd_reduce_row(corner);
 }
 
+*/
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+bool Lineare_Transformation<Integer>::reduce_column(size_t corner){
+    return Center.reduce_column(corner, Right,Right_Inv);
+}
+*/
+
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+bool Lineare_Transformation<Integer>::gcd_reduce_column(size_t corner){
+    return Center.gcd_reduce_column(corner, Right);
+}
+*/
+
 //---------------------------------------------------------------------------
 
+
+// new
 template<typename Integer>
 bool Lineare_Transformation<Integer>::transformation(){
     long r;
-    long rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
-    vector<long> piv(2,0);
-    for (r = 0; r < rk_max; r++) {
-        piv=Center.pivot(r);
-        if (piv[0]>=0) {
-            do {
-                exchange_rows (r,piv[0]);
-                exchange_columns (r,piv[1]);
-                if(!reduce_row (r))
-                    return false;
-                if(!reduce_column (r))
-                    return false;
-                piv=Center.pivot(r);
-            } while ((piv[0]>r)||(piv[1]>r));
-        }
-        else
+    // long rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
+    bool success=true;
+    
+    while(true){
+        rk=Center.row_echelon_inner(success);
+        if(!success)
+            return false;
+        if(rk==0)
             break;
+            
+        /* cout << "----------------------" << endl;
+        cout << "Nach Rows " << endl << endl;            
+        Center.pretty_print(cout); */
+            
+        bool is_diagonal=true;
+        for(size_t i=0;i<rk;++i){
+            for(size_t j=0;j<Center.nc;++j){
+                if(i!=j && Center[i][j]!=0){
+                    is_diagonal=false;
+                    break;
+                }
+            }
+            if(!is_diagonal)
+                break;
+        }
+        
+        if(is_diagonal)
+            break;
+            
+        success=Center.reduce_rows_upwards();
+        if(!success)
+            return false;
+        
+        /* cout << "----------------------" << endl;
+        cout << "Nach Upwards " << endl << endl;             
+        Center.pretty_print(cout); */
+        
+        success=Center.column_triangulate(rk,Right);
+        if(!success)
+            return false;
+        
+        /*cout << "----------------------" << endl;
+        cout << "Mach Columns " << endl << endl;        
+        Center.pretty_print(cout);*/
+                                
     }
-    rk=r;
     for (r = 0; r < rk; r++) {
-        index*=Center.read(r,r);
+        index*=Center[r][r];
     }
     index=Iabs(index);
+    
+    vector<Integer> Diag(Right.nr_of_columns());
+    Integer denom;    
+    Right_Inv=Right.invert(Diag,denom);
+    
     status="initialized, after transformation";
     return true;
 }
+
 
 //---------------------------------------------------------------------------
 
@@ -242,8 +294,105 @@ bool Lineare_Transformation<Integer>::test_transformation(const size_t& m) const
 }
 
 
+
+// basement filled with old routines
 /*
                 if (test==false) {
                 errorOutput()<<"Arithmetic failure in linear transformation. Most likely overflow.\n";
                 throw ArithmeticException();
+*/
+
+
+//---------------------------------------------------------------------------
+/*
+
+// middle
+
+template<typename Integer>
+bool Lineare_Transformation<Integer>::transformation(){
+    long r;
+    long rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
+    vector<long> piv(2,0);
+    for (r = 0; r < rk_max; r++) {
+        piv=Center.pivot(r);
+        
+        cout << "piv " << piv;
+        if(piv[0]<0)
+            break;
+                                
+        exchange_rows (r,piv[0]);
+        exchange_columns (r,piv[1]);
+        
+        bool done;
+        
+        do{
+        piv=Center.pivot(r);
+                   exchange_rows (r,piv[0]);
+        exchange_columns (r,piv[1]);
+            cout << "r " << r << endl; 
+            Center.pretty_print(cout);
+            cout << "----------" << endl; 
+                    piv=Center.pivot(r);
+                   exchange_rows (r,piv[0]);
+        exchange_columns (r,piv[1]);     
+            gcd_reduce_column(r); 
+            Center.pretty_print(cout);
+            cout << "=========" << endl;           
+            gcd_reduce_row(r);
+            Center.pretty_print(cout);
+            cout << "+++++++++" << endl;
+            done=true;                
+            for(size_t j=r+1;j<Center.nr_of_columns();++j)
+                if(Center[r][j]!=0)
+                    done=false;                    
+        } while(!done);
+    }
+    rk=r;
+    for (r = 0; r < rk; r++) {
+        index*=Center[r][r];
+    }
+    index=Iabs(index);
+    status="initialized, after transformation";
+    return true;
+}
+*/
+
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+
+/*
+
+// old 
+template<typename Integer>
+bool Lineare_Transformation<Integer>::transformation(){
+    long r;
+    long rk_max=min(Center.nr_of_rows(),Center.nr_of_columns());
+    vector<long> piv(2,0);
+    for (r = 0; r < rk_max; r++) {
+        piv=Center.pivot(r);
+        if (piv[0]>=0) {
+            do {
+                exchange_rows (r,piv[0]);
+                exchange_columns (r,piv[1]);
+                if(!reduce_row (r))
+                    return false;
+                if(!reduce_column (r))
+                    return false;
+                Center.pretty_print(cout);
+            cout << "+++++++++" << endl;
+                piv=Center.pivot(r);
+            } while ((piv[0]>r)||(piv[1]>r));
+        }
+        else
+            break;
+    }
+    rk=r;
+    for (r = 0; r < rk; r++) {
+        index*=Center.read(r,r);
+    }
+    index=Iabs(index);
+    status="initialized, after transformation";
+    return true;
+}
 */

@@ -135,6 +135,14 @@ template<> mpz_class lcm(const mpz_class& a, const mpz_class& b);
  template<typename Integer>
 void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem);
 
+// extended Euclidean algorithm: d=ua+vb
+template <typename Integer>
+Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v);
+
+// minimizes u and v and makes d >= 0.
+template <typename Integer>
+void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v);
+
 //---------------------------------------------------------------------------
 //                     Special functions
 //---------------------------------------------------------------------------

@@ -179,15 +179,39 @@ public:
     bool reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
     //for saving or copying the linear transformations AND for linear systems where Left is the RHS
     bool reduce_column(size_t corner);  //reduction by the corner-th column
-    bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv);
+    // bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv); --- not in use presently
     //column reduction,  Right used for saving or copying the linear
     //transformations, Right_Inv used for saving the inverse linear transformations
+    
+    // reduces the rows a matrix in row echelon form upwards, from left to right
+    bool reduce_rows_upwards();
+    
+    // replaces two rows by linear combinations of them
+    bool linear_comb_rows(const size_t& row,const size_t& i, 
+            const Integer& u,const Integer& v,const Integer& w,const Integer&  z);
+            
+    // replaces two rows by linear combinations of them
+    bool linear_comb_columns(const size_t& col,const size_t& j,
+            const Integer& u,const Integer& w,const Integer& v,const Integer& z);
+                       
+    // use the extended Euclidean algorithm for row reduction
+    bool gcd_reduce_row (size_t row, size_t col);
+    bool gcd_reduce_row (size_t corner);
+    
+    // the same for column
+    bool gcd_reduce_column (size_t corner, Matrix<Integer>& Right);
+    
+    // transforms matrix in lower triangular form via column transformations
+    // assumes that the rk is the rank and that the matrix is zero after the first rk rows
+    // column transformation saved in Right
+    bool column_triangulate(long rk, Matrix<Integer>& Right);
 
 //---------------------------------------------------------------------------
 //                      Pivots for rows/columns operations
 //---------------------------------------------------------------------------
 
     vector<long> pivot(size_t corner); //Find the position of an element x with
+    vector<long> max_pivot(size_t corner);
     //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
     //described by an int corner
     long pivot_column(size_t col);  //Find the position of an element x with
