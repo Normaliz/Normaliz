@@ -37,30 +37,6 @@
 namespace libnormaliz {
 using namespace std;
 
-//---------------------------------------------------------------------------
-//Private
-//---------------------------------------------------------------------------
-
-/* template<typename Integer>
-void Matrix<Integer>::max_rank_submatrix_lex(vector<key_t>& v, const size_t& rank) const{
-    size_t level=v.size();
-    if (level==rank) {
-        return;
-    }
-    if (level==0) {
-        v.push_back(0);
-    }
-    else{
-        v.push_back(v[level-1]);
-    }
-    for (; v[level] < nr; v[level]++) {
-        Matrix<Integer> S=submatrix(v);
-        if (S.rank_destructive()==S.nr_of_rows()) {
-            max_rank_submatrix_lex(v,rank);
-            return;
-        }
-    }
-} */
 
 //---------------------------------------------------------------------------
 //Public
@@ -694,11 +670,21 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool Matrix<Integer>::is_diagonal() const{
+
+    for(size_t i=0;i<nr;++i)
+        for(size_t j=0;j<nc;++j)
+            if(i!=j && elements[i][j]!=0)
+                return false;
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2){
     if (row1 == row2) return;
-    assert(row1 >= 0);
     assert(row1 < nr);
-    assert(row2 >= 0);
     assert(row2 < nr);
     elements[row1].swap(elements[row2]);
 }
@@ -708,9 +694,7 @@ void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2){
 template<typename Integer>
 void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
     if (col1 == col2) return;
-    assert(col1 >= 0);
     assert(col1 < nc);
-    assert(col2 >= 0);
     assert(col2 < nc);
     for(size_t i=0; i<nr;i++){
         std::swap(elements[i][col1], elements[i][col2]);
@@ -728,10 +712,8 @@ bool  Matrix<Integer>::reduce_row (size_t corner) {
  
 template<typename Integer>
 bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
-    assert(col >= 0);
     assert(col < nc);
     assert(row < nr);
-    assert(row >= 0);
     size_t i,j;
     Integer help;
     const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
@@ -793,6 +775,8 @@ bool Matrix<Integer>::linear_comb_columns(const size_t& col,const size_t& j,
 
 template<typename Integer>
 bool Matrix<Integer>::gcd_reduce_row (size_t row, size_t col) {
+    assert(row<nr);
+    assert(col<nc);
 
     Integer u,v,w,z,d;      
     for(size_t i=row+1;i<nr;++i){
@@ -859,29 +843,29 @@ bool Matrix<Integer>::reduce_rows_upwards () {
 
 template<typename Integer>
 bool Matrix<Integer>::gcd_reduce_column (size_t corner, Matrix<Integer>& Right){
-
-     Integer d,u,w,z,v;
-     for(size_t j=corner+1;j<nc;++j){
-        d=ext_gcd(elements[corner][corner],elements[corner][j],u,v);
-        w=-elements[corner][j]/d;
-        z=elements[corner][corner]/d;
-        // Now we multiply the submatrix formed by columns "corner" and "j" 
-        // and rows corner,...,nr from the right by the 2x2 matrix
-        // | u w |
-        // | v z |              
-        if(!linear_comb_columns(corner,j,u,w,v,z))
-            return false; 
-        if(!Right.linear_comb_columns(corner,j,u,w,v,z))
-            return false;  
+    assert(corner < nc);
+    assert(corner < nr);
+    Integer d,u,w,z,v;
+    for(size_t j=corner+1;j<nc;++j){
+       d=ext_gcd(elements[corner][corner],elements[corner][j],u,v);
+       w=-elements[corner][j]/d;
+       z=elements[corner][corner]/d;
+       // Now we multiply the submatrix formed by columns "corner" and "j" 
+       // and rows corner,...,nr from the right by the 2x2 matrix
+       // | u w |
+       // | v z |              
+       if(!linear_comb_columns(corner,j,u,w,v,z))
+           return false; 
+       if(!Right.linear_comb_columns(corner,j,u,w,v,z))
+           return false;  
     }   
     return true;
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 bool Matrix<Integer>::reduce_column (size_t corner) {
-    assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     size_t i,j;
@@ -901,12 +885,11 @@ bool Matrix<Integer>::reduce_column (size_t corner) {
     }
     return true;
 }
-
+*/
 //---------------------------------------------------------------------------
 /*
 template<typename Integer>
 bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
-    assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     assert(Right.nr == nc);
@@ -944,8 +927,9 @@ bool Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matr
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-bool Matrix<Integer>::column_triangulate(long rk, Matrix<Integer>& Right) { 
-
+bool Matrix<Integer>::column_trigonalize(size_t rk, Matrix<Integer>& Right) { 
+    assert(Right.nr == nc);
+    assert(Right.nc == nc);
     vector<long> piv(2,0);       
     for(size_t j=0;j<rk;++j){
             piv=pivot(j);
@@ -960,14 +944,26 @@ bool Matrix<Integer>::column_triangulate(long rk, Matrix<Integer>& Right) {
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& success) {
+
+    Matrix<Integer> Right(nc);
+    rk=row_echelon_reduce(success);
+    if(success)
+        success=column_trigonalize(rk,Right); 
+    return Right; 
+} 
+
+    
+
+//---------------------------------------------------------------------------
 
 
 template<typename Integer>
-bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
-    assert(corner >= 0);
+bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& RHS) {
     assert(corner < nc);
     assert(corner < nr);
-    assert(Left.nr == nr);
+    assert(RHS.nr == nr);
     size_t i,j;
     Integer help1, help2=elements[corner][corner];
     const Integer max_half = do_arithmetic_check<Integer>() ? int_max_value_half<Integer>() : 0;
@@ -981,9 +977,9 @@ bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
                     return false; //throw ArithmeticException();
                 }
             }
-            for (j = 0; j < Left.nc; j++) {
-                Left.elements[i][j] -= help1*Left.elements[corner][j];
-                if (do_arithmetic_check<Integer>() && Iabs(Left.elements[i][j]) >= max_half) {
+            for (j = 0; j < RHS.nc; j++) {
+                RHS.elements[i][j] -= help1*RHS.elements[corner][j];
+                if (do_arithmetic_check<Integer>() && Iabs(RHS.elements[i][j]) >= max_half) {
                     // errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
                     return false; // throw ArithmeticException();
                 }
@@ -997,7 +993,6 @@ bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
 
 template<typename Integer>
 vector<long> Matrix<Integer>::pivot(size_t corner){
-    assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     size_t i,j;
@@ -1021,10 +1016,9 @@ vector<long> Matrix<Integer>::pivot(size_t corner){
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 vector<long> Matrix<Integer>::max_pivot(size_t corner){
-    assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     size_t i,j;
@@ -1046,7 +1040,7 @@ vector<long> Matrix<Integer>::max_pivot(size_t corner){
     
     return v;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1058,10 +1052,8 @@ long Matrix<Integer>::pivot_column(size_t col){
 
 template<typename Integer>
 long Matrix<Integer>::pivot_column(size_t row,size_t col){
-    assert(col >= 0);
     assert(col < nc);
     assert(row < nr);
-    assert(row >= 0);
     size_t i;
     long j=-1;
     Integer help=0;
@@ -1114,6 +1106,17 @@ size_t Matrix<Integer>::row_echelon_inner(bool& success){
         }while (piv>rk);
     }
     
+    return rk;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon_reduce(bool& success){
+
+    size_t rk=row_echelon_inner(success);
+    if(success)
+        reduce_rows_upwards();
     return rk;
 }
 
@@ -1439,14 +1442,23 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     size_t dim=nc;
     if(nr==0)
         return(Matrix<Integer>(dim));
-    Lineare_Transformation<Integer> NewLT(*this);
-    size_t rank = NewLT.get_rank();
+
+    Matrix<Integer> Copy(*this);
+    size_t rank;
+    bool success;
+    Matrix<Integer> Transf=Copy.row_column_trigonalize(rank,success);
+    if(!success){
+        Matrix<mpz_class> mpz_Copy(nr,nc);
+        mat_to_mpz(*this,mpz_Copy);
+        Matrix<mpz_class> mpz_Transf=mpz_Copy.row_column_trigonalize(rank,success);
+        mat_to_Int(mpz_Transf,Transf);    
+    }
+    
     Matrix<Integer> ker_basis(dim-rank,dim);
-    Matrix<Integer> Help = NewLT.get_right().transpose();
+    Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
     return(ker_basis);
-
 }
 
 //---------------------------------------------------------------------------
@@ -1470,7 +1482,6 @@ Matrix<Integer> invert(const Matrix<Integer>& Left_side, vector< Integer >& diag
 // version with minimal remainder
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
-    assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     assert(Left.nr == nr);
@@ -1506,10 +1517,8 @@ void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
 // version with minimal remainder
 template<typename Integer>
 void Matrix<Integer>::reduce_row (size_t row, size_t col) {
-    assert(col >= 0);
     assert(col < nc);
     assert(row < nr);
-    assert(row >= 0);
     size_t i,j;
     Integer quot, rem;
     for (i =row+1; i < nr; i++) {

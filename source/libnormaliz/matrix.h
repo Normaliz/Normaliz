@@ -140,6 +140,8 @@ public:
     bool equal(const Matrix& A) const;             // returns this==A
     bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this
+    
+    bool is_diagonal() const;
 
 //---------------------------------------------------------------------------
 //                          Scalar operations
@@ -173,18 +175,19 @@ public:
 //              Rows and columns reduction  in  respect to
 //          the right-lower submatrix of this described by an int corner
 //---------------------------------------------------------------------------
-    // return value false undicates failure
+    // return value false undicates failure because of overflow
+    // for all the routines below
+    
+    // reduction via integer division and elemntary transformations
     bool reduce_row(size_t corner);      //reduction by the corner-th row
     bool reduce_row (size_t row, size_t col); // corner at position (row,col)
-    bool reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
-    //for saving or copying the linear transformations AND for linear systems where Left is the RHS
-    bool reduce_column(size_t corner);  //reduction by the corner-th column
+    bool reduce_row(size_t corner, Matrix& LeftRHS);//row reduction, Left used
+    //for saving or linear systems with right hand side RHS
+    // bool reduce_column(size_t corner);  //reduction by the corner-th column
+    
     // bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv); --- not in use presently
     //column reduction,  Right used for saving or copying the linear
     //transformations, Right_Inv used for saving the inverse linear transformations
-    
-    // reduces the rows a matrix in row echelon form upwards, from left to right
-    bool reduce_rows_upwards();
     
     // replaces two rows by linear combinations of them
     bool linear_comb_rows(const size_t& row,const size_t& i, 
@@ -194,26 +197,21 @@ public:
     bool linear_comb_columns(const size_t& col,const size_t& j,
             const Integer& u,const Integer& w,const Integer& v,const Integer& z);
                        
-    // use the extended Euclidean algorithm for row reduction
+    // use the extended Euclidean algorithm for row reduction instead of elemntary transformations
     bool gcd_reduce_row (size_t row, size_t col);
     bool gcd_reduce_row (size_t corner);
     
     // the same for column
     bool gcd_reduce_column (size_t corner, Matrix<Integer>& Right);
-    
-    // transforms matrix in lower triangular form via column transformations
-    // assumes that the rk is the rank and that the matrix is zero after the first rk rows
-    // column transformation saved in Right
-    bool column_triangulate(long rk, Matrix<Integer>& Right);
 
 //---------------------------------------------------------------------------
 //                      Pivots for rows/columns operations
 //---------------------------------------------------------------------------
 
     vector<long> pivot(size_t corner); //Find the position of an element x with
-    vector<long> max_pivot(size_t corner);
     //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
     //described by an int corner
+    // vector<long> max_pivot(size_t corner);
     long pivot_column(size_t col);  //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
     //described by an int col
@@ -227,6 +225,17 @@ public:
 
     size_t row_echelon(bool compute_vol); // transforms this into row echelon form and returns rank
     size_t row_echelon_inner(bool& success); // does the work and checks for overflows
+    // reduces the rows a matrix in row echelon form upwards, from left to right
+    bool reduce_rows_upwards();
+    size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
+    
+    // transforms matrix in lower triangular form via column transformations
+    // assumes that the rk is the rank and that the matrix is zero after the first rk rows
+    // Right = Right*(column transformation of this call)
+    bool column_trigonalize(size_t rk, Matrix<Integer>& Right);
+    // combines row_echelon_reduce and column_trigonalize
+    // returns column transformation matrix
+    Matrix<Integer> row_column_trigonalize(size_t& rk, bool& success);
 
     size_t rank() const; //returns rank, nondestructive
     

@@ -61,9 +61,9 @@ Lineare_Transformation<Integer>::Lineare_Transformation(const Matrix<Integer>& M
     bool success=transformation();
     // cout << "Success " << success << endl;
     if(success && !using_GMP<Integer>()){
-        success=test_transformation(overflow_test_modulus);
-        //  if(!success)
-        //  cout << endl << "******** Test daneben!!" << endl;
+        success=test_transformation(overflow_test_modulus);  // <-------------------- Test has no value anymore
+        // if(!success)                                         // makes only sense is Right_Inv is computed independently
+        // cout << endl << "******** Test daneben!!" << endl;
     }
     if(!success){
         Matrix<mpz_class> mpz_M(M.nr_of_rows(),M.nr_of_columns());
@@ -223,7 +223,7 @@ bool Lineare_Transformation<Integer>::transformation(){
     bool success=true;
     
     while(true){
-        rk=Center.row_echelon_inner(success);
+        rk=Center.row_echelon_reduce(success);
         if(!success)
             return false;
         if(rk==0)
@@ -232,38 +232,20 @@ bool Lineare_Transformation<Integer>::transformation(){
         /* cout << "----------------------" << endl;
         cout << "Nach Rows " << endl << endl;            
         Center.pretty_print(cout); */
-            
-        bool is_diagonal=true;
-        for(size_t i=0;i<rk;++i){
-            for(size_t j=0;j<Center.nc;++j){
-                if(i!=j && Center[i][j]!=0){
-                    is_diagonal=false;
-                    break;
-                }
-            }
-            if(!is_diagonal)
-                break;
-        }
         
-        if(is_diagonal)
+        if(Center.is_diagonal())
             break;
-            
-        success=Center.reduce_rows_upwards();
-        if(!success)
-            return false;
         
-        /* cout << "----------------------" << endl;
-        cout << "Nach Upwards " << endl << endl;             
-        Center.pretty_print(cout); */
-        
-        success=Center.column_triangulate(rk,Right);
+        success=Center.column_trigonalize(rk,Right);
         if(!success)
             return false;
         
         /*cout << "----------------------" << endl;
         cout << "Mach Columns " << endl << endl;        
         Center.pretty_print(cout);*/
-                                
+        
+        if(Center.is_diagonal())
+            break;                                
     }
     for (r = 0; r < rk; r++) {
         index*=Center[r][r];
