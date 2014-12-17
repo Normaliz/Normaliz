@@ -39,9 +39,6 @@ extern const long ScipBound;
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens);
 
-template<typename Integer>
-vector<Integer> opt_sol(Matrix<Integer> SuppHyp, vector<Integer> grading);
-
 } // namespace
 
 #endif // NMZ_SCIP

@@ -653,7 +653,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const long SimplexParallelEvaluationBound=1000; // larger simplices are evaluated by parallel threads
+const long SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
 
 //---------------------------------------------------------------------------
 
@@ -862,7 +862,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         verboseOutput() << "simplex volume " << volume << endl;
     }
 
-    #ifdef NMZ_SCIP
+#ifdef NMZ_SCIP
     if (volume >= ScipBound)
     {
         Full_Cone<Integer>& C = *C_ptr;
@@ -872,21 +872,23 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
         list< vector<Integer> > new_points;
         bottom_points(new_points, Generators);
-cout << "new_points:" << endl << new_points;
+        cout << "new points " << endl << new_points << endl;
         if (!new_points.empty()) {
             int nr_new_points = new_points.size();
-	    // remove this simplex from det_sum and multiplicity
+            // remove this simplex from det_sum and multiplicity
             addMult(-volume,C.Results[0]);
-	    // add new points to HilbertBasis
-	    typename list< vector<Integer> >::const_iterator it = new_points.begin();
-            while (it != new_points.end()) {
-                bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(*it,C,C.OldCandidates);
-                if(inserted) {
-		   C.Results[0].collected_elements_size++;
-	           C.Results[0].HB_Elements.Candidates.back().original_generator = true; //TODO @Bruns ist das richtig so? wird es auch in OldCandidates uebernommen?
+            if (C.do_Hilbert_basis) {
+                // add new points to HilbertBasis
+                typename list< vector<Integer> >::const_iterator it = new_points.begin();
+                while (it != new_points.end()) {
+                    bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(*it,C,C.OldCandidates);
+                    if(inserted) {
+                        C.Results[0].collected_elements_size++;
+                        C.Results[0].HB_Elements.Candidates.back().original_generator = true; //TODO @Bruns ist das richtig so? wird es auch in OldCandidates uebernommen?
+                    }
+                    ++it;
                 }
-                ++it;
-	    }
+            }
             // temporarily add new_points to the Top_Cone generators
             C.is_simplicial = false; 
             C.Generators.append(Matrix<Integer>(new_points));
@@ -894,11 +896,19 @@ cout << "new_points:" << endl << new_points;
             C.nr_gen += nr_new_points;
             C.set_degrees();
             C.Top_Key.resize(C.nr_gen);
+            C.Extreme_Rays.resize(C.nr_gen);
             for (size_t i=nr_old_gen; i<C.nr_gen; ++i) {
                 C.Top_Key[i] = i;
+                C.Extreme_Rays[i] = false;
             }
-            bool tmp_keep_triang = C.keep_triangulation;
-            C.keep_triangulation =  false;
+
+            // delete large simplex
+            C.totalNrSimplices--;
+            if (C.keep_triangulation) {
+                cout << "tri is so gross " << C.TriangulationSize << endl;
+                C.TriangulationSize = 0;
+                C.Triangulation.clear();  //TODO richtig machen
+            }
 
             // create "pyramid" key
             vector<key_t> subcone_key(C.dim + nr_new_points);
@@ -918,26 +928,25 @@ cout << "new_points:" << endl << new_points;
             C.evaluate_triangulation();
 
             // restore Top_Cone
-            C.Generators.resize(nr_old_gen);
-            C.nr_gen = nr_old_gen;
-            gen_degrees.resize(nr_old_gen);
-            C.keep_triangulation = tmp_keep_triang;
+//            C.Generators.resize(nr_old_gen);
+//            C.nr_gen = nr_old_gen;
+//            gen_degrees.resize(nr_old_gen);
             return;
         }
     }
-    #endif // NMZ_SCIP
+#endif // NMZ_SCIP
 
     take_care_of_0vector(C_ptr->Results[0]);
     sequential_evaluation=false;
 
     evaluation_loop_parallel();
-    
+
     collect_vectors();   // --> Results[0]
     for(size_t i=1;i<C_ptr->Results.size();++i)  // takes care of h-vectors
         conclude_evaluation(C_ptr->Results[i]);
     sequential_evaluation=true;   
     conclude_evaluation(C_ptr->Results[0]);  // h-vector in Results[0] and collected elements
-    
+
     if(verbose){
         verboseOutput() << endl;
     }    
