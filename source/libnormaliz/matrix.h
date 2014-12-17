@@ -229,6 +229,8 @@ public:
     bool reduce_rows_upwards();
     size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
     
+    size_t row_echelon_bareiss(bool& success);
+    
     // transforms matrix in lower triangular form via column transformations
     // assumes that the rk is the rank and that the matrix is zero after the first rk rows
     // Right = Right*(column transformation of this call)

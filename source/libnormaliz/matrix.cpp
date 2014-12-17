@@ -1082,6 +1082,52 @@ size_t Matrix<Integer>::rank() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+size_t Matrix<Integer>::row_echelon_bareiss(bool& success){
+
+    size_t pc=0;
+    long piv=0, rk=0;
+    success=true;
+    vector<bool> last_time_mult(nr,false),this_time_mult(nr,false);
+    Integer div=1;    
+    
+    for (rk = 0; rk < (long) nr; rk++){
+        for(;pc<nc;pc++){
+            piv=pivot_column(rk,pc);
+            if(piv>=0)
+                break;
+        }
+        if(pc==nc)
+            break;
+        exchange_rows (rk,piv);
+        swap(last_time_mult[rk],last_time_mult[piv]);
+        Integer a=elements[rk][pc];
+        for(size_t i=rk+1;i<nr;++i){
+            if(elements[i][pc]==0){
+                this_time_mult[i]=false;
+                continue;
+            }
+            this_time_mult[i]=true;
+            bool divide=last_time_mult[i] && (Iabs(elements[rk-1][pc-1])!=1);
+            if(divide)
+                div=elements[rk-1][pc-1]; 
+            Integer b=elements[i][pc];
+            elements[i][pc]=0;
+            for(size_t j=pc+1;j<nc;++j){
+                elements[i][j]=a*elements[i][j]-b*elements[rk][j]; 
+                if(divide)
+                    elements[i][j]/=div;            
+            }
+                
+        }
+        last_time_mult=this_time_mult;
+
+    }
+    
+    return rk;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 size_t Matrix<Integer>::row_echelon_inner(bool& success){
 
     size_t pc=0;
@@ -1181,6 +1227,8 @@ size_t Matrix<Integer>::rank_destructive(){
 
 template<typename Integer>
 Integer Matrix<Integer>::vol_destructive(){
+
+    assert(nr==nc);
 
     if(nr==0)
         return 1;
