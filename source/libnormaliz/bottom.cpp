@@ -28,6 +28,7 @@
 #include <iostream>
 //#include <sstream>
 #include <algorithm>
+#include <queue>
 
 #include "bottom.h"
 #include "libnormaliz.h"
@@ -76,9 +77,16 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 	SCIPsetRealParam(scip, "numerics/feastol", 1e-9); 
 
     stellar_det_sum = 0;
-    bottom_points_inner(scip, new_points, gens);
+
+    queue< Matrix<Integer> > q_gens;
+    q_gens.push(gens);
+    while (!q_gens.empty()) {
+        bottom_points_inner(scip, new_points, q_gens);
+    }
 
     cout << "stellar_det_sum = " << stellar_det_sum << endl;
+    cout << "sorting new points" << endl;
+    new_points.sort();
 
     SCIPfree(& scip);
 
@@ -88,8 +96,9 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 
 
 template<typename Integer>
-void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points, Matrix<Integer> gens) { //TODO lieber Referenz fuer Matrix?
-
+void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points,
+                         queue< Matrix<Integer> >& q_gens) {
+    Matrix<Integer>& gens = q_gens.front();
     vector<Integer>  grading = gens.find_linear_form();
     Integer volume;
     int dim = gens[0].size();
@@ -97,6 +106,7 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points, Matrix
 
     if (volume < ScipBound) {
         stellar_det_sum += explicit_cast_to_long(volume);
+        q_gens.pop();
         return;
     }
 
@@ -121,7 +131,7 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points, Matrix
         for (int i=0; i<dim; ++i) {
             if (v_scalar_product(Support_Hyperplanes[i], new_point) != 0) {
                 stellar_gens[i] = new_point;
-                bottom_points_inner(scip, new_points, stellar_gens);
+                q_gens.push(stellar_gens);
 
                 stellar_gens[i] = gens[i];
             } else nr_hyps++;
@@ -134,6 +144,7 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points, Matrix
 //      cout << "Not using " << new_point;
         stellar_det_sum += explicit_cast_to_long(volume);
     }
+    q_gens.pop();
     return;
 }
 
