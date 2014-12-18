@@ -2744,6 +2744,10 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
         nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
         return;
     }
+    if (verbose) {
+        verboseOutput() << "Minimize the given set of support hyperplanes by "
+                        << "computing the extreme rays of the dual cone" << endl;
+    }
     Full_Cone<Integer> Dual(Support_Hyperplanes);
     Dual.Support_Hyperplanes = Generators;
     Dual.is_Computed.set(ConeProperty::SupportHyperplanes);

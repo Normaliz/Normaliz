@@ -219,9 +219,19 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }
     
     }
-    if(nr_types>=2){
+    // allow only on input type, or generators and constraints
+//    cout << "nr_types = " << nr_types << endl;
+//    cout << generators_input << constraints_input << inhom_input << lattice_ideal_input << endl;
+    if (nr_types > 2) {
         errorOutput() << "(1) This InputType combination is currently not supported!"<< endl;
         throw BadInputException();
+    }
+    if (nr_types == 2) {
+        if (generators_input && constraints_input) {
+        } else {
+            errorOutput() << "(2) This InputType combination is currently not supported!"<< endl;
+            throw BadInputException();
+        }
     }
     if(nr_types==0){  // we have only a grading, dehomogenization or excluded faces
         constraints_input=true;       
@@ -277,7 +287,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     // for generators we can have only one strict input
-    if(generators_input && nr_strict_input >1){
+    if(generators_input && nr_strict_input > 1 && !constraints_input) {
         errorOutput() << "This InputType combination is currently not supported!"<< endl;
         throw BadInputException();        
     }
@@ -423,6 +433,26 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(Inequalities);
     Inequalities=Help;
 
+    if (isComputed(ConeProperty::Generators)) {
+        if (Congruences.nr_of_rows() != 0 || Equations.nr_of_rows() != 0) {
+            errorOutput() << "(3) This InputType combination is currently not supported!"<< endl;
+            throw BadInputException();
+        }
+        // check if the equations are at least valid
+        if (Inequalities.nr_of_rows() != 0) {
+            Integer sp;
+            for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
+                for (size_t j = 0; j < Generators.nr_of_rows(); ++j) {
+                    if ((sp = v_scalar_product(Generators[i], Inequalities[j])) < 0) {
+                        errorOutput() << "Inequality " << j
+                        << " is not valid for generator " << i
+                        << " (value " << sp << ")" << endl;
+                        throw BadInputException();
+                    }
+                }
+            }
+        }
+    }
     prepare_input_type_456(Congruences, Equations, Inequalities);
 }
 
@@ -457,7 +487,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                 if(inhomogeneous){
                     errorOutput() << "Dehomogenization not allowed for normalization!" << endl;
                     throw BadInputException();
-                }    
+                }
                 prepare_input_type_1(it->second); 
                 break;
             case Type::polytope:         
