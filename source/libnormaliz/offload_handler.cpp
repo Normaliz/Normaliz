@@ -616,9 +616,10 @@ OffloadHandler<Integer>::~OffloadHandler()
 template<typename Integer>
 MicOffloader<Integer>::MicOffloader()
 : is_init(false),
-  nr_mics(_Offload_number_of_devices())
+  nr_mics(_Offload_number_of_devices()),
+  nr_handlers(nr_mics)
 {
-  handlers.resize(nr_mics);
+  handlers.resize(nr_handlers);
 }
 
 //---------------------------------------------------------------------------
@@ -627,7 +628,7 @@ template<typename Integer>
 MicOffloader<Integer>::~MicOffloader()
 {
   if (is_init)
-    for (int i=0; i<nr_mics; ++i)
+    for (int i=0; i<nr_handlers; ++i)
       delete handlers[i];
 }
 
@@ -646,11 +647,11 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
     }
 
     // create handler
-    for (int i=0; i<nr_mics; ++i)
-      handlers[i] = new OffloadHandler<Integer>(fc,i);
+    for (int i=0; i<nr_handlers; ++i)
+      handlers[i] = new OffloadHandler<Integer>(fc, i % nr_mics);
     is_init = true;
     // wait for completed creation // TODO keep it?
-    for (int i=0; i<nr_mics; ++i)
+    for (int i=0; i<nr_handlers; ++i)
       handlers[i]->wait();
   }
 }
@@ -664,11 +665,11 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 
     //offload some pyramids //TODO move only a part
     list< vector<key_t> > pyrs;
-    vector<bool> started(nr_mics, false);
+    vector<bool> started(nr_handlers, false);
     size_t nr_transfer = min(fc.nrPyramids[0]/2, 25000ul);
     if (nr_transfer == 0) return;
 
-    for (int i=0; i<nr_mics; ++i)
+    for (int i=0; i<nr_handlers; ++i)
     {
       if (!handlers[i]->is_running())
       {
@@ -685,7 +686,7 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
     }
 
     //compute on mics
-    for (int i=0; i<nr_mics; ++i)
+    for (int i=0; i<nr_handlers; ++i)
       if (started[i])
         handlers[i]->evaluate_pyramids();
 }
@@ -698,7 +699,7 @@ void MicOffloader<Integer>::evaluate_triangulation()
 {
   if (is_init)
   {
-    for (int i=0; i<nr_mics; ++i)
+    for (int i=0; i<nr_handlers; ++i)
       if (!handlers[i]->is_running())
         handlers[i]->evaluate_triangulation();
   }
@@ -714,7 +715,7 @@ void MicOffloader<Integer>::finalize()
     list<int> to_complete, to_collect;
     list<int>::iterator it;
 
-    for (int i=0; i<nr_mics; ++i)
+    for (int i=0; i<nr_handlers; ++i)
       to_complete.push_back(i);
     // first start it on all idle mics
     while (!to_complete.empty() || !to_collect.empty())

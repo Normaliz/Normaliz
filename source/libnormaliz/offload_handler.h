@@ -78,6 +78,7 @@ public:
 private:
   bool is_init;
   int nr_mics;
+  int nr_handlers;
   std::vector< OffloadHandler<Integer>* > handlers;
 
   void init(Full_Cone<Integer>& fc);
