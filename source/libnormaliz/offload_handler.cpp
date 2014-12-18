@@ -320,12 +320,12 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
     offload_fc_ptr->do_vars_check();
     offload_fc_ptr->primal_algorithm_initialize();
 
-    cout << "mic " << mic_nr<< ": create 4 mio empty simplices ..." << endl;
+    cout << "mic " << mic_nr<< ": create 3 mio empty simplices ..." << endl;
     SHORTSIMPLEX<Integer> simp;
     simp.key = vector<key_t>(offload_fc_ptr->dim);
     simp.height = 0;
     simp.vol = 0;
-    offload_fc_ptr->FreeSimpl.insert(offload_fc_ptr->FreeSimpl.end(), 4000000, simp);
+    offload_fc_ptr->FreeSimpl.insert(offload_fc_ptr->FreeSimpl.end(), 3000000, simp);
     cout << "mic " << mic_nr<< ": creating simplices done." << endl;
   }
   running = true;
