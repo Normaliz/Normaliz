@@ -1142,7 +1142,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         in_triang[key[i]]=true;
         GensInCone.push_back(key[i]);
         if (deg1_triangulation && isComputed(ConeProperty::Grading))
-            deg1_triangulation = (gen_degrees[i] == 1);
+            deg1_triangulation = (gen_degrees[key[i]] == 1);
     }
     
     nrGensInCone=dim;
@@ -1667,8 +1667,7 @@ void Full_Cone<Integer>::build_cone() {
         // in_triang[i]=true; // now at end of loop
         if (deg1_triangulation && isComputed(ConeProperty::Grading))
             deg1_triangulation = (gen_degrees[i] == 1);
-        
-            
+
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
             if (do_triangulation)
@@ -2128,11 +2127,10 @@ void Full_Cone<Integer>::primal_algorithm(){
     extreme_rays_and_deg1_check();
     if(!pointed) return;
 
+    if (isComputed(ConeProperty::Grading) && !deg1_generated) {
+        deg1_triangulation = false;
+    }
     if (keep_triangulation) {
-        if (isComputed(ConeProperty::Grading) && !deg1_generated) {
-            deg1_triangulation = false;
-        }
-
         is_Computed.set(ConeProperty::Triangulation);
     }
     
