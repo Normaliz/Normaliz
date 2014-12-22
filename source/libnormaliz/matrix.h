@@ -51,16 +51,89 @@ template<typename Integer> class Matrix {
 
     size_t nr;
     size_t nc;
-    vector< vector<Integer> > elements;
+    vector< vector<Integer> > elem;
 
 //---------------------------------------------------------------------------
 //              Private routines, used in the public routines
 //---------------------------------------------------------------------------
-    
 
+//---------------------------------------------------------------------------
+//                      Rows and columns exchange
+//---------------------------------------------------------------------------
+
+    void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
+    void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
+
+//---------------------------------------------------------------------------
+//              Rows and columns reduction
+//---------------------------------------------------------------------------
+    // return value false undicates failure because of overflow
+    // for all the routines below
+    
+    // reduction via integer division and elemntary transformations
+    bool reduce_row(size_t corner);      //reduction by the corner-th row
+    bool reduce_row (size_t row, size_t col); // corner at position (row,col)
+    bool reduce_row(size_t corner, Matrix& LeftRHS);//row reduction, Left used
+    //for saving or linear systems with right hand side RHS
+    // bool reduce_column(size_t corner);  //reduction by the corner-th column
+    
+    // bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv); --- not in use presently
+    //column reduction,  Right used for saving or copying the linear
+    //transformations, Right_Inv used for saving the inverse linear transformations
+    
+    // replaces two rows by linear combinations of them
+    // bool linear_comb_rows(const size_t& row,const size_t& i,const size_t& col,  
+    //        const Integer& u,const Integer& v,const Integer& w,const Integer&  z);
+            
+    // replaces two rows by linear combinations of them
+    bool linear_comb_columns(const size_t& col,const size_t& j,
+            const Integer& u,const Integer& w,const Integer& v,const Integer& z);
+                       
+    // use the extended Euclidean algorithm for row reduction instead of elemntary transformations
+    // bool gcd_reduce_row (size_t row, size_t col);
+    // bool gcd_reduce_row (size_t corner);
+    
+    // the same for column
+    bool gcd_reduce_column (size_t corner, Matrix<Integer>& Right);
+    
+//---------------------------------------------------------------------------
+//                      Work horses
+//---------------------------------------------------------------------------
+
+    // takes product of the diagonal elem
+    void do_compute_vol(bool& success);  
+        
     // Does the computation for the solution of linear systems
     bool solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution); 
+                    Integer& denom, Matrix<Integer>& Solution);
+                    
+    size_t row_echelon_inner_elem(bool compute_vol,bool& success); // does the work and checks for overflows
+    size_t row_echelon_inner_bareiss(bool& success);
+    // size_t row_echelon_inner_gcd(bool& success); 
+    
+    size_t row_echelon(bool compute_vol); // transforms this into row echelon form and returns rank
+    // reduces the rows a matrix in row echelon form upwards, from left to right
+    bool reduce_rows_upwards();
+    size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
+    
+    // The Bareiss routine does NOT use Z-invertible transformations
+    size_t row_echelon_bareiss(bool& success);
+    
+
+//---------------------------------------------------------------------------
+//                      Pivots for rows/columns operations
+//---------------------------------------------------------------------------
+
+    vector<long> pivot(size_t corner); //Find the position of an element x with
+    //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
+    //described by an int corner
+    // vector<long> max_pivot(size_t corner);
+    long pivot_column(size_t col);  //Find the position of an element x with
+    //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
+    //described by an int col
+    
+    long pivot_column(size_t row,size_t col); //in column col starting from row
+    
                     
 public:    
   
@@ -71,10 +144,10 @@ public:
 //---------------------------------------------------------------------------
 
     Matrix();
-    Matrix(size_t dim);                           //constructor of identity matrix
+    Matrix(size_t dim);                           //constructor of unit matrix
     Matrix(size_t row, size_t col);                 //main constructor, all entries 0
     Matrix(size_t row, size_t col, Integer value); //constructor, all entries set to value
-    Matrix(const vector< vector<Integer> >& elem); //constuctor, elements=elem
+    Matrix(const vector< vector<Integer> >& elem); //constuctor, elem=elem
     Matrix(const list< vector<Integer> >& elems);
 
 //---------------------------------------------------------------------------
@@ -116,16 +189,16 @@ public:
     void cut_columns(size_t c); // remove columns, only the first c columns will survive
 
     inline const Integer& get_elem(size_t row, size_t col) const {
-        return elements[row][col];
+        return elem[row][col];
     }
     inline const vector< vector<Integer> >& get_elements() const {
-        return elements;
+        return elem;
     }
     inline vector<Integer> const& operator[] (size_t row) const {
-        return elements[row];
+        return elem[row];
     }
     inline vector<Integer>& operator[] (size_t row) { 
-        return elements[row];
+        return elem[row];
     }
 
 //---------------------------------------------------------------------------
@@ -149,9 +222,9 @@ public:
 
     void scalar_multiplication(const Integer& scalar);  //this=this*scalar
     void scalar_division(const Integer& scalar);
-    //this=this div scalar, all the elements of this must be divisible with the scalar
+    //this=this div scalar, all the elem of this must be divisible with the scalar
     void reduction_modulo(const Integer& modulo);     //this=this mod scalar
-    Integer matrix_gcd() const; //returns the gcd of all elements
+    Integer matrix_gcd() const; //returns the gcd of all elem
     vector<Integer> make_prime();         //each row of this is reduced by its gcd
     //return a vector containing the gcd of the rows
 
@@ -164,73 +237,15 @@ public:
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
 
-//---------------------------------------------------------------------------
-//                      Rows and columns exchange
-//---------------------------------------------------------------------------
 
-    void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
-    void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
-
-//---------------------------------------------------------------------------
-//              Rows and columns reduction  in  respect to
-//          the right-lower submatrix of this described by an int corner
-//---------------------------------------------------------------------------
-    // return value false undicates failure because of overflow
-    // for all the routines below
-    
-    // reduction via integer division and elemntary transformations
-    bool reduce_row(size_t corner);      //reduction by the corner-th row
-    bool reduce_row (size_t row, size_t col); // corner at position (row,col)
-    bool reduce_row(size_t corner, Matrix& LeftRHS);//row reduction, Left used
-    //for saving or linear systems with right hand side RHS
-    // bool reduce_column(size_t corner);  //reduction by the corner-th column
-    
-    // bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv); --- not in use presently
-    //column reduction,  Right used for saving or copying the linear
-    //transformations, Right_Inv used for saving the inverse linear transformations
-    
-    // replaces two rows by linear combinations of them
-    bool linear_comb_rows(const size_t& row,const size_t& i, 
-            const Integer& u,const Integer& v,const Integer& w,const Integer&  z);
-            
-    // replaces two rows by linear combinations of them
-    bool linear_comb_columns(const size_t& col,const size_t& j,
-            const Integer& u,const Integer& w,const Integer& v,const Integer& z);
-                       
-    // use the extended Euclidean algorithm for row reduction instead of elemntary transformations
-    bool gcd_reduce_row (size_t row, size_t col);
-    bool gcd_reduce_row (size_t corner);
-    
-    // the same for column
-    bool gcd_reduce_column (size_t corner, Matrix<Integer>& Right);
-
-//---------------------------------------------------------------------------
-//                      Pivots for rows/columns operations
-//---------------------------------------------------------------------------
-
-    vector<long> pivot(size_t corner); //Find the position of an element x with
-    //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
-    //described by an int corner
-    // vector<long> max_pivot(size_t corner);
-    long pivot_column(size_t col);  //Find the position of an element x with
-    //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
-    //described by an int col
-    
-    long pivot_column(size_t row,size_t col); //in column col starting from row
 
 //---------------------------------------------------------------------------
 //                          Matrices operations
 //           --- this are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
-    size_t row_echelon(bool compute_vol); // transforms this into row echelon form and returns rank
-    size_t row_echelon_inner(bool& success); // does the work and checks for overflows
-    // reduces the rows a matrix in row echelon form upwards, from left to right
-    bool reduce_rows_upwards();
-    size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
-    
-    size_t row_echelon_bareiss(bool& success);
-    
+// Normal forms
+
     // transforms matrix in lower triangular form via column transformations
     // assumes that the rk is the rank and that the matrix is zero after the first rk rows
     // Right = Right*(column transformation of this call)
@@ -238,39 +253,69 @@ public:
     // combines row_echelon_reduce and column_trigonalize
     // returns column transformation matrix
     Matrix<Integer> row_column_trigonalize(size_t& rk, bool& success);
+    
+// rank and determinant
 
     size_t rank() const; //returns rank, nondestructive
+    size_t rank_destructive(); //returns rank, destructive
     
     Integer vol_destructive();
-
-    size_t rank_destructive(); //returns rank, destructive
+    Integer vol() const;
+    
+// find linearly indepenpendent submatrix of maximal rank
 
     vector<key_t>  max_rank_submatrix_lex() const; //returns a vector with entries
     //the indices of the first rows in lexicographic order of this forming
     //a submatrix of maximal rank.
+    
+// Solution of linear systems with square matrix
   
     // In the following routines denom is the absolute value of the determinant of the
     // left side matrix ( =this).
-
-    Matrix solve(const Matrix& Right_side, Integer& denom) const;// solves the system
-    //this*Solution=denom*Right_side. this should be a quadratic matrix with nonzero determinant.
 
     Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*Right_side. this should be a quadratic /matrix with nonzero determinant.
     //The diagonal of this after transformation into an upper triangular matrix
     //is saved in diagonal
+    // Variant:
+    Matrix solve(const Matrix& Right_side, Integer& denom) const;
 
-    // Right_side and this get destroyed!
+    // "This" and Right_side get destroyed!
     Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
 
     // Returns the solution of the system in Solution (for efficiency)
     void solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution);
-                   
+                    
+    // The next two solve routines do not require the matrix to be square.
+    // However, we want rank = number of columns, ensuring unique solvability
+    
+// For non-square matrices
+    
+    vector<Integer> solve_rectangular(const vector<Integer>& v, Integer& denom) const;
+    // computes solution vector for right side v, solution over the rationals
+    // matrix needs not be quadratic, but must have rank = number of columns
+    // with denominator denom. 
+    // gcd of denom and solution is extracted !!!!!
+    
+    vector<Integer> solve_ZZ(const vector<Integer>& v) const;
+    // computes solution vector for right side v
+    // insists on integrality of the solution
+                    
+// homogenous linear systems
+
+    Matrix<Integer> kernel () const;
+    // computes a ZZ-basis of the solutions of (*this)x=0
+    // the basis is formed by the ROWS of the returned matrix
+                    
+// inverse matrix
+                    
     Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
-    //this*Solution=denom*I. this should be a quadratic matrix with nonzero determinant. 
+    //this*Solution=denom*I. "this" should be a quadratic matrix with nonzero determinant. 
     //The diagonal of this after transformation into an upper triangular matrix
     //is saved in diagonal
+                    
+// find linear form that is constant on the rows 
 
     vector<Integer> find_linear_form () const;
     // Tries to find a linear form which gives the same value an all rows of this
@@ -279,23 +324,7 @@ public:
   
     vector<Integer> find_linear_form_low_dim () const;
     //same as find_linear_form but also works with not maximal rank
-    //uses a linear transformation to get a full rank matrix
-
-    // The next two solve routines do not require the matrix to be square.
-    // However, we want rank = number of columns, ensuring unique solvability
-    
-    vector<Integer> solve(const vector<Integer>& v, Integer& denom) const;
-    // computes solution vector for right side v, solution over the rationals
-    // with denominator denom. 
-    // gcd of denom and solution is extracted !!!!!
-    
-    vector<Integer> solve(const vector<Integer>& v) const;
-    // computes solution vector for right side v
-    // insists on integrality of the solution
-    
-    Matrix<Integer> kernel () const;
-    // computes a ZZ-basis of the solutions of (*this)x=0
-    // the basis is formed by the ROWS of the returned matrix
+    //uses a linear transformation to get a full rank matrix   
 
 };
 //class end *****************************************************************

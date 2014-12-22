@@ -1142,7 +1142,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         in_triang[key[i]]=true;
         GensInCone.push_back(key[i]);
         if (deg1_triangulation && isComputed(ConeProperty::Grading))
-            deg1_triangulation = (gen_degrees[i] == 1);
+            deg1_triangulation = (gen_degrees[key[i]] == 1);
     }
     
     nrGensInCone=dim;
@@ -2186,7 +2186,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     if(do_Stanley_dec){
         is_Computed.set(ConeProperty::StanleyDec);
     }
-
+    
 }
 
    
@@ -2448,7 +2448,7 @@ void Full_Cone<Integer>::find_module_rank_from_proj(){
         ProjGen[i]=ProjToLevel0Quot.MxV(Generators[i]);
     }
     
-    vector<Integer> GradingProj=ProjToLevel0Quot.transpose().solve(Truncation);
+    vector<Integer> GradingProj=ProjToLevel0Quot.transpose().solve_ZZ(Truncation);
     
     Full_Cone<Integer> Cproj(ProjGen);
     Cproj.Grading=GradingProj;
@@ -3069,7 +3069,7 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
 
     Integer dummy_denom;                             
     vector<Integer> dummy_diag(dim); 
-    Matrix<Integer> T=invert(U,dummy_diag,dummy_denom);       // T is the coordinate transformation
+    Matrix<Integer> T=U.invert(dummy_diag,dummy_denom);       // T is the coordinate transformation
                                                             // to the new basis: v --> Tv (in this case)
                                                     // for which the grading is the FIRST coordinate
 

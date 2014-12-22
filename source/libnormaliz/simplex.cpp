@@ -52,7 +52,7 @@ Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
     key=Map.max_rank_submatrix_lex();
     Generators=Map.submatrix(key);
     diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=invert(Generators, diagonal, volume); //test for arithmetic
+    Support_Hyperplanes=Generators.invert(diagonal, volume); //test for arithmetic
     //overflow performed
     v_abs(diagonal);
     Support_Hyperplanes = Support_Hyperplanes.transpose();
@@ -67,7 +67,7 @@ Simplex<Integer>::Simplex(const vector<key_t>& k, const Matrix<Integer>& Map){
     Generators=Map.submatrix(k);
     dim=k.size();
     diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=invert(Generators, diagonal, volume);  //test for arithmetic
+    Support_Hyperplanes=Generators.invert(diagonal, volume);  //test for arithmetic
     //overflow performed
     v_abs(diagonal);
     Support_Hyperplanes=Support_Hyperplanes.transpose();
@@ -299,7 +299,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     size_t i,j;
 
-
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++)
@@ -405,7 +404,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     // take care of multiplicity unless do_only_multiplicity
     // Can't be done earlier since volume is not always known earlier
 
-
     addMult(volume,Coll);
         
     if (unimodular && !C.do_h_vector && !C.do_Stanley_dec) { // in this case done
@@ -475,10 +473,8 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         for(j=0;j<dim;j++){
             InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
-   
     
-    return(volume);
-    
+    return(volume);    
 }
 
 //---------------------------------------------------------------------------
