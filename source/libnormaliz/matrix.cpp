@@ -1259,66 +1259,93 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 */
 
 //---------------------------------------------------------------------------
-/*
+
 template<typename Integer>
-bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
-    size_t dim=Right_side.nr;
-    size_t nr_sys=Right_side.nc;
-    // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
-    assert(nr == nc);
-    assert(nc == dim);
+bool Matrix<Integer>::solve_destructive_elem_inner(vector< Integer >& diagonal, Integer& denom) {
+
+    assert(nc>=nr);
+    size_t dim=nr;
     assert(dim == diagonal.size());
-    assert(Solution.nc>=nr_sys);
-    assert(Solution.nr==dim);
+    bool success;  
     
-
-    Integer S;
-    size_t i;
-    long rk, piv;
-
-    for (rk = 0; rk < (long)dim; rk++) {
-        piv=(*this).pivot_column(rk);
-        if (piv>=0) {
-            do {
-                exchange_rows (rk,piv);
-                Right_side.exchange_rows (rk,piv);
-                if(!reduce_row(rk, Right_side))
-                    return false;
-                piv=(*this).pivot_column(rk);
-            } while (piv>rk);
-        }
+    size_t rk=row_echelon_inner_elem(success); 
+    if(!success)
+        return false;
+        
+    assert(rk==nr);
+    denom=1;
+    for(size_t i=0;i<nr;++i){
+        diagonal[i]=elem[i][i];
+        denom*=diagonal[i];    
     }
-    denom = 1;
-    for (i = 0; i < dim; i++) {
-        denom *= (*this).elem[i][i];
-        diagonal[i] = (*this).elem[i][i];
-    }
-
+    denom=Iabs(denom);
+    // cout << "denom " << denom << endl<< "------------" << endl;
     if (denom==0) { 
-        errorOutput() << "Cannot solve system (denom=0)!" << endl;
-        if(!do_arithmetic_check<Integer>())
+        if(!do_arithmetic_check<Integer>()){
+            errorOutput() << "Cannot solve system (denom=0)!" << endl;
             throw ArithmeticException();
+        }
         else
             return false;            
     }
 
-    denom=Iabs(denom);
+    Integer S;
+    size_t i;
     long j;
     size_t k;
-    for (i = 0; i < nr_sys; i++) {
+    for (i = nr; i < nc; i++) {
         for (j = dim-1; j >= 0; j--) {
-            S=denom*Right_side.elem[j][i];
+            S=denom*elem[j][i];
             for (k = j+1; k < dim; k++) {
-                S-=(*this).elem[j][k]*Solution.elem[k][i];
+                S-=elem[j][k]*elem[k][i];
             }
-            Solution.elem[j][i]=S/(*this).elem[j][j];
+            if(!check_range(S))
+                return false;
+            elem[j][i]=S/elem[j][j];
         }
     }
     return true;
 }
-*/
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+void Matrix<Integer>::solve_destructive_elem(vector< Integer >& diagonal, Integer& denom) {
+
+    if(!do_arithmetic_check<Integer>()){
+        if(!solve_destructive_elem_inner(diagonal,denom)){
+            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
+            throw ArithmeticException();        
+        }
+        return;        
+    }
+    
+    Matrix<Integer> Copy=*this;
+    if(!solve_destructive_elem_inner(diagonal,denom)){
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mat_to_mpz(Copy,mpz_this);
+        mpz_class mpz_denom;
+        vector<mpz_class> mpz_diagonal(diagonal.size());
+        mpz_this.solve_destructive_elem_inner(mpz_diagonal,mpz_denom);
+        mat_to_Int(mpz_this,*this);
+        vect_to_Int(mpz_diagonal,diagonal);
+        denom=to_Int<Integer>(mpz_denom);
+    }    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_destructive_non_elem(Integer& denom){
+    vector<Integer> dummy(nr);
+    solve_destructive_elem(dummy,denom);
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
     size_t nr_sys=Right_side.nc;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
@@ -1334,104 +1361,14 @@ bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
         for(size_t j=nc;j<M.nc;++j)
             M[i][j]=Right_side[i][j-nc];
     }
-    bool success;
-    success=M.solve_destructive_elem(diagonal,denom);
+    M.solve_destructive_elem(diagonal,denom);
     for(size_t i=0;i<nr;++i){
         for(size_t j=0;j<Right_side.nc;++j)
             Solution[i][j]=M[i][j+nc];    
     }
     return true;
     
-}
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool Matrix<Integer>::solve_destructive_elem(vector< Integer >& diagonal, Integer& denom) {
-
-    assert(nc>=nr);
-    size_t dim=nr;
-    assert(dim == diagonal.size());
-    bool success; 
-    
-    // pretty_print(cout);  
-    
-    size_t rk=row_echelon_inner_elem(success); 
-    if(!success)
-        return false;
-        
-    assert(rk==nr);
-    denom=1;
-    for(size_t i=0;i<nr;++i){
-        diagonal[i]=elem[i][i];
-        denom*=diagonal[i];    
-    }
-    denom=Iabs(denom);
-    // cout << "denom " << denom << endl<< "------------" << endl;
-    if (denom==0) { 
-        errorOutput() << "Cannot solve system (denom=0)!" << endl;
-        if(!do_arithmetic_check<Integer>())
-            throw ArithmeticException();
-        else
-            return false;            
-    }
-
-    Integer S;
-    size_t i;
-    long j;
-    size_t k;
-    for (i = nr; i < nc; i++) {
-        for (j = dim-1; j >= 0; j--) {
-            S=denom*elem[j][i];
-            for (k = j+1; k < dim; k++) {
-                S-=elem[j][k]*elem[k][i];
-            }
-            elem[j][i]=S/elem[j][j];
-        }
-    }
-    return true;
-}
-
-    
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution) {
-                    
-    if(!do_arithmetic_check<Integer>()){
-        solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
-        return;
-    }
-    
-    // now with do_arithmetic_check<Integer>()
-    Matrix LS_Copy=*this;
-    Matrix RS_x_denom=Right_side; // we use this for the test and as a copy
-    bool success=solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
-    if(success){    
-        RS_x_denom.scalar_multiplication(denom);
-        Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
-        if (!RS_x_denom.equal(RS_test)){
-            success=false;
-            RS_x_denom.scalar_division(denom); // must restore the copy
-        }
-    }
-    
-    if(!success){
-        Matrix<mpz_class> mpz_this(nr,nc);
-        mat_to_mpz(LS_Copy,mpz_this);
-        Matrix<mpz_class> mpz_RS(Right_side.nr,Right_side.nc);
-        Matrix<mpz_class> mpz_Sol(Right_side.nr,Right_side.nc);
-        mat_to_mpz(RS_x_denom,mpz_RS);
-        mpz_class mpz_denom;
-        vector<mpz_class> mpz_diag(diagonal.size());
-        mpz_this.solve_destructive_Sol_inner(mpz_RS,mpz_diag,mpz_denom,mpz_Sol);
-        vect_to_Int(mpz_diag,diagonal);
-        denom=to_Int<Integer>(mpz_denom);
-        mat_to_Int(mpz_Sol,Solution);
-    }
-    
-
-}
+}    
 
 //---------------------------------------------------------------------------
 

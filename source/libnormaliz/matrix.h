@@ -103,10 +103,12 @@ template<typename Integer> class Matrix {
     // takes product of the diagonal elem
     void do_compute_vol(bool& success);  
         
-    // Does the computation for the solution of linear systems
-    bool solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution);
-    // bool solve_destructive_elem(vector< Integer >& diagonal, Integer& denom);
+    // Solve system with coefficients and right hand side in one matrix, using elementary transformations
+    // solution replaces right hand side
+    void solve_destructive_elem(vector< Integer >& diagonal, Integer& denom);
+    bool solve_destructive_elem_inner(vector< Integer >& diagonal, Integer& denom);
+    // allowing arbitrary transformations
+    void solve_destructive_non_elem(Integer& denom);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success);
@@ -288,10 +290,10 @@ public:
     void solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution);
                     
+// For non-square matrices
+                    
     // The next two solve routines do not require the matrix to be square.
     // However, we want rank = number of columns, ensuring unique solvability
-    
-// For non-square matrices
     
     vector<Integer> solve_rectangular(const vector<Integer>& v, Integer& denom) const;
     // computes solution vector for right side v, solution over the rationals
@@ -326,8 +328,6 @@ public:
     vector<Integer> find_linear_form_low_dim () const;
     //same as find_linear_form but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix   
-    
-    bool solve_destructive_elem(vector< Integer >& diagonal, Integer& denom);
 
 };
 //class end *****************************************************************
