@@ -65,7 +65,7 @@ template<typename Integer> class Matrix {
     void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
 
 //---------------------------------------------------------------------------
-//              Rows and columns reduction
+//              Row and column reduction
 //---------------------------------------------------------------------------
     // return value false undicates failure because of overflow
     // for all the routines below
@@ -106,12 +106,13 @@ template<typename Integer> class Matrix {
     // Does the computation for the solution of linear systems
     bool solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
                     Integer& denom, Matrix<Integer>& Solution);
+    // bool solve_destructive_elem(vector< Integer >& diagonal, Integer& denom);
                     
-    size_t row_echelon_inner_elem(bool compute_vol,bool& success); // does the work and checks for overflows
+    size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success);
     // size_t row_echelon_inner_gcd(bool& success); 
     
-    size_t row_echelon(bool compute_vol); // transforms this into row echelon form and returns rank
+    size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
     // reduces the rows a matrix in row echelon form upwards, from left to right
     bool reduce_rows_upwards();
     size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
@@ -325,6 +326,8 @@ public:
     vector<Integer> find_linear_form_low_dim () const;
     //same as find_linear_form but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix   
+    
+    bool solve_destructive_elem(vector< Integer >& diagonal, Integer& denom);
 
 };
 //class end *****************************************************************

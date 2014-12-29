@@ -53,7 +53,6 @@ Matrix<Integer>::Matrix(){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(size_t dim){
-    assert(dim>=0);
     nr=dim;
     nc=dim;
     elem = vector< vector<Integer> >(dim, vector<Integer>(dim));
@@ -66,8 +65,6 @@ Matrix<Integer>::Matrix(size_t dim){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(size_t row, size_t col){
-    assert(row>=0);
-    assert(col>=0);
     nr=row;
     nc=col;
     elem = vector< vector<Integer> >(row, vector<Integer>(col));
@@ -77,8 +74,6 @@ Matrix<Integer>::Matrix(size_t row, size_t col){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(size_t row, size_t col, Integer value){
-    assert(row>=0);
-    assert(col>=0);
     nr=row;
     nc=col;
     elem = vector< vector<Integer> > (row, vector<Integer>(col,value));
@@ -88,9 +83,9 @@ Matrix<Integer>::Matrix(size_t row, size_t col, Integer value){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(const vector< vector<Integer> >& new_elem){
-    nr=elem.size();
+    nr=new_elem.size();
     if (nr>0) {
-        nc=elem[0].size();
+        nc=new_elem[0].size();
         elem=new_elem;
         //check if all rows have the same length
         for (size_t i=1; i<nr; i++) {
@@ -108,7 +103,7 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& new_elem){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
-    nr = elem.size();
+    nr = new_elem.size();
     elem = vector< vector<Integer> > (nr);
     nc = 0;
     size_t i=0;
@@ -913,22 +908,9 @@ bool Matrix<Integer>::column_trigonalize(size_t rk, Matrix<Integer>& Right) {
 }
 
 //---------------------------------------------------------------------------
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& success) {
-
-    Matrix<Integer> Right(nc);
-    rk=row_echelon_reduce(success);
-    if(success)
-        success=column_trigonalize(rk,Right); 
-    return Right; 
-} 
-
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Matrix<Integer>::do_compute_vol(bool& success){
-
-    // it remains to xcompute |determinant|
         
     assert(nr==nc);
     
@@ -951,11 +933,13 @@ void Matrix<Integer>::do_compute_vol(bool& success){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::row_echelon_inner_elem(bool compute_vol, bool& success){
+size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
 
     size_t pc=0;
     long piv=0, rk=0;
     success=true;
+
+    assert(nr>0);
     
     for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
@@ -974,10 +958,7 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool compute_vol, bool& success){
             piv=pivot_column(rk,pc);
         }while (piv>rk);
     }
-    
-    if(compute_vol)    
-        do_compute_vol(success);  
-            
+                
     return rk;
 }
 
@@ -1085,7 +1066,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon_reduce(bool& success){
 
-    size_t rk=row_echelon_inner_elem(false,success);
+    size_t rk=row_echelon_inner_elem(success);
     if(success)
         reduce_rows_upwards();
     return rk;
@@ -1094,41 +1075,49 @@ size_t Matrix<Integer>::row_echelon_reduce(bool& success){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::row_echelon(bool compute_vol){
+Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& success) {
 
-    bool success;
-    size_t rk=0;
+    Matrix<Integer> Right(nc);
+    rk=row_echelon_reduce(success);
+    if(success)
+        success=column_trigonalize(rk,Right); 
+    return Right; 
+} 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon(bool& success){
     
     if(using_GMP<Integer>())
         return row_echelon_inner_bareiss(success);
-        
-    if(!do_arithmetic_check<Integer>()){
-        rk=row_echelon_inner_elem(compute_vol,success);
-        if(!success){
-            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
-            throw ArithmeticException();        
-        }   
-    }
-    else{
-        Matrix<Integer> Copy=*this;
-        // cout << "test" << endl;
-        rk=row_echelon_inner_elem(compute_vol,success);
-        if(!success){
-            Matrix<mpz_class> mpz_this(nr,nc);
-            mat_to_mpz(Copy,mpz_this);
-            rk=mpz_this.row_echelon_inner_bareiss(success);
-        }
-    }
-
-    return rk;
+    else
+        return row_echelon_inner_elem(success); 
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 size_t Matrix<Integer>::rank_destructive(){
-         
-    return row_echelon(false);
+
+    bool success;
+    if(!do_arithmetic_check<Integer>()){
+        size_t rk=row_echelon(success);
+        if(!success){
+            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
+            throw ArithmeticException();
+        }
+        return rk;       
+    }
+    
+    Matrix<Integer> Copy=*this;
+    size_t rk=row_echelon(success);
+    if(!success){
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mat_to_mpz(Copy,mpz_this);
+        rk=mpz_this.row_echelon(success);
+    }
+    return rk;                               
 }
 //---------------------------------------------------------------------------
 
@@ -1144,14 +1133,34 @@ template<typename Integer>
 Integer Matrix<Integer>::vol_destructive(){
 
     assert(nr==nc);
-
     if(nr==0)
         return 1;
-    
-    row_echelon(true);
-    return elem[0][0];
-}
 
+    bool success;   
+        
+    if(!do_arithmetic_check<Integer>()){
+        row_echelon(success);
+        if(!success){
+            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
+            throw ArithmeticException();
+        }
+        if(!using_GMP<Integer>())
+            do_compute_vol(success);
+        return elem[0][0];      
+    }
+    
+    Matrix<Integer> Copy=*this;
+    row_echelon(success);
+    if(success)
+        do_compute_vol(success);
+    if(success)
+        return elem[0][0];
+        
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(Copy,mpz_this);
+    mpz_class vol=mpz_this.vol_destructive();
+    return to_Int<Integer>(vol);
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1176,7 +1185,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
     
         Test[Test.nr-1]=elem[i];
         TestCopy=Test;
-        rk=TestCopy.row_echelon(false);
+        rk=TestCopy.rank_destructive();
         if(rk==Test.nr){
             key.push_back(i);
             Test.nr++;
@@ -1188,9 +1197,69 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
     return key;
 }
 
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+
+    vector<key_t> key;
+    size_t max_rank=min(nr,nc);
+    Matrix<Integer> Test(max_rank,nc);
+    cout << "max_rank " << max_rank << " " << nc << endl;
+    // Matrix<Integer> TestCopy(max_rank,nc);
+    cout << "nc " << nc << endl;
+    vector<key_t> perm(nc);
+    for(size_t j=0;j<nc;++j)
+        perm[j]=j;
+        
+    Test.nr=1;
+        
+    
+        
+    vector<Integer> Test_vec(nc);
+     
+    
+    for(size_t i=0;i<nr;++i){
+    
+        for(size_t j=0;j<nc;++j)
+            Test_vec[j]=elem[i][perm[j]];
+            
+        for(size_t k=0;k<Test.nr;++k){
+            if(Test_vec[k]==0)
+                continue;
+            Integer a=Test[k][k];
+            Integer b=Test_vec[k];
+            for(size_t j=i;j<nc;++j)
+                Test_vec[j]=a*Test_vec[j]-b*Test[k][j];
+        } 
+        
+        Integer gcd=v_make_prime(Test_vec);
+        if(gcd==0)
+            continue;
+            
+        key.push_back(i);            
+        if(key.size()==max_rank)
+                return key;
+                
+        Test.nr++;
+        Test[Test.nr-1]=Test_vec;
+        size_t j=i+1;
+        for(;j<nc;++j)
+            if(Test_vec[j]!=0)
+                break;
+        perm[i]=j;
+        perm[j]=i;
+                
+        for(size_t k=0;k<Test.nr;++k)
+            swap(Test[k][i],Test[k][j]);
+    }
+    
+    return key;                
+}
+*/
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
@@ -1247,6 +1316,81 @@ bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, v
     }
     return true;
 }
+*/
+template<typename Integer>
+bool Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+    size_t dim=Right_side.nr;
+    size_t nr_sys=Right_side.nc;
+    // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
+    assert(nr == nc);
+    assert(nc == dim);
+    assert(dim == diagonal.size());
+    assert(Solution.nc>=nr_sys);
+    assert(Solution.nr==dim);
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<nc;++j)
+            M[i][j]=elem[i][j];
+        for(size_t j=nc;j<M.nc;++j)
+            M[i][j]=Right_side[i][j-nc];
+    }
+    bool success;
+    success=M.solve_destructive_elem(diagonal,denom);
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<Right_side.nc;++j)
+            Solution[i][j]=M[i][j+nc];    
+    }
+    return true;
+    
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::solve_destructive_elem(vector< Integer >& diagonal, Integer& denom) {
+
+    assert(nc>=nr);
+    size_t dim=nr;
+    assert(dim == diagonal.size());
+    bool success; 
+    
+    // pretty_print(cout);  
+    
+    size_t rk=row_echelon_inner_elem(success); 
+    if(!success)
+        return false;
+        
+    assert(rk==nr);
+    denom=1;
+    for(size_t i=0;i<nr;++i){
+        diagonal[i]=elem[i][i];
+        denom*=diagonal[i];    
+    }
+    denom=Iabs(denom);
+    // cout << "denom " << denom << endl<< "------------" << endl;
+    if (denom==0) { 
+        errorOutput() << "Cannot solve system (denom=0)!" << endl;
+        if(!do_arithmetic_check<Integer>())
+            throw ArithmeticException();
+        else
+            return false;            
+    }
+
+    Integer S;
+    size_t i;
+    long j;
+    size_t k;
+    for (i = nr; i < nc; i++) {
+        for (j = dim-1; j >= 0; j--) {
+            S=denom*elem[j][i];
+            for (k = j+1; k < dim; k++) {
+                S-=elem[j][k]*elem[k][i];
+            }
+            elem[j][i]=S/elem[j][j];
+        }
+    }
+    return true;
+}
+
     
 //---------------------------------------------------------------------------
 
