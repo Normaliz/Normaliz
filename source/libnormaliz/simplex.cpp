@@ -145,8 +145,8 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   // candidates_size(0),
   // collected_elements_size(0),
   Generators(dim,dim),
-  TGenerators(dim,2*dim+1),
-  GenCopy(dim,dim),
+  LinSys(dim,2*dim+1),
+  // GenCopy(dim,dim),
   InvGenSelRows(dim,dim),
   InvGenSelCols(dim,dim),
   Sol(dim,dim+1),
@@ -287,6 +287,42 @@ size_t TotDet=0;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void SimplexEvaluator<Integer>::insert_gens(){
+
+    LinSys.set_nc(dim);
+    for(size_t i=0;i<dim;++i)
+        for(size_t j=0;j<dim;++j)
+            LinSys[i][j]=Generators[i][j];    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::insert_gens_transpose(){
+
+    LinSys.set_nc(dim);
+    for(size_t i=0;i<dim;++i)
+        LinSys.write_column(i,Generators[i]);   
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::insert_unit_vectors(vector<key_t> RHS_key){
+
+    size_t old_nr_cols=LinSys.nr_of_columns();
+    LinSys.set_nc(LinSys.nr_of_columns()+RHS_key.size());
+    for(size_t i=0;i<RHS_key.size();i++){ // insert unit vectors
+        for(size_t k=0;k<dim;++k)
+            LinSys[k][dim+i]=0;
+        LinSys[RHS_key[i]][old_nr_cols+i]=1;
+    }    
+
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll) {
 
     volume = s.vol;
@@ -348,14 +384,13 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     }
 
     if(potentially_unimodular){ // very likely unimodular, Indicator computed first, uses transpose of Gen
-        // set up the linear system
-        TGenerators.set_nc(dim+1); // adjust number iof active columns
-        for(i=0; i<dim; ++i)
-            TGenerators.write_column(i,C.Generators[key[i]]);
-        TGenerators.write_column(dim,C.Order_Vector);  // insert right hand side
-        TGenerators.solve_destructive(volume);
+
+        insert_gens_transpose();
+        LinSys.set_nc(dim+1); // adjust number iof active columns
+        LinSys.write_column(dim,C.Order_Vector);  // insert right hand side
+        LinSys.solve_destructive(volume);
         for (i=0; i<dim; i++)
-            Indicator[i]=TGenerators[i][dim];  // extract solution
+            Indicator[i]=LinSys[i][dim];  // extract solution
         if(volume==1){
             unimodular=true;
             #pragma omp atomic
@@ -383,37 +418,21 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
     if(!unimodular || Ind0_key.size()>0){
-        for(i=0; i<dim; ++i)  // (uses Gen)
-            Generators[i] = C.Generators[key[i]];
-        if(!unimodular)
-            GenCopy=Generators; // for later use
-        if(Ind0_key.size()>0){
-            // Matrix<Integer> RSmult(dim,Ind0_key.size());
-            // for(i=0;i<Ind0_key.size();i++) // insert unit vectors
-            //     RSmult[Ind0_key[i]][i]=1;
-            
-            TGenerators.set_nc(dim+Ind0_key.size());
-            for(size_t i=0;i<dim;++i)
-                for(size_t j=0;j<dim;++j)
-                    TGenerators[i][j]=Generators[i][j];
-            
-            for(i=0;i<Ind0_key.size();i++){ // insert unit vectors
-                for(size_t k=0;k<dim;++k)
-                    TGenerators[k][dim+i]=0;
-                TGenerators[Ind0_key[i]][dim+i]=1;
-            }
-            TGenerators.solve_destructive(GDiag,volume);
+        if(Ind0_key.size()>0){            
+            insert_gens();
+            insert_unit_vectors(Ind0_key);
+            LinSys.solve_destructive(GDiag,volume);
             
             for(size_t i=0;i<dim;++i)
-                for(size_t j=dim;j<TGenerators.nr_of_columns();++j)
-                    InvSol[i][j-dim]=TGenerators[i][j];            
+                for(size_t j=dim;j<LinSys.nr_of_columns();++j)
+                    InvSol[i][j-dim]=LinSys[i][j];            
             
             v_abs(GDiag);
             GDiag_computed=true;
         }
         if(!GDiag_computed){
-            // Matrix<Integer> RSmult(dim,Ind0_key.size());
-            Generators.solve_destructive(GDiag,volume);
+            insert_gens();
+            LinSys.solve_destructive(GDiag,volume);
             v_abs(GDiag);
             GDiag_computed=true;
         }
@@ -438,37 +457,28 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if (!unimodular) {    
 
         for(i=0; i<dim; ++i) {
-            TGenerators.write_column(i,C.Generators[key[i]]);
             if(GDiag[i]>1)
                 Last_key.push_back(i);
         }
         
-        size_t RScol; // number iof columns on right hand side
-        if(potentially_unimodular)
-            RScol=Last_key.size();
-        else
-            RScol=Last_key.size()+1;
+        insert_gens_transpose();
+        insert_unit_vectors(Last_key);
 
-        TGenerators.set_nc(dim+RScol);
-        for(i=0;i<Last_key.size();i++){ // insert unit vectors
-            for(size_t k=0;k<dim;++k)
-                TGenerators[k][dim+i]=0;
-            TGenerators[Last_key[i]][dim+i]=1;
-        }
         if(!potentially_unimodular){ // insert order vector if necessary
-            TGenerators.write_column(dim+Last_key.size(),C.Order_Vector);
+            LinSys.set_nc(LinSys.nr_of_columns()+1);
+            LinSys.write_column(LinSys.nr_of_columns()-1,C.Order_Vector);
         }
-        TGenerators.solve_destructive(volume);
+        LinSys.solve_destructive(volume);
 
         for(i=0;i<Last_key.size();i++) // extract solutions as selected rows of InvGen
             for(j=0;j<dim;j++){
-                InvGenSelRows[Last_key[i]][j]=TGenerators[j][dim+i]%volume; //makes reduction mod volume easier
+                InvGenSelRows[Last_key[i]][j]=LinSys[j][dim+i]%volume; //makes reduction mod volume easier
                 if(InvGenSelRows[Last_key[i]][j] <0)
                     InvGenSelRows[Last_key[i]][j]+=volume;
             }
         if(!potentially_unimodular) // extract Indicator
             for (i=0; i<dim; i++)
-                Indicator[i]=TGenerators[i][dim+Last_key.size()];
+                Indicator[i]=LinSys[i][dim+Last_key.size()];
     }
     
     // if not potentially unimodular we must still take care of the 0 ntries of the indicator
@@ -478,23 +488,13 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
         if(Ind0_key.size()>0){
-            Generators=GenCopy;
+            insert_gens();
+            insert_unit_vectors(Ind0_key);
+            LinSys.set_nc(dim+Ind0_key.size());
+            LinSys.solve_destructive(volume);
             for(size_t i=0;i<dim;++i)
-                for(size_t j=0;j<dim;++j)
-                    TGenerators[i][j]=Generators[i][j];
-            TGenerators.set_nc(dim+Ind0_key.size());
-            // Matrix<Integer> RSmult(dim,Ind0_key.size());
-            for(i=0;i<Ind0_key.size();i++){ // insert unit vectors
-                for(size_t k=0;k<dim;++k)
-                    TGenerators[k][dim+i]=0;
-                TGenerators[Ind0_key[i]][dim+i]=1;
-            }
-            // for(i=0;i<Ind0_key.size();i++) // insert unit vectors
-                    // RSmult[Ind0_key[i]][i]=1;
-            TGenerators.solve_destructive(volume);
-            for(size_t i=0;i<dim;++i)
-                for(size_t j=dim;j<TGenerators.nr_of_columns();++j)
-                    InvSol[i][j-dim]=TGenerators[i][j];
+                for(size_t j=dim;j<LinSys.nr_of_columns();++j)
+                    InvSol[i][j-dim]=LinSys[i][j];
         }
     }
     
@@ -681,7 +681,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
                 return;
             }
             if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
-                vector<Integer> help=GenCopy.VxM(element);
+                vector<Integer> help=Generators.VxM(element);
                 v_scalar_division(help,volume);
                 Coll.Deg1_Elements.push_back(help);
                 Coll.collected_elements_size++;
@@ -738,7 +738,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
             jj->pop_back(); //remove the norm entry at the end
             
             // transform to global coordinates 
-            *jj = GenCopy.VxM(*jj);
+            *jj = Generators.VxM(*jj);
             v_scalar_division(*jj,volume);
             
             // reduce against global reducers in C.OldCandidates and insert into HB_Elements

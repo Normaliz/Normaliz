@@ -73,7 +73,7 @@ template<typename Integer> class Matrix {
     // reduction via integer division and elemntary transformations
     bool reduce_row(size_t corner);      //reduction by the corner-th row
     bool reduce_row (size_t row, size_t col); // corner at position (row,col)
-    bool reduce_row(size_t corner, Matrix& LeftRHS);//row reduction, Left used
+    // bool reduce_row(size_t corner, Matrix& LeftRHS);//row reduction, Left used
     //for saving or linear systems with right hand side RHS
     // bool reduce_column(size_t corner);  //reduction by the corner-th column
     
@@ -283,6 +283,9 @@ public:
     void solve_destructive(vector< Integer>& diagonal, Integer& denom);
     // allowing arbitrary transformations:
     void solve_destructive(Integer& denom);
+    
+    // Gives 
+    Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
 
     Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*Right_side. this should be a quadratic /matrix with nonzero determinant.
@@ -290,13 +293,6 @@ public:
     //is saved in diagonal
     // Variant:
     Matrix solve(const Matrix& Right_side, Integer& denom) const;
-
-    // "This" and Right_side get destroyed!
-    Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
-
-    // Returns the solution of the system in Solution (for efficiency)
-    void solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution);
                     
 // For non-square matrices
                     

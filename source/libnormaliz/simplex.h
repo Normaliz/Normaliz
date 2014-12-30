@@ -98,7 +98,7 @@ class SimplexEvaluator {
     // size_t candidates_size;
     // size_t collected_elements_size;
     Matrix<Integer> Generators;
-    Matrix<Integer> TGenerators;
+    Matrix<Integer> LinSys;
     Matrix<Integer> GenCopy;
     Matrix<Integer> InvGenSelRows; // selected rows of inverse of Gen
     Matrix<Integer> InvGenSelCols; // selected columns of inverse of Gen
@@ -166,6 +166,10 @@ class SimplexEvaluator {
     void evaluation_loop_parallel();
     void evaluate_block(long block_start, long block_end, Collector<Integer>& Coll);
     void collect_vectors();
+    
+    void insert_gens();
+    void insert_gens_transpose();
+    void insert_unit_vectors(vector<key_t> RHS_key);
 
 
 //---------------------------------------------------------------------------

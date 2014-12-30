@@ -820,34 +820,6 @@ bool Matrix<Integer>::reduce_rows_upwards () {
 }
 
 //---------------------------------------------------------------------------
-
-template<typename Integer>
-bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& RHS) {
-    assert(corner < nc);
-    assert(corner < nr);
-    assert(RHS.nr == nr);
-    size_t i,j;
-    Integer help1, help2=elem[corner][corner];
-    for ( i = corner+1; i < nr; i++) {
-        if (elem[i][corner]!=0) {
-            help1=elem[i][corner] / help2;
-            for (j = corner; j < nc; j++) {
-                elem[i][j] -= help1*elem[corner][j];
-                if (!check_range(elem[i][j]) ){ 
-                    return false;
-                } 
-            }
-            for (j = 0; j < RHS.nc; j++) {
-                RHS.elem[i][j] -= help1*RHS.elem[corner][j];
-                if ( !check_range(RHS.elem[i][j]) ) {
-                }
-            }
-        }
-    }
-    return true;
-}
-
-//---------------------------------------------------------------------------
  
 template<typename Integer>
 bool Matrix<Integer>::linear_comb_columns(const size_t& col,const size_t& j,
@@ -1353,15 +1325,12 @@ void Matrix<Integer>::solve_destructive(Integer& denom){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
     size_t dim=Right_side.nr;
-    size_t nr_sys=Right_side.nc;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
     assert(nr == nc);
     assert(nc == dim);
     assert(dim == diagonal.size());
-    assert(Solution.nc>=nr_sys);
-    assert(Solution.nr==dim);
     Matrix<Integer> M(nr,nc+Right_side.nc);
     for(size_t i=0;i<nr;++i){
         for(size_t j=0;j<nc;++j)
@@ -1370,14 +1339,17 @@ void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector<
             M[i][j]=Right_side[i][j-nc];
     }
     M.solve_destructive(diagonal,denom);
+    Matrix<Integer> Solution(Right_side.nr,Right_side.nc); 
     for(size_t i=0;i<nr;++i){
         for(size_t j=0;j<Right_side.nc;++j)
             Solution[i][j]=M[i][j+nc];    
-    }   
-}    
+    }
+    return Solution;   
+}
+    
 
-//---------------------------------------------------------------------------
-
+//--------------------------------------------------------------------------
+/*
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
 
@@ -1385,7 +1357,7 @@ Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, 
     solve_destructive_Sol(Right_side,diagonal,denom,Solution);
     return Solution;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1811,4 +1783,32 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 }
 */
 
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& RHS) {
+    assert(corner < nc);
+    assert(corner < nr);
+    assert(RHS.nr == nr);
+    size_t i,j;
+    Integer help1, help2=elem[corner][corner];
+    for ( i = corner+1; i < nr; i++) {
+        if (elem[i][corner]!=0) {
+            help1=elem[i][corner] / help2;
+            for (j = corner; j < nc; j++) {
+                elem[i][j] -= help1*elem[corner][j];
+                if (!check_range(elem[i][j]) ){ 
+                    return false;
+                } 
+            }
+            for (j = 0; j < RHS.nc; j++) {
+                RHS.elem[i][j] -= help1*RHS.elem[corner][j];
+                if ( !check_range(RHS.elem[i][j]) ) {
+                }
+            }
+        }
+    }
+    return true;
+}
+*/
 }  // namespace
