@@ -201,6 +201,9 @@ public:
     inline vector<Integer>& operator[] (size_t row) { 
         return elem[row];
     }
+    void set_nc(size_t col){
+        nc=col;
+    }
 
 //---------------------------------------------------------------------------
 //                  Basic matrices operations
