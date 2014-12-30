@@ -1261,11 +1261,10 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::solve_destructive_elem_inner(vector< Integer >& diagonal, Integer& denom) {
+bool Matrix<Integer>::solve_destructive_elem_inner(Integer& denom) {
 
     assert(nc>=nr);
     size_t dim=nr;
-    assert(dim == diagonal.size());
     bool success;  
     
     size_t rk=row_echelon_inner_elem(success); 
@@ -1275,8 +1274,7 @@ bool Matrix<Integer>::solve_destructive_elem_inner(vector< Integer >& diagonal, 
     assert(rk==nr);
     denom=1;
     for(size_t i=0;i<nr;++i){
-        diagonal[i]=elem[i][i];
-        denom*=diagonal[i];    
+        denom*=elem[i][i];  
     }
     denom=Iabs(denom);
     // cout << "denom " << denom << endl<< "------------" << endl;
@@ -1310,10 +1308,10 @@ bool Matrix<Integer>::solve_destructive_elem_inner(vector< Integer >& diagonal, 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_elem(vector< Integer >& diagonal, Integer& denom) {
+void Matrix<Integer>::solve_destructive_elem(Integer& denom) {
 
     if(!do_arithmetic_check<Integer>()){
-        if(!solve_destructive_elem_inner(diagonal,denom)){
+        if(!solve_destructive_elem_inner(denom)){
             errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
             throw ArithmeticException();        
         }
@@ -1321,14 +1319,12 @@ void Matrix<Integer>::solve_destructive_elem(vector< Integer >& diagonal, Intege
     }
     
     Matrix<Integer> Copy=*this;
-    if(!solve_destructive_elem_inner(diagonal,denom)){
+    if(!solve_destructive_elem_inner(denom)){  // <---------------------- eventuell Probe einbauen
         Matrix<mpz_class> mpz_this(nr,nc);
         mat_to_mpz(Copy,mpz_this);
         mpz_class mpz_denom;
-        vector<mpz_class> mpz_diagonal(diagonal.size());
-        mpz_this.solve_destructive_elem_inner(mpz_diagonal,mpz_denom);
+        mpz_this.solve_destructive_elem_inner(mpz_denom);
         mat_to_Int(mpz_this,*this);
-        vect_to_Int(mpz_diagonal,diagonal);
         denom=to_Int<Integer>(mpz_denom);
     }    
 }
@@ -1336,16 +1332,28 @@ void Matrix<Integer>::solve_destructive_elem(vector< Integer >& diagonal, Intege
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_non_elem(Integer& denom){
-    vector<Integer> dummy(nr);
-    solve_destructive_elem(dummy,denom);
+void Matrix<Integer>::solve_destructive(vector< Integer >& diagonal,Integer& denom) {
+
+    solve_destructive_elem(denom);
+    assert(diagonal.size()==nr);
+    for(size_t i=0;i<nr;++i)
+        diagonal[i]=elem[i][i];
 }
 
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
+void Matrix<Integer>::solve_destructive(Integer& denom){
+
+    solve_destructive_elem(denom); // <--------------- hier Bareiss aufrufen bei GMP
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
     size_t dim=Right_side.nr;
     size_t nr_sys=Right_side.nc;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
@@ -1361,13 +1369,11 @@ bool Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector<
         for(size_t j=nc;j<M.nc;++j)
             M[i][j]=Right_side[i][j-nc];
     }
-    M.solve_destructive_elem(diagonal,denom);
+    M.solve_destructive(diagonal,denom);
     for(size_t i=0;i<nr;++i){
         for(size_t j=0;j<Right_side.nc;++j)
             Solution[i][j]=M[i][j+nc];    
-    }
-    return true;
-    
+    }   
 }    
 
 //---------------------------------------------------------------------------

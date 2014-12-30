@@ -105,10 +105,8 @@ template<typename Integer> class Matrix {
         
     // Solve system with coefficients and right hand side in one matrix, using elementary transformations
     // solution replaces right hand side
-    void solve_destructive_elem(vector< Integer >& diagonal, Integer& denom);
-    bool solve_destructive_elem_inner(vector< Integer >& diagonal, Integer& denom);
-    // allowing arbitrary transformations
-    void solve_destructive_non_elem(Integer& denom);
+    bool solve_destructive_elem_inner(Integer& denom);
+    void solve_destructive_elem(Integer& denom);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success);
@@ -275,6 +273,13 @@ public:
   
     // In the following routines denom is the absolute value of the determinant of the
     // left side matrix ( =this).
+    
+    // Solve system with coefficients and right hand side in one matrix
+    // solution replaces right hand side
+    // using elementary transformations:
+    void solve_destructive(vector< Integer>& diagonal, Integer& denom);
+    // allowing arbitrary transformations:
+    void solve_destructive(Integer& denom);
 
     Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*Right_side. this should be a quadratic /matrix with nonzero determinant.
