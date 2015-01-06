@@ -85,12 +85,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
     }
 
     cout << "stellar_det_sum = " << stellar_det_sum << endl;
-    cout << "sorting new points" << endl;
-    new_points.sort();
 
     SCIPfree(& scip);
-
-    
 
 }
 
@@ -238,7 +234,8 @@ vector<Integer> opt_sol(SCIP* scip,
 //    SCIPinfoMessage(scip, NULL, "Original problem:\n");
 //    SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
 //    SCIPinfoMessage(scip, NULL, "\nSolving...\n");
-#ifndef NDEBUG 
+#ifdef NDEBUG_BLA
+//#ifndef NDEBUG 
         FILE* file = fopen("mostrecent.lp","w");
         assert (file != NULL);
         SCIPprintOrigProblem(scip, file, "lp", FALSE);
@@ -260,17 +257,8 @@ vector<Integer> opt_sol(SCIP* scip,
         }
         Integer sc = v_scalar_product(sol_vec,grading);
 cout << "solution " << sol_vec << " | " << sc << endl;
-#ifndef NDEBUG 
-        FILE* file = fopen("mostrecent.lp","w");
-        assert (file != NULL);
-        SCIPprintOrigProblem(scip, file, "lp", FALSE);
-        SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
-        fclose(file);
-#endif
 
     } else {
-        //		cout << "ich komme nieeeeeeeeemals vor!!!" << endl;
-        //		exit(5); //TODO kann jetzt doch vorkommen
         return vector<Integer>();
     }
     

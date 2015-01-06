@@ -666,7 +666,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     s.vol=volume;
     if(C_ptr->do_only_multiplicity)
         return true;
-    if(volume>SimplexParallelEvaluationBound && !C_ptr->do_Stanley_dec && omp_get_max_threads()>1) // to be postponed for parallel evaluation
+    if (volume>SimplexParallelEvaluationBound && !C_ptr->do_Stanley_dec) //&& omp_get_max_threads()>1) // to be postponed for parallel evaluation
         return false;
     take_care_of_0vector(C_ptr->Results[tn]);
     if(volume!=1)
@@ -872,7 +872,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
         list< vector<Integer> > new_points;
         bottom_points(new_points, Generators);
-        cout << "new points " << endl << new_points << endl;
+        
+        cout << new_points.size() << " new points " << endl << new_points << endl;
         if (!new_points.empty()) {
             int nr_new_points = new_points.size();
             // remove this simplex from det_sum and multiplicity
@@ -883,16 +884,17 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 while (it != new_points.end()) {
                     bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(*it,C,C.OldCandidates);
                     if(inserted) {
+                        cout << "inserted " << *it;
                         C.Results[0].collected_elements_size++;
-                        C.Results[0].HB_Elements.Candidates.back().original_generator = true; //TODO @Bruns ist das richtig so? wird es auch in OldCandidates uebernommen?
+                        C.Results[0].HB_Elements.Candidates.back().original_generator = true;
                     }
                     ++it;
                 }
             }
             // temporarily add new_points to the Top_Cone generators
             C.is_simplicial = false; 
-            C.Generators.append(Matrix<Integer>(new_points));
             int nr_old_gen = C.nr_gen;
+            C.Generators.append(Matrix<Integer>(new_points));
             C.nr_gen += nr_new_points;
             C.set_degrees();
             C.Top_Key.resize(C.nr_gen);
@@ -901,15 +903,14 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 C.Top_Key[i] = i;
                 C.Extreme_Rays[i] = false;
             }
+            // TODO more for inhom cones?
 
             // delete large simplex
             C.totalNrSimplices--;
             if (C.keep_triangulation) {
-                cout << "tri is so gross " << C.TriangulationSize << endl;
                 C.TriangulationSize = 0;
-                C.Triangulation.clear();  //TODO richtig machen
-            }
-
+//                C.Triangulation.clear();  //TODO richtig machen
+           }
             // create "pyramid" key
             vector<key_t> subcone_key(C.dim + nr_new_points);
             for (int i=0; i<nr_new_points; ++i) {
@@ -919,18 +920,19 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 subcone_key[nr_new_points + i] = key[i];
             }
 
+//            C.sort_gens_by_degree(); //TODO
+
+
             Full_Cone<Integer> subcone(C, subcone_key);
+            subcone.is_Computed.set(ConeProperty::ExtremeRays, false); //TODO could be removed
+//            subcone.Generators.pretty_print(cout);
             subcone.do_all_hyperplanes=false;
 
-            subcone.build_cone();
-            // evaluate created simplices
-            // TODO evaluate_stored_pyramids?
+            subcone.build_cone(); // TODO just store key?
+            // evaluate created simplices //TODO move in build_top_cone? 
+            C.evaluate_stored_pyramids(0);
             C.evaluate_triangulation();
 
-            // restore Top_Cone
-//            C.Generators.resize(nr_old_gen);
-//            C.nr_gen = nr_old_gen;
-//            gen_degrees.resize(nr_old_gen);
             return;
         }
     }
