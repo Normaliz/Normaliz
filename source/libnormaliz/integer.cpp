@@ -268,6 +268,8 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
 
     quot=a/b;
     rem=a-quot*b;
+    if(rem==0)
+        return;
     if(2*Iabs(rem)>Iabs(b)){
         if((rem<0 && b>0) || (rem >0 && b<0)){                
             rem+=b;

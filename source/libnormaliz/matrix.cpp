@@ -948,10 +948,14 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
     vector<bool> last_time_mult(nr,false),this_time_mult(nr,false);
     Integer last_div=1,this_div=1;
     size_t this_time_exp=0,last_time_exp=0;
-    Integer det_factor=1;  
+    Integer det_factor=1;
+    long piv_selection=-1;  
     
     for (rk = 0; rk < (long) nr; rk++){
     
+        if(piv_selection>=0 && elem[piv_selection][pc+1]!=0){
+        
+        }
         for(;pc<nc;pc++){
             piv=pivot_column(rk,pc);
             if(piv>=0)
@@ -974,6 +978,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
         for(size_t i=rk+1;i<nr;++i){
             if(elem[i][pc]==0){
                 this_time_mult[i]=false;
+                piv_selection=i;
                 continue;
             }
             this_time_exp++;
@@ -1017,6 +1022,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
         last_time_mult=this_time_mult;
         last_div=this_div;
         last_time_exp=this_time_exp;
+        piv_selection=-1;
 
     }
     
@@ -1061,9 +1067,9 @@ Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& succes
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon(bool& success){
     
-    if(using_GMP<Integer>())
+    /*if(using_GMP<Integer>())
         return row_echelon_inner_bareiss(success);
-    else
+    else */
         return row_echelon_inner_elem(success); 
 }
 
@@ -1116,7 +1122,7 @@ Integer Matrix<Integer>::vol_destructive(){
             errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
             throw ArithmeticException();
         }
-        if(!using_GMP<Integer>())
+        // if(!using_GMP<Integer>())  // <------------------------------ deaktivieren, wenn Bareiss nicht verwendet wird
             do_compute_vol(success);
         return elem[0][0];      
     }
@@ -1168,7 +1174,32 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
     }        
     return key;
 }
+/*
+template<typename Integer>
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 
+    vector<key_t> v;
+    size_t max_rank=min(nr,nc);
+    size_t rk;
+    Matrix<Integer> Test(max_rank,nc);
+    Test.nr=1;
+    
+    for(size_t i=0;i<nr;++i){
+    
+        Test[Test.nr-1]=elem[i];
+        bool success;
+        rk=Test.row_echelon(success);
+        if(rk==Test.nr){
+            v.push_back(i);
+            Test.nr++;
+        }
+        if(rk==max_rank)
+            return v;
+    }
+        
+    return v;
+}
+*/
 //---------------------------------------------------------------------------
 /*
 template<typename Integer>
