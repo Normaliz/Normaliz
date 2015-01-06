@@ -1611,17 +1611,10 @@ void Full_Cone<Integer>::build_cone() {
     size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     last_to_be_inserted=nr_gen-1;  // because we don't need to compute support hyperplanes in this case 
     for(int j=nr_gen-1;j>=0;--j){
-        if(isComputed(ConeProperty::ExtremeRays)){
-            if(!in_triang[j] && Extreme_Rays[j]){
-                last_to_be_inserted=j;
-                break;
-            }
+        if(!in_triang[j]){
+            last_to_be_inserted=j;
+            break;
         }
-        else
-            if(!in_triang[j]){
-                last_to_be_inserted=j;
-                break;
-            }
     } // last_to_be_inserted now determined
     
     bool is_new_generator;
@@ -1632,7 +1625,7 @@ void Full_Cone<Integer>::build_cone() {
     
         start_from=i;
     
-        if(in_triang[i] || (isComputed(ConeProperty::ExtremeRays) && !Extreme_Rays[i]))
+        if (in_triang[i])
             continue;
             
         if(do_triangulation && TriangulationSize > 2*RecBoundTriang) // emermergency brake
@@ -2674,27 +2667,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
 
 template<typename Integer>
 vector<key_t> Full_Cone<Integer>::find_start_simplex() const {
-
-    if (isComputed(ConeProperty::ExtremeRays)) {
-        vector<key_t> marked_extreme_rays(0);
-        for (size_t i=0; i<nr_gen; i++) {
-            if (Extreme_Rays[i])
-                marked_extreme_rays.push_back(i);
-        }
-        vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex();
-        assert(key_extreme.size() == dim);
-        vector<key_t> key(dim);
-        for (key_t i=0; i<dim; i++) {
-            key[i] = marked_extreme_rays[key_extreme[i]];
-        }
-        // return Simplex<Integer>(key, Generators);
-        return key;
-    } 
-    else {
-        // assert(Generators.rank()>=dim); 
-        // return Simplex<Integer>(Generators);
         return Generators.max_rank_submatrix_lex();
-    }
 }
 
 //---------------------------------------------------------------------------
