@@ -2118,6 +2118,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
 
+return;
+//TODO reactivate old version, setting in_triang!
+
     set<vector<Integer> > Duplicates;
     for (size_t i = 0; i <nr_gen; i++) {               
         if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i]){
@@ -2247,6 +2250,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         remove_duplicate_ori_gens_from_HB();
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
+Hilbert_Basis.sort(); //TODO undo
+Hilbert_Basis.unique();
         is_Computed.set(ConeProperty::HilbertBasis,true);
         if (isComputed(ConeProperty::Grading)) {
             select_deg1_elements();
