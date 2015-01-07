@@ -105,8 +105,8 @@ template<typename Integer> class Matrix {
         
     // Solve system with coefficients and right hand side in one matrix, using elementary transformations
     // solution replaces right hand side
-    bool solve_destructive_elem_inner(Integer& denom);
-    void solve_destructive_elem(Integer& denom);
+    bool solve_destructive_inner(bool ZZinvertible, Integer& denom);
+    void solve_destructive_outer(bool ZZinvertible, Integer& denom);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success, Integer& det);

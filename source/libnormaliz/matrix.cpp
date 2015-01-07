@@ -954,13 +954,9 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
     Integer last_div=1,this_div=1;
     size_t this_time_exp=0,last_time_exp=0;
     Integer det_factor=1;
-    long piv_selection=-1;  
     
     for (rk = 0; rk < (long) nr; rk++){
     
-        if(piv_selection>=0 && elem[piv_selection][pc+1]!=0){
-        
-        }
         for(;pc<nc;pc++){
             piv=pivot_column(rk,pc);
             if(piv>=0)
@@ -983,7 +979,6 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         for(size_t i=rk+1;i<nr;++i){
             if(elem[i][pc]==0){
                 this_time_mult[i]=false;
-                piv_selection=i;
                 continue;
             }
             this_time_exp++;
@@ -1027,12 +1022,11 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         last_time_mult=this_time_mult;
         last_div=this_div;
         last_time_exp=this_time_exp;
-        piv_selection=-1;
 
     }
     
     det=0;
-    if(nr==nc && rk==nr){
+    if(nr<=nc && rk==nr){ // must allow nonsquare matrices
         det=1;
         for(size_t i=0;i<nr;++i)
             det*=elem[i][i];            
@@ -1073,9 +1067,10 @@ size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer&
     if(using_GMP<Integer>())
         return row_echelon_inner_bareiss(success,det);
     else{ 
-        return row_echelon_inner_elem(success);
+        size_t rk=row_echelon_inner_elem(success);
         if(do_compute_vol)
             det=compute_vol(success);
+        return rk;
     }
 }
 
@@ -1251,18 +1246,26 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::solve_destructive_elem_inner(Integer& denom) {
+bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) {
 
     assert(nc>=nr);
     size_t dim=nr;
     bool success;  
     
-    size_t rk=row_echelon_inner_elem(success); 
-    if(!success)
-        return false;
-        
-    assert(rk==nr);
-    denom=compute_vol(success);
+    size_t rk;
+    
+    if(ZZinvertible){
+        rk=row_echelon_inner_elem(success); 
+        if(!success)
+            return false;        
+        assert(rk==nr);
+        denom=compute_vol(success);
+    }
+    else{
+        rk=row_echelon(success,denom);
+        if(!success)
+            return false;    
+    }
 
     // cout << "denom " << denom << endl<< "------------" << endl;
     if (denom==0) { 
@@ -1295,10 +1298,10 @@ bool Matrix<Integer>::solve_destructive_elem_inner(Integer& denom) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_elem(Integer& denom) {
+void Matrix<Integer>::solve_destructive_outer(bool ZZinvertible, Integer& denom) {
 
     if(!do_arithmetic_check<Integer>()){
-        if(!solve_destructive_elem_inner(denom)){
+        if(!solve_destructive_inner(ZZinvertible,denom)){
             errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
             throw ArithmeticException();        
         }
@@ -1306,11 +1309,11 @@ void Matrix<Integer>::solve_destructive_elem(Integer& denom) {
     }
     
     Matrix<Integer> Copy=*this;
-    if(!solve_destructive_elem_inner(denom)){  // <---------------------- eventuell Probe einbauen
+    if(!solve_destructive_inner(ZZinvertible,denom)){  // <---------------------- eventuell Probe einbauen
         Matrix<mpz_class> mpz_this(nr,nc);
         mat_to_mpz(Copy,mpz_this);
         mpz_class mpz_denom;
-        mpz_this.solve_destructive_elem_inner(mpz_denom);
+        mpz_this.solve_destructive_inner(ZZinvertible, mpz_denom);
         mat_to_Int(mpz_this,*this);
         denom=to_Int<Integer>(mpz_denom);
     }    
@@ -1321,7 +1324,7 @@ void Matrix<Integer>::solve_destructive_elem(Integer& denom) {
 template<typename Integer>
 void Matrix<Integer>::solve_destructive(vector< Integer >& diagonal,Integer& denom) {
 
-    solve_destructive_elem(denom);
+    solve_destructive_outer(true,denom);
     assert(diagonal.size()==nr);
     for(size_t i=0;i<nr;++i)
         diagonal[i]=elem[i][i];
@@ -1333,7 +1336,7 @@ void Matrix<Integer>::solve_destructive(vector< Integer >& diagonal,Integer& den
 template<typename Integer>
 void Matrix<Integer>::solve_destructive(Integer& denom){
 
-    solve_destructive_elem(denom); // <--------------- hier Bareiss aufrufen bei GMP
+    solve_destructive_outer(false,denom);
 }
 
 
