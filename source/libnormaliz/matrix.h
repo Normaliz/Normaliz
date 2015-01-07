@@ -108,7 +108,7 @@ template<typename Integer> class Matrix {
     bool solve_destructive_elem_inner(Integer& denom);
     void solve_destructive_elem(Integer& denom);
                     
-    // size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
+    size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success);
     // size_t row_echelon_inner_gcd(bool& success); 
     
@@ -119,6 +119,8 @@ template<typename Integer> class Matrix {
     
     // The Bareiss routine does NOT use Z-invertible transformations
     size_t row_echelon_bareiss(bool& success);
+    
+    vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
     
 
 //---------------------------------------------------------------------------
@@ -332,8 +334,6 @@ public:
     vector<Integer> find_linear_form_low_dim () const;
     //same as find_linear_form but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix 
-    
-    size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows  
 
 };
 //class end *****************************************************************

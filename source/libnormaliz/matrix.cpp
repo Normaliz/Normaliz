@@ -911,7 +911,8 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
     long piv=0, rk=0;
     success=true;
 
-    assert(nr>0);
+    if(nr==0)
+        return 0;
     
     for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
@@ -940,11 +941,13 @@ template<typename Integer>
 size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
 // no overflow checks since this is supposed to be only used with GMP
 
+    success=true;
+    if(nr==0)
+        return 0;
     assert(using_GMP<Integer>());
 
     size_t pc=0;
     long piv=0, rk=0;
-    success=true;
     vector<bool> last_time_mult(nr,false),this_time_mult(nr,false);
     Integer last_div=1,this_div=1;
     size_t this_time_exp=0,last_time_exp=0;
@@ -1150,116 +1153,76 @@ Integer Matrix<Integer>::vol() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) const{
 
+    success=true;
+    size_t max_rank=min(nr,nc);
+    Matrix<Integer> Test(max_rank,nc);
+    Test.nr=0;
+    vector<key_t> col;
+    col.reserve(max_rank);
     vector<key_t> key;
-    size_t max_rank=min(nr,nc);
-    size_t rk;
-    Matrix<Integer> Test(max_rank,nc);
-    Matrix<Integer> TestCopy(max_rank,nc);
-    Test.nr=1;
+    key.reserve(max_rank);
     
-    for(size_t i=0;i<nr;++i){
-    
-        Test[Test.nr-1]=elem[i];
-        TestCopy=Test;
-        rk=TestCopy.rank_destructive();
-        if(rk==Test.nr){
-            key.push_back(i);
-            Test.nr++;
-        }
-        if(rk==max_rank){
-            return key;
-        }
-    }        
-    return key;
-}
-/*
-template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
-
-    vector<key_t> v;
-    size_t max_rank=min(nr,nc);
-    size_t rk;
-    Matrix<Integer> Test(max_rank,nc);
-    Test.nr=1;
-    
-    for(size_t i=0;i<nr;++i){
-    
-        Test[Test.nr-1]=elem[i];
-        bool success;
-        rk=Test.row_echelon(success);
-        if(rk==Test.nr){
-            v.push_back(i);
-            Test.nr++;
-        }
-        if(rk==max_rank)
-            return v;
-    }
-        
-    return v;
-}
-*/
-//---------------------------------------------------------------------------
-/*
-template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
-
-    vector<key_t> key;
-    size_t max_rank=min(nr,nc);
-    Matrix<Integer> Test(max_rank,nc);
-    cout << "max_rank " << max_rank << " " << nc << endl;
-    // Matrix<Integer> TestCopy(max_rank,nc);
-    cout << "nc " << nc << endl;
-    vector<key_t> perm(nc);
-    for(size_t j=0;j<nc;++j)
-        perm[j]=j;
-        
-    Test.nr=1;
-        
-    
-        
     vector<Integer> Test_vec(nc);
      
-    
-    for(size_t i=0;i<nr;++i){
-    
-        for(size_t j=0;j<nc;++j)
-            Test_vec[j]=elem[i][perm[j]];
-            
+    for(size_t i=0;i<nr;++i){    
+        Test_vec=elem[i];            
         for(size_t k=0;k<Test.nr;++k){
-            if(Test_vec[k]==0)
+            if(Test_vec[col[k]]==0)
                 continue;
-            Integer a=Test[k][k];
-            Integer b=Test_vec[k];
-            for(size_t j=i;j<nc;++j)
+            Integer a=Test[k][col[k]];
+            Integer b=Test_vec[col[k]];
+            for(size_t j=0;j<nc;++j){
                 Test_vec[j]=a*Test_vec[j]-b*Test[k][j];
-        } 
+                if (!check_range(Test_vec[j]) ) {
+                    success=false;
+                    return key;
+                }
+            }
+        }
         
-        Integer gcd=v_make_prime(Test_vec);
-        if(gcd==0)
-            continue;
-            
-        key.push_back(i);            
-        if(key.size()==max_rank)
-                return key;
-                
-        Test.nr++;
-        Test[Test.nr-1]=Test_vec;
-        size_t j=i+1;
+        size_t j=0;
         for(;j<nc;++j)
             if(Test_vec[j]!=0)
                 break;
-        perm[i]=j;
-        perm[j]=i;
-                
-        for(size_t k=0;k<Test.nr;++k)
-            swap(Test[k][i],Test[k][j]);
-    }
-    
+        if(j==nc)
+            continue;
+            
+        col.push_back(j);     
+        
+        v_make_prime(Test_vec);
+        key.push_back(i);
+
+        /*size_t rk=submatrix(key).rank();
+        if(rk!=key.size()){
+         cout << "ALARM" << endl;
+         exit(0);
+        }*/
+        Test.nr++;
+        Test[Test.nr-1]=Test_vec;
+            
+        if(key.size()==max_rank)
+            break;   
+    }    
     return key;                
 }
-*/
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+
+    bool success;
+    vector<key_t> key=max_rank_submatrix_lex_inner(success);
+    if(!success){
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mat_to_mpz(*this,mpz_this);
+        key=mpz_this.max_rank_submatrix_lex_inner(success);    
+    }
+    return key;
+}
+
 
 //---------------------------------------------------------------------------
 
