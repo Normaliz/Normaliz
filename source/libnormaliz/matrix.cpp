@@ -41,26 +41,31 @@ using namespace std;
 //Private
 //---------------------------------------------------------------------------
 
-/* template<typename Integer>
-void Matrix<Integer>::max_rank_submatrix_lex(vector<key_t>& v, const size_t& rank) const{
-    size_t level=v.size();
-    if (level==rank) {
-        return;
-    }
-    if (level==0) {
-        v.push_back(0);
-    }
-    else{
-        v.push_back(v[level-1]);
-    }
-    for (; v[level] < nr; v[level]++) {
-        Matrix<Integer> S=submatrix(v);
-        if (S.rank_destructive()==S.nr_of_rows()) {
-            max_rank_submatrix_lex(v,rank);
-            return;
+template<typename Integer>
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+
+    vector<key_t> v;
+    size_t max_rank=min(nr,nc);
+    size_t rk;
+    Matrix<Integer> Test(max_rank,nc);
+    Matrix<Integer> TestCopy(max_rank,nc);
+    Test.nr=1;
+   
+    for(size_t i=0;i<nr;++i){
+   
+        Test[Test.nr-1]=elements[i];
+        TestCopy=Test;
+        rk=TestCopy.row_echelon(); //false fehlt!
+        if(rk==Test.nr){
+            v.push_back(i);
+            Test.nr++;
         }
+        if(rk==max_rank)
+            return v;
     }
-} */
+       
+    return v;
+}
 
 //---------------------------------------------------------------------------
 //Public
@@ -1025,7 +1030,7 @@ Integer Matrix<Integer>::vol_destructive(){
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
+/*template<typename Integer>
 vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 
     vector<key_t> v;
@@ -1047,7 +1052,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
     }
         
     return v;
-}
+}*/
 
 
 //---------------------------------------------------------------------------
