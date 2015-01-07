@@ -882,24 +882,26 @@ bool Matrix<Integer>::column_trigonalize(size_t rk, Matrix<Integer>& Right) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::do_compute_vol(bool& success){
+Integer Matrix<Integer>::compute_vol(bool& success){
         
-    assert(nr==nc);
+    assert(nr<=nc);
     
-    Integer test_det = 1;
+    Integer det, test_det = 1;
     if(do_arithmetic_check<Integer>())
         for (size_t i=0; i<nr; i++){
             test_det=(test_det*elem[i][i]%overflow_test_modulus)%overflow_test_modulus;
       test_det=Iabs(test_det);  
     }
     
-    for(size_t i=1;i<nr;++i)
-        elem[0][0]*=elem[i][i];           
-    elem[0][0]=Iabs(elem[0][0]);
+    det=1;
+    for(size_t i=0;i<nr;++i)
+        det*=elem[i][i];           
+    det=Iabs(det);
     
-    if(do_arithmetic_check<Integer>() && test_det!=elem[0][0]%overflow_test_modulus){
+    if(do_arithmetic_check<Integer>() && test_det!=det%overflow_test_modulus){
         success=false;
     }
+    return det;
 }
 
 //---------------------------------------------------------------------------
@@ -938,7 +940,7 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
+size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
 // no overflow checks since this is supposed to be only used with GMP
 
     success=true;
@@ -1029,14 +1031,12 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success){
 
     }
     
-    // cout << elem[0][0]<< " " << det_factor << " " << endl;
-    
+    det=0;
     if(nr==nc && rk==nr){
-        // cout << "Drin " << endl;
-        Integer det=1;
+        det=1;
         for(size_t i=0;i<nr;++i)
             det*=elem[i][i];            
-        elem[0][0]=Iabs<Integer>(det/det_factor);        
+        det=Iabs<Integer>(det/det_factor);        
     }
     return rk;
 }
@@ -1068,13 +1068,34 @@ Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& succes
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer& det){
+    
+    if(using_GMP<Integer>())
+        return row_echelon_inner_bareiss(success,det);
+    else{ 
+        return row_echelon_inner_elem(success);
+        if(do_compute_vol)
+            det=compute_vol(success);
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 size_t Matrix<Integer>::row_echelon(bool& success){
     
-    /*if(using_GMP<Integer>())
-        return row_echelon_inner_bareiss(success);
-    else */
-        return row_echelon_inner_elem(success); 
+    Integer dummy;
+    return row_echelon(success,false,dummy);
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon(bool& success, Integer& det){
+    
+    return row_echelon(success,true,det);
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -1117,25 +1138,22 @@ Integer Matrix<Integer>::vol_destructive(){
     if(nr==0)
         return 1;
 
-    bool success;   
+    bool success; 
+    Integer det;  
         
     if(!do_arithmetic_check<Integer>()){
-        row_echelon(success);
+        row_echelon(success,det);
         if(!success){
             errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
             throw ArithmeticException();
         }
-        // if(!using_GMP<Integer>())  // <------------------------------ deaktivieren, wenn Bareiss nicht verwendet wird
-            do_compute_vol(success);
-        return elem[0][0];      
+        return det;     
     }
     
     Matrix<Integer> Copy=*this;
-    row_echelon(success);
+    row_echelon(success,det);
     if(success)
-        do_compute_vol(success);
-    if(success)
-        return elem[0][0];
+        return det;
         
     Matrix<mpz_class> mpz_this(nr,nc);
     mat_to_mpz(Copy,mpz_this);
@@ -1164,6 +1182,8 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
     vector<key_t> key;
     key.reserve(max_rank);
     
+    vector<vector<bool> > col_done(max_rank,vector<bool>(nc,false));
+    
     vector<Integer> Test_vec(nc);
      
     for(size_t i=0;i<nr;++i){    
@@ -1173,7 +1193,8 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
                 continue;
             Integer a=Test[k][col[k]];
             Integer b=Test_vec[col[k]];
-            for(size_t j=0;j<nc;++j){
+            for(size_t j=0;j<nc;++j)
+                if(!col_done[k][j]){
                 Test_vec[j]=a*Test_vec[j]-b*Test[k][j];
                 if (!check_range(Test_vec[j]) ) {
                     success=false;
@@ -1189,12 +1210,15 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
         if(j==nc)
             continue;
             
-        col.push_back(j);     
+        col.push_back(j); 
+        
+        for(size_t k=0;k<Test.nr;++k)
+            col_done[Test.nr][col[k]]=true;    
         
         v_make_prime(Test_vec);
         key.push_back(i);
 
-        /*size_t rk=submatrix(key).rank();
+        /* size_t rk=submatrix(key).rank();
         if(rk!=key.size()){
          cout << "ALARM" << endl;
          exit(0);
@@ -1238,11 +1262,8 @@ bool Matrix<Integer>::solve_destructive_elem_inner(Integer& denom) {
         return false;
         
     assert(rk==nr);
-    denom=1;
-    for(size_t i=0;i<nr;++i){
-        denom*=elem[i][i];  
-    }
-    denom=Iabs(denom);
+    denom=compute_vol(success);
+
     // cout << "denom " << denom << endl<< "------------" << endl;
     if (denom==0) { 
         if(!do_arithmetic_check<Integer>()){

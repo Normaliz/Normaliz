@@ -100,8 +100,8 @@ template<typename Integer> class Matrix {
 //                      Work horses
 //---------------------------------------------------------------------------
 
-    // takes product of the diagonal elem
-    void do_compute_vol(bool& success);  
+    // takes |product of the diagonal elem|
+    Integer compute_vol(bool& success);  
         
     // Solve system with coefficients and right hand side in one matrix, using elementary transformations
     // solution replaces right hand side
@@ -109,16 +109,19 @@ template<typename Integer> class Matrix {
     void solve_destructive_elem(Integer& denom);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
-    size_t row_echelon_inner_bareiss(bool& success);
+    size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     // size_t row_echelon_inner_gcd(bool& success); 
     
     size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
+    size_t row_echelon(bool& success, Integer& det); // computes also |det|
+    size_t row_echelon(bool& success, bool do_compute_vol, Integer& det); // chooses elem or bareiss
+    
     // reduces the rows a matrix in row echelon form upwards, from left to right
     bool reduce_rows_upwards();
     size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
     
     // The Bareiss routine does NOT use Z-invertible transformations
-    size_t row_echelon_bareiss(bool& success);
+    size_t row_echelon_bareiss(bool& success, Integer& det);
     
     vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
     
