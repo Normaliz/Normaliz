@@ -1,50 +1,46 @@
-// Singular library normaliz.lib
+//// Singular library normaliz.lib
 
-version="$Id$"
-category="Commutative algebra"
+version="version normaliz.lib 4.1.0.0 Jan_2015 "; // $Id$
+category="Commutative Algebra";
 info="
-LIBRARY: normaliz.lib  Provides an interface for the use of Normaliz 2.8 or 2.9
-         within SINGULAR.
+LIBRARY: normaliz.lib  Provides an interface for the use of Normaliz 2.8 or
+         newer within SINGULAR.
 AUTHORS: Winfried Bruns, Winfried.Bruns@Uni-Osnabrueck.de
          Christof Soeger, Christof.Soeger@Uni-Osnabrueck.de
 
 OVERVIEW:
 @texinfo
 The library normaliz.lib provides an interface for the use of Normaliz 2.8 or
-2.9 within SINGULAR. The exchange of data is via files.
+newer within SINGULAR. The exchange of data is via files.
 In addition to the top level
 functions that aim at objects of type ideal or ring, several other auxiliary
 functions allow the user to apply Normaliz to data of type intmat. Therefore
 SINGULAR can be used as a comfortable environment for the work with Normaliz.
-@* Please see the @code{Normaliz2.9Documentation.pdf} (included in the Normaliz
+@* Please see the @code{Normaliz.pdf} (included in the Normaliz
 distribution) for a more extensive documentation of Normaliz.
 
-@* Normaliz allows the use of a grading. In the Singular functions that access
+Normaliz allows the use of a grading. In the Singular functions that access
 Normaliz the parameter grading is an intvec that assigns a (not necessarily
 positive) degree to every variable of the ambient polynomial ring.
 But it must give positive degrees to the generators given to function.
 
-@*
-@*Singular and Normaliz exchange data via files. These files are automatically
+Singular and Normaliz exchange data via files. These files are automatically
 created and erased behind the scenes. As long as one wants to use only the
 ring-theoretic functions there is no need for file management.
-@*
 @*Note that the numerical invariants computed by Normaliz can be
 accessed in this \"automatic file mode\".
-@*
 @*However, if Singular is used as a frontend for Normaliz or the user
 wants to inspect data not automatically returned to Singular, then
 an explicit filename and a path can be specified for the exchange of
 data. Moreover, the library provides functions for access to these files.
 Deletion of the files is left to the user.
-@*
-@* Use of this library requires the program Normaliz to be installed.
+
+Use of this library requires the program Normaliz to be installed.
 You can download it from
 @uref{http://www.mathematik.uni-osnabrueck.de/normaliz/}. Please make sure
 that the executables are in the search path or use setNmzExecPath
 (@ref{setNmzExecPath}).
 @end texinfo
-
 
 KEYWORDS: integral closure; normalization; toric ring
 
@@ -401,8 +397,9 @@ EXAMPLE:  example rmNmzFiles; shows an example
     for(i=1;i<=size(suffixes);i++)
     {
         f=getNmzFile()+"."+suffixes[i];
-        if (fileExists(f)) {
-              dummy=system("sh","rm "+f+ "&> /dev/null");
+        if (fileExists(f))
+        {
+            dummy=system("sh","rm "+f+ "&> /dev/null");
         }
     }
 }
@@ -587,32 +584,32 @@ static proc doWriteNmzData(list #)
     int num_rows, num_cols, n_mode;
 
     for (int k=1; k+1<=size(#); k=k+2) {
-      //get data from the parameter list
-      n_mode   = #[k+1];
-      if (n_mode != -1) { //skip -1 mode
-        sgr   = #[k];
-        num_rows = nrows(sgr);
-        num_cols = ncols(sgr);
+    //get data from the parameter list
+        n_mode   = #[k+1];
+        if (n_mode != -1) { //skip -1 mode
+            sgr = #[k];
+            num_rows = nrows(sgr);
+            num_cols = ncols(sgr);
 
-        write(outf,num_rows);
-        write(outf,num_cols);
+            write(outf,num_rows);
+            write(outf,num_cols);
 
-        for(i=1;i<=nrows(sgr);i++)
-        {
-          s="";
-          for(j=1;j<=num_cols;j++)
-          {
-             s=s+string(sgr[i,j])+" ";
-          }
-          write(outf,s);
+            for(i=1;i<=nrows(sgr);i++)
+            {
+                s="";
+                for(j=1;j<=num_cols;j++)
+                {
+                    s=s+string(sgr[i,j])+" ";
+                }
+                write(outf,s);
+            }
+            if (n_mode == 20) {
+                write(outf,"grading");
+            } else {
+                write(outf,n_mode);
+            }
+            write(outf,"");
         }
-        if (n_mode == 20) {
-          write(outf,"grading");
-        } else {
-          write(outf,n_mode);
-        }
-        write(outf,"");
-      }
     }
     close(outf);
 }
@@ -1173,7 +1170,6 @@ static proc intmat2monsSel(intmat expo_vecs, int d)
     {
         if(expo_vecs[i,ncols(expo_vecs)]==d)
         {
-
             m=1;
             for(j=1;j<=ncols(expo_vecs)-1;j++)
             {
@@ -1182,8 +1178,8 @@ static proc intmat2monsSel(intmat expo_vecs, int d)
             mons=mons,m;
         }
     }
-     mons=simplify(mons,2);    // get rid of starting 0
-     return(mons);
+    mons=simplify(mons,2);    // get rid of starting 0
+    return(mons);
 }
 
 
@@ -1202,17 +1198,21 @@ EXAMPLE:  example binomials2intmat; shows an example"
     k=0;
     poly f;
 
-    for(i=1; i<=ncols(I); i++)     {
-        if( I[i] != 0 ) {
+    for(i=1; i<=ncols(I); i++)
+    {
+        if( I[i] != 0 )
+        {
             k++;
             f = I[i];
             if (leadcoef(f) != 1) {f = -f};  //works in all characteristics
-            if (size(f)!=2 || leadcoef(f)!=1 || leadcoef(f[2])!=-1) {
+            if (size(f)!=2 || leadcoef(f)!=1 || leadcoef(f[2])!=-1)
+            {
                 ERROR(string("normalToricRing: binomial ideal expected: generator ",i,": ",I[i]));
             }
 
             expo_v = leadexp(f)-leadexp(f[2]);
-            for(j=1;j<=nvars(basering);j++) {
+            for(j=1;j<=nvars(basering);j++)
+            {
                 expo_vecs[k,j]=expo_v[j];
             }
         }
