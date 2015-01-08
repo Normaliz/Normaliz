@@ -1490,7 +1490,7 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::kernel () const{
 // computes a ZZ-basis of the solutions of (*this)x=0
-// the basis is formed by the ROWS of the returned matrix
+// the basis is formed by the rOWS of the returned matrix
 
     size_t dim=nc;
     if(nr==0)
