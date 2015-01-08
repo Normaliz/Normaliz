@@ -1176,6 +1176,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
     col.reserve(max_rank);
     vector<key_t> key;
     key.reserve(max_rank);
+    size_t rk=0;
     
     vector<vector<bool> > col_done(max_rank,vector<bool>(nc,false));
     
@@ -1183,7 +1184,7 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
      
     for(size_t i=0;i<nr;++i){    
         Test_vec=elem[i];            
-        for(size_t k=0;k<Test.nr;++k){
+        for(size_t k=0;k<rk;++k){
             if(Test_vec[col[k]]==0)
                 continue;
             Integer a=Test[k][col[k]];
@@ -1202,16 +1203,16 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
         for(;j<nc;++j)
             if(Test_vec[j]!=0)
                 break;
-        if(j==nc)
+        if(j==nc)     // Test_vec=0
             continue;
             
-        col.push_back(j); 
-        
-        for(size_t k=0;k<Test.nr;++k)
-            col_done[Test.nr][col[k]]=true;    
-        
-        v_make_prime(Test_vec);
+        col.push_back(j);
         key.push_back(i);
+        
+        if(rk>0){
+            col_done[rk]=col_done[rk-1];
+            col_done[rk][col[rk-1]]=true;
+        }
 
         /* size_t rk=submatrix(key).rank();
         if(rk!=key.size()){
@@ -1219,9 +1220,11 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
          exit(0);
         }*/
         Test.nr++;
-        Test[Test.nr-1]=Test_vec;
+        rk++;
+        v_make_prime(Test_vec);
+        Test[rk-1]=Test_vec;
             
-        if(key.size()==max_rank)
+        if(rk==max_rank)
             break;   
     }    
     return key;                
