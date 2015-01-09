@@ -913,14 +913,17 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
            }
             // create "pyramid" key
             vector<key_t> subcone_key(C.dim + nr_new_points);
-            for (int i=0; i<nr_new_points; ++i) {
-                subcone_key[i] = nr_old_gen + i;
-            }
-            for (size_t i=0; i<C.dim; ++i) {
-                subcone_key[nr_new_points + i] = key[i];
-            }
-
-//            C.sort_gens_by_degree(); //TODO
+			subcone_key=C.Generators.perm_sort_by_degree(C.Grading,C.isComputed(ConeProperty::Grading));
+//            if (C.isComputed(ConeProperty::Grading)){
+//				subcone_key = C.Generators.perm_sort_by_degree(C.Grading);
+//			} else {
+//           for (int i=0; i<nr_new_points; ++i) {
+//                subcone_key[i] = nr_old_gen + i;
+//            }
+//            for (size_t i=0; i<C.dim; ++i) {
+//                subcone_key[nr_new_points + i] = key[i];
+//            }
+//			}	
 
 
             Full_Cone<Integer> subcone(C, subcone_key);
