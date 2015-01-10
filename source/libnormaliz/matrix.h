@@ -46,6 +46,7 @@ template<typename Integer> class Matrix {
 
     template<typename> friend class Matrix;
     template<typename> friend class Lineare_Transformation;
+    template<typename> friend class Sublattice_Representation;
     
     // public:
 
@@ -125,6 +126,9 @@ template<typename Integer> class Matrix {
     
     vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
     
+    // A version of invert that circumvents the protected solve_destuctive_outer
+    Matrix invert_unprotected(Integer& denom, bool& sucess) const;
+    
 
 //---------------------------------------------------------------------------
 //                      Pivots for rows/columns operations
@@ -140,6 +144,12 @@ template<typename Integer> class Matrix {
     
     long pivot_column(size_t row,size_t col); //in column col starting from row
     
+//---------------------------------------------------------------------------
+//                     Helpers for linear systems
+//---------------------------------------------------------------------------
+
+    Matrix bundle_matrices(const Matrix<Integer>& Right_side)const;
+    Matrix extract_solution() const;    
                     
 public:    
   
@@ -279,25 +289,23 @@ public:
     
 // Solution of linear systems with square matrix
   
-    // In the following routines denom is the absolute value of the determinant of the
-    // left side matrix ( =this).
+    // In the following routines, denom is the absolute value of the determinant of the
+    // left side matrix.
+    // If the diagonal is asked for, ZZ-invertible transformations are used.
+    // Otherwise ther is no restriction on the used algorithm
+    
+    //The diagonal of left hand side after transformation into an upper triangular matrix
+    //is saved in diagonal, denom is |determinant|.
+    
+    // System with "this" as left side
+    Matrix solve(const Matrix& Right_side, Integer& denom) const;
+    Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;
+    // solve the system this*Solution=denom*Right_side. 
     
     // Solve system with coefficients and right hand side in one matrix
-    // solution replaces right hand side
-    // using elementary transformations:
+    // solution mist be extracted
     void solve_destructive(vector< Integer>& diagonal, Integer& denom);
-    // allowing arbitrary transformations:
-    void solve_destructive(Integer& denom);
-    
-    // Gives 
-    Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
-
-    Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
-    //this*Solution=denom*Right_side. this should be a quadratic /matrix with nonzero determinant.
-    //The diagonal of this after transformation into an upper triangular matrix
-    //is saved in diagonal
-    // Variant:
-    Matrix solve(const Matrix& Right_side, Integer& denom) const;
+    void solve_destructive(Integer& denom);    
                     
 // For non-square matrices
                     
@@ -326,6 +334,7 @@ public:
     //this*Solution=denom*I. "this" should be a quadratic matrix with nonzero determinant. 
     //The diagonal of this after transformation into an upper triangular matrix
     //is saved in diagonal
+    Matrix invert(Integer& denom) const;
                     
 // find linear form that is constant on the rows 
 
@@ -336,7 +345,13 @@ public:
   
     vector<Integer> find_linear_form_low_dim () const;
     //same as find_linear_form but also works with not maximal rank
-    //uses a linear transformation to get a full rank matrix 
+    //uses a linear transformation to get a full rank matrix
+    
+// normal forms
+        
+    Matrix Hermite(size_t& rk);
+    // Converts "this" into lower trigonal column Hermite normal form, returns column 
+    // transformation matrix 
 
 };
 //class end *****************************************************************

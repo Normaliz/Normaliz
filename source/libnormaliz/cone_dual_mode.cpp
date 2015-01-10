@@ -670,7 +670,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
         if (i!=rank_subspace) {    // the new hyperplane does not contain the intersection of the previous hyperplanes
                                    // so we must intersect the new hyperplane and Max_Subspace
             lifting=true;
-            //computing new maximal subspace
+
             Matrix<Integer> M(1,rank_subspace); // this is the restriction of the new linear form to Max_Subspace
             M[0]=restriction;                   // encoded as a matrix 
             

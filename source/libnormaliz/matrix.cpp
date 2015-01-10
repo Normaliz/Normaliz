@@ -1047,6 +1047,7 @@ size_t Matrix<Integer>::row_echelon_reduce(bool& success){
     return rk;
 }
 
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1342,16 +1343,15 @@ void Matrix<Integer>::solve_destructive(Integer& denom){
     solve_destructive_outer(false,denom);
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
+Matrix<Integer> Matrix<Integer>::bundle_matrices(const Matrix<Integer>& Right_side) const {
+
     size_t dim=Right_side.nr;
     // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
     assert(nr == nc);
     assert(nc == dim);
-    assert(dim == diagonal.size());
     Matrix<Integer> M(nr,nc+Right_side.nc);
     for(size_t i=0;i<nr;++i){
         for(size_t j=0;j<nc;++j)
@@ -1359,43 +1359,43 @@ Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, 
         for(size_t j=nc;j<M.nc;++j)
             M[i][j]=Right_side[i][j-nc];
     }
-    M.solve_destructive(diagonal,denom);
-    Matrix<Integer> Solution(Right_side.nr,Right_side.nc); 
-    for(size_t i=0;i<nr;++i){
-        for(size_t j=0;j<Right_side.nc;++j)
-            Solution[i][j]=M[i][j+nc];    
-    }
-    return Solution;   
+    return M;
 }
-    
 
-//--------------------------------------------------------------------------
-/*
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
-
-    Matrix<Integer> Solution(Right_side.nr,Right_side.nc);  
-    solve_destructive_Sol(Right_side,diagonal,denom,Solution);
-    return Solution;
+Matrix<Integer> Matrix<Integer>::extract_solution() const {
+    assert(nc>=nr);
+    Matrix<Integer> Solution(nr,nc-nr); 
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<Solution.nc;++j)
+            Solution[i][j]=elem[i][j+nr];    
+    }
+    return Solution;  
 }
-*/
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) const {
-    Matrix<Integer> Left_side(*this);
-    Matrix<Integer> Copy_Right_Side=Right_side;
-    return Left_side.solve_destructive(Copy_Right_Side, diagonal, denom);
+
+    Matrix<Integer> M=bundle_matrices(Right_side);
+    M.solve_destructive(diagonal,denom);
+    return M.extract_solution();
+ 
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, Integer& denom) const {
-    // Matrix<Integer> Left_side(*this);
-    vector<Integer> dummy_diag(nr);
-    return solve(Right_side, dummy_diag, denom);
-}   
+Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side,Integer& denom) const {
+
+    Matrix<Integer> M=bundle_matrices(Right_side);
+    M.solve_destructive(denom);
+    return M.extract_solution();
+ 
+}
 
 //---------------------------------------------------------------------------
 
@@ -1403,12 +1403,31 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& denom) const{
     assert(nr == nc);
     assert(nr == diagonal.size());
-    Matrix<Integer> Left_side(*this);
     Matrix<Integer> Right_side(nr);
 
-    return Left_side.solve_destructive(Right_side,diagonal,denom);
+    return solve(Right_side,diagonal,denom);
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::invert(Integer& denom) const{
+    assert(nr == nc);
+    Matrix<Integer> Right_side(nr);
+
+    return solve(Right_side,denom);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::invert_unprotected(Integer& denom, bool& success) const{
+    assert(nr == nc);
+    Matrix<Integer> Right_side(nr);
+    Matrix<Integer> M=bundle_matrices(Right_side);
+    success=M.solve_destructive_inner(false,denom);
+    return M.extract_solution();;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1512,6 +1531,26 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
     return(ker_basis);
+}
+
+//---------------------------------------------------------------------------
+// Converts "this" into (column) into Hermite normal form, returns column transformation matrix
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::Hermite(size_t& rk){
+
+    Matrix<Integer> Copy=*this;
+    Matrix<Integer> Transf;
+    bool success;
+    Transf=row_column_trigonalize(rk,success);
+    if(success)
+        return Transf;
+    
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(*this,mpz_this);
+    Matrix<mpz_class> mpz_Transf=mpz_this.row_column_trigonalize(rk,success);
+    mat_to_Int(mpz_this,*this);
+    mat_to_Int(mpz_Transf,Transf);
+    return Transf;
 }
 
 
@@ -1832,4 +1871,25 @@ bool Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& RHS) {
     return true;
 }
 */
+
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon_reduce(){
+
+    Matrix<Integer> Copy=*this;
+    bool success;
+    size_t rk==row_echelon_reduce_inner(success);
+    if(success)
+        return rk;
+    
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(*this,mpz_this);
+    rk==mpz_this.row_echelon_reduce_inner(success);
+    mat_to_Int(mpz_this,*this);
+    return rk;
+}*/
+
+
+
 }  // namespace
