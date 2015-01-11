@@ -78,9 +78,10 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Lineare_Tran
 template<typename Integer>
 void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bool take_saturation, bool& success) {
 
+    success=true;
+
     dim=M.nr_of_columns();
-    Matrix<Integer> N=M;
-    
+    Matrix<Integer> N=M;    
 
     rank=N.row_echelon_reduce(success);
     if(!success)
@@ -88,7 +89,6 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     if (rank==0) {
         errorOutput()<<"warning: matrix has rank 0. Please check input data."<<endl;
     }
-
     
     if(rank==dim && take_saturation){
         A = B = Matrix<Integer>(dim);
@@ -96,6 +96,9 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         c=1;
         return;   
     }
+    
+    A=Matrix<Integer>(rank, dim);
+    B=Matrix<Integer>(dim,rank);
     
     Integer row_index=1;
     vector<key_t> col(rank);
@@ -110,14 +113,8 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         row_index*=N[k][j];
     }
     
-    if(row_index==1){  // ==> index=1, sublattice is saturated
-        if(rank==dim){  // and we can take B as projection onto corner columns       
-            A = B = Matrix<Integer>(dim); // all columns are corners
-            index=1;
-            c=1;
-            return;        
-        }
-        B=Matrix<Integer>(dim,dim);
+    if(row_index==1){  // ==> index=1, sublattice is saturated and we can take a projection
+    
         for(size_t k=0;k<rank;++k)
             A[k]=N[k];
         size_t j=0;
@@ -133,8 +130,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     }
     
     if(!take_saturation){
-        Matrix<Integer> P(dim,dim);
-        Matrix<Integer> A(rank, dim);
+        Matrix<Integer> P(dim,dim);  // A augmented by unit vectors to full rank
         for(size_t k=0;k<rank;++k)
             A[k]=P[k]=N[k];
         size_t k=rank;
@@ -144,21 +140,25 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             P[k][j]=1;
             k++;        
         }
-        Matrix<Integer> Q=P.invert_unprotected(c,success);
+        Matrix<Integer> Q=P.invert_unprotected(c,success);  // gives c=1
         if(!success)
             return;
         index=1;
-        Matrix<Integer> B(dim,rank);
+        
         for(k=0;k<dim;++k)
             for(size_t j=0;j<rank;++j)
-                B[k][j]=Q[j][k];
+                B[k][j]=Q[k][j];
         return;               
     }
     
     // now we must take the saturation
     
-    Matrix<Integer> R_inv=N.Hermite(rank);
-    Matrix<Integer> R=R_inv.invert(c);   // yields c=1 as it should be in this case
+    // Matrix<Integer> R_inv=N.Hermite(rank);
+    Matrix<Integer> R_onv(dim,dim);
+    success=N.column_trigonalize(rankk,R_inv);
+    Matrix<Integer> R=R_inv.invert_unprotected(c,succe(c);   // yields c=1 as it should be in this case
+    if/!success)
+        return;
     for (size_t i = 0; i < rank; i++) {
         for (size_t j = 0; j < dim; j++) {
                 A[i][j]=R[i][j];

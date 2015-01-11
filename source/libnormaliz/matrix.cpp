@@ -869,7 +869,7 @@ bool Matrix<Integer>::column_trigonalize(size_t rk, Matrix<Integer>& Right) {
     vector<long> piv(2,0);       
     for(size_t j=0;j<rk;++j){
             piv=pivot(j);
-            assert(piv[0]>=0); // pritect against wrong rank
+            assert(piv[0]>=0); // protect against wrong rank
             exchange_rows (j,piv[0]);
             exchange_columns (j,piv[1]);
             Right.exchange_columns(j,piv[1]);
