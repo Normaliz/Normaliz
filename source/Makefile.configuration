@@ -11,8 +11,8 @@ CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 
-
-CXXFLAGS += -I /home/math/rsieg/src/scipoptsuite-3.1.0/scip-3.1.0/src/
+SCIPPATH = $(HOME)/src/scipoptsuite-3.1.1
+CXXFLAGS += -I $(SCIPPATH)/scip-3.1.1/src
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
@@ -22,18 +22,15 @@ else
 endif
 
 ## for distributing the executables link static (does not work for mac)
-CXXFLAGS += -static
+#CXXFLAGS += -static
 ## for almost static compilation on Mac use
 #CXXFLAGS += -static-libgcc
 ## make it compatible with older Mac versions
 #CXXFLAGS += -mmacosx-version-min=10.5
 
 CXXFLAGS += -DNMZ_SCIP
-GMPFLAGS =-L=/home/math/rsieg/src/scipoptsuite-3.1.0/scip-3.1.0/lib \
-    -lobjscip -llpispx -lnlpi.cppad -lsoplex.linux.x86_64.gnu.opt \
-    -lscip.linux.x86_64.gnu.opt \
-    -lobjscip.linux.x86_64.gnu.opt -llpispx.linux.x86_64.gnu.opt -lnlpi.cppad.linux.x86_64.gnu.opt \
-    -lsoplex.linux.x86_64.gnu.opt \
-    -lm -m64  \
+GMPFLAGS = -L $(SCIPPATH)/lib  \
+    -lscipopt-3.1.1.linux.x86_64.gnu.opt \
+    -lreadline \
+    -lz \
     -lgmpxx -lgmp
-
