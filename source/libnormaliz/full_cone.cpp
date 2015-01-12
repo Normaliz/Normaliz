@@ -1142,7 +1142,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         in_triang[key[i]]=true;
         GensInCone.push_back(key[i]);
         if (deg1_triangulation && isComputed(ConeProperty::Grading))
-            deg1_triangulation = (gen_degrees[i] == 1);
+            deg1_triangulation = (gen_degrees[key[i]] == 1);
     }
     
     nrGensInCone=dim;
