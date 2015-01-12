@@ -49,7 +49,7 @@ const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > Re
 const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
 
-const size_t EvalBoundPyr=20000;   // the same for stored pyramids of level > 0
+const size_t EvalBoundPyr=200000;   // the same for stored pyramids of level > 0
 
 const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored level 0 pyramids
 
