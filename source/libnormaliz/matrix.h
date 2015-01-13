@@ -190,7 +190,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 	// returns the permutation created by sorting the rows with a grading function
     // or by 1-norm if computed is false
-    vector<key_t> perm_sort_by_degree(const vector<Integer>& grading, bool computed) const;
+    vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
     
     void select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows);
     void select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows);
@@ -386,7 +386,6 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     // computes support hyperplanes and volume
     void simplex_data(const vector<key_t>& key, Integer& vol, Matrix& Supp) const; 
 
-    
 };
 //class end *****************************************************************
 

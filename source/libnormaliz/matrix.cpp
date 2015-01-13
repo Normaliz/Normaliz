@@ -1905,7 +1905,7 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
 * does not change matrix (yet)
  */
 template<typename Integer>
-vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<Integer>& grading,bool computed) const{
+vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const{
 
 	list<vector<Integer>> rowList;
 	vector<Integer> v;
@@ -1913,22 +1913,22 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<Integer>& gradin
 	v.resize(nc+2);
 	unsigned long i,j;
 	
-	for (i=0;i<nr;i++){
+	for (i=0;i<key.size();i++){
 		if (computed){
-		v[0]=v_scalar_product((*this).elements[i],grading);
+		v[0]=v_scalar_product((*this).elem[key[i]],grading);
 		} else{
 			v[0]=0;
-			for (j=0;j<nc;j++) v[0]+=Iabs((*this).elements[i][j]);
+			for (j=0;j<nc;j++) v[0]+=Iabs((*this).elem[key[i]][j]);
 		}
 		for (j=0;j<nc;j++){
-			v[j+1] = (*this).elements[i][j];
+			v[j+1] = (*this).elem[key[i]][j];
 		}
-		v[nc+1] = i; // position of row
+		v[nc+1] = key[i]; // position of row
 		rowList.push_back(v);
 	}
 	rowList.sort();
 	vector<key_t> perm;
-	perm.resize(nr);
+	perm.resize(key.size());
 	i=0;
 	for (typename list< vector<Integer> >::const_iterator it = rowList.begin();it!=rowList.end();++it){
 		perm[i]=explicit_cast_to_long((*it)[nc+1]);
