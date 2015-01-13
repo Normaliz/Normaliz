@@ -50,7 +50,7 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading);
 
 template<typename Integer>
-void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points, Matrix<Integer> gens);
+void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens);
 
 
 // don't do it with mpz_class TODO
@@ -58,15 +58,15 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points, Matrix
 
 // TODO do not use global variables
 long long stellar_det_sum;
-size_t open_tasks;
 
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { //TODO lieber Referenz fuer Matrix?
-
+	
+	cout << "Using SCIP to compute points from bottom." << endl;
     stellar_det_sum = 0;
-    queue< Matrix<Integer> > q_gens;
-    q_gens.push(gens);
-    open_tasks = 1;
+    vector< Matrix<Integer> > q_gens;
+    q_gens.push_back(gens);
+    int level = 0;
 
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
@@ -85,32 +85,45 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 	SCIPsetRealParam(scip, "numerics/epsilon", 1e-10); 
 	SCIPsetRealParam(scip, "numerics/feastol", 1e-9); 
 
+    vector< Matrix<Integer> > local_q_gens;
+    list< vector<Integer> > local_new_points;
 
-    while (open_tasks > 0) {
-        bottom_points_inner(scip, new_points, q_gens);
+    while (!q_gens.empty()) {
+        #pragma omp single
+        cout << q_gens.size() << " simplices on level " << level++ << endl;
+        #pragma omp for
+        for (size_t i = 0; i < q_gens.size(); ++i) {
+            bottom_points_inner(scip, q_gens[i], local_new_points, local_q_gens);
+        }
+        #pragma omp single
+        q_gens.clear();
+        #pragma omp critical
+        {
+            q_gens.insert(q_gens.end(),local_q_gens.begin(),local_q_gens.end());
+        }
+        local_q_gens.clear();
+        #pragma omp barrier
+    }
+    #pragma omp critical
+    {
+        new_points.splice(new_points.end(), local_new_points, local_new_points.begin(), local_new_points.end());
     }
 
     SCIPfree(& scip);
     } // end parallel
+
+    cout << "new_points.size()" << new_points.size() << endl;
+    new_points.sort();
+    new_points.unique();
+    cout << "new_points.size()" << new_points.size() << endl;
 
     cout << "stellar_det_sum = " << stellar_det_sum << endl;
 }
 
 
 template<typename Integer>
-void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points,
-                         queue< Matrix<Integer> >& q_gens) {
-    Matrix<Integer> gens;
-    bool got_element = false;
-    #pragma omp critical(Q_GENS)
-    {
-        if (!q_gens.empty()) {
-            gens = q_gens.front();
-            q_gens.pop();
-            got_element = true;
-        }
-    }
-    if (!got_element) return;
+void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
+                         vector< Matrix<Integer> >& local_q_gens) {
 
     vector<Integer>  grading = gens.find_linear_form();
     Integer volume;
@@ -119,8 +132,6 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points,
 
     if (volume < ScipBound) {
         stellar_det_sum += explicit_cast_to_long(volume);
-        #pragma omp atomic
-        --open_tasks;
         return;
     }
 
@@ -137,18 +148,15 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points,
     vector<Integer> new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
     if ( !new_point.empty() ){
 
-        if (find(new_points.begin(), new_points.end(),new_point) == new_points.end())
-            new_points.push_back(new_point);
+//        if (find(local_new_points.begin(), local_new_points.end(),new_point) == local_new_points.end())
+            local_new_points.push_back(new_point);
         Matrix<Integer> stellar_gens(gens);
 
         int nr_hyps = 0;
         for (int i=0; i<dim; ++i) {
             if (v_scalar_product(Support_Hyperplanes[i], new_point) != 0) {
                 stellar_gens[i] = new_point;
-                #pragma omp critical(Q_GENS)
-                q_gens.push(stellar_gens);
-                #pragma omp atomic
-                ++open_tasks;
+                local_q_gens.push_back(stellar_gens);
 
                 stellar_gens[i] = gens[i];
             } else nr_hyps++;
@@ -161,8 +169,6 @@ void bottom_points_inner(SCIP* scip, list< vector<Integer> >& new_points,
 //      cout << "Not using " << new_point;
         stellar_det_sum += explicit_cast_to_long(volume);
     }
-    #pragma omp atomic
-    --open_tasks;
     return;
 }
 
@@ -278,8 +284,8 @@ vector<Integer> opt_sol(SCIP* scip,
             sol_vec[i] = explicit_cast_to_long(SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
         }
         Integer sc = v_scalar_product(sol_vec,grading);
-#pragma omp critical(VERBOSE)
-cout << "solution " << sol_vec << " | " << sc << endl;
+//		#pragma omp critical(VERBOSE)
+//		cout << sc << " | solution " << sol_vec;
 
     } else {
         return vector<Integer>();
