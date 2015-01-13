@@ -926,12 +926,13 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             subcone.is_Computed.set(ConeProperty::ExtremeRays, false); //TODO could be removed
 //            subcone.Generators.pretty_print(cout);
             subcone.do_all_hyperplanes=false;
-
+ScipBound *= 100;
             subcone.build_cone(); // TODO just store key?
             // evaluate created simplices //TODO move in build_top_cone? 
             C.evaluate_stored_pyramids(0);
             C.evaluate_triangulation();
 
+ScipBound /= 100;
             return;
         }
     }

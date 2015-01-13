@@ -44,7 +44,7 @@
 namespace libnormaliz {
 using namespace std;
 
-const long ScipBound = 1000000;
+long ScipBound = 1000000;
 
 template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading);
@@ -207,8 +207,8 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip,
                         const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp,
                         const vector<Integer>& grading) {
-    //    double SCIP_scalar =1.0;
-    double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]) -1);
+    double SCIP_scalar = 1.0;
+    double upper_bound = SCIP_scalar*convert_to_double(v_scalar_product(grading,gens[0]) -1);
     // TODO make the test more strict
     long dim = grading.size();
     // create variables
