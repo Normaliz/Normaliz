@@ -30,6 +30,7 @@
 #include <set>
 #include <deque>
 
+#include "time.h"
 #include "integer.h"
 #include "vector_operations.h"
 #include "matrix.h"
@@ -871,9 +872,16 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             Generators[i] = C.Generators[key[i]];
 
         list< vector<Integer> > new_points;
-        bottom_points(new_points, Generators);
+        time_t start,end;
+		time (&start);
+		bottom_points(new_points, Generators);
+		time (&end);
+		double dif = difftime (end,start);
+
+		cout << "bottom points took " << dif << " sec " <<endl;
         
-        cout << new_points.size() << " new points " << endl << new_points << endl;
+        
+        // cout << new_points.size() << " new points " << endl << new_points << endl;
         if (!new_points.empty()) {
             int nr_new_points = new_points.size();
             // remove this simplex from det_sum and multiplicity
@@ -884,7 +892,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 while (it != new_points.end()) {
                     bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(*it,C,C.OldCandidates);
                     if(inserted) {
-                        cout << "inserted " << *it;
+                        //cout << "inserted " << *it;
                         C.Results[0].collected_elements_size++;
                         C.Results[0].HB_Elements.Candidates.back().original_generator = true;
                     }
@@ -921,12 +929,12 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             }
 			subcone_key = C.Generators.perm_sort_by_degree(subcone_key, C.Grading,C.isComputed(ConeProperty::Grading));
 
-
             Full_Cone<Integer> subcone(C, subcone_key);
             subcone.is_Computed.set(ConeProperty::ExtremeRays, false); //TODO could be removed
-//            subcone.Generators.pretty_print(cout);
+            //subcone.Generators.pretty_print(cout);
             subcone.do_all_hyperplanes=false;
 ScipBound *= 100;
+
             subcone.build_cone(); // TODO just store key?
             // evaluate created simplices //TODO move in build_top_cone? 
             C.evaluate_stored_pyramids(0);

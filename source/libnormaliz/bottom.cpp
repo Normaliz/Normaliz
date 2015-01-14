@@ -207,8 +207,9 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip,
                         const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp,
                         const vector<Integer>& grading) {
-    double SCIP_scalar = 1.0;
-    double upper_bound = SCIP_scalar*convert_to_double(v_scalar_product(grading,gens[0]) -1);
+    double SCIPFactor =1.0;
+    double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]) -1);
+    upper_bound*=SCIPFactor;
     // TODO make the test more strict
     long dim = grading.size();
     // create variables
@@ -262,8 +263,8 @@ vector<Integer> opt_sol(SCIP* scip,
 //    SCIPinfoMessage(scip, NULL, "Original problem:\n");
 //    SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
 //    SCIPinfoMessage(scip, NULL, "\nSolving...\n");
-#ifdef NDEBUG_BLA
-//#ifndef NDEBUG 
+//#ifdef NDEBUG_BLA
+#ifndef NDEBUG 
         FILE* file = fopen("mostrecent.lp","w");
         assert (file != NULL);
         SCIPprintOrigProblem(scip, file, "lp", FALSE);
