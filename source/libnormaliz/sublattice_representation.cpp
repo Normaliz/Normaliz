@@ -112,6 +112,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         col[k]=j;
         row_index*=N[k][j];
     }
+    row_index=Iabs(row_index);
     
     if(row_index==1){  // ==> index=1, sublattice is saturated and we can take a projection
     
@@ -126,6 +127,11 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         }
         index=1;
         c=1;
+        A.pretty_print(cout);
+        cout << "-----------------------" << endl;
+        B.pretty_print(cout);
+        cout << "-----------------------" << endl;
+        cout << "c " << c << " ´index " << index << endl;
         return;               
     }
     
@@ -148,16 +154,21 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         for(k=0;k<dim;++k)
             for(size_t j=0;j<rank;++j)
                 B[k][j]=Q[k][j];
+                A.pretty_print(cout);
+        cout << "-----------------------" << endl;
+        B.pretty_print(cout);
+        cout << "-----------------------" << endl;
+        cout << "c " << c << " ´index " << index << endl;
         return;               
     }
     
     // now we must take the saturation
     
     // Matrix<Integer> R_inv=N.Hermite(rank);
-    Matrix<Integer> R_onv(dim,dim);
-    success=N.column_trigonalize(rankk,R_inv);
-    Matrix<Integer> R=R_inv.invert_unprotected(c,succe(c);   // yields c=1 as it should be in this case
-    if/!success)
+    Matrix<Integer> R_inv(dim,dim);
+    success=N.column_trigonalize(rank,R_inv);
+    Matrix<Integer> R=R_inv.invert_unprotected(c,success);   // yields c=1 as it should be in this case
+    if(!success)
         return;
     for (size_t i = 0; i < rank; i++) {
         for (size_t j = 0; j < dim; j++) {
@@ -168,6 +179,12 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     index=1;
     for(size_t k=0;k<rank;++k)
         index*=N[k][k];
+        
+            A.pretty_print(cout);
+        cout << "-----------------------" << endl;
+        B.pretty_print(cout);
+        cout << "-----------------------" << endl;
+        cout << "c " << c << " ´index " << index << endl;
 
     return; 
 }
