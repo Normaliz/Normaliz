@@ -1553,9 +1553,88 @@ Matrix<Integer> Matrix<Integer>::Hermite(size_t& rk){
     return Transf;
 }
 
-
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+bool Matrix<Integer>::SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right){
+
+    bool success=true;
+    
+    // first we diagonalize
+
+    while(true){
+        rk=row_echelon_reduce(success);
+        if(!success)
+            return false;
+        if(rk==0)
+            break;
+        
+        if(is_diagonal())
+            break;
+        
+        success=column_trigonalize(rk,Right);
+        if(!success)
+            return false;
+        
+        if(is_diagonal())
+            break;                                
+    }
+    
+    // now we change the diagonal so that we have successive divisibilty
+    
+    if(rk<=1)
+        return true;
+        
+    // pretty_print(cout);
+           
+    while(true){
+        size_t i=0;
+        for(;i<rk-1;++i)
+            if(elem[i+1][i+1]%elem[i][i]!=0)
+                break;
+        if(i==rk-1)
+            break;
+        
+        Integer u,v,w,z, d=ext_gcd(elem[i][i],elem[i+1][i+1],u,v);
+        elem[i][i+1]=elem[i+1][i+1];
+        w=-elem[i+1][i+1]/d;
+        z=elem[i][i]/d;
+        // Now we multiply the submatrix formed by columns "corner" and "j" 
+        // and rows corner,...,nr from the right by the 2x2 matrix
+        // | u w |
+        // | v z |              
+       if(!linear_comb_columns(i,i+1,u,w,v,z))
+           return false; 
+       if(!Right.linear_comb_columns(i,i+1,u,w,v,z))
+           return false;
+       elem[i+1][i]=0;        
+     }
+     
+    return true;
+}
+
+// Converts "this" into Smith normal form, returns column transformation matrix
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
+
+    size_t dim=nc;
+    Matrix<Integer> Transf(dim);
+    if(dim==0)
+        return Transf;
+        
+    Matrix<Integer> Copy=*this;
+    bool success=SmithNormalForm_inner(rk,Transf);
+    if(success)
+        return Transf;
+    
+    Matrix<mpz_class> mpz_this(nr,dim);
+    mat_to_mpz(*this,mpz_this);
+    Matrix<mpz_class> mpz_Transf(dim);
+    mpz_this.SmithNormalForm_inner(rk,mpz_Transf);
+    mat_to_Int(mpz_this,*this);
+    mat_to_Int(mpz_Transf,Transf);
+    return Transf;
+}
 
 //---------------------------------------------------------------------------
 // Classless conversion routines

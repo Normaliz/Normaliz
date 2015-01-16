@@ -129,6 +129,8 @@ template<typename Integer> class Matrix {
     // A version of invert that circumvents the protected solve_destuctive_outer
     Matrix invert_unprotected(Integer& denom, bool& sucess) const;
     
+    bool SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right);
+    
 
 //---------------------------------------------------------------------------
 //                      Pivots for rows/columns operations
@@ -352,6 +354,10 @@ public:
     Matrix Hermite(size_t& rk);
     // Converts "this" into lower trigonal column Hermite normal form, returns column 
     // transformation matrix 
+    
+    Matrix SmithNormalForm(size_t& rk);
+    
+    
 
 };
 //class end *****************************************************************

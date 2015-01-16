@@ -90,10 +90,13 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         errorOutput()<<"warning: matrix has rank 0. Please check input data."<<endl;
     }
     
+    // cout << "dim " << dim << " rank " << rank <<endl;
+    
     if(rank==dim && take_saturation){
         A = B = Matrix<Integer>(dim);
         index=1;
         c=1;
+        // cout << "Hier Hier" << endl;
         return;   
     }
     
@@ -127,11 +130,11 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         }
         index=1;
         c=1;
-        A.pretty_print(cout);
+        /* A.pretty_print(cout);
         cout << "-----------------------" << endl;
         B.pretty_print(cout);
         cout << "-----------------------" << endl;
-        cout << "c " << c << " ´index " << index << endl;
+        cout << "c " << c << " ´index " << index << endl;*/
         return;               
     }
     
@@ -147,6 +150,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             k++;        
         }
         Matrix<Integer> Q=P.invert_unprotected(c,success);  // gives c=1
+        cout << "Nach invert" << endl;
         if(!success)
             return;
         index=1;
@@ -155,19 +159,23 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             for(size_t j=0;j<rank;++j)
                 B[k][j]=Q[k][j];
                 A.pretty_print(cout);
-        cout << "-----------------------" << endl;
+        /* cout << "-----------------------" << endl;
         B.pretty_print(cout);
         cout << "-----------------------" << endl;
-        cout << "c " << c << " ´index " << index << endl;
+        cout << "c " << c << " ´index " << index << endl; */
         return;               
     }
     
     // now we must take the saturation
     
     // Matrix<Integer> R_inv=N.Hermite(rank);
-    Matrix<Integer> R_inv(dim,dim);
+    Matrix<Integer> R_inv(dim);
     success=N.column_trigonalize(rank,R_inv);
+    // cout << "********************" << endl;
+    R_inv.pretty_print(cout);
+    // cout << "********************" << endl;
     Matrix<Integer> R=R_inv.invert_unprotected(c,success);   // yields c=1 as it should be in this case
+    // cout << "Nach invert 2" << endl;
     if(!success)
         return;
     for (size_t i = 0; i < rank; i++) {
@@ -180,11 +188,11 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     for(size_t k=0;k<rank;++k)
         index*=N[k][k];
         
-            A.pretty_print(cout);
+            /* A.pretty_print(cout);
         cout << "-----------------------" << endl;
         B.pretty_print(cout);
         cout << "-----------------------" << endl;
-        cout << "c " << c << " ´index " << index << endl;
+        cout << "c " << c << " ´index " << index << endl;*/
 
     return; 
 }
@@ -193,8 +201,9 @@ template<typename Integer>
 Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& M, bool take_saturation) {
     bool success;
     initialize(M,take_saturation,success);
+    // cout << "success " << success << endl;
     if(!success){
-        Matrix<mpz_class> mpz_M(M.nr,M.nr);
+        Matrix<mpz_class> mpz_M(M.nr,M.nc);
         mat_to_mpz(M,mpz_M);
         Sublattice_Representation<mpz_class> mpz_SLR;
         mpz_SLR.initialize(mpz_M,take_saturation,success);
@@ -419,30 +428,28 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
     if ( c == 1 ) { // no congruences then
         return Matrix<Integer>(0,dim+1);
     }
+    
+    size_t dummy;
+    Matrix<Integer> A_Copy=A;
+    Matrix<Integer> Transf=A_Copy.SmithNormalForm(dummy);
 
-    // Cong is B transposed and with an extra column for the modul m
-    Matrix<Integer> Cong = B;
-    Cong.append(Matrix<Integer>(1,rank));
-    Cong = Cong.transpose();
-    vector<Integer> gcds = Cong.make_prime();
-    Integer m; //the modul
-    Integer rowgcd;
-    Matrix<Integer> Cong2(0,dim+1); //only the relavant congruences
-    vector<Integer> new_row;
-    for (size_t j=0; j<rank; j++) {
-        m = c/gcds[j];
-        if ( m != 1 ) {
-            new_row = Cong.read(j);
-            v_reduction_modulo(new_row,m);  
-            //new_row cannot be divisible by a factor of m
-            //so make_prime divides by an invertible element
-            rowgcd = v_make_prime(new_row);  
-            assert(gcd(m,rowgcd) == 1);
-            new_row[dim] = m;
-            Cong2.append(new_row);
-        }
+    // Congruences given by first rank columns of Transf transposed and with an extra column for the modulus m
+    // The moduli are the diagonal elements of the Smith normal form
+    
+    // Transf.pretty_print(cout);
+
+    Transf.append(Matrix<Integer>(1,dim));
+    Transf = Transf.transpose();
+    Matrix<Integer> Transf2(0,dim+1); //only the relavant congruences
+    for(size_t k=0;k<rank;++k){
+        if(A_Copy[k][k]!=1){
+            Transf2.append(Transf[k]);
+            Transf2[Transf2.nr-1][dim]=A_Copy[k][k];
+        
+        }   
     }
-    return Cong2;
+
+    return Transf2;
 }
 
 }
