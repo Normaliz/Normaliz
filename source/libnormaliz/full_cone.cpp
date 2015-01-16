@@ -1455,9 +1455,10 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 
     if(Pyramids[level].empty())
         return;
-    Pyramids.resize(level+2); // provide space for a new generation
-    nrPyramids.resize(level+2);
-    nrPyramids[level+1]=0;
+    if (Pyramids.size() < level+2) {
+        Pyramids.resize(level+2);      // provide space for a new generation
+        nrPyramids.resize(level+2, 0);
+    }
 
     size_t nr_done=0;
     size_t nr_pyramids=nrPyramids[level];
@@ -3377,9 +3378,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     FS.resize(omp_get_max_threads());
     
-    Pyramids.resize(1);  // prepare storage for pyramids
-    nrPyramids.resize(1);
-    nrPyramids[0]=0;
+    Pyramids.resize(20);  // prepare storage for pyramids
+    nrPyramids.resize(20,0);
       
     recursion_allowed=true;
     
