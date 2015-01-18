@@ -33,7 +33,7 @@
 
 #include "cone_dual_mode.h"
 #include "vector_operations.h"
-#include "lineare_transformation.h"
+// #include "lineare_transformation.h"
 #include "list_operations.h"
 
 //---------------------------------------------------------------------------

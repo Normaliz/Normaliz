@@ -43,7 +43,7 @@
 namespace libnormaliz {
 
 template<typename Integer> class Matrix;
-template<typename Integer> class Lineare_Transformation;
+// template<typename Integer> class Lineare_Transformation;
 using std::vector;
 
 
@@ -81,7 +81,7 @@ public:
 	 * otherwise it is a direct summand of Z^n containing the rows of M
 	 */
 	Sublattice_Representation(const Matrix<Integer>& M, bool take_saturation);
-	Sublattice_Representation(const Lineare_Transformation<Integer>& LT, bool take_saturation);
+	// Sublattice_Representation(const Lineare_Transformation<Integer>& LT, bool take_saturation);
 
 //---------------------------------------------------------------------------
 //                       Manipulation operations

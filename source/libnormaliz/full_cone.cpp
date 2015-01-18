@@ -34,7 +34,7 @@
 
 #include "full_cone.h"
 #include "vector_operations.h"
-#include "lineare_transformation.h"
+// #include "lineare_transformation.h"
 #include "list_operations.h"
 #include "map_operations.h"
 #include "my_omp.h"
@@ -3063,9 +3063,11 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     assert(isComputed(ConeProperty::ExtremeRays));
     Matrix<Integer> G(1,dim);
     G[0]=Grading;
+    Matrix<Integer> G_copy=G;
     
-    Lineare_Transformation<Integer> NewBasis(G); // gives a new basis in which the grading is a coordinate
-    Matrix<Integer> U=NewBasis.get_right();   // the basis elements are the columns of U
+    // Lineare_Transformation<Integer> NewBasis(G); // gives a new basis in which the grading is a coordinate
+    size_t dummy;
+    Matrix<Integer> U=G_copy.SmithNormalForm(dummy);   // the basis elements are the columns of U
 
     Integer dummy_denom;                             
     vector<Integer> dummy_diag(dim); 
