@@ -27,6 +27,7 @@
 #include "general.h"
 #include <list>
 #include <vector>
+#include "limits.h"
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs
@@ -37,7 +38,37 @@
 namespace libnormaliz {
 
 //---------------------------------------------------------------------------
+//                     Basic functions
+//---------------------------------------------------------------------------
 
+// returns the absolute value of a
+template<typename Integer> inline Integer Iabs(const Integer& a) {
+    return (a>=0) ? (a) : Integer(-a);
+}
+
+//returns gcd of a and b,   if one is 0 returns the other integer
+template<typename Integer> Integer gcd(const Integer& a, const Integer& b);
+template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
+
+//returns lcm of a and b,   returns 0 if one is 0
+template<typename Integer> Integer lcm(const Integer& a, const Integer& b);
+template<> mpz_class lcm(const mpz_class& a, const mpz_class& b);
+
+// integer division a/b. Returns quot and rem = minimal remainder <= |b|/2
+ template<typename Integer>
+void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem);
+
+// extended Euclidean algorithm: d=ua+vb
+template <typename Integer>
+Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v);
+
+// minimizes u and v and makes d >= 0.
+template <typename Integer>
+void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v);
+
+//---------------------------------------------------------------------------
+//                     Conversions and checks
+//---------------------------------------------------------------------------
 
 bool fits_long_range(long long a);
 
@@ -67,7 +98,13 @@ template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
 template<typename Integer> 
 inline Integer to_Int(const mpz_class& a) { // only used for Integer = long long
 
-    return (long long)explicit_cast_to_long<mpz_class>(a);
+    if (a.fits_slong_p())
+        return (long long)explicit_cast_to_long<mpz_class>(a);
+    if(sizeof(long long)==sizeof(long))
+        throw ArithmeticException();
+    mpz_class quot=a/LONG_MAX;
+    mpz_class rem=a-quot*LONG_MAX;
+    return ((long long) explicit_cast_to_long(quot))*((long long) LONG_MAX)+((long long) explicit_cast_to_long(rem));     
 }
 
 template<> 
@@ -104,6 +141,29 @@ template<typename Integer>
 Integer int_max_value_half();
 
 template<typename Integer>
+inline bool check_range(Integer& m) {
+  return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+inline bool check_range<long long>(long long& m){
+    const long long max_half = int_max_value_half<long>();
+    return(Iabs(m)<=max_half);
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+inline bool check_range<long>(long& m){
+    const long max_half = int_max_value_half<long long>();
+    return(Iabs(m)<=max_half);
+}
+
+
+template<typename Integer>
 void check_range(const std::list<std::vector<Integer> >& ll);
 
 template<typename Integer> class CandidateList;
@@ -114,34 +174,7 @@ void check_range(const CandidateList<Integer>& ll);
 template<typename Integer>
 void check_range(const std::list<Candidate<Integer> >& ll);
 
-//---------------------------------------------------------------------------
-//                     Basic functions
-//---------------------------------------------------------------------------
 
-// returns the absolute value of a
-template<typename Integer> inline Integer Iabs(const Integer& a) {
-    return (a>=0) ? (a) : Integer(-a);
-}
-
-//returns gcd of a and b,   if one is 0 returns the other integer
-template<typename Integer> Integer gcd(const Integer& a, const Integer& b);
-template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
-
-//returns lcm of a and b,   returns 0 if one is 0
-template<typename Integer> Integer lcm(const Integer& a, const Integer& b);
-template<> mpz_class lcm(const mpz_class& a, const mpz_class& b);
-
-// integer division a/b. Returns quot and rem = minimal remainder <= |b|/2
- template<typename Integer>
-void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem);
-
-// extended Euclidean algorithm: d=ua+vb
-template <typename Integer>
-Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v);
-
-// minimizes u and v and makes d >= 0.
-template <typename Integer>
-void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v);
 
 //---------------------------------------------------------------------------
 //                     Special functions

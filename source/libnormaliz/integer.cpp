@@ -239,29 +239,6 @@ void check_range(const std::list<Candidate<Integer> >& ll){
 
 }
 
-template<typename Integer>
-inline bool check_range(Integer& m) {
-  return true;
-}
-
-
-//---------------------------------------------------------------------------
-
-template<>
-inline bool check_range<long long>(long long& m){
-    const long long max_half = int_max_value_half<long>();
-    return(Iabs(m)<=max_half);
-    return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<>
-inline bool check_range<long>(long& m){
-    const long max_half = int_max_value_half<long long>();
-    return(Iabs(m)<=max_half);
-}
-
 //---------------------------------------------------------------------------
  template<typename Integer>
 void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
