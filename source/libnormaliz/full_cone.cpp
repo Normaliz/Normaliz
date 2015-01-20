@@ -334,6 +334,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> subfacet(dim-2);
     jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
+    Matrix<Integer> Test(0,dim);
 
     bool found;
     #pragma omp for schedule(dynamic)
@@ -593,11 +594,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
             NrRank++; */
             
-               Matrix<Integer> Test(nr_common_zero,dim);
+               /* Matrix<Integer> Test(nr_common_zero,dim);
                for (k = 0; k < nr_common_zero; k++)
-                   Test.write(k,Generators[common_key[k]]);
+                   Test.write(k,Generators[common_key[k]]);*/
 
-               if (Test.rank_destructive()<subfacet_dim) {
+               if (Test.rank_submatrix(Generators,common_key,nr_common_zero)<subfacet_dim) {
                    common_subfacet=false;
                }
            } // ranktest

@@ -221,6 +221,9 @@ public:
     void set_nc(size_t col){
         nc=col;
     }
+    void set_nr(size_t rows){
+        nc=rows;
+    }
 
 //---------------------------------------------------------------------------
 //                  Basic matrices operations
@@ -277,8 +280,12 @@ public:
     
 // rank and determinant
 
-    size_t rank() const; //returns rank, nondestructive
-    size_t rank_destructive(); //returns rank, destructive
+    size_t rank() const; //returns rank
+    size_t rank_destructive(); 
+    size_t rank_submatrix(const vector<key_t>& key) const; //returns rank of submarix defined by key
+    
+    // return rank of submatrix of mother. "this" is used as work space    
+    size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key,const size_t keylength);
     
     Integer vol_destructive();
     Integer vol() const;
@@ -371,6 +378,9 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
 
 template<typename Integer>
 void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
+
+template<typename Integer>
+void mpz_submatrix(Matrix<mpz_class> sub, Matrix<Integer> mother, vector<key_t> selection);
 
 } // namespace
 

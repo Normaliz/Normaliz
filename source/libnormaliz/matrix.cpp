@@ -1117,12 +1117,55 @@ size_t Matrix<Integer>::rank_destructive(){
     }
     return rk;                               
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const size_t key_length){
+
+    assert(nc>=mother.nc);
+    if(nr<key_length){
+        elem.resize(key_length,vector<Integer>(nc,0));
+        nr=key_length;    
+    }
+    size_t save_nr=nr;
+    size_t save_nc=nc;
+    nr=key_length;
+    nc=mother.nc;
+    
+    *this=mother.submatrix(key);
+
+    bool success;
+    size_t rk=row_echelon(success);
+    
+    if(!success){        
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mpz_submatrix(mpz_this,mother,key);
+        rk=mpz_this.row_echelon(success);
+    }
+    
+    nr=save_nr;
+    nc=save_nc;
+    return rk;                               
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank_submatrix(const vector<key_t>& key) const{
+
+    Matrix<Integer> work(key.size(),nc);
+    return work.rank_submatrix(*this,key,key.size());              
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 size_t Matrix<Integer>::rank() const{
-    Matrix<Integer> N(*this);
-    return N.rank_destructive();
+    vector<key_t> key(nr);
+    for(size_t i=0;i<nr;++i)
+        key[i]=i;
+    return rank_submatrix(key);
 }
 
 //---------------------------------------------------------------------------
@@ -1649,6 +1692,9 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
             mpz_mat[i][j]=to_mpz(mat[i][j]);
 }
 
+//---------------------------------------------------------------------------
+
+
 template<typename Integer>
 void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
     size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
@@ -1657,7 +1703,19 @@ void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
         for(size_t j=0; j<ncols;++j)
             mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
 }
+
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+void mpz_submatrix(Matrix<mpz_class> sub, Matrix<Integer> mother, vector<key_t> selection){
+
+    assert(sub.nr_of_columns()>=mother.nr_of_columns());
+    assert(sub.nr_of_rows()>=mother.nr_of_rows());
+    for(size_t i=0;i<mother.nr_of_rows();++i)
+        for(size_t j=0;j<mother.nr_of_columns();++j)
+            sub[i][j]=to_mpz(mother[i][j]);
+
+}
 
 //---------------------------------------------------------------------------
 // Basement (routines currently not in use)
