@@ -158,6 +158,7 @@ public:
     // evaluation in parallel threads
     void Simplex_parallel_evaluation(); 
     
+    void print_all();
 };
 //class SimplexEvaluator end
 

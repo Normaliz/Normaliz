@@ -1121,6 +1121,43 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void SimplexEvaluator<Integer>::print_all() {
+//  C_ptr(&fc),
+//   dim(fc.dim),
+//    key(dim)
+    cout << "print all matricies" << endl;
+    cout << "Generators" << endl;
+    Generators.pretty_print(cout);
+    cout << "GenCopy" << endl;
+    GenCopy.pretty_print(cout);
+    cout << "InvGenSelRows" << endl;
+    InvGenSelRows.pretty_print(cout);
+    cout << "InvGenSelCols" << endl;
+    InvGenSelCols.pretty_print(cout);
+    cout << "Sol" << endl;
+    Sol.pretty_print(cout);
+    // ProjGen(dim-fc.level0_dim,dim-fc.level0_dim),
+    cout << "InvSol" << endl;
+    InvSol.pretty_print(cout);
+    cout << "InvSol" << endl;
+    InvSol.pretty_print(cout);
+    cout << "RS" << endl;
+    RS.pretty_print(cout);
+    cout << "StanleyMat" << endl;
+    // St.pretty_print(cout);
+//        GDiag(dim),
+//        TDiag(dim),
+//        Excluded(dim),
+//        Indicator(dim),
+//        gen_degrees(dim),
+//        gen_levels(dim),
+//        RS(dim,1),
+//        InExSimplData(C_ptr->InExCollect.size())
+}
+
+//---------------------------------------------------------------------------
+
 
 // Collector
 
