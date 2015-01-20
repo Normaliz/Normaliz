@@ -24,6 +24,7 @@
 #ifdef NMZ_SCIP
 #include <stdlib.h>
 #include <math.h>
+#include <omp.h>
 
 #include <iostream>
 //#include <sstream>
@@ -91,12 +92,14 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
     while (!q_gens.empty()) {
         #pragma omp single
         cout << q_gens.size() << " simplices on level " << level++ << endl;
-        #pragma omp for
+        #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
             bottom_points_inner(scip, q_gens[i], local_new_points, local_q_gens);
         }
         #pragma omp single
-        q_gens.clear();
+        {
+			q_gens.clear();
+		}
         #pragma omp critical
         {
             q_gens.insert(q_gens.end(),local_q_gens.begin(),local_q_gens.end());
@@ -148,8 +151,8 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     vector<Integer> new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
     if ( !new_point.empty() ){
 
-//        if (find(local_new_points.begin(), local_new_points.end(),new_point) == local_new_points.end())
-            local_new_points.push_back(new_point);
+        //if (find(local_new_points.begin(), local_new_points.end(),new_point) == local_new_points.end())
+        local_new_points.push_back(new_point);
         Matrix<Integer> stellar_gens(gens);
 
         int nr_hyps = 0;
@@ -263,14 +266,14 @@ vector<Integer> opt_sol(SCIP* scip,
 //    SCIPinfoMessage(scip, NULL, "Original problem:\n");
 //    SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
 //    SCIPinfoMessage(scip, NULL, "\nSolving...\n");
-//#ifdef NDEBUG_BLA
-#ifndef NDEBUG 
-        FILE* file = fopen("mostrecent.lp","w");
-        assert (file != NULL);
-        SCIPprintOrigProblem(scip, file, "lp", FALSE);
-        SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
-        fclose(file);
-#endif
+
+//#ifndef NDEBUG_BLA 
+        //FILE* file = fopen("mostrecent.lp","w");
+        //assert (file != NULL);
+        //SCIPprintOrigProblem(scip, file, "lp", FALSE);
+        //SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+        //fclose(file);
+//#endif
 
     SCIPsolve(scip);
 
@@ -284,7 +287,8 @@ vector<Integer> opt_sol(SCIP* scip,
         for (int i=0;i<dim;i++) {
             sol_vec[i] = explicit_cast_to_long(SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
         }
-        Integer sc = v_scalar_product(sol_vec,grading);
+        for (int i=0;i<nrSuppHyp;i++) assert((v_scalar_product(SuppHyp[i],sol_vec))>=0);
+//        Integer sc = v_scalar_product(sol_vec,grading);
 //		#pragma omp critical(VERBOSE)
 //		cout << sc << " | solution " << sol_vec;
 
