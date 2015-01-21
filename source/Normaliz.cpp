@@ -41,10 +41,10 @@ using namespace libnormaliz;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                    Normaliz 2.12.1                  \\....|"<<endl;
+    cout << "                    Normaliz 2.12.2                  \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "      (C) W. Bruns  B. Ichim  T. Roemer  C. Soeger     \\..|"<<endl;
-    cout << "                     October 2014                       \\.|"<<endl;
+    cout << "                     January 2015                       \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {

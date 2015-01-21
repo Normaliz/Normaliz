@@ -1,6 +1,6 @@
 # ChangeLog
 
-## [2.12.2] - unreleased
+## [2.12.2] - 2014-01-22
 - bug fix in volume computation "-v"
 - change max_rank_submatrix back to pre2.12 version, avoids some overflows
 
