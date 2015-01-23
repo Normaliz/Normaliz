@@ -78,6 +78,11 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 //    SCIPsetMessagehdlr(scip,NULL);  // deactivate scip output
     
 	SCIPsetIntParam(scip, "display/verblevel", 0); 
+	
+	// modify timing for better parallelization
+//	SCIPsetBoolParam(scip, "timing/enabled", FALSE);
+	SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
+	SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
 
 	SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
 	SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
