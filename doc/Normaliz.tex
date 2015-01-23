@@ -3064,7 +3064,7 @@ If only the lattice points in a rational polytope are to be computed, there are 
 \end{itemize}
 For lattice polytopes \verb|-1| and \verb|-r| are identical. The choice between the primal and the dual algorithm has been discussed above. Note that \verb|-d1| is \emph{not} a Hilbert basis computation via \verb|-d| with a subsequent selection of degree $1$ elements. On the contrary, all computations are truncated in degree $1$.
 
-In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-rB| it is a matter of minutes, with \verb|-d1| it is doable with some patience, and \verb|-1B| seems to be out of reach presently. (Note that \verb|-r| needs the inclusion of \verb|B|. On a powerful machine \verb|-d| is doable.)
+In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-r| it is a matter of seconds, with \verb|-d1| it is doable with some patience, and \verb|-1| fails because of overflow (add \verb|-e| to realize the overflow). (One could try \verb|-1B|, but it would take an extremely long time.)
 
 \subsection{Semiopen vs. inhomogeneous}
 
