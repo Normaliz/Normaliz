@@ -915,9 +915,19 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
             // delete large simplex
             C.totalNrSimplices--;
+            list < SHORTSIMPLEX<Integer> > tmp_triang;
+            size_t tmp_triang_size = 0;
             if (C.keep_triangulation) {
+                tmp_triang.splice(tmp_triang.begin(), C.Triangulation);
+                typename list < SHORTSIMPLEX<Integer> >::iterator it = tmp_triang.begin();
+                for (; it != tmp_triang.end(); ++it) {
+                    if (it->key == key) {
+                        tmp_triang.erase(it);
+                        break;
+                    }
+                }
+                tmp_triang_size = C.TriangulationSize - 1;
                 C.TriangulationSize = 0;
-//                C.Triangulation.clear();  //TODO richtig machen
             }
             // create "pyramid" key
             vector<key_t> subcone_key(C.dim + nr_new_points);
@@ -942,6 +952,11 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             C.evaluate_triangulation();
 
 			ScipBound/=100;
+
+            if (C.keep_triangulation) {
+                C.Triangulation.splice(C.Triangulation.begin(), tmp_triang);
+                C.TriangulationSize += tmp_triang_size;
+            }
 
             return;
         }
