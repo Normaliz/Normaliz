@@ -218,7 +218,8 @@ class Full_Cone {
     void evaluate_large_rec_pyramids(size_t new_generator);
 
     void find_and_evaluate_start_simplex();
-    Simplex<Integer> find_start_simplex() const;
+    // Simplex<Integer> find_start_simplex() const;
+    vector<key_t>  find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
                                   

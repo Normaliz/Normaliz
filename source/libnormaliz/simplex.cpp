@@ -44,92 +44,6 @@
 namespace libnormaliz {
 using namespace std;
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Simplex<Integer>::Simplex(const Matrix<Integer>& Map){
-    dim=Map.nr_of_columns();
-    key=Map.max_rank_submatrix_lex();
-    Generators=Map.submatrix(key);
-    diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=Generators.invert(diagonal, volume); //test for arithmetic
-    //overflow performed
-    v_abs(diagonal);
-    Support_Hyperplanes = Support_Hyperplanes.transpose();
-    multiplicators = Support_Hyperplanes.make_prime();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Simplex<Integer>::Simplex(const vector<key_t>& k, const Matrix<Integer>& Map){
-    key=k;
-    Generators=Map.submatrix(k);
-    dim=k.size();
-    diagonal = vector< Integer >(dim);
-    Support_Hyperplanes=Generators.invert(diagonal, volume);  //test for arithmetic
-    //overflow performed
-    v_abs(diagonal);
-    Support_Hyperplanes=Support_Hyperplanes.transpose();
-    multiplicators=Support_Hyperplanes.make_prime();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-size_t Simplex<Integer>::read_dimension() const{
-    return dim;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Simplex<Integer>::write_volume(const Integer& vol){
-    volume=vol;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Integer Simplex<Integer>::read_volume() const{
-    return volume;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<key_t> Simplex<Integer>::read_key() const{
-    return key;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Simplex<Integer>::read_generators() const{
-    return Generators;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> Simplex<Integer>::read_diagonal() const{
-    return diagonal;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> Simplex<Integer>::read_multiplicators() const{
-    return multiplicators;
-}
-
-//---------------------------------------------------------------------------
-
-
-template<typename Integer>
-Matrix<Integer> Simplex<Integer>::read_support_hyperplanes() const{
-    return Support_Hyperplanes;
-}
 
 //---------------------------------------------------------------------------
 // SimplexEvaluator
@@ -356,9 +270,9 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     if(do_only_multiplicity){
         if(volume == 0) { // not known in advance
-            for(i=0; i<dim; ++i)
-                Generators[i] = C.Generators[key[i]];
-            volume=Generators.vol_destructive();
+            /*for(i=0; i<dim; ++i)
+                Generators[i] = C.Generators[key[i]];*/
+            volume=Generators.vol_submatrix(C.Generators,key);
             #pragma omp atomic
             TotDet++;
         }
@@ -1039,7 +953,7 @@ void SimplexEvaluator<Integer>::update_mult_inhom(Integer& multiplicity){
                 j++;
             }
         multiplicity*=corr_fact;
-        multiplicity/=ProjGen.vol_destructive();
+        multiplicity/=ProjGen.vol(); // .vol_destructive();
         // cout << "After corr "  << multiplicity << endl;      
     }
 }

@@ -771,8 +771,8 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
         k=zero_list.size();
         if (k>=dim-1) {
 
-            Matrix<Integer> Test=SupportHyperplanes.submatrix(zero_list);
-            if (Test.rank_destructive()>=dim-1) {
+            // Matrix<Integer> Test=SupportHyperplanes.submatrix(zero_list);
+            if (SupportHyperplanes.rank_submatrix(zero_list)>=dim-1) {
                 ExtremeRayList.push_back(&(*c));
             }
         }
@@ -811,7 +811,7 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
                 k++;
             }
         }
-        if (k >= realdim-1 && Test.rank_destructive()>=realdim-1) {
+        if (k >= realdim-1 && Test.rank()>=realdim-1) {
             relevant_sh.push_back(i);
         }
     }

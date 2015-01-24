@@ -297,6 +297,38 @@ void Matrix<Integer>::random (int mod) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows){
+
+    assert(nr>=rows.size());
+    assert(nc>=mother.nc);
+    
+    size_t size=rows.size(), j;
+    for (size_t i=0; i < size; i++) {
+        j=rows[i];
+        for(size_t k=0;k<mother.nc;++k)
+            elem[i][k]=mother[j][k];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows){
+
+    assert(nc>=rows.size());
+    assert(nr>=mother.nc);
+    
+    size_t size=rows.size(), j;
+    for (size_t i=0; i < size; i++) {
+        j=rows[i];
+        for(size_t k=0;k<mother.nc;++k)
+            elem[k][i]=mother[j][k];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Matrix<Integer>::submatrix(const vector<key_t>& rows) const{
     size_t size=rows.size(), j;
     Matrix<Integer> M(size, nc);
@@ -1093,47 +1125,23 @@ size_t Matrix<Integer>::row_echelon(bool& success, Integer& det){
 }
 
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-size_t Matrix<Integer>::rank_destructive(){
-
-    bool success;
-    if(!do_arithmetic_check<Integer>()){
-        size_t rk=row_echelon(success);
-        if(!success){
-            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
-            throw ArithmeticException();
-        }
-        return rk;       
-    }
-    
-    Matrix<Integer> Copy=*this;
-    size_t rk=row_echelon(success);
-    if(!success){
-        Matrix<mpz_class> mpz_this(nr,nc);
-        mat_to_mpz(Copy,mpz_this);
-        rk=mpz_this.row_echelon(success);
-    }
-    return rk;                               
-}
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const size_t key_length){
+size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key){
 
     assert(nc>=mother.nc);
-    if(nr<key_length){
-        elem.resize(key_length,vector<Integer>(nc,0));
-        nr=key_length;    
+    if(nr<key.size()){
+        elem.resize(key.size(),vector<Integer>(nc,0));
+        nr=key.size();    
     }
     size_t save_nr=nr;
     size_t save_nc=nc;
-    nr=key_length;
+    nr=key.size();
     nc=mother.nc;
-    
-    *this=mother.submatrix(key);
+
+    select_submatrix(mother,key);
 
     bool success;
     size_t rk=row_echelon(success);
@@ -1155,7 +1163,7 @@ template<typename Integer>
 size_t Matrix<Integer>::rank_submatrix(const vector<key_t>& key) const{
 
     Matrix<Integer> work(key.size(),nc);
-    return work.rank_submatrix(*this,key,key.size());              
+    return work.rank_submatrix(*this,key);              
 }
 
 //---------------------------------------------------------------------------
@@ -1199,12 +1207,57 @@ Integer Matrix<Integer>::vol_destructive(){
     mpz_class vol=mpz_this.vol_destructive();
     return to_Int<Integer>(vol);
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key){
+
+    assert(nc>=mother.nc);
+    if(nr<key.size()){
+        elem.resize(key.size(),vector<Integer>(nc,0));
+        nr=key.size();    
+    }
+    size_t save_nr=nr;
+    size_t save_nc=nc;
+    nr=key.size();
+    nc=mother.nc;
+    
+    select_submatrix(mother,key);
+
+    bool success;
+    Integer det;
+    row_echelon(success,det);
+    
+    if(!success){        
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mpz_submatrix(mpz_this,mother,key);
+        mpz_class mpz_det;
+        mpz_this.row_echelon(success,mpz_det);
+        det=to_Int<Integer>(mpz_det);
+    }
+    
+    nr=save_nr;
+    nc=save_nc;
+    return det;                               
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::vol_submatrix(const vector<key_t>& key) const{
+
+    Matrix<Integer> work(key.size(),nc);
+    return work.vol_submatrix(*this,key);              
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Integer Matrix<Integer>::vol() const{
-    Matrix<Integer> N(*this);
-    return N.vol_destructive();
+    vector<key_t> key(nr);
+    for(size_t i=0;i<nr;++i)
+        key[i]=i;
+    return vol_submatrix(key);
 }
 
 //---------------------------------------------------------------------------
@@ -1369,6 +1422,79 @@ void Matrix<Integer>::solve_destructive_outer(bool ZZinvertible, Integer& denom)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, bool ZZ_invertible, bool transpose) {
+         
+        size_t dim=mother.nc;
+        assert(key.size()==dim);
+        assert(nr==dim);
+        assert(dim+RS.size()<=nc);
+        size_t save_nc=nc;
+        nc=dim+RS.size();
+        
+        if(transpose)
+           select_submatrix_trans(mother,key);           
+        else
+           select_submatrix(mother,key);
+                   
+        for(size_t i=0;i<dim;++i)
+           for(size_t k=0;k<RS.size();++k)
+               elem[i][k]= (*RS[k])[i];
+        
+        if(!solve_destructive_inner(ZZ_invertible,denom)){
+           Matrix<mpz_class> mpz_this(nr,nc);
+           mpz_class mpz_denom;
+           if(transpose)
+               mpz_submatrix_trans(mpz_this,mother,key);
+           else            
+               mpz_submatrix(mpz_this,mother,key);
+               
+           for(size_t i=0;i<dim;++i)
+               for(size_t k=0;k<RS.size();++k)
+                   mpz_this[i][k]=to_mpz((*RS[k])[i]);
+           mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);    
+           mat_to_Int(mpz_this,*this);
+           denom=to_Int<Integer>(mpz_denom);
+        }
+        
+        nc=save_nc;            
+
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         vector< Integer >& diagonal, Integer& denom) {
+
+    solve_system_submatrix_outer(mother,key,RS,denom,true,false);
+    assert(diagonal.size()==nr);
+    for(size_t i=0;i<nr;++i)
+        diagonal[i]=elem[i][i];
+                 
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom) {
+
+    solve_system_submatrix_outer(mother,key,RS,denom,false,false);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom) {
+         
+    solve_system_submatrix_outer(mother,key,RS,denom,false,true);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::solve_destructive(vector< Integer >& diagonal,Integer& denom) {
 
     solve_destructive_outer(true,denom);
@@ -1421,23 +1547,38 @@ Matrix<Integer> Matrix<Integer>::extract_solution() const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) const {
+vector<vector<Integer>* > Matrix<Integer>::row_pointers(){
 
-    Matrix<Integer> M=bundle_matrices(Right_side);
-    M.solve_destructive(diagonal,denom);
-    return M.extract_solution();
- 
+    vector<vector<Integer>* > pointers(nr);
+    for(size_t i=0;i<nr;++i)
+        pointers[i]=&(elem[i]);
+    return pointers;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side,Integer& denom) const {
+Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side,vector<Integer>& diagonal,Integer& denom) const {
 
-    Matrix<Integer> M=bundle_matrices(Right_side);
-    M.solve_destructive(denom);
-    return M.extract_solution();
- 
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    vector<key_t> key=identity_key(nr);
+    Matrix<Integer> RS_trans=Right_side.transpose();
+    vector<vector<Integer>* > RS=RS_trans.row_pointers();
+    M.solve_system_submatrix(*this,key,RS,diagonal,denom);
+    return M.extract_solution(); 
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, Integer& denom) const {
+
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    vector<key_t> key=identity_key(nr);
+    Matrix<Integer> RS_trans=transpose();
+    vector<vector<Integer>* > RS=RS_trans.row_pointers();
+    M.solve_system_submatrix(*this,key,RS,denom);
+    return M.extract_solution(); 
 }
 
 //---------------------------------------------------------------------------
@@ -1470,6 +1611,28 @@ Matrix<Integer> Matrix<Integer>::invert_unprotected(Integer& denom, bool& succes
     Matrix<Integer> M=bundle_matrices(Right_side);
     success=M.solve_destructive_inner(false,denom);
     return M.extract_solution();;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv) const{
+    assert(key.size() == nc);
+    Matrix<Integer> unit_mat(key.size());
+    Matrix<Integer> M(key.size(),2*key.size());        
+    vector<vector<Integer>* > RS_pointers=unit_mat.row_pointers();
+    M.solve_system_submatrix(*this,key,RS_pointers,denom);
+    Inv=M.extract_solution();;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::simplex_data(const vector<key_t>& key, Integer& vol, Matrix<Integer>& Supp) const{
+    assert(key.size() == nc);
+    invert_submatrix(key,vol,Supp);
+    Supp=Supp.transpose();
+    Supp.make_prime();
 }
 //---------------------------------------------------------------------------
 
@@ -1707,14 +1870,25 @@ void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void mpz_submatrix(Matrix<mpz_class> sub, Matrix<Integer> mother, vector<key_t> selection){
+void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection){
 
     assert(sub.nr_of_columns()>=mother.nr_of_columns());
-    assert(sub.nr_of_rows()>=mother.nr_of_rows());
+    assert(sub.nr_of_rows()>=selection.size());
     for(size_t i=0;i<mother.nr_of_rows();++i)
         for(size_t j=0;j<mother.nr_of_columns();++j)
-            sub[i][j]=to_mpz(mother[i][j]);
+            sub[i][j]=to_mpz(mother[selection[i]][j]);
+}
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection){
+
+    assert(sub.nr_of_columns()>=mother.nr_of_columns());
+    assert(sub.nr_of_rows()>=selection.size());
+    for(size_t i=0;i<mother.nr_of_rows();++i)
+        for(size_t j=0;j<mother.nr_of_columns();++j)
+            sub[j][i]=to_mpz(mother[selection[i]][j]);
 }
 
 //---------------------------------------------------------------------------
@@ -2027,6 +2201,31 @@ size_t Matrix<Integer>::row_echelon_reduce(){
     return rk;
 }*/
 
+//---------------------------------------------------------------------------
+/*
+template<typename Integer>
+size_t Matrix<Integer>::rank_destructive(){
+
+    bool success;
+    if(!do_arithmetic_check<Integer>()){
+        size_t rk=row_echelon(success);
+        if(!success){
+            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
+            throw ArithmeticException();
+        }
+        return rk;       
+    }
+    
+    Matrix<Integer> Copy=*this;
+    size_t rk=row_echelon(success);
+    if(!success){
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mat_to_mpz(Copy,mpz_this);
+        rk=mpz_this.row_echelon(success);
+    }
+    return rk;                               
+}
+*/
 
 
 }  // namespace

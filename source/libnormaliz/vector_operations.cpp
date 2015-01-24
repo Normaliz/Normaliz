@@ -551,6 +551,12 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 
 }
 
+vector<key_t> identity_key(size_t n){
+    vector<key_t> key(n);
+    for(size_t k=0;k<n;++k)
+        key[k]=k;
+    return key;
+}
 // conversion between different integer types
 
 template<typename Integer>

@@ -52,39 +52,6 @@ template<typename Integer> class Full_Cone;
 template<typename Integer> class Collector;
 
 template<typename Integer>
-class Simplex {
-    size_t dim;
-    Integer volume;
-    vector<key_t> key;
-    Matrix<Integer> Generators;
-    vector< Integer > diagonal;
-    vector< Integer > multiplicators;
-    Matrix<Integer> Support_Hyperplanes;
-
-//---------------------------------------------------------------------------
-public:
-//                      Construction and destruction
-    Simplex(const Matrix<Integer>& Map);  //contructor of the first in lexicographic
-    //order simplex inside Map, the rank of Map is assumed to equal the number of
-    //columns of Map
-    Simplex(const vector<key_t>& k, const Matrix<Integer>& Map); //main constuctor
-    //the rank of M is assumed to equal the number of columns of M
-
-//                          Data acces
-    size_t read_dimension() const;              // returns dim
-    void write_volume(const Integer& vol);  // writes volume
-    Integer read_volume() const;            // returns volume
-    vector<key_t> read_key() const;          // returns key
-    Matrix<Integer> read_generators() const;        // returns generators
-    vector<Integer> read_diagonal() const;    // returns diagonal
-    vector<Integer> read_multiplicators() const;    // returns multiplicators
-    Matrix<Integer> read_support_hyperplanes() const;  // returns the support hyperplanes
-
-};
-//class Simplex end 
-
-
-template<typename Integer>
 class SimplexEvaluator {
     Full_Cone<Integer> * C_ptr;
     int tn; //number of associated thread in parallelization of evaluators

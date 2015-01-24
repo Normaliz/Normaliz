@@ -108,6 +108,9 @@ template<typename Integer> class Matrix {
     // solution replaces right hand side
     bool solve_destructive_inner(bool ZZinvertible, Integer& denom);
     void solve_destructive_outer(bool ZZinvertible, Integer& denom);
+    
+    void solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, bool ZZ_invertible, bool transpose);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success, Integer& det);
@@ -151,7 +154,8 @@ template<typename Integer> class Matrix {
 //---------------------------------------------------------------------------
 
     Matrix bundle_matrices(const Matrix<Integer>& Right_side)const;
-    Matrix extract_solution() const;    
+    Matrix extract_solution() const;
+    vector<vector<Integer>* > row_pointers();   
                     
 public:    
   
@@ -193,6 +197,9 @@ public:
     Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
+    
+    void select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows);
+    void select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows);
 
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
@@ -281,14 +288,16 @@ public:
 // rank and determinant
 
     size_t rank() const; //returns rank
-    size_t rank_destructive(); 
+    // size_t rank_destructive(); 
     size_t rank_submatrix(const vector<key_t>& key) const; //returns rank of submarix defined by key
     
     // return rank of submatrix of mother. "this" is used as work space    
-    size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key,const size_t keylength);
+    size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
     
     Integer vol_destructive();
     Integer vol() const;
+    Integer vol_submatrix(const vector<key_t>& key) const;
+    Integer vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
     
 // find linearly indepenpendent submatrix of maximal rank
 
@@ -310,6 +319,13 @@ public:
     Matrix solve(const Matrix& Right_side, Integer& denom) const;
     Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;
     // solve the system this*Solution=denom*Right_side. 
+    
+    void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         vector< Integer >& diagonal, Integer& denom);
+    void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom);
+    void solve_system_submatrix_trans(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom);
     
     // Solve system with coefficients and right hand side in one matrix
     // solution mist be extracted
@@ -344,6 +360,8 @@ public:
     //The diagonal of this after transformation into an upper triangular matrix
     //is saved in diagonal
     Matrix invert(Integer& denom) const;
+    
+    void invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv) const;
                     
 // find linear form that is constant on the rows 
 
@@ -364,7 +382,10 @@ public:
     
     Matrix SmithNormalForm(size_t& rk);
     
-    
+
+//for simplicial subcones
+
+    void simplex_data(const vector<key_t>& key, Integer& vol, Matrix& Supp) const; 
 
 };
 //class end *****************************************************************
@@ -380,7 +401,10 @@ template<typename Integer>
 void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
 
 template<typename Integer>
-void mpz_submatrix(Matrix<mpz_class> sub, Matrix<Integer> mother, vector<key_t> selection);
+void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
+
+template<typename Integer>
+void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
 
 } // namespace
 

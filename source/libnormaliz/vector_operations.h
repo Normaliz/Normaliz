@@ -176,6 +176,8 @@ vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
 template<typename Integer>
 void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx);
 
+vector<key_t> identity_key(size_t n);
+
 //---------------------------------------------------------------------------
 //							  Conversion between integer types
 //---------------------------------------------------------------------------
@@ -186,7 +188,6 @@ void vect_to_Int(const vector<mpz_class>& mpz_vect, vector<Integer>& vect);
 
 template<typename Integer>
 void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect);
-
 
 }
 
