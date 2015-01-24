@@ -155,9 +155,11 @@ template<typename Integer> class Matrix {
 
     Matrix bundle_matrices(const Matrix<Integer>& Right_side)const;
     Matrix extract_solution() const;
-    vector<vector<Integer>* > row_pointers();   
+    vector<vector<Integer>* > row_pointers();
                     
-public:    
+public:
+
+    vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);     
   
 //---------------------------------------------------------------------------
 

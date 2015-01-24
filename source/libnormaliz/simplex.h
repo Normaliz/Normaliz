@@ -107,6 +107,11 @@ class SimplexEvaluator {
     vector<SIMPLINEXDATA> InExSimplData;
     size_t nrInExSimplData;
     // bool InExTouched;                        // indicates whether any hvector!=0 // see above
+    
+    vector<vector<Integer>* > RS_pointers;
+    Matrix<Integer> unit_matrix;
+    vector<key_t> id_key;
+    
 
     void local_reduction(Collector<Integer>& Coll);
 

@@ -73,7 +73,10 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   gen_degrees(dim),
   gen_levels(dim),
   RS(dim,1),
-  InExSimplData(C_ptr->InExCollect.size())
+  InExSimplData(C_ptr->InExCollect.size()),
+  RS_pointers(dim+1),
+  unit_matrix(dim),
+  id_key(identity_key(dim))
 {
     size_t hv_max=0;
     if (C_ptr->do_h_vector) {
@@ -101,6 +104,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
     
     full_cone_simplicial=(C_ptr->nr_gen==C_ptr->dim);
     sequential_evaluation=true; // to be changed later if necessrary
+
 }
 
 template<typename Integer>
@@ -200,6 +204,7 @@ size_t TotDet=0;
 
 //---------------------------------------------------------------------------
 
+/*
 template<typename Integer>
 void SimplexEvaluator<Integer>::insert_gens(){
 
@@ -233,6 +238,8 @@ void SimplexEvaluator<Integer>::insert_unit_vectors(vector<key_t> RHS_key){
     }    
 
 }
+
+*/
 
 //---------------------------------------------------------------------------
 
@@ -299,12 +306,17 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     if(potentially_unimodular){ // very likely unimodular, Indicator computed first, uses transpose of Gen
 
-        insert_gens_transpose();
+        /* insert_gens_transpose();
         LinSys.set_nc(dim+1); // adjust number iof active columns
         LinSys.write_column(dim,C.Order_Vector);  // insert right hand side
-        LinSys.solve_destructive(volume);
+        LinSys.solve_destructive(volume);*/
+    
+        RS_pointers.clear();    
+        RS_pointers.push_back(&(C.Order_Vector));
+        LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume);        
         for (i=0; i<dim; i++)
             Indicator[i]=LinSys[i][dim];  // extract solution
+            
         if(volume==1){
             unimodular=true;
             #pragma omp atomic
@@ -333,9 +345,12 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 Ind0_key.push_back(i);
     if(!unimodular || Ind0_key.size()>0){
         if(Ind0_key.size()>0){            
-            insert_gens();
+            /*insert_gens();
             insert_unit_vectors(Ind0_key);
-            LinSys.solve_destructive(GDiag,volume);
+            LinSys.solve_destructive(GDiag,volume);*/
+
+            RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume);
             
             for(size_t i=0;i<dim;++i)
                 for(size_t j=dim;j<LinSys.nr_of_columns();++j)
@@ -345,8 +360,11 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             GDiag_computed=true;
         }
         if(!GDiag_computed){
-            insert_gens();
-            LinSys.solve_destructive(GDiag,volume);
+            /*insert_gens();
+            LinSys.solve_destructive(GDiag,volume);*/
+            
+            RS_pointers.clear();
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume);
             v_abs(GDiag);
             GDiag_computed=true;
         }
@@ -375,14 +393,21 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 Last_key.push_back(i);
         }
         
-        insert_gens_transpose();
-        insert_unit_vectors(Last_key);
+        /* insert_gens_transpose();
+        insert_unit_vectors(Last_key);*/
+        
+        RS_pointers=unit_matrix.submatrix_pointers(Last_key);
 
         if(!potentially_unimodular){ // insert order vector if necessary
-            LinSys.set_nc(LinSys.nr_of_columns()+1);
-            LinSys.write_column(LinSys.nr_of_columns()-1,C.Order_Vector);
+            /* LinSys.set_nc(LinSys.nr_of_columns()+1);
+            LinSys.write_column(LinSys.nr_of_columns()-1,C.Order_Vector);*/
+            
+            RS_pointers.push_back(&(C.Order_Vector));
         }
-        LinSys.solve_destructive(volume);
+        
+        // LinSys.solve_destructive(volume);
+        
+        LinSys.solve_system_submatrix_trans(Generators,id_key,RS_pointers,volume);
 
         for(i=0;i<Last_key.size();i++) // extract solutions as selected rows of InvGen
             for(j=0;j<dim;j++){
@@ -402,10 +427,14 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
         if(Ind0_key.size()>0){
-            insert_gens();
+            /* insert_gens();
             insert_unit_vectors(Ind0_key);
             LinSys.set_nc(dim+Ind0_key.size());
-            LinSys.solve_destructive(volume);
+            LinSys.solve_destructive(volume);*/
+            
+            RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume);
+            
             for(size_t i=0;i<dim;++i)
                 for(size_t j=dim;j<LinSys.nr_of_columns();++j)
                     InvSol[i][j-dim]=LinSys[i][j];

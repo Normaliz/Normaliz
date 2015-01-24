@@ -1558,6 +1558,16 @@ vector<vector<Integer>* > Matrix<Integer>::row_pointers(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+vector<vector<Integer>* > Matrix<Integer>::submatrix_pointers(const vector<key_t>& key){
+
+    vector<vector<Integer>* > pointers(key.size());
+    for(size_t i=0;i<key.size();++i)
+        pointers[i]=&(elem[key[i]]);
+    return pointers;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side,vector<Integer>& diagonal,Integer& denom) const {
 
     Matrix<Integer> M(nr,nc+Right_side.nc);
