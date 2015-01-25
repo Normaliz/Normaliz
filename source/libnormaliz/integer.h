@@ -27,6 +27,7 @@
 #include "general.h"
 #include <list>
 #include <vector>
+#include <iostream>
 #include "limits.h"
 
 // Integer should (may) support:
@@ -36,6 +37,7 @@
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
+using namespace std;
 
 //---------------------------------------------------------------------------
 //                     Basic functions
@@ -80,6 +82,7 @@ inline mpz_class to_mpz(const mpz_class& a) {return a;}
 template<typename Integer> inline long explicit_cast_to_long(const Integer& a) { // only used for Integer = long long
     // check for overflow
     if (!fits_long_range(a)) {
+        errorOutput() << "Cannot convert " << a << " to Integer" << endl;
         throw ArithmeticException();
     }
     return (long)a;
@@ -90,6 +93,7 @@ template<> inline long explicit_cast_to_long(const long& a) {
 template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
     // check for overflow
     if (!a.fits_slong_p()) {
+        errorOutput() << "Cannot convert " << a << " to Integer" << endl;
         throw ArithmeticException();
     }
     return a.get_si();
@@ -100,8 +104,10 @@ inline Integer to_Int(const mpz_class& a) { // only used for Integer = long long
 
     if (a.fits_slong_p())
         return (long long)explicit_cast_to_long<mpz_class>(a);
-    if(sizeof(long long)==sizeof(long))
+    if(sizeof(long long)==sizeof(long)){
+        errorOutput() << "Cannot convert " << a << " to Integer" << endl;
         throw ArithmeticException();
+    }
     mpz_class quot=a/LONG_MAX;
     mpz_class rem=a-quot*LONG_MAX;
     return ((long long) explicit_cast_to_long(quot))*((long long) LONG_MAX)+((long long) explicit_cast_to_long(rem));     

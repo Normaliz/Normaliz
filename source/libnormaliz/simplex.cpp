@@ -316,7 +316,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume);        
         for (i=0; i<dim; i++)
             Indicator[i]=LinSys[i][dim];  // extract solution
-            
+
         if(volume==1){
             unimodular=true;
             #pragma omp atomic
@@ -415,9 +415,10 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 if(InvGenSelRows[Last_key[i]][j] <0)
                     InvGenSelRows[Last_key[i]][j]+=volume;
             }
-        if(!potentially_unimodular) // extract Indicator
+        if(!potentially_unimodular){ // extract Indicator
             for (i=0; i<dim; i++)
                 Indicator[i]=LinSys[i][dim+Last_key.size()];
+        }
     }
     
     // if not potentially unimodular we must still take care of the 0 ntries of the indicator
