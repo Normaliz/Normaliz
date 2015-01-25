@@ -1149,6 +1149,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     Integer vol;
     Generators.simplex_data(key,vol,H);
     
+    // H.pretty_print(cout);
+    
         
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;

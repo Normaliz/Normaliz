@@ -212,6 +212,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
         mat_to_Int(mpz_SLR.A,A);
         mat_to_Int(mpz_SLR.B,B);
         index=to_Int<Integer>(mpz_SLR.index);
+        c=to_Int<Integer>(mpz_SLR.c);
         rank=mpz_SLR.rank;        
     }
 }

@@ -837,15 +837,13 @@ bool Matrix<Integer>::reduce_rows_upwards () {
             Integer quot, rem;
             
             minimal_remainder(elem[i][col],elem[row][col],quot,rem);
-            // cout << "Zahlen " << elem[row][col] << " " << elem[i][col] << " " << quot << " " << rem << endl;
             elem[i][col]=rem;
             for(size_t j=col+1;j<nc;++j){
                 elem[i][j]-=quot* elem[row][j];
                 if ( !check_range(elem[i][j]) ) {
                     return false;
                 }
-            }                            
-            // cout << "Nach Abzug " << elem[i];                  
+            }                                           
         }
     }
     return true;
@@ -1047,8 +1045,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
                 }
             }
         }
-        // pretty_print(cout);
-        // cout << "-------- " << last_time_mult[rk] << " " << last_div << " " << this_time_exp << " " << last_time_exp << endl;
+
         for(size_t i=0;i<last_time_exp;++i)
             det_factor*=last_div;
         last_time_mult=this_time_mult;
@@ -1179,38 +1176,6 @@ size_t Matrix<Integer>::rank() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer Matrix<Integer>::vol_destructive(){
-
-    assert(nr==nc);
-    if(nr==0)
-        return 1;
-
-    bool success; 
-    Integer det;  
-        
-    if(!do_arithmetic_check<Integer>()){
-        row_echelon(success,det);
-        if(!success){
-            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
-            throw ArithmeticException();
-        }
-        return det;     
-    }
-    
-    Matrix<Integer> Copy=*this;
-    row_echelon(success,det);
-    if(success)
-        return det;
-        
-    Matrix<mpz_class> mpz_this(nr,nc);
-    mat_to_mpz(Copy,mpz_this);
-    mpz_class vol=mpz_this.vol_destructive();
-    return to_Int<Integer>(vol);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 Integer Matrix<Integer>::vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key){
 
     assert(nc>=mother.nc);
@@ -1311,11 +1276,6 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
             col_done[rk][col[rk-1]]=true;
         }
 
-        /* size_t rk=submatrix(key).rank();
-        if(rk!=key.size()){
-         cout << "ALARM" << endl;
-         exit(0);
-        }*/
         Test.nr++;
         rk++;
         v_make_prime(Test_vec);
@@ -1367,7 +1327,6 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
             return false;    
     }
 
-    // cout << "denom " << denom << endl<< "------------" << endl;
     if (denom==0) { 
         if(!do_arithmetic_check<Integer>()){
             errorOutput() << "Cannot solve system (denom=0)!" << endl;
@@ -1398,30 +1357,6 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_outer(bool ZZinvertible, Integer& denom) {
-
-    if(!do_arithmetic_check<Integer>()){
-        if(!solve_destructive_inner(ZZinvertible,denom)){
-            errorOutput()<<"Arithmetic failure in matrix operation. Most likely overflow.\n";
-            throw ArithmeticException();        
-        }
-        return;        
-    }
-    
-    Matrix<Integer> Copy=*this;
-    if(!solve_destructive_inner(ZZinvertible,denom)){  // <---------------------- eventuell Probe einbauen
-        Matrix<mpz_class> mpz_this(nr,nc);
-        mat_to_mpz(Copy,mpz_this);
-        mpz_class mpz_denom;
-        mpz_this.solve_destructive_inner(ZZinvertible, mpz_denom);
-        mat_to_Int(mpz_this,*this);
-        denom=to_Int<Integer>(mpz_denom);
-    }    
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom, bool ZZ_invertible, bool transpose) {
          
@@ -1439,7 +1374,7 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                    
         for(size_t i=0;i<dim;++i)
            for(size_t k=0;k<RS.size();++k)
-               elem[i][k]= (*RS[k])[i];
+               elem[i][k+dim]= (*RS[k])[i];
         
         if(!solve_destructive_inner(ZZ_invertible,denom)){
            Matrix<mpz_class> mpz_this(nr,nc);
@@ -1451,7 +1386,7 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                
            for(size_t i=0;i<dim;++i)
                for(size_t k=0;k<RS.size();++k)
-                   mpz_this[i][k]=to_mpz((*RS[k])[i]);
+                   mpz_this[i][k+dim]=to_mpz((*RS[k])[i]);
            mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);    
            mat_to_Int(mpz_this,*this);
            denom=to_Int<Integer>(mpz_denom);
@@ -1491,44 +1426,6 @@ void Matrix<Integer>::solve_system_submatrix_trans(const Matrix<Integer>& mother
          Integer& denom) {
          
     solve_system_submatrix_outer(mother,key,RS,denom,false,true);
-}
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::solve_destructive(vector< Integer >& diagonal,Integer& denom) {
-
-    solve_destructive_outer(true,denom);
-    assert(diagonal.size()==nr);
-    for(size_t i=0;i<nr;++i)
-        diagonal[i]=elem[i][i];
-}
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::solve_destructive(Integer& denom){
-
-    solve_destructive_outer(false,denom);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::bundle_matrices(const Matrix<Integer>& Right_side) const {
-
-    size_t dim=Right_side.nr;
-    // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
-    assert(nr == nc);
-    assert(nc == dim);
-    Matrix<Integer> M(nr,nc+Right_side.nc);
-    for(size_t i=0;i<nr;++i){
-        for(size_t j=0;j<nc;++j)
-            M[i][j]=elem[i][j];
-        for(size_t j=nc;j<M.nc;++j)
-            M[i][j]=Right_side[i][j-nc];
-    }
-    return M;
 }
 
 //---------------------------------------------------------------------------
@@ -1585,21 +1482,10 @@ Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, Intege
 
     Matrix<Integer> M(nr,nc+Right_side.nc);
     vector<key_t> key=identity_key(nr);
-    Matrix<Integer> RS_trans=transpose();
+    Matrix<Integer> RS_trans=Right_side.transpose();
     vector<vector<Integer>* > RS=RS_trans.row_pointers();
     M.solve_system_submatrix(*this,key,RS,denom);
     return M.extract_solution(); 
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& denom) const{
-    assert(nr == nc);
-    assert(nr == diagonal.size());
-    Matrix<Integer> Right_side(nr);
-
-    return solve(Right_side,diagonal,denom);
 }
 
 //---------------------------------------------------------------------------
@@ -1612,6 +1498,23 @@ Matrix<Integer> Matrix<Integer>::invert(Integer& denom) const{
     return solve(Right_side,denom);
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::bundle_matrices(const Matrix<Integer>& Right_side) const {
+
+    size_t dim=Right_side.nr;
+    assert(nr == nc);
+    assert(nc == dim);
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<nc;++j)
+            M[i][j]=elem[i][j];
+        for(size_t j=nc;j<M.nc;++j)
+            M[i][j]=Right_side[i][j-nc];
+    }
+    return M;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1663,11 +1566,8 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
     for (i = 0; i <nc; i++) {
         Linear_Form[i] = Solution[i][0];  // the solution vector is called Linear_Form
     }
-    // cout << denom << " v= " << v;
-    // denom/=v_make_prime(Linear_Form);
     vector<Integer> test = MxV(Linear_Form); // we have solved the system by taking a square submatrix
-    // cout << denom << " v= " << v;         // now we must test whether the solution satisfies the full system
-    // cout << denom << " t= " << test; 
+                        // now we must test whether the solution satisfies the full system
     for (i = 0; i <nr; i++) {
         if (test[i] != denom * v[i]){
             return vector<Integer>();
@@ -1800,8 +1700,6 @@ bool Matrix<Integer>::SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right){
     
     if(rk<=1)
         return true;
-        
-    // pretty_print(cout);
            
     while(true){
         size_t i=0;
@@ -1884,7 +1782,7 @@ void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const 
 
     assert(sub.nr_of_columns()>=mother.nr_of_columns());
     assert(sub.nr_of_rows()>=selection.size());
-    for(size_t i=0;i<mother.nr_of_rows();++i)
+    for(size_t i=0;i<selection.size();++i)
         for(size_t j=0;j<mother.nr_of_columns();++j)
             sub[i][j]=to_mpz(mother[selection[i]][j]);
 }
@@ -1894,9 +1792,9 @@ void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const 
 template<typename Integer>
 void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection){
 
-    assert(sub.nr_of_columns()>=mother.nr_of_columns());
-    assert(sub.nr_of_rows()>=selection.size());
-    for(size_t i=0;i<mother.nr_of_rows();++i)
+    assert(sub.nr_of_columns()>=selection.size());
+    assert(sub.nr_of_rows()>=mother.nr_of_columns());
+    for(size_t i=0;i<selection.size();++i)
         for(size_t j=0;j<mother.nr_of_columns();++j)
             sub[j][i]=to_mpz(mother[selection[i]][j]);
 }

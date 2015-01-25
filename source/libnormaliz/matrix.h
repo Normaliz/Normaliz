@@ -74,13 +74,6 @@ template<typename Integer> class Matrix {
     // reduction via integer division and elemntary transformations
     bool reduce_row(size_t corner);      //reduction by the corner-th row
     bool reduce_row (size_t row, size_t col); // corner at position (row,col)
-    // bool reduce_row(size_t corner, Matrix& LeftRHS);//row reduction, Left used
-    //for saving or linear systems with right hand side RHS
-    // bool reduce_column(size_t corner);  //reduction by the corner-th column
-    
-    // bool reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv); --- not in use presently
-    //column reduction,  Right used for saving or copying the linear
-    //transformations, Right_Inv used for saving the inverse linear transformations
     
     // replaces two rows by linear combinations of them
     // bool linear_comb_rows(const size_t& row,const size_t& i,const size_t& col,  
@@ -107,14 +100,16 @@ template<typename Integer> class Matrix {
     // Solve system with coefficients and right hand side in one matrix, using elementary transformations
     // solution replaces right hand side
     bool solve_destructive_inner(bool ZZinvertible, Integer& denom);
-    void solve_destructive_outer(bool ZZinvertible, Integer& denom);
-    
+
+    // asembles the matrix of the system (left side the submatrix of mother given by key
+    // right side from column vectors pointed to by RS
+    // both in a single matrix    
     void solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom, bool ZZ_invertible, bool transpose);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success, Integer& det);
-    // size_t row_echelon_inner_gcd(bool& success); 
+    // NOTE: Bareiss cannot be used if z-invertible transformations are needed
     
     size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
     size_t row_echelon(bool& success, Integer& det); // computes also |det|
@@ -124,12 +119,9 @@ template<typename Integer> class Matrix {
     bool reduce_rows_upwards();
     size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
     
-    // The Bareiss routine does NOT use Z-invertible transformations
-    size_t row_echelon_bareiss(bool& success, Integer& det);
-    
     vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
     
-    // A version of invert that circumvents the protected solve_destuctive_outer
+    // A version of invert that circumvents protection and leaves it to the calling routine
     Matrix invert_unprotected(Integer& denom, bool& sucess) const;
     
     bool SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right);
@@ -142,7 +134,7 @@ template<typename Integer> class Matrix {
     vector<long> pivot(size_t corner); //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
     //described by an int corner
-    // vector<long> max_pivot(size_t corner);
+
     long pivot_column(size_t col);  //Find the position of an element x with
     //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
     //described by an int col
@@ -273,8 +265,8 @@ public:
 
 
 //---------------------------------------------------------------------------
-//                          Matrices operations
-//           --- this are more complicated algorithms ---
+//                          Matrix operations
+//           --- these are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
 // Normal forms
@@ -290,13 +282,11 @@ public:
 // rank and determinant
 
     size_t rank() const; //returns rank
-    // size_t rank_destructive(); 
     size_t rank_submatrix(const vector<key_t>& key) const; //returns rank of submarix defined by key
     
     // return rank of submatrix of mother. "this" is used as work space    
     size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
     
-    Integer vol_destructive();
     Integer vol() const;
     Integer vol_submatrix(const vector<key_t>& key) const;
     Integer vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
@@ -321,18 +311,17 @@ public:
     Matrix solve(const Matrix& Right_side, Integer& denom) const;
     Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;
     // solve the system this*Solution=denom*Right_side. 
-    
+
+    // system is defined by submatrix of mother given by key (left side) and column vectors pointed to by RS (right side)
+    // NOTE: this is used as the matrix for the woek     
     void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          vector< Integer >& diagonal, Integer& denom);
     void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom);
+    // the left side gets transposed
     void solve_system_submatrix_trans(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom);
-    
-    // Solve system with coefficients and right hand side in one matrix
-    // solution mist be extracted
-    void solve_destructive(vector< Integer>& diagonal, Integer& denom);
-    void solve_destructive(Integer& denom);    
+        
                     
 // For non-square matrices
                     
@@ -357,10 +346,7 @@ public:
                     
 // inverse matrix
                     
-    Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
     //this*Solution=denom*I. "this" should be a quadratic matrix with nonzero determinant. 
-    //The diagonal of this after transformation into an upper triangular matrix
-    //is saved in diagonal
     Matrix invert(Integer& denom) const;
     
     void invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv) const;
@@ -382,11 +368,13 @@ public:
     // Converts "this" into lower trigonal column Hermite normal form, returns column 
     // transformation matrix 
     
+    // Computes Smith normal form and returns column transformation matrix
     Matrix SmithNormalForm(size_t& rk);
     
 
 //for simplicial subcones
 
+    // computes support hyperplanes and volume
     void simplex_data(const vector<key_t>& key, Integer& vol, Matrix& Supp) const; 
 
 };
