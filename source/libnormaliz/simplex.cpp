@@ -912,7 +912,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 C.Extreme_Rays[i] = false;
             }
             // TODO more for inhom cones?
-
+            if (C.inhomogeneous){
+                C.set_levels();
+            }
             // delete large simplex
             C.totalNrSimplices--;
             list < SHORTSIMPLEX<Integer> > tmp_triang;

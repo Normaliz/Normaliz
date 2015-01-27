@@ -2640,7 +2640,7 @@ void Full_Cone<Integer>::set_levels() {
     
     // cout <<"trunc " << Truncation;
 
-    if(gen_levels.size()==0) // now we compute the levels
+    if(gen_levels.size()!=nr_gen) // now we compute the levels
     {
         gen_levels.resize(nr_gen);
         vector<Integer> gen_levels_Integer=Generators.MxV(Truncation);
