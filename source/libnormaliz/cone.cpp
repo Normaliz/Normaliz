@@ -1105,6 +1105,20 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.set(ConeProperty::Triangulation);
 
     /* Create a Full_Cone FC */
+    
+    /* cout << "==============" << endl;
+    BasisChange.to_sublattice(Generators).pretty_print(cout);
+    cout << "==============" << endl;
+                cout << "A " << endl;
+            BasisChange.get_A().pretty_print(cout);
+            cout << "B " << endl;
+            BasisChange.get_B().pretty_print(cout);
+            cout << endl;
+            
+            BasisChange.get_A().multiplication(BasisChange.get_B()).pretty_print(cout); */
+            
+            
+    
     Full_Cone<Integer> FC(BasisChange.to_sublattice(Generators));
 
     /* activate bools in FC */
@@ -1200,7 +1214,17 @@ void Cone<Integer>::compute_generators() {
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
+            
+            /*cout << "Extreme rays " << endl;
+            Extreme_Rays.pretty_print(cout);
+            cout << "------------" << endl;*/
+            
             set_original_monoid_generators(BasisChange.from_sublattice(Extreme_Rays));
+            
+            /* cout << "OriginalMonoidGenerators " << endl;
+            OriginalMonoidGenerators.pretty_print(cout);
+            cout << "------------" << endl;*/
+            
             set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
             if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
                 //get minmal set of support_hyperplanes
@@ -1209,6 +1233,9 @@ void Cone<Integer>::compute_generators() {
                 is_Computed.set(ConeProperty::SupportHyperplanes);
             }
             Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
+            
+            cout << endl;
+            
             compose_basis_change(Basis_Change);
 
             // check grading and compute denominator

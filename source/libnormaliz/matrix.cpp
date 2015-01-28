@@ -1662,7 +1662,7 @@ Matrix<Integer> Matrix<Integer>::Hermite(size_t& rk){
         return Transf;
     
     Matrix<mpz_class> mpz_this(nr,nc);
-    mat_to_mpz(*this,mpz_this);
+    mat_to_mpz(Copy,mpz_this);
     Matrix<mpz_class> mpz_Transf=mpz_this.row_column_trigonalize(rk,success);
     mat_to_Int(mpz_this,*this);
     mat_to_Int(mpz_Transf,Transf);
@@ -1742,7 +1742,7 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
         return Transf;
     
     Matrix<mpz_class> mpz_this(nr,dim);
-    mat_to_mpz(*this,mpz_this);
+    mat_to_mpz(Copy,mpz_this);
     Matrix<mpz_class> mpz_Transf(dim);
     mpz_this.SmithNormalForm_inner(rk,mpz_Transf);
     mat_to_Int(mpz_this,*this);

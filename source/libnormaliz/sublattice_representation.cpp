@@ -96,7 +96,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         A = B = Matrix<Integer>(dim);
         index=1;
         c=1;
-        // cout << "Hier Hier" << endl;
+        // cout << "Ausgang 0" << endl;
         return;   
     }
     
@@ -113,9 +113,10 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
                 break;
         col_is_corner[j]=true;
         col[k]=j;
+        if(N[k][j]<0)
+            v_scalar_multiplication<Integer>(N[k],-1);
         row_index*=N[k][j];
     }
-    row_index=Iabs(row_index);
     
     if(row_index==1){  // ==> index=1, sublattice is saturated and we can take a projection
     
@@ -135,6 +136,8 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         B.pretty_print(cout);
         cout << "-----------------------" << endl;
         cout << "c " << c << " ´index " << index << endl;*/
+        // cout << "Ausgang 1" << endl;
+        // A.multiplication(B).pretty_print(cout);
         return;               
     }
     
@@ -150,7 +153,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             k++;        
         }
         Matrix<Integer> Q=P.invert_unprotected(c,success);  // gives c=1
-        cout << "Nach invert" << endl;
+        // cout << "Ausgang 2" << endl;
         if(!success)
             return;
         index=1;
@@ -158,11 +161,12 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         for(k=0;k<dim;++k)
             for(size_t j=0;j<rank;++j)
                 B[k][j]=Q[k][j];
-                A.pretty_print(cout);
+        // A.pretty_print(cout);
         /* cout << "-----------------------" << endl;
         B.pretty_print(cout);
         cout << "-----------------------" << endl;
         cout << "c " << c << " ´index " << index << endl; */
+        // cout << "Ausgang 3" << endl;
         return;               
     }
     
@@ -172,10 +176,9 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     Matrix<Integer> R_inv(dim);
     success=N.column_trigonalize(rank,R_inv);
     // cout << "********************" << endl;
-    R_inv.pretty_print(cout);
+    // R_inv.pretty_print(cout);
     // cout << "********************" << endl;
     Matrix<Integer> R=R_inv.invert_unprotected(c,success);   // yields c=1 as it should be in this case
-    // cout << "Nach invert 2" << endl;
     if(!success)
         return;
     for (size_t i = 0; i < rank; i++) {

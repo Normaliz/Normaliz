@@ -127,25 +127,26 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
 
     size_t k;
     
-    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);
+    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);        
     
-    Integer used_for_tests;
-    if (test_arithmetic_overflow) {  // does arithmetic tests
-        for (k = 0; k <dim; k++) {
-            NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
-            used_for_tests =(positive.ValNewGen%overflow_test_modulus)*(negative.Hyp[k]%overflow_test_modulus)-(negative.ValNewGen%overflow_test_modulus)*(positive.Hyp[k]%overflow_test_modulus);
-            if (((NewFacet.Hyp[k]-used_for_tests) % overflow_test_modulus)!=0) {
-                errorOutput()<<"Arithmetic failure in Full_Cone::add_hyperplane. Possible arithmetic overflow.\n";
-                throw ArithmeticException();
-            }
-        }
+    for (k = 0; k <dim; k++) {
+        NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
+        if(!check_range(NewFacet.Hyp[k]))
+            break;    
     }
-    else  {                      // no arithmetic tests
-        for (k = 0; k <dim; k++) {
-            NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
-        }
+    
+    if(k==dim)
+        v_make_prime(NewFacet.Hyp);
+    else{
+        vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
+        vect_to_mpz(negative.Hyp,mpz_neg);
+        vect_to_mpz(positive.Hyp,mpz_pos);
+        for (k = 0; k <dim; k++)
+            mpz_sum[k]=to_mpz(positive.ValNewGen)*mpz_neg[k]-to_mpz(negative.ValNewGen)*mpz_pos[k];
+        v_make_prime(mpz_sum);
+        vect_to_Int(mpz_sum,NewFacet.Hyp);
     }
-    v_make_prime(NewFacet.Hyp);
+    
     NewFacet.ValNewGen=0; 
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
@@ -2558,7 +2559,8 @@ void Full_Cone<Integer>::set_degrees() {
 
     // cout << "Grading " << Grading;
     // cout << "---------" << endl;
-    // Generators.print(cout);
+    // Generators.pretty_print(cout);
+    // cout << "Grading " << Grading;
     if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);

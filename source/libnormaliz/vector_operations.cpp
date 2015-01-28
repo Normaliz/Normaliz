@@ -112,6 +112,17 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
     if(n>0)
         ans += a[0]*b[0];
         
+        
+    if(!check_range(ans)){
+    
+        // cout << "av " << av;
+        // cout << "bv " << bv;   
+        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
+        vect_to_mpz(av,mpz_a);
+        vect_to_mpz(bv,mpz_b);
+        ans=to_Int<Integer>(v_scalar_product(mpz_a,mpz_b));
+    }
+        
     return ans;
 }
 
@@ -151,9 +162,6 @@ vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integ
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size());
-   /* if (test_arithmetic_overflow) {  // does arithmetic tests
-       return(v_add_overflow_check(a,b));
-   } */
     size_t i,s=a.size();
     vector<Integer> d(s);
     for (i = 0; i <s; i++) {
@@ -167,9 +175,6 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 template<typename Integer>
 void v_add_result(vector<Integer>& result, const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size() && a.size() == result.size());
-   /* if (test_arithmetic_overflow) {  // does arithmetic tests
-       return(v_add_overflow_check(a,b));
-   } */
     size_t i,s=a.size();
     // vector<Integer> d(s);
     for (i = 0; i <s; i++) {
