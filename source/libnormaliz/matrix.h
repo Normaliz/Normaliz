@@ -105,7 +105,7 @@ template<typename Integer> class Matrix {
     // right side from column vectors pointed to by RS
     // both in a single matrix    
     void solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom, bool ZZ_invertible, bool transpose);
+         Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     size_t row_echelon_inner_bareiss(bool& success, Integer& det);
@@ -315,12 +315,12 @@ public:
     // system is defined by submatrix of mother given by key (left side) and column vectors pointed to by RS (right side)
     // NOTE: this is used as the matrix for the woek     
     void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         vector< Integer >& diagonal, Integer& denom);
+         vector< Integer >& diagonal, Integer& denom, size_t red_col, size_t sign_col);
     void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom);
+         Integer& denom, size_t red_col, size_t sign_col);
     // the left side gets transposed
     void solve_system_submatrix_trans(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom);
+         Integer& denom, size_t red_col, size_t sign_col);
         
                     
 // For non-square matrices

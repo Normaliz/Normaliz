@@ -95,6 +95,9 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     if(rank==dim && take_saturation){
         A = B = Matrix<Integer>(dim);
         index=1;
+        for(size_t k=0;k<dim;++k)
+            index*=N[k][k];
+        index=Iabs(index);
         c=1;
         // cout << "Ausgang 0" << endl;
         return;   
@@ -449,6 +452,11 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
         if(A_Copy[k][k]!=1){
             Transf2.append(Transf[k]);
             Transf2[Transf2.nr-1][dim]=A_Copy[k][k];
+            for(size_t j=0;j<dim;++j){
+                Transf2[Transf2.nr-1][j]%=A_Copy[k][k];
+                if(Transf2[Transf2.nr-1][j]<0)
+                    Transf2[Transf2.nr-1][j]+=A_Copy[k][k];
+            }
         
         }   
     }

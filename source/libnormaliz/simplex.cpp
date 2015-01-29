@@ -313,7 +313,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     
         RS_pointers.clear();    
         RS_pointers.push_back(&(C.Order_Vector));
-        LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume);        
+        LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume,0,1);        
         for (i=0; i<dim; i++)
             Indicator[i]=LinSys[i][dim];  // extract solution
 
@@ -350,7 +350,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             LinSys.solve_destructive(GDiag,volume);*/
 
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
-            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume);
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume,0,RS_pointers.size());
             
             for(size_t i=0;i<dim;++i)
                 for(size_t j=dim;j<LinSys.nr_of_columns();++j)
@@ -364,7 +364,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             LinSys.solve_destructive(GDiag,volume);*/
             
             RS_pointers.clear();
-            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume);
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume,0,0);
             v_abs(GDiag);
             GDiag_computed=true;
         }
@@ -407,7 +407,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         
         // LinSys.solve_destructive(volume);
         
-        LinSys.solve_system_submatrix_trans(Generators,id_key,RS_pointers,volume);
+        LinSys.solve_system_submatrix_trans(Generators,id_key,RS_pointers,volume,Last_key.size(),RS_pointers.size()-Last_key.size());
 
         for(i=0;i<Last_key.size();i++) // extract solutions as selected rows of InvGen
             for(j=0;j<dim;j++){
@@ -434,7 +434,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             LinSys.solve_destructive(volume);*/
             
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
-            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume);
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume,RS_pointers.size(),0);
             
             for(size_t i=0;i<dim;++i)
                 for(size_t j=dim;j<LinSys.nr_of_columns();++j)

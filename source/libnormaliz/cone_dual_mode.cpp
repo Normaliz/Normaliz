@@ -676,7 +676,6 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
             
             size_t dummy_rank;
             Matrix<Integer> NewBasisOldMaxSubspace=M.Hermite(dummy_rank).transpose(); // compute kernel of restriction and complementary subspace            
-            // Matrix<Integer> NewBasisOldMaxSubspace=M.SmithNormalForm(dummy_rank).transpose();
             
             Matrix<Integer> NewBasisOldMaxSubspaceAmbient=NewBasisOldMaxSubspace.multiplication(Basis_Max_Subspace); 
             // in coordinates of the ambient space
@@ -706,61 +705,58 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 
-    // SupportHyperplanes.pretty_print(cout);
-
-    if(dim>0){            //correction needed to include the 0 cone;
-        if (verbose==true) {
-            verboseOutput()<<"\n************************************************************\n";
-            verboseOutput()<<"computing Hilbert basis ..."<<endl;
-        }
-        
-        if(Generators.nr_of_rows()!=ExtremeRays.size()){
-            errorOutput() << "Mismatch of extreme rays and generators in cone dual mode. THIS SHOULD NOT HAPPEN." << endl;
-            throw FatalException(); 
-        }
-        
-        size_t hyp_counter;      // current hyperplane
-        Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
-        for (hyp_counter = 0; hyp_counter < nr_sh; hyp_counter++) {
-            Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
-        }
-        
-        if(ExtremeRays.size()==0){  // no precomputed generators
-            extreme_rays_rank();
-            relevant_support_hyperplanes();
-            ExtremeRayList.clear();
-            
-        }
-        else{  // must produce the relevant support hyperplanes from the generators
-               // since the Hilbert basis may have been truncated
-            vector<Integer> test(SupportHyperplanes.nr_of_rows());
-            vector<key_t> key;
-            vector <key_t> relevant_sh;
-            size_t realdim=Generators.rank();
-            for(key_t h=0;h<SupportHyperplanes.nr_of_rows();++h){
-                key.clear();
-                vector<Integer> test=Generators.MxV(SupportHyperplanes[h]);
-                for(key_t i=0;i<test.size();++i)
-                    if(test[i]==0)
-                        key.push_back(i);
-                if (key.size() >= realdim-1 && Generators.submatrix(key).rank() >= realdim-1)
-                    relevant_sh.push_back(h);
-            }    
-            SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
-        }
-            
-        /* if(verbose)
-           verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << 
-                "comparisons = " << redcounter << endl << "comp/match " << (float) redcounter/(float) counter << endl;
-           // verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl; //  << "add avoided " << counter2 << endl;
-        */
-           
-        Intermediate_HB.extract(Hilbert_Basis);
-        
-        if(verbose)
-            verboseOutput() << "Hilbert basis " << Hilbert_Basis.size() << endl;
-    
+    assert(dim>0);         
+    if (verbose==true) {
+        verboseOutput()<<"\n************************************************************\n";
+        verboseOutput()<<"computing Hilbert basis ..."<<endl;
     }
+    
+    if(Generators.nr_of_rows()!=ExtremeRays.size()){
+        errorOutput() << "Mismatch of extreme rays and generators in cone dual mode. THIS SHOULD NOT HAPPEN." << endl;
+        throw FatalException(); 
+    }
+    
+    size_t hyp_counter;      // current hyperplane
+    Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
+    for (hyp_counter = 0; hyp_counter < nr_sh; hyp_counter++) {
+        Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
+    }
+    
+    if(ExtremeRays.size()==0){  // no precomputed generators
+        extreme_rays_rank();
+        relevant_support_hyperplanes();
+        ExtremeRayList.clear();
+        
+    }
+    else{  // must produce the relevant support hyperplanes from the generators
+           // since the Hilbert basis may have been truncated
+        vector<Integer> test(SupportHyperplanes.nr_of_rows());
+        vector<key_t> key;
+        vector <key_t> relevant_sh;
+        size_t realdim=Generators.rank();
+        for(key_t h=0;h<SupportHyperplanes.nr_of_rows();++h){
+            key.clear();
+            vector<Integer> test=Generators.MxV(SupportHyperplanes[h]);
+            for(key_t i=0;i<test.size();++i)
+                if(test[i]==0)
+                    key.push_back(i);
+            if (key.size() >= realdim-1 && Generators.submatrix(key).rank() >= realdim-1)
+                relevant_sh.push_back(h);
+        }    
+        SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
+    }
+        
+    /* if(verbose)
+       verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl << 
+            "comparisons = " << redcounter << endl << "comp/match " << (float) redcounter/(float) counter << endl;
+       // verboseOutput() << "matches = " << counter << endl << "avoided = " << counter1 << endl; //  << "add avoided " << counter2 << endl;
+    */
+       
+    Intermediate_HB.extract(Hilbert_Basis);
+    
+    if(verbose)
+        verboseOutput() << "Hilbert basis " << Hilbert_Basis.size() << endl;
+
 }
 
 //---------------------------------------------------------------------------

@@ -1358,7 +1358,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
 
 template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom, bool ZZ_invertible, bool transpose) {
+         Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col) {
          
         size_t dim=mother.nc;
         assert(key.size()==dim);
@@ -1387,9 +1387,27 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
            for(size_t i=0;i<dim;++i)
                for(size_t k=0;k<RS.size();++k)
                    mpz_this[i][k+dim]=to_mpz((*RS[k])[i]);
-           mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);    
+           mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);            
+                      
+           for(size_t j=0;j<red_col;++j)
+               for(size_t k=0;k<dim;++k)
+                  mpz_this[k][dim+j]%=mpz_denom;
+                
+           for(size_t j=0;j<red_col;++j)
+              for(size_t k=0;k<dim;++k){
+                if(mpz_this[k][dim+red_col+j]>0){
+                    mpz_this[k][dim+red_col+j]=1;
+                    continue;
+                } 
+                if(mpz_this[k][dim+red_col+j]<0){
+                    mpz_this[k][dim+red_col+j]=-1;
+                    continue;
+                }       
+              }
+                  
            mat_to_Int(mpz_this,*this);
            denom=to_Int<Integer>(mpz_denom);
+                
         }
         
         nc=save_nc;            
@@ -1400,9 +1418,9 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
 
 template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         vector< Integer >& diagonal, Integer& denom) {
+         vector< Integer >& diagonal, Integer& denom, size_t red_col, size_t sign_col) {
 
-    solve_system_submatrix_outer(mother,key,RS,denom,true,false);
+    solve_system_submatrix_outer(mother,key,RS,denom,true,false,0,0);
     assert(diagonal.size()==nr);
     for(size_t i=0;i<nr;++i)
         diagonal[i]=elem[i][i];
@@ -1414,18 +1432,18 @@ void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, cons
 
 template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom) {
+         Integer& denom, size_t red_col, size_t sign_col) {
 
-    solve_system_submatrix_outer(mother,key,RS,denom,false,false);
+    solve_system_submatrix_outer(mother,key,RS,denom,false,false,0,0);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom) {
+         Integer& denom, size_t red_col, size_t sign_col) {
          
-    solve_system_submatrix_outer(mother,key,RS,denom,false,true);
+    solve_system_submatrix_outer(mother,key,RS,denom,false,true,0,0);
 }
 
 //---------------------------------------------------------------------------
@@ -1471,7 +1489,7 @@ Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side,vector<
     vector<key_t> key=identity_key(nr);
     Matrix<Integer> RS_trans=Right_side.transpose();
     vector<vector<Integer>* > RS=RS_trans.row_pointers();
-    M.solve_system_submatrix(*this,key,RS,diagonal,denom);
+    M.solve_system_submatrix(*this,key,RS,diagonal,denom,0,0);
     return M.extract_solution(); 
 }
 
@@ -1484,7 +1502,7 @@ Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, Intege
     vector<key_t> key=identity_key(nr);
     Matrix<Integer> RS_trans=Right_side.transpose();
     vector<vector<Integer>* > RS=RS_trans.row_pointers();
-    M.solve_system_submatrix(*this,key,RS,denom);
+    M.solve_system_submatrix(*this,key,RS,denom,0,0);
     return M.extract_solution(); 
 }
 
@@ -1534,7 +1552,7 @@ void Matrix<Integer>::invert_submatrix(const vector<key_t>& key, Integer& denom,
     Matrix<Integer> unit_mat(key.size());
     Matrix<Integer> M(key.size(),2*key.size());        
     vector<vector<Integer>* > RS_pointers=unit_mat.row_pointers();
-    M.solve_system_submatrix(*this,key,RS_pointers,denom);
+    M.solve_system_submatrix(*this,key,RS_pointers,denom,0,0);
     Inv=M.extract_solution();;
 }
 
