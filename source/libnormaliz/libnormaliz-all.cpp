@@ -27,7 +27,7 @@
 #include "matrix.cpp"
 #include "simplex.cpp"
 #include "list_operations.cpp"
-#include "lineare_transformation.cpp"
+// #include "lineare_transformation.cpp"
 #include "sublattice_representation.cpp"
 #include "full_cone.cpp"
 #include "reduction.cpp"

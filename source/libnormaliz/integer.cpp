@@ -80,6 +80,58 @@ template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
     return g;
 }
 
+template void sign_adjust_and_minimize<long long>(const long long& a, const long long& b, long long& d, long long& u, long long&v);
+template long long ext_gcd<long long>(const long long& a, const long long& b, long long& u, long long&v);
+
+
+template <typename Integer>
+void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v){
+    if(d<0){
+        d=-d;
+        u=-u;
+        v=-v;    
+    }
+    // cout << u << " " << v << endl;
+    if(b==0)
+        return;
+        
+    Integer sign=1;
+    if(a<0)
+        sign=-1;
+    Integer u1= (sign*u) % (Iabs(b)/d);
+    if(u1==0)
+        u1+=Iabs(b)/d;
+    u=sign*u1;
+    v=(d-a*u)/b;
+}
+
+
+template <typename Integer>
+Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v){
+
+    u=1;
+    v=0;
+    Integer d=a;
+    if (b==0) {
+        sign_adjust_and_minimize(a,b,d,u,v);
+        return(d);
+    }
+    Integer v1=0;
+    Integer v3=b;
+    Integer q,t1,t3;
+    while(v3!=0){
+        q=d/v3;
+        t3=d-q*v3;
+        t1=u-q*v1;
+        u=v1;
+        d=v3;
+        v1=t1;
+        v3=t3;
+    }
+    sign_adjust_and_minimize(a,b,d,u,v);
+    return(d);
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -138,9 +190,10 @@ Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
 
 template<typename Integer>
 Integer int_max_value_half(){
-    Integer k=sizeof(Integer)*8-2;  // number of bytes convetred to number of bits
+    Integer k=sizeof(Integer)*8-12;  // number of bytes convetred to number of bits
     Integer test=1;
-    test = test << k;  // (maximal positive number)/2
+    test = test << k;  // (maximal positive number)/2^k
+    // test=0; // 10000;
     return test;
 }
 
@@ -164,7 +217,7 @@ void check_range(CandidateList<Integer>& ll){
 template<typename Integer>
 void check_range(const std::list<Candidate<Integer> >& ll){
 
-    if (!test_arithmetic_overflow)
+    if (using_GMP<Integer>())
         return;
         
     typename list<Candidate<Integer> >::const_iterator v=ll.begin();
@@ -185,5 +238,27 @@ void check_range(const std::list<Candidate<Integer> >& ll){
     
 
 }
+
+//---------------------------------------------------------------------------
+ template<typename Integer>
+void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
+
+    quot=a/b;
+    rem=a-quot*b;
+    if(rem==0)
+        return;
+    if(2*Iabs(rem)>Iabs(b)){
+        if((rem<0 && b>0) || (rem >0 && b<0)){                
+            rem+=b;
+            quot--;
+        }
+        else{
+            rem-=b;
+            quot++;                
+        }
+    }
+}
+
+
 
 }

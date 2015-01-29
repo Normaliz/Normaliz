@@ -43,6 +43,7 @@
 #include <string>
 
 #include "libnormaliz.h"
+#include "integer.h"
 #include "matrix.h"
 
 //---------------------------------------------------------------------------
@@ -51,6 +52,11 @@ namespace libnormaliz {
 
 template<typename Integer>
 class Lineare_Transformation {
+
+  template<typename> friend class Lineare_Transformation;
+    
+// public:
+
   long rk;
   string status;
   Integer index;
@@ -90,22 +96,25 @@ public:
 //                    Rows and columns exchange
 //---------------------------------------------------------------------------
 
-  void exchange_rows(size_t row1, size_t row2);     //similar to Matrix<Integer>::exchange_rows
-  void exchange_columns(size_t col1, size_t col2); //similar to Matrix<Integer>::exchange_columns
+  // void exchange_rows(size_t row1, size_t row2);     //similar to Matrix<Integer>::exchange_rows
+  // void exchange_columns(size_t col1, size_t col2); //similar to Matrix<Integer>::exchange_columns
 
 //---------------------------------------------------------------------------
 //                  Rows and columns reduction
 //---------------------------------------------------------------------------
 
-  void reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
-  void reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
+  // bool reduce_row(size_t corner);      //similar to Matrix<Integer>::reduce_row
+  // bool reduce_column(size_t corner);  //similar to Matrix<Integer>::reduce_column
+
+  // bool gcd_reduce_row(size_t corner);
+  // bool gcd_reduce_column(size_t corner);
 
 //---------------------------------------------------------------------------
 //                   Algorithms
 //---------------------------------------------------------------------------
 
-  void transformation(); //makes the main computation
-                        //no tests for errors
+  bool transformation(); //makes the main computation
+                        
 //---------------------------------------------------------------------------
 //Tests
 //---------------------------------------------------------------------------
@@ -114,16 +123,11 @@ public:
   /* test the main computation for arithmetic overflow
    * uses multiplication mod m
    */
-  bool test_transformation(const Matrix<Integer>& M, const size_t& m) const;
+  bool test_transformation(const size_t& m) const;
 
 
 };
 //class end *****************************************************************
-//---------------------------------------------------------------------------
-
-//makes the main computation, test for errors
-template<typename Integer>
-Lineare_Transformation<Integer> Transformation(const Matrix<Integer>& M);
 
 } /* end namespace libnormaliz */
 

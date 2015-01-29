@@ -25,10 +25,11 @@
 
 #include <fstream>
 #include <algorithm>
+#include <math.h>
 
 #include "matrix.h"
 #include "vector_operations.h"
-#include "lineare_transformation.h"
+// #include "lineare_transformation.h"
 #include "normaliz_exception.h"
 #include "sublattice_representation.h"
 
@@ -36,36 +37,6 @@
 
 namespace libnormaliz {
 using namespace std;
-
-//---------------------------------------------------------------------------
-//Private
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
-
-    vector<key_t> v;
-    size_t max_rank=min(nr,nc);
-    size_t rk;
-    Matrix<Integer> Test(max_rank,nc);
-    Matrix<Integer> TestCopy(max_rank,nc);
-    Test.nr=1;
-   
-    for(size_t i=0;i<nr;++i){
-   
-        Test[Test.nr-1]=elements[i];
-        TestCopy=Test;
-        rk=TestCopy.row_echelon(); //false fehlt!
-        if(rk==Test.nr){
-            v.push_back(i);
-            Test.nr++;
-        }
-        if(rk==max_rank)
-            return v;
-    }
-       
-    return v;
-}
 
 //---------------------------------------------------------------------------
 //Public
@@ -81,12 +52,11 @@ Matrix<Integer>::Matrix(){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(size_t dim){
-    assert(dim>=0);
     nr=dim;
     nc=dim;
-    elements = vector< vector<Integer> >(dim, vector<Integer>(dim));
+    elem = vector< vector<Integer> >(dim, vector<Integer>(dim));
     for (size_t i = 0; i < dim; i++) {
-        elements[i][i]=1;
+        elem[i][i]=1;
     }
 }
 
@@ -94,35 +64,31 @@ Matrix<Integer>::Matrix(size_t dim){
 
 template<typename Integer>
 Matrix<Integer>::Matrix(size_t row, size_t col){
-    assert(row>=0);
-    assert(col>=0);
     nr=row;
     nc=col;
-    elements = vector< vector<Integer> >(row, vector<Integer>(col));
+    elem = vector< vector<Integer> >(row, vector<Integer>(col));
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer>::Matrix(size_t row, size_t col, Integer value){
-    assert(row>=0);
-    assert(col>=0);
     nr=row;
     nc=col;
-    elements = vector< vector<Integer> > (row, vector<Integer>(col,value));
+    elem = vector< vector<Integer> > (row, vector<Integer>(col,value));
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
-    nr=elem.size();
+Matrix<Integer>::Matrix(const vector< vector<Integer> >& new_elem){
+    nr=new_elem.size();
     if (nr>0) {
-        nc=elem[0].size();
-        elements=elem;
+        nc=new_elem[0].size();
+        elem=new_elem;
         //check if all rows have the same length
         for (size_t i=1; i<nr; i++) {
-            if (elements[i].size() != nc) {
+            if (elem[i].size() != nc) {
                 errorOutput() << "Inconsistent lengths of rows in matrix!" << endl;
                 throw BadInputException();
             }
@@ -135,13 +101,13 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& elem){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
-    nr = elem.size();
-    elements = vector< vector<Integer> > (nr);
+Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
+    nr = new_elem.size();
+    elem = vector< vector<Integer> > (nr);
     nc = 0;
     size_t i=0;
-    typename list< vector<Integer> >::const_iterator it=elem.begin();
-    for(; it!=elem.end(); ++it, ++i) {
+    typename list< vector<Integer> >::const_iterator it=new_elem.begin();
+    for(; it!=new_elem.end(); ++it, ++i) {
         if(i == 0) {
             nc = (*it).size();
         } else {
@@ -150,7 +116,7 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& elem){
                 throw BadInputException();
             }
         }
-        elements[i]=(*it);
+        elem[i]=(*it);
     }
 }
 
@@ -161,7 +127,7 @@ void Matrix<Integer>::write(istream& in){
     size_t i,j;
     for(i=0; i<nr; i++){
         for(j=0; j<nc; j++) {
-            in >> elements[i][j];
+            in >> elem[i][j];
         }
     }
 }
@@ -174,7 +140,7 @@ void Matrix<Integer>::write(size_t row, const vector<Integer>& data){
     assert(row < nr); 
     assert(nc == data.size());
     
-    elements[row]=data;
+    elem[row]=data;
 }
 
 //---------------------------------------------------------------------------
@@ -186,7 +152,7 @@ void Matrix<Integer>::write(size_t row, const vector<int>& data){
     assert(nc == data.size());
 
     for (size_t i = 0; i < nc; i++) {
-        elements[row][i]=data[i];
+        elem[row][i]=data[i];
     }
 }
 
@@ -199,7 +165,7 @@ void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
     assert(nr == data.size());
 
     for (size_t i = 0; i < nr; i++) {
-        elements[i][col]=data[i];
+        elem[i][col]=data[i];
     }
 }
 
@@ -212,7 +178,7 @@ void Matrix<Integer>::write(size_t row, size_t col, Integer data){
     assert(col >= 0);
     assert(col < nc); 
 
-    elements[row][col]=data;
+    elem[row][col]=data;
 }
 
 //---------------------------------------------------------------------------
@@ -234,7 +200,7 @@ void Matrix<Integer>::print(ostream& out) const{
     out<<nr<<endl<<nc<<endl;
     for (i = 0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
-            out<<elements[i][j]<<" ";
+            out<<elem[i][j]<<" ";
         }
         out<<endl;
     }
@@ -255,10 +221,10 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
             out << i << ": ";
         }
         for (j = 0; j < nc; j++) {
-            for (k= 0; k <= max_length - decimal_length(elements[i][j]); k++) {
+            for (k= 0; k <= max_length - decimal_length(elem[i][j]); k++) {
                 out<<" ";
             }
-            out<<elements[i][j];
+            out<<elem[i][j];
         }
         out<<endl;
     }
@@ -272,7 +238,7 @@ void Matrix<Integer>::read() const{      //to overload for files
     for(i=0; i<nr; i++){
         cout << "\n" ;
         for(j=0; j<nc; j++) {
-            cout << elements[i][j] << " ";
+            cout << elem[i][j] << " ";
         }
     }
 }
@@ -284,7 +250,7 @@ vector<Integer> Matrix<Integer>::read(size_t row) const{
     assert(row >= 0);
     assert(row < nr);
 
-    return elements[row];
+    return elem[row];
 }
 
 //---------------------------------------------------------------------------
@@ -296,7 +262,7 @@ Integer Matrix<Integer>::read (size_t row, size_t col) const{
     assert(col >= 0);
     assert(col < nc); 
 
-    return elements[row][col];
+    return elem[row][col];
 }
 
 //---------------------------------------------------------------------------
@@ -322,8 +288,40 @@ void Matrix<Integer>::random (int mod) {
     for (i = 0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
             k = rand();
-            elements[i][j]=k % mod;
+            elem[i][j]=k % mod;
         }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows){
+
+    assert(nr>=rows.size());
+    assert(nc>=mother.nc);
+    
+    size_t size=rows.size(), j;
+    for (size_t i=0; i < size; i++) {
+        j=rows[i];
+        for(size_t k=0;k<mother.nc;++k)
+            elem[i][k]=mother[j][k];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows){
+
+    assert(nc>=rows.size());
+    assert(nr>=mother.nc);
+    
+    size_t size=rows.size(), j;
+    for (size_t i=0; i < size; i++) {
+        j=rows[i];
+        for(size_t k=0;k<mother.nc;++k)
+            elem[k][i]=mother[j][k];
     }
 }
 
@@ -337,7 +335,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<key_t>& rows) const{
         j=rows[i];
         assert(j >= 0);
         assert(j < nr);
-        M.elements[i]=elements[j];
+        M.elem[i]=elem[j];
     }
     return M;
 }
@@ -352,7 +350,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<int>& rows) const{
         j=rows[i];
         assert(j >= 0);
         assert(j < nr);
-        M.elements[i]=elements[j];
+        M.elem[i]=elem[j];
     }
     return M;
 }
@@ -372,7 +370,7 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
     size_t j = 0;
     for (size_t i = 0; i < nr; i++) {
         if (rows[i]) {
-            M.elements[j++] = elements[i];
+            M.elem[j++] = elem[i];
         }
     }
     return M;
@@ -383,15 +381,15 @@ Matrix<Integer> Matrix<Integer>::submatrix(const vector<bool>& rows) const{
 template<typename Integer>
 Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     size_t from = 0, to = 0; // maintain to <= from
-    while (from < nr && v_is_zero(elements[from])) from++; //skip zero rows
+    while (from < nr && v_is_zero(elem[from])) from++; //skip zero rows
     while (from < nr) {  // go over matrix
         // now from is a non-zero row
-        if (to != from) swap(elements[to],elements[from]);
+        if (to != from) swap(elem[to],elem[from]);
         ++to; ++from;
-        while (from < nr && v_is_zero(elements[from])) from++; //skip zero rows
+        while (from < nr && v_is_zero(elem[from])) from++; //skip zero rows
     }
     nr = to;
-    elements.resize(nr);
+    elem.resize(nr);
     return *this;
 }
 
@@ -402,7 +400,7 @@ vector<Integer> Matrix<Integer>::diagonal() const{
     assert(nr == nc); 
     vector<Integer> diag(nr);
     for(size_t i=0; i<nr;i++){
-        diag[i]=elements[i][i];
+        diag[i]=elem[i][i];
     }
     return diag;
 }
@@ -414,7 +412,7 @@ size_t Matrix<Integer>::maximal_decimal_length() const{
     size_t i,j,maxim=0;
     for (i = 0; i <nr; i++) {
         for (j = 0; j <nc; j++) {
-            maxim=max(maxim,decimal_length(elements[i][j]));
+            maxim=max(maxim,decimal_length(elem[i][j]));
         }
     }
     return maxim;
@@ -425,9 +423,9 @@ size_t Matrix<Integer>::maximal_decimal_length() const{
 template<typename Integer>
 void Matrix<Integer>::append(const Matrix<Integer>& M) {
     assert (nc == M.nc);
-    elements.reserve(nr+M.nr);
+    elem.reserve(nr+M.nr);
     for (size_t i=0; i<M.nr; i++) {
-        elements.push_back(M.elements[i]);
+        elem.push_back(M.elem[i]);
     }
     nr += M.nr;
 }
@@ -439,9 +437,9 @@ void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
     if(M.size()==0)
         return;
     assert (nc == M[0].size());
-    elements.reserve(nr+M.size());
+    elem.reserve(nr+M.size());
     for (size_t i=0; i<M.size(); i++) {
-        elements.push_back(M[i]);
+        elem.push_back(M[i]);
     }
     nr += M.size();
 }
@@ -452,7 +450,7 @@ void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
 template<typename Integer>
 void Matrix<Integer>::append(const vector<Integer>& V) {
     assert (nc == V.size());
-    elements.push_back(V);
+    elem.push_back(V);
     nr++;
 }
 
@@ -463,7 +461,7 @@ void Matrix<Integer>::cut_columns(size_t c) {
     assert (c >= 0);
     assert (c <= nc);
     for (size_t i=0; i<nr; i++) {
-        elements[i].resize(c);
+        elem[i].resize(c);
     }
     nc = c;
 }
@@ -479,7 +477,7 @@ Matrix<Integer> Matrix<Integer>::add(const Matrix<Integer>& A) const{
     size_t i,j;
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
-            B.elements[i][j]=elements[i][j]+A.elements[i][j];
+            B.elem[i][j]=elem[i][j]+A.elem[i][j];
         }
     }
     return B;
@@ -496,7 +494,7 @@ Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
     for(i=0; i<B.nr;i++){
         for(j=0; j<B.nc; j++){
             for(k=0; k<nc; k++){
-                B.elements[i][j]=B.elements[i][j]+elements[i][k]*A.elements[k][j];
+                B.elem[i][j]=B.elem[i][j]+elem[i][k]*A.elem[k][j];
             }
         }
     }
@@ -515,7 +513,7 @@ Matrix<Integer> Matrix<Integer>::multiplication_cut(const Matrix<Integer>& A, co
     for(i=0; i<B.nr;i++){
         for(j=0; j<c; j++){
             for(k=0; k<nc; k++){
-                B.elements[i][j]=B.elements[i][j]+elements[i][k]*A.elements[k][j];
+                B.elem[i][j]=B.elem[i][j]+elem[i][k]*A.elem[k][j];
             }
         }
     }
@@ -534,9 +532,9 @@ Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, long m
     for(i=0; i<B.nr;i++){
         for(j=0; j<B.nc; j++){
                 for(k=0; k<nc; k++){
-                B.elements[i][j]=(B.elements[i][j]+elements[i][k]*A.elements[k][j])%m;
-                if (B.elements[i][j]<0) {
-                    B.elements[i][j]=B.elements[i][j]+m;
+                B.elem[i][j]=(B.elem[i][j]+elem[i][k]*A.elem[k][j])%m;
+                if (B.elem[i][j]<0) {
+                    B.elem[i][j]=B.elem[i][j]+m;
                 }
             }
         }
@@ -552,7 +550,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A) const{
     size_t i,j;
     for (i=0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
-            if (elements[i][j]!=A.elements[i][j]) {
+            if (elem[i][j]!=A.elem[i][j]) {
                 return false;
             }
         }
@@ -568,7 +566,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A, long m) const{
     size_t i,j;
     for (i=0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
-            if (((elements[i][j]-A.elements[i][j]) % m)!=0) {
+            if (((elem[i][j]-A.elem[i][j]) % m)!=0) {
                 return false;
             }
         }
@@ -584,7 +582,7 @@ Matrix<Integer> Matrix<Integer>::transpose()const{
     size_t i,j;
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
-            B.elements[j][i]=elements[i][j];
+            B.elem[j][i]=elem[i][j];
         }
     }
     return B;
@@ -597,7 +595,7 @@ void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
     size_t i,j;
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
-            elements[i][j] *= scalar;
+            elem[i][j] *= scalar;
         }
     }
 }
@@ -610,8 +608,8 @@ void Matrix<Integer>::scalar_division(const Integer& scalar){
     assert(scalar != 0);
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
-            assert (elements[i][j]%scalar == 0);
-            elements[i][j] /= scalar;
+            assert (elem[i][j]%scalar == 0);
+            elem[i][j] /= scalar;
         }
     }
 }
@@ -623,9 +621,9 @@ void Matrix<Integer>::reduction_modulo(const Integer& modulo){
     size_t i,j;
     for(i=0; i<nr;i++){
         for(j=0; j<nc; j++){
-            elements[i][j] %= modulo;
-            if (elements[i][j] < 0) {
-                elements[i][j] += modulo;
+            elem[i][j] %= modulo;
+            if (elem[i][j] < 0) {
+                elem[i][j] += modulo;
             }
         }
     }
@@ -637,7 +635,7 @@ template<typename Integer>
 Integer Matrix<Integer>::matrix_gcd() const{
     Integer g=0,h;
     for (size_t i = 0; i <nr; i++) {
-        h = v_gcd(elements[i]);
+        h = v_gcd(elem[i]);
         g = gcd<Integer>(g, h);
         if (g==1) return g;
     }
@@ -650,7 +648,7 @@ template<typename Integer>
 vector<Integer> Matrix<Integer>::make_prime() {
     vector<Integer> g(nr);
     for (size_t i = 0; i <nr; i++) {
-        g[i] = v_make_prime(elements[i]);
+        g[i] = v_make_prime(elem[i]);
     }
     return g;
 }
@@ -663,7 +661,7 @@ Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const{ 
   size_t i,j;
   for (i = 0; i<nr; i++) {
      for (j = 0; j<nc; j++) {
-        M.elements[i][j] = elements[i][j]*m[i];
+        M.elem[i][j] = elem[i][j]*m[i];
      }
   }
   return M;
@@ -676,7 +674,7 @@ vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
     assert (nc == v.size());
     vector<Integer> w(nr);
     for(size_t i=0; i<nr;i++){
-        w[i]=v_scalar_product(elements[i],v);
+        w[i]=v_scalar_product(elem[i],v);
     }
     return w;
 }
@@ -690,7 +688,7 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
     size_t i,j;
     for (i=0; i<nc; i++){
         for (j=0; j<nr; j++){
-            w[i] += v[j]*elements[j][i];
+            w[i] += v[j]*elem[j][i];
         }
     }
     return w;
@@ -699,178 +697,19 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2){
-    if (row1 == row2) return;
-    assert(row1 >= 0);
-    assert(row1 < nr);
-    assert(row2 >= 0);
-    assert(row2 < nr);
-    elements[row1].swap(elements[row2]);
-}
+bool Matrix<Integer>::is_diagonal() const{
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
-    if (col1 == col2) return;
-    assert(col1 >= 0);
-    assert(col1 < nc);
-    assert(col2 >= 0);
-    assert(col2 < nc);
-    for(size_t i=0; i<nr;i++){
-        std::swap(elements[i][col1], elements[i][col2]);
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t corner) {
-    reduce_row(corner,corner);
-}
-
-//---------------------------------------------------------------------------
- 
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t row, size_t col) {
-    assert(col >= 0);
-    assert(col < nc);
-    assert(row < nr);
-    assert(row >= 0);
-    size_t i,j;
-    Integer help;
-    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
-    for (i =row+1; i < nr; i++) {
-        if (elements[i][col]!=0) {
-            help=elements[i][col] / elements[row][col];
-            for (j = col; j < nc; j++) {
-                elements[i][j] -= help*elements[row][j];
-                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
-                }
-            }
-        }
-    }
-}
-
-//---------------------------------------------------------------------------
-/* 
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t row, size_t col) {
-    assert(col >= 0);
-    assert(col < nc);
-    assert(row < nr);
-    assert(row >= 0);
-    size_t i,j;
-    Integer div, quot, rem;
-    for (i =row+1; i < nr; i++) {
-        if (elements[i][col]!=0) {
-            div=elements[row][col];
-            quot=elements[i][col] / div;
-            rem=elements[i][col]-quot*div;
-            if(2*Iabs(rem)>Iabs(elements[row][col])){
-                if((rem<0 && div>0) || (rem >0 && div <0)){                
-                    rem+=elements[row][col];
-                    quot--;
-                }
-                else{
-                    rem-=elements[row][col];
-                    quot++;                
-                }
-            }
-            elements[i][col]=rem;            
-            for (j = col+1; j < nc; j++) {
-                elements[i][j] -= quot*elements[row][j];
-            }
-        }
-    }
-}
-*/
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::reduce_row (size_t corner, Matrix<Integer>& Left) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    assert(Left.nr == nr);
-    size_t i,j;
-    Integer help1, help2=elements[corner][corner];
-    const Integer max_half = test_arithmetic_overflow ? int_max_value_half<Integer>() : 0;
-    for ( i = corner+1; i < nr; i++) {
-        help1=elements[i][corner] / help2;
-        if (help1!=0) {
-            for (j = corner; j < nc; j++) {
-                elements[i][j] -= help1*elements[corner][j];
-                if (test_arithmetic_overflow && Iabs(elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
-                }
-            }
-            for (j = 0; j < Left.nc; j++) {
-                Left.elements[i][j] -= help1*Left.elements[corner][j];
-                if (test_arithmetic_overflow && Iabs(Left.elements[i][j]) >= max_half) {
-                    errorOutput()<<"Arithmetic failure in reduce_row. Most likely overflow.\n";
-                    throw ArithmeticException();
-                }
-            }
-        }
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::reduce_column (size_t corner) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    size_t i,j;
-    Integer help1, help2=elements[corner][corner];
-    for ( j = corner+1; j < nc; j++) {
-        help1=elements[corner][j] / help2;
-        if (help1!=0) {
-            for (i = corner; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner];
-            }
-        }
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::reduce_column (size_t corner, Matrix<Integer>& Right, Matrix<Integer>& Right_Inv) {
-    assert(corner >= 0);
-    assert(corner < nc);
-    assert(corner < nr);
-    assert(Right.nr == nc);
-    assert(Right.nc == nc);
-    assert(Right_Inv.nr == nc);
-    assert(Right_Inv.nc ==nc);
-    size_t i,j;
-    Integer help1, help2=elements[corner][corner];
-    for ( j = corner+1; j < nc; j++) {
-        help1=elements[corner][j] / help2;
-        if (help1!=0) {
-            for (i = corner; i < nr; i++) {
-                elements[i][j] -= help1*elements[i][corner];
-            }
-            for (i = 0; i < nc; i++) {
-                Right.elements[i][j] -= help1*Right.elements[i][corner];
-                Right_Inv.elements[corner][i] += help1*Right_Inv.elements[j][i];
-            }
-        }
-    }
+    for(size_t i=0;i<nr;++i)
+        for(size_t j=0;j<nc;++j)
+            if(i!=j && elem[i][j]!=0)
+                return false;
+    return true;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 vector<long> Matrix<Integer>::pivot(size_t corner){
-    assert(corner >= 0);
     assert(corner < nc);
     assert(corner < nr);
     size_t i,j;
@@ -879,9 +718,9 @@ vector<long> Matrix<Integer>::pivot(size_t corner){
 
     for (i = corner; i < nr; i++) {
         for (j = corner; j < nc; j++) {
-            if (elements[i][j]!=0) {
-                if ((help==0)||(Iabs(elements[i][j])<help)) {
-                    help=Iabs(elements[i][j]);
+            if (elem[i][j]!=0) {
+                if ((help==0)||(Iabs(elem[i][j])<help)) {
+                    help=Iabs(elem[i][j]);
                     v[0]=i;
                     v[1]=j;
                     if (help == 1) return v;
@@ -889,33 +728,24 @@ vector<long> Matrix<Integer>::pivot(size_t corner){
             }
         }
     }
-
+    
     return v;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-long Matrix<Integer>::pivot_column(size_t col){
-    return pivot_column(col,col);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 long Matrix<Integer>::pivot_column(size_t row,size_t col){
-    assert(col >= 0);
     assert(col < nc);
     assert(row < nr);
-    assert(row >= 0);
     size_t i;
     long j=-1;
     Integer help=0;
 
     for (i = row; i < nr; i++) {
-        if (elements[i][col]!=0) {
-            if ((help==0)||(Iabs(elements[i][col])<help)) {
-                help=Iabs(elements[i][col]);
+        if (elem[i][col]!=0) {
+            if ((help==0)||(Iabs(elem[i][col])<help)) {
+                help=Iabs(elem[i][col]);
                 j=i;
                 if (help == 1) return j;
             }
@@ -928,18 +758,192 @@ long Matrix<Integer>::pivot_column(size_t row,size_t col){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::rank() const{
-    Matrix<Integer> N(*this);
-    return N.rank_destructive();
+long Matrix<Integer>::pivot_column(size_t col){
+    return pivot_column(col,col);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::row_echelon(){
+void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2){
+    if (row1 == row2) return;
+    assert(row1 < nr);
+    assert(row2 < nr);
+    elem[row1].swap(elem[row2]);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2){
+    if (col1 == col2) return;
+    assert(col1 < nc);
+    assert(col2 < nc);
+    for(size_t i=0; i<nr;i++){
+        std::swap(elem[i][col1], elem[i][col2]);
+    }
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::reduce_row (size_t row, size_t col) {
+    assert(col < nc);
+    assert(row < nr);
+    size_t i,j;
+    Integer help;
+    for (i =row+1; i < nr; i++) {
+        if (elem[i][col]!=0) {
+            help=elem[i][col] / elem[row][col];
+            for (j = col; j < nc; j++) {
+                elem[i][j] -= help*elem[row][j];
+                if (!check_range(elem[i][j]) ) {
+                    return false;
+                }
+            }
+            // v_el_trans<Integer>(elem[row],elem[i],-help,col);
+        }
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool  Matrix<Integer>::reduce_row (size_t corner) {
+    return reduce_row(corner,corner);
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::reduce_rows_upwards () {
+// assumes that "this" is in row echelon form
+// and reduces eevery column in which the rank jumps 
+// by its lowest element
+
+    for(size_t row=1;row<nr;++row){
+        size_t col;
+        for(col=0;col<nc;++col)
+            if(elem[row][col]!=0)
+                break;
+        if(col==nc)
+            continue;
+        if(elem[row][col]<0)
+            v_scalar_multiplication<Integer>(elem[row],-1);
+        
+        for(long i=row-1;i>=0;--i){
+            Integer quot, rem;
+            
+            minimal_remainder(elem[i][col],elem[row][col],quot,rem);
+            elem[i][col]=rem;
+            for(size_t j=col+1;j<nc;++j){
+                elem[i][j]-=quot* elem[row][j];
+                if ( !check_range(elem[i][j]) ) {
+                    return false;
+                }
+            }                                           
+        }
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+ 
+template<typename Integer>
+bool Matrix<Integer>::linear_comb_columns(const size_t& col,const size_t& j,
+            const Integer& u,const Integer& w,const Integer& v,const Integer& z){
+                       
+    for(size_t i=0;i<nr;++i){
+        Integer rescue=elem[i][col];
+        elem[i][col]=u*elem[i][col]+v*elem[i][j];
+        elem[i][j]=w*rescue+z*elem[i][j];
+        if ( (!check_range(elem[i][col])  || !check_range(elem[i][j]) )) {
+            return false;
+        }        
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::gcd_reduce_column (size_t corner, Matrix<Integer>& Right){
+    assert(corner < nc);
+    assert(corner < nr);
+    Integer d,u,w,z,v;
+    for(size_t j=corner+1;j<nc;++j){
+       d=ext_gcd(elem[corner][corner],elem[corner][j],u,v);
+       w=-elem[corner][j]/d;
+       z=elem[corner][corner]/d;
+       // Now we multiply the submatrix formed by columns "corner" and "j" 
+       // and rows corner,...,nr from the right by the 2x2 matrix
+       // | u w |
+       // | v z |              
+       if(!linear_comb_columns(corner,j,u,w,v,z))
+           return false; 
+       if(!Right.linear_comb_columns(corner,j,u,w,v,z))
+           return false;  
+    }   
+    return true;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Matrix<Integer>::column_trigonalize(size_t rk, Matrix<Integer>& Right) { 
+    assert(Right.nr == nc);
+    assert(Right.nc == nc);
+    vector<long> piv(2,0);       
+    for(size_t j=0;j<rk;++j){
+            piv=pivot(j);
+            assert(piv[0]>=0); // protect against wrong rank
+            exchange_rows (j,piv[0]);
+            exchange_columns (j,piv[1]);
+            Right.exchange_columns(j,piv[1]);
+            if(!gcd_reduce_column(j, Right))
+                return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::compute_vol(bool& success){
+        
+    assert(nr<=nc);
+    
+    Integer det, test_det = 1;
+    if(do_arithmetic_check<Integer>())
+        for (size_t i=0; i<nr; i++){
+            test_det=(test_det*elem[i][i]%overflow_test_modulus)%overflow_test_modulus;
+      test_det=Iabs(test_det);  
+    }
+    
+    det=1;
+    for(size_t i=0;i<nr;++i)
+        det*=elem[i][i];           
+    det=Iabs(det);
+    
+    if(do_arithmetic_check<Integer>() && test_det!=det%overflow_test_modulus){
+        success=false;
+    }
+    return det;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
 
     size_t pc=0;
     long piv=0, rk=0;
+    success=true;
+
+    if(nr==0)
+        return 0;
     
     for (rk = 0; rk < (long) nr; rk++){
         for(;pc<nc;pc++){
@@ -951,240 +955,624 @@ size_t Matrix<Integer>::row_echelon(){
             break;
         do{
             exchange_rows (rk,piv);
-            /* print(cout);
-                cout << "++++++++++++++++++++++++" << endl; */
-            reduce_row(rk,pc);
-                /* print(cout);
-                 cout << "**********************" << endl; */
+            if(!reduce_row(rk,pc)){
+                success=false;
+                return rk;
+            }
             piv=pivot_column(rk,pc);
         }while (piv>rk);
     }
-    
+                
     return rk;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t Matrix<Integer>::rank_destructive(){
+size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
+// no overflow checks since this is supposed to be only used with GMP
+
+    success=true;
+    if(nr==0)
+        return 0;
+    assert(using_GMP<Integer>());
+
+    size_t pc=0;
+    long piv=0, rk=0;
+    vector<bool> last_time_mult(nr,false),this_time_mult(nr,false);
+    Integer last_div=1,this_div=1;
+    size_t this_time_exp=0,last_time_exp=0;
+    Integer det_factor=1;
     
+    for (rk = 0; rk < (long) nr; rk++){
     
-    if(!test_arithmetic_overflow)
-        return row_echelon();
-        
-    size_t rk=row_echelon();
-    Integer det=1, test_det=1;
-    for(size_t i=0;i<rk;++i){
-        size_t j=i;
-        for(;j<nc;j++)
-            if(elements[i][j]!=0)
+        for(;pc<nc;pc++){
+            piv=pivot_column(rk,pc);
+            if(piv>=0)
                 break;
-        det*=elements[i][j];
-        test_det=(test_det *(elements[i][j]%overflow_test_modulus))%overflow_test_modulus;
+        }
+        if(pc==nc)
+            break;
+
+        exchange_rows (rk,piv);
+        swap(last_time_mult[rk],last_time_mult[piv]);
+        
+        if(!last_time_mult[rk])
+            for(size_t i=0;i<nr;++i)
+                last_time_mult[i]=false;
+         
+        Integer a=elem[rk][pc];
+        this_div=Iabs(a);
+        this_time_exp=0;
+        
+        for(size_t i=rk+1;i<nr;++i){
+            if(elem[i][pc]==0){
+                this_time_mult[i]=false;
+                continue;
+            }
+            this_time_exp++;
+            this_time_mult[i]=true;
+            bool divide=last_time_mult[i] && (last_div!=1);
+            if(divide)
+                last_time_exp--;
+            Integer b=elem[i][pc];
+            elem[i][pc]=0;
+            if(a==1){
+                for(size_t j=pc+1;j<nc;++j){
+                    elem[i][j]=elem[i][j]-b*elem[rk][j]; 
+                    if(divide){
+                        elem[i][j]/=last_div;
+                    }
+                }            
+            }
+            else{
+                if(a==-1){
+                    for(size_t j=pc+1;j<nc;++j){
+                        elem[i][j]=-elem[i][j]-b*elem[rk][j]; 
+                        if(divide){
+                            elem[i][j]/=last_div;
+                        }            
+                    }
+                }
+                else{            
+                    for(size_t j=pc+1;j<nc;++j){
+                        elem[i][j]=a*elem[i][j]-b*elem[rk][j]; 
+                       if(divide){
+                            elem[i][j]/=last_div;
+                        }                   
+                    }
+                }
+            }
+        }
+
+        for(size_t i=0;i<last_time_exp;++i)
+            det_factor*=last_div;
+        last_time_mult=this_time_mult;
+        last_div=this_div;
+        last_time_exp=this_time_exp;
+
     }
     
-    if(test_det!=det%overflow_test_modulus){
-        errorOutput()<<"Arithmetic failure in computing rank. Most likely overflow.\n";
-        throw ArithmeticException();
+    det=0;
+    if(nr<=nc && rk==nr){ // must allow nonsquare matrices
+        det=1;
+        for(size_t i=0;i<nr;++i)
+            det*=elem[i][i];            
+        det=Iabs<Integer>(det/det_factor);        
     }
+    return rk;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon_reduce(bool& success){
+
+    size_t rk=row_echelon_inner_elem(success);
+    if(success)
+        reduce_rows_upwards();
+    return rk;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& success) {
+
+    Matrix<Integer> Right(nc);
+    rk=row_echelon_reduce(success);
+    if(success)
+        success=column_trigonalize(rk,Right); 
+    return Right; 
+} 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer& det){
     
-    return rk; 
+    if(using_GMP<Integer>())
+        return row_echelon_inner_bareiss(success,det);
+    else{ 
+        size_t rk=row_echelon_inner_elem(success);
+        if(do_compute_vol)
+            det=compute_vol(success);
+        return rk;
+    }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer Matrix<Integer>::vol_destructive(){
-
-    //cout << "--------vol_destructive start------------" << endl;
-    //pretty_print(cout);
-
-    row_echelon();
-    //cout << "-------- row_echolon done ------------" << endl;
-    //pretty_print(cout);
-
-	Integer det = 1;
-    for (size_t i=0; i<nr; i++){
-        det*=elements[i][i];
-        #ifdef _WIN32 //for 32 and 64 bit windows to workaround a bug in intel compiler
-            if (nr != nc) cout << flush;
-        #endif
-    }
+size_t Matrix<Integer>::row_echelon(bool& success){
     
-    //cout << "==========vol_destructive end=========" << endl;
-    
-    if(!test_arithmetic_overflow)
-        return Iabs(det);
-        
-    Integer test_det = 1;
-    for (size_t i=0; i<nr; i++){
-        test_det=(test_det*elements[i][i]%overflow_test_modulus)%overflow_test_modulus;
-    }
-    if(test_det!=det%overflow_test_modulus){
-        errorOutput()<<"Arithmetic failure in computing determinant. Most likely overflow.\n";
-        throw ArithmeticException();
-    }
-    
-    return Iabs(det);
+    Integer dummy;
+    return row_echelon(success,false,dummy);
 }
 
 //---------------------------------------------------------------------------
 
-/*template<typename Integer>
+template<typename Integer>
+size_t Matrix<Integer>::row_echelon(bool& success, Integer& det){
+    
+    return row_echelon(success,true,det);
+}
+
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key){
+
+    assert(nc>=mother.nc);
+    if(nr<key.size()){
+        elem.resize(key.size(),vector<Integer>(nc,0));
+        nr=key.size();    
+    }
+    size_t save_nr=nr;
+    size_t save_nc=nc;
+    nr=key.size();
+    nc=mother.nc;
+
+    select_submatrix(mother,key);
+
+    bool success;
+    size_t rk=row_echelon(success);
+    
+    if(!success){        
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mpz_submatrix(mpz_this,mother,key);
+        rk=mpz_this.row_echelon(success);
+    }
+    
+    nr=save_nr;
+    nc=save_nc;
+    return rk;                               
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank_submatrix(const vector<key_t>& key) const{
+
+    Matrix<Integer> work(key.size(),nc);
+    return work.rank_submatrix(*this,key);              
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Matrix<Integer>::rank() const{
+    vector<key_t> key(nr);
+    for(size_t i=0;i<nr;++i)
+        key[i]=i;
+    return rank_submatrix(key);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key){
+
+    assert(nc>=mother.nc);
+    if(nr<key.size()){
+        elem.resize(key.size(),vector<Integer>(nc,0));
+        nr=key.size();    
+    }
+    size_t save_nr=nr;
+    size_t save_nc=nc;
+    nr=key.size();
+    nc=mother.nc;
+    
+    select_submatrix(mother,key);
+
+    bool success;
+    Integer det;
+    row_echelon(success,det);
+    
+    if(!success){        
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mpz_submatrix(mpz_this,mother,key);
+        mpz_class mpz_det;
+        mpz_this.row_echelon(success,mpz_det);
+        det=to_Int<Integer>(mpz_det);
+    }
+    
+    nr=save_nr;
+    nc=save_nc;
+    return det;                               
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::vol_submatrix(const vector<key_t>& key) const{
+
+    Matrix<Integer> work(key.size(),nc);
+    return work.vol_submatrix(*this,key);              
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::vol() const{
+    vector<key_t> key(nr);
+    for(size_t i=0;i<nr;++i)
+        key[i]=i;
+    return vol_submatrix(key);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) const{
+
+    success=true;
+    size_t max_rank=min(nr,nc);
+    Matrix<Integer> Test(max_rank,nc);
+    Test.nr=0;
+    vector<key_t> col;
+    col.reserve(max_rank);
+    vector<key_t> key;
+    key.reserve(max_rank);
+    size_t rk=0;
+    
+    vector<vector<bool> > col_done(max_rank,vector<bool>(nc,false));
+    
+    vector<Integer> Test_vec(nc);
+     
+    for(size_t i=0;i<nr;++i){    
+        Test_vec=elem[i];            
+        for(size_t k=0;k<rk;++k){
+            if(Test_vec[col[k]]==0)
+                continue;
+            Integer a=Test[k][col[k]];
+            Integer b=Test_vec[col[k]];
+            for(size_t j=0;j<nc;++j)
+                if(!col_done[k][j]){
+                Test_vec[j]=a*Test_vec[j]-b*Test[k][j];
+                if (!check_range(Test_vec[j]) ) {
+                    success=false;
+                    return key;
+                }
+            }
+        }
+        
+        size_t j=0;
+        for(;j<nc;++j)
+            if(Test_vec[j]!=0)
+                break;
+        if(j==nc)     // Test_vec=0
+            continue;
+            
+        col.push_back(j);
+        key.push_back(i);
+        
+        if(rk>0){
+            col_done[rk]=col_done[rk-1];
+            col_done[rk][col[rk-1]]=true;
+        }
+
+        Test.nr++;
+        rk++;
+        v_make_prime(Test_vec);
+        Test[rk-1]=Test_vec;
+            
+        if(rk==max_rank)
+            break;   
+    }    
+    return key;                
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
 
-    vector<key_t> v;
-    size_t max_rank=min(nr,nc);
-    size_t rk;
-    Matrix<Integer> Test(max_rank,nc);
-    Test.nr=1;
-    
-    for(size_t i=0;i<nr;++i){
-    
-        Test[Test.nr-1]=elements[i];
-        rk=Test.row_echelon();
-        if(rk==Test.nr){
-            v.push_back(i);
-            Test.nr++;
-        }
-        if(rk==max_rank)
-            return v;
+    bool success;
+    vector<key_t> key=max_rank_submatrix_lex_inner(success);
+    if(!success){
+        Matrix<mpz_class> mpz_this(nr,nc);
+        mat_to_mpz(*this,mpz_this);
+        key=mpz_this.max_rank_submatrix_lex_inner(success);    
     }
-        
-    return v;
-}*/
-
+    return key;
+}
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom, Matrix<Integer>& Solution) {
-    size_t dim=Right_side.nr;
-    size_t nr_sys=Right_side.nc;
-    // cout << endl << "Sol.nc " << Solution.nc << " Sol.nr " << Solution.nr << " " << nr_sys << endl;
-    assert(nr == nc);
-    assert(nc == dim);
-    assert(dim == diagonal.size());
-    assert(Solution.nc>=nr_sys);
-    assert(Solution.nr==dim);
+bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) {
+
+    assert(nc>=nr);
+    size_t dim=nr;
+    bool success;  
     
-
-    Integer S;
-    size_t i;
-    long rk, piv;
-
-    for (rk = 0; rk < (long)dim; rk++) {
-        piv=(*this).pivot_column(rk);
-        if (piv>=0) {
-            do {
-                (*this).exchange_rows (rk,piv);
-                Right_side.exchange_rows (rk,piv);
-                (*this).reduce_row(rk, Right_side);
-                piv=(*this).pivot_column(rk);
-            } while (piv>rk);
-        }
+    size_t rk;
+    
+    if(ZZinvertible){
+        rk=row_echelon_inner_elem(success); 
+        if(!success)
+            return false;        
+        assert(rk==nr);
+        denom=compute_vol(success);
     }
-    denom = 1;
-    for (i = 0; i < dim; i++) {
-        denom *= (*this).elements[i][i];
-        diagonal[i] = (*this).elements[i][i];
+    else{
+        rk=row_echelon(success,denom);
+        if(!success)
+            return false;    
     }
 
     if (denom==0) { 
-        errorOutput() << "Cannot solve system (denom=0)!" << endl;
-        throw ArithmeticException(); //TODO welche Exception?
+        if(!do_arithmetic_check<Integer>()){
+            errorOutput() << "Cannot solve system (denom=0)!" << endl;
+            throw ArithmeticException();
+        }
+        else
+            return false;            
     }
 
-    denom=Iabs(denom);
+    Integer S;
+    size_t i;
     long j;
     size_t k;
-    for (i = 0; i < nr_sys; i++) {
+    for (i = nr; i < nc; i++) {
         for (j = dim-1; j >= 0; j--) {
-            S=denom*Right_side.elements[j][i];
+            S=denom*elem[j][i];
             for (k = j+1; k < dim; k++) {
-                S-=(*this).elements[j][k]*Solution.elements[k][i];
+                S-=elem[j][k]*elem[k][i];
             }
-            Solution.elements[j][i]=S/(*this).elements[j][j];
+            if(!check_range(S))
+                return false;
+            elem[j][i]=S/elem[j][j];
         }
     }
-}
-
-
-    
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution) {
-                    
-    if(!test_arithmetic_overflow){
-        solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
-        return;
-    }
-    
-    // now with test_arithmetic_overflow
-    Matrix LS_Copy=*this;
-    Matrix RS_x_denom=Right_side;
-    solve_destructive_Sol_inner(Right_side,diagonal,denom,Solution);
-    RS_x_denom.scalar_multiplication(denom);
-    // cout << endl;
-    // cout << RS_x_denom.nr << " " << RS_x_denom.nc << endl;  
-    // RS_x_denom.pretty_print(cout);
-    // cout << endl;
-
-    Matrix RS_test=LS_Copy.multiplication_cut(Solution,RS_x_denom.nc);
-    // cout << RS_test.nr << " " << RS_test.nc << endl; 
-    // RS_test.pretty_print(cout);
-    if (!RS_x_denom.equal(RS_test)) {
-        errorOutput()<<"Arithmetic failure in solving a linear system. Most likely overflow.\n";
-        throw ArithmeticException();
-    }
+    return true;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_destructive(Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) {
+void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col) {
+         
+        size_t dim=mother.nc;
+        assert(key.size()==dim);
+        assert(nr==dim);
+        assert(dim+RS.size()<=nc);
+        size_t save_nc=nc;
+        nc=dim+RS.size();
+        
+        if(transpose)
+           select_submatrix_trans(mother,key);           
+        else
+           select_submatrix(mother,key);
+                   
+        for(size_t i=0;i<dim;++i)
+           for(size_t k=0;k<RS.size();++k)
+               elem[i][k+dim]= (*RS[k])[i];
+        
+        if(!solve_destructive_inner(ZZ_invertible,denom)){
+           Matrix<mpz_class> mpz_this(nr,nc);
+           mpz_class mpz_denom;
+           if(transpose)
+               mpz_submatrix_trans(mpz_this,mother,key);
+           else            
+               mpz_submatrix(mpz_this,mother,key);
+               
+           for(size_t i=0;i<dim;++i)
+               for(size_t k=0;k<RS.size();++k)
+                   mpz_this[i][k+dim]=to_mpz((*RS[k])[i]);
+           mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);            
+                      
+           for(size_t j=0;j<red_col;++j)  // reduce first red_col columns of solution mod denom
+               for(size_t k=0;k<dim;++k)
+                  mpz_this[k][dim+j]%=mpz_denom;
+                
+           for(size_t j=0;j<sign_col;++j)   // replace entries in the next sign_col columns by their signs
+              for(size_t k=0;k<dim;++k){
+                if(mpz_this[k][dim+red_col+j]>0){
+                    mpz_this[k][dim+red_col+j]=1;
+                    continue;
+                } 
+                if(mpz_this[k][dim+red_col+j]<0){
+                    mpz_this[k][dim+red_col+j]=-1;
+                    continue;
+                }       
+              }
+              
+           for(size_t i=0;i<dim;++i)  // replace left side by 0, except diagonal if ZZ_invetible
+              for(size_t j=0;j<dim;++j){
+                if(i!=j || !ZZ_invertible)
+                    mpz_this[i][j]=0;              
+              }
+                  
+           mat_to_Int(mpz_this,*this);
+           denom=to_Int<Integer>(mpz_denom);
+                
+        }
+        
+        nc=save_nc;            
 
-    Matrix<Integer> Solution(Right_side.nr,Right_side.nc);  
-    solve_destructive_Sol(Right_side,diagonal,denom,Solution);
-    return Solution;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         vector< Integer >& diagonal, Integer& denom, size_t red_col, size_t sign_col) {
+
+    solve_system_submatrix_outer(mother,key,RS,denom,true,false,0,0);
+    assert(diagonal.size()==nr);
+    for(size_t i=0;i<nr;++i)
+        diagonal[i]=elem[i][i];
+                 
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, size_t red_col, size_t sign_col) {
+
+    solve_system_submatrix_outer(mother,key,RS,denom,false,false,0,0);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::solve_system_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, size_t red_col, size_t sign_col) {
+         
+    solve_system_submatrix_outer(mother,key,RS,denom,false,true,0,0);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::extract_solution() const {
+    assert(nc>=nr);
+    Matrix<Integer> Solution(nr,nc-nr); 
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<Solution.nc;++j)
+            Solution[i][j]=elem[i][j+nr];    
+    }
+    return Solution;  
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<vector<Integer>* > Matrix<Integer>::row_pointers(){
+
+    vector<vector<Integer>* > pointers(nr);
+    for(size_t i=0;i<nr;++i)
+        pointers[i]=&(elem[i]);
+    return pointers;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<vector<Integer>* > Matrix<Integer>::submatrix_pointers(const vector<key_t>& key){
+
+    vector<vector<Integer>* > pointers(key.size());
+    for(size_t i=0;i<key.size();++i)
+        pointers[i]=&(elem[key[i]]);
+    return pointers;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side,vector<Integer>& diagonal,Integer& denom) const {
+
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    vector<key_t> key=identity_key(nr);
+    Matrix<Integer> RS_trans=Right_side.transpose();
+    vector<vector<Integer>* > RS=RS_trans.row_pointers();
+    M.solve_system_submatrix(*this,key,RS,diagonal,denom,0,0);
+    return M.extract_solution(); 
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, Integer& denom) const {
-    // Matrix<Integer> Left_side(*this);
-    vector<Integer> dummy_diag(nr);
-    return solve(Right_side, dummy_diag, denom);
+
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    vector<key_t> key=identity_key(nr);
+    Matrix<Integer> RS_trans=Right_side.transpose();
+    vector<vector<Integer>* > RS=RS_trans.row_pointers();
+    M.solve_system_submatrix(*this,key,RS,denom,0,0);
+    return M.extract_solution(); 
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve(const Matrix<Integer>& Right_side, vector< Integer >& diagonal, Integer& denom) const {
-    Matrix<Integer> Left_side(*this);
-    Matrix<Integer> Copy_Right_Side=Right_side;
-    return Left_side.solve_destructive(Copy_Right_Side, diagonal, denom);
-}    
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::invert(vector< Integer >& diagonal, Integer& denom) const{
+Matrix<Integer> Matrix<Integer>::invert(Integer& denom) const{
     assert(nr == nc);
-    assert(nr == diagonal.size());
-    Matrix<Integer> Left_side(*this);
     Matrix<Integer> Right_side(nr);
 
-    return Left_side.solve_destructive(Right_side,diagonal,denom);
+    return solve(Right_side,denom);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::solve(const vector<Integer>& v, Integer& denom) const {
+Matrix<Integer> Matrix<Integer>::bundle_matrices(const Matrix<Integer>& Right_side) const {
+
+    size_t dim=Right_side.nr;
+    assert(nr == nc);
+    assert(nc == dim);
+    Matrix<Integer> M(nr,nc+Right_side.nc);
+    for(size_t i=0;i<nr;++i){
+        for(size_t j=0;j<nc;++j)
+            M[i][j]=elem[i][j];
+        for(size_t j=nc;j<M.nc;++j)
+            M[i][j]=Right_side[i][j-nc];
+    }
+    return M;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::invert_unprotected(Integer& denom, bool& success) const{
+    assert(nr == nc);
+    Matrix<Integer> Right_side(nr);
+    Matrix<Integer> M=bundle_matrices(Right_side);
+    success=M.solve_destructive_inner(false,denom);
+    return M.extract_solution();;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv) const{
+    assert(key.size() == nc);
+    Matrix<Integer> unit_mat(key.size());
+    Matrix<Integer> M(key.size(),2*key.size());        
+    vector<vector<Integer>* > RS_pointers=unit_mat.row_pointers();
+    M.solve_system_submatrix(*this,key,RS_pointers,denom,0,0);
+    Inv=M.extract_solution();;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::simplex_data(const vector<key_t>& key, Integer& vol, Matrix<Integer>& Supp) const{
+    assert(key.size() == nc);
+    invert_submatrix(key,vol,Supp);
+    Supp=Supp.transpose();
+    Supp.make_prime();
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Integer& denom) const {
     if (nc == 0 || nr == 0) { //return zero-vector as solution
         return vector<Integer>(nc,0);
     }
@@ -1200,11 +1588,8 @@ vector<Integer> Matrix<Integer>::solve(const vector<Integer>& v, Integer& denom)
     for (i = 0; i <nc; i++) {
         Linear_Form[i] = Solution[i][0];  // the solution vector is called Linear_Form
     }
-    // cout << denom << " v= " << v;
-    // denom/=v_make_prime(Linear_Form);
     vector<Integer> test = MxV(Linear_Form); // we have solved the system by taking a square submatrix
-    // cout << denom << " v= " << v;         // now we must test whether the solution satisfies the full system
-    // cout << denom << " t= " << test; 
+                        // now we must test whether the solution satisfies the full system
     for (i = 0; i <nr; i++) {
         if (test[i] != denom * v[i]){
             return vector<Integer>();
@@ -1215,22 +1600,24 @@ vector<Integer> Matrix<Integer>::solve(const vector<Integer>& v, Integer& denom)
     v_scalar_division(Linear_Form,total_gcd);
     return Linear_Form;
 }
+//---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::solve(const vector<Integer>& v) const {
+vector<Integer> Matrix<Integer>::solve_ZZ(const vector<Integer>& v) const {
 
     Integer denom;
-    vector<Integer> result=solve(v,denom);
+    vector<Integer> result=solve_rectangular(v,denom);
     if(denom!=1)
         result.clear();
     return result;
 }
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 vector<Integer> Matrix<Integer>::find_linear_form() const {
 
     Integer denom;
-    vector<Integer> result=solve(vector<Integer>(nr,1),denom);
+    vector<Integer> result=solve_rectangular(vector<Integer>(nr,1),denom);
     v_make_prime(result);
     return result;
 }
@@ -1260,36 +1647,179 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::kernel () const{
 // computes a ZZ-basis of the solutions of (*this)x=0
-// the basis is formed by the ROWS of the returned matrix
+// the basis is formed by the rOWS of the returned matrix
 
     size_t dim=nc;
     if(nr==0)
         return(Matrix<Integer>(dim));
-    Lineare_Transformation<Integer> NewLT = Transformation(*this);
-    size_t rank = NewLT.get_rank();
+
+    Matrix<Integer> Copy(*this);
+    size_t rank;
+    bool success;
+    Matrix<Integer> Transf=Copy.row_column_trigonalize(rank,success);
+    if(!success){
+        Matrix<mpz_class> mpz_Copy(nr,nc);
+        mat_to_mpz(*this,mpz_Copy);
+        Matrix<mpz_class> mpz_Transf=mpz_Copy.row_column_trigonalize(rank,success);
+        mat_to_Int(mpz_Transf,Transf);    
+    }
+    
     Matrix<Integer> ker_basis(dim-rank,dim);
-    Matrix<Integer> Help = NewLT.get_right().transpose();
+    Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
     return(ker_basis);
+}
 
+//---------------------------------------------------------------------------
+// Converts "this" into (column almost) Hermite normal form, returns column transformation matrix
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::AlmostHermite(size_t& rk){
+
+    Matrix<Integer> Copy=*this;
+    Matrix<Integer> Transf;
+    bool success;
+    Transf=row_column_trigonalize(rk,success);
+    if(success)
+        return Transf;
+    
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(Copy,mpz_this);
+    Matrix<mpz_class> mpz_Transf=mpz_this.row_column_trigonalize(rk,success);
+    mat_to_Int(mpz_this,*this);
+    mat_to_Int(mpz_Transf,Transf);
+    return Transf;
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> solve(const Matrix<Integer>& Left_side, const Matrix<Integer>& Right_side,Integer& denom){
-    return Left_side.solve(Right_side,denom);
+bool Matrix<Integer>::SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right){
+
+    bool success=true;
+    
+    // first we diagonalize
+
+    while(true){
+        rk=row_echelon_reduce(success);
+        if(!success)
+            return false;
+        if(rk==0)
+            break;
+        
+        if(is_diagonal())
+            break;
+        
+        success=column_trigonalize(rk,Right);
+        if(!success)
+            return false;
+        
+        if(is_diagonal())
+            break;                                
+    }
+    
+    // now we change the diagonal so that we have successive divisibilty
+    
+    if(rk<=1)
+        return true;
+           
+    while(true){
+        size_t i=0;
+        for(;i<rk-1;++i)
+            if(elem[i+1][i+1]%elem[i][i]!=0)
+                break;
+        if(i==rk-1)
+            break;
+        
+        Integer u,v,w,z, d=ext_gcd(elem[i][i],elem[i+1][i+1],u,v);
+        elem[i][i+1]=elem[i+1][i+1];
+        w=-elem[i+1][i+1]/d;
+        z=elem[i][i]/d;
+        // Now we multiply the submatrix formed by columns "corner" and "j" 
+        // and rows corner,...,nr from the right by the 2x2 matrix
+        // | u w |
+        // | v z |              
+       if(!linear_comb_columns(i,i+1,u,w,v,z))
+           return false; 
+       if(!Right.linear_comb_columns(i,i+1,u,w,v,z))
+           return false;
+       elem[i+1][i]=0;        
+     }
+     
+    return true;
+}
+
+// Converts "this" into Smith normal form, returns column transformation matrix
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
+
+    size_t dim=nc;
+    Matrix<Integer> Transf(dim);
+    if(dim==0)
+        return Transf;
+        
+    Matrix<Integer> Copy=*this;
+    bool success=SmithNormalForm_inner(rk,Transf);
+    if(success)
+        return Transf;
+    
+    Matrix<mpz_class> mpz_this(nr,dim);
+    mat_to_mpz(Copy,mpz_this);
+    Matrix<mpz_class> mpz_Transf(dim);
+    mpz_this.SmithNormalForm_inner(rk,mpz_Transf);
+    mat_to_Int(mpz_this,*this);
+    mat_to_Int(mpz_Transf,Transf);
+    return Transf;
+}
+
+//---------------------------------------------------------------------------
+// Classless conversion routines
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
+    size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
+    for(size_t i=0; i<nrows;++i)
+        for(size_t j=0; j<ncols;++j)
+            mpz_mat[i][j]=to_mpz(mat[i][j]);
+}
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
+    size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
+    size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
+    for(size_t i=0; i<nrows;++i)
+        for(size_t j=0; j<ncols;++j)
+            mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> invert(const Matrix<Integer>& Left_side, vector< Integer >& diagonal, Integer& denom){
-    return Left_side.invert(diagonal,denom);
+void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection){
+
+    assert(sub.nr_of_columns()>=mother.nr_of_columns());
+    assert(sub.nr_of_rows()>=selection.size());
+    for(size_t i=0;i<selection.size();++i)
+        for(size_t j=0;j<mother.nr_of_columns();++j)
+            sub[i][j]=to_mpz(mother[selection[i]][j]);
 }
 
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection){
+
+    assert(sub.nr_of_columns()>=selection.size());
+    assert(sub.nr_of_rows()>=mother.nr_of_columns());
+    for(size_t i=0;i<selection.size();++i)
+        for(size_t j=0;j<mother.nr_of_columns();++j)
+            sub[j][i]=to_mpz(mother[selection[i]][j]);
+}
 
 
 }  // namespace

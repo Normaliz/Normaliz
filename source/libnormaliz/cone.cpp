@@ -536,7 +536,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
     if (isComputed(ConeProperty::Grading)) {
         // solve GeneratorsOfToricRing * grading = old_grading
         Integer dummyDenom;
-        Grading = Positive_Embedded_Generators.solve(Grading,dummyDenom);
+        Grading = Positive_Embedded_Generators.solve_rectangular(Grading,dummyDenom);
         if (Grading.size() != dim) {
             errorOutput() << "Grading could not be transfered!"<<endl;
             is_Computed.set(ConeProperty::Grading, false);
@@ -1105,6 +1105,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.set(ConeProperty::Triangulation);
 
     /* Create a Full_Cone FC */
+    
     Full_Cone<Integer> FC(BasisChange.to_sublattice(Generators));
 
     /* activate bools in FC */
@@ -1200,7 +1201,7 @@ void Cone<Integer>::compute_generators() {
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
-            set_original_monoid_generators(BasisChange.from_sublattice(Extreme_Rays));
+            set_original_monoid_generators(BasisChange.from_sublattice(Extreme_Rays));            
             set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
             if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
                 //get minmal set of support_hyperplanes
@@ -1208,7 +1209,7 @@ void Cone<Integer>::compute_generators() {
                 SupportHyperplanes = BasisChange.from_sublattice_dual(Supp_Hyp);
                 is_Computed.set(ConeProperty::SupportHyperplanes);
             }
-            Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
+            Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);            
             compose_basis_change(Basis_Change);
 
             // check grading and compute denominator
@@ -1275,7 +1276,6 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     
     if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
         vector<Integer> lf= Generators.submatrix(ExtremeRays).find_linear_form_low_dim();
-        // cout << "lf " << lf;
         if(lf.size()==dim)
             setGrading(lf); 
         else{
@@ -1301,8 +1301,6 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     size_t i_start=0;
     if(inhomogeneous){  // in the inhomogeneous case the truncation will be inserted below
         i_start=1;
-        //cout << "Dehom " << BasisChange.to_sublattice_dual_no_div(Dehomogenization);
-        //cout << "First " << Inequ_on_Ker[0];
         assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual(Dehomogenization));
     }
     for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
@@ -1376,7 +1374,6 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
     if(verbose) {
         verboseOutput() << "transforming data..."<<flush;
-        // cout << "inhom "<<inhomogeneous<<endl;
     }
     
     if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {

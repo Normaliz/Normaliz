@@ -33,6 +33,7 @@
 #include <string>
 
 #include "libnormaliz.h"
+#include "integer.h"
 
 //---------------------------------------------------------------------------
 
@@ -42,29 +43,119 @@ using std::vector;
 using std::string;
 
 template<typename Integer> class Matrix {
+
+    template<typename> friend class Matrix;
+    template<typename> friend class Lineare_Transformation;
+    template<typename> friend class Sublattice_Representation;
+    
+    // public:
+
     size_t nr;
     size_t nc;
-    vector< vector<Integer> > elements;
+    vector< vector<Integer> > elem;
 
 //---------------------------------------------------------------------------
 //              Private routines, used in the public routines
 //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//                      Rows and columns exchange
+//---------------------------------------------------------------------------
+
+    void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
+    void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
+
+//---------------------------------------------------------------------------
+//              Row and column reduction
+//---------------------------------------------------------------------------
+    // return value false undicates failure because of overflow
+    // for all the routines below
     
-    // Does the computation for the solution of linear systems
-    void solve_destructive_Sol_inner(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution);     
+    // reduction via integer division and elemntary transformations
+    bool reduce_row(size_t corner);      //reduction by the corner-th row
+    bool reduce_row (size_t row, size_t col); // corner at position (row,col)
+            
+    // replaces two columns by linear combinations of them
+    bool linear_comb_columns(const size_t& col,const size_t& j,
+            const Integer& u,const Integer& w,const Integer& v,const Integer& z);
+    
+    // column reduction with gcd method
+    bool gcd_reduce_column (size_t corner, Matrix<Integer>& Right);
+    
+//---------------------------------------------------------------------------
+//                      Work horses
+//---------------------------------------------------------------------------
+
+    // takes |product of the diagonal elem|
+    Integer compute_vol(bool& success);  
+        
+    // Solve system with coefficients and right hand side in one matrix, using elementary transformations
+    // solution replaces right hand side
+    bool solve_destructive_inner(bool ZZinvertible, Integer& denom);
+
+    // asembles the matrix of the system (left side the submatrix of mother given by key
+    // right side from column vectors pointed to by RS
+    // both in a single matrix    
+    void solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col);
+                    
+    size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
+    size_t row_echelon_inner_bareiss(bool& success, Integer& det);
+    // NOTE: Bareiss cannot be used if z-invertible transformations are needed
+    
+    size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
+    size_t row_echelon(bool& success, Integer& det); // computes also |det|
+    size_t row_echelon(bool& success, bool do_compute_vol, Integer& det); // chooses elem or bareiss
+    
+    // reduces the rows a matrix in row echelon form upwards, from left to right
+    bool reduce_rows_upwards();
+    size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
+    
+    vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
+    
+    // A version of invert that circumvents protection and leaves it to the calling routine
+    Matrix invert_unprotected(Integer& denom, bool& sucess) const;
+    
+    bool SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right);
+    
+
+//---------------------------------------------------------------------------
+//                      Pivots for rows/columns operations
+//---------------------------------------------------------------------------
+
+    vector<long> pivot(size_t corner); //Find the position of an element x with
+    //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
+    //described by an int corner
+
+    long pivot_column(size_t col);  //Find the position of an element x with
+    //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
+    //described by an int col
+    
+    long pivot_column(size_t row,size_t col); //in column col starting from row
+    
+//---------------------------------------------------------------------------
+//                     Helpers for linear systems
+//---------------------------------------------------------------------------
+
+    Matrix bundle_matrices(const Matrix<Integer>& Right_side)const;
+    Matrix extract_solution() const;
+    vector<vector<Integer>* > row_pointers();
+                    
+public:
+
+    vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);     
   
 //---------------------------------------------------------------------------
-public:
+
 //---------------------------------------------------------------------------
 //                      Construction and destruction
 //---------------------------------------------------------------------------
 
     Matrix();
-    Matrix(size_t dim);                           //constructor of identity matrix
+    Matrix(size_t dim);                           //constructor of unit matrix
     Matrix(size_t row, size_t col);                 //main constructor, all entries 0
     Matrix(size_t row, size_t col, Integer value); //constructor, all entries set to value
-    Matrix(const vector< vector<Integer> >& elem); //constuctor, elements=elem
+    Matrix(const vector< vector<Integer> >& elem); //constuctor, elem=elem
     Matrix(const list< vector<Integer> >& elems);
 
 //---------------------------------------------------------------------------
@@ -92,6 +183,9 @@ public:
     Matrix submatrix(const vector<key_t>& rows) const;
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
+    
+    void select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows);
+    void select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows);
 
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
@@ -106,19 +200,23 @@ public:
     void cut_columns(size_t c); // remove columns, only the first c columns will survive
 
     inline const Integer& get_elem(size_t row, size_t col) const {
-        return elements[row][col];
+        return elem[row][col];
     }
     inline const vector< vector<Integer> >& get_elements() const {
-        return elements;
+        return elem;
     }
     inline vector<Integer> const& operator[] (size_t row) const {
-        return elements[row];
+        return elem[row];
     }
     inline vector<Integer>& operator[] (size_t row) { 
-        return elements[row];
+        return elem[row];
     }
-
-
+    void set_nc(size_t col){
+        nc=col;
+    }
+    void set_nr(size_t rows){
+        nc=rows;
+    }
 
 //---------------------------------------------------------------------------
 //                  Basic matrices operations
@@ -132,6 +230,8 @@ public:
     bool equal(const Matrix& A) const;             // returns this==A
     bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this
+    
+    bool is_diagonal() const;
 
 //---------------------------------------------------------------------------
 //                          Scalar operations
@@ -139,9 +239,9 @@ public:
 
     void scalar_multiplication(const Integer& scalar);  //this=this*scalar
     void scalar_division(const Integer& scalar);
-    //this=this div scalar, all the elements of this must be divisible with the scalar
+    //this=this div scalar, all the elem of this must be divisible with the scalar
     void reduction_modulo(const Integer& modulo);     //this=this mod scalar
-    Integer matrix_gcd() const; //returns the gcd of all elements
+    Integer matrix_gcd() const; //returns the gcd of all elem
     vector<Integer> make_prime();         //each row of this is reduced by its gcd
     //return a vector containing the gcd of the rows
 
@@ -154,79 +254,96 @@ public:
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
 
-//---------------------------------------------------------------------------
-//                      Rows and columns exchange
-//---------------------------------------------------------------------------
 
-    void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
-    void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
 
 //---------------------------------------------------------------------------
-//              Rows and columns reduction  in  respect to
-//          the right-lower submatrix of this described by an int corner
+//                          Matrix operations
+//           --- these are more complicated algorithms ---
 //---------------------------------------------------------------------------
 
-    void reduce_row(size_t corner);      //reduction by the corner-th row
-    void reduce_row (size_t row, size_t col); // corner at position (row,col)
-    void reduce_row(size_t corner, Matrix& Left);//row reduction, Left used
-    //for saving or copying the linear transformations
-    void reduce_column(size_t corner);  //reduction by the corner-th column
-    void reduce_column(size_t corner, Matrix& Right, Matrix& Right_Inv);
-    //column reduction,  Right used for saving or copying the linear
-    //transformations, Right_Inv used for saving the inverse linear transformations
+// Normal forms
 
-//---------------------------------------------------------------------------
-//                      Pivots for rows/columns operations
-//---------------------------------------------------------------------------
-
-    vector<long> pivot(size_t corner); //Find the position of an element x with
-    //0<abs(x)<=abs(y) for all y!=0 in the right-lower submatrix of this
-    //described by an int corner
-    long pivot_column(size_t col);  //Find the position of an element x with
-    //0<abs(x)<=abs(y) for all y!=0 in the lower half of the column of this
-    //described by an int col
+    // transforms matrix in lower triangular form via column transformations
+    // assumes that the rk is the rank and that the matrix is zero after the first rk rows
+    // Right = Right*(column transformation of this call)
+    bool column_trigonalize(size_t rk, Matrix<Integer>& Right);
+    // combines row_echelon_reduce and column_trigonalize
+    // returns column transformation matrix
+    Matrix<Integer> row_column_trigonalize(size_t& rk, bool& success);
     
-    long pivot_column(size_t row,size_t col); //in column col starting from row
+// rank and determinant
 
-//---------------------------------------------------------------------------
-//                          Matrices operations
-//           --- this are more complicated algorithms ---
-//---------------------------------------------------------------------------
-
-    size_t row_echelon(); // transforms this into row echelon form and returns rank
-
-    size_t rank() const; //returns rank, nondestructive
+    size_t rank() const; //returns rank
+    size_t rank_submatrix(const vector<key_t>& key) const; //returns rank of submarix defined by key
     
-    Integer vol_destructive();
-
-    size_t rank_destructive(); //returns rank, destructive
+    // return rank of submatrix of mother. "this" is used as work space    
+    size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
+    
+    Integer vol() const;
+    Integer vol_submatrix(const vector<key_t>& key) const;
+    Integer vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
+    
+// find linearly indepenpendent submatrix of maximal rank
 
     vector<key_t>  max_rank_submatrix_lex() const; //returns a vector with entries
     //the indices of the first rows in lexicographic order of this forming
     //a submatrix of maximal rank.
+    
+// Solution of linear systems with square matrix
   
-    // In the following routines denom is the absolute value of the determinant of the
-    // left side matrix ( =this).
+    // In the following routines, denom is the absolute value of the determinant of the
+    // left side matrix.
+    // If the diagonal is asked for, ZZ-invertible transformations are used.
+    // Otherwise ther is no restriction on the used algorithm
+    
+    //The diagonal of left hand side after transformation into an upper triangular matrix
+    //is saved in diagonal, denom is |determinant|.
+    
+    // System with "this" as left side
+    Matrix solve(const Matrix& Right_side, Integer& denom) const;
+    Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;
+    // solve the system this*Solution=denom*Right_side. 
 
-    Matrix solve(const Matrix& Right_side, Integer& denom) const;// solves the system
-    //this*Solution=denom*Right_side. this should be a quadratic matrix with nonzero determinant.
+    // system is defined by submatrix of mother given by key (left side) and column vectors pointed to by RS (right side)
+    // NOTE: this is used as the matrix for the woek     
+    void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         vector< Integer >& diagonal, Integer& denom, size_t red_col, size_t sign_col);
+    void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, size_t red_col, size_t sign_col);
+    // the left side gets transposed
+    void solve_system_submatrix_trans(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
+         Integer& denom, size_t red_col, size_t sign_col);
+        
+                    
+// For non-square matrices
+                    
+    // The next two solve routines do not require the matrix to be square.
+    // However, we want rank = number of columns, ensuring unique solvability
+    
+    vector<Integer> solve_rectangular(const vector<Integer>& v, Integer& denom) const;
+    // computes solution vector for right side v, solution over the rationals
+    // matrix needs not be quadratic, but must have rank = number of columns
+    // with denominator denom. 
+    // gcd of denom and solution is extracted !!!!!
+    
+    vector<Integer> solve_ZZ(const vector<Integer>& v) const;
+    // computes solution vector for right side v
+    // insists on integrality of the solution
+                    
+// homogenous linear systems
 
-    Matrix solve(const Matrix& Right_side, vector< Integer >& diagonal, Integer& denom) const;// solves the system
-    //this*Solution=denom*Right_side. this should be a quadratic /matrix with nonzero determinant.
-    //The diagonal of this after transformation into an upper triangular matrix
-    //is saved in diagonal
-
-    // Right_side and this get destroyed!
-    Matrix solve_destructive(Matrix& Right_side, vector< Integer >& diagonal, Integer& denom);
-
-    // Returns the solution of the system in Solution (for efficiency)
-    void solve_destructive_Sol(Matrix<Integer>& Right_side, vector< Integer >& diagonal, 
-                    Integer& denom, Matrix<Integer>& Solution);
-                   
-    Matrix invert(vector< Integer >& diagonal, Integer& denom) const;// solves the system
-    //this*Solution=denom*I. this should be a quadratic matrix with nonzero determinant. 
-    //The diagonal of this after transformation into an upper triangular matrix
-    //is saved in diagonal
+    Matrix<Integer> kernel () const;
+    // computes a ZZ-basis of the solutions of (*this)x=0
+    // the basis is formed by the ROWS of the returned matrix
+                    
+// inverse matrix
+                    
+    //this*Solution=denom*I. "this" should be a quadratic matrix with nonzero determinant. 
+    Matrix invert(Integer& denom) const;
+    
+    void invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv) const;
+                    
+// find linear form that is constant on the rows 
 
     vector<Integer> find_linear_form () const;
     // Tries to find a linear form which gives the same value an all rows of this
@@ -236,25 +353,41 @@ public:
     vector<Integer> find_linear_form_low_dim () const;
     //same as find_linear_form but also works with not maximal rank
     //uses a linear transformation to get a full rank matrix
+    
+// normal forms
+        
+    Matrix AlmostHermite(size_t& rk);
+    // Converts "this" into lower trigonal column Hermite normal form, returns column 
+    // transformation matrix
+    // Almost: elements left of diagonal are not reduced mod diagonal 
+    
+    // Computes Smith normal form and returns column transformation matrix
+    Matrix SmithNormalForm(size_t& rk);
+    
 
-    // The next two solve routines do not require the matrix to be square.
-    // However, we want rank = number of columns, ensuring unique solvability
-    
-    vector<Integer> solve(const vector<Integer>& v, Integer& denom) const;
-    // computes solution vector for right side v, solution over the rationals
-    // with denominator denom. 
-    // gcd of denom and solution is extracted !!!!!
-    
-    vector<Integer> solve(const vector<Integer>& v) const;
-    // computes solution vector for right side v
-    // insists on integrality of the solution
-    
-    Matrix<Integer> kernel () const;
-    // computes a ZZ-basis of the solutions of (*this)x=0
-    // the basis is formed by the ROWS of the returned matrix
+//for simplicial subcones
+
+    // computes support hyperplanes and volume
+    void simplex_data(const vector<key_t>& key, Integer& vol, Matrix& Supp) const; 
 
 };
 //class end *****************************************************************
+
+//---------------------------------------------------------------------------
+//                  Conversion between integer types
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
+
+template<typename Integer>
+void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat);
+
+template<typename Integer>
+void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
+
+template<typename Integer>
+void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
 
 } // namespace
 

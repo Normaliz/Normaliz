@@ -27,7 +27,7 @@
 #include "matrix.cpp"
 #include "simplex.cpp"
 #include "list_operations.cpp"
-#include "lineare_transformation.cpp"
+// #include "lineare_transformation.cpp"
 #include "sublattice_representation.cpp"
 #include "reduction.cpp"
 #include "full_cone.cpp"
@@ -48,13 +48,9 @@ template class Sublattice_Representation<long>;
 template class Sublattice_Representation<long long int>;
 template class Sublattice_Representation<mpz_class>;
 
-template class Lineare_Transformation<long>;
-template class Lineare_Transformation<long long int>;
-template class Lineare_Transformation<mpz_class>;
-
-template Lineare_Transformation<long> Transformation(const Matrix<long>& M);
-template Lineare_Transformation<long long int> Transformation(const Matrix<long long int>& M);
-template Lineare_Transformation<mpz_class> Transformation(const Matrix<mpz_class>& M);
+// template class Lineare_Transformation<long>;
+// template class Lineare_Transformation<long long int>;
+// template class Lineare_Transformation<mpz_class>;
 
 template size_t decimal_length<long>(long);
 template size_t decimal_length<long long int>(long long int);

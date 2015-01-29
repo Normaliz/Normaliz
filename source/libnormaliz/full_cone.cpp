@@ -34,7 +34,7 @@
 
 #include "full_cone.h"
 #include "vector_operations.h"
-#include "lineare_transformation.h"
+// #include "lineare_transformation.h"
 #include "list_operations.h"
 #include "map_operations.h"
 #include "my_omp.h"
@@ -53,7 +53,7 @@ const size_t EvalBoundPyr=200000;   // the same for stored pyramids of level > 0
 
 const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored level 0 pyramids
 
-// const size_t EvalBoundRecPyr=20000;   // the same for stored RECURSIVE pyramids
+// const size_t EvalBoundRecPyr=200000;   // the same for stored RECURSIVE pyramids
 
 // const size_t IntermedRedBoundHB=2000000;  // bound for number of HB elements before 
                                               // intermediate reduction is called
@@ -127,25 +127,26 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
 
     size_t k;
     
-    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);
+    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);        
     
-    Integer used_for_tests;
-    if (test_arithmetic_overflow) {  // does arithmetic tests
-        for (k = 0; k <dim; k++) {
-            NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
-            used_for_tests =(positive.ValNewGen%overflow_test_modulus)*(negative.Hyp[k]%overflow_test_modulus)-(negative.ValNewGen%overflow_test_modulus)*(positive.Hyp[k]%overflow_test_modulus);
-            if (((NewFacet.Hyp[k]-used_for_tests) % overflow_test_modulus)!=0) {
-                errorOutput()<<"Arithmetic failure in Full_Cone::add_hyperplane. Possible arithmetic overflow.\n";
-                throw ArithmeticException();
-            }
-        }
+    for (k = 0; k <dim; k++) {
+        NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
+        if(!check_range(NewFacet.Hyp[k]))
+            break;    
     }
-    else  {                      // no arithmetic tests
-        for (k = 0; k <dim; k++) {
-            NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
-        }
+    
+    if(k==dim)
+        v_make_prime(NewFacet.Hyp);
+    else{
+        vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
+        vect_to_mpz(negative.Hyp,mpz_neg);
+        vect_to_mpz(positive.Hyp,mpz_pos);
+        for (k = 0; k <dim; k++)
+            mpz_sum[k]=to_mpz(positive.ValNewGen)*mpz_neg[k]-to_mpz(negative.ValNewGen)*mpz_pos[k];
+        v_make_prime(mpz_sum);
+        vect_to_Int(mpz_sum,NewFacet.Hyp);
     }
-    v_make_prime(NewFacet.Hyp);
+    
     NewFacet.ValNewGen=0; 
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
@@ -334,6 +335,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> subfacet(dim-2);
     jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
+    Matrix<Integer> Test(0,dim);
 
     bool found;
     #pragma omp for schedule(dynamic)
@@ -477,7 +479,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
-    vector<key_t> common_key(nr_gen);
+    vector<key_t> common_key;
+    common_key.reserve(nr_gen);
     vector<int> key_start(nrGensInCone);
     
     #pragma omp for schedule(dynamic) // nowait
@@ -540,6 +543,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                       
            nr_missing=0; 
            nr_common_zero=0;
+           common_key.clear();
            size_t second_loop_bound=nr_zero_i;
            common_subfacet=true;  
            
@@ -556,7 +560,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                    }
                    else {
                        extended=true;
-                       common_key[nr_common_zero]=key[k];
+                       common_key.push_back(key[k]);
                        nr_common_zero++;
                    }
                }
@@ -575,7 +579,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                    }
                }
                else {
-                   common_key[nr_common_zero]=key[k];
+                   common_key.push_back(key[k]);
                    nr_common_zero++;
                }
             }
@@ -593,11 +597,11 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
             NrRank++; */
             
-               Matrix<Integer> Test(nr_common_zero,dim);
+               /* Matrix<Integer> Test(nr_common_zero,dim);
                for (k = 0; k < nr_common_zero; k++)
-                   Test.write(k,Generators[common_key[k]]);
+                   Test.write(k,Generators[common_key[k]]);*/
 
-               if (Test.rank_destructive()<subfacet_dim) {
+               if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) {
                    common_subfacet=false;
                }
            } // ranktest
@@ -1026,10 +1030,13 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         #pragma omp atomic        // only for saving memory
         Top_Cone->nrSimplicialPyr++;
         if(recursive){ // the facets may be facets of the mother cone and if recursive==true must be given back
-            Simplex<Integer> S(Pyramid_key, Generators);
+            /* Simplex<Integer> S(Pyramid_key, Generators);
             if (height != 0)
                 height = S.read_volume(); //update our lower bound for the volume
-            Matrix<Integer> H=S.read_support_hyperplanes();
+            Matrix<Integer> H=S.read_support_hyperplanes();*/
+            Matrix<Integer> H(dim,dim);
+            Integer dummy_vol;
+            Generators.simplex_data(Pyramid_key,dummy_vol,H);
             list<FACETDATA> NewFacets;
             FACETDATA NewFacet;
             NewFacet.GenInHyp.resize(nr_gen);
@@ -1135,8 +1142,16 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     Integer factor;
 
     
-    Simplex<Integer> S = find_start_simplex();
-    vector<key_t> key=S.read_key();   // generators indexed from 0
+    /* Simplex<Integer> S = find_start_simplex();
+    vector<key_t> key=S.read_key();   // generators indexed from 0 */
+    
+    vector<key_t> key=find_start_simplex();
+    Matrix<Integer> H(dim,dim);
+    Integer vol;
+    Generators.simplex_data(key,vol,H);
+    
+    // H.pretty_print(cout);
+    
         
     for (i = 0; i < dim; i++) {
         in_triang[key[i]]=true;
@@ -1150,7 +1165,6 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     nrTotalComparisons=dim*dim/2;
     Comparisons.push_back(nrTotalComparisons);
        
-    Matrix<Integer> H=S.read_support_hyperplanes();
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H.read(i);
@@ -1165,19 +1179,19 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     if(!is_pyramid){
         //define Order_Vector, decides which facets of the simplices are excluded
         Order_Vector = vector<Integer>(dim,0);
-        Matrix<Integer> G=S.read_generators();
+        // Matrix<Integer> G=S.read_generators();
         //srand(12345);
         for(i=0;i<dim;i++){
             factor=(unsigned long)(2*(rand()%(2*dim))+3);
             for(j=0;j<dim;j++)
-                Order_Vector[j]+=factor*G[i][j];        
+                Order_Vector[j]+=factor*Generators[key[i]][j];        
         }
     }
 
     //the volume is an upper bound for the height
-    if(do_triangulation || (do_partial_triangulation && S.read_volume()>1))
+    if(do_triangulation || (do_partial_triangulation && vol>1))
     {
-        store_key(key,S.read_volume(),1,Triangulation); 
+        store_key(key,vol,1,Triangulation); 
         if(do_only_multiplicity) {
             #pragma omp atomic
             TotDet++;
@@ -1258,7 +1272,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
     size_t missing_bound, nr_common_zero;
     boost::dynamic_bitset<> common_zero(nr_gen);
-    vector<key_t> common_key(nr_gen);
+    vector<key_t> common_key;
+    common_key.reserve(nr_gen);
     vector<key_t> key(nr_gen);
     bool common_subfacet;
     list<FACETDATA> NewHyp;
@@ -1267,6 +1282,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     typename list<FACETDATA*>::iterator a;
     // FACETDATA *hp_t;
     list<FACETDATA> NewHyps;
+    Matrix<Integer> Test(0,dim);
     
     boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
     
@@ -1316,6 +1332,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
                   
        nr_missing=0; 
        nr_common_zero=0;
+       common_key.clear();
        size_t second_loop_bound=nr_zero_hyp;
        common_subfacet=true;  
        
@@ -1332,7 +1349,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
                }
                else {
                    extended=true;
-                   common_key[nr_common_zero]=key[k];
+                   common_key.push_back(key[k]);
                    nr_common_zero++;
                }
            }
@@ -1350,7 +1367,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
                }
            }
            else {
-               common_key[nr_common_zero]=key[k];
+               common_key.push_back(key[k]);
                nr_common_zero++;
            }
         }
@@ -1358,11 +1375,11 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        if(!common_subfacet)
             continue;
             
-        Matrix<Integer> Test(nr_common_zero,dim); // only rank test since we have many supphyps anyway
+        /* Matrix<Integer> Test(nr_common_zero,dim); // only rank test since we have many supphyps anyway
         for (size_t k = 0; k < nr_common_zero; k++)
-            Test[k]=Generators[common_key[k]];
+            Test[k]=Generators[common_key[k]];*/
 
-        if (Test.rank_destructive()<subfacet_dim) 
+        if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) 
             common_subfacet=false;     // don't make a hyperplane
 
         
@@ -2185,7 +2202,7 @@ void Full_Cone<Integer>::primal_algorithm(){
     if(do_Stanley_dec){
         is_Computed.set(ConeProperty::StanleyDec);
     }
-
+    
 }
 
    
@@ -2447,7 +2464,7 @@ void Full_Cone<Integer>::find_module_rank_from_proj(){
         ProjGen[i]=ProjToLevel0Quot.MxV(Generators[i]);
     }
     
-    vector<Integer> GradingProj=ProjToLevel0Quot.transpose().solve(Truncation);
+    vector<Integer> GradingProj=ProjToLevel0Quot.transpose().solve_ZZ(Truncation);
     
     Full_Cone<Integer> Cproj(ProjGen);
     Cproj.Grading=GradingProj;
@@ -2541,7 +2558,8 @@ void Full_Cone<Integer>::set_degrees() {
 
     // cout << "Grading " << Grading;
     // cout << "---------" << endl;
-    // Generators.print(cout);
+    // Generators.pretty_print(cout);
+    // cout << "Grading " << Grading;
     if(gen_degrees.size()==0 && isComputed(ConeProperty::Grading)) // now we set the degrees
     {
         gen_degrees.resize(nr_gen);
@@ -2672,7 +2690,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
+vector<key_t> Full_Cone<Integer>::find_start_simplex() const {
 
     if (isComputed(ConeProperty::ExtremeRays)) {
         vector<key_t> marked_extreme_rays(0);
@@ -2682,15 +2700,17 @@ Simplex<Integer> Full_Cone<Integer>::find_start_simplex() const {
         }
         vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex();
         assert(key_extreme.size() == dim);
-        vector<key_t> key(dim);
+        /* vector<key_t> key(dim);
         for (key_t i=0; i<dim; i++) {
             key[i] = marked_extreme_rays[key_extreme[i]];
         }
-        return Simplex<Integer>(key, Generators);
+        return Simplex<Integer>(key, Generators);*/
+        return key_extreme;
     } 
     else {
-    // assert(Generators.rank()>=dim); 
-        return Simplex<Integer>(Generators);
+        // assert(Generators.rank()>=dim); 
+        // return Simplex<Integer>(Generators);
+        return Generators.max_rank_submatrix_lex();
     }
 }
 
@@ -2784,7 +2804,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
         if(gen_in_hyperplanes.size()< dim-1)
             continue;
         M=select_matrix_from_list(Support_Hyperplanes,gen_in_hyperplanes);
-        if(M.rank_destructive()>=dim-1)
+        if(M.rank()>=dim-1)
             Extreme_Rays[i]=true;   
     }
 
@@ -2927,7 +2947,7 @@ void Full_Cone<Integer>::check_pointed() {
         return;
     if (verbose) verboseOutput() << "Checking for pointed ... " << flush;
     Matrix<Integer> SH = getSupportHyperplanes();
-    pointed = (SH.rank_destructive() == dim);
+    pointed = (SH.rank() == dim);
     is_Computed.set(ConeProperty::IsPointed);
     if (verbose) verboseOutput() << "done." << endl;
 }
@@ -3062,13 +3082,15 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     assert(isComputed(ConeProperty::ExtremeRays));
     Matrix<Integer> G(1,dim);
     G[0]=Grading;
+    Matrix<Integer> G_copy=G;
     
-    Lineare_Transformation<Integer> NewBasis = Transformation(G); // gives a new basis in which the grading is a coordinate
-    Matrix<Integer> U=NewBasis.get_right();   // the basis elements are the columns of U
+    // Lineare_Transformation<Integer> NewBasis(G); // gives a new basis in which the grading is a coordinate
+    size_t dummy;
+    Matrix<Integer> U=G_copy.SmithNormalForm(dummy);   // the basis elements are the columns of U
 
     Integer dummy_denom;                             
-    vector<Integer> dummy_diag(dim); 
-    Matrix<Integer> T=invert(U,dummy_diag,dummy_denom);       // T is the coordinate transformation
+    // vector<Integer> dummy_diag(dim); 
+    Matrix<Integer> T=U.invert(dummy_denom);       // T is the coordinate transformation
                                                             // to the new basis: v --> Tv (in this case)
                                                     // for which the grading is the FIRST coordinate
 
@@ -3098,6 +3120,10 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     
     for(size_t j=0;j<M.nr_of_rows();++j)  // reverse transformation
         M[j]=U.MxV(M[j]);
+        
+    // cout << "-------" << endl;
+    // M.print(cout);
+    // cout << "-------" << endl;
     
     return(M);
 } 
@@ -3275,7 +3301,7 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
                             }
                             // add the volume of the projected simplex
                             primary_multiplicity +=
-                              Projection.submatrix(new_key).vol_destructive();
+                              Projection.vol_submatrix(new_key); //    Projection.submatrix(new_key).vol_destructive();
                         }
                     }
                 }
@@ -3316,6 +3342,7 @@ void Full_Cone<Integer>::reset_tasks(){
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     dim=M.nr_of_columns();
+    
     if (dim!=M.rank()) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
         throw BadInputException();
