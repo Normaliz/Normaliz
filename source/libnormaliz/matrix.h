@@ -74,20 +74,12 @@ template<typename Integer> class Matrix {
     // reduction via integer division and elemntary transformations
     bool reduce_row(size_t corner);      //reduction by the corner-th row
     bool reduce_row (size_t row, size_t col); // corner at position (row,col)
-    
-    // replaces two rows by linear combinations of them
-    // bool linear_comb_rows(const size_t& row,const size_t& i,const size_t& col,  
-    //        const Integer& u,const Integer& v,const Integer& w,const Integer&  z);
             
-    // replaces two rows by linear combinations of them
+    // replaces two columns by linear combinations of them
     bool linear_comb_columns(const size_t& col,const size_t& j,
             const Integer& u,const Integer& w,const Integer& v,const Integer& z);
-                       
-    // use the extended Euclidean algorithm for row reduction instead of elemntary transformations
-    // bool gcd_reduce_row (size_t row, size_t col);
-    // bool gcd_reduce_row (size_t corner);
     
-    // the same for column
+    // column reduction with gcd method
     bool gcd_reduce_column (size_t corner, Matrix<Integer>& Right);
     
 //---------------------------------------------------------------------------
