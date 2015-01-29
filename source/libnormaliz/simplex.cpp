@@ -53,18 +53,12 @@ template<typename Integer>
 SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
 : C_ptr(&fc),
   dim(fc.dim),
-  // det_sum(0),
-  // mult_sum(0),
   key(dim),
-  // candidates_size(0),
-  // collected_elements_size(0),
   Generators(dim,dim),
   LinSys(dim,2*dim+1),
-  // GenCopy(dim,dim),
   InvGenSelRows(dim,dim),
   InvGenSelCols(dim,dim),
   Sol(dim,dim+1),
-  // ProjGen(dim-fc.level0_dim,dim-fc.level0_dim),
   InvSol(dim,dim+1),
   GDiag(dim),
   TDiag(dim),
@@ -87,8 +81,6 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
             errorOutput() << "Error: generator degrees are to huge, h-vector would contain more than 10^6 entires." << endl;
             throw BadInputException();
         }
-        // hvector.resize(hv_max);
-        // inhom_hvector.resize(hv_max);
     }
     
     if(fc.inhomogeneous)
@@ -137,7 +129,6 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Collector<Integer>& Coll) {
      
      Full_Cone<Integer>& C = *C_ptr;
-     // map<boost::dynamic_bitset<>, long> InExSimpl;      // local version of nExCollect   
      map<boost::dynamic_bitset<>, long>::iterator F;
      
      nrInExSimplData=0;
@@ -175,8 +166,6 @@ void SimplexEvaluator<Integer>::prepare_inclusion_exclusion_simpl(size_t Deg, Co
 template<typename Integer>
 void SimplexEvaluator<Integer>::update_inhom_hvector(long level_offset, size_t Deg, Collector<Integer>& Coll){
 
-    // cout << "*** " << level_offset << " " << Deg << endl;
-
     if(level_offset==1){
         Coll.inhom_hvector[Deg-1]++;
         return;
@@ -187,14 +176,12 @@ void SimplexEvaluator<Integer>::update_inhom_hvector(long level_offset, size_t D
     assert(level_offset==0);
     
     for(size_t i=0;i<dim;++i){
-        // cout << "+++ " << gen_levels[i] << " " << gen_degrees[i] << endl;
         if(gen_levels[i]==1){
             Deg_i=Deg+gen_degrees[i];
             Coll.inhom_hvector[Deg_i-1]++;
         }
     }
-    // cout << "------ " << Coll.inhom_hvector << endl;
-    // cout << level0_gen_degrees;
+
 }
 
 //---------------------------------------------------------------------------
@@ -277,8 +264,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     if(do_only_multiplicity){
         if(volume == 0) { // not known in advance
-            /*for(i=0; i<dim; ++i)
-                Generators[i] = C.Generators[key[i]];*/
             volume=Generators.vol_submatrix(C.Generators,key);
             #pragma omp atomic
             TotDet++;
@@ -305,12 +290,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     }
 
     if(potentially_unimodular){ // very likely unimodular, Indicator computed first, uses transpose of Gen
-
-        /* insert_gens_transpose();
-        LinSys.set_nc(dim+1); // adjust number iof active columns
-        LinSys.write_column(dim,C.Order_Vector);  // insert right hand side
-        LinSys.solve_destructive(volume);*/
-    
         RS_pointers.clear();    
         RS_pointers.push_back(&(C.Order_Vector));
         LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume,0,1);        
@@ -345,10 +324,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 Ind0_key.push_back(i);
     if(!unimodular || Ind0_key.size()>0){
         if(Ind0_key.size()>0){            
-            /*insert_gens();
-            insert_unit_vectors(Ind0_key);
-            LinSys.solve_destructive(GDiag,volume);*/
-
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
             LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume,0,RS_pointers.size());
             
@@ -359,10 +334,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             v_abs(GDiag);
             GDiag_computed=true;
         }
-        if(!GDiag_computed){
-            /*insert_gens();
-            LinSys.solve_destructive(GDiag,volume);*/
-            
+        if(!GDiag_computed){            
             RS_pointers.clear();
             LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume,0,0);
             v_abs(GDiag);
@@ -392,16 +364,10 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             if(GDiag[i]>1)
                 Last_key.push_back(i);
         }
-        
-        /* insert_gens_transpose();
-        insert_unit_vectors(Last_key);*/
-        
+
         RS_pointers=unit_matrix.submatrix_pointers(Last_key);
 
-        if(!potentially_unimodular){ // insert order vector if necessary
-            /* LinSys.set_nc(LinSys.nr_of_columns()+1);
-            LinSys.write_column(LinSys.nr_of_columns()-1,C.Order_Vector);*/
-            
+        if(!potentially_unimodular){ // insert order vector if necessary          
             RS_pointers.push_back(&(C.Order_Vector));
         }
         
@@ -428,11 +394,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             if(Indicator[i]==0)
                 Ind0_key.push_back(i);
         if(Ind0_key.size()>0){
-            /* insert_gens();
-            insert_unit_vectors(Ind0_key);
-            LinSys.set_nc(dim+Ind0_key.size());
-            LinSys.solve_destructive(volume);*/
-            
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
             LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume,RS_pointers.size(),0);
             
@@ -751,14 +712,6 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     size_t nr_superblocks=nr_blocks/SuperBlockLength;
     if(nr_blocks%SuperBlockLength != 0)
         nr_superblocks++;
-
-    /*if(nr_blocks>MaxNrBlocks){
-        block_length=nr_elements/MaxNrBlocks;
-        if(nr_elements%MaxNrBlocks != 0)
-            ++block_length;
-        nr_blocks=MaxNrBlocks;
-    }*/
-    // cout << "nr super " << nr_superblocks;
     
     for(size_t sbi=0;sbi < nr_superblocks;sbi++){
     
@@ -774,8 +727,6 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         actual_nr_blocks=nr_blocks%SuperBlockLength;
     else
         actual_nr_blocks=SuperBlockLength;
-        
-    // cout << "actual " << actual_nr_blocks << endl;
     
     size_t progess_report=actual_nr_blocks/50;
     if(progess_report==0)
@@ -793,8 +744,6 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 
     #pragma omp for schedule(dynamic)
     for(size_t i=0; i<actual_nr_blocks;++i){
-    
-        // cout << "i " << i << endl;
     
         if(skip_remaining || done[i])
             continue;
@@ -815,11 +764,6 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     } // parallel
     
     if(skip_remaining){
-    
-        /* #pragma omp parallel for schedule(dynamic)
-        for(size_t i=0;i<C_ptr->Results.size();++i)
-            reduce(C_ptr->Results[i].Candidates,C_ptr->Results[i].Candidates); 
-        */
             
         if(verbose){
                 verboseOutput() << "r" << flush;

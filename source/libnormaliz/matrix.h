@@ -364,9 +364,10 @@ public:
     
 // normal forms
         
-    Matrix Hermite(size_t& rk);
+    Matrix AlmostHermite(size_t& rk);
     // Converts "this" into lower trigonal column Hermite normal form, returns column 
-    // transformation matrix 
+    // transformation matrix
+    // Almost: elements left of diagonal are not reduced mod diagonal 
     
     // Computes Smith normal form and returns column transformation matrix
     Matrix SmithNormalForm(size_t& rk);

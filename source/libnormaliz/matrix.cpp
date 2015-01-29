@@ -1389,11 +1389,11 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                    mpz_this[i][k+dim]=to_mpz((*RS[k])[i]);
            mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);            
                       
-           for(size_t j=0;j<red_col;++j)
+           for(size_t j=0;j<red_col;++j)  // reduce first red_col columns of solution mod denom
                for(size_t k=0;k<dim;++k)
                   mpz_this[k][dim+j]%=mpz_denom;
                 
-           for(size_t j=0;j<red_col;++j)
+           for(size_t j=0;j<sign_col;++j)   // replace entries in the next sign_col columns by their signs
               for(size_t k=0;k<dim;++k){
                 if(mpz_this[k][dim+red_col+j]>0){
                     mpz_this[k][dim+red_col+j]=1;
@@ -1403,6 +1403,12 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                     mpz_this[k][dim+red_col+j]=-1;
                     continue;
                 }       
+              }
+              
+           for(size_t i=0;i<dim;++i)  // replace left side by 0, except diagonal if ZZ_invetible
+              for(size_t j=0;j<dim;++j){
+                if(i!=j || !ZZ_invertible)
+                    mpz_this[i][j]=0;              
               }
                   
            mat_to_Int(mpz_this,*this);
@@ -1668,9 +1674,9 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
 }
 
 //---------------------------------------------------------------------------
-// Converts "this" into (column) into Hermite normal form, returns column transformation matrix
+// Converts "this" into (column almost) Hermite normal form, returns column transformation matrix
 template<typename Integer>
-Matrix<Integer> Matrix<Integer>::Hermite(size_t& rk){
+Matrix<Integer> Matrix<Integer>::AlmostHermite(size_t& rk){
 
     Matrix<Integer> Copy=*this;
     Matrix<Integer> Transf;
