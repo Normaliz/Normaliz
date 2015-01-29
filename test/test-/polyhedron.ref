@@ -32,11 +32,11 @@ module rank = 1
  2 0 0
 
 1 support hyperplanes of polyhedron:
-  1  2 -1
+ 1 0 1
 
 1 equations:
-  0 -1  1
+  0  1 -1
 
 1 congruences:
- 1 0 1 2
+ 1 1 0 2
 

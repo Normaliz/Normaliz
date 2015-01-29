@@ -46,9 +46,9 @@ with common denominator = 1
  -1 -1  1
 
 5 Hilbert basis elements of degree 1:
- -1  0  1
   0 -1  1
-  0  0  1
+ -1  0  1
   0  1  1
   1  0  1
+  0  0  1
 

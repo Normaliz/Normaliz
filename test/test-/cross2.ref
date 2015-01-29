@@ -35,11 +35,11 @@ with common denominator = 1
 ***********************************************************************
 
 5 Hilbert basis elements:
+  1  0  1
+  0  1  1
  -1  0  1
   0 -1  1
   0  0  1
-  0  1  1
-  1  0  1
 
 4 extreme rays:
   1  0  1
@@ -57,9 +57,9 @@ with common denominator = 1
  -1 -1  1
 
 5 Hilbert basis elements of degree 1:
+  1  0  1
+  0  1  1
  -1  0  1
   0 -1  1
   0  0  1
-  0  1  1
-  1  0  1
 

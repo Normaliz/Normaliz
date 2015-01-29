@@ -35,9 +35,9 @@ with common denominator = 1
 5 Hilbert basis elements:
  1 2 0 0 1 2 2 0 1
  2 0 1 0 1 2 1 2 0
- 1 1 1 1 1 1 1 1 1
  0 2 1 2 1 0 1 0 2
  1 0 2 2 1 0 0 2 1
+ 1 1 1 1 1 1 1 1 1
 
 4 extreme rays:
  1 2 0 0 1 2 2 0 1
@@ -47,12 +47,12 @@ with common denominator = 1
 
 4 support hyperplanes:
   0  1  0  0  0  0  0  0  0
-  0  1  2  0 -2  0  0  0  0
-  0 -1 -2  0  4  0  0  0  0
+ -2 -1  0  0  4  0  0  0  0
+  2  1  0  0 -2  0  0  0  0
   0 -1  0  0  2  0  0  0  0
 
 6 equations:
- -2  1  4 -3  0  0  0  0  0
+  2 -1 -4  3  0  0  0  0  0
  -1  0  1 -1  1  0  0  0  0
  -2  0  2 -1  0  1  0  0  0
  -2  0  3 -2  0  0  1  0  0
@@ -62,7 +62,7 @@ with common denominator = 1
 5 Hilbert basis elements of degree 1:
  1 2 0 0 1 2 2 0 1
  2 0 1 0 1 2 1 2 0
- 1 1 1 1 1 1 1 1 1
  0 2 1 2 1 0 1 0 2
  1 0 2 2 1 0 0 2 1
+ 1 1 1 1 1 1 1 1 1
 
