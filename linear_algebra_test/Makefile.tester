@@ -4,7 +4,7 @@
 
 #######  customize  ######
 
-LIBNORMALIZ_DIR = ../git_normaliz/source/libnormaliz
+LIBNORMALIZ_DIR = ../source/libnormaliz
 MY_PROG = tester
 
 ##### end customize ######

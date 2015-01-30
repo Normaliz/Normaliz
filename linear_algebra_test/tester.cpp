@@ -70,12 +70,28 @@ int main(int argc, char* argv[])
     string project=string(argv[1]);
     
     Matrix<Integer> M=ReadMat<Integer>(project);
-    M.pretty_print(cout);
+    // M.pretty_print(cout);
     Matrix<Integer> N=M;
     
     size_t rank;
+    Integer det;
     
-    Matrix<Integer> Transf=N.SmithNormalForm(rank);
+    for(size_t i=0;i<1000000;++i){
+    N=M;
+    // N.row_echelon_inner_bareiss(success,det);
+    N.row_echelon_inner_elem(success);
+    }
+    
+    N.pretty_print(cout);
+    
+    det=1;
+    
+    for(size_t i=0;i<N.nr_of_rows();++i)
+        det*=N[i][i];
+    
+    cout << "det " << Iabs(det) << endl;
+    
+    /* Matrix<Integer> Transf=N.SmithNormalForm(rank);
     
     Integer denom;
     
@@ -91,7 +107,7 @@ int main(int argc, char* argv[])
     
      cout <<"--------------------" << endl;
      
-     Transf.invert(denom).multiplication(Transf).pretty_print(cout);
+     Transf.invert(denom).multiplication(Transf).pretty_print(cout); */
     
     
 

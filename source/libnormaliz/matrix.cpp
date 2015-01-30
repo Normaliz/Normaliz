@@ -993,14 +993,22 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         }
         if(pc==nc)
             break;
-
+                        
+        if(!last_time_mult[piv]){
+            for(size_t k=rk;k<nr;++k)
+                if(elem[k][pc]!=0 && last_time_mult[k]){
+                    piv=k;
+                    break;                
+                }        
+        }
+        
         exchange_rows (rk,piv);
         swap(last_time_mult[rk],last_time_mult[piv]);
         
         if(!last_time_mult[rk])
             for(size_t i=0;i<nr;++i)
                 last_time_mult[i]=false;
-         
+                     
         Integer a=elem[rk][pc];
         this_div=Iabs(a);
         this_time_exp=0;
@@ -1008,8 +1016,14 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         for(size_t i=rk+1;i<nr;++i){
             if(elem[i][pc]==0){
                 this_time_mult[i]=false;
+                if(last_time_mult[i] && (last_div!=1)){
+                    last_time_exp--;
+                    for(size_t j=pc+1;j<nc;++j)
+                        elem[i][j]/=last_div;
+                }
                 continue;
             }
+            
             this_time_exp++;
             this_time_mult[i]=true;
             bool divide=last_time_mult[i] && (last_div!=1);
@@ -1044,7 +1058,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
                 }
             }
         }
-
+        
         for(size_t i=0;i<last_time_exp;++i)
             det_factor*=last_div;
         last_time_mult=this_time_mult;
