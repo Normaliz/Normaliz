@@ -144,7 +144,10 @@ inline bool using_GMP<mpz_class>() {
 } 
 
 template<typename Integer>
-Integer int_max_value_half();
+Integer int_max_value_dual();
+
+template<typename Integer>
+Integer int_max_value_primary();
 
 template<typename Integer>
 inline bool check_range(Integer& m) {
@@ -155,8 +158,8 @@ inline bool check_range(Integer& m) {
 
 template<>
 inline bool check_range<long long>(long long& m){
-    const long long max_half = int_max_value_half<long>();
-    return(Iabs(m)<=max_half);
+    const long long max_primary = int_max_value_primary<long>();
+    return(Iabs(m)<=max_primary);
     return true;
 }
 
@@ -164,8 +167,8 @@ inline bool check_range<long long>(long long& m){
 
 template<>
 inline bool check_range<long>(long& m){
-    const long max_half = int_max_value_half<long long>();
-    return(Iabs(m)<=max_half);
+    const long max_primary = int_max_value_primary<long long>();
+    return(Iabs(m)<=max_primary);
 }
 
 
