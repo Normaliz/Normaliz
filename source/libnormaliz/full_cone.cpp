@@ -3337,6 +3337,7 @@ void Full_Cone<Integer>::reset_tasks(){
     is_pyramid = false;
 }
 
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
