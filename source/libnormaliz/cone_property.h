@@ -106,7 +106,7 @@ public:
 
 
 private:
-    std::bitset<ConeProperty::EnumSize> CPs;
+    std::bitset<ConeProperty::EnumSize> CPs; 
 
 };
 

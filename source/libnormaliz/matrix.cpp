@@ -985,7 +985,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
     Integer det_factor=1;
     
     for (rk = 0; rk < (long) nr; rk++){
-    
+
         for(;pc<nc;pc++){
             piv=pivot_column(rk,pc);
             if(piv>=0)
@@ -994,14 +994,13 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         if(pc==nc)
             break;
                         
-        /* if(!last_time_mult[piv]){
+        if(!last_time_mult[piv]){
             for(size_t k=rk;k<nr;++k)
                 if(elem[k][pc]!=0 && last_time_mult[k]){
                     piv=k;
                     break;                
                 }        
-        }
-        */
+        }        
         
         exchange_rows (rk,piv);
         swap(last_time_mult[rk],last_time_mult[piv]);
@@ -1015,13 +1014,8 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         this_time_exp=0;
         
         for(size_t i=rk+1;i<nr;++i){
-            if(elem[i][pc]==0){/*
+            if(elem[i][pc]==0){
                 this_time_mult[i]=false;
-                if(last_time_mult[i] && (last_div!=1)){
-                    last_time_exp--;
-                    for(size_t j=pc+1;j<nc;++j)
-                        elem[i][j]/=last_div;
-                }*/
                 continue;
             }
             
@@ -1065,10 +1059,6 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         last_time_mult=this_time_mult;
         last_div=this_div;
         last_time_exp=this_time_exp;
-        
-        cout << "----------------------" << endl;
-        pretty_print(cout);
-
     }
     
     det=0;
@@ -1078,6 +1068,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
             det*=elem[i][i];            
         det=Iabs<Integer>(det/det_factor);        
     }
+    
     return rk;
 }
 
@@ -1111,8 +1102,9 @@ Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& succes
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer& det){
     
-    if(false) // using_GMP<Integer>())
-        return row_echelon_inner_bareiss(success,det);
+    if(using_GMP<Integer>()){
+        return row_echelon_inner_bareiss(success,det);;
+    }
     else{ 
         size_t rk=row_echelon_inner_elem(success);
         if(do_compute_vol)
