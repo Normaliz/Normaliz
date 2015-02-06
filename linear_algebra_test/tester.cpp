@@ -70,19 +70,19 @@ int main(int argc, char* argv[])
     string project=string(argv[1]);
     
     Matrix<Integer> M=ReadMat<Integer>(project);
-    // M.pretty_print(cout);
+    M.pretty_print(cout);
     Matrix<Integer> N=M;
     
     size_t rank;
     Integer det;
     
-    for(size_t i=0;i<1000000;++i){
+    // for(size_t i=0;i<1000000;++i){
     N=M;
-    // N.row_echelon_inner_bareiss(success,det);
-    N.row_echelon_inner_elem(success);
-    }
+    N.row_echelon_inner_bareiss(success,det);
+    // N.row_echelon_inner_elem(success);
+    // }
     
-    N.pretty_print(cout);
+    // N.pretty_print(cout);
     
     det=1;
     

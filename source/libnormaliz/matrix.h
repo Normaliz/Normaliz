@@ -100,7 +100,7 @@ template<typename Integer> class Matrix {
          Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
-    size_t row_echelon_inner_bareiss(bool& success, Integer& det);
+    // size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     // NOTE: Bareiss cannot be used if z-invertible transformations are needed
     
     size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
@@ -142,6 +142,8 @@ template<typename Integer> class Matrix {
     vector<vector<Integer>* > row_pointers();
                     
 public:
+
+size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);     
   
