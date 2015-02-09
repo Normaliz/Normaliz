@@ -226,6 +226,7 @@ class Full_Cone {
     Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void compute_deg1_elements_via_approx(); // uses the approximation
     void select_deg1_elements(const Full_Cone& C);
+    void select_Hilbert_Basis(const Full_Cone& C);
     
     void build_top_cone(); 
     void build_cone();

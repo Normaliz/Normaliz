@@ -342,6 +342,8 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         }
     }
     
+    // cout << "Vol " << volume << endl;
+    
     // take care of multiplicity unless do_only_multiplicity
     // Can't be done earlier since volume is not always known earlier
 
