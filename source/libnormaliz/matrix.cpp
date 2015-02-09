@@ -1300,7 +1300,6 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
 
 template<typename Integer>
 vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
-
     bool success;
     vector<key_t> key=max_rank_submatrix_lex_inner(success);
     if(!success){
