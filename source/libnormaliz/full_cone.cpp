@@ -2700,12 +2700,12 @@ vector<key_t> Full_Cone<Integer>::find_start_simplex() const {
         }
         vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex();
         assert(key_extreme.size() == dim);
-        /* vector<key_t> key(dim);
+        vector<key_t> key(dim);
         for (key_t i=0; i<dim; i++) {
             key[i] = marked_extreme_rays[key_extreme[i]];
         }
-        return Simplex<Integer>(key, Generators);*/
-        return key_extreme;
+        // return Simplex<Integer>(key, Generators);
+        return key;
     } 
     else {
         // assert(Generators.rank()>=dim); 
