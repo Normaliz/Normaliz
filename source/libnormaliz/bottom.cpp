@@ -180,25 +180,6 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     return;
 }
 
-
-template<typename Integer>
-Integer max_in_col(const Matrix<Integer>& M, size_t j) {
-    Integer max = 0;
-    for (size_t i=0; i<M.nr_of_rows(); ++i) {
-        if (M[i][j] > max) max = M[i][j];
-    }
-    return max;
-}
-
-template<typename Integer>
-Integer min_in_col(const Matrix<Integer>& M, size_t j) {
-    Integer min = 0;
-    for (size_t i=0; i<M.nr_of_rows(); ++i) {
-        if (M[i][j] < min) min = M[i][j];
-    }
-    return min;
-}
-
 double convert_to_double(mpz_class a) {
     return a.get_d();
 }
@@ -209,6 +190,24 @@ double convert_to_double(long a) {
 
 double convert_to_double(long long a) {
     return a;
+}
+
+template<typename Integer>
+double max_in_col(const Matrix<Integer>& M, size_t j) {
+    Integer max = 0;
+    for (size_t i=0; i<M.nr_of_rows(); ++i) {
+        if (M[i][j] > max) max = M[i][j];
+    }
+    return convert_to_double(max);
+}
+
+template<typename Integer>
+double min_in_col(const Matrix<Integer>& M, size_t j) {
+    Integer min = 0;
+    for (size_t i=0; i<M.nr_of_rows(); ++i) {
+        if (M[i][j] < min) min = M[i][j];
+    }
+    return convert_to_double(min);
 }
 
 template<typename Integer>
@@ -226,8 +225,10 @@ vector<Integer> opt_sol(SCIP* scip,
     SCIPcreateProbBasic(scip, "extra_points");
     for (long i=0; i<dim; i++) {
         (void) SCIPsnprintf(name, SCIP_MAXSTRLEN, "x_%d", i);
-        SCIPcreateVarBasic(scip, &x[i], name, -SCIPinfinity(scip), SCIPinfinity(scip), convert_to_double(grading[i]), SCIP_VARTYPE_INTEGER);
-        //SCIPcreateVarBasic(scip, &x[i], name, min_in_col(gens,i), max_in_col(gens, i), grading[i], SCIP_VARTYPE_INTEGER);
+//        SCIPcreateVarBasic(scip, &x[i], name, -SCIPinfinity(scip), SCIPinfinity(scip),
+//                           convert_to_double(grading[i]), SCIP_VARTYPE_INTEGER);
+        SCIPcreateVarBasic(scip, &x[i], name, min_in_col(gens,i), max_in_col(gens, i),
+                             convert_to_double(grading[i]), SCIP_VARTYPE_INTEGER);
         SCIPaddVar(scip, x[i]);
     }
 
