@@ -699,7 +699,7 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::ReesPrimary)) {
                 out << rees_ideal_key.size() <<" generators of integral closure of the ideal:"<<endl;
                 Matrix<Integer> Ideal_Gens = Hilbert_Basis.submatrix(rees_ideal_key);
-                Ideal_Gens.cut_columns(dim-1);
+                Ideal_Gens.resize_columns(dim-1);
                 Ideal_Gens.pretty_print(out);
                 out << endl;
             }

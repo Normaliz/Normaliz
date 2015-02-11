@@ -293,6 +293,17 @@ void Matrix<Integer>::random (int mod) {
         }
     }
 }
+//---------------------------------------------------------------------------
+  
+template<typename Integer>
+void Matrix<Integer>::set_zero() {
+    size_t i,j;
+    for (i = 0; i < nr; i++) {
+        for (j = 0; j < nc; j++) {
+            elem[i][j] = 0;
+        }
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -404,6 +415,18 @@ void Matrix<Integer>::resize(size_t nr_rows) {
     }
     nr = nr_rows;
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::resize_columns(size_t nr_cols) {
+//    assert (nr_cols >= 0);
+    for (size_t i=0; i<nr; i++) {
+        elem[i].resize(nr_cols);
+    }
+    nc = nr_cols;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -463,18 +486,6 @@ void Matrix<Integer>::append(const vector<Integer>& V) {
     assert (nc == V.size());
     elem.push_back(V);
     nr++;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::cut_columns(size_t c) {
-    assert (c >= 0);
-    assert (c <= nc);
-    for (size_t i=0; i<nr; i++) {
-        elem[i].resize(c);
-    }
-    nc = c;
 }
 
 //---------------------------------------------------------------------------

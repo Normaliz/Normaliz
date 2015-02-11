@@ -789,7 +789,8 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     size_t last;
     vector<Integer> point(dim,0); // represents the lattice element whose residue class is to be processed
 
-    Matrix<Integer> elements(dim,dim); //all 0 matrix
+    Matrix<Integer>& elements = Coll.elements;
+    elements.set_zero();
 
     size_t one_back=block_start-1;
     long counter=one_back;
@@ -1058,7 +1059,8 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
   mult_sum(0),
   candidates_size(0),
   collected_elements_size(0),
-  InEx_hvector(C_ptr->InExCollect.size())
+  InEx_hvector(C_ptr->InExCollect.size()),
+  elements(dim,dim)
 {
 
     size_t hv_max=0;
