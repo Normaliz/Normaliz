@@ -26,6 +26,7 @@
 
 #include <list>
 #include <vector>
+#include <deque>
 //#include <set>
 #include <boost/dynamic_bitset.hpp>
 
