@@ -1071,7 +1071,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         }        
         
         exchange_rows (rk,piv);
-        swap(last_time_mult[rk],last_time_mult[piv]);
+        vector<bool>::swap(last_time_mult[rk],last_time_mult[piv]);
         
         if(!last_time_mult[rk])
             for(size_t i=0;i<nr;++i)
