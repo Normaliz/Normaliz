@@ -3236,6 +3236,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
     InExScheme.erase(InExScheme.begin()); // remove full cone
     
     // map<boost::dynamic_bitset<>, long> InExCollect;
+    InExCollect.clear();
     map<boost::dynamic_bitset<>, long>::iterator F;
     
     for(size_t i=0;i<old_size-1;++i){               // we compactify the list of faces

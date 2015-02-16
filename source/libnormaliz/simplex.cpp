@@ -899,7 +899,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                     ++it;
                 }
             }
-            // temporarily add new_points to the Top_Cone generators
+            // add new_points to the Top_Cone generators
             C.is_simplicial = false; 
             int nr_old_gen = C.nr_gen;
             C.Generators.append(Matrix<Integer>(new_points));
@@ -911,9 +911,13 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 C.Top_Key[i] = i;
                 C.Extreme_Rays[i] = false;
             }
-            // TODO more for inhom cones?
+            // more for inhom cones?
             if (C.inhomogeneous){
                 C.set_levels();
+            }
+            // excluded faces
+            if (C.do_excluded_faces) {
+                C.prepare_inclusion_exclusion();
             }
             // delete large simplex
             C.totalNrSimplices--;
