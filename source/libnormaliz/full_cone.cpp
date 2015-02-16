@@ -2333,6 +2333,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     C_approx.is_approximation=true;
     C_approx.do_Hilbert_basis=true;
     C_approx.do_all_hyperplanes=false;
+    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
     C_approx.Support_Hyperplanes=Support_Hyperplanes;
     if(verbose)
         verboseOutput() << "Computing deg 1 elements in approximating cone with "

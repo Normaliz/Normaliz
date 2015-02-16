@@ -512,94 +512,94 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.is_approximation){
         vector<Integer> help=Generators.VxM(element);
         v_scalar_division(help,volume);
-        if(!C.contains(help)
+        if(!C.contains(help))
             return;
     }
     
     typename list <vector <Integer> >::iterator c;
-        
-        // now the vector in par has been produced and is in element
-        
-        // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
+    
+    // now the vector in par has been produced and is in element
+    
+    // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
 
-        norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
-                // it is used to sort the Hilbert basis candidates
-        normG = 0;  // the degree according to the grading
-        for (i = 0; i < dim; i++) {  // since generators have degree 1
-            norm+=element[i];
-            if(C.do_h_vector || C.do_deg1_elements) {
-                normG += element[i]*gen_degrees[i];
-            }
+    norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
+            // it is used to sort the Hilbert basis candidates
+    normG = 0;  // the degree according to the grading
+    for (i = 0; i < dim; i++) {  // since generators have degree 1
+        norm+=element[i];
+        if(C.do_h_vector || C.do_deg1_elements) {
+            normG += element[i]*gen_degrees[i];
         }
+    }
+    
+
+    long level,level_offset=0;
+    Integer level_Int=0;
+    
+    if(C.inhomogeneous){
+        for(i=0;i<dim;i++)
+            level_Int+=element[i]*gen_levels[i];
+        level=explicit_cast_to_long<Integer>(level_Int/volume); // have to divide by volume; see above
+        // cout << level << " ++ " << volume << " -- " << element;
         
-
-        long level,level_offset=0;
-        Integer level_Int=0;
+        if(level>1) return; // ***************** nothing to do for this vector
+                              // if we sahould decide to allow Stanley dec in the inhomogeneous case, this must be changed
         
-        if(C.inhomogeneous){
-            for(i=0;i<dim;i++)
-                level_Int+=element[i]*gen_levels[i];
-            level=explicit_cast_to_long<Integer>(level_Int/volume); // have to divide by volume; see above
-            // cout << level << " ++ " << volume << " -- " << element;
-            
-            if(level>1) return; // ***************** nothing to do for this vector
-                                  // if we sahould decide to allow Stanley dec in the inhomogeneous case, this must be changed
-            
-            // cout << "Habe ihn" << endl;
-            
-            if(C.do_h_vector){
-                level_offset=level; 
-                for(i=0;i<dim;i++)
-                    if(element[i]==0 && Excluded[i])
-                        level_offset+=gen_levels[i];
-            }
-        }
-
-
-        size_t Deg=0;
+        // cout << "Habe ihn" << endl;
+        
         if(C.do_h_vector){
-            Deg = explicit_cast_to_long<Integer>(normG/volume);
-            for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
-                if(element[i]==0 && Excluded[i]) {
-                    Deg += gen_degrees[i];
-                }
-            }
-
-            //count point in the h-vector
-            if(C.inhomogeneous && level_offset<=1)
-                update_inhom_hvector(level_offset,Deg, Coll);          
-            else
-                Coll.hvector[Deg]++;
-            
-            if(C.do_excluded_faces)
-                add_to_inex_faces(element,Deg,Coll);
-        }
-
-        if(C.do_Stanley_dec){
-            (*StanleyMat)[StanIndex]=element;
+            level_offset=level; 
             for(i=0;i<dim;i++)
-                if(Excluded[i]&&element[i]==0)
-                    (*StanleyMat)[StanIndex][i]+=volume;
-            StanIndex++;
+                if(element[i]==0 && Excluded[i])
+                    level_offset+=gen_levels[i];
+        }
+    }
+
+
+    size_t Deg=0;
+    if(C.do_h_vector){
+        Deg = explicit_cast_to_long<Integer>(normG/volume);
+        for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
+            if(element[i]==0 && Excluded[i]) {
+                Deg += gen_degrees[i];
+            }
         }
 
-            if (C.do_Hilbert_basis) {
-                vector<Integer> candi = v_merge(element,norm);
-                if (!is_reducible(candi, Hilbert_Basis)) {
-                    Coll.Candidates.push_back(candi);
-                    Coll.candidates_size++;
-                    if (Coll.candidates_size >= 1000 && sequential_evaluation) {
-                        local_reduction(Coll);
-                    }
-                }
-                return;
+        //count point in the h-vector
+        if(C.inhomogeneous && level_offset<=1)
+            update_inhom_hvector(level_offset,Deg, Coll);          
+        else
+            Coll.hvector[Deg]++;
+        
+        if(C.do_excluded_faces)
+            add_to_inex_faces(element,Deg,Coll);
+    }
+
+    if(C.do_Stanley_dec){
+        (*StanleyMat)[StanIndex]=element;
+        for(i=0;i<dim;i++)
+            if(Excluded[i]&&element[i]==0)
+                (*StanleyMat)[StanIndex][i]+=volume;
+        StanIndex++;
+    }
+
+    if (C.do_Hilbert_basis) {
+        vector<Integer> candi = v_merge(element,norm);
+        if (!is_reducible(candi, Hilbert_Basis)) {
+            Coll.Candidates.push_back(candi);
+            Coll.candidates_size++;
+            if (Coll.candidates_size >= 1000 && sequential_evaluation) {
+                local_reduction(Coll);
             }
-            if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
-                vector<Integer> help=Generators.VxM(element);
-                v_scalar_division(help,volume);
-                Coll.Deg1_Elements.push_back(help);
-                Coll.collected_elements_size++;
-            }
+        }
+        return;
+    }
+    if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
+        vector<Integer> help=Generators.VxM(element);
+        v_scalar_division(help,volume);
+        Coll.Deg1_Elements.push_back(help);
+        Coll.collected_elements_size++;
+    }
 }
 
 
