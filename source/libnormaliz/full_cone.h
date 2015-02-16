@@ -193,6 +193,8 @@ class Full_Cone {
     size_t start_from;
     
     size_t AdjustedReductionBound;
+    
+    bool is_approximation;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines

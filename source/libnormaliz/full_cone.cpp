@@ -2330,7 +2330,10 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
     C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=true;  // for supercone C_approx that is generated in degree 1
-    // C_approx.do_Hilbert_basis=true; 
+    C_approx.is_approximation=true;
+    C_approx.do_Hilbert_basis=true;
+    C_approx.do_all_hyperplanes=false;
+    C_approx.Support_Hyperplanes=Support_Hyperplanes;
     if(verbose)
         verboseOutput() << "Computing deg 1 elements in approximating cone with "
                         << C_approx.Generators.nr_of_rows() << " generators." << endl;
@@ -2348,8 +2351,8 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     // compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
     if(verbose)
         verboseOutput() << "Selecting deg 1 elements from approximating cone" << endl;
-    select_deg1_elements(C_approx);    
-    // select_Hilbert_Basis(C_approx);
+    // select_deg1_elements(C_approx);    
+    select_Hilbert_Basis(C_approx);
     if(verbose)
         verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
 }
@@ -3528,6 +3531,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     old_nr_supp_hyps=0;
     OldCandidates.dual=false;
     NewCandidates.dual=false;
+    
+    is_approximation=false;
 }
 
 template<typename Integer>
@@ -3569,6 +3574,8 @@ void Full_Cone<Integer>::dual_mode() {
     
     use_existing_facets=false;
     start_from=0;
+    
+    is_approximation=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3650,6 +3657,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     old_nr_supp_hyps=0;
     OldCandidates.dual=false;
     NewCandidates.dual=false;
+    
+    is_approximation=false;
 }
 
 //---------------------------------------------------------------------------
