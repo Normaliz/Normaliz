@@ -883,24 +883,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         
         // cout << new_points.size() << " new points " << endl << new_points << endl;
         if (!new_points.empty()) {
-            int nr_new_points = new_points.size();
-            // remove this simplex from det_sum and multiplicity
-            addMult(-volume,C.Results[0]);
-            if (C.do_Hilbert_basis) {
-                // add new points to HilbertBasis
-                typename list< vector<Integer> >::const_iterator it = new_points.begin();
-                while (it != new_points.end()) {
-                    bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(*it,C,C.OldCandidates);
-                    if(inserted) {
-                        //cout << "inserted " << *it;
-                        C.Results[0].collected_elements_size++;
-                        C.Results[0].HB_Elements.Candidates.back().original_generator = true;
-                    }
-                    ++it;
-                }
-            }
             // add new_points to the Top_Cone generators
             C.is_simplicial = false; 
+            int nr_new_points = new_points.size();
             int nr_old_gen = C.nr_gen;
             C.Generators.append(Matrix<Integer>(new_points));
             C.nr_gen += nr_new_points;
@@ -911,14 +896,29 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 C.Top_Key[i] = i;
                 C.Extreme_Rays[i] = false;
             }
-            // more for inhom cones?
-            if (C.inhomogeneous){
+            // inhom cones
+            if (C.inhomogeneous) {
                 C.set_levels();
             }
             // excluded faces
             if (C.do_excluded_faces) {
                 C.prepare_inclusion_exclusion();
             }
+            if (C.do_Hilbert_basis) {
+                // add new points to HilbertBasis
+                for (size_t i = nr_old_gen; i < C.nr_gen; ++i) {
+                    if (!C.inhomogeneous || C.gen_levels[i]<=1) {
+                        bool inserted = C.Results[0].HB_Elements.reduce_by_and_insert(C.Generators[i],C,C.OldCandidates);
+                        if (inserted) {
+                            //cout << "inserted " << *it;
+                            C.Results[0].collected_elements_size++;
+                            C.Results[0].HB_Elements.Candidates.back().original_generator = true;
+                        }
+                    }
+                }
+            }
+            // remove this simplex from det_sum and multiplicity
+            addMult(-volume,C.Results[0]);
             // delete large simplex
             C.totalNrSimplices--;
             list < SHORTSIMPLEX<Integer> > tmp_triang;
