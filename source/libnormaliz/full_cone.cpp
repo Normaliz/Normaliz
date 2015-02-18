@@ -3296,6 +3296,43 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 
 //---------------------------------------------------------------------------
 
+/* adds generators, they have to lie inside the existing cone */
+template<typename Integer>
+void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
+    is_simplicial = false;
+    int nr_new_points = new_points.nr_of_rows();
+    int nr_old_gen = nr_gen;
+    Generators.append(new_points);
+    nr_gen += nr_new_points;
+    set_degrees();
+    Top_Key.resize(nr_gen);
+    Extreme_Rays.resize(nr_gen);
+    for (size_t i=nr_old_gen; i<nr_gen; ++i) {
+        Top_Key[i] = i;
+        Extreme_Rays[i] = false;
+    }
+    // inhom cones
+    if (inhomogeneous) {
+        set_levels();
+    }
+    // excluded faces
+    if (do_excluded_faces) {
+        prepare_inclusion_exclusion();
+    }
+    if (do_Hilbert_basis) {
+        // add new points to HilbertBasis
+        for (size_t i = nr_old_gen; i < nr_gen; ++i) {
+            if(!inhomogeneous || gen_levels[i]<=1) {
+                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+                OldCandidates.Candidates.back().original_generator=true;
+            }
+        }
+        OldCandidates.auto_reduce();
+    }
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 Integer Full_Cone<Integer>::primary_multiplicity() const{
     size_t h,i,j,k;
