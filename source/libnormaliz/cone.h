@@ -67,11 +67,25 @@ public:
 //                    Constructors, they preprocess the input 
 //---------------------------------------------------------------------------
 
-    /* give a single matrix as input */
-    Cone(const vector< vector<Integer> >& input_data,
-         InputType type = Type::integral_closure);
+    /* give up to 3 matrices as input
+     * the types must be pairwise different
+     */
+    Cone(InputType type, const vector< vector<Integer> >& input_data);
+
+    Cone(InputType type1, const vector< vector<Integer> >& input_data1,
+         InputType type2, const vector< vector<Integer> >& input_data2);
+
+    Cone(InputType type1, const vector< vector<Integer> >& input_data1,
+         InputType type2, const vector< vector<Integer> >& input_data2,
+         InputType type3, const vector< vector<Integer> >& input_data3);
+
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
+
+    /* DEPRECATED ** use version with type as first argument! */
+    Cone(const vector< vector<Integer> >& input_data,
+         InputType type = Type::integral_closure);
+
 
 //---------------------------------------------------------------------------
 //                          give additional data
@@ -94,8 +108,10 @@ public:
     // return what was NOT computed
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
     ConeProperties compute(ConeProperties ToCompute);
-    //is done by compiler through creation of CPies
-    ConeProperties compute(ConeProperty::Enum prop);
+    // special case for up to 3 CPs
+    ConeProperties compute(ConeProperty::Enum);
+    ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
+    ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
 
 //---------------------------------------------------------------------------
 //                         check what is computed

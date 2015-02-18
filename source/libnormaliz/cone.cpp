@@ -148,20 +148,52 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
 
 template<typename Integer>
 Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
-    initialize();
-    if(Input.size()==0){
-        errorOutput() << "All input matrices empty!"<< endl;
-        throw BadInputException();
-    }
     // convert single matrix into a map
     map< InputType, vector< vector<Integer> > > multi_input_data;
-    multi_input_data.insert(pair< InputType, vector< vector<Integer> > >(input_type,Input));
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const vector< vector<Integer> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+                    InputType type2, const vector< vector<Integer> >& Input2) {
+    if (type1 == type2) {
+        errorOutput() << "Input types must be pairwise different!"<< endl;
+        throw BadInputException();
+    }
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+                    InputType type2, const vector< vector<Integer> >& Input2,
+                    InputType type3, const vector< vector<Integer> >& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        errorOutput() << "Input types must be pairwise different!"<< endl;
+        throw BadInputException();
+    }
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    multi_input_data[type3] = Input3;
     process_multi_input(multi_input_data);
 }
 
 template<typename Integer>
 Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_input_data) {
-    initialize();
     process_multi_input(multi_input_data);
 }
 
@@ -1087,6 +1119,24 @@ void Cone<Integer>::setDehomogenization (const vector<Integer>& lf) {
     }
     Dehomogenization=lf;
     is_Computed.set(ConeProperty::Dehomogenization);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
+    return compute(ConeProperties(cp));
+}
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2) {
+    return compute(ConeProperties(cp1,cp2));
+}
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2,
+                                      ConeProperty::Enum cp3) {
+    return compute(ConeProperties(cp1,cp2,cp3));
 }
 
 //---------------------------------------------------------------------------
