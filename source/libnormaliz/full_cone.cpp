@@ -1998,8 +1998,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     if(TriangulationSize==0)
         return;
-        
-    list<SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationSize-VERBOSE_STEPS;
@@ -2093,24 +2091,42 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     if(verbose){
         size_t lss=LargeSimplices.size();
         if(lss>0)
-            verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
+            verboseOutput() << lss << " large simplices stored" << endl;
+    }
+
+    for(size_t i=0;i<Results.size();++i)
+        Results[i].transfer_candidates(); // any remaining ones
+    if(do_Hilbert_basis)
+        update_reducers();
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::evaluate_large_simplices(){
+
+    assert(omp_get_level()==0);
+
+    size_t lss=LargeSimplices.size();
+    if (lss == 0)
+        return;
+
+    if(verbose){
+        verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
     }
 
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
     for(;LS!=LargeSimplices.end();++LS){
         LS->Simplex_parallel_evaluation();
-        if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){       
+        if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){
             Results[0].transfer_candidates();
             update_reducers();
         }
     }
-    
+
     for(size_t i=0;i<Results.size();++i)
         Results[i].transfer_candidates(); // any remaining ones
     if(do_Hilbert_basis)
         update_reducers();
-    
-
 }
 
 //---------------------------------------------------------------------------
@@ -2205,27 +2221,26 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     }
 
     evaluate_triangulation();
+    evaluate_large_simplices();
     FreeSimpl.clear();
 
     // collect accumulated data from the SimplexEvaluators
-    if(!is_pyramid) {
-        for (int zi=0; zi<omp_get_max_threads(); zi++) {
-            detSum += Results[zi].getDetSum();
-            multiplicity += Results[zi].getMultiplicitySum(); 
-            if (do_h_vector) {
-                Hilbert_Series += Results[zi].getHilbertSeriesSum();
-            }
-        }
-#ifdef NMZ_MIC_OFFLOAD
-        // collect accumulated data from mics
-        if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
-        {
-            mic_offloader.finalize();
-        }
-#endif // NMZ_MIC_OFFLOAD
+    for (int zi=0; zi<omp_get_max_threads(); zi++) {
+        detSum += Results[zi].getDetSum();
+        multiplicity += Results[zi].getMultiplicitySum();
         if (do_h_vector) {
-            Hilbert_Series.collectData();
+            Hilbert_Series += Results[zi].getHilbertSeriesSum();
         }
+    }
+#ifdef NMZ_MIC_OFFLOAD
+    // collect accumulated data from mics
+    if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
+    {
+        mic_offloader.finalize();
+    }
+#endif // NMZ_MIC_OFFLOAD
+    if (do_h_vector) {
+        Hilbert_Series.collectData();
     }
 }
     
@@ -2236,6 +2251,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
 
     extreme_rays_and_deg1_check();
     if(!pointed) return;
+
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);
         if (do_evaluation) {

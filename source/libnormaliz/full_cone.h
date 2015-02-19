@@ -119,6 +119,7 @@ public:
     vector<long> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationSize;          // number of elements in Triangulation, for efficiency
     list < SHORTSIMPLEX<Integer> > Triangulation; // triangulation of cone
+    list< SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
     Integer detSum;                  // sum of the determinants of the simplices
     list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition
     
@@ -267,6 +268,7 @@ public:
     bool check_evaluation_buffer();
     bool check_evaluation_buffer_size();
     void evaluate_triangulation();
+    void evaluate_large_simplices();
     void transfer_triangulation_to_top();
     void primal_algorithm();
     void primal_algorithm_initialize();
