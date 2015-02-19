@@ -2088,7 +2088,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         TriangulationSize=0;
     }
 
-    if(verbose){
+    if (verbose && use_bottom_points) {
         size_t lss=LargeSimplices.size();
         if(lss>0)
             verboseOutput() << lss << " large simplices stored" << endl;
