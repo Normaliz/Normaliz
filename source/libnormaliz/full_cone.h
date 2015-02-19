@@ -98,6 +98,7 @@ public:
     bool do_only_multiplicity;
     bool do_evaluation;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
+    bool use_bottom_points;
     ConeProperties is_Computed;    
 
     // data of the cone (input or output)

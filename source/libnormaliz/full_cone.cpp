@@ -3413,6 +3413,8 @@ void Full_Cone<Integer>::reset_tasks(){
     do_evaluation = false;
     do_only_multiplicity=false;
 
+    use_bottom_points = true;
+
     nrSimplicialPyr=0;
     totalNrPyr=0;
     is_pyramid = false;

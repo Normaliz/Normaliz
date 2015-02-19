@@ -864,7 +864,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     }
 
 #ifdef NMZ_SCIP
-    if (volume >= ScipBound)
+    if (C_ptr->use_bottom_points && volume >= ScipBound)
     {
         Full_Cone<Integer>& C = *C_ptr;
 
@@ -889,7 +889,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             C.add_generators(Matrix<Integer>(new_points));
             // remove this simplex from det_sum and multiplicity
             addMult(-volume,C.Results[0]);
-            // delete large simplex
+            // delete this large simplex
             C.totalNrSimplices--;
             list < SHORTSIMPLEX<Integer> > tmp_triang;
             size_t tmp_triang_size = 0;
@@ -920,14 +920,14 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             //subcone.Generators.pretty_print(cout);
             subcone.do_all_hyperplanes=false;
 
-			ScipBound*=100;
+            C.use_bottom_points = false;
 
             subcone.build_cone(); // TODO just store key?
-            // evaluate created simplices //TODO move in build_top_cone? 
+            // evaluate created pyramids and simplices
             C.evaluate_stored_pyramids(0);
             C.evaluate_triangulation();
 
-			ScipBound/=100;
+            C.use_bottom_points = true;
 
             if (C.keep_triangulation) {
                 C.Triangulation.splice(C.Triangulation.begin(), tmp_triang);
