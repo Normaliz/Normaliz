@@ -509,12 +509,12 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     Full_Cone<Integer>& C = *C_ptr;
     
-    if(C.is_approximation){
+    /* if(C.is_approximation){
         vector<Integer> help=Generators.VxM(element);
         v_scalar_division(help,volume);
         if(!C.contains(help))
             return;
-    }
+    }*/
     
     typename list <vector <Integer> >::iterator c;
     

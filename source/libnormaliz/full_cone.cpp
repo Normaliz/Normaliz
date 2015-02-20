@@ -62,7 +62,7 @@ const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comp
 
 const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
-const size_t UpdateReducersBound=2000; // 200000; // reducers updated if one thread has collected more candidates
+const size_t UpdateReducersBound=200000; // reducers updated if one thread has collected more candidates
 
 //---------------------------------------------------------------------------
 
@@ -2331,10 +2331,10 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=true;  // for supercone C_approx that is generated in degree 1
     C_approx.is_approximation=true;
-    C_approx.do_Hilbert_basis=true;
-    C_approx.do_all_hyperplanes=false;
-    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
-    C_approx.Support_Hyperplanes=Support_Hyperplanes;
+    // C_approx.do_Hilbert_basis=true;
+    // C_approx.do_all_hyperplanes=false;
+    // C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
+    // C_approx.Support_Hyperplanes=Support_Hyperplanes;
     if(verbose)
         verboseOutput() << "Computing deg 1 elements in approximating cone with "
                         << C_approx.Generators.nr_of_rows() << " generators." << endl;
@@ -2349,11 +2349,11 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
 
     if(verbose)
         verboseOutput() << "Returning to original cone" << endl;
-    // compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
+    compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
     if(verbose)
         verboseOutput() << "Selecting deg 1 elements from approximating cone" << endl;
-    // select_deg1_elements(C_approx);    
-    select_Hilbert_Basis(C_approx);
+    select_deg1_elements(C_approx);    
+    // select_Hilbert_Basis(C_approx);
     if(verbose)
         verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
 }
@@ -2949,6 +2949,9 @@ void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vec
 
 //---------------------------------------------------------------------------
 
+
+// sofar only for experiments
+
 template<typename Integer>
 void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vectors computed in 
                                                               // the auxiliary cone C
@@ -3460,7 +3463,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     
     AdjustedReductionBound=UpdateReducersBound/omp_get_max_threads();
     if(AdjustedReductionBound < 10000)
-        AdjustedReductionBound=2000; // 10000;
+        AdjustedReductionBound=10000;
 }
 
 //---------------------------------------------------------------------------
