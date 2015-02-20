@@ -1080,7 +1080,7 @@ size_t Matrix<Integer>::row_echelon_reduce(bool& success){
 
     size_t rk=row_echelon_inner_elem(success);
     if(success)
-        reduce_rows_upwards();
+        success=reduce_rows_upwards();
     return rk;
 }
 

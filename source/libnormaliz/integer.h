@@ -158,16 +158,15 @@ inline bool check_range(Integer& m) {
 
 template<>
 inline bool check_range<long long>(long long& m){
-    const long long max_primary = int_max_value_primary<long>();
+    const long long max_primary = int_max_value_primary<long long>();
     return(Iabs(m)<=max_primary);
-    return true;
 }
 
 //---------------------------------------------------------------------------
 
 template<>
 inline bool check_range<long>(long& m){
-    const long max_primary = int_max_value_primary<long long>();
+    const long max_primary = int_max_value_primary<long>();
     return(Iabs(m)<=max_primary);
 }
 
