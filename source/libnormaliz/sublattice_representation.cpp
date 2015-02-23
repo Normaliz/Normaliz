@@ -104,7 +104,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         index=1;
         for(size_t k=0;k<dim;++k)
             index*=N[k][k];
-        index=Iabs(index);
+        index=1; // Iabs(index);  TEMPORARILY
         c=1;
         // cout << "Ausgang 0" << endl;
         return;   

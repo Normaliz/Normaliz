@@ -2328,7 +2328,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     }
 
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
-    C_approx.Generators.pretty_print(cout);
+    // C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=true;  // for supercone C_approx that is generated in degree 1
     C_approx.is_approximation=true;
     // C_approx.do_Hilbert_basis=true;
