@@ -758,7 +758,17 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
         for (j=0; j<nr; j++){
             w[i] += v[j]*elem[j][i];
         }
+        if(!check_range(w[i]))
+            break;
     }
+    if(i==nc)  
+        return w;
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(*this,mpz_this);
+    vector<mpz_class> mpz_v(nr);
+    vect_to_mpz(v,mpz_v);
+    vector<mpz_class> mpz_w=mpz_this.VxM(mpz_v);
+    vect_to_Int(mpz_w,w);
     return w;
 }
 
