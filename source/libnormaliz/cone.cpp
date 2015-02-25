@@ -204,7 +204,7 @@ template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
     typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
-    
+    initialize();    
     // find basic input type
     bool constraints_input=false, generators_input=false, lattice_ideal_input=false;
     size_t nr_types=0;
