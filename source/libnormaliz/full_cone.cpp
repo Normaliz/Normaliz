@@ -2084,7 +2084,13 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
 
     Full_Cone<Integer> SimplCone(Generators.submatrix(key));
     SimplCone.Grading=Grading;
-    SimplCone.compute_deg1_elements_via_approx();
+    SimplCone.is_Computed.set(ConeProperty::Grading);
+    SimplCone.do_deg1_elements=true;
+    SimplCone.do_approximation=true;
+    
+    cout << "Vor Approx" << endl;
+    SimplCone.compute();
+    cout << "Nach Approx" << endl;
     
     vector<bool> Excluded(dim,false);
     for(size_t i=0;i<dim;++i){
