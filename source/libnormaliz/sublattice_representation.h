@@ -56,7 +56,7 @@ class Sublattice_Representation {
 	Matrix<Integer> A;
 	Matrix<Integer> B;
 	Integer c;
-	Integer index;
+	mpz_class index;
 
 //---------------------------------------------------------------------------
 public:
@@ -119,7 +119,7 @@ public:
 	size_t get_rank() const;
 
 	/* returns the index of the sublattice */
-	Integer get_index() const;
+	mpz_class get_index() const;
 
 	Matrix<Integer> get_A() const;
 	
