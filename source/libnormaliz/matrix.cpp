@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 
 #include <fstream>
+#include <set>
 #include <algorithm>
 #include <math.h>
 
@@ -292,6 +293,17 @@ void Matrix<Integer>::random (int mod) {
         }
     }
 }
+//---------------------------------------------------------------------------
+  
+template<typename Integer>
+void Matrix<Integer>::set_zero() {
+    size_t i,j;
+    for (i = 0; i < nr; i++) {
+        for (j = 0; j < nc; j++) {
+            elem[i][j] = 0;
+        }
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -393,6 +405,28 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     return *this;
 }
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::resize(size_t nr_rows) {
+    if (nr_rows > elem.size()) {
+        elem.resize(nr_rows, vector<Integer>(nc));
+    }
+    nr = nr_rows;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::resize_columns(size_t nr_cols) {
+//    assert (nr_cols >= 0);
+    for (size_t i=0; i<nr; i++) {
+        elem[i].resize(nr_cols);
+    }
+    nc = nr_cols;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -457,13 +491,39 @@ void Matrix<Integer>::append(const vector<Integer>& V) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::cut_columns(size_t c) {
-    assert (c >= 0);
-    assert (c <= nc);
-    for (size_t i=0; i<nr; i++) {
-        elem[i].resize(c);
+void Matrix<Integer>::remove_row(const vector<Integer>& row) {
+    size_t tmp_nr = nr;
+    for (size_t i = 1; i <= tmp_nr; ++i) {
+        if (elem[tmp_nr-i] == row) {
+            elem.erase(elem.begin()+(tmp_nr-i));
+            nr--;
+        }
     }
-    nc = c;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::remove_duplicate_and_zero_rows() {
+    bool remove_some = false;
+    vector<bool> key(nr, true);
+
+    set<vector<Integer> > SortedRows;
+    SortedRows.insert( vector<Integer>(nc,0) );
+    typename set<vector<Integer> >::iterator found;
+    for (size_t i = 0; i<nr; i++) {
+        found = SortedRows.find(elem[i]);
+        if (found != SortedRows.end()) {
+            key[i] = false;
+            remove_some = true;
+        }
+        else
+            SortedRows.insert(found,elem[i]);
+    }
+
+    if (remove_some) {
+        *this = submatrix(key);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -670,12 +730,20 @@ Matrix<Integer> Matrix<Integer>::multiply_rows(const vector<Integer>& m) const{ 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
+void Matrix<Integer>::MxV(vector<Integer>& result, const vector<Integer>& v) const{
     assert (nc == v.size());
-    vector<Integer> w(nr);
+    result.resize(nr);
     for(size_t i=0; i<nr;i++){
-        w[i]=v_scalar_product(elem[i],v);
+        result[i]=v_scalar_product(elem[i],v);
     }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::MxV(const vector<Integer>& v) const{
+    vector<Integer> w(nr);
+    MxV(w, v);
     return w;
 }
 
@@ -1003,7 +1071,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
         }        
         
         exchange_rows (rk,piv);
-        swap(last_time_mult[rk],last_time_mult[piv]);
+        vector<bool>::swap(last_time_mult[rk],last_time_mult[piv]);
         
         if(!last_time_mult[rk])
             for(size_t i=0;i<nr;++i)

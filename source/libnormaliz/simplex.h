@@ -181,6 +181,8 @@ class Collector {
     CandidateList<Integer> HB_Elements;
     list< vector<Integer> > Deg1_Elements;
     vector<vector< num_t> > InEx_hvector;
+
+    Matrix<Integer> elements;
     
     public:
 

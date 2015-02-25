@@ -180,6 +180,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     /* generates a pseudo random matrix for tests, entries form 0 to mod-1 */
     void random(int mod=3);
 
+    void set_zero(); // sets all entries to 0
+
     /* returns a submatrix with rows corresponding to indices given by
      * the entries of rows, Numbering from 0 to n-1 ! */
     Matrix submatrix(const vector<key_t>& rows) const;
@@ -191,6 +193,13 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
+    // resizes the matrix to the given number of rows
+    // if the size shrinks it will keep all its allocated memory
+    // useful when the size varies
+    void resize(size_t nr_rows);
+    // same for columns
+    void resize_columns(size_t nr_cols);
+
     vector<Integer> diagonal() const;     //returns the diagonale of this
                                   //this should be a quadratic matrix
     size_t maximal_decimal_length() const;    //return the maximal number of decimals
@@ -199,7 +208,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append(const Matrix& M); // appends the rows of M to this
     void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
     void append(const vector<Integer>& v); // append the row v to this
-    void cut_columns(size_t c); // remove columns, only the first c columns will survive
+    void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
+    void remove_duplicate_and_zero_rows();
 
     inline const Integer& get_elem(size_t row, size_t col) const {
         return elem[row][col];
@@ -253,6 +263,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 //                          Vector operations
 //---------------------------------------------------------------------------
 
+   void MxV(vector<Integer>& result, const vector<Integer>& v) const;//result = this*V
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
 

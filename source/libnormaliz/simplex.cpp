@@ -72,17 +72,6 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   unit_matrix(dim),
   id_key(identity_key(dim))
 {
-    size_t hv_max=0;
-    if (C_ptr->do_h_vector) {
-        // we need the generators to be sorted by degree
-        for (size_t i=C_ptr->nr_gen-dim; i<C_ptr->nr_gen; i++)
-            hv_max += C_ptr->gen_degrees[i];
-        if (hv_max > 1000000) {
-            errorOutput() << "Error: generator degrees are to huge, h-vector would contain more than 10^6 entires." << endl;
-            throw BadInputException();
-        }
-    }
-    
     if(fc.inhomogeneous)
         ProjGen=Matrix<Integer>(dim-fc.level0_dim,dim-fc.level0_dim);    
     
@@ -90,13 +79,11 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
     
     for(size_t i=0;i<fc.InExCollect.size();++i){
         InExSimplData[i].GenInFace.resize(fc.dim);
-        // InExSimplData[i].hvector.resize(hv_max);
         InExSimplData[i].gen_degrees.reserve(fc.dim);
     }
     
     full_cone_simplicial=(C_ptr->nr_gen==C_ptr->dim);
     sequential_evaluation=true; // to be changed later if necessrary
-
 }
 
 template<typename Integer>
@@ -798,7 +785,8 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     size_t last;
     vector<Integer> point(dim,0); // represents the lattice element whose residue class is to be processed
 
-    Matrix<Integer> elements(dim,dim); //all 0 matrix
+    Matrix<Integer>& elements = Coll.elements;
+    elements.set_zero();
 
     size_t one_back=block_start-1;
     long counter=one_back;
@@ -1067,14 +1055,19 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
   mult_sum(0),
   candidates_size(0),
   collected_elements_size(0),
-  InEx_hvector(C_ptr->InExCollect.size())
+  InEx_hvector(C_ptr->InExCollect.size()),
+  elements(dim,dim)
 {
 
     size_t hv_max=0;
     if (C_ptr->do_h_vector) {
         // we need the generators to be sorted by degree
-        for (size_t i=C_ptr->nr_gen-dim; i<C_ptr->nr_gen; i++)
-            hv_max += C_ptr->gen_degrees[i];
+        hv_max = C_ptr->gen_degrees[C_ptr->nr_gen-1] * C_ptr->dim;
+        if (hv_max > 1000000) {
+            errorOutput() << "Error: generator degrees are to huge, h-vector would contain more than 10^6 entires." << endl;
+            throw BadInputException();
+        }
+
         hvector.resize(hv_max,0);
         inhom_hvector.resize(hv_max,0);
     }

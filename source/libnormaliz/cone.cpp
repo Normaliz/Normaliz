@@ -148,20 +148,52 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
 
 template<typename Integer>
 Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
-    initialize();
-    if(Input.size()==0){
-        errorOutput() << "All input matrices empty!"<< endl;
-        throw BadInputException();
-    }
     // convert single matrix into a map
     map< InputType, vector< vector<Integer> > > multi_input_data;
-    multi_input_data.insert(pair< InputType, vector< vector<Integer> > >(input_type,Input));
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const vector< vector<Integer> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+                    InputType type2, const vector< vector<Integer> >& Input2) {
+    if (type1 == type2) {
+        errorOutput() << "Input types must be pairwise different!"<< endl;
+        throw BadInputException();
+    }
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+                    InputType type2, const vector< vector<Integer> >& Input2,
+                    InputType type3, const vector< vector<Integer> >& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        errorOutput() << "Input types must be pairwise different!"<< endl;
+        throw BadInputException();
+    }
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    multi_input_data[type3] = Input3;
     process_multi_input(multi_input_data);
 }
 
 template<typename Integer>
 Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_input_data) {
-    initialize();
     process_multi_input(multi_input_data);
 }
 
@@ -170,7 +202,6 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
-    initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
     typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
     
@@ -220,9 +251,19 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }
     
     }
-    if(nr_types>=2){
+    // allow only on input type, or generators and constraints
+//    cout << "nr_types = " << nr_types << endl;
+//    cout << generators_input << constraints_input << inhom_input << lattice_ideal_input << endl;
+    if (nr_types > 2) {
         errorOutput() << "(1) This InputType combination is currently not supported!"<< endl;
         throw BadInputException();
+    }
+    if (nr_types == 2) {
+        if (generators_input && constraints_input) {
+        } else {
+            errorOutput() << "(2) This InputType combination is currently not supported!"<< endl;
+            throw BadInputException();
+        }
     }
     if(nr_types==0){  // we have only a grading, dehomogenization or excluded faces
         constraints_input=true;       
@@ -278,7 +319,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     // for generators we can have only one strict input
-    if(generators_input && nr_strict_input >1){
+    if(generators_input && nr_strict_input > 1 && !constraints_input) {
         errorOutput() << "This InputType combination is currently not supported!"<< endl;
         throw BadInputException();        
     }
@@ -424,6 +465,26 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(Inequalities);
     Inequalities=Help;
 
+    if (isComputed(ConeProperty::Generators)) {
+        if (Congruences.nr_of_rows() != 0 || Equations.nr_of_rows() != 0) {
+            errorOutput() << "(3) This InputType combination is currently not supported!"<< endl;
+            throw BadInputException();
+        }
+        // check if the equations are at least valid
+        if (Inequalities.nr_of_rows() != 0) {
+            Integer sp;
+            for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
+                for (size_t j = 0; j < Generators.nr_of_rows(); ++j) {
+                    if ((sp = v_scalar_product(Generators[i], Inequalities[j])) < 0) {
+                        errorOutput() << "Inequality " << j
+                        << " is not valid for generator " << i
+                        << " (value " << sp << ")" << endl;
+                        throw BadInputException();
+                    }
+                }
+            }
+        }
+    }
     prepare_input_type_456(Congruences, Equations, Inequalities);
 }
 
@@ -458,7 +519,7 @@ void Cone<Integer>::prepare_input_generators(const map< InputType, vector< vecto
                 if(inhomogeneous){
                     errorOutput() << "Dehomogenization not allowed for normalization!" << endl;
                     throw BadInputException();
-                }    
+                }
                 prepare_input_type_1(it->second); 
                 break;
             case Type::polytope:         
@@ -1063,6 +1124,24 @@ void Cone<Integer>::setDehomogenization (const vector<Integer>& lf) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
+    return compute(ConeProperties(cp));
+}
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2) {
+    return compute(ConeProperties(cp1,cp2));
+}
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum cp2,
+                                      ConeProperty::Enum cp3) {
+    return compute(ConeProperties(cp1,cp2,cp3));
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // handle zero cone as special case, makes our life easier
@@ -1392,7 +1471,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
             vector<Integer> irr_hyp_subl = BasisChange.to_sublattice_dual(Dehomogenization);
-            FC.Support_Hyperplanes.remove(irr_hyp_subl);
+            FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         }
         SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes());
         is_Computed.set(ConeProperty::SupportHyperplanes);

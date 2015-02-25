@@ -370,7 +370,7 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
-//    MyCone.compute(ConeProperties(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
+//    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
     MyCone.compute(to_compute);
     Out.setCone(MyCone);
     Out.write_files();

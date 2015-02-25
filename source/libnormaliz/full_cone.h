@@ -101,7 +101,7 @@ class Full_Cone {
     mpq_class multiplicity;
     Matrix<Integer> Generators;
     vector<bool> Extreme_Rays;
-    list<vector<Integer> > Support_Hyperplanes;
+    Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
     CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
@@ -174,6 +174,7 @@ class Full_Cone {
     
     list< SHORTSIMPLEX<Integer> > FreeSimpl;           // list of short simplices already evaluated, kept for recycling
     vector<list< SHORTSIMPLEX<Integer> > > FS;         // the same per thread
+    vector< Matrix<Integer> > RankTest;                // helper matrices for rank test
     
     // helpers for evaluation
     vector< SimplexEvaluator<Integer> > SimplexEval; // one per thread
@@ -263,7 +264,7 @@ class Full_Cone {
     void evaluate_triangulation();
     void transfer_triangulation_to_top();
     void primal_algorithm(); 
-    void remove_duplicate_ori_gens_ftom_HB();
+    void remove_duplicate_ori_gens_from_HB();
 
     void minimize_support_hyperplanes();   
     void compute_extreme_rays();

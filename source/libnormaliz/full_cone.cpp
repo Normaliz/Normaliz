@@ -179,7 +179,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     size_t subfacet_dim=dim-2; // NEW dimension of subfacet
     size_t facet_dim=dim-1; // NEW dimension of facet
     
-    const bool tv_verbose = false; //verbose && !is_pyramid; // && Support_Hyperplanes.size()>10000; //verbose in this method call
+    const bool tv_verbose = false; //verbose && !is_pyramid; // && Support_Hyperplanes.nr_of_rows()>10000; //verbose in this method call
     
         
     // preparing the computations, the various types of facets are sorted into the deques
@@ -235,7 +235,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     
     // TO DO: Negativliste mit Zero_Positive verfeinern, also die aussondern, die nicht genug positive Erz enthalten
     // Eventuell sogar Rang-Test einbauen.
-    // Letzteres könnte man auch bei den positiven machen, bevor sie verearbeitet werden
+    // Letzteres kÃ¶nnte man auch bei den positiven machen, bevor sie verarbeitet werden
     
     boost::dynamic_bitset<> Zero_PN(nr_gen);
     Zero_PN = Zero_Positive & Zero_Negative;
@@ -335,7 +335,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> subfacet(dim-2);
     jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
-    Matrix<Integer> Test(0,dim);
+    int tn = omp_get_ancestor_thread_num(1);
 
     bool found;
     #pragma omp for schedule(dynamic)
@@ -597,10 +597,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
             NrRank++; */
             
-               /* Matrix<Integer> Test(nr_common_zero,dim);
-               for (k = 0; k < nr_common_zero; k++)
-                   Test.write(k,Generators[common_key[k]]);*/
-
+               Matrix<Integer>& Test = Top_Cone->RankTest[tn];
                if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) {
                    common_subfacet=false;
                }
@@ -839,36 +836,40 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
     typename list< SHORTSIMPLEX<Integer> >::iterator F;
 
     if(Top_Cone->FS[tn].empty()){
-        #pragma omp critical(FREESIMPL)
-        {
-        if(Top_Cone->FreeSimpl.empty())
+        if (Top_Cone->FreeSimpl.empty()) {
             Simpl_available=false;
-        else{
-            F=Top_Cone->FreeSimpl.begin();  // take 100 simplices from FreeSimpl
-            size_t q; for(q=0;q<1000;++q){            // or what you can get
-                if(F==Top_Cone->FreeSimpl.end())
-                    break;
-                ++F;
-            }
-        
-            if(q<1000)
-                Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                    Top_Cone->FreeSimpl);
-            else
-                Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
-                              Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),F);
-        } // else
-        } // critical
-    } // if empty
-          
+        } else {
+            #pragma omp critical(FREESIMPL)
+            {
+            if (Top_Cone->FreeSimpl.empty()) {
+                Simpl_available=false;
+            } else {
+                // take 1000 simplices from FreeSimpl or what you can get
+                F = Top_Cone->FreeSimpl.begin();
+                size_t q;
+                for (q = 0; q < 1000; ++q, ++F) {
+                    if (F == Top_Cone->FreeSimpl.end())
+                        break;
+                }
 
-    if(Simpl_available){
+                if(q<1000)
+                    Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                        Top_Cone->FreeSimpl);
+                else
+                    Top_Cone->FS[tn].splice(Top_Cone->FS[tn].begin(),
+                                  Top_Cone->FreeSimpl,Top_Cone->FreeSimpl.begin(),F);
+            } // if empty global (critical)
+            } // critical
+        } // if empty global
+    } // if empty thread
+
+    if (Simpl_available) {
         Triangulation.splice(Triangulation.end(),Top_Cone->FS[tn],
                         Top_Cone->FS[tn].begin());
-        Triangulation.back()=newsimplex;
-    }
-    else
+        Triangulation.back() = newsimplex;
+    } else {
         Triangulation.push_back(newsimplex);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -1308,6 +1309,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     if (nr_zero_hyp<dim-2) 
         return;
     
+    int tn = omp_get_ancestor_thread_num(1);
     missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
                                           
@@ -1375,10 +1377,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        if(!common_subfacet)
             continue;
             
-        /* Matrix<Integer> Test(nr_common_zero,dim); // only rank test since we have many supphyps anyway
-        for (size_t k = 0; k < nr_common_zero; k++)
-            Test[k]=Generators[common_key[k]];*/
-
+        // only rank test since we have many supphyps anyway
+        Matrix<Integer>& Test = Top_Cone->RankTest[tn];
         if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) 
             common_subfacet=false;     // don't make a hyperplane
 
@@ -1477,7 +1477,6 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
         nrPyramids.resize(level+2, 0);
     }
 
-    size_t nr_done=0;
     size_t nr_pyramids=nrPyramids[level];
     vector<char> Done(nr_pyramids,0);
     if (verbose) {
@@ -1493,19 +1492,18 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     }
     typename list<vector<key_t> >::iterator p;
     size_t ppos;
-    bool skip_remaining_tri,skip_remaining_pyr;
+    bool skip_remaining;
 
     while (nr_pyramids > 0) {
 
        p = Pyramids[level].begin();
        ppos=0;
-       skip_remaining_tri=false;
-       skip_remaining_pyr=false;
+       skip_remaining = false;
     
        #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
        for(size_t i=0; i<nr_pyramids; i++){
        
-           if(skip_remaining_tri || skip_remaining_pyr)
+           if (skip_remaining)
                 continue;
                 
            for(; i > ppos; ++ppos, ++p) ;
@@ -1514,16 +1512,6 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            if(Done[i])
                continue;
            Done[i]=1;
-           
-           /* if(ReportPyr){
-           #pragma omp critical(REPORTPYR)
-           cout << "Pyr " << i << ": " << *p << endl << flush;
-           
-           } */
-            
-           
-           #pragma omp atomic
-           nr_done++;
            
            Full_Cone<Integer> Pyramid(*this,*p);
            // Pyramid.recursion_allowed=false;
@@ -1534,13 +1522,12 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            }
            Pyramid.store_level=level+1;
            Pyramid.build_cone();
-           if(check_evaluation_buffer_size() && nr_done < nr_pyramids)  // we interrupt parallel execution if it is really parallel
-                skip_remaining_tri=true;                         //  to keep the triangulation buffer under control
-                
-            if(Top_Cone->check_pyr_buffer(level+1)  && nr_done < nr_pyramids) 
-                 skip_remaining_pyr=true;
-        }
-       
+           if (check_evaluation_buffer_size() || Top_Cone->check_pyr_buffer(level+1)) {
+               // interrupt parallel execution to keep the buffer under control
+               skip_remaining = true;
+           }
+        } //end parallel for
+
         // remove done pyramids
         p = Pyramids[level].begin();
         for(size_t i=0; i<nr_pyramids; i++){
@@ -1552,17 +1539,16 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
                 ++p;
             }
         }
-        nr_done=0;
         nr_pyramids = nrPyramids[level];
 
-        if (skip_remaining_tri) {
+        if (check_evaluation_buffer_size()) {
             if (verbose)
                 verboseOutput() << nr_pyramids <<
                     " pyramids remaining on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
         }
 
-        if(skip_remaining_pyr){
+        if (Top_Cone->check_pyr_buffer(level+1)) {
             evaluate_stored_pyramids(level+1);
         }
     
@@ -1625,17 +1611,10 @@ void Full_Cone<Integer>::build_cone() {
     size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
     last_to_be_inserted=nr_gen-1;  // because we don't need to compute support hyperplanes in this case 
     for(int j=nr_gen-1;j>=0;--j){
-        if(isComputed(ConeProperty::ExtremeRays)){
-            if(!in_triang[j] && Extreme_Rays[j]){
-                last_to_be_inserted=j;
-                break;
-            }
+        if(!in_triang[j]){
+            last_to_be_inserted=j;
+            break;
         }
-        else
-            if(!in_triang[j]){
-                last_to_be_inserted=j;
-                break;
-            }
     } // last_to_be_inserted now determined
     
     bool is_new_generator;
@@ -1646,7 +1625,7 @@ void Full_Cone<Integer>::build_cone() {
     
         start_from=i;
     
-        if(in_triang[i] || (isComputed(ConeProperty::ExtremeRays) && !Extreme_Rays[i]))
+        if (in_triang[i])
             continue;
             
         if(do_triangulation && TriangulationSize > 2*RecBoundTriang) // emermergency brake
@@ -1742,7 +1721,7 @@ void Full_Cone<Integer>::build_cone() {
             if (do_all_hyperplanes || i!=last_to_be_inserted) {
                 verboseOutput() << Facets.size()<<" hyp";
             } else {
-                verboseOutput() << Support_Hyperplanes.size()<<" hyp";
+                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp";
             }
             if(nrPyramids[0]>0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
@@ -1762,11 +1741,11 @@ void Full_Cone<Integer>::build_cone() {
     
     // transfer Facets --> SupportHyperplanes
     if (do_all_hyperplanes) {
-        nrSupport_Hyperplanes=0;
+        nrSupport_Hyperplanes = Facets.size();
+        Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,dim);
         typename list<FACETDATA>::const_iterator IHV=Facets.begin();
-        for(;IHV!=Facets.end();IHV++){
-            nrSupport_Hyperplanes++;
-            Support_Hyperplanes.push_back(IHV->Hyp);
+        for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
+            Support_Hyperplanes[i] = IHV->Hyp;
         }
     }  
     
@@ -1861,7 +1840,6 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     typename list< SHORTSIMPLEX<Integer> >::iterator pyr_simp=Triangulation.begin();
     while (pyr_simp!=Triangulation.end()) {
         if (pyr_simp->height == 0) { // it was marked to be skipped
-//            pyr_simp = Triangulation.erase(pyr_simp); //TODO splice to FreeSimp?
             Top_Cone->FS[tn].splice(Top_Cone->FS[tn].end(), Triangulation, pyr_simp++);
             --TriangulationSize;
         } else {
@@ -1914,8 +1892,8 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     
     copy.compute_support_hyperplanes();
     
-    Support_Hyperplanes.splice(Support_Hyperplanes.begin(),copy.Support_Hyperplanes);
-    nrSupport_Hyperplanes=copy.nrSupport_Hyperplanes;
+    std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
+    nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
     is_Computed.set(ConeProperty::SupportHyperplanes);
     do_all_hyperplanes = false;
     // exit(1);   
@@ -2141,7 +2119,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::remove_duplicate_ori_gens_ftom_HB(){
+void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
 
     set<vector<Integer> > Duplicates;
     for (size_t i = 0; i <nr_gen; i++) {               
@@ -2224,7 +2202,7 @@ void Full_Cone<Integer>::primal_algorithm(){
                 
     if (do_Hilbert_basis) {
         // global_reduction(); // no longer necessary
-        remove_duplicate_ori_gens_ftom_HB();
+        remove_duplicate_ori_gens_from_HB();
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
         is_Computed.set(ConeProperty::HilbertBasis,true);
@@ -2238,8 +2216,6 @@ void Full_Cone<Integer>::primal_algorithm(){
         for(size_t i=0;i<nr_gen;i++)
             if(in_triang[i] && v_scalar_product(Grading,Generators[i])==1)
                 Deg1_Elements.push_front(Generators[i]);
-        // Deg1_Elements.sort();
-        // Deg1_Elements.unique();  //TODO sort, unique needed?
         is_Computed.set(ConeProperty::Deg1Elements,true);
     }
     if (do_h_vector) {
@@ -2744,27 +2720,7 @@ void Full_Cone<Integer>::compute_support_hyperplanes(){
 
 template<typename Integer>
 vector<key_t> Full_Cone<Integer>::find_start_simplex() const {
-
-    if (isComputed(ConeProperty::ExtremeRays)) {
-        vector<key_t> marked_extreme_rays(0);
-        for (size_t i=0; i<nr_gen; i++) {
-            if (Extreme_Rays[i])
-                marked_extreme_rays.push_back(i);
-        }
-        vector<key_t> key_extreme = Generators.submatrix(Extreme_Rays).max_rank_submatrix_lex();
-        assert(key_extreme.size() == dim);
-        vector<key_t> key(dim);
-        for (key_t i=0; i<dim; i++) {
-            key[i] = marked_extreme_rays[key_extreme[i]];
-        }
-        // return Simplex<Integer>(key, Generators);
-        return key;
-    } 
-    else {
-        // assert(Generators.rank()>=dim); 
-        // return Simplex<Integer>(Generators);
         return Generators.max_rank_submatrix_lex();
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -2794,22 +2750,23 @@ Matrix<Integer> Full_Cone<Integer>::select_matrix_from_list(const list<vector<In
 template<typename Integer>
 
 void Full_Cone<Integer>::minimize_support_hyperplanes(){
-    if(Support_Hyperplanes.empty())
+    if(Support_Hyperplanes.nr_of_rows() == 0)
         return;
     if(isComputed(ConeProperty::SupportHyperplanes)){
-        nrSupport_Hyperplanes=Support_Hyperplanes.size();
+        nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
         return;
     }
+    if (verbose) {
+        verboseOutput() << "Minimize the given set of support hyperplanes by "
+                        << "computing the extreme rays of the dual cone" << endl;
+    }
     Full_Cone<Integer> Dual(Support_Hyperplanes);
-    Dual.Support_Hyperplanes=list<vector<Integer> >
-                   (Generators.get_elements().begin(),Generators.get_elements().end());
+    Dual.Support_Hyperplanes = Generators;
     Dual.is_Computed.set(ConeProperty::SupportHyperplanes);
     Dual.compute_extreme_rays();
-    Matrix<Integer> Essential_Hyperplanes=Dual.Generators.submatrix(Dual.Extreme_Rays);
-    Support_Hyperplanes=list<vector<Integer> >
-                   (Essential_Hyperplanes.get_elements().begin(),Essential_Hyperplanes.get_elements().end());
+    Support_Hyperplanes = Dual.Generators.submatrix(Dual.Extreme_Rays); //only essential hyperplanes
     is_Computed.set(ConeProperty::SupportHyperplanes);
-    nrSupport_Hyperplanes=Support_Hyperplanes.size();
+    nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
     do_all_hyperplanes=false;
 }
     
@@ -2823,7 +2780,7 @@ void Full_Cone<Integer>::compute_extreme_rays(){
         return;
     assert(isComputed(ConeProperty::SupportHyperplanes));
 
-    if(dim*Support_Hyperplanes.size() < nr_gen) {
+    if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
          compute_extreme_rays_rank();
     } else {
          compute_extreme_rays_compare();
@@ -2838,26 +2795,22 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
     if (verbose) verboseOutput() << "Select extreme rays via rank ... " << flush;
 
     size_t i,j;
-    typename list<vector<Integer> >::iterator s;
-    vector<size_t> gen_in_hyperplanes;
-    gen_in_hyperplanes.reserve(Support_Hyperplanes.size());
-    Matrix<Integer> M;
+    vector<key_t> gen_in_hyperplanes;
+    gen_in_hyperplanes.reserve(Support_Hyperplanes.nr_of_rows());
+    Matrix<Integer> M(Support_Hyperplanes.nr_of_rows(),dim);
     
     for(i=0;i<nr_gen;++i){
         Extreme_Rays[i]=false;
         if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
             continue;
-        j=0;
         gen_in_hyperplanes.clear();
-        for(s=Support_Hyperplanes.begin();s!=Support_Hyperplanes.end();++s){
-            if(v_scalar_product(Generators[i],*s)==0)
+        for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j){
+            if(v_scalar_product(Generators[i],Support_Hyperplanes[j])==0)
                 gen_in_hyperplanes.push_back(j);
-            j++;
         }
-        if(gen_in_hyperplanes.size()< dim-1)
+        if (gen_in_hyperplanes.size() < dim-1)
             continue;
-        M=select_matrix_from_list(Support_Hyperplanes,gen_in_hyperplanes);
-        if(M.rank()>=dim-1)
+        if (M.rank_submatrix(Support_Hyperplanes,gen_in_hyperplanes) >= dim-1)
             Extreme_Rays[i]=true;   
     }
 
@@ -2875,7 +2828,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     size_t i,j,k,l,t;
     // Matrix<Integer> SH=getSupportHyperplanes().transpose();
     // Matrix<Integer> Val=Generators.multiplication(SH);
-    size_t nc=Support_Hyperplanes.size();
+    size_t nc=Support_Hyperplanes.nr_of_rows();
     
     vector<vector<bool> > Val(nr_gen);
     for (i=0;i<nr_gen;++i)
@@ -2886,7 +2839,6 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     
     vector<key_t> Zero(nc);
     vector<key_t> nr_zeroes(nr_gen);
-    typename list<vector<Integer> >::iterator s;
 
     for (i = 0; i <nr_gen; i++) {
         if (isComputed(ConeProperty::Triangulation) && !in_triang[i]) {
@@ -2895,9 +2847,8 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
         }
         k=0;
         Extreme_Rays[i]=true;
-        s=Support_Hyperplanes.begin();
-        for (j = 0; j <nc; ++j,++s) {
-            if (v_scalar_product(Generators[i],*s)==0) {
+        for (j = 0; j <nc; ++j) {
+            if (v_scalar_product(Generators[i],Support_Hyperplanes[j])==0) {
                 k++;
                 Val[i][j]=false;                
             }
@@ -2959,11 +2910,10 @@ void Full_Cone<Integer>::select_deg1_elements() { // from the Hilbert basis
 
 template<typename Integer>
 bool Full_Cone<Integer>::contains(const vector<Integer>& v) {
-    typename list<vector<Integer> >::iterator s;
-    for(s= Support_Hyperplanes.begin();s!= Support_Hyperplanes.end();++s)
-        if(v_scalar_product(*s,v)<0)
-            return(false);
-    return(true);
+    for (size_t i=0; i<Support_Hyperplanes.nr_of_rows(); ++i)
+        if (v_scalar_product(Support_Hyperplanes[i],v) < 0)
+            return false;
+    return true;
 }
 //---------------------------------------------------------------------------
 
@@ -3325,12 +3275,12 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
         if(verbose) {
             verboseOutput()<<"computing degree function... "<<flush;
         }
-        typename list< vector<Integer> >::const_iterator h;
-        for (h=Support_Hyperplanes.begin(); h!=Support_Hyperplanes.end(); ++h) {
+        size_t h;
+        for (h=0; h<Support_Hyperplanes.nr_of_rows(); ++h) {
             for (i=0; i<dim; i++) {
-                degree_function[i]+=(*h)[i];
+                degree_function[i] += Support_Hyperplanes.get_elem(h,i);
             }
-        } 
+        }
         v_make_prime(degree_function);
         if(verbose) {
             verboseOutput()<<"done."<<endl;
@@ -3343,7 +3293,7 @@ vector<Integer> Full_Cone<Integer>::compute_degree_function() const {
 
 template<typename Integer>
 Integer Full_Cone<Integer>::primary_multiplicity() const{
-    size_t i,j,k;
+    size_t h,i,j,k;
     Integer primary_multiplicity=0;
     vector <key_t> key,new_key(dim-1);
     Matrix<Integer> Projection(nr_gen,dim-1);
@@ -3352,17 +3302,16 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
             Projection.write(i,j,Generators[i][j]);
         }
     }
-    typename list< vector<Integer> >::const_iterator h;
     typename list< SHORTSIMPLEX<Integer> >::const_iterator t;
-    for (h =Support_Hyperplanes.begin(); h != Support_Hyperplanes.end(); ++h){
-        if ((*h)[dim-1]!=0) {
+    for (h = 0;  h < Support_Hyperplanes.nr_of_rows(); ++h){
+        if (Support_Hyperplanes.get_elem(h,dim-1) != 0) {
             for (t =Triangulation.begin(); t!=Triangulation.end(); ++t){
                 key=t->key;
                 for (i = 0; i <dim; i++) {
                     k=0;
                     for (j = 0; j < dim; j++) {
                         if (j!=i && Generators[key[j]][dim-1]==1) {
-                            if (v_scalar_product(Generators[key[j]],(*h))==0) {
+                            if (v_scalar_product(Generators[key[j]],Support_Hyperplanes[h])==0) {
                                 k++;
                             }
                         }
@@ -3423,32 +3372,16 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         throw BadInputException();
     }
     Generators = M;
-    nr_gen=Generators.nr_of_rows();
+    //make the generators coprime, remove 0 rows and duplicates
+    Generators.make_prime();
+    Generators.remove_duplicate_and_zero_rows();
+    nr_gen = Generators.nr_of_rows();
+
     if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {
         error_msg("Too many generators to fit in range of key_t!");
         throw FatalException();
     }
-    //make the generators coprime, remove 0 rows and duplicates
-    vector<Integer> gcds = Generators.make_prime();
-    bool remove_some = false;
-    vector<bool> key(nr_gen, true);
-    
-    set<vector<Integer> > SortedGens;
-    typename set<vector<Integer> >::iterator found;
-    for (size_t i = 0; i<nr_gen; i++) {
-        found=SortedGens.find(Generators[i]);
-        if(gcds[i] == 0 || found!=SortedGens.end()){
-            key[i] = false;
-            remove_some = true;
-        }
-        else
-            SortedGens.insert(found,Generators[i]);   
-    }
-    
-    if (remove_some) {
-        Generators=Generators.submatrix(key);
-        nr_gen=Generators.nr_of_rows();
-    }
+
     multiplicity = 0;
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
@@ -3505,9 +3438,12 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     OldCandidates.dual=false;
     NewCandidates.dual=false;
     
-    AdjustedReductionBound=UpdateReducersBound/omp_get_max_threads();
+    int max_threads = omp_get_max_threads();
+    AdjustedReductionBound=UpdateReducersBound/max_threads;
     if(AdjustedReductionBound < 10000)
         AdjustedReductionBound=10000;
+
+    RankTest = vector< Matrix<Integer> >(max_threads, Matrix<Integer>(0,dim));
 }
 
 //---------------------------------------------------------------------------
@@ -3536,9 +3472,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     
     reset_tasks();
     
-    for (size_t i=0; i < C.SupportHyperplanes.nr_of_rows(); i++) {
-        Support_Hyperplanes.push_back(C.SupportHyperplanes[i]);
-    }
+    Support_Hyperplanes = C.SupportHyperplanes;
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
     if(!C.do_only_Deg1_Elements){
@@ -3590,9 +3524,7 @@ void Full_Cone<Integer>::dual_mode() {
     start_from=0;
     old_nr_supp_hyps=0;
     
-    Support_Hyperplanes.sort();
-    Support_Hyperplanes.unique();
-    Support_Hyperplanes.remove(vector<Integer>(dim,0));
+    Support_Hyperplanes.remove_duplicate_and_zero_rows();
 
     if(dim>0 && !inhomogeneous) {            //correction needed to include the 0 cone;
         deg1_check();
@@ -3798,15 +3730,7 @@ vector<bool> Full_Cone<Integer>::getExtremeRays()const{
 
 template<typename Integer>
 Matrix<Integer> Full_Cone<Integer>::getSupportHyperplanes()const{
-    size_t s= Support_Hyperplanes.size();
-    Matrix<Integer> M(s,dim);
-    size_t i=0;
-    typename list< vector<Integer> >::const_iterator l;
-    for (l =Support_Hyperplanes.begin(); l != Support_Hyperplanes.end(); l++) {
-        M.write(i,(*l));
-        i++;
-    }
-    return M;
+    return Support_Hyperplanes;
 }
 
 //---------------------------------------------------------------------------
