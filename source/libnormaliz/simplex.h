@@ -168,7 +168,8 @@ public:
 template<typename Integer>
 class Collector {
     
-    friend class SimplexEvaluator<Integer>;
+    template<typename> friend class SimplexEvaluator;
+    template<typename> friend class Full_Cone;
     
     Full_Cone<Integer> * C_ptr;
     size_t dim;

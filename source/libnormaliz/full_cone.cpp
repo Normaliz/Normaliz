@@ -2116,9 +2116,18 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
         for(i=0;i<dim;++i)
             if(v_scalar_product(*E,SimplCone.Support_Hyperplanes[i])==0 && Excluded[i])
                 break;
-        if(i==dim)
-            Deg1_Elements.push_back(*E); // Results[0].Deg1_Elements.push_back(*E);        
+        if(i<dim)
+            continue;
+            
+        for(i=0;i<dim;++i)  // exclude original generators
+            if(*E==SimplCone.Generators[i])
+                 break;
+        if(i==dim){    
+            Results[0].Deg1_Elements.push_back(*E); // Results[0].Deg1_Elements.push_back(*E);
+            Results[0].collected_elements_size++;
+        }        
     }
+    Results[0].transfer_candidates();
 }
     
 
