@@ -1044,6 +1044,11 @@ bool SimplexEvaluator<Integer>::is_reducible(const vector< Integer >& new_elemen
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+vector<key_t> SimplexEvaluator<Integer>::get_key(){
+    return key;
+}
+
 
 // Collector
 

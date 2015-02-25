@@ -157,7 +157,10 @@ public:
     bool evaluate(SHORTSIMPLEX<Integer>& s);
     
     // evaluation in parallel threads
-    void Simplex_parallel_evaluation(); 
+    void Simplex_parallel_evaluation();  
+
+        vector<key_t> get_key();
+
     
 };
 //class SimplexEvaluator end

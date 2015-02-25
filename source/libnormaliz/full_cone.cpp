@@ -2052,7 +2052,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
     for(;LS!=LargeSimplices.end();++LS){
         if(do_deg1_elements && !do_triangulation && !deg1_triangulation){
-            compute_deg1_elements_via_approx_simplicial(*LS);        
+            compute_deg1_elements_via_approx_simplicial(LS->get_key());        
         }
         else{
             LS->Simplex_parallel_evaluation();
@@ -2080,7 +2080,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
+void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t> key){
 
     Full_Cone<Integer> SimplCone(Generators.submatrix(key));
     SimplCone.Grading=Grading;
@@ -2088,7 +2088,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
     
     vector<bool> Excluded(dim,false);
     for(size_t i=0;i<dim;++i){
-        Integer test=v_Scalar_product(SimplCone.Support_Hyperplanes[i],Order_Vector);
+        Integer test=v_scalar_product(SimplCone.Support_Hyperplanes[i],Order_Vector);
         if(test>0)
             continue;
         if(test<0){

@@ -611,7 +611,6 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
 /* only used by the constructors */
 template<typename Integer>
 void Cone<Integer>::initialize() {
-    inhomogeneous=false;
     BC_set=false;
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     dim = 0;
