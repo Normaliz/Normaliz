@@ -639,8 +639,8 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
             jj->pop_back(); //remove the norm entry at the end
             
             // transform to global coordinates 
-            *jj = Generators.VxM(*jj);
-            v_scalar_division(*jj,volume);
+            *jj = Generators.VxM_div(*jj,volume);
+            // v_scalar_division(*jj,volume);
             
             // reduce against global reducers in C.OldCandidates and insert into HB_Elements
             if(full_cone_simplicial){ // no global reduction necessary
