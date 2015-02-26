@@ -2981,9 +2981,15 @@ void Full_Cone<Integer>::check_pointed() {
     assert(isComputed(ConeProperty::SupportHyperplanes));
     if (isComputed(ConeProperty::IsPointed))
         return;
+    if (isComputed(ConeProperty::Grading)){
+        pointed=true;
+        if (verbose) verboseOutput() << "Pointed since graded" << endl << flush;
+        is_Computed.set(ConeProperty::IsPointed);
+        return;
+    }
     if (verbose) verboseOutput() << "Checking for pointed ... " << flush;
-    Matrix<Integer> SH = getSupportHyperplanes();
-    pointed = (SH.rank() == dim);
+
+    pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
     if (verbose) verboseOutput() << "done." << endl;
 }
