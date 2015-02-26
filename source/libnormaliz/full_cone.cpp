@@ -2051,7 +2051,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
     for(;LS!=LargeSimplices.end();++LS){
-        if(do_deg1_elements && !do_triangulation && !deg1_triangulation){
+        if(do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation){
             compute_deg1_elements_via_approx_simplicial(LS->get_key());        
         }
         else{
@@ -2074,7 +2074,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         FreeSimpl.splice(FreeSimpl.begin(),Triangulation);
         TriangulationSize=0;
     }
-
 }
 
 //---------------------------------------------------------------------------
@@ -2088,9 +2087,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
     SimplCone.do_deg1_elements=true;
     SimplCone.do_approximation=true;
     
-    cout << "Vor Approx" << endl;
     SimplCone.compute();
-    cout << "Nach Approx" << endl;
     
     vector<bool> Excluded(dim,false);
     for(size_t i=0;i<dim;++i){
