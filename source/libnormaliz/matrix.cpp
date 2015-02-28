@@ -212,7 +212,7 @@ void Matrix<Integer>::print(ostream& out) const{
 template<typename Integer>
 void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     size_t i,j,k;
-    size_t max_length = maximal_decimal_length();
+    vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
@@ -222,7 +222,7 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
             out << i << ": ";
         }
         for (j = 0; j < nc; j++) {
-            for (k= 0; k <= max_length - decimal_length(elem[i][j]); k++) {
+            for (k= 0; k <= max_length[j] - decimal_length(elem[i][j]); k++) {
                 out<<" ";
             }
             out<<elem[i][j];
@@ -447,6 +447,20 @@ size_t Matrix<Integer>::maximal_decimal_length() const{
     for (i = 0; i <nr; i++) {
         for (j = 0; j <nc; j++) {
             maxim=max(maxim,decimal_length(elem[i][j]));
+        }
+    }
+    return maxim;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<size_t> Matrix<Integer>::maximal_decimal_length_columnwise() const{
+    size_t i,j=0;
+    vector<size_t> maxim(nc,0);
+    for (i = 0; i <nr; i++) {
+        for (j = 0; j <nc; j++) {
+            maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
         }
     }
     return maxim;
