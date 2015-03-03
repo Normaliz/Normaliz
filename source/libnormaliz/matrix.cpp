@@ -1130,7 +1130,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
     }
     
     det=0;
-    if(nr<=nc && rk==nr){ // must allow nonsquare matrices
+    if (nr <= nc && rk == (long) nr) { // must allow nonsquare matrices
         det=1;
         for(size_t i=0;i<nr;++i)
             det*=elem[i][i];            
