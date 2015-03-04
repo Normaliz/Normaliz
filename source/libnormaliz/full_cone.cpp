@@ -909,7 +909,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     efficient if a pyramid is large. For triangulation a large recursive
     pyramid is then stored as a pyramid of type (ii).
 
-    (b) If the "this" is processed in a parallelized loop calling process_pyramids, then
+    (b) If "this" is processed in a parallelized loop calling process_pyramids, then
     the loop in process_pyramids cannot be interrupted for the evaluation of simplices. As a
     consequence an extremely long lst of simplices could arise if many small subpyramids of "this"
     are created in process_pyramids. In order to prevent this dangeous effect, small recursive
@@ -918,7 +918,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     Pyramids of type (ii) are stpred in Pyramids. The store_level of the created pyramids is 0
     for all pyramids created (possibly recursively) from the top cone. Pyramids created
-    in evaluate_stored_pyramids get the store level for their subpyramids in that routine.
+    in evaluate_stored_pyramids get the store level for their subpyramids in that routine and
+    transfer it to their recursive daughters. (correction March 4, 2015).
 
     Note: the top cone has pyr_level=-1. The pyr_level has no algorithmic relevance
     at present, but it shows the depth of the pyramid recursion at which the pyramid has been
@@ -2956,7 +2957,7 @@ void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vec
 //---------------------------------------------------------------------------
 
 
-// sofar only for experiments
+// so far only for experiments
 
 template<typename Integer>
 void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vectors computed in 
@@ -3643,7 +3644,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     // multithreaded_pyramid=false; // SEE ABOVE
     
     nextGen=0;
-    store_level=0;
+    store_level=C.store_level;
     
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
