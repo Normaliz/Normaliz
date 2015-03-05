@@ -10,6 +10,7 @@
 #include "my_omp.h"
 #include "HilbertSeries.h"
 #include <iostream>
+#include <fstream>
 
 namespace libnormaliz {
 
@@ -141,7 +142,7 @@ void OffloadHandler<Integer>::transfer_bools()
   Full_Cone<Integer>& foo_loc = local_fc_ref;  // prevents segfault
   //TODO segfaults should be resolved in intel compiler version 2015
   bool is_computed_pointed = local_fc_ref.isComputed(ConeProperty::IsPointed);
-  #pragma offload target(mic:mic_nr)
+  #pragma offload target(mic:mic_nr) in(mic_nr)
   {
     bool foo = offload_fc_ptr->inhomogeneous;  // prevents segfault
     offload_fc_ptr->inhomogeneous      = foo_loc.inhomogeneous;
@@ -163,7 +164,14 @@ void OffloadHandler<Integer>::transfer_bools()
       offload_fc_ptr->pointed = foo_loc.pointed;
       offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
     }
-    //verbose = true;
+    verbose = true;
+    string fstr = "/tmp/mic";
+    fstr.push_back(static_cast<char>('0'+mic_nr));
+    fstr.append(".log");
+    cout << "writing to " << fstr << endl;
+    ofstream *fout = new ofstream(fstr.c_str());
+    setVerboseOutput(*fout);
+    setErrorOutput(*fout);
   }
 //  cout << "mic " << mic_nr<< ": transfer_bools done" << endl;
 }
