@@ -3620,7 +3620,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     // multithreaded_pyramid=false; // SEE ABOVE
     
     nextGen=0;
-    store_level=0;
+    store_level = C.store_level;
     
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
