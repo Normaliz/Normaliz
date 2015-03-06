@@ -2019,7 +2019,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     step_x_size = TriangulationSize-VERBOSE_STEPS;
 
     
-    #pragma omp parallel 
+    #pragma omp parallel
     {
         typename list< SHORTSIMPLEX<Integer> >::iterator s = Triangulation.begin();
         size_t spos=0;

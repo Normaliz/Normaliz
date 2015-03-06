@@ -671,7 +671,7 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
 {
     if (!is_init) init(fc);
 
-    //offload some pyramids //TODO move only a part
+    // offload some pyramids
     list< vector<key_t> > pyrs;
     vector<bool> started(nr_handlers, false);
     size_t nr_transfer = min(fc.nrPyramids[0]/2, 25000ul);
