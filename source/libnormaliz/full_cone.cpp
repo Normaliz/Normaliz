@@ -2056,6 +2056,11 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             compute_deg1_elements_via_approx_simplicial(LS->get_key());        
         }
         else{
+	    list<vector<Integer> > sub_div_elements;
+	    compute_sub_div_elements(LS->get_key(),sub_div_elements);
+        cout << NrSurvivors << " Survivors of " << NrCand << endl;
+        cout << sub_div_elements.size() << " subdividing elements" << endl;
+	    sub_div_elements.clear();
             LS->Simplex_parallel_evaluation();
             if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){       
                 Results[0].transfer_candidates();
@@ -2080,7 +2085,25 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t> key){
+void Full_Cone<Integer>::compute_sub_div_elements(const vector<key_t>& key,list<vector<Integer> >& sub_div_elements){
+  
+   Full_Cone<Integer> SimplCone(Generators.submatrix(key));
+   SimplCone.Grading=Grading;
+   SimplCone.is_Computed.set(ConeProperty::Grading);
+   SimplCone.do_Hilbert_basis=true;
+   SimplCone.do_approximation=true;
+   
+   SimplCone.Truncation=SimplCone.Generators.find_linear_form();
+   SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
+
+   SimplCone.compute();
+   sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
 
     Full_Cone<Integer> SimplCone(Generators.submatrix(key));
     SimplCone.Grading=Grading;
@@ -2295,9 +2318,6 @@ void Full_Cone<Integer>::compute() {
         support_hyperplanes();
     else{
         minimize_support_hyperplanes();
-        // set needed do_ vars
-        if (do_Hilbert_basis||do_deg1_elements||do_h_vector)
-        do_evaluation = true;
         
         if(inhomogeneous)
             set_levels();
@@ -2332,13 +2352,20 @@ void Full_Cone<Integer>::compute() {
                 support_hyperplanes();
             if(verbose)
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
-            compute_deg1_elements_via_approx();
-            if(do_triangulation){
-                do_deg1_elements=false;
-                do_partial_triangulation=false;
-                do_only_multiplicity = do_determinants;
-                primal_algorithm();            
+            if(do_deg1_elements){
+                compute_elements_via_approx(Deg1_Elements);
+	            is_Computed.set(ConeProperty::Deg1Elements,true);
+                if(do_triangulation){
+                    do_deg1_elements=false;
+                    do_partial_triangulation=false;
+                    do_only_multiplicity = do_determinants;
+                    primal_algorithm();            
+                }
+            } else{  // now we want subdividing elements for a simplicial cone
+                assert(do_Hilbert_basis);
+                    compute_elements_via_approx(Hilbert_Basis);            
             }
+            
         }
         else
             primal_algorithm();
@@ -2353,23 +2380,27 @@ void Full_Cone<Integer>::compute() {
 
 // -1
 template<typename Integer>
-void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
+void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& elements_from_approx) {
 
     if (!isComputed(ConeProperty::Grading)){
         support_hyperplanes(); // the only thing we can do now
         return;
     }
+    
+    assert(elements_from_approx.empty());
 
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
-    // C_approx.Generators.pretty_print(cout);
-    C_approx.do_deg1_elements=true;  // for supercone C_approx that is generated in degree 1
     C_approx.is_approximation=true;
-    // C_approx.do_Hilbert_basis=true;
-    // C_approx.do_all_hyperplanes=false;
-    // C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
-    // C_approx.Support_Hyperplanes=Support_Hyperplanes;
+    // C_approx.Generators.pretty_print(cout);
+    C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
+    C_approx.do_Hilbert_basis=do_Hilbert_basis;
+    C_approx.do_all_hyperplanes=false;    // we use the support Hyperplanes of the approximated cone for the selection of elements
+    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
+    C_approx.Support_Hyperplanes=Support_Hyperplanes;
+    C_approx.Truncation=Truncation;
+    C_approx.TruncLevel=TruncLevel;
     if(verbose)
-        verboseOutput() << "Computing deg 1 elements in approximating cone with "
+        verboseOutput() << "Computing elements in approximating cone with "
                         << C_approx.Generators.nr_of_rows() << " generators." << endl;
     C_approx.compute();
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
@@ -2378,17 +2409,23 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     }
 
     if(verbose)
-        verboseOutput() << "Sum of dets of simplicial cones evaluated in approximation = " << C_approx.detSum << endl;
-
+        verboseOutput() << "Sum of dets of simplicial cones evaluated in approximation = " << C_approx.detSum << endl;   
+    
     if(verbose)
         verboseOutput() << "Returning to original cone" << endl;
-    compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
-    if(verbose)
-        verboseOutput() << "Selecting deg 1 elements from approximating cone" << endl;
-    select_deg1_elements(C_approx);    
-    // select_Hilbert_Basis(C_approx);
-    if(verbose)
-        verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
+    if(do_deg1_elements){
+	elements_from_approx.splice(elements_from_approx.begin(),C_approx.Deg1_Elements);
+	typename list<vector<Integer> >::iterator e;
+	for(e=elements_from_approx.begin(); e!=elements_from_approx.end();)
+	    if(!contains(*e))
+		e=elements_from_approx.erase(e);
+	    else
+		++e;
+        if(verbose)
+	    verboseOutput() << elements_from_approx.size() << " deg 1 elements found" << endl;
+    }
+    if(do_Hilbert_basis)
+	elements_from_approx.splice(elements_from_approx.begin(),C_approx.Hilbert_Basis);
 }
 
 

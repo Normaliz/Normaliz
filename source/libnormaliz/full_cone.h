@@ -96,6 +96,7 @@ class Full_Cone {
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
+    Integer TruncLevel; // used for approximation of simplicial cones
     vector<Integer> Grading;
     vector<Integer> Sorting;
     mpq_class multiplicity;
@@ -227,8 +228,9 @@ class Full_Cone {
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
                                   
     Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
-    void compute_deg1_elements_via_approx(); // uses the approximation
-    void compute_deg1_elements_via_approx_simplicial(const vector<key_t> key); // the same for a simplicial subcone
+    void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
+    void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
+    void compute_sub_div_elements(const vector<key_t>& key,list<vector<Integer> >& sub_div_elements); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
     void select_Hilbert_Basis(const Full_Cone& C);
     

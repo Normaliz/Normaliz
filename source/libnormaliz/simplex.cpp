@@ -486,6 +486,8 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
 
 //---------------------------------------------------------------------------
 
+size_t NrSurvivors=0, NrCand=0;
+
 template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
 
@@ -496,12 +498,20 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     Full_Cone<Integer>& C = *C_ptr;
     
-    /* if(C.is_approximation){
-        vector<Integer> help=Generators.VxM(element);
-        v_scalar_division(help,volume);
+    if(C.is_approximation && C.do_Hilbert_basis){
+    
+        vector<Integer> help=Generators.VxM_div(element,volume);
         if(!C.contains(help))
             return;
-    }*/
+        #pragma omp atomic
+        NrCand++;
+	   if(v_scalar_product(C.Truncation,help) >= C.TruncLevel)
+	    return;
+
+        #pragma omp atomic
+        NrSurvivors++;
+    
+    }
     
     typename list <vector <Integer> >::iterator c;
     

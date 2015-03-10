@@ -1217,6 +1217,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     if (ToCompute.test(ConeProperty::ApproximateRatPolytope)) {
         FC.do_approximation = true;
+	    FC.do_deg1_elements = true;
         is_Computed.set(ConeProperty::ApproximateRatPolytope);
     }
     if (ToCompute.test(ConeProperty::DefaultMode)) {
