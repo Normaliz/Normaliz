@@ -920,14 +920,14 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             //subcone.Generators.pretty_print(cout);
             subcone.do_all_hyperplanes=false;
 
-            C.use_bottom_points = false;
+
 
             subcone.build_cone(); // TODO just store key?
             // evaluate created pyramids and simplices
             C.evaluate_stored_pyramids(0);
             C.evaluate_triangulation();
 
-            C.use_bottom_points = true;
+
 
             if (C.keep_triangulation) {
                 C.Triangulation.splice(C.Triangulation.begin(), tmp_triang);

@@ -2113,9 +2113,10 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     if(verbose){
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
     }
-
+	size_t j=0;
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
-    for(;LS!=LargeSimplices.end();++LS){
+    for(;LS!=LargeSimplices.end();++LS,++j){
+		if (j>=lss) use_bottom_points =false;
         LS->Simplex_parallel_evaluation();
         if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){
             Results[0].transfer_candidates();

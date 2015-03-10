@@ -122,12 +122,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens, In
     SCIPfree(& scip);
     } // end parallel
 
-    cout << "new_points.size()" << new_points.size() << endl;
+    cout  << new_points.size() << " new points accumulated" << endl;
     new_points.sort();
     new_points.unique();
-    cout << "new_points.size()" << new_points.size() << endl;
+    cout << "of which " << new_points.size() << " are unique" << endl;
 
     cout << "stellar_det_sum = " << stellar_det_sum << endl;
+    cout << "this is a factor of " << convert_to_double(volume)/stellar_det_sum << endl;
 }
 
 
@@ -172,7 +173,8 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
             } else nr_hyps++;
 
         }
-//       cout << new_point << " liegt in " << nr_hyps << endl;
+        //#pragma omp critical(VERBOSE)
+       //cout << new_point << " liegt in " << nr_hyps <<" hyperebenen" << endl;
 
     }
     else {
@@ -217,7 +219,7 @@ vector<Integer> opt_sol(SCIP* scip,
                         const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp,
                         const vector<Integer>& grading) {
     double SCIPFactor =1.0;
-    double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]) -1);
+    double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]))-1;
     upper_bound*=SCIPFactor;
     // TODO make the test more strict
     long dim = grading.size();
@@ -290,22 +292,115 @@ vector<Integer> opt_sol(SCIP* scip,
 	double feastol = max(1e-17,epsilon*10);
 	SCIPsetRealParam(scip, "numerics/epsilon", epsilon); 
 	SCIPsetRealParam(scip, "numerics/feastol", feastol); 
-    SCIPsolve(scip);
 
-    //    SCIPprintStatistics(scip, NULL);
+    SCIPsolve(scip);
+    
+    
+
+    //SCIPprintStatistics(scip, NULL);
     vector<Integer> sol_vec(dim);
+    
+	// if generators are inserted as solution, we also have to check, whether the upper_bound 
+	// was really reduced
+	// if(v_scalar_product(grading,sol_vec)<=upper_bound)
     if( SCIPgetNLimSolsFound(scip) > 0 ) // solutions respecting objective limit (ie not our input solutions)
     {
         SCIP_SOL* sol = SCIPgetBestSol(scip);
-//        SCIPprintSol(scip, SCIPgetBestSol(scip), NULL, FALSE) ;
+        //SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+        //SCIPprintSol(scip, sol, NULL, FALSE) ;
 
         for (int i=0;i<dim;i++) {
             sol_vec[i] = explicit_cast_to_long(SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
         }
+
+        // HOTFIX to avoid pseudo solution 
+        //if(v_scalar_product(grading,sol_vec)>upper_bound){
+			//Integer sc = v_scalar_product(sol_vec,grading);
+				//#pragma omp critical(VERBOSE)
+				//{
+					//cout << "solution does not respect upper bound! here's the data:" << endl;
+					//cout << "upper bound: " << upper_bound << endl;
+					//cout << "grading: " << grading;
+					//cout << "hyperplanes:" << endl;
+					//SuppHyp.pretty_print(cout);
+					//cout << "generators:" << endl;
+					//gens.pretty_print(cout);
+					//cout << sc << " | solution " << sol_vec;
+					//cout << "epsilon: " << epsilon << endl;
+					//SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+					//SCIPprintSol(scip, sol, NULL, FALSE) ;
+					//cout << "write files... " << endl;
+					//FILE* file = fopen("mostrecent.lp","w");
+					//assert (file != NULL);
+					//SCIPprintOrigProblem(scip, file, "lp", FALSE);
+					//SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+					//fclose(file);
+					//assert(v_scalar_product(grading,sol_vec)<=upper_bound);
+			
+				//}
+			//return vector<Integer>();
+			//}
+			
+		
+        //for (int i=0;i<nrSuppHyp;i++) {
+			//if((v_scalar_product(SuppHyp[i],sol_vec))<0) {
+				//Integer sc = v_scalar_product(sol_vec,grading);
+				//#pragma omp critical(VERBOSE)
+				//{
+					//cout << "solution does not respect hyperplanes! here's the data:" << endl;
+					//cout << "the hyperplane: " << SuppHyp[i];
+					//cout << "grading: " << grading;
+					//cout << "hyperplanes:" << endl;
+					//SuppHyp.pretty_print(cout);
+					//cout << "generators:" << endl;
+					//gens.pretty_print(cout);
+					//cout << sc << " | solution " << sol_vec;
+					//cout << "epsilon: " << epsilon << endl;
+					//SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+					//SCIPprintSol(scip, sol, NULL, FALSE) ;
+					//cout << "write files... " << endl;
+					//FILE* file = fopen("mostrecent.lp","w");
+					//assert (file != NULL);
+					//SCIPprintOrigProblem(scip, file, "lp", FALSE);
+					//SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+					//fclose(file);
+					//assert((v_scalar_product(SuppHyp[i],sol_vec))>=0);
+			
+				//}
+			//return vector<Integer>();
+			//}
+		//}
+        //if((v_scalar_product(grading,sol_vec))<1) {
+		//Integer sc = v_scalar_product(sol_vec,grading);
+		//#pragma omp critical(VERBOSE)
+		//{
+			//cout << "the solution does not respect the nonzero condition! here's the data:" << endl;
+			//cout << "grading: " << grading;
+			//cout << "hyperplanes:" << endl;
+			//SuppHyp.pretty_print(cout);
+			//cout << "generators:" << endl;
+			//gens.pretty_print(cout);
+			//cout << sc << " | solution " << sol_vec;
+			//cout << "epsilon: " << epsilon << endl;
+			//SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+			//SCIPprintSol(scip, sol, NULL, FALSE) ;
+			//cout << "write files... " << endl;
+			//FILE* file = fopen("mostrecent.lp","w");
+			//assert (file != NULL);
+			//SCIPprintOrigProblem(scip, file, "lp", FALSE);
+			//SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+			//fclose(file);
+			//assert((v_scalar_product(grading,sol_vec))>=1);
+			
+		//}
+			//return vector<Integer>();
+        //}
+        assert(v_scalar_product(grading,sol_vec)<=upper_bound);
         for (int i=0;i<nrSuppHyp;i++) assert((v_scalar_product(SuppHyp[i],sol_vec))>=0);
-//        Integer sc = v_scalar_product(sol_vec,grading);
-//		#pragma omp critical(VERBOSE)
-//		cout << sc << " | solution " << sol_vec;
+        assert((v_scalar_product(grading,sol_vec))>=1);
+        //Integer sc = v_scalar_product(sol_vec,grading);
+		//#pragma omp critical(VERBOSE)
+		//cout << sc << " | solution " << sol_vec;
 
     } else {
         return vector<Integer>();
