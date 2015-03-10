@@ -905,28 +905,54 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 tmp_triang_size = C.TriangulationSize - 1;
                 C.TriangulationSize = 0;
             }
-            // create "pyramid" key
+
+            // create subcone key
             vector<key_t> subcone_key(C.dim + nr_new_points);
-            for (int i=0; i<nr_new_points; ++i) {
-                subcone_key[i] = nr_old_gen + i;
-            }
             for (size_t i=0; i<C.dim; ++i) {
-                subcone_key[nr_new_points + i] = key[i];
+                subcone_key[i] = key[i];
             }
-			subcone_key = C.Generators.perm_sort_by_degree(subcone_key, C.Grading,C.isComputed(ConeProperty::Grading));
+            for (int i=0; i<nr_new_points; ++i) {
+                subcone_key[C.dim + i] = nr_old_gen + i;
+            }
 
-            Full_Cone<Integer> subcone(C, subcone_key);
-            subcone.is_Computed.set(ConeProperty::ExtremeRays, false); //TODO could be removed
-            //subcone.Generators.pretty_print(cout);
-            subcone.do_all_hyperplanes=false;
+            //compute optimal triangulation
+            Matrix<Integer> polytope_gens(C.Generators.submatrix(subcone_key));
+            key_t zero_point = polytope_gens.nr_of_rows();
+            polytope_gens.append( vector<Integer>(dim, 0) );
+            polytope_gens.append_column( vector<Integer>(zero_point+1, 1) );
+            Full_Cone<Integer> bottom_polytope(polytope_gens);
+            bottom_polytope.keep_triangulation = true;
+            //bottom_polytope.do_all_hyperplanes = false;
+            bottom_polytope.compute();
+            assert(bottom_polytope.isComputed(ConeProperty::Triangulation));
 
+            // extract bottom triangulation
+            list< SHORTSIMPLEX<Integer> > bottom_triang;
+            typename list< SHORTSIMPLEX<Integer> >::iterator bottom_it;
+            bottom_it = bottom_polytope.Triangulation.begin();
+            typename list< SHORTSIMPLEX<Integer> >::const_iterator bottom_end;
+            bottom_end = bottom_polytope.Triangulation.end();
+            SHORTSIMPLEX<Integer> new_simplex;
+            new_simplex.key = vector<key_t>(dim);
+            key_t i;
+            cout << "extract triangulation from bottom polytope" << endl;
+            for (; bottom_it != bottom_end; ++bottom_it) {
+                sort(bottom_it->key.begin(), bottom_it->key.end());
+                //cout << "org " << bottom_it->key;
+                // we assume sorted keys
+                if (bottom_it->key.back() == zero_point) {
+                    for (i = 0; i < dim; ++i)
+                        new_simplex.key[i] = subcone_key[bottom_it->key[i]];
+                    new_simplex.height = bottom_it->vol; // best replacement for height
+                    new_simplex.vol    = bottom_it->vol;
+                    //cout << "new " << new_simplex.key;
+                    C.Triangulation.push_back(new_simplex);
+                    C.TriangulationSize++;
+                }
+            }
 
-
-            subcone.build_cone(); // TODO just store key?
-            // evaluate created pyramids and simplices
-            C.evaluate_stored_pyramids(0);
+            // evaluate created triangulation
             C.evaluate_triangulation();
-
 
 
             if (C.keep_triangulation) {
