@@ -480,12 +480,23 @@ void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
 
 //---------------------------------------------------------------------------
 
-
 template<typename Integer>
 void Matrix<Integer>::append(const vector<Integer>& V) {
     assert (nc == V.size());
     elem.push_back(V);
     nr++;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::append_column(const vector<Integer>& v) {
+    assert (nr == v.size());
+    for (size_t i=0; i<nr; i++) {
+        elem[i].resize(nc+1);
+        elem[i][nc] = v[i];
+    }
+    nc++;
 }
 
 //---------------------------------------------------------------------------

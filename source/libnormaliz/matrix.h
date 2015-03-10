@@ -212,6 +212,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append(const Matrix& M); // appends the rows of M to this
     void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
     void append(const vector<Integer>& v); // append the row v to this
+    void append_column(const vector<Integer>& v); // append the column v to this
     void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
     void remove_duplicate_and_zero_rows();
 
