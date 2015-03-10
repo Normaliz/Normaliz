@@ -874,7 +874,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         list< vector<Integer> > new_points;
         time_t start,end;
 		time (&start);
-		bottom_points(new_points, Generators);
+		bottom_points(new_points, Generators,volume);
 		time (&end);
 		double dif = difftime (end,start);
 

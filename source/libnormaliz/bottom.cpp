@@ -61,13 +61,15 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
 long long stellar_det_sum;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { //TODO lieber Referenz fuer Matrix?
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens, Integer volume) { //TODO lieber Referenz fuer Matrix?
 	
-	cout << "Using SCIP to compute points from bottom." << endl;
+	cout << "Using SCIP to compute points from bottom. BOUND: " <<ScipBound<< endl;
     stellar_det_sum = 0;
     vector< Matrix<Integer> > q_gens;
     q_gens.push_back(gens);
     int level = 0;
+    double time_limit = pow(log10(convert_to_double(volume)),2);
+    cout << "time limit for this round is " << time_limit << " sec"<< endl;
 
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
@@ -83,13 +85,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 //	SCIPsetBoolParam(scip, "timing/enabled", FALSE);
 	SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
 	SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
+	// set time limit according to volume
+	SCIPsetRealParam(scip, "limits/time", time_limit);
 
 	SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
 	SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
 //	SCIPsetIntParam(scip, "nodeselection/uct/stdpriority", 1000000); 
 
-	SCIPsetRealParam(scip, "numerics/epsilon", 1e-10); 
-	SCIPsetRealParam(scip, "numerics/feastol", 1e-9); 
 
     vector< Matrix<Integer> > local_q_gens;
     list< vector<Integer> > local_new_points;
@@ -281,6 +283,13 @@ vector<Integer> opt_sol(SCIP* scip,
         //fclose(file);
 //#endif
 
+	// set numerics
+	Integer maxabs = v_max_abs(grading);
+	double epsilon = max(1e-20,min(1/(convert_to_double(maxabs)*10),1e-10));
+	//cout << "epsilon is in region " << log10(epsilon) << endl;
+	double feastol = max(1e-17,epsilon*10);
+	SCIPsetRealParam(scip, "numerics/epsilon", epsilon); 
+	SCIPsetRealParam(scip, "numerics/feastol", feastol); 
     SCIPsolve(scip);
 
     //    SCIPprintStatistics(scip, NULL);
@@ -307,9 +316,9 @@ vector<Integer> opt_sol(SCIP* scip,
     return sol_vec; 
 }
 
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens);
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens);
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,long volume);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,long long volume);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,mpz_class volume);
 
 } // namespace
 

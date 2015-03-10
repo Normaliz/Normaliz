@@ -162,11 +162,22 @@ vector<key_t> v_non_zero_pos(const vector<Integer>& v);
 template<typename Integer>
 bool v_is_zero(const vector<Integer>& v);
 
+
+template<typename Integer>
+Integer v_max_abs(const vector<Integer>& v){
+	Integer tmp = 0;
+	for (size_t i=0; i<v.size(); i++){
+		if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
+	}
+	return tmp;
+}
+
 //---------------------------------------------------------------------------
 //							   bool vector operations
 //---------------------------------------------------------------------------
 
 vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
+
 
 //---------------------------------------------------------------------------
 //							  Special
