@@ -2357,7 +2357,7 @@ void Full_Cone<Integer>::compute() {
             if(verbose)
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
             if(do_deg1_elements){
-                compute_elements_via_approx(Deg1_Elements);
+                compute_deg1_elements_via_approx_global();
 	            is_Computed.set(ConeProperty::Deg1Elements,true);
                 if(do_triangulation){
                     do_deg1_elements=false;
@@ -2380,9 +2380,28 @@ void Full_Cone<Integer>::compute() {
         }
         
     }
+    
+    //---------------------------------------------------------------------------
+    
 }
 
-// -1
+template<typename Integer>
+void Full_Cone<Integer>::compute_deg1_elements_via_approx_global() {
+	
+	compute_elements_via_approx(Deg1_Elements);
+	
+	typename list<vector<Integer> >::iterator e;
+	for(e=Deg1_Elements.begin(); e!=Deg1_Elements.end();)
+		if(!contains(*e))
+			e=Deg1_Elements.erase(e);
+		else
+			++e;
+		if(verbose)
+			verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;	
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& elements_from_approx) {
 
@@ -2417,19 +2436,10 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     
     if(verbose)
         verboseOutput() << "Returning to original cone" << endl;
-    if(do_deg1_elements){
-	elements_from_approx.splice(elements_from_approx.begin(),C_approx.Deg1_Elements);
-	typename list<vector<Integer> >::iterator e;
-	for(e=elements_from_approx.begin(); e!=elements_from_approx.end();)
-	    if(!contains(*e))
-		e=elements_from_approx.erase(e);
-	    else
-		++e;
-        if(verbose)
-	    verboseOutput() << elements_from_approx.size() << " deg 1 elements found" << endl;
-    }
+    if(do_deg1_elements)
+		elements_from_approx.splice(elements_from_approx.begin(),C_approx.Deg1_Elements);
     if(do_Hilbert_basis)
-	elements_from_approx.splice(elements_from_approx.begin(),C_approx.Hilbert_Basis);
+		elements_from_approx.splice(elements_from_approx.begin(),C_approx.Hilbert_Basis);
 }
 
 
