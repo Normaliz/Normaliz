@@ -53,9 +53,17 @@ vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<In
 template<typename Integer>
 void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens);
 
+double convert_to_double(mpz_class a) {
+    return a.get_d();
+}
 
-// don't do it with mpz_class TODO
-//template<> void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens) {}
+double convert_to_double(long a) {
+    return a;
+}
+
+double convert_to_double(long long a) {
+    return a;
+}
 
 // TODO do not use global variables
 long long stellar_det_sum;
@@ -182,18 +190,6 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
         stellar_det_sum += explicit_cast_to_long(volume);
     }
     return;
-}
-
-double convert_to_double(mpz_class a) {
-    return a.get_d();
-}
-
-double convert_to_double(long a) {
-    return a;
-}
-
-double convert_to_double(long long a) {
-    return a;
 }
 
 template<typename Integer>
