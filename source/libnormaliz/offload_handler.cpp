@@ -667,14 +667,16 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
+void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_t level)
 {
     if (!is_init) init(fc);
+    size_t fraction = 5;
+    if (level > 0) fraction = 10;
 
     // offload some pyramids
     list< vector<key_t> > pyrs;
     vector<bool> started(nr_handlers, false);
-    size_t nr_transfer = min(fc.nrPyramids[0]/2, 25000ul);
+    size_t nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
     if (nr_transfer == 0) return;
 
     for (int i=0; i<nr_handlers; ++i)
@@ -682,13 +684,13 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc)
       if (!handlers[i]->is_running())
       {
         started[i] = true;
-        typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[0].begin());
+        typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[level].begin());
         for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
-        pyrs.splice(pyrs.end(), fc.Pyramids[0], fc.Pyramids[0].begin(), transfer_end);
-        fc.nrPyramids[0] -= nr_transfer;
+        pyrs.splice(pyrs.end(), fc.Pyramids[level], fc.Pyramids[level].begin(), transfer_end);
+        fc.nrPyramids[level] -= nr_transfer;
         handlers[i]->transfer_pyramids(pyrs);
         pyrs.clear();
-        nr_transfer = min(fc.nrPyramids[0]/2, 25000ul);
+        nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
         if (nr_transfer == 0) break;
       }
     }

@@ -294,9 +294,9 @@ public:
 
 
 #ifdef NMZ_MIC_OFFLOAD
-    void try_offload();
+    void try_offload(const size_t max_level);
 #else
-    void try_offload() {};
+    void try_offload(const size_t max_level) {};
 #endif
 
 

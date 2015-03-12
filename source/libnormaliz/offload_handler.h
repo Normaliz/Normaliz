@@ -68,7 +68,7 @@ public:
   ~MicOffloader();
 
   // on the first call it inits the offloaded cones
-  void offload_pyramids(Full_Cone<Integer>& fc);
+  void offload_pyramids(Full_Cone<Integer>& fc, const size_t level);
 
   // evaluates remaining triangulation
   void evaluate_triangulation();
