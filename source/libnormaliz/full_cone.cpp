@@ -1765,6 +1765,7 @@ void Full_Cone<Integer>::build_cone() {
 
 }
 
+
 //---------------------------------------------------------------------------
 /* builds the top cone successively by inserting generators, computes all essential data
 except global reduction */
@@ -1783,10 +1784,73 @@ void Full_Cone<Integer>::build_top_cone() {
         if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
         verboseOutput()<<"..."<<endl;
     }
-
-    build_cone();
+	
+	if(!do_triangulation && !do_partial_triangulation){
+		build_cone();
+		return;		
+	}
+	
+	cout << "Starte Bottom" << endl;
+    
+	vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
+	Order_Vector = vector<Integer>(dim,0);
+	for(size_t i=0;i<dim;++i)
+			for(size_t j=0;j<dim;++j)
+				Order_Vector[j]+=Generators[start_simpl[i]][j];
+	
+ 
+	Matrix<Integer> BottomGen(0,dim+1);
+	vector<Integer> help(dim+1);
+	for(size_t i=0;i<nr_gen;++i){
+		for(size_t j=0;j<dim; ++j)
+			help[j]=Generators[i][j];
+		help[dim]=0;
+		BottomGen.append(help);					
+	}
+	for(size_t i=0;i<nr_gen;++i){
+		for(size_t j=0;j<dim; ++j)
+			help[j]=Generators[i][j];
+		help[dim]=1;
+		BottomGen.append(help);					
+	}
+	Full_Cone BottomPolyhedron(BottomGen);
+	BottomPolyhedron.compute_support_hyperplanes();	
+	
+	BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
+	
+	Matrix<Integer> BottomFacets(0,dim);
+	vector<Integer> BottomDegs(0,dim);
+	Support_Hyperplanes = Matrix<Integer>(0,dim);
+	help.resize(dim);
+	for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
+			for(size_t j=0;j<dim;++j)
+				help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];
+			if(BottomPolyhedron.Support_Hyperplanes[i][dim]==0){
+				Support_Hyperplanes.append(help);
+				nrSupport_Hyperplanes++;
+			} 
+			else{
+				if(BottomPolyhedron.Support_Hyperplanes[i][dim]<0){
+					BottomFacets.append(help);
+					BottomDegs.push_back(-BottomPolyhedron.Support_Hyperplanes[i][dim]);
+				}
+			}
+	}
+		
+	is_Computed.set(ConeProperty::SupportHyperplanes);
+	
+	vector<key_t> facet;
+	for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
+		facet.clear();
+		for(size_t k=0;k<nr_gen;++k)
+			if(v_scalar_product(Generators[k],BottomFacets[i])==BottomDegs[i])
+				facet.push_back(k);
+		Pyramids[0].push_back(facet);
+		nrPyramids[0]++;			
+	}
+	
         
-    evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids                    
+    evaluate_stored_pyramids(0);                   
         
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
