@@ -1785,12 +1785,10 @@ void Full_Cone<Integer>::build_top_cone() {
         verboseOutput()<<"..."<<endl;
     }
 	
-	if(!do_triangulation && !do_partial_triangulation){
+	if(!do_bottom_dec || deg1_generated || (!do_triangulation && !do_partial_triangulation)) {
 		build_cone();
-		return;		
 	}
-	
-	cout << "Starte Bottom" << endl;
+	else{
     
 	vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
 	Order_Vector = vector<Integer>(dim,0);
@@ -1816,24 +1814,25 @@ void Full_Cone<Integer>::build_top_cone() {
 	Full_Cone BottomPolyhedron(BottomGen);
 	BottomPolyhedron.compute_support_hyperplanes();	
 	
-	BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
+	// BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
 	
 	Matrix<Integer> BottomFacets(0,dim);
 	vector<Integer> BottomDegs(0,dim);
 	Support_Hyperplanes = Matrix<Integer>(0,dim);
 	help.resize(dim);
 	for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
+			Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
+			if((test==0 && isComputed(ConeProperty::SupportHyperplanes)) || test>0)
+				continue;			
 			for(size_t j=0;j<dim;++j)
 				help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];
-			if(BottomPolyhedron.Support_Hyperplanes[i][dim]==0){
+			if(test==0){
 				Support_Hyperplanes.append(help);
 				nrSupport_Hyperplanes++;
 			} 
 			else{
-				if(BottomPolyhedron.Support_Hyperplanes[i][dim]<0){
-					BottomFacets.append(help);
-					BottomDegs.push_back(-BottomPolyhedron.Support_Hyperplanes[i][dim]);
-				}
+				BottomFacets.append(help);
+				BottomDegs.push_back(-test);
 			}
 	}
 		
@@ -1847,6 +1846,8 @@ void Full_Cone<Integer>::build_top_cone() {
 				facet.push_back(k);
 		Pyramids[0].push_back(facet);
 		nrPyramids[0]++;			
+	}
+	
 	}
 	
         
@@ -2224,35 +2225,24 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
 
 template<typename Integer>
 void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
-
-    set<vector<Integer> > Duplicates;
-    for (size_t i = 0; i <nr_gen; i++) {               
-        if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i]){
-            Duplicates.insert(Generators[i]);
-            // cout << in_triang[i] <<" Dupl " << Generators[i];
-        }
-    }
-    size_t nrDuplicates=Duplicates.size();
-    if(nrDuplicates==0)
-        return;
-    
-    size_t nrRemoved=0;
+	
+	set<vector<Integer> > OriGens;
     typename list<Candidate<Integer> >:: iterator c=OldCandidates.Candidates.begin();
     typename set<vector<Integer> >:: iterator found;
-    for(;nrRemoved < nrDuplicates && c!=OldCandidates.Candidates.end();){
-        // cout << c->original_generator << " Suche " << c->cand;
+    for(;c!=OldCandidates.Candidates.end();){
         if(!c->original_generator){
             ++c;
             continue;
         }
-        found=Duplicates.find(c->cand);
-        if(found!=Duplicates.end()){
+        found=OriGens.find(c->cand);
+        if(found!=OriGens.end()){
             c=OldCandidates.Candidates.erase(c);
-            // cout << "Entferne " << c->cand;
-            nrRemoved++;
         }
-        else
-            ++c;    
+        else{
+			if(c->original_generator)
+				OriGens.insert(c->cand);
+            ++c;
+		}
     }
 }
 
@@ -3578,6 +3568,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
         AdjustedReductionBound=10000;
 
     RankTest = vector< Matrix<Integer> >(max_threads, Matrix<Integer>(0,dim));
+	
+	do_bottom_dec=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3773,6 +3765,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     NewCandidates.dual=false;
     
     is_approximation=false;
+	
+	do_bottom_dec=false;
 }
 
 //---------------------------------------------------------------------------
