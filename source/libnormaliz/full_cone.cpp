@@ -1789,6 +1789,9 @@ void Full_Cone<Integer>::build_top_cone() {
 		build_cone();
 	}
 	else{
+		
+	if(verbose)
+		verboseOutput() << "Computing botttom decomposition" << endl;
     
 	vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
 	Order_Vector = vector<Integer>(dim,0);
@@ -1845,8 +1848,10 @@ void Full_Cone<Integer>::build_top_cone() {
 			if(v_scalar_product(Generators[k],BottomFacets[i])==BottomDegs[i])
 				facet.push_back(k);
 		Pyramids[0].push_back(facet);
-		nrPyramids[0]++;			
+		nrPyramids[0]++;
 	}
+	if(verbose)
+		verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
 	
 	}
 	

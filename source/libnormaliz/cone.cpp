@@ -1224,6 +1224,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         FC.do_default_mode = true;
         is_Computed.set(ConeProperty::DefaultMode);
     }
+    
+    if (ToCompute.test(ConeProperty::BottomDecomposition)) {
+		FC.do_bottom_dec = true;
+		is_Computed.set(ConeProperty::BottomDecomposition);
+	}
 
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {

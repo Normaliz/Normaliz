@@ -191,6 +191,9 @@ int main(int argc, char* argv[])
             case 'B':  //use Big Integer
                 use_Big_Integer=true;
                 break;
+			case 'b':  //use the bottom decomposition for the triangulation
+				to_compute.set(ConeProperty::BottomDecomposition);
+				break;
             case 'm':  //save memory / don't optimize for speed
             //    optimize_speed=false;
                 break;
