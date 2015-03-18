@@ -119,6 +119,8 @@ int main(int argc, char* argv[])
 
     //Analyzing the command line options
     bool write_extra_files = false, write_all_files = false;
+	bool do_bottom_dec=false;
+	bool keep_order=false;
     bool use_Big_Integer = false;
     ConeProperties to_compute;
     bool nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
@@ -192,7 +194,10 @@ int main(int argc, char* argv[])
                 use_Big_Integer=true;
                 break;
 			case 'b':  //use the bottom decomposition for the triangulation
-				to_compute.set(ConeProperty::BottomDecomposition);
+				do_bottom_dec=true;
+				break;
+			case 'k':  //use the bottom decomposition for the triangulation
+				keep_order=true;
 				break;
             case 'm':  //save memory / don't optimize for speed
             //    optimize_speed=false;
@@ -228,6 +233,12 @@ int main(int argc, char* argv[])
     if (to_compute.none()) {
         to_compute.set(ConeProperty::DefaultMode);
     }
+
+	if(keep_order)
+		to_compute.set(ConeProperty::KeepOrder);
+		
+	if(do_bottom_dec)
+		to_compute.set(ConeProperty::BottomDecomposition);
 
     if (verbose || !filename_set) {
         printHeader();

@@ -1853,6 +1853,8 @@ void Full_Cone<Integer>::build_top_cone() {
 	if(verbose)
 		verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
 	
+	deg1_triangulation=false;
+	
 	}
 	
         
@@ -3575,6 +3577,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     RankTest = vector< Matrix<Integer> >(max_threads, Matrix<Integer>(0,dim));
 	
 	do_bottom_dec=false;
+	keep_order=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3772,6 +3775,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     is_approximation=false;
 	
 	do_bottom_dec=false;
+	keep_order=true;
 }
 
 //---------------------------------------------------------------------------

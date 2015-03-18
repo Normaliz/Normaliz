@@ -1230,6 +1230,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 		is_Computed.set(ConeProperty::BottomDecomposition);
 	}
 
+	if (ToCompute.test(ConeProperty::KeepOrder)) {
+		FC.keep_order = true;
+		is_Computed.set(ConeProperty::KeepOrder);
+	}
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays = ExtremeRays;

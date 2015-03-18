@@ -88,6 +88,7 @@ class Full_Cone {
     bool do_approximation;
     bool do_default_mode;
 	bool do_bottom_dec;
+	bool keep_order;
 
     // internal helper control variables
     bool do_only_multiplicity;
