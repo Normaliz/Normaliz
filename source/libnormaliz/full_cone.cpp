@@ -2173,6 +2173,17 @@ void Full_Cone<Integer>::primal_algorithm(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_initialize() {
 
+    if (ExcludedFaces.nr_of_rows() > 0) {
+        if (!do_h_vector && !do_Stanley_dec) {
+            errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition" << endl
+                << "Therefore excluded faces will be ignored" << endl;
+        }
+        else {
+            do_excluded_faces=true;
+            prepare_inclusion_exclusion();
+        }
+    }
+
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
     for(size_t i=0;i<SimplexEval.size();++i)
         SimplexEval[i].set_evaluator_tn(i);
@@ -2314,35 +2325,24 @@ void Full_Cone<Integer>::compute() {
         support_hyperplanes();
     else{
         minimize_support_hyperplanes();
-        
-        if(inhomogeneous)
+
+        if (inhomogeneous)
             set_levels();
-        
+
         // look for a grading if it is needed
         find_grading();
         if(isComputed(ConeProperty::IsPointed) && !pointed) return;
         
         if (!isComputed(ConeProperty::Grading))
             disable_grading_dep_comp();
-            
+
         if(inhomogeneous){
             find_level0_dim();
         }
 
         set_degrees();
         sort_gens_by_degree();
-                
-        if(ExcludedFaces.nr_of_rows()>0){
-            if(!do_h_vector && !do_Stanley_dec){
-                errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition" << endl
-                    << "Therefore excluded faces will be ignored" << endl;           
-            }
-            else {
-                do_excluded_faces=true;
-                prepare_inclusion_exclusion();
-            }
-        }
-            
+
         if(do_approximation && !deg1_generated){
             if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes))
                 support_hyperplanes();

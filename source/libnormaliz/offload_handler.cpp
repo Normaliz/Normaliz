@@ -193,7 +193,7 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes()
   Integer *data = new Integer[size];
   fill_plain(data, nr, nc, M);
 
-  // offload to mic, copy data and free it afterwards, but keep a pointer to the created C++ matrix
+  // offload to mic, copy data and create the C++ matrix in the offloaded Full_Cone
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
     offload_fc_ptr->Support_Hyperplanes = Matrix<Integer>(nr, nc);
@@ -204,6 +204,25 @@ void OffloadHandler<Integer>::transfer_support_hyperplanes()
   delete[] data;
 
 //  cout << "mic " << mic_nr<< ": transfer_support_hyperplanes done" << endl;
+  if (local_fc_ref.ExcludedFaces.nr_of_rows() > 0)
+  {
+    const Matrix<Integer>& ExFaces = local_fc_ref.ExcludedFaces;
+
+    nr = ExFaces.nr_of_rows();
+    nc = ExFaces.nr_of_columns();
+    size = nr*nc;
+    assert(size > 0); // make sure there are support hyperplanes computed
+    Integer *data = new Integer[size];
+    fill_plain(data, nr, nc, ExFaces);
+
+    // offload to mic, copy data and create the C++ matrix in the offloaded Full_Cone
+    #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
+    {
+      offload_fc_ptr->ExcludedFaces = Matrix<Integer>(nr, nc);
+      fill_matrix(offload_fc_ptr->ExcludedFaces, nr, nc, data);
+    }
+    delete[] data;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -215,13 +234,16 @@ void OffloadHandler<Integer>::transfer_grading()
   long dim = local_fc_ref.dim;
   if (local_fc_ref.inhomogeneous)
   {
+    assert(local_fc_ref.isComputed(ConeProperty::RecessionRank));
     Integer *data = new Integer[dim];
     fill_plain(data, dim, local_fc_ref.Truncation);
+    long level0_dim = local_fc_ref.level0_dim;
 
-    #pragma offload target(mic:mic_nr) in(dim) in(data: length(dim) ONCE)
+    #pragma offload target(mic:mic_nr) in(dim) in(level0_dim) in(data: length(dim) ONCE)
     {
       offload_fc_ptr->Truncation = vector<Integer>(dim);
       fill_vector(offload_fc_ptr->Truncation, dim, data);
+      offload_fc_ptr->level0_dim = level0_dim;
     }
     delete[] data;
   }
@@ -236,16 +258,16 @@ void OffloadHandler<Integer>::transfer_grading()
       offload_fc_ptr->Grading = vector<Integer>(dim);
       fill_vector(offload_fc_ptr->Grading, dim, data);
       offload_fc_ptr->is_Computed.set(ConeProperty::Grading);
-      offload_fc_ptr->set_degrees();
     }
     delete[] data;
   }
 
   if (local_fc_ref.isComputed(ConeProperty::Shift))
   {
-    #pragma offload target(mic:mic_nr)
+    auto shift = local_fc_ref.shift;
+    #pragma offload target(mic:mic_nr) in(shift)
     {
-      offload_fc_ptr->shift = local_fc_ref.shift;
+      offload_fc_ptr->shift = shift;
       offload_fc_ptr->is_Computed.set(ConeProperty::Shift);
     }
   }
@@ -290,15 +312,6 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
     delete[] data;
   }
 
-  if (local_fc_ref.isComputed(ConeProperty::Shift))
-  {
-    #pragma offload target(mic:mic_nr)
-    {
-      offload_fc_ptr->shift = local_fc_ref.shift;
-      offload_fc_ptr->is_Computed.set(ConeProperty::Shift);
-    }
-  }
-
   if (!local_fc_ref.Comparisons.empty())
   {
     long size = local_fc_ref.Comparisons.size();
@@ -324,8 +337,10 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
 {
   #pragma offload target(mic:mic_nr) signal(&running)
   {
-    //TODO handle also inhomogeneous, excluded_faces, approx, ...
     offload_fc_ptr->do_vars_check();
+    if (offload_fc_ptr->inhomogeneous)
+      offload_fc_ptr->set_levels();
+    offload_fc_ptr->set_degrees();
     offload_fc_ptr->primal_algorithm_initialize();
 
     cout << "mic " << mic_nr<< ": create 3 mio empty simplices ..." << endl;
