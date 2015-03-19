@@ -1799,7 +1799,7 @@ void Full_Cone<Integer>::build_top_cone() {
 			for(size_t j=0;j<dim;++j)
 				Order_Vector[j]+=Generators[start_simpl[i]][j];
 	
- 
+	// First the generators for the rexession cone = our cone		
 	Matrix<Integer> BottomGen(0,dim+1);
 	vector<Integer> help(dim+1);
 	for(size_t i=0;i<nr_gen;++i){
@@ -1808,6 +1808,7 @@ void Full_Cone<Integer>::build_top_cone() {
 		help[dim]=0;
 		BottomGen.append(help);					
 	}
+	// then the same vectors as geberators of the bottom polyhedron
 	for(size_t i=0;i<nr_gen;++i){
 		for(size_t j=0;j<dim; ++j)
 			help[j]=Generators[i][j];
@@ -1815,14 +1816,27 @@ void Full_Cone<Integer>::build_top_cone() {
 		BottomGen.append(help);					
 	}
 	Full_Cone BottomPolyhedron(BottomGen);
-	BottomPolyhedron.compute_support_hyperplanes();	
+	BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
 	
 	// BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
 	
+	help.resize(dim);
+	
+	// find extreme rays of Bottom among the generators
+	vector<key_t> BottomExtRays;
+	for(size_t i=0;i<nr_gen;++i)
+		if(BottomPolyhedron.Extreme_Rays[i+nr_gen])
+			BottomExtRays.push_back(i); 
+		
+	if(verbose)
+			verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
+	
 	Matrix<Integer> BottomFacets(0,dim);
 	vector<Integer> BottomDegs(0,dim);
-	Support_Hyperplanes = Matrix<Integer>(0,dim);
-	help.resize(dim);
+	if(!isComputed(ConeProperty::SupportHyperplanes)){
+		Support_Hyperplanes = Matrix<Integer>(0,dim);
+		nrSupport_Hyperplanes=0;
+	}
 	for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
 			Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
 			if((test==0 && isComputed(ConeProperty::SupportHyperplanes)) || test>0)
@@ -1844,9 +1858,9 @@ void Full_Cone<Integer>::build_top_cone() {
 	vector<key_t> facet;
 	for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
 		facet.clear();
-		for(size_t k=0;k<nr_gen;++k)
-			if(v_scalar_product(Generators[k],BottomFacets[i])==BottomDegs[i])
-				facet.push_back(k);
+		for(size_t k=0;k<BottomExtRays.size();++k)
+			if(v_scalar_product(Generators[BottomExtRays[k]],BottomFacets[i])==BottomDegs[i])
+				facet.push_back(BottomExtRays[k]);
 		Pyramids[0].push_back(facet);
 		nrPyramids[0]++;
 	}
