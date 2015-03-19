@@ -1765,10 +1765,93 @@ void Full_Cone<Integer>::build_cone() {
 
 }
 
+//---------------------------------------------------------------------------
+
+ template<typename Integer>
+ void Full_Cone<Integer>::find_bottom_facets() {
+	 
+	 if(verbose)
+		 verboseOutput() << "Computing botttom decomposition" << endl;
+	 
+	 vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
+	 Order_Vector = vector<Integer>(dim,0);
+	 for(size_t i=0;i<dim;++i)
+		 for(size_t j=0;j<dim;++j)
+			 Order_Vector[j]+=Generators[start_simpl[i]][j];
+		 
+		 // First the generators for the rexession cone = our cone		
+		 Matrix<Integer> BottomGen(0,dim+1);
+	 vector<Integer> help(dim+1);
+	 for(size_t i=0;i<nr_gen;++i){
+		 for(size_t j=0;j<dim; ++j)
+			 help[j]=Generators[i][j];
+		 help[dim]=0;
+		 BottomGen.append(help);					
+	 }
+	 // then the same vectors as geberators of the bottom polyhedron
+	 for(size_t i=0;i<nr_gen;++i){
+		 for(size_t j=0;j<dim; ++j)
+			 help[j]=Generators[i][j];
+		 help[dim]=1;
+		 BottomGen.append(help);					
+	 }
+	 Full_Cone BottomPolyhedron(BottomGen);
+	 BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
+	 
+	 // BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
+	 
+	 help.resize(dim);
+	 
+	 // find extreme rays of Bottom among the generators
+	 vector<key_t> BottomExtRays;
+	 for(size_t i=0;i<nr_gen;++i)
+		 if(BottomPolyhedron.Extreme_Rays[i+nr_gen])
+			 BottomExtRays.push_back(i); 
+		 
+		 if(verbose)
+			 verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
+		 
+		 Matrix<Integer> BottomFacets(0,dim);
+	 vector<Integer> BottomDegs(0,dim);
+	 if(!isComputed(ConeProperty::SupportHyperplanes)){
+		 Support_Hyperplanes = Matrix<Integer>(0,dim);
+		 nrSupport_Hyperplanes=0;
+	 }
+	 for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
+		 Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
+		 if((test==0 && isComputed(ConeProperty::SupportHyperplanes)) || test>0)
+			 continue;			
+		 for(size_t j=0;j<dim;++j)
+			 help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];
+		 if(test==0){
+			 Support_Hyperplanes.append(help);
+			 nrSupport_Hyperplanes++;
+		 } 
+		 else{
+			 BottomFacets.append(help);
+			 BottomDegs.push_back(-test);
+		 }
+	 }
+	 
+	 is_Computed.set(ConeProperty::SupportHyperplanes);
+	 
+	 vector<key_t> facet;
+	 for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
+		 facet.clear();
+		 for(size_t k=0;k<BottomExtRays.size();++k)
+			 if(v_scalar_product(Generators[BottomExtRays[k]],BottomFacets[i])==BottomDegs[i])
+				 facet.push_back(BottomExtRays[k]);
+			 Pyramids[0].push_back(facet);
+		 nrPyramids[0]++;
+	 }
+	 if(verbose)
+		 verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
+	 
+ }
+
 
 //---------------------------------------------------------------------------
-/* builds the top cone successively by inserting generators, computes all essential data
-except global reduction */
+
 template<typename Integer>
 void Full_Cone<Integer>::build_top_cone() {
     
@@ -1789,88 +1872,9 @@ void Full_Cone<Integer>::build_top_cone() {
 		build_cone();
 	}
 	else{
-		
-	if(verbose)
-		verboseOutput() << "Computing botttom decomposition" << endl;
-    
-	vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
-	Order_Vector = vector<Integer>(dim,0);
-	for(size_t i=0;i<dim;++i)
-			for(size_t j=0;j<dim;++j)
-				Order_Vector[j]+=Generators[start_simpl[i]][j];
-	
-	// First the generators for the rexession cone = our cone		
-	Matrix<Integer> BottomGen(0,dim+1);
-	vector<Integer> help(dim+1);
-	for(size_t i=0;i<nr_gen;++i){
-		for(size_t j=0;j<dim; ++j)
-			help[j]=Generators[i][j];
-		help[dim]=0;
-		BottomGen.append(help);					
-	}
-	// then the same vectors as geberators of the bottom polyhedron
-	for(size_t i=0;i<nr_gen;++i){
-		for(size_t j=0;j<dim; ++j)
-			help[j]=Generators[i][j];
-		help[dim]=1;
-		BottomGen.append(help);					
-	}
-	Full_Cone BottomPolyhedron(BottomGen);
-	BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
-	
-	// BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
-	
-	help.resize(dim);
-	
-	// find extreme rays of Bottom among the generators
-	vector<key_t> BottomExtRays;
-	for(size_t i=0;i<nr_gen;++i)
-		if(BottomPolyhedron.Extreme_Rays[i+nr_gen])
-			BottomExtRays.push_back(i); 
-		
-	if(verbose)
-			verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
-	
-	Matrix<Integer> BottomFacets(0,dim);
-	vector<Integer> BottomDegs(0,dim);
-	if(!isComputed(ConeProperty::SupportHyperplanes)){
-		Support_Hyperplanes = Matrix<Integer>(0,dim);
-		nrSupport_Hyperplanes=0;
-	}
-	for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
-			Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
-			if((test==0 && isComputed(ConeProperty::SupportHyperplanes)) || test>0)
-				continue;			
-			for(size_t j=0;j<dim;++j)
-				help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];
-			if(test==0){
-				Support_Hyperplanes.append(help);
-				nrSupport_Hyperplanes++;
-			} 
-			else{
-				BottomFacets.append(help);
-				BottomDegs.push_back(-test);
-			}
-	}
-		
-	is_Computed.set(ConeProperty::SupportHyperplanes);
-	
-	vector<key_t> facet;
-	for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
-		facet.clear();
-		for(size_t k=0;k<BottomExtRays.size();++k)
-			if(v_scalar_product(Generators[BottomExtRays[k]],BottomFacets[i])==BottomDegs[i])
-				facet.push_back(BottomExtRays[k]);
-		Pyramids[0].push_back(facet);
-		nrPyramids[0]++;
-	}
-	if(verbose)
-		verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
-	
-	deg1_triangulation=false;
-	
-	}
-	
+		find_bottom_facets();
+		deg1_triangulation=false;
+	}	
         
     evaluate_stored_pyramids(0);                   
         

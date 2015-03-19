@@ -228,7 +228,7 @@ class Full_Cone {
     vector<key_t>  find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
-                                  
+	void find_bottom_facets();                                  
     Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
