@@ -62,7 +62,7 @@ const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comp
 
 const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
-const size_t UpdateReducersBound=200000; // reducers updated if one thread has collected more candidates
+const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
 //---------------------------------------------------------------------------
 
@@ -2037,6 +2037,14 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             get_supphyps_from_copy(false);
         }
         
+        int max_threads = omp_get_max_threads();
+		size_t Memory_per_gen=8*nrSupport_Hyperplanes;
+		size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
+		AdjustedReductionBound=max_nr_gen;
+		if(AdjustedReductionBound < 2000)
+			AdjustedReductionBound=2000;
+		
+        
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
@@ -2150,13 +2158,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             compute_deg1_elements_via_approx_simplicial(LS->get_key());        
         }
         else{
-	    list<vector<Integer> > sub_div_elements;
+	    /* list<vector<Integer> > sub_div_elements;
 	    compute_sub_div_elements(LS->get_key(),sub_div_elements);
         cout << NrSurvivors << " Survivors of " << NrCand << endl;
         cout << sub_div_elements.size() << " subdividing elements" << endl;
-	    sub_div_elements.clear();
+	    sub_div_elements.clear();*/
             LS->Simplex_parallel_evaluation();
-            if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){       
+            if(do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound){       
                 Results[0].transfer_candidates();
                 update_reducers();
             }
@@ -3587,12 +3595,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     OldCandidates.dual=false;
     NewCandidates.dual=false;
     
-    int max_threads = omp_get_max_threads();
-    AdjustedReductionBound=UpdateReducersBound/max_threads;
-    if(AdjustedReductionBound < 10000)
-        AdjustedReductionBound=10000;
-
-    RankTest = vector< Matrix<Integer> >(max_threads, Matrix<Integer>(0,dim));
+	RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
 	
 	do_bottom_dec=false;
 	keep_order=false;
