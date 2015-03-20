@@ -31,6 +31,11 @@ bool verbose = false;
 bool test_arithmetic_overflow = false;
 long overflow_test_modulus = 15401;
 
+size_t GMP_mat=0;
+size_t GMP_hyp=0;
+size_t GMP_scal_prod=0;
+
+
 namespace {
     std::ostream* verbose_ostream_ptr = &std::cout;
     std::ostream* error_ostream_ptr = &std::cerr;

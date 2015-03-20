@@ -138,6 +138,8 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     if(k==dim)
         v_make_prime(NewFacet.Hyp);
     else{
+		#pragma omp atomic
+		GMP_hyp++;
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
         vect_to_mpz(negative.Hyp,mpz_neg);
         vect_to_mpz(positive.Hyp,mpz_pos);
@@ -1794,6 +1796,8 @@ void Full_Cone<Integer>::build_top_cone() {
         if(NrCompVect>0)
             cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal 
                     << " Average " << NrCompVal/NrCompVect+1 << endl;
+		if(GMP_hyp+GMP_scal_prod+GMP_mat>0)
+			cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
     }   
 
 }
@@ -2090,8 +2094,8 @@ void Full_Cone<Integer>::compute_sub_div_elements(const vector<key_t>& key,list<
    Full_Cone<Integer> SimplCone(Generators.submatrix(key));
    SimplCone.Grading=Grading;
    SimplCone.is_Computed.set(ConeProperty::Grading);
-   SimplCone.do_Hilbert_basis=true;
-   SimplCone.do_approximation=true;
+   SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
+   SimplCone.do_approximation=true;  // as indicted by do_approximation
    
    SimplCone.Truncation=SimplCone.Generators.find_linear_form();
    SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);

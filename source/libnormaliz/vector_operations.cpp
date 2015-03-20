@@ -114,6 +114,8 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
         
         
     if(!check_range(ans)){
+		#pragma omp atomic
+		GMP_scal_prod++;
     
         // cout << "av " << av;
         // cout << "bv " << bv;   

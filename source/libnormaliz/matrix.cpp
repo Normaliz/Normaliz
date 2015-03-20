@@ -1507,6 +1507,9 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                elem[i][k+dim]= (*RS[k])[i];
         
         if(!solve_destructive_inner(ZZ_invertible,denom)){
+		   #pragma omp atomic
+		   GMP_mat++;
+		
            Matrix<mpz_class> mpz_this(nr,nc);
            mpz_class mpz_denom;
            if(transpose)
@@ -1915,6 +1918,8 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
     for(size_t i=0; i<nrows;++i)
         for(size_t j=0; j<ncols;++j)
             mpz_mat[i][j]=to_mpz(mat[i][j]);
+	#pragma omp atomic
+	GMP_mat++;
 }
 
 //---------------------------------------------------------------------------
