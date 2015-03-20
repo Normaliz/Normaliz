@@ -2451,9 +2451,11 @@ Hilbert_Basis.unique();
     
     if (do_deg1_elements) {
         for(size_t i=0;i<nr_gen;i++)
-            if(in_triang[i] && v_scalar_product(Grading,Generators[i])==1)
+            if(v_scalar_product(Grading,Generators[i])==1) //TODO in_triang[i] &&
                 Deg1_Elements.push_front(Generators[i]);
         is_Computed.set(ConeProperty::Deg1Elements,true);
+        Deg1_Elements.sort();
+        Deg1_Elements.unique();
     }
     if (do_h_vector) {
         Hilbert_Series.simplify();
@@ -3049,8 +3051,8 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
     
     for(i=0;i<nr_gen;++i){
         Extreme_Rays[i]=false;
-        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
-            continue;
+//        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
+//            continue;
         gen_in_hyperplanes.clear();
         for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j){
             if(v_scalar_product(Generators[i],Support_Hyperplanes[j])==0)
@@ -3089,10 +3091,10 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     vector<key_t> nr_zeroes(nr_gen);
 
     for (i = 0; i <nr_gen; i++) {
-        if (isComputed(ConeProperty::Triangulation) && !in_triang[i]) {
+/*        if (isComputed(ConeProperty::Triangulation)) { // && !in_triang[i]) {
             Extreme_Rays[i]=false;
             continue;
-        }
+        }*/
         k=0;
         Extreme_Rays[i]=true;
         for (j = 0; j <nc; ++j) {
