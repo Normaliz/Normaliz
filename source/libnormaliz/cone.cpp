@@ -205,7 +205,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
     typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
-    
+    initialize();    
     // find basic input type
     bool constraints_input=false, generators_input=false, lattice_ideal_input=false;
     size_t nr_types=0;
@@ -1218,13 +1218,23 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     if (ToCompute.test(ConeProperty::ApproximateRatPolytope)) {
         FC.do_approximation = true;
+	    FC.do_deg1_elements = true;
         is_Computed.set(ConeProperty::ApproximateRatPolytope);
     }
     if (ToCompute.test(ConeProperty::DefaultMode)) {
         FC.do_default_mode = true;
         is_Computed.set(ConeProperty::DefaultMode);
     }
+    
+    if (ToCompute.test(ConeProperty::BottomDecomposition)) {
+		FC.do_bottom_dec = true;
+		is_Computed.set(ConeProperty::BottomDecomposition);
+	}
 
+	if (ToCompute.test(ConeProperty::KeepOrder)) {
+		FC.keep_order = true;
+		is_Computed.set(ConeProperty::KeepOrder);
+	}
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays = ExtremeRays;

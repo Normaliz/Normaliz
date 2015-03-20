@@ -76,7 +76,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
         B=Matrix<Integer>(mpz_SLR.B.nr,mpz_SLR.B.nc);
         mat_to_Int(mpz_SLR.A,A);
         mat_to_Int(mpz_SLR.B,B);
-        index=to_Int<Integer>(mpz_SLR.index);
+        index=mpz_SLR.index; // to_Int<Integer>(mpz_SLR.index);
         c=to_Int<Integer>(mpz_SLR.c);
         rank=mpz_SLR.rank;        
     }
@@ -103,7 +103,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         A = B = Matrix<Integer>(dim);
         index=1;
         for(size_t k=0;k<dim;++k)
-            index*=N[k][k];
+            index*=to_mpz(N[k][k]);
         index=Iabs(index);
         c=1;
         // cout << "Ausgang 0" << endl;
@@ -113,7 +113,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     A=Matrix<Integer>(rank, dim);
     B=Matrix<Integer>(dim,rank);
     
-    Integer row_index=1;
+    mpz_class row_index=1;
     vector<key_t> col(rank);
     vector<bool> col_is_corner(dim,false);
     for(size_t k=0;k<rank;++k){
@@ -125,7 +125,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         col[k]=j;
         if(N[k][j]<0)
             v_scalar_multiplication<Integer>(N[k],-1);
-        row_index*=N[k][j];
+        row_index*=to_mpz(N[k][j]);
     }
     
     if(row_index==1){  // ==> index=1, sublattice is saturated and we can take a projection
@@ -181,7 +181,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     }
     index=1;
     for(size_t k=0;k<rank;++k)
-        index*=N[k][k];
+        index*=to_mpz(N[k][k]);
     return; 
 }
 
@@ -298,9 +298,9 @@ size_t Sublattice_Representation<Integer>::get_rank() const {
 
 //---------------------------------------------------------------------------
 
-/* returns the index of the sublattice */
+// /* returns the index of the sublattice */
 template<typename Integer>
-Integer Sublattice_Representation<Integer>::get_index() const {
+mpz_class Sublattice_Representation<Integer>::get_index() const {
     return index;
 }
 

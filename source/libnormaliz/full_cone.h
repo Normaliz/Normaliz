@@ -93,6 +93,8 @@ public:
     bool do_excluded_faces;
     bool do_approximation;
     bool do_default_mode;
+	bool do_bottom_dec;
+	bool keep_order;
 
     // internal helper control variables
     bool do_only_multiplicity;
@@ -103,6 +105,7 @@ public:
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
+    Integer TruncLevel; // used for approximation of simplicial cones
     vector<Integer> Grading;
     vector<Integer> Sorting;
     mpq_class multiplicity;
@@ -205,6 +208,8 @@ public:
     size_t start_from;
     
     size_t AdjustedReductionBound;
+    
+    bool is_approximation;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -234,10 +239,14 @@ public:
     vector<key_t>  find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
-                                  
+	void find_bottom_facets();                                  
     Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
-    void compute_deg1_elements_via_approx(); // uses the approximation
+    void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
+	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
+    void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
+    void compute_sub_div_elements(const vector<key_t>& key,list<vector<Integer> >& sub_div_elements); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
+    void select_Hilbert_Basis(const Full_Cone& C);
     
     void build_top_cone(); 
     void build_cone();

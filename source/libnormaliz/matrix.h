@@ -208,6 +208,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
                                   //this should be a quadratic matrix
     size_t maximal_decimal_length() const;    //return the maximal number of decimals
                                       //needed to write an entry
+                                      
+    vector<size_t> maximal_decimal_length_columnwise() const; // the same per column
 
     void append(const Matrix& M); // appends the rows of M to this
     void append(const vector<vector<Integer> >& M); // the same, but for another type of matrix
@@ -271,8 +273,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
    void MxV(vector<Integer>& result, const vector<Integer>& v) const;//result = this*V
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
-
-
+   vector<Integer> VxM_div(const vector<Integer>& v, const Integer& divisor) const; // additionally divides by divisor
 
 //---------------------------------------------------------------------------
 //                          Matrix operations

@@ -212,7 +212,7 @@ void Matrix<Integer>::print(ostream& out) const{
 template<typename Integer>
 void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     size_t i,j,k;
-    size_t max_length = maximal_decimal_length();
+    vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
@@ -222,7 +222,7 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
             out << i << ": ";
         }
         for (j = 0; j < nc; j++) {
-            for (k= 0; k <= max_length - decimal_length(elem[i][j]); k++) {
+            for (k= 0; k <= max_length[j] - decimal_length(elem[i][j]); k++) {
                 out<<" ";
             }
             out<<elem[i][j];
@@ -447,6 +447,20 @@ size_t Matrix<Integer>::maximal_decimal_length() const{
     for (i = 0; i <nr; i++) {
         for (j = 0; j <nc; j++) {
             maxim=max(maxim,decimal_length(elem[i][j]));
+        }
+    }
+    return maxim;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<size_t> Matrix<Integer>::maximal_decimal_length_columnwise() const{
+    size_t i,j=0;
+    vector<size_t> maxim(nc,0);
+    for (i = 0; i <nr; i++) {
+        for (j = 0; j <nc; j++) {
+            maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
         }
     }
     return maxim;
@@ -769,7 +783,48 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
         for (j=0; j<nr; j++){
             w[i] += v[j]*elem[j][i];
         }
+        if(!check_range(w[i]))
+            break;
     }
+    if(i==nc)  
+        return w;
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(*this,mpz_this);
+    vector<mpz_class> mpz_v(nr);
+    vect_to_mpz(v,mpz_v);
+    vector<mpz_class> mpz_w=mpz_this.VxM(mpz_v);
+    vect_to_Int(mpz_w,w);
+    return w;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::VxM_div(const vector<Integer>& v, const Integer& divisor) const{
+    assert (nr == v.size());
+    vector<Integer> w(nc,0);
+    size_t i,j;
+    for (i=0; i<nc; i++){
+        for (j=0; j<nr; j++){
+            w[i] += v[j]*elem[j][i];
+        }
+        if(!check_range(w[i]))
+            break;
+    }
+
+    if(i==nc){      
+        v_scalar_division(w,divisor);  
+        return w;
+    }
+    
+    Matrix<mpz_class> mpz_this(nr,nc);
+    mat_to_mpz(*this,mpz_this);
+    vector<mpz_class> mpz_v(nr);
+    vect_to_mpz(v,mpz_v);
+    vector<mpz_class> mpz_w=mpz_this.VxM(mpz_v);
+    mpz_class mpz_div=to_mpz(divisor);
+    v_scalar_division(mpz_w,mpz_div); 
+    vect_to_Int(mpz_w,w);
     return w;
 }
 
@@ -1379,7 +1434,6 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
 
 template<typename Integer>
 vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
-
     bool success;
     vector<key_t> key=max_rank_submatrix_lex_inner(success);
     if(!success){
@@ -1464,6 +1518,9 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                elem[i][k+dim]= (*RS[k])[i];
         
         if(!solve_destructive_inner(ZZ_invertible,denom)){
+		   #pragma omp atomic
+		   GMP_mat++;
+		
            Matrix<mpz_class> mpz_this(nr,nc);
            mpz_class mpz_denom;
            if(transpose)
@@ -1872,6 +1929,8 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
     for(size_t i=0; i<nrows;++i)
         for(size_t j=0; j<ncols;++j)
             mpz_mat[i][j]=to_mpz(mat[i][j]);
+	#pragma omp atomic
+	GMP_mat++;
 }
 
 //---------------------------------------------------------------------------

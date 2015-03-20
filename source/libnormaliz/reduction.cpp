@@ -102,6 +102,9 @@ CandidateList<Integer>::CandidateList(bool dual_algorithm)
     last_hyp = 0;
 }
 
+size_t NrCompVect=0;
+size_t NrCompVal=0;
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -115,17 +118,26 @@ bool CandidateList<Integer>::is_reducible(const vector<Integer>& values, const l
     size_t kk=0;
     typename list<Candidate<Integer> >::const_iterator r;
     for(r=Candidates.begin();r!=Candidates.end();++r){
+        #pragma omp atomic
+        NrCompVect++;
+        #pragma omp atomic
+        NrCompVal++;
         if(sd < r->sort_deg){
             return(false);
         }
+        #pragma omp atomic
+        NrCompVal++;
         size_t i=0;
         if(values[kk]<r->values[kk])
                 continue;
-        for(;i<values.size();++i)
+        for(;i<values.size();++i){
+            #pragma omp atomic
+            NrCompVal++;
             if(values[i]<r->values[i]){
                 kk=i;
                 break;
             }
+        }
         if(i==values.size()){
             return(true);
         }
@@ -479,17 +491,26 @@ bool CandidateTable<Integer>::is_reducible(const vector<Integer>& values, const 
     size_t kk=0;
     typename list < pair<size_t, vector<Integer>* > >::iterator r;
     for(r=ValPointers.begin();r!=ValPointers.end();++r){
+        #pragma omp atomic
+        NrCompVect++;
+        #pragma omp atomic
+        NrCompVal++;
         if(sd < (long) r->first){
             return(false);
         }
+        #pragma omp atomic
+        NrCompVal++;
         size_t i=0;
         if(values[kk] < (*(r->second))[kk])
                 continue;
-        for(;i<values.size();++i)
+        for(;i<values.size();++i){
+            #pragma omp atomic
+            NrCompVal++;
             if(values[i] < (*(r->second))[i]){
                 kk=i;
                 break;
             }
+        }
         if(i==values.size()){
             ValPointers.splice(ValPointers.begin(),ValPointers,r);
             return(true);

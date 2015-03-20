@@ -63,7 +63,7 @@ const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comp
 
 const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
-const size_t UpdateReducersBound=200000; // reducers updated if one thread has collected more candidates
+const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
 //---------------------------------------------------------------------------
 
@@ -139,6 +139,8 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     if(k==dim)
         v_make_prime(NewFacet.Hyp);
     else{
+		#pragma omp atomic
+		GMP_hyp++;
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
         vect_to_mpz(negative.Hyp,mpz_neg);
         vect_to_mpz(positive.Hyp,mpz_pos);
@@ -910,7 +912,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     efficient if a pyramid is large. For triangulation a large recursive
     pyramid is then stored as a pyramid of type (ii).
 
-    (b) If the "this" is processed in a parallelized loop calling process_pyramids, then
+    (b) If "this" is processed in a parallelized loop calling process_pyramids, then
     the loop in process_pyramids cannot be interrupted for the evaluation of simplices. As a
     consequence an extremely long lst of simplices could arise if many small subpyramids of "this"
     are created in process_pyramids. In order to prevent this dangeous effect, small recursive
@@ -919,7 +921,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     Pyramids of type (ii) are stpred in Pyramids. The store_level of the created pyramids is 0
     for all pyramids created (possibly recursively) from the top cone. Pyramids created
-    in evaluate_stored_pyramids get the store level for their subpyramids in that routine.
+    in evaluate_stored_pyramids get the store level for their subpyramids in that routine and
+    transfer it to their recursive daughters. (correction March 4, 2015).
 
     Note: the top cone has pyr_level=-1. The pyr_level has no algorithmic relevance
     at present, but it shows the depth of the pyramid recursion at which the pyramid has been
@@ -1798,8 +1801,92 @@ void Full_Cone<Integer>::build_cone() {
 }
 
 //---------------------------------------------------------------------------
-/* builds the top cone successively by inserting generators, computes all essential data
-except global reduction */
+
+ template<typename Integer>
+ void Full_Cone<Integer>::find_bottom_facets() {
+	 
+	 if(verbose)
+		 verboseOutput() << "Computing botttom decomposition" << endl;
+	 
+	 vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
+	 Order_Vector = vector<Integer>(dim,0);
+	 for(size_t i=0;i<dim;++i)
+		 for(size_t j=0;j<dim;++j)
+			 Order_Vector[j]+=Generators[start_simpl[i]][j];
+		 
+		 // First the generators for the rexession cone = our cone		
+		 Matrix<Integer> BottomGen(0,dim+1);
+	 vector<Integer> help(dim+1);
+	 for(size_t i=0;i<nr_gen;++i){
+		 for(size_t j=0;j<dim; ++j)
+			 help[j]=Generators[i][j];
+		 help[dim]=0;
+		 BottomGen.append(help);					
+	 }
+	 // then the same vectors as geberators of the bottom polyhedron
+	 for(size_t i=0;i<nr_gen;++i){
+		 for(size_t j=0;j<dim; ++j)
+			 help[j]=Generators[i][j];
+		 help[dim]=1;
+		 BottomGen.append(help);					
+	 }
+	 Full_Cone BottomPolyhedron(BottomGen);
+	 BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
+	 
+	 // BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
+	 
+	 help.resize(dim);
+	 
+	 // find extreme rays of Bottom among the generators
+	 vector<key_t> BottomExtRays;
+	 for(size_t i=0;i<nr_gen;++i)
+		 if(BottomPolyhedron.Extreme_Rays[i+nr_gen])
+			 BottomExtRays.push_back(i); 
+		 
+		 if(verbose)
+			 verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
+		 
+		 Matrix<Integer> BottomFacets(0,dim);
+	 vector<Integer> BottomDegs(0,dim);
+	 if(!isComputed(ConeProperty::SupportHyperplanes)){
+		 Support_Hyperplanes = Matrix<Integer>(0,dim);
+		 nrSupport_Hyperplanes=0;
+	 }
+	 for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
+		 Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
+		 if((test==0 && isComputed(ConeProperty::SupportHyperplanes)) || test>0)
+			 continue;			
+		 for(size_t j=0;j<dim;++j)
+			 help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];
+		 if(test==0){
+			 Support_Hyperplanes.append(help);
+			 nrSupport_Hyperplanes++;
+		 } 
+		 else{
+			 BottomFacets.append(help);
+			 BottomDegs.push_back(-test);
+		 }
+	 }
+	 
+	 is_Computed.set(ConeProperty::SupportHyperplanes);
+	 
+	 vector<key_t> facet;
+	 for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
+		 facet.clear();
+		 for(size_t k=0;k<BottomExtRays.size();++k)
+			 if(v_scalar_product(Generators[BottomExtRays[k]],BottomFacets[i])==BottomDegs[i])
+				 facet.push_back(BottomExtRays[k]);
+			 Pyramids[0].push_back(facet);
+		 nrPyramids[0]++;
+	 }
+	 if(verbose)
+		 verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
+	 
+ }
+
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::build_top_cone() {
     
@@ -1816,7 +1903,13 @@ void Full_Cone<Integer>::build_top_cone() {
         verboseOutput()<<"..."<<endl;
     }
 
-    build_cone();
+	if(!do_bottom_dec || deg1_generated || (!do_triangulation && !do_partial_triangulation)) {
+		build_cone();
+	}
+	else{
+		find_bottom_facets();
+		deg1_triangulation=false;
+	}	
 
     try_offload(0);
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
@@ -1829,12 +1922,16 @@ void Full_Cone<Integer>::build_top_cone() {
     }
 #endif // NMZ_MIC_OFFLOAD
 
-
     if (verbose) {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
         // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
         if(do_only_multiplicity)
             verboseOutput() << "Determinantes computed = " << TotDet << endl;
+        if(NrCompVect>0)
+            cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal 
+                    << " Average " << NrCompVal/NrCompVect+1 << endl;
+		if(GMP_hyp+GMP_scal_prod+GMP_mat>0)
+			cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
     }   
 
 }
@@ -1984,6 +2081,14 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             get_supphyps_from_copy(false);
         }
         
+        int max_threads = omp_get_max_threads();
+		size_t Memory_per_gen=8*nrSupport_Hyperplanes;
+		size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
+		AdjustedReductionBound=max_nr_gen;
+		if(AdjustedReductionBound < 2000)
+			AdjustedReductionBound=2000;
+		
+        
         Sorting=compute_degree_function();
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
@@ -2115,12 +2220,22 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     }
 	size_t j=0;
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
-    for(;LS!=LargeSimplices.end();++LS,++j){
+    for(;LS!=LargeSimplices.end();++LS){
 		if (j>=lss) use_bottom_points =false;
-        LS->Simplex_parallel_evaluation();
-        if(do_Hilbert_basis && Results[0].get_collected_elements_size() > UpdateReducersBound){
-            Results[0].transfer_candidates();
-            update_reducers();
+        if(do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation){
+            compute_deg1_elements_via_approx_simplicial(LS->get_key());        
+        }
+        else{
+	    /* list<vector<Integer> > sub_div_elements;
+	    compute_sub_div_elements(LS->get_key(),sub_div_elements);
+        cout << NrSurvivors << " Survivors of " << NrCand << endl;
+        cout << sub_div_elements.size() << " subdividing elements" << endl;
+	    sub_div_elements.clear();*/
+            LS->Simplex_parallel_evaluation();
+            if(do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound){       
+                Results[0].transfer_candidates();
+                update_reducers();
+            }
         }
     }
 
@@ -2133,39 +2248,97 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
+void Full_Cone<Integer>::compute_sub_div_elements(const vector<key_t>& key,list<vector<Integer> >& sub_div_elements){
+  
+   Full_Cone<Integer> SimplCone(Generators.submatrix(key));
+   SimplCone.Grading=Grading;
+   SimplCone.is_Computed.set(ConeProperty::Grading);
+   SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
+   SimplCone.do_approximation=true;  // as indicted by do_approximation
+   
+   SimplCone.Truncation=SimplCone.Generators.find_linear_form();
+   SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
 
-return;
-//TODO reactivate old version, setting in_triang!
+   SimplCone.compute();
+   sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
+}
 
-    set<vector<Integer> > Duplicates;
-    for (size_t i = 0; i <nr_gen; i++) {               
-        if((!inhomogeneous || gen_levels[i]<=1) && !in_triang[i]){
-            Duplicates.insert(Generators[i]);
-            // cout << in_triang[i] <<" Dupl " << Generators[i];
-        }
-    }
-    size_t nrDuplicates=Duplicates.size();
-    if(nrDuplicates==0)
-        return;
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
+
+    Full_Cone<Integer> SimplCone(Generators.submatrix(key));
+    SimplCone.Grading=Grading;
+    SimplCone.is_Computed.set(ConeProperty::Grading);
+    SimplCone.do_deg1_elements=true;
+    SimplCone.do_approximation=true;
     
-    size_t nrRemoved=0;
+    SimplCone.compute();
+    
+    vector<bool> Excluded(dim,false);
+    for(size_t i=0;i<dim;++i){
+        Integer test=v_scalar_product(SimplCone.Support_Hyperplanes[i],Order_Vector);
+        if(test>0)
+            continue;
+        if(test<0){
+            Excluded[i]=true;
+            continue;
+        }
+        size_t j;
+        for(j=0;j<dim;++j){
+            if(SimplCone.Support_Hyperplanes[i][j]!=0)
+                break;        
+        }
+        if(SimplCone.Support_Hyperplanes[i][j]<0)
+            Excluded[i]=true;        
+    }
+    
+    typename list<vector<Integer> >::const_iterator E;
+    for(E=SimplCone.Deg1_Elements.begin();E!=SimplCone.Deg1_Elements.end();++E){
+        size_t i;
+        for(i=0;i<dim;++i)
+            if(v_scalar_product(*E,SimplCone.Support_Hyperplanes[i])==0 && Excluded[i])
+                break;
+        if(i<dim)
+            continue;
+            
+        for(i=0;i<dim;++i)  // exclude original generators
+            if(*E==SimplCone.Generators[i])
+                 break;
+        if(i==dim){    
+            Results[0].Deg1_Elements.push_back(*E); // Results[0].Deg1_Elements.push_back(*E);
+            Results[0].collected_elements_size++;
+        }        
+    }
+    Results[0].transfer_candidates();
+}
+    
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
+	
+return; //TODO reactivate!
+
+	set<vector<Integer> > OriGens;
     typename list<Candidate<Integer> >:: iterator c=OldCandidates.Candidates.begin();
     typename set<vector<Integer> >:: iterator found;
-    for(;nrRemoved < nrDuplicates && c!=OldCandidates.Candidates.end();){
-        // cout << c->original_generator << " Suche " << c->cand;
+    for(;c!=OldCandidates.Candidates.end();){
         if(!c->original_generator){
             ++c;
             continue;
         }
-        found=Duplicates.find(c->cand);
-        if(found!=Duplicates.end()){
+        found=OriGens.find(c->cand);
+        if(found!=OriGens.end()){
             c=OldCandidates.Candidates.erase(c);
-            // cout << "Entferne " << c->cand;
-            nrRemoved++;
         }
-        else
-            ++c;    
+        else{
+			if(c->original_generator)
+				OriGens.insert(c->cand);
+            ++c;
+		}
     }
 }
 
@@ -2369,13 +2542,20 @@ void Full_Cone<Integer>::compute() {
                 support_hyperplanes();
             if(verbose)
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
-            compute_deg1_elements_via_approx();
-            if(do_triangulation){
-                do_deg1_elements=false;
-                do_partial_triangulation=false;
-                do_only_multiplicity = do_determinants;
-                primal_algorithm();            
+            if(do_deg1_elements){
+                compute_deg1_elements_via_approx_global();
+	            is_Computed.set(ConeProperty::Deg1Elements,true);
+                if(do_triangulation){
+                    do_deg1_elements=false;
+                    do_partial_triangulation=false;
+                    do_only_multiplicity = do_determinants;
+                    primal_algorithm();            
+                }
+            } else{  // now we want subdividing elements for a simplicial cone
+                assert(do_Hilbert_basis);
+                    compute_elements_via_approx(Hilbert_Basis);            
             }
+            
         }
         else
             primal_algorithm();
@@ -2386,21 +2566,50 @@ void Full_Cone<Integer>::compute() {
         }
         
     }
+    
+    //---------------------------------------------------------------------------
+    
 }
 
-// -1
 template<typename Integer>
-void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
+void Full_Cone<Integer>::compute_deg1_elements_via_approx_global() {
+	
+	compute_elements_via_approx(Deg1_Elements);
+	
+	typename list<vector<Integer> >::iterator e;
+	for(e=Deg1_Elements.begin(); e!=Deg1_Elements.end();)
+		if(!contains(*e))
+			e=Deg1_Elements.erase(e);
+		else
+			++e;
+		if(verbose)
+			verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;	
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& elements_from_approx) {
 
     if (!isComputed(ConeProperty::Grading)){
         support_hyperplanes(); // the only thing we can do now
         return;
     }
+    
+    assert(elements_from_approx.empty());
 
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
-    C_approx.do_deg1_elements=true;    // for supercone C_approx that is generated in degree 1
+    C_approx.is_approximation=true;
+    // C_approx.Generators.pretty_print(cout);
+    C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
+    C_approx.do_Hilbert_basis=do_Hilbert_basis;
+    C_approx.do_all_hyperplanes=false;    // we use the support Hyperplanes of the approximated cone for the selection of elements
+    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
+    C_approx.Support_Hyperplanes=Support_Hyperplanes;
+    C_approx.Truncation=Truncation;
+    C_approx.TruncLevel=TruncLevel;
     if(verbose)
-        verboseOutput() << "Computing deg 1 elements in approximating cone with "
+        verboseOutput() << "Computing elements in approximating cone with "
                         << C_approx.Generators.nr_of_rows() << " generators." << endl;
     C_approx.compute();
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
@@ -2409,17 +2618,14 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx() {
     }
 
     if(verbose)
-        verboseOutput() << "Sum of dets of simplicial cones evaluated in approximation = " << C_approx.detSum << endl;
-
-    if(verbose)
-        verboseOutput() << "Returning to original cone" << endl;
-    // compute_support_hyperplanes();  // we need them to selct the deg 1 elements in C
-    if(verbose)
-        verboseOutput() << "Selecting deg 1 elements from approximating cone" << endl;
-    select_deg1_elements(C_approx);
+        verboseOutput() << "Sum of dets of simplicial cones evaluated in approximation = " << C_approx.detSum << endl;   
     
     if(verbose)
-        verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;
+        verboseOutput() << "Returning to original cone" << endl;
+    if(do_deg1_elements)
+		elements_from_approx.splice(elements_from_approx.begin(),C_approx.Deg1_Elements);
+    if(do_Hilbert_basis)
+		elements_from_approx.splice(elements_from_approx.begin(),C_approx.Hilbert_Basis);
 }
 
 
@@ -2985,14 +3191,41 @@ void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vec
 
 //---------------------------------------------------------------------------
 
+
+// so far only for experiments
+
+template<typename Integer>
+void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vectors computed in 
+                                                              // the auxiliary cone C
+    assert(isComputed(ConeProperty::SupportHyperplanes));
+    assert(C.isComputed(ConeProperty::Deg1Elements));
+    typename list<vector<Integer> >::const_iterator h = C.Hilbert_Basis.begin();
+    for(;h!=C.Hilbert_Basis.end();++h){
+        if(contains(*h))
+            // Deg1_Elements.push_back(*h);
+            cout << *h;
+    }
+    exit(0);
+    is_Computed.set(ConeProperty::Deg1Elements,true);
+}
+
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::check_pointed() {
     assert(isComputed(ConeProperty::SupportHyperplanes));
     if (isComputed(ConeProperty::IsPointed))
         return;
+    if (isComputed(ConeProperty::Grading)){
+        pointed=true;
+        if (verbose) verboseOutput() << "Pointed since graded" << endl << flush;
+        is_Computed.set(ConeProperty::IsPointed);
+        return;
+    }
     if (verbose) verboseOutput() << "Checking for pointed ... " << flush;
-    Matrix<Integer> SH = getSupportHyperplanes();
-    pointed = (SH.rank() == dim);
+
+    pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
     if (verbose) verboseOutput() << "done." << endl;
 }
@@ -3500,12 +3733,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     OldCandidates.dual=false;
     NewCandidates.dual=false;
     
-    int max_threads = omp_get_max_threads();
-    AdjustedReductionBound=UpdateReducersBound/max_threads;
-    if(AdjustedReductionBound < 10000)
-        AdjustedReductionBound=10000;
-
-    RankTest = vector< Matrix<Integer> >(max_threads, Matrix<Integer>(0,dim));
+	RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
+	
+	do_bottom_dec=false;
+	keep_order=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3576,6 +3807,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     old_nr_supp_hyps=0;
     OldCandidates.dual=false;
     NewCandidates.dual=false;
+    
+    is_approximation=false;
 }
 
 template<typename Integer>
@@ -3615,6 +3848,8 @@ void Full_Cone<Integer>::dual_mode() {
     
     use_existing_facets=false;
     start_from=0;
+    
+    is_approximation=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3697,6 +3932,11 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     old_nr_supp_hyps=0;
     OldCandidates.dual=false;
     NewCandidates.dual=false;
+    
+    is_approximation=false;
+	
+	do_bottom_dec=false;
+	keep_order=true;
 }
 
 //---------------------------------------------------------------------------

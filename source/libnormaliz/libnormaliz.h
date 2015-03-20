@@ -83,6 +83,7 @@ InputType to_type(const std::string& type_string);
 typedef unsigned int key_t;
 
 extern bool verbose;
+extern size_t GMP_mat, GMP_hyp, GMP_scla_prod;
 
 /* if test_arithmetic_overflow is true, many operations are also done
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
