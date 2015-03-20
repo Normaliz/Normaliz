@@ -16,8 +16,8 @@ libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-impl.cpp
 cone_property.o: cone_property.h cone_property.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_property.cpp -o $@
 
-offload.o: $(LIBHEADERS) offload.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c offload.cpp -o $@
+offload_handler.o: $(LIBHEADERS) offload_handler.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c offload_handler.cpp -o $@
 
 bottom.o: $(LIBHEADERS) bottom.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c bottom.cpp -o $@
@@ -28,7 +28,7 @@ hilbert_series.o: $(LIBHEADERS) HilbertSeries.cpp
 libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz-templated.cpp -o $@
 
-libnormaliz.a: cone_property.o hilbert_series.o libnormaliz-templated.o bottom.o offload.o
+libnormaliz.a: cone_property.o hilbert_series.o libnormaliz-templated.o bottom.o offload_handler.o
 	ar -cr $@ $^
 
 clean:

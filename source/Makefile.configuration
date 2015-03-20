@@ -12,13 +12,12 @@ CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -DNDEBUG ## disables asserts
 
 SCIPPATH = $(HOME)/src/scipoptsuite-3.1.1
-CXXFLAGS += -I $(SCIPPATH)/scip-3.1.1/src
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
- CXXFLAGS += -Wno-unknown-pragmas
+  CXXFLAGS += -Wno-unknown-pragmas
 else
- CXXFLAGS += -fopenmp
+  CXXFLAGS += -fopenmp
 endif
 
 ## for distributing the executables link static (does not work for mac)
@@ -28,9 +27,18 @@ endif
 ## make it compatible with older Mac versions
 #CXXFLAGS += -mmacosx-version-min=10.5
 
-CXXFLAGS += -DNMZ_SCIP
-GMPFLAGS = -L $(SCIPPATH)/lib  \
+
+GMPFLAGS = -lgmpxx -lgmp
+
+## use SCIP?
+ifeq ($(SCIP),yes)
+  CXXFLAGS += -DNMZ_SCIP
+  CXXFLAGS += -I $(SCIPPATH)/scip-3.1.1/src
+
+  SCIPFLAGS = -L $(SCIPPATH)/lib  \
     -lscipopt-3.1.1.linux.x86_64.gnu.opt \
     -lreadline \
-    -lz \
-    -lgmpxx -lgmp
+    -lz
+endif
+
+LINKFLAGS += $(GMPFLAGS) $(SCIPFLAGS)
