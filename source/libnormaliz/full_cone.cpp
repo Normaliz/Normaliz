@@ -3737,6 +3737,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
 	
 	do_bottom_dec=false;
 	keep_order=false;
+
+    is_approximation=false;
 }
 
 //---------------------------------------------------------------------------
@@ -3848,8 +3850,6 @@ void Full_Cone<Integer>::dual_mode() {
     
     use_existing_facets=false;
     start_from=0;
-    
-    is_approximation=false;
 }
 
 //---------------------------------------------------------------------------
