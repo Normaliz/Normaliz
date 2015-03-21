@@ -1837,9 +1837,6 @@ void Full_Cone<Integer>::find_bottom_facets() {
     assert( BottomPolyhedron.isComputed(ConeProperty::IsPointed) );
     pointed = BottomPolyhedron.pointed;
     is_Computed.set(ConeProperty::IsPointed);
-    if (!pointed)
-        return;
-
 
     // BottomPolyhedron.Support_Hyperplanes.pretty_print(cout);
 
@@ -1862,22 +1859,22 @@ void Full_Cone<Integer>::find_bottom_facets() {
     }
     for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
         Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
-        if(test>0)
-            continue;
-        for(size_t j=0;j<dim;++j)
-            help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];
-
-        if (!isComputed(ConeProperty::SupportHyperplanes)) {
+		for(size_t j=0;j<dim;++j)
+			help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];		
+        if(test==0 && !isComputed(ConeProperty::SupportHyperplanes)){
             Support_Hyperplanes.append(help);
             nrSupport_Hyperplanes++;
         }
-
-        if (test < 0) { //TODO check if correct!
+        if (test < 0){ 
             BottomFacets.append(help);
             BottomDegs.push_back(-test);
         }
     }
-    minimize_support_hyperplanes();
+    
+    is_Computed.set(ConeProperty::SupportHyperplanes);
+    
+     if (!pointed)
+        return;
 
     vector<key_t> facet;
     for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
@@ -1912,7 +1909,7 @@ void Full_Cone<Integer>::build_top_cone() {
         verboseOutput()<<"..."<<endl;
     }
 
-	if(!do_bottom_dec || deg1_generated || (!do_triangulation && !do_partial_triangulation)) {
+    if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
 		build_cone();
 	}
 	else{
