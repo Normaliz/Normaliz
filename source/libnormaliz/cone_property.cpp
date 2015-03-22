@@ -227,6 +227,8 @@ namespace {
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
         CPN.at(ConeProperty::ApproximateRatPolytope) = "ApproximateRatPolytope";
+        CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
+        CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
         return CPN;
     }
  
