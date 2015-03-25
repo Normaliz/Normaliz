@@ -893,7 +893,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         list< vector<Integer> > new_points;
         time_t start,end;
 		time (&start);
-		bottom_points(new_points, Generators,volume);
+		bottom_points(new_points, Generators);
 		time (&end);
 		double dif = difftime (end,start);
 
@@ -942,7 +942,15 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             Full_Cone<Integer> bottom_polytope(polytope_gens);
             bottom_polytope.keep_triangulation = true;
             //bottom_polytope.do_all_hyperplanes = false;
+            cout << "compute triangulation of bottom polytope" << endl;
+            bool verbtmp = verbose;
+            verbose = false;
+			time (&start);
             bottom_polytope.compute();
+            time (&end);
+			dif = difftime (end,start);
+            verbose = verbtmp;
+            cout << "computing triangulation took " << dif << " sec" << endl;
             assert(bottom_polytope.isComputed(ConeProperty::Triangulation));
 
             // extract bottom triangulation

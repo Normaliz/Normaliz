@@ -69,15 +69,13 @@ double convert_to_double(long long a) {
 long long stellar_det_sum;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens, Integer volume) { //TODO lieber Referenz fuer Matrix?
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { //TODO lieber Referenz fuer Matrix?
 	
 	cout << "Using SCIP to compute points from bottom. BOUND: " <<ScipBound<< endl;
     stellar_det_sum = 0;
     vector< Matrix<Integer> > q_gens;
     q_gens.push_back(gens);
     int level = 0;
-    double time_limit = pow(log10(convert_to_double(volume)),2);
-    cout << "time limit for this round is " << time_limit << " sec"<< endl;
 
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
@@ -93,8 +91,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens, In
 //	SCIPsetBoolParam(scip, "timing/enabled", FALSE);
 	SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
 	SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
-	// set time limit according to volume
-	SCIPsetRealParam(scip, "limits/time", time_limit);
+
 
 	SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
 	SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
@@ -136,7 +133,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens, In
     cout << "of which " << new_points.size() << " are unique" << endl;
 
     cout << "stellar_det_sum = " << stellar_det_sum << endl;
-    cout << "this is a factor of " << convert_to_double(volume)/stellar_det_sum << endl;
+
 }
 
 
@@ -163,6 +160,9 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
        Support_Hyperplanes.pretty_print(cout);
        cout << "grading " << grading;
        */
+    // set time limit according to volume   
+    double time_limit = pow(log10(convert_to_double(volume)),2);
+    SCIPsetRealParam(scip, "limits/time", time_limit);
     // call scip
     vector<Integer> new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
     if ( !new_point.empty() ){
@@ -407,9 +407,9 @@ vector<Integer> opt_sol(SCIP* scip,
     return sol_vec; 
 }
 
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,long volume);
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,long long volume);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,mpz_class volume);
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gense);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens);
 
 } // namespace
 
