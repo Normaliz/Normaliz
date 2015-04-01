@@ -170,6 +170,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void write_column(size_t col, const vector<Integer>& data); //write a column
     void write(size_t row, size_t col, Integer data);  // write data at (row,col)
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
+    void print_append(const string& name,const string& suffix) const;  // the same, but appends matrix
     void print(std::ostream& out) const;          // writes matrix to the stream
     void pretty_print(std::ostream& out, bool with_row_nr=false) const;  // writes matrix in a nice format to the stream
     void read() const;                 // to be modified, just for tests

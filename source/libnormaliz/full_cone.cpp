@@ -1932,12 +1932,10 @@ void Full_Cone<Integer>::build_top_cone() {
         verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
         // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
         if(do_only_multiplicity)
-            verboseOutput() << "Determinantes computed = " << TotDet << endl;
-        if(NrCompVect>0)
+            verboseOutput() << "Determinants computed = " << TotDet << endl;
+        /* if(NrCompVect>0)
             cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal 
-                    << " Average " << NrCompVal/NrCompVect+1 << endl;
-		if(GMP_hyp+GMP_scal_prod+GMP_mat>0)
-			cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
+                    << " Average " << NrCompVal/NrCompVect+1 << endl; */
     }   
 
 }
@@ -2090,6 +2088,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         int max_threads = omp_get_max_threads();
 		size_t Memory_per_gen=8*nrSupport_Hyperplanes;
 		size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
+        cout << "max_nr_gen " << max_nr_gen << endl;
 		AdjustedReductionBound=max_nr_gen;
 		if(AdjustedReductionBound < 2000)
 			AdjustedReductionBound=2000;
@@ -2403,6 +2402,9 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     evaluate_triangulation();
     evaluate_large_simplices();
     FreeSimpl.clear();
+    
+    if(verbose && GMP_hyp+GMP_scal_prod+GMP_mat>0)
+        cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
 
     // collect accumulated data from the SimplexEvaluators
     for (int zi=0; zi<omp_get_max_threads(); zi++) {

@@ -196,6 +196,17 @@ void Matrix<Integer>::print(const string& name,const string& suffix) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::print_append(const string& name,const string& suffix) const{
+    string file_name = name+"."+suffix;
+    const char* file = file_name.c_str();
+    ofstream out(file,ios_base::app);
+    print(out);
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::print(ostream& out) const{
     size_t i,j;
     out<<nr<<endl<<nc<<endl;
