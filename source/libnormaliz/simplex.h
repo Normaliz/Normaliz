@@ -58,6 +58,7 @@ class SimplexEvaluator {
             // to be set by Full_Cone
     size_t dim;
     Integer volume;
+    mpz_class mpz_volume;
     size_t Deg0_offset; // the degree of 0+offset
     // Integer det_sum; // sum of the determinants of all evaluated simplices --> Collector
     // mpq_class mult_sum; // sum of the multiplicities of all evaluated simplices --> Collector
@@ -110,6 +111,7 @@ class SimplexEvaluator {
     vector<vector<Integer>* > RS_pointers;
     Matrix<Integer> unit_matrix;
     vector<key_t> id_key;
+    Matrix<mpz_class> mpz_Generators;
     
 
     void local_reduction(Collector<Integer>& Coll);
@@ -138,9 +140,11 @@ class SimplexEvaluator {
     void evaluate_block(long block_start, long block_end, Collector<Integer>& Coll);
     void collect_vectors();
     
-    void insert_gens();
-    void insert_gens_transpose();
-    void insert_unit_vectors(vector<key_t> RHS_key);
+    // void insert_gens();
+    // void insert_gens_transpose();
+    // void insert_unit_vectors(vector<key_t> RHS_key);
+    
+    void transform_to_global(const vector<Integer>& element, vector<Integer>& help);
 
 
 //---------------------------------------------------------------------------

@@ -72,7 +72,9 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   InExSimplData(C_ptr->InExCollect.size()),
   RS_pointers(dim+1),
   unit_matrix(dim),
-  id_key(identity_key(dim))
+  id_key(identity_key(dim)
+  // mpz_Generators(0,0)       
+)
 {
     if(fc.inhomogeneous)
         ProjGen=Matrix<Integer>(dim-fc.level0_dim,dim-fc.level0_dim);    
@@ -85,6 +87,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
     }
     
     sequential_evaluation=true; // to be changed later if necessrary
+    mpz_Generators=Matrix<mpz_class>(0,0);
 }
 
 template<typename Integer>
@@ -179,47 +182,11 @@ size_t TotDet=0;
 
 //---------------------------------------------------------------------------
 
-/*
-template<typename Integer>
-void SimplexEvaluator<Integer>::insert_gens(){
-
-    LinSys.set_nc(dim);
-    for(size_t i=0;i<dim;++i)
-        for(size_t j=0;j<dim;++j)
-            LinSys[i][j]=Generators[i][j];    
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void SimplexEvaluator<Integer>::insert_gens_transpose(){
-
-    LinSys.set_nc(dim);
-    for(size_t i=0;i<dim;++i)
-        LinSys.write_column(i,Generators[i]);   
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void SimplexEvaluator<Integer>::insert_unit_vectors(vector<key_t> RHS_key){
-
-    size_t old_nr_cols=LinSys.nr_of_columns();
-    LinSys.set_nc(LinSys.nr_of_columns()+RHS_key.size());
-    for(size_t i=0;i<RHS_key.size();i++){ // insert unit vectors
-        for(size_t k=0;k<dim;++k)
-            LinSys[k][dim+i]=0;
-        LinSys[RHS_key[i]][old_nr_cols+i]=1;
-    }    
-
-}
-
-*/
-
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll) {
+    
+    if(mpz_Generators.nr_of_rows()!=0)
+        mpz_Generators=Matrix<mpz_class>(0,0); // this is not a local variable and must be deleted at the start
 
     volume = s.vol;
     key = s.key;
@@ -487,7 +454,35 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& element, vector<Integer>& help){
+
+    bool success;
+    if(mpz_Generators.nr_of_rows()==0){
+        help=Generators.VxM_div(element,volume,success);
+        if(!success){
+            #pragma omp critical(MPZGEN)
+            {
+            mpz_Generators=Matrix<mpz_class>(dim,dim);
+            mat_to_mpz(Generators,mpz_Generators);
+            mpz_volume=to_mpz(volume);
+            }
+        }
+    }
+    if(mpz_Generators.nr_of_rows()!=0){
+        vector<mpz_class> mpz_element(dim);
+        vect_to_mpz(element,mpz_element);
+        vector<mpz_class> mpz_help=mpz_Generators.VxM_div(mpz_element,mpz_volume,success);
+        vect_to_Int(mpz_help,help);
+    }
+
+}
+
+//---------------------------------------------------------------------------
+
 size_t NrSurvivors=0, NrCand=0;
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
@@ -500,8 +495,8 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     Full_Cone<Integer>& C = *C_ptr;
     
     if(C.is_approximation && C.do_Hilbert_basis){
-    
-        vector<Integer> help=Generators.VxM_div(element,volume);
+        vector<Integer> help(dim);
+        transform_to_global(element,help);
         if(!C.contains(help))
             return;
         #pragma omp atomic
@@ -593,8 +588,8 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         return;
     }
     if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
-        vector<Integer> help=Generators.VxM(element);
-        v_scalar_division(help,volume);
+        vector<Integer> help(dim);
+        transform_to_global(element,help);
         Coll.Deg1_Elements.push_back(help);
         Coll.collected_elements_size++;
     }
@@ -648,10 +643,12 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
     for(;jj != Hilbert_Basis.end();++jj) {
         if (!isDuplicate(*jj)) { //skip the element
             jj->pop_back(); //remove the norm entry at the end
-            
-            // transform to global coordinates 
-            *jj = Generators.VxM_div(*jj,volume);
+            // cout << "Vor " << *jj;
+            // transform to global coordinates
+            vector<Integer> help=*jj; // we need a copy
+            transform_to_global(help,*jj);
             // v_scalar_division(*jj,volume);
+            // cout << "Nach " << *jj;
             
             // reduce against global reducers in C.OldCandidates and insert into HB_Elements
             if (C.is_simplicial) { // no global reduction necessary
@@ -665,7 +662,6 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
         }
     }
 	// cout << "local reduction finished " << Coll.collected_elements_size << endl;
-    
 
     Hilbert_Basis.clear(); // this is not a local variable !!    
 }

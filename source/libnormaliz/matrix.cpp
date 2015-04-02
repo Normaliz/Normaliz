@@ -797,31 +797,24 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> Matrix<Integer>::VxM_div(const vector<Integer>& v, const Integer& divisor) const{
+vector<Integer> Matrix<Integer>::VxM_div(const vector<Integer>& v, const Integer& divisor, bool& success) const{
     assert (nr == v.size());
     vector<Integer> w(nc,0);
+    success=true;
     size_t i,j;
     for (i=0; i<nc; i++){
         for (j=0; j<nr; j++){
             w[i] += v[j]*elem[j][i];
         }
-        if(!check_range(w[i]))
+        if(!check_range(w[i])){
+            success=false;
             break;
+        }
     }
 
-    if(i==nc){      
+    if(success)      
         v_scalar_division(w,divisor);  
-        return w;
-    }
-    
-    Matrix<mpz_class> mpz_this(nr,nc);
-    mat_to_mpz(*this,mpz_this);
-    vector<mpz_class> mpz_v(nr);
-    vect_to_mpz(v,mpz_v);
-    vector<mpz_class> mpz_w=mpz_this.VxM(mpz_v);
-    mpz_class mpz_div=to_mpz(divisor);
-    v_scalar_division(mpz_w,mpz_div); 
-    vect_to_Int(mpz_w,w);
+        
     return w;
 }
 

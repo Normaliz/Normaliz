@@ -272,7 +272,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
    void MxV(vector<Integer>& result, const vector<Integer>& v) const;//result = this*V
    vector<Integer> MxV(const vector<Integer>& v) const;//returns this*V
    vector<Integer> VxM(const vector<Integer>& v) const;//returns V*this
-   vector<Integer> VxM_div(const vector<Integer>& v, const Integer& divisor) const; // additionally divides by divisor
+   vector<Integer> VxM_div(const vector<Integer>& v, const Integer& divisor,bool& success) const; // additionally divides by divisor
 
 //---------------------------------------------------------------------------
 //                          Matrix operations
