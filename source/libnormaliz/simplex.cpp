@@ -906,6 +906,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             int nr_new_points = new_points.size();
             int nr_old_gen = C.nr_gen;
             C.add_generators(Matrix<Integer>(new_points));
+            //cout << "generators: " << endl;
+            //C.Generators.pretty_print(cout);
             // remove this simplex from det_sum and multiplicity
             addMult(-volume,C.Results[0]);
             // delete this large simplex

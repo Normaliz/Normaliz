@@ -194,7 +194,20 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
 
 template<typename Integer>
 double max_in_col(const Matrix<Integer>& M, size_t j) {
+	// warum setzen wir das auf 0???
     Integer max = 0;
+    //Integer max = M[1][j];
+    for (size_t i=0; i<M.nr_of_rows(); ++i) {
+        if (M[i][j] > max) max = M[i][j];
+    }
+    return convert_to_double(max);
+}
+
+template<typename Integer>
+double max_in_col_no_zero(const Matrix<Integer>& M, size_t j) {
+	// warum setzen wir das auf 0???
+    //Integer max = 0;
+    Integer max = M[1][j];
     for (size_t i=0; i<M.nr_of_rows(); ++i) {
         if (M[i][j] > max) max = M[i][j];
     }
@@ -203,7 +216,20 @@ double max_in_col(const Matrix<Integer>& M, size_t j) {
 
 template<typename Integer>
 double min_in_col(const Matrix<Integer>& M, size_t j) {
+	// warum setzen wir das auf 0???
     Integer min = 0;
+    //Integer min = M[1][j];
+    for (size_t i=0; i<M.nr_of_rows(); ++i) {
+        if (M[i][j] < min) min = M[i][j];
+    }
+    return convert_to_double(min);
+}
+
+template<typename Integer>
+double min_in_col_no_zero(const Matrix<Integer>& M, size_t j) {
+	// warum setzen wir das auf 0???
+    //Integer min = 0;
+    Integer min = M[1][j];
     for (size_t i=0; i<M.nr_of_rows(); ++i) {
         if (M[i][j] < min) min = M[i][j];
     }
@@ -248,10 +274,54 @@ vector<Integer> opt_sol(SCIP* scip,
     }
 
     SCIP_CONS* cons;
-    for (long j=0; j<dim; j++)
+    // setup non-zero constraints
+    // if all extreme rays have the same sign in one dimension, add the x_i>=1 or x_i<=-1 constraint
+    
+    for (long i=0; i<dim; i++){
+		double min = min_in_col_no_zero(gens,i);
+		double max = max_in_col_no_zero(gens,i);
+		if (min*max>0){
+			cout << "same sign in variable " << i << endl;
+			for (int j=0;j<dim;j++) ineq[j]=0;
+			ineq[i]=1;
+			if (min>0){
+				SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, 1.0, SCIPinfinity(scip));
+			}
+			else {
+
+				SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, -SCIPinfinity(scip), -1.0);
+			}
+			break;
+		}
+		if (i==dim-1){
+			cout << "no same sign. using bound disjunction" << endl;
+			// set bound disjunction
+			
+			SCIP_VAR** double_x = new SCIP_VAR*[2*dim];
+			SCIP_BOUNDTYPE* boundtypes = new SCIP_BOUNDTYPE[2*dim];
+			SCIP_Real* bounds = new SCIP_Real[2*dim];
+			for (long i=0; i<dim;i++) {
+				double_x[2*i] = x[i];
+				double_x[2*i+1] = x[i];
+				boundtypes[2*i]= SCIP_BOUNDTYPE_LOWER;
+				boundtypes[2*i+1] = SCIP_BOUNDTYPE_UPPER;
+				bounds[2*i] = 1.0;
+				bounds[2*i+1] = -1.0;
+			}
+			SCIPcreateConsBasicBounddisjunction	(scip, &cons,"non_zero",2*dim,double_x,boundtypes,bounds);		
+		
+		/*
+		// this type of constraints procedures numerical problems:
+		for (long j=0; j<dim; j++)
         ineq[j] = convert_to_double(grading[j]);
-//    SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, 1.0, upper_bound);
-    SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, 1.0, SCIPinfinity(scip));
+		SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, 1.0, SCIPinfinity(scip));
+		*/
+		}
+	}
+	
+	
+
+	// set objective limit. feasible solution has to have at least this objective value
     SCIPsetObjlimit(scip,upper_bound);
     SCIPaddCons(scip, cons);
     SCIPreleaseCons(scip, &cons);
@@ -290,15 +360,9 @@ vector<Integer> opt_sol(SCIP* scip,
 	SCIPsetRealParam(scip, "numerics/feastol", feastol); 
 
     SCIPsolve(scip);
-    
-    
-
     //SCIPprintStatistics(scip, NULL);
     vector<Integer> sol_vec(dim);
-    
-	// if generators are inserted as solution, we also have to check, whether the upper_bound 
-	// was really reduced
-	// if(v_scalar_product(grading,sol_vec)<=upper_bound)
+	if(SCIPgetStatus(scip) == SCIP_STATUS_TIMELIMIT) cout << "time limit reached!" << endl;
     if( SCIPgetNLimSolsFound(scip) > 0 ) // solutions respecting objective limit (ie not our input solutions)
     {
         SCIP_SOL* sol = SCIPgetBestSol(scip);
@@ -309,88 +373,94 @@ vector<Integer> opt_sol(SCIP* scip,
             sol_vec[i] = explicit_cast_to_long(SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
         }
 
-        // HOTFIX to avoid pseudo solution 
-        //if(v_scalar_product(grading,sol_vec)>upper_bound){
-			//Integer sc = v_scalar_product(sol_vec,grading);
-				//#pragma omp critical(VERBOSE)
-				//{
-					//cout << "solution does not respect upper bound! here's the data:" << endl;
-					//cout << "upper bound: " << upper_bound << endl;
-					//cout << "grading: " << grading;
-					//cout << "hyperplanes:" << endl;
-					//SuppHyp.pretty_print(cout);
-					//cout << "generators:" << endl;
-					//gens.pretty_print(cout);
-					//cout << sc << " | solution " << sol_vec;
-					//cout << "epsilon: " << epsilon << endl;
-					//SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
-					//SCIPprintSol(scip, sol, NULL, FALSE) ;
-					//cout << "write files... " << endl;
-					//FILE* file = fopen("mostrecent.lp","w");
-					//assert (file != NULL);
-					//SCIPprintOrigProblem(scip, file, "lp", FALSE);
-					//SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
-					//fclose(file);
-					//assert(v_scalar_product(grading,sol_vec)<=upper_bound);
+        // HOTFIX to avoid pseudo solution
+        // if(v_scalar_product(grading,sol_vec)>upper_bound) return vector<Integer>();
+        //for (int i=0;i<nrSuppHyp;i++){
+        //    if((v_scalar_product(SuppHyp[i],sol_vec))<0) return vector<Integer>();
+        //    }
+        // if((v_scalar_product(grading,sol_vec))<1) return vector<Integer>();
+
+        if(v_scalar_product(grading,sol_vec)>upper_bound){
+			Integer sc = v_scalar_product(sol_vec,grading);
+				#pragma omp critical(VERBOSE)
+				{
+					cout << "solution does not respect upper bound! here's the data:" << endl;
+					cout << "upper bound: " << upper_bound << endl;
+					cout << "grading: " << grading;
+					cout << "hyperplanes:" << endl;
+					SuppHyp.pretty_print(cout);
+					cout << "generators:" << endl;
+					gens.pretty_print(cout);
+					cout << sc << " | solution " << sol_vec;
+					cout << "epsilon: " << epsilon << endl;
+					SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+					SCIPprintSol(scip, sol, NULL, FALSE) ;
+					cout << "write files... " << endl;
+					FILE* file = fopen("mostrecent.lp","w");
+					assert (file != NULL);
+					SCIPprintOrigProblem(scip, file, "lp", FALSE);
+					SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+					fclose(file);
+					assert(v_scalar_product(grading,sol_vec)<=upper_bound);
 			
-				//}
-			//return vector<Integer>();
-			//}
+				}
+			return vector<Integer>();
+			}
 			
 		
-        //for (int i=0;i<nrSuppHyp;i++) {
-			//if((v_scalar_product(SuppHyp[i],sol_vec))<0) {
-				//Integer sc = v_scalar_product(sol_vec,grading);
-				//#pragma omp critical(VERBOSE)
-				//{
-					//cout << "solution does not respect hyperplanes! here's the data:" << endl;
-					//cout << "the hyperplane: " << SuppHyp[i];
-					//cout << "grading: " << grading;
-					//cout << "hyperplanes:" << endl;
-					//SuppHyp.pretty_print(cout);
-					//cout << "generators:" << endl;
-					//gens.pretty_print(cout);
-					//cout << sc << " | solution " << sol_vec;
-					//cout << "epsilon: " << epsilon << endl;
-					//SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
-					//SCIPprintSol(scip, sol, NULL, FALSE) ;
-					//cout << "write files... " << endl;
-					//FILE* file = fopen("mostrecent.lp","w");
-					//assert (file != NULL);
-					//SCIPprintOrigProblem(scip, file, "lp", FALSE);
-					//SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
-					//fclose(file);
-					//assert((v_scalar_product(SuppHyp[i],sol_vec))>=0);
+        for (int i=0;i<nrSuppHyp;i++) {
+			if((v_scalar_product(SuppHyp[i],sol_vec))<0) {
+				Integer sc = v_scalar_product(sol_vec,grading);
+				#pragma omp critical(VERBOSE)
+				{
+					cout << "solution does not respect hyperplanes! here's the data:" << endl;
+					cout << "the hyperplane: " << SuppHyp[i];
+					cout << "grading: " << grading;
+					cout << "hyperplanes:" << endl;
+					SuppHyp.pretty_print(cout);
+					cout << "generators:" << endl;
+					gens.pretty_print(cout);
+					cout << sc << " | solution " << sol_vec;
+					cout << "epsilon: " << epsilon << endl;
+					SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+					SCIPprintSol(scip, sol, NULL, FALSE) ;
+					cout << "write files... " << endl;
+					FILE* file = fopen("mostrecent.lp","w");
+					assert (file != NULL);
+					SCIPprintOrigProblem(scip, file, "lp", FALSE);
+					SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+					fclose(file);
+					assert((v_scalar_product(SuppHyp[i],sol_vec))>=0);
 			
-				//}
-			//return vector<Integer>();
-			//}
-		//}
-        //if((v_scalar_product(grading,sol_vec))<1) {
-		//Integer sc = v_scalar_product(sol_vec,grading);
-		//#pragma omp critical(VERBOSE)
-		//{
-			//cout << "the solution does not respect the nonzero condition! here's the data:" << endl;
-			//cout << "grading: " << grading;
-			//cout << "hyperplanes:" << endl;
-			//SuppHyp.pretty_print(cout);
-			//cout << "generators:" << endl;
-			//gens.pretty_print(cout);
-			//cout << sc << " | solution " << sol_vec;
-			//cout << "epsilon: " << epsilon << endl;
-			//SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
-			//SCIPprintSol(scip, sol, NULL, FALSE) ;
-			//cout << "write files... " << endl;
-			//FILE* file = fopen("mostrecent.lp","w");
-			//assert (file != NULL);
-			//SCIPprintOrigProblem(scip, file, "lp", FALSE);
-			//SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
-			//fclose(file);
-			//assert((v_scalar_product(grading,sol_vec))>=1);
+				}
+			return vector<Integer>();
+			}
+		}
+        if((v_scalar_product(grading,sol_vec))<1) {
+		Integer sc = v_scalar_product(sol_vec,grading);
+		#pragma omp critical(VERBOSE)
+		{
+			cout << "the solution does not respect the nonzero condition! here's the data:" << endl;
+			cout << "grading: " << grading;
+			cout << "hyperplanes:" << endl;
+			SuppHyp.pretty_print(cout);
+			cout << "generators:" << endl;
+			gens.pretty_print(cout);
+			cout << sc << " | solution " << sol_vec;
+			cout << "epsilon: " << epsilon << endl;
+			SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+			SCIPprintSol(scip, sol, NULL, FALSE) ;
+			cout << "write files... " << endl;
+			FILE* file = fopen("mostrecent.lp","w");
+			assert (file != NULL);
+			SCIPprintOrigProblem(scip, file, "lp", FALSE);
+			SCIPwriteParams(scip, "mostrecent.set", TRUE, TRUE);
+			fclose(file);
+			assert((v_scalar_product(grading,sol_vec))>=1);
 			
-		//}
-			//return vector<Integer>();
-        //}
+		}
+			return vector<Integer>();
+        }
         assert(v_scalar_product(grading,sol_vec)<=upper_bound);
         for (int i=0;i<nrSuppHyp;i++) assert((v_scalar_product(SuppHyp[i],sol_vec))>=0);
         assert((v_scalar_product(grading,sol_vec))>=1);
