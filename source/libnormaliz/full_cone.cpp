@@ -1187,9 +1187,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
         //define Order_Vector, decides which facets of the simplices are excluded
         Order_Vector = vector<Integer>(dim,0);
         // Matrix<Integer> G=S.read_generators();
-        //srand(12345);
         for(i=0;i<dim;i++){
-            factor=(unsigned long)(2*(rand()%(2*dim))+3);
+            factor=(unsigned long) (1+i%10);  // (2*(rand()%(2*dim))+3);
             for(j=0;j<dim;j++)
                 Order_Vector[j]+=factor*Generators[key[i]][j];        
         }
@@ -1812,7 +1811,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     Order_Vector = vector<Integer>(dim,0);
     for(size_t i=0;i<dim;++i)
         for(size_t j=0;j<dim;++j)
-            Order_Vector[j]+=Generators[start_simpl[i]][j];
+            Order_Vector[j]+=((unsigned long) (1+i%10))*Generators[start_simpl[i]][j];
 
     // First the generators for the rexession cone = our cone
     Matrix<Integer> BottomGen(0,dim+1);
