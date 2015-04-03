@@ -2544,7 +2544,7 @@ void Full_Cone<Integer>::compute() {
         }
 
         set_degrees();
-        sort_gens_by_degree();
+        sort_gens_by_degree(true);
 
         if(do_approximation && !deg1_generated){
             if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes))
@@ -2644,6 +2644,7 @@ void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support 
     // recursion_allowed=true;                    // are known, it just discards the redundant ones
     minimize_support_hyperplanes();
     if(!isComputed(ConeProperty::SupportHyperplanes)){
+        sort_gens_by_degree(false); // we do not want to triangulate here
         compute_support_hyperplanes();           
     }
     extreme_rays_and_deg1_check();
@@ -2893,9 +2894,12 @@ void Full_Cone<Integer>::set_levels() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::sort_gens_by_degree() {
-    if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
-        return;
+void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
+    // if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
+    // return;
+    
+    if(keep_order)
+            return;
     
     list<vector<Integer> > genList;
     vector<Integer> v;
@@ -2907,15 +2911,19 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
     unsigned long i,j;
     
     for(i=0;i<nr_gen;i++){
-        if(isComputed(ConeProperty::Grading))
-            v[0]=gen_degrees[i];
-        else{
-            v[0]=0;
-            for(j=0;j<dim;++j)
-                v[0]+=Iabs(Generators[i][j]);       
+        v[0]=0;
+        if(triangulate){
+            if(isComputed(ConeProperty::Grading))
+                v[0]=gen_degrees[i];
+            else{
+                v[0]=0;
+                for(j=0;j<dim;++j)
+                    v[0]+=Iabs(Generators[i][j]);       
+            }
         }
                 
-        v[1]=i;                // keep the input order as far as possible
+        // v[1]=i;                // keep the input order as far as possible
+        v[1]=0; // we disregard the input order now
         w=Generators[i];
         for(j=0;j<dim;j++)
             v[j+2]=w[j];
@@ -2953,6 +2961,7 @@ void Full_Cone<Integer>::sort_gens_by_degree() {
         else
             verboseOutput() << endl << "Generators sorted by 1-norm" << endl;
     }
+    keep_order=true;
 }
 
 //---------------------------------------------------------------------------
