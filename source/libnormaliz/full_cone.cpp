@@ -3281,7 +3281,7 @@ void Full_Cone<Integer>::deg1_check() {
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
             Grading = Extreme.find_linear_form();
-            if (Grading.size() == dim) {
+            if (Grading.size() == dim && v_scalar_product(Grading,Extreme[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_extreme_rays = false;

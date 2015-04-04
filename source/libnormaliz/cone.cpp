@@ -1311,7 +1311,9 @@ void Cone<Integer>::compute_generators() {
                 // Generators = ExtremeRays
                 vector<Integer> lf = BasisChange.to_sublattice(Generators).find_linear_form();
                 if (lf.size() == BasisChange.get_rank()) {
-                    setGrading(BasisChange.from_sublattice_dual(lf));
+                    vector<Integer> test_lf=BasisChange.from_sublattice_dual(lf);
+                    if(v_scalar_product(Generators[0],test_lf)==1)
+                        setGrading(test_lf);
                 }
             }
         }
@@ -1366,7 +1368,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     
     if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
         vector<Integer> lf= Generators.submatrix(ExtremeRays).find_linear_form_low_dim();
-        if(lf.size()==dim)
+        if(lf.size()==dim && v_scalar_product(Generators[0],lf)==1)
             setGrading(lf); 
         else{
             errorOutput() << "Need grading to compute degree 1 elements and cannot find one." << endl;
