@@ -1,4 +1,4 @@
-/*
+    /*
  * Normaliz
  * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
@@ -585,6 +585,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
     
     Matrix<Integer> Generators=Binomials.kernel().transpose();
     Full_Cone<Integer> FC(Generators);
+    FC.verbose=verbose;
     if (verbose) verboseOutput() << endl << "Computing a positive embedding..." << endl;
 
     FC.support_hyperplanes();
@@ -1189,6 +1190,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     Full_Cone<Integer> FC(BasisChange.to_sublattice(Generators));
 
     /* activate bools in FC */
+    
+    FC.verbose=verbose;
 
     FC.inhomogeneous=inhomogeneous;
     
@@ -1287,6 +1290,7 @@ void Cone<Integer>::compute_generators() {
             verboseOutput() <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
         }
         Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(SupportHyperplanes));
+        Dual_Cone.verbose=verbose;
         Dual_Cone.support_hyperplanes();
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
@@ -1331,6 +1335,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
             verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
         }
         Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Generators));
+        Tmp_Cone.verbose=verbose;
         Tmp_Cone.inhomogeneous=inhomogeneous;  // necessary to prevent computation of grading in the inhomogeneous case
         Tmp_Cone.support_hyperplanes();        // also marks extreme rays
         extract_data(Tmp_Cone);
@@ -1418,6 +1423,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     }
     
     Cone_Dual_Mode<Integer> ConeDM(Inequ_Ordered);
+    ConeDM.verbose=verbose;
     ConeDM.inhomogeneous=inhomogeneous;
     ConeDM.do_only_Deg1_Elements=do_only_Deg1_Elements;
     if(isComputed(ConeProperty::Generators))
@@ -1439,6 +1445,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         }
     //}
     Full_Cone<Integer> FC(ConeDM);
+    FC.verbose=verbose;
     // Give extra data to FC
     if ( isComputed(ConeProperty::Grading) ) {
         FC.Grading = BasisChange.to_sublattice_dual(Grading);

@@ -104,6 +104,8 @@ class CandidateList {
   friend class Cone_Dual_Mode<Integer>;
 
   public:
+      
+  bool verbose;
 
   list <Candidate<Integer> > Candidates;
   bool dual;

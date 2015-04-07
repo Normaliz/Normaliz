@@ -149,7 +149,8 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
+/* 
+ * template<typename Integer>
 vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integer>& b){
     size_t i,s=a.size();
     Integer test;
@@ -164,7 +165,7 @@ vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integ
     }
     return d;
 }
-
+*/
 
 //---------------------------------------------------------------------------
 

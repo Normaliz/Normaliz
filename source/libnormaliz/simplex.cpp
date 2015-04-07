@@ -718,7 +718,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
     for(size_t sbi=0;sbi < nr_superblocks;sbi++){
     
-    if(verbose && nr_superblocks>1){
+    if(C_ptr->verbose && nr_superblocks>1){
         if(sbi >0)
             verboseOutput() << endl;
         verboseOutput() << "Superblock " << sbi+1 << " ";
@@ -750,7 +750,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
         if(skip_remaining || done[i])
             continue;
-        if(verbose){
+        if(C_ptr->verbose){
             if(i>0 && i%progess_report==0)
                 verboseOutput() <<"." << flush;        
         }
@@ -768,7 +768,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
     if(skip_remaining){
             
-        if(verbose){
+        if(C_ptr->verbose){
                 verboseOutput() << "r" << flush;
             }
         collect_vectors();   
@@ -874,7 +874,7 @@ void SimplexEvaluator<Integer>::collect_vectors(){
 template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
-    if(verbose){
+    if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
 
@@ -941,13 +941,13 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             bottom_polytope.keep_triangulation = true;
             //bottom_polytope.do_all_hyperplanes = false;
             cout << "compute triangulation of bottom polytope" << endl;
-            bool verbtmp = verbose;
-            verbose = false;
+            bool verbtmp = C_ptr->verbose;
+            C_ptr->verbose = false;
 			time (&start);
             bottom_polytope.compute();
             time (&end);
 			dif = difftime (end,start);
-            verbose = verbtmp;
+            C_ptr->verbose = verbtmp;
             cout << "computing triangulation took " << dif << " sec" << endl;
             assert(bottom_polytope.isComputed(ConeProperty::Triangulation));
 
@@ -1001,7 +1001,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     sequential_evaluation=true;   
     conclude_evaluation(C_ptr->Results[0]);  // h-vector in Results[0] and collected elements
 
-    if(verbose){
+    if(C_ptr->verbose){
         verboseOutput() << endl;
     }    
 }

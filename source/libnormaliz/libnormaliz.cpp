@@ -28,8 +28,8 @@ namespace libnormaliz {
 
 bool verbose = false;
 
-bool test_arithmetic_overflow = false;
-long overflow_test_modulus = 15401;
+// bool test_arithmetic_overflow = false;
+// long overflow_test_modulus = 15401;
 
 size_t GMP_mat=0;
 size_t GMP_hyp=0;

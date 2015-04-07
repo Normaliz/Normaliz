@@ -1425,7 +1425,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     if(nrLargeRecPyrs==0)
         return;
         
-    if(verbose && !is_pyramid)
+    if(verbose)
         verboseOutput() << "large pyramids " << nrLargeRecPyrs << endl;
     
     list<FACETDATA*> PosHyps;
@@ -1753,7 +1753,7 @@ void Full_Cone<Integer>::build_cone() {
         
         Comparisons.push_back(nrTotalComparisons);
         
-        if(verbose && !is_pyramid) {
+        if(verbose) {
             verboseOutput() << "gen="<< i+1 <<", ";
             if (do_all_hyperplanes || i!=last_to_be_inserted) {
                 verboseOutput() << Facets.size()<<" hyp";
@@ -1894,6 +1894,9 @@ void Full_Cone<Integer>::find_bottom_facets() {
 
 template<typename Integer>
 void Full_Cone<Integer>::build_top_cone() {
+
+    OldCandidates.verbose=verbose;
+    NewCandidates.verbose=verbose;
     
     if(dim==0)
         return;
@@ -1925,17 +1928,7 @@ void Full_Cone<Integer>::build_top_cone() {
         evaluate_stored_pyramids(0);  // previous run could have left over pyramids
         mic_offloader.evaluate_triangulation();
     }
-#endif // NMZ_MIC_OFFLOAD
-
-    if (verbose) {
-        verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
-        // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
-        if(do_only_multiplicity)
-            verboseOutput() << "Determinants computed = " << TotDet << endl;
-        /* if(NrCompVect>0)
-            cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal 
-                    << " Average " << NrCompVal/NrCompVect+1 << endl; */
-    }   
+#endif // NMZ_MIC_OFFLOAD   
 
 }
 
@@ -2402,9 +2395,6 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     evaluate_large_simplices();
     FreeSimpl.clear();
     
-    if(verbose && GMP_hyp+GMP_scal_prod+GMP_mat>0)
-        cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
-
     // collect accumulated data from the SimplexEvaluators
     for (int zi=0; zi<omp_get_max_threads(); zi++) {
         detSum += Results[zi].getDetSum();
@@ -2423,6 +2413,20 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     if (do_h_vector) {
         Hilbert_Series.collectData();
     }
+    
+    if(verbose) {
+        verboseOutput() << "Total number of pyramids = "<< totalNrPyr << ", among them simplicial " << nrSimplicialPyr << endl;
+        // cout << "Uni "<< Unimod << " Ht1NonUni " << Ht1NonUni << " NonDecided " << NonDecided << " TotNonDec " << NonDecidedHyp<< endl;
+        if(do_only_multiplicity)
+            verboseOutput() << "Determinants computed = " << TotDet << endl;
+        /* if(NrCompVect>0)
+            cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal 
+                    << " Average " << NrCompVal/NrCompVect+1 << endl; */
+    }
+    
+    if(verbose && GMP_hyp+GMP_scal_prod+GMP_mat>0)
+        cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
+
 }
     
 //---------------------------------------------------------------------------
@@ -3748,8 +3752,12 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
+    
+    verbose=false;
     OldCandidates.dual=false;
+    OldCandidates.verbose=verbose;
     NewCandidates.dual=false;
+    NewCandidates.verbose=verbose;
     
 	RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
 	
@@ -3826,9 +3834,14 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     start_from=0;
     old_nr_supp_hyps=0;
     OldCandidates.dual=false;
+    OldCandidates.verbose=verbose;
     NewCandidates.dual=false;
+    NewCandidates.verbose=verbose;
+    
     
     is_approximation=false;
+    
+    verbose=C.verbose;
 }
 
 template<typename Integer>
@@ -3948,8 +3961,11 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
+    verbose=false;
     OldCandidates.dual=false;
+    OldCandidates.verbose=verbose;
     NewCandidates.dual=false;
+    NewCandidates.verbose=verbose;
     
     is_approximation=false;
 	

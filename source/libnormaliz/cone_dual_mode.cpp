@@ -49,6 +49,7 @@ template<typename Integer>
 void Cone_Dual_Mode<Integer>::splice_them_sort(CandidateList< Integer>& Total, vector<CandidateList< Integer> >& Parts){
 
     CandidateList<Integer> New;
+    New.verbose=verbose;
     New.dual=true;
     for(int i=0;i<omp_get_max_threads();i++)
         New.Candidates.splice(New.Candidates.end(),Parts[i].Candidates);
@@ -166,6 +167,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     int sign;
 
     CandidateList<Integer> Positive_Irred(true),Negative_Irred(true),Neutral_Irred(true); // for the Hilbert basis elements
+    Positive_Irred.verbose=Negative_Irred.verbose=Neutral_Irred.verbose=verbose;
     list<Candidate<Integer>* > Pos_Gen0, Pos_Gen1, Neg_Gen0, Neg_Gen1;  // pointer lists for generation control
     size_t pos_gen0_size=0, pos_gen1_size=0, neg_gen0_size=0, neg_gen1_size=0;
         
@@ -308,11 +310,13 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     }
     
     CandidateList<Integer> New_Positive_Irred(true),New_Negative_Irred(true),New_Neutral_Irred(true);
+    New_Positive_Irred.verbose=New_Negative_Irred.verbose=New_Neutral_Irred.verbose=verbose;
     New_Negative_Irred.last_hyp=hyp_counter;  // for the newly generated vector in each thread
     New_Positive_Irred.last_hyp=hyp_counter;
     New_Neutral_Irred.last_hyp=hyp_counter;
     
     CandidateList<Integer> Positive_Depot(true),Negative_Depot(true),Neutral_Depot(true); // to store the new vectors after generation
+    Positive_Depot.verbose=Negative_Depot.verbose=Neutral_Depot.verbose=verbose;
     
     vector<CandidateList<Integer> > New_Positive_thread(omp_get_max_threads()),
                       New_Negative_thread(omp_get_max_threads()),
@@ -322,8 +326,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                       
      for(long i=0;i<omp_get_max_threads();++i){
         New_Positive_thread[i].dual=true;
-        New_Negative_thread[i].dual=true;   
+        New_Positive_thread[i].verbose=verbose;
+        New_Negative_thread[i].dual=true;
+        New_Negative_thread[i].verbose=verbose;
         New_Neutral_thread[i].dual=true;
+        New_Neutral_thread[i].verbose=verbose;
     }
     
     for(int k=0;k<omp_get_max_threads();++k){

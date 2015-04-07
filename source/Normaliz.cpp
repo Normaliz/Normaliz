@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
                 to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'e':  //check for arithmetic overflow
-                test_arithmetic_overflow=true;
+                // test_arithmetic_overflow=true;
                 break;
             case 'B':  //use Big Integer
                 use_Big_Integer=true;
@@ -278,16 +278,16 @@ int main(int argc, char* argv[])
     if(use_Big_Integer) {
 #ifndef NMZ_MIC_OFFLOAD
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
-        test_arithmetic_overflow=false;
+        // test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files);
+        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files, verbose);
 #else // NMZ_MIC_OFFLOAD*/
       cerr << "Error: option \"-B\" not supported with mic offload!" << endl;
       exit(1);
 #endif // NMZ_MIC_OFFLOAD
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files);
+        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files, verbose);
     }
 
     if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files ) {
+template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, bool verbose ) {
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 

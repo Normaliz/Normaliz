@@ -1039,21 +1039,17 @@ Integer Matrix<Integer>::compute_vol(bool& success){
         
     assert(nr<=nc);
     
-    Integer det, test_det = 1;
-    if(do_arithmetic_check<Integer>())
-        for (size_t i=0; i<nr; i++){
-            test_det=(test_det*elem[i][i]%overflow_test_modulus)%overflow_test_modulus;
-      test_det=Iabs(test_det);  
+    Integer det=1;
+    for(size_t i=0;i<nr;++i){
+        det*=elem[i][i]; 
+        if(!check_range(det)){
+            success=false;
+            return 0;
+        }
     }
-    
-    det=1;
-    for(size_t i=0;i<nr;++i)
-        det*=elem[i][i];           
+            
     det=Iabs(det);
-    
-    if(do_arithmetic_check<Integer>() && test_det!=det%overflow_test_modulus){
-        success=false;
-    }
+    success=true;
     return det;
 }
 
@@ -1459,7 +1455,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
     }
 
     if (denom==0) { 
-        if(!do_arithmetic_check<Integer>()){
+        if(using_GMP<Integer>()){
             errorOutput() << "Cannot solve system (denom=0)!" << endl;
             throw ArithmeticException();
         }

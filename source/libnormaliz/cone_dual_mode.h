@@ -46,6 +46,8 @@ public:
     size_t nr_sh;
     // size_t hyp_size;
     
+    bool verbose;
+    
     bool inhomogeneous;
     bool do_only_Deg1_Elements;
     bool truncate;  // = inhomogeneous || do_only_Deg1_Elements

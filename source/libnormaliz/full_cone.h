@@ -72,6 +72,8 @@ public:
     size_t nr_gen;
     // size_t hyp_size; // not used at present
     
+    bool verbose;
+    
     bool pointed;
     bool is_simplicial;
     bool deg1_generated;

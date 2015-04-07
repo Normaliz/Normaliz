@@ -237,7 +237,6 @@ private:
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
-
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_lattice_ideal(const map< InputType, vector< vector<Integer> > >& multi_input_data);

@@ -163,13 +163,13 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 
 void HilbertSeries::collectData() const {
     if (denom_classes.empty()) return;
-	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
+	// if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
     map< vector<denom_t>, vector<num_t> >::iterator it;
     for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
         performAdd(it->second, it->first);
     }
     denom_classes.clear();
-	if (verbose) verboseOutput() << " done." << endl;
+	// if (verbose) verboseOutput() << " done." << endl;
 }
 
 // simplify, see class description
