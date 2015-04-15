@@ -88,6 +88,7 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
     
     sequential_evaluation=true; // to be changed later if necessrary
     mpz_Generators=Matrix<mpz_class>(0,0);
+    GMP_transition=false;
 }
 
 template<typename Integer>
@@ -185,8 +186,10 @@ size_t TotDet=0;
 template<typename Integer>
 Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll) {
     
-    if(mpz_Generators.nr_of_rows()!=0)
+    if(GMP_transition){
         mpz_Generators=Matrix<mpz_class>(0,0); // this is not a local variable and must be deleted at the start
+        GMP_transition=false;
+    }
 
     volume = s.vol;
     key = s.key;
@@ -458,23 +461,26 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& element, vector<Integer>& help){
 
     bool success;
-    if(mpz_Generators.nr_of_rows()==0){
+    if(!GMP_transition){
         help=Generators.VxM_div(element,volume,success);
-        if(!success){
-            #pragma omp critical(MPZGEN)
-            {
+        if(success)
+            return;       
+        
+        #pragma omp critical(MPZGEN)
+        {
+        if(!GMP_transition){
             mpz_Generators=Matrix<mpz_class>(dim,dim);
             mat_to_mpz(Generators,mpz_Generators);
             mpz_volume=to_mpz(volume);
-            }
+            GMP_transition=true;
+        }
         }
     }
-    if(mpz_Generators.nr_of_rows()!=0){
-        vector<mpz_class> mpz_element(dim);
-        vect_to_mpz(element,mpz_element);
-        vector<mpz_class> mpz_help=mpz_Generators.VxM_div(mpz_element,mpz_volume,success);
-        vect_to_Int(mpz_help,help);
-    }
+
+    vector<mpz_class> mpz_element(dim);
+    vect_to_mpz(element,mpz_element);
+    vector<mpz_class> mpz_help=mpz_Generators.VxM_div(mpz_element,mpz_volume,success);
+    vect_to_Int(mpz_help,help);
 
 }
 

@@ -97,6 +97,8 @@ class SimplexEvaluator {
     
     bool sequential_evaluation; // indicates whether the simplex is evaluated by a single thread
     
+    bool GMP_transition; 
+    
     struct SIMPLINEXDATA{                    // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
         // vector< num_t > hvector;             // accumulates the h-vector of this face
