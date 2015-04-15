@@ -52,6 +52,8 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
     A = Matrix<Integer>(n);
     B = Matrix<Integer>(n);
     c = 1;
+    Equations_computed=false;
+    Congruences_computed=false;
 }
 
 //---------------------------------------------------------------------------
@@ -85,6 +87,9 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
 
 template<typename Integer>
 void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bool take_saturation, bool& success) {
+
+    Equations_computed=false;
+    Congruences_computed=false;
 
     success=true;
 
@@ -155,7 +160,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             P[k][j]=1;
             k++;        
         }
-        Matrix<Integer> Q=P.invert_unprotected(c,success);  // gives c=1
+        Matrix<Integer> Q=P.invert_unprotected(c,success);
         if(!success)
             return;
         index=1;
@@ -195,6 +200,9 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
 template<typename Integer>
 void Sublattice_Representation<Integer>::compose(const Sublattice_Representation& SR) {
     assert(rank == SR.dim); //TODO vielleicht doch exception?
+    
+    Equations_computed=false;
+    Congruences_computed=false;
 
     rank = SR.rank;
     index = SR.index;
@@ -328,10 +336,49 @@ Integer Sublattice_Representation<Integer>::get_c() const {
 //---------------------------------------------------------------------------
 
 /* returns the congruences defining the sublattice */
+
 template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
-    if ( c == 1 ) { // no congruences then
-        return Matrix<Integer>(0,dim+1);
+Matrix<Integer> Sublattice_Representation<Integer>::get_equations() const{
+
+    if(!Equations_computed)
+        make_equations();
+    return Equations;
+}
+
+template<typename Integer>
+void Sublattice_Representation<Integer>::make_equations() const{
+
+    if(rank==dim)
+        Equations=Matrix<Integer>(0,dim);
+    else
+        Equations=A.kernel();    
+    Equations_computed=true;
+}
+
+template<typename Integer>
+Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const{
+
+    if(!Congruences_computed)
+        make_congruences();
+    return Congruences;
+}
+
+template<typename Integer>
+mpz_class Sublattice_Representation<Integer>::get_external_index() const{
+
+    if(!Congruences_computed)
+        make_congruences();
+    return external_index;
+}
+
+template<typename Integer>
+void Sublattice_Representation<Integer>::make_congruences() const {
+
+    if ( c == 1) { // no congruences then
+        Congruences=Matrix<Integer>(0,dim+1);
+        Congruences_computed=true;
+        external_index=1;
+        return;
     }
     
     size_t dummy;
@@ -358,8 +405,11 @@ Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const {
         
         }   
     }
-
-    return Transf2;
+    Congruences=Transf2;
+    Congruences_computed=true;
+    external_index=1;
+    for(size_t i=0;i<Transf2.nr;++i)
+        external_index*=to_mpz(Transf2[i][dim]);
 }
 
 }

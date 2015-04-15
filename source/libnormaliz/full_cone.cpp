@@ -1805,7 +1805,7 @@ template<typename Integer>
 void Full_Cone<Integer>::find_bottom_facets() {
 
     if(verbose)
-        verboseOutput() << "Computing botttom decomposition" << endl;
+        verboseOutput() << "Computing bottom decomposition" << endl;
 
     vector<key_t> start_simpl=Generators.max_rank_submatrix_lex();
     Order_Vector = vector<Integer>(dim,0);
@@ -1830,6 +1830,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
         BottomGen.append(help);
     }
     Full_Cone BottomPolyhedron(BottomGen);
+    BottomPolyhedron.verbose=verbose;
     BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
 
     // transfer pointedness
@@ -2002,6 +2003,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
         return;
     
     Full_Cone copy((*this).Generators);
+    copy.verbose=verbose;
     if(!from_scratch){
         copy.start_from=start_from;
         copy.use_existing_facets=true;
@@ -2248,6 +2250,7 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_sub_div_elements(const vector<key_t>& key,list<vector<Integer> >& sub_div_elements){
   
    Full_Cone<Integer> SimplCone(Generators.submatrix(key));
+   SimplCone.verbose=verbose;
    SimplCone.Grading=Grading;
    SimplCone.is_Computed.set(ConeProperty::Grading);
    SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
@@ -2266,6 +2269,7 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
 
     Full_Cone<Integer> SimplCone(Generators.submatrix(key));
+    SimplCone.verbose=verbose;
     SimplCone.Grading=Grading;
     SimplCone.is_Computed.set(ConeProperty::Grading);
     SimplCone.do_deg1_elements=true;
@@ -2612,6 +2616,7 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     assert(elements_from_approx.empty());
 
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
+    C_approx.verbose=verbose;
     C_approx.is_approximation=true;
     // C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
@@ -2760,6 +2765,7 @@ void Full_Cone<Integer>::find_module_rank_from_proj(){
     vector<Integer> GradingProj=ProjToLevel0Quot.transpose().solve_ZZ(Truncation);
     
     Full_Cone<Integer> Cproj(ProjGen);
+    Cproj.verbose=false;
     Cproj.Grading=GradingProj;
     Cproj.is_Computed.set(ConeProperty::Grading);
     Cproj.do_deg1_elements=true;
@@ -2958,12 +2964,18 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     }
     
     if (verbose) {
-        if(isComputed(ConeProperty::Grading)){
-            verboseOutput() << endl << "Degrees after sort" << endl;
-            verboseOutput() << count_in_map<long,long>(gen_degrees);
+        if(triangulate){
+            if(isComputed(ConeProperty::Grading)){
+                verboseOutput() << endl << "Generators sorted by degree and lexicographically" << endl;
+                verboseOutput() << "Generators per degree:" << endl;
+                verboseOutput() << count_in_map<long,long>(gen_degrees);
+            }
+            else
+                verboseOutput() << endl << "Generators sorted by 1-norm and lexicographically" << endl;
         }
-        else
-            verboseOutput() << endl << "Generators sorted by 1-norm" << endl;
+        else{
+            verboseOutput() << endl << "Generators sorted lexicographically" << endl;
+        }
     }
     keep_order=true;
 }
@@ -3031,6 +3043,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
                         << "computing the extreme rays of the dual cone" << endl;
     }
     Full_Cone<Integer> Dual(Support_Hyperplanes);
+    Dual.verbose=verbose;
     Dual.Support_Hyperplanes = Generators;
     Dual.is_Computed.set(ConeProperty::SupportHyperplanes);
     Dual.compute_extreme_rays();

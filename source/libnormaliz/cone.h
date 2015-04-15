@@ -186,8 +186,8 @@ public:
     vector< vector<Integer> > getGeneratorsOfToricRing() const;
     Matrix<Integer> getOriginalMonoidGeneratorsMatrix() const;
     vector< vector<Integer> > getOriginalMonoidGenerators() const;
-    Sublattice_Representation<Integer> getBasisChange() const;
     // the following methods return const refs to avoid copying of big data objects
+    const Sublattice_Representation<Integer>& getBasisChange() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
     const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData() const;

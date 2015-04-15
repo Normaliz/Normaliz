@@ -1,4 +1,4 @@
-    /*
+/*
  * Normaliz
  * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
  * This program is free software: you can redistribute it and/or modify
@@ -649,7 +649,7 @@ long Cone<Integer>::getAffineDim() const {
 }
 
 template<typename Integer>
-Sublattice_Representation<Integer> Cone<Integer>::getBasisChange() const{
+const Sublattice_Representation<Integer>& Cone<Integer>::getBasisChange() const{
     return BasisChange;
 }
 
@@ -715,11 +715,7 @@ vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getEquationsMatrix() const {
-    size_t rank = BasisChange.get_rank();
-    if (rank == 0)                   // the zero cone
-        return Matrix<Integer>(dim); // identity matrix
-    else 
-        return Generators.submatrix(ExtremeRays).kernel();
+    return BasisChange.get_equations();
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getEquations() const {
@@ -1316,7 +1312,7 @@ void Cone<Integer>::compute_generators() {
                 vector<Integer> lf = BasisChange.to_sublattice(Generators).find_linear_form();
                 if (lf.size() == BasisChange.get_rank()) {
                     vector<Integer> test_lf=BasisChange.from_sublattice_dual(lf);
-                    if(v_scalar_product(Generators[0],test_lf)==1)
+                    if(Generators.nr_of_rows()==0 || v_scalar_product(Generators[0],test_lf)==1)
                         setGrading(test_lf);
                 }
             }
@@ -1373,7 +1369,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     
     if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
         vector<Integer> lf= Generators.submatrix(ExtremeRays).find_linear_form_low_dim();
-        if(lf.size()==dim && v_scalar_product(Generators[0],lf)==1)
+        if(Generators.nr_of_rows()==0 || (lf.size()==dim && v_scalar_product(Generators[0],lf)==1))
             setGrading(lf); 
         else{
             errorOutput() << "Need grading to compute degree 1 elements and cannot find one." << endl;
