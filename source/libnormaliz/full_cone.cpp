@@ -3618,6 +3618,7 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
 
 //---------------------------------------------------------------------------
 
+/*
 template<typename Integer>
 Integer Full_Cone<Integer>::primary_multiplicity() const{
     size_t h,i,j,k;
@@ -3660,6 +3661,7 @@ Integer Full_Cone<Integer>::primary_multiplicity() const{
     }
     return primary_multiplicity;
 }
+*/
 //---------------------------------------------------------------------------
 // Constructors
 //---------------------------------------------------------------------------
@@ -3693,7 +3695,7 @@ void Full_Cone<Integer>::reset_tasks(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
+Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constructor of the top cone
     dim=M.nr_of_columns();
     
     if (dim!=M.rank()) {
@@ -3702,7 +3704,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M){ // constructor of the top cone
     }
     Generators = M;
     //make the generators coprime, remove 0 rows and duplicates
-    Generators.make_prime();
+    if(do_make_prime)
+        Generators.make_prime();
     Generators.remove_duplicate_and_zero_rows();
     nr_gen = Generators.nr_of_rows();
 

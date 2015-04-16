@@ -319,7 +319,7 @@ public:
  *                      Constructors
  *---------------------------------------------------------------------------
  */
-    Full_Cone(Matrix<Integer> M);            //main constructor
+Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constructor
     Full_Cone(const Cone_Dual_Mode<Integer> &C);
     Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
 
@@ -363,7 +363,7 @@ public:
 
     /* computes the multiplicity of the ideal in case of a Rees algebra
      * (not the same as the multiplicity of the semigroup) */
-    Integer primary_multiplicity() const;
+    // Integer primary_multiplicity() const;  // replaced by function in cone.cpp
 
     void dual_mode();
 

@@ -1178,8 +1178,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;  
     }
 
-    if (rees_primary) // && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
-        ToCompute.set(ConeProperty::Triangulation);
+    /* if (rees_primary) // && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
+        ToCompute.set(ConeProperty::Triangulation); */
 
     /* Create a Full_Cone FC */
     
@@ -1462,6 +1462,28 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Integer Cone<Integer>::compute_primary_multiplicity(){
+    
+    Matrix<Integer> Ideal(0,dim-1);
+    for(size_t i=0;i<Generators.nr_of_rows();++i){ // select ideal generators
+        if(Generators[i][dim-1]==1){
+            vector<Integer> help(dim-1);
+            for(size_t j=0;j<dim-1;++j)
+                help[j]=Generators[i][j];
+            Ideal.append(help);
+        }
+    }
+    
+    Full_Cone<Integer> IdCone(Ideal,false);
+    IdCone.do_bottom_dec=true;
+    IdCone.do_determinants=true;
+    IdCone.compute();
+    return IdCone.detSum;    
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     //this function extracts ALL available data from the Full_Cone
     //even if it was in Cone already <- this may change
@@ -1471,9 +1493,9 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         verboseOutput() << "transforming data..."<<flush;
     }
     
-    if (rees_primary && FC.isComputed(ConeProperty::Triangulation)) {
+    if (rees_primary){ //  && FC.isComputed(ConeProperty::Triangulation)) {
         //here are some computations involved, made first so that data can be deleted in FC later
-        ReesPrimaryMultiplicity = FC.primary_multiplicity();
+        ReesPrimaryMultiplicity = compute_primary_multiplicity();
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
     

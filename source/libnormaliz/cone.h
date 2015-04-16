@@ -277,6 +277,8 @@ private:
     /* set this object to the zero cone */
     void set_zero_cone();
     
+    Integer compute_primary_multiplicity();
+    
 };
 
 // helpers
