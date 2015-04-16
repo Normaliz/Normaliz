@@ -178,8 +178,7 @@ void SimplexEvaluator<Integer>::update_inhom_hvector(long level_offset, size_t D
 
 //---------------------------------------------------------------------------
 
-size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
-size_t TotDet=0;
+// size_t Unimod=0, Ht1NonUni=0, Gcd1NonUni=0, NonDecided=0, NonDecidedHyp=0;
 
 //---------------------------------------------------------------------------
 
@@ -256,15 +255,15 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
         if(volume==1){
             unimodular=true;
-            #pragma omp atomic
-            Unimod++;
+            /* #pragma omp atomic
+            Unimod++; */
             for(i=0;i<dim;i++)
                 GDiag[i]=1;
             GDiag_computed=true;
         }
-        else
+        /* else
             #pragma omp atomic
-            Ht1NonUni++;
+            Ht1NonUni++;*/
     }
 
 
@@ -370,12 +369,12 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
         }
         
-    if(Ind0_key.size()>0){
+   /*  if(Ind0_key.size()>0){
         #pragma omp atomic
         NonDecided++;
         #pragma omp atomic
         NonDecidedHyp+=Ind0_key.size();
-    }
+    }*/
 
     
     return(volume);    
@@ -486,7 +485,7 @@ void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& eleme
 
 //---------------------------------------------------------------------------
 
-size_t NrSurvivors=0, NrCand=0;
+// size_t NrSurvivors=0, NrCand=0;
 
 //---------------------------------------------------------------------------
 
@@ -505,13 +504,13 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         transform_to_global(element,help);
         if(!C.contains(help))
             return;
-        #pragma omp atomic
-        NrCand++;
+        /* #pragma omp atomic
+        NrCand++;*/
 	   if(v_scalar_product(C.Truncation,help) >= C.TruncLevel)
 	    return;
 
-        #pragma omp atomic
-        NrSurvivors++;
+        /* #pragma omp atomic
+        NrSurvivors++; */
     
     }
     

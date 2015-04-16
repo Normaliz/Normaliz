@@ -84,11 +84,12 @@ typedef unsigned int key_t;
 
 extern bool verbose;
 extern size_t GMP_mat, GMP_hyp, GMP_scla_prod;
+extern size_t TotDet;
 
 /* if test_arithmetic_overflow is true, many operations are also done
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
-extern bool test_arithmetic_overflow;
-extern long overflow_test_modulus;
+// extern bool test_arithmetic_overflow;
+// extern long overflow_test_modulus;
 
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);

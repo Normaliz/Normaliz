@@ -34,6 +34,7 @@ bool verbose = false;
 size_t GMP_mat=0;
 size_t GMP_hyp=0;
 size_t GMP_scal_prod=0;
+size_t TotDet=0;
 
 
 namespace {

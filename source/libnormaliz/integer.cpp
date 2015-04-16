@@ -193,7 +193,7 @@ Integer int_max_value_dual(){
     Integer k=sizeof(Integer)*8-2;  // number of bytes convetred to number of bits
     Integer test=1;
     test = test << k;  // (maximal positive number)/2^k
-    test=0; // 10000;
+    // test=0; // 10000;
     return test;
 }
 
@@ -228,14 +228,14 @@ mpz_class int_max_value_primary<mpz_class>(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void check_range(CandidateList<Integer>& ll){
-    check_range(ll.Candidates);
+void check_range_list(const CandidateList<Integer>& ll){
+    check_range_list(ll.Candidates);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void check_range(const std::list<Candidate<Integer> >& ll){
+void check_range_list(const std::list<Candidate<Integer> >& ll){
 
     if (using_GMP<Integer>())
         return;

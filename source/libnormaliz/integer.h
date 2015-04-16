@@ -123,15 +123,15 @@ inline mpz_class to_Int(const mpz_class& a) {
     return a;
 }
 
-template<typename Integer>
+/* template<typename Integer>
 inline bool do_arithmetic_check() {
   return test_arithmetic_overflow; // true;
-}
+} 
 
 template<>
 inline bool do_arithmetic_check<mpz_class>() {
   return false;
-} 
+} */
 
 template<typename Integer>
 inline bool using_GMP() {
@@ -172,15 +172,15 @@ inline bool check_range<long>(long& m){
 
 
 template<typename Integer>
-void check_range(const std::list<std::vector<Integer> >& ll);
+void check_range_list(const std::list<std::vector<Integer> >& ll);
 
 template<typename Integer> class CandidateList;
 template<typename Integer> class Candidate;
 
 template<typename Integer>
-void check_range(const CandidateList<Integer>& ll);
+void check_range_list(const CandidateList<Integer>& ll);
 template<typename Integer>
-void check_range(const std::list<Candidate<Integer> >& ll);
+void check_range_list(const std::list<Candidate<Integer> >& ll);
 
 
 

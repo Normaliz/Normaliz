@@ -292,14 +292,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         #pragma omp single nowait
         {
-        check_range(Negative_Irred);
+        check_range_list(Negative_Irred);
         Negative_Irred.sort_by_val();
         Negative_Irred.last_hyp=hyp_counter;
         }
 
         #pragma omp single nowait
         {
-        check_range(Positive_Irred);
+        check_range_list(Positive_Irred);
         Positive_Irred.sort_by_val();
         Positive_Irred.last_hyp=hyp_counter;
         }
@@ -614,7 +614,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         if (!New_Positive_Irred.empty()) {
             if(do_reduction)
                 Positive_Depot.reduce_by(New_Positive_Irred);
-            check_range(New_Positive_Irred);  // check for danger of overflow
+            check_range_list(New_Positive_Irred);  // check for danger of overflow
             Positive_Irred.merge_by_val(New_Positive_Irred,Pos_Gen1);
             typename list<Candidate<Integer>* >::iterator c;
             for(c=Pos_Gen1.begin(); c!=Pos_Gen1.end(); ++c){
@@ -625,7 +625,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         if (!New_Negative_Irred.empty()) {
             Negative_Depot.reduce_by(New_Negative_Irred);
-            check_range(New_Negative_Irred);
+            check_range_list(New_Negative_Irred);
             Negative_Irred.merge_by_val(New_Negative_Irred,Neg_Gen1);
             typename list<Candidate<Integer>* >::iterator c;
             for(c=Neg_Gen1.begin(); c!=Neg_Gen1.end(); ++c){

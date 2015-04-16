@@ -276,6 +276,7 @@ private:
 
     /* set this object to the zero cone */
     void set_zero_cone();
+    
 };
 
 // helpers
