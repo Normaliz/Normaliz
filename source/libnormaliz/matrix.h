@@ -192,6 +192,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 	// returns the permutation created by sorting the rows with a grading function
     // or by 1-norm if computed is false
     vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
+    vector<key_t> perm_by_weights(const Matrix<Integer>& Weights);
+    void sort_by_weights(const Matrix<Integer>& Weights);
     
     void select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows);
     void select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows);
@@ -281,10 +283,14 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 // Normal forms
 
+    // public version of row_echelon_reduce (), GMP protected
+    void row_echelon_reduce();
+
     // transforms matrix in lower triangular form via column transformations
     // assumes that the rk is the rank and that the matrix is zero after the first rk rows
     // Right = Right*(column transformation of this call)
     bool column_trigonalize(size_t rk, Matrix<Integer>& Right);
+    
     // combines row_echelon_reduce and column_trigonalize
     // returns column transformation matrix
     Matrix<Integer> row_column_trigonalize(size_t& rk, bool& success);
@@ -389,6 +395,15 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 };
 //class end *****************************************************************
+
+template<typename Integer> class order_helper {
+    
+public:
+    
+    vector<Integer> weight;
+    key_t index;
+    vector<Integer>* v;
+};
 
 //---------------------------------------------------------------------------
 //                  Conversion between integer types

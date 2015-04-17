@@ -200,9 +200,14 @@ void vect_to_Int(const vector<mpz_class>& mpz_vect, vector<Integer>& vect);
 template<typename Integer>
 void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect);
 
-}
+//---------------------------------------------------------------------------
+//                            Sorting
+//---------------------------------------------------------------------------
 
+template <typename T>
+void order_by_perm(vector<T>& v, const vector<key_t>& permfix);
 
+} // namespace
 
 //---------------------------------------------------------------------------
 #endif

@@ -193,7 +193,6 @@ Integer int_max_value_dual(){
     Integer k=sizeof(Integer)*8-2;  // number of bytes convetred to number of bits
     Integer test=1;
     test = test << k;  // (maximal positive number)/2^k
-    // test=0; // 10000;
     return test;
 }
 

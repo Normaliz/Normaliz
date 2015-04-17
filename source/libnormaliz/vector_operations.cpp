@@ -572,6 +572,8 @@ vector<key_t> identity_key(size_t n){
         key[k]=k;
     return key;
 }
+
+//---------------------------------------------------------------
 // conversion between different integer types
 
 template<typename Integer>
@@ -586,5 +588,22 @@ void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect){
         mpz_vect[i]=to_mpz(vect[i]);
 }
 
+//---------------------------------------------------------------
+// Sorting
+
+template <typename T>
+void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
+    
+    vector<key_t> perm=permfix; // we may want to use permfix a second time
+    vector<key_t> inv(perm.size());
+    for(key_t i=0;i<perm.size();++i)
+        inv[perm[i]]=i;
+    for(key_t i=0;i<perm.size();++i){
+        key_t j=perm[i];
+        swap(v[i],v[perm[i]]);        
+        swap(perm[i],perm[inv[i]]);        
+        swap(inv[i],inv[j]);                
+    }
+}
 
 } // end namespace libnormaliz

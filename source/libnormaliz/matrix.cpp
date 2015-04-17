@@ -945,6 +945,12 @@ bool Matrix<Integer>::reduce_rows_upwards () {
 // assumes that "this" is in row echelon form
 // and reduces eevery column in which the rank jumps 
 // by its lowest element
+    
+    if(nr==0)
+        return true;
+    
+    if(elem[0][0]<0)
+        v_scalar_multiplication<Integer>(elem[0],-1);
 
     for(size_t row=1;row<nr;++row){
         size_t col;
@@ -1777,6 +1783,22 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::row_echelon_reduce(){
+    
+    Matrix<Integer> Copy(*this);
+    bool success;
+    row_echelon_reduce(success);
+    if(success)
+        return;
+    Matrix<mpz_class> mpz_Copy(nr,nc);
+    mat_to_mpz(Copy,mpz_Copy);
+    mpz_Copy.row_echelon_reduce(success);
+    mat_to_Int(mpz_Copy,*this);     
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Matrix<Integer>::kernel () const{
 // computes a ZZ-basis of the solutions of (*this)x=0
 // the basis is formed by the rOWS of the returned matrix
@@ -1800,6 +1822,7 @@ Matrix<Integer> Matrix<Integer>::kernel () const{
     Matrix<Integer> Help =Transf.transpose();
     for (size_t i = rank; i < dim; i++) 
             ker_basis[i-rank]=Help[i];
+    ker_basis.row_echelon_reduce();
     return(ker_basis);
 }
 
@@ -1991,6 +2014,55 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
 		i++;
 	}
 	return perm;
+}
+
+//---------------------------------------------------------------------------
+
+
+template<typename Integer>
+bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
+    
+        if(a.weight < b.weight)
+            return true;
+        if(a.weight==b.weight)
+            if(*(a.v)< *(b.v))
+                return true;
+        return false;
+}
+
+//---------------------------------------------------------------------------
+
+/* sorts rows of a matrix by according to a weight matrix and lexicographically
+ * does not change matrix (yet)
+ */
+
+template<typename Integer>
+void Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights){
+    
+    vector<key_t> perm=perm_by_weights(Weights);
+    order_by_perm(elem,perm);    
+}
+
+template<typename Integer>
+vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights){
+// the smallest entry is the row with index perm[0], then perm[1] etc.
+    
+    list<order_helper<Integer> > order;
+    order_helper<Integer> entry;
+    
+    for(key_t i=0;i<nr; ++i){
+        entry.weight=Weights.MxV(elem[i]);
+        entry.index=i;
+        entry.v=&(elem[i]);
+        order.push_back(entry);        
+    }
+    order.sort(weight_lex<Integer>);
+    vector<key_t> perm(nr);
+    typename list<order_helper<Integer> >::const_iterator ord=order.begin();
+    for(key_t i=0;i<nr;++i, ++ord)
+        perm[i]=ord->index; 
+    
+    return perm;
 }
 
 }  // namespace
