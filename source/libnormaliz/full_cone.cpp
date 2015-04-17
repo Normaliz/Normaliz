@@ -2452,10 +2452,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
                 
     if (do_Hilbert_basis) {
         // global_reduction(); // no longer necessary
-        remove_duplicate_ori_gens_from_HB();
+        // remove_duplicate_ori_gens_from_HB();
+        OldCandidates.sort_by_val();
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
-Hilbert_Basis.sort(); //TODO undo
+// Hilbert_Basis.sort(); //TODO undo
 Hilbert_Basis.unique();
         is_Computed.set(ConeProperty::HilbertBasis,true);
         if (isComputed(ConeProperty::Grading)) {
@@ -3183,9 +3184,10 @@ void Full_Cone<Integer>::select_deg1_elements() { // from the Hilbert basis
     if(inhomogeneous)
         return;
     typename list<vector<Integer> >::iterator h = Hilbert_Basis.begin();
-    for(;h!=Hilbert_Basis.end();h++)
+    for(;h!=Hilbert_Basis.end();h++){
         if(v_scalar_product(Grading,*h)==1)
             Deg1_Elements.push_back(*h);
+    }
     is_Computed.set(ConeProperty::Deg1Elements,true);
 }
 
@@ -3811,7 +3813,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     reset_tasks();
     
     Support_Hyperplanes = C.SupportHyperplanes;
-    is_Computed.set(ConeProperty::SupportHyperplanes);
+    Support_Hyperplanes.remove_duplicate_and_zero_rows();  // we can assume that all entries on C.Supp.. are relevant
+    is_Computed.set(ConeProperty::SupportHyperplanes);     // but there may be duplicates in the coordinates of the Full_Cone
     
     if(!C.do_only_Deg1_Elements){
         Hilbert_Basis = C.Hilbert_Basis;
