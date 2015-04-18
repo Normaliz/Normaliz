@@ -2037,21 +2037,30 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
  */
 
 template<typename Integer>
-void Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights){
+void Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
     
-    vector<key_t> perm=perm_by_weights(Weights);
+    vector<key_t> perm=perm_by_weights(Weights,absolute);
     order_by_perm(elem,perm);    
 }
 
 template<typename Integer>
-vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights){
+vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
 // the smallest entry is the row with index perm[0], then perm[1] etc.
+    
+    assert(Weights.nc==nc);
+    assert(absolute.size()==Weights.nr);
     
     list<order_helper<Integer> > order;
     order_helper<Integer> entry;
+    entry.weight.resize(Weights.nr);
     
     for(key_t i=0;i<nr; ++i){
-        entry.weight=Weights.MxV(elem[i]);
+        for(size_t j=0;j<Weights.nr;++j){
+            if(absolute[j])
+                entry.weight[j]=v_scalar_product(Weights[j],v_abs(elem[i]));
+            else
+                entry.weight[j]=v_scalar_product(Weights[j],elem[i]);                
+        }
         entry.index=i;
         entry.v=&(elem[i]);
         order.push_back(entry);        
