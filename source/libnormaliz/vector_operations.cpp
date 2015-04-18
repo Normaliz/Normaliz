@@ -222,6 +222,19 @@ vector<Integer>& v_abs(vector<Integer>& v){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+vector<Integer> v_abs_value(vector<Integer>& v){
+    size_t i, size=v.size();
+    vector<Integer> w=v;
+    for (i = 0; i < size; i++) {
+        if (v[i]<0) w[i] = Iabs(v[i]);
+    }
+    return w;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Integer v_gcd(const vector<Integer>& v){
     size_t i, size=v.size();
     Integer g=0;

@@ -234,6 +234,11 @@ private:
     size_t recession_rank; // rank of recession monoid
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
+    
+    Matrix<Integer> WeightsGradL1;
+    Matrix<Integer> WeightsL1;
+    vector<bool> GradL1Abs;
+    vector<bool> L1Abs;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 

@@ -75,9 +75,13 @@ vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, cons
 //							abs, gcd and lcm
 //---------------------------------------------------------------------------
 
-//takes the absolute value of the elements and returns a reference to the changed vector
+// takes the absolute value of the elements and returns a reference to the changed vector
 template<typename Integer>
 vector<Integer>& v_abs(vector<Integer>& v);
+
+// returns the vector of absolute values, does not change the argument
+template<typename Integer>
+vector<Integer> v_abs_value(vector<Integer>& v);
 
 //returns gcd of the elements of v
 template<typename Integer>

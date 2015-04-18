@@ -71,78 +71,33 @@ int main(int argc, char* argv[])
     
     Matrix<Integer> M=ReadMat<Integer>(project);
     M.pretty_print(cout);
+    cout << "---------" << endl;
     Matrix<Integer> N=M;
     
-    size_t rank;
-    Integer det;
+    size_t dim=M.nr_of_columns();
     
-    // for(size_t i=0;i<1000000;++i){
-    N=M;
-    N.row_echelon_inner_bareiss(success,det);
-    // N.row_echelon_inner_elem(success);
-    // }
+    vector<Integer> Grading(dim,0);
+    Grading [Grading.size()-1]=1;
     
-    // N.pretty_print(cout);
+    Matrix<Integer> WeightsGradL1(0,dim);  // weight matrix for ordering, first row Grading, then L1
+    // if(isComputed(ConeProperty::Grading))
+        WeightsGradL1.append(Grading);
+    WeightsGradL1.append(vector<Integer>(dim,1));
+    vector<bool> AbsWGL(WeightsGradL1.nr_of_rows(),false);
+    AbsWGL[AbsWGL.size()-1]=true;
     
-    det=1;
+    Matrix<Integer> WeightsL1(0,dim);  // only L1
+    WeightsL1.append(vector<Integer>(dim,1));
+    vector<bool> AbsWL(WeightsL1.nr_of_rows(),false);
+    AbsWL[AbsWL.size()-1]=true;
+ 
+    WeightsGradL1.pretty_print(cout);
+    cout << "---------" << endl;
+    WeightsL1.pretty_print(cout);
+    cout << "---------" << endl;
     
-    for(size_t i=0;i<N.nr_of_rows();++i)
-        det*=N[i][i];
-    
-    cout << "det " << Iabs(det) << endl;
-    
-    /* Matrix<Integer> Transf=N.SmithNormalForm(rank);
-    
-    Integer denom;
-    
-    Transf.pretty_print(cout); 
-    
-    cout <<"--------------------" << endl;
-    
-    N.pretty_print(cout);
-    
-    cout <<"--------------------" << endl;
-    
-    Transf.invert(denom).pretty_print(cout);
-    
-     cout <<"--------------------" << endl;
-     
-     Transf.invert(denom).multiplication(Transf).pretty_print(cout); */
-    
-    
-
-    
-        /*
-    
-    for(size_t i=0;i<100000;++i){
-    
-        N=M;
-        N.max_rank_submatrix_lex();
-    }    
-
-    
-    // cout << "Vol " << N.row_echelon_inner_gcd(success) << endl;
-    // N.pretty_print(cout);
-    
-        //cout << "Rang " << N.row_echelon_bareiss(success) << endl;
-        
-    // N.rank_destructive();
-    
-    for(size_t i=0;i<1000000;++i){
-    
-        N=M;
-        // N.row_echelon_inner_gcd(success);
-        // N.rank_destructive();
-        N.row_echelon_inner_elem(success);
-        // N.row_echelon_inner_bareiss(success);
-        
-        
-    }
-        
-
-    N.pretty_print(cout);
-    
-    */
+    M.sort_by_weights(WeightsL1,AbsWL);
+    M.pretty_print(cout);
     
     
     exit(0);

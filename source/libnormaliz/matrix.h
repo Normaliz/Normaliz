@@ -394,7 +394,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     
 // Sorting of rows
     
-    void sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
+    Matrix<Integer> sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute) const;
 
 };
 //class end *****************************************************************

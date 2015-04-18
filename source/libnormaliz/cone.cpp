@@ -685,10 +685,10 @@ Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
     if (inhomogeneous) { // return only the rays of the recession cone
         assert(isComputed(ConeProperty::ExtremeRays));
         assert(isComputed(ConeProperty::VerticesOfPolyhedron));
-        return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron));
+        return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron)).sort_by_weights(WeightsGradL1,GradL1Abs);
     }
     // homogeneous case
-    return Generators.submatrix(ExtremeRays);
+    return Generators.submatrix(ExtremeRays).sort_by_weights(WeightsGradL1,GradL1Abs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
@@ -697,20 +697,20 @@ vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
-    return Generators.submatrix(VerticesOfPolyhedron);
+    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGradL1,GradL1Abs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getVerticesOfPolyhedron() const {
-    return Generators.submatrix(VerticesOfPolyhedron).get_elements();
+    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getSupportHyperplanesMatrix() const {
-   return SupportHyperplanes;
+    return SupportHyperplanes.sort_by_weights(WeightsL1,L1Abs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
-   return SupportHyperplanes.get_elements();
+    return SupportHyperplanes.sort_by_weights(WeightsL1,L1Abs).get_elements();
 }
 
 template<typename Integer>
@@ -776,29 +776,29 @@ Integer Cone<Integer>::getTriangulationDetSum() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getHilbertBasisMatrix() const {
-    return HilbertBasis;
+    return HilbertBasis.sort_by_weights(WeightsGradL1,GradL1Abs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
-    return HilbertBasis.get_elements();
+    return HilbertBasis.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getModuleGeneratorsMatrix() const {
-    return ModuleGenerators;
+    return ModuleGenerators.sort_by_weights(WeightsGradL1,GradL1Abs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
-    return ModuleGenerators.get_elements();
+    return ModuleGenerators.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getDeg1ElementsMatrix() const {
-    return Deg1Elements;
+    return Deg1Elements.sort_by_weights(WeightsGradL1,GradL1Abs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
-    return Deg1Elements.get_elements();
+    return Deg1Elements.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
 
 template<typename Integer>
@@ -1274,6 +1274,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         errorOutput() << "Warning: Cone could not compute everything that was asked for!"<<endl;
         errorOutput() << "Missing: " << ToCompute << endl;
     }
+    
     return ToCompute;
 }
 
@@ -1488,7 +1489,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     //this function extracts ALL available data from the Full_Cone
     //even if it was in Cone already <- this may change
     //it is possible to delete the data in Full_Cone after extracting it
-
+    
     if(verbose) {
         verboseOutput() << "transforming data..."<<flush;
     }
@@ -1648,6 +1649,18 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
 
     check_integrally_closed();
+    
+    WeightsGradL1=Matrix<Integer> (0,dim);  // weight matrix for ordering, first row Grading, then L1
+    if(isComputed(ConeProperty::Grading))
+        WeightsGradL1.append(Grading);
+    WeightsGradL1.append(vector<Integer>(dim,1));
+    GradL1Abs=vector<bool>(WeightsGradL1.nr_of_rows(),false);
+    GradL1Abs[GradL1Abs.size()-1]=true; // for L1
+    
+    WeightsL1=Matrix<Integer> (0,dim);   // only L1
+    WeightsL1.append(vector<Integer>(dim,1));
+    L1Abs=vector<bool>(WeightsL1.nr_of_rows(),false);
+    L1Abs[0]=true;
 
     if (verbose) {
         verboseOutput() << " done." <<endl;

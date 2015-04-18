@@ -2037,10 +2037,15 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
  */
 
 template<typename Integer>
-void Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
+Matrix<Integer> Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute) const{
     
-    vector<key_t> perm=perm_by_weights(Weights,absolute);
-    order_by_perm(elem,perm);    
+    Matrix<Integer> sorted=*this;    
+    if(nr==0)
+        return sorted;
+    
+    vector<key_t> perm=sorted.perm_by_weights(Weights,absolute);
+    order_by_perm(sorted.elem,perm);
+    return sorted;
 }
 
 template<typename Integer>
@@ -2049,7 +2054,7 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
     
     assert(Weights.nc==nc);
     assert(absolute.size()==Weights.nr);
-    
+
     list<order_helper<Integer> > order;
     order_helper<Integer> entry;
     entry.weight.resize(Weights.nr);
@@ -2057,7 +2062,7 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
     for(key_t i=0;i<nr; ++i){
         for(size_t j=0;j<Weights.nr;++j){
             if(absolute[j])
-                entry.weight[j]=v_scalar_product(Weights[j],v_abs(elem[i]));
+                entry.weight[j]=v_scalar_product(Weights[j],v_abs_value(elem[i]));
             else
                 entry.weight[j]=v_scalar_product(Weights[j],elem[i]);                
         }
