@@ -662,6 +662,7 @@ vector< vector<Integer> > Cone<Integer>::getOriginalMonoidGenerators() const {
     return OriginalMonoidGenerators.get_elements();
 }
 
+
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
     return GeneratorsOfToricRing;
@@ -679,6 +680,10 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getGenerators() const {
     return Generators.get_elements();
 }
+template<typename Integer>
+size_t Cone<Integer>::getNrGenerators() const {
+    return Generators.nr_of_rows();
+}
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
@@ -694,6 +699,19 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
     return getExtremeRaysMatrix().get_elements();
 }
+template<typename Integer>
+size_t Cone<Integer>::getNrExtremeRays() const {
+    vector<bool> ind;
+    if(inhomogeneous)
+        ind=v_bool_andnot(ExtremeRays,VerticesOfPolyhedron);
+    else
+        ind =ExtremeRays;
+    size_t n=0;
+    for(size_t i=0;i<ind.size();++i)
+        if(ind[i])
+            n++;
+    return n;
+}
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
@@ -703,6 +721,14 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getVerticesOfPolyhedron() const {
     return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
+template<typename Integer>
+size_t Cone<Integer>::getNrVerticesOfPolyhedron() const {
+    size_t n=0;
+    for(size_t i=0;i<VerticesOfPolyhedron.size();++i)
+        if(VerticesOfPolyhedron[i])
+            n++;
+    return n;
+}
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getSupportHyperplanesMatrix() const {
@@ -711,6 +737,10 @@ Matrix<Integer> Cone<Integer>::getSupportHyperplanesMatrix() const {
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
     return SupportHyperplanes.sort_by_weights(WeightsL1,L1Abs).get_elements();
+}
+template<typename Integer>
+size_t Cone<Integer>::getNrSupportHyperplanes() const {
+    return SupportHyperplanes.nr_of_rows();
 }
 
 template<typename Integer>
@@ -782,6 +812,10 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
     return HilbertBasis.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
+template<typename Integer>
+size_t Cone<Integer>::getNrHilbertBasis() const {
+    return HilbertBasis.nr_of_rows();
+}
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getModuleGeneratorsMatrix() const {
@@ -791,6 +825,10 @@ template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
     return ModuleGenerators.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
 }
+template<typename Integer>
+size_t Cone<Integer>::getNrModuleGenerators() const {
+    return ModuleGenerators.nr_of_rows();
+}
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getDeg1ElementsMatrix() const {
@@ -799,6 +837,10 @@ Matrix<Integer> Cone<Integer>::getDeg1ElementsMatrix() const {
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
     return Deg1Elements.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
+}
+template<typename Integer>
+size_t Cone<Integer>::getNrDeg1Elements() const {
+    return Deg1Elements.nr_of_rows();
 }
 
 template<typename Integer>

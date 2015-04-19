@@ -345,10 +345,10 @@ void Output<Integer>::write_inv_file() const{
 
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
             inv << "integer number_module_generators = "
-                << Result->getModuleGeneratorsMatrix().nr_of_rows() << endl;
+                << Result->getNrModuleGenerators() << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
-            inv<<"integer hilbert_basis_elements = "<<Result->getHilbertBasis().size()<<endl;
+            inv<<"integer hilbert_basis_elements = "<<Result->getNrHilbertBasis()<<endl;
         }
 
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
@@ -356,7 +356,7 @@ void Output<Integer>::write_inv_file() const{
                 << Result->getVerticesOfPolyhedronMatrix().nr_of_rows() << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
-            size_t nr_ex_rays = Result->getExtremeRays().size();
+            size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
         }
 
@@ -372,7 +372,7 @@ void Output<Integer>::write_inv_file() const{
                 inv << "integer recession_rank = "  << Result->getRecessionRank() << endl;
         }
 
-        inv<<"integer number_support_hyperplanes = "<<Result->getSupportHyperplanes().size()<<endl;
+        inv<<"integer number_support_hyperplanes = "<<Result->getNrSupportHyperplanes()<<endl;
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             inv << "integer size_triangulation = " << Result->getTriangulationSize() << endl;
         }
@@ -396,7 +396,7 @@ void Output<Integer>::write_inv_file() const{
         else {
             inv<<"boolean graded = "<<"true"<<endl;
             if (Result->isComputed(ConeProperty::Deg1Elements)) {
-                inv<<"integer degree_1_elements = "<<Result->getDeg1Elements().size()<<endl;
+                inv<<"integer degree_1_elements = "<<Result->getNrDeg1Elements()<<endl;
             }
             vector<Integer> Linear_Form = Result->getGrading();
             inv<<"vector "<<Linear_Form.size()<<" grading = ";
@@ -480,11 +480,11 @@ void Output<Integer>::write_files() const {
             out << nr_module_gen <<" module generators" << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
-            out << Result->getHilbertBasis().size() <<" Hilbert basis elements"
+            out << Result->getNrHilbertBasis() <<" Hilbert basis elements"
                 << of_monoid << endl;
         }
         if (homogeneous && Result->isComputed(ConeProperty::Deg1Elements)) {
-            out << Result->getDeg1Elements().size() <<" Hilbert basis elements of degree 1"<<endl;
+            out << Result->getNrDeg1Elements() <<" Hilbert basis elements of degree 1"<<endl;
         }
         if (Result->isComputed(ConeProperty::ReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
@@ -502,11 +502,11 @@ void Output<Integer>::write_files() const {
             out << nr_vert <<" vertices of polyhedron" << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
-            size_t nr_ex_rays = Result->getExtremeRays().size();
+            size_t nr_ex_rays = Result->getNrExtremeRays();
             out << nr_ex_rays <<" extreme rays" << of_cone << endl;
         }
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
-            out << Result->getSupportHyperplanes().size() <<" support hyperplanes"
+            out << Result->getNrSupportHyperplanes() <<" support hyperplanes"
                 << of_polyhedron << endl;
         }
         out<<endl;

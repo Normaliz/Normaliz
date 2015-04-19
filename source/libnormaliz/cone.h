@@ -135,16 +135,20 @@ public:
 
     Matrix<Integer> getGeneratorsMatrix() const;
     vector< vector<Integer> > getGenerators() const;
+    size_t getNrGenerators() const;
 
     Matrix<Integer> getExtremeRaysMatrix() const;
     vector< vector<Integer> > getExtremeRays() const;
+    size_t getNrExtremeRays() const;
 
     Matrix<Integer> getVerticesOfPolyhedronMatrix() const;
     vector< vector<Integer> > getVerticesOfPolyhedron() const;
+    size_t getNrVerticesOfPolyhedron() const;
 
     // The following constraints depend all on ConeProperty::SupportHyperplanes
     Matrix<Integer> getSupportHyperplanesMatrix() const;
     vector< vector<Integer> > getSupportHyperplanes() const;
+    size_t getNrSupportHyperplanes() const;
     Matrix<Integer> getEquationsMatrix() const;
     vector< vector<Integer> > getEquations() const;
     Matrix<Integer> getCongruencesMatrix() const;
@@ -159,12 +163,15 @@ public:
 
     Matrix<Integer> getHilbertBasisMatrix() const;
     vector< vector<Integer> > getHilbertBasis() const;
+    size_t getNrHilbertBasis() const;
 
     Matrix<Integer> getModuleGeneratorsMatrix() const;
     vector< vector<Integer> > getModuleGenerators() const;
+    size_t getNrModuleGenerators() const;
 
     Matrix<Integer> getDeg1ElementsMatrix() const;
     vector< vector<Integer> > getDeg1Elements() const;
+    size_t getNrDeg1Elements() const;
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading() const;
