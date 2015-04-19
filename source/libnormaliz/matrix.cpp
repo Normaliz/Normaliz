@@ -2044,8 +2044,13 @@ Matrix<Integer> Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights,
         return sorted;
     
     vector<key_t> perm=sorted.perm_by_weights(Weights,absolute);
-    order_by_perm(sorted.elem,perm);
+    sorted.order_rows_by_perm(perm);
     return sorted;
+}
+
+template<typename Integer>
+void Matrix<Integer>::order_rows_by_perm(const vector<key_t>& perm){
+    order_by_perm(elem,perm);    
 }
 
 template<typename Integer>

@@ -2901,7 +2901,56 @@ void Full_Cone<Integer>::set_levels() {
     }
     
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
+    // if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
+    // return;
     
+    if(keep_order)
+        return;
+    
+    Matrix<Integer> Weights(0,dim);
+    vector<bool> absolute;
+    if(triangulate){
+        if(isComputed(ConeProperty::Grading)){
+            Weights.append(Grading);
+            absolute.push_back(false);
+        }
+        else{
+            Weights.append(vector<Integer>(dim,1));
+            absolute.push_back(true);
+        }
+    }
+    
+    vector<key_t> perm=Generators.perm_by_weights(Weights,absolute);
+    Generators.order_rows_by_perm(perm);
+    order_by_perm(Extreme_Rays,perm);
+    if(isComputed(ConeProperty::Grading))
+        order_by_perm(gen_degrees,perm);
+    if(inhomogeneous)
+        order_by_perm(gen_levels,perm);
+    
+    if (verbose) {
+        if(triangulate){
+            if(isComputed(ConeProperty::Grading)){
+                verboseOutput() << endl << "Generators sorted by degree and lexicographically" << endl;
+                verboseOutput() << "Generators per degree:" << endl;
+                verboseOutput() << count_in_map<long,long>(gen_degrees);
+            }
+            else
+                verboseOutput() << endl << "Generators sorted by 1-norm and lexicographically" << endl;
+        }
+        else{
+            verboseOutput() << endl << "Generators sorted lexicographically" << endl;
+        }
+    }
+    keep_order=true;
+}
+
+/*    
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2980,7 +3029,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     }
     keep_order=true;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
