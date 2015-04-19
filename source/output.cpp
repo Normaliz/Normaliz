@@ -353,7 +353,7 @@ void Output<Integer>::write_inv_file() const{
 
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
             inv << "integer number_vertices_polyhedron = "
-                << Result->getVerticesOfPolyhedronMatrix().nr_of_rows() << endl;
+                << Result->getNrVerticesOfPolyhedron() << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
@@ -455,8 +455,8 @@ template<typename Integer>
 void Output<Integer>::write_files() const {
     const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
     size_t i, nr;
-    Matrix<Integer> Generators(Result->getGeneratorsMatrix());
-    Matrix<Integer> Support_Hyperplanes(Result->getSupportHyperplanesMatrix());
+    const Matrix<Integer>& Generators = Result->getGeneratorsMatrix();
+    const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
     vector<libnormaliz::key_t> rees_ideal_key;
 
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
@@ -481,8 +481,7 @@ void Output<Integer>::write_files() const {
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            size_t nr_module_gen = Result->getModuleGeneratorsMatrix().nr_of_rows();
-            out << nr_module_gen <<" module generators" << endl;
+            out << Result->getNrModuleGenerators() <<" module generators" << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
             out << Result->getNrHilbertBasis() <<" Hilbert basis elements"
@@ -493,7 +492,7 @@ void Output<Integer>::write_files() const {
         }
         if (Result->isComputed(ConeProperty::ReesPrimary)
             && Result->isComputed(ConeProperty::HilbertBasis)) {
-            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
+            const Matrix<Integer>& Hilbert_Basis = Result->getHilbertBasisMatrix();
             nr = Hilbert_Basis.nr_of_rows();
             for (i = 0; i < nr; i++) {
                 if (Hilbert_Basis.read(i,dim-1)==1) {
@@ -503,12 +502,10 @@ void Output<Integer>::write_files() const {
             out << rees_ideal_key.size() <<" generators of integral closure of the ideal"<<endl;
         }
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
-            size_t nr_vert = Result->getVerticesOfPolyhedronMatrix().nr_of_rows();
-            out << nr_vert <<" vertices of polyhedron" << endl;
+            out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron" << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
-            size_t nr_ex_rays = Result->getNrExtremeRays();
-            out << nr_ex_rays <<" extreme rays" << of_cone << endl;
+            out << Result->getNrExtremeRays() <<" extreme rays" << of_cone << endl;
         }
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
             out << Result->getNrSupportHyperplanes() <<" support hyperplanes"
@@ -516,7 +513,7 @@ void Output<Integer>::write_files() const {
         }
         out<<endl;
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
-            out << Result->getExcludedFaces().size() <<" excluded faces"<<endl;
+            out << Result->getNrExcludedFaces() <<" excluded faces"<<endl;
             out << endl;
         }
         out << "embedding dimension = " << dim << endl;
@@ -672,14 +669,13 @@ void Output<Integer>::write_files() const {
             out << endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
-            Matrix<Integer> Module_Gen = Result->getModuleGeneratorsMatrix();
-            out << Module_Gen.nr_of_rows() <<" module generators:" << endl;
-            Module_Gen.pretty_print(out);
+            out << Result->getNrModuleGenerators() <<" module generators:" << endl;
+            Result->getModuleGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
         
         if ( Result->isComputed(ConeProperty::Deg1Elements) ) {
-            Matrix<Integer> Hom = Result->getDeg1ElementsMatrix();
+            const Matrix<Integer>& Hom = Result->getDeg1ElementsMatrix();
             write_matrix_ht1(Hom);
             nr=Hom.nr_of_rows();
             out<<nr<<" Hilbert basis elements of degree 1:"<<endl;
@@ -689,7 +685,7 @@ void Output<Integer>::write_files() const {
         
         if (Result->isComputed(ConeProperty::HilbertBasis)) {
 
-            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
+            const Matrix<Integer>& Hilbert_Basis = Result->getHilbertBasisMatrix();
             
             if(!Result->isComputed(ConeProperty::Deg1Elements)){
                 nr=Hilbert_Basis.nr_of_rows();
@@ -697,7 +693,7 @@ void Output<Integer>::write_files() const {
                 Hilbert_Basis.pretty_print(out);
                 out << endl;
             }
-            else{
+            else {
                 nr=Hilbert_Basis.nr_of_rows()-Result->getNrDeg1Elements();
                 out << nr << " further Hilbert basis elements" << of_monoid << " of higher degree:" << endl;
                 Matrix<Integer> HighDeg(nr,dim);
@@ -706,11 +702,16 @@ void Output<Integer>::write_files() const {
                 HighDeg.pretty_print(out);
                 out << endl;                       
             }
+            Matrix<Integer> complete_Hilbert_Basis(0,dim);
             if (gen || egn || typ) {
                 // for these files we append the module generators if there are any
-                if (Result->isComputed(ConeProperty::ModuleGenerators))
-                    Hilbert_Basis.append(Result->getModuleGeneratorsMatrix());
-                write_matrix_gen(Hilbert_Basis);
+                if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+                    complete_Hilbert_Basis.append(Hilbert_Basis);
+                    complete_Hilbert_Basis.append(Result->getModuleGeneratorsMatrix());
+                    write_matrix_gen(complete_Hilbert_Basis);
+                } else {
+                    write_matrix_gen(Hilbert_Basis);
+                }
             }
             if (egn || typ) {
                 Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
@@ -748,24 +749,23 @@ void Output<Integer>::write_files() const {
             }
         }
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
-            Matrix<Integer> Vert_Polyh = Result->getVerticesOfPolyhedronMatrix();
-            out << Vert_Polyh.nr_of_rows() <<" vertices of polyhedron:" << endl;
-            Vert_Polyh.pretty_print(out);
+            out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
+            Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        Matrix<Integer> Extreme_Rays;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
-            Extreme_Rays = Result->getExtremeRaysMatrix();          //write extreme rays
-            size_t nr_ex_rays = Extreme_Rays.nr_of_rows();
-
-            out << nr_ex_rays << " extreme rays" << of_cone << ":" << endl;
-            Extreme_Rays.pretty_print(out);
+            out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
+            Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
             if (ext) {
                 // for the .gen file we append the vertices of polyhedron if there are any
-                if (Result->isComputed(ConeProperty::VerticesOfPolyhedron))
+                if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+                    Matrix<Integer> Extreme_Rays(Result->getExtremeRaysMatrix());
                     Extreme_Rays.append(Result->getVerticesOfPolyhedronMatrix());
-                write_matrix_ext(Extreme_Rays);
+                    write_matrix_ext(Extreme_Rays);
+                } else {
+                    write_matrix_ext(Result->getExtremeRaysMatrix());
+                }
             }
         }
 
@@ -777,7 +777,7 @@ void Output<Integer>::write_files() const {
         out << endl;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             //equations
-            Matrix<Integer> Equations = Result->getEquationsMatrix();
+            const Matrix<Integer>& Equations = Result->getEquationsMatrix();
             size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
@@ -786,27 +786,22 @@ void Output<Integer>::write_files() const {
             }
 
             //congruences
-            Matrix<Integer> Congruences = Result->getCongruencesMatrix();
+            const Matrix<Integer>& Congruences = Result->getCongruencesMatrix();
             size_t nr_of_cong = Congruences.nr_of_rows();
             if (nr_of_cong > 0) {
                 out << nr_of_cong <<" congruences:" <<endl;
                 Congruences.pretty_print(out);
                 out << endl;
-            } else {
-                Congruences = Matrix<Integer>(0,dim+1);
             }
 
             //excluded faces
-            Matrix<Integer> ExFaces;
+            const Matrix<Integer>& ExFaces = Result->getExcludedFacesMatrix();
             size_t nr_of_exfaces = 0;
             if (Result->isComputed(ConeProperty::ExcludedFaces)) {
-                ExFaces = Result->getExcludedFacesMatrix();
                 nr_of_exfaces = ExFaces.nr_of_rows();
                 out << nr_of_exfaces <<" excluded faces:" <<endl;
                 ExFaces.pretty_print(out);
                 out << endl;
-            } else {
-                ExFaces = Matrix<Integer>(0,dim);
             }
 
             if(cst) {
@@ -833,7 +828,7 @@ void Output<Integer>::write_files() const {
                     cst_out << "dehomogenization" << endl;
                 }
                 cst_out.close();
-            }    
+            }
         }
         
         out.close();

@@ -157,6 +157,7 @@ public:
 
     const Matrix<Integer>& getExcludedFacesMatrix() const;
     const vector< vector<Integer> >& getExcludedFaces() const;
+    size_t getNrExcludedFaces() const;
 
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;

@@ -764,6 +764,10 @@ template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces() const {
     return ExcludedFaces.get_elements();
 }
+template<typename Integer>
+size_t Cone<Integer>::getNrExcludedFaces() const {
+    return ExcludedFaces.nr_of_rows();
+}
 
 template<typename Integer>
 const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() const {
