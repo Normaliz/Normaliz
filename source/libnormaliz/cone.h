@@ -242,10 +242,8 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
     
-    Matrix<Integer> WeightsGradL1;
-    Matrix<Integer> WeightsL1;
-    vector<bool> GradL1Abs;
-    vector<bool> L1Abs;
+    Matrix<Integer> WeightsGrad;
+    vector<bool> GradAbs;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 

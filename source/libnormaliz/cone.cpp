@@ -690,10 +690,10 @@ Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
     if (inhomogeneous) { // return only the rays of the recession cone
         assert(isComputed(ConeProperty::ExtremeRays));
         assert(isComputed(ConeProperty::VerticesOfPolyhedron));
-        return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron)).sort_by_weights(WeightsGradL1,GradL1Abs);
+        return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron)).sort_by_weights(WeightsGrad,GradAbs);
     }
     // homogeneous case
-    return Generators.submatrix(ExtremeRays).sort_by_weights(WeightsGradL1,GradL1Abs);
+    return Generators.submatrix(ExtremeRays).sort_by_weights(WeightsGrad,GradAbs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
@@ -715,11 +715,11 @@ size_t Cone<Integer>::getNrExtremeRays() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
-    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGradL1,GradL1Abs);
+    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGrad,GradAbs);
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getVerticesOfPolyhedron() const {
-    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
+    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGrad,GradAbs).get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrVerticesOfPolyhedron() const {
@@ -732,11 +732,11 @@ size_t Cone<Integer>::getNrVerticesOfPolyhedron() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getSupportHyperplanesMatrix() const {
-    return SupportHyperplanes.sort_by_weights(WeightsL1,L1Abs);
+    return SupportHyperplanes;
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
-    return SupportHyperplanes.sort_by_weights(WeightsL1,L1Abs).get_elements();
+    return SupportHyperplanes.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrSupportHyperplanes() const {
@@ -806,11 +806,11 @@ Integer Cone<Integer>::getTriangulationDetSum() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getHilbertBasisMatrix() const {
-    return HilbertBasis.sort_by_weights(WeightsGradL1,GradL1Abs);
+    return HilbertBasis;
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
-    return HilbertBasis.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
+    return HilbertBasis.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrHilbertBasis() const {
@@ -819,11 +819,11 @@ size_t Cone<Integer>::getNrHilbertBasis() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getModuleGeneratorsMatrix() const {
-    return ModuleGenerators.sort_by_weights(WeightsGradL1,GradL1Abs);
+    return ModuleGenerators;
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
-    return ModuleGenerators.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
+    return ModuleGenerators.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrModuleGenerators() const {
@@ -832,11 +832,11 @@ size_t Cone<Integer>::getNrModuleGenerators() const {
 
 template<typename Integer>
 Matrix<Integer> Cone<Integer>::getDeg1ElementsMatrix() const {
-    return Deg1Elements.sort_by_weights(WeightsGradL1,GradL1Abs);
+    return Deg1Elements;
 }
 template<typename Integer>
 vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
-    return Deg1Elements.sort_by_weights(WeightsGradL1,GradL1Abs).get_elements();
+    return Deg1Elements.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrDeg1Elements() const {
@@ -1536,6 +1536,23 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         verboseOutput() << "transforming data..."<<flush;
     }
     
+    if (FC.isComputed(ConeProperty::Grading)) {
+        if (!isComputed(ConeProperty::Grading)) {
+            Grading = BasisChange.from_sublattice_dual(FC.getGrading());
+            is_Computed.set(ConeProperty::Grading);
+        }
+        //compute denominator of Grading
+        if(BasisChange.get_rank()!=0){
+            vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(Grading);
+            GradingDenom=v_make_prime(test_grading);
+        }
+    }
+    
+    WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
+    if(isComputed(ConeProperty::Grading))
+        WeightsGrad.append(Grading);
+    GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
+    
     if (rees_primary){ //  && FC.isComputed(ConeProperty::Triangulation)) {
         //here are some computations involved, made first so that data can be deleted in FC later
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
@@ -1555,6 +1572,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         }
         SupportHyperplanes = BasisChange.from_sublattice_dual(FC.getSupportHyperplanes());
+        SupportHyperplanes.sort_lex();
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
@@ -1645,14 +1663,17 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
                     ModuleGenerators.append(tmp);
                 }
             }
+            ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
             is_Computed.set(ConeProperty::ModuleGenerators);
         } else { // homogeneous
             HilbertBasis = BasisChange.from_sublattice(FC.getHilbertBasis());
         }
+        HilbertBasis.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
         Deg1Elements = BasisChange.from_sublattice(FC.getDeg1Elements());
+        Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::Deg1Elements);
     }
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
@@ -1670,19 +1691,8 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     if (FC.isComputed(ConeProperty::ExcludedFaces)) {
         ExcludedFaces = BasisChange.from_sublattice_dual(FC.getExcludedFaces());
+        ExcludedFaces.sort_lex();
         is_Computed.set(ConeProperty::ExcludedFaces);
-    }
-
-    if (FC.isComputed(ConeProperty::Grading)) {
-        if (!isComputed(ConeProperty::Grading)) {
-            Grading = BasisChange.from_sublattice_dual(FC.getGrading());
-            is_Computed.set(ConeProperty::Grading);
-        }
-        //compute denominator of Grading
-        if(BasisChange.get_rank()!=0){
-            vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(Grading);
-            GradingDenom=v_make_prime(test_grading);
-        }
     }
     
     if (FC.isComputed(ConeProperty::IsDeg1HilbertBasis)) {
@@ -1690,20 +1700,8 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
     }
 
-    check_integrally_closed();
+    check_integrally_closed();  
     
-    WeightsGradL1=Matrix<Integer> (0,dim);  // weight matrix for ordering, first row Grading, then L1
-    if(isComputed(ConeProperty::Grading))
-        WeightsGradL1.append(Grading);
-    WeightsGradL1.append(vector<Integer>(dim,1));
-    GradL1Abs=vector<bool>(WeightsGradL1.nr_of_rows(),false);
-    GradL1Abs[GradL1Abs.size()-1]=true; // for L1
-    
-    WeightsL1=Matrix<Integer> (0,dim);   // only L1
-    WeightsL1.append(vector<Integer>(dim,1));
-    L1Abs=vector<bool>(WeightsL1.nr_of_rows(),false);
-    L1Abs[0]=true;
-
     if (verbose) {
         verboseOutput() << " done." <<endl;
     }

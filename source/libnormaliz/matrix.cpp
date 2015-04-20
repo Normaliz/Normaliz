@@ -2032,25 +2032,27 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
 
 //---------------------------------------------------------------------------
 
-/* sorts rows of a matrix by according to a weight matrix and lexicographically
- * does not change matrix (yet)
- */
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute) const{
-    
-    Matrix<Integer> sorted=*this;    
-    if(nr==0)
-        return sorted;
-    
-    vector<key_t> perm=sorted.perm_by_weights(Weights,absolute);
-    sorted.order_rows_by_perm(perm);
-    return sorted;
-}
-
 template<typename Integer>
 void Matrix<Integer>::order_rows_by_perm(const vector<key_t>& perm){
     order_by_perm(elem,perm);    
+}
+
+template<typename Integer>
+Matrix<Integer>& Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
+    if(nr<=1)
+        return *this;
+    vector<key_t> perm=perm_by_weights(Weights,absolute);
+    order_by_perm(elem,perm);
+    return *this;   
+}
+
+template<typename Integer>
+Matrix<Integer>& Matrix<Integer>::sort_lex(){
+    if(nr<=1)
+        return *this;
+    vector<key_t> perm=perm_by_weights(Matrix<Integer>(0,nc),vector<bool>(0));
+    order_by_perm(elem,perm);
+    return *this;    
 }
 
 template<typename Integer>
