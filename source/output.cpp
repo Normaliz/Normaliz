@@ -363,8 +363,8 @@ void Output<Integer>::write_inv_file() const{
         inv << "integer embedding_dim = " << dim << endl;
         if (homogeneous) {
             inv << "integer rank = " << rank << endl;
-            inv << "integer index = " << Result->getBasisChange().get_index() << endl;
-            inv << "integer index_A_E = " << Result->getBasisChange().get_external_index() << endl;
+            //inv << "integer index = " << Result->getBasisChange().get_index() << endl;
+            inv << "integer external_index = " << Result->getBasisChange().get_external_index() << endl;
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
                 inv << "integer affine_dim_polyhedron = " << Result->getAffineDim() << endl;
@@ -517,8 +517,8 @@ void Output<Integer>::write_files() const {
         out << "embedding dimension = " << dim << endl;
         if (homogeneous) {
             out << "rank = "<< rank << is_maximal(rank,dim) << endl;
-            out << "index E:G = "<< BasisChange.get_index() << endl;
-            out << "index A:E = "<< BasisChange.get_external_index() << endl;
+            //out << "index E:G = "<< BasisChange.get_index() << endl;
+            out << "external index = "<< BasisChange.get_external_index() << endl;
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
