@@ -419,6 +419,11 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     if(!BC_set) compose_basis_change(Sublattice_Representation<Integer>(dim));
+    
+    WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
+    if(isComputed(ConeProperty::Grading))
+        WeightsGrad.append(Grading);
+    GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
 }
 
 //---------------------------------------------------------------------------
@@ -654,30 +659,30 @@ const Sublattice_Representation<Integer>& Cone<Integer>::getBasisChange() const{
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getOriginalMonoidGeneratorsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getOriginalMonoidGeneratorsMatrix() const {
     return OriginalMonoidGenerators;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getOriginalMonoidGenerators() const {
+const vector< vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators() const {
     return OriginalMonoidGenerators.get_elements();
 }
 
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
     return GeneratorsOfToricRing;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getGeneratorsOfToricRing() const {
+const vector< vector<Integer> >& Cone<Integer>::getGeneratorsOfToricRing() const {
     return GeneratorsOfToricRing.get_elements();
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getGeneratorsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() const {
     return Generators;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getGenerators() const {
+const vector< vector<Integer> >& Cone<Integer>::getGenerators() const {
     return Generators.get_elements();
 }
 template<typename Integer>
@@ -686,56 +691,37 @@ size_t Cone<Integer>::getNrGenerators() const {
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getExtremeRaysMatrix() const {
-    if (inhomogeneous) { // return only the rays of the recession cone
-        assert(isComputed(ConeProperty::ExtremeRays));
-        assert(isComputed(ConeProperty::VerticesOfPolyhedron));
-        return Generators.submatrix(v_bool_andnot(ExtremeRays,VerticesOfPolyhedron)).sort_by_weights(WeightsGrad,GradAbs);
-    }
-    // homogeneous case
-    return Generators.submatrix(ExtremeRays).sort_by_weights(WeightsGrad,GradAbs);
+const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() const {
+    return ExtremeRays;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getExtremeRays() const {
-    return getExtremeRaysMatrix().get_elements();
+const vector< vector<Integer> >& Cone<Integer>::getExtremeRays() const {
+    return ExtremeRays.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrExtremeRays() const {
-    vector<bool> ind;
-    if(inhomogeneous)
-        ind=v_bool_andnot(ExtremeRays,VerticesOfPolyhedron);
-    else
-        ind =ExtremeRays;
-    size_t n=0;
-    for(size_t i=0;i<ind.size();++i)
-        if(ind[i])
-            n++;
-    return n;
+    return ExtremeRays.nr_of_rows();
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
-    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGrad,GradAbs);
+const Matrix<Integer>& Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
+    return VerticesOfPolyhedron;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getVerticesOfPolyhedron() const {
-    return Generators.submatrix(VerticesOfPolyhedron).sort_by_weights(WeightsGrad,GradAbs).get_elements();
+const vector< vector<Integer> >& Cone<Integer>::getVerticesOfPolyhedron() const {
+    return VerticesOfPolyhedron.get_elements();
 }
 template<typename Integer>
 size_t Cone<Integer>::getNrVerticesOfPolyhedron() const {
-    size_t n=0;
-    for(size_t i=0;i<VerticesOfPolyhedron.size();++i)
-        if(VerticesOfPolyhedron[i])
-            n++;
-    return n;
+    return VerticesOfPolyhedron.nr_of_rows();
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getSupportHyperplanesMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getSupportHyperplanesMatrix() const {
     return SupportHyperplanes;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getSupportHyperplanes() const {
+const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes() const {
     return SupportHyperplanes.get_elements();
 }
 template<typename Integer>
@@ -744,20 +730,20 @@ size_t Cone<Integer>::getNrSupportHyperplanes() const {
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getEquationsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getEquationsMatrix() const {
     return BasisChange.get_equations();
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getEquations() const {
+const vector< vector<Integer> >& Cone<Integer>::getEquations() const {
     return getEquationsMatrix().get_elements();
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getCongruencesMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getCongruencesMatrix() const {
     return BasisChange.get_congruences();
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getCongruences() const {
+const vector< vector<Integer> >& Cone<Integer>::getCongruences() const {
     return BasisChange.get_congruences().get_elements();
 }
 
@@ -771,11 +757,11 @@ map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () co
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getExcludedFacesMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getExcludedFacesMatrix() const {
     return ExcludedFaces;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getExcludedFaces() const {
+const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces() const {
     return ExcludedFaces.get_elements();
 }
 
@@ -805,11 +791,11 @@ Integer Cone<Integer>::getTriangulationDetSum() const {
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getHilbertBasisMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() const {
     return HilbertBasis;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getHilbertBasis() const {
+const vector< vector<Integer> >& Cone<Integer>::getHilbertBasis() const {
     return HilbertBasis.get_elements();
 }
 template<typename Integer>
@@ -818,11 +804,11 @@ size_t Cone<Integer>::getNrHilbertBasis() const {
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getModuleGeneratorsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsMatrix() const {
     return ModuleGenerators;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getModuleGenerators() const {
+const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators() const {
     return ModuleGenerators.get_elements();
 }
 template<typename Integer>
@@ -831,11 +817,11 @@ size_t Cone<Integer>::getNrModuleGenerators() const {
 }
 
 template<typename Integer>
-Matrix<Integer> Cone<Integer>::getDeg1ElementsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getDeg1ElementsMatrix() const {
     return Deg1Elements;
 }
 template<typename Integer>
-vector< vector<Integer> > Cone<Integer>::getDeg1Elements() const {
+const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements() const {
     return Deg1Elements.get_elements();
 }
 template<typename Integer>
@@ -1278,7 +1264,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 	}
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
-        FC.Extreme_Rays = ExtremeRays;
+        FC.Extreme_Rays = ExtremeRaysIndicator;
         FC.is_Computed.set(ConeProperty::ExtremeRays);
     }
     if (ExcludedFaces.nr_of_rows()!=0) {
@@ -1411,7 +1397,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     }
     
     if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
-        vector<Integer> lf= Generators.submatrix(ExtremeRays).find_linear_form_low_dim();
+        vector<Integer> lf= Generators.submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
         if(Generators.nr_of_rows()==0 || (lf.size()==dim && v_scalar_product(Generators[0],lf)==1))
             setGrading(lf); 
         else{
@@ -1468,7 +1454,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     if(isComputed(ConeProperty::Generators))
         ConeDM.Generators=BasisChange.to_sublattice(Generators);
     if(isComputed(ConeProperty::ExtremeRays))
-        ConeDM.ExtremeRays=ExtremeRays;
+        ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
     
     //create a Full_Cone out of ConeDM
@@ -1553,8 +1539,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         WeightsGrad.append(Grading);
     GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
     
-    if (rees_primary){ //  && FC.isComputed(ConeProperty::Triangulation)) {
-        //here are some computations involved, made first so that data can be deleted in FC later
+    if (rees_primary){
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
@@ -1754,19 +1739,23 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 template<typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     assert(ext.size() == Generators.nr_of_rows());
-    ExtremeRays = ext;
+    ExtremeRaysIndicator=ext;
+    vector<bool> choice=ext;
     if (inhomogeneous) {
         // separate extreme rays to rays of the level 0 cone
         // and the verticies of the polyhedron, which are in level >=1
         size_t nr_gen = Generators.nr_of_rows();
-        VerticesOfPolyhedron = vector<bool>(nr_gen);
+        vector<bool> VOP(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
-            if (ExtremeRays[i] && v_scalar_product(Generators[i],Dehomogenization) != 0) {
-                VerticesOfPolyhedron[i] = true;
+            if (ext[i] && v_scalar_product(Generators[i],Dehomogenization) != 0) {
+                VOP[i] = true;
+                choice[i]=false;
             }
         }
+        VerticesOfPolyhedron=Generators.submatrix(VOP).sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
+    ExtremeRays=Generators.submatrix(choice).sort_by_weights(WeightsGrad,GradAbs);
     is_Computed.set(ConeProperty::ExtremeRays);
 }
 
@@ -1778,7 +1767,7 @@ void Cone<Integer>::set_zero_cone() {
 
     set_original_monoid_generators(Matrix<Integer>(0,dim));
 
-    ExtremeRays = vector<bool>(Generators.nr_of_rows(), false);
+    ExtremeRays = Matrix<Integer>(0,dim);
     is_Computed.set(ConeProperty::ExtremeRays);
 
     SupportHyperplanes = Matrix<Integer>(0,dim);
@@ -1834,7 +1823,7 @@ void Cone<Integer>::set_zero_cone() {
     }
 
     if (inhomogeneous) {  // empty set of solutions
-        VerticesOfPolyhedron = vector<bool>(Generators.nr_of_rows(), false);
+        VerticesOfPolyhedron = Matrix<Integer>(0,dim);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
 
         shift = 0;

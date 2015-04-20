@@ -315,14 +315,14 @@ mpz_class Sublattice_Representation<Integer>::get_index() const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::get_A() const {
+const Matrix<Integer>& Sublattice_Representation<Integer>::get_A() const {
     return A;
 } 
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::get_B() const {
+const Matrix<Integer>& Sublattice_Representation<Integer>::get_B() const {
     return B;
 }
 
@@ -338,7 +338,7 @@ Integer Sublattice_Representation<Integer>::get_c() const {
 /* returns the congruences defining the sublattice */
 
 template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::get_equations() const{
+const Matrix<Integer>& Sublattice_Representation<Integer>::get_equations() const{
 
     if(!Equations_computed)
         make_equations();
@@ -356,7 +356,7 @@ void Sublattice_Representation<Integer>::make_equations() const{
 }
 
 template<typename Integer>
-Matrix<Integer> Sublattice_Representation<Integer>::get_congruences() const{
+const Matrix<Integer>& Sublattice_Representation<Integer>::get_congruences() const{
 
     if(!Congruences_computed)
         make_congruences();

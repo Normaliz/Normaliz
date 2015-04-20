@@ -659,12 +659,35 @@ void Output<Integer>::write_files() const {
             Module_Gen.pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::HilbertBasis)) {
-            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
-            nr=Hilbert_Basis.nr_of_rows();
-            out << nr << " Hilbert basis elements" << of_monoid << ":" << endl;
-            Hilbert_Basis.pretty_print(out);
+        
+        if ( Result->isComputed(ConeProperty::Deg1Elements) ) {
+            Matrix<Integer> Hom = Result->getDeg1ElementsMatrix();
+            write_matrix_ht1(Hom);
+            nr=Hom.nr_of_rows();
+            out<<nr<<" Hilbert basis elements of degree 1:"<<endl;
+            Hom.pretty_print(out);
             out << endl;
+        }
+        
+        if (Result->isComputed(ConeProperty::HilbertBasis)) {
+
+            Matrix<Integer> Hilbert_Basis = Result->getHilbertBasisMatrix();
+            
+            if(!Result->isComputed(ConeProperty::Deg1Elements)){
+                nr=Hilbert_Basis.nr_of_rows();
+                out << nr << " Hilbert basis elements" << of_monoid << ":" << endl;
+                Hilbert_Basis.pretty_print(out);
+                out << endl;
+            }
+            else{
+                nr=Hilbert_Basis.nr_of_rows()-Result->getNrDeg1Elements();
+                out << nr << " further Hilbert basis elements" << of_monoid << " of higher degree:" << endl;
+                Matrix<Integer> HighDeg(nr,dim);
+                for(size_t i=0;i<nr;++i)
+                    HighDeg[i]=Hilbert_Basis[i+Result->getNrDeg1Elements()];                               
+                HighDeg.pretty_print(out);
+                out << endl;                       
+            }
             if (gen || egn || typ) {
                 // for these files we append the module generators if there are any
                 if (Result->isComputed(ConeProperty::ModuleGenerators))
@@ -795,14 +818,6 @@ void Output<Integer>::write_files() const {
             }    
         }
         
-        if ( Result->isComputed(ConeProperty::Deg1Elements) ) {
-            Matrix<Integer> Hom = Result->getDeg1ElementsMatrix();
-            write_matrix_ht1(Hom);
-            nr=Hom.nr_of_rows();
-            out<<nr<<" Hilbert basis elements of degree 1:"<<endl;
-            Hom.pretty_print(out);
-            out << endl;
-        }
         out.close();
     }
 

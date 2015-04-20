@@ -129,14 +129,14 @@ public:
 	/* returns the index of the sublattice */
 	mpz_class get_index() const;
 
-	Matrix<Integer> get_A() const;
+	const Matrix<Integer>& get_A() const;
 	
-	Matrix<Integer> get_B() const;
+	const Matrix<Integer>& get_B() const;
 	
 	Integer get_c() const;
 
-    Matrix<Integer> get_equations() const;	
-    Matrix<Integer> get_congruences() const;
+    const Matrix<Integer>& get_equations() const;	
+    const Matrix<Integer>& get_congruences() const;
     mpz_class get_external_index() const;
 
 };

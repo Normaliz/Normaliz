@@ -133,44 +133,44 @@ public:
     long getAffineDim() const;
     size_t getModuleRank() const;
 
-    Matrix<Integer> getGeneratorsMatrix() const;
-    vector< vector<Integer> > getGenerators() const;
+    const Matrix<Integer>& getGeneratorsMatrix() const;
+    const vector< vector<Integer> >& getGenerators() const;
     size_t getNrGenerators() const;
 
-    Matrix<Integer> getExtremeRaysMatrix() const;
-    vector< vector<Integer> > getExtremeRays() const;
+    const Matrix<Integer>& getExtremeRaysMatrix() const;
+    const vector< vector<Integer> >& getExtremeRays() const;
     size_t getNrExtremeRays() const;
 
-    Matrix<Integer> getVerticesOfPolyhedronMatrix() const;
-    vector< vector<Integer> > getVerticesOfPolyhedron() const;
+    const Matrix<Integer>& getVerticesOfPolyhedronMatrix() const;
+    const vector< vector<Integer> >& getVerticesOfPolyhedron() const;
     size_t getNrVerticesOfPolyhedron() const;
 
     // The following constraints depend all on ConeProperty::SupportHyperplanes
-    Matrix<Integer> getSupportHyperplanesMatrix() const;
-    vector< vector<Integer> > getSupportHyperplanes() const;
+    const Matrix<Integer>& getSupportHyperplanesMatrix() const;
+    const vector< vector<Integer> >& getSupportHyperplanes() const;
     size_t getNrSupportHyperplanes() const;
-    Matrix<Integer> getEquationsMatrix() const;
-    vector< vector<Integer> > getEquations() const;
-    Matrix<Integer> getCongruencesMatrix() const;
-    vector< vector<Integer> > getCongruences() const;
+    const Matrix<Integer>& getEquationsMatrix() const;
+    const vector< vector<Integer> >& getEquations() const;
+    const Matrix<Integer>& getCongruencesMatrix() const;
+    const vector< vector<Integer> >& getCongruences() const;
     map< InputType, vector< vector<Integer> > > getConstraints() const;
 
-    Matrix<Integer> getExcludedFacesMatrix() const;
-    vector< vector<Integer> > getExcludedFaces() const;
+    const Matrix<Integer>& getExcludedFacesMatrix() const;
+    const vector< vector<Integer> >& getExcludedFaces() const;
 
     size_t getTriangulationSize() const;
     Integer getTriangulationDetSum() const;
 
-    Matrix<Integer> getHilbertBasisMatrix() const;
-    vector< vector<Integer> > getHilbertBasis() const;
+    const Matrix<Integer>& getHilbertBasisMatrix() const;
+    const vector< vector<Integer> >& getHilbertBasis() const;
     size_t getNrHilbertBasis() const;
 
-    Matrix<Integer> getModuleGeneratorsMatrix() const;
-    vector< vector<Integer> > getModuleGenerators() const;
+    const Matrix<Integer>& getModuleGeneratorsMatrix() const;
+    const vector< vector<Integer> >& getModuleGenerators() const;
     size_t getNrModuleGenerators() const;
 
-    Matrix<Integer> getDeg1ElementsMatrix() const;
-    vector< vector<Integer> > getDeg1Elements() const;
+    const Matrix<Integer>& getDeg1ElementsMatrix() const;
+    const vector< vector<Integer> >& getDeg1Elements() const;
     size_t getNrDeg1Elements() const;
 
     // the actual grading is Grading/GradingDenom
@@ -189,10 +189,10 @@ public:
     bool isReesPrimary() const;
     Integer getReesPrimaryMultiplicity() const;
     Integer getShift() const;
-    Matrix<Integer> getGeneratorsOfToricRingMatrix() const;
-    vector< vector<Integer> > getGeneratorsOfToricRing() const;
-    Matrix<Integer> getOriginalMonoidGeneratorsMatrix() const;
-    vector< vector<Integer> > getOriginalMonoidGenerators() const;
+    const Matrix<Integer>& getGeneratorsOfToricRingMatrix() const;
+    const vector< vector<Integer> >& getGeneratorsOfToricRing() const;
+    const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix() const;
+    const vector< vector<Integer> >& getOriginalMonoidGenerators() const;
     // the following methods return const refs to avoid copying of big data objects
     const Sublattice_Representation<Integer>& getBasisChange() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
@@ -213,8 +213,9 @@ private:
     Matrix<Integer> GeneratorsOfToricRing;
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
-    vector<bool> ExtremeRays;
-    vector<bool> VerticesOfPolyhedron;
+    Matrix<Integer> ExtremeRays;
+    vector<bool> ExtremeRaysIndicator;
+    Matrix<Integer> VerticesOfPolyhedron;
     Matrix<Integer> SupportHyperplanes;
     Matrix<Integer> ExcludedFaces;
     size_t TriangulationSize;
