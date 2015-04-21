@@ -6,7 +6,7 @@ endif
 
 #NORMPARA += -c
 #NORMPARA += -x=1
-DIFF = ./sortdiff
+DIFF = diff -b
 #NICE = nice -n19
 
 
