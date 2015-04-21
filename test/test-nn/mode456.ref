@@ -1,29 +1,24 @@
 5 Hilbert basis elements
-0 Hilbert basis elements of degree 1
 2 extreme rays
 2 support hyperplanes
 
 embedding dimension = 3
 rank = 2
-index = 40
+external index = 5
 original monoid is not integrally closed
 
 size of triangulation   = 1
 resulting sum of |det|s = 40
 
-grading:
--1 -2 0 
-
-degrees of extreme rays:
-20: 2  
+No implicit grading found
 
 ***********************************************************************
 
 5 Hilbert basis elements:
-   0  -1   0
-  -5  -3   0
-   5  -8   0
  -10  -5   0
+  -5  -3   0
+   0  -1   0
+   5  -8   0
   10 -15   0
 
 2 extreme rays:
@@ -39,6 +34,4 @@ degrees of extreme rays:
 
 1 congruences:
  4 0 0 5
-
-0 Hilbert basis elements of degree 1:
 

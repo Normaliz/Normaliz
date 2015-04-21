@@ -4,7 +4,7 @@
 
 embedding dimension = 2
 rank = 1
-index = 1
+external index = 1
 
 grading:
 1 0 
@@ -14,6 +14,9 @@ degrees of extreme rays:
 
 ***********************************************************************
 
+1 Hilbert basis elements of degree 1:
+ 1 0
+
 1 extreme rays:
  1 0
 
@@ -22,7 +25,4 @@ degrees of extreme rays:
 
 1 equations:
  0 1
-
-1 Hilbert basis elements of degree 1:
- 1 0
 

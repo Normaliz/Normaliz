@@ -23,17 +23,17 @@ module rank = 1
  1 1 1
 
 2 Hilbert basis elements of recession monoid:
- 0 1 0
  0 0 1
+ 0 1 0
 
 1 vertices of polyhedron:
  1 1 1
 
 2 extreme rays of recession cone:
- 0 1 0
  0 0 1
+ 0 1 0
 
 2 support hyperplanes of polyhedron:
- -1  1  0
  -1  0  1
+ -1  1  0
 

@@ -4,7 +4,7 @@
 
 embedding dimension = 2
 rank = 2 (maximal)
-index = 1
+external index = 1
 
 grading:
 0 1 
@@ -14,14 +14,6 @@ degrees of extreme rays:
 
 ***********************************************************************
 
-2 extreme rays:
- 0 1
- 6 1
-
-2 support hyperplanes:
- -1  6
-  1  0
-
 7 Hilbert basis elements of degree 1:
  0 1
  1 1
@@ -30,4 +22,12 @@ degrees of extreme rays:
  4 1
  5 1
  6 1
+
+2 extreme rays:
+ 0 1
+ 6 1
+
+2 support hyperplanes:
+ -1  6
+  1  0
 

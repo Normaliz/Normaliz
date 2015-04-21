@@ -34,13 +34,13 @@ with common denominator = 1
 
 3 vertices of polyhedron:
  1 1 1
- 2 1 1
  1 2 1
+ 2 1 1
 
 0 extreme rays of recession cone:
 
 3 support hyperplanes of polyhedron:
-  1  0 -1
-  0  1 -1
  -1 -1  3
+  0  1 -1
+  1  0 -1
 

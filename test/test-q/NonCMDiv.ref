@@ -37,14 +37,14 @@ with common denominator = 1
  2 2 2 1
 
 4 extreme rays of recession cone:
- 1 0 1 0
  0 0 1 0
- 1 1 1 0
  0 1 1 0
+ 1 0 1 0
+ 1 1 1 0
 
 4 support hyperplanes of polyhedron:
-  0  1  0  0
  -1  0  1  0
   0 -1  1  0
+  0  1  0  0
   1  0  0 -2
 

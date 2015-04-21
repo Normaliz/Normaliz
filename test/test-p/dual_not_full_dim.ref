@@ -4,7 +4,7 @@
 
 embedding dimension = 2
 rank = 1
-index = 1
+external index = 1
 
 size of triangulation   = 1
 resulting sum of |det|s = 1
@@ -28,6 +28,9 @@ with common denominator = 1
 
 ***********************************************************************
 
+1 Hilbert basis elements of degree 1:
+ 1 0
+
 1 extreme rays:
  1 0
 
@@ -36,7 +39,4 @@ with common denominator = 1
 
 1 equations:
  0 1
-
-1 Hilbert basis elements of degree 1:
- 1 0
 

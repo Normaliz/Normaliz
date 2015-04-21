@@ -6,10 +6,10 @@
 
 embedding dimension = 2
 rank = 2 (maximal)
-index = 1
+external index = 2
 original monoid is not integrally closed
 
-size of triangulation   = 1
+size of triangulation   = 2
 resulting sum of |det|s = 2
 
 grading:
@@ -31,24 +31,21 @@ multiplicity = 2
  1 1
  1 3
 
-3 Hilbert basis elements:
- 2 0
+3 Hilbert basis elements of degree 1:
  0 2
  1 1
+ 2 0
+
+0 further Hilbert basis elements of higher degree:
 
 2 extreme rays:
- 2 0
  0 2
+ 2 0
 
 2 support hyperplanes:
- 1 0
  0 1
+ 1 0
 
 1 congruences:
  1 1 2
-
-3 Hilbert basis elements of degree 1:
- 2 0
- 0 2
- 1 1
 

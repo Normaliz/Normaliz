@@ -25,7 +25,7 @@ TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
 
 
 #fehlen noch: tests testr1
-all: testv testn test1 testN testq testp testd testh testdefault testd1
+all: testv testn test1 testN testq testp testd testh testdefault testd1 testr1
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)

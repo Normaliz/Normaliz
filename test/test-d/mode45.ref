@@ -1,26 +1,21 @@
 5 Hilbert basis elements
-0 Hilbert basis elements of degree 1
 2 extreme rays
 2 support hyperplanes
 
 embedding dimension = 3
 rank = 2
-index = 8
+external index = 1
 original monoid is not integrally closed
 
-grading:
--1 -2 0 
-
-degrees of extreme rays:
-4: 2  
+No implicit grading found
 
 ***********************************************************************
 
 5 Hilbert basis elements:
-  0 -1  0
- -1 -1  0
-  1 -2  0
  -2 -1  0
+ -1 -1  0
+  0 -1  0
+  1 -2  0
   2 -3  0
 
 2 extreme rays:
@@ -33,6 +28,4 @@ degrees of extreme rays:
 
 1 equations:
  0 0 1
-
-0 Hilbert basis elements of degree 1:
 

@@ -5,7 +5,7 @@
 
 embedding dimension = 1
 rank = 1 (maximal)
-index = 1
+external index = 1
 original monoid is not integrally closed
 
 size of triangulation   = 1
@@ -32,15 +32,14 @@ with common denominator = 1
 
 ***********************************************************************
 
-1 Hilbert basis elements:
+1 Hilbert basis elements of degree 1:
  1
+
+0 further Hilbert basis elements of higher degree:
 
 1 extreme rays:
  1
 
 1 support hyperplanes:
- 1
-
-1 Hilbert basis elements of degree 1:
  1
 

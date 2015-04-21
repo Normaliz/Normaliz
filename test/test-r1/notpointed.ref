@@ -1,12 +1,13 @@
 2 support hyperplanes
 
+embedding dimension = 3
 rank = 3 (maximal)
-index = 2
+external index = 1
 
 
 ***********************************************************************
 
 2 support hyperplanes:
- 1 0 0
  0 1 0
+ 1 0 0
 

@@ -4,7 +4,7 @@
 
 embedding dimension = 2
 rank = 2 (maximal)
-index = 1
+external index = 2
 
 size of triangulation   = 2
 resulting sum of |det|s = 2
@@ -21,17 +21,17 @@ multiplicity = 2
 ***********************************************************************
 
 3 original generators:
- 0 2
- 1 1
  2 0
+ 1 1
+ 0 2
 
 2 extreme rays:
  0 2
  2 0
 
 2 support hyperplanes:
- 1 0
  0 1
+ 1 0
 
 1 congruences:
  1 1 2

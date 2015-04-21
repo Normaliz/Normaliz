@@ -2,8 +2,9 @@
 4 extreme rays
 4 support hyperplanes
 
+embedding dimension = 4
 rank = 4 (maximal)
-index = 30
+external index = 1
 
 size of triangulation   = 1
 resulting sum of |det|s = 30
@@ -15,18 +16,6 @@ degrees of extreme rays:
 1: 4  
 
 ***********************************************************************
-
-4 extreme rays:
- 0 0 0 1
- 2 0 0 1
- 0 3 0 1
- 0 0 5 1
-
-4 support hyperplanes:
- -15 -10  -6  30
-   1   0   0   0
-   0   1   0   0
-   0   0   1   0
 
 18 Hilbert basis elements of degree 1:
  0 0 0 1
@@ -47,4 +36,16 @@ degrees of extreme rays:
  1 0 2 1
  1 1 0 1
  2 0 0 1
+
+4 extreme rays:
+ 0 0 0 1
+ 0 0 5 1
+ 0 3 0 1
+ 2 0 0 1
+
+4 support hyperplanes:
+ -15 -10  -6  30
+   0   0   1   0
+   0   1   0   0
+   1   0   0   0
 

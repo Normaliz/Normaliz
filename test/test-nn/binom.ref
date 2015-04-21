@@ -6,7 +6,7 @@
 
 embedding dimension = 2
 rank = 2 (maximal)
-index = 1
+external index = 2
 original monoid is integrally closed
 
 size of triangulation   = 0
@@ -24,28 +24,25 @@ Hilbert basis elements are of degree 1
 ***********************************************************************
 
 3 original generators:
+ 2 0
+ 1 1
+ 0 2
+
+3 Hilbert basis elements of degree 1:
  0 2
  1 1
  2 0
 
-3 Hilbert basis elements:
- 0 2
- 1 1
- 2 0
+0 further Hilbert basis elements of higher degree:
 
 2 extreme rays:
  0 2
  2 0
 
 2 support hyperplanes:
- 1 0
  0 1
+ 1 0
 
 1 congruences:
  1 1 2
-
-3 Hilbert basis elements of degree 1:
- 0 2
- 1 1
- 2 0
 

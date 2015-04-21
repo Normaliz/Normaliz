@@ -3,7 +3,7 @@
 
 embedding dimension = 3
 rank = 2
-index = 8
+external index = 1
 
 size of triangulation   = 1
 resulting sum of |det|s = 8

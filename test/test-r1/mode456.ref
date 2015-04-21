@@ -2,11 +2,9 @@
 2 extreme rays
 2 support hyperplanes
 
+embedding dimension = 3
 rank = 2
-index = 40
-
-size of triangulation   = 1
-resulting sum of |det|s = 40
+external index = 5
 
 grading:
 -1 -2 0 
@@ -15,6 +13,8 @@ degrees of extreme rays:
 20: 2  
 
 ***********************************************************************
+
+0 Hilbert basis elements of degree 1:
 
 2 extreme rays:
  -10  -5   0
@@ -28,7 +28,5 @@ degrees of extreme rays:
  0 0 1
 
 1 congruences:
- 1 0 0 5
-
-0 Hilbert basis elements of degree 1:
+ 4 0 0 5
 

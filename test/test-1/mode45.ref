@@ -4,7 +4,7 @@
 
 embedding dimension = 3
 rank = 2
-index = 8
+external index = 1
 
 size of triangulation   = 1
 resulting sum of |det|s = 8
@@ -17,6 +17,8 @@ degrees of extreme rays:
 
 ***********************************************************************
 
+0 Hilbert basis elements of degree 1:
+
 2 extreme rays:
  -2 -1  0
   2 -3  0
@@ -27,6 +29,4 @@ degrees of extreme rays:
 
 1 equations:
  0 0 1
-
-0 Hilbert basis elements of degree 1:
 
