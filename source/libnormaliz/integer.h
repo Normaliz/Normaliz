@@ -149,27 +149,20 @@ Integer int_max_value_dual();
 template<typename Integer>
 Integer int_max_value_primary();
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-inline bool check_range(Integer& m) {
+inline bool check_range(const Integer& m) {
+    const Integer max_primary = int_max_value_primary<Integer>();
+    return (Iabs(m) <= max_primary);
+}
+
+template<>
+inline bool check_range<mpz_class>(const mpz_class& m) {
   return true;
 }
 
 //---------------------------------------------------------------------------
-
-template<>
-inline bool check_range<long long>(long long& m){
-    const long long max_primary = int_max_value_primary<long long>();
-    return(Iabs(m)<=max_primary);
-}
-
-//---------------------------------------------------------------------------
-
-template<>
-inline bool check_range<long>(long& m){
-    const long max_primary = int_max_value_primary<long>();
-    return(Iabs(m)<=max_primary);
-}
-
 
 template<typename Integer>
 void check_range_list(const std::list<std::vector<Integer> >& ll);
