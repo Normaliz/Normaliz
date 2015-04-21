@@ -34,7 +34,6 @@
 
 #include "full_cone.h"
 #include "vector_operations.h"
-// #include "lineare_transformation.h"
 #include "list_operations.h"
 #include "map_operations.h"
 #include "my_omp.h"

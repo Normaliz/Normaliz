@@ -33,7 +33,6 @@
 
 
 #include "sublattice_representation.h"
-// #include "lineare_transformation.h"
 #include "vector_operations.h"
 
 //---------------------------------------------------------------------------

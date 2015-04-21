@@ -30,7 +30,6 @@
 
 #include "matrix.h"
 #include "vector_operations.h"
-// #include "lineare_transformation.h"
 #include "normaliz_exception.h"
 #include "sublattice_representation.h"
 
