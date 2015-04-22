@@ -1490,6 +1490,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     }
     if(inhomogeneous)
         FC.Truncation=BasisChange.to_sublattice_dual(Dehomogenization);
+    FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
     FC.dual_mode();
     extract_data(FC);
     
@@ -1853,7 +1854,9 @@ void Cone<Integer>::set_zero_cone() {
 
         recession_rank = 0;
         is_Computed.set(ConeProperty::RecessionRank);
-        
+    }
+
+    if (!inhomogeneous) {
         ClassGroup.resize(1,0);
         is_Computed.set(ConeProperty::ClassGroup);
     }

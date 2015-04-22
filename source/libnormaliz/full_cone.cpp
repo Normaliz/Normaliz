@@ -3940,6 +3940,8 @@ void Full_Cone<Integer>::dual_mode() {
     start_from=0;
     old_nr_supp_hyps=0;
     
+    compute_class_group();
+    
     // Support_Hyperplanes.remove_duplicate_and_zero_rows(); //now in constructor
 
     if(dim>0 && !inhomogeneous) {            //correction needed to include the 0 cone;
