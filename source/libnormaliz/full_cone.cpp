@@ -2399,6 +2399,8 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     evaluate_large_simplices();
     FreeSimpl.clear();
     
+    compute_class_group();
+    
     // collect accumulated data from the SimplexEvaluators
     for (int zi=0; zi<omp_get_max_threads(); zi++) {
         detSum += Results[zi].getDetSum();
@@ -2503,6 +2505,8 @@ void Full_Cone<Integer>::do_vars_check() {
     if (do_default_mode) {
         do_Hilbert_basis = true;
         do_h_vector = true;
+        if(!inhomogeneous)
+            do_class_group=true;
     }
 
     // activate implications
@@ -2664,6 +2668,7 @@ void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support 
        find_level0_dim();
        find_module_rank();
     }
+    compute_class_group();
 }
 
 //---------------------------------------------------------------------------
@@ -3223,6 +3228,22 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
 
     is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_class_group() { // from the support hyperplanes
+    if(!do_class_group || !isComputed(ConeProperty::SupportHyperplanes) || isComputed(ConeProperty::ClassGroup))
+        return;
+    Matrix<Integer> Trans=Support_Hyperplanes.transpose();
+    size_t rk;
+    Trans.SmithNormalForm(rk);
+    ClassGroup.push_back(Support_Hyperplanes.nr_of_rows()-rk);
+    for(size_t i=0;i<rk;++i)
+        if(Trans[i][i]!=1)
+            ClassGroup.push_back(Trans[i][i]);
+    is_Computed.set(ConeProperty::ClassGroup);
 }
 
 //---------------------------------------------------------------------------

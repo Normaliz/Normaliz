@@ -196,7 +196,10 @@ int main(int argc, char* argv[])
 			case 'b':  //use the bottom decomposition for the triangulation
 				do_bottom_dec=true;
 				break;
-			case 'k':  //use the bottom decomposition for the triangulation
+			case 'C':  //compute the class group
+				to_compute.set(ConeProperty::ClassGroup);
+				break;
+			case 'k':  //keep the order of the generators in Full_Cone
 				keep_order=true;
 				break;
             case 'm':  //save memory / don't optimize for speed

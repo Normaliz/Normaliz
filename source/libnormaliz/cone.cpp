@@ -900,6 +900,11 @@ size_t Cone<Integer>::getModuleRank() const {
     return module_rank;
 }
 
+template<typename Integer>
+vector<Integer> Cone<Integer>::getClassGroup() const {
+    return ClassGroup;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1261,6 +1266,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 	if (ToCompute.test(ConeProperty::KeepOrder)) {
 		FC.keep_order = true;
 		is_Computed.set(ConeProperty::KeepOrder);
+	}
+
+	if (ToCompute.test(ConeProperty::ClassGroup)) {
+		FC.do_class_group=true;
 	}
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
@@ -1684,6 +1693,10 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         deg1_hilbert_basis = FC.isDeg1HilbertBasis();
         is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
     }
+    if (FC.isComputed(ConeProperty::ClassGroup)) {
+        ClassGroup = FC.ClassGroup;
+        is_Computed.set(ConeProperty::ClassGroup);
+    }
 
     check_integrally_closed();  
     
@@ -1840,6 +1853,9 @@ void Cone<Integer>::set_zero_cone() {
 
         recession_rank = 0;
         is_Computed.set(ConeProperty::RecessionRank);
+        
+        ClassGroup.resize(1,0);
+        is_Computed.set(ConeProperty::ClassGroup);
     }
 
     if (inhomogeneous || ExcludedFaces.nr_of_rows() != 0) {

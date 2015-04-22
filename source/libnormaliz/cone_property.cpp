@@ -165,7 +165,8 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
-                  || prop == ConeProperty::ApproximateRatPolytope ) {
+                  || prop == ConeProperty::ApproximateRatPolytope 
+                  || prop == ConeProperty::ClassGroup) {
                     errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
                 }

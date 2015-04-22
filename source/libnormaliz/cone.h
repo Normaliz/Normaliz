@@ -178,6 +178,8 @@ public:
     Integer getGradingDenom() const;
 
     vector<Integer> getDehomogenization() const;
+    
+    vector<Integer> getClassGroup() const;
 
     mpq_class getMultiplicity() const;
 
@@ -242,6 +244,7 @@ private:
     size_t recession_rank; // rank of recession monoid
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
+    vector<Integer> ClassGroup;
     
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;

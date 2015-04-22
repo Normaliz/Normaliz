@@ -439,6 +439,11 @@ void Output<Integer>::write_inv_file() const{
         if (Result->isComputed(ConeProperty::ReesPrimaryMultiplicity)) {
             inv<<"integer ideal_multiplicity = "<<Result->getReesPrimaryMultiplicity()<<endl;
         }
+        
+        if (Result->isComputed(ConeProperty::ClassGroup)) {
+            inv <<"vector "<< Result->getClassGroup().size() <<" class_group = "<< Result->getClassGroup();
+        }
+        
         inv.close();
     }
 }
@@ -642,6 +647,18 @@ void Output<Integer>::write_files() const {
                 out<<"multiplicity of the ideal = "<<Result->getReesPrimaryMultiplicity()<<endl;
             }
             out << endl;
+        }
+        
+        if(Result->isComputed(ConeProperty::ClassGroup)) {
+            vector<Integer> ClassGroup=Result->getClassGroup();
+            out << "Rank of class group = " << ClassGroup[0] << endl;
+            if(ClassGroup.size()==1)
+                out << "Class Group is free" << endl << endl;
+            else{
+                ClassGroup.erase(ClassGroup.begin());
+                out << "Finite cyclic summands " << count_in_map<Integer,size_t>(ClassGroup);
+                out << endl;
+            }                   
         }
 
         out << "***********************************************************************"

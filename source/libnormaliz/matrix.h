@@ -116,7 +116,7 @@ template<typename Integer> class Matrix {
     // A version of invert that circumvents protection and leaves it to the calling routine
     Matrix invert_unprotected(Integer& denom, bool& sucess) const;
     
-    bool SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right);
+    bool SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right);
     
 
 //---------------------------------------------------------------------------

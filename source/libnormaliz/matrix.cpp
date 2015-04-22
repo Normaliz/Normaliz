@@ -948,11 +948,8 @@ bool Matrix<Integer>::reduce_rows_upwards () {
     
     if(nr==0)
         return true;
-    
-    if(elem[0][0]<0)
-        v_scalar_multiplication<Integer>(elem[0],-1);
 
-    for(size_t row=1;row<nr;++row){
+    for(size_t row=0;row<nr;++row){
         size_t col;
         for(col=0;col<nc;++col)
             if(elem[row][col]!=0)
@@ -1849,7 +1846,7 @@ Matrix<Integer> Matrix<Integer>::AlmostHermite(size_t& rk){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Matrix<Integer>::SmithNormalForm_inner(size_t rk, Matrix<Integer>& Right){
+bool Matrix<Integer>::SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right){
 
     bool success=true;
     

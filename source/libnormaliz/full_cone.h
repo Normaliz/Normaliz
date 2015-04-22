@@ -97,6 +97,7 @@ public:
     bool do_default_mode;
 	bool do_bottom_dec;
 	bool keep_order;
+    bool do_class_group;
 
     // internal helper control variables
     bool do_only_multiplicity;
@@ -128,6 +129,7 @@ public:
     list< SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
     Integer detSum;                  // sum of the determinants of the simplices
     list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition
+    vector<Integer> ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
     
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    
 
@@ -287,6 +289,7 @@ public:
     void primal_algorithm_finalize();
     void primal_algorithm_set_computed();
     void remove_duplicate_ori_gens_from_HB();
+    void compute_class_group();
 
     void minimize_support_hyperplanes();   
     void compute_extreme_rays();
