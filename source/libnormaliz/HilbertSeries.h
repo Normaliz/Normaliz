@@ -114,6 +114,8 @@ public:
     string to_string_rep() const;
     void from_string_rep(const string&);
 
+    void setVerbose(bool v) { verbose = v; }
+
 private:
     // collected data in denominator classes
     mutable map< vector<denom_t>, vector<num_t> > denom_classes;
@@ -136,6 +138,8 @@ private:
     // the quasi polynomial, can have big coefficients
     mutable vector< vector<mpz_class> > quasi_poly;
     mutable mpz_class quasi_denom;
+
+    bool verbose;
 
     // these are only const when used properly!!
     void performAdd(const vector<num_t>& num, const vector<denom_t>& gen_degrees) const;

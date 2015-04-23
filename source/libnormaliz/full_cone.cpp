@@ -2381,6 +2381,7 @@ void Full_Cone<Integer>::primal_algorithm_initialize() {
     for(size_t i=0;i<SimplexEval.size();++i)
         SimplexEval[i].set_evaluator_tn(i);
     Results = vector< Collector<Integer> >(omp_get_max_threads(),Collector<Integer>(*this));
+    Hilbert_Series.setVerbose(verbose);
 }
 
 //---------------------------------------------------------------------------

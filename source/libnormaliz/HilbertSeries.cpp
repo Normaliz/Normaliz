@@ -60,12 +60,14 @@ long lcm_of_keys(const map<long, denom_t>& m){
 HilbertSeries::HilbertSeries() {
     num = vector<mpz_class>(1,0);
     //denom just default constructed
+    verbose = false;
 }
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1,0);
     add(numerator, gen_degrees);
+    verbose = false;
 }
 
 // Constructor, creates num/denom, see class description for format
@@ -73,11 +75,13 @@ HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long,
     num = numerator;
     denom = denominator;
     is_simplified = false;
+    verbose = false;
 }
 
 // Constructor, string as created by to_string_rep
 HilbertSeries::HilbertSeries(const string& str) {
     from_string_rep(str);
+    verbose = false;
 }
 
 
@@ -163,13 +167,13 @@ void HilbertSeries::performAdd(vector<mpz_class>& other_num, const map<long, den
 
 void HilbertSeries::collectData() const {
     if (denom_classes.empty()) return;
-	// if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
+	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
     map< vector<denom_t>, vector<num_t> >::iterator it;
     for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
         performAdd(it->second, it->first);
     }
     denom_classes.clear();
-	// if (verbose) verboseOutput() << " done." << endl;
+	if (verbose) verboseOutput() << " done." << endl;
 }
 
 // simplify, see class description
@@ -454,8 +458,6 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     out << " )" << std::endl;
     return out;
 }
-
-
 
 //---------------------------------------------------------------------------
 // polynomial operations, for polynomials repr. as vector of coefficients

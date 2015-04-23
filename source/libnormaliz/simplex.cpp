@@ -1238,6 +1238,7 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
     }
     for(size_t i=0;i<InEx_hvector.size();++i)
         InEx_hvector[i].resize(hv_max,0);
+    Hilbert_Series.setVerbose(fc.verbose);
 }
 
 template<typename Integer>
