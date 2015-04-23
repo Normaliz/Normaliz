@@ -34,6 +34,6 @@ module rank = 1
  0 1 0
 
 2 support hyperplanes of polyhedron:
- -1  0  1
- -1  1  0
+ -1 0 1
+ -1 1 0
 

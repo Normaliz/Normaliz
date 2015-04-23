@@ -30,6 +30,10 @@ Hilbert polynomial:
 1 4 8 5 
 with common denominator = 1
 
+rank of class group = 0
+finite cyclic summands:
+30: 1  
+
 ***********************************************************************
 
 18 Hilbert basis elements of degree 1:
@@ -62,8 +66,8 @@ with common denominator = 1
  2 0 0 1
 
 4 support hyperplanes:
- -15 -10  -6  30
-   0   0   1   0
-   0   1   0   0
-   1   0   0   0
+ -15 -10 -6 30
+   0   0  1  0
+   0   1  0  0
+   1   0  0  0
 

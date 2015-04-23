@@ -22,23 +22,23 @@ Hilbert basis elements are of degree 1
 ***********************************************************************
 
 5 Hilbert basis elements of degree 1:
- -1  0  1
-  0 -1  1
-  0  0  1
-  0  1  1
-  1  0  1
+ -1  0 1
+  0 -1 1
+  0  0 1
+  0  1 1
+  1  0 1
 
 0 further Hilbert basis elements of higher degree:
 
 4 extreme rays:
- -1  0  1
-  0 -1  1
-  0  1  1
-  1  0  1
+ -1  0 1
+  0 -1 1
+  0  1 1
+  1  0 1
 
 4 support hyperplanes:
- -1 -1  1
- -1  1  1
-  1 -1  1
-  1  1  1
+ -1 -1 1
+ -1  1 1
+  1 -1 1
+  1  1 1
 

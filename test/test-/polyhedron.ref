@@ -20,13 +20,13 @@ module rank = 1
 ***********************************************************************
 
 1 module generators:
- -1  1  1
+ -1 1 1
 
 1 Hilbert basis elements of recession monoid:
  2 0 0
 
 1 vertices of polyhedron:
- -1  1  1
+ -1 1 1
 
 1 extreme rays of recession cone:
  2 0 0
@@ -35,7 +35,7 @@ module rank = 1
  1 0 1
 
 1 equations:
-  0  1 -1
+ 0 1 -1
 
 1 congruences:
  1 1 0 2

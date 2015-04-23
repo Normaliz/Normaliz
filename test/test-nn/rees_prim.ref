@@ -44,9 +44,9 @@ multiplicity of the ideal = 15
  3 0 0 1
 
 5 support hyperplanes:
-   0   0   0   1
-   0   0   1   0
-   0   1   0   0
-   1   0   0   0
-   5   3  15 -15
+ 0 0  0   1
+ 0 0  1   0
+ 0 1  0   0
+ 1 0  0   0
+ 5 3 15 -15
 

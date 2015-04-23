@@ -651,12 +651,13 @@ void Output<Integer>::write_files() const {
         
         if(Result->isComputed(ConeProperty::ClassGroup)) {
             vector<Integer> ClassGroup=Result->getClassGroup();
-            out << "Rank of class group = " << ClassGroup[0] << endl;
+            out << "rank of class group = " << ClassGroup[0] << endl;
             if(ClassGroup.size()==1)
-                out << "Class Group is free" << endl << endl;
+                out << "class group is free" << endl << endl;
             else{
                 ClassGroup.erase(ClassGroup.begin());
-                out << "Finite cyclic summands " << count_in_map<Integer,size_t>(ClassGroup);
+                out << "finite cyclic summands:" << endl;
+                out << count_in_map<Integer,size_t>(ClassGroup);
                 out << endl;
             }                   
         }

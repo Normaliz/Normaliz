@@ -44,8 +44,8 @@ degrees of extreme rays:
  2 0 0 1
 
 4 support hyperplanes:
- -15 -10  -6  30
-   0   0   1   0
-   0   1   0   0
-   1   0   0   0
+ -15 -10 -6 30
+   0   0  1  0
+   0   1  0  0
+   1   0  0  0
 

@@ -18,16 +18,16 @@ degrees of extreme rays:
 ***********************************************************************
 
 2 Hilbert basis elements of degree 1:
-  0 -1  1  0  0
-  1 -2  3 -1  0
+ 0 -1 1  0 0
+ 1 -2 3 -1 0
 
 2 extreme rays:
-  0 -1  1  0  0
-  1 -2  3 -1  0
+ 0 -1 1  0 0
+ 1 -2 3 -1 0
 
 2 support hyperplanes:
- -2 -1  0  0  0
-  1  0  0  0  0
+ -2 -1 0 0 0
+  1  0 0 0 0
 
 3 equations:
  1 0 0 1 0
