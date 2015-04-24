@@ -192,49 +192,28 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     return;
 }
 
+// returns -1 if maximum is negative
 template<typename Integer>
 double max_in_col(const Matrix<Integer>& M, size_t j) {
-	// warum setzen wir das auf 0???
-    Integer max = 0;
-    //Integer max = M[1][j];
-    for (size_t i=0; i<M.nr_of_rows(); ++i) {
+	Integer max = -1;
+	for (size_t i=0; i<M.nr_of_rows(); ++i) {
         if (M[i][j] > max) max = M[i][j];
     }
     return convert_to_double(max);
 }
 
-template<typename Integer>
-double max_in_col_no_zero(const Matrix<Integer>& M, size_t j) {
-	// warum setzen wir das auf 0???
-    //Integer max = 0;
-    Integer max = M[1][j];
-    for (size_t i=0; i<M.nr_of_rows(); ++i) {
-        if (M[i][j] > max) max = M[i][j];
-    }
-    return convert_to_double(max);
-}
 
+// returns 1 if minimum is positive
 template<typename Integer>
 double min_in_col(const Matrix<Integer>& M, size_t j) {
-	// warum setzen wir das auf 0???
-    Integer min = 0;
-    //Integer min = M[1][j];
+    Integer min = 1;
     for (size_t i=0; i<M.nr_of_rows(); ++i) {
         if (M[i][j] < min) min = M[i][j];
     }
     return convert_to_double(min);
 }
 
-template<typename Integer>
-double min_in_col_no_zero(const Matrix<Integer>& M, size_t j) {
-	// warum setzen wir das auf 0???
-    //Integer min = 0;
-    Integer min = M[1][j];
-    for (size_t i=0; i<M.nr_of_rows(); ++i) {
-        if (M[i][j] < min) min = M[i][j];
-    }
-    return convert_to_double(min);
-}
+
 
 template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip,
@@ -253,6 +232,9 @@ vector<Integer> opt_sol(SCIP* scip,
         (void) SCIPsnprintf(name, SCIP_MAXSTRLEN, "x_%d", i);
 //        SCIPcreateVarBasic(scip, &x[i], name, -SCIPinfinity(scip), SCIPinfinity(scip),
 //                           convert_to_double(grading[i]), SCIP_VARTYPE_INTEGER);
+
+		// min_in_col and max_in_col already give good bounds if all signs are positive or negative
+		// no constraint needed
         SCIPcreateVarBasic(scip, &x[i], name, min_in_col(gens,i), max_in_col(gens, i),
                              convert_to_double(grading[i]), SCIP_VARTYPE_INTEGER);
         SCIPaddVar(scip, x[i]);
@@ -278,19 +260,9 @@ vector<Integer> opt_sol(SCIP* scip,
     // if all extreme rays have the same sign in one dimension, add the x_i>=1 or x_i<=-1 constraint
     
     for (long i=0; i<dim; i++){
-		double min = min_in_col_no_zero(gens,i);
-		double max = max_in_col_no_zero(gens,i);
+		double min = min_in_col(gens,i);
+		double max = max_in_col(gens,i);
 		if (min*max>0){
-			cout << "same sign in variable " << i << endl;
-			for (int j=0;j<dim;j++) ineq[j]=0;
-			ineq[i]=1;
-			if (min>0){
-				SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, 1.0, SCIPinfinity(scip));
-			}
-			else {
-
-				SCIPcreateConsBasicLinear(scip, &cons, "non_zero", dim, x, ineq, -SCIPinfinity(scip), -1.0);
-			}
 			break;
 		}
 		if (i==dim-1){
@@ -308,7 +280,9 @@ vector<Integer> opt_sol(SCIP* scip,
 				bounds[2*i] = 1.0;
 				bounds[2*i+1] = -1.0;
 			}
-			SCIPcreateConsBasicBounddisjunction	(scip, &cons,"non_zero",2*dim,double_x,boundtypes,bounds);		
+			SCIPcreateConsBasicBounddisjunction	(scip, &cons,"non_zero",2*dim,double_x,boundtypes,bounds);
+			SCIPaddCons(scip, cons);
+			SCIPreleaseCons(scip, &cons);
 		
 		/*
 		// this type of constraints procedures numerical problems:
@@ -319,12 +293,9 @@ vector<Integer> opt_sol(SCIP* scip,
 		}
 	}
 	
-	
-
 	// set objective limit. feasible solution has to have at least this objective value
     SCIPsetObjlimit(scip,upper_bound);
-    SCIPaddCons(scip, cons);
-    SCIPreleaseCons(scip, &cons);
+
 
     // give original generators as hints to scip
     SCIP_SOL* input_sol;
