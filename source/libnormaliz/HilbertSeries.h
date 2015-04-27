@@ -110,6 +110,14 @@ public:
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
 
+    // setting the shift will not change the numerator directly, only its interpretation
+    // the shift will be considered in the computation of the (quasi) polynomial
+    void setShift(long s);
+    // adjust the shift so that the series starts in degree 0
+    // it does not change the (quasi) polynomial
+    void adjustShift();
+    long getShift() const;
+
     // methods for textual transfer of a Hilbert Series
     string to_string_rep() const;
     void from_string_rep(const string&);
@@ -135,6 +143,7 @@ private:
     mutable bool is_simplified;
     mutable long dim;
     mutable long period;
+    long shift;
     // the quasi polynomial, can have big coefficients
     mutable vector< vector<mpz_class> > quasi_poly;
     mutable mpz_class quasi_denom;

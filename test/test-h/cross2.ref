@@ -24,9 +24,11 @@ Hilbert basis elements are of degree 1
 multiplicity = 4
 
 Hilbert series:
-0 3 1 
+3 1 
 denominator with 3 factors:
 1: 3  
+
+shift = -1
 
 Hilbert polynomial:
 0 1 2 

@@ -60,6 +60,7 @@ long lcm_of_keys(const map<long, denom_t>& m){
 HilbertSeries::HilbertSeries() {
     num = vector<mpz_class>(1,0);
     //denom just default constructed
+    shift = 0;
     verbose = false;
 }
 
@@ -67,6 +68,7 @@ HilbertSeries::HilbertSeries() {
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1,0);
     add(numerator, gen_degrees);
+    shift = 0;
     verbose = false;
 }
 
@@ -75,12 +77,14 @@ HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long,
     num = numerator;
     denom = denominator;
     is_simplified = false;
+    shift = 0;
     verbose = false;
 }
 
 // Constructor, string as created by to_string_rep
 HilbertSeries::HilbertSeries(const string& str) {
     from_string_rep(str);
+    shift = 0;
     verbose = false;
 }
 
@@ -90,6 +94,7 @@ void HilbertSeries::reset() {
     num.push_back(0);
     denom.clear();
     denom_classes.clear();
+    shift = 0;
     is_simplified = false;
 }
 
@@ -321,7 +326,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     long num_size = num.size();
     vector<mpz_class> norm_num(num_size);  //normalized numerator
     for (i = 0;  i < num_size;  ++i) {
-        norm_num[i] = to_mpz(num[i]);
+        norm_num[i] = num[i];
     }
     map<long, denom_t>::reverse_iterator rit;
     long d;
@@ -346,7 +351,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         quasi_poly[j].reserve(dim);
     }
     for (i=0; i<nn_size; ++i) {
-        quasi_poly[i%period].push_back((norm_num[i]));
+        quasi_poly[i%period].push_back(norm_num[i]);
     }
 
     for (j=0; j<period; ++j) {
@@ -366,7 +371,8 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     quasi_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
     for (j=0; j<period; ++j) {
-        linear_substitution<mpz_class>(quasi_poly[j], j); // replaces quasi_poly[j]
+        // X |--> X - (j - shift)
+        linear_substitution<mpz_class>(quasi_poly[j], j - shift); // replaces quasi_poly[j]
     }
     //divide by gcd //TODO operate directly on vector
     Matrix<mpz_class> QP(quasi_poly);
@@ -374,7 +380,12 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     g = gcd(g,quasi_denom);
     quasi_denom /= g;
     QP.scalar_division(g);
-    quasi_poly = QP.get_elements();
+    //we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
+    long normed_shift = shift;
+    while (normed_shift < 0) normed_shift += period;
+    for (j=0; j<period; ++j) {
+        quasi_poly[j] = QP[(j+normed_shift)%period];
+    }
 }
 
 // returns the numerator, repr. as vector of coefficients, the h-vector
@@ -399,6 +410,34 @@ const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const {
     return cyclo_denom;
 }
 
+// shift
+void HilbertSeries::setShift(long s) {
+    if (shift != s) {
+        is_simplified = false;
+        // remove quasi-poly //TODO could also be adjusted
+        quasi_poly.clear();
+        quasi_denom = 1;
+        shift = s;
+    }
+}
+
+long HilbertSeries::getShift() const {
+    return shift;
+}
+
+void HilbertSeries::adjustShift() {
+    collectData();
+    size_t adj = 0; // adjust shift by
+    while (adj < num.size() && num[adj] == 0) adj++;
+    if (adj > 0) {
+        shift -= adj;
+        num.erase(num.begin(),num.begin()+adj);
+        if (cyclo_num.size() != 0) {
+            assert (cyclo_num.size() >= adj);
+            cyclo_num.erase(cyclo_num.begin(),cyclo_num.begin()+adj);
+        }
+    }
+}
 
 // methods for textual transfer of a Hilbert Series
 string HilbertSeries::to_string_rep() const {
@@ -440,12 +479,14 @@ void HilbertSeries::from_string_rep(const string& input) {
 ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     HS.collectData();
     out << "(";
+    // i == 0
     if (HS.num.size()>0) out << " " << HS.num[0];
+    if (HS.shift != 0)   out << "*t^" << -HS.shift;
     for (size_t i=1; i<HS.num.size(); ++i) {
-             if ( HS.num[i]== 1 ) out << " +t^"<<i;
-        else if ( HS.num[i]==-1 ) out << " -t^"<<i;
-        else if ( HS.num[i] > 0 ) out << " +"<<HS.num[i]<<"*t^"<<i;
-        else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i;
+             if ( HS.num[i]== 1 ) out << " +t^"<<i-HS.shift;
+        else if ( HS.num[i]==-1 ) out << " -t^"<<i-HS.shift;
+        else if ( HS.num[i] > 0 ) out << " +"<<HS.num[i]<<"*t^"<<i-HS.shift;
+        else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i-HS.shift;
     }
     out << " ) / (";
     if (HS.denom.empty()) {
@@ -494,7 +535,7 @@ void poly_add_to (vector<Integer>& a, const vector<Integer>& b) {
     }
     remove_zeros(a);
 }
-// a -= b  (also possible to define the += op for vector)
+// a -= b  (also possible to define the -= op for vector)
 template<typename Integer>
 void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
     size_t b_size = b.size();

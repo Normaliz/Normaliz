@@ -2476,6 +2476,10 @@ Hilbert_Basis.unique();
         Deg1_Elements.unique();
     }
     if (do_h_vector) {
+        Hilbert_Series.setShift(explicit_cast_to_long(shift));
+        Hilbert_Series.adjustShift();
+        // now the shift in the HilbertSeries may change and we would have to adjust
+        // the shift, the grading and more in the Full_Cone to continue to add data!
         Hilbert_Series.simplify();
         is_Computed.set(ConeProperty::HilbertSeries);
     }
@@ -2848,11 +2852,11 @@ void Full_Cone<Integer>::find_grading_inhom(){
     for(size_t i=0;i<dim;++i) // under this grading all generators have positive degree
         Grading[i]=Grading[i]+shift*Truncation[i];
         
-    shift--;  // coorection for the Hilbert series computation to have it start in degree 0
+    shift--;  // correction for the Hilbert series computation to have it start in degree 0
     
     is_Computed.set(ConeProperty::Shift);
         
-    // cout << "Shlft " << shift << endl;  
+    // cout << "Shift " << shift << endl;
     // cout << Grading;
 }
 
@@ -3816,6 +3820,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     TriangulationSize=0;
     CandidatesSize=0;
     detSum = 0;
+    shift = 0;
     
     FS.resize(omp_get_max_threads());
     
@@ -3909,6 +3914,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     TriangulationSize=0;
     CandidatesSize=0;
     detSum = 0;
+    shift = 0;
     
     do_all_hyperplanes=true;
     
@@ -4023,6 +4029,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     totalNrSimplices=0;
     detSum = 0;
+    shift = C.shift;
     if(C.gen_degrees.size()>0){ // now we copy the degrees
     	gen_degrees.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {

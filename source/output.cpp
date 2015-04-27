@@ -603,8 +603,8 @@ void Output<Integer>::write_files() const {
             out << "denominator with " << nr_factors << " factors:" << endl;
             out << HS.getDenom();
             out << endl;
-            if (Result->isComputed(ConeProperty::Shift)) {
-                out << "shift = " << Result->getShift() << endl << endl;
+            if (HS.getShift() != 0) {
+                out << "shift = " << HS.getShift() << endl << endl;
             }
 
             long period = HS.getPeriod();

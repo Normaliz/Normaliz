@@ -22,12 +22,14 @@ degrees of extreme rays:
 multiplicity = 1/8
 
 Hilbert series:
-0 1 0 8 0 14 1 7 0 1 
+1 0 8 0 14 1 7 0 1 
 denominator with 8 factors:
 1: 1  2: 6  4: 1  
 
+shift = -1
+
 Hilbert series with cyclotomic denominator:
-0 1 0 8 0 14 1 7 0 1 
+1 0 8 0 14 1 7 0 1 
 cyclotomic denominator:
 1: 8  2: 7  4: 1  
 
