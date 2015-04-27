@@ -27,6 +27,7 @@
 
 #include <vector>
 #include <string>
+#include <assert.h>
 
 #include "cone_property.h"
 #include "normaliz_exception.h"
@@ -189,11 +190,6 @@ namespace {
     // only to initialize the CPN in ConePropertyNames
     vector<string> initializeCPN() {
         vector<string> CPN(ConeProperty::EnumSize);
-        if (ConeProperty::EnumSize != 37) { //to detect changes in size of Enum
-            errorOutput() << "Fatal Error: ConeProperties Enum size does not fit!" << std::endl;
-            errorOutput() << "Fatal Error: Update cone_property.cpp!" << std::endl;
-            throw FatalException();
-        }
         CPN.at(ConeProperty::Generators) = "Generators";
         CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
         CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
@@ -231,11 +227,19 @@ namespace {
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
         CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
         CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
+
+        // detect changes in size of Enum, to remember to update CPN!
+        static_assert (ConeProperty::EnumSize == 37,
+            "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+        // assert all fields contain an non-empty string
+        for (size_t i=0;  i<ConeProperty::EnumSize; i++) {
+            assert(CPN.at(i).size() > 0);
+        }
         return CPN;
     }
- 
+
     const vector<string>& ConePropertyNames() {
-        static vector<string> CPN(initializeCPN());
+        static const vector<string> CPN(initializeCPN());
         return CPN;
     }
 }

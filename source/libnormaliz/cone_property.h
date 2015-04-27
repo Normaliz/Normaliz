@@ -32,6 +32,7 @@ namespace libnormaliz {
 
 /* An enumeration of things, that can be computed for a cone.
  * The namespace prevents interfering with other names.
+ * Remember to change also the string conversion if you change this enum!
  */
 namespace ConeProperty {
     enum Enum {
