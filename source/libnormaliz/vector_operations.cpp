@@ -619,4 +619,20 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
     }
 }
 
+// vector<bool> is special
+template <>
+void order_by_perm(vector<bool>& v, const vector<key_t>& permfix){
+    
+    vector<key_t> perm=permfix; // we may want to use permfix a second time
+    vector<key_t> inv(perm.size());
+    for(key_t i=0;i<perm.size();++i)
+        inv[perm[i]]=i;
+    for(key_t i=0;i<perm.size();++i){
+        key_t j=perm[i];
+        v.swap(v[i],v[perm[i]]);        
+        swap(perm[i],perm[inv[i]]);        
+        swap(inv[i],inv[j]);                
+    }
+}
+
 } // end namespace libnormaliz
