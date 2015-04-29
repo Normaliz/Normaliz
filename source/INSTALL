@@ -87,3 +87,44 @@ Boost_NO_SYSTEM_PATHS      - Set to ON to disable searching in locations not
 Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
                              (Boost install locations may contain the version)
 See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
+
+
+
+**** Build for Intel Xeon Phi Mic ****
+
+This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
+
+First you need (as usual) the libraries boost and gmp. The libgmp and libgmpxx must be compiled twice, once for the host and once for the target-architecture of the mic. You will probably not find a compiled version for the mic, so we recommend to compile both yourself. Download the gmp sources and extract them.
+The following description is based on gmp 6.0.0 and icc 15.0.2
+
+Compile gmp with icc:
+cd gmp-6.0.0
+mkdir BUILD_native
+cd BUILD_native
+CC=icc CXX=icpc ../configure --enable-cxx --prefix=$HOME/local/
+make
+make install
+
+Compile gmp with icc for the mic:
+cd gmp-6.0.0
+mkdir BUILD_mic
+cd BUILD_mic
+CC=icc CXX=icpc CFLAGS="-mmic" CXXFLAGS="-mmic" LDFLAGS="-mmic" ../configure --host=x86_64-k1om-linux  --enable-cxx --disable-assembly --prefix=$HOME/mic_local/
+make
+make install
+
+The intel compiler had problems with User-defined literals from c++11, so I had to commend some lines (1925-1944) in $HOME/local/include/gmpxx.h and the same for the mic dir.
+
+Now we are ready to compile Normaliz:
+
+cd normaliz
+mkdir BUILD_mic
+cd BUILD_mic
+CC=icc CXX=icpc GMP_DIR=$HOME/local MIC_GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DNMZ_MIC_OFFLOAD=ON ../source/
+make
+
+If you get an error saying it cannot find boost/dynamic_bitset.hpp or similar, try to set BOOST_INCLUDE_DIR directly to a path which is not a system default path (e.g. by using "ccmake ." after the first configuration.)
+
+
+If you want to compile Normaliz for running it NATIVELY on the Phi, give 
+CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
