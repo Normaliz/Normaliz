@@ -25,7 +25,6 @@
 #define BOTTOM_H
 
 
-#ifdef NMZ_SCIP
 #include <vector>
 #include <list>
 
@@ -41,6 +40,5 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens);
 
 } // namespace
 
-#endif // NMZ_SCIP
 
 #endif // BOTTOM_H

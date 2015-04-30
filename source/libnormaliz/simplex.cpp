@@ -883,7 +883,6 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         verboseOutput() << "simplex volume " << volume << endl;
     }
 
-#ifdef NMZ_SCIP
     if (C_ptr->use_bottom_points && volume >= ScipBound)
     {
         Full_Cone<Integer>& C = *C_ptr;
@@ -894,6 +893,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         list< vector<Integer> > new_points;
         time_t start,end;
 		time (&start);
+#ifndef NMZ_SCIP
+        C.compute_sub_div_elements(key, new_points);
+        cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+#endif
 		bottom_points(new_points, Generators);
 		time (&end);
 		double dif = difftime (end,start);
@@ -994,7 +997,6 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             return;
         }
     }
-#endif // NMZ_SCIP
 
     take_care_of_0vector(C_ptr->Results[0]);
     sequential_evaluation=false;

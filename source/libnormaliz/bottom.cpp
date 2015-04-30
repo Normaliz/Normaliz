@@ -21,7 +21,6 @@
  * terms of service.
  */
 
-#ifdef NMZ_SCIP
 #include <stdlib.h>
 #include <math.h>
 #include <omp.h>
@@ -36,10 +35,14 @@
 #include "vector_operations.h"
 #include "integer.h"
 
+#ifdef NMZ_SCIP
 #include "scip/scip.h"
 #include "scip/scipdefplugins.h"  //TODO needed?
 #include "scip/cons_linear.h"
 //#include "objscip/objscip.h"
+#else
+class SCIP;
+#endif // NMZ_SCIP
 
 
 namespace libnormaliz {
@@ -48,10 +51,13 @@ using namespace std;
 long ScipBound = 1000000;
 
 template<typename Integer>
+vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading);
+
+template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading);
 
 template<typename Integer>
-void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens);
+void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens);
 
 double convert_to_double(mpz_class a) {
     return a.get_d();
@@ -71,7 +77,11 @@ long long stellar_det_sum;
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { //TODO lieber Referenz fuer Matrix?
 	
-	cout << "Using SCIP to compute points from bottom. BOUND: " <<ScipBound<< endl;
+    list<vector<Integer> > bottom_candidates;
+    Matrix<Integer>(bottom_candidates).pretty_print(cout);
+    bottom_candidates.splice(bottom_candidates.begin(), new_points);
+
+	cout << "Compute points from bottom. BOUND: " <<ScipBound<< endl;
     stellar_det_sum = 0;
     vector< Matrix<Integer> > q_gens;
     q_gens.push_back(gens);
@@ -80,7 +90,10 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
     // setup scip enviorenment
-    SCIP* scip;
+    SCIP* scip = NULL;
+#ifdef NMZ_SCIP
+    #pragma omp single
+    { cout << "Using SCIP" << endl; }
     SCIPcreate(& scip);
     SCIPincludeDefaultPlugins(scip);
 //    SCIPsetMessagehdlr(scip,NULL);  // deactivate scip output
@@ -96,7 +109,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 	SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
 	SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
 //	SCIPsetIntParam(scip, "nodeselection/uct/stdpriority", 1000000); 
-
+#endif // NMZ_SCIP
 
     vector< Matrix<Integer> > local_q_gens;
     list< vector<Integer> > local_new_points;
@@ -106,7 +119,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
         cout << q_gens.size() << " simplices on level " << level++ << endl;
         #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
-            bottom_points_inner(scip, q_gens[i], local_new_points, local_q_gens);
+            bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens);
         }
         #pragma omp single
         {
@@ -124,7 +137,9 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
         new_points.splice(new_points.end(), local_new_points, local_new_points.begin(), local_new_points.end());
     }
 
+#ifdef NMZ_SCIP
     SCIPfree(& scip);
+#endif // NMZ_SCIP
     } // end parallel
 
     cout  << new_points.size() << " new points accumulated" << endl;
@@ -138,8 +153,9 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 
 
 template<typename Integer>
-void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
-                         vector< Matrix<Integer> >& local_q_gens) {
+void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip,
+                 Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
+                 vector< Matrix<Integer> >& local_q_gens) {
 
     vector<Integer>  grading = gens.find_linear_form();
     Integer volume;
@@ -160,11 +176,15 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
        Support_Hyperplanes.pretty_print(cout);
        cout << "grading " << grading;
        */
+#ifdef NMZ_SCIP
     // set time limit according to volume   
     double time_limit = pow(log10(convert_to_double(volume)),2);
     SCIPsetRealParam(scip, "limits/time", time_limit);
     // call scip
     vector<Integer> new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
+#else
+    vector<Integer> new_point = best_point(bottom_candidates, gens, Support_Hyperplanes, grading);
+#endif // NMZ_SCIP
     if ( !new_point.empty() ){
 
         //if (find(local_new_points.begin(), local_new_points.end(),new_point) == local_new_points.end())
@@ -192,6 +212,35 @@ void bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     return;
 }
 
+template<typename Integer>
+vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading) {
+    size_t dim = SuppHyp.nr_of_columns();
+    size_t i;
+    auto best = bottom_candidates.end();
+    Integer best_value = v_scalar_product(grading,gens[0]);
+
+    for (auto it = bottom_candidates.begin(); it != bottom_candidates.end(); ++it) {
+        for (i=0; i<dim; ++i) {
+            if (v_scalar_product(SuppHyp[i],*it) < 0) {
+                break;
+            }
+
+        }
+        if (i < dim) continue;
+        Integer current_value = v_scalar_product(grading,*it);
+        if (current_value<best_value){
+            best_value = current_value;
+            best = it;
+        }
+    }
+    if (best != bottom_candidates.end()) {
+       return *best;
+    } else {
+        return vector<Integer>();
+    }
+}
+
+
 // returns -1 if maximum is negative
 template<typename Integer>
 double max_in_col(const Matrix<Integer>& M, size_t j) {
@@ -214,7 +263,7 @@ double min_in_col(const Matrix<Integer>& M, size_t j) {
 }
 
 
-
+#ifdef NMZ_SCIP
 template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip,
                         const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp,
@@ -447,6 +496,7 @@ vector<Integer> opt_sol(SCIP* scip,
     SCIPfreeProb(scip);
     return sol_vec; 
 }
+#endif // NMZ_SCIP
 
 template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens);
 template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gense);
@@ -454,4 +504,3 @@ template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_cl
 
 } // namespace
 
-#endif // NMZ_SCIP
