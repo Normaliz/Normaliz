@@ -48,7 +48,13 @@ enum InputType {
     inhom_congruences,
     lattice_ideal,
     grading,
-    excluded_faces
+    excluded_faces,
+    lattice,
+    saturation,
+    cone,
+    offset,
+    vertices,
+    support_hyperplanes
 };
 } //end namespace Type
 
