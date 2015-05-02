@@ -221,10 +221,9 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
     initialize();    
     // find basic input type
-    bool constraints_input=false, generators_input=false, lattice_ideal_input=false;
-    size_t nr_types=0;
-    size_t nr_strict_input=0; // grading, dehomogenization and excluded_faces are non-strict input
+    bool lattice_ideal_input=false;
     bool inhom_input=false;
+    size_t nr_latt_gen=0, nr_cone_gen=0;
     
     // remove empty matrices
     it = multi_input_data.begin();
@@ -254,49 +253,62 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             case Type::inequalities:
             case Type::equations:
             case Type::congruences:
-                if(!constraints_input)
-                    nr_types++;
-                nr_strict_input++;
-                constraints_input=true;
                 break;
             case Type::lattice_ideal:
-            if(!lattice_ideal_input)
-                    nr_types++;
-                nr_strict_input++;
                 lattice_ideal_input=true;
                 break;
             case Type::polyhedron:
-            case Type::vertices:
-            case Type::offset:
                 inhom_input=true;
             case Type::integral_closure:
-            case Type::normalization:
             case Type::rees_algebra:
             case Type::polytope:
             case Type::cone:
+                nr_cone_gen++;
+                break; 
+            case Type::normalization:
+                nr_cone_gen++;
             case Type::lattice:
             case Type::saturation:
-            if(!generators_input)
-                    nr_types++;
-                nr_strict_input++;
-                generators_input=true;
+                nr_latt_gen++;
                 break;
+            case Type::vertices:
+            case Type::offset:
+                inhom_input=true;
             default:
                 break;        
         }
     
     }
-    // allow only on input type, or generators and constraints
-//    cout << "nr_types = " << nr_types << endl;
-//    cout << generators_input << constraints_input << inhom_input << lattice_ideal_input << endl;
-
-    if (lattice_ideal_input  && nr_types >= 2) {
-        errorOutput() << "lattice_odeal can only be combined with grding!"<< endl;
-        throw BadInputException();
+    
+    if(nr_cone_gen>1){
+        errorOutput() << "Only one matrix of cone generators allowed!" << endl;
+        throw BadInputException();        
     }
-
-    if(nr_types==0){  // we have only a grading, dehomogenization, excluded faces or support hyperplanes
-        constraints_input=true;       
+    if(nr_latt_gen>1){
+        errorOutput() << "Only one matrix of lattice generators allowed!" << endl;
+        throw BadInputException();        
+    }
+    if(lattice_ideal_input){
+        if(multi_input_data.size() > 2 || (multi_input_data.size()==2 && !exists_input_matrix(multi_input_data,Type::grading))){
+            errorOutput() << "Only grading allowed with lattice_ideal!" << endl;
+            throw BadInputException();
+        }        
+    }
+    if(inhom_input){
+        if(exists_input_matrix(multi_input_data,Type::dehomogenization)){
+            errorOutput() << "Dehomogenizaion not allowed with inhomogeneous input!" << endl;
+            throw BadInputException();            
+        }       
+    }
+    if(inhom_input || exists_input_matrix(multi_input_data,Type::dehomogenization)){
+        if(exists_input_matrix(multi_input_data,Type::rees_algebra) || exists_input_matrix(multi_input_data,Type::polytope)){
+            errorOutput() << "polytope and rees_algebra not allowed with inhomogeneous input or hehomogenizaion!" << endl;
+            throw BadInputException();       
+        }
+        if(exists_input_matrix(multi_input_data,Type::excluded_faces)){
+            errorOutput() << "Excluded faces not allowed with inhomogeneous input or hehomogenizaion!"<< endl;
+            throw BadInputException();
+        }
     }
             
     //determine dimension
@@ -415,11 +427,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }        
     if(isComputed(ConeProperty::Dehomogenization))
         inhomogeneous=true;
-        
-    if(inhomogeneous && ExcludedFaces.nr_of_rows()>0){
-        errorOutput() << "Excluded faces not allowed with inhomogeneous input!"<< endl;
-        throw BadInputException();
-    }
     
     if(lattice_ideal_input){
         prepare_input_lattice_ideal(multi_input_data);
@@ -614,6 +621,10 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
                 LatticeGenerators.saturate();
                 break;
             case Type::offset:
+                if(it->second.size()>1){
+                  errorOutput() << "Only one offset allowed!" << endl;
+                  throw BadInputException();
+                }
                 LatticeGenerators.append(it->second);
                 break;
             default: break;
