@@ -2104,7 +2104,7 @@ Matrix<Integer> Matrix<Integer>::solve_congruences(bool& zero_modulus) const{
     
     zero_modulus=false;
     size_t i,j;
-    size_t nr_cong=nr, dim=nc;
+    size_t nr_cong=nr, dim=nc-1;
     if(nr_cong==0)
         return Matrix<Integer>(dim); // give back unit matrix
     

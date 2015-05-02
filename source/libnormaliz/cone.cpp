@@ -356,7 +356,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         
     }
     
-    cout << "Dim " << dim <<endl;
+    // cout << "Dim " << dim <<endl;
     
     // check consistence of dimension
     size_t inhom_corr=0; // coorection in the inhom_input case
@@ -425,31 +425,23 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         prepare_input_lattice_ideal(multi_input_data);
     } 
     
-    Matrix<Integer> Equations(0,dim), Congruences(0,dim+1);  
+    Matrix<Integer> LatticeGenerators(0,dim);   // important to do this first since interpretation of excluded 
+    prepare_input_generators(multi_input_data, LatticeGenerators);  // faces depends on Fenerators    
     
-    cout << "1st " << Congruences.nr_of_columns() << endl;
+    Matrix<Integer> Equations(0,dim), Congruences(0,dim+1);     
     Matrix<Integer> Inequalities(0,dim);
-
     prepare_input_constraints(multi_input_data,Equations,Congruences,Inequalities);
-    
-    cout << "2nd " << Congruences.nr_of_columns() << endl;
-    
-    Matrix<Integer> LatticeGenerators(0,dim);
-    
-    prepare_input_generators(multi_input_data, LatticeGenerators);
-    
+      
     // set default values if necessary
-    
-    if(inhomogeneous && LatticeGenerators.nr_of_rows()!=0 && !exists_input_matrix(multi_input_data,Type::offset)){
+    if(inhom_input && LatticeGenerators.nr_of_rows()!=0 && !exists_input_matrix(multi_input_data,Type::offset)){
         vector<Integer> offset(dim);
         offset[dim-1]=1;
         LatticeGenerators.append(offset);               
-    }
-    
-    if(inhomogeneous &&  Generators.nr_of_rows()!=0 && !exists_input_matrix(multi_input_data,Type::vertices)){
+    }    
+    if(inhom_input &&  Generators.nr_of_rows()!=0 && !exists_input_matrix(multi_input_data,Type::vertices)){
         vector<Integer> vertex(dim);
         vertex[dim-1]=1;
-        LatticeGenerators.append(vertex);               
+        Generators.append(vertex);               
     }
     
     process_lattice_data(LatticeGenerators,Congruences,Equations);
@@ -457,13 +449,16 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     bool cone_sat_eq=no_lattice_restriction;
     bool cone_sat_cong=no_lattice_restriction;
     
-    if(Inequalities.nr_of_rows()==0){
+    cout << "nolatrest " << no_lattice_restriction << endl;
+    
+    if(Inequalities.nr_of_rows()==0 && Generators.nr_of_rows()!=0){
         if(!no_lattice_restriction){
             cone_sat_eq=true;
             for(size_t i=0;i<Generators.nr_of_rows() && cone_sat_eq;++i)
                 for(size_t j=0;j<Equations.nr_of_rows()  && cone_sat_eq ;++j)
-                    if(v_scalar_product(Generators[i],Equations[j])!=0)
-                        cone_sat_eq=false;           
+                    if(v_scalar_product(Generators[i],Equations[j])!=0){
+                        cone_sat_eq=false;
+            }
         }
         if(!no_lattice_restriction){
             cone_sat_cong=true;
@@ -471,21 +466,22 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
                 vector<Integer> test=Generators[i];
                 test.resize(dim+1);
                 for(size_t j=0;j<Congruences.nr_of_rows()  && cone_sat_cong ;++j)
-                    if(v_scalar_product(test,Congruences[j]) % Congruences[i][dim] !=0)
+                    if(v_scalar_product(test,Congruences[j]) % Congruences[j][dim] !=0)
                         cone_sat_cong=false; 
             }
         }
+        
         if(cone_sat_eq && cone_sat_cong){
             set_original_monoid_generators(Generators);
         }
-        
+
         if(cone_sat_eq && !cone_sat_cong){ // multiply generators by annihilator mod sublattice
             for(size_t i=0;i<Generators.nr_of_rows();++i)
                 v_scalar_multiplication(Generators[i],BasisChange.get_c());
             cone_sat_cong=true;
         }
     }
-        
+    
     if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
         Sublattice_Representation<Integer> ConeLatt(Generators,true);
         Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
@@ -522,7 +518,6 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
             case Type::strict_inequalities:
             case Type::inequalities:
             case Type::inhom_inequalities:
-            case Type::excluded_faces:
                 Inequalities.append(it->second);
                 break;
             case Type::equations:
@@ -548,6 +543,11 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(StrictSigns);   // then strict signs
     Help.append(Inequalities);
     Inequalities=Help;
+    
+    // take care of excluded faces if no explicit cone generators are present
+    if(Generators.nr_of_rows()==0)
+        if(exists_input_matrix(multi_input_data,Type::excluded_faces))
+            Inequalities.append(find_input_matrix(multi_input_data,Type::excluded_faces));
 }
 
 //---------------------------------------------------------------------------
@@ -582,8 +582,6 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
             case Type::polyhedron:
             case Type::cone:
             case Type::integral_closure:
-                cout << "Gen" << Generators.nr_of_columns() << endl;
-                cout << "inp" << it->second[0].size() << endl;
                 Generators.append(it->second);
                 break;
             case Type::polytope: 
@@ -626,14 +624,15 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     
     no_lattice_restriction=true;
     
+    if(Equations.nr_of_rows()>0)
+        no_lattice_restriction=false;
+    
     if(Generators.nr_of_rows()!=0){
         Equations.append(Generators.kernel());        
     }
 
     if(LatticeGenerators.nr_of_rows()!=0){               
         Sublattice_Representation<Integer> GenSublattice(LatticeGenerators,false);
-        cout << "Col " << GenSublattice.get_congruences().nr_of_columns() << endl;
-        cout << "Col " << Congruences.nr_of_columns() << endl;
         Congruences.append(GenSublattice.get_congruences());
         Equations.append(GenSublattice.get_equations());
         no_lattice_restriction=false;
@@ -655,7 +654,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Matrix<Integer> Ker_Basis=BasisChange.to_sublattice_dual(Equations).kernel();
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis,true);
         compose_basis_change(Basis_Change);
-        no_lattice_restriction=false;
+        // no_lattice_restriction=false; // taken care of abive
     }
 }
 
@@ -701,7 +700,7 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_2(const vector< vector<Integer
     size_t j;
     size_t nr = Input.size();
     //append a column of 1
-    Generators = Matrix<Integer>(nr, dim);
+    Matrix<Integer> Generators(nr, dim);
     for (size_t i=0; i<nr; i++) {
         for (j=0; j<dim-1; j++) 
             Generators[i][j] = Input[i][j];
