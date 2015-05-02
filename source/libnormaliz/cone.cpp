@@ -492,12 +492,28 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     
     if(Generators.nr_of_rows()==0)
         prepare_input_type_4(Inequalities);
+    else
+        is_Computed.set(ConeProperty::Generators);
     
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
     if(isComputed(ConeProperty::Grading))
         WeightsGrad.append(Grading);
     GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
+
+    /*
+    cout <<"-----------------------" << endl;
+    cout << "Gen " << endl;
+    Generators.pretty_print(cout);
+    cout << "Supp " << endl;
+    SupportHyperplanes.pretty_print(cout);
+    cout << "A" << endl;
+    BasisChange.get_A().pretty_print(cout);
+    cout << "B" << endl;
+    BasisChange.get_B().pretty_print(cout);    
+    cout <<"-----------------------" << endl;   
+    */
 }
+
 
 //---------------------------------------------------------------------------
         
