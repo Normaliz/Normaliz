@@ -3240,7 +3240,7 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_class_group() { // from the support hyperplanes
     if(!do_class_group || !isComputed(ConeProperty::SupportHyperplanes) || isComputed(ConeProperty::ClassGroup))
         return;
-    Matrix<Integer> Trans=Support_Hyperplanes.transpose();
+    Matrix<Integer> Trans=Support_Hyperplanes; // .transpose();
     size_t rk;
     Trans.SmithNormalForm(rk);
     ClassGroup.push_back(Support_Hyperplanes.nr_of_rows()-rk);
