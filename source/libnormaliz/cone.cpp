@@ -596,10 +596,13 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
     typename map< InputType , vector< vector<Integer> > >::const_iterator it=multi_input_data.begin();    
     // find specific generator type -- there is only one, as checked already
     
+    normalization=false;
+    
     Generators=Matrix<Integer>(0,dim);
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::normalization:
+                normalization=true;
                 LatticeGenerators.append(it->second);
             case Type::vertices:
             case Type::polyhedron:
@@ -645,14 +648,28 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
 
 template<typename Integer>
 void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations) {
-    
+ 
     if(!BC_set)
         compose_basis_change(Sublattice_Representation<Integer>(dim));
     
+    bool no_constraints=(Congruences.nr_of_rows()==0) && (Equations.nr_of_rows()==0);
+    bool only_cone_gen=(Generators.nr_of_rows()!=0) && no_constraints && (LatticeGenerators.nr_of_rows()==0);
+    
     no_lattice_restriction=true;
     
-    if(Equations.nr_of_rows()>0)
-        no_lattice_restriction=false;
+    if(only_cone_gen){
+        Sublattice_Representation<Integer> Basis_Change(Generators,true);
+        compose_basis_change(Basis_Change);
+        return;
+    }
+    
+    if(normalization && no_constraints){
+        Sublattice_Representation<Integer> Basis_Change(Generators,false);
+        compose_basis_change(Basis_Change);
+        return;
+    }
+    
+    no_lattice_restriction=false;
     
     if(Generators.nr_of_rows()!=0){
         Equations.append(Generators.kernel());        
@@ -662,7 +679,6 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         Sublattice_Representation<Integer> GenSublattice(LatticeGenerators,false);
         Congruences.append(GenSublattice.get_congruences());
         Equations.append(GenSublattice.get_equations());
-        no_lattice_restriction=false;
     }
     
     if (Congruences.nr_of_rows() > 0) {
@@ -674,14 +690,12 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         }
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis,false);
         compose_basis_change(Basis_Change);
-        no_lattice_restriction=false;
     }
     
     if (Equations.nr_of_rows()>0) {
         Matrix<Integer> Ker_Basis=BasisChange.to_sublattice_dual(Equations).kernel();
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis,true);
         compose_basis_change(Basis_Change);
-        // no_lattice_restriction=false; // taken care of abive
     }
 }
 

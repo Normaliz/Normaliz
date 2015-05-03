@@ -251,7 +251,8 @@ private:
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
     
-    bool no_lattice_restriction;
+    bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
+    bool normalization; // true if input type normalization is used
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
