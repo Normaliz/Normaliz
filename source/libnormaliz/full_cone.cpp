@@ -1812,7 +1812,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
         for(size_t j=0;j<dim;++j)
             Order_Vector[j]+=((unsigned long) (1+i%10))*Generators[start_simpl[i]][j];
 
-    // First the generators for the rexession cone = our cone
+    // First the generators for the recession cone = our cone
     Matrix<Integer> BottomGen(0,dim+1);
     vector<Integer> help(dim+1);
     for(size_t i=0;i<nr_gen;++i){
@@ -1821,15 +1821,17 @@ void Full_Cone<Integer>::find_bottom_facets() {
         help[dim]=0;
         BottomGen.append(help);
     }
-    // then the same vectors as geberators of the bottom polyhedron
+    // then the same vectors as generators of the bottom polyhedron
     for(size_t i=0;i<nr_gen;++i){
         for(size_t j=0;j<dim; ++j)
             help[j]=Generators[i][j];
         help[dim]=1;
         BottomGen.append(help);
     }
+    
     Full_Cone BottomPolyhedron(BottomGen);
     BottomPolyhedron.verbose=verbose;
+    BottomPolyhedron.keep_order=true;
     BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
 
     // transfer pointedness
@@ -1848,8 +1850,8 @@ void Full_Cone<Integer>::find_bottom_facets() {
             BottomExtRays.push_back(i);
 
     if(verbose)
-        verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
-
+        verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl << flush;
+ 
     Matrix<Integer> BottomFacets(0,dim);
     vector<Integer> BottomDegs(0,dim);
     if (!isComputed(ConeProperty::SupportHyperplanes)) {
@@ -1886,7 +1888,6 @@ void Full_Cone<Integer>::find_bottom_facets() {
     }
     if(verbose)
         verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
-
 }
 
 

@@ -790,7 +790,7 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector< vector<Integer
             Prim_Test[v]=true;
     }
     rees_primary=true;
-    for(i=0; i<nr_rows; i++)
+    for(i=0; i<nr_columns; i++)
         if(!Prim_Test[i])
             rees_primary=false;
  
@@ -1597,7 +1597,6 @@ Integer Cone<Integer>::compute_primary_multiplicity(){
             Ideal.append(help);
         }
     }
-    
     Full_Cone<Integer> IdCone(Ideal,false);
     IdCone.do_bottom_dec=true;
     IdCone.do_determinants=true;
