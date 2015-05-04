@@ -59,6 +59,15 @@ std::ostream& errorOutput() {
 }
 
 InputType to_type(const std::string& type_string) {
+
+    if ( type_string=="0" || type_string=="1" || type_string=="2" || type_string=="3"
+      || type_string=="4" || type_string=="5" || type_string=="6"
+      || type_string=="hyperplanes"
+      || type_string=="10") {
+        errorOutput() << "Error: deprecated type \"" << type_string<<"\", please use new type string!" << std::endl;
+        throw BadInputException();
+    }
+
     if (type_string=="0"||type_string=="integral_closure") {
         return Type::integral_closure;
     }
@@ -114,7 +123,7 @@ InputType to_type(const std::string& type_string) {
         return Type::excluded_faces;
     }
     
-    std::cerr<<"ERROR: Unknown type \""<<type_string<<"\"!"<<std::endl;
+    errorOutput() << "ERROR: Unknown type \"" << type_string<<"\"!" << std::endl;
     throw BadInputException();
     return Type::integral_closure;
 }
