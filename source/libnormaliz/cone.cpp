@@ -456,7 +456,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     bool cone_sat_eq=no_lattice_restriction;
     bool cone_sat_cong=no_lattice_restriction;
     
-    cout << "nolatrest " << no_lattice_restriction << endl;
+    // cout << "nolatrest " << no_lattice_restriction << endl;
     
     if(Inequalities.nr_of_rows()==0 && Generators.nr_of_rows()!=0){
         if(!no_lattice_restriction){
@@ -677,6 +677,10 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     if(LatticeGenerators.nr_of_rows()!=0){               
         Sublattice_Representation<Integer> GenSublattice(LatticeGenerators,false);
+        if((Equations.nr_of_rows()==0) && (Congruences.nr_of_rows()==0)){
+            compose_basis_change(GenSublattice);
+            return;
+        }            
         Congruences.append(GenSublattice.get_congruences());
         Equations.append(GenSublattice.get_equations());
     }
