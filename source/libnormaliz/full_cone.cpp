@@ -1830,6 +1830,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     }
     Full_Cone BottomPolyhedron(BottomGen);
     BottomPolyhedron.verbose=verbose;
+    BottomPolyhedron.keep_order = true;
     BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
 
     // transfer pointedness

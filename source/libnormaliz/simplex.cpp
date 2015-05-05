@@ -943,6 +943,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             polytope_gens.append( vector<Integer>(dim, 0) );
             polytope_gens.append_column( vector<Integer>(zero_point+1, 1) );
             Full_Cone<Integer> bottom_polytope(polytope_gens);
+            bottom_polytope.keep_order = true;
             bottom_polytope.keep_triangulation = true;
             //bottom_polytope.do_all_hyperplanes = false;
             cout << "compute triangulation of bottom polytope" << endl;
