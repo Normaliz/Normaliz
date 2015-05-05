@@ -1,0 +1,32 @@
+Macaulay2 distributes a version of the Normaliz interface. To use it just start
+M2 and do
+    loadPackage "Normaliz";
+
+
+Instructions to use another version:
+
+* Start M2 from the directory where your Normaliz.m2 is located.
+* Run
+    installPackage "Normaliz";
+  twice! (The second run updates some references.)
+  This will load the package, run the examples, create the manual,
+  and install everything to the users local Macaulay directory
+  (e.g. ~/.Macaulay2/)
+* Now it is installed locally and every consecutive
+    loadPackage "Normaliz";
+  will load this version.
+
+Additional instructions for developers:
+
+* Run the tests:
+    loadPackage "Normaliz";
+    check "Normaliz"
+
+* If you change Normaliz.m2, a new installPackage will still use an earlier
+  installed version from your local Macalauy2 directory. You can delete this
+  directory to be sure that everything is remade.
+* For development it might be convinient to have the package NOT installed but
+  only re-load it after a change and run the tests via
+    loadPackage ("Normaliz", Reload => true);
+    check "Normaliz"
+
