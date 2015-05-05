@@ -815,8 +815,10 @@ void Output<Integer>::write_files() const {
                 cst_out<<"equations"<<endl;
                 Congruences.print(cst_out);
                 cst_out<<"congruences"<<endl;
-                ExFaces.print(cst_out);
-                cst_out<<"excluded_faces"<<endl;
+                if (Result->isComputed(ConeProperty::ExcludedFaces)) {
+                    ExFaces.print(cst_out);
+                    cst_out<<"excluded_faces"<<endl;
+                }
                 if (Result->isComputed(ConeProperty::Grading)) {
                     cst_out << 1 << endl << dim << endl;
                     cst_out << Result->getGrading();
