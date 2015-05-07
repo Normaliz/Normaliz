@@ -153,6 +153,8 @@ public:
     const vector< vector<Integer> >& getEquations() const;
     const Matrix<Integer>& getCongruencesMatrix() const;
     const vector< vector<Integer> >& getCongruences() const;
+    const Matrix<Integer>& getLatticeMatrix() const;
+    const vector< vector<Integer> >& getLattice() const;
     map< InputType, vector< vector<Integer> > > getConstraints() const;
 
     const Matrix<Integer>& getExcludedFacesMatrix() const;

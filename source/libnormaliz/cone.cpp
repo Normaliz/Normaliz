@@ -1076,6 +1076,15 @@ const vector< vector<Integer> >& Cone<Integer>::getCongruences() const {
 }
 
 template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getLatticeMatrix() const {
+    return BasisChange.get_A();
+}
+template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getLattice() const {
+    return BasisChange.get_A().get_elements();
+}
+
+template<typename Integer>
 map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
     map<InputType, vector< vector<Integer> > > c;
     c[Type::inequalities] = SupportHyperplanes.get_elements();
