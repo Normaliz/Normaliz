@@ -48,6 +48,7 @@ class Output {
     bool tgn;
     bool ht1;
     bool dec;
+    bool lat;
     Cone<Integer>* Result;
     size_t dim;
     size_t rank;
@@ -92,6 +93,7 @@ public:
     void set_write_all_files();                       //sets most flags to true
   
     void write_matrix_ext(const Matrix<Integer>& M) const; //writes M to file name.ext
+    void write_matrix_lat(const Matrix<Integer>& M) const; //writes M to file name.lat
     void write_matrix_esp(const Matrix<Integer>& M) const; //writes M to file name.esp
     void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
     void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
