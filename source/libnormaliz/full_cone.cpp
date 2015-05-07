@@ -2942,6 +2942,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         order_by_perm(gen_degrees,perm);
     if(inhomogeneous)
         order_by_perm(gen_levels,perm);
+    compose_perm_gens(perm);
     
     if (verbose) {
         if(triangulate){
@@ -2960,6 +2961,12 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     keep_order=true;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
+    order_by_perm(PermGens,perm);
+}
 /*    
 //---------------------------------------------------------------------------
 
@@ -3860,6 +3867,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
 	keep_order=false;
 
     is_approximation=false;
+    
+    PermGens.resize(nr_gen);
+    for(size_t i=0;i<nr_gen;++i)
+        PermGens[i]=i;
 }
 
 //---------------------------------------------------------------------------
