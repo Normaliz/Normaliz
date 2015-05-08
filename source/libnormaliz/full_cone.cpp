@@ -2007,6 +2007,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     if(!from_scratch){
         copy.start_from=start_from;
         copy.use_existing_facets=true;
+        copy.keep_order=true;
         copy.HypCounter=HypCounter;
         copy.Extreme_Rays=Extreme_Rays;
         copy.in_triang=in_triang;
