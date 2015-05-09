@@ -507,6 +507,12 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         WeightsGrad.append(Grading);
     GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
 
+    if(PreComputedSupportHyperplanes.nr_of_rows()>0){
+        check_precomputed_support_Hyperplanes();
+        SupportHyperplanes=PreComputedSupportHyperplanes;
+        is_Computed.set(ConeProperty::SupportHyperplanes);
+    }
+
     /*
     cout <<"-----------------------" << endl;
     cout << "Gen " << endl;
@@ -884,7 +890,7 @@ void Cone<Integer>::check_precomputed_support_Hyperplanes(){
             for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
                 for (size_t j = 0; j < Generators.nr_of_rows(); ++j) {
                     if ((sp = v_scalar_product(Generators[i], PreComputedSupportHyperplanes[j])) < 0) {
-                        errorOutput() << "Inequality " << j
+                        errorOutput() << "Precomputed nequality " << j
                         << " is not valid for generator " << i
                         << " (value " << sp << ")" << endl;
                         throw BadInputException();
