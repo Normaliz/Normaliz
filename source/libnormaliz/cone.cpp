@@ -512,6 +512,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         SupportHyperplanes=PreComputedSupportHyperplanes;
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
+    
+    if(ExcludedFaces.nr_of_rows()>0){
+        check_excluded_faces();
+    }
 
     /*
     cout <<"-----------------------" << endl;
@@ -875,20 +879,16 @@ void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer
         BC_set = true;
     }
 }
-
-
-
-
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::check_precomputed_support_Hyperplanes(){
     
     if (isComputed(ConeProperty::Generators)) {
-        // check if the equations are at least valid
-        if (PreComputedSupportHyperplanes.nr_of_rows() != 0) {
+        // check if the inequalities are at least valid
+        // if (PreComputedSupportHyperplanes.nr_of_rows() != 0) {
             Integer sp;
             for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
-                for (size_t j = 0; j < Generators.nr_of_rows(); ++j) {
+                for (size_t j = 0; j < PreComputedSupportHyperplanes.nr_of_rows(); ++j) {
                     if ((sp = v_scalar_product(Generators[i], PreComputedSupportHyperplanes[j])) < 0) {
                         errorOutput() << "Precomputed nequality " << j
                         << " is not valid for generator " << i
@@ -897,9 +897,32 @@ void Cone<Integer>::check_precomputed_support_Hyperplanes(){
                     }
                 }
             }
-        }
+        // }
     }
 }
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::check_excluded_faces(){
+    
+    if (isComputed(ConeProperty::Generators)) {
+        // check if the inequalities are at least valid
+        // if (ExcludedFaces.nr_of_rows() != 0) {
+            Integer sp;
+            for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
+                for (size_t j = 0; j < ExcludedFaces.nr_of_rows(); ++j) {
+                    if ((sp = v_scalar_product(Generators[i], ExcludedFaces[j])) < 0) {
+                        errorOutput() << "Excluded face " << j
+                        << " is not valid for generator " << i
+                        << " (value " << sp << ")" << endl;
+                        throw BadInputException();
+                    }
+                }
+            }
+        // }
+    }
+}
+
 
 //---------------------------------------------------------------------------
 

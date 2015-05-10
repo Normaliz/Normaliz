@@ -267,6 +267,7 @@ private:
                      Matrix<Integer>& LatticeGenerators);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_Hyperplanes();
+    void check_excluded_faces();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
