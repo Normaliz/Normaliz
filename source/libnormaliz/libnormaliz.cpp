@@ -128,8 +128,8 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="vertices") {
         return Type::vertices;
     }
-    if (type_string=="support_hypeplanes") {
-        return Type::vertices;
+    if (type_string=="support_hyperplanes") {
+        return Type::support_hyperplanes;
     }
     
     std::cerr<<"ERROR: Unknown type \""<<type_string<<"\"!"<<std::endl;

@@ -387,9 +387,14 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             case Type::inhom_equations:
             case Type::congruences:
             case Type::vertices:
-            case Type::support_hyperplanes:
                 test_dim=current_dim-1;
                 break;
+            case Type::support_hyperplanes:
+                if(inhom_input)
+                    test_dim=current_dim-1;
+                else
+                    test_dim=current_dim;
+            break;
             case Type::polytope:
             case Type::rees_algebra:
                 test_dim=current_dim+1;
