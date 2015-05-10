@@ -54,7 +54,8 @@ enum InputType {
     cone,
     offset,
     vertices,
-    support_hyperplanes
+    support_hyperplanes,
+    cone_and_lattice
 };
 } //end namespace Type
 

@@ -266,6 +266,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
                 nr_cone_gen++;
                 break; 
             case Type::normalization:
+            case Type::cone_and_lattice:
                 nr_cone_gen++;
             case Type::lattice:
             case Type::saturation:
@@ -617,6 +618,7 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::normalization:
+            case Type::cone_and_lattice:
                 normalization=true;
                 LatticeGenerators.append(it->second);
             case Type::vertices:
