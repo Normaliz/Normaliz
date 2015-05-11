@@ -606,7 +606,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(const map< InputType, vector< ve
         Integer dummyDenom;
         Grading = Positive_Embedded_Generators.solve_rectangular(Grading,dummyDenom);
         if (Grading.size() != dim) {
-            errorOutput() << "Grading could not be transfered!"<<endl;
+            errorOutput() << "Grading could not be transferred!"<<endl;
             is_Computed.set(ConeProperty::Grading, false);
         }
     }

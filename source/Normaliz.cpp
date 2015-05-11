@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
         printHeader();
     }
     if (!filename_set) {
-        cout<<"Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+        cout<<"Copyright (C) 2007-2015  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
             <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
             <<"and you are welcome to redistribute it under certain conditions;"<<endl
             <<"See COPYING for details."
