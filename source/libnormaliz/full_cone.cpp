@@ -2270,7 +2270,7 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
 
     Full_Cone<Integer> SimplCone(Generators.submatrix(key));
-    SimplCone.verbose=verbose;
+    SimplCone.verbose=false; // verbose;
     SimplCone.Grading=Grading;
     SimplCone.is_Computed.set(ConeProperty::Grading);
     SimplCone.do_deg1_elements=true;
