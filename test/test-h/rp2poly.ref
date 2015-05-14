@@ -87,3 +87,11 @@ with common denominator = 120
 1 congruences:
  1 1 1 1 1 1 3
 
+6 basis elements of lattice:
+ 1 0 0 0 0 -1
+ 0 1 0 0 0 -1
+ 0 0 1 0 0 -1
+ 0 0 0 1 0 -1
+ 0 0 0 0 1 -1
+ 0 0 0 0 0  3
+
