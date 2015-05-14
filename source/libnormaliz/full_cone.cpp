@@ -1850,7 +1850,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
             BottomExtRays.push_back(i);
 
     if(verbose)
-        verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl << flush;
+        verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
  
     Matrix<Integer> BottomFacets(0,dim);
     vector<Integer> BottomDegs(0,dim);
@@ -2218,10 +2218,13 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     if(verbose){
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
     }
-	size_t j=0;
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
-    for(;LS!=LargeSimplices.end();++LS){
+    for (size_t j=0; LS!=LargeSimplices.end(); ++LS, ++j) {
 		if (j>=lss) use_bottom_points =false;
+        if (verbose) {
+            verboseOutput() << "Large simplex " << j+1 << " / " << lss << endl;
+        }
+
         if(do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation){
             compute_deg1_elements_via_approx_simplicial(LS->get_key());        
         }
@@ -2238,6 +2241,7 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
             }
         }
     }
+    LargeSimplices.clear();
 
     for(size_t i=0;i<Results.size();++i)
         Results[i].transfer_candidates(); // any remaining ones
@@ -3339,7 +3343,7 @@ void Full_Cone<Integer>::check_pointed() {
     assert(isComputed(ConeProperty::SupportHyperplanes));
     if (isComputed(ConeProperty::Grading)){
         pointed=true;
-        if (verbose) verboseOutput() << "Pointed since graded" << endl << flush;
+        if (verbose) verboseOutput() << "Pointed since graded" << endl;
         is_Computed.set(ConeProperty::IsPointed);
         return;
     }
