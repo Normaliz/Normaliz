@@ -122,6 +122,27 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="excluded_faces") {
         return Type::excluded_faces;
     }
+    if (type_string=="lattice") {
+        return Type::lattice;
+    }
+    if (type_string=="saturation") {
+        return Type::saturation;
+    }
+    if (type_string=="cone") {
+        return Type::cone;
+    }
+    if (type_string=="offset") {
+        return Type::offset;
+    }
+    if (type_string=="vertices") {
+        return Type::vertices;
+    }
+    if (type_string=="support_hyperplanes") {
+        return Type::support_hyperplanes;
+    }
+    if (type_string=="cone_and_lattice") {
+        return Type::cone_and_lattice;
+    }
     
     errorOutput() << "ERROR: Unknown type \"" << type_string<<"\"!" << std::endl;
     throw BadInputException();

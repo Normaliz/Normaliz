@@ -153,6 +153,8 @@ public:
     const vector< vector<Integer> >& getEquations() const;
     const Matrix<Integer>& getCongruencesMatrix() const;
     const vector< vector<Integer> >& getCongruences() const;
+    const Matrix<Integer>& getLatticeMatrix() const;
+    const vector< vector<Integer> >& getLattice() const;
     map< InputType, vector< vector<Integer> > > getConstraints() const;
 
     const Matrix<Integer>& getExcludedFacesMatrix() const;
@@ -221,6 +223,7 @@ private:
     Matrix<Integer> VerticesOfPolyhedron;
     Matrix<Integer> SupportHyperplanes;
     Matrix<Integer> ExcludedFaces;
+    Matrix<Integer> PreComputedSupportHyperplanes;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
     vector< pair<vector<key_t>, Integer> > Triangulation;
@@ -249,25 +252,27 @@ private:
     
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
+    
+    bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
+    bool normalization; // true if input type normalization is used
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void prepare_input_lattice_ideal(const map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void prepare_input_generators(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data,
+            Matrix<Integer>& equations, Matrix<Integer>& congruence, Matrix<Integer>& Inequalities);
+    void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data, 
+                     Matrix<Integer>& LatticeGenerators);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void check_trunc_nonneg(const vector< vector<Integer> >& input_gens);
+    void check_precomputed_support_Hyperplanes();
+    void check_excluded_faces();
+    void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
 
-    /* Progress input for subtypes */
-    void prepare_input_type_0(const vector< vector<Integer> >& Input);
-    void prepare_input_type_1(const vector< vector<Integer> >& Input);
-    void prepare_input_type_2(const vector< vector<Integer> >& Input);
-    void prepare_input_type_3(const vector< vector<Integer> >& Input);
-
-    void prepare_input_type_456(const Matrix<Integer>& Congruences, const Matrix<Integer>& Equations, Matrix<Integer>& Inequalities);
-    void prepare_input_type_45(const Matrix<Integer>& Equations, Matrix<Integer>& Inequalities);
+    Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
+    Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
+    void prepare_input_type_4(Matrix<Integer>& Inequalities);
 
     /* only used by the constructors */
     void initialize();
@@ -300,6 +305,10 @@ private:
 
 template<typename Integer>
 vector<vector<Integer> > find_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data, 
+                               const InputType type);
+                               
+template<typename Integer>
+bool exists_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data, 
                                const InputType type);
 
 template<typename Integer>

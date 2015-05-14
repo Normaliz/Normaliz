@@ -399,6 +399,14 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix& sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
     Matrix& sort_lex();
     void order_rows_by_perm(const vector<key_t>& perm);
+    
+// solve homogeneous congruences
+    
+    Matrix<Integer> solve_congruences(bool& zero_modulus) const;
+    
+// saturate sublattice
+    
+    void saturate();
 
 };
 //class end *****************************************************************

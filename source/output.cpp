@@ -53,6 +53,7 @@ Output<Integer>::Output(){
     tgn=false;
     ht1=false;
     dec=false;
+    lat=false;
 }
 
 //---------------------------------------------------------------------------
@@ -209,7 +210,10 @@ void Output<Integer>::set_write_all_files(){
     gen=true;
     cst=true;
     ht1=true;
+    lat=true;
 }
+
+
 
 //---------------------------------------------------------------------------
 
@@ -217,6 +221,15 @@ template<typename Integer>
 void Output<Integer>::write_matrix_ext(const Matrix<Integer>& M) const{
     if (ext==true) {
         M.print(name,"ext");
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_matrix_lat(const Matrix<Integer>& M) const{
+    if (ext==true) {
+        M.print(name,"lat");
     }
 }
 
@@ -793,6 +806,18 @@ void Output<Integer>::write_files() const {
                 Congruences.pretty_print(out);
                 out << endl;
             }
+            
+            //lattice
+            const Matrix<Integer>& LatticeBasis = Result->getLatticeMatrix();
+            size_t nr_of_latt = LatticeBasis.nr_of_rows();
+            if (nr_of_latt < dim ||  BasisChange.get_external_index()!=1) {
+                out << nr_of_latt <<" basis elements of lattice:" <<endl;
+                LatticeBasis.pretty_print(out);
+                out << endl;
+            }
+            if(lat)
+                write_matrix_lat(LatticeBasis);
+            
 
             //excluded faces
             const Matrix<Integer>& ExFaces = Result->getExcludedFacesMatrix();

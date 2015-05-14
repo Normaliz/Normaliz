@@ -1812,7 +1812,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
         for(size_t j=0;j<dim;++j)
             Order_Vector[j]+=((unsigned long) (1+i%10))*Generators[start_simpl[i]][j];
 
-    // First the generators for the rexession cone = our cone
+    // First the generators for the recession cone = our cone
     Matrix<Integer> BottomGen(0,dim+1);
     vector<Integer> help(dim+1);
     for(size_t i=0;i<nr_gen;++i){
@@ -1821,13 +1821,14 @@ void Full_Cone<Integer>::find_bottom_facets() {
         help[dim]=0;
         BottomGen.append(help);
     }
-    // then the same vectors as geberators of the bottom polyhedron
+    // then the same vectors as generators of the bottom polyhedron
     for(size_t i=0;i<nr_gen;++i){
         for(size_t j=0;j<dim; ++j)
             help[j]=Generators[i][j];
         help[dim]=1;
         BottomGen.append(help);
     }
+    
     Full_Cone BottomPolyhedron(BottomGen);
     BottomPolyhedron.verbose=verbose;
     BottomPolyhedron.keep_order = true;
@@ -1849,8 +1850,8 @@ void Full_Cone<Integer>::find_bottom_facets() {
             BottomExtRays.push_back(i);
 
     if(verbose)
-        verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
-
+        verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl << flush;
+ 
     Matrix<Integer> BottomFacets(0,dim);
     vector<Integer> BottomDegs(0,dim);
     if (!isComputed(ConeProperty::SupportHyperplanes)) {
@@ -1887,7 +1888,6 @@ void Full_Cone<Integer>::find_bottom_facets() {
     }
     if(verbose)
         verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
-
 }
 
 
@@ -2270,7 +2270,7 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
 
     Full_Cone<Integer> SimplCone(Generators.submatrix(key));
-    SimplCone.verbose=verbose;
+    SimplCone.verbose=false; // verbose;
     SimplCone.Grading=Grading;
     SimplCone.is_Computed.set(ConeProperty::Grading);
     SimplCone.do_deg1_elements=true;
@@ -2943,6 +2943,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         order_by_perm(gen_degrees,perm);
     if(inhomogeneous)
         order_by_perm(gen_levels,perm);
+    compose_perm_gens(perm);
     
     if (verbose) {
         if(triangulate){
@@ -2961,6 +2962,12 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     keep_order=true;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
+    order_by_perm(PermGens,perm);
+}
 /*    
 //---------------------------------------------------------------------------
 
@@ -3861,6 +3868,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
 	keep_order=false;
 
     is_approximation=false;
+    
+    PermGens.resize(nr_gen);
+    for(size_t i=0;i<nr_gen;++i)
+        PermGens[i]=i;
 }
 
 //---------------------------------------------------------------------------

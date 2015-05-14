@@ -113,6 +113,7 @@ public:
     vector<Integer> Sorting;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
+    vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays;
     Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
@@ -290,6 +291,7 @@ public:
     void primal_algorithm_set_computed();
     void remove_duplicate_ori_gens_from_HB();
     void compute_class_group();
+    void compose_perm_gens(const vector<key_t>& perm);
 
     void minimize_support_hyperplanes();   
     void compute_extreme_rays();
