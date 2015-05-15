@@ -23,7 +23,6 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <omp.h>
 
 #include <iostream>
 //#include <sstream>
@@ -34,6 +33,7 @@
 #include "libnormaliz.h"
 #include "vector_operations.h"
 #include "integer.h"
+//#include "my_omp.h"
 
 #ifdef NMZ_SCIP
 #include "scip/scip.h"
