@@ -1460,7 +1460,7 @@ void Cone<Integer>::compute_generators() {
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
-            set_original_monoid_generators(BasisChange.from_sublattice(Extreme_Rays));            
+            set_generators(BasisChange.from_sublattice(Extreme_Rays));            
             set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
             if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
                 //get minmal set of support_hyperplanes
@@ -1685,7 +1685,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     }
     
     if (FC.isComputed(ConeProperty::Generators)) {
-        set_original_monoid_generators(BasisChange.from_sublattice(FC.getGenerators()));
+        set_generators(BasisChange.from_sublattice(FC.getGenerators()));
     }
     if (FC.isComputed(ConeProperty::ExtremeRays)) {
         set_extreme_rays(FC.getExtremeRays());
@@ -1841,7 +1841,8 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
 
 template<typename Integer>
 void Cone<Integer>::check_integrally_closed() {
-    if (isComputed(ConeProperty::IsIntegrallyClosed) || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || isComputed(ConeProperty::IsIntegrallyClosed) 
+               || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
 
     integrally_closed = false;
@@ -1874,6 +1875,14 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
         OriginalMonoidGenerators = Input;
         is_Computed.set(ConeProperty::OriginalMonoidGenerators);
     }
+    // Generators = Input;
+    // is_Computed.set(ConeProperty::Generators);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::set_generators(const Matrix<Integer>& Input) {
     Generators = Input;
     is_Computed.set(ConeProperty::Generators);
 }
@@ -1909,7 +1918,7 @@ template<typename Integer>
 void Cone<Integer>::set_zero_cone() {
     // GeneratorsOfToricRing needs no handling
 
-    set_original_monoid_generators(Matrix<Integer>(0,dim));
+    set_generators(Matrix<Integer>(0,dim));
 
     ExtremeRays = Matrix<Integer>(0,dim);
     is_Computed.set(ConeProperty::ExtremeRays);

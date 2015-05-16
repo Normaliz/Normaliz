@@ -286,8 +286,11 @@ private:
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     void extract_data(Full_Cone<Integer>& FC);
 
-    /* set OriginalMonoidGenerators and Generators */
+    /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
+
+    /* set Generators */    
+    void set_generators(const Matrix<Integer>& Input);
 
     /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron */
     void set_extreme_rays(const vector<bool>&);
