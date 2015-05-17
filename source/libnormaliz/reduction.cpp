@@ -78,6 +78,8 @@ template<typename Integer>
 void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
     C.Support_Hyperplanes.MxV(values, cand);
     sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(cand,C.Sorting));
+    if(C.do_module_gens_intcl)  // nevessary to make all monoid generators subrtactible
+        sort_deg*=2;
 }
 
 
@@ -106,6 +108,16 @@ CandidateList<Integer>::CandidateList(bool dual_algorithm)
 // size_t NrCompVal=0;
 
 //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void CandidateList<Integer>::divide_sortdeg_by2(){
+    
+    typename list<Candidate<Integer> >::iterator r;
+    for(r=Candidates.begin();r!=Candidates.end();++r)
+        r->sort_deg/=2;
+}
 
 template<typename Integer>
 bool CandidateList<Integer>::is_reducible(const vector<Integer>& values, const long sort_deg) const {

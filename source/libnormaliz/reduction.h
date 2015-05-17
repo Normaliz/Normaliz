@@ -143,6 +143,7 @@ class CandidateList {
 
   void sort_by_deg();
   void sort_by_val();
+  void divide_sortdeg_by2();
   void merge(CandidateList<Integer>& NewCand);
   void merge_by_val(CandidateList<Integer>& NewCand);
   void merge_by_val(CandidateList<Integer>& NewCand,list<Candidate<Integer>* >& New_Elements);

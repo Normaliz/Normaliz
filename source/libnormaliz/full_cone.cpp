@@ -2041,7 +2041,10 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::update_reducers(){
+void Full_Cone<Integer>::update_reducers(bool forced){
+    
+    if((!do_Hilbert_basis || do_module_gens_intcl) && !forced)
+        return;
 
     if(NewCandidates.Candidates.empty())
         return;
@@ -2049,7 +2052,7 @@ void Full_Cone<Integer>::update_reducers(){
     if(nr_gen==dim)  // no global reduction in the simplicial case
         NewCandidates.sort_by_deg(); 
     // cout << "Nach sort" << endl;
-    if(nr_gen!=dim){  // global reduction in the nonsimplicial case
+    if(nr_gen!=dim || forced){  // global reduction in the nonsimplicial case (or forced)
         NewCandidates.auto_reduce();
         // cout << "Nach auto" << endl; 
         if(verbose){
@@ -2166,15 +2169,11 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     if (verbose)
         verboseOutput()  << endl;
         
-    if(do_Hilbert_basis)
-        update_reducers();
+    update_reducers();
         
     } while(skip_remaining);
         
     } // do_evaluation
-    
-    /* if(do_Hilbert_basis)  // moved further down
-        update_reducers(); */
             
     if (verbose)
     {
@@ -2201,8 +2200,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
     for(size_t i=0;i<Results.size();++i)
         Results[i].transfer_candidates(); // any remaining ones
-    if(do_Hilbert_basis)
-        update_reducers();
+    
+    update_reducers();
 }
 
 //---------------------------------------------------------------------------
@@ -2245,8 +2244,8 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 
     for(size_t i=0;i<Results.size();++i)
         Results[i].transfer_candidates(); // any remaining ones
-    if(do_Hilbert_basis)
-        update_reducers();
+        
+    update_reducers();
 }
 
 //---------------------------------------------------------------------------
@@ -2459,13 +2458,19 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         is_Computed.set(ConeProperty::Multiplicity,true);
                 
     if (do_Hilbert_basis) {
-        // global_reduction(); // no longer necessary
-        // remove_duplicate_ori_gens_from_HB();
+        if(do_module_gens_intcl){
+            NewCandidates.extract(ModuleGeneratorsOfIntegralClosure);
+            cout << "Mod " << endl;
+            Matrix<Integer>(ModuleGeneratorsOfIntegralClosure).pretty_print(cout);
+            cout << "--------" << endl;
+            is_Computed.set(ConeProperty::ModuleGeneratorsOfIntegralClosure,true);
+            NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2
+            update_reducers(true); // must be forced -- otherwise not done in the simplicial case         
+        }
         OldCandidates.sort_by_val();
         OldCandidates.extract(Hilbert_Basis);
         OldCandidates.Candidates.clear();
-// Hilbert_Basis.sort(); //TODO undo
-Hilbert_Basis.unique();
+        Hilbert_Basis.unique();
         is_Computed.set(ConeProperty::HilbertBasis,true);
         if (isComputed(ConeProperty::Grading)) {
             select_deg1_elements();
@@ -2520,6 +2525,7 @@ void Full_Cone<Integer>::do_vars_check() {
     }
 
     // activate implications
+    if (do_module_gens_intcl) do_Hilbert_basis= true;
     if (do_Stanley_dec)     keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
@@ -3803,7 +3809,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
         error_msg("Too many generators to fit in range of key_t!");
         throw FatalException();
     }
-
+    
     multiplicity = 0;
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
@@ -4200,30 +4206,31 @@ void Full_Cone<Integer>::getTriangulation(list< vector<key_t> >& Triang, list<In
 
 template<typename Integer>
 Matrix<Integer> Full_Cone<Integer>::getHilbertBasis()const{
-    size_t s= Hilbert_Basis.size();
-    Matrix<Integer> M(s,dim);
-    size_t i=0;
-    typename list< vector<Integer> >::const_iterator l;
-    for (l =Hilbert_Basis.begin(); l != Hilbert_Basis.end(); l++) {
-        M.write(i,(*l));
-        i++;
-    }
-    return M;
+    if(Hilbert_Basis.empty())
+        return Matrix<Integer>(0,dim);
+    else
+        return Matrix<Integer>(Hilbert_Basis);
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::getModuleGeneratorsOfIntegralClosure()const{
+    if(ModuleGeneratorsOfIntegralClosure.empty())
+        return Matrix<Integer>(0,dim);
+    else
+        return Matrix<Integer>(ModuleGeneratorsOfIntegralClosure);
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Full_Cone<Integer>::getDeg1Elements()const{
-    size_t s= Deg1_Elements.size();
-    Matrix<Integer> M(s,dim);
-    size_t i=0;
-    typename list< vector<Integer> >::const_iterator l;
-    for (l =Deg1_Elements.begin(); l != Deg1_Elements.end(); l++) {
-        M.write(i,(*l));
-        i++;
-    }
-    return M;
+    if(Deg1_Elements.empty())
+        return Matrix<Integer>(0,dim);
+    else
+        return Matrix<Integer>(Deg1_Elements);
 }
 
 //---------------------------------------------------------------------------

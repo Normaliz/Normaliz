@@ -660,8 +660,8 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
                 Coll.HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
                 inserted=true;
             }
-            else         
-                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);
+            else
+                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);                
             if(inserted)
                 Coll.collected_elements_size++;
         }
@@ -1090,6 +1090,12 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // reduce new against old elements
     //now done directly    reduce(Coll.Candidates, Hilbert_Basis);
+    
+    if(C_ptr->do_module_gens_intcl){
+        Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
+        Coll.candidates_size = 0;
+        return;
+    }
 
     // interreduce
     Coll.Candidates.sort(compare_last<Integer>);

@@ -211,6 +211,7 @@ void Output<Integer>::set_write_all_files(){
     cst=true;
     ht1=true;
     lat=true;
+    mod=true;
 }
 
 
@@ -223,6 +224,16 @@ void Output<Integer>::write_matrix_ext(const Matrix<Integer>& M) const{
         M.print(name,"ext");
     }
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_matrix_mod(const Matrix<Integer>& M) const{
+    if (mod==true) {
+        M.print(name,"mod");
+    }
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -520,6 +531,9 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             out << Result->getNrExtremeRays() <<" extreme rays" << of_cone << endl;
         }
+        if(Result->isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
+            out << Result->getNrModuleGeneratorsOfIntegralClosure() <<" module generators of integral closure/original monoid" << endl;    
+        }
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
             out << Result->getNrSupportHyperplanes() <<" support hyperplanes"
                 << of_polyhedron << endl;
@@ -780,6 +794,14 @@ void Output<Integer>::write_files() const {
                     write_matrix_ext(Result->getExtremeRaysMatrix());
                 }
             }
+        }
+        
+        if(Result->isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
+            out << Result->getNrModuleGeneratorsOfIntegralClosure() <<" module generators of integral closure/original monoid:" << endl;
+            Result->getModuleGeneratorsOfIntegralClosureMatrix().pretty_print(out);
+            out << endl;
+            if(mod)
+                write_matrix_ext(Result->getModuleGeneratorsOfIntegralClosureMatrix());
         }
 
         //write constrains (support hyperplanes, congruences, equations)

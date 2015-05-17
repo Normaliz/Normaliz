@@ -167,7 +167,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
                   || prop == ConeProperty::ApproximateRatPolytope 
-                  || prop == ConeProperty::ClassGroup) {
+                  || prop == ConeProperty::ClassGroup
+                  || prop == ConeProperty::ModuleGeneratorsOfIntegralClosure  
+                ) {
                     errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
                 }
@@ -227,9 +229,10 @@ namespace {
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
         CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
         CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
+        CPN.at(ConeProperty::ModuleGeneratorsOfIntegralClosure) = "ModuleGeneratorsOfIntegralClosure";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 37,
+        static_assert (ConeProperty::EnumSize == 38,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

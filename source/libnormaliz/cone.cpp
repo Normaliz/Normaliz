@@ -1182,6 +1182,19 @@ size_t Cone<Integer>::getNrHilbertBasis() const {
 }
 
 template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsOfIntegralClosureMatrix() const {
+    return ModuleGeneratorsOfIntegralClosure;
+}
+template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getModuleGeneratorsOfIntegralClosure() const {
+    return ModuleGeneratorsOfIntegralClosure.get_elements();
+}
+template<typename Integer>
+size_t Cone<Integer>::getNrModuleGeneratorsOfIntegralClosure() const {
+    return ModuleGeneratorsOfIntegralClosure.nr_of_rows();
+}
+
+template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsMatrix() const {
     return ModuleGenerators;
 }
@@ -1317,6 +1330,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options();
     ToCompute.check_sanity(inhomogeneous);
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure) && !isComputed(ConeProperty::OriginalMonoidGenerators)){
+        errorOutput() << "Generators of integral closure/original monoid only computable if original monoid is defined" 
+                << endl << flush;
+        throw BadInputException();
+    }
+        
 
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
@@ -1348,7 +1367,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* Create a Full_Cone FC */
     
-    Full_Cone<Integer> FC(BasisChange.to_sublattice(Generators));
+    Full_Cone<Integer> FC(BasisChange.to_sublattice(Generators),!ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure));
+    // !ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
     
@@ -1431,6 +1451,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         FC.do_all_hyperplanes = false;
     }
 
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure)){
+        FC.do_module_gens_intcl=true;        
+    }
+    
     /* do the computation */
     FC.compute();
     
@@ -1682,6 +1706,12 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
     if (rees_primary){
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
+    }
+    
+    if (FC.isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
+        ModuleGeneratorsOfIntegralClosure=BasisChange.from_sublattice(FC.getModuleGeneratorsOfIntegralClosure());
+        ModuleGeneratorsOfIntegralClosure.sort_by_weights(WeightsGrad,GradAbs);
+        is_Computed.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
     }
     
     if (FC.isComputed(ConeProperty::Generators)) {

@@ -98,6 +98,7 @@ public:
 	bool do_bottom_dec;
 	bool keep_order;
     bool do_class_group;
+    bool do_module_gens_intcl;
 
     // internal helper control variables
     bool do_only_multiplicity;
@@ -118,6 +119,7 @@ public:
     Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
+    list<vector<Integer> > ModuleGeneratorsOfIntegralClosure;
     CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
@@ -256,7 +258,7 @@ public:
     void build_top_cone(); 
     void build_cone();
     void get_supphyps_from_copy(bool from_scratch);   // if evealuation starts before support hyperplanes are fully computed
-    void update_reducers();   // update list of reducers after evaluation of simplices
+    void update_reducers(bool forced=false);   // update list of reducers after evaluation of simplices
     
 
     bool is_reducible(list<vector<Integer> *> & Irred, const vector<Integer> & new_element);
@@ -347,6 +349,7 @@ Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constru
     Matrix<Integer> getSupportHyperplanes() const;
     void getTriangulation(list< vector<key_t> >& Triang, list<Integer>& TriangVol) const;
     Matrix<Integer> getHilbertBasis() const;
+    Matrix<Integer> getModuleGeneratorsOfIntegralClosure()const;
     Matrix<Integer> getDeg1Elements() const;
     vector<Integer> getHVector() const;
     Matrix<Integer> getExcludedFaces()const;

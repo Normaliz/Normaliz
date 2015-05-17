@@ -49,6 +49,7 @@ class Output {
     bool ht1;
     bool dec;
     bool lat;
+    bool mod;
     Cone<Integer>* Result;
     size_t dim;
     size_t rank;
@@ -98,6 +99,7 @@ public:
     void write_matrix_typ(const Matrix<Integer>& M) const; //writes M to file name.typ
     void write_matrix_egn(const Matrix<Integer>& M) const; //writes M to file name.egn
     void write_matrix_gen(const Matrix<Integer>& M) const; //writes M to file name.gen
+    void write_matrix_mod(const Matrix<Integer>& M) const; //writes M to file name.mod 
     void write_tri() const; //writes the .tri file
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1

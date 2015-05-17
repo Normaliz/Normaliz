@@ -202,6 +202,10 @@ int main(int argc, char* argv[])
 			case 'k':  //keep the order of the generators in Full_Cone
 				keep_order=true;
 				break;
+            case 'M':  // compute minimal system of generators of integral closure 
+                       // as amodule over original monoid
+                to_compute.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
+                break;
             case 'm':  //save memory / don't optimize for speed
             //    optimize_speed=false;
                 break;
