@@ -2093,6 +2093,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 		
         
         Sorting=compute_degree_function();
+        bool save_do_module_gens_intcl=do_module_gens_intcl;
+        do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
         for (size_t i = 0; i <nr_gen; i++) {               
             // cout << gen_levels[i] << " ** " << Generators[i];
             if(!inhomogeneous || gen_levels[i]<=1) {
@@ -2100,8 +2102,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 OldCandidates.Candidates.back().original_generator=true;
             }
         }
-        // OldCandidates.sort_by_deg(); // now in auto_reduce
-        OldCandidates.auto_reduce();
+        do_module_gens_intcl=save_do_module_gens_intcl; // restore
+        if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
+            OldCandidates.auto_reduce();
     }
     
     if(TriangulationSize==0)
