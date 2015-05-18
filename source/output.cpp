@@ -383,6 +383,9 @@ void Output<Integer>::write_inv_file() const{
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
         }
+        if (Result->isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
+            inv<<"integer mod_gen_intcl = "<<Result->getNrModuleGeneratorsOfIntegralClosure()<<endl;
+        }
 
         inv << "integer embedding_dim = " << dim << endl;
         if (homogeneous) {

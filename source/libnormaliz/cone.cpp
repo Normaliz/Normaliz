@@ -438,8 +438,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         prepare_input_lattice_ideal(multi_input_data);
     } 
     
-    Matrix<Integer> LatticeGenerators(0,dim);   // important to do this first since interpretation of excluded 
-    prepare_input_generators(multi_input_data, LatticeGenerators);  // faces depends on Fenerators    
+    Matrix<Integer> LatticeGenerators(0,dim);
+    prepare_input_generators(multi_input_data, LatticeGenerators);
     
     Matrix<Integer> Equations(0,dim), Congruences(0,dim+1);     
     Matrix<Integer> Inequalities(0,dim);
@@ -456,6 +456,22 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         vertex[dim-1]=1;
         Generators.append(vertex);               
     }
+    
+    if(Inequalities.nr_of_rows()>0 && Generators.nr_of_rows()>0){ // eliminate superfluous inequalities
+        vector<key_t> essential;        
+        for(size_t i=0;i<Inequalities.nr_of_rows();++i){
+            for (size_t j=0;j<Generators.nr_of_rows();++j){
+                if(v_scalar_product(Inequalities[i],Generators[j])<0){
+                    essential.push_back(i);
+                    break;               
+                }
+            }        
+        }
+        if(essential.size()<Inequalities.nr_of_rows())
+            Inequalities=Inequalities.submatrix(essential);    
+    }
+    
+    // cout << "Ineq " << Inequalities.nr_of_rows() << endl;
     
     process_lattice_data(LatticeGenerators,Congruences,Equations);
     
@@ -557,6 +573,7 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
             case Type::strict_inequalities:
             case Type::inequalities:
             case Type::inhom_inequalities:
+            case Type::excluded_faces:
                 Inequalities.append(it->second);
                 break;
             case Type::equations:
@@ -582,11 +599,6 @@ void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vect
     Help.append(StrictSigns);   // then strict signs
     Help.append(Inequalities);
     Inequalities=Help;
-    
-    // take care of excluded faces if no explicit cone generators are present
-    if(Generators.nr_of_rows()==0)
-        if(exists_input_matrix(multi_input_data,Type::excluded_faces))
-            Inequalities.append(find_input_matrix(multi_input_data,Type::excluded_faces));
 }
 
 //---------------------------------------------------------------------------
