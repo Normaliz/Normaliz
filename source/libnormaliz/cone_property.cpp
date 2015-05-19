@@ -211,28 +211,28 @@ namespace {
         CPN.at(ConeProperty::HilbertFunction) = "HilbertFunction";
         CPN.at(ConeProperty::Grading) = "Grading";
         CPN.at(ConeProperty::IsPointed) = "IsPointed";
-        CPN.at(ConeProperty::IsDeg1Generated) = "IsDeg1Generated";
         CPN.at(ConeProperty::IsDeg1ExtremeRays) = "IsDeg1ExtremeRays";
         CPN.at(ConeProperty::IsDeg1HilbertBasis) = "IsDeg1HilbertBasis";
         CPN.at(ConeProperty::IsIntegrallyClosed) = "IsIntegrallyClosed";
         CPN.at(ConeProperty::OriginalMonoidGenerators) = "OriginalMonoidGenerators";
-        CPN.at(ConeProperty::Sublattice) = "Sublattice";
-        CPN.at(ConeProperty::ReesPrimary) = "ReesPrimary";
+        CPN.at(ConeProperty::IsReesPrimary) = "IsReesPrimary";
         CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
         CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
         CPN.at(ConeProperty::ExcludedFaces) = "ExcludedFaces";
         CPN.at(ConeProperty::Dehomogenization) = "Dehomogenization";
         CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
-        CPN.at(ConeProperty::DualMode) = "DualMode";
-        CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
-        CPN.at(ConeProperty::ApproximateRatPolytope) = "ApproximateRatPolytope";
-        CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
-        CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
+        CPN.at(ConeProperty::Sublattice) = "Sublattice";
         CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
         CPN.at(ConeProperty::ModuleGeneratorsOfIntegralClosure) = "ModuleGeneratorsOfIntegralClosure";
+        // the following are more compute options than real properties of the cone
+        CPN.at(ConeProperty::ApproximateRatPolytope) = "ApproximateRatPolytope";
+        CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
+        CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
+        CPN.at(ConeProperty::DualMode) = "DualMode";
+        CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 38,
+        static_assert (ConeProperty::EnumSize == 37,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

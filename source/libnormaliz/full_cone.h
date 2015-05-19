@@ -77,6 +77,7 @@ public:
     
     bool pointed;
     bool is_simplicial;
+    bool deg1_generated_computed;
     bool deg1_generated;
     bool deg1_extreme_rays;
     bool deg1_triangulation;

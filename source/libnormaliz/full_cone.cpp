@@ -3403,13 +3403,13 @@ void Full_Cone<Integer>::deg1_check() {
                 is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
             }
         } else // extreme rays not known
-        if (!isComputed(ConeProperty::IsDeg1Generated)) {
+        if (!deg1_generated_computed) {
             Grading = Generators.find_linear_form();
             if (Grading.size() == dim && v_scalar_product(Grading,Generators[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_generated = false;
-                is_Computed.set(ConeProperty::IsDeg1Generated);
+                deg1_generated_computed = true;
             }
         }
     }
@@ -3420,7 +3420,7 @@ void Full_Cone<Integer>::deg1_check() {
         if (isComputed(ConeProperty::ExtremeRays)) {
             // there is no hope to find a grading later
             deg1_generated = false;
-            is_Computed.set(ConeProperty::IsDeg1Generated);
+            deg1_generated_computed = true;
             deg1_extreme_rays = false;
             is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
             disable_grading_dep_comp();
@@ -3430,7 +3430,7 @@ void Full_Cone<Integer>::deg1_check() {
     
     set_degrees();
         
-    if (!isComputed(ConeProperty::IsDeg1Generated)) {
+    if (!deg1_generated_computed) {
         deg1_generated = true;
         for (size_t i = 0; i < nr_gen; i++) {
             if (gen_degrees[i] != 1) {
@@ -3438,7 +3438,7 @@ void Full_Cone<Integer>::deg1_check() {
                 break;
             }
         }
-        is_Computed.set(ConeProperty::IsDeg1Generated);
+        deg1_generated_computed = true;
         if (deg1_generated) {
             deg1_extreme_rays = true;
             is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
@@ -3828,6 +3828,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     is_simplicial = nr_gen == dim;
     deg1_extreme_rays = false;
     deg1_generated = false;
+    deg1_generated_computed = false;
     deg1_hilbert_basis = false;
     
     reset_tasks();
@@ -3917,6 +3918,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     is_Computed.set(ConeProperty::IsPointed);
     deg1_extreme_rays = false;
     deg1_generated = false;
+    deg1_generated_computed = false;
     deg1_triangulation = false;
     deg1_hilbert_basis = false;
     
@@ -3998,7 +4000,7 @@ void Full_Cone<Integer>::dual_mode() {
         deg1_extreme_rays = deg1_generated = true;
         Grading=vector<Integer>(dim);
         is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
-        is_Computed.set(ConeProperty::IsDeg1Generated);
+        deg1_generated_computed = true;
         is_Computed.set(ConeProperty::Grading);
     }
     if(!inhomogeneous && isComputed(ConeProperty::HilbertBasis)){
@@ -4040,6 +4042,12 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
             Extreme_Rays[i]=C.Extreme_Rays[Key[i]];
     in_triang = vector<bool> (nr_gen,false);
     deg1_triangulation = true;
+
+    // not used in a pyramid, but set precaution
+    deg1_extreme_rays = false;
+    deg1_generated = false;
+    deg1_generated_computed = false;
+    deg1_hilbert_basis = false;
     
     Grading=C.Grading;
     is_Computed.set(ConeProperty::Grading, C.isComputed(ConeProperty::Grading));

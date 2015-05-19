@@ -827,7 +827,7 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector< vector<Integer
         if(!Prim_Test[i])
             rees_primary=false;
  
-    is_Computed.set(ConeProperty::ReesPrimary);
+    is_Computed.set(ConeProperty::IsReesPrimary);
     return Full_Cone_Generators;    
 }
 
@@ -980,7 +980,6 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     is_Computed.set(ConeProperty::Grading);
     
     //remove data that depend on the grading 
-    is_Computed.reset(ConeProperty::IsDeg1Generated);
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
     is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
     is_Computed.reset(ConeProperty::Deg1Elements);
