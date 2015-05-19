@@ -291,7 +291,7 @@ vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual_no_div (c
 
 /* returns the dimension of the ambient space */
 template<typename Integer>
-size_t Sublattice_Representation<Integer>::get_dim() const {
+size_t Sublattice_Representation<Integer>::getDim() const {
     return dim;
 }
 
@@ -299,7 +299,7 @@ size_t Sublattice_Representation<Integer>::get_dim() const {
 
 /* returns the rank of the sublattice */
 template<typename Integer>
-size_t Sublattice_Representation<Integer>::get_rank() const {
+size_t Sublattice_Representation<Integer>::getRank() const {
     return rank;
 }
 
@@ -316,21 +316,32 @@ mpz_class Sublattice_Representation<Integer>::get_index() const {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::get_A() const {
+const Matrix<Integer>& Sublattice_Representation<Integer>::getEmbeddingMatrix() const {
     return A;
 } 
 
-//---------------------------------------------------------------------------
-
 template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::get_B() const {
-    return B;
+const vector<vector<Integer> >& Sublattice_Representation<Integer>::getEmbedding() const{
+    return getEmbeddingMatrix().get_elements();
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer Sublattice_Representation<Integer>::get_c() const {
+const Matrix<Integer>& Sublattice_Representation<Integer>::getProjectionMatrix() const {
+    return B;
+}
+
+template<typename Integer>
+const vector<vector<Integer> >& Sublattice_Representation<Integer>::getProjection() const{
+    return getProjectionMatrix().get_elements();
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Sublattice_Representation<Integer>::getAnnihilator() const {
     return c;
 }
 
@@ -339,11 +350,16 @@ Integer Sublattice_Representation<Integer>::get_c() const {
 /* returns the congruences defining the sublattice */
 
 template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::get_equations() const{
+const Matrix<Integer>& Sublattice_Representation<Integer>::getEquationsMatrix() const{
 
     if(!Equations_computed)
         make_equations();
     return Equations;
+}
+
+template<typename Integer>
+const vector<vector<Integer> >& Sublattice_Representation<Integer>::getEquations() const{
+        return getEquationsMatrix().get_elements();
 }
 
 template<typename Integer>
@@ -357,7 +373,7 @@ void Sublattice_Representation<Integer>::make_equations() const{
 }
 
 template<typename Integer>
-const Matrix<Integer>& Sublattice_Representation<Integer>::get_congruences() const{
+const Matrix<Integer>& Sublattice_Representation<Integer>::getCongruencesMatrix() const{
 
     if(!Congruences_computed)
         make_congruences();
@@ -365,7 +381,12 @@ const Matrix<Integer>& Sublattice_Representation<Integer>::get_congruences() con
 }
 
 template<typename Integer>
-mpz_class Sublattice_Representation<Integer>::get_external_index() const{
+const vector<vector<Integer> >& Sublattice_Representation<Integer>::getCongruences() const{
+    return getCongruencesMatrix().get_elements();
+}
+
+template<typename Integer>
+mpz_class Sublattice_Representation<Integer>::getExternalIndex() const{
 
     if(!Congruences_computed)
         make_congruences();

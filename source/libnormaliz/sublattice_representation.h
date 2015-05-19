@@ -121,23 +121,25 @@ public:
 //---------------------------------------------------------------------------
 
 	/* returns the dimension of the ambient space */
-	size_t get_dim() const;
+	size_t getDim() const;
 
 	/* returns the rank of the sublattice */
-	size_t get_rank() const;
+	size_t getRank() const;
 
 	/* returns the index of the sublattice */
 	// mpz_class get_index() const;
 
-	const Matrix<Integer>& get_A() const;
-	
-	const Matrix<Integer>& get_B() const;
-	
-	Integer get_c() const;
+	Integer getAnnihilator() const;
 
-    const Matrix<Integer>& get_equations() const;	
-    const Matrix<Integer>& get_congruences() const;
-    mpz_class get_external_index() const;
+    const Matrix<Integer>& getEquationsMatrix() const;
+    const vector<vector<Integer> >& getEquations() const;
+    const Matrix<Integer>& getCongruencesMatrix() const;
+    const vector<vector<Integer> >& getCongruences() const;
+    mpz_class getExternalIndex() const;
+    const Matrix<Integer>& getEmbeddingMatrix() const;
+    const vector<vector<Integer> >& getEmbedding() const;
+    const Matrix<Integer>& getProjectionMatrix() const;
+    const vector<vector<Integer> >& getProjection() const;
 
 };
 

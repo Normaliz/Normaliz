@@ -150,12 +150,6 @@ public:
     const Matrix<Integer>& getSupportHyperplanesMatrix() const;
     const vector< vector<Integer> >& getSupportHyperplanes() const;
     size_t getNrSupportHyperplanes() const;
-    const Matrix<Integer>& getEquationsMatrix() const;
-    const vector< vector<Integer> >& getEquations() const;
-    const Matrix<Integer>& getCongruencesMatrix() const;
-    const vector< vector<Integer> >& getCongruences() const;
-    const Matrix<Integer>& getLatticeMatrix() const;
-    const vector< vector<Integer> >& getLattice() const;
     map< InputType, vector< vector<Integer> > > getConstraints() const;
 
     const Matrix<Integer>& getExcludedFacesMatrix() const;
@@ -205,7 +199,7 @@ public:
     const vector< vector<Integer> >& getOriginalMonoidGenerators() const;
     size_t getNrOriginalMonoidGenerators() const;
     // the following methods return const refs to avoid copying of big data objects
-    const Sublattice_Representation<Integer>& getBasisChange() const;
+    const Sublattice_Representation<Integer>& getSublattice() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
     const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData() const;

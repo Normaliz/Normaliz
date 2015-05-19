@@ -299,7 +299,7 @@ void Output<Integer>::write_tri() const{
         typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();
 
         out << Tri.size() << endl;
-        out << Result->getBasisChange().get_rank()+1 << endl; //works also for empty list
+        out << Result->getSublattice().get_rank()+1 << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
@@ -397,8 +397,7 @@ void Output<Integer>::write_inv_file() const{
         inv << "integer embedding_dim = " << dim << endl;
         if (homogeneous) {
             inv << "integer rank = " << rank << endl;
-            //inv << "integer index = " << Result->getBasisChange().get_index() << endl;
-            inv << "integer external_index = " << Result->getBasisChange().get_external_index() << endl;
+            inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
                 inv << "integer affine_dim_polyhedron = " << Result->getAffineDim() << endl;
@@ -491,7 +490,7 @@ void Output<Integer>::write_inv_file() const{
 
 template<typename Integer>
 void Output<Integer>::write_files() const {
-    const Sublattice_Representation<Integer>& BasisChange = Result->getBasisChange();
+    const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
     size_t i, nr;
     const Matrix<Integer>& Generators = Result->getGeneratorsMatrix();
     const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
@@ -561,7 +560,7 @@ void Output<Integer>::write_files() const {
         if (homogeneous) {
             out << "rank = "<< rank << is_maximal(rank,dim) << endl;
             //out << "index E:G = "<< BasisChange.get_index() << endl;
-            out << "external index = "<< BasisChange.get_external_index() << endl;
+            out << "external index = "<< BasisChange.getExternalIndex() << endl;
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
@@ -831,7 +830,7 @@ void Output<Integer>::write_files() const {
         out << endl;
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             //equations
-            const Matrix<Integer>& Equations = Result->getEquationsMatrix();
+            const Matrix<Integer>& Equations = BasisChange.getEquationsMatrix();
             size_t nr_of_equ = Equations.nr_of_rows();
             if (nr_of_equ > 0) {
                 out << nr_of_equ <<" equations:" <<endl;
@@ -840,7 +839,7 @@ void Output<Integer>::write_files() const {
             }
 
             //congruences
-            const Matrix<Integer>& Congruences = Result->getCongruencesMatrix();
+            const Matrix<Integer>& Congruences = BasisChange.getCongruencesMatrix();
             size_t nr_of_cong = Congruences.nr_of_rows();
             if (nr_of_cong > 0) {
                 out << nr_of_cong <<" congruences:" <<endl;
@@ -849,9 +848,9 @@ void Output<Integer>::write_files() const {
             }
             
             //lattice
-            const Matrix<Integer>& LatticeBasis = Result->getLatticeMatrix();
+            const Matrix<Integer>& LatticeBasis = BasisChange.getEmbeddingMatrix();
             size_t nr_of_latt = LatticeBasis.nr_of_rows();
-            if (nr_of_latt < dim ||  BasisChange.get_external_index()!=1) {
+            if (nr_of_latt < dim ||  BasisChange.getExternalIndex()!=1) {
                 out << nr_of_latt <<" basis elements of lattice:" <<endl;
                 LatticeBasis.pretty_print(out);
                 out << endl;

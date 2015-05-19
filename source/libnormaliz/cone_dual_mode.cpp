@@ -834,9 +834,9 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Integer>& SR) {
-    assert(SR.get_dim() == dim);
+    assert(SR.getDim() == dim);
 
-    dim = SR.get_rank();
+    dim = SR.getRank();
     // hyp_size = dim+nr_sh;
     SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
     typename list<vector<Integer> >::iterator it;

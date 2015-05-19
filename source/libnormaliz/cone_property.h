@@ -60,7 +60,6 @@ namespace ConeProperty {
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         OriginalMonoidGenerators,
-        GeneratorsOfToricRing,
         ReesPrimary,
         ReesPrimaryMultiplicity,
         StanleyDec,
@@ -74,6 +73,7 @@ namespace ConeProperty {
         DefaultMode,
         ClassGroup,
         ModuleGeneratorsOfIntegralClosure,
+        Sublattice,
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }

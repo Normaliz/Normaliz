@@ -506,7 +506,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 
         if(cone_sat_eq && !cone_sat_cong){ // multiply generators by annihilator mod sublattice
             for(size_t i=0;i<Generators.nr_of_rows();++i)
-                v_scalar_multiplication(Generators[i],BasisChange.get_c());
+                v_scalar_multiplication(Generators[i],BasisChange.getAnnihilator());
             cone_sat_cong=true;
         }
     }
@@ -519,10 +519,14 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
     
+    assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);
+    
     if(Generators.nr_of_rows()==0)
-        prepare_input_type_4(Inequalities);
-    else
+        prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
+    else{
         is_Computed.set(ConeProperty::Generators);
+        is_Computed.set(ConeProperty::Sublattice);
+    }
     
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
     if(isComputed(ConeProperty::Grading))
@@ -710,8 +714,8 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
             compose_basis_change(GenSublattice);
             return;
         }            
-        Congruences.append(GenSublattice.get_congruences());
-        Equations.append(GenSublattice.get_equations());
+        Congruences.append(GenSublattice.getCongruencesMatrix());
+        Equations.append(GenSublattice.getEquationsMatrix());
     }
     
     if (Congruences.nr_of_rows() > 0) {
@@ -1017,7 +1021,7 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
 /* getter */
 template<typename Integer>
 size_t Cone<Integer>::getRank() const {
-    return BasisChange.get_rank();
+    return BasisChange.getRank();
 }
 
 template<typename Integer>    // computation depends on OriginalGenerators
@@ -1036,7 +1040,7 @@ long Cone<Integer>::getAffineDim() const {
 }
 
 template<typename Integer>
-const Sublattice_Representation<Integer>& Cone<Integer>::getBasisChange() const{
+const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() const{
     return BasisChange;
 }
 
@@ -1117,38 +1121,11 @@ size_t Cone<Integer>::getNrSupportHyperplanes() const {
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getEquationsMatrix() const {
-    return BasisChange.get_equations();
-}
-template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getEquations() const {
-    return getEquationsMatrix().get_elements();
-}
-
-template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getCongruencesMatrix() const {
-    return BasisChange.get_congruences();
-}
-template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getCongruences() const {
-    return BasisChange.get_congruences().get_elements();
-}
-
-template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getLatticeMatrix() const {
-    return BasisChange.get_A();
-}
-template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getLattice() const {
-    return BasisChange.get_A().get_elements();
-}
-
-template<typename Integer>
 map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
     map<InputType, vector< vector<Integer> > > c;
     c[Type::inequalities] = SupportHyperplanes.get_elements();
-    c[Type::equations] = getEquations();
-    c[Type::congruences] = getCongruences();
+    c[Type::equations] = BasisChange.getEquations();
+    c[Type::congruences] = BasisChange.getCongruences();
     return c;
 }
 
@@ -1343,7 +1320,7 @@ template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // handle zero cone as special case, makes our life easier
-    if (BasisChange.get_rank() == 0) {
+    if (BasisChange.getRank() == 0) {
         set_zero_cone();
         ToCompute.reset(is_Computed);
         return ToCompute;
@@ -1363,12 +1340,15 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute_dual(ToCompute);
     }
     ToCompute.reset(is_Computed);
-    if (ToCompute.none())
+    if (ToCompute.none()){
+        is_Computed.set(ConeProperty::Sublattice);
         return ToCompute;
+    }
 
     /* preparation: get generators if necessary */
     compute_generators();
-    if (BasisChange.get_rank() == 0) {
+    is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
+    if (BasisChange.getRank() == 0) {
         set_zero_cone();
         ToCompute.reset(is_Computed);
         return ToCompute;
@@ -1525,7 +1505,7 @@ void Cone<Integer>::compute_generators() {
             if (!isComputed(ConeProperty::Grading) && !inhomogeneous) {
                 // Generators = ExtremeRays
                 vector<Integer> lf = BasisChange.to_sublattice(Generators).find_linear_form();
-                if (lf.size() == BasisChange.get_rank()) {
+                if (lf.size() == BasisChange.getRank()) {
                     vector<Integer> test_lf=BasisChange.from_sublattice_dual(lf);
                     if(Generators.nr_of_rows()==0 || v_scalar_product(Generators[0],test_lf)==1)
                         setGrading(test_lf);
@@ -1575,7 +1555,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         compute_generators();   // computes extreme rays, but does not find grading ! 
         if(inhomogeneous)                        // we must guard ourselves against loosing the truncation
             SupportHyperplanes=Help;   
-        if (BasisChange.get_rank() == 0) {
+        if (BasisChange.getRank() == 0) {
             set_zero_cone();
             ToCompute.reset(is_Computed);
             return ToCompute;
@@ -1649,7 +1629,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         ConeDM.to_sublattice(SR);
         compose_basis_change(SR);
         // handle zero cone as special case, makes our life easier
-        if (BasisChange.get_rank() == 0) {
+        if (BasisChange.getRank() == 0) {
             set_zero_cone();
             ToCompute.reset(is_Computed);
             return ToCompute;
@@ -1714,7 +1694,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
             is_Computed.set(ConeProperty::Grading);
         }
         //compute denominator of Grading
-        if(BasisChange.get_rank()!=0){
+        if(BasisChange.getRank()!=0){
             vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(Grading);
             GradingDenom=v_make_prime(test_grading);
         }
@@ -1931,7 +1911,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     // is_Computed.set(ConeProperty::Generators);
     Matrix<Integer> M=BasisChange.to_sublattice(Input);
     size_t rk=M.row_echelon();
-    assert(rk==BasisChange.get_rank());
+    assert(rk==BasisChange.getRank());
     index=1;
     for(size_t i=0;i<rk;++i)
         index*=M[i][i];

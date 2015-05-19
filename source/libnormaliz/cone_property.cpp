@@ -216,7 +216,7 @@ namespace {
         CPN.at(ConeProperty::IsDeg1HilbertBasis) = "IsDeg1HilbertBasis";
         CPN.at(ConeProperty::IsIntegrallyClosed) = "IsIntegrallyClosed";
         CPN.at(ConeProperty::OriginalMonoidGenerators) = "OriginalMonoidGenerators";
-        CPN.at(ConeProperty::GeneratorsOfToricRing) = "GeneratorsOfToricRing";
+        CPN.at(ConeProperty::Sublattice) = "Sublattice";
         CPN.at(ConeProperty::ReesPrimary) = "ReesPrimary";
         CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
         CPN.at(ConeProperty::StanleyDec) = "StanleyDec";
