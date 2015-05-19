@@ -57,6 +57,8 @@ class Output {
     string of_cone;
     string of_monoid;
     string of_polyhedron;
+    
+    bool lattice_ideal_input;
 
 
 //---------------------------------------------------------------------------
@@ -105,6 +107,8 @@ public:
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 
     void write_inv_file() const;
+    
+    void set_lattice_ideal_input(bool lattice_odeal_input);
 
 
 //---------------------------------------------------------------------------

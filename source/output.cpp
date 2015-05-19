@@ -59,6 +59,13 @@ Output<Integer>::Output(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_lattice_ideal_input(bool value){
+    lattice_ideal_input=value;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::read() const{
     cout<<"\nname="<<name<<"\n";
     cout<<"\nout="<<out<<"\n";
@@ -398,6 +405,10 @@ void Output<Integer>::write_inv_file() const{
             if (Result->isComputed(ConeProperty::RecessionRank))
                 inv << "integer recession_rank = "  << Result->getRecessionRank() << endl;
         }
+        
+        if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
+            inv << "integer internal_index = " << Result->getIndex() << endl;           
+        }
 
         inv<<"integer number_support_hyperplanes = "<<Result->getNrSupportHyperplanes()<<endl;
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
@@ -503,8 +514,8 @@ void Output<Integer>::write_files() const {
         ofstream out(file);
 
         // write "header" of the .out file
-        size_t nr_orig_gens = Result->getGeneratorsOfToricRing().size();
-        if (nr_orig_gens > 0) {
+        size_t nr_orig_gens = Result->getNrOriginalMonoidGenerators();
+        if (lattice_ideal_input) {
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
@@ -558,6 +569,11 @@ void Output<Integer>::write_files() const {
             if (Result->isComputed(ConeProperty::RecessionRank))
                 out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
         }
+        
+        if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
+            out << "internal index = " << Result->getIndex() << endl;           
+        }
+        
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
                 out << "original monoid is integrally closed"<<endl;
@@ -693,9 +709,9 @@ void Output<Integer>::write_files() const {
             << endl << endl;
 
 
-        if (nr_orig_gens > 0) {
+        if (lattice_ideal_input) {
             out << nr_orig_gens <<" original generators:"<<endl;
-            Result->getGeneratorsOfToricRingMatrix().pretty_print(out);
+            Result->getOriginalMonoidGeneratorsMatrix().pretty_print(out);
             out << endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
