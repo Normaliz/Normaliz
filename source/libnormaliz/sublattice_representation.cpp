@@ -305,12 +305,14 @@ size_t Sublattice_Representation<Integer>::get_rank() const {
 
 //---------------------------------------------------------------------------
 
-// /* returns the index of the sublattice */
+// returns the index of the sublattice */
+
+/*
 template<typename Integer>
 mpz_class Sublattice_Representation<Integer>::get_index() const {
     return index;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>

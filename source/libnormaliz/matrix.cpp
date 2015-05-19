@@ -1809,6 +1809,24 @@ void Matrix<Integer>::row_echelon_reduce(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+size_t Matrix<Integer>::row_echelon(){
+    
+    Matrix<Integer> Copy(*this);
+    bool success;
+    size_t rk;
+    rk=row_echelon(success);
+    if(success)
+        return rk;
+    Matrix<mpz_class> mpz_Copy(nr,nc);
+    mat_to_mpz(Copy,mpz_Copy);
+    rk=mpz_Copy.row_echelon_reduce(success);
+    mat_to_Int(mpz_Copy,*this);
+        return rk;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Matrix<Integer> Matrix<Integer>::kernel () const{
 // computes a ZZ-basis of the solutions of (*this)x=0
 // the basis is formed by the rOWS of the returned matrix

@@ -284,6 +284,9 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 // Normal forms
 
+    // converts this to row echelon form and returns rank, GMP protected
+    size_t row_echelon();
+
     // public version of row_echelon_reduce (), GMP protected
     void row_echelon_reduce();
 
@@ -299,6 +302,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 // rank and determinant
 
     size_t rank() const; //returns rank
+    size_t rank_and_index(Integer& index) const; // returns rank and |product of nonzero diagonal elem|
     size_t rank_submatrix(const vector<key_t>& key) const; //returns rank of submarix defined by key
     
     // return rank of submatrix of mother. "this" is used as work space    

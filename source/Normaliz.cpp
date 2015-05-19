@@ -353,7 +353,8 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, bool verbose ) {
+template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, 
+                                            bool verbose){
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -372,8 +373,7 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
     }
-
-
+    
     string name_in=output_name+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
@@ -387,6 +387,8 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
 
     //read the file
     map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in);
+    
+    Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
     in.close();
 

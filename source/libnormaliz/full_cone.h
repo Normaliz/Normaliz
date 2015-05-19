@@ -71,6 +71,7 @@ public:
     size_t module_rank;  // rank of solution module over level 0 monoid in the inhomogeneous case
     size_t nr_gen;
     // size_t hyp_size; // not used at present
+    Integer index; // index of full lattice over lattice of generators
     
     bool verbose;
     

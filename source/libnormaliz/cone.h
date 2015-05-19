@@ -128,6 +128,7 @@ public:
     // dimension and rank invariants
     size_t getEmbeddingDim() const { return dim; };   // is always known
     size_t getRank() const;                           // depends on ExtremeRays
+    Integer getIndex() const;                          // depends on OriginalGenerators
     // only for inhomogeneous case:
     size_t getRecessionRank() const;
     long getAffineDim() const;
@@ -198,10 +199,11 @@ public:
     bool isReesPrimary() const;
     Integer getReesPrimaryMultiplicity() const;
     Integer getShift() const;
-    const Matrix<Integer>& getGeneratorsOfToricRingMatrix() const;
-    const vector< vector<Integer> >& getGeneratorsOfToricRing() const;
+    // const Matrix<Integer>& getGeneratorsOfToricRingMatrix() const;
+    // const vector< vector<Integer> >& getGeneratorsOfToricRing() const;
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix() const;
     const vector< vector<Integer> >& getOriginalMonoidGenerators() const;
+    size_t getNrOriginalMonoidGenerators() const;
     // the following methods return const refs to avoid copying of big data objects
     const Sublattice_Representation<Integer>& getBasisChange() const;
     const HilbertSeries& getHilbertSeries() const; //general purpose object
@@ -219,7 +221,7 @@ private:
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     bool BC_set;
     ConeProperties is_Computed;
-    Matrix<Integer> GeneratorsOfToricRing;
+    // Matrix<Integer> GeneratorsOfToricRing;
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
     Matrix<Integer> ExtremeRays;
@@ -241,6 +243,8 @@ private:
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
     Integer GradingDenom;
+    Integer index;
+
     bool pointed;
     bool inhomogeneous;
     bool deg1_extreme_rays;

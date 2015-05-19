@@ -535,9 +535,9 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     
-    if(ExcludedFaces.nr_of_rows()>0){
+    /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
-    }
+    } */ 
 
     /*
     cout <<"-----------------------" << endl;
@@ -861,8 +861,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
     Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Integer> Positive_Embedded_Generators=Gens.multiplication(Selected_Supp_Hyp_Trans);
-    GeneratorsOfToricRing = Positive_Embedded_Generators;
-    is_Computed.set(ConeProperty::GeneratorsOfToricRing);
+    // GeneratorsOfToricRing = Positive_Embedded_Generators;
+    // is_Computed.set(ConeProperty::GeneratorsOfToricRing);
     dim = Positive_Embedded_Generators.nr_of_columns();
     multi_input_data.insert(make_pair(Type::normalization,Positive_Embedded_Generators.get_elements())); // this is the cone defined by the binomials
 
@@ -1020,6 +1020,11 @@ size_t Cone<Integer>::getRank() const {
     return BasisChange.get_rank();
 }
 
+template<typename Integer>    // computation depends on OriginalGenerators
+Integer Cone<Integer>::getIndex() const {
+    return index;
+}
+
 template<typename Integer>
 size_t Cone<Integer>::getRecessionRank() const {
     return recession_rank;
@@ -1043,9 +1048,13 @@ template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators() const {
     return OriginalMonoidGenerators.get_elements();
 }
-
-
 template<typename Integer>
+size_t Cone<Integer>::getNrOriginalMonoidGenerators() const {
+    return OriginalMonoidGenerators.nr_of_rows();
+}
+
+
+/* template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
     return GeneratorsOfToricRing;
 }
@@ -1053,6 +1062,7 @@ template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getGeneratorsOfToricRing() const {
     return GeneratorsOfToricRing.get_elements();
 }
+*/
 
 template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() const {
@@ -1919,6 +1929,13 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     }
     // Generators = Input;
     // is_Computed.set(ConeProperty::Generators);
+    Matrix<Integer> M=BasisChange.to_sublattice(Input);
+    size_t rk=M.row_echelon();
+    assert(rk==BasisChange.get_rank());
+    index=1;
+    for(size_t i=0;i<rk;++i)
+        index*=M[i][i];
+    index=Iabs(index);
 }
 
 //---------------------------------------------------------------------------
@@ -1958,7 +1975,6 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
 
 template<typename Integer>
 void Cone<Integer>::set_zero_cone() {
-    // GeneratorsOfToricRing needs no handling
 
     set_generators(Matrix<Integer>(0,dim));
 

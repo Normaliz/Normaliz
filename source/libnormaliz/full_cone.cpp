@@ -3797,11 +3797,19 @@ template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constructor of the top cone
     dim=M.nr_of_columns();
     
-    if (dim!=M.rank()) {
+    Generators=M;
+
+    
+    if (M.row_echelon() < dim) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
         throw BadInputException();
     }
-    Generators = M;
+    
+    index=1;
+    for(size_t i=0;i<dim;++i)
+        index*=M[i][i];
+    index=Iabs(index);
+
     //make the generators coprime, remove 0 rows and duplicates
     if(do_make_prime)
         Generators.make_prime();

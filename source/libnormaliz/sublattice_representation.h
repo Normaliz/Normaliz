@@ -127,7 +127,7 @@ public:
 	size_t get_rank() const;
 
 	/* returns the index of the sublattice */
-	mpz_class get_index() const;
+	// mpz_class get_index() const;
 
 	const Matrix<Integer>& get_A() const;
 	
