@@ -1710,7 +1710,7 @@ void Cone<Integer>::extract_data(Full_Cone<Integer>& FC) {
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
     
-    if (FC.isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
+    if (FC.isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) { // must prece extreme rays
         ModuleGeneratorsOfIntegralClosure=BasisChange.from_sublattice(FC.getModuleGeneratorsOfIntegralClosure());
         ModuleGeneratorsOfIntegralClosure.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
@@ -1947,7 +1947,15 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         VerticesOfPolyhedron=Generators.submatrix(VOP).sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
-    ExtremeRays=Generators.submatrix(choice).sort_by_weights(WeightsGrad,GradAbs);
+    ExtremeRays=Generators.submatrix(choice);
+    if(isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)){  // not possible in inhomogeneous case
+        Matrix<Integer> ExteEmbedded=BasisChange.to_sublattice(ExtremeRays);
+        for(size_t i=0;i<ExteEmbedded.nr_of_rows();++i)
+            v_make_prime(ExteEmbedded[i]);       
+        ExteEmbedded.remove_duplicate_and_zero_rows();
+        ExtremeRays=BasisChange.from_sublattice(ExteEmbedded);
+    }     
+    ExtremeRays.sort_by_weights(WeightsGrad,GradAbs);
     is_Computed.set(ConeProperty::ExtremeRays);
 }
 

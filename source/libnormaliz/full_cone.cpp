@@ -2463,9 +2463,9 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     if (do_Hilbert_basis) {
         if(do_module_gens_intcl){
             NewCandidates.extract(ModuleGeneratorsOfIntegralClosure);
-            cout << "Mod " << endl;
-            Matrix<Integer>(ModuleGeneratorsOfIntegralClosure).pretty_print(cout);
-            cout << "--------" << endl;
+            // cout << "Mod " << endl;
+            // Matrix<Integer>(ModuleGeneratorsOfIntegralClosure).pretty_print(cout);
+            // cout << "--------" << endl;
             is_Computed.set(ConeProperty::ModuleGeneratorsOfIntegralClosure,true);
             NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2
             update_reducers(true); // must be forced -- otherwise not done in the simplicial case         

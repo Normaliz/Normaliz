@@ -299,7 +299,7 @@ void Output<Integer>::write_tri() const{
         typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();
 
         out << Tri.size() << endl;
-        out << Result->getSublattice().get_rank()+1 << endl; //works also for empty list
+        out << Result->getSublattice().getRank()+1 << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
