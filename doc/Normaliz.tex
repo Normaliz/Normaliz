@@ -13,6 +13,11 @@
 
 \usepackage{booktabs}
 
+\usepackage{pgf, tikz}
+\usepackage{color}
+
+% !TeX spellcheck = en_US
+
 %\textwidth=15cm \textheight=22cm \topmargin=0.5cm
 %\oddsidemargin=0.5cm \evensidemargin=0.5cm
 
@@ -134,59 +139,58 @@ Söger\\[14pt]
 
 \subsection{The objectives of Normaliz}
 
-The program Normaliz, version 2.12, is a tool for computing
+The program Normaliz  is a tool for computing
 the Hilbert bases and enumerative data of rational cones, and more generally, sets of lattice points in rational polyhedra. The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
 \cite{BG} and \cite{BH}. The terminology follows \cite{BG}. For
 algorithms of Normaliz see \cite{BHIKS}, \cite{BI},
 \cite{BIS} and \cite{BK02}.
 
-A rational cone or a rational polyhedron can be given by
+Both polyhedra and lattices  can be given by
 \begin{arab}
-\item a system of generators $\mathcal G$ in a lattice
-    $\ZZ^n$;
-\item constraints: an (in)homogeneous linear system of equations
-    and inequalities.
-%\item generators and relations.
+\item a system of generators and/or
+\item constraints.
 \end{arab}
-Affine monoids can also be defined by generators and binomial relations.
 
-The Hilbert basis of a rational pointed cone $C$ in $\RR^n$ is
-defined with respect to a lattice $L\subset\ZZ^n$: it is the
-unique minimal system of generators of the monoid $C\cap L$. In the case of polyhedra Normaliz computes a system of generators of the set of lattice points in $P$ over the Hilbert basis of the recession monoid.
+In order to define a rational polyhedron by generators one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generateing a rational cone $C$. The polyhedron defined by these generators is 
+$$
+P=\conv(x_1,\dots,x_n)+C,\qquad C=\RR_+y_1+\dots+\RR_+y_m.
+$$
+An affine lattice defined by generators is a subset if $\ZZ^d$ given as
+$$
+L=w+L_0,\qquad L_0=\ZZ z_1+\dots+\ZZ z_r, \qquad w,z_1,\dots,z_r\in \ZZ^d.
+$$
+Constraints defining a polyhedron are affine-linear inequalities with integral coefficients, and the constraints for an affine lattice are affine-linear diophantine equations and congruences. The conversion between generators and constraints is an important subtask of Normaliz.
 
-The standard choice for $L$ is $\ZZ^n$ itself, but for
-Normaliz this choice can be modified in two ways:
-\begin{arab}
-\item  $L$ is defined as a (affine) sublattice  by a system of generators;
-\item  $L$ is the set solutions of an (in)homogeneous diophantine system of equations and congruences.
-\end{arab}
-In particular, Normaliz solves combined systems of
-diophantine linear equations, inequalities and congruences. Descriptions of polyhedra and lattices by generators are converted to descriptions by constraints, and vice versa. Input types can be mixed. For example, a cone could be given by generators, and the lattice defined by congruences.
 
-Normaliz has special input types for lattice polytopes
-(represented by their vertices) and monomial ideals
-(represented by the exponent vectors of their generators). Via
-the specification of a grading, one can easily apply Normaliz
-also to rational polytopes.
+The goal of Normaliz is to compute a system of generators for
+$$
+P\cap L.
+$$
+Tthe minimal system of generators of the monoid $M=C\cap L_0$ is the Hilbert basis $\Hilb(M)$ of $M$, and the homogeneous case in which $P=C$ and $L)L_0$ is uncoubtedly the most important one. In the general case the system of generators consists of $\Hilb(M)$ and finitely many points $u_1,\dots,u_s\in P\cap L$ sich that
+$$
+P\cap L=\bigcup_{j=1}^s u_j+M.
+$$
 
 The enumerative data computed by Normaliz depend on a grading
-of the monoid under consideration  (see Section \ref{grading}):
+of the ambient lattice (see Section \ref{grading}):
 if asked to do so, Normaliz computes the Hilbert series and
-the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedron. In polytopal terminology: Normaliz computes Ehrhart
+the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedron. In combinatorial terminology: Normaliz computes Ehrhart
 series and quasipolynomials of rational polyhedra. Via its
 offspring NmzIntegrate \cite{NmzInt}, Normaliz computes generalized
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
-The computations can be restricted in several ways, for example to the support
-hyperplanes or the lattice points of a rational polytope.
-\medskip
+The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtaks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
+
+In addition to generators and constraints, affine monoids can be defined by a lattice ideals.
 
 \emph{Acknowledgement.}\enspace The development of Normaliz is currently supported by the DFG SPP 1489  ``Ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
 \subsection{Platforms and access from other systems}
 
-Executables for Normaliz are provided for Mac OS, Linux and MS Windows. Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}).
+Executables for Normaliz are provided for Mac OS, Linux and MS Windows. Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). 
+
+The executables provided by us use the integer optimization program SCIP \cite{Scip} for certain subtasks, but the of SCIP must be activated at compile time.
 
 Normaliz can be accessed from the following systems:
 \begin{itemize}
@@ -225,6 +229,12 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 
 \item Improvement of Fourier-Motzkin elimination by ordering the generators.
 
+\item An improved programming interface.
+
+\item Computation of Graver bases (experimental).
+
+\item Massive parallelization on Intel Xeon Phi cards (experimental).
+
 \end{arab}
 
 
@@ -235,7 +245,9 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 \item Access from further systems.
 \end{arab}
 
-\section{Getting started}
+\section{A short tutorial}
+
+\subsection{Download and installation}
 
 Download
 \begin{itemize}
@@ -253,6 +265,8 @@ directory \ttt{Normaliz2.12} (called Normaliz directory in the
 following) is created with several subdirectories. (Some
 versions of the Windows executables may need the installation
 of a runtime library; see our website.)
+
+\subsection{jNormaliz or the command line?}
 
 In the Normaliz directory open jNormaliz by clicking
 \ttt{jNormaliz.jar} in the appropriate way. (We assume that
@@ -275,72 +289,1115 @@ you can  compile Normaliz yourself (see Section
 \ref{Compile}).
 
 Moreover, one can, and often will, run Normaliz from the
-command line. This is explained in Section \ref{options}.
+command line. This is fully explained in Section \ref{options}. At this point it is enough to call Normaliz by typing
+\begin{Verbatim}
+normaliz -c <project>
+\end{Verbatim}
+where \ttt{<project>} denotes for the project to be computed. Normaliz will load the file \ttt{project.in}.
+	
+Note that you may have to prefix  \ttt{normaliz} by a path name, and \ttt{<project>} must contain a path to the input file if it is not in the current directory. Suppose the Normaliz directory is the current directory and we are using a Linux or Mac system. Then
+\begin{Verbatim}
+./normaliz -c example/small
+\end{Verbatim}
+wil run \ttt{small.in} from the directory \ttt{example}. On Windows we must change this to
+\begin{Verbatim}
+.\normaliz -c example\small
+\end{Verbatim}
 
-If 64 bit integer precision is not sufficient, then one can
-switch jNormaliz to infinite precision (or use the option
-\texttt{-B} from the command line). Then Normaliz has no
-restrictions on the integer precision. See Section
-\ref{NumLim}. (The integer precision has nothing to do with the
-address width (32 bit or 64 bit) of your operating system.)
+The commans given above will run Normaliz with the full parallelization that your system can deliver. For the very small examples in this tutorial you may want to add \ttt{-x=1} to suppress parallelization.
+
+\subsection{A cone in dimension $2$}
+
+We want to investigate the cone $C=\RR_+(2,1)+\RR_+(1.3)\subset \RR^2$:
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+ \filldraw[yellow] (0,0) -- (1.833,5.5) -- (4.5,5.5) -- (4.5,2.25) -- cycle;
+ \draw (0,0) -- (1.833,5.5);
+ \draw (0,0) -- (4.5,2.25) node at (-0.3,-0.3){\small $0$};
+     \foreach \x in {0,...,4}
+     \foreach \y in {0,...,5}
+   	  {
+   	  \filldraw[fill=black] (\x,\y)  circle (1.5pt);
+   	 }
+  \draw[red,thick] (1,1) circle (4pt);
+  \draw[red,thick] (1,2) circle (4pt);
+  \draw[red,thick] (1,3) circle (4pt);
+  \draw[red,thick] (2,1) circle (4pt);
+\end{tikzpicture}
+\end{center}
+
+This cone is defined in the input file \verb|2cone.in|:
+\begin{Verbatim}
+amb_space 2
+cone
+2
+2 1
+1 3
+\end{Verbatim}
+Thhe input tells Normaliz that the ambient space is $\RR^2$, an then a cone with 2 generators is defined, namely the cone $C$ from above.
+
+The figure indictaes the Hilbert basis, and this is our first computation goal
+
+\subsubsection{The Hilbert basis}
+In order to compute teh Hilbert basis, we run Normaliz from jNormaliz or by
+\begin{Verbatim}
+./normaliz -c ../example/3cone	
+\end{Verbatim}
+and inspect the output file
+\begin{Verbatim}
+4 Hilbert basis elements
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 5
+original monoid is not integrally closed
+
+size of triangulation   = 1
+resulting sum of |det|s = 5
+
+No implicit grading found
+
+rank of class group = 0
+finite cyclic summands:
+5: 1  
+
+***********************************************************************
+
+4 Hilbert basis elements:
+ 1 1
+ 1 2
+ 1 3
+ 2 1
+
+2 extreme rays:
+ 1 3
+ 2 1
+
+2 support hyperplanes:
+ -1  2
+  3 -1
+\end{Verbatim}
+
+
+
+\subsubsection{We add a grading}
+
+\begin{Verbatim}
+grading:
+1 1 
+
+degrees of extreme rays:
+3: 1  4: 1  
+
+multiplicity = 5/12
+
+Hilbert series:
+1 -1 1 1 0 0 1 0 1 0 0 1 
+denominator with 2 factors:
+1: 1  12: 1  
+
+Hilbert series with cyclotomic denominator:
+1 0 1 1 1 1 
+cyclotomic denominator:
+1: 2  2: 1  3: 1  4: 1  
+
+Hilbert quasi-polynomial of period 12:
+  0:  12 5
+  1:  -5 5
+  2:   2 5
+  3:   9 5
+  4:   4 5
+  5:  -1 5
+  6:   6 5
+  7:   1 5
+  8:   8 5
+  9:   3 5
+ 10:  -2 5
+ 11:   5 5
+with common denominator = 12
+
+...
+
+***********************************************************************
+
+0 Hilbert basis elements of degree 1:
+
+4 further Hilbert basis elements of higher degree:
+ 1 1
+ 1 2
+ 2 1
+ 1 3
+ \end{Verbatim}
+
+\subsubsection{The same by inequalities}
+
+\subsubsection{The interior}
+
+\begin{Verbatim}
+2 module generators
+4 Hilbert basis elements of recession monoid
+1 vertices of polyhedron
+2 extreme rays of recession cone
+2 support hyperplanes of polyhedron
+
+embedding dimension = 3
+affine dimension of the polyhedron = 2 (maximal)
+rank of recession monoid = 2
+
+size of triangulation   = 1
+resulting sum of |det|s = 25
+
+dehomogenization:
+0 0 1 
+
+grading:
+1 1 0 
+
+
+module rank = 1
+multiplicity = 5/12
+
+Hilbert series:
+1 0 0 1 0 1 0 0 1 1 -1 1 
+denominator with 2 factors:
+1: 1  12: 1  
+
+shift = -2
+
+Hilbert series with cyclotomic denominator:
+1 1 1 1 0 1 
+cyclotomic denominator:
+1: 2  2: 1  3: 1  4: 1  
+
+Hilbert quasi-polynomial of period 12:
+  0:  -12 5
+  1:   -5 5
+  2:    2 5
+  3:   -3 5
+  4:   -8 5
+  5:   -1 5
+  6:   -6 5
+  7:    1 5
+  8:   -4 5
+  9:   -9 5
+ 10:   -2 5
+ 11:    5 5
+with common denominator = 12
+
+***********************************************************************
+
+2 module generators:
+ 1 1 1
+ 1 2 1
+
+4 Hilbert basis elements of recession monoid:
+ 1 1 0
+ 1 2 0
+ 2 1 0
+ 1 3 0
+
+1 vertices of polyhedron:
+ 3 4 5
+
+2 extreme rays of recession cone:
+ 2 1 0
+ 1 3 0
+
+2 support hyperplanes of polyhedron:
+ -1  2 -1
+  3 -1 -1
+
+\end{Verbatim}
+
+\subsection{A lattice polytope}
+
+The file \ttt{polytop.in} contains
+
+\begin{Verbatim}
+4
+3
+0 0 0
+2 0 0
+0 3 0
+0 0 5
+polytope
+\end{Verbatim}
+
+
+The Ehrhart monoid of the integral polytope with the $4$
+vertices
+$$
+(0,0,0)\,,\quad (2,0,0)\,,\quad (0,3,0)\quad\text{ and }\quad (0,0,5)
+$$
+in $\RR^3$ is to be computed. (Note the last line, indicating the
+polytope type.)
+
+Running \ttt{normaliz} without an option (or option \ttt{-h}) produces the file \ttt{polytop.out}:
+
+
+\begin{Verbatim}
+19 Hilbert basis elements                         multiplicity = 30          
+18 Hilbert basis elements of degree 1                                        
+4 extreme rays                                    Hilbert series:            
+4 support hyperplanes                             1 14 15                    
+denominator with 4 factors:
+embedding dimension = 4                           1: 4                       
+rank = 4 (maximal)                                                           
+index = 30                                        Hilbert polynomial:        
+original monoid is not integrally closed          1 4 8 5                    
+with common denominator = 1
+size of triangulation   = 1
+resulting sum of |det|s = 30
+
+grading:
+0 0 0 1 
+
+degrees of extreme rays:
+1: 4  
+
+Hilbert basis elements are not of degree 1                         
+
+***********************************************************************
+
+19 Hilbert basis elements:     18 Hilbert basis elements of degree 1:
+0 0 5 1                        0 0 5 1
+0 3 0 1                        0 3 0 1
+...                            ...
+1 0 2 1                        1 0 2 1
+1 1 0 1                        1 1 0 1
+1 2 4 2
+
+4 extreme rays:                4 support hyperplanes:
+0 0 0 1                        -15 -10  -6  30
+2 0 0 1                          1   0   0   0
+0 3 0 1                          0   1   0   0
+0 0 5 1                          0   0   1   0
+\end{Verbatim}
+
+
+For the polytopal interpretation one must observe that all data
+are in homogenized coordinates for which Normaliz has
+appended $1$  to the input vectors that (in this case) are the
+vertices of the polytope. In the cone produced, the lattice
+points of the polytope are of degree $1$. Therefore the $18$
+Hilbert basis elements of degree $1$ represent the lattice
+points of the polytope, starting from $(0,0,5)$ and ending with
+$(1,1,0)$. The extreme rays represent the $4$ vertices.
+
+From the fact that there are $19$ Hilbert basis elements, but
+only $18$ of degree $1$, we see that the lattice points in the
+polytope do not yield the Hilbert basis of the Ehrhart monoid
+(or the cone over the polytope).
+
+That there is only one simplicial cone in the triangulation is
+not surprising since our polytope is a simplex.
+
+The support hyperplanes give us a description of the polytope
+by inequalities: it is the solution of the system of the $4$
+inequalities
+$$ x_3\ge0\,,\quad
+x_2\ge0\,,\quad x_1\ge0\quad\text{ and }\quad
+15x_1+10x_2+6x_3\le30\,.
+$$
+
+The dimension of the polytope is $3$ since the cone over it has
+dimension $4$. The polytope has $\ZZ^3$-normalized volume $30$
+as indicated by the multiplicity.
+
+The Ehrhart series (we use the more general term Hilbert
+series) is
+$$
+\frac{1+14t+15t^2}{(1-t)^4}
+$$
+and its Ehrhart polynomial (again we use a more general term in
+the output file) of the polytope is
+$$
+p(k)=1+4k+8k^2+5k^3\,.
+$$
+
+\subitem\subsection{Only the lattice points}
+
+\subsection{A rational polytope}
+
+
+We want to investigate the Ehrhart series of the triangle $P$
+with vertices
+$$
+(1/2,1/2),\ (-1/3,-1/3),\ (1/4,-1/2).
+$$
+The input file is \ttt{rational.in}. Running Normaliz yields
+the following output:
+
+
+\begin{Verbatim}
+8 Hilbert basis elements                       H...t s...s  cycl... denom...: 
+1 Hilbert basis elements of degree 1           -1 -1 -1 -3 -4 -3 -2                  
+3 extreme rays                                 cyclotomic denominator:               
+3 support hyperplanes                          1: 3  2: 2  3: 1  4: 1                
+
+embedding dimension = 3                        H...t quasi-pol...l of period 12:
+rank = 3 (maximal)                               0:   48  28  15                        
+index = 15                                       1:   11  22  15                             
+original monoid is not integrally closed         2:  -20  28  15                             
+3:   39  22  15                             
+size of triangulation   = 1                      4:   32  28  15                             
+resulting sum of |det|s = 15                     5:   -5  22  15                             
+6:   12  28  15                             
+grading:                                         7:   23  22  15                             
+0 0 1                                            8:   16  28  15                             
+9:   27  22  15                             
+degrees of extreme rays:                        10:   -4  28  15                             
+2: 1  3: 1  4: 1                                11:    7  22  15                             
+with common denominator = 48                  
+multiplicity = 5/8                                     
+
+Hilbert series:                                        
+1 0 0 3 2 -1 2 2 1 1 1 1 2                             
+denominator with 3 factors:                            
+1: 1  2: 1  12: 1                                                                     
+
+***********************************************************************
+
+8 Hilbert basis elements:         3 extreme rays:
+1 -2  4                           1  1  2
+-1 -1  3                          -1 -1  3
+1  1  2                           1 -2  4
+0  0  1
+0 -1  3                         3 support hyperplanes:
+1  0  3                           2  7  3
+1 -1  4                          -8  2  3
+0 -2  5                           1 -1  0
+
+1 Hilbert basis elements of degree 1:
+0 0 1
+\end{Verbatim}
+
+The $3$ extreme rays have reproduced the vertices (don't forget
+that the last coordinate can be interpreted as a denominator),
+and the $3$ support hyperplanes represent the $3$ inequalities
+that define the polytope as an intersection of affine
+halfspaces like in \ref{latt_pol}. The Hilbert basis element of
+degree $1$ shows that there is a single lattice point in the
+polytope, namely the origin $(0,0)$. Except that $P$ has
+non-integral vertices now, these data are completely analogous
+to those of the lattice polytope in \ref{latt_pol}.
+
+The multiplicity is a rational number. Since in dimension $2$
+the normalized area (of full-dimensional polytopes) is twice
+the Euclidean area, we see that $P$ has Euclidean area $5/16$.
+
+The Hilbert (or Ehrhart) function counts the lattice points in
+$kP$, $k\in\ZZ_+$. The corresponding generating function is a
+rational function $H(t)$ with numerator
+$$
+1+3t^3+2t^4-t^5+2t^6+2t^7+t^8+t^9+t^{10}+t^{11}+2t^{12}
+$$
+and denominator
+$$
+(1-t)(1-t^2)(1-t^{12}).
+$$
+As a rational function, $H(t)$ has degree $-3$. This implies
+that $3P$ is the smallest integral multiple of $P$ that
+contains a lattice point in its interior.
+
+Normaliz gives also a representation as a quotient of coprime
+polynomials with the denominator factored into cyclotomic
+polynomials. The multiset notation lists the orders of the
+cyclotomic polynomials and their multiplicities. In this case
+we have
+$$
+H(t)=-\frac{1+t+t^2+t^3+4t^4+3t^5+2t^6}{\zeta_1^3\zeta_2^2\zeta_3\zeta_4}
+$$
+where $\zeta_i$ is the $i$-th cyclotomic polynomial
+($\zeta_1=t-1$, $\zeta_2=t+1$, $\zeta_3=t^2+t+1$,
+$\zeta_4=t^2+1$).
+
+Normaliz transforms the representation with cyclotomic
+denominator into one with denominator of type
+$(1-t^{e_1})\cdots(1-t^{e_r})$, $r=\textup{rank}$, by choosing
+$e_r$ as the least common multiple of all the orders of the
+cyclotomic polynomials appearing, $e_{r-1}$ as the lcm of those
+orders that have multiplicity $\ge 2$ etc.
+
+There are other ways to form a suitable denominator with $3$
+factors $1-t^e$, for example
+$g(t)=(1-t^2)(1-t^3)(1-t^4)=-\zeta_1^3\zeta_2^2\zeta_3\zeta_4$.
+Of course, $g(t)$ is the optimal choice in this case. However,
+$P$ is a simplex, and in general such optimal choice may not
+exist. We will explain the reason for our standardization
+below.
+
+Let $p(k)$ be the number of lattice points in $kP$. Then $p(k)$
+is a quasipolynomial:
+$$
+p(k)=p_0(k)+p_1(k)k+\dots+p_{r-1}(k)k^{r-1},
+$$
+where the coefficients depend on $k$, but only to the extent
+that they are periodic of a certain period $\pi\in\NN$. In our
+case $\pi=12$ (the lcm of the orders of the cyclotomic
+polynomials).
+
+The table giving the quasipolynomial is to be read as follows:
+The first column denotes the residue class $j$ modulo the
+period and the corresponding line lists the coefficients
+$p_i(j)$ in ascending order of $i$, multiplied by the common
+denominator. So
+$$
+p(k)=1+\frac{7}{12}k+\frac{5}{16}k^2, \qquad k\equiv 0\pod{12},
+$$
+etc. The leading coefficient is the same for all residue
+classes and equals the Euclidean volume as in equation
+\eqref{multlead}.
+
+Our choice of denominator for the Hilbert series is motivated
+by the following fact: $e_i$ is the common period of the
+coefficients $p_{r-i},\dots,p_{r-1}$. The user should prove
+this fact or at least verify it by several examples.
+
+\subsection{Magic squares}
+
+Suppose that you have the following ``square''
+\begin{center}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		$x_1$ & $x_2$ & $x_3$\\
+		\hline
+		$x_4$ & $x_5$ & $x_6$\\
+		\hline
+		$x_7$ & $x_8$ & $x_9$\\
+		\hline
+	\end{tabular}
+\end{center}
+and the problem is to find nonnegative values for $x_1,\dots,x_9$
+such that the 3 numbers in all rows, all columns, and both
+diagonals sum to the same constant $\mathcal{M}$. Sometimes
+such squares are called \emph{magic} and $\mathcal M$ is the
+\emph{magic constant}. This leads to a linear system of
+equations
+\begin{align*}
+& x_1+x_2+x_3=x_4+x_5+x_6;\\
+& x_1+x_2+x_3=x_7+x_8+x_9;\\
+& x_1+x_2+x_3=x_1+x_4+x_7;\\
+& x_1+x_2+x_3=x_2+x_5+x_8;\\
+& x_1+x_2+x_3=x_3+x_6+x_9;\\
+& x_1+x_2+x_3=x_1+x_5+x_9;\\
+& x_1+x_2+x_3=x_3+x_5+x_7.\\
+\end{align*}
+This system of equations is contained in the file
+\ttt{3x3magic.in}. It has input type \ttt{equations}. (Don't
+forget that the sign conditions $x_i\ge 0$ are automatically
+included if there are no explicit inequalities.)
+
+The magic constant is a natural choice for the grading, and
+therefore
+
+\begin{Verbatim}
+1
+9
+1 1 1 0 0 0 0 0 0
+grading
+\end{Verbatim}
+
+follows the equations.
+
+The output file contains the following:
+
+\begin{Verbatim}
+5 Hilbert basis elements                        multiplicity = 4           
+5 Hilbert basis elements of degree 1                                       
+4 extreme rays                                  Hilbert series:            
+4 support hyperplanes                           1 2 1                      
+denominator with 3 factors:
+embedding dimension = 9                         1: 3                       
+rank = 3                                                                   
+index = 2                                       Hilbert polynomial:        
+original monoid is not integrally closed        1 2 2                      
+with common denominator = 1
+size of triangulation   = 2
+resulting sum of |det|s = 4
+
+grading:
+1 1 1 0 0 0 0 0 0 
+with denominator = 3
+
+degrees of extreme rays:
+1: 4  
+
+Hilbert basis elements are of degree 1                                     
+***********************************************************************
+
+5 Hilbert basis elements:             6 equations:
+1 0 2 2 1 0 0 2 1                     -2  1  4 -3  0  0  0  0  0
+0 2 1 2 1 0 1 0 2                     -1  0  1 -1  1  0  0  0  0
+2 0 1 0 1 2 1 2 0                     -2  0  2 -1  0  1  0  0  0
+1 2 0 0 1 2 2 0 1                     -2  0  3 -2  0  0  1  0  0
+1 1 1 1 1 1 1 1 1                      0  0 -2  1  0  0  0  1  0
+-1  0  2 -2  0  0  0  0  1
+4 extreme rays:
+1 2 0 0 1 2 2 0 1                    5 Hilbert basis elements of degree 1:
+2 0 1 0 1 2 1 2 0                     1 0 2 2 1 0 0 2 1
+0 2 1 2 1 0 1 0 2                     0 2 1 2 1 0 1 0 2
+1 0 2 2 1 0 0 2 1                     2 0 1 0 1 2 1 2 0
+1 2 0 0 1 2 2 0 1
+4 support hyperplanes:                 1 1 1 1 1 1 1 1 1
+0 -1  0  0  2  0  0  0  0
+0  1  2  0 -2  0  0  0  0
+0 -1 -2  0  4  0  0  0  0
+0  1  0  0  0  0  0  0  0
+\end{Verbatim}
+
+The $5$ elements of the Hilbert basis represent the magic
+squares
+\begin{center}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		2 & 0 & 1\\
+		\hline
+		0 & 1 & 2\\
+		\hline
+		1 & 2 & 0\\
+		\hline
+	\end{tabular}
+	\hspace{10mm}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		1 & 0 & 2\\
+		\hline
+		2 & 1 & 0\\
+		\hline
+		0 & 2 & 1\\
+		\hline
+	\end{tabular}
+	\hspace{10mm}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		1 & 1 & 1\\
+		\hline
+		1 & 1 & 1\\
+		\hline
+		1 & 1 & 1\\
+		\hline
+	\end{tabular}
+	\hspace{10mm}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		1 & 2 & 0\\
+		\hline
+		0 & 1 & 2\\
+		\hline
+		2 & 0 & 1\\
+		\hline
+	\end{tabular}
+	\hspace{10mm}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		0 & 2 & 1\\
+		\hline
+		2 & 1 & 0\\
+		\hline
+		1 & 0 & 2\\
+		\hline
+	\end{tabular}
+	
+\end{center}
+All other solutions are linear combinations of these squares
+with nonnegative integer coefficients.
+
+Normaliz tells us that the cone generated by the magic
+squares can be described by $4$ inequalities and $6$ linear
+relations. The number of equations becomes clear when we look
+at the rank.
+
+The input degree is the magic constant. However, as the
+denominator $3$ shows, the magic constant is always divisible
+by $3$, and therefore the effective degree is $\mathcal M/3$.
+This degree is used for the multiplicity and the Hilbert
+series.
+
+The Hilbert series is
+$$
+\frac{1+2t+t^2}{(1-t)^3}.
+$$
+The Hilbert polynomial is
+$$
+P(k)=1+2k+2k^2,
+$$
+and after substituting $\mathcal M/3$ for $k$ we obtain the
+number of magic squares of magic constant $\mathcal M$.
+
+\subsubsection{With even corners}\label{magiceven}
+
+We change our definition of magic square by requiring that the
+entries in the $4$ corners are all even. Then we have to
+augment the input file as follows (\ttt{3x3magiceven.in}):
+
+\begin{Verbatim}
+7                              4
+9                              10
+1 1 1 -1 -1 -1  0  0  0        1 0 0 0 0 0 0 0 0 2
+1 1 1  0  0  0 -1 -1 -1        0 0 1 0 0 0 0 0 0 2
+0 1 1 -1  0  0 -1  0  0        0 0 0 0 0 0 1 0 0 2
+1 0 1  0 -1  0  0 -1  0        0 0 0 0 0 0 0 0 1 2
+1 1 0  0  0 -1  0  0 -1        congruences
+0 1 1  0 -1  0  0  0 -1        1
+1 1 0  0 -1  0 -1  0  0        9
+equations                      1 1 1 0 0 0 0 0 0
+grading
+\end{Verbatim}
+
+
+The output changes accordingly:
+
+
+\begin{Verbatim}
+9 Hilbert basis elements                        multiplicity = 1                           
+0 Hilbert basis elements of degree 1                                                       
+4 extreme rays                                  Hilbert series:                            
+4 support hyperplanes                           1 -1 3 1                                   
+denominator with 3 factors:                
+embedding dimension = 9                         1: 1  2: 2                                 
+rank = 3                                                                                   
+index = 4                                       H...t s...s  cycl... denom...: 
+original monoid is not integrally closed        -1 1 -3 -1                                 
+cyclotomic denominator:                    
+size of triangulation   = 2                     1: 3  2: 2                                 
+resulting sum of |det|s = 8                                                                
+H...t quasi-pol...l of period 2:      
+grading:                                         0:   2  2  1                              
+1 1 1 0 0 0 0 0 0                                1:  -1  0  1                              
+with denominator = 3                            with common denominator = 2                
+
+degrees of extreme rays:
+2: 4                                                                                       
+
+***********************************************************************
+
+9 Hilbert basis elements:        4 support hyperplanes:
+2 0 4 4 2 0 0 4 2                 1  0  1  0 -1  0  0  0  0
+0 4 2 4 2 0 2 0 4                -1  0  1  0  1  0  0  0  0
+4 0 2 0 2 4 2 4 0                 1  0 -1  0  1  0  0  0  0
+2 4 0 0 2 4 4 0 2                -1  0 -1  0  3  0  0  0  0
+2 2 2 2 2 2 2 2 2
+4 3 2 1 3 5 4 3 2               6 equations:
+2 5 2 3 3 3 4 1 4                -2  1  4 -3  0  0  0  0  0
+2 3 4 5 3 1 2 3 4                -1  0  1 -1  1  0  0  0  0
+4 1 4 3 3 3 2 5 2                -2  0  2 -1  0  1  0  0  0
+-2  0  3 -2  0  0  1  0  0
+4 extreme rays:                    0  0 -2  1  0  0  0  1  0
+2 4 0 0 2 4 4 0 2                -1  0  2 -2  0  0  0  0  1
+4 0 2 0 2 4 2 4 0
+0 4 2 4 2 0 2 0 4               2 congruences:
+2 0 4 4 2 0 0 4 2                0 0 1 0 0 0 0 0 0 2
+1 0 0 0 0 0 0 0 0 2
+
+0 Hilbert basis elements of degree 1:
+\end{Verbatim}
+
+
+It is not surprising that the support hyperplanes have not
+changed after the introduction of the congruences, since the
+latter only modify the lattice $\EE$. Similarly the number of
+extreme rays is the same, but the vectors are multiplied by the
+factor $2$ since Normaliz chooses them in $\EE$, and
+therefore these vectors must satisfy the congruences.
+
+Its first representation tells us that the Hilbert series is
+$$
+\frac{1-t+3t^2+t^3}{(1-t)(1-t^2)^2}.
+$$
+As in \ref{rat_pol_out}, the second representation gives
+coprime numerator and denominator polynomials in which the
+denominator is a product of cyclotomic polynomials:
+$$
+\frac{-1+t-3t^2-t^3}{\zeta_1^3\zeta_2^2},\qquad \zeta_1=t-1, \zeta_2=t+1.
+$$
+In this case, the two denominators differ by the factor $-1$.
+In general, the first representation  is not coprime, as we
+have seen in \ref{rat_pol_out}.
+
+The lattice point enumerator is a quasipolynomial of period
+$2$:
+$$
+|\{x:\deg x=k\}|=\begin{cases}
+1+k+k^2/2,&k\equiv0\pod 2\\
+-1/2+k^2/2,&k\equiv 1 \pod 2.
+\end{cases}
+$$
+
+In general one must expect a non-integral multiplicity if the
+period is $>1$. That the multiplicity is integral, namely $1$,
+in this case must be considered  an exception.
+
+As you can see, the equations make two of the input congruences
+superfluous: it is enough to require the two corners in the
+first row to be even. The first congruence is to be read as
+$x_1\equiv 0 \mod 2$, the second as $x_3\equiv 0\mod 2$.
+
+Another good example for Hilbert series and gradings is given
+by \ttt{Condorcet.in}. The reader should run it or have a look
+at the corresponding output file.
+
+\subsection{A job for the dual algorithm}
+
+We increase the size of the magic squares to $5\times 5$. Normaliz can do the same computation as for $3\times 3$ squares, but this will take some minutes. If we are only interested in the Hilbert basis, we should use the dual algorithm for this example. The input file is \ttt{5x5dual.in}:
+
+\begin{Verbatim}
+11
+25
+1 1 1 1 1 -1 -1 -1 -1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+1 1 1 1 1  0  0  0  0  0 -1 -1 -1 -1 -1  0  0  0  0  0  0  0  0  0  0
+1 1 1 1 1  0  0  0  0  0  0  0  0  0  0 -1 -1 -1 -1 -1  0  0  0  0  0
+1 1 1 1 1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 -1 -1 -1 -1 -1
+0 1 1 1 1 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0
+1 0 1 1 1  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0
+1 1 0 1 1  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0
+1 1 1 0 1  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0
+1 1 1 1 0  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1  0  0  0  0 -1
+0 1 1 1 1  0 -1  0  0  0  0  0 -1  0  0  0  0  0 -1  0  0  0  0  0 -1
+1 1 1 1 0  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0  0
+equations
+1
+25
+1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+grading
+\end{Verbatim}
+
+
+The Hilbert basis contains $4828$ elements, too many to be listed here.
+
+If you want to use the input file \ttt{5x5.in}, add \ttt{-d} to the command line or choose the corresponding option in jNormaliz.
+
+
+\subsection{The Condorcet paradoxon}
+
+\subsubsection{Excluding ties}
+
+\subsection{A dull polyhedron}
+
+Let $x=(-2,-1/2)$, $y=(0,3/2)$ and let $Q$ be the line segment joining $x$ and $y$. We want to model the polyhedron  $Q+\RR_+(1,0)$ by inequalities. These
+are
+\begin{eqnarray*}
+	\xi_2 &\ge& -1/2,\\
+	\xi_2 &\le& 3/2,\\
+	\xi_2 &\le& \xi_1+3/2
+\end{eqnarray*}
+and yield the input \verb|InhomIneq.in|:
+\begin{Verbatim}
+3                   1
+3                   2
+0  2  1             1 0
+0 -2  3             grading
+2 -2  3
+inhom_inequalities
+\end{Verbatim}
+It yields the output
+\begin{Verbatim}
+2 module generators
+1 Hilbert basis elements of recession monoid
+2 vertices of polyhedron
+1 extreme rays of recession cone
+3 support hyperplanes of polyhedron                  module rank = 2             
+multiplicity = 2            
+embedding dimension = 3                                                          
+affine dimension of the polyhedron = 2 (maximal)     Hilbert series:             
+rank of recession monoid = 1                         0 1 1                       
+denominator with 1 factors: 
+size of triangulation   = 1                          1: 1                        
+resulting sum of |det|s = 8                                                      
+shift = 2                   
+dehomogenization:                                                                
+0 0 1                                                Hilbert polynomial:         
+2                           
+grading:                                             with common denominator = 1 
+1 0 0 
+
+***********************************************************************
+
+2 module generators:            1 extreme rays of recession cone:
+-1  0  1                        1 0 0
+0  1  1
+
+1 Hilbert basis elements of recession monoid:
+1 0 0
+
+2 vertices of polyhedron:       3 support hyperplanes of polyhedron: 
+-4 -1  2                         0  2  1                           
+0  3  2                         0 -2  3                           
+2 -2  3           
+\end{Verbatim}
+
+The module rank is $2$ in this case since we have two ``layers'' in the solution module that are parallel to the recession monoid. The Hilbert series is
+$$
+t^{-2}\,\frac{t+t^2}{1-t}=\frac{t^{-1}+1}{1-t}
+$$
+It reflects the disjoint decomposition $((-1,0)+\ZZ_+(1,0))\cup((0,1)+\ZZ_+(1,0))$ of the solution module: $(-1,0)$ has degree $-1$, $(0,1)$ has degree $0$.
+
+\subsubsection{Defining it by inequalities}
+
+Once more we choose the example of Section \ref{ex_fac_out}, this time realized with a
+strict inequality (\verb|SquareMinusVertexStrict.in|):
+\begin{Verbatim}
+4                     1
+3                     3
+0 -1  1               1 1 0
+1  0  0               strict_inequalities
+-1  0  1              1
+0  1  0               3
+inequalities          0 0 1
+grading
+\end{Verbatim}
+There is nothing to comment on the output since it is identical to that of
+Section \ref{out_polyh}.  The strict inequality is only a shortcut for
+\begin{Verbatim}
+1
+4
+1 1 0 -1
+inhom_inequalities
+\end{Verbatim}
+The two inequalities represented by \verb|1 0 0| and \verb|0 1 0| could also be given by
+\begin{Verbatim}
+1 3
+1 1 0
+signs
+\end{Verbatim}
+
+
+\subsection{Testing normality}
+
+We want to test the monoid $A_{4\times 4\times 3}$ defined by $4\times4\times3$ contingency tables for normality. The input file is \ttt{A443.in}
+\begin{Verbatim}
+48
+40
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
+0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0
+0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0
+0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0
+0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0
+0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0
+0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
+normalization
+\end{Verbatim}
+Why \verb|cone_and_lattice|? Well, we want to find out whether the monoid is integrally closed, i.e., whether $M=C(M)\space\gp(M)$. If $M$ is even integrally closed in $\ZZ^{24}$, then it is certainly in the evidently smaller lattice $\gp(M)$.
+
+It turns out that the monoid is indeed normal:
+\begin{Verbatim}
+original monoid is integrally closed
+\end{Verbatim}
+Actually the output file reveals that $M$ is even integrally closed in $\}ZZ^{24}$: the external index is $1$m and therefore $\gp(M)$ is integrally closed in $\ZZ^{24} $. 
+
+The output files also shows that there is a grading on $\ZZ^{24}$ under which all our generators vhave degree $1$. We could have seen this ourselves: Every generator has exactly one entry $1$ in the first $16$ coordinates. (This is also Clear from the construction of $M$.) 
+
+It is no problem to compute the Hilbert series as well if you are interested in it. Simply add \verb|-h| to the command line or remove \verb|HilberBasis| from the input file.
+
+Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  INPUT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The input file}\label{input}
 
 The input file \ttt{<project>.in} consists of one or
-several matrices. Each matrix is built as follows:
+several items. There are several types of items:
 
 \begin{arab}
-\item The first line contains the number of rows $m$.
-\item The second contains the number of columns $n$.
-\item The next $m$ lines of $n$ integers each contain the rows.
-\item The last line contains a single number or word
-    specifying the type of input the matrix presents.
+\item definition of the ambient space,
+\item matrices,
+\item vectors,
+\item computation modes,
+\item comments.
 \end{arab}
 
-The line structure is irrelevant for the interpretation of the input, and only meant as a suggestion for a transparent structure of the file. The examples below are often typeset in two columns. It should always be obvious how to read them properly.
+An item cannot include another item. In particular, comments can only be included between other items, but not within another item.
 
-At the moment there are three major classes of input matrices,
-namely \emph{generators}, \emph{constraints}, and
-\emph{relations}.
+Matrices and vectors are classified by the following attributes:
+\begin{arab}
+\item generators, constraints, accessory
+\item cone/polyhedron, (affine) lattice
+\item homomogeneous, infomogeneous
+\end{arab} 
 
-Generators and constraints themselves fall into two subclasses:
+The line structure is irrelevant for the interpretation of the input, but it is advisable to use it to enhance the readability of the input file.
+
+The input syntax of Noramliz 2 can still be used. It is explained in Appendix \ref{OldSyntax}.
+
+\subsection{Input items}
+
+\subsubsection{The ambient space and lattice}
+
+The ambeient space is specified as follows:
+\begin{Verbatim}
+amb_space <N>
+\end{Verbatim}
+where \ttt{<N>} stands for the dimension $d$ of the ambient vector space $\RR$ in which the geometric objects live.  The \emph{ambient lattice} $\AA$ is set to $\ZZ$. 
+
+
+An example:
+\begin{Verbatim}
+amb_space 5
+\end{Verbatim}
+indicates that polyhedar and lattices are subobjects of $\RR^5$. The ambient lattice is $\ZZ$. 
+
+The first non-comment input item must specify the ambient space. There are no further rules for the order of the items in the input file.
+
+\subsubsection{Matrices}
+
+A matrix is built as follows:
+\begin{Verbatim}
+<T>
+<m>
+<x_1>
+...
+<x_m>
+\end{Verbatim}
+Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},dots,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example:
+A matrix is built as follows:
+\begin{Verbatim}
+cone
+3
+1 2 3
+4 5 6
+11 12 13
+\end{Verbatim}
+
+
+\subsubsection{Vectors}
+
+A vector is built as follows:
+\begin{Verbatim}
+<T>
+<x>
+\end{Verbatim}
+Again \ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. Example:
+\begin{Verbatim}
+grading
+1 0 0
+\end{Verbatim}
+
+
+For certain vectors there exist shortcuts. Example:
+\begin{Verbatim}
+total_degree
+\end{Verbatim}
+
+\subsubsection{Computation goals}
+
+These are single or compound words, such as
+\begin{Verbatim}
+HilbertBasis
+Multiplicity
+\end{Verbatim}
+The file can contain several computation goals as in this example.
+
+\subsubsection{Comments}
+
+A comment has the form
+\begin{Verbatim}
+/* <text> */
+\end{Verbatim}
+where \ttt{<text>} stands for the text of the comment. It can have arbitrary length and stretch over several lines. Example:
+\begin{Verbatim}
+/* This is a comment
+*/
+\end{Verbatim}
+
+\subsubsection{Restrictions}
+
+Input items can almost freely be combined, but there are some restrictions:
 
 \begin{arab}
-\item \emph{homogeneous}, defining cones and lattices,
-\item \emph{inhomogeneous}, defining polyhedra and affine lattices.
+\item Every input type can appear only once.
+\item There can be at most one matrix of homogeneous cone generators. The types
+\begin{center}
+\ttt {cone, cone\_and\_lattice, polytope, rees\_algebra}	
+\end{center}
+exclude each other mutually.
+\item There can be at most one matrix of homogeneous lattice generators. The types
+\begin{center}
+	\ttt {lattice}, \ttt{cone\_and\_lattice}	
+\end{center}
+exclude each other mutually.
+\item The only type that can be combined with \ttt{lattice\_ideal} is \ttt{grading}.
+\item The following types cannot be combined with inhomogeneous types:
+\begin{center}
+\ttt{polytope, rees\_algebra, dehomogenization, excluded\_faces}
+\end{center}
 \end{arab}
 
-Additional classes are \emph{grading} and \emph{dehomogenization}.
+\subsubsection{Default values}
 
-\emph{Remark}.\enspace Normaliz 2.12 (like Normaliz 2.11) allows inhomogeneous input types. While polytopes are defined by inhomogeneous data, one usually wants to compute the cone over the polytope, its Hilbert basis and the Ehrhart series. These computations require \emph{homogeneous} input types, and their application to polytopes is explained below. Also see Section \ref{po_vs_po}.
+If there is no lattice defining item, Normaliz (virtually) inserts the the unit matrix as an input item of type \ttt{lattice}. If there is no polyhedron defining item, the unit matrix is (additionally) inserted as an input item of type \\ttt{cone}.
 
-Rules for the combination of input types:
-
+If the input is inhomogeneous, then Normaliz provides deafult values for vertices and the offset as follows:
 \begin{arab}
-\item The order of the matrices does not matter.
-\item Matrices of the same type will be concatenated (and must have the same number of columns).
-\item The three classes generators, constraints and relations exclude each other (at present), with one exception: \verb|excluded_faces| are allowed with homogeneous generators.
-\item There can be at most one type of generators.
-\item Homogeneous and inhomogeneous constraints can be mixed. As soon as an inhomogeneous type is present, Normaliz treats the input as being inhomogeneous, transforming the homogeneous types appropriately.
-
-Exception: \verb|excluded_faces| are forbidden in combination with inhomogeneous constraints for which they are replaced by \verb|strict_inequalities|.
+\item If there is an input matrix of lattice type lattice, but no \ttt{offset}, then the off set $0$ is inserted.
+\item If there is an input matrix of type lattice, but no \ttt{vetices}, then the vertex $0$ is inserted. 
 \end{arab}
 
-For each input type we specify two lattices: the \emph{ambient
-lattice} $\AA$ to which the input data refer and the
-\emph{essential lattice} $\EE\subset \AA$ with respect to which
-all data are computed.
+\subsubsection{Normaliz takes intersections}
 
-In this section we assume that Normaliz is run in a computation
-mode in which the Hilbert basis or the system of generators, respectively, is actually computed. (See Section
-\ref{options} for computation modes.)
+The input may contain several cone defining items and several lattice defining items.
 
-\subsection{Generators of cones and lattices}
+The sublattice $L$ is defined by the lattice input items is the \emph{intersection} of the sublattices defined by the single items. The polyhedron $P$ is defined as the intersection of all polyhedra defined by the single  polyhedron defining items. The object then computed by Normaliz is
+$$
+P\cap L.
+$$
 
-These generator types are \verb|integral_closure|, \verb|normalization|, \verb|polytope| and \verb|rees_algebra|.
 
+
+\subsection{Homogeneous generators}
+
+These generator types are \verb|cone|,verb|lattice| and \verb|cone_and_lattice|.
+
+Shortcut types are \verb|polytope| and \verb|rees_algebra|.
+
+
+The Normaliz 2 types \verb|integral_closure| and \verb|normalization| can still be used. They are synonyms for \verb|cone| and \verb|cone_and_lattice|, respectively.
+
+
+\verb|polytope| and \verb|rees_algebra|.
 \subsubsection{Type \ttt{integral\_closure}}
 
 The rows of an $m\times n$ matrix of this type represent $m$ vectors in
@@ -1859,7 +2916,7 @@ We omit an example of type \verb|normalization| since it does not add anything n
 
 \subsubsection{Type \ttt{polytope}}\label{latt_pol}
 
-The file \ttt{polytop.in}contains
+The file \ttt{polytop.in} contains
 
 \begin{Verbatim}
  4
@@ -3498,6 +4555,8 @@ $$
 M=\{a_1x_1+\dots+a_nx_n: a_1,\dots,a_n\in\ZZ_+\}.
 $$
 We say that $x_1,\dots,x_n$ is a \emph{system of generators} of $M$. A monoid $M$ is positive if $x\in M$ and $-x\in M$ implies $x=0$.  An element $x$ in a positive monoid $M$ is called \emph{irreducible} if it has no decomposition $x=y+z$ with $y,z\in M$, $y,z\neq0$. The \emph{rank} of $M$ is the rank of the subgroup $\gp(M)$ of $\ZZ^d$ generated by $M$. (Subgroups of $\ZZ^d$ are also called sublattices.)
+For certain aspects of monoid theory it is very useful (or even necessary) to introduce coefficients from a field $K$ (or a more general commutative ring) and consider the monoid algebra $K[M]$.
+
 
 \begin{theorem}[van der Corput]
 Every positive affine monoid $M$ has a unique minimal system of generators, given by its irreducible elements.
@@ -3523,7 +4582,7 @@ The integral closure $\overline M$ of $M$ in $\gp(M)$ is its \emph{normalization
 
 The integral closure has a geometric description:
 
-\begin{theorem}
+\begin{theorem}\label{incl_cone}
 $$
 \widehat M_N =\cone(M)\cap N.
 $$
@@ -3532,6 +4591,8 @@ $$
 Combining the theorems, we can say that Normaliz computes integral closures of affine monoids in lattices, and the integral closures are themselves affine monoids as well. (More generally, $\widehat M_N$ is affine if $M$ and $N$ are affine.)
 
 In order to specify the intersection $C\cap L$ by constraints we need a system of homogeneous inequalities for $C$. Every sublattice of $\ZZ^d$ can be written as the solution set of a combined system of homogeneous linear diophantine equations and a homogeneous system of congruences (this follows from the elementary divisor theorem). Thus $C\cap L$ is the solution set of a homogeneous linear diophantine system of inequalities, equations and congruences. Conversely, the solution set of every such system is a monoid of type $C\cap L$.
+
+In the situation of Theorem \ref{incl_cone}, if $\gp(N)$ has finite rank as a $\gp(M)$-module, $\widehat M_N$ is even a finitely generated module over $M$. I.e., there exist finitely many elements $y_1,\dots,y_m\in \widehat M_N$ such that $\widehat M_N=\bigcup_{i=1}^m M+y_i$. Normaliz computes a minimal system $y_1,\dots,y_m$ and lists the nonzero $y_i$ as a system of module generators of $\widehat M_N$ modulo $M$. We must introduce coefficients to make this precise: Normaliz computes a minimal system of generators of the $K[M]$-module $K[\widehat M_N]/K[M]$.
 
 \subsection{Affine monoids from binomial ideals}\label{binomials}
 

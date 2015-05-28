@@ -3405,7 +3405,7 @@ void Full_Cone<Integer>::deg1_check() {
         } else // extreme rays not known
         if (!isComputed(ConeProperty::IsDeg1Generated)) {
             Grading = Generators.find_linear_form();
-            if (Grading.size() == dim) {
+            if (Grading.size() == dim && v_scalar_product(Grading,Generators[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_generated = false;
