@@ -98,6 +98,8 @@ extern size_t TotDet;
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
 
+/* set the verbose default value */
+bool setVerboseDefault(bool v);
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);

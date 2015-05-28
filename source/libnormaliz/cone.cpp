@@ -219,7 +219,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
     typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
-    initialize();    
     // find basic input type
     bool lattice_ideal_input=false;
     bool inhom_input=false;
@@ -890,6 +889,7 @@ void Cone<Integer>::initialize() {
     dim = 0;
     inhomogeneous=false;
     rees_primary = false;
+    verbose = libnormaliz::verbose; //take the global default
 }
 
 //---------------------------------------------------------------------------
@@ -947,6 +947,16 @@ void Cone<Integer>::check_excluded_faces(){
     }
 }
 
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Cone<Integer>::setVerbose (bool v) {
+    //we want to return the old value
+    bool old = verbose;
+    verbose = v;
+    return old;
+}
 
 //---------------------------------------------------------------------------
 

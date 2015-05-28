@@ -91,6 +91,12 @@ public:
 //                          give additional data
 //---------------------------------------------------------------------------
 
+    /* Sets if the Cone prints verbose output.
+     * The default value for the Cone is the global verbose.
+     * returns the old value
+     */
+    bool setVerbose (bool v);
+
     /* Sets the linear form which is used to grade. 
      * It has to be an N-grading, i.e. all generators must have a value >=1.
      * If it is not, a subclass of NormalizException will be thrown at the 
@@ -214,6 +220,7 @@ private:
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     bool BC_set;
+    bool verbose;
     ConeProperties is_Computed;
     // Matrix<Integer> GeneratorsOfToricRing;
     Matrix<Integer> OriginalMonoidGenerators;

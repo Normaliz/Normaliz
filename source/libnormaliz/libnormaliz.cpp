@@ -42,6 +42,13 @@ namespace {
     std::ostream* error_ostream_ptr = &std::cerr;
 } // end anonymous namespace, only accessible in this file (and when it is included)
 
+bool setVerboseDefault(bool v) {
+    //we want to return the old value
+    bool old = verbose;
+    verbose = v;
+    return old;
+}
+
 void setVerboseOutput(std::ostream& v_out) {
     verbose_ostream_ptr = &v_out;
 }
