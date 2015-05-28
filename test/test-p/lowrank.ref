@@ -5,6 +5,7 @@
 embedding dimension = 18
 rank = 16
 external index = 1
+internal index = 1
 
 size of triangulation   = 1
 resulting sum of |det|s = 1

@@ -6,7 +6,6 @@
 embedding dimension = 3
 rank = 2
 external index = 5
-original monoid is not integrally closed
 
 size of triangulation   = 1
 resulting sum of |det|s = 40

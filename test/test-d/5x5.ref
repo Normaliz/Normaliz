@@ -6,7 +6,6 @@
 embedding dimension = 25
 rank = 15
 external index = 1
-original monoid is not integrally closed
 
 grading:
 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

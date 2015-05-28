@@ -6,6 +6,7 @@
 embedding dimension = 2
 rank = 2 (maximal)
 external index = 2
+internal index = 1
 
 size of triangulation   = 0
 resulting sum of |det|s = 0

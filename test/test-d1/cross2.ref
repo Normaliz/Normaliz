@@ -5,6 +5,7 @@
 embedding dimension = 3
 rank = 3 (maximal)
 external index = 1
+internal index = 2
 
 grading:
 0 0 1 

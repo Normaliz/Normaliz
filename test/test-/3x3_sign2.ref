@@ -6,7 +6,6 @@
 embedding dimension = 9
 rank = 3
 external index = 1
-original monoid is not integrally closed
 
 size of triangulation   = 3
 resulting sum of |det|s = 5

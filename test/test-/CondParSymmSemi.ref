@@ -8,7 +8,6 @@
 embedding dimension = 8
 rank = 8 (maximal)
 external index = 1
-original monoid is not integrally closed
 
 size of triangulation   = 16
 resulting sum of |det|s = 19

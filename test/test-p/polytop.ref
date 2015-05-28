@@ -5,6 +5,7 @@
 embedding dimension = 4
 rank = 4 (maximal)
 external index = 1
+internal index = 30
 
 size of triangulation   = 1
 resulting sum of |det|s = 30

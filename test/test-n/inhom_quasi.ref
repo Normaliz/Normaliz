@@ -7,6 +7,7 @@
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
 rank of recession monoid = 3
+internal index = 1
 
 size of triangulation   = 4
 resulting sum of |det|s = 4

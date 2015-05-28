@@ -6,6 +6,7 @@
 embedding dimension = 9
 rank = 9 (maximal)
 external index = 1
+internal index = 4
 original monoid is not integrally closed
 
 size of triangulation   = 221
