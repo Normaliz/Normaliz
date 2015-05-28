@@ -106,6 +106,8 @@ public:
     // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
     const map<long, denom_t>& getCyclotomicDenom() const;
 
+    long getDegreeAsRationalFunction() const;
+
     long getPeriod() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
@@ -143,6 +145,7 @@ private:
     mutable bool is_simplified;
     mutable long dim;
     mutable long period;
+    mutable long degree; // as rational function
     long shift;
     // the quasi polynomial, can have big coefficients
     mutable vector< vector<mpz_class> > quasi_poly;

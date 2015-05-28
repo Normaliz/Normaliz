@@ -61,7 +61,7 @@ vector<key> to_vector (const map<key, T> M) {
     vector<key> v;
     typename map<key, T>::const_iterator it;
     for (it = M.begin(); it != M.end(); ++it) {
-        for (T i = 0; i < it-> second; i++) {
+        for (T i = 0; i < it->second; i++) {
             v.push_back(it->first);
         }
     }

@@ -651,6 +651,8 @@ void Output<Integer>::write_files() const {
             if (HS.getShift() != 0) {
                 out << "shift = " << HS.getShift() << endl << endl;
             }
+            out << "degree of Hilbert Series as rational function = "
+                << HS.getDegreeAsRationalFunction() << endl << endl;
 
             long period = HS.getPeriod();
             if (period == 1) {

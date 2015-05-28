@@ -295,6 +295,16 @@ void HilbertSeries::simplify() const {
     is_simplified = true;
 }
 
+long HilbertSeries::getDegreeAsRationalFunction() const {
+    simplify();
+    long num_deg = num.size() - 1 - shift;
+    long denom_deg = 0;
+    for (auto it = denom.begin(); it != denom.end(); ++it) {
+            denom_deg += it->first * it->second;
+    }
+    return num_deg - denom_deg;
+}
+
 long HilbertSeries::getPeriod() const {
     simplify();
     return period;
