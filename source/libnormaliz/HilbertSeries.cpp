@@ -263,7 +263,7 @@ void HilbertSeries::simplify() const {
         dim = 0;
     period = lcm_of_keys(cdenom);
     i = period;
-    if (period > 2000) {
+    if (period > 10000) {
         errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         i = cdenom.rbegin()->first;
     }
@@ -284,7 +284,7 @@ void HilbertSeries::simplify() const {
             }
         }
         i = lcm_of_keys(cdenom);
-        if (i > 2000) {
+        if (i > 10000) {
             i = cdenom.rbegin()->first;
         }
     }
@@ -326,7 +326,7 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
 
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
     simplify();
-    if (period > 2000) {
+    if (period > 200000) {
         errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
         return;
     }
