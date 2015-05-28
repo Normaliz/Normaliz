@@ -592,7 +592,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            NrCSF++;*/
            
            ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
-           // ranktest=true;
 
            if(ranktest) {
            
@@ -1036,10 +1035,6 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         #pragma omp atomic        // only for saving memory
         Top_Cone->nrSimplicialPyr++;
         if(recursive){ // the facets may be facets of the mother cone and if recursive==true must be given back
-            /* Simplex<Integer> S(Pyramid_key, Generators);
-            if (height != 0)
-                height = S.read_volume(); //update our lower bound for the volume
-            Matrix<Integer> H=S.read_support_hyperplanes();*/
             Matrix<Integer> H(dim,dim);
             Integer dummy_vol;
             Generators.simplex_data(Pyramid_key,dummy_vol,H);
@@ -1486,10 +1481,6 @@ void Full_Cone<Integer>::try_offload(const size_t max_level) {
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
-//
-// OBOLETE:
-// In contrast to the the recusrive pyramids, extend_cone is called
-// only once for every stored pyramid since we set recursion_allowed=false.
 
     assert(!omp_in_parallel());
 
@@ -2051,18 +2042,14 @@ void Full_Cone<Integer>::update_reducers(bool forced){
 
     if(nr_gen==dim)  // no global reduction in the simplicial case
         NewCandidates.sort_by_deg(); 
-    // cout << "Nach sort" << endl;
     if(nr_gen!=dim || forced){  // global reduction in the nonsimplicial case (or forced)
         NewCandidates.auto_reduce();
-        // cout << "Nach auto" << endl; 
         if(verbose){
             verboseOutput() << "reducing " << OldCandidates.Candidates.size() << " candidates by " << NewCandidates.Candidates.size() << " reducers" << endl;
         }
         OldCandidates.reduce_by(NewCandidates);
-        // if (verbose) cout << "Nach reduce_by" << endl;
     }
     OldCandidates.merge(NewCandidates);
-    // cout << "Nach merge" << endl;
     CandidatesSize=OldCandidates.Candidates.size();
 }
 
@@ -2231,11 +2218,6 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
             compute_deg1_elements_via_approx_simplicial(LS->get_key());        
         }
         else{
-	    /* list<vector<Integer> > sub_div_elements;
-	    compute_sub_div_elements(LS->get_key(),sub_div_elements);
-        cout << NrSurvivors << " Survivors of " << NrCand << endl;
-        cout << sub_div_elements.size() << " subdividing elements" << endl;
-	    sub_div_elements.clear();*/
             LS->Simplex_parallel_evaluation();
             if(do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound){       
                 Results[0].transfer_candidates();
@@ -2592,9 +2574,9 @@ void Full_Cone<Integer>::compute() {
                     do_only_multiplicity = do_determinants;
                     primal_algorithm();            
                 }
-            } else{  // now we want subdividing elements for a simplicial cone
+            } else { // now we want subdividing elements for a simplicial cone
                 assert(do_Hilbert_basis);
-                    compute_elements_via_approx(Hilbert_Basis);            
+                compute_elements_via_approx(Hilbert_Basis);            
             }
             
         }
