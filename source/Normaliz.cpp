@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <list>
-
+#include <string>
 #include <sstream>
 #include <algorithm>
 using namespace std;
@@ -37,11 +37,15 @@ using namespace libnormaliz;
 #include "Input.cpp"
 #include "output.cpp"
 
-
+#ifndef STRINGIFY
+#define STRINGIFYx(Token) #Token
+#define STRINGIFY(Token) STRINGIFYx(Token)
+#endif
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                    Normaliz 2.99.0                  \\....|"<<endl;
+    cout << "                    Normaliz " << string( STRINGIFY(NMZ_VERSION) "           " ,11)
+                                                 << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "      (C) W. Bruns  B. Ichim  T. Roemer  C. Soeger     \\..|"<<endl;
     cout << "                       May 2015                         \\.|"<<endl;

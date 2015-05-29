@@ -27,6 +27,8 @@
 #include <iostream>
 #include <string>
 
+#include "version.h"
+
 namespace libnormaliz {
 
 namespace Type {
