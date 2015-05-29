@@ -2336,8 +2336,6 @@ return; //TODO reactivate!
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
-    
-    cout << "Grad " << Grading;
 
     primal_algorithm_initialize();
 
@@ -2350,7 +2348,6 @@ void Full_Cone<Integer>::primal_algorithm(){
 
     primal_algorithm_finalize();
     primal_algorithm_set_computed();
-    cout << "Grad " << Grading;
 }
 
 //---------------------------------------------------------------------------
@@ -2424,7 +2421,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     }
     
     if(verbose && GMP_hyp+GMP_scal_prod+GMP_mat>0)
-        cout << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
+        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
 
 }
     
@@ -2540,8 +2537,6 @@ void Full_Cone<Integer>::do_vars_check() {
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
     do_vars_check();
-
-    cout << "Grad 1 " << Grading;
     
     if (!do_triangulation && !do_partial_triangulation)
         support_hyperplanes();
@@ -2552,9 +2547,7 @@ void Full_Cone<Integer>::compute() {
             set_levels();
 
         // look for a grading if it is needed
-        cout << "Grad 2 " << Grading;
         find_grading();
-        cout << "Grad 3 " << Grading;
         if(isComputed(ConeProperty::IsPointed) && !pointed) return;
         
         if (!isComputed(ConeProperty::Grading))
