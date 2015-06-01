@@ -1528,6 +1528,12 @@ void Cone<Integer>::compute_generators() {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
 
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none() || !( ToCompute.test(ConeProperty::Deg1Elements)
+                            || ToCompute.test(ConeProperty::HilbertBasis))) {
+        return ToCompute;
+    }
+
     bool do_only_Deg1_Elements=ToCompute.test(ConeProperty::Deg1Elements) && !ToCompute.test(ConeProperty::HilbertBasis);
         
     if(isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()==0){
@@ -1547,13 +1553,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         }
         
     }
-    
-    if(isComputed(ConeProperty::Generators) && !isComputed(ConeProperty::ExtremeRays)){
-        errorOutput() << "Generators computed, but extreme rays not marked in dual cone. THIS SHOULD NOT HAPPEN!" << endl;
-        throw FatalException();
-    
-    }
-    
+
     if((do_only_Deg1_Elements || inhomogeneous) && !isComputed(ConeProperty::ExtremeRays)){
         if (verbose) {
             verboseOutput() <<endl<< "Computing extreme rays for the dual mode:";
