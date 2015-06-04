@@ -427,6 +427,8 @@ int main(int argc, char* argv[])
 
 template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, 
                                             const vector<string>& OutFiles, bool ignoreInFileOpt, bool verbose){
+    std::exception_ptr excep;
+    try {
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -516,6 +518,19 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
     MyCone.compute(to_compute);
     Out.setCone(MyCone);
     Out.write_files();
+
+    } catch(const NormalizException& e) {
+        excep = std::current_exception();
+        std::cout << "NormalizException caught...";
+    } catch(const std::exception& e) {
+        excep = std::current_exception();
+        std::cout << "std::exception caught...";
+    }
+
+    if (excep) {
+        cout << "rethrowing the exception!" << endl;
+        std::rethrow_exception (excep);
+    }
 
     return 0;
 }
