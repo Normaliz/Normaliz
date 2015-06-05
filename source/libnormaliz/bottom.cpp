@@ -87,6 +87,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
     q_gens.push_back(gens);
     int level = 0;
 
+    // TODO Exception handling needed here?
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
     // setup scip enviorenment

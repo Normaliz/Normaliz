@@ -733,6 +733,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         progess_report=1;
     
     bool skip_remaining;
+    std::exception_ptr tmp_exception(nullptr);
+
     deque<bool> done(actual_nr_blocks,false);
     
     do{
@@ -747,22 +749,30 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
         if(skip_remaining || done[i])
             continue;
-        if(C_ptr->verbose){
-            if(i>0 && i%progess_report==0)
-                verboseOutput() <<"." << flush;        
+        try {
+            if(C_ptr->verbose){
+                if(i>0 && i%progess_report==0)
+                    verboseOutput() <<"." << flush;
+            }
+            done[i]=true;
+            long block_start=(sbi*SuperBlockLength+i)*block_length+1;  // we start at 1
+            long block_end=block_start+block_length-1;
+            if(block_end>(long) nr_elements)
+                block_end=nr_elements;
+            evaluate_block(block_start, block_end,C_ptr->Results[tn]);
+            if(C_ptr->Results[tn].candidates_size>= LocalReductionBound) // >= (not > !! ) if
+                skip_remaining=true;                            // LocalReductionBound==ParallelBlockLength
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
         }
-        done[i]=true;
-        long block_start=(sbi*SuperBlockLength+i)*block_length+1;  // we start at 1
-        long block_end=block_start+block_length-1;
-        if(block_end>(long) nr_elements)
-            block_end=nr_elements;
-        evaluate_block(block_start, block_end,C_ptr->Results[tn]);
-        if(C_ptr->Results[tn].candidates_size>= LocalReductionBound) // >= (not > !! ) if 
-            skip_remaining=true;                            // LocalReductionBound==ParallelBlockLength
     } // for
     
     } // parallel
-    
+
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
+
     if(skip_remaining){
             
         if(C_ptr->verbose){
@@ -1108,6 +1118,7 @@ void SimplexEvaluator<Integer>::count_and_reduce(list< vector< Integer > >& Cand
 template<typename Integer>
 void SimplexEvaluator<Integer>::reduce(list< vector< Integer > >& Candi, list< vector<Integer> >& Reducers, size_t& Candi_size){
 
+    // This parallel region cannot throw a NormalizException
     #pragma omp parallel
     {
     typename list <vector <Integer> >::iterator cand=Candi.begin();

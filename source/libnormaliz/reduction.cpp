@@ -189,6 +189,7 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         
         CandidateTable<Integer> ReducerTable(Reducers);
         
+        // This parallel region cannot throw a NormalizException
         #pragma omp parallel private(c,cpos) firstprivate(ReducerTable)
         {
         

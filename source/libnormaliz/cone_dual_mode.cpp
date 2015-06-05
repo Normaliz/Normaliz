@@ -284,29 +284,41 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
     }
     
+    std::exception_ptr tmp_exception(nullptr);
 
-
-    #pragma omp parallel
+    #pragma omp parallel num_threads(3)
     {
 
         #pragma omp single nowait
         {
+        try {
         check_range_list(Negative_Irred);
         Negative_Irred.sort_by_val();
         Negative_Irred.last_hyp=hyp_counter;
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+        }
+
         }
 
         #pragma omp single nowait
         {
+        try {
         check_range_list(Positive_Irred);
         Positive_Irred.sort_by_val();
         Positive_Irred.last_hyp=hyp_counter;
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+        }
         }
 
         #pragma omp single nowait
+        {
         Neutral_Irred.sort_by_val();
         Neutral_Irred.last_hyp=hyp_counter;
+        }
     }
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
     
     CandidateList<Integer> New_Positive_Irred(true),New_Negative_Irred(true),New_Neutral_Irred(true);
     New_Positive_Irred.verbose=New_Negative_Irred.verbose=New_Neutral_Irred.verbose=verbose;
@@ -361,8 +373,12 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         
         typename list<Candidate<Integer>* >::iterator pos_begin, pos_end, neg_begin, neg_end;
         size_t pos_size, neg_size;
-        
-        for(size_t step=0;step<=2;step++) // stpes are: old pos vs. new neg, new pos vs. old neg, new pos vs new neg
+
+        // Steps are:
+        // 0: old pos vs. new neg
+        // 1: new pos vs. old neg
+        // 2: new pos vs. new neg
+        for(size_t step=0;step<=2;step++)
         {
         
         if(step==0){
@@ -408,6 +424,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             }
         }
         
+        bool skip_remaining = false;
+
         const long VERBOSE_STEPS = 50;
         long step_x_size = pos_size-VERBOSE_STEPS;
         
@@ -421,6 +439,10 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         for(i = 0; i<pos_size; ++i){
             for(;i > ppos; ++ppos, ++p) ;
             for(;i < ppos; --ppos, --p) ;
+
+            if (skip_remaining) continue;
+
+            try {
             
             if(verbose && pos_size*neg_size>=ReportBound){
                 #pragma omp critical(VERBOSE)
@@ -520,7 +542,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
             }
-            
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+        }
         } //end generation of new elements
         
         #pragma omp single
@@ -530,7 +556,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
 
         } //END PARALLEL
-        
+
+        if (tmp_exception) std::rethrow_exception(tmp_exception);
+
         } // steps
 
         Pos_Gen0.splice(Pos_Gen0.end(),Pos_Gen1); // the new generation has becomeold

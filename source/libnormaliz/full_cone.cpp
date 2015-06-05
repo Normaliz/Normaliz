@@ -257,6 +257,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
     boost::dynamic_bitset<> zero_i, subfacet;
 
+    // This parallel region cannot throw a NormalizException
     #pragma omp parallel for private(zero_i,subfacet,k,nr_zero_i)
     for (i=0; i<nr_NegSimp;i++){
         zero_i=Zero_PN & Neg_Simp[i]->GenInHyp;
@@ -331,6 +332,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 //=====================================================================
 // parallel from here
 
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception(nullptr);
+
     #pragma omp parallel private(jj)
     {
     size_t i,j,k,nr_zero_i;
@@ -340,6 +344,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     int tn = omp_get_ancestor_thread_num(1);
 
     bool found;
+    // This for region cannot throw a NormalizException
     #pragma omp for schedule(dynamic)
     for (size_t j=0; j<nr_NegSubfMult; ++j) {  // remove negative subfacets shared
         for(;j > jjpos; ++jjpos, ++jj) ;       // by non-simpl neg or neutral facets 
@@ -402,6 +407,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     #pragma omp for schedule(dynamic) nowait
     for (size_t i =0; i<nr_PosSimp; i++){ //Positive Simp vs.Negative Non Simp
 
+        if (skip_remaining) continue;
+        try {
         zero_i=Zero_PN & Pos_Simp[i]->GenInHyp;
         nr_zero_i=0;
         for(j=0;j<nr_gen && nr_zero_i<=facet_dim;j++)
@@ -457,9 +464,16 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
                    break;
             }
-       }           
+       }
+       } catch(const std::exception& e) {
+           tmp_exception = std::current_exception();
+           skip_remaining = true;
+           #pragma omp flush(skip_remaining)
+       }
+
     } // PS vs NS and PS vs N
 
+    if (!skip_remaining) {
     #pragma omp single nowait
     if (tv_verbose) {
         verboseOutput() << "P vs NS and P vs N" << endl;
@@ -488,6 +502,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     #pragma omp for schedule(dynamic) // nowait
     for (size_t i =0; i<nr_PosNonSimp; i++){ //Positive Non Simp vs.Negative Simp and Non Simp
 
+        if (skip_remaining) continue;
+
+        try {
         jj_map = Neg_Subfacet.begin();       // First the Simp
         for (j=0; j<nr_NegSubf; ++j,++jj_map) {
             if ( (*jj_map).second != -1 ) {  // skip used subfacets
@@ -624,11 +641,17 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                 NrNewF++; */
                 // Indi[j]=true;
            }
-       }
-
-    }
+        }
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+        }
+    } // end for
+    } // end !skip_remaining
     } //END parallel
     
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
 //=====================================================================
 // parallel until here
 
@@ -677,6 +700,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     // listsize = visible.size(); // now acczmulated above
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
 
+    std::exception_ptr tmp_exception(nullptr);
 
     typename list< SHORTSIMPLEX<Integer> >::iterator oldTriBack = --Triangulation.end();
     #pragma omp parallel private(i)
@@ -698,6 +722,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
     #pragma omp for schedule(dynamic)
     for (size_t kk=0; kk<listsize; ++kk) {
+
+    try {
+
         i=visible[kk];
         
         nr_in_i=0;
@@ -771,7 +798,11 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
             
         } // for vertex
 
-    } // for kk
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+        }
+
+    } // omp for kk
 
     if (multithreaded_pyramid) {
         #pragma omp critical(TRIANG)
@@ -780,6 +811,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
         Triangulation.splice(Triangulation.end(),Triangulation_kk);
 
     } // parallel
+
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
 
     // GensInCone.push_back(new_generator); // now in extend_cone
     TriSectionFirst.push_back(++oldTriBack);
@@ -937,7 +970,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     bool skip_triang; // make hyperplanes but skip triangulation (recursive pyramids only)
 
     deque<bool> done(old_nr_supp_hyps,false);
-    bool skip_remaining_tri,skip_remaining_pyr;
+    bool skip_remaining;
+    std::exception_ptr tmp_exception(nullptr);
     typename list< FACETDATA >::iterator hyp;
     size_t nr_done=0;
 
@@ -945,68 +979,75 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     hyp=Facets.begin();
     size_t hyppos=0;
-    skip_remaining_tri=skip_remaining_pyr=false;
-
+    skip_remaining = false;
 
     #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
 
-        if(skip_remaining_tri || skip_remaining_pyr)
-            continue;
+        if (skip_remaining) continue;
 
-        for(;kk > hyppos; hyppos++, hyp++) ;
-        for(;kk < hyppos; hyppos--, hyp--) ;
+        try {
 
-        if(done[hyppos])
-            continue;
+            for(;kk > hyppos; hyppos++, hyp++) ;
+            for(;kk < hyppos; hyppos--, hyp--) ;
 
-        done[hyppos]=true;
-        
-        nr_done++;
-
-        if (hyp->ValNewGen == 0)                     // MUST BE SET HERE
-            hyp->GenInHyp.set(new_generator);
-
-        if (hyp->ValNewGen >= 0) // facet not visible
-            continue;
-
-        skip_triang = false;
-        if (Top_Cone->do_partial_triangulation && hyp->ValNewGen>=-1) { //ht1 criterion
-            skip_triang = is_hyperplane_included(*hyp);
-            if (skip_triang && !recursive) {
+            if(done[hyppos])
                 continue;
+
+            done[hyppos]=true;
+
+            nr_done++;
+
+            if (hyp->ValNewGen == 0)                     // MUST BE SET HERE
+                hyp->GenInHyp.set(new_generator);
+
+            if (hyp->ValNewGen >= 0) // facet not visible
+                continue;
+
+            skip_triang = false;
+            if (Top_Cone->do_partial_triangulation && hyp->ValNewGen>=-1) { //ht1 criterion
+                skip_triang = is_hyperplane_included(*hyp);
+                if (skip_triang && !recursive) {
+                    continue;
+                }
             }
-        }
 
-        Pyramid_key.clear(); // make data of new pyramid
-        Pyramid_key.push_back(new_generator);
-        for(size_t i=0;i<nr_gen;i++){
-            if(in_triang[i] && hyp->GenInHyp.test(i)) {
-                Pyramid_key.push_back(i);
+            Pyramid_key.clear(); // make data of new pyramid
+            Pyramid_key.push_back(new_generator);
+            for(size_t i=0;i<nr_gen;i++){
+                if(in_triang[i] && hyp->GenInHyp.test(i)) {
+                    Pyramid_key.push_back(i);
+                }
             }
+
+            // now we can store the new pyramid at the right place (or finish the simplicial ones)
+            if (recursive && skip_triang) { // mark as "do not triangulate"
+                process_pyramid(Pyramid_key, new_generator,store_level,0, recursive,hyp,start_level);
+            } else { //default
+                process_pyramid(Pyramid_key, new_generator,store_level,-hyp->ValNewGen, recursive,hyp,start_level);
+            }
+            // interrupt parallel execution if it is really parallel
+            // to keep the triangulationand pyramid buffers under control
+            if (start_level==0) {
+                if (check_evaluation_buffer_size() || Top_Cone->check_pyr_buffer(store_level)) {
+                    skip_remaining = true;
+                }
+            }
+
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
         }
 
-        // now we can store the new pyramid at the right place (or finish the simplicial ones)
-        if (recursive && skip_triang) { // mark as "do not triangulate"
-            process_pyramid(Pyramid_key, new_generator,store_level,0, recursive,hyp,start_level);
-        } else { //default
-            process_pyramid(Pyramid_key, new_generator,store_level,-hyp->ValNewGen, recursive,hyp,start_level);
-        }
-
-        if (start_level==0) {  // interrupt parallel execution if it is really parallel
-            if(check_evaluation_buffer_size())
-                skip_remaining_tri=true;  // keep the triangulation buffer under control
-            if(Top_Cone->check_pyr_buffer(store_level))
-                skip_remaining_pyr=true;  // keep the pyramid buffer under control
-        }
-        
-        
     } // end parallel loop over hyperplanes
+
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
 
     if (!omp_in_parallel())
         try_offload(0);
     
-    if (skip_remaining_tri) {
+    if (start_level==0 && check_evaluation_buffer_size()) {
         Top_Cone->evaluate_triangulation();
     }
     
@@ -1434,9 +1475,10 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     collect_pos_supphyps(PosHyps,Zero_P,nr_pos);
     
     nrTotalComparisons+=nr_pos*nrLargeRecPyrs;
+    std::exception_ptr tmp_exception(nullptr);
     
     #pragma omp parallel
-    {                            
+    {
     size_t ppos=0;
     typename list<FACETDATA>::iterator p=LargeRecPyrs.begin(); 
     
@@ -1444,9 +1486,14 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     for(size_t i=0; i<nrLargeRecPyrs; i++){
         for(; i > ppos; ++ppos, ++p) ;
         for(; i < ppos; --ppos, --p) ;
-        match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
+        try {
+            match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
+        } catch(const std::exception& e) {
+            tmp_exception = std::current_exception();
+        }
     }
     } // parallel
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
 
     LargeRecPyrs.clear();
     
@@ -1523,6 +1570,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     typename list<vector<key_t> >::iterator p;
     size_t ppos;
     bool skip_remaining;
+    std::exception_ptr tmp_exception(nullptr);
 
     while (nrPyramids[level] > eval_down_to) {
 
@@ -1532,31 +1580,36 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     
        #pragma omp parallel for firstprivate(p,ppos) schedule(dynamic) 
        for(size_t i=0; i<nrPyramids[level]; i++){
-       
            if (skip_remaining)
                 continue;
-                
            for(; i > ppos; ++ppos, ++p) ;
            for(; i < ppos; --ppos, --p) ;
            
            if(Done[i])
                continue;
            Done[i]=1;
-           
-           Full_Cone<Integer> Pyramid(*this,*p);
-           // Pyramid.recursion_allowed=false;
-           Pyramid.do_all_hyperplanes=false;
-           if(level>=2 && do_partial_triangulation){ // limits the descent of do_partial_triangulation
-               Pyramid.do_triangulation=true;
-               Pyramid.do_partial_triangulation=false;
-           }
-           Pyramid.store_level=level+1;
-           Pyramid.build_cone();
-           if (check_evaluation_buffer_size() || Top_Cone->check_pyr_buffer(level+1)) {
-               // interrupt parallel execution to keep the buffer under control
+
+           try {
+               Full_Cone<Integer> Pyramid(*this,*p);
+               // Pyramid.recursion_allowed=false;
+               Pyramid.do_all_hyperplanes=false;
+               if (level>=2 && do_partial_triangulation){ // limits the descent of do_partial_triangulation
+                   Pyramid.do_triangulation=true;
+                   Pyramid.do_partial_triangulation=false;
+               }
+               Pyramid.store_level=level+1;
+               Pyramid.build_cone();
+               if (check_evaluation_buffer_size() || Top_Cone->check_pyr_buffer(level+1)) {
+                   // interrupt parallel execution to keep the buffer under control
+                   skip_remaining = true;
+               }
+           } catch(const std::exception& e) {
+               tmp_exception = std::current_exception();
                skip_remaining = true;
+               #pragma omp flush(skip_remaining)
            }
         } //end parallel for
+        if (tmp_exception) std::rethrow_exception(tmp_exception);
 
         // remove done pyramids
         p = Pyramids[level].begin();
@@ -1668,25 +1721,31 @@ void Full_Cone<Integer>::build_cone() {
 
         long long nr_pos=0; long long nr_neg=0;
         vector<Integer> L;           
+        std::exception_ptr tmp_exception(nullptr);
         
         size_t lpos=0;
         #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
         for (size_t k=0; k<old_nr_supp_hyps; k++) {
-            for(;k > lpos; lpos++, l++) ;
-            for(;k < lpos; lpos--, l--) ;
+            try {
+                for(;k > lpos; lpos++, l++) ;
+                for(;k < lpos; lpos--, l--) ;
 
-            L=Generators[i];
-            scalar_product=v_scalar_product(L,(*l).Hyp);            
-            l->ValNewGen=scalar_product;
-            if (scalar_product<0) {
-                is_new_generator=true;
-                nr_neg++;
-            }
-            if (scalar_product>0) {
-                nr_pos++;
+                L=Generators[i];
+                scalar_product=v_scalar_product(L,(*l).Hyp);
+                l->ValNewGen=scalar_product;
+                if (scalar_product<0) {
+                    is_new_generator=true;
+                    nr_neg++;
+                }
+                if (scalar_product>0) {
+                    nr_pos++;
+                }
+            } catch(const std::exception& e) {
+                tmp_exception = std::current_exception();
             }
         }  //end parallel for
-        
+        if (tmp_exception) std::rethrow_exception(tmp_exception);
+
         if(!is_new_generator)
             continue;
 
@@ -2134,51 +2193,59 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     deque<bool> done(TriangulationSize,false);
     bool skip_remaining;
-    
+    std::exception_ptr tmp_exception(nullptr);
+
     do{ // allows multiple run of loop below in case of interruption for the update of reducers
     
     skip_remaining=false;
     step_x_size = TriangulationSize-VERBOSE_STEPS;
 
-    
     #pragma omp parallel
     {
         typename list< SHORTSIMPLEX<Integer> >::iterator s = Triangulation.begin();
         size_t spos=0;
         int tn = omp_get_thread_num();
-        #pragma omp for schedule(dynamic) 
+        #pragma omp for schedule(dynamic) nowait
         for(size_t i=0; i<TriangulationSize; i++){
-            for(; i > spos; ++spos, ++s) ;
-            for(; i < spos; --spos, --s) ;
-            
-            if(skip_remaining)
-                continue;
-            
-            if(done[spos])
-                continue;
-                
-            done[spos]=true;
+            try {
+                for(; i > spos; ++spos, ++s) ;
+                for(; i < spos; --spos, --s) ;
 
-            if(keep_triangulation || do_Stanley_dec)
-                sort(s->key.begin(),s->key.end());
-            if(!SimplexEval[tn].evaluate(*s)){
-                #pragma omp critical(LARGESIMPLEX)
-                LargeSimplices.push_back(SimplexEval[tn]);
-            }
-            if (verbose) {
-                #pragma omp critical(VERBOSE)
-                while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
-                    step_x_size += TriangulationSize;
-                    verboseOutput() << "|" <<flush;
+                if(skip_remaining)
+                    continue;
+                
+                if(done[spos])
+                    continue;
+
+                done[spos]=true;
+
+                if(keep_triangulation || do_Stanley_dec)
+                    sort(s->key.begin(),s->key.end());
+                if(!SimplexEval[tn].evaluate(*s)){
+                    #pragma omp critical(LARGESIMPLEX)
+                    LargeSimplices.push_back(SimplexEval[tn]);
                 }
+                if (verbose) {
+                    #pragma omp critical(VERBOSE)
+                    while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
+                        step_x_size += TriangulationSize;
+                        verboseOutput() << "|" <<flush;
+                    }
+                }
+
+                if(do_Hilbert_basis && Results[tn].get_collected_elements_size() > AdjustedReductionBound)
+                    skip_remaining=true;
+
+            } catch(const std::exception& e) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
             }
-            
-            if(do_Hilbert_basis && Results[tn].get_collected_elements_size() > AdjustedReductionBound)
-                skip_remaining=true;
-            
         }
         Results[tn].transfer_candidates();
     } // end parallel
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
+
     if (verbose)
         verboseOutput()  << endl;
         
