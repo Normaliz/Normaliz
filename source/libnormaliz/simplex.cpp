@@ -733,7 +733,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
         progess_report=1;
     
     bool skip_remaining;
-    std::exception_ptr tmp_exception(nullptr);
+    std::exception_ptr tmp_exception;
 
     deque<bool> done(actual_nr_blocks,false);
     
@@ -771,7 +771,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
     } // parallel
 
-    if (tmp_exception) std::rethrow_exception(tmp_exception);
+    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
 
     if(skip_remaining){
             

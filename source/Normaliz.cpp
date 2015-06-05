@@ -527,7 +527,7 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
         std::cout << "std::exception caught...";
     }
 
-    if (excep) {
+    if (excep != std::exception_ptr()) {
         cout << "rethrowing the exception!" << endl;
         std::rethrow_exception (excep);
     }

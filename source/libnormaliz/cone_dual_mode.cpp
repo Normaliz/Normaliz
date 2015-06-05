@@ -284,7 +284,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         }
     }
     
-    std::exception_ptr tmp_exception(nullptr);
+    std::exception_ptr tmp_exception;
 
     #pragma omp parallel num_threads(3)
     {
@@ -318,7 +318,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Neutral_Irred.last_hyp=hyp_counter;
         }
     }
-    if (tmp_exception) std::rethrow_exception(tmp_exception);
+    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
     
     CandidateList<Integer> New_Positive_Irred(true),New_Negative_Irred(true),New_Neutral_Irred(true);
     New_Positive_Irred.verbose=New_Negative_Irred.verbose=New_Neutral_Irred.verbose=verbose;
@@ -557,7 +557,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         } //END PARALLEL
 
-        if (tmp_exception) std::rethrow_exception(tmp_exception);
+        if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
 
         } // steps
 
