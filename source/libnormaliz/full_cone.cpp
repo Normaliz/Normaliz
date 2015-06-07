@@ -1823,7 +1823,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     Full_Cone BottomPolyhedron(BottomGen);
     BottomPolyhedron.verbose=verbose;
     BottomPolyhedron.keep_order = true;
-    BottomPolyhedron.support_hyperplanes();	// includes finding extreme rays
+    BottomPolyhedron.dualize_cone(true);	// includes finding extreme rays
 
     // transfer pointedness
     assert( BottomPolyhedron.isComputed(ConeProperty::IsPointed) );
@@ -2019,7 +2019,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
         }
     }
     
-    copy.compute_support_hyperplanes();
+    copy.dualize_cone();
     
     std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
@@ -2490,13 +2490,6 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
 // Normaliz modes (public)
 //---------------------------------------------------------------------------
 
-// pure dualization
-template<typename Integer>
-void Full_Cone<Integer>::dualize_cone() {  
-    compute_support_hyperplanes();
-    // reset_tasks();
-}
-
 // check the do_* bools, they must be set in advance
 // this method (de)activate them according to dependencies between them
 template<typename Integer>
@@ -2660,7 +2653,7 @@ void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support 
     minimize_support_hyperplanes();
     if(!isComputed(ConeProperty::SupportHyperplanes)){
         sort_gens_by_degree(false); // we do not want to triangulate here
-        compute_support_hyperplanes();           
+        dualize_cone();           
     }
     extreme_rays_and_deg1_check();
     // reset_tasks();
@@ -3046,7 +3039,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_support_hyperplanes(bool do_extreme_rays){
+void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays){
 
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;

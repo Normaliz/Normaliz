@@ -513,7 +513,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
         Sublattice_Representation<Integer> ConeLatt(Generators,true);
         Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
-        TmpCone.compute_support_hyperplanes();
+        TmpCone.dualize_cone();
         Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
@@ -860,7 +860,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     FC.verbose=verbose;
     if (verbose) verboseOutput() << endl << "Computing a positive embedding..." << endl;
 
-    FC.compute_support_hyperplanes();
+    FC.dualize_cone();
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
     Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Integer> Positive_Embedded_Generators=Gens.multiplication(Selected_Supp_Hyp_Trans);
@@ -1491,7 +1491,7 @@ void Cone<Integer>::compute_generators() {
         }
         Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(SupportHyperplanes));
         Dual_Cone.verbose=verbose;
-        Dual_Cone.compute_support_hyperplanes();
+        Dual_Cone.dualize_cone();
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
@@ -1537,7 +1537,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Generators));
         Tmp_Cone.verbose=verbose;
         // Tmp_Cone.inhomogeneous=inhomogeneous;  // NO LONGER necessary to prevent computation of grading in the inhomogeneous case
-        Tmp_Cone.compute_support_hyperplanes(true);        // also marks extreme rays
+        Tmp_Cone.dualize_cone(true);        // also marks extreme rays
         extract_data(Tmp_Cone);
         if(inhomogeneous){
             Matrix<Integer> Help(SupportHyperplanes.nr_of_rows()+1,dim);  // make Dehomogenization the first inequality
