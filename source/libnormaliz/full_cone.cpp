@@ -2936,7 +2936,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     order_by_perm(Extreme_Rays,perm);
     if(isComputed(ConeProperty::Grading))
         order_by_perm(gen_degrees,perm);
-    if(inhomogeneous)
+    if(inhomogeneous) // && gen_levels.size()==nr_gen)
         order_by_perm(gen_levels,perm);
     compose_perm_gens(perm);
     
@@ -3046,16 +3046,18 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_support_hyperplanes(){
-    if(isComputed(ConeProperty::SupportHyperplanes))
-        return;
+void Full_Cone<Integer>::compute_support_hyperplanes(bool do_extreme_rays){
 
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
     do_triangulation         = false;
     do_partial_triangulation = false;
-
-    build_top_cone();
+    
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        build_top_cone();
+        
+    if(do_extreme_rays)
+        compute_extreme_rays();
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;

@@ -283,7 +283,7 @@ public:
     void find_module_rank_from_proj();  // used if Hilbert basis is not computed
     void find_level0_dim(); // ditto for the level 0 dimension 
     void sort_gens_by_degree(bool triangulate);
-    void compute_support_hyperplanes();
+    void compute_support_hyperplanes(bool do_extreme_rays=false);
     bool check_evaluation_buffer();
     bool check_evaluation_buffer_size();
     void evaluate_triangulation();
