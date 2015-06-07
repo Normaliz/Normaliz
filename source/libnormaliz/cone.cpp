@@ -1596,9 +1596,10 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     typename multimap <Integer , vector <Integer> >::const_iterator ii;
     
     size_t i_start=0;
-    if(inhomogeneous){  // in the inhomogeneous case the truncation will be inserted below
+    if(inhomogeneous){  // in the inhomogeneous case the truncation will be (re)inserted below
         i_start=1;
-        assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual(Dehomogenization));
+        if(Inequ_on_Ker[0]!=BasisChange.to_sublattice_dual(Dehomogenization))
+            i_start=0;
     }
     for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
         hyperplane=Inequ_on_Ker[i];
