@@ -3052,7 +3052,7 @@ void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays){
     if(do_extreme_rays)
         compute_extreme_rays();
     
-    check_pointed();
+    check_pointed();  // sometimes needed
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
