@@ -34,6 +34,7 @@
 #include "vector_operations.h"
 #include "integer.h"
 //#include "my_omp.h"
+#include "full_cone.h"
 
 #ifdef NMZ_SCIP
 #include "scip/scip.h"
@@ -57,7 +58,7 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading);
 
 template<typename Integer>
-void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens);
+void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens,vector< Matrix<Integer> >& big_simplices, bool first_round);
 
 double convert_to_double(mpz_class a) {
     return a.get_d();
@@ -75,19 +76,21 @@ double convert_to_double(long long a) {
 long long stellar_det_sum;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { //TODO lieber Referenz fuer Matrix?
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,bool first_round) { 
 	
     list<vector<Integer> > bottom_candidates;
     Matrix<Integer>(bottom_candidates).pretty_print(cout);
     bottom_candidates.splice(bottom_candidates.begin(), new_points);
 
-	cout << "Compute points from bottom. BOUND: " <<ScipBound<< endl;
+	if(first_round) cout << "Compute points from bottom. BOUND: " <<ScipBound<< endl;
     stellar_det_sum = 0;
     vector< Matrix<Integer> > q_gens;
     q_gens.push_back(gens);
     int level = 0;
 
     // TODO Exception handling needed here?
+	// list for the simplices that could not be decomposed
+    vector< Matrix<Integer> > big_simplices;
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
     // setup scip enviorenment
@@ -115,12 +118,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
     vector< Matrix<Integer> > local_q_gens;
     list< vector<Integer> > local_new_points;
 
+
     while (!q_gens.empty()) {
         #pragma omp single
         cout << q_gens.size() << " simplices on level " << level++ << endl;
         #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
-            bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens);
+            bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens,big_simplices,first_round);
         }
         #pragma omp single
         {
@@ -133,6 +137,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
         local_q_gens.clear();
         #pragma omp barrier
     }
+    
     #pragma omp critical
     {
         new_points.splice(new_points.end(), local_new_points, local_new_points.begin(), local_new_points.end());
@@ -142,7 +147,52 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
     SCIPfree(& scip);
 #endif // NMZ_SCIP
     } // end parallel
-
+	// if we still have big_simplices we approx again
+	int counter=0;
+    if (!big_simplices.empty()){
+		cout << big_simplices.size() << " big simplices are remaining. we approx them again!" << endl;
+		for (auto it = big_simplices.begin(); it != big_simplices.end(); ++it){
+			// now we approximate this simplex again. maybe we're lucky.
+			// create full_cone
+			cout << "start approximation for big simplex number " << it-big_simplices.begin() << endl;
+			Matrix<Integer> gens = *it;
+			
+			list<vector<Integer> > new_points_again;
+			cout << "compute approximation for big simplex " << endl;
+			Full_Cone<Integer> ApproxCone(gens);
+			ApproxCone.compute_sub_div_elements(gens,new_points_again);
+			/*
+			Full_Cone<Integer> ApproxCone(gens);
+			bool verbtmp =verbose;
+			verbose=false;
+			vector<Integer>  grading = gens.find_linear_form();
+			ApproxCone.Grading=grading;
+			ApproxCone.is_Computed.set(ConeProperty::Grading);
+			ApproxCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
+			ApproxCone.do_approximation=true;  // as indicted by do_approximation
+			ApproxCone.Truncation= grading;
+	        ApproxCone.TruncLevel=v_scalar_product(ApproxCone.Truncation,gens[0]);
+	        
+	        ApproxCone.compute();
+	        verbose = verbtmp;
+			// look through Hilber Basis for new point:
+			list<vector<Integer> > new_points_again= ApproxCone.Hilbert_Basis;
+			*/
+			cout << "start bottom points again..." << endl;
+		    bottom_points(new_points_again,gens,false);
+			//vector<Integer> new_point = best_point(hb, gens, Support_Hyperplanes, grading);
+			if (!new_points_again.empty()){
+				counter++;
+				#pragma omp critical
+				new_points.splice(new_points.end(), new_points_again, new_points_again.begin(), new_points_again.end());
+			}
+			else{
+				cout << "even new approx did not give a new point..." << endl;
+			}
+			
+		}
+	}
+	if (first_round) cout << "+++ in " << counter << " of " << big_simplices.size() << " cases new approx was successfull! +++" << endl;
     cout  << new_points.size() << " new points accumulated" << endl;
     new_points.sort();
     new_points.unique();
@@ -156,7 +206,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens) { 
 template<typename Integer>
 void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip,
                  Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
-                 vector< Matrix<Integer> >& local_q_gens) {
+                 vector< Matrix<Integer> >& local_q_gens, vector< Matrix<Integer> >& big_simplices,bool first_round) {
 
     vector<Integer>  grading = gens.find_linear_form();
     Integer volume;
@@ -207,7 +257,10 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
 
     }
     else {
-//      cout << "Not using " << new_point;
+		//cout << "Could not find a new point! " << endl;
+		// store the simplex into the big simplices list
+		#pragma omp critical
+		if (first_round  && volume>100*ScipBound) big_simplices.push_back(gens);
         stellar_det_sum += convertTo<long>(volume);
     }
     return;
@@ -237,7 +290,11 @@ vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, cons
     if (best != bottom_candidates.end()) {
        return *best;
     } else {
-        return vector<Integer>();
+		cout << "Could not find a new point in the list! " << endl;
+		// save the simplex for later approximation
+		return vector<Integer>();
+		
+
     }
 }
 
@@ -499,9 +556,9 @@ vector<Integer> opt_sol(SCIP* scip,
 }
 #endif // NMZ_SCIP
 
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens);
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gense);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens);
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,bool first_round);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,bool first_round);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,bool first_round);
 
 } // namespace
 

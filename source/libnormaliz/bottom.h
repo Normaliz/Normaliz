@@ -36,7 +36,7 @@ using namespace std;
 extern long ScipBound;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens);
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens, bool first_round);
 
 } // namespace
 

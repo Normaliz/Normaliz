@@ -900,10 +900,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         time_t start,end;
 		time (&start);
 #ifndef NMZ_SCIP
-        C.compute_sub_div_elements(key, new_points);
+        C.compute_sub_div_elements(Generators, new_points);
         cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
 #endif
-		bottom_points(new_points, Generators);
+		bottom_points(new_points, Generators,true);
 		time (&end);
 		double dif = difftime (end,start);
 

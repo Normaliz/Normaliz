@@ -2196,18 +2196,20 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         
         
         Sorting=compute_degree_function();
-        bool save_do_module_gens_intcl=do_module_gens_intcl;
-        do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
-        for (size_t i = 0; i <nr_gen; i++) {               
-            // cout << gen_levels[i] << " ** " << Generators[i];
-            if(!inhomogeneous || gen_levels[i]<=1) {
-                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
-                OldCandidates.Candidates.back().original_generator=true;
+        if (!do_approximation) {
+            bool save_do_module_gens_intcl=do_module_gens_intcl;
+            do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
+            for (size_t i = 0; i <nr_gen; i++) {               
+                // cout << gen_levels[i] << " ** " << Generators[i];
+                if(!inhomogeneous || gen_levels[i]<=1) {
+                    OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+                    OldCandidates.Candidates.back().original_generator=true;
+                }
             }
+            do_module_gens_intcl=save_do_module_gens_intcl; // restore
+            if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
+                OldCandidates.auto_reduce();
         }
-        do_module_gens_intcl=save_do_module_gens_intcl; // restore
-        if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
-            OldCandidates.auto_reduce();
     }
     
     if(TriangulationSize==0)
@@ -2363,20 +2365,35 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_sub_div_elements(const vector<key_t>& key,list<vector<Integer> >& sub_div_elements){
+void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements){
   
-   Full_Cone<Integer> SimplCone(Generators.submatrix(key));
-   SimplCone.verbose=verbose;
-   SimplCone.Grading=Grading;
-   SimplCone.is_Computed.set(ConeProperty::Grading);
-   SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
-   SimplCone.do_approximation=true;  // as indicted by do_approximation
-   
-   SimplCone.Truncation=SimplCone.Generators.find_linear_form();
-   SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
+    bool tmp_verb = verbose;
+    verbose =false;
+    Full_Cone<Integer> SimplCone(gens);
 
-   SimplCone.compute();
-   sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
+    vector<Integer> N;
+    N = SimplCone.Generators.find_linear_form();
+    assert(N.size()==SimplCone.dim);
+    // if no grading is computed, we use the normal vector on the simplex
+    if (isComputed(ConeProperty::Grading)){
+        SimplCone.Grading=Grading;
+    } else {
+
+        SimplCone.Grading = N;
+    }
+
+    SimplCone.is_Computed.set(ConeProperty::Grading);
+    SimplCone.deg1_check();
+    if (SimplCone.isDeg1ExtremeRays()) return; // no approx possible
+    SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
+    SimplCone.do_approximation=true;  // as indicted by do_approximation
+
+    SimplCone.Truncation= N;
+    SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
+
+    SimplCone.compute();
+    sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
+    verbose=tmp_verb;
 }
 
 //---------------------------------------------------------------------------
@@ -3627,7 +3644,7 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
 template<typename Integer>
 void Full_Cone<Integer>::deg1_check() {
 
-    if(inhomogeneous)  // deg 1 check isabled since it makes no sense in this case
+    if(inhomogeneous)  // deg 1 check disabled since it makes no sense in this case
         return;
         
     if (!isComputed(ConeProperty::Grading)          // we still need it and
