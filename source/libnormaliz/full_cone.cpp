@@ -2929,7 +2929,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     order_by_perm(Extreme_Rays,perm);
     if(isComputed(ConeProperty::Grading))
         order_by_perm(gen_degrees,perm);
-    if(inhomogeneous) // && gen_levels.size()==nr_gen)
+    if(inhomogeneous && gen_levels.size()==nr_gen)
         order_by_perm(gen_levels,perm);
     compose_perm_gens(perm);
     
