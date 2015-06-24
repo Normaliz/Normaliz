@@ -2851,8 +2851,10 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
     C_approx.do_Hilbert_basis=do_Hilbert_basis;
     C_approx.do_all_hyperplanes=false;    // we use the support Hyperplanes of the approximated cone for the selection of elements
-    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
     C_approx.Support_Hyperplanes=Support_Hyperplanes;
+    C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
+    C_approx.Grading = Grading;
+    C_approx.is_Computed.set(ConeProperty::Grading);
     C_approx.Truncation=Truncation;
     C_approx.TruncLevel=TruncLevel;
     if(verbose)
@@ -3354,6 +3356,10 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays(){
 
     if (isComputed(ConeProperty::ExtremeRays))
+        return;
+    // when we do approximation, we do not have the correct hyperplanes
+    // and cannot compute the extreme rays
+    if (is_approximation)
         return;
     assert(isComputed(ConeProperty::SupportHyperplanes));
     
