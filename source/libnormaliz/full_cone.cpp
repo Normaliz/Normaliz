@@ -1092,11 +1092,17 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
         if (height != 0 && (do_triangulation || do_partial_triangulation)) {
             if(multithreaded_pyramid) {
+                std::exception_ptr tmp_exception;
                 #pragma omp critical(TRIANG)
                 {
-                store_key(Pyramid_key,height,0,Triangulation);
-                nrTotalComparisons+=dim*dim/2;
+                try{
+                    store_key(Pyramid_key,height,0,Triangulation);
+                    nrTotalComparisons+=dim*dim/2;
+                } catch(const std::exception& e) {
+                    tmp_exception = std::current_exception();
                 }
+                } // end critical
+                if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
             } else {
                 store_key(Pyramid_key,height,0,Triangulation);
                 nrTotalComparisons+=dim*dim/2;
@@ -4275,7 +4281,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     is_pyramid=true;
     
     pyr_level=C.pyr_level+1;
-    
+
     totalNrSimplices=0;
     detSum = 0;
     shift = C.shift;

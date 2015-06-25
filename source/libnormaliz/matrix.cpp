@@ -1693,9 +1693,8 @@ Matrix<Integer> Matrix<Integer>::invert(Integer& denom) const{
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::bundle_matrices(const Matrix<Integer>& Right_side) const {
 
-    size_t dim=Right_side.nr;
     assert(nr == nc);
-    assert(nc == dim);
+    assert(nc == Right_side.nr);
     Matrix<Integer> M(nr,nc+Right_side.nc);
     for(size_t i=0;i<nr;++i){
         for(size_t j=0;j<nc;++j)
