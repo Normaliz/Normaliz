@@ -38,6 +38,10 @@
     #include <gmpxx.h>
 #endif
 
+// in the serial version there is no need to catch-rethrow
+#ifndef _OPENMP
+    #define NCATCH
+#endif
 
 #include "libnormaliz.h"
 #include "normaliz_exception.h"

@@ -291,25 +291,32 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         #pragma omp single nowait
         {
+#ifndef NCATCH
         try {
+#endif
         check_range_list(Negative_Irred);
         Negative_Irred.sort_by_val();
         Negative_Irred.last_hyp=hyp_counter;
+#ifndef NCATCH
         } catch(const std::exception& e) {
             tmp_exception = std::current_exception();
         }
-
+#endif
         }
 
         #pragma omp single nowait
         {
+#ifndef NCATCH
         try {
+#endif
         check_range_list(Positive_Irred);
         Positive_Irred.sort_by_val();
         Positive_Irred.last_hyp=hyp_counter;
+#ifndef NCATCH
         } catch(const std::exception& e) {
             tmp_exception = std::current_exception();
         }
+#endif
         }
 
         #pragma omp single nowait
@@ -442,7 +449,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
             if (skip_remaining) continue;
 
+#ifndef NCATCH
             try {
+#endif
             
             if(verbose && pos_size*neg_size>=ReportBound){
                 #pragma omp critical(VERBOSE)
@@ -542,11 +551,13 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }
             }
+#ifndef NCATCH
         } catch(const std::exception& e) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
         }
+#endif
         } //end generation of new elements
         
         #pragma omp single
