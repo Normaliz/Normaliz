@@ -86,6 +86,7 @@ public:
     
     // control of what to compute
     bool do_triangulation;
+    bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
     bool do_partial_triangulation;
     bool do_determinants;
     bool do_multiplicity;
@@ -250,6 +251,7 @@ public:
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
 	void find_bottom_facets();                                  
     Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
     void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
@@ -312,7 +314,7 @@ public:
     
     void prepare_inclusion_exclusion();
 
-    void do_vars_check();
+    void do_vars_check(bool with_default);
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 

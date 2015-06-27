@@ -2493,9 +2493,9 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
 // check the do_* bools, they must be set in advance
 // this method (de)activate them according to dependencies between them
 template<typename Integer>
-void Full_Cone<Integer>::do_vars_check() {
+void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
-    if (do_default_mode) {
+    if (do_default_mode && with_default) {
         do_Hilbert_basis = true;
         do_h_vector = true;
         if(!inhomogeneous)
@@ -2529,7 +2529,10 @@ void Full_Cone<Integer>::do_vars_check() {
 // if no bool is set it does support hyperplanes and extreme rays
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
-    do_vars_check();
+    do_vars_check(false);
+    explicit_full_triang=do_triangulation;
+    if(do_default_mode)
+        do_vars_check(true); 
     
     if (!do_triangulation && !do_partial_triangulation)
         support_hyperplanes();
@@ -2546,8 +2549,14 @@ void Full_Cone<Integer>::compute() {
         if (!isComputed(ConeProperty::Grading))
             disable_grading_dep_comp();
 
+        bool polyhedron_is_polytope=inhomogeneous;
         if(inhomogeneous){
             find_level0_dim();
+            for(size_t i=0;i<nr_gen;++i)
+                if(gen_levels[i]==0){
+                    polyhedron_is_polytope=false;
+                    break;
+                }                
         }
 
         set_degrees();
@@ -2573,19 +2582,55 @@ void Full_Cone<Integer>::compute() {
             }
             
         }
-        else
-            primal_algorithm();
+        else{
+            if(polyhedron_is_polytope){ // inthis situation we must just find the 
+                convert_polyhedron_to_polytope();                  // lattice points in a polytope
+            }
+            else
+                primal_algorithm();            
+        }
             
         if(inhomogeneous){
             find_module_rank();
             // cout << "module rank " << module_rank << endl;
         }
         
-    }
-    
-    //---------------------------------------------------------------------------
-    
+    }    
 }
+
+template<typename Integer>
+void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
+    
+    if(verbose)
+        verboseOutput() << "Converting polyhedron to polytope" << endl;
+    
+    Full_Cone Polytope(Generators);
+    Polytope.Grading=Truncation;
+    Polytope.is_Computed.set(ConeProperty::Grading);
+    Polytope.do_deg1_elements=true;
+    Polytope.verbose=verbose;
+    Polytope.compute();
+    Hilbert_Basis=Polytope.Deg1_Elements;
+    is_Computed.set(ConeProperty::HilbertBasis);
+    module_rank=Hilbert_Basis.size();
+    is_Computed.set(ConeProperty::ModuleRank);
+    multiplicity=1;// module_rank;
+    is_Computed.set(ConeProperty::Multiplicity);
+    if(isComputed(ConeProperty::Grading) && module_rank>0){
+        vector<num_t> hv(1);
+        typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
+        for(;hb!=Hilbert_Basis.end();++hb){
+            long deg=explicit_cast_to_long<Integer>(v_scalar_product(Grading,*hb));
+            if(deg+1>hv.size())
+                hv.resize(deg+1);
+            hv[deg]++;                        
+        }    
+        Hilbert_Series.add(hv,vector<denom_t>());
+        is_Computed.set(ConeProperty::HilbertSeries);
+    }    
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_approx_global() {
@@ -3354,6 +3399,10 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
             //                    << "Disabling some computations!" << endl;
             do_deg1_elements = false;
             do_h_vector = false;
+            if(!explicit_full_triang){
+                do_triangulation=false;
+                do_partial_triangulation=true;
+            }
         } else {
             errorOutput() << "No grading specified and cannot find one. "
                           << "Cannot compute some requested properties!" << endl;
