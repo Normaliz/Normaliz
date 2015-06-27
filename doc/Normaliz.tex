@@ -232,8 +232,6 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 
 \item An improved programming interface.
 
-\item Computation of Graver bases (experimental).
-
 \item Massive parallelization on Intel Xeon Phi cards (experimental).
 
 \end{arab}
@@ -274,7 +272,7 @@ For the precise interpretation of parts of the Normaliz output some terminology 
 As pointed out in the introduction, Normaliz ` `computes'' intersections $P\cap L$ where $P$ is a rational polyhedron in $\RR$ and $L$ is an affine sublattice of $\ZZ$. It proceeds as follows:
 
 \begin{arab}
-\item If the input is inhomogeneous, then it is homogenized by introducing a homogenizing coordinate: the polyhedron $P$ is replaced by the cone $C(P)$: it is the closure of $\RR_+(P\times \{1\}$ in $\RR^{d+1}$. Similarly $L$ is repalced by $\widetilde L=\ZZ(L\times \{1\}$. In the homogeneous case in which $P$ is a cone and $L$ is a subgroup of $\ZZ$, we set $C(P)=P$ and $\widetilde L=L$.
+\item If the input is inhomogeneous, then it is homogenized by introducing a homogenizing coordinate: the polyhedron $P$ is replaced by the cone $C(P)$: it is the closure of $\RR_+(P\times \{1\}$ in $\RR^{d+1}$. Similarly $L$ is repalced by $\widetilde L=\ZZ(L\times \{1\})$. In the homogeneous case in which $P$ is a cone and $L$ is a subgroup of $\ZZ$, we set $C(P)=P$ and $\widetilde L=L$.
 
 \item The computations take place in the \emph{efficient lattice} 
 $$
@@ -316,7 +314,7 @@ command line. This is fully explained in Section \ref{options}. At this point it
 \begin{Verbatim}
 normaliz -c <project>
 \end{Verbatim}
-where \ttt{<project>} denotes for the project to be computed. Normaliz will load the file \ttt{project.in}. The option \verb|-c| makes Normaliz to write a progress report on the terminal.
+where \ttt{<project>} denotes for the project to be computed. Normaliz will load the file \ttt{project.in}. The option \verb|-c| makes Normaliz to write a progress report on the terminal. Normaliz writes its results to \verb|<project>.out|.
 	
 Note that you may have to prefix  \ttt{normaliz} by a path name, and \ttt{<project>} must contain a path to the input file if it is not in the current directory. Suppose the Normaliz directory is the current directory and we are using a Linux or Mac system. Then
 \begin{Verbatim}
@@ -327,7 +325,7 @@ wil run \ttt{small.in} from the directory \ttt{example}. On Windows we must chan
 .\normaliz -c example\small
 \end{Verbatim}
 
-The commans given above will run Normaliz with the full parallelization that your system can deliver. For the very small examples in this tutorial you may want to add \ttt{-x=1} to suppress parallelization.
+The commands given above will run Normaliz with the full parallelization that your system can deliver. For the very small examples in this tutorial you may want to add \ttt{-x=1} to suppress parallelization.
 
 As long as you don't specify a computation goal on the command line or in the input file, Normaliz will use the \emph{default computation goals}:
 \begin{verbatim}
@@ -335,7 +333,7 @@ HilbertBasis
 HilbertSeries
 ClassGroup
 \end{verbatim}
-The computation of the Hilbert series requires the explicit or implicit definition of a grading. Normaliz does only complain that a computation goal cannot be reached if thze goal has been set explicitly. For example, if you say \verb|HilbertSeries| and there is no grading, an exceptoion will be thrown and Normaliz terminates.
+The computation of the Hilbert series requires the explicit or implicit definition of a grading. Normaliz does only complain that a computation goal cannot be reached if the goal has been set explicitly. For example, if you say \verb|HilbertSeries| and there is no grading, an exception will be thrown and Normaliz terminates.
 
 Normaliz will always print the results that are obtained on the way to the computation goals and do not require extra effort.
 
@@ -374,7 +372,7 @@ The figure indicates the Hilbert basis, and this is our first computation goal.
 \subsubsection{The Hilbert basis}
 In order to compute the Hilbert basis, we run Normaliz from jNormaliz or by
 \begin{Verbatim}
-./normaliz -c ../example/3cone	
+./normaliz -c example/3cone	
 \end{Verbatim}
 and inspect the output file:
 \begin{Verbatim}
@@ -390,7 +388,7 @@ external index = 1
 internal index = 5
 original monoid is not integrally closed
 \end{Verbatim}
-The embedding dimension is the dimension of gthe space in which the computation is done. The rank is the rank of the lattice $\EE$ (notation as in Section \ref{Term}). In fact, in our example $\EE=\ZZ^2$, and therefore has rank $2$.
+The embedding dimension is the dimension of the space in which the computation is done. The rank is the rank of the lattice $\EE$ (notation as in Section \ref{Term}). In fact, in our example $\EE=\ZZ^2$, and therefore has rank $2$.
 
 For subgroups $G\subset U\subset \ZZ^d$ we denote the order of the torsion subgroup of $U/G$ by the \emph{index} of $G$ in $U$. The \emph{external index} is the index of the lattce $\EE$ in $\ZZ^d$. In our case $\EE=\ZZ^d$, and therefore the external index is $1$. Note: the external index is $1$ exactly when $\EE$ is a direct summand of $\ZZ^d$.
 
@@ -573,7 +571,6 @@ polytope
 2 0 0
 0 3 0
 0 0 5
-polytope
 \end{Verbatim}
 \vspace*{-4.5cm}
 \hspace*{9cm}
@@ -715,13 +712,12 @@ $$
 Suppose we want to compute only the lattice points in our polytope. In the language of graded monoids these are the degree $1$ elements, and so we add \verb|Deg1Elements| to our input file (\verb|polytop_deg1.in|):
 \begin{Verbatim}
 amb_space 4
-cone
-4
-0 0 0 1
-2 0 0 1
-0 3 0 1
-0 0 5 1
 polytope
+4
+0 0 0
+2 0 0
+0 3 0
+0 0 5
 Deg1Elements
 /* This is our first explicit computation goal*/
 \end{Verbatim}
@@ -1476,14 +1472,14 @@ It reflects the disjoint decomposition $((-1,0)+\ZZ_+(1,0))\cup((0,1)+\ZZ_+(1,0)
 
 If the polyhedron is given by its vertices and the recession cone, we can define it by these data (\verb|InhomIneq_gen.in|):
 \begin{Verbatim}
-\amb_space 2
+amb_space 2
 vertices
 1
  -4 -1 2
   0  3 2
 cone
 1
- 1 0 0
+ 1 0 0        ??????????????????????????????????????????????
 grading
  1 0 
 \end{Verbatim}
@@ -1524,7 +1520,7 @@ Since there are $4$ candidates, the probability for the existence of a Condorcet
 Now we are more anbitious and want to compoute the Hilbert series for the Condorcet paradoxon, or more precisely, the number of election outcomes having $A$ as the Condorcet winner depending on the number $k$ of voters. Moreover, as is customary in social choice theory, we want to exclude ties. The minput file chjanges to \verb|CondorcetSemi.in|:
 \begin{Verbatim}
 amb_space 24
-ecluded_faces
+excluded_faces
 3
 1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
 1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
@@ -1566,7 +1562,7 @@ If we want the interior of the Condorcet cone, we must replace the \verb|inequal
 We want to test the monoid $A_{4\times 4\times 3}$ defined by $4\times4\times3$ contingency tables for normality (see \cite{BHIKS} for the background). The input file is \ttt{A443.in}:
 \begin{Verbatim}
 amb_space 40
-cone_and_lattuce
+cone_and_lattice
 48
 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
@@ -1843,7 +1839,6 @@ vertices
 5 1 0 1 1
 2 4 1 5 1
 2 2 2 4 1
-vertices
 cone
 4
 1 0 0 0
@@ -2019,6 +2014,7 @@ Matrices and vectors are classified by the following attributes:
 \item cone/polyhedron, (affine) lattice.
 \item homomogeneous, infomogeneous.
 \end{arab} 
+In this classification equations are considered as constraints on the lattice because Normaliz treats them as such -- for good reason: it is very easy to intersect a lattice with a hyperplane.
 
 The line structure is irrelevant for the interpretation of the input, but it is advisable to use it for the readability of the input file.
 
@@ -2082,7 +2078,7 @@ For certain vectors there exist shortcuts. Example:
 total_degree
 \end{Verbatim}
 
-\subsubsection{Computation goals and algorithmic variants}
+\subsubsection{Computation goals and algorithmic variants}\label{Goals}
 
 These are single or compound words, such as
 \begin{Verbatim}
@@ -2120,13 +2116,18 @@ exclude each other mutually.
 \end{center}
 exclude each other mutually.
 \item The only type that can be combined with \ttt{lattice\_ideal} is \ttt{grading}.
+\item The following types cannot be combined with inhomogeneous types or \verb|dehomogenization|:
+\begin{center}
+\ttt{polytope, rees\_algebra, excluded\_faces}
+\end{center}
+
 \item The following types cannot be combined with inhomogeneous types:
 \begin{center}
-\ttt{polytope, rees\_algebra, dehomogenization, excluded\_faces}
+\ttt{dehomogenization, support\_hyperplanes}
 \end{center}
 \end{arab}
 
-Homogeneous and inhomogeneous types can be combined as well as generators and constraints. A single inhomogeneous type in the input triggers an inhomogeneous computation.
+Apart from these restrictions, homogeneous and inhomogeneous types can be combined as well as generators and constraints. A single inhomogeneous type in the input triggers an inhomogeneous computation.
 
 \subsubsection{Default values}
 
@@ -2212,6 +2213,7 @@ $$
 for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but in every other respect  \verb|excluded_faces| behave like \verb|inequalities|. 
 Section \ref{excluded_ex}, \verb|CondParSemi.in|.
 
+\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requiures homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Section \ref{supp_hyp_ex}, \verb|SuppHyp.in|
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -2372,7 +2374,7 @@ Normaliz checks this condition.
 
 \subsection{Dehomogenization}
 
-Like \verb|grading| zhis is an accessory type.
+Like \verb|grading| this is an accessory type.
 
 Inhomogeneous input for objects in $\RR^d$ is homogenized by an additional coordinate and then computed in $\RR^{d+1}$, but with the additional condition $x_{d+1}\ge 0$, and then dehomogenizing all results: the substitution $x_{d+1}=1$ acts as the \emph{dehomogenization}, and the inhomogeneous input types implicitly choose this dehomogenization.
 
@@ -2419,11 +2421,11 @@ line, needs an input file \ttt{<project>.pnm} that contains
 the polynomial for which the generalized Ehrhart series or the
 integral is to be computed. See \cite{NmzInt}.
 
-\section{Remarks on the lgorithms of Normaliz}
+\section{Remarks on the algorithms of Normaliz}
 
 \section{Computation goals and algorithmic variants}
 
-The library \verb|libnormaliz| contains a classe \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. FThe llatter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz.|
+The library \verb|libnormaliz| contains a clase \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The llatter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz.|
 
 All computation goals and algorithmic variants can be communicated to Normaliz in two ways:
 \begin{arab}
@@ -2435,6 +2437,8 @@ For the most important choices there are single letter command line options, for
 Some computation goals apply only to homogeneous computations, and some others make sense only for inhomogeneous computations.
 
 Some single letter command line options combine two or more computation goals, and some algorithmic variants imply computation goals.
+
+Normaliz can call NmzIntegrate. The three computation goals that require NmzIntegrate do not belong to the class \verb|ConeProperties|.
 
 \subsection{Default choices and basic rules}
 
@@ -2458,7 +2462,13 @@ If \verb|DefaultMode| is set, implicitly or explicitly, Normaliz will not compla
 
 \subsection{Computation goals}\label{goals}
 
-All computation goals include \verb|SupportHyperplanes|.
+The computation goal \verb|sublattice| does not include any other computation goal. All other computation goals include |\verb|SupportHyperplanes|.
+
+\subsubsection{Lattice data}
+
+\begin{itemize}
+\itemtt[Sublattice, -S] (upper case S) asks Normaliz to computte the data of the efficient sublattice.
+\end{itemize}
 
 \subsubsection{Support hyperplanes and extreme rays}
 
@@ -2490,14 +2500,10 @@ The computation goals in this section require a grading. They include \verb|Supp
 \begin{itemize}
 \itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 
-\itemtt[HilbertFunction] is contained in \verb|HilbertSeries|, but may fail if the period of the quasipolynomial is too large. Not useful for Normaliz.
-
 \itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
-
-\itemtt[ReesPrimaryMultiplicity] computes the multiplicity of a moinomial ideal, provided it is primary to the maximal ideal generated by the indeterminates. Not useful for Normaliz. Makes sense only with the input type \verb|rees_algebra|.
 \end{itemize}
 
-\subsubsection{Combined computaion goals}
+\subsubsection{Combined computation goals}
 
 Can only be set by single letter command line options:
 
@@ -2513,7 +2519,7 @@ Can only be set by single letter command line options:
 \subsubsection{The class group}
 
 \begin{itemize}
-\itemtt [ClassGroup, -C] is self explanatory, icludes \verb|SupportHyperplanes|. Not allowes in inhomogeneous computations.
+\itemtt [ClassGroup, -C] is self explanatory, icludes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.
 \end{itemize}
 
 \subsubsection{Boolean valued computation goals}
@@ -2550,7 +2556,26 @@ These computation goals are not really useful for Normaliz since they will be an
 	
 \end{itemize}
 
+The triangulation and the Stanley decomposition are treated
+separately since they can become very large and may exhaust
+memory if they must be stored for output.
+
+\subsubsection{NmzIntegrate}
+
+\begin{itemize}
+	
+\itemtt[GenEhrhart, -E] makes Normaliz compue a generalized Ehrhart series.
+
+\itemtt[LeadCoeff, -L] makes Normaliz compute the leading coefficient of a generalized Ehrhart series.
+
+\itemtt[Integral, -I] makes Normaliz compute an integral.	
+\end{itemize}
+
+These computation goals require a hogeneous computation.
+
 \subsection{Algorithmic variants}
+
+The ndefault choice is the Normaliz primal algorithm that is based on a (partial) triangulation.
 
 
 \begin{itemize}
@@ -2566,75 +2591,60 @@ These computation goals are not really useful for Normaliz since they will be an
 \subsection{Control of computations}
 
 In addition to the computation goals in Section \ref{goals}, 
-the following elements of \verb|ConeProperties| are control the work flow in \verb|libnormaliz| and can be used by calling programs to ensure the availability of the data for which they stand.
+the following elements of \verb|ConeProperties| control the work flow in \verb|libnormaliz| and can be used by calling programs to ensure the availability of the data that are controlled by them.
 
 \begin{itemize}
-\itemtt[Sublattice] refers to the efficient lattice $\EE$.
-
-\itemtt[RecessionRank]  refers to the rank of the recesion monoid in inhomogeneous computations.
-
-\itemtt[AffineDim]  refers to the aafine dimension of the polyhedron in inhomogeneous computations.
-
-\itemtt[ModuleRank] in inhomogeneous computations computes it refers to the rank of the module of lattice points in the polyhedron as a module over the recession monoid. 
-
-\itemtt[ExcludedFaces] refers to the excluded faces.
+\itemtt[HilbertFunction] controls the Hilbert (quasi)polynomial.
 	
-\itemtt[InclusionExclusionData] refers to data derived from the excluded faces.
+\itemtt[Sublattice] controls to the efficient lattice $\EE$.
 
-\itemtt[Grading] obvious meaning.
+\itemtt[RecessionRank]  controls the rank of the recesion monoid in inhomogeneous computations.
 
-\itemtt[Dehomogenization] Ditto.
+\itemtt[AffineDim]  controls the aafine dimension of the polyhedron in inhomogeneous computations.
 
-\itemtt[Generators] refers to the generators of the efficient cone.
+\itemtt[ModuleRank] in inhomogeneous computations computes it controls the rank of the module of lattice points in the polyhedron as a module over the recession monoid. 
 
-\itemtt[OriginalMonoidGenerators] refers to the generators of the original monoid.
+\itemtt[ExcludedFaces] controls the excluded faces.
+	
+\itemtt[InclusionExclusionData] controls data derived from the excluded faces.
+
+\itemtt[Grading] controls the grading.
+
+\itemtt[Dehomogenization] controls the dehomogenization.
+
+\itemtt[Generators] controls the generators of the efficient cone.
+
+\itemtt[OriginalMonoidGenerators] controls the generators of the original monoid.
+
+\itemtt[ReesPrimaryMultiplicity] controls the multiplicity of a monomial ideal, provided it is primary to the maximal ideal generated by the indeterminates. Used only with the input type \verb|rees_algebra|.
 
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  RUNNING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Running Normaliz}\label{options}
 
-The simplest way to call Normaliz from the command line is
-\begin{center}
-\ttt{normaliz <project>}
-\end{center}
-for example
-\begin{center}
-\ttt{normaliz rafa2416}
-\end{center}
-The project name is \ttt{rafa2416}. Normaliz reads the input
-file \ttt{rafa2416.in} (hopefully existing), computes
-everything it can compute, and writes the output to
-\ttt{rafa2416.out}.  (We assume
-that the executable \ttt{normaliz} or \ttt{normaliz.exe} is in the
-search path. Otherwise you have to prefix it with a suitable
-relative or absolute path.)
+The standard form for  calling Normaliz is
+\begin{quote}
+\verb|normaliz [options]| <project>
+\end{quote}
+where \verb|<proect>| is the name of the project. Note that \verb|normaliz| may require to be prefixed by a path name, and the same applies to \verb|<project>|. A typical example on a Linux or Mac system:
+\begin{quote}
+\verb|./normaliz --Console -x=5 ../example/big|
+\end{quote}
+that for MS Windows must be converted to
+\begin{quote}
+\verb|.\normaliz --Console -x=5 example\big|
+\end{quote}
 
-In the following we explain the various options of Normaliz.
-The full text names given appear in the help screen as well as
-in the menus of jNormaliz which allows you to choose options
-interactively.
+Normaliz uses the standard conventions for calls from the command line:
+\begin{arab}
+\item the order of the arguments on the command line is arbitrary.
+\item Single letter options are prefixed by the charcater \verb|-| and can be grouped into one string.
+\item Verbatim options are prefixed by the characters \verb|--|.
+\end{arab}
 
-{\bf In the default computation mode Normaliz will try to compute all data
-accessible to it, using the triangulation based \emph{primal} algorithm. All
-options that
-can be activated are switched off by default.}
-
-The default mode is broken by any option that asks for a specific computation. These are all \emph{except}
-\begin{center}
-\ttt{ceBfax}.
-\end{center}
-\subsection{Full syntax and basic rules}
-
-The full syntax for calling Normaliz from the command line is
-\begin{center}
-\hspace*{-1cm}\ttt{normaliz [-sN1vq]  [-nph] [-dr] [-tTy] [-ceB] [-fa] [-ELI] [-x=<T>] [<project>]}
-\end{center}
-where the options and \ttt{<project>} are optional.
-
-A help screen can be displayed by \ttt{normaliz -?}.
-
-Basic rules for the use of options:
+\subsection{Basic rules}
+The options for computation goals and algorithmis variants have been explained in Section \ref{Goals}. The options that control the execution and the amont of output will be explained in the following. Basic rules for the use of options:
 
 \begin{enumerate}
 \item If no \ttt{<project>} is given, the
@@ -2652,21 +2662,13 @@ name, then Normaliz will first look for \ttt{rafa2416.in.in}
 as the input file. If this file doesn't exist,
 \ttt{rafa2416.in} will be loaded.
 
-\item Adding a pure output option, namely \ttt{-f} or \ttt{-a}, or an
-option controlling execution does not change the computation
-mode. In particular, it does not change the default computation mode.
-
-\item The options can be given in arbitrary order. All options are accumulated,
-and there is no mutual exclusion.
-
-\item However, not all options are allowed for inhomogeneous input data; see
-Section \ref{OptInhom}.
+\item The options can be given in arbitrary order. All options, including those in the input file, are accumulated, and there is no mutual exclusion.
 
 \item If Normaliz cannot perform a computation explicitly asked for by the
 user, it will terminate. Typically this happens if no grading is given although
 it is necessary.
 
-\item In the default mode Normaliz does not complain about missing data
+\item In the options include \verb|DefaultMode|, Normaliz does not complain about missing data
 (anymore). It will simply omit those computations that are impossible.
 
 \item If a certain type of computation is not asked for explicitly, but can
@@ -2676,286 +2678,7 @@ degree $1$ elements of the Hilbert basis are selected from it.
 
 \end{enumerate}
 
-For example, if you input the command
-\begin{center}
-\ttt{normaliz -c -p -a rafa2416 -T -y}\qquad or\qquad
-\ttt{normaliz -cpaTy rafa2416}
-\end{center}
-then the program will take the file \ttt{rafa2416.in} as input,
-control data will be displayed on your terminal, the support
-hyperplanes, the triangulation, the multiplicity, the Hilbert
-series and the Hilbert (quasi)polynomial will be computed and
-all the possible output files will be produced.
-
-\subsection{Computation modes: homogeneous input}
-
-\subsubsection{Basic modes}
-
-The least that Normaliz can do is
-\begin{itemize}
-\itemtt[-s] \ttt{support hyperplanes}: only the constraints  of the cone and the lattice  under consideration and the
-    extreme rays are computed.
-\end{itemize}
-All computation modes include \ttt{-s}.
-
-For Hilbert basis computations one uses
-\begin{itemize}
-\itemtt[-N] \ttt{Hilbert basis}: computes the Hilbert basis.
-\end{itemize}
-The degree $1$ elements of the Hilbert basis are computed by
-\begin{itemize}
-\item [-1] \ttt{degree 1 elements}: only degree 1 elements are computed.
-\end{itemize}
-
-Enumerative data are chosen by
-\begin{itemize}
-\itemtt[-v] \ttt{volume}: Normaliz
-    computes the multiplicity (or normalized volume);
-\itemtt[-q] \ttt{Hilbert series}.
-\end{itemize}
-
-Remarks: (1) The Hilbert basis can also be computed by the dual algorithm; see
-Section \ref{dual}. In the presence of a grading, \ttt{-N} includes the
-computation of the degree $1$ elements.
-
-(2) For degree $1$ elements the dual algorithm can be applied as well.
-Moreover, the approximation of rational polytopes is available for this
-purpose; see Section \ref{approx}.
-
-(3) The options \ttt{-1vq} require the presence of a grading (implicit or explicit).
-
-(4) \ttt{-N} and \ttt{-1} only need a partial triangulation, whereas the options \ttt{-vq}
-require a full triangulation.
-
-\subsubsection{Combined modes}
-
-For convenience, Normaliz provides shortcut modes that combine basic modes:
-
-\begin{itemize}
-\itemtt[-n] \ttt{Hilbert basis volume}: combines \ttt{-N} and \ttt{-v};
-\itemtt[-p] \ttt{Hilbert series degree 1 elements}.This mode
-    combines \ttt{-q} and \ttt{-1};
-\itemtt[-h] \ttt{Hilbert basis series}: combines \ttt{-N} and \ttt{-q}. This
-    computation mode yields the maximum information Normaliz can produce.
-\end{itemize}
-
-Remarks: (1) There is no mode combining \ttt{-v} and \ttt{-1}. Simply use
-\ttt{-v1}.
-
-(2) The effect of \ttt{-h} is also reached by the default mode. However,
-\ttt{-h} will result in termination if a grading cannot be found.
-
-\subsubsection{The dual algorithm}\label{dual}
-
-If a cone is defined by constraints, it is often (but not
-always) faster to use a Hilbert basis algorithm originally due
-to Pottier \cite{Po} that we call the \emph{dual} algorithm, in
-contrast to the primal (triangulation based) algorithm
-of Normaliz. (See \cite{BI} for our version of the dual
-algorithm.) The dual algorithm is invoked by
-
-\begin{itemize}
-\itemtt[-d] \ttt{dual Hilbert basis}: computes the Hilbert basis using the
-dual algorithm;
-
-\itemtt[-d1] \ttt{dual degree 1}: computes only the degree $1$ elements.
-\end{itemize}
-
-Remarks: (1) The dual algorithm can be used with all input types. See
-Section \ref{PerPar} for a comparison of performance on various
-examples.
-
-(2) \ttt{-d1} is optimized for the computation of degree $1$ elements.
-
-(3) The dual algorithm can be combined with the primal algorithm. For example,
-\ttt{-d1v} or \ttt{-dq} make perfect sense, and are often useful.
-
-(4) If \ttt{-d} is set, the dual algorithm has priority in the computation of
-Hilbert bases, but not necessarily in the computation of degree $1$ elements.
-For example, \ttt{-d1q} will bypass the dual algorithm, since the degree $1$
-elements can be gotten as a byproduct of \ttt{-q}.
-
-\subsubsection{Approximation of rational polytopes}\label{approx}
-
-Even the computation of degree $1$ elements can be an extremely difficult
-problem in the primal as well as in the dual approach. A major obstruction in
-the primal algorithm is the occurrence of gigantic determinants of the
-simplicial cones in the triangulation. In this case the approximation of a
-rational polytope by a lattice polytope offers a way out:
-
-\begin{itemize}
-\itemtt[-r] \ttt{approximate rat polytope}: computes the lattice points in the
-degree $1$ cross-section by approximation.
-\end{itemize}
-
-It makes no sense to combine \ttt{-r} with the computation of a Hilbert basis
-or Hilbert series or with the dual mode. In such case \ttt{-r} is bypassed.
-However, \ttt{-rv} makes sense.
-
-\subsubsection{What option do I use \dots}
-
-The following table gives an overview of the computation
-options introduced so far.
-\begin{center}
-\begin{tabular}{l|c|c|c|}
-&No enumera-&&Hilbert\\
-&tive data&multiplicity&series\\
-\hline
-only extreme&&&\\
-rays&\ttt{-s}&\ttt{-v}&\ttt{-q}\\
-\hline
-degree 1&\ttt{-1}&\ttt{-v1}&\\
-elements &\ttt{-d1, -r}&\ttt{-d1v, -rv}&\ttt{-p}\\
-\hline
-Hilbert &\ttt{-d}&\ttt{-dv}&default,\\
-basis &\ttt{-N}&\ttt{-n}&\ttt{-h, -dq}\\
-\hline
-\end{tabular}
-\end{center}
-
-
-\subsubsection{Modes calling NmzIntegrate}
-
-NmzIntegrate is an independent executable, but it can be
-called by Normaliz. The options are exactly those that would
-be used for a command line call of NmzIntegrate:
-
-\begin{itemize}
-\itemtt[-E] \ttt{Generalized Ehrhart series}: computation
-    of generalized Ehrhart series,
-\itemtt[-L] \ttt{Leading coefficient}: computation of
-    leading coefficient of generalized Ehrhart
-    quasi\-po\-lynomial,
-    \itemtt[-I] \ttt{Integral}: computation of Lebesgue
-        integrals.
-\end{itemize}
-
-See \cite{NmzInt} for the details of NmzIntegrate. The
-options \ttt{-c} and \ttt{-x=<T>} are forwarded to
-NmzIntegrate.
-
-The option \ttt{-E} contains \ttt{-y}, and \ttt{-I} and
-\ttt{-L} both contain \ttt{-T}. See Section \ref{TriStan}
-for \ttt{-T} and \ttt{-y}.
-
-Note: the option \verb|-F| of NmzIntegrate cannot be accessed via Normaliz.
-
-\subsubsection{Triangulation and Stanley decomposition}\label{TriStan}
-
-In some applications it may be useful to base further computations on the
-triangulation or even the Stanley decomposition computed by Normaliz. As
-already mentioned, NmzIntegrate needs these data:
-\begin{itemize}
-\itemtt[-T] computes the triangulation and writes it to the file
-\ttt{<project>.tri}.
-
-\itemtt[-y] computes the Stanley decomposition and writes it to the file
-\ttt{<project>.dec}.
-\end{itemize}
-
-Both modes generate further output files, namely \ttt{<project.>inv} and
-\ttt{<project>.tgn}. The
-format of these files will be explained in Section
-\ref{optionaloutput}.
-
-There is a further mode computing the triangulation, but producing no output:
-\begin{itemize}
-\itemtt[-t] Computes the triangulation.
-\end{itemize}
-Why this option is sometimes useful will be explained in Section \ref{Large}.
-
-\subsection{Computation modes: inhomogeneous input}\label{OptInhom}
-
-The following options are \emph{not allowed} for inhomogeneous input:
-\begin{center}
-\ttt{1prTyELI}
-\end{center}
-The other modes are completely analogous to those for cones when one replaces
-``Hilbert basis'' by ``system of generators and Hilbert basis of recession monoid'' (see Section \ref{latt_hedra}).
-Whether Normaliz computes a cone or a polyhedron does only depend on the
-input file and not on the command line options. In order to keep jNormaliz
-simple, the same full text names of the options are used for polyhedra.
-
-\subsubsection{Basic modes}
-
-\begin{itemize}
-\itemtt[-s] \ttt{support hyperplanes}: only the constraints of the polyhedron and its vertices are computed.
-\end{itemize}
-All computation modes include \ttt{-s}.
-
-\begin{itemize}
-\itemtt[-N] \ttt{Hilbert basis}: computes the system of generators, namely the
-Hilbert basis of the recession cone and the minimal system of module generators.
-\itemtt[-v] \ttt{volume}: Normaliz computes the multiplicity.
-\itemtt[-q] \ttt{Hilbert series}: what it says.
-\end{itemize}
-
-Remarks: (1) Systems of generators can also be computed by the dual algorithm;
-see Section \ref{dual}.
-
-(2) The options \ttt{-vq} require the presence of a grading.
-
-(3) \ttt{-N} only needs a partial triangulation, whereas the options \ttt{-vq}
-require a full triangulation.
-
-\subsubsection{Combination modes}
-
-\begin{itemize}
-\itemtt[-n] \ttt{Hilbert basis volume}: combines \ttt{-N} and \ttt{-v};
-\itemtt[-h] \ttt{Hilbert basis series}: combines \ttt{-N} and \ttt{-q}. This
-    computation mode yields the maximum information Normaliz can produce.
-\end{itemize}
-
-The effect of \ttt{-h} is also reached by the default mode. However,
-\ttt{-h} will result in termination if a grading cannot be found.
-
-\subsubsection{The dual algorithm}
-
-\begin{itemize}
-\itemtt[-d] \ttt{dual Hilbert basis}: computes the system of generators using
-the
-dual algorithm.
-\end{itemize}
-
-\subsubsection{What option do I use \dots}
-
-The following table gives an overview of the computation
-options introduced so far.
-\begin{center}
-\begin{tabular}{l|c|c|c|}
-&No enumera-&&Hilbert\\
-&tive data&multiplicity&series\\
-\hline
-only vertices&\ttt{-s}&\ttt{-v}&\ttt{-q}\\
-\hline
-Hilbert &\ttt{-d}&\ttt{-dv}&default,\\
-basis &\ttt{-N}&\ttt{-n}&\ttt{-h, -dq}\\
-\hline
-\end{tabular}
-\end{center}
-
-\subsection{Control of output files}\label{outcontrol}
-
-In the default setting Normaliz writes only the output file
-\ttt{<project>.out} (and the files produced by \ttt{-T} and \ttt{-y}). The
-amount of output files can be
-increased as follows:
-\begin{itemize}
-\itemtt[-f] Normaliz writes the additional output files
-    with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
-    provided the data of these files have been computed.
-\itemtt[-a] includes \ttt{-f}, Normaliz writes all
-    available output files except the triangulation or the
-    Stanley decomposition.
-\end{itemize}
-In order to see all available output files one uses \ttt{-aTy}.
-
-The triangulation and the Stanley decomposition are treated
-separately since they can become very large and may exhaust
-memory if they must be stored for output.
-
-For the list of potential output files and their interpretation
-see Section \ref{optionaloutput}.
+A help screen can be displayed by \ttt{normaliz -?}.
 
 
 \subsection{Control of execution}\label{exec}
@@ -2963,13 +2686,11 @@ see Section \ref{optionaloutput}.
 The options that control the execution are:
 
 \begin{itemize}
-\itemtt[-c] activates the verbose (``console'') behavior of
+\itemtt[Console, -c] activates the verbose (``console'') behavior of
     Normaliz in which Normaliz writes additional
     information about its current activities to the
     standard output.
-\itemtt[-e] activates the overflow error check of
-    Normaliz. Ignored if used with -B.
-\itemtt[-B] switches Normaliz to infinite precision.
+
 \itemtt[-x=<T>] Here \ttt{<T>} stands for a positive
     integer limiting the number of threads that Normaliz
     is allowed access on your system. The default value is
@@ -2982,24 +2703,41 @@ The number of threads can also be controlled by the environment
 variable \verb+OMP_NUM_THREADS+. See Section \ref{PerPar} for
 further discussion.
 
-\subsection{Numerical limitations}\label{NumLim}
 
-Even in low dimensions, the range of 64 bit integers may not be
-sufficient for the computations of Normaliz. Therefore
-\texttt{normaliz} can be switched to infinite precision by the
-option \texttt{-B}.
 
-Computations with \ttt{-B} typically run about 5 times slower than
-those without it. In examples that look critical, it may be useful
-first to try \ttt{normaliz} without \texttt{-B}, but with the error
-check option activated. This costs time, too, but hardly more than
-50\% extra.
+\subsection{Control of output files}\label{outcontrol}
 
-The user should run the example \ttt{critical64.in} in the
-subdirectory \ttt{examples} with \ttt{normaliz -e} in order to
-see the failure of 64 bit arithmetic. (Running it with \ttt{-B}
-takes a while and requires much memory.)
+In the default setting Normaliz writes only the output file
+\ttt{<project>.out} (and the files produced by \ttt{Triangulation} and \ttt{StanleyDec}). The
+amount of output files can be
+increased as follows:
+\begin{itemize}
+\itemtt[Files, -f] Normaliz writes the additional output files
+    with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
+    provided the data of these files have been computed.
+\itemtt[AllFiles, -a] includes \ttt{Files}, Normaliz writes all
+    available output files (except the triangulation or the
+    Stanley decomposition, unless these have been requested).
+\end{itemize}
 
+
+
+For the list of potential output files and their interpretation
+see Section \ref{optionaloutput}.
+
+\subsection{Overriding the options in the input file}
+
+Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
+\begin{itemize}
+\itemtt[Ignore, -i] This option disables all settings in the input file.
+\end{itemize} 
+
+
+\subsection{Integer types}\label{NumLim}
+
+Contrary to Normaliz 2, the integer type of a computation is set automatically by Normaliz 3. (In particular the options \verb|-e| and \verb|-B| do not exist anymore.) Normaliz rads all input and preprocesses it with indefinite precision. It then tries a 64 bit computation. If that fails, the computation is restarted with indefinite precision. Also see Section \ref{approx_ex}.
+
+In order to prevent the computations with indefinite precision, which usually take 10 times as long as 64 bit integer computations, Normaliz constantly controls the size of intermediate results. If a linear algebra routine fails because of arithmetic overflow, the particular computation os repesated with indefinite precision. If a final result fails the 64 bit size, the whole computation must of course be restarted.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The output file}\label{output}
@@ -3050,7 +2788,7 @@ Moreover, Normaliz tells you whether the original system of
 generators contains the Hilbert basis by indicating whether the
 original monoid is integrally closed.
 
-Please note:
+Please note:  
 
 \begin{arab}
 \item The equations and support hyperplanes \emph{together}
@@ -3153,6 +2891,18 @@ Note that the output you get by running the examples may differ from the one giv
 
 \subsection{Lattice points by approximation}
 
+in order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vetors that are needed for the Hilbert basis computations, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
+
+Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept.This is done automatically. Since version 2.11 the user can also choose a gobal approximation of the input polytope $P$, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should not be too large.
+
+Another option that is often favourable is \verb|DualMode| in connection with \verb|Deg1Elements|. So there are three choices for the computation of lattice points in polytopes:
+\begin{itemize}
+\itemtt[Deg1Elements, -1] with local approximation of rational polytopes,
+\itemtt [ApproximateRationalPolytope, -r] with global approximation,
+\itemtt[DualMode Deg1Elements, -d1] dual mode optimized for the computation of geree $1$ elements.
+\end{itemize}
+
+
 \subsection{The bottom decomposition}
 
 \subsection{Explicit dehomogenization}
@@ -3162,6 +2912,8 @@ Note that the output you get by running the examples may differ from the one giv
 \subsection{Exporting the Stanley decomposition}
 
 \subsection{Minimal module generators of integral closure}
+
+\subsection{Precomputed support hyperplanes}
 
 \subsection{NmzIntegrate}
 

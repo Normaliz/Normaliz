@@ -295,8 +295,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }        
     }
     if(inhom_input){
-        if(exists_input_matrix(multi_input_data,Type::dehomogenization)){
-            errorOutput() << "Dehomogenizaion not allowed with inhomogeneous input!" << endl;
+        if(exists_input_matrix(multi_input_data,Type::dehomogenization) || exists_input_matrix(multi_input_data,Type::support_hyperplanes)){
+            errorOutput() << "dehomogenizaion and support_hyperplanes not allowed with inhomogeneous input!" << endl;
             throw BadInputException();            
         }       
     }
@@ -306,7 +306,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             throw BadInputException();       
         }
         if(exists_input_matrix(multi_input_data,Type::excluded_faces)){
-            errorOutput() << "Excluded faces not allowed with inhomogeneous input or hehomogenizaion!"<< endl;
+            errorOutput() << "excluded_faces not allowed with inhomogeneous input or dehomogenizaion!"<< endl;
             throw BadInputException();
         }
     }
