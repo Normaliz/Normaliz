@@ -2605,6 +2605,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
         verboseOutput() << "Converting polyhedron to polytope" << endl;
     
     Full_Cone Polytope(Generators);
+    Polytope.keep_order=true;
     Polytope.Grading=Truncation;
     Polytope.is_Computed.set(ConeProperty::Grading);
     Polytope.do_deg1_elements=true;
@@ -2626,6 +2627,10 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
             hv[deg]++;                        
         }    
         Hilbert_Series.add(hv,vector<denom_t>());
+        cout << Grading << hv << "SHIFT " << shift << endl;
+        Hilbert_Series.setShift(explicit_cast_to_long(shift));
+        Hilbert_Series.adjustShift();
+        Hilbert_Series.simplify();
         is_Computed.set(ConeProperty::HilbertSeries);
     }    
 }
@@ -2881,13 +2886,13 @@ void Full_Cone<Integer>::find_grading_inhom(){
         }
         if(quot<min_quot)
             min_quot=quot;
-        // cout << "+++ " << min_quot << endl;
+        cout << "+++ " << min_quot << endl;
     }
     shift=-min_quot;
     for(size_t i=0;i<dim;++i) // under this grading all generators have positive degree
         Grading[i]=Grading[i]+shift*Truncation[i];
         
-    shift--;  // correction for the Hilbert series computation to have it start in degree 0
+    // shift--;  // NO LONGER correction for the Hilbert series computation to have it start in degree 0
     
     is_Computed.set(ConeProperty::Shift);
         

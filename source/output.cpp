@@ -408,8 +408,9 @@ void Output<Integer>::write_inv_file() const{
         if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
             inv << "integer internal_index = " << Result->getIndex() << endl;           
         }
-
-        inv<<"integer number_support_hyperplanes = "<<Result->getNrSupportHyperplanes()<<endl;
+        if (Result->isComputed(ConeProperty::SupportHyperplanes)) { 
+            inv<<"integer number_support_hyperplanes = "<<Result->getNrSupportHyperplanes()<<endl;
+        }
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             inv << "integer size_triangulation = " << Result->getTriangulationSize() << endl;
         }
@@ -426,9 +427,10 @@ void Output<Integer>::write_inv_file() const{
             inv << "vector " << Linear_Form.size()
                 << " dehomogenization = " << Linear_Form;
         }
-
         if (Result->isComputed(ConeProperty::Grading)==false) {
-            inv<<"boolean graded = "<<"false"<<endl;
+            if (Result->isComputed(ConeProperty::ExtremeRays)) {
+                inv<<"boolean graded = "<<"false"<<endl;
+            }
         }
         else {
             inv<<"boolean graded = "<<"true"<<endl;
@@ -826,10 +828,12 @@ void Output<Integer>::write_files() const {
 
         //write constrains (support hyperplanes, congruences, equations)
 
-        out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
-            << of_polyhedron << ":" << endl;
-        Support_Hyperplanes.pretty_print(out);
-        out << endl;
+        if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+            out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
+                << of_polyhedron << ":" << endl;
+            Support_Hyperplanes.pretty_print(out);
+            out << endl;
+        }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             //equations
             const Matrix<Integer>& Equations = BasisChange.getEquationsMatrix();
