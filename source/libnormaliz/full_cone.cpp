@@ -2583,7 +2583,7 @@ void Full_Cone<Integer>::compute() {
             
         }
         else{
-            if(polyhedron_is_polytope){ // inthis situation we must just find the 
+            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
                 convert_polyhedron_to_polytope();                  // lattice points in a polytope
             }
             else
@@ -2641,9 +2641,9 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
         is_Computed.set(ConeProperty::HilbertBasis);
         module_rank=Hilbert_Basis.size();
         is_Computed.set(ConeProperty::ModuleRank);
-        multiplicity=1;// module_rank;
-        is_Computed.set(ConeProperty::Multiplicity);
         if(isComputed(ConeProperty::Grading) && module_rank>0){
+            multiplicity=1;// module_rank;
+            is_Computed.set(ConeProperty::Multiplicity);
             vector<num_t> hv(1);
             typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
             for(;hb!=Hilbert_Basis.end();++hb){
