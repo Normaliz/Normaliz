@@ -2601,16 +2601,41 @@ void Full_Cone<Integer>::compute() {
 template<typename Integer>
 void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     
-    if(verbose)
+    if(verbose){
         verboseOutput() << "Converting polyhedron to polytope" << endl;
-    
+		verboseOutput() << "Pointed since cone over polytope" << endl;		
+	}
+	pointed=true;
+	is_Computed.set(ConeProperty::IsPointed);    
     Full_Cone Polytope(Generators);
+	Polytope.pointed=true;
+	Polytope.is_Computed.set(ConeProperty::IsPointed);    
     Polytope.keep_order=true;
     Polytope.Grading=Truncation;
     Polytope.is_Computed.set(ConeProperty::Grading);
+	if(isComputed(ConeProperty::SupportHyperplanes)){
+		Polytope.Support_Hyperplanes=Support_Hyperplanes;
+		Polytope.nrSupport_Hyperplanes=nrSupport_Hyperplanes;
+		Polytope.is_Computed.set(ConeProperty::SupportHyperplanes);		
+	}
+	if(isComputed(ConeProperty::ExtremeRays)){
+		Polytope.Extreme_Rays=Extreme_Rays;
+		Polytope.is_Computed.set(ConeProperty::ExtremeRays);		
+	}
     Polytope.do_deg1_elements=true;
     Polytope.verbose=verbose;
     Polytope.compute();
+	if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
+					!isComputed(ConeProperty::SupportHyperplanes)){
+		Support_Hyperplanes=Polytope.Support_Hyperplanes;
+		nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
+		is_Computed.set(ConeProperty::SupportHyperplanes);	
+	}
+	if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
+					!isComputed(ConeProperty::ExtremeRays)){
+		Extreme_Rays=Polytope.Extreme_Rays;
+		is_Computed.set(ConeProperty::ExtremeRays);		
+	}
     Hilbert_Basis=Polytope.Deg1_Elements;
     is_Computed.set(ConeProperty::HilbertBasis);
     module_rank=Hilbert_Basis.size();

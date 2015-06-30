@@ -2462,7 +2462,7 @@ If \verb|DefaultMode| is set, implicitly or explicitly, Normaliz will not compla
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|sublattice| does not include any other computation goal. All other computation goals include |\verb|SupportHyperplanes|.
+The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and |\verb|SupportHyperplanes|.
 
 \subsubsection{Lattice data}
 
@@ -2562,13 +2562,15 @@ memory if they must be stored for output.
 
 \subsubsection{NmzIntegrate}
 
+The computation goals that require calling NmzIntegrate can only be set on the command line.
+
 \begin{itemize}
 	
-\itemtt[GenEhrhart, -E] makes Normaliz compue a generalized Ehrhart series.
+\itemtt[-E] makes Normaliz compue a generalized Ehrhart series.
 
-\itemtt[LeadCoeff, -L] makes Normaliz compute the leading coefficient of a generalized Ehrhart series.
+\itemtt[-L] makes Normaliz compute the leading coefficient of a generalized Ehrhart series.
 
-\itemtt[Integral, -I] makes Normaliz compute an integral.	
+\itemtt[-I] makes Normaliz compute an integral.	
 \end{itemize}
 
 These computation goals require a hogeneous computation.
