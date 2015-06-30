@@ -823,7 +823,7 @@ void Output<Integer>::write_files() const {
             Result->getModuleGeneratorsOfIntegralClosureMatrix().pretty_print(out);
             out << endl;
             if(mod)
-                write_matrix_ext(Result->getModuleGeneratorsOfIntegralClosureMatrix());
+                write_matrix_mod(Result->getModuleGeneratorsOfIntegralClosureMatrix());
         }
 
         //write constrains (support hyperplanes, congruences, equations)
