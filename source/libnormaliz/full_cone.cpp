@@ -138,8 +138,8 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     if(k==dim)
         v_make_prime(NewFacet.Hyp);
     else{
-		#pragma omp atomic
-		GMP_hyp++;
+        #pragma omp atomic
+        GMP_hyp++;
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
         vect_to_mpz(negative.Hyp,mpz_neg);
         vect_to_mpz(positive.Hyp,mpz_pos);
@@ -1823,7 +1823,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     Full_Cone BottomPolyhedron(BottomGen);
     BottomPolyhedron.verbose=verbose;
     BottomPolyhedron.keep_order = true;
-    BottomPolyhedron.dualize_cone(true);	// includes finding extreme rays
+    BottomPolyhedron.dualize_cone(true);    // includes finding extreme rays
 
     // transfer pointedness
     assert( BottomPolyhedron.isComputed(ConeProperty::IsPointed) );
@@ -1851,8 +1851,8 @@ void Full_Cone<Integer>::find_bottom_facets() {
     }
     for(size_t i=0;i<BottomPolyhedron.nrSupport_Hyperplanes;++i){
         Integer test=BottomPolyhedron.Support_Hyperplanes[i][dim];
-		for(size_t j=0;j<dim;++j)
-			help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];		
+        for(size_t j=0;j<dim;++j)
+            help[j]=BottomPolyhedron.Support_Hyperplanes[i][j];     
         if(test==0 && !isComputed(ConeProperty::SupportHyperplanes)){
             Support_Hyperplanes.append(help);
             nrSupport_Hyperplanes++;
@@ -1904,12 +1904,12 @@ void Full_Cone<Integer>::build_top_cone() {
     }
 
     if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
-		build_cone();
-	}
-	else{
-		find_bottom_facets();
-		deg1_triangulation=false;
-	}	
+        build_cone();
+    }
+    else{
+        find_bottom_facets();
+        deg1_triangulation=false;
+    }   
 
     try_offload(0);
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
@@ -2071,13 +2071,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
         
         int max_threads = omp_get_max_threads();
-		size_t Memory_per_gen=8*nrSupport_Hyperplanes;
-		size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
+        size_t Memory_per_gen=8*nrSupport_Hyperplanes;
+        size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
         // cout << "max_nr_gen " << max_nr_gen << endl;
-		AdjustedReductionBound=max_nr_gen;
-		if(AdjustedReductionBound < 2000)
-			AdjustedReductionBound=2000;
-		
+        AdjustedReductionBound=max_nr_gen;
+        if(AdjustedReductionBound < 2000)
+            AdjustedReductionBound=2000;
+        
         
         Sorting=compute_degree_function();
         bool save_do_module_gens_intcl=do_module_gens_intcl;
@@ -2209,7 +2209,7 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     }
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
     for (size_t j=0; LS!=LargeSimplices.end(); ++LS, ++j) {
-		if (j>=lss) use_bottom_points =false;
+        if (j>=lss) use_bottom_points =false;
         if (verbose) {
             verboseOutput() << "Large simplex " << j+1 << " / " << lss << endl;
         }
@@ -2309,10 +2309,10 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
 
 template<typename Integer>
 void Full_Cone<Integer>::remove_duplicate_ori_gens_from_HB(){
-	
+    
 return; //TODO reactivate!
 
-	set<vector<Integer> > OriGens;
+    set<vector<Integer> > OriGens;
     typename list<Candidate<Integer> >:: iterator c=OldCandidates.Candidates.begin();
     typename set<vector<Integer> >:: iterator found;
     for(;c!=OldCandidates.Candidates.end();){
@@ -2325,10 +2325,10 @@ return; //TODO reactivate!
             c=OldCandidates.Candidates.erase(c);
         }
         else{
-			if(c->original_generator)
-				OriGens.insert(c->cand);
+            if(c->original_generator)
+                OriGens.insert(c->cand);
             ++c;
-		}
+        }
     }
 }
 
@@ -2569,7 +2569,7 @@ void Full_Cone<Integer>::compute() {
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
             if(do_deg1_elements){
                 compute_deg1_elements_via_approx_global();
-	            is_Computed.set(ConeProperty::Deg1Elements,true);
+                is_Computed.set(ConeProperty::Deg1Elements,true);
                 if(do_triangulation){
                     do_deg1_elements=false;
                     do_partial_triangulation=false;
@@ -2603,78 +2603,79 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     
     if(verbose){
         verboseOutput() << "Converting polyhedron to polytope" << endl;
-		verboseOutput() << "Pointed since cone over polytope" << endl;		
-	}
-	pointed=true;
-	is_Computed.set(ConeProperty::IsPointed);    
+        verboseOutput() << "Pointed since cone over polytope" << endl;      
+    }
+    pointed=true;
+    is_Computed.set(ConeProperty::IsPointed);    
     Full_Cone Polytope(Generators);
-	Polytope.pointed=true;
-	Polytope.is_Computed.set(ConeProperty::IsPointed);    
+    Polytope.pointed=true;
+    Polytope.is_Computed.set(ConeProperty::IsPointed);    
     Polytope.keep_order=true;
     Polytope.Grading=Truncation;
     Polytope.is_Computed.set(ConeProperty::Grading);
-	if(isComputed(ConeProperty::SupportHyperplanes)){
-		Polytope.Support_Hyperplanes=Support_Hyperplanes;
-		Polytope.nrSupport_Hyperplanes=nrSupport_Hyperplanes;
-		Polytope.is_Computed.set(ConeProperty::SupportHyperplanes);		
-	}
-	if(isComputed(ConeProperty::ExtremeRays)){
-		Polytope.Extreme_Rays=Extreme_Rays;
-		Polytope.is_Computed.set(ConeProperty::ExtremeRays);		
-	}
+    if(isComputed(ConeProperty::SupportHyperplanes)){
+        Polytope.Support_Hyperplanes=Support_Hyperplanes;
+        Polytope.nrSupport_Hyperplanes=nrSupport_Hyperplanes;
+        Polytope.is_Computed.set(ConeProperty::SupportHyperplanes);     
+    }
+    if(isComputed(ConeProperty::ExtremeRays)){
+        Polytope.Extreme_Rays=Extreme_Rays;
+        Polytope.is_Computed.set(ConeProperty::ExtremeRays);        
+    }
     Polytope.do_deg1_elements=true;
     Polytope.verbose=verbose;
     Polytope.compute();
-	if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
-					!isComputed(ConeProperty::SupportHyperplanes)){
-		Support_Hyperplanes=Polytope.Support_Hyperplanes;
-		nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
-		is_Computed.set(ConeProperty::SupportHyperplanes);	
-	}
-	if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
-					!isComputed(ConeProperty::ExtremeRays)){
-		Extreme_Rays=Polytope.Extreme_Rays;
-		is_Computed.set(ConeProperty::ExtremeRays);		
-	}
-    Hilbert_Basis=Polytope.Deg1_Elements;
-    is_Computed.set(ConeProperty::HilbertBasis);
-    module_rank=Hilbert_Basis.size();
-    is_Computed.set(ConeProperty::ModuleRank);
-    multiplicity=1;// module_rank;
-    is_Computed.set(ConeProperty::Multiplicity);
-    if(isComputed(ConeProperty::Grading) && module_rank>0){
-        vector<num_t> hv(1);
-        typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
-        for(;hb!=Hilbert_Basis.end();++hb){
-            long deg=explicit_cast_to_long<Integer>(v_scalar_product(Grading,*hb));
-            if(deg+1>hv.size())
-                hv.resize(deg+1);
-            hv[deg]++;                        
-        }    
-        Hilbert_Series.add(hv,vector<denom_t>());
-        cout << Grading << hv << "SHIFT " << shift << endl;
-        Hilbert_Series.setShift(explicit_cast_to_long(shift));
-        Hilbert_Series.adjustShift();
-        Hilbert_Series.simplify();
-        is_Computed.set(ConeProperty::HilbertSeries);
-    }    
+    if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
+                    !isComputed(ConeProperty::SupportHyperplanes)){
+        Support_Hyperplanes=Polytope.Support_Hyperplanes;
+        nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
+        is_Computed.set(ConeProperty::SupportHyperplanes);  
+    }
+    if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
+                    !isComputed(ConeProperty::ExtremeRays)){
+        Extreme_Rays=Polytope.Extreme_Rays;
+        is_Computed.set(ConeProperty::ExtremeRays);     
+    }
+    if(Polytope.isComputed(ConeProperty::Deg1Elements)){
+        Hilbert_Basis=Polytope.Deg1_Elements;
+        is_Computed.set(ConeProperty::HilbertBasis);
+        module_rank=Hilbert_Basis.size();
+        is_Computed.set(ConeProperty::ModuleRank);
+        multiplicity=1;// module_rank;
+        is_Computed.set(ConeProperty::Multiplicity);
+        if(isComputed(ConeProperty::Grading) && module_rank>0){
+            vector<num_t> hv(1);
+            typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
+            for(;hb!=Hilbert_Basis.end();++hb){
+                long deg=explicit_cast_to_long<Integer>(v_scalar_product(Grading,*hb));
+                if(deg+1>hv.size())
+                    hv.resize(deg+1);
+                hv[deg]++;                        
+            }    
+            Hilbert_Series.add(hv,vector<denom_t>());
+            Hilbert_Series.setShift(explicit_cast_to_long(shift));
+            Hilbert_Series.adjustShift();
+            Hilbert_Series.simplify();
+            is_Computed.set(ConeProperty::HilbertSeries);
+        }  
+    }   
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_approx_global() {
-	
-	compute_elements_via_approx(Deg1_Elements);
-	
-	typename list<vector<Integer> >::iterator e;
-	for(e=Deg1_Elements.begin(); e!=Deg1_Elements.end();)
-		if(!contains(*e))
-			e=Deg1_Elements.erase(e);
-		else
-			++e;
-		if(verbose)
-			verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl;	
+    
+    compute_elements_via_approx(Deg1_Elements);
+    
+    typename list<vector<Integer> >::iterator e;
+    for(e=Deg1_Elements.begin(); e!=Deg1_Elements.end();)
+        if(!contains(*e))
+            e=Deg1_Elements.erase(e);
+        else
+            ++e;
+        if(verbose)
+            verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl; 
 }
 
 //---------------------------------------------------------------------------
@@ -2715,9 +2716,9 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     if(verbose)
         verboseOutput() << "Returning to original cone" << endl;
     if(do_deg1_elements)
-		elements_from_approx.splice(elements_from_approx.begin(),C_approx.Deg1_Elements);
+        elements_from_approx.splice(elements_from_approx.begin(),C_approx.Deg1_Elements);
     if(do_Hilbert_basis)
-		elements_from_approx.splice(elements_from_approx.begin(),C_approx.Hilbert_Basis);
+        elements_from_approx.splice(elements_from_approx.begin(),C_approx.Hilbert_Basis);
 }
 
 
@@ -2911,7 +2912,7 @@ void Full_Cone<Integer>::find_grading_inhom(){
         }
         if(quot<min_quot)
             min_quot=quot;
-        cout << "+++ " << min_quot << endl;
+        // cout << "+++ " << min_quot << endl;
     }
     shift=-min_quot;
     for(size_t i=0;i<dim;++i) // under this grading all generators have positive degree
@@ -3942,10 +3943,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     NewCandidates.dual=false;
     NewCandidates.verbose=verbose;
     
-	RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
-	
-	do_bottom_dec=false;
-	keep_order=false;
+    RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
+    
+    do_bottom_dec=false;
+    keep_order=false;
 
     is_approximation=false;
     
@@ -4131,13 +4132,13 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     detSum = 0;
     shift = C.shift;
     if(C.gen_degrees.size()>0){ // now we copy the degrees
-    	gen_degrees.resize(nr_gen);
+        gen_degrees.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
             gen_degrees[i] = C.gen_degrees[Key[i]];
         }
     }
     if(C.gen_levels.size()>0){ // now we copy the levels
-    	gen_levels.resize(nr_gen);
+        gen_levels.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
             gen_levels[i] = C.gen_levels[Key[i]];
         }
@@ -4167,9 +4168,9 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     NewCandidates.verbose=verbose;
     
     is_approximation=false;
-	
-	do_bottom_dec=false;
-	keep_order=true;
+    
+    do_bottom_dec=false;
+    keep_order=true;
 }
 
 //---------------------------------------------------------------------------
