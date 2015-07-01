@@ -8,8 +8,8 @@ embedding dimension = 6
 affine dimension of the polyhedron = 3
 rank of recession monoid = 3
 
-size of triangulation   = 5
-resulting sum of |det|s = 2167
+size of triangulation   = 3
+resulting sum of |det|s = 2165
 
 dehomogenization:
 0 0 0 0 0 1 

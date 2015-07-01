@@ -148,8 +148,10 @@ int main(int argc, char* argv[])
                 // to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 's':
-            case 'S':
                 to_compute.set(ConeProperty::SupportHyperplanes);
+                break;
+            case 'S':
+                to_compute.set(ConeProperty::Sublattice);
                 break;
             case 't':
                 to_compute.set(ConeProperty::TriangulationSize);

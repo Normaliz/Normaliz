@@ -86,6 +86,7 @@ public:
     
     // control of what to compute
     bool do_triangulation;
+    bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
     bool do_partial_triangulation;
     bool do_determinants;
     bool do_multiplicity;
@@ -250,6 +251,7 @@ public:
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
 	void find_bottom_facets();                                  
     Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
     void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
@@ -283,7 +285,7 @@ public:
     void find_module_rank_from_proj();  // used if Hilbert basis is not computed
     void find_level0_dim(); // ditto for the level 0 dimension 
     void sort_gens_by_degree(bool triangulate);
-    void compute_support_hyperplanes();
+    // void compute_support_hyperplanes(bool do_extreme_rays=false);
     bool check_evaluation_buffer();
     bool check_evaluation_buffer_size();
     void evaluate_triangulation();
@@ -312,7 +314,7 @@ public:
     
     void prepare_inclusion_exclusion();
 
-    void do_vars_check();
+    void do_vars_check(bool with_default);
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
 
@@ -363,7 +365,7 @@ Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constru
  *              Computation Methods
  *---------------------------------------------------------------------------
  */
-    void dualize_cone();
+    void dualize_cone(bool do_extreme_rays=false);
     void support_hyperplanes();
 
     void compute();

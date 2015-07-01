@@ -159,7 +159,7 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::update_inhom_hvector(long level_offset, size_t Deg, Collector<Integer>& Coll){
 
     if(level_offset==1){
-        Coll.inhom_hvector[Deg-1]++;
+        Coll.inhom_hvector[Deg]++;
         return;
     }
     
@@ -170,7 +170,7 @@ void SimplexEvaluator<Integer>::update_inhom_hvector(long level_offset, size_t D
     for(size_t i=0;i<dim;++i){
         if(gen_levels[i]==1){
             Deg_i=Deg+gen_degrees[i];
-            Coll.inhom_hvector[Deg_i-1]++;
+            Coll.inhom_hvector[Deg_i]++;
         }
     }
 

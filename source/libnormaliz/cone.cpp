@@ -295,8 +295,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         }        
     }
     if(inhom_input){
-        if(exists_input_matrix(multi_input_data,Type::dehomogenization)){
-            errorOutput() << "Dehomogenizaion not allowed with inhomogeneous input!" << endl;
+        if(exists_input_matrix(multi_input_data,Type::dehomogenization) || exists_input_matrix(multi_input_data,Type::support_hyperplanes)){
+            errorOutput() << "dehomogenizaion and support_hyperplanes not allowed with inhomogeneous input!" << endl;
             throw BadInputException();            
         }       
     }
@@ -306,7 +306,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             throw BadInputException();       
         }
         if(exists_input_matrix(multi_input_data,Type::excluded_faces)){
-            errorOutput() << "Excluded faces not allowed with inhomogeneous input or hehomogenizaion!"<< endl;
+            errorOutput() << "excluded_faces not allowed with inhomogeneous input or dehomogenizaion!"<< endl;
             throw BadInputException();
         }
     }
@@ -513,7 +513,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     if((Inequalities.nr_of_rows()!=0 || !cone_sat_eq) && Generators.nr_of_rows()!=0){
         Sublattice_Representation<Integer> ConeLatt(Generators,true);
         Full_Cone<Integer> TmpCone(ConeLatt.to_sublattice(Generators));
-        TmpCone.compute_support_hyperplanes();
+        TmpCone.dualize_cone();
         Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
@@ -860,7 +860,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     FC.verbose=verbose;
     if (verbose) verboseOutput() << endl << "Computing a positive embedding..." << endl;
 
-    FC.support_hyperplanes();
+    FC.dualize_cone();
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
     Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Integer> Positive_Embedded_Generators=Gens.multiplication(Selected_Supp_Hyp_Trans);
@@ -1491,7 +1491,7 @@ void Cone<Integer>::compute_generators() {
         }
         Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(SupportHyperplanes));
         Dual_Cone.verbose=verbose;
-        Dual_Cone.support_hyperplanes();
+        Dual_Cone.dualize_cone();
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
             Matrix<Integer> Extreme_Rays=Dual_Cone.getSupportHyperplanes();
@@ -1542,8 +1542,8 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         }
         Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Generators));
         Tmp_Cone.verbose=verbose;
-        Tmp_Cone.inhomogeneous=inhomogeneous;  // necessary to prevent computation of grading in the inhomogeneous case
-        Tmp_Cone.support_hyperplanes();        // also marks extreme rays
+        // Tmp_Cone.inhomogeneous=inhomogeneous;  // NO LONGER necessary to prevent computation of grading in the inhomogeneous case
+        Tmp_Cone.dualize_cone(true);        // also marks extreme rays
         extract_data(Tmp_Cone);
         if(inhomogeneous){
             Matrix<Integer> Help(SupportHyperplanes.nr_of_rows()+1,dim);  // make Dehomogenization the first inequality
@@ -1596,9 +1596,10 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
     typename multimap <Integer , vector <Integer> >::const_iterator ii;
     
     size_t i_start=0;
-    if(inhomogeneous){  // in the inhomogeneous case the truncation will be inserted below
+    if(inhomogeneous){  // in the inhomogeneous case the truncation will be (re)inserted below
         i_start=1;
-        assert(Inequ_on_Ker[0]==BasisChange.to_sublattice_dual(Dehomogenization));
+        if(Inequ_on_Ker[0]!=BasisChange.to_sublattice_dual(Dehomogenization))
+            i_start=0;
     }
     for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
         hyperplane=Inequ_on_Ker[i];
