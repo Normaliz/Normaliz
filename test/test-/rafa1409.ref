@@ -8,8 +8,8 @@ external index = 1
 internal index = 1
 original monoid is integrally closed
 
-size of triangulation   = 27
-resulting sum of |det|s = 29
+size of triangulation   = 1
+resulting sum of |det|s = 2
 
 No implicit grading found
 

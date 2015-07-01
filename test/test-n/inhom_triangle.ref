@@ -8,9 +8,6 @@ embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
 rank of recession monoid = 0
 
-size of triangulation   = 1
-resulting sum of |det|s = 1
-
 dehomogenization:
 0 0 1 
 
@@ -20,6 +17,19 @@ grading:
 
 module rank = 3
 multiplicity = 3
+
+Hilbert series:
+1 2 
+denominator with 0 factors:
+
+
+shift = -2
+
+degree of Hilbert Series as rational function = 3
+
+Hilbert polynomial:
+
+with common denominator = 1
 
 ***********************************************************************
 
