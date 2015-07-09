@@ -25,10 +25,12 @@
 #define INTEGER_H_
 
 #include "general.h"
+
 #include <list>
 #include <vector>
 #include <iostream>
 #include "limits.h"
+
 
 // Integer should (may) support:
 // Integer abs(Integer); here implemented as Iabs
@@ -72,66 +74,38 @@ void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, In
 //                     Conversions and checks
 //---------------------------------------------------------------------------
 
+// convert val to ret
+// does the conversion and returns false if it fails
+bool try_convert(long& ret, const long long& val);
+inline bool try_convert(long long& ret, const long& val) {ret = val; return true;}
+bool try_convert(long& ret, const mpz_class& val);
+bool try_convert(long long& ret, const mpz_class& val);
+inline bool try_convert(mpz_class& ret, const long& val) {ret = val; return true;}
+bool try_convert(mpz_class& ret, const long long& val);
+
+// template for same typ "conversion"
+template<typename Type>
+inline bool try_convert(Type& ret, const Type& val) {ret = val; return true;}
+
+// general conversion, throws ArithmeticException if conversion fails
+template<typename ToType, typename FromType>
+inline void convert(ToType& ret, const FromType& val) {
+    if (!try_convert(ret,val)) {
+        errorOutput() << "Cannot convert " << val << endl;
+        throw ArithmeticException();
+    }
+}
+
+// general conversion with return, throws ArithmeticException if conversion fails
+template<typename ToType, typename FromType>
+inline ToType convertTo(const FromType& val) {
+    ToType copy;
+    convert(copy,val);
+    return copy;
+}
+
+
 bool fits_long_range(long long a);
-
-mpz_class to_mpz(long a);
-mpz_class to_mpz(long long a);
-inline mpz_class to_mpz(const mpz_class& a) {return a;}
-
-
-template<typename Integer> inline long explicit_cast_to_long(const Integer& a) { // only used for Integer = long long
-    // check for overflow
-    if (!fits_long_range(a)) {
-        errorOutput() << "Cannot convert " << a << " to Integer" << endl;
-        throw ArithmeticException();
-    }
-    return (long)a;
-}
-template<> inline long explicit_cast_to_long(const long& a) {
-    return a;
-}
-template<> inline long explicit_cast_to_long<mpz_class> (const mpz_class& a) {
-    // check for overflow
-    if (!a.fits_slong_p()) {
-        errorOutput() << "Cannot convert " << a << " to Integer" << endl;
-        throw ArithmeticException();
-    }
-    return a.get_si();
-}
-
-template<typename Integer> 
-inline Integer to_Int(const mpz_class& a) { // only used for Integer = long long
-
-    if (a.fits_slong_p())
-        return (long long)explicit_cast_to_long<mpz_class>(a);
-    if(sizeof(long long)==sizeof(long)){
-        errorOutput() << "Cannot convert " << a << " to Integer" << endl;
-        throw ArithmeticException();
-    }
-    mpz_class quot=a/LONG_MAX;
-    mpz_class rem=a-quot*LONG_MAX;
-    return ((long long) explicit_cast_to_long(quot))*((long long) LONG_MAX)+((long long) explicit_cast_to_long(rem));     
-}
-
-template<> 
-inline long to_Int(const mpz_class& a) {
-    return explicit_cast_to_long(a);
-}
-
-template<> 
-inline mpz_class to_Int(const mpz_class& a) {
-    return a;
-}
-
-/* template<typename Integer>
-inline bool do_arithmetic_check() {
-  return test_arithmetic_overflow; // true;
-} 
-
-template<>
-inline bool do_arithmetic_check<mpz_class>() {
-  return false;
-} */
 
 template<typename Integer>
 inline bool using_GMP() {

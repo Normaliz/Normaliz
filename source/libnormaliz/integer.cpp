@@ -32,28 +32,53 @@
 namespace libnormaliz {
 using namespace std;
 
+bool try_convert(long& ret, const long long& val) {
+    if (fits_long_range(val)) {
+        ret = val;
+        return true;
+    }
+    return false;
+}
 
+bool try_convert(long& ret, const mpz_class& val) {
+    if (!val.fits_slong_p()) {
+        return false;
+    }
+    ret = val.get_si();
+    return true;
+}
+
+bool try_convert(long long& ret, const mpz_class& val) {
+    if (val.fits_slong_p()) {
+        ret = val.get_si();
+        return true;
+    }
+    if (sizeof(long long)==sizeof(long)) {
+        return false;
+    }
+    mpz_class quot;
+    ret = mpz_tdiv_q_ui(quot.get_mpz_t(), val.get_mpz_t(), LONG_MAX); //returns remainder
+    if (!quot.fits_slong_p()){
+        return false;
+    }
+    ret += ((long long) quot.get_si())*((long long) LONG_MAX);
+    return true;
+}
+
+bool try_convert(mpz_class& ret, const long long& val) {
+    if (fits_long_range(val)) {
+        ret = mpz_class(long(val));
+    } else {
+        ret = mpz_class(long (val % LONG_MAX)) + mpz_class(LONG_MAX) * mpz_class(long(val/LONG_MAX));
+    }
+    return true;
+}
 
 bool fits_long_range(long long a) {
-    //TODO make it return true without check when ranges are the same
-    return ( a <= LONG_MAX && a >= LONG_MIN);
+    return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
 }
 
-mpz_class to_mpz(long a) {
-    return mpz_class(a);
-}
-mpz_class to_mpz(long long a) {
-    if (fits_long_range(a)) {
-        return mpz_class(long(a));
-    } else {
-        static long long mod = LONG_MAX;
-        // to ensure the following % and / are done in long long
-        return mpz_class(long (a % mod)) + mpz_class(LONG_MAX) * to_mpz(long(a/mod));
-    }
-}
-
-
-
+//---------------------------------------------------------------------------
 
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b){

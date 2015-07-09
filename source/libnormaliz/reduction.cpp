@@ -77,8 +77,8 @@ Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
 template<typename Integer>
 void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
     C.Support_Hyperplanes.MxV(values, cand);
-    sort_deg=explicit_cast_to_long<Integer>(v_scalar_product(cand,C.Sorting));
-    if(C.do_module_gens_intcl)  // nevessary to make all monoid generators subrtactible
+    convert(sort_deg, v_scalar_product(cand,C.Sorting));
+    if(C.do_module_gens_intcl)  // necessary to make all monoid generators subtractible
         sort_deg*=2;
 }
 

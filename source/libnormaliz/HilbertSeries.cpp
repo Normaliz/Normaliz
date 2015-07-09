@@ -132,11 +132,8 @@ void HilbertSeries::performAdd(const vector<num_t>& numerator, const vector<deno
         other_denom[gen_degrees[i]]++;
     }
     // convert numerator to mpz
-    s = numerator.size();
-    vector<mpz_class> other_num(s);
-    for (i=0; i<s; ++i) {
-        other_num[i] = to_mpz(numerator[i]);
-    }
+    vector<mpz_class> other_num(numerator.size());
+    convert(other_num, numerator);
     performAdd(other_num, other_denom);
 }
 

@@ -141,12 +141,12 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
         #pragma omp atomic
         GMP_hyp++;
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
-        vect_to_mpz(negative.Hyp,mpz_neg);
-        vect_to_mpz(positive.Hyp,mpz_pos);
+        convert(mpz_neg, negative.Hyp);
+        convert(mpz_pos, positive.Hyp);
         for (k = 0; k <dim; k++)
-            mpz_sum[k]=to_mpz(positive.ValNewGen)*mpz_neg[k]-to_mpz(negative.ValNewGen)*mpz_pos[k];
+            mpz_sum[k]=convertTo<mpz_class>(positive.ValNewGen)*mpz_neg[k]-convertTo<mpz_class>(negative.ValNewGen)*mpz_pos[k];
         v_make_prime(mpz_sum);
-        vect_to_Int(mpz_sum,NewFacet.Hyp);
+        convert(NewFacet.Hyp, mpz_sum);
     }
     
     NewFacet.ValNewGen=0; 
@@ -2599,7 +2599,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         Deg1_Elements.unique();
     }
     if (do_h_vector) {
-        Hilbert_Series.setShift(explicit_cast_to_long(shift));
+        Hilbert_Series.setShift(convertTo<long>(shift));
         Hilbert_Series.adjustShift();
         // now the shift in the HilbertSeries may change and we would have to adjust
         // the shift, the grading and more in the Full_Cone to continue to add data!
@@ -2784,13 +2784,13 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
             vector<num_t> hv(1);
             typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
             for(;hb!=Hilbert_Basis.end();++hb){
-                long deg=explicit_cast_to_long<Integer>(v_scalar_product(Grading,*hb));
+                long deg=convertTo<long>(v_scalar_product(Grading,*hb));
                 if(deg+1>hv.size())
                     hv.resize(deg+1);
                 hv[deg]++;                        
             }    
             Hilbert_Series.add(hv,vector<denom_t>());
-            Hilbert_Series.setShift(explicit_cast_to_long(shift));
+            Hilbert_Series.setShift(convertTo<long>(shift));
             Hilbert_Series.adjustShift();
             Hilbert_Series.simplify();
             is_Computed.set(ConeProperty::HilbertSeries);
@@ -3075,7 +3075,7 @@ void Full_Cone<Integer>::set_degrees() {
                 errorOutput() << "Grading gives non-positive value " << gen_degrees_Integer[i] << " for generator " << i+1 << "." << endl;
                 throw BadInputException();
             }
-            gen_degrees[i] = explicit_cast_to_long(gen_degrees_Integer[i]);
+            convert(gen_degrees[i], gen_degrees_Integer[i]);
         }
     }
     
@@ -3102,7 +3102,7 @@ void Full_Cone<Integer>::set_levels() {
                 errorOutput() << "THIS SHOULD NOT HAPPEN !" << endl;
                 throw BadInputException();
             }
-            gen_levels[i] = explicit_cast_to_long(gen_levels_Integer[i]);
+            convert(gen_levels[i], gen_levels_Integer[i]);
             // cout << "Gen " << Generators[i];
             // cout << "level " << gen_levels[i] << endl << "----------------------" << endl;
         }
@@ -3216,9 +3216,9 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     for(;g!=genList.end();++g){
         v=*g;
         if(isComputed(ConeProperty::Grading))
-            gen_degrees[i]=explicit_cast_to_long<Integer>(v[0]);
+            gen_degrees[i]=convertTo<long>(v[0]);
         if(inhomogeneous)
-            gen_levels[i]=explicit_cast_to_long<Integer>(v[dim+3]);
+            gen_levels[i]=convertTo<long>(v[dim+3]);
         Extreme_Rays[i]=false;
         if(v[dim+2]>0)
             Extreme_Rays[i]=true;

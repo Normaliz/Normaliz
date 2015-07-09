@@ -127,9 +127,9 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
         // cout << "av " << av;
         // cout << "bv " << bv;   
         vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
-        vect_to_mpz(av,mpz_a);
-        vect_to_mpz(bv,mpz_b);
-        ans=to_Int<Integer>(v_scalar_product(mpz_a,mpz_b));
+        convert(mpz_a, av);
+        convert(mpz_b, bv);
+        convert(ans, v_scalar_product(mpz_a,mpz_b));
     }
         
     return ans;
@@ -589,16 +589,11 @@ vector<key_t> identity_key(size_t n){
 //---------------------------------------------------------------
 // conversion between different integer types
 
-template<typename Integer>
-void vect_to_Int(const vector<mpz_class>& mpz_vect, vector<Integer>& vect){
-    for(size_t i=0; i<mpz_vect.size();++i)
-        vect[i]=to_Int<Integer>(mpz_vect[i]);
-}
-
-template<typename Integer>
-void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect){
-    for(size_t i=0; i<mpz_vect.size();++i)
-        mpz_vect[i]=to_mpz(vect[i]);
+template<typename ToType, typename FromType>
+void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect){
+    assert (ret_vect.size() >= from_vect.size());
+    for(size_t i=0; i<from_vect.size();++i)
+        convert(ret_vect[i], from_vect[i]);
 }
 
 //---------------------------------------------------------------

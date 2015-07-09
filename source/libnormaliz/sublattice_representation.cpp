@@ -77,8 +77,8 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
         B=Matrix<Integer>(mpz_SLR.B.nr,mpz_SLR.B.nc);
         mat_to_Int(mpz_SLR.A,A);
         mat_to_Int(mpz_SLR.B,B);
-        index=mpz_SLR.index; // to_Int<Integer>(mpz_SLR.index);
-        c=to_Int<Integer>(mpz_SLR.c);
+        index=mpz_SLR.index;
+        convert(c, mpz_SLR.c);
         rank=mpz_SLR.rank;        
     }
 }
@@ -107,7 +107,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         A = B = Matrix<Integer>(dim);
         index=1;
         for(size_t k=0;k<dim;++k)
-            index*=to_mpz(N[k][k]);
+            index*=convertTo<mpz_class>(N[k][k]);
         index=Iabs(index);
         c=1;
         // cout << "Ausgang 0" << endl;
@@ -129,7 +129,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         col[k]=j;
         if(N[k][j]<0)
             v_scalar_multiplication<Integer>(N[k],-1);
-        row_index*=to_mpz(N[k][j]);
+        row_index*=convertTo<mpz_class>(N[k][j]);
     }
     
     if(row_index==1){  // ==> index=1, sublattice is saturated and we can take a projection
@@ -185,7 +185,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     }
     index=1;
     for(size_t k=0;k<rank;++k)
-        index*=to_mpz(N[k][k]);
+        index*=convertTo<mpz_class>(N[k][k]);
     return; 
 }
 
@@ -431,7 +431,7 @@ void Sublattice_Representation<Integer>::make_congruences() const {
     Congruences_computed=true;
     external_index=1;
     for(size_t i=0;i<Transf2.nr;++i)
-        external_index*=to_mpz(Transf2[i][dim]);
+        external_index*=convertTo<mpz_class>(Transf2[i][dim]);
 }
 
 }

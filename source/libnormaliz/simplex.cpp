@@ -429,7 +429,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
     if(C_ptr->do_Stanley_dec){                          // prepare space for Stanley dec
         STANLEYDATA<Integer> SimplStanley;         // key + matrix of offsets
         SimplStanley.key=key;
-        Matrix<Integer> offsets(explicit_cast_to_long(volume),dim);  // volume rows, dim columns
+        Matrix<Integer> offsets(convertTo<long>(volume),dim);  // volume rows, dim columns
         SimplStanley.offsets=offsets;
         #pragma omp critical(STANLEY)
         {
@@ -462,16 +462,16 @@ void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& eleme
         if(!GMP_transition){
             mpz_Generators=Matrix<mpz_class>(dim,dim);
             mat_to_mpz(Generators,mpz_Generators);
-            mpz_volume=to_mpz(volume);
+            convert(mpz_volume, volume);
             GMP_transition=true;
         }
         }
     }
 
     vector<mpz_class> mpz_element(dim);
-    vect_to_mpz(element,mpz_element);
+    convert(mpz_element, element);
     vector<mpz_class> mpz_help=mpz_Generators.VxM_div(mpz_element,mpz_volume,success);
-    vect_to_Int(mpz_help,help);
+    convert(help, mpz_help);
 
 }
 
@@ -529,7 +529,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.inhomogeneous){
         for(i=0;i<dim;i++)
             level_Int+=element[i]*gen_levels[i];
-        level=explicit_cast_to_long<Integer>(level_Int/volume); // have to divide by volume; see above
+        level=convertTo<long>(level_Int/volume); // have to divide by volume; see above
         // cout << level << " ++ " << volume << " -- " << element;
         
         if(level>1) return; // ***************** nothing to do for this vector
@@ -548,7 +548,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     size_t Deg=0;
     if(C.do_h_vector){
-        Deg = explicit_cast_to_long<Integer>(normG/volume);
+        Deg = convertTo<long>(normG/volume);
         for(i=0;i<dim;i++) { // take care of excluded facets and increase degree when necessary
             if(element[i]==0 && Excluded[i]) {
                 Deg += gen_degrees[i];
@@ -683,7 +683,7 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         return false;
     take_care_of_0vector(C_ptr->Results[tn]);
     if(volume!=1)
-        evaluate_block(1,explicit_cast_to_long(volume)-1,C_ptr->Results[tn]);
+        evaluate_block(1,convertTo<long>(volume)-1,C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
     return true;
@@ -704,7 +704,7 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
 
     size_t block_length=ParallelBlockLength;
-    size_t nr_elements=explicit_cast_to_long(volume)-1; // 0-vector already taken care of
+    size_t nr_elements=convertTo<long>(volume)-1; // 0-vector already taken care of
     size_t nr_blocks=nr_elements/ParallelBlockLength;
     if(nr_elements%ParallelBlockLength != 0)
         ++nr_blocks;
@@ -812,7 +812,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
     if(one_back>0){                           // define the last point processed before if it isn't 0
         for(size_t i=1;i<=dim;++i){               
             point[dim-i]=one_back % GDiag[dim-i];
-            one_back/= explicit_cast_to_long(GDiag[dim-i]);
+            one_back/= convertTo<long>(GDiag[dim-i]);
         }
         
         for(size_t i=0;i<dim;++i){  // put elements into the state at the end of the previous block
@@ -1078,13 +1078,13 @@ void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>
     }
     
     if (C_ptr->deg1_triangulation) {
-        Coll.mult_sum += to_mpz(multiplicity);
+        Coll.mult_sum += convertTo<mpz_class>(multiplicity);
     } else {
         mpz_class deg_prod=gen_degrees[0];
         for (size_t i=1; i<dim; i++) {
             deg_prod *= gen_degrees[i];
         }
-        mpq_class mult = to_mpz(multiplicity);
+        mpq_class mult = convertTo<mpz_class>(multiplicity);
         mult /= deg_prod;
         Coll.mult_sum += mult;
     }  

@@ -164,7 +164,7 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
 
     if (volume < ScipBound) {
-        stellar_det_sum += explicit_cast_to_long(volume);
+        stellar_det_sum += convertTo<long>(volume);
         return;
     }
 
@@ -208,7 +208,7 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
     }
     else {
 //      cout << "Not using " << new_point;
-        stellar_det_sum += explicit_cast_to_long(volume);
+        stellar_det_sum += convertTo<long>(volume);
     }
     return;
 }
@@ -391,7 +391,7 @@ vector<Integer> opt_sol(SCIP* scip,
         //SCIPprintSol(scip, sol, NULL, FALSE) ;
 
         for (int i=0;i<dim;i++) {
-            sol_vec[i] = explicit_cast_to_long(SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
+            convert(sol_vec[i], SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
         }
 
         // HOTFIX to avoid pseudo solution

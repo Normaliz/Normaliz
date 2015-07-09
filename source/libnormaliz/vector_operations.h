@@ -197,12 +197,8 @@ vector<key_t> identity_key(size_t n);
 //							  Conversion between integer types
 //---------------------------------------------------------------------------
 
-
-template<typename Integer>
-void vect_to_Int(const vector<mpz_class>& mpz_vect, vector<Integer>& vect);
-
-template<typename Integer>
-void vect_to_mpz(const vector<Integer>& vect, vector<mpz_class>& mpz_vect);
+template<typename ToType, typename FromType>
+void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect);
 
 //---------------------------------------------------------------------------
 //                            Sorting

@@ -801,9 +801,9 @@ vector<Integer> Matrix<Integer>::VxM(const vector<Integer>& v) const{
     Matrix<mpz_class> mpz_this(nr,nc);
     mat_to_mpz(*this,mpz_this);
     vector<mpz_class> mpz_v(nr);
-    vect_to_mpz(v,mpz_v);
+    convert(mpz_v, v);
     vector<mpz_class> mpz_w=mpz_this.VxM(mpz_v);
-    vect_to_Int(mpz_w,w);
+    convert(w,mpz_w);
     return w;
 }
 
@@ -1364,7 +1364,7 @@ Integer Matrix<Integer>::vol_submatrix(const Matrix<Integer>& mother, const vect
         mpz_submatrix(mpz_this,mother,key);
         mpz_class mpz_det;
         mpz_this.row_echelon(success,mpz_det);
-        det=to_Int<Integer>(mpz_det);
+        convert(det, mpz_det);
     }
     
     nr=save_nr;
@@ -1552,7 +1552,7 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
                
            for(size_t i=0;i<dim;++i)
                for(size_t k=0;k<RS.size();++k)
-                   mpz_this[i][k+dim]=to_mpz((*RS[k])[i]);
+                   convert(mpz_this[i][k+dim], (*RS[k])[i]);
            mpz_this.solve_destructive_inner(ZZ_invertible,mpz_denom);            
                       
            for(size_t j=0;j<red_col;++j)  // reduce first red_col columns of solution mod denom
@@ -1578,7 +1578,7 @@ void Matrix<Integer>::solve_system_submatrix_outer(const Matrix<Integer>& mother
               }
                   
            mat_to_Int(mpz_this,*this);
-           denom=to_Int<Integer>(mpz_denom);
+           convert(denom, mpz_denom);
                 
         }
         
@@ -1838,7 +1838,7 @@ Integer Matrix<Integer>::full_rank_index() const{
     Matrix<mpz_class> mpz_Copy(nr,nc);
     mat_to_mpz(*this,mpz_Copy);
     mpz_class mpz_index=mpz_Copy.full_rank_index(success);
-    index=to_Int<Integer>(mpz_index);
+    convert(index, mpz_index);
     return index;
 }
 
@@ -1995,19 +1995,31 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
 // Classless conversion routines
 //---------------------------------------------------------------------------
 
+template<typename ToType, typename FromType>
+void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
+    // we allow the matrices to have different sizes
+    size_t nrows = min(to_mat.nr_of_rows(),   from_mat.nr_of_rows());
+    size_t ncols = min(to_mat.nr_of_columns(),from_mat.nr_of_columns());
+    for(size_t i=0; i<nrows; ++i)
+        for(size_t j=0; j<ncols; ++j)
+            convert<ToType>(to_mat[i][j], from_mat[i][j]);
+}
+
+//---------------------------------------------------------------------------
+
+
 template<typename Integer>
 void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
     size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
     size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
     for(size_t i=0; i<nrows;++i)
         for(size_t j=0; j<ncols;++j)
-            mpz_mat[i][j]=to_mpz(mat[i][j]);
+            convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
 	GMP_mat++;
 }
 
 //---------------------------------------------------------------------------
-
 
 template<typename Integer>
 void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
@@ -2015,7 +2027,7 @@ void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
     size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
     for(size_t i=0; i<nrows;++i)
         for(size_t j=0; j<ncols;++j)
-            mat[i][j]=to_Int<Integer>(mpz_mat[i][j]);
+            convert(mat[i][j], mpz_mat[i][j]);
 }
 
 //---------------------------------------------------------------------------
@@ -2027,7 +2039,7 @@ void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const 
     assert(sub.nr_of_rows()>=selection.size());
     for(size_t i=0;i<selection.size();++i)
         for(size_t j=0;j<mother.nr_of_columns();++j)
-            sub[i][j]=to_mpz(mother[selection[i]][j]);
+            convert(sub[i][j], mother[selection[i]][j]);
 }
 
 //---------------------------------------------------------------------------
@@ -2039,7 +2051,7 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
     assert(sub.nr_of_rows()>=mother.nr_of_columns());
     for(size_t i=0;i<selection.size();++i)
         for(size_t j=0;j<mother.nr_of_columns();++j)
-            sub[j][i]=to_mpz(mother[selection[i]][j]);
+            convert(sub[j][i], mother[selection[i]][j]);
 }
 
 //---------------------------------------------------------------------------
@@ -2074,7 +2086,7 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
 	perm.resize(key.size());
 	i=0;
 	for (typename list< vector<Integer> >::const_iterator it = rowList.begin();it!=rowList.end();++it){
-		perm[i]=explicit_cast_to_long((*it)[nc+1]);
+		perm[i]=convertTo<long>((*it)[nc+1]);
 		i++;
 	}
 	return perm;
