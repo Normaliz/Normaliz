@@ -111,6 +111,9 @@ template<typename Integer> class Matrix {
     bool reduce_rows_upwards();
     size_t row_echelon_reduce(bool& success); // combines row_echelon and reduce_rows_upwards
     
+    // computes rank and index simultaneously, returns rank
+    Integer full_rank_index(bool& success);
+    
     vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
     
     // A version of invert that circumvents protection and leaves it to the calling routine
@@ -284,14 +287,14 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 // Normal forms
 
-    // converts this to row echelon form and returns rank, GMP protected
+    // converts this to row echelon form over QQ and returns rank, GMP protected
     size_t row_echelon();
 
-    // public version of row_echelon_reduce (), GMP protected
+    // public version of row_echelon_reduce (), GMP protected, uses only elementary transformations over ZZ
     void row_echelon_reduce();
 
-    // transforms matrix in lower triangular form via column transformations
-    // assumes that the rk is the rank and that the matrix is zero after the first rk rows
+    // transforms matrix into lower triangular form via column transformations
+    // assumes that rk is the rank and that the matrix is zero after the first rk rows
     // Right = Right*(column transformation of this call)
     bool column_trigonalize(size_t rk, Matrix<Integer>& Right);
     
@@ -302,12 +305,13 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 // rank and determinant
 
     size_t rank() const; //returns rank
-    size_t rank_and_index(Integer& index) const; // returns rank and |product of nonzero diagonal elem|
+    Integer full_rank_index() const; // returns index of full rank sublattice
     size_t rank_submatrix(const vector<key_t>& key) const; //returns rank of submarix defined by key
     
-    // return rank of submatrix of mother. "this" is used as work space    
+    // returns rank of submatrix of mother. "this" is used as work space    
     size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
-    
+ 
+    // vol stands for |det|
     Integer vol() const;
     Integer vol_submatrix(const vector<key_t>& key) const;
     Integer vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);

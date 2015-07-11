@@ -1920,12 +1920,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     // Generators = Input;
     // is_Computed.set(ConeProperty::Generators);
     Matrix<Integer> M=BasisChange.to_sublattice(Input);
-    size_t rk=M.row_echelon();
-    assert(rk==BasisChange.getRank());
-    index=1;
-    for(size_t i=0;i<rk;++i)
-        index*=M[i][i];
-    index=Iabs(index);
+    index=M.full_rank_index();
 }
 
 //---------------------------------------------------------------------------

@@ -1220,7 +1220,29 @@ size_t Matrix<Integer>::row_echelon_reduce(bool& success){
     return rk;
 }
 
+//---------------------------------------------------------------------------
 
+template<typename Integer>
+Integer Matrix<Integer>::full_rank_index(bool& success){
+
+    size_t rk=row_echelon_inner_elem(success);
+    Integer index=1;
+    if(success){
+        for(size_t i=0;i<rk;++i)
+            for(size_t j=0;j<nc;++j)
+                if(elem[i][j]!=0){
+                    index*=elem[i][j];
+                    if(!check_range(index)){
+                        success=false;
+                        index=0;
+                    }
+                    break;
+                }
+    }
+    assert(rk==nc);
+    index=Iabs(index);
+    return index;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1804,6 +1826,23 @@ void Matrix<Integer>::row_echelon_reduce(){
     mat_to_mpz(Copy,mpz_Copy);
     mpz_Copy.row_echelon_reduce(success);
     mat_to_Int(mpz_Copy,*this);     
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+Integer Matrix<Integer>::full_rank_index() const{
+    
+    Matrix<Integer> Copy(*this);
+    Integer index;
+    bool success;
+    index=Copy.full_rank_index(success);
+    if(success)
+        return index;
+    Matrix<mpz_class> mpz_Copy(nr,nc);
+    mat_to_mpz(*this,mpz_Copy);
+    mpz_class mpz_index=mpz_Copy.full_rank_index(success);
+    index=to_Int<Integer>(mpz_index);
+    return index;
 }
 
 //---------------------------------------------------------------------------
