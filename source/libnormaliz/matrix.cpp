@@ -1228,18 +1228,16 @@ Integer Matrix<Integer>::full_rank_index(bool& success){
     size_t rk=row_echelon_inner_elem(success);
     Integer index=1;
     if(success){
-        for(size_t i=0;i<rk;++i)
-            for(size_t j=0;j<nc;++j)
-                if(elem[i][j]!=0){
-                    index*=elem[i][j];
-                    if(!check_range(index)){
-                        success=false;
-                        index=0;
-                    }
-                    break;
-                }
+        for(size_t i=0;i<rk;++i){
+            index*=elem[i][i];
+            if(!check_range(index)){
+                success=false;
+                index=0;
+                return index;
+            }
+        }
     }
-    assert(rk==nc);
+    assert(rk==nc); // must have full rank
     index=Iabs(index);
     return index;
 }
