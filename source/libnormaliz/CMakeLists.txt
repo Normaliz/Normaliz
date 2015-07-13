@@ -1,7 +1,7 @@
 # libnormaliz source files
 SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp offload_handler.cpp bottom.cpp)
 # libnormaliz header files
-SET(headers cone.h cone_property.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h)
+SET(headers cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h)
 
 # add the necessary include directories
 INCLUDE_DIRECTORIES(.)

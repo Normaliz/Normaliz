@@ -35,6 +35,7 @@
 #include "vector_operations.h"
 #include "map_operations.h"
 #include "integer.h"
+#include "convert.h"
 
 #include "matrix.h"
 

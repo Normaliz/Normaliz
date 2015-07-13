@@ -87,23 +87,6 @@ bool try_convert(mpz_class& ret, const long long& val);
 template<typename Type>
 inline bool try_convert(Type& ret, const Type& val) {ret = val; return true;}
 
-// general conversion, throws ArithmeticException if conversion fails
-template<typename ToType, typename FromType>
-inline void convert(ToType& ret, const FromType& val) {
-    if (!try_convert(ret,val)) {
-        errorOutput() << "Cannot convert " << val << endl;
-        throw ArithmeticException();
-    }
-}
-
-// general conversion with return, throws ArithmeticException if conversion fails
-template<typename ToType, typename FromType>
-inline ToType convertTo(const FromType& val) {
-    ToType copy;
-    convert(copy,val);
-    return copy;
-}
-
 
 bool fits_long_range(long long a);
 

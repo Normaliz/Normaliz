@@ -31,6 +31,7 @@
 
 #include "libnormaliz.h"
 #include "integer.h"
+#include "convert.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -192,13 +193,6 @@ template<typename Integer>
 void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx);
 
 vector<key_t> identity_key(size_t n);
-
-//---------------------------------------------------------------------------
-//							  Conversion between integer types
-//---------------------------------------------------------------------------
-
-template<typename ToType, typename FromType>
-void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect);
 
 //---------------------------------------------------------------------------
 //                            Sorting

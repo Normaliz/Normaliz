@@ -587,16 +587,6 @@ vector<key_t> identity_key(size_t n){
 }
 
 //---------------------------------------------------------------
-// conversion between different integer types
-
-template<typename ToType, typename FromType>
-void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect){
-    assert (ret_vect.size() >= from_vect.size());
-    for(size_t i=0; i<from_vect.size();++i)
-        convert(ret_vect[i], from_vect[i]);
-}
-
-//---------------------------------------------------------------
 // Sorting
 
 template <typename T>

@@ -419,6 +419,13 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::resize(size_t nr_rows, size_t nr_cols) {
+    nc = nr_cols; //for adding new rows with the right length
+    resize(nr_rows);
+    resize_columns(nr_cols);
+}
+
+template<typename Integer>
 void Matrix<Integer>::resize(size_t nr_rows) {
     if (nr_rows > elem.size()) {
         elem.resize(nr_rows, vector<Integer>(nc));
@@ -426,11 +433,8 @@ void Matrix<Integer>::resize(size_t nr_rows) {
     nr = nr_rows;
 }
 
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 void Matrix<Integer>::resize_columns(size_t nr_cols) {
-//    assert (nr_cols >= 0);
     for (size_t i=0; i<nr; i++) {
         elem[i].resize(nr_cols);
     }
@@ -1997,12 +2001,12 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
 
 template<typename ToType, typename FromType>
 void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
-    // we allow the matrices to have different sizes
-    size_t nrows = min(to_mat.nr_of_rows(),   from_mat.nr_of_rows());
-    size_t ncols = min(to_mat.nr_of_columns(),from_mat.nr_of_columns());
+    size_t nrows = from_mat.nr_of_rows();
+    size_t ncols = from_mat.nr_of_columns();
+    to_mat.resize(nrows, ncols);
     for(size_t i=0; i<nrows; ++i)
         for(size_t j=0; j<ncols; ++j)
-            convert<ToType>(to_mat[i][j], from_mat[i][j]);
+            convert(to_mat[i][j], from_mat[i][j]);
 }
 
 //---------------------------------------------------------------------------
@@ -2010,10 +2014,12 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
 
 template<typename Integer>
 void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
-    size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
-    size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
-    for(size_t i=0; i<nrows;++i)
-        for(size_t j=0; j<ncols;++j)
+    //convert(mpz_mat, mat);
+    // we allow the matrices to have different sizes
+    size_t nrows = min(mat.nr_of_rows(),   mpz_mat.nr_of_rows());
+    size_t ncols = min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
+    for(size_t i=0; i<nrows; ++i)
+        for(size_t j=0; j<ncols; ++j)
             convert(mpz_mat[i][j], mat[i][j]);
 	#pragma omp atomic
 	GMP_mat++;
@@ -2023,10 +2029,12 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
 
 template<typename Integer>
 void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
-    size_t nrows=min(mat.nr_of_rows(),mpz_mat.nr_of_rows()); // we allow the matrices to have different sizes
-    size_t ncols=min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
-    for(size_t i=0; i<nrows;++i)
-        for(size_t j=0; j<ncols;++j)
+    //convert(mat, mpz_mat);
+    // we allow the matrices to have different sizes
+    size_t nrows = min(mpz_mat.nr_of_rows(),   mat.nr_of_rows());
+    size_t ncols = min(mpz_mat.nr_of_columns(),mat.nr_of_columns());
+    for(size_t i=0; i<nrows; ++i)
+        for(size_t j=0; j<ncols; ++j)
             convert(mat[i][j], mpz_mat[i][j]);
 }
 

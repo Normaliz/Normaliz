@@ -43,13 +43,14 @@
     #define NCATCH
 #endif
 
+namespace libnormaliz {
+
+typedef long long MachineInteger;
+
+} /* end namespace libnormaliz */
+
 #include "libnormaliz.h"
 #include "normaliz_exception.h"
 #include "cone_property.h"
-
-namespace libnormaliz {
-
-
-} /* end namespace libnormaliz */
 
 #endif /* GENERAL_H_ */

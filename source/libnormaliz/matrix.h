@@ -34,6 +34,7 @@
 
 #include "libnormaliz.h"
 #include "integer.h"
+#include "convert.h"
 
 //---------------------------------------------------------------------------
 
@@ -202,11 +203,11 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     Matrix& remove_zero_rows(); // remove zero rows, modifies this
 
-    // resizes the matrix to the given number of rows
+    // resizes the matrix to the given number of rows/columns
     // if the size shrinks it will keep all its allocated memory
     // useful when the size varies
     void resize(size_t nr_rows);
-    // same for columns
+    void resize(size_t nr_rows, size_t nr_cols);
     void resize_columns(size_t nr_cols);
 
     vector<Integer> diagonal() const;     //returns the diagonale of this
@@ -431,6 +432,9 @@ public:
 //---------------------------------------------------------------------------
 //                  Conversion between integer types
 //---------------------------------------------------------------------------
+
+template<typename ToType, typename FromType>
+void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat);
 
 template<typename Integer>
 void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat);
