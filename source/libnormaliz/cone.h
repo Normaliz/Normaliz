@@ -266,6 +266,9 @@ private:
     bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
 
+    // if this is true we allow to change to a smaller integer type in the computation
+    bool change_integer_type;
+
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
     // main input processing
@@ -276,7 +279,7 @@ private:
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data, 
                      Matrix<Integer>& LatticeGenerators);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void check_precomputed_support_Hyperplanes();
+    void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
 
@@ -287,20 +290,25 @@ private:
     /* only used by the constructors */
     void initialize();
 
+    template<typename IntegerFC>
+    void compute_inner(ConeProperties& ToCompute);
+
     /* compute the generators using the support hyperplanes */
     void compute_generators();
+    template<typename IntegerFC>
+    void compute_generators_inner();
 
     /* compute method for the dual_mode, used in compute(mode) */
     ConeProperties compute_dual(ConeProperties ToCompute);
+    template<typename IntegerFC>
+    void compute_dual_inner(ConeProperties& ToCompute);
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
-    void extract_data(Full_Cone<Integer>& FC);
+    template<typename IntegerFC>
+    void extract_data(Full_Cone<IntegerFC>& FC);
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
-
-    /* set Generators */    
-    void set_generators(const Matrix<Integer>& Input);
 
     /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron */
     void set_extreme_rays(const vector<bool>&);
@@ -311,6 +319,8 @@ private:
     void set_zero_cone();
     
     Integer compute_primary_multiplicity();
+    template<typename IntegerFC>
+    Integer compute_primary_multiplicity_inner();
     
 };
 

@@ -116,6 +116,29 @@ public:
 	vector<Integer> from_sublattice_dual (const vector<Integer>& V) const;
 
 	vector<Integer> to_sublattice_dual_no_div (const vector<Integer>& M) const;
+
+    // and with integrated type conversion
+    template<typename ToType, typename FromType>
+    void convert_to_sublattice(ToType& ret, const FromType& val) const {
+        convert(ret, to_sublattice(val));
+    }
+    template<typename ToType, typename FromType>
+    void convert_from_sublattice(ToType& ret, const FromType& val) const {
+        ret = from_sublattice(convertTo<ToType>(val));
+    }
+    template<typename ToType, typename FromType>
+    void convert_to_sublattice_dual(ToType& ret, const FromType& val) const {
+        convert(ret, to_sublattice_dual(val));
+    }
+    template<typename ToType, typename FromType>
+    void convert_from_sublattice_dual(ToType& ret, const FromType& val) const {
+        ret = from_sublattice_dual(convertTo<ToType>(val));
+    }
+    template<typename ToType, typename FromType>
+    void convert_to_sublattice_dual_no_div(ToType& ret, const FromType& val) const {
+        convert(ret, to_sublattice_dual_no_div(val));
+    }
+
 //---------------------------------------------------------------------------
 //						 Data acces
 //---------------------------------------------------------------------------
