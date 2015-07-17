@@ -176,7 +176,7 @@ void CyclRatFunct::showCoprimeCRF(){
     RingHom phi=PolyAlgebraHom(R,P,Im);
     RingElem f(phi(num));
     RingElem g(denom2poly(P,denom));
-    RingElem h=gcd(f,g);
+    RingElem h=CoCoA::gcd(f,g);
     f/=h;
     g/=h;
     cout << "Coprime numerator (for denom with remaining factor 1)" << endl <<endl;
