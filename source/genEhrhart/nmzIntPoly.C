@@ -24,7 +24,7 @@
 RingElem binomial(const RingElem& f, long k)
 // computes binomial coefficient (f choose k)
 {
-    SparsePolyRing P=AsSparsePolyRing(owner(f));
+    SparsePolyRing P=owner(f);
     RingElem g(P);
     g=1;
     for(int i=0;i<k;i++)
@@ -35,7 +35,7 @@ RingElem binomial(const RingElem& f, long k)
 RingElem ascFact(const RingElem& f, long k)
 // computes (f+1)*...*(f+k)
 {
-    SparsePolyRing P=AsSparsePolyRing(owner(f));
+    SparsePolyRing P=owner(f);
     RingElem g(P);
     g=1;
     for(int i=0;i<k;i++)
@@ -46,7 +46,7 @@ RingElem ascFact(const RingElem& f, long k)
 RingElem descFact(const RingElem& f, long k)
 // computes f*(f-1)*...*(f-k+1)
 {
-    SparsePolyRing P=AsSparsePolyRing(owner(f));
+    SparsePolyRing P=owner(f);
     RingElem g(P);
     g=1;
     for(int i=0;i<k;i++)
@@ -62,7 +62,7 @@ vector<RingElem> ourCoeffs(const RingElem& F, const long j){
 // our version of expanding a poly nomial wrt to indeterminate j
 // The return value is the vector of coefficients of x[j]^i
     vector<RingElem> c;
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     RingElem x=indets(P)[j];
     if(F==0){
         c.push_back(zero(P));
@@ -100,7 +100,7 @@ vector<long> MxV(const vector<vector<long> >& M, vector<long> V){
 
 vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<long> >& M){
 // vector*matrix
-    SparsePolyRing R=AsSparsePolyRing(owner(V[0]));
+    SparsePolyRing R=owner(V[0]);
     RingElem s(zero(R));
     vector<RingElem> P(M[0].size(),zero(R));
     for(size_t j=0;j<M[0].size();++j){
@@ -118,7 +118,7 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
                      const vector<long>& b, const long& denom){
 // NOT IN USE
     size_t i;
-    SparsePolyRing R=AsSparsePolyRing(owner(F));
+    SparsePolyRing R=owner(F);
     size_t m=A.size();
     // long n=A[0].size();
     vector<RingElem> v(m,zero(R));
@@ -215,7 +215,7 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
  // of variables to degrees
  // compactification not used at present (occurs only in restrictToFaces) 
 
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     vector<long> v(NumIndets(P));
     vector<long> key,localDeg;
     key.reserve(v.size()+1);
@@ -278,7 +278,7 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
 // Note: degrees are given for the full simplex. Therefore "local" degreees must be made 
 // (depend only on face and not on offset, but generation here is cheap)
 
-    SparsePolyRing P=AsSparsePolyRing(owner(G));
+    SparsePolyRing P=owner(G);
 
     vector<long> v(NumIndets(P));
     vector<long> w(NumIndets(P));
@@ -312,7 +312,7 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
 
     // now we go over the terms of G
     SparsePolyIter term=BeginIter(G);
-    //PPMonoid TT = PPM(AsSparsePolyRing(owner(G)));
+    //PPMonoid TT = PPM(owner(G));
     for (; !IsEnded(term); ++term){
         //PPMonoidElem mon(PP(term));
         exponents(v,PP(term));
@@ -369,7 +369,7 @@ long nrActiveFacesOld=0;
 void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>& degrees, boost::dynamic_bitset<>& indicator, long Deg, 
                      vector<SIMPLINEXDATA_INT>& inExSimplData, vector<deque<pair<vector<long>,RingElem> > >& facePolys){
                      
-    const SparsePolyRing R=AsSparsePolyRing(owner(G));
+    const SparsePolyRing R=owner(G);
     vector<RingElem> GRest;
     // size_t dim=indicator.size();
     for(size_t i=0;i<inExSimplData.size();++i){
@@ -465,7 +465,7 @@ vector<RingElem> homogComps(const RingElem& F){
 // returns the vector of homogeneous components of F
 // w.r.t. standard grading
 
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     long dim=NumIndets(P);
     vector<long> v(dim);
     vector<RingElem> c(deg(F)+1,zero(P));
@@ -488,7 +488,7 @@ RingElem homogenize(const RingElem& F){
 // homogenizes F wrt the zeroth variable and returns the 
 // homogenized polynomial
 
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     int d=deg(F);    
     vector<RingElem> c(d+1,zero(P));
     c=homogComps(F);

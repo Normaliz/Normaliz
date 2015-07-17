@@ -24,7 +24,7 @@
 /* BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
                 const vector<BigInt>& factQuot, const long& rank){
 
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     vector<long> v(NumIndets(P));
     
     BigRat Irat;
@@ -51,7 +51,7 @@
 BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
                 const vector<BigInt>& factQuot, const long& rank){
                 
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     long dim=NumIndets(P);
     vector<long> v(dim);
     

@@ -70,7 +70,7 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
 // under the specialization T_i --> t^g_i
 // as a rational function in t
 {
-    SparsePolyRing P=AsSparsePolyRing(owner(F));
+    SparsePolyRing P=owner(F);
     RingElem t=indets(P)[0];
     
     CyclRatFunct s(F); // F/1
@@ -106,7 +106,7 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
 // computes the generating rational functions
 // for the denominator classes collected from proper faces and returns the sum
 
-    SparsePolyRing R=AsSparsePolyRing(owner(faceClasses.begin()->second));
+    SparsePolyRing R=owner(faceClasses.begin()->second);
     CyclRatFunct H(zero(R));
     // vector<CyclRatFunct> h(omp_get_max_threads(),CyclRatFunct(zero(R)));
     // vector<CyclRatFunct> h(1,CyclRatFunct(zero(R)));
@@ -166,7 +166,7 @@ CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
 // computes the generating rational function
 // for a denominator class and returns it
 
-    SparsePolyRing R=AsSparsePolyRing(owner(denomClass.second[0]));
+    SparsePolyRing R=owner(denomClass.second[0]);
     
     if(verbose_INT){
     #pragma omp critical(PROGRESS)

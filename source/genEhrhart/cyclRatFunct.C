@@ -54,7 +54,7 @@ void CyclRatFunct::extendDenom(const vector<long>& target)
 // extends the denominator to target
 // by multiplying the numrerator with the remaining factor
 {
-    RingElem t=indets(AsSparsePolyRing(owner(num)))[0];
+    RingElem t=indets(owner(num))[0];
     long i,ns=target.size(),nf=denom.size();
     for(i=1;i<ns;++i){
         if(i>nf-1)
@@ -134,7 +134,7 @@ vector<long> makeDenom(long k,long n)
 
 void CyclRatFunct::addCRF(const CyclRatFunct& r){
 // adds r to *this, r is preserved in its given form
-    CyclRatFunct s(zero(AsSparsePolyRing(owner(num))));
+    CyclRatFunct s(zero(owner(num)));
     const vector<long> lcmden(lcmDenom(denom,r.denom));
     s=r;
     s.extendDenom(lcmden);
@@ -169,7 +169,7 @@ void CyclRatFunct::showCoprimeCRF(){
     cout << "Given form" << endl << endl;
     showCRF();
     cout << endl;
-    SparsePolyRing R=AsSparsePolyRing(owner(num));
+    SparsePolyRing R=owner(num);
     SparsePolyRing P=NewPolyRing_DMPI(RingQQ(),symbols("t"));
     vector<RingElem> Im(NumIndets(R),zero(P));
     Im[0]=indets(P)[0];
@@ -193,7 +193,7 @@ void CyclRatFunct::simplifyCRF(){
 // cancels factors 1-t^i from the denominator that appear there explicitly
 // (and not just as factors of 1-t^j for some j)
 
-    SparsePolyRing R=AsSparsePolyRing(owner(num));
+    SparsePolyRing R=owner(num);
     long nd=denom.size();
     for(long i=1;i<nd;i++)
     {
