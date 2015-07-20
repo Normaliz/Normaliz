@@ -61,7 +61,6 @@ SimplexEvaluator<Integer>::SimplexEvaluator(Full_Cone<Integer>& fc)
   InvGenSelRows(dim,dim),
   InvGenSelCols(dim,dim),
   Sol(dim,dim+1),
-  InvSol(dim,dim+1),
   GDiag(dim),
   TDiag(dim),
   Excluded(dim),
@@ -269,7 +268,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 
     // we need the GDiag if not unimodular (to be computed from Gen)
     // if potentially unimodular, we combine its computation with that of the i-th support forms for Ind[i]==0
-    // stored in InvSol (transferred to InvGenSelCols later)
     // if unimodular and all Ind[i] !=0, then nothing is done here
 
     vector<key_t> Ind0_key;  //contains the indices i as above
@@ -285,8 +283,8 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
             LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume,0,RS_pointers.size());
             
             for(size_t i=0;i<dim;++i)
-                for(size_t j=dim;j<LinSys.nr_of_columns();++j)
-                    InvSol[i][j-dim]=LinSys[i][j];            
+                for(size_t j=dim;j<dim+Ind0_key.size();++j) 
+                    InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j];       
             
             v_abs(GDiag);
             GDiag_computed=true;
@@ -355,19 +353,13 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         if(Ind0_key.size()>0){
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
             LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume,RS_pointers.size(),0);
-            
             for(size_t i=0;i<dim;++i)
-                for(size_t j=dim;j<LinSys.nr_of_columns();++j)
-                    InvSol[i][j-dim]=LinSys[i][j];
+                for(size_t j=dim;j<dim+Ind0_key.size();++j)
+                    InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j]; 
         }
     }
     
-    // transfer InvSol into the columns of InvGenSelCols given by Ind0_key
 
-    for(i=0;i<Ind0_key.size();i++) // insert selected columns of InvGen at right place
-        for(j=0;j<dim;j++){
-            InvGenSelCols[j][Ind0_key[i]]=InvSol[j][i];
-        }
         
    /*  if(Ind0_key.size()>0){
         #pragma omp atomic
@@ -1194,10 +1186,6 @@ void SimplexEvaluator<Integer>::print_all() {
     cout << "Sol" << endl;
     Sol.pretty_print(cout);
     // ProjGen(dim-fc.level0_dim,dim-fc.level0_dim),
-    cout << "InvSol" << endl;
-    InvSol.pretty_print(cout);
-    cout << "InvSol" << endl;
-    InvSol.pretty_print(cout);
     cout << "RS" << endl;
     RS.pretty_print(cout);
     cout << "StanleyMat" << endl;

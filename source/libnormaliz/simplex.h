@@ -72,7 +72,6 @@ class SimplexEvaluator {
     Matrix<Integer> InvGenSelCols; // selected columns of inverse of Gen
     Matrix<Integer> Sol;
     Matrix<Integer> ProjGen; // generators of projection modulo level 0 sublattice
-    Matrix<Integer> InvSol;
     vector< Integer > GDiag; // diagonal of generator matrix after trigonalization
     vector< Integer > TDiag; // diagonal of transpose of generaor matrix after trigonalization
     vector< bool > Excluded;
