@@ -2024,6 +2024,10 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
     is_Computed.set(ConeProperty::SupportHyperplanes);
+    if(copy.isComputed(ConeProperty::IsPointed)){
+            pointed=copy.pointed;
+            is_Computed.set(ConeProperty::IsPointed);
+    }
     do_all_hyperplanes = false;
     // exit(1);   
 }
