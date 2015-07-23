@@ -120,11 +120,12 @@
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf Normaliz 2.12} \vspace*{1cm}
+ \centerline{\Large\bf Normaliz 3.0} \vspace*{1cm}
 
 
-\begin{center}Winfried Bruns, Bogdan Ichim, Tim Römer and Christof
+\begin{center}Winfried Bruns, Tim Römer, Richrd Sieg and Christof
 Söger\\[14pt]
+Normaliz 2 team member: Bogdan Ichim\\[14pt]
 \url{http://www.math.uos.de/normaliz}\\[14pt]
 \url{mailto:normaliz@uos.de}
 \end{center}
@@ -337,6 +338,7 @@ The computation of the Hilbert series requires the explicit or implicit definiti
 
 Normaliz will always print the results that are obtained on the way to the computation goals and do not require extra effort.
 
+Appendix \ref{Console} heps you to read th console output that you have demanded by the option \verb|-c|.
 \subsection{A cone in dimension $2$}\label{cone_ex}
 
 We want to investigate the cone $C=\RR_+(2,1)+\RR_+(1.3)\subset \RR^2$:
@@ -1298,30 +1300,11 @@ The set of solutions is a module over the monoid $M$ of solutions of the homogen
 \end{Verbatim}
 The last line is as expected, and the $6$ module generators are the goal of the computation.
 
-\subsubsection{The polytopal approach} 
-
-the input for our problem given above is the natural choice. If it is a priori clear that the set of solutions is finite, given by the lattice points in a polytope, it is often better to use a different encoding of the input (\verb|NumSemiPolytope.in|):
+Normaliz is smart enough to recognize that it must compute the lattice points in a polygon, and does exactly this. You can recognize it in the console output: it contains the line
 
 \begin{Verbatim}
-am_space 4
-equations
-1
-6 10 15 -97
-grading 0 0 0 1
-Deg1Elements
+Converting polyhedron to polytope
 \end{Verbatim}
-This means that we treat the problem as a homogeneous one and force the specialization of the homogenizing variable to $1$ by \verb|Deg1Elements|. The output contains the same information in different words:
-\begin{Verbatim}
-6 Hilbert basis elements of degree 1:
-2 1 5 1
-2 4 3 1
-2 7 1 1
-7 1 3 1
-7 4 1 1
-12 1 1 1
-\end{Verbatim}
-The main advanntage or this approach is that Normaliz can a priori avoid the Hilbert basis computation. (Normaliz is not yet clever enough to recognize this itself, but it will learn.)
-
 
 \subsection{A job for the dual algorithm}
 
@@ -1426,7 +1409,7 @@ denominator with 1 factors:
 
 shift = 1
 \end{Verbatim}
-We haven't seen a shift yet. It is always printed (necessarily) if the Hilbert series does not start in degree $0$. In our case it starts in degree $-1$ that relative to degree $0$ has shift $1$ (this is the convention in algebraic geometry and commutative algebra). We get thus get the Hilbert series
+We haven't seen a shift yet. It is always printed (necessarily) if the Hilbert series does not start in degree $0$. In our case it starts in degree $-1$ that relative to degree $0$ has shift $1$ (this is the convention in algebraic geometry and commutative algebra). We thus get the Hilbert series
 $$
 t^{-1}\,\frac{t+t}{1-t}=\frac{t^{-1}+1}{1-t}.
 $$
@@ -1474,12 +1457,12 @@ If the polyhedron is given by its vertices and the recession cone, we can define
 \begin{Verbatim}
 amb_space 2
 vertices
-1
+2
  -4 -1 2
   0  3 2
 cone
 1
- 1 0 0        ??????????????????????????????????????????????
+ 1 0 0
 grading
  1 0 
 \end{Verbatim}
@@ -2192,7 +2175,7 @@ There are $3$ types:
 
 \subsection{Homogeneous Constraints}
 
-\subsubsection{Cones}
+\subsubsection{Cones} \label{HomConstrCone}
 
 \begin{itemize}
 \itemtt[linequalities] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents a homogeneous inequality
@@ -2423,7 +2406,7 @@ integral is to be computed. See \cite{NmzInt}.
 
 \section{Remarks on the algorithms of Normaliz}
 
-\section{Computation goals and algorithmic variants}
+\section{Computation goals and algorithmic variants}\label{Goals}
 
 The library \verb|libnormaliz| contains a clase \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The llatter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz.|
 
@@ -2590,6 +2573,15 @@ The ndefault choice is the Normaliz primal algorithm that is based on a (partial
 \itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined.
 \end{itemize}
 
+\subsection{Integer type}
+
+There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use indefinite precision. The main computation is the tried with $64$ bit integers. If it fails, it will be restarted with indefinite precision. The $64$ bit attempt can be surpassed by
+\begin{itemize}
+\itemtt[BigInt, -B]	
+\end{itemize}
+
+Note that Normaliz tries to avoid overflows by intermediate results. It such overflow should happen, the computation is repeated locally with indefinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
+
 \subsection{Control of computations}
 
 In addition to the computation goals in Section \ref{goals}, 
@@ -2644,6 +2636,8 @@ Normaliz uses the standard conventions for calls from the command line:
 \item Single letter options are prefixed by the charcater \verb|-| and can be grouped into one string.
 \item Verbatim options are prefixed by the characters \verb|--|.
 \end{arab}
+
+The options for computation goals and algorithmic variants have been described in Section \ref{Goals}. In this section the remaining options for the control of execution and output are discussed, together with some basic rules on the use of the options.
 
 \subsection{Basic rules}
 The options for computation goals and algorithmis variants have been explained in Section \ref{Goals}. The options that control the execution and the amont of output will be explained in the following. Basic rules for the use of options:
@@ -2735,167 +2729,29 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 \end{itemize} 
 
 
-\subsection{Integer types}\label{NumLim}
 
-Contrary to Normaliz 2, the integer type of a computation is set automatically by Normaliz 3. (In particular the options \verb|-e| and \verb|-B| do not exist anymore.) Normaliz rads all input and preprocesses it with indefinite precision. It then tries a 64 bit computation. If that fails, the computation is restarted with indefinite precision. Also see Section \ref{approx_ex}.
-
-In order to prevent the computations with indefinite precision, which usually take 10 times as long as 64 bit integer computations, Normaliz constantly controls the size of intermediate results. If a linear algebra routine fails because of arithmetic overflow, the particular computation os repesated with indefinite precision. If a final result fails the 64 bit size, the whole computation must of course be restarted.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The output file}\label{output}
-
-The data you will find in the output file \ttt{<project>.out} depend on the input
-type and on the computation mode. The output file starts with
-an ``abstract'' that collects various numerical and qualitative
-data, for example the number of elements in the Hilbert basis.
-The lists of vectors, equations etc.\ follow the abstract.
-
-Note that the values of results computed by Normaliz depend only on the input file, except that the order of vectors in lists like the Hilbert basis can vary, for example because of the unpredictability of the parallelization. The command line parameters only determine which results are computed and what algorithm is used.
-
-
-\subsection{The homogeneous case}
-The output file will contain the following data as far as computed:
-
-\begin{itemize}
-\item only for type \verb|lattice_ideal|: the original system of generators
-    (see below);
-\item  the Hilbert basis $H$ computed;
-\item the extreme rays of the cone $C$ generated by $H$;
-\item the rank of the lattice $\EE$;
-\item the embedding dimension (the rank of $\AA$);
-\item the index of the lattice generated by the original input vectors in $\EE$;
-\item the support hyperplanes of $C$;
-\item a system of equations defining the vector space generated by
-$C$;
-\item a system of congruences defining $\EE$ as a sublattice of
-$\AA$ (together with the equations);
-\item the number of simplicial cones in the triangulation
-    and the sum of the absolute values of their
-    determinants.
-\end{itemize}
-In the presence of a grading the following extra data may be
-printed:
-\begin{itemize}
-\item the linear form defining the degree;
-\item the degree $1$ elements of the Hilbert basis;
-\item the multiplicity;
-\item the Hilbert series and the coefficients of the
-    Hilbert (quasi)polynomial;
-\item the excluded faces (if any).
-\end{itemize}
-
-The degrees of the extreme rays are listed in the abstract. If
-the whole Hilbert basis is of degree 1, this fact is indicated.
-Moreover, Normaliz tells you whether the original system of
-generators contains the Hilbert basis by indicating whether the
-original monoid is integrally closed.
-
-Please note:  
-
-\begin{arab}
-\item The equations and support hyperplanes \emph{together}
-    define the cone $C$. While support hyperplanes will
-    always be present (except for the zero cone), equations will
-    only be printed if necessary, namely when $\dim
-    C<\rank\AA$.
-
-Similarly, congruences will only be printed if the lattice $\EE$
-is not given by $\RR C\cap \AA$. This can only happen with
-input matrices of types \verb|normalization| or \verb|congruences|.
-
-Even if the cone and the lattice are defined by constraints,
-the inequalities, equations and congruences of the input will
-in general not be reproduced, but replaced by an equivalent
-system.
-
-\item The extreme rays are given by the first points in $\EE$ on
-them (the extreme integral generators with respect to $\EE$).
-
-\item In order to lift the grading from
-    $\EE$ to $\AA$ it may be necessary to replace it by a
-    multiple (in order to avoid fractions as coefficients).
-    The necessary factor appears as ``denominator''. The Hilbert series
-    and the Hilbert (quasi)polynomial do always refer to the degree in $\EE$.
-
-\item Input matrices of type \emph{generators} contain an explicit
-    system of generators. For the other types different from \verb|lattice_ideal|  the extreme rays
-    computed by Normaliz take their place. For type \verb|lattice_ideal|
-    Normaliz first computes the monoid $M$ generated by the
-    residue classes of the canonical basis of $\ZZ^n$ (compare
-    Section \ref{relations}), and they are considered as the
-    original system of generators.
-\end{arab}
-
-
-In type \verb|rees_algebra|, the data in the output file
-refer to the integral closure $\Bar{\cR}$ of the Rees algebra.
-In addition to what has been mentioned already, the following
-data are computed:
-
-\begin{itemize}
-\item the generators of the integral closure of the ideal;
-\item if the ideal is primary to the irrelevant maximal
-    ideal, the multiplicity of the ideal (not to be
-    confused with the multiplicity of the monoid).
-\end{itemize}
-
-\subsection{The inhomogeneous case}
-
-\textbf{Note:}\enspace All data are presented in \emph{homogenized coordinates}.
-For inhomogeneous input types with implicit dehomogenization this means that all vectors with last component $0$ belong to the recession
-cone, and those with last component $>0$ represent a rational point in the
-polyhedron with denominator given by the last coordinate.
-In constraints the last coordinate represents the negative of the right hand side, as in the input.
-
-If the dehomogenization is another coordinate, the interpretation is analogous. If the dehomogenization $\delta$ is not a coordinate, one must compute it by applying the truncating linear form to the vectors given: the denominator is $\delta(x)$ for the points of the polyhedron. Solving the linear equation $\delta(x)=1$ for one coordinate and substituting the result into the constraints, one obtains inhomogeneous versions of the constraints if they should be needed.
-
-In the inhomogeneous case we compute a polyhedron $P$. We can find the following lists of vectors in the output file describing the solution monoid:
-\begin{itemize}
-\item the dehomogenization,
-\item the generators of the solution module,
-\item the Hilbert basis of the solution module.
-\end{itemize}
-The convex-geometric data of the polyhedron are given by:
-\begin{itemize}
-\item the vertices of the polyhedron (with denominator $\delta(x)$),
-\item the extreme rays of the recession cone.
-\end{itemize}
-
-The support hyperplanes, equations and congruences have the same meaning as in the homogeneous case: they describe the polyhedron and the affine lattice with respect to which the solution monoid is computed.
-
-The module rank and the rank of the recession monoid are always computed, as well as the affine dimension of the polyhedron $P$.
-
-If a grading is given, then one can also compute
-\begin{itemize}
-\item the multiplicity of the solution monoid (the suitably normed leading coefficient of the Hilbert (quasi)polynomial),
-\item the Hilbert series given as a rational function with numerator and denominator as in the homogeneous case, however modified by
-\item a shift, and
-\item the Hilbert (quasi)polynomial, provided the period is not too large.
-\end{itemize}
-
-The shift corrects the Hilbert series as follows:
-$$
-H_{\textup{true}}(t)=t^{-\textup{shift}}H_{\textup{computed}}(t).
-$$
-The Hilbert (quasi)polynomial must be shifted correspondingly:
-$$
-q_{\textup{true}}(k)=q_{\textup{computed}}(k+\textup{shift}).
-$$
-
-At the end we find the system of constraints that defines the polyhedron $P$ and the set of lattice points in it.
-
-The remarks in the homogeneous case apply accordingly.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{More examples}\label{Examples}
 
-Note that the output you get by running the examples may differ from the one given below in the order of the vectors in lists like the Hilbert basis. 
 
 \subsection{Lattice points by approximation}
 
 in order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vetors that are needed for the Hilbert basis computations, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
 
-Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept.This is done automatically. Since version 2.11 the user can also choose a gobal approximation of the input polytope $P$, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should not be too large.
+Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept.This is done automatically. Since version 2.11 the user can also choose a gobal approximation of the input polytope $P$ by th e option \verb|ApproximateRationalPolytope|, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should be not too large.
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+\filldraw[fill=orange] (0,0) -- (0,1) -- (1,3) -- (2,4) -- (3,4) -- (4,1) -- (3,0) --cycle;
+\filldraw[fill=yellow] (0.3,0.6) -- (3.4,0.8) -- (2.3,3.8) --(1.2,2.7) -- cycle;
+    \foreach \x in {0,...,4}
+    \foreach \y in {0,...,4}
+  	  {
+  	  \filldraw[fill=black] (\x,\y)  circle (1.5pt);
+  	 } 
+  	 % \draw (1,0) -- (0,1) -- (2,2) --cycle;
+\end{tikzpicture}
+\end{center}
 
 Another option that is often favourable is \verb|DualMode| in connection with \verb|Deg1Elements|. So there are three choices for the computation of lattice points in polytopes:
 \begin{itemize}
@@ -2904,41 +2760,337 @@ Another option that is often favourable is \verb|DualMode| in connection with \v
 \itemtt[DualMode Deg1Elements, -d1] dual mode optimized for the computation of geree $1$ elements.
 \end{itemize}
 
-Our demonstration example is \verb|MaxCandPolytope| with the input file
+Our demonstration example is \verb|max_polytope_cand| with the input file
 
-set up for global approximation.
+\begin{Verbatim}
+11
+amb_space 5
+inequalities
+11
+  -3  -3 -10  14  88
+  26  -3  19  14 361
+  -4  25   6 -49 133
+   2  -3   1   5  17
+  -2  -3  -7  11  61
+  -6  23   9 -30 233
+  -2   7   3  -9  81
+  -8  17  12 -65 183
+   8 -15   4  23  65
+  -8 -13 -28  45 241
+  -8  27  12 -35 321  
+grading
+0 0 0 0 1
+ApproximateRationalPolytope
+\end{Verbatim}
+set up for global approximation. (This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036.)
 
+Despite of the large number of lattice points, the computation is very fast. Now replace \verb|ApproximateRationalPolytope| by \verb|Deg1Elements|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
+
+The third choice using thedual algorithm is still o.k. though it takes the most time.
+
+You can also use inhomogeneous input with the default computation mode or dual mode. This is equivalent to homogeneous input with \verb|Deg1Elements| and \verb|DualMode|, respectively, in addition.
 
 \subsection{The bottom decomposition}
 
+The determinant sum of the triangulation computed by Normaliz is the number of vectrors that Normaliz must create for the primal algorithm. Therefore it is very desirable to keep this number as small as ppossible. Normaliz always tries to order the generators in such a way that the determinant sum is close to the minimum, and on the whole this works out well. 
+
+The determinant sum is independent of the order of the generators of the cone $C$ if they lie in a hyperplane $H$. Then the determinant sum is exactly the normalized volume of the polytope spanned by $0$ and $C\cap H$. The triangulation itself depends on the order, but the determiant sum is constant.
+\begin{center}
+\begin{tikzpicture}[scale=0.4]
+\filldraw[gray!20] (-3.5,5.833) -- (0,0) -- (6,4) -- (6,5.833) -- cycle;
+\filldraw[yellow] (0,0) -- (-3,5) -- (3,2) -- cycle;
+\draw (-3.5,5.833) -- (0,0) -- (6,4);
+    \foreach \x in {-4,...,5}
+    \foreach \y in {0,...,5}
+  	  {
+  	  \filldraw[fill=black] (\x,\y)  circle (1.5pt);
+  	 }
+\draw (-4,5.5) --(4,1.5) node at (4.5,1.3){\tiny $H$};
+  	 
+\draw (-3,5) circle (4pt) node at (3.5,4.5){\tiny $C$};
+\draw (1,3) circle (4pt);
+\draw (3,2) circle (4pt); 
+\end{tikzpicture}
+\end{center}
+
+This observation helps to find a triangulation with minimal determinant sum in the general case.
+We look at the \emph{bottom} (the union of the cmpact faces) of the polyhedron generated by $x_1,\dots,x_n$ as vertices and $C$ as recession cone, and take the volume underneath the bottom: 
+\begin{center}
+\begin{tikzpicture}[scale=0.4]
+\filldraw[gray!20] (-3.5,5.833) -- (0,0) -- (6,4) -- (6,5.833) -- cycle;
+\filldraw[yellow] (0,0) -- (-3,5) -- (-1,3) -- (1,2) -- (3,2) -- cycle;
+
+\draw (-3,5) -- (-1,3) -- (1,2) -- (3,2);
+
+\draw (-3.5,5.833) -- (0,0) -- (6,4);
+    \foreach \x in {-4,...,5}
+    \foreach \y in {0,...,5}
+  	  {
+  	  \filldraw[fill=black] (\x,\y)  circle (1.5pt);
+  	 }
+  	 
+\draw (-3,5) circle (4pt) node at (3.5,4.5){\tiny $C$};
+\draw (-1,3) circle (4pt);
+\draw (1,3) circle (4pt);
+\draw (3,2) circle (4pt);
+\draw (1,2) circle (4pt);  
+\end{tikzpicture}
+\end{center}
+With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz 3.0 computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators.
+
+Normaöliz does not use the bottom decomposition by default since its computation requires some time and administrative overhead. However, for medium to large examples with generators of varying degree, it si worthwhile trying.
+
+Note: though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}.
+
 \subsection{Explicit dehomogenization}
+Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehogenization.in|
+\begin{Verbatim}
+amb_space 3
+inequalities
+2
+-1 1 0
+-1 0 1
+dehomogenization
+1 0 0
+\end{Verbatim}
+indicates that in this case the first variable is the homogenizing one. The outputput file
+\begin{Verbatim}
+1 module generators
+2 Hilbert basis elements of recession monoid
+1 vertices of polyhedron
+2 extreme rays of recession cone
+2 support hyperplanes of polyhedron
+
+embedding dimension = 3
+affine dimension of the polyhedron = 2 (maximal)
+rank of recession monoid = 2
+
+size of triangulation   = 0
+resulting sum of |det|s = 0
+
+dehomogenization:
+1 0 0 
+
+
+module rank = 1
+
+***********************************************************************
+
+1 module generators:
+ 1 1 1
+
+2 Hilbert basis elements of recession monoid:
+ 0 0 1
+ 0 1 0
+
+1 vertices of polyhedron:
+ 1 1 1
+
+2 extreme rays of recession cone:
+ 0 0 1
+ 0 1 0
+
+2 support hyperplanes of polyhedron:
+ -1 0 1
+ -1 1 0
+\end{Verbatim}
+shows that Normaliz does the computation in the same way as with implicit dehomogenization, except that now the first coordinate decides what is in the polyhedron and what belongs to the recession cone, roughly speaking.
+
+Note that the dehomogenization need not be a coordinate. It can be any linear form that is nonnegative on the cone generators.
 
 \subsection{Exporting the triangulation}
 
+The option \ttt{-T} asks Normaliz to export the triangulation by writing the files 
+writes \ttt{<project>.tgn} and \verb|<project>.tri|:
+
+\begin{itemize}
+
+\itemtt[tgn]     The file \ttt{tgn} contains a matrix of vectors (in the
+coordinates of $\AA$) spanning the simplicial cones in
+the triangulation.
+
+\itemtt[tri]
+The file \ttt{tri} lists the simplicial subcones as follows:
+The first line contains the number of simplicial cones
+in the triangulation, and the next line contains the
+number $m+1$ where $m=\rank \EE$. Each of the following
+lines specifies a simplicial cone $\Delta$: the first
+$m$ numbers are the indices (with respect to the order
+in the file \ttt{tgn}) of those generators that span
+$\Delta$, and the last entry is the multiplicity of
+$\Delta$ in $\EE$, i.~e.\ the absolute value of the
+determinant of the matrix of the spanning vectors (as
+elements of $\EE$).
+\end{itemize}
+
+The following example is the $2$-dimensional cross polytope with one excluded face (\verb|cross2.in|). The excluded face is irrelevant for the triangulation.
+
+\begin{Verbatim}
+amb_space 3
+polytope
+4                           
+ 1  0                      
+ 0  1                
+-1  0
+ 0 -1
+excluded_faces
+1
+ 1  1 -1                         
+\end{Verbatim}
+
+Its \verb|tgn| and \verb|tri| files are
+\begin{Verbatim}
+tgn             tri
+4               2
+3               4
+1 0 1           1 2 3 2
+0 1 1           1 3 4 2
+-1 0 1 
+0 -1 1                 
+\end{Verbatim}
+
+We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$.
+
+In addition to the files \verb|<project>.tgn| and \verb|<project>.tri, also the file \verb|<object>.inv| is written. It contains the data of the file \verb|<project>.out| above the line of stars in a human and machine readable format.
+
+Note: with the option \verb|t-T| previous versions of Normaliz exported the triangulation, but suppressed the computation of the determinants. The combination \verb|-tT| is still admissible, but the determinants will always be computed when \verb|-T| is set.
+
 \subsection{Exporting the Stanley decomposition}
+
+The option \ttt{-y} makes Normaliz 
+write the files  \ttt{<project>.tgn}, \verb|<project>.dec| and \verb|<project>.inv|.   Stanley decomposition is contained in the file with the suffix \verb|dec|. But this file also contains the inclusion/exclusion data if there are excluded faces:
+
+(a) If there are any excluded faces, the file starts with the word
+\verb|in_ex_data|. The next line contains the number of such data that follow.
+Each of these lines contains the data of a face and the coefficient with which
+the face is to be counted: the first number lists the number of generators that
+are contained in the face, followed by the indices of the generators relative
+to the \verb|tgn| file and the last number is the coefficient.
+
+(b) The second block (the first if there are no excluded faces) starts with
+the word \verb|Stanley_dec|, followed by the number of simplicial cones in the
+triangulation.
+
+For each simplicial cone $\Delta$ in the
+triangulation this file contains a block of data:
+\begin{enumerate}
+\item[(i)] a line listing the indices $i_1,\dots,i_m$ of the
+    generators $v_{i_1},\dots,v_{i_m}$ relative to the
+    order in \ttt{tgn} (as in \ttt{tri}, $m=\rank \EE$);
+
+\item[(ii)] a $\mu\times m$ matrix where $\mu$ the
+    multiplicity of $\Delta$ (see above).
+
+    In the notation of \cite{BIS}, each line lists an
+    ``offset'' $x+\epsilon(x)$  by its coordinates with
+    respect to $v_{i_1},\dots,v_{i_m}$ as follows: if
+    $(a_1,\dots,a_m)$ is the line of the matrix, then
+    $$
+    x+\epsilon(x)=\frac{1}{\mu}(a_1v_{i_1}+\dots+a_mv_{i_m}).
+    $$
+\end{enumerate}
+
+
+The \verb|dec| file of the example above is
+\begin{Verbatim}
+in_ex_data
+1
+2 1 2 -1
+Stanley_dec
+2
+1 3 4              1 2 3 
+2                  2     
+3                  3     
+0 0 2              0 0 0 
+1 1 2              1 0 1
+\end{Verbatim}
+
+There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_1$ and $v_2$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
+$$
+\frac12 (1v_1+0v_2+1v_3)=(0,0,1).
+$$ 
+
+The file \ttt{3x3magiceven.in} has been processed with the
+option \ttt{-ahTy} activated. We recommend you to inspect all
+the output files in the subdirectory \ttt{example} of the
+distribution.
 
 \subsection{Minimal module generators of integral closure}
 
+Suppose that the original generators are well defined in the input. This is always the case when these consists just of a \verb|cone| or a \verb|cone_and _lattice|. Let $M$ be the monoid generated by them. Then Normaliz computes the integral closure $N$ of $M$ in the effective lattice $\EE$. It is often interesting to understand the difference set $N\setminus M$. After the introduction of a field $K$ of coefficients, this amounts to understanding the quotient $K[N]/K[M]$ as a $K[M]$-module. With the option \verb|MinimalModuleGeneratorsof IntegralClosure, -M| Normaliz computes a minimal generating set $T$ of this module. Combinatorially this means that we find an irreducible  cover
+$$
+N\setminus M\subset\bigcup_{x\in T} x+M.
+$$
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+ \filldraw[yellow] (0,0) -- (1.833,5.5) -- (4.5,5.5) -- (4.5,2.25) -- cycle;
+ \draw (0,0) -- (1.833,5.5);
+ \draw (0,0) -- (4.5,2.25) node at (-0.3,-0.3){\small $0$};
+     \foreach \x in {0,...,4}
+     \foreach \y in {0,...,5}
+   	  {
+   	  \filldraw[fill=black] (\x,\y)  circle (1.5pt);
+   	 }
+  \draw[red,thick] (1,1) circle (4pt);
+  \draw[red,thick] (2,3) circle (4pt);
+  \draw[red,thick] (1,2) circle (4pt);
+  \draw[red,thick] (2,2) circle (4pt);
+  \draw[->,thick] (0,0) -- (1,3);
+  \draw[->,thick] (0,0) -- (2,1);
+\end{tikzpicture}
+\end{center}
+As an example, we can run \verb|2cone.in| with the option \verb|-M| on the command line. This yields the output
+\begin{Verbatim}
+...
+4 Hilbert basis elements:
+ 1 1
+ 1 2
+ 1 3
+ 2 1
+
+2 extreme rays:
+ 1 3
+ 2 1
+
+4 module generators of integral closure/original monoid:
+ 1 1
+ 1 2
+ 2 2
+ 2 3
+\end{Verbatim} 
+
+
 \subsection{Precomputed support hyperplanes}
 
-\subsection{NmzIntegrate}
+Computing the support hyperplanes can sometimes be a very time consuming task, and if it has been the first step in the exploration of a difficult example, it may be desirable, to use the support hyperplanes as additional input in order to save computation time. This is especially true if Normaliz must do an intermediate computation of the support hyperplanes because of a large number of simplicial cones to be evaluated. The file \verb|2cone_supp.in| is just a toy example
+\begin{Verbatim}
+amb_space 2
+cone
+2
+2 1
+1 3
+support_hyperplanes
+2
+-1 2
+3 -1
+\end{Verbatim}
 
-
+As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
 \section{Optional output files}\label{optionaloutput}
 
-When one of the options \ttt{-f}, \ttt{-a}, \ttt{-T}, \ttt{-y}
-or an option calling NmzIntegrate is activated, Normaliz
+
+When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a}, Normaliz
 writes additional output files whose names are of type
-\ttt{<project>.<type>}. The format of most files is completely analogous to
-that of the
-input file, except that there is usually no last line denoting
-the type. The main purpose of these files is to give the other
-systems easy access to the results of Normaliz without
-complicated parsing. The packages for Singular and Macaulay~2
-use the extra output files to retrieve the results of
-Normaliz. Furthermore they provide additional information not
-contained in the standard output file.
+\ttt{<project>.<type>}. (Nothe that the options \verb|-T, Triangulation|, \verb|-y, StanleyDEC| and the options calling NmzIntegrate also write files in addition to \verb|<project>.out|.) Most these files contain matrices in a simple format:
+\begin{Verbatim}
+<m>
+<n>
+<x_1>
+...
+<x_m>
+\end{Verbatim}
+where each row has \verb|<n>| entries. Exceptions are the files with suffixes \verb|cst|, \verb|inv|, and the files con
 
 \subsection{The homogeneous case}
 
@@ -2969,21 +3121,6 @@ If \ttt{-a} is activated, then the following files are written
 
 \begin{itemize}
 
-\item[\ttt{typ}]  This is the product of the matrices
-    corresponding to \ttt{egn} and \ttt{esp}. In other
-    words, the linear forms representing the support
-    hyperplanes of the cone $C$ are evaluated on the
-    Hilbert basis. The resulting matrix, with the
-    generators corresponding to the rows and the support
-    hyperplanes corresponding to the columns, is written to
-    this file.
-
-    The suffix \ttt{typ} is motivated by the fact that the
-    matrix in this file depends only on the isomorphism
-    type of monoid generated by the Hilbert basis (up to
-    row and column permutations). In the language of
-    \cite{BG} it contains the \emph{standard embedding}.
-
 \item[\ttt{ext}] contains the extreme rays of the cone.
 
 \item[\ttt{ht1}] contains the degree $1$ elements of the
@@ -2998,140 +3135,18 @@ If \ttt{-a} is activated, then the following files are written
 
 \end{itemize}
 
-\subsection{Triangulation and Stanley decomposition}
-
-The option \ttt{-T} (independently from \ttt{-f} or \ttt{-a})
-writes \ttt{inv} and the triangulation data:
-
-\begin{itemize}
-
-\item[\ttt{tgn, tri}] These files together describe the
-    triangulation computed by Normaliz.
-
-    The file \ttt{tri} lists the simplicial subcones as follows:
-    The first line contains the number of simplicial cones
-    in the triangulation, and the next line contains the
-    number $m+1$ where $m=\rank \EE$. Each of the following
-    lines specifies a simplicial cone $\Delta$: the first
-    $m$ numbers are the indices (with respect to the order
-    in the file \ttt{tgn}) of those generators that span
-    $\Delta$, and the last entry is the multiplicity of
-    $\Delta$ in $\EE$, i.~e.\ the absolute value of the
-    determinant of the matrix of the spanning vectors (as
-    elements of $\EE$).
-
-    If \ttt{-t} is combined with \ttt{-T}, then the
-    determinants have not been computed, and the last entry
-    of each row is $0$ (a forbidden value for the
-    determinant).
-
-    The file \ttt{tgn} contains a matrix of vectors (in the
-    coordinates of $\AA$) spanning the simplicial cones in
-    the triangulation.
-\end{itemize}
-
-The following example is the $2$-dimensional cross polytope with one excluded face (\verb|cross2.in|)
-
-\begin{Verbatim}
-4 2                 1 3            
- 1  0               1  1 -1         
- 0  1               excluded_faces 
--1  0
- 0 -1
-polytope                        
-\end{Verbatim}
-
-Its \verb|tgn| and \verb|tri| files are
-\begin{Verbatim}
-tgn             tri
-4               2
-3               4
-1 0 1           1 2 3 2
-0 1 1           1 3 4 2
--1 0 1 
-0 -1 1                 
-\end{Verbatim}
-
-We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$.
-
-The option \ttt{-y} (independently from \ttt{-f} or \ttt{-a})
-writes \ttt{inv}, \ttt{tgn} and the Stanley decomposition:
-
-\begin{itemize}
-
-\item[\ttt{dec}] This file contains two types of data: (a) the information
-resulting from the excluded faces in connection with the sieve formula for
-inclusion/exclusion, (b) the Stanley decomposition.
-
-(a) If there are any excluded faces, the file starts with the word
-\verb|in_ex_data|. The next line contains the number of such data that follow.
-Each of these lines contains the data of a face and the coefficient with which
-the face is to be counted: the first number lists the number of generators that
-are contained in the face, followed by the indices of the generators relative
-to the \verb|tgn| file and the last number is the coefficient.
-
-(b) The second block (the first if there are no excluded faces) starts with
-the word \verb|Stanley_dec|, followed by the number of simplicial cones in the
-triangulation.
-
-	For each simplicial cone $\Delta$ in the
-    triangulation this file contains a block of data:
-
-    (i) a line listing the indices $i_1,\dots,i_m$ of the
-    generators $v_{i_1},\dots,v_{i_m}$ relative to the
-    order in \ttt{tgn} (as in \ttt{tri}, $m=\rank \EE$);
-
-    (ii) a $\mu\times m$ matrix where $\mu$ the
-    multiplicity of $\Delta$ (see above).
-
-    In the notation of \cite{BIS}, each line lists an
-    ``offset'' $x+\epsilon(x)$  by its coordinates with
-    respect to $v_{i_1},\dots,v_{i_m}$ as follows: if
-    $(a_1,\dots,a_m)$ is the line of the matrix, then
-    $$
-    x+\epsilon(x)=\frac{1}{\mu}(a_1v_{i_1}+\dots+a_mv_{i_m}).
-    $$
-
-\end{itemize}
-
-The \verb|dec| file of the example above is
-\begin{Verbatim}
-in_ex_data
-1
-2 1 2 -1
-Stanley_dec
-2
-1 3 4              1 2 3 
-2                  2     
-3                  3     
-0 0 2              0 0 0 
-1 1 2              1 0 1
-\end{Verbatim}
-
-There is $1$ face in \verb|in_ex_data| (namely the excluded one), it contains the $2$ generators $v_1$ and $v_2$  and appears with multiplicity $-1$. The Stanley decomposition consists of $4$ components of which each of the simplicial cone contains $2$. The second offset in the second simplicial cone is
-$$
-\frac12 (1v_1+0v_2+1v_3)=(0,0,1).
-$$ 
-
-The file \ttt{3x3magiceven.in} has been processed with the
-option \ttt{-ahTy} activated. We recommend you to inspect all
-the output files in the subdirectory \ttt{example} of the
-distribution.
 
 \subsection{Modifications in the inhomogeneous case}
 
 The types are a subset of the types that can be produced in the homogeneous
 case. The main difference is that the generators of the solution module and the
 Hilbert basis of the recession monoid appear together in the file \verb|gen|.
-They can be distinguished by the last component, as discussed already, and the
+They can be distinguished by evaluating the dehomogenization on them (the last component with inhomogeneous input), and the
 same applies to the  vertices of the polyhedron and extreme rays of the
 recession cone. The file \verb|cst| contains the constraints defining the
-polyhedron and the recession module in conjunction with the dehomogenization which is also contained in the \verb|cst| file, following the constraints.
+polyhedron and the recession module in conjunction with the dehomogenization, which is also contained in the \verb|cst| file, following the constraints.
 
-With \verb|-a| the files \verb|typ|, \verb|egn| and \verb|esp| are produced,
-but \verb|typ| has no meaning. The other two files contain \verb|gen| in the
-coordinates of the efficient homogenized lattice and the support hyperplanes of
-the homogenized cone in the coordinates of $\EE$.
+With \verb|-a| the files \verb|egn| and \verb|esp| are produced. These files contain \verb|gen| and the support hyperplanes of the homogenized cone in the coordinates of $\EE$, as well as the dehomogenization.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%  TERMINAL OUTPUT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -3143,7 +3158,7 @@ the homogenized cone in the coordinates of $\EE$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  LARGE COMPUTATIONS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Advanced topics}
+\section{Performance}\label{Perf}
 
 \subsection{Primal vs.\ dual}
 
@@ -3153,64 +3168,8 @@ The paper \cite{BIS} contains computation times for many examples that can help 
 
 Note that the dual algorithm is arithmetically much more stable than the primal algorithm since it basically only requires addition of vectors.
 
-\subsection{Polytope vs.\ polyhedron}\label{po_vs_po}
 
-Every polytope is a polyhedron, and therefore the input type \verb|polyhedron| or inhomogeneous constraints seems to be a reasonable choice in order to compute polytopes. In general it is not since in homogenized coordinates all computations are truncated at degree $1$, and the information hidden in the cone over the polytope cannot be obtained.
-
-If a polytope is defined via inhomogeneous data, the computations are essentially limited to the lattice points in the polytope, and the multiplicity computed this way is their number.
-
-\subsection{Lattice points in polytopes}
-
-If only the lattice points in a rational polytope are to be computed, there are essentially three options:
-\begin{itemize}
-\itemtt[-1] Use the primal algorithm on the original polytope.
-\itemtt[-r] Use the primal algorithm on an integral approximation.
-\itemtt[-d1] Use the dual algorithm on the original polytope.
-\end{itemize}
-For lattice polytopes \verb|-1| and \verb|-r| are identical. The choice between the primal and the dual algorithm has been discussed above. Note that \verb|-d1| is \emph{not} a Hilbert basis computation via \verb|-d| with a subsequent selection of degree $1$ elements. On the contrary, all computations are truncated in degree $1$.
-
-In order to compare the approaches the user should try to compute the degree $1$ points for the example \verb|hickerson-18.in| (taken from the LattE distribution \cite{LatInt}): with \verb|-r| it is a matter of seconds, with \verb|-d1| it is doable with some patience, and \verb|-1| fails because of overflow (add \verb|-e| to realize the overflow). (One could try \verb|-1B|, but it would take an extremely long time.)
-
-\subsection{Semiopen vs. inhomogeneous}
-
-The user may have noticed that the type \verb|excluded_faces| is in principle superfluous since  the Hilbert series of semiopen cones can also be computed via inhomogeneous input using \verb|strict_inequalities|. However, the two types represent different algorithmic approaches:
-\begin{arab}
-\item The computation with excluded faces are done in the ``original'' cone without the introduction of an additional coordinate: the Stanley decomposition is restricted to the excluded faces and all faces that arise from them as intersections. The result is then obtained by the sieve formula for inclusion/exclusion.
-
-\item For inhomogeneous input we introduce a homogenizing coordinate, and the Stanley decomposition of the homogenized monoid is restricted to the hyperplane $\delta(x)=1$ ($\delta$ is the dehomogenization).
-\end{arab}
-
-As a rule of thumb, \verb|excluded_faces| should be preferred if only few faces are excluded. Moreover, at present they present the only way for applying NmzIntegrate to semiopen cones.
-
-\subsection{Ordering the generators}
-
-The computation time of Normaliz for input of type generators depends often on the order of the generators. The following discussion may help to deal with this problem. 
-
-In computations with partial or full triangulation the crucial measure of complexity is the sum of the determinants of the simplicial cones in the (partial) triangulation.
-
-If a grading is defined and all extreme rays have the same degree, then the determinant sum of a full triangulation is independent of the order of the generators. The typical example is a lattice polytope given by (a superset of) its vertices.  In such a case the order can only influence the combinatorial complexity of the triangulation. But the latter is impossible to predict, and since it plays no essential role, Normaliz processes the generators in the input order.
-
-If the extreme rays have different degrees, then it is desirable to cover as much ground as possible by the generators of low degree, and Normaliz therefore orders the generators by ascending degree, for full triangulations as well as for partial ones. (In the absence of a grading, the $L_1$-norm is used.) This strategy has proved very useful. In addition to keeping the determinants small, it also helps to find a small partial triangulation.
-
-In mode \ttt{-s} Normaliz does not sort the generators in any way. Especially in combinatorial situations the user may have found a clever order of the generators, and it would be foolish to destroy it.
-
-It can be helpful to order the generators lexicographically if no better order is a priori available. Lexicographic ordering can easily be done by a text editor. In particular for \ttt{-s} one may not have a better choice. The following bidualization strategy often makes sense:
-\begin{arab}
- \item Compute the dual of the input cone using option \ttt{-s}. 
- \item If the number of support hyperplanes is not too large, use the constraints found in step (1) as input and compute the Hilbert basis with \ttt{-N}.
-\end{arab}  
-Many examples support our view that the order of the generators in step (2) is rather ``regular'', even if it is not always optimal.
-
-As a case study, the user may compute the examples 
-\begin{center}
-\verb|cut_poly_7.in, cut_poly_7_lex.in, cut_poly_7_bidual.in, cut_poly_7_mysort.in.|
-\end{center}
-with \ttt{-s} and \ttt{-N}. Start with \verb|cut_poly_7_bidual.in|.
-
-After step (1) above, one can of course also consider the dual algorithm for the computation of the Hilbert basis. It is instructive to apply \ttt{-d} to one of the input files above and compare computation times.
-  
-
-\subsection{Performance and parallelization}\label{PerPar}
+\subsection{Parallelization}
 
 The executables of Normaliz have been compiled for parallelization
 on shared memory systems with OpenMP. Parallelization reduces the
@@ -3772,140 +3731,248 @@ Since $N$ may have generators in negative degrees, Normaliz shifts the degrees i
 
 A normal affine monoid $M$ has a well-defined divisor class group. It is naturally isomorphic to the divisor class group of $K[M]$ where $K$ is a field (or any unique factorization doain); see \cite[4.F]{BG}, and especially \cite[4.56]{BG}. The class group classifies the divisorial ideals ip to isomorphism. It can be computed from the standard embedding that sends an element $x$ of $\gp(M)$ to the vector $\sigma(x)$ where $\sigma$ is the collection of support forms $\sigma_1,\dots,\sigma_s$ of $M$: $\Cl(M)=\ZZ^s/\sigma(\gp(M))$. Finding this quotient amounts to an application of the Smith normal form to the matrix of $\sigma$.
 
+\section{Annotated console output}\label{Console}
+
+\subsection{Primal mode}
+
+Wuth
+\begin{Verbatim}
+./normaliz -c example/A443
+\end{Verbatim}
+we get the following terminal output.
+
+\begin{Verbatim}
+                                                    \.....|
+                    Normaliz 3.0                     \....|
+                                                      \...|
+       (C) W. Bruns  T. Roemer R. Sieg    C. Soeger    \..|
+                     August 2015                        \.|
+                                                         \|
+************************************************************
+Compute: DefaultMode 
+************************************************************
+starting primal algorithm with full triangulation ...
+Generators sorted by degree and lexicographically
+Generators per degree:
+1: 48 
+\end{Verbatim}
+Self explanatory so far. Now the generators are inserted.
+\begin{Verbatim}
+Start simplex 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 19 22 25 26 27 28 31 34 
+37 38 39 40 43 46 
+\end{Verbatim}
+Normaliz starts by searching linearly independent generators with indices as small as possiple. They span the start simplex in the triangulation. The remaining generators are inserted successively. (If a generator does not increase the cone spanned by the previous ones, it is not listed, but this does not happen for \verb|A443|.)
+\begin{Verbatim}
+gen=17, 39 hyp, 4 simpl
+\end{Verbatim}
+We have now reached a cone with $39$ support hyperplanes and the triangulation has $3$  simplices so far. We omit some generators until something interesting happens:
+\begin{Verbatim}
+gen=35, 667 hyp, 85 pyr, 13977 simpl
+\end{Verbatim}
+In view of the number of simplices in the triangulation and the number of support yperplanes, Normaliz has decided to build pyramids and to store them for later triangulation.
+\begin{Verbatim}
+gen=36, 723 hyp, 234 pyr, 14025 simpl
+...
+gen=48, 4948 hyp, 3541 pyr, 14856 simpl
+**************************************************
+level 0 pyramids remaining: 3541
+**************************************************
+\end{Verbatim}
+Now these pyramids must be triangulated. They may produce not only simplices, but also pyramids of higher level, and indeed they do so:
+\begin{Verbatim}
+**************************************************
+all pyramids on level 0 done!
+**************************************************
+level 1 pyramids remaining: 5935
+**************************************************
+**************************************************
+all pyramids on level 1 done!
+**************************************************
+level 2 pyramids remaining: 1567
+**************************************************
+1180 pyramids remaining on level 2, evaluating 2503294 simplices
+\end{Verbatim}
+At this point the preset size of the evaluation buffer for simplices has ben exceeded. Normaliz stops the processing of pyramids, and empties the buffer by evaluating the simplices. 
+\begin{Verbatim}
+||||||||||||||||||||||||||||||||||||||||||||||||||
+2503294 simplices, 0 HB candidates accumulated.
+**************************************************
+all pyramids on level 2 done!
+**************************************************
+level 3 pyramids remaining: 100
+**************************************************
+**************************************************
+all pyramids on level 3 done!
+\end{Verbatim}
+This is a small computation, and the computation of pyramids goes level by level without the ncessity to return to a lower level. But in larger examples the buffer for level $n+1$ may be filled before level $n$ is finished. Then it becomes necessary to go back.
+\begin{Verbatim}
+**************************************************
+Pointed since graded
+\end{Verbatim}
+Fortunately our cone is pointed. Some simplices remaining in nthe buffer are now evakuated:
+\begin{Verbatim}
+evaluating 150978 simplices
+||||||||||||||||||||||||||||||||||||||||||||||||||
+2654272 simplices, 0 HB candidates accumulated.
+Adding 1 denominator classes... done.
+\end{Verbatim}
+Since our generators form the Hilbert basis, we do not collect any further candidates. If all generators are in degree $1$, we have only one denominator class in the Hilbert series, but otherwise there may be many. The collection of the Hilbert series in denominator classes reduces the compoutations of common denominators to a minimum.
+\begin{Verbatim}
+Total number of pyramids = 14137, among them simplicial 2994
+\end{Verbatim}
+Some statistics of the pyramid decomposition.
+\begin{Verbatim}
+Select extreme rays via comparison ... done.
+\end{Verbatim}
+Normaliz knows two methods for finding the extreme rays. Instead of ``comparison''you may see `` rank''.
+\begin{Verbatim}
+------------------------------------------------------------
+transforming data... done.
+\end{Verbatim}
+
+\subsection{Dual mode}
+
+Now we ggive an example of a computation in dual mode. It is started by the command
+\begin{Verbatim}
+./normaliz -cd example/5x5
+\end{Verbatim}
+The console output:
+
+\begin{Verbatim}
+                                                    \.....|
+                    Normaliz 3.0                     \....|
+                                                      \...|
+       (C) W. Bruns  T. Roemer R. Sieg    C. Soeger    \..|
+                    August 2015                         \.|
+                                                         \|
+************************************************************
+Compute: DualMode 
+No inequalities specified in constraint mode, using non-negative orthant.
+\end{Verbatim}
+Indeed, we have used equations as the input.
+\begin{Verbatim}
+************************************************************
+computing Hilbert basis ...
+==================================================
+cut with halfspace 1 ...
+Final sizes: Pos 1 Neg 1 Neutral 0
+\end{Verbatim}
+The cone is cut out from the space of solutions of the system of equations (in this case) by successive intersections with halfspaces defined by the inequalities. After such an intersection we have the positive half space, the ``neutral'' hyperplane and the negative half space. The final sizes given are the numbers of Hilbert basis elements strictly in the positive half space, strictly in the negative half space, and in the hyperplane. This pattern is repeated until all hyperplanes have been used.
+\begin{Verbatim}
+==================================================
+cut with halfspace 2 ...
+Final sizes: Pos 1 Neg 1 Neutral 1
+\end{Verbatim}
+We leave out some hyperplanes \dots
+\begin{Verbatim}
+==================================================
+cut with halfspace 20 ...
+auto-reduce 1159 candidates, degrees <= 13 27 
+Final sizes: Pos 138 Neg 239 Neutral 1592
+==================================================
+cut with halfspace 21 ...
+Positive: 1027  Negative: 367
+..................................................
+Final sizes: Pos 1094 Neg 369 Neutral 1019
+\end{Verbatim}
+Sometimes reduction takes some time, and then Normaliz may issue a message on ``auto-reduction'' organized by degree (chosen for the algorithm, not defined by the given grading). The line of dots is printed is the computation of new Hilbert basis candidates takes time, and Normaliz wants to show you that it is not sleeping. Normaliz shows you the niumber of positive and negative partners that must be pared oproduce offspring.
+\begin{Verbatim}
+==================================================
+cut with halfspace 25 ...
+Positive: 1856  Negative: 653
+..................................................
+auto-reduce 1899 candidates, degrees <= 19 39 
+Final sizes: Pos 1976 Neg 688 Neutral 2852
+\end{Verbatim}
+All hyperplanes have been taken care of.
+\begin{Verbatim}
+Find extreme rays
+Find relevant support hyperplanes
+\end{Verbatim}
+Well, in connection with the equations, some hyperplanes become superfluous. In the output file Normaliz willlist a minimal set of support hyperplanes that together with the equations define the cone.
+\begin{Verbatim}
+Hilbert basis 4828
+\end{Verbatim}
+The number of Hilbert basis elements computed is the sum of the last positive and neutral numbers.
+\begin{Verbatim}
+Find degree 1 elements
+\end{Verbatim}
+The input file contains a grading.
+\begin{Verbatim}
+transforming data... done.
+\end{Verbatim}
+
+The computation of the new Hilbert basis after the intersection with the new hyperplane proceeds in rounds, and there be many rounds \dots (not in the above example). then you cn see terminal output like
+\begin{Verbatim}
+Round 100
+Round 200
+Round 300
+Round 400
+Round 500
+\end{Verbatim}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CHANGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Changes relative to version 2.5}
+\section{Changes relative to version 2.12}
 
-For the history of changes starting from 2.0 see the manual of
-version 2.7 (still accessible on the web site). Note that some changes
+For the history of changes starting from 2.0 see the manuals of
+versions 2.7 and 2.12 (still accessible at the web site). Note that some changes
 have become obsolete later on.
 
 {\small
 
+Documentation:
 
+\begin{enumerate}
 
-\textbf{Changes in version 2.7:}
+\item Manual completely rewritten.
+
+\end{enumerate}
 
 User control, input and output:
 
 \begin{enumerate}
-\item Only one executable \texttt{normaliz}. Precision controlled by
-option \texttt{-B}.
 
-\item Slight changes in the wording of the main output file.
+\item New syntax for input files and command line options (with backward compatibility).
 
-\item Introduction of options for large problems.
-    (Obsolete.)
+\item Balance between generator input and constraints input.
+
+\item Generator and constraints input can be mixed.
+
+\item Output augmented and order of vectors in lists standardized.
+
+\item Console output improved.
+
+\end{enumerate}
+
+Computation goals:
+
+\begin{enumerate}
+\item Minimal module generators of integral closure can be computed.
+
+\item Computation of class group added.
+
+\item Implicit grading restricted to the case in which all extreme rays have degree $1$ (instead of constant degree).
 \end{enumerate}
 
 Algorithms and implementation:
 
 \begin{enumerate}
-\item Separation of front end and kernel (implemented as a library).
-\item Pyramid based algorithms for large problems (see
-    \cite{BIS}).
-\item New algorithm for $h$-vector. No computation of line
-    shellings in this version.
+\item Improved linear algebra, especially better coordinate transformations.
 
-\item Dual mode accessible from all input types.
-\item General improvement of memory use (and speed) by more
-    efficient data types.
+\item Local GMP transitions if intermediate results do not fit 64 bit integers.
+
+\item Global GMP transition if final results do not fit 64 bit integers.
+
+\item Local approximation of rational simplicial cones for degree $1$ points.
+
+\item Subdivisision of large simplicial cones via SCIP and approximation.
+
+\item Bottom decomposition introduced.
+
+\item Recognition of polytopes in the computation of polyhedra.
 \end{enumerate}
 
-\textbf{Changes in version 2.8:}
-
-User control, input and output:
-
-\begin{enumerate}
-\item Use of arbitrary $\ZZ$-gradings which make rational
-    polytopes accessible.
-\item Implied changes in the output files.
-\item Simplification of the command line options.
-    (``Large'' modes now superfluous.)
-\end{enumerate}
-
-Algorithms and implementation:
-\begin{enumerate}
-\item Handling of arbitrary $\ZZ$-gradings.
-\item Substantial improvement of parallelization, based on
-    thorough use of pyramid decompositions (see
-    \cite{BIS}).
-\item Faster evaluation of simplicial cones (see
-    \cite{BIS}).
-\item General overhaul of the code.
-\end{enumerate}
-
-\textbf{Changes in version 2.9:}
-
-User control, input and output:
-
-\begin{enumerate}
-\item Introduction of type \ttt{signs}.
-\item Options for calling NmzIntegrate.
-\item Corresponding output options and output files.
-\end{enumerate}
-
-Algorithms and implementation:
-
-\begin{enumerate}
-\item Introduction of NmzIntegrate (independent
-    executable).
-\item Faster volume computation by using the heights of
-    simplicial cones attached to unimodular ones.
-\item Parallelization of pyramid decomposition also for
-    support hyperplane computation.
-\end{enumerate}
-
-\textbf{Changes in version 2.10:}
-
-User control, input and output:
-
-\begin{enumerate}
-\item Corrections in the output forwarded to NmzIntegrate.
-\end{enumerate}
-
-Algorithms and implementation:
-
-\begin{enumerate}
-\item Normaliz now avoids the production of duplicates of
-candidates for the Hilbert basis. At the expense of some
-computation time, this strategy saves much memory.
-\end{enumerate}
-
-Version 2.10.1 is only a bug fix.
-
-\textbf{Changes in version 2.11:}
-
-User control, input and output:
-
-\begin{enumerate}
-\item Addition of inhomogeneous input types.
-\item Hilbert series of semiopen cones.
-\end{enumerate}
-
-Algorithms and implementation:
-
-\begin{enumerate}
-\item Corresponding extension of algorithms.
-\item Integral approximation of rational polytopes.
-\item Lattice points in polytopes via the dual algorithm.
-\item Improvement in Fourier-Motzkin elimination by better use of pyramid decomposition.
-\item Substantial improvement in computing ``large'' simplicial cones.
-\end{enumerate}
-
-Versions 2.11.1 and 2.11.2 are mainly bug fixes.
-
-\textbf{Changes in version 2.12:}
-
-Algorithms and implementation:
-
-\begin{enumerate}
-\item Dual algorithm thoroughly revised.
-\item Internal parallelization of simplicial cones with large determinants.
-\item Improvement of linear algebra.
-\end{enumerate}
-
-Versions 2.12.1 and 2.12.2 are mainly bug fixes.
 } %%%%%%%%%% small
 
 \begin{thebibliography}{15.}
@@ -4092,3 +4159,10 @@ Access from computer algebra systems:
     library adapted.
 
 \end{enumerate}
+
+
+\subsection{Integer types}\label{NumLim}
+
+Contrary to Normaliz 2, the integer type of a computation is set automatically by Normaliz 3. (In particular the options \verb|-e| and \verb|-B| do not exist anymore.) Normaliz rads all input and preprocesses it with indefinite precision. It then tries a 64 bit computation. If that fails, the computation is restarted with indefinite precision. Also see Section \ref{approx_ex}.
+
+In order to prevent the computations with indefinite precision, which usually take 10 times as long as 64 bit integer computations, Normaliz constantly controls the size of intermediate results. If a linear algebra routine fails because of arithmetic overflow, the particular computation os repesated with indefinite precision. If a final result fails the 64 bit size, the whole computation must of course be restarted.
