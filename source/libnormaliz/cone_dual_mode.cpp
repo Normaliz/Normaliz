@@ -710,8 +710,11 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 
     assert(dim>0);         
     if (verbose==true) {
-        verboseOutput()<<"\n************************************************************\n";
-        verboseOutput()<<"computing Hilbert basis ..."<<endl;
+        verboseOutput()<<"************************************************************\n";
+        verboseOutput()<<"computing Hilbert basis";
+        if(truncate)
+            verboseOutput() << " (truncated)";
+        verboseOutput() << " ..." << endl;
     }
     
     if(Generators.nr_of_rows()!=ExtremeRays.size()){
@@ -758,7 +761,10 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
     Intermediate_HB.extract(Hilbert_Basis);
     
     if(verbose)
-        verboseOutput() << "Hilbert basis " << Hilbert_Basis.size() << endl;
+        verboseOutput() << "Hilbert basis ";
+            if(truncate)
+            verboseOutput() << "(truncated) ";
+        verboseOutput() << Hilbert_Basis.size() << endl;
 
 }
 

@@ -858,7 +858,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     Matrix<Integer> Gens=Binomials.kernel().transpose();
     Full_Cone<Integer> FC(Gens);
     FC.verbose=verbose;
-    if (verbose) verboseOutput() << endl << "Computing a positive embedding..." << endl;
+    if (verbose) verboseOutput() << "Computing a positive embedding..." << endl;
 
     FC.dualize_cone();
     Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
@@ -1487,7 +1487,7 @@ void Cone<Integer>::compute_generators() {
     //create Generators from SupportHyperplanes
     if (!isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()!=0) {
         if (verbose) {
-            verboseOutput() <<endl<< "Computing extreme rays as support hyperplanes of the dual cone:";
+            verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
         }
         Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(SupportHyperplanes));
         Dual_Cone.verbose=verbose;
@@ -1538,7 +1538,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         
     if(isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()==0){
         if (verbose) {
-            verboseOutput() <<endl<< "Computing support hyperplanes for the dual mode:";
+            verboseOutput()<<  "Computing support hyperplanes for the dual mode:"<< endl;
         }
         Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Generators));
         Tmp_Cone.verbose=verbose;
@@ -1556,7 +1556,7 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
 
     if((do_only_Deg1_Elements || inhomogeneous) && !isComputed(ConeProperty::ExtremeRays)){
         if (verbose) {
-            verboseOutput() <<endl<< "Computing extreme rays for the dual mode:";
+            verboseOutput() << "Computing extreme rays for the dual mode:"<< endl;
         }
         Matrix<Integer> Help(0,dim);
         if(inhomogeneous)                        // we must guard ourselves against loosing the truncation

@@ -317,6 +317,9 @@ public:
     void do_vars_check(bool with_default);
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
+    
+    void start_message();
+    void end_message();
 
 
 #ifdef NMZ_MIC_OFFLOAD
@@ -365,7 +368,7 @@ Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constru
  *              Computation Methods
  *---------------------------------------------------------------------------
  */
-    void dualize_cone(bool do_extreme_rays=false);
+    void dualize_cone(bool do_extreme_rays=false, bool print_message=true);
     void support_hyperplanes();
 
     void compute();

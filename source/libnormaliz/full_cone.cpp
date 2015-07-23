@@ -1147,6 +1147,12 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     vector<key_t> key=S.read_key();   // generators indexed from 0 */
     
     vector<key_t> key=find_start_simplex();
+    if(verbose){
+        verboseOutput() << "Start simplex ";
+        for(size_t i=0;i<key.size();++i)
+            verboseOutput() <<  key[i]+1 << " ";
+        verboseOutput() << endl;
+    }
     Matrix<Integer> H(dim,dim);
     Integer vol;
     Generators.simplex_data(key,vol,H);
@@ -1881,6 +1887,29 @@ void Full_Cone<Integer>::find_bottom_facets() {
         verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
 }
 
+template<typename Integer>
+void Full_Cone<Integer>::start_message() {
+    
+       if (verbose) {
+        verboseOutput()<<"************************************************************"<<endl;
+        verboseOutput()<<"starting primal algorithm ";
+        if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
+        if (do_triangulation) {
+            verboseOutput()<<"with full triangulation ";
+        }
+        if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
+        verboseOutput()<<"..."<<endl;
+    }   
+}
+
+template<typename Integer>
+void Full_Cone<Integer>::end_message() {
+    
+       if (verbose) {
+        verboseOutput() << "------------------------------------------------------------"<<endl;
+    }   
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -1892,17 +1921,7 @@ void Full_Cone<Integer>::build_top_cone() {
     
     if(dim==0)
         return;
-    if (verbose) {
-        verboseOutput()<<endl<<"************************************************************"<<endl;
-        verboseOutput()<<"starting primal algorithm ";
-        if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
-        if (do_triangulation) {
-            verboseOutput()<<"with full triangulation ";
-        }
-        if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
-        verboseOutput()<<"..."<<endl;
-    }
-
+ 
     if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
         build_cone();
     }
@@ -2536,7 +2555,9 @@ void Full_Cone<Integer>::compute() {
     do_vars_check(false);
     explicit_full_triang=do_triangulation;
     if(do_default_mode)
-        do_vars_check(true); 
+        do_vars_check(true);
+    
+    start_message();
     
     if (!do_triangulation && !do_partial_triangulation)
         support_hyperplanes();
@@ -2548,7 +2569,10 @@ void Full_Cone<Integer>::compute() {
 
         // look for a grading if it is needed
         find_grading();
-        if(isComputed(ConeProperty::IsPointed) && !pointed) return;
+        if(isComputed(ConeProperty::IsPointed) && !pointed){
+            end_message();
+            return;
+        }
         
         if (!isComputed(ConeProperty::Grading))
             disable_grading_dep_comp();
@@ -2599,7 +2623,8 @@ void Full_Cone<Integer>::compute() {
             // cout << "module rank " << module_rank << endl;
         }
         
-    }    
+    }  
+    end_message();
 }
 
 template<typename Integer>
@@ -2733,7 +2758,7 @@ void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support 
     minimize_support_hyperplanes();
     if(!isComputed(ConeProperty::SupportHyperplanes)){
         sort_gens_by_degree(false); // we do not want to triangulate here
-        dualize_cone();           
+        dualize_cone(false,false);           
     }
     extreme_rays_and_deg1_check();
     // reset_tasks();
@@ -3016,15 +3041,15 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     if (verbose) {
         if(triangulate){
             if(isComputed(ConeProperty::Grading)){
-                verboseOutput() << endl << "Generators sorted by degree and lexicographically" << endl;
+                verboseOutput() <<"Generators sorted by degree and lexicographically" << endl;
                 verboseOutput() << "Generators per degree:" << endl;
                 verboseOutput() << count_in_map<long,long>(gen_degrees);
             }
             else
-                verboseOutput() << endl << "Generators sorted by 1-norm and lexicographically" << endl;
+                verboseOutput() << "Generators sorted by 1-norm and lexicographically" << endl;
         }
         else{
-            verboseOutput() << endl << "Generators sorted lexicographically" << endl;
+            verboseOutput() << "Generators sorted lexicographically" << endl;
         }
     }
     keep_order=true;
@@ -3116,15 +3141,21 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     keep_order=true;
 }
 */
+
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays){
+void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays, bool print_message){
 
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
     do_triangulation         = false;
     do_partial_triangulation = false;
+    
+    if(print_message) start_message();
+    
+    sort_gens_by_degree(false);
     
     if(!isComputed(ConeProperty::SupportHyperplanes))
         build_top_cone();
@@ -3136,6 +3167,7 @@ void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays){
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
+    if(print_message) end_message();
 }
 
 //---------------------------------------------------------------------------
