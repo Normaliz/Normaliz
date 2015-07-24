@@ -3838,6 +3838,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_approximation=false;
     do_default_mode=false;
     do_class_group = false;
+    do_module_gens_intcl = false;
     
     do_evaluation = false;
     do_only_multiplicity=false;
