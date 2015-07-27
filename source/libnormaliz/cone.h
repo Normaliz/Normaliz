@@ -128,88 +128,88 @@ public:
     bool isComputed(ConeProperties CheckComputed) const;
 
 //---------------------------------------------------------------------------
-//          get the results, these methods do not start a computation
+//   get the results, these methods will start a computation if necessary
+//   throws an NotComputableException if not succesful
 //---------------------------------------------------------------------------
 
     // dimension and rank invariants
     size_t getEmbeddingDim() const { return dim; };   // is always known
-    size_t getRank() const;                           // depends on ExtremeRays
-    Integer getIndex() const;                          // depends on OriginalGenerators
+    size_t getRank();                           // depends on ExtremeRays
+    Integer getIndex();                         // depends on OriginalMonoidGenerators
     // only for inhomogeneous case:
-    size_t getRecessionRank() const;
-    long getAffineDim() const;
-    size_t getModuleRank() const;
+    size_t getRecessionRank();
+    long getAffineDim();
+    size_t getModuleRank();
 
-    const Matrix<Integer>& getGeneratorsMatrix() const;
-    const vector< vector<Integer> >& getGenerators() const;
-    size_t getNrGenerators() const;
+    const Matrix<Integer>& getGeneratorsMatrix();
+    const vector< vector<Integer> >& getGenerators();
+    size_t getNrGenerators();
 
-    const Matrix<Integer>& getExtremeRaysMatrix() const;
-    const vector< vector<Integer> >& getExtremeRays() const;
-    size_t getNrExtremeRays() const;
+    const Matrix<Integer>& getExtremeRaysMatrix();
+    const vector< vector<Integer> >& getExtremeRays();
+    size_t getNrExtremeRays();
 
-    const Matrix<Integer>& getVerticesOfPolyhedronMatrix() const;
-    const vector< vector<Integer> >& getVerticesOfPolyhedron() const;
-    size_t getNrVerticesOfPolyhedron() const;
+    const Matrix<Integer>& getVerticesOfPolyhedronMatrix();
+    const vector< vector<Integer> >& getVerticesOfPolyhedron();
+    size_t getNrVerticesOfPolyhedron();
 
-    // The following constraints depend all on ConeProperty::SupportHyperplanes
-    const Matrix<Integer>& getSupportHyperplanesMatrix() const;
-    const vector< vector<Integer> >& getSupportHyperplanes() const;
-    size_t getNrSupportHyperplanes() const;
-    map< InputType, vector< vector<Integer> > > getConstraints() const;
+    const Matrix<Integer>& getSupportHyperplanesMatrix();
+    const vector< vector<Integer> >& getSupportHyperplanes();
+    size_t getNrSupportHyperplanes();
 
-    const Matrix<Integer>& getExcludedFacesMatrix() const;
-    const vector< vector<Integer> >& getExcludedFaces() const;
-    size_t getNrExcludedFaces() const;
+    // depends on the ConeProperty::s SupportHyperplanes and Sublattice
+    map< InputType, vector< vector<Integer> > > getConstraints();
 
-    size_t getTriangulationSize() const;
-    Integer getTriangulationDetSum() const;
+    const Matrix<Integer>& getExcludedFacesMatrix();
+    const vector< vector<Integer> >& getExcludedFaces();
+    size_t getNrExcludedFaces();
 
-    const Matrix<Integer>& getHilbertBasisMatrix() const;
-    const vector< vector<Integer> >& getHilbertBasis() const;
-    size_t getNrHilbertBasis() const;
+    size_t getTriangulationSize();
+    Integer getTriangulationDetSum();
+
+    const Matrix<Integer>& getHilbertBasisMatrix();
+    const vector< vector<Integer> >& getHilbertBasis();
+    size_t getNrHilbertBasis();
     
-    const Matrix<Integer>& getModuleGeneratorsOfIntegralClosureMatrix() const;
-    const vector< vector<Integer> >& getModuleGeneratorsOfIntegralClosure() const;
-    size_t getNrModuleGeneratorsOfIntegralClosure() const;
+    const Matrix<Integer>& getModuleGeneratorsOfIntegralClosureMatrix();
+    const vector< vector<Integer> >& getModuleGeneratorsOfIntegralClosure();
+    size_t getNrModuleGeneratorsOfIntegralClosure();
 
-    const Matrix<Integer>& getModuleGeneratorsMatrix() const;
-    const vector< vector<Integer> >& getModuleGenerators() const;
-    size_t getNrModuleGenerators() const;
+    const Matrix<Integer>& getModuleGeneratorsMatrix();
+    const vector< vector<Integer> >& getModuleGenerators();
+    size_t getNrModuleGenerators();
 
-    const Matrix<Integer>& getDeg1ElementsMatrix() const;
-    const vector< vector<Integer> >& getDeg1Elements() const;
-    size_t getNrDeg1Elements() const;
+    const Matrix<Integer>& getDeg1ElementsMatrix();
+    const vector< vector<Integer> >& getDeg1Elements();
+    size_t getNrDeg1Elements();
 
     // the actual grading is Grading/GradingDenom
-    vector<Integer> getGrading() const;
-    Integer getGradingDenom() const;
+    vector<Integer> getGrading();
+    Integer getGradingDenom();
 
-    vector<Integer> getDehomogenization() const;
+    vector<Integer> getDehomogenization();
     
-    vector<Integer> getClassGroup() const;
+    vector<Integer> getClassGroup();
 
-    mpq_class getMultiplicity() const;
+    mpq_class getMultiplicity();
 
-    bool isPointed() const;
-    bool isInhomogeneous() const;
-    bool isDeg1ExtremeRays() const;
-    bool isDeg1HilbertBasis() const;
-    bool isIntegrallyClosed() const;
-    bool isReesPrimary() const;
-    Integer getReesPrimaryMultiplicity() const;
-    Integer getShift() const;
-    // const Matrix<Integer>& getGeneratorsOfToricRingMatrix() const;
-    // const vector< vector<Integer> >& getGeneratorsOfToricRing() const;
-    const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix() const;
-    const vector< vector<Integer> >& getOriginalMonoidGenerators() const;
-    size_t getNrOriginalMonoidGenerators() const;
+    bool isPointed();
+    bool isInhomogeneous();
+    bool isDeg1ExtremeRays();
+    bool isDeg1HilbertBasis();
+    bool isIntegrallyClosed();
+    bool isReesPrimary();
+    Integer getReesPrimaryMultiplicity();
+    Integer getShift();
+    const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();
+    const vector< vector<Integer> >& getOriginalMonoidGenerators();
+    size_t getNrOriginalMonoidGenerators();
     // the following methods return const refs to avoid copying of big data objects
-    const Sublattice_Representation<Integer>& getSublattice() const;
-    const HilbertSeries& getHilbertSeries() const; //general purpose object
-    const vector< pair<vector<key_t>, Integer> >& getTriangulation() const;
-    const vector< pair<vector<key_t>, long> >& getInclusionExclusionData() const;
-    const list< STANLEYDATA<Integer> >& getStanleyDec() const;
+    const Sublattice_Representation<Integer>& getSublattice();
+    const HilbertSeries& getHilbertSeries(); //general purpose object
+    const vector< pair<vector<key_t>, Integer> >& getTriangulation();
+    const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
+    const list< STANLEYDATA<Integer> >& getStanleyDec();
 
 //---------------------------------------------------------------------------
 //                          private part

@@ -1021,6 +1021,7 @@ void Cone<Integer>::setDehomogenization (const vector<Integer>& lf) {
     is_Computed.set(ConeProperty::Dehomogenization);
 }
 
+//---------------------------------------------------------------------------
 
 /* check what is computed */
 template<typename Integer>
@@ -1036,108 +1037,118 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
 
 /* getter */
 template<typename Integer>
-size_t Cone<Integer>::getRank() const {
+size_t Cone<Integer>::getRank() {
+    compute(ConeProperty::Sublattice);
     return BasisChange.getRank();
 }
 
-template<typename Integer>    // computation depends on OriginalGenerators
-Integer Cone<Integer>::getIndex() const {
+template<typename Integer>    // computation depends on OriginalMonoidGenerators
+Integer Cone<Integer>::getIndex() {
+    compute(ConeProperty::OriginalMonoidGenerators);
     return index;
 }
 
 template<typename Integer>
-size_t Cone<Integer>::getRecessionRank() const {
+size_t Cone<Integer>::getRecessionRank() {
+    compute(ConeProperty::RecessionRank);
     return recession_rank;
 }
 
 template<typename Integer>
-long Cone<Integer>::getAffineDim() const {
+long Cone<Integer>::getAffineDim() {
+    compute(ConeProperty::AffineDim);
     return affine_dim;
 }
 
 template<typename Integer>
-const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() const{
+const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() {
+    compute(ConeProperty::Sublattice);
     return BasisChange;
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getOriginalMonoidGeneratorsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getOriginalMonoidGeneratorsMatrix() {
+    compute(ConeProperty::OriginalMonoidGenerators);
     return OriginalMonoidGenerators;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators() const {
+const vector< vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators() {
+    compute(ConeProperty::OriginalMonoidGenerators);
     return OriginalMonoidGenerators.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrOriginalMonoidGenerators() const {
+size_t Cone<Integer>::getNrOriginalMonoidGenerators() {
+    compute(ConeProperty::OriginalMonoidGenerators);
     return OriginalMonoidGenerators.nr_of_rows();
 }
 
-
-/* template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getGeneratorsOfToricRingMatrix() const {
-    return GeneratorsOfToricRing;
-}
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getGeneratorsOfToricRing() const {
-    return GeneratorsOfToricRing.get_elements();
-}
-*/
-
-template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() {
+    compute(ConeProperty::Generators);
     return Generators;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getGenerators() const {
+const vector< vector<Integer> >& Cone<Integer>::getGenerators() {
+    compute(ConeProperty::Generators);
     return Generators.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrGenerators() const {
+size_t Cone<Integer>::getNrGenerators() {
+    compute(ConeProperty::Generators);
     return Generators.nr_of_rows();
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() {
+    compute(ConeProperty::ExtremeRays);
     return ExtremeRays;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getExtremeRays() const {
+const vector< vector<Integer> >& Cone<Integer>::getExtremeRays() {
+    compute(ConeProperty::ExtremeRays);
     return ExtremeRays.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrExtremeRays() const {
+size_t Cone<Integer>::getNrExtremeRays() {
+    compute(ConeProperty::ExtremeRays);
     return ExtremeRays.nr_of_rows();
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getVerticesOfPolyhedronMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getVerticesOfPolyhedronMatrix() {
+    compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getVerticesOfPolyhedron() const {
+const vector< vector<Integer> >& Cone<Integer>::getVerticesOfPolyhedron() {
+    compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrVerticesOfPolyhedron() const {
+size_t Cone<Integer>::getNrVerticesOfPolyhedron() {
+    compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron.nr_of_rows();
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getSupportHyperplanesMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getSupportHyperplanesMatrix() {
+    compute(ConeProperty::SupportHyperplanes);
     return SupportHyperplanes;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes() const {
+const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes() {
+    compute(ConeProperty::SupportHyperplanes);
     return SupportHyperplanes.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrSupportHyperplanes() const {
+size_t Cone<Integer>::getNrSupportHyperplanes() {
+    compute(ConeProperty::SupportHyperplanes);
     return SupportHyperplanes.nr_of_rows();
 }
 
 template<typename Integer>
-map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () const {
+map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () {
+    compute(ConeProperty::Sublattice, ConeProperty::SupportHyperplanes);
     map<InputType, vector< vector<Integer> > > c;
     c[Type::inequalities] = SupportHyperplanes.get_elements();
     c[Type::equations] = BasisChange.getEquations();
@@ -1146,168 +1157,202 @@ map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints () co
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getExcludedFacesMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getExcludedFacesMatrix() {
+    compute(ConeProperty::ExcludedFaces);
     return ExcludedFaces;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces() const {
+const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces() {
+    compute(ConeProperty::ExcludedFaces);
     return ExcludedFaces.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrExcludedFaces() const {
+size_t Cone<Integer>::getNrExcludedFaces() {
+    compute(ConeProperty::ExcludedFaces);
     return ExcludedFaces.nr_of_rows();
 }
 
 template<typename Integer>
-const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() const {
+const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() {
+    compute(ConeProperty::Triangulation);
     return Triangulation;
 }
 
 template<typename Integer>
-const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() const {
+const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() {
+    compute(ConeProperty::InclusionExclusionData);
     return InExData;
 }
 
 template<typename Integer>
-const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() const {
+const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() {
+    compute(ConeProperty::StanleyDec);
     return StanleyDec;
 }
 
 template<typename Integer>
-size_t Cone<Integer>::getTriangulationSize() const {
+size_t Cone<Integer>::getTriangulationSize() {
+    compute(ConeProperty::TriangulationSize);
     return TriangulationSize;
 }
 
 template<typename Integer>
-Integer Cone<Integer>::getTriangulationDetSum() const {
+Integer Cone<Integer>::getTriangulationDetSum() {
+    compute(ConeProperty::TriangulationDetSum);
     return TriangulationDetSum;
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() {
+    compute(ConeProperty::HilbertBasis);
     return HilbertBasis;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getHilbertBasis() const {
+const vector< vector<Integer> >& Cone<Integer>::getHilbertBasis() {
+    compute(ConeProperty::HilbertBasis);
     return HilbertBasis.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrHilbertBasis() const {
+size_t Cone<Integer>::getNrHilbertBasis() {
+    compute(ConeProperty::HilbertBasis);
     return HilbertBasis.nr_of_rows();
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsOfIntegralClosureMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsOfIntegralClosureMatrix() {
+    compute(ConeProperty::ModuleGeneratorsOfIntegralClosure);
     return ModuleGeneratorsOfIntegralClosure;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getModuleGeneratorsOfIntegralClosure() const {
+const vector< vector<Integer> >& Cone<Integer>::getModuleGeneratorsOfIntegralClosure() {
+    compute(ConeProperty::ModuleGeneratorsOfIntegralClosure);
     return ModuleGeneratorsOfIntegralClosure.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrModuleGeneratorsOfIntegralClosure() const {
+size_t Cone<Integer>::getNrModuleGeneratorsOfIntegralClosure() {
+    compute(ConeProperty::ModuleGeneratorsOfIntegralClosure);
     return ModuleGeneratorsOfIntegralClosure.nr_of_rows();
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsMatrix() {
+    compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators() const {
+const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators() {
+    compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrModuleGenerators() const {
+size_t Cone<Integer>::getNrModuleGenerators() {
+    compute(ConeProperty::ModuleGenerators);
     return ModuleGenerators.nr_of_rows();
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getDeg1ElementsMatrix() const {
+const Matrix<Integer>& Cone<Integer>::getDeg1ElementsMatrix() {
+    compute(ConeProperty::Deg1Elements);
     return Deg1Elements;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements() const {
+const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements() {
+    compute(ConeProperty::Deg1Elements);
     return Deg1Elements.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrDeg1Elements() const {
+size_t Cone<Integer>::getNrDeg1Elements() {
+    compute(ConeProperty::Deg1Elements);
     return Deg1Elements.nr_of_rows();
 }
 
 template<typename Integer>
-const HilbertSeries& Cone<Integer>::getHilbertSeries() const {
+const HilbertSeries& Cone<Integer>::getHilbertSeries() {
+    compute(ConeProperty::HilbertSeries);
     return HSeries;
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getGrading() const {
+vector<Integer> Cone<Integer>::getGrading() {
+    compute(ConeProperty::Grading);
     return Grading;
 }
 
 template<typename Integer>
-Integer Cone<Integer>::getGradingDenom() const {
+Integer Cone<Integer>::getGradingDenom() {
+    compute(ConeProperty::Grading);
     return GradingDenom;
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getDehomogenization() const {
+vector<Integer> Cone<Integer>::getDehomogenization() {
+    compute(ConeProperty::Dehomogenization);
     return Dehomogenization;
 }
 
 template<typename Integer>
-mpq_class Cone<Integer>::getMultiplicity() const {
+mpq_class Cone<Integer>::getMultiplicity() {
+    compute(ConeProperty::Multiplicity);
     return multiplicity;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isPointed() const {
+bool Cone<Integer>::isPointed() {
+    compute(ConeProperty::IsPointed);
     return pointed;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isInhomogeneous() const {
+bool Cone<Integer>::isInhomogeneous() {
     return inhomogeneous;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isDeg1ExtremeRays() const {
+bool Cone<Integer>::isDeg1ExtremeRays() {
+    compute(ConeProperty::IsDeg1ExtremeRays);
     return deg1_extreme_rays;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isDeg1HilbertBasis() const {
+bool Cone<Integer>::isDeg1HilbertBasis() {
+    compute(ConeProperty::IsDeg1HilbertBasis);
     return deg1_hilbert_basis;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isIntegrallyClosed() const {
+bool Cone<Integer>::isIntegrallyClosed() {
+    compute(ConeProperty::IsIntegrallyClosed);
     return integrally_closed;
 }
 
 template<typename Integer>
-bool Cone<Integer>::isReesPrimary() const {
+bool Cone<Integer>::isReesPrimary() {
+    compute(ConeProperty::IsReesPrimary);
     return rees_primary;
 }
 
 template<typename Integer>
-Integer Cone<Integer>::getReesPrimaryMultiplicity() const {
+Integer Cone<Integer>::getReesPrimaryMultiplicity() {
+    compute(ConeProperty::ReesPrimaryMultiplicity);
     return ReesPrimaryMultiplicity;
 }
 
 
 template<typename Integer>
-Integer Cone<Integer>::getShift() const {
+Integer Cone<Integer>::getShift() {
+    compute(ConeProperty::Shift);
     return shift;
 }
 
 template<typename Integer>
-size_t Cone<Integer>::getModuleRank() const {
+size_t Cone<Integer>::getModuleRank() {
+    compute(ConeProperty::ModuleRank);
     return module_rank;
 }
 
 template<typename Integer>
-vector<Integer> Cone<Integer>::getClassGroup() const {
+vector<Integer> Cone<Integer>::getClassGroup() {
+    compute(ConeProperty::ClassGroup);
     return ClassGroup;
 }
 
@@ -1316,6 +1361,7 @@ vector<Integer> Cone<Integer>::getClassGroup() const {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp) {
+    if (isComputed(cp)) return ConeProperties();
     return compute(ConeProperties(cp));
 }
 

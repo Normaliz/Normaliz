@@ -26,7 +26,6 @@
 
 #include <bitset>
 #include <iostream>
-#include "libnormaliz.h"
 
 namespace libnormaliz {
 

@@ -527,8 +527,9 @@ void Output<Integer>::write_files() const {
         ofstream out(file);
 
         // write "header" of the .out file
-        size_t nr_orig_gens = Result->getNrOriginalMonoidGenerators();
+        size_t nr_orig_gens = 0;
         if (lattice_ideal_input) {
+            nr_orig_gens = Result->getNrOriginalMonoidGenerators();
             out << nr_orig_gens <<" original generators of the toric ring"<<endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGenerators)) {
@@ -878,11 +879,9 @@ void Output<Integer>::write_files() const {
             
 
             //excluded faces
-            const Matrix<Integer>& ExFaces = Result->getExcludedFacesMatrix();
-            size_t nr_of_exfaces = 0;
             if (Result->isComputed(ConeProperty::ExcludedFaces)) {
-                nr_of_exfaces = ExFaces.nr_of_rows();
-                out << nr_of_exfaces <<" excluded faces:" <<endl;
+                const Matrix<Integer>& ExFaces = Result->getExcludedFacesMatrix();
+                out << ExFaces.nr_of_rows() <<" excluded faces:" <<endl;
                 ExFaces.pretty_print(out);
                 out << endl;
             }
@@ -899,7 +898,7 @@ void Output<Integer>::write_files() const {
                 Congruences.print(cst_out);
                 cst_out<<"congruences"<<endl;
                 if (Result->isComputed(ConeProperty::ExcludedFaces)) {
-                    ExFaces.print(cst_out);
+                    Result->getExcludedFacesMatrix().print(cst_out);
                     cst_out<<"excluded_faces"<<endl;
                 }
                 if (Result->isComputed(ConeProperty::Grading)) {

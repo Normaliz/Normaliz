@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include "cone_property.h"
+#include "libnormaliz.h"
 #include "normaliz_exception.h"
 
 namespace libnormaliz {
