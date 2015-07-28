@@ -1828,8 +1828,9 @@ void Full_Cone<Integer>::find_bottom_facets() {
     
     Full_Cone BottomPolyhedron(BottomGen);
     BottomPolyhedron.verbose=verbose;
+    BottomPolyhedron.do_extreme_rays=true;
     BottomPolyhedron.keep_order = true;
-    BottomPolyhedron.dualize_cone(true);    // includes finding extreme rays
+    BottomPolyhedron.dualize_cone();    // includes finding extreme rays
 
     // transfer pointedness
     assert( BottomPolyhedron.isComputed(ConeProperty::IsPointed) );
@@ -2043,10 +2044,6 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
     is_Computed.set(ConeProperty::SupportHyperplanes);
-    if(copy.isComputed(ConeProperty::IsPointed)){
-            pointed=copy.pointed;
-            is_Computed.set(ConeProperty::IsPointed);
-    }
     do_all_hyperplanes = false;
     // exit(1);   
 }
@@ -2559,14 +2556,14 @@ void Full_Cone<Integer>::compute() {
     
     start_message();
     
-    if (!do_triangulation && !do_partial_triangulation)
+    minimize_support_hyperplanes();
+    if (inhomogeneous)
+        set_levels();
+    
+    if (!do_triangulation && !do_partial_triangulation){
         support_hyperplanes();
+    }
     else{
-        minimize_support_hyperplanes();
-
-        if (inhomogeneous)
-            set_levels();
-
         // look for a grading if it is needed
         find_grading();
         if(isComputed(ConeProperty::IsPointed) && !pointed){
@@ -2591,8 +2588,10 @@ void Full_Cone<Integer>::compute() {
         sort_gens_by_degree(true);
 
         if(do_approximation && !deg1_generated){
-            if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes))
-                support_hyperplanes();
+            if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)){
+                do_extreme_rays=true;
+                dualize_cone(false);// no start or end message
+            }
             if(verbose)
                 verboseOutput() << "Approximating rational by lattice polytope" << endl;
             if(do_deg1_elements){
@@ -2753,19 +2752,15 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
 
 // -s
 template<typename Integer>
-void Full_Cone<Integer>::support_hyperplanes() {  // if called when the support hyperplanes
-    // recursion_allowed=true;                    // are known, it just discards the redundant ones
-    minimize_support_hyperplanes();
+void Full_Cone<Integer>::support_hyperplanes() { 
     if(!isComputed(ConeProperty::SupportHyperplanes)){
         sort_gens_by_degree(false); // we do not want to triangulate here
-        dualize_cone(false,false);           
+        build_top_cone();           
     }
     extreme_rays_and_deg1_check();
-    // reset_tasks();
     if(inhomogeneous){
-       set_levels();
-       find_level0_dim();
-       find_module_rank();
+        find_level0_dim();
+        find_module_rank();
     }
     compute_class_group();
 }
@@ -3145,8 +3140,9 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
 
 //---------------------------------------------------------------------------
 
+// an alternative to compute() for the basic tasks that need no triangulation
 template<typename Integer>
-void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays, bool print_message){
+void Full_Cone<Integer>::dualize_cone(bool print_message){
 
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
@@ -3163,7 +3159,8 @@ void Full_Cone<Integer>::dualize_cone(bool do_extreme_rays, bool print_message){
     if(do_extreme_rays)
         compute_extreme_rays();
     
-    check_pointed();  // sometimes needed
+    if(do_pointed)
+        check_pointed(); 
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
@@ -3234,6 +3231,10 @@ void Full_Cone<Integer>::compute_extreme_rays(){
     if (isComputed(ConeProperty::ExtremeRays))
         return;
     assert(isComputed(ConeProperty::SupportHyperplanes));
+    
+    check_pointed();
+    if(!pointed)
+        return;
 
     if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
          compute_extreme_rays_rank();
@@ -3875,6 +3876,9 @@ void Full_Cone<Integer>::reset_tasks(){
     do_default_mode=false;
     do_class_group = false;
     do_module_gens_intcl = false;
+    
+    do_extreme_rays=false;
+    do_pointed=false;
     
     do_evaluation = false;
     do_only_multiplicity=false;

@@ -1491,6 +1491,7 @@ void Cone<Integer>::compute_generators() {
         }
         Full_Cone<Integer> Dual_Cone(BasisChange.to_sublattice_dual(SupportHyperplanes));
         Dual_Cone.verbose=verbose;
+        Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
         Dual_Cone.dualize_cone();
         if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
             //get the extreme rays of the primal cone
@@ -1542,8 +1543,12 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
         }
         Full_Cone<Integer> Tmp_Cone(BasisChange.to_sublattice(Generators));
         Tmp_Cone.verbose=verbose;
-        // Tmp_Cone.inhomogeneous=inhomogeneous;  // NO LONGER necessary to prevent computation of grading in the inhomogeneous case
-        Tmp_Cone.dualize_cone(true);        // also marks extreme rays
+        /* if (ToCompute.test(ConeProperty::KeepOrder)) {
+            Tmp_Cone.keep_order = true;
+            Tmp_Cone.is_Computed.set(ConeProperty::KeepOrder);
+        }*/
+        Tmp_Cone.do_extreme_rays=true;
+        Tmp_Cone.dualize_cone();        // also marks extreme rays
         extract_data(Tmp_Cone);
         if(inhomogeneous){
             Matrix<Integer> Help(SupportHyperplanes.nr_of_rows()+1,dim);  // make Dehomogenization the first inequality

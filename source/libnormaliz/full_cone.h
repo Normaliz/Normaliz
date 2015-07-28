@@ -102,6 +102,9 @@ public:
 	bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
+    
+    bool do_extreme_rays;
+    bool do_pointed;
 
     // internal helper control variables
     bool do_only_multiplicity;
@@ -368,7 +371,7 @@ Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constru
  *              Computation Methods
  *---------------------------------------------------------------------------
  */
-    void dualize_cone(bool do_extreme_rays=false, bool print_message=true);
+    void dualize_cone(bool print_message=true);
     void support_hyperplanes();
 
     void compute();
