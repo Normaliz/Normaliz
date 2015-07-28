@@ -861,7 +861,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     if (verbose) verboseOutput() << "Computing a positive embedding..." << endl;
 
     FC.dualize_cone();
-    Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes();
+    Matrix<Integer> Supp_Hyp=FC.getSupportHyperplanes().sort_lex();
     Matrix<Integer> Selected_Supp_Hyp_Trans=(Supp_Hyp.submatrix(Supp_Hyp.max_rank_submatrix_lex())).transpose();
     Matrix<Integer> Positive_Embedded_Generators=Gens.multiplication(Selected_Supp_Hyp_Trans);
     // GeneratorsOfToricRing = Positive_Embedded_Generators;
