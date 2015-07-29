@@ -545,29 +545,30 @@ template<typename Integer>
 bool CandidateTable<Integer>::is_reducible_unordered(const vector<Integer>& values, const long sort_deg) {
 
     long sd;
-    /* if(dual)
+    if(dual)
         sd=sort_deg;
-    else */
+    else
         sd=sort_deg/2;
     size_t kk=0;
     typename list < pair<size_t, vector<Integer>* > >::iterator r;
     for(r=ValPointers.begin();r!=ValPointers.end();++r){
-        if(sd < (long) r->first){
+        if(sd <= (long) r->first){
             continue;     // in the ordered version we can say: return(false);
         }
         // #pragma omp atomic
         // redcounter++;
+        vector<Integer>* reducer=r->second;
         if(values[last_hyp]< (*(r->second))[last_hyp])
             continue;
         size_t i=0;
         if(values[kk] < (*(r->second))[kk])
                 continue;
-        for(;i<values.size();++i)
-            if(values[i] < (*(r->second))[i]){
+        for(;i<last_hyp;++i)
+            if(values[i] < (*reducer)[i]){
                 kk=i;
                 break;
             }
-        if(i==values.size()){
+        if(i==last_hyp){
             ValPointers.splice(ValPointers.begin(),ValPointers,r);
             return(true);
         }
