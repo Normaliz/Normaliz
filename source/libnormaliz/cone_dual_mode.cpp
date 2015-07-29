@@ -480,7 +480,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 // counter++;
                 
                 new_candidate.old_tot_deg=p_cand->old_tot_deg+n_cand->old_tot_deg;
-                v_add_result(new_candidate.values,p_cand->values,n_cand->values);   // new_candidate=v_add
+                v_add_result(new_candidate.values,hyp_counter,p_cand->values,n_cand->values);   // new_candidate=v_add
 
                 if (diff>0) {
                     new_candidate.values[hyp_counter]=diff;
@@ -488,7 +488,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     if(do_reduction && (Pos_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate) ||
                                 Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)))
                         continue;
-                    v_add_result(new_candidate.cand,p_cand->cand,n_cand->cand);
+                    v_add_result(new_candidate.cand,dim,p_cand->cand,n_cand->cand);
                     new_candidate.mother=pos_val;
                     // new_candidate.father=neg_val;                    
                     New_Positive_thread[omp_get_thread_num()].push_back(new_candidate);
@@ -504,7 +504,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     if(Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)) {
                         continue;
                     }
-                    v_add_result(new_candidate.cand,p_cand->cand,n_cand->cand);
+                    v_add_result(new_candidate.cand,dim,p_cand->cand,n_cand->cand);
                     new_candidate.mother=neg_val;
                     // new_candidate.father=pos_val;
                     New_Negative_thread[omp_get_thread_num()].push_back(new_candidate);
@@ -515,7 +515,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                     if(do_reduction && Neutr_Table[omp_get_thread_num()].is_reducible_unordered(new_candidate)) {
                         continue;
                     }
-                    v_add_result(new_candidate.cand,p_cand->cand,n_cand->cand);
+                    v_add_result(new_candidate.cand,dim,p_cand->cand,n_cand->cand);
                     // new_candidate.mother=0; // irrelevant
                     New_Neutral_thread[omp_get_thread_num()].push_back(new_candidate);
                 }

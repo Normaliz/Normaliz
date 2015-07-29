@@ -183,9 +183,9 @@ vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void v_add_result(vector<Integer>& result, const vector<Integer>& a,const vector<Integer>& b){
+void v_add_result(vector<Integer>& result, const size_t s, const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size() && a.size() == result.size());
-    size_t i,s=a.size();
+    size_t i;
     // vector<Integer> d(s);
     for (i = 0; i <s; i++) {
         result[i]=a[i]+b[i];
