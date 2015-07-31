@@ -92,6 +92,8 @@ public:
     void set_write_tgn(const bool& flag);             //sets the write .tgn flag
     void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
     void set_write_dec(const bool& flag);             //sets the write .dec flag
+    void set_write_lat(const bool& flag);             //sets the write .lat flag
+    void set_write_mod(const bool& flag);             //sets the write .mod flag
     void set_write_extra_files();                     //sets some flags to true
     void set_write_all_files();                       //sets most flags to true
   

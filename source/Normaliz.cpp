@@ -77,6 +77,9 @@ void printHelp(char* command) {
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
+template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, 
+                                            const vector<string>& OutFiles, bool ignoreInFileOpt, bool verbose);
+
 //---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
@@ -90,12 +93,18 @@ int main(int argc, char* argv[])
     // read command line options
     bool filename_set=false;
     string option;            //all options concatenated (including -)
+    vector<string> LongOptions;
     
     for (i = 1; i < (unsigned int)argc; i++) {
         if (argv[i][0]=='-') {
             if (argv[i][1]!='\0') {
                 if (argv[i][1]!='x') {
-                    option = option + argv[i];
+                    if(argv[i][1]=='-') {
+                        string LO=argv[i];
+                        LO.erase(0,2);
+                        LongOptions.push_back(LO);
+                    } else                    
+                        option = option + argv[i];
                 } else if (argv[i][2]=='=') {
                     #ifdef _OPENMP
                     string Threads = argv[i];
@@ -116,23 +125,23 @@ int main(int argc, char* argv[])
             string s(argv[i]);
             output_name=s;
             filename_set=true;
+        } else if(filename_set){
+            cerr<<"Warning: Second file name " <<argv[i] << " in command line ignored "<<endl;
         }
     }
 
-
-
-    //Analyzing the command line options
+    //Analyzing short command line options
     bool write_extra_files = false, write_all_files = false;
 	bool do_bottom_dec=false;
 	bool keep_order=false;
     bool use_Big_Integer = false;
+    bool ignoreInFileOpt=false;
     ConeProperties to_compute;
     bool nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
 
     for (i = 1; i <option.size(); i++) {
         switch (option[i]) {
             case '-':
-            case 'i':
                 break;
             case 'c':
                 verbose=true;
@@ -212,9 +221,6 @@ int main(int argc, char* argv[])
                        // as amodule over original monoid
                 to_compute.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
                 break;
-            case 'm':  //save memory / don't optimize for speed
-            //    optimize_speed=false;
-                break;
             case '?':  //print help text and exit
                 printHeader();
                 printHelp(argv[0]);
@@ -237,11 +243,69 @@ int main(int argc, char* argv[])
                 nmzInt_E = true;
                 to_compute.set(ConeProperty::StanleyDec);
                 break;
+            case 'i':
+                ignoreInFileOpt=true;
+                break;
             default:
                 cerr<<"Warning: Unknown option -"<<option[i]<<endl;
                 break;
         }
     }
+
+    vector<string> ComputeLO;
+    string ComputeLOarray[]={"SupportHyperplanes","HilbertBasis","Deg1Elements","ModuleGeneratorsOfIntegralClosure",
+        "HilbertSeries","Multiplicity","ClassGroup","[Triangulation","TriangulationSize","TriangulationDetSum",
+        "StanleyDec","DualMode","ApproximateRatPolytope","BottomDecomposition"};
+    for(size_t i=0;i<14;++i)
+        ComputeLO.push_back(ComputeLOarray[i]);
+    
+    vector<string> AdmissibleOut;
+    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"};
+    for(size_t i=0;i<10;++i)
+        AdmissibleOut.push_back(AdmissibleOutarray[i]);
+    vector<string> OutFiles;
+    
+    // analyzing long options
+    for(size_t i=0; i<LongOptions.size();++i){
+        if(find(ComputeLO.begin(),ComputeLO.end(),LongOptions[i])!=ComputeLO.end()){
+            to_compute.set(LongOptions[i]);
+            continue;
+        }
+        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOptions[i])!=AdmissibleOut.end()){
+            OutFiles.push_back(LongOptions[i]);
+            continue;
+        }
+        if(LongOptions[i]=="Ignore"){
+            ignoreInFileOpt=true;
+            continue;
+        }
+        if(LongOptions[i]=="KeepOrder"){
+            keep_order=true;
+            continue;
+        }
+        if(LongOptions[i]=="BottomDec"){
+            do_bottom_dec=true;
+            continue;
+        }
+        if(LongOptions[i]=="Console"){
+            verbose=true;
+            continue;
+        }
+        if(LongOptions[i]=="Files"){
+            write_extra_files = true;
+            continue;
+        }
+        if(LongOptions[i]=="AllFiles"){
+            write_all_files = true;
+            continue;
+        }
+        if(LongOptions[i]=="BigInt"){
+            use_Big_Integer=true;
+            continue;
+        }
+        cerr<<"Warning: Unknown option --" << LongOptions[i]<<endl;
+    }
+    
     // activate default mode
     if (to_compute.none()) {
         to_compute.set(ConeProperty::DefaultMode);
@@ -293,14 +357,14 @@ int main(int argc, char* argv[])
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         // test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files, verbose);
+        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files, OutFiles,ignoreInFileOpt, verbose);
 #else // NMZ_MIC_OFFLOAD*/
       cerr << "Error: option \"-B\" not supported with mic offload!" << endl;
       exit(1);
 #endif // NMZ_MIC_OFFLOAD
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files, verbose);
+        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files, OutFiles,ignoreInFileOpt, verbose);
     }
 
     if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
@@ -360,7 +424,7 @@ int main(int argc, char* argv[])
 //---------------------------------------------------------------------------
 
 template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, 
-                                            bool verbose){
+                                            const vector<string>& OutFiles, bool ignoreInFileOpt, bool verbose){
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
@@ -378,6 +442,48 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
         Out.set_write_dec(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
+    }
+    for(size_t i=0;i<OutFiles.size();++i){
+        if(OutFiles[i]=="gen"){
+            Out.set_write_gen(true);
+            continue;
+        }
+        if(OutFiles[i]=="cst"){
+            Out.set_write_cst(true);
+            continue;
+        }
+        if(OutFiles[i]=="inv"){
+            Out.set_write_inv(true);
+            continue;
+        }
+        if(OutFiles[i]=="ht1"){
+            Out.set_write_ht1(true);
+            continue;
+        }
+        if(OutFiles[i]=="ext"){
+            Out.set_write_ext(true);
+            continue;
+        }
+        if(OutFiles[i]=="egn"){
+            Out.set_write_egn(true);
+            continue;
+        }
+        if(OutFiles[i]=="esp"){
+            Out.set_write_esp(true);
+            continue;
+        }
+        if(OutFiles[i]=="typ"){
+            Out.set_write_typ(true);
+            continue;
+        }
+        if(OutFiles[i]=="lat"){
+            Out.set_write_lat(true);
+            continue;
+        } 
+        if(OutFiles[i]=="mod"){
+            Out.set_write_mod(true);
+            continue;
+        }           
     }
     
     string name_in=output_name+".in";

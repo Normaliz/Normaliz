@@ -193,7 +193,19 @@ void Output<Integer>::set_write_dec(const bool& flag) {
     dec=flag;
 }
 
+//---------------------------------------------------------------------------
 
+template<typename Integer>
+void Output<Integer>::set_write_mod(const bool& flag) {
+    mod=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_write_lat(const bool& flag) {
+    lat=flag;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>

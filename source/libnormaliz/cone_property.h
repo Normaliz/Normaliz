@@ -89,6 +89,7 @@ public:
 
     /* set properties */
     ConeProperties& set(ConeProperty::Enum, bool value=true);
+    ConeProperties& set(const std::string s, bool value=true);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties& set(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties& set(const ConeProperties&);

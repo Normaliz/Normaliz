@@ -78,6 +78,11 @@ ConeProperties& ConeProperties::set(const ConeProperties& ConeProps) {
     return *this;
 }
 
+ConeProperties& ConeProperties::set(const std::string s, bool value) {
+    CPs.set(toConeProperty(s), value);
+    return *this;
+}
+
 /* reset (=unset) properties */
 ConeProperties& ConeProperties::reset(ConeProperty::Enum Property) {
     CPs.set(Property, false);

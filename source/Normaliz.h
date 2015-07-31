@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone_property.h"
 
@@ -40,8 +41,9 @@ void printHelp(char* command);
 
 int main(int argc, char* argv[]);
 
-template<typename Integer> 
+/*template<typename Integer> 
 int process_data(string& output_name, libnormaliz::ConeProperties to_compute, bool write_extra_files, bool write_all_files, bool verbose);
+*/ 
 
 //---------------------------------------------------------------------------
 #endif

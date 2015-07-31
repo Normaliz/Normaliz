@@ -2238,8 +2238,6 @@ line, needs an input file \ttt{<project>.pnm} that contains
 the polynomial for which the generalized Ehrhart series or the
 integral is to be computed. See \cite{NmzInt}.
 
-\section{Remarks on the algorithms of Normaliz}
-
 \section{Computation goals and algorithmic variants}\label{Goals}
 
 The library \verb|libnormaliz| contains a clase \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The llatter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz.|
@@ -2291,10 +2289,6 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 
 \begin{itemize}
 	\itemtt[SupportHyperplanes, -s] triggers the computation of support hyperplanes and extreme rays.
-	
-	\itemtt[ExtremeRays, -s] does the same.
-	
-	\itemtt[VerticesOfPolyhedron, -s] Again the same, but assumes inhomogeneous computation.
 \end{itemize}
 
 \subsubsection{Hilbert basis and related data}
@@ -2303,11 +2297,9 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 	
 	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. For inhomogeneous computations it contains \verb|ModuleGenerators|.
 	
-	\itemtt[ModuleGenerators, -N] identical to \verb|HilbertBasis|, but assumes inhomogeneous computation.
-	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis. Requires the presence of a grading. Forbidden in inhomogeneous computations.
 	
-	\itemtt[ModuleGeneratorsOfIntegralClosure, -m] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{???}). Not possible in inhomogeneous computations and requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
+	\itemtt[ModuleGeneratorsOfIntegralClosure, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{???}). Not possible in inhomogeneous computations and requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
 \end{itemize}
 
 \subsubsection{Enumerative data}
@@ -2338,26 +2330,6 @@ Can only be set by single letter command line options:
 \begin{itemize}
 	\itemtt [ClassGroup, -C] is self explanatory, icludes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.
 \end{itemize}
-
-\subsubsection{Boolean valued computation goals}
-
-They tell Normaliz to find out the answers to the questions they ask. 
-
-\begin{itemize}
-	
-	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed?
-	
-	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree $1$?
-	
-	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree 1?
-	
-	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed?.
-	
-	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?
-	
-\end{itemize}
-
-These computation goals are not really useful for Normaliz since they will be answered automatically. Note that they may trigger extensive computations.
 
 \subsubsection{Triangulation and Stanley decomposition}
 
@@ -2392,6 +2364,27 @@ The computation goals that require calling NmzIntegrate can only be set on the c
 
 These computation goals require a hogeneous computation.
 
+\subsubsection{Boolean valued computation goals}
+
+They tell Normaliz to find out the answers to the questions they ask. 
+
+\begin{itemize}
+	
+	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed?
+	
+	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree $1$?
+	
+	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree 1?
+	
+	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed?.
+	
+	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?
+	
+\end{itemize}
+
+These computation goals are not really useful for Normaliz since they will be answered automatically. Note that they may trigger extensive computations.
+
+
 \subsection{Algorithmic variants}
 
 The ndefault choice is the Normaliz primal algorithm that is based on a (partial) triangulation.
@@ -2422,6 +2415,14 @@ In addition to the computation goals in Section \ref{goals},
 the following elements of \verb|ConeProperties| control the work flow in \verb|libnormaliz| and can be used by calling programs to ensure the availability of the data that are controlled by them.
 
 \begin{itemize}
+	
+		
+	\itemtt[ModuleGenerators, -N] controls the module generators in inhomogeneous computation.
+	
+	\itemtt[ExtremeRays] controls the extreme rays.
+		
+	\itemtt[VerticesOfPolyhedron] controls the vertices of the polyhedron in the inhomogeneous case.
+	
 	\itemtt[HilbertFunction] controls the Hilbert (quasi)polynomial.
 	
 	\itemtt[RecessionRank]  controls the rank of the recesion monoid in inhomogeneous computations.
@@ -2992,7 +2993,7 @@ If \ttt{-a} is activated, then the following files are written
 	
 \end{itemize}
 
-In order to select one or more of these files add an option of type \verb|--<suffix>| to the command line where \verb|<suffix>| can take the values
+In order to select one or more of these files individually, add an option of type \verb|--<suffix>| to the command line where \verb|<suffix>| can take the values
 \begin{Verbatim}
 gen, cst, inv, ext, ht1, egn, esp, typ
 \end{Verbatim}
