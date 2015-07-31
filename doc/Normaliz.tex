@@ -120,7 +120,7 @@
 \begin{document}
 \vspace*{2cm}
 
-\centerline{\Large\bf Normaliz 3.0} \vspace*{1cm}
+\centerline{\Large\textbf{Normaliz 3.0}} \vspace*{1cm}
 
 
 \begin{center}Winfried Bruns, Tim Römer, Richrd Sieg and Christof
@@ -1472,7 +1472,7 @@ We could omit \verb|HilbertSeries|, and the computation would include the Hilber
 
 Please have a look at \verb|CondorcetSemi.out|.
 
-It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. See Section \ref{???} for a discussion of this alternative. If there are many excluded faces, then it is better to use \verb|strict_inequalities|.
+It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. If there are many excluded faces, then it is better to use \verb|strict_inequalities|. However, NmzIntegrate can only work with \verb|excluded_faces|.
 
 \subsubsection{At least one vote for every preference order}\label{strict_signs_ex}
 
@@ -1895,7 +1895,7 @@ For certain vectors there exist shortcuts. Example:
 total_degree
 \end{Verbatim}
 
-\subsubsection{Computation goals and algorithmic variants}\label{Goals}
+\subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
 These are single or compound words, such as
 \begin{Verbatim}
@@ -2019,7 +2019,7 @@ There are $3$ types:
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Sections \ref{ineq_ex}, \ref{rat_ineq} , \verb|2cone_ineq.in|, \verb|poly_ineq.in|
 	
 	\itemtt[signs] is a vector with $d$ entries in $\{-1,0,1\}$.
-	It stands for a matrix of type \verb|inequalities| composed of the sign inequalities $x_i\ge 0$ for the entry $1$ at the $i$-th component and the inequality $x_i\le 0$ for the entry $-1$. The entry $0$ does not impose an inequality.  Section\ref{sign_ex}, \verb|sign.in|.
+	It stands for a matrix of type \verb|inequalities| composed of the sign inequalities $x_i\ge 0$ for the entry $1$ at the $i$-th component and the inequality $x_i\le 0$ for the entry $-1$. The entry $0$ does not impose an inequality. See \verb|sign.in|.
 	
 	\itemtt[nonnegative] It stands vor a vector of type \verb|sign| with all entries equal to $1$. See Section \ref{Condorcet}, \verb|Condorcet.in|.
 	
@@ -2030,7 +2030,7 @@ There are $3$ types:
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but in every other respect  \verb|excluded_faces| behave like \verb|inequalities|. 
 	Section \ref{excluded_ex}, \verb|CondParSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requiures homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Section \ref{supp_hyp_ex}, \verb|SuppHyp.in|
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requiures homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Section \ref{supphyp_ex}, \verb|SuppHyp.in|
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -2299,7 +2299,7 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis. Requires the presence of a grading. Forbidden in inhomogeneous computations.
 	
-	\itemtt[ModuleGeneratorsOfIntegralClosure, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{???}). Not possible in inhomogeneous computations and requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
+	\itemtt[ModuleGeneratorsOfIntegralClosure, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Not possible in inhomogeneous computations and requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
 \end{itemize}
 
 \subsubsection{Enumerative data}
@@ -2529,7 +2529,7 @@ The options that control the execution are:
 \end{itemize}
 
 The number of threads can also be controlled by the environment
-variable \verb+OMP_NUM_THREADS+. See Section \ref{PerPar} for
+variable \verb+OMP_NUM_THREADS+. See Section \ref{PerfPar} for
 further discussion.
 
 
@@ -2568,7 +2568,7 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 \section{More examples}\label{Examples}
 
 
-\subsection{Lattice points by approximation}
+\subsection{Lattice points by approximation}\label{approx}
 
 in order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vetors that are needed for the Hilbert basis computations, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
 
@@ -2625,7 +2625,7 @@ You can also use inhomogeneous input with the default computation mode or dual m
 
 \subsection{The bottom decomposition}
 
-The determinant sum of the triangulation computed by Normaliz is the number of vectrors that Normaliz must create for the primal algorithm. Therefore it is very desirable to keep this number as small as ppossible. Normaliz always tries to order the generators in such a way that the determinant sum is close to the minimum, and on the whole this works out well. 
+The triangulation size and the determinant sum of the triangulation are critical size parameters in Normaliz computations. Normaliz always tries to order the generators in such a way that the determinant sum is close to the minimum, and on the whole this works out well. The use of the bottom decomposition by \verb|BottomDecomposition, -b| enables Normaliz to compute a triangulation with the optimal determinant sum for the given set of generators, as we will explain in the following. 
 
 The determinant sum is independent of the order of the generators of the cone $C$ if they lie in a hyperplane $H$. Then the determinant sum is exactly the normalized volume of the polytope spanned by $0$ and $C\cap H$. The triangulation itself depends on the order, but the determiant sum is constant.
 \begin{center}
@@ -2669,38 +2669,42 @@ We look at the \emph{bottom} (the union of the cmpact faces) of the polyhedron g
 	\draw (1,2) circle (4pt);  
 	\end{tikzpicture}
 \end{center}
-With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz 3.0 computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators.
+With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz 3.0 computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
 
-Normaöliz does not use the bottom decomposition by default since its computation requires some time and administrative overhead. However, for medium to large examples with generators of varying degree, it si worthwhile trying.
+Normaliz does not use the bottom decomposition by default since its computation requires some time and administrative overhead. However, for medium to large examples with generators of varying degree, it is worthwhile trying. See also the next section.
+
+We compare three variants for \verb|CondEffPlur.in|, \verb|HilbertSeries|:
+\begin{center}
+\begin{tabular}{|r|r|r|r|}\hline
+input	& triangulation size& determinant sum& computation time\\ \hline
+inequalities & 347,225,775,338 &4,111,428,313,448  & 112:43:17 h\\ \hline
+inequalities  with \ttt{-b} & 288,509,390,884 & 1,509,605,641,358 & 84:26:19 h\\ \hline
+Hilbert basis, \ttt{-b}& & & \\ \hline
+\end{tabular}
+\end{center}
 
 Note: (1) though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}. It converts the computation time from days to hours.
 
-(2) The determinant sum is a critical parameter in large computations. Buzt minimizing it at any rate is not a good idea. If it is possible to compute the Hilbert basis quickly by the dual algorithm as for \verb|CondEffPlur|, one can in fact reach the absolutely minimal determinant sum by starting from the Hilbert basis as the generating system and using he bottom decomposition. As a consequence, the determinat sum will indeed its minimum, but the number of simplicial cones grows so much that the increase in combinatorial complexity overshadows the gain in arithmetical complexity, an the computation time goes up considerably.
-
-Ele 3 with bottom dec:
-
-Total number of pyramids = 93648825, among them simplicial 439272
-
-8902807.93user 8523.22system 84:26:19elapsed 2931%CPU 
-
-size of triangulation   = 288509390884
-
-resulting sum of |det|s = 1509605641358
-
-multiplicity = 3694037185290163550681491/205426954327818240000000000
-
-Ohne Bottom
-
-
-347225775338 simplices accumulated.
-
-Total number of pyramids = 112241812, among them simplicial 641137
-
-11907256.34user 10399.46system 112:43:17elapsed 2936%CPU 
+(2) In the above example the saving in computation time with \ttt{-b} results mainly from the smaller triangulation, and the Hilbert basis input shows that it makes no sense to reduce the determinant sum by a small factor at the price of a much larger triangulation.
+ 
 
 \subsection{Subdivision of large simplicial cones}
 
-\subsection{Explicit dehomogenization}
+Especially in computations with rational polytopes one encounters very large determinants that can keep the Normaliz primal algorithm from terminating in reasonable time. As an example we take \verb|hickerson-18.in| from the LattE distribution. 
+
+It is simplicial and the complexity is totally determined by the large determinant (computed with \verb|-v|). 
+
+If we are just interested in the degree $1$ points, Normaliz uses the approximation method of Section \ref{approx} and finds $44$ degree $1$ points very quickly. If we use these points together with the extreme rays of the simplex, then the determinant sum decreases to $...$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
+\begin{arab}
+\item computation of subdivision points by the IP solver SCIP,
+\item computation of candidate subdivision points by approximation of the given simplicial cone by an overcone that is generated by vectors  of `low denominator''.
+\end{arab}
+Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition which in general leads to substantial firther improvement.
+
+The use of SCIP rrequires a Normaliz executable that is compiled with the option \verb|SCIP=yes| after the installation of SCIP. Without SCIP. only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this vase the approximation method will be tried as well.
+
+
+\subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehogenization.in|
 \begin{Verbatim}
 amb_space 3
@@ -2803,16 +2807,27 @@ tgn             tri
 3               4
 1 0 1           1 2 3 2
 0 1 1           1 3 4 2
--1 0 1 
+-1 0 1          plain
 0 -1 1                 
 \end{Verbatim}
 
-We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$.
+We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$. The last word \verb|plain| indicates that Normaliz has computed a triangulation in the strict sense, namely a simplicial subdivision in which neighboring simplicial cones match along common faces. The alternative is \verb|nested| that we discis below.
 
 In addition to the files \verb|<project>.tgn| and \verb|<project>.tri, also the file \verb|<object>.inv| is written. It contains the data of the file \verb|<project>.out| above the line of stars in a human and machine readable format.
 
 Note: with the option \verb|t-T| previous versions of Normaliz exported the triangulation, but suppressed the computation of the determinants. The combination \verb|-tT| is still admissible, but the determinants will always be computed when \verb|-T| is set.
 
+\subsubsection{Nested triangulations}
+
+If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{hnested triangulation} defined as follows: it is a map from a rooted tree to the set of full-dimensional simplicial subcones of $C$ with the following properties:
+\begin{arab}
+\item the root is mapped to $C$,
+\item each other node is mapped to a simplicial subcone,
+\item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $X$.
+\end{arab}
+For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T| Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz.
+
+The triangulation is always plain if \verb|-T| is the only triangulation goal or if it is combined with \verb|-v|.
 \subsection{Exporting the Stanley decomposition}
 
 The option \ttt{-y} makes Normaliz 
@@ -2873,7 +2888,7 @@ option \ttt{-ahTy} activated. We recommend you to inspect all
 the output files in the subdirectory \ttt{example} of the
 distribution.
 
-\subsection{Minimal module generators of integral closure}
+\subsection{Minimal module generators of integral closure}\label{MinMod}
 
 Suppose that the original generators are well defined in the input. This is always the case when these consists just of a \verb|cone| or a \verb|cone_and _lattice|. Let $M$ be the monoid generated by them. Then Normaliz computes the integral closure $N$ of $M$ in the effective lattice $\EE$. It is often interesting to understand the difference set $N\setminus M$. After the introduction of a field $K$ of coefficients, this amounts to understanding the quotient $K[N]/K[M]$ as a $K[M]$-module. With the option \verb|MinimalModuleGeneratorsof IntegralClosure, -M| Normaliz computes a minimal generating set $T$ of this module. Combinatorially this means that we find an irreducible  cover
 $$
@@ -2918,7 +2933,7 @@ As an example, we can run \verb|2cone.in| with the option \verb|-M| on the comma
 \end{Verbatim} 
 
 
-\subsection{Precomputed support hyperplanes}
+\subsection{Precomputed support hyperplanes}\label{supphyp_ex}
 
 Computing the support hyperplanes can sometimes be a very time consuming task, and if it has been the first step in the exploration of a difficult example, it may be desirable, to use the support hyperplanes as additional input in order to save computation time. This is especially true if Normaliz must do an intermediate computation of the support hyperplanes because of a large number of simplicial cones to be evaluated. The file \verb|2cone_supp.in| is just a toy example
 \begin{Verbatim}
@@ -3047,7 +3062,7 @@ The paper \cite{BIS} contains computation times for many examples that can help 
 Note that the dual algorithm is arithmetically much more stable than the primal algorithm since it basically only requires addition of vectors.
 
 
-\subsection{Parallelization}
+\subsection{Parallelization}\label{PerfPar}
 
 The executables of Normaliz have been compiled for parallelization
 on shared memory systems with OpenMP. Parallelization reduces the
@@ -3563,9 +3578,7 @@ degree than that in the theorem, and Normaliz tries to
 give a more economical presentation of $H(t)$ as a quotient of
 two polynomials. One should note that it is not clear what the
 most natural presentation of $H(t)$ is in general (when $e>1$).
-We discuss this problem in \cite[Section 4]{BIS} and in
-\ref{rat_pol_out}. The examples in Section \ref{Examples},
-especially \ref{rat_pol_out} and \ref{magiceven}, may serve as
+We discuss this problem in \cite[Section 4]{BIS}. The examples \ref{rational} and \ref{magiceven}, may serve as
 an illustration.
 
 A rational cone $C$ and a grading together define the rational
@@ -3796,6 +3809,22 @@ Round 400
 Round 500
 \end{Verbatim}
 
+\section{Normaliz 2 input syntax}\label{OldSyntax}
+
+The Normaliz 2 input file contains a sequence of matrices. Comments or options are not allowed in it. A matrix has the format
+\begin{Verbatim}
+<m>
+<n>
+<x_1>
+...
+<x_m>
+<type>
+\end{Verbatim}
+where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<m>| entries each. All matrix types of Normaliz 3 re allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
+
+The optional output files of with suffix \verb|cst| are still in this format. Just create one and inspect it.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CHANGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Changes relative to version 2.12}
@@ -3879,14 +3908,16 @@ have become obsolete later on.
 	
 	\bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for
 		rational cones and affine monoids.}
-	J. Algebra {\bf 324} (2010) 1098--1113.
+	J. Algebra 324 (2010) 1098--1113.
 	
 	\bibitem{BIS} W. Bruns, B. Ichim and C. Söger. {\em The power of
 		pyramid decompositions in Normaliz}. Preprint arXiv:1206.1916.
 	
 	\bibitem{BK02} W .Bruns and R. Koch. {\em Computing the integral
 		closure of an affine semigroup}. Univ. Iagell. Acta Math.
-	{\bf 39} (2001), 59--70.
+	39 (2001), 59--70.
+	
+	\bibitem{BS} W. Bruns and C. Söger. {\em The computation of generalized Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
 	
 	\bibitem{NmzInt} W. Bruns and C. Söger. {\em NmzIntegrate
 		1.2.} Available from\\
