@@ -3252,26 +3252,42 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays_rank(){
 
     if (verbose) verboseOutput() << "Select extreme rays via rank ... " << flush;
+    
+    bool use_Facets=false;    
+    if(do_all_hyperplanes && Facets.size()==nrSupport_Hyperplanes)
+        use_Facets=true;
 
-    size_t i,j;
+    size_t i;
     vector<key_t> gen_in_hyperplanes;
     gen_in_hyperplanes.reserve(Support_Hyperplanes.nr_of_rows());
     Matrix<Integer> M(Support_Hyperplanes.nr_of_rows(),dim);
-    
+
+    deque<bool> Ext(nr_gen,false);
+    #pragma omp parallel for private(gen_in_hyperplanes,M)
     for(i=0;i<nr_gen;++i){
-        Extreme_Rays[i]=false;
 //        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
         gen_in_hyperplanes.clear();
-        for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j){
+        if(use_Facets){
+            typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
+            for (size_t j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
+                if(IHV->GenInHyp.test(i))
+                    gen_in_hyperplanes.push_back(j);
+            }            
+        }
+        else{
+            for (size_t j=0; j<Support_Hyperplanes.nr_of_rows(); ++j){
             if(v_scalar_product(Generators[i],Support_Hyperplanes[j])==0)
                 gen_in_hyperplanes.push_back(j);
+            }
         }
         if (gen_in_hyperplanes.size() < dim-1)
             continue;
         if (M.rank_submatrix(Support_Hyperplanes,gen_in_hyperplanes) >= dim-1)
-            Extreme_Rays[i]=true;   
+            Ext[i]=true;   
     }
+    for(i=0; i<nr_gen;++i)
+        Extreme_Rays[i]=Ext[i];
 
     is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
@@ -3283,6 +3299,10 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays_compare(){
 
     if (verbose) verboseOutput() << "Select extreme rays via comparison ... " << flush;
+    
+    bool use_Facets=false;    
+    if(do_all_hyperplanes && Facets.size()==nrSupport_Hyperplanes)
+        use_Facets=true;
 
     size_t i,j,k,l,t;
     // Matrix<Integer> SH=getSupportHyperplanes().transpose();
@@ -3306,13 +3326,26 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
         }*/
         k=0;
         Extreme_Rays[i]=true;
-        for (j = 0; j <nc; ++j) {
-            if (v_scalar_product(Generators[i],Support_Hyperplanes[j])==0) {
-                k++;
-                Val[i][j]=false;                
-            }
-            else
+        if(use_Facets){
+            typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
+            for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
+                if(IHV->GenInHyp.test(i)){
+                    k++;
+                    Val[i][j]=false;                
+                }
+                else
                 Val[i][j]=true;  
+            }          
+        }
+        else{
+            for (j = 0; j <nc; ++j) {
+                if (v_scalar_product(Generators[i],Support_Hyperplanes[j])==0) {
+                    k++;
+                    Val[i][j]=false;                
+                }
+                else
+                    Val[i][j]=true;  
+            }
         }
         nr_zeroes[i]=k;
         if (k<dim-1||k==nc)  // not contained in enough facets or in all (0 as generator)
