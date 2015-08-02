@@ -3263,7 +3263,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
     Matrix<Integer> M(Support_Hyperplanes.nr_of_rows(),dim);
 
     deque<bool> Ext(nr_gen,false);
-    #pragma omp parallel for private(gen_in_hyperplanes,M)
+    #pragma omp parallel for firstprivate(gen_in_hyperplanes,M)
     for(i=0;i<nr_gen;++i){
 //        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
