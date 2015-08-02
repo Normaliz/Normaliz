@@ -1780,7 +1780,11 @@ void Full_Cone<Integer>::build_cone() {
         for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
             Support_Hyperplanes[i] = IHV->Hyp;
         }
-    }  
+    }    
+    is_Computed.set(ConeProperty::SupportHyperplanes);
+    
+    if(do_extreme_rays_in_build_cone)
+        compute_extreme_rays();
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
     if(check_evaluation_buffer()){
@@ -1789,9 +1793,7 @@ void Full_Cone<Integer>::build_cone() {
 
     } // end if (dim>0)
     
-    Facets.clear();
-    is_Computed.set(ConeProperty::SupportHyperplanes);
-    
+    Facets.clear(); 
 
 }
 
@@ -3146,6 +3148,7 @@ void Full_Cone<Integer>::dualize_cone(bool print_message){
 
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
+    bool save_do_extreme_rays_in_build_cone=do_extreme_rays_in_build_cone;
     do_triangulation         = false;
     do_partial_triangulation = false;
     
@@ -3153,17 +3156,17 @@ void Full_Cone<Integer>::dualize_cone(bool print_message){
     
     sort_gens_by_degree(false);
     
+    do_extreme_rays_in_build_cone=do_extreme_rays;
+    
     if(!isComputed(ConeProperty::SupportHyperplanes))
         build_top_cone();
-        
-    if(do_extreme_rays)
-        compute_extreme_rays();
     
     if(do_pointed)
         check_pointed(); 
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
+    do_extreme_rays_in_build_cone=save_do_extreme_rays_in_build_cone;
     if(print_message) end_message();
 }
 
@@ -3878,6 +3881,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_module_gens_intcl = false;
     
     do_extreme_rays=false;
+    do_extreme_rays_in_build_cone=true;
     do_pointed=false;
     
     do_evaluation = false;
