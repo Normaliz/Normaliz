@@ -254,15 +254,17 @@ int main(int argc, char* argv[])
 
     vector<string> ComputeLO;
     string ComputeLOarray[]={"SupportHyperplanes","HilbertBasis","Deg1Elements","ModuleGeneratorsOfIntegralClosure",
-        "HilbertSeries","Multiplicity","ClassGroup","[Triangulation","TriangulationSize","TriangulationDetSum",
-        "StanleyDec","DualMode","ApproximateRatPolytope","BottomDecomposition"};
-    for(size_t i=0;i<14;++i)
+        "HilbertSeries","Multiplicity","ClassGroup","Triangulation","TriangulationSize","TriangulationDetSum",
+        "StanleyDec","DualMode","ApproximateRatPolytope","BottomDecomposition","DefaultMode"}; // "DefaultMode" must be last
+    for(size_t i=0;i<15;++i)
         ComputeLO.push_back(ComputeLOarray[i]);
+    assert(ComputeLO.back()=="DefaultMode");
     
     vector<string> AdmissibleOut;
-    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"};
+    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"}; // "mod" nust be last
     for(size_t i=0;i<10;++i)
         AdmissibleOut.push_back(AdmissibleOutarray[i]);
+    assert(AdmissibleOut.back()=="mod");
     vector<string> OutFiles;
     
     // analyzing long options

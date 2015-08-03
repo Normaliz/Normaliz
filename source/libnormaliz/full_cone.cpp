@@ -1780,8 +1780,9 @@ void Full_Cone<Integer>::build_cone() {
         for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
             Support_Hyperplanes[i] = IHV->Hyp;
         }
+        is_Computed.set(ConeProperty::SupportHyperplanes);
     }    
-    is_Computed.set(ConeProperty::SupportHyperplanes);
+   
     
     if(do_extreme_rays_in_build_cone)
         compute_extreme_rays();

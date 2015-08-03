@@ -3061,11 +3061,14 @@ If \ttt{-a} is activated, then the following files are written
 	equations for $C\cap\EE$ or congruences for $\EE$ are
 	necessary.
 	
+    \itemtt[lat] contains the basis of the lattice $\EE$.
+
+    \itemtt[mod] contains the module generators of the integral closure modulo the original monoid.
 \end{itemize}
 
 In order to select one or more of these files individually, add an option of type \verb|--<suffix>| to the command line where \verb|<suffix>| can take the values
 \begin{Verbatim}
-gen, cst, inv, ext, ht1, egn, esp, lat, mod, typ, lat, mod
+gen, cst, inv, ext, ht1, egn, esp, lat, mod, typ
 \end{Verbatim}
 
 The type \verb|typ| is not contained in \verb|Files| or \verb|AllFiles| since it can be extremely large. It is the matrix format described above. It is the product of the matrices
