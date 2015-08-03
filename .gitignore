@@ -31,6 +31,8 @@ BUILD*
 *.tgn
 *.dec
 *.inv
+*.lat
+*.mod
 
 
 # ignore latex output files
