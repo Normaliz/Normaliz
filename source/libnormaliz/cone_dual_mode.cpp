@@ -760,12 +760,12 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
        
     Intermediate_HB.extract(Hilbert_Basis);
     
-    if(verbose)
+    if(verbose) {
         verboseOutput() << "Hilbert basis ";
-            if(truncate)
+        if(truncate)
             verboseOutput() << "(truncated) ";
         verboseOutput() << Hilbert_Basis.size() << endl;
-
+    }
 }
 
 //---------------------------------------------------------------------------
