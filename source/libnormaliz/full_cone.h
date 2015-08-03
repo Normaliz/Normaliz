@@ -104,7 +104,6 @@ public:
     bool do_module_gens_intcl;
     
     bool do_extreme_rays;
-    bool do_extreme_rays_in_build_cone;
     bool do_pointed;
 
     // internal helper control variables

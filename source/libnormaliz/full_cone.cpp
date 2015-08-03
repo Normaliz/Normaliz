@@ -1784,7 +1784,7 @@ void Full_Cone<Integer>::build_cone() {
     }    
    
     
-    if(do_extreme_rays_in_build_cone)
+    if(do_extreme_rays && do_all_hyperplanes)
         compute_extreme_rays();
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
@@ -2518,6 +2518,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
 template<typename Integer>
 void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
+    do_extreme_rays=true; // we always want to dom this if compute() is called
+
     if (do_default_mode && with_default) {
         do_Hilbert_basis = true;
         do_h_vector = true;
@@ -3147,17 +3149,16 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
 template<typename Integer>
 void Full_Cone<Integer>::dualize_cone(bool print_message){
 
+    // DO NOT CALL do_vars_check!!
+
     bool save_tri      = do_triangulation;
     bool save_part_tri = do_partial_triangulation;
-    bool save_do_extreme_rays_in_build_cone=do_extreme_rays_in_build_cone;
     do_triangulation         = false;
     do_partial_triangulation = false;
     
     if(print_message) start_message();
     
     sort_gens_by_degree(false);
-    
-    do_extreme_rays_in_build_cone=do_extreme_rays;
     
     if(!isComputed(ConeProperty::SupportHyperplanes))
         build_top_cone();
@@ -3167,7 +3168,6 @@ void Full_Cone<Integer>::dualize_cone(bool print_message){
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
-    do_extreme_rays_in_build_cone=save_do_extreme_rays_in_build_cone;
     if(print_message) end_message();
 }
 
@@ -3255,7 +3255,8 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
     if (verbose) verboseOutput() << "Select extreme rays via rank ... " << flush;
     
     bool use_Facets=false;    
-    if(do_all_hyperplanes && Facets.size()==nrSupport_Hyperplanes)
+    if(do_all_hyperplanes && !Facets.empty() && 
+            Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
         use_Facets=true;
 
     size_t i;
@@ -3302,7 +3303,8 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     if (verbose) verboseOutput() << "Select extreme rays via comparison ... " << flush;
     
     bool use_Facets=false;    
-    if(do_all_hyperplanes && Facets.size()==nrSupport_Hyperplanes)
+    if(do_all_hyperplanes && !Facets.empty() && 
+            Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
         use_Facets=true;
 
     size_t i,j,k,l,t;
@@ -3915,7 +3917,6 @@ void Full_Cone<Integer>::reset_tasks(){
     do_module_gens_intcl = false;
     
     do_extreme_rays=false;
-    do_extreme_rays_in_build_cone=true;
     do_pointed=false;
     
     do_evaluation = false;
@@ -4190,7 +4191,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     Grading=C.Grading;
     is_Computed.set(ConeProperty::Grading, C.isComputed(ConeProperty::Grading));
     Order_Vector=C.Order_Vector;
-    
+
+    do_extreme_rays=false;
     do_triangulation=C.do_triangulation;
     do_partial_triangulation=C.do_partial_triangulation;
     do_determinants=C.do_determinants;
