@@ -114,11 +114,16 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     q_gens.push_back(gens);
     int level = 0;
 
-    // TODO Exception handling needed here?
+    std::exception_ptr tmp_exception;
+
 	// list for the simplices that could not be decomposed
     vector< Matrix<Integer> > big_simplices;
     #pragma omp parallel reduction(+:stellar_det_sum)
     {
+#ifndef NCATCH
+    try {
+#endif
+
     // setup scip enviorenment
     SCIP* scip = NULL;
 #ifdef NMZ_SCIP
@@ -143,14 +148,22 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     vector< Matrix<Integer> > local_q_gens;
     list< vector<Integer> > local_new_points;
 
-
     while (!q_gens.empty()) {
         #pragma omp single
         cout << q_gens.size() << " simplices on level " << level++ << endl;
         #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
+#ifndef NCATCH
+            try {
+#endif
             bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens,big_simplices,grading);
+#ifndef NCATCH
+            } catch(const std::exception& e) {
+                tmp_exception = std::current_exception();
+            }
+#endif
         }
+
         #pragma omp single
         {
 			q_gens.clear();
@@ -171,7 +184,15 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifdef NMZ_SCIP
     SCIPfree(& scip);
 #endif // NMZ_SCIP
+
+#ifndef NCATCH
+    } catch(const std::exception& e) {
+        tmp_exception = std::current_exception();
+    }
+#endif
     } // end parallel
+    if (tmp_exception) std::rethrow_exception(tmp_exception);
+
 	// if we still have big_simplices we approx again
 #ifndef NMZ_SCIP
 	int counter=0;
