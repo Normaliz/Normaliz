@@ -156,7 +156,7 @@ Both polyhedra and lattices  can be given by
 
 In addition to generators and constraints, affine monoids can be defined by a lattice ideals, in other words, by binomial equations.
 
-In order to define a rational polyhedron by generators one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generateing a rational cone $C$. The polyhedron defined by these generators is 
+In order to define a rational polyhedron by generators one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generating a rational cone $C$. The polyhedron defined by these generators is 
 $$
 P=\conv(x_1,\dots,x_n)+C,\qquad C=\RR_+y_1+\dots+\RR_+y_m.
 $$
@@ -171,7 +171,7 @@ The first main goal of Normaliz is to compute a system of generators for
 $$
 P\cap L.
 $$
-Tthe minimal system of generators of the monoid $M=C\cap L_0$ is the Hilbert basis $\Hilb(M)$ of $M$, and the homogeneous case, in which $P=C$ and $L=L_0$, is undoubtedly the most important one. In the general case the system of generators consists of $\Hilb(M)$ and finitely many points $u_1,\dots,u_s\in P\cap L$ sich that
+The minimal system of generators of the monoid $M=C\cap L_0$ is the Hilbert basis $\Hilb(M)$ of $M$, and the homogeneous case, in which $P=C$ and $L=L_0$, is undoubtedly the most important one. In the general case the system of generators consists of $\Hilb(M)$ and finitely many points $u_1,\dots,u_s\in P\cap L$ such that
 $$
 P\cap L=\bigcup_{j=1}^s u_j+M.
 $$
@@ -276,7 +276,7 @@ For the precise interpretation of parts of the Normaliz output some terminology 
 As pointed out in the introduction, Normaliz ` `computes'' intersections $P\cap L$ where $P$ is a rational polyhedron in $\RR^d$ and $L$ is an affine sublattice of $\ZZ^d$. It proceeds as follows:
 
 \begin{arab}
-	\item If the input is inhomogeneous, then it is homogenized by introducing a homogenizing coordinate: the polyhedron $P$ is replaced by the cone $C(P)$: it is the closure of $\RR_+(P\times \{1\}$ in $\RR^{d+1}$. Similarly $L$ is repalced by $\widetilde L=\ZZ(L\times \{1\})$. In the homogeneous case in which $P$ is a cone and $L$ is a subgroup of $\ZZ$, we set $C(P)=P$ and $\widetilde L=L$.
+	\item If the input is inhomogeneous, then it is homogenized by introducing a homogenizing coordinate: the polyhedron $P$ is replaced by the cone $C(P)$: it is the closure of $\RR_+(P\times \{1\}$ in $\RR^{d+1}$. Similarly $L$ is replaced by $\widetilde L=\ZZ(L\times \{1\})$. In the homogeneous case in which $P$ is a cone and $L$ is a subgroup of $\ZZ$, we set $C(P)=P$ and $\widetilde L=L$.
 	
 	\item The computations take place in the \emph{efficient lattice} 
 	$$
@@ -292,7 +292,7 @@ As pointed out in the introduction, Normaliz ` `computes'' intersections $P\cap 
 	\item The final step is the conversion to the original coordinates. Note that we must use the coordinates of $\RR^{d+1}$ if homogenization has been necessary, simply because some output vectors may be non-integral.
 \end{arab}
 
-Normaliz computes inequalities, equations and congruences defining $\EE$ and $\CC$. The output contains only those constraints that are really needed. They must always be used jointly: the equations and congruences define $\EE$, and the equations and inequalities define $\CC$. Altogerher they define the monoid $M=\CC\cap\EE$. In the homogeneous case this is the monoid to be computed. In the inhomogeneous case we must intersect $M$ with the dehomogenizing hyperplane to obtain $P\cap L$.
+Normaliz computes inequalities, equations and congruences defining $\EE$ and $\CC$. The output contains only those constraints that are really needed. They must always be used jointly: the equations and congruences define $\EE$, and the equations and inequalities define $\CC$. Altogether they define the monoid $M=\CC\cap\EE$. In the homogeneous case this is the monoid to be computed. In the inhomogeneous case we must intersect $M$ with the dehomogenizing hyperplane to obtain $P\cap L$.
 
 
 \subsection{Practical preparations}
@@ -385,7 +385,7 @@ and inspect the output file:
 2 extreme rays
 2 support hyperplanes
 \end{Verbatim}
-Self expanatory so far.
+Self explanatory so far.
 \begin{Verbatim}
 embedding dimension = 2
 rank = 2 (maximal)
@@ -395,7 +395,7 @@ original monoid is not integrally closed
 \end{Verbatim}
 The embedding dimension is the dimension of the space in which the computation is done. The rank is the rank of the lattice $\EE$ (notation as in Section \ref{Term}). In fact, in our example $\EE=\ZZ^2$, and therefore has rank $2$.
 
-For subgroups $G\subset U\subset \ZZ^d$ we denote the order of the torsion subgroup of $U/G$ by the \emph{index} of $G$ in $U$. The \emph{external index} is the index of the lattce $\EE$ in $\ZZ^d$. In our case $\EE=\ZZ^d$, and therefore the external index is $1$. Note: the external index is $1$ exactly when $\EE$ is a direct summand of $\ZZ^d$.
+For subgroups $G\subset U\subset \ZZ^d$ we denote the order of the torsion subgroup of $U/G$ by the \emph{index} of $G$ in $U$. The \emph{external index} is the index of the lattice $\EE$ in $\ZZ^d$. In our case $\EE=\ZZ^d$, and therefore the external index is $1$. Note: the external index is $1$ exactly when $\EE$ is a direct summand of $\ZZ^d$.
 
 For this example and many others the \emph{original monoid} is well defined: the generators of the cone used as input are contained in $\EE$. (This need not be the case if $\EE$ is a proper sublattice of $\ZZ^d$, and we let the original monoid undefined in inhomogeneous computations.) Let $G$ be the subgroup generated by the original monoid. The \emph{internal index} is the index of $G$ in $\EE$.
 
@@ -417,7 +417,7 @@ rank of class group = 0
 finite cyclic summands:
 5: 1  
 \end{Verbatim}
-The class group of the monoid $M$ has eank $0$, in other words, it is finite. It has one finite cyclic summand of order $5$.
+The class group of the monoid $M$ has rank $0$, in other words, it is finite. It has one finite cyclic summand of order $5$.
 
 This is the first instance of a multiset of integers displayed as a sequence of pairs 
 \begin{quote}
@@ -437,7 +437,7 @@ Now come the vector lists (typeset in two columns to save space):
                                  3 -1
 \end{Verbatim}
 
-The support hyperplanres are given by the linear forms (or inner normal vectors):
+The support hyperplanes are given by the linear forms (or inner normal vectors):
 \begin{align*}
 	-x_1+2x_2&\ge 0,\\
 	3x_1-x_2&\ge 0.
@@ -477,7 +477,7 @@ The strict inequalities encode the conditions
 	-x_1+2x_2&\ge 1,\\
 	3x_1-x_2&\ge 1.
 \end{align*}
-This is our first nexample of inhomogeneous input.
+This is our first example of inhomogeneous input.
 \begin{center}
 	\begin{tikzpicture}[scale=0.7]
 	\filldraw[yellow] (0,0) -- (1.833,5.5) -- (4.5,5.5) -- (4.5,2.25) -- cycle;
@@ -512,7 +512,7 @@ embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
 rank of recession monoid = 2
 \end{Verbatim}
-The only surprise may be the embedding dimension: Normaliz alsways takes the dimension of the space in which the computation is done. It is the nember of components of the output vectors. Because of the homogenization is has increased by $1$.
+The only surprise may be the embedding dimension: Normaliz always takes the dimension of the space in which the computation is done. It is the number of components of the output vectors. Because of the homogenization is has increased by $1$.
 \begin{Verbatim}
 size of triangulation   = 1
 resulting sum of |det|s = 25
@@ -522,13 +522,13 @@ In this case the homogenized cone has stayed simplicial, but the determinant has
 dehomogenization:
 0 0 1 
 \end{Verbatim}
-The dehmogenization is the linear form $\delta$ on the homogenized space that defines the hyperplanes from which we get the polyhedron and the recession cone by the equations $\delta(x)=1$ and $\delta(x)=0$, respectively. It is listed since one can also work with a user defined dehmomogenization.
+The dehmogenization is the linear form $\delta$ on the homogenized space that defines the hyperplanes from which we get the polyhedron and the recession cone by the equations $\delta(x)=1$ and $\delta(x)=0$, respectively. It is listed since one can also work with a user defined dehomogenization.
 \begin{Verbatim}
 module rank = 1
 \end{Verbatim}
 This is the rank of the module of lattice points in the polyhedron over the recession monoid. In our case the module is an ideal, and so the rank is $1$.
 
-The output of inhomogeneous computations is always given in homogenized form. The last coordinate is the value of the dehzomogenization on the listed vectors, $1$ on the module generaators, $0$ on the vectors in the recesion monoid:
+The output of inhomogeneous computations is always given in homogenized form. The last coordinate is the value of the dehomogenization on the listed vectors, $1$ on the module generators, $0$ on the vectors in the recesion monoid:
 \begin{Verbatim}
 2 module generators:          4 Hilbert basis elements of recession monoid:
 1 1 1                         1 1 0
@@ -3750,19 +3750,19 @@ level 3 pyramids remaining: 100
 **************************************************
 all pyramids on level 3 done!
 \end{Verbatim}
-This is a small computation, and the computation of pyramids goes level by level without the ncessity to return to a lower level. But in larger examples the buffer for level $n+1$ may be filled before level $n$ is finished. Then it becomes necessary to go back.
+This is a small computation, and the computation of pyramids goes level by level without the necessity to return to a lower level. But in larger examples the buffer for level $n+1$ may be filled before level $n$ is finished. Then it becomes necessary to go back.
 \begin{Verbatim}
 **************************************************
 Pointed since graded
 \end{Verbatim}
-Fortunately our cone is pointed. Some simplices remaining in nthe buffer are now evakuated:
+Fortunately our cone is pointed. Some simplices remaining in the buffer are now evaluated:
 \begin{Verbatim}
 evaluating 150978 simplices
 ||||||||||||||||||||||||||||||||||||||||||||||||||
 2654272 simplices, 0 HB candidates accumulated.
 Adding 1 denominator classes... done.
 \end{Verbatim}
-Since our generators form the Hilbert basis, we do not collect any further candidates. If all generators are in degree $1$, we have only one denominator class in the Hilbert series, but otherwise there may be many. The collection of the Hilbert series in denominator classes reduces the compoutations of common denominators to a minimum.
+Since our generators form the Hilbert basis, we do not collect any further candidates. If all generators are in degree $1$, we have only one denominator class in the Hilbert series, but otherwise there may be many. The collection of the Hilbert series in denominator classes reduces the computations of common denominators to a minimum.
 \begin{Verbatim}
 Total number of pyramids = 14137, among them simplicial 2994
 \end{Verbatim}
@@ -3770,7 +3770,7 @@ Some statistics of the pyramid decomposition.
 \begin{Verbatim}
 Select extreme rays via comparison ... done.
 \end{Verbatim}
-Normaliz knows two methods for finding the extreme rays. Instead of ``comparison''you may see `` rank''.
+Normaliz knows two methods for finding the extreme rays. Instead of ``comparison'' you may see ``rank''.
 \begin{Verbatim}
 ------------------------------------------------------------
 transforming data... done.
@@ -3785,7 +3785,7 @@ It tells you that Normaliz has found a list of $539511$ new candidates for the H
 
 \subsection{Dual mode}
 
-Now we ggive an example of a computation in dual mode. It is started by the command
+Now we give an example of a computation in dual mode. It is started by the command
 \begin{Verbatim}
 ./normaliz -cd example/5x5
 \end{Verbatim}
@@ -3828,7 +3828,7 @@ Positive: 1027  Negative: 367
 ..................................................
 Final sizes: Pos 1094 Neg 369 Neutral 1019
 \end{Verbatim}
-Sometimes reduction takes some time, and then Normaliz may issue a message on ``auto-reduction'' organized by degree (chosen for the algorithm, not defined by the given grading). The line of dots is printed is the computation of new Hilbert basis candidates takes time, and Normaliz wants to show you that it is not sleeping. Normaliz shows you the niumber of positive and negative partners that must be pared oproduce offspring.
+Sometimes reduction takes some time, and then Normaliz may issue a message on ``auto-reduction'' organized by degree (chosen for the algorithm, not defined by the given grading). The line of dots is printed is the computation of new Hilbert basis candidates takes time, and Normaliz wants to show you that it is not sleeping. Normaliz shows you the number of positive and negative partners that must be pared oproduce offspring. TODO!!!
 \begin{Verbatim}
 ==================================================
 cut with halfspace 25 ...
@@ -3842,7 +3842,7 @@ All hyperplanes have been taken care of.
 Find extreme rays
 Find relevant support hyperplanes
 \end{Verbatim}
-Well, in connection with the equations, some hyperplanes become superfluous. In the output file Normaliz willlist a minimal set of support hyperplanes that together with the equations define the cone.
+Well, in connection with the equations, some hyperplanes become superfluous. In the output file Normaliz will list a minimal set of support hyperplanes that together with the equations define the cone.
 \begin{Verbatim}
 Hilbert basis 4828
 \end{Verbatim}
@@ -3855,7 +3855,7 @@ The input file contains a grading.
 transforming data... done.
 \end{Verbatim}
 
-The computation of the new Hilbert basis after the intersection with the new hyperplane proceeds in rounds, and there be many rounds \dots (not in the above example). then you cn see terminal output like
+The computation of the new Hilbert basis after the intersection with the new hyperplane proceeds in rounds, and there be many rounds \dots (not in the above example). then you can see terminal output like
 \begin{Verbatim}
 Round 100
 Round 200
