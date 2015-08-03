@@ -2196,7 +2196,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         
         
         Sorting=compute_degree_function();
-        if (!do_approximation) {
+        if (!is_approximation) {
             bool save_do_module_gens_intcl=do_module_gens_intcl;
             do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
             for (size_t i = 0; i <nr_gen; i++) {               
@@ -2366,9 +2366,8 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements){
-  
-    bool tmp_verb = verbose;
-    verbose =false;
+
+    if (is_approximation) return; // do not approximate again!
     Full_Cone<Integer> SimplCone(gens);
 
     vector<Integer> N;
@@ -2381,19 +2380,18 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
 
         SimplCone.Grading = N;
     }
-
     SimplCone.is_Computed.set(ConeProperty::Grading);
     SimplCone.deg1_check();
     if (SimplCone.isDeg1ExtremeRays()) return; // no approx possible
     SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
     SimplCone.do_approximation=true;  // as indicted by do_approximation
+    SimplCone.approx_level = approx_level;
 
     SimplCone.Truncation= N;
     SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
 
     SimplCone.compute();
     sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
-    verbose=tmp_verb;
 }
 
 //---------------------------------------------------------------------------
@@ -2847,20 +2845,29 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
     C_approx.verbose=verbose;
     C_approx.is_approximation=true;
+    C_approx.approx_level = approx_level;
     // C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
     C_approx.do_Hilbert_basis=do_Hilbert_basis;
     C_approx.do_all_hyperplanes=false;    // we use the support Hyperplanes of the approximated cone for the selection of elements
     C_approx.Support_Hyperplanes=Support_Hyperplanes;
     C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
+    C_approx.nrSupport_Hyperplanes = nrSupport_Hyperplanes;
     C_approx.Grading = Grading;
     C_approx.is_Computed.set(ConeProperty::Grading);
     C_approx.Truncation=Truncation;
     C_approx.TruncLevel=TruncLevel;
+
     if(verbose)
         verboseOutput() << "Computing elements in approximating cone with "
                         << C_approx.Generators.nr_of_rows() << " generators." << endl;
+    
+	
+	// TODO different verbosity option!
+	bool verbose_tmp = verbose;
+	verbose =false;
     C_approx.compute();
+    verbose = verbose_tmp;
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
         errorOutput() << "Wrong approximating cone. Fatal error. PLEASE CONTACT THE AUTHORS" << endl;
         throw FatalException();
@@ -2901,6 +2908,10 @@ template<typename Integer>
 void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
     check_pointed();
     if(!pointed) return;
+    //cout << "Generators" << endl;
+    //Generators.pretty_print(cout);
+    //cout << "SupportHyperplanes" << endl;
+    //Support_Hyperplanes.pretty_print(cout);
     compute_extreme_rays();
     deg1_check();
 }
@@ -3428,8 +3439,8 @@ template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays_compare(){
 
     if (verbose) verboseOutput() << "Select extreme rays via comparison ... " << flush;
-    
-    bool use_Facets=false;    
+
+    bool use_Facets=false;
     if(do_all_hyperplanes && !Facets.empty() && 
             Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
         use_Facets=true;
@@ -3657,6 +3668,8 @@ void Full_Cone<Integer>::deg1_check() {
      && !isComputed(ConeProperty::IsDeg1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
+            //cout << "the extreme rays are:" << endl;
+            //Extreme.pretty_print(cout);
             Grading = Extreme.find_linear_form();
             if (Grading.size() == dim && v_scalar_product(Grading,Extreme[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
@@ -3784,7 +3797,8 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     for(size_t i=0;i<nr_gen;++i){
         if(Extreme_Rays[i]){
             list<vector<Integer> > approx;
-            approx_simplex(T.MxV(Generators[i]),approx);
+            //cout << "point before transformation: " << Generators[i];
+            approx_simplex(T.MxV(Generators[i]),approx,approx_level);
             L.splice(L.end(),approx);
         }
     }
@@ -3794,9 +3808,9 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     for(size_t j=0;j<M.nr_of_rows();++j)  // reverse transformation
         M[j]=U.MxV(M[j]);
         
-    // cout << "-------" << endl;
-    // M.print(cout);
-    // cout << "-------" << endl;
+     //cout << "-------" << endl;
+     //M.print(cout);
+     //cout << "-------" << endl;
     
     return(M);
 } 
@@ -4155,6 +4169,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     do_bottom_dec=false;
     keep_order=false;
 
+    approx_level = 1;
     is_approximation=false;
     
     PermGens.resize(nr_gen);
@@ -4237,6 +4252,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     NewCandidates.verbose=verbose;
     
     
+    approx_level = 1;
     is_approximation=false;
     
     verbose=C.verbose;
@@ -4375,10 +4391,11 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     NewCandidates.dual=false;
     NewCandidates.verbose=verbose;
     
-    is_approximation=false;
-    
-    do_bottom_dec=false;
-    keep_order=true;
+    approx_level = C.approx_level;
+    is_approximation = C.is_approximation;
+	
+	do_bottom_dec=false;
+	keep_order=true;
 }
 
 //---------------------------------------------------------------------------

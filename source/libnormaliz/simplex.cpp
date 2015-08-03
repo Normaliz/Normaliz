@@ -498,14 +498,14 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
             return;
         /* #pragma omp atomic
         NrCand++;*/
-	   if(v_scalar_product(C.Truncation,help) >= C.TruncLevel)
+	    if(v_scalar_product(C.Truncation,help) >= C.TruncLevel)
 	    return;
 
         /* #pragma omp atomic
         NrSurvivors++; */
     
     }
-    
+
     typename list <vector <Integer> >::iterator c;
     
     // now the vector in par has been produced and is in element
@@ -888,8 +888,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
-
-    if (C_ptr->use_bottom_points && volume >= ScipBound)
+    if (C_ptr->use_bottom_points && volume >= ScipBound && C_ptr->approx_level==1)
     {
         Full_Cone<Integer>& C = *C_ptr;
 
@@ -901,10 +900,13 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 		time (&start);
 #ifndef NMZ_SCIP
         C.compute_sub_div_elements(Generators, new_points);
-        cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+        //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+       
 #endif
-		bottom_points(new_points, Generators,true);
-		time (&end);
+		if (C.isComputed(ConeProperty::Grading)) {
+			bottom_points(new_points, Generators,C.Grading,C.approx_level);
+		}
+        time (&end);
 		double dif = difftime (end,start);
 
 		cout << "bottom points took " << dif << " sec " <<endl;

@@ -58,7 +58,7 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading);
 
 template<typename Integer>
-void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens,vector< Matrix<Integer> >& big_simplices, bool first_round);
+void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& new_points, vector< Matrix<Integer> >& q_gens,vector< Matrix<Integer> >& big_simplices, bool first_round,vector<Integer>& grading);
 
 double convert_to_double(mpz_class a) {
     return a.get_d();
@@ -76,14 +76,40 @@ double convert_to_double(long long a) {
 long long stellar_det_sum;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,bool first_round) { 
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,const vector<Integer>& grading, long app_level) { 
 	
     list<vector<Integer> > bottom_candidates;
-    Matrix<Integer>(bottom_candidates).pretty_print(cout);
     bottom_candidates.splice(bottom_candidates.begin(), new_points);
+    //Matrix<Integer>(bottom_candidates).pretty_print(cout);
+#ifdef NMZ_SCIP
+	cout << "Compute points from bottom using SCIP." << endl;
+#else
+    cout << "Compute points from bottom using approximation with approximation level: " << app_level << endl;
+#endif 
+    cout << "Volume bound for stopping the algorithm: "<< ScipBound << endl;
+    // find a good approximation level
+	Integer volume;
+	int dim = gens[0].size();
+    Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
+	Integer grading_product=1;
+	for (int i =0; i< dim; i++) grading_product *= v_scalar_product(grading,gens[i]);
+	//cout << "The volume is " << volume << endl;
+	//cout << "The product of the gradings is " << grading_product << endl;
+	long max_app_lvl;
+	double stuff_under_root = convert_to_double(grading_product)*1000000/convert_to_double(volume);
+	//cout << "The stuff under the root is " << stuff_under_root << endl;
+	max_app_lvl = round(pow(stuff_under_root,1.0/dim));
+	//cout << "The maximal approximation level is " << max_app_lvl << endl;
+	
+#ifndef NMZ_SCIP   
+    if (app_level>max_app_lvl && bottom_candidates.size()==0){
+        cout << "We stop approximation, since there are no bottom candidates and the current approximation level is higher than the maximal one!" << endl;
+        return;
+    }
+    cout << "There are " << bottom_candidates.size() << " bottom candidates." << endl;
+#endif
 
-	if(first_round) cout << "Compute points from bottom. BOUND: " <<ScipBound<< endl;
-    stellar_det_sum = 0;
+	stellar_det_sum = 0;
     vector< Matrix<Integer> > q_gens;
     q_gens.push_back(gens);
     int level = 0;
@@ -96,8 +122,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,boo
     // setup scip enviorenment
     SCIP* scip = NULL;
 #ifdef NMZ_SCIP
-    #pragma omp single
-    { cout << "Using SCIP" << endl; }
+
     SCIPcreate(& scip);
     SCIPincludeDefaultPlugins(scip);
 //    SCIPsetMessagehdlr(scip,NULL);  // deactivate scip output
@@ -124,7 +149,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,boo
         cout << q_gens.size() << " simplices on level " << level++ << endl;
         #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
-            bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens,big_simplices,first_round);
+            bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens,big_simplices,grading);
         }
         #pragma omp single
         {
@@ -148,38 +173,32 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,boo
 #endif // NMZ_SCIP
     } // end parallel
 	// if we still have big_simplices we approx again
+#ifndef NMZ_SCIP
 	int counter=0;
-    if (!big_simplices.empty()){
-		cout << big_simplices.size() << " big simplices are remaining. we approx them again!" << endl;
+    //cout << "A big simplex!" << endl;
+    //if (!big_simplices.empty()) big_simplices.front().pretty_print(cout);
+    if (app_level<max_app_lvl && !big_simplices.empty()){
+		cout << "There are " << big_simplices.size() << " big simplices (vol>100*BOUND) remaining. We approximate them again." << endl;
 		for (auto it = big_simplices.begin(); it != big_simplices.end(); ++it){
 			// now we approximate this simplex again. maybe we're lucky.
 			// create full_cone
-			cout << "start approximation for big simplex number " << it-big_simplices.begin() << endl;
 			Matrix<Integer> gens = *it;
 			
 			list<vector<Integer> > new_points_again;
-			cout << "compute approximation for big simplex " << endl;
+			
 			Full_Cone<Integer> ApproxCone(gens);
+			//ApproxCone.verbose = true;
+            ApproxCone.approx_level=max_app_lvl;
+            ApproxCone.Grading = grading;
+            ApproxCone.is_Computed.set(ConeProperty::Grading);
+            
+            cout << "Compute approximation for big simplex " << it-big_simplices.begin()+1 << "/"<< big_simplices.size() << " with approximation level " << ApproxCone.approx_level << endl;
 			ApproxCone.compute_sub_div_elements(gens,new_points_again);
-			/*
-			Full_Cone<Integer> ApproxCone(gens);
-			bool verbtmp =verbose;
-			verbose=false;
-			vector<Integer>  grading = gens.find_linear_form();
-			ApproxCone.Grading=grading;
-			ApproxCone.is_Computed.set(ConeProperty::Grading);
-			ApproxCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
-			ApproxCone.do_approximation=true;  // as indicted by do_approximation
-			ApproxCone.Truncation= grading;
-	        ApproxCone.TruncLevel=v_scalar_product(ApproxCone.Truncation,gens[0]);
-	        
-	        ApproxCone.compute();
-	        verbose = verbtmp;
-			// look through Hilber Basis for new point:
-			list<vector<Integer> > new_points_again= ApproxCone.Hilbert_Basis;
-			*/
-			cout << "start bottom points again..." << endl;
-		    bottom_points(new_points_again,gens,false);
+			
+			cout << "Start bottom points again." << endl;
+            //Matrix<Integer>(new_points_again).pretty_print(cout);
+            
+		    bottom_points(new_points_again,gens,ApproxCone.Grading,ApproxCone.approx_level);
 			//vector<Integer> new_point = best_point(hb, gens, Support_Hyperplanes, grading);
 			if (!new_points_again.empty()){
 				counter++;
@@ -187,18 +206,20 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,boo
 				new_points.splice(new_points.end(), new_points_again, new_points_again.begin(), new_points_again.end());
 			}
 			else{
-				cout << "even new approx did not give a new point..." << endl;
+				cout << "The new approximation did not yield a new point." << endl;
 			}
 			
 		}
 	}
-	if (first_round) cout << "+++ in " << counter << " of " << big_simplices.size() << " cases new approx was successfull! +++" << endl;
-    cout  << new_points.size() << " new points accumulated" << endl;
+	if (!big_simplices.empty() && app_level==1) cout << "In " << counter << " of " << big_simplices.size() << " cases the new approximation was successfull." << endl;
+#endif
+    //cout  << new_points.size() << " new points accumulated" << endl;
     new_points.sort();
     new_points.unique();
-    cout << "of which " << new_points.size() << " are unique" << endl;
+    cout << new_points.size() << " new points accumulated" << endl;
 
-    cout << "stellar_det_sum = " << stellar_det_sum << endl;
+    cout << "The sum of determinants of the stellar subdivision is " << stellar_det_sum << endl;
+
 
 }
 
@@ -206,9 +227,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,boo
 template<typename Integer>
 void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip,
                  Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
-                 vector< Matrix<Integer> >& local_q_gens, vector< Matrix<Integer> >& big_simplices,bool first_round) {
+                 vector< Matrix<Integer> >& local_q_gens, vector< Matrix<Integer> >& big_simplices, const vector<Integer>& grading_) {
 
-    vector<Integer>  grading = gens.find_linear_form();
+    vector<Integer> grading = grading_;
+    if (grading.empty()) grading = gens.find_linear_form();
+#ifdef NMZ_SCIP
+    grading = gens.find_linear_form();
+#endif    
     Integer volume;
     int dim = gens[0].size();
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
@@ -260,18 +285,19 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
 		//cout << "Could not find a new point! " << endl;
 		// store the simplex into the big simplices list
 		#pragma omp critical
-		if (first_round  && volume>100*ScipBound) big_simplices.push_back(gens);
+		if (volume>100*ScipBound) big_simplices.push_back(gens);
         stellar_det_sum += convertTo<long>(volume);
     }
     return;
 }
 
 template<typename Integer>
-vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading) {
+vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading_) {
     size_t dim = SuppHyp.nr_of_columns();
     size_t i;
     auto best = bottom_candidates.end();
-    Integer best_value = v_scalar_product(grading,gens[0]);
+    vector<Integer> grading = gens.find_linear_form();
+    Integer best_value = v_scalar_product(grading,gens[dim-1]);
 
     for (auto it = bottom_candidates.begin(); it != bottom_candidates.end(); ++it) {
         for (i=0; i<dim; ++i) {
@@ -290,8 +316,7 @@ vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, cons
     if (best != bottom_candidates.end()) {
        return *best;
     } else {
-		cout << "Could not find a new point in the list! " << endl;
-		// save the simplex for later approximation
+		//cout << "Could not find a new point in the list! " << endl;
 		return vector<Integer>();
 		
 
@@ -373,7 +398,7 @@ vector<Integer> opt_sol(SCIP* scip,
 			break;
 		}
 		if (i==dim-1){
-			cout << "no same sign. using bound disjunction" << endl;
+			//cout << "no same sign. using bound disjunction" << endl;
 			// set bound disjunction
 			
 			SCIP_VAR** double_x = new SCIP_VAR*[2*dim];
@@ -417,9 +442,9 @@ vector<Integer> opt_sol(SCIP* scip,
     }
     SCIPfreeSol(scip, &input_sol);
     
-//    SCIPinfoMessage(scip, NULL, "Original problem:\n");
-//    SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
-//    SCIPinfoMessage(scip, NULL, "\nSolving...\n");
+    //SCIPinfoMessage(scip, NULL, "Original problem:\n");
+    //SCIPprintOrigProblem(scip, NULL, NULL, FALSE);
+    //SCIPinfoMessage(scip, NULL, "\nSolving...\n");
 
 //#ifndef NDEBUG_BLA 
         //FILE* file = fopen("mostrecent.lp","w");
@@ -451,12 +476,6 @@ vector<Integer> opt_sol(SCIP* scip,
             convert(sol_vec[i], SCIPconvertRealToLongint(scip,SCIPgetSolVal(scip,sol,x[i])));
         }
 
-        // HOTFIX to avoid pseudo solution
-        // if(v_scalar_product(grading,sol_vec)>upper_bound) return vector<Integer>();
-        //for (int i=0;i<nrSuppHyp;i++){
-        //    if((v_scalar_product(SuppHyp[i],sol_vec))<0) return vector<Integer>();
-        //    }
-        // if((v_scalar_product(grading,sol_vec))<1) return vector<Integer>();
 
         if(v_scalar_product(grading,sol_vec)>upper_bound){
 			Integer sc = v_scalar_product(sol_vec,grading);
@@ -556,9 +575,9 @@ vector<Integer> opt_sol(SCIP* scip,
 }
 #endif // NMZ_SCIP
 
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,bool first_round);
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,bool first_round);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,bool first_round);
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,const vector<long long>& grading,long app_level);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,const vector<mpz_class>& grading,long app_level);
 
 } // namespace
 

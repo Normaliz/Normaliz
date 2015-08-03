@@ -222,6 +222,7 @@ public:
     
     size_t AdjustedReductionBound;
     
+    long approx_level;
     bool is_approximation;
 
 /* ---------------------------------------------------------------------------
