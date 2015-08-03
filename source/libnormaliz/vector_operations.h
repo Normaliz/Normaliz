@@ -190,7 +190,7 @@ vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
 
 // computes integral simplex containing a rational vector
 template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx);
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx,const long k);
 
 vector<key_t> identity_key(size_t n);
 

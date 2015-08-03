@@ -30,6 +30,7 @@
 
 #include "integer.h"
 #include "vector_operations.h"
+#include "matrix.h"
 
 //---------------------------------------------------------------------------
 
@@ -540,41 +541,70 @@ vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b) {
 // q is a rational vector with the denominator in the FIRST component q[0]
 
 template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx){
-
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long k){
+	
+	//cout << "approximate the point " << q;
     long dim=q.size();
-    vector<Integer> quot(dim);
-    vector<pair<Integer,size_t> > remain(dim);
-    for(long i=0;i<dim;++i){
-        quot[i]=q[i]/q[0];          // write q[i]=quot*q[0]+remain
-        remain[i].first=q[i]%q[0];  // with 0 <= remain < q[0]
-        if(remain[i].first<0){
-            remain[i].first+=q[0];
-            quot[i]--;
-        }
-        remain[i].second=i;  // after sorting we must know where elements come from
-    }
-    
-
-    remain[0].first=q[0];  // helps to avoid special treatment of i=0
-    sort(remain.begin(),remain.end()); 
-    reverse(remain.begin(),remain.end()); // we sort remain into descending order
+    long l=k;
+    //if (k>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
+    // TODO in this case, skip the rest and just approximate on q[0]
+    Matrix<Integer> quot =  Matrix<Integer>(l,dim);
+    Matrix<Integer> remain=Matrix<Integer>(l,dim);
+    for(long j=0;j<l;j++){
+	    for(long i=0;i<dim;++i){
+	        quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
+	        //quot[j][0] = 1;
+	        remain[j][i]=(q[i]*(j+1))%q[0];  // with 0 <= remain < q[0]
+	        if(remain[j][i]<0){
+	            remain[j][i]+=q[0];
+	            quot[j][i]--;
+	        }
+	          
+	    }
+	    v_make_prime(quot[j]);
+	    remain[j][0]=q[0];  // helps to avoid special treatment of i=0
+	}
+	// choose best level
+	//cout << "this is the qout matrix" << endl;
+	//quot.pretty_print(cout);
+	//cout << "this is the remain matrix" << endl;
+	//remain.pretty_print(cout);
+	long best_level=l-1;
+	vector<long> nr_zeros(l);
+	for(long j=l-1;j>=0;j--){
+		for(long i=0;i<dim;++i){
+			if(remain[j][i]==0) nr_zeros[j]++;
+		}
+		if (nr_zeros[j]>nr_zeros[best_level]) best_level=j;
+	}
+	//cout << "the best level is " << (best_level+1) << endl;
+	//now we proceed as before
+	vector<pair<Integer,size_t>> best_remain(dim);
+	for(long i=0;i<dim;i++){
+		best_remain[i].first = remain[best_level][i];
+		best_remain[i].second = i; // after sorting we must lnow where elements come from
+	}
+	
+    sort(best_remain.begin(),best_remain.end()); 
+    reverse(best_remain.begin(),best_remain.end()); // we sort remain into descending order
     
     /*for(long i=0;i<dim;++i){
         cout << remain[i].first << " " << remain[i].second << endl;
     } */
     
     for(long i=1;i<dim;++i){
-        if(remain[i].first<remain[i-1].first)
+        if(best_remain[i].first<best_remain[i-1].first)
         {
-            approx.push_back(quot);
+            approx.push_back(quot[best_level]);
+            //cout << "add the point " << quot[best_level];
             // cout << i << " + " << remain[i].first << " + " << quot << endl;
         }
-        quot[remain[i].second]++;    
+        quot[best_level][best_remain[i].second]++;    
     }
-    if(remain[dim-1].first > 0){
+    if(best_remain[dim-1].first > 0){
         // cout << "E " << quot << endl;
-        approx.push_back(quot);
+        approx.push_back(quot[best_level]);
+        //cout << "add the point " << quot[best_level];
     }
 
 }
