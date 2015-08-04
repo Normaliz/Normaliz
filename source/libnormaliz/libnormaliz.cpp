@@ -156,6 +156,15 @@ InputType to_type(const std::string& type_string) {
     return Type::integral_closure;
 }
 
-
+long type_nr_columns_correction(InputType t) {
+    if (t == Type::polytope || t == Type::rees_algebra)
+        return -1;
+    if (t == Type::congruences || t == Type::vertices
+     || t == Type::inhom_inequalities || t == Type::inhom_equations)
+        return 1;
+    if (t == Type::inhom_congruences)
+        return 2;
+    return 0;
+}
 
 } /* end namespace libnormaliz */

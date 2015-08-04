@@ -61,31 +61,14 @@ enum InputType {
 };
 } //end namespace Type
 
-/*namespace Mode {
-enum ComputationMode {
-    supportHyperplanes,
-    triangulationSize,
-    triangulation,
-    volumeTriangulation,
-    // volumeLarge,
-    degree1Elements,
-    hilbertBasisTriangulation,
-    hilbertBasisMultiplicity,
-    hilbertBasisLarge,
-    hilbertSeries,
-    // hilbertSeriesLarge,
-    hilbertBasisSeries,
-    // hilbertBasisSeriesLarge,
-    dual
-};
-} //end namespace Mode */
-
 using Type::InputType;
-// using Mode::ComputationMode;
 
 /* converts a string to an InputType
  * throws an BadInputException if the string cannot be converted */
 InputType to_type(const std::string& type_string);
+
+/* gives the difference of the number of columns to the dimension */
+long type_nr_columns_correction(InputType type);
 
 /* this type is used in the entries of keys
  * it has to be able to hold number of generators */

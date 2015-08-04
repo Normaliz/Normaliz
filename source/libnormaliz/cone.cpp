@@ -315,40 +315,9 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             
     //determine dimension
     it = multi_input_data.begin();
-    
-    if(inhom_input){
-        for(; it != multi_input_data.end(); ++it) { // there must be at least one inhom_input type
-            switch(it->first){
-                case Type::strict_inequalities:
-                case Type::strict_signs:
-                case Type::offset:
-                    dim = it->second.front().size()+1;
-                    break;
-                case Type::inhom_inequalities:
-                case Type::inhom_equations:
-                case Type::polyhedron:
-                case Type::vertices:
-                    dim = it->second.front().size();
-                    break;
-                case Type::inhom_congruences:
-                    dim = it->second.front().size()-1; //congruences have one extra column
-                    break;
-                default: break;
-            }
-        }
-    }
-    else{
-        for(; it != multi_input_data.end(); ++it) {
-            dim = it->second.front().size();
-            if (it->first == Type::rees_algebra || it->first == Type::polytope) {
-                dim++; // we add one component
-            }
-            if (it->first == Type::congruences) {
-                dim--; //congruences have one extra column
-            }
-            break;
-        }
-    }  
+    size_t inhom_corr = 0; // correction in the inhom_input case
+    if (inhom_input) inhom_corr = 1;
+    dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
      
     // We now process input types that are independent of generators, constraints, lattice_ideal
     
@@ -373,39 +342,11 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // cout << "Dim " << dim <<endl;
     
     // check consistence of dimension
-    size_t inhom_corr=0; // coorection in the inhom_input case
-    if(inhom_input)
-        inhom_corr=1;
     it = multi_input_data.begin();
-    size_t current_dim, test_dim;
-    for(; it != multi_input_data.end(); ++it) {
-        current_dim=it->second[0].size()+inhom_corr;      
-        switch (it->first) {
-            case Type::inhom_congruences:
-                test_dim=current_dim-2;
-                break;
-            case Type::polyhedron:
-            case Type::inhom_inequalities:
-            case Type::inhom_equations:
-            case Type::congruences:
-            case Type::vertices:
-                test_dim=current_dim-1;
-                break;
-            case Type::support_hyperplanes:
-                if(inhom_input)
-                    test_dim=current_dim-1;
-                else
-                    test_dim=current_dim;
-            break;
-            case Type::polytope:
-            case Type::rees_algebra:
-                test_dim=current_dim+1;
-                break;
-            default:
-                test_dim=current_dim;
-                break;        
-        }
-        if(test_dim!=dim){
+    size_t test_dim;
+    for (; it != multi_input_data.end(); ++it) {
+        test_dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
+        if (test_dim != dim) {
             errorOutput() << "Inconsistent dimensions in input!"<< endl;
             throw BadInputException();           
         }
