@@ -260,7 +260,7 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
 
     if (volume < ScipBound) {
-        stellar_det_sum += convertTo<long>(volume);
+        stellar_det_sum += convertTo<long long>(volume);
         return;
     }
 
@@ -307,7 +307,7 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
 		// store the simplex into the big simplices list
 		#pragma omp critical
 		if (volume>100*ScipBound) big_simplices.push_back(gens);
-        stellar_det_sum += convertTo<long>(volume);
+        stellar_det_sum += convertTo<long long>(volume);
     }
     return;
 }

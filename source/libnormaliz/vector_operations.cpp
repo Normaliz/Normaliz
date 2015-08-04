@@ -670,4 +670,14 @@ void order_by_perm(vector<bool>& v, const vector<key_t>& permfix){
     }
 }
 
+
+
+template long      v_make_prime(vector<long     >&);
+template long long v_make_prime(vector<long long>&);
+template mpz_class v_make_prime(vector<mpz_class>&);
+
+template void v_add_result<long     >(vector<long     >&, size_t, const vector<long     >&, const vector<long     >&);
+template void v_add_result<long long>(vector<long long>&, size_t, const vector<long long>&, const vector<long long>&);
+template void v_add_result<mpz_class>(vector<mpz_class>&, size_t, const vector<mpz_class>&, const vector<mpz_class>&);
+
 } // end namespace libnormaliz

@@ -2807,7 +2807,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
             vector<num_t> hv(1);
             typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
             for(;hb!=Hilbert_Basis.end();++hb){
-                long deg=convertTo<long>(v_scalar_product(Grading,*hb));
+                size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
                 if(deg+1>hv.size())
                     hv.resize(deg+1);
                 hv[deg]++;                        

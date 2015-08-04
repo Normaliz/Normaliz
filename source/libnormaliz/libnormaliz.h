@@ -75,7 +75,7 @@ long type_nr_columns_correction(InputType type);
 typedef unsigned int key_t;
 
 extern bool verbose;
-extern size_t GMP_mat, GMP_hyp, GMP_scla_prod;
+extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 extern size_t TotDet;
 
 /* if test_arithmetic_overflow is true, many operations are also done
