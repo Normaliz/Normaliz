@@ -295,7 +295,7 @@ void HilbertSeries::simplify() const {
 
 long HilbertSeries::getDegreeAsRationalFunction() const {
     simplify();
-    long num_deg = num.size() - 1 - shift;
+    long num_deg = num.size() - 1 + shift;
     long denom_deg = 0;
     for (auto it = denom.begin(); it != denom.end(); ++it) {
             denom_deg += it->first * it->second;
@@ -383,8 +383,8 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     quasi_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
     for (j=0; j<period; ++j) {
-        // X |--> X - (j - shift)
-        linear_substitution<mpz_class>(quasi_poly[j], j - shift); // replaces quasi_poly[j]
+        // X |--> X - (j + shift)
+        linear_substitution<mpz_class>(quasi_poly[j], j + shift); // replaces quasi_poly[j]
     }
     //divide by gcd //TODO operate directly on vector
     Matrix<mpz_class> QP(quasi_poly);
@@ -393,10 +393,10 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     quasi_denom /= g;
     QP.scalar_division(g);
     //we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
-    long normed_shift = shift;
+    long normed_shift = -shift;
     while (normed_shift < 0) normed_shift += period;
     for (j=0; j<period; ++j) {
-        quasi_poly[j] = QP[(j+normed_shift)%period];
+        quasi_poly[j] = QP[(j+normed_shift)%period]; // QP[ (j - shift) % p ]
     }
     if (verbose && period > 1) {
         verboseOutput() << " done." << endl;
@@ -445,7 +445,7 @@ void HilbertSeries::adjustShift() {
     size_t adj = 0; // adjust shift by
     while (adj < num.size() && num[adj] == 0) adj++;
     if (adj > 0) {
-        shift -= adj;
+        shift += adj;
         num.erase(num.begin(),num.begin()+adj);
         if (cyclo_num.size() != 0) {
             assert (cyclo_num.size() >= adj);
@@ -496,12 +496,12 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     out << "(";
     // i == 0
     if (HS.num.size()>0) out << " " << HS.num[0];
-    if (HS.shift != 0)   out << "*t^" << -HS.shift;
+    if (HS.shift != 0)   out << "*t^" << HS.shift;
     for (size_t i=1; i<HS.num.size(); ++i) {
-             if ( HS.num[i]== 1 ) out << " +t^"<<i-HS.shift;
-        else if ( HS.num[i]==-1 ) out << " -t^"<<i-HS.shift;
-        else if ( HS.num[i] > 0 ) out << " +"<<HS.num[i]<<"*t^"<<i-HS.shift;
-        else if ( HS.num[i] < 0 ) out << " -"<<-HS.num[i]<<"*t^"<<i-HS.shift;
+             if ( HS.num[i]== 1 ) out << " +t^"<< i + HS.shift;
+        else if ( HS.num[i]==-1 ) out << " -t^"<< i + HS.shift;
+        else if ( HS.num[i] > 0 ) out << " +"  << HS.num[i] << "*t^" << i + HS.shift;
+        else if ( HS.num[i] < 0 ) out << " -"  <<-HS.num[i] << "*t^" << i + HS.shift;
     }
     out << " ) / (";
     if (HS.denom.empty()) {

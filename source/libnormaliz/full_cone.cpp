@@ -3085,9 +3085,9 @@ void Full_Cone<Integer>::find_grading_inhom(){
             min_quot=quot;
         // cout << "+++ " << min_quot << endl;
     }
-    shift=-min_quot;
+    shift = min_quot;
     for(size_t i=0;i<dim;++i) // under this grading all generators have positive degree
-        Grading[i]=Grading[i]+shift*Truncation[i];
+        Grading[i] = Grading[i] - shift * Truncation[i];
         
     // shift--;  // NO LONGER correction for the Hilbert series computation to have it start in degree 0
     
