@@ -377,7 +377,7 @@ The figure indicates the Hilbert basis, and this is our first computation goal.
 \subsubsection{The Hilbert basis}
 In order to compute the Hilbert basis, we run Normaliz from jNormaliz or by
 \begin{Verbatim}
-./normaliz -c example/3cone	
+./normaliz -c example/2cone	
 \end{Verbatim}
 and inspect the output file:
 \begin{Verbatim}
@@ -1186,7 +1186,7 @@ The rank of the lattice has of course not changed, but after the introduction of
 It is possible to define the lattice by generators. We demonstrate this for the magic squares with even corners. The lattice has just been computed (\verb|3x3magiceven_lat.in|):
 
 \begin{Verbatim}
-amb_soace 9
+amb_space 9
 lattice
 3
 2 0 -2 -4 0  4  2 0 -2
@@ -1222,7 +1222,7 @@ $$
 
 Input (\verb|NumSemi.in|):
 \begin{Verbatim}
-am_space 3
+amb_space 3
 inhom_equations
 1
 6 10 15 -97
@@ -1287,7 +1287,6 @@ equations
 1 1 1 1 1 -1 -1 -1 -1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 ...
 1 1 1 1 0  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0  0
-equations
 DualMode
 grading
 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -1319,7 +1318,6 @@ inhom_inequalities
 2 -2  3
 grading
 1 0 
-inhom_inequalities
 \end{Verbatim}
 The grading says that we want to count points by the first coordinate.
 \begin{center}
@@ -1589,7 +1587,7 @@ Again, don't forget that Normaliz prints a basis of the efficient lattice $\EE$.
 The set of solutions to the inhomogeneous system is an affine lattice in $\RR^2$. The lattice basis of $\EE$ above does not immediately let us write down the set of solutions in the form $w+L_0$ with a subgroup $L_0$, but we can easily transform the basis of $\EE$: just add the first and the second vector to obtain $(1,1,1)$ -- we already know that it belongs to $\EE$ and any element in $\EE$ with last coordinate $1$ would do. Try the file \verb|InhomCongLat.in|:
 
 \begin{Verbatim}
-ambspace 2
+amb_space 2
 offset
 1 1
 lattice 
@@ -1628,7 +1626,7 @@ The Hilbert basis of the recession monoid is simply that of the nonnegative case
 Next, let us discuss the example \ttt{MonIdeal.in} (typeset in two columns):
 
 \begin{Verbatim}
-amb_soace 5
+amb_space 5
 rees_algebra
 9                       0 2 3 4
 1 2 1 2                 1 0 3 4
