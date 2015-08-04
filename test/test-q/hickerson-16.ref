@@ -1,0 +1,62 @@
+9 extreme rays
+9 support hyperplanes
+
+embedding dimension = 9
+rank = 9 (maximal)
+external index = 1
+
+size of triangulation   = 4
+resulting sum of |det|s = 3932160
+
+grading:
+1 0 0 0 0 0 0 0 0 
+
+degrees of extreme rays:
+1: 5  5: 4  
+
+multiplicity = 786432/5
+
+Hilbert series:
+1 46 1695 21504 82823 140913 156027 155433 136184 73957 16786 1043 20 
+denominator with 9 factors:
+1: 8  5: 1  
+
+degree of Hilbert Series as rational function = -1
+
+Hilbert series with cyclotomic denominator:
+-1 -46 -1695 -21504 -82823 -140913 -156027 -155433 -136184 -73957 -16786 -1043 -20 
+cyclotomic denominator:
+1: 9  5: 1  
+
+Hilbert quasi-polynomial of period 5:
+ 0:   1575 7785 9802 10332 21952 6720 9856 3072 6144
+ 1:   9387 7785 9802 10332 21952 6720 9856 3072 6144
+ 2:   5355 7785 9802 10332 21952 6720 9856 3072 6144
+ 3:   7119 7785 9802 10332 21952 6720 9856 3072 6144
+ 4:  11655 7785 9802 10332 21952 6720 9856 3072 6144
+with common denominator = 1575
+
+***********************************************************************
+
+9 extreme rays:
+ 1 -2  1  2 -2  2 -1 -2  3
+ 1 -2  3 -2  1 -2  3 -2  1
+ 1  0 -2  0  3  0 -2  0  1
+ 1  2 -1 -2 -2 -2  1  2  3
+ 1  2  1  2  1  2  1  2  1
+ 5 -6  5 -2  0  2 -5  6 -5
+ 5 -2 -5  6  0 -6  5  2 -5
+ 5  2 -5 -6  0  6  5 -2 -5
+ 5  6  5  2  0 -2 -5 -6 -5
+
+9 support hyperplanes:
+  1  -1   2  -1   2  -1   2  -1   1
+  1   2   2   2   2   2   2   2   1
+  4  -1  -4  -1   8  -1  -4  -1   4
+ 16 -13  -4  11 -16  11  -4 -13  16
+ 16  11  -4 -13 -16 -13  -4  11  16
+ 64 -61  44 -37 -16  11 -52  83 -32
+ 64 -37 -52  83 -16 -61  44  11 -32
+ 64  11 -52 -61 -16  83  44 -37 -32
+ 64  83  44  11 -16 -37 -52 -61 -32
+
