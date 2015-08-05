@@ -33,6 +33,7 @@ using namespace std;
 #include "libnormaliz/cone.h"
 using namespace libnormaliz;
 
+#include "Normaliz.h"
 #include "Options.h"
 #include "output.h"
 
@@ -230,16 +231,23 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
     // analyzing long options
     for(size_t i=0; i<LongOptions.size();++i){
-        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOptions[i])!=AdmissibleOut.end()){
-            OutFiles.push_back(LongOptions[i]);
+        if(LongOptions[i]=="help"){
+            return true; // indicate printing of help text
+        }
+        if(LongOptions[i]=="verbose"){
+            verbose=true;
+            continue;
+        }
+        if(LongOptions[i]=="version"){
+            printVersion();
+            exit(0);
+        }
+        if(LongOptions[i]=="big-int"){
+            use_Big_Integer=true;
             continue;
         }
         if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
-            continue;
-        }
-        if(LongOptions[i]=="verbose"){
-            verbose=true;
             continue;
         }
         if(LongOptions[i]=="files"){
@@ -250,8 +258,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             write_all_files = true;
             continue;
         }
-        if(LongOptions[i]=="big-int"){
-            use_Big_Integer=true;
+        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOptions[i])!=AdmissibleOut.end()){
+            OutFiles.push_back(LongOptions[i]);
             continue;
         }
         try {

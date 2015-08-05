@@ -85,6 +85,11 @@ void printCopying() {
         <<"See COPYING for details."<<endl;
 }
 
+void printVersion() {
+    cout << "Normaliz " << string(STRINGIFY(NMZ_VERSION)) << endl;
+    printCopying();
+}
+
 template<typename Integer> int process_data(OptionsHandler& options);
 
 //---------------------------------------------------------------------------
@@ -101,7 +106,7 @@ int main(int argc, char* argv[])
 	if (print_help) {
         printHeader();
         printHelp(argv[0]);
-        exit(1);
+        exit(0);
 	}
 
 	if (verbose) {
