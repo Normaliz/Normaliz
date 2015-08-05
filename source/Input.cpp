@@ -21,7 +21,9 @@
  * terms of service.
  */
 
+#include "Options.h"
 #include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/map_operations.h"
 
 template <typename Integer>
 map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in) {
@@ -41,7 +43,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
         in >> nr_columns;
         if((nr_rows <0) || (nr_columns < 0)){
             cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
-            throw BadInputException();        
+            throw BadInputException();
         }
         vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
         for(i=0; i<nr_rows; i++){
@@ -60,13 +62,12 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
 
         input_type = to_type(type_string);
 
-        //check if this type already exists and merge data then
-        it = input_map.find(input_type);
-        if (it == input_map.end()) {
-            input_map.insert(make_pair(input_type, M));
-        } else { //in this case we merge the data
-            it->second.insert(it->second.end(), M.begin(), M.end());
+        //check if this type already exists
+        if(exists_element(input_map, input_type)){
+            cerr << "Error: Multiple inputs of type \"" << type_string <<"\" are not allowed!" << endl;
+            throw BadInputException();
         }
+        input_map[input_type] = M;
     }
 
     return input_map;

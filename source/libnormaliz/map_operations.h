@@ -27,7 +27,7 @@
 #define MAP_OPERATIONS_H
 
 //---------------------------------------------------------------------------
-                  
+
 #include <map>
 #include <ostream>
 
@@ -42,6 +42,13 @@ ostream& operator<< (ostream& out, const map<key, T> M) {
     }
     out << std::endl;
     return out;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename key, typename T>
+bool exists_element(const map<key, T>& m, const key& k){
+    return (m.find(k) != m.end());
 }
 
 //---------------------------------------------------------------------------

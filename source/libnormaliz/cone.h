@@ -64,7 +64,7 @@ class Cone {
 public:
 
 //---------------------------------------------------------------------------
-//                    Constructors, they preprocess the input 
+//                    Constructors, they preprocess the input
 //---------------------------------------------------------------------------
 
     /* give up to 3 matrices as input
@@ -97,9 +97,9 @@ public:
      */
     bool setVerbose (bool v);
 
-    /* Sets the linear form which is used to grade. 
+    /* Sets the linear form which is used to grade.
      * It has to be an N-grading, i.e. all generators must have a value >=1.
-     * If it is not, a subclass of NormalizException will be thrown at the 
+     * If it is not, a subclass of NormalizException will be thrown at the
      * time of detection which can be in this method or later!
      * It will delete all data from the cone that depend on the grading!
      */
@@ -170,7 +170,7 @@ public:
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector< vector<Integer> >& getHilbertBasis();
     size_t getNrHilbertBasis();
-    
+
     const Matrix<Integer>& getModuleGeneratorsOfIntegralClosureMatrix();
     const vector< vector<Integer> >& getModuleGeneratorsOfIntegralClosure();
     size_t getNrModuleGeneratorsOfIntegralClosure();
@@ -188,7 +188,7 @@ public:
     Integer getGradingDenom();
 
     vector<Integer> getDehomogenization();
-    
+
     vector<Integer> getClassGroup();
 
     mpq_class getMultiplicity();
@@ -259,10 +259,10 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
-    
+
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
-    
+
     bool no_lattice_restriction; // true if cine generators are known to be in the relevant lattice
     bool normalization; // true if input type normalization is used
 
@@ -276,7 +276,7 @@ private:
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data,
             Matrix<Integer>& equations, Matrix<Integer>& congruence, Matrix<Integer>& Inequalities);
-    void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data, 
+    void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
                      Matrix<Integer>& LatticeGenerators);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
@@ -317,21 +317,17 @@ private:
 
     /* set this object to the zero cone */
     void set_zero_cone();
-    
+
     Integer compute_primary_multiplicity();
     template<typename IntegerFC>
     Integer compute_primary_multiplicity_inner();
-    
+
 };
 
 // helpers
 
 template<typename Integer>
-vector<vector<Integer> > find_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data, 
-                               const InputType type);
-                               
-template<typename Integer>
-bool exists_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data, 
+vector<vector<Integer> > find_input_matrix(const map< InputType, vector< vector<Integer> > >& multi_input_data,
                                const InputType type);
 
 template<typename Integer>
