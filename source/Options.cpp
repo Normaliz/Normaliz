@@ -342,7 +342,7 @@ bool OptionsHandler::anyNmzIntegrateOption() const {
     return nmzInt_E || nmzInt_I || nmzInt_L;
 }
 
-string OptionsHandler::getNmzOptions() const {
+string OptionsHandler::getNmzIntegrateOptions() const {
     string nmz_options;
     if (verbose) {
         nmz_options.append(" -c");

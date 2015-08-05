@@ -55,7 +55,7 @@ public:
     // returns whether any nmzIntegrate option is set
     bool anyNmzIntegrateOption() const;
 
-    string getNmzOptions() const;
+    string getNmzIntegrateOptions() const;
 
     bool isFilenameSet() const {
         return filename_set;

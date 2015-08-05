@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
         }
         nmz_int_exec.append("\"");
 
-        nmz_int_exec.append(options.getNmzOptions());
+        nmz_int_exec.append(options.getNmzIntegrateOptions());
 
         #ifdef _WIN32 //for 32 and 64 bit windows
             nmz_int_exec.append("\"");
