@@ -328,6 +328,10 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
         return;
     }
+    if (verbose && period > 1) {
+        verboseOutput() << "Computing Hilbert quasipolynomial of period "
+                        << period <<" ..." << flush;
+    }
     long i,j;
     //period und dim encode the denominator
     //now adjust the numerator
@@ -393,6 +397,9 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     while (normed_shift < 0) normed_shift += period;
     for (j=0; j<period; ++j) {
         quasi_poly[j] = QP[(j+normed_shift)%period];
+    }
+    if (verbose && period > 1) {
+        verboseOutput() << " done." << endl;
     }
 }
 
