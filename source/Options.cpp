@@ -140,7 +140,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 to_compute.set(ConeProperty::TriangulationSize);
                 break;
             case 'v':
-            case 'V':
                 to_compute.set(ConeProperty::Multiplicity);
                 break;
             case 'n':
@@ -157,12 +156,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 to_compute.set(ConeProperty::HilbertSeries);
                 break;
             case 'p':
-            case 'P':
                 to_compute.set(ConeProperty::HilbertSeries);
                 to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'h':
-            case 'H':
                 to_compute.set(ConeProperty::HilbertBasis);
                 to_compute.set(ConeProperty::HilbertSeries);
                 break;
@@ -174,7 +171,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'r':
                 to_compute.set(ConeProperty::ApproximateRatPolytope);
-                to_compute.set(ConeProperty::Deg1Elements);
                 break;
             case 'e':  //check for arithmetic overflow
                 // test_arithmetic_overflow=true;
@@ -238,23 +234,23 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             OutFiles.push_back(LongOptions[i]);
             continue;
         }
-        if(LongOptions[i]=="Ignore"){
+        if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
             continue;
         }
-        if(LongOptions[i]=="Console"){
+        if(LongOptions[i]=="verbose"){
             verbose=true;
             continue;
         }
-        if(LongOptions[i]=="Files"){
+        if(LongOptions[i]=="files"){
             write_extra_files = true;
             continue;
         }
-        if(LongOptions[i]=="AllFiles"){
+        if(LongOptions[i]=="all-files"){
             write_all_files = true;
             continue;
         }
-        if(LongOptions[i]=="BigInt"){
+        if(LongOptions[i]=="big-int"){
             use_Big_Integer=true;
             continue;
         }
