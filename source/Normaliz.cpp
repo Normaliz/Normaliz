@@ -78,6 +78,13 @@ void printHelp(char* command) {
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
+void printCopying() {
+    cout<<"Copyright (C) 2007-2015  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+        <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
+        <<"and you are welcome to redistribute it under certain conditions;"<<endl
+        <<"See COPYING for details."<<endl;
+}
+
 template<typename Integer> int process_data(OptionsHandler& options);
 
 //---------------------------------------------------------------------------
@@ -97,44 +104,26 @@ int main(int argc, char* argv[])
         exit(1);
 	}
 
-	bool interactive_mode = !options.isFilenameSet();
-    if (verbose || interactive_mode) {
+	if (verbose) {
         printHeader();
     }
-    if (interactive_mode) {
-        cout<<"Copyright (C) 2007-2015  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
-            <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
-            <<"and you are welcome to redistribute it under certain conditions;"<<endl
-            <<"See COPYING for details."
-            <<endl<<endl;
-        cout<<"Enter the input file name or -? for help: ";
-        string str;
-        cin >> str;
-        if (str == "-?") {
-            printHelp(argv[0]);
-            return 1;
-        }
-        options.setOutputName(str);
-    }
-
-    int returnvalue;
 
     if(options.isUseBigInteger()) {
 #ifndef NMZ_MIC_OFFLOAD
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         // test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(options);
+        return process_data<mpz_class>(options);
 #else // NMZ_MIC_OFFLOAD*/
       cerr << "Error: option \"-B\" not supported with mic offload!" << endl;
       exit(1);
 #endif // NMZ_MIC_OFFLOAD
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(options);
+        return process_data<long long int>(options);
     }
 
-    if (returnvalue == 0 && options.anyNmzIntegrateOption()) {
+    if (options.anyNmzIntegrateOption()) {
         //cout << "argv[0] = "<< argv[0] << endl;
         string nmz_int_exec("\"");
         // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
@@ -158,16 +147,8 @@ int main(int argc, char* argv[])
         #endif
 
         cout << "executing: "<< nmz_int_exec << endl;
-        returnvalue = system(nmz_int_exec.c_str());
+        return system(nmz_int_exec.c_str());
     }
-    //exit
-    if (interactive_mode) {
-        cout<< "\nType something and press enter to exit.\n";
-        char c;
-        cin >> c;
-    }
-
-    return returnvalue;
 }
 
 //---------------------------------------------------------------------------

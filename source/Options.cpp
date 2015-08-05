@@ -80,20 +80,19 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
 					throw BadInputException();
 				}
 			}
-		} else if (!filename_set) {
-			string s(argv[i]);
-			output_name = s;
-			filename_set = true;
-		} else if (filename_set) {
-			cerr << "Error: Second file name " << argv[i] << " in command line!" << endl;
-			throw BadInputException();
+		} else {
+		    setOutputName(argv[i]);
 		}
 	}
 	return handle_options(LongOptions, ShortOptions);
 }
 
-void OptionsHandler::setOutputName(const string& outputName) {
-    output_name = outputName;
+void OptionsHandler::setOutputName(const string& s) {
+    if (filename_set) {
+        cerr << "Error: Second file name " << s << " in command line!" << endl;
+        throw BadInputException();
+    }
+    output_name = s;
     // check if we can read the .in file
     string name_in= output_name+".in";
     const char* file_in=name_in.c_str();
@@ -109,6 +108,7 @@ void OptionsHandler::setOutputName(const string& outputName) {
     } else {
         in2.close();
     }
+    filename_set = true;
 }
 
 bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {

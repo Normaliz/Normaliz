@@ -81,7 +81,7 @@ public:
         return output_name;
     }
 
-    void setOutputName(const string& outputName);
+    void setOutputName(const string& s);
 
 //---------------------------------------------------------------------------
 
