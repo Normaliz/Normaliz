@@ -35,6 +35,7 @@ using namespace std;
 //#include "libnormaliz/libnormaliz.cpp"
 using namespace libnormaliz;
 #include "Input.cpp"
+#include "Options.cpp"
 #include "output.cpp"
 
 #ifndef STRINGIFY
@@ -77,336 +78,81 @@ void printHelp(char* command) {
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
 }
 
-template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, 
-                                            const vector<string>& OutFiles, bool ignoreInFileOpt, bool verbose);
+template<typename Integer> int process_data(OptionsHandler& options);
 
 //---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
 
-    size_t i;       //used for iterations
-    char c;
-    string output_name;         //name of the output file(s) saved here
-    long nr_threads = 0;
-
     // read command line options
-    bool filename_set=false;
-    string option;            //all options concatenated (including -)
-    vector<string> LongOptions;
-    
-    for (i = 1; i < (unsigned int)argc; i++) {
-        if (argv[i][0]=='-') {
-            if (argv[i][1]!='\0') {
-                if (argv[i][1]!='x') {
-                    if(argv[i][1]=='-') {
-                        string LO=argv[i];
-                        LO.erase(0,2);
-                        LongOptions.push_back(LO);
-                    } else                    
-                        option = option + argv[i];
-                } else if (argv[i][2]=='=') {
-                    #ifdef _OPENMP
-                    string Threads = argv[i];
-                    Threads.erase(0,3);
-                    if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                        omp_set_num_threads(nr_threads);
-                    } else {
-                        cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
-                    }
-                    #else
-                    cerr << "Warning: Compiled without OpenMP support, option "<<argv[i]<<" ignored."<<endl;
-                    #endif
-                } else {
-                    cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
-                }
-            }
-        } else if (!filename_set) {
-            string s(argv[i]);
-            output_name=s;
-            filename_set=true;
-        } else if(filename_set){
-            cerr<<"Warning: Second file name " <<argv[i] << " in command line ignored "<<endl;
-        }
-    }
 
-    //Analyzing short command line options
-    bool write_extra_files = false, write_all_files = false;
-	bool do_bottom_dec=false;
-	bool keep_order=false;
-    bool use_Big_Integer = false;
-    bool ignoreInFileOpt=false;
-    ConeProperties to_compute;
-    bool nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
+    OptionsHandler options;
 
-    for (i = 1; i <option.size(); i++) {
-        switch (option[i]) {
-            case '-':
-                break;
-            case 'c':
-                verbose=true;
-                break;
-            case 'f':
-                write_extra_files = true;
-                break;
-            case 'a':
-                write_all_files = true;
-                break;
-            case 'T':
-                to_compute.set(ConeProperty::Triangulation);
-                // to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 's':
-                to_compute.set(ConeProperty::SupportHyperplanes);
-                break;
-            case 'S':
-                to_compute.set(ConeProperty::Sublattice);
-                break;
-            case 't':
-                to_compute.set(ConeProperty::TriangulationSize);
-                break;
-            case 'v':
-            case 'V':
-                to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 'n':
-                to_compute.set(ConeProperty::HilbertBasis);
-                to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 'N':
-                to_compute.set(ConeProperty::HilbertBasis);
-                break;
-            case '1':
-                to_compute.set(ConeProperty::Deg1Elements);
-                break;
-            case 'q':
-                to_compute.set(ConeProperty::HilbertSeries);
-                break;
-            case 'p':
-            case 'P':
-                to_compute.set(ConeProperty::HilbertSeries);
-                to_compute.set(ConeProperty::Deg1Elements);
-                break;
-            case 'h':
-            case 'H':
-                to_compute.set(ConeProperty::HilbertBasis);
-                to_compute.set(ConeProperty::HilbertSeries);
-                break;
-            case 'y':
-                to_compute.set(ConeProperty::StanleyDec);
-                break;
-            case 'd':
-                to_compute.set(ConeProperty::DualMode);
-                break;
-            case 'r':
-                to_compute.set(ConeProperty::ApproximateRatPolytope);
-                to_compute.set(ConeProperty::Deg1Elements);
-                break;
-            case 'e':  //check for arithmetic overflow
-                // test_arithmetic_overflow=true;
-                break;
-            case 'B':  //use Big Integer
-                use_Big_Integer=true;
-                break;
-			case 'b':  //use the bottom decomposition for the triangulation
-				do_bottom_dec=true;
-				break;
-			case 'C':  //compute the class group
-				to_compute.set(ConeProperty::ClassGroup);
-				break;
-			case 'k':  //keep the order of the generators in Full_Cone
-				keep_order=true;
-				break;
-            case 'M':  // compute minimal system of generators of integral closure 
-                       // as amodule over original monoid
-                to_compute.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
-                break;
-            case '?':  //print help text and exit
-                printHeader();
-                printHelp(argv[0]);
-                exit(1);
-                break;
-            case 'x': //should be separated from other options
-                cerr<<"Warning: Option -x=<T> has to be separated from other options"<<endl;
-                break;
-            case 'I':  //nmzIntegrate -I (integrate)
-                nmzInt_I = true;
-                to_compute.set(ConeProperty::Triangulation);
-                to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 'L':  //nmzIntegrate -L (leading term)
-                nmzInt_L = true;
-                to_compute.set(ConeProperty::Triangulation);
-                to_compute.set(ConeProperty::Multiplicity);
-                break;
-            case 'E':  //nmzIntegrate -E (ehrhart series)
-                nmzInt_E = true;
-                to_compute.set(ConeProperty::StanleyDec);
-                break;
-            case 'i':
-                ignoreInFileOpt=true;
-                break;
-            default:
-                cerr<<"Warning: Unknown option -"<<option[i]<<endl;
-                break;
-        }
-    }
+    bool print_help = options.handle_commandline(argc, argv);
 
-    vector<string> ComputeLO;
-    string ComputeLOarray[]={"SupportHyperplanes","HilbertBasis","Deg1Elements","ModuleGeneratorsOfIntegralClosure",
-        "HilbertSeries","Multiplicity","ClassGroup","Triangulation","TriangulationSize","TriangulationDetSum",
-        "StanleyDec","DualMode","ApproximateRatPolytope","BottomDecomposition","DefaultMode"}; // "DefaultMode" must be last
-    for(size_t i=0;i<15;++i)
-        ComputeLO.push_back(ComputeLOarray[i]);
-    assert(ComputeLO.back()=="DefaultMode");
-    
-    vector<string> AdmissibleOut;
-    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"}; // "mod" nust be last
-    for(size_t i=0;i<10;++i)
-        AdmissibleOut.push_back(AdmissibleOutarray[i]);
-    assert(AdmissibleOut.back()=="mod");
-    vector<string> OutFiles;
-    
-    // analyzing long options
-    for(size_t i=0; i<LongOptions.size();++i){
-        if(find(ComputeLO.begin(),ComputeLO.end(),LongOptions[i])!=ComputeLO.end()){
-            to_compute.set(LongOptions[i]);
-            continue;
-        }
-        if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOptions[i])!=AdmissibleOut.end()){
-            OutFiles.push_back(LongOptions[i]);
-            continue;
-        }
-        if(LongOptions[i]=="Ignore"){
-            ignoreInFileOpt=true;
-            continue;
-        }
-        if(LongOptions[i]=="KeepOrder"){
-            keep_order=true;
-            continue;
-        }
-        if(LongOptions[i]=="BottomDec"){
-            do_bottom_dec=true;
-            continue;
-        }
-        if(LongOptions[i]=="Console"){
-            verbose=true;
-            continue;
-        }
-        if(LongOptions[i]=="Files"){
-            write_extra_files = true;
-            continue;
-        }
-        if(LongOptions[i]=="AllFiles"){
-            write_all_files = true;
-            continue;
-        }
-        if(LongOptions[i]=="BigInt"){
-            use_Big_Integer=true;
-            continue;
-        }
-        cerr<<"Warning: Unknown option --" << LongOptions[i]<<endl;
-    }
-    
-    // activate default mode
-    if (to_compute.none()) {
-        to_compute.set(ConeProperty::DefaultMode);
-    }
+	if (print_help) {
+        printHeader();
+        printHelp(argv[0]);
+        exit(1);
+	}
 
-	if(keep_order)
-		to_compute.set(ConeProperty::KeepOrder);
-		
-	if(do_bottom_dec)
-		to_compute.set(ConeProperty::BottomDecomposition);
-
-    if (verbose || !filename_set) {
+	bool interactive_mode = !options.isFilenameSet();
+    if (verbose || interactive_mode) {
         printHeader();
     }
-    if (!filename_set) {
+    if (interactive_mode) {
         cout<<"Copyright (C) 2007-2015  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
             <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
             <<"and you are welcome to redistribute it under certain conditions;"<<endl
             <<"See COPYING for details."
             <<endl<<endl;
         cout<<"Enter the input file name or -? for help: ";
-        cin >>output_name;
-        if (output_name == "-?") {
+        string str;
+        cin >> str;
+        if (str == "-?") {
             printHelp(argv[0]);
             return 1;
         }
-    }
-
-    // check if we cand read the .in file
-    string name_in=output_name+".in";
-    const char* file_in=name_in.c_str();
-    ifstream in2;
-    in2.open(file_in,ifstream::in);
-    if (in2.is_open()==false) {
-        //check if user added ".in" and ignore it in this case
-        string suffix (".in");
-        size_t found = output_name.rfind(suffix);
-        if (found!=string::npos) {
-            output_name.erase(found);
-        }
-    } else {
-        in2.close();
+        options.setOutputName(str);
     }
 
     int returnvalue;
 
-    if(use_Big_Integer) {
+    if(options.isUseBigInteger()) {
 #ifndef NMZ_MIC_OFFLOAD
         //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
         // test_arithmetic_overflow=false;
         //Read and process Input
-        returnvalue = process_data<mpz_class>(output_name, to_compute, write_extra_files, write_all_files, OutFiles,ignoreInFileOpt, verbose);
+        returnvalue = process_data<mpz_class>(options);
 #else // NMZ_MIC_OFFLOAD*/
       cerr << "Error: option \"-B\" not supported with mic offload!" << endl;
       exit(1);
 #endif // NMZ_MIC_OFFLOAD
     } else {
         //Read and process Input
-        returnvalue = process_data<long long int>(output_name, to_compute, write_extra_files, write_all_files, OutFiles,ignoreInFileOpt, verbose);
+        returnvalue = process_data<long long int>(options);
     }
 
-    if (returnvalue == 0 && (nmzInt_E || nmzInt_I || nmzInt_L) ) {
+    if (returnvalue == 0 && options.anyNmzIntegrateOption()) {
         //cout << "argv[0] = "<< argv[0] << endl;
         string nmz_int_exec("\"");
         // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
         #ifdef _WIN32 //for 32 and 64 bit windows
             nmz_int_exec.append("\"");
-        #endif	
+        #endif
         nmz_int_exec.append(argv[0]);
         size_t found = nmz_int_exec.rfind("normaliz");
         if (found!=std::string::npos) {
             nmz_int_exec.replace (found,8,"nmzIntegrate");
         } else {
-            cout << "ERROR: Could not start nmzIntegrate" << endl;
+            cerr << "Error: Could not start nmzIntegrate" << endl;
             return 2;
         }
         nmz_int_exec.append("\"");
 
-        if (verbose) {
-            nmz_int_exec.append(" -c");
-        }
-        if (nr_threads > 0) {
-            nmz_int_exec.append(" -x=");
-            ostringstream convert;
-            convert << nr_threads;
-            nmz_int_exec.append(convert.str());
-        }
-        if (nmzInt_E) {
-            nmz_int_exec.append(" -E");
-        }
-        if (nmzInt_L) {
-            nmz_int_exec.append(" -L");
-        }
-        if (nmzInt_I) {
-            nmz_int_exec.append(" -I");
-        }
-        nmz_int_exec.append(" \"");
-        nmz_int_exec.append(output_name);
-        nmz_int_exec.append("\"");
+        nmz_int_exec.append(options.getNmzOptions());
+
         #ifdef _WIN32 //for 32 and 64 bit windows
             nmz_int_exec.append("\"");
         #endif
@@ -415,8 +161,9 @@ int main(int argc, char* argv[])
         returnvalue = system(nmz_int_exec.c_str());
     }
     //exit
-    if (!filename_set) {
+    if (interactive_mode) {
         cout<< "\nType something and press enter to exit.\n";
+        char c;
         cin >> c;
     }
 
@@ -425,8 +172,8 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(string& output_name, ConeProperties to_compute, bool write_extra_files, bool write_all_files, 
-                                            const vector<string>& OutFiles, bool ignoreInFileOpt, bool verbose){
+template<typename Integer> int process_data(OptionsHandler& options) {
+
 #ifndef NCATCH
     std::exception_ptr excep;
     try {
@@ -434,65 +181,9 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
 
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
-    if(write_all_files) {
-        Out.set_write_all_files();
-    } else if (write_extra_files) {
-        Out.set_write_extra_files();
-    }
-    if (to_compute.test(ConeProperty::Triangulation)) {
-        Out.set_write_tri(true);
-        Out.set_write_tgn(true);
-        Out.set_write_inv(true);
-    }
-    if (to_compute.test(ConeProperty::StanleyDec)) {
-        Out.set_write_dec(true);
-        Out.set_write_tgn(true);
-        Out.set_write_inv(true);
-    }
-    for(size_t i=0;i<OutFiles.size();++i){
-        if(OutFiles[i]=="gen"){
-            Out.set_write_gen(true);
-            continue;
-        }
-        if(OutFiles[i]=="cst"){
-            Out.set_write_cst(true);
-            continue;
-        }
-        if(OutFiles[i]=="inv"){
-            Out.set_write_inv(true);
-            continue;
-        }
-        if(OutFiles[i]=="ht1"){
-            Out.set_write_ht1(true);
-            continue;
-        }
-        if(OutFiles[i]=="ext"){
-            Out.set_write_ext(true);
-            continue;
-        }
-        if(OutFiles[i]=="egn"){
-            Out.set_write_egn(true);
-            continue;
-        }
-        if(OutFiles[i]=="esp"){
-            Out.set_write_esp(true);
-            continue;
-        }
-        if(OutFiles[i]=="typ"){
-            Out.set_write_typ(true);
-            continue;
-        }
-        if(OutFiles[i]=="lat"){
-            Out.set_write_lat(true);
-            continue;
-        } 
-        if(OutFiles[i]=="mod"){
-            Out.set_write_mod(true);
-            continue;
-        }           
-    }
-    
-    string name_in=output_name+".in";
+    options.applyOutputOptions(Out);
+
+    string name_in=options.getOutputName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
@@ -501,23 +192,21 @@ template<typename Integer> int process_data(string& output_name, ConeProperties 
         return 1;
     }
 
-    Out.set_name(output_name);
-
     //read the file
     map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in);
-    
+
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
     in.close();
 
     if (verbose) {
         cout << "************************************************************" << endl;
-        cout << "Compute: " << to_compute << endl;
+        cout << "Compute: " << options.getToCompute() << endl;
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
 //    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
-    MyCone.compute(to_compute);
+    MyCone.compute(options.getToCompute());
     Out.setCone(MyCone);
     Out.write_files();
 
