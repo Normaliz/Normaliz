@@ -40,8 +40,6 @@ using namespace libnormaliz;
 OptionsHandler::OptionsHandler() {
     filename_set = false;
     write_extra_files = false, write_all_files = false;
-	do_bottom_dec=false;
-	keep_order=false;
 	use_Big_Integer = false;
 	ignoreInFileOpt=false;
 	nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
@@ -185,13 +183,13 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 use_Big_Integer=true;
                 break;
 			case 'b':  //use the bottom decomposition for the triangulation
-				do_bottom_dec=true;
-				break;
+			    to_compute.set(ConeProperty::BottomDecomposition);
+			    break;
 			case 'C':  //compute the class group
 				to_compute.set(ConeProperty::ClassGroup);
 				break;
 			case 'k':  //keep the order of the generators in Full_Cone
-				keep_order=true;
+		        to_compute.set(ConeProperty::KeepOrder);
 				break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
@@ -228,14 +226,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
     }
 
-    vector<string> ComputeLO;
-    string ComputeLOarray[]={"SupportHyperplanes","HilbertBasis","Deg1Elements","ModuleGeneratorsOfIntegralClosure",
-        "HilbertSeries","Multiplicity","ClassGroup","Triangulation","TriangulationSize","TriangulationDetSum",
-        "StanleyDec","DualMode","ApproximateRatPolytope","BottomDecomposition","DefaultMode"}; // "DefaultMode" must be last
-    for(size_t i=0;i<15;++i)
-        ComputeLO.push_back(ComputeLOarray[i]);
-    assert(ComputeLO.back()=="DefaultMode");
-
     vector<string> AdmissibleOut;
     string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"}; // "mod" must be last
     for(size_t i=0;i<10;++i)
@@ -244,24 +234,12 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
     // analyzing long options
     for(size_t i=0; i<LongOptions.size();++i){
-        if(find(ComputeLO.begin(),ComputeLO.end(),LongOptions[i])!=ComputeLO.end()){
-            to_compute.set(LongOptions[i]);
-            continue;
-        }
         if(find(AdmissibleOut.begin(),AdmissibleOut.end(),LongOptions[i])!=AdmissibleOut.end()){
             OutFiles.push_back(LongOptions[i]);
             continue;
         }
         if(LongOptions[i]=="Ignore"){
             ignoreInFileOpt=true;
-            continue;
-        }
-        if(LongOptions[i]=="KeepOrder"){
-            keep_order=true;
-            continue;
-        }
-        if(LongOptions[i]=="BottomDec"){
-            do_bottom_dec=true;
             continue;
         }
         if(LongOptions[i]=="Console"){
@@ -280,19 +258,15 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_Big_Integer=true;
             continue;
         }
-        cerr<<"Warning: Unknown option --" << LongOptions[i]<<endl;
+        try {
+            to_compute.set(toConeProperty(LongOptions[i]));
+            continue;
+        } catch (const BadInputException& e) {};
+        cerr << "Error: Unknown option --" << LongOptions[i] << endl;
+        throw BadInputException();
     }
 
-    // activate default mode
-    if (to_compute.none()) {
-        to_compute.set(ConeProperty::DefaultMode);
-    }
-
-	if(keep_order)
-		to_compute.set(ConeProperty::KeepOrder);
-
-	if(do_bottom_dec)
-		to_compute.set(ConeProperty::BottomDecomposition);
+    activateDefaultMode(); // only if no real cone property is given!
 
 	return false; //no need to print help text
 }
@@ -388,4 +362,13 @@ string OptionsHandler::getNmzOptions() const {
     nmz_options.append(output_name);
     nmz_options.append("\"");
     return nmz_options;
+}
+
+bool OptionsHandler::activateDefaultMode() {
+    int proper_properties = to_compute.count();
+    if (to_compute.test(ConeProperty::KeepOrder)) proper_properties--;
+    if (to_compute.test(ConeProperty::BottomDecomposition)) proper_properties--;
+    if (proper_properties > 0) return false;
+    to_compute.set(ConeProperty::DefaultMode);
+    return true;
 }

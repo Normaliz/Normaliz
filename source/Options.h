@@ -47,6 +47,8 @@ public:
 	//return true if a help should be printed, false otherwise
     bool handle_commandline(int argc, char* argv[]);
 
+    bool activateDefaultMode();
+
     template<typename Integer>
     void applyOutputOptions(Output<Integer>& Out);
 
@@ -96,8 +98,6 @@ private:
     ConeProperties to_compute;
 
     bool write_extra_files, write_all_files;
-    bool do_bottom_dec;
-    bool keep_order;
 
     vector<string> OutFiles;
 
