@@ -47,6 +47,18 @@ void skip_comment(istream& in) {
     throw BadInputException();
 }
 
+template<typename Integer>
+void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
+        InputType input_type, const string& type_string, const vector<vector<Integer> >& M) {
+    //check if this type already exists
+    if (exists_element(input_map, input_type)) {
+        cerr << "Error: Multiple inputs of type \"" << type_string
+                << "\" are not allowed!" << endl;
+        throw BadInputException();
+    }
+    input_map[input_type] = M;
+}
+
 template <typename Integer>
 map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in, OptionsHandler& options) {
 
@@ -95,6 +107,17 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     cerr << "Error: Could not read type string!" << endl;
                     throw BadInputException();
                 }
+                if (type_string == "total_degree") {
+                    input_type = Type::grading;
+                    save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    continue;
+                }
+                if (type_string == "nonnegative") {
+                    input_type = Type::grading;
+                    save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    continue;
+                }
+
                 input_type = to_type(type_string);
 
                 if (type_is_vector(input_type)) {
@@ -104,7 +127,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 }
                 nr_columns = dim + type_nr_columns_correction(input_type);
                 if(!in.good() || nr_rows < 0) {
-                    cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
+                    cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) form the input!" << endl;
                     throw BadInputException();
                 }
                 vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
@@ -113,12 +136,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         in >> M[i][j];
                     }
                 }
-                //check if this type already exists
-                if(exists_element(input_map, input_type)){
-                    cerr << "Error: Multiple inputs of type \"" << type_string <<"\" are not allowed!" << endl;
-                    throw BadInputException();
-                }
-                input_map[input_type] = M;
+                save_matrix(input_map, input_type, type_string, M);
             }
             if (!in.good()) {
                 cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) form the input!" << endl;
@@ -154,11 +172,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             input_type = to_type(type_string);
 
             //check if this type already exists
-            if(exists_element(input_map, input_type)){
-                cerr << "Error: Multiple inputs of type \"" << type_string <<"\" are not allowed!" << endl;
-                throw BadInputException();
-            }
-            input_map[input_type] = M;
+            save_matrix(input_map, input_type, type_string, M);
         }
     }
     return input_map;
