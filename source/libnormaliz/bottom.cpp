@@ -191,7 +191,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     }
 #endif
     } // end parallel
-    if (tmp_exception) std::rethrow_exception(tmp_exception);
+    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
 
 	// if we still have big_simplices we approx again
 #ifndef NMZ_SCIP
