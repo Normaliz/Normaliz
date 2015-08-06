@@ -28,6 +28,7 @@
 #include "Options.h"
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/map_operations.h"
+#include "libnormaliz/cone_property.h"
 
 // eats up a comment, stream must start with "/*", eats everything until "*/"
 void skip_comment(istream& in) {
@@ -67,6 +68,8 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
     long nr_rows,nr_columns;
     InputType input_type;
     Integer number;
+    ConeProperty::Enum cp;
+
     map<Type::InputType, vector< vector<Integer> > > input_map;
     typename map<Type::InputType, vector< vector<Integer> > >::iterator it;
 
@@ -106,6 +109,14 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 if (!in.good()) {
                     cerr << "Error: Could not read type string!" << endl;
                     throw BadInputException();
+                }
+                if (std::isdigit(c)) {
+                    cerr << "Error: Unexpected number "<< type_string << " when expecting a type !" << endl;
+                    throw BadInputException();
+                }
+                if (isConeProperty(cp, type_string)) {
+                    options.activateConeProperty(cp);
+                    continue;
                 }
                 if (type_string == "total_degree") {
                     input_type = Type::grading;

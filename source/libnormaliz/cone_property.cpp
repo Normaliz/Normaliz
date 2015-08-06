@@ -147,17 +147,17 @@ void ConeProperties::set_preconditions() {
 void ConeProperties::prepare_compute_options() {
     // -d without -1 means: compute Hilbert basis in dual mode
     if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
-        CPs.set(ConeProperty::HilbertBasis);  
+        CPs.set(ConeProperty::HilbertBasis);
     }
 
-    // dual mode has priority, approximation makes no sense if HB is computed 
+    // dual mode has priority, approximation makes no sense if HB is computed
     if(CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::HilbertBasis))
         CPs.reset(ConeProperty::ApproximateRatPolytope);
-    
-    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::ApproximateRatPolytope)) 
+
+    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::ApproximateRatPolytope))
         && (CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::StanleyDec))
          && !CPs.test(ConeProperty::HilbertBasis)){
-        CPs.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode 
+        CPs.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode
         CPs.reset(ConeProperty::ApproximateRatPolytope); // or by approximation if the
     }                                            // Stanley decomposition must be computed anyway
 }
@@ -172,9 +172,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
-                  || prop == ConeProperty::ApproximateRatPolytope 
+                  || prop == ConeProperty::ApproximateRatPolytope
                   || prop == ConeProperty::ClassGroup
-                  || prop == ConeProperty::ModuleGeneratorsOfIntegralClosure  
+                  || prop == ConeProperty::ModuleGeneratorsOfIntegralClosure
                 ) {
                     errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
@@ -253,11 +253,20 @@ namespace {
     }
 }
 
-ConeProperty::Enum toConeProperty(const std::string& s) {
+bool isConeProperty(ConeProperty::Enum& cp, const std::string& s) {
     const vector<string>& CPN = ConePropertyNames();
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
-        if (CPN[i] == s) return static_cast<ConeProperty::Enum>(i);
+        if (CPN[i] == s) {
+            cp = static_cast<ConeProperty::Enum>(i);
+            return true;
+        }
     }
+    return false;
+}
+
+ConeProperty::Enum toConeProperty(const std::string& s) {
+    ConeProperty::Enum cp;
+    if (isConeProperty(cp, s)) return cp;
     errorOutput() << "Unknown ConeProperty string \"" << s << "\"" << std::endl;
     throw BadInputException();
 }

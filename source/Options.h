@@ -72,6 +72,10 @@ public:
         return nr_threads;
     }
 
+    void activateConeProperty(ConeProperty::Enum cp) {
+        to_compute.set(cp, true);
+    }
+
     const ConeProperties& getToCompute() const {
         return to_compute;
     }

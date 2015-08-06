@@ -104,7 +104,7 @@ public:
     size_t count () const;
 
     /* the following methods are used internally */
-    void set_preconditions();    // activate properties which are needed implicitily
+    void set_preconditions();    // activate properties which are needed implicitly
     void prepare_compute_options();
     void check_sanity(bool inhomogeneous);
 
@@ -113,11 +113,12 @@ public:
 
 
 private:
-    std::bitset<ConeProperty::EnumSize> CPs; 
+    std::bitset<ConeProperty::EnumSize> CPs;
 
 };
 
 // conversion to/from strings
+bool isConeProperty(ConeProperty::Enum& cp, const std::string& s);
 ConeProperty::Enum toConeProperty(const std::string&);
 const std::string& toString(ConeProperty::Enum);
 std::ostream& operator<<(std::ostream&, const ConeProperties&);
