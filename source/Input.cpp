@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <cctype>       // std::isdigit
+#include <limits>       // numeric_limits
 
 #include "Options.h"
 #include "libnormaliz/libnormaliz.h"
@@ -95,7 +96,12 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     throw BadInputException();
                 }
                 input_type = to_type(type_string);
-                in >> nr_rows;
+
+                if (type_is_vector(input_type)) {
+                    nr_rows = 1;
+                } else {
+                    in >> nr_rows;
+                }
                 nr_columns = dim + type_nr_columns_correction(input_type);
                 if(!in.good() || nr_rows < 0) {
                     cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;

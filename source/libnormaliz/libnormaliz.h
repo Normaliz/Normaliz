@@ -70,6 +70,9 @@ InputType to_type(const std::string& type_string);
 /* gives the difference of the number of columns to the dimension */
 long type_nr_columns_correction(InputType type);
 
+/* returns true if the input of this type is a vector */
+bool type_is_vector(InputType type);
+
 /* this type is used in the entries of keys
  * it has to be able to hold number of generators */
 typedef unsigned int key_t;

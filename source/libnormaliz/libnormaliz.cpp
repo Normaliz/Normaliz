@@ -150,7 +150,7 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="cone_and_lattice") {
         return Type::cone_and_lattice;
     }
-    
+
     errorOutput() << "ERROR: Unknown type \"" << type_string<<"\"!" << std::endl;
     throw BadInputException();
     return Type::integral_closure;
@@ -165,6 +165,15 @@ long type_nr_columns_correction(InputType t) {
     if (t == Type::inhom_congruences)
         return 2;
     return 0;
+}
+
+/* returns true if the input of this type is a vector */
+bool type_is_vector(InputType type){
+    if (type == Type::grading || type == Type::signs || type == Type::strict_signs
+            || type == Type::dehomogenization || type == Type::offset) {
+        return true;
+    }
+    return false;
 }
 
 } /* end namespace libnormaliz */
