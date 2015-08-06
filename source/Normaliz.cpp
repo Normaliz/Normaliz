@@ -179,7 +179,9 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     }
 
     //read the file
-    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in);
+    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in, options);
+
+    options.activateDefaultMode(); // only if no real cone property is given!
 
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 

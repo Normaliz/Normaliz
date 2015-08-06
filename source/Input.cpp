@@ -21,54 +21,70 @@
  * terms of service.
  */
 
+#include <cctype>       // std::isdigit
+
 #include "Options.h"
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/map_operations.h"
 
 template <typename Integer>
-map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in) {
+map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in, OptionsHandler& options) {
 
     string type_string;
     long i,j;
-    long nr_rows,nr_columns;;
-    InputType input_type = Type::integral_closure;
+    long nr_rows,nr_columns;
+    InputType input_type;
     Integer number;
     map<Type::InputType, vector< vector<Integer> > > input_map;
     typename map<Type::InputType, vector< vector<Integer> > >::iterator it;
 
-    while (in.good()) {
-        in >> nr_rows;
-        if(in.fail())
-            break;
-        in >> nr_columns;
-        if((nr_rows <0) || (nr_columns < 0)){
-            cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
-            throw BadInputException();
-        }
-        vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
-        for(i=0; i<nr_rows; i++){
-            for(j=0; j<nr_columns; j++) {
-                in >> number;
-                M[i][j] = number;
-            }
-        }
-
-        in>>type_string;
-
-        if ( in.fail() ) {
-            cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
-            throw BadInputException();
-        }
-
-        input_type = to_type(type_string);
-
-        //check if this type already exists
-        if(exists_element(input_map, input_type)){
-            cerr << "Error: Multiple inputs of type \"" << type_string <<"\" are not allowed!" << endl;
-            throw BadInputException();
-        }
-        input_map[input_type] = M;
+    in >> std::ws;  // eat up any leading white spaces
+    int c = in.peek();  // peek character
+    if ( c == EOF ) {
+        cerr << "Error: Empty input file!" << endl;
+        throw BadInputException();
     }
+    bool new_input_syntax = !std::isdigit(c);
 
+    if (new_input_syntax) {
+        // TODO implement new input syntax
+        cout << "NEW INPUT SYNTAX NOT YET IMPLEMENTED!" << endl;
+        exit(1);
+    } else {
+        // old input syntax
+        while (in.good()) {
+            in >> nr_rows;
+            if(in.fail())
+                break;
+            in >> nr_columns;
+            if((nr_rows <0) || (nr_columns < 0)){
+                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
+                throw BadInputException();
+            }
+            vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
+            for(i=0; i<nr_rows; i++){
+                for(j=0; j<nr_columns; j++) {
+                    in >> number;
+                    M[i][j] = number;
+                }
+            }
+
+            in>>type_string;
+
+            if ( in.fail() ) {
+                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
+                throw BadInputException();
+            }
+
+            input_type = to_type(type_string);
+
+            //check if this type already exists
+            if(exists_element(input_map, input_type)){
+                cerr << "Error: Multiple inputs of type \"" << type_string <<"\" are not allowed!" << endl;
+                throw BadInputException();
+            }
+            input_map[input_type] = M;
+        }
+    }
     return input_map;
 }

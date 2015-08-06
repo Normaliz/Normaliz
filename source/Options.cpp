@@ -270,9 +270,19 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         throw BadInputException();
     }
 
-    activateDefaultMode(); // only if no real cone property is given!
-
 	return false; //no need to print help text
+}
+
+void OptionsHandler::handle_input_file_option(const string& s) {
+    ConeProperty::Enum prop;
+    try {
+        prop = toConeProperty(s);
+    } catch (const BadInputException& e) {};
+    cerr << "Error: Unknown input file option " << s << endl;
+    throw BadInputException();
+    if (!ignoreInFileOpt) {
+        to_compute.set(prop);
+    }
 }
 
 template<typename Integer>

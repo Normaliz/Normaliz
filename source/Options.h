@@ -44,13 +44,16 @@ class OptionsHandler {
 public:
 	OptionsHandler();
 
-	//return true if a help should be printed, false otherwise
+	// returns true if a help should be printed, false otherwise
     bool handle_commandline(int argc, char* argv[]);
 
+    // returns true if default mode was activated, false otherwise
     bool activateDefaultMode();
 
     template<typename Integer>
     void applyOutputOptions(Output<Integer>& Out);
+
+    void handle_input_file_option(const string& s);
 
     // returns whether any nmzIntegrate option is set
     bool anyNmzIntegrateOption() const;
