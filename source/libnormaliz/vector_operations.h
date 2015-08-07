@@ -110,9 +110,9 @@ void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
     }
 }
 
-//returns v * scalar
+//returns v * scalar mod modulus
 template<typename Integer>
-vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Integer& scalar);
+vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus, bool& success);
 
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer& scalar);

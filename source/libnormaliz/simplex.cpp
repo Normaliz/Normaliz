@@ -331,7 +331,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         // LinSys.solve_destructive(volume);
         
         LinSys.solve_system_submatrix_trans(Generators,id_key,RS_pointers,volume,Last_key.size(),RS_pointers.size()-Last_key.size());
-
         for(i=0;i<Last_key.size();i++) // extract solutions as selected rows of InvGen
             for(j=0;j<dim;j++){
                 InvGenSelRows[Last_key[i]][j]=LinSys[j][dim+i]%volume; //makes reduction mod volume easier
@@ -367,8 +366,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         #pragma omp atomic
         NonDecidedHyp+=Ind0_key.size();
     }*/
-
-    
+      
     return(volume);    
 }
 
@@ -817,7 +815,7 @@ void SimplexEvaluator<Integer>::evaluate_block(long block_start, long block_end,
         
         for(size_t i=0;i<dim;++i){  // put elements into the state at the end of the previous block
             if(point[i]!=0){
-                elements[i]=v_add(elements[i],v_scalar_multiplication_two(InvGenSelRows[i],point[i]));
+                elements[i]=v_add(elements[i],v_scalar_mult_mod(InvGenSelRows[i],point[i],volume));
                 v_reduction_modulo(elements[i],volume);
                 for(size_t j=i+1;j<dim;++j)
                     elements[j]=elements[i];

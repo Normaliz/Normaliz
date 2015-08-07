@@ -281,13 +281,33 @@ Integer v_make_prime(vector<Integer>& v){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<Integer> v_scalar_multiplication_two(const vector<Integer>& v, const Integer& scalar){
+bool v_scalar_mult_mod_inner(vector<Integer>& w, const vector<Integer>& v, const Integer& scalar, const Integer& modulus){
     size_t i,size=v.size();
-    vector<Integer> w(size);
+    Integer test;
     for (i = 0; i <size; i++) {
-        w[i]=v[i]*scalar;
+        test=v[i]*scalar;
+        if(!check_range(test)){
+            return false;
+        }
+        w[i]=test % modulus;
+        if(w[i]<0)
+            w[i]+=modulus;
     }
-    return w;
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus){
+    
+    vector<Integer> w(v.size());
+    if(v_scalar_mult_mod_inner(w,v,scalar,modulus))
+        return w;
+    vector<mpz_class> x,y(v.size());
+    convert(x,v);
+    v_scalar_mult_mod_inner(y,x,convertTo<mpz_class>(scalar),convertTo<mpz_class>(modulus));
+    return convertTo<vector<Integer>>(y);       
 }
 
 //---------------------------------------------------------------------------
