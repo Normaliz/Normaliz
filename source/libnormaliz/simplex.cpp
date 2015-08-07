@@ -888,7 +888,13 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     }
     if (C_ptr->use_bottom_points && volume >= ScipBound && C_ptr->approx_level==1)
     {
+
         Full_Cone<Integer>& C = *C_ptr;
+        
+        if (C_ptr->verbose) {
+				verboseOutput() << "**************************************************" << endl;
+				verboseOutput() << "Try to decompose the simplex into smaller simplices." << endl;
+		}
 
         for (size_t i=0; i<dim; ++i)
             Generators[i] = C.Generators[key[i]];
@@ -901,14 +907,13 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
        
 #endif
-		if (C.isComputed(ConeProperty::Grading)) {
-			bottom_points(new_points, Generators,C.Grading,C.approx_level);
-		}
+		bottom_points(new_points, Generators,C.Grading,C.approx_level);
         time (&end);
 		double dif = difftime (end,start);
 
-		cout << "bottom points took " << dif << " sec " <<endl;
-
+		if (C_ptr->verbose) {
+				verboseOutput() << "Bottom points took " << dif << " sec " <<endl;
+		}
 
         // cout << new_points.size() << " new points " << endl << new_points << endl;
         if (!new_points.empty()) {
@@ -955,7 +960,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             bottom_polytope.keep_order = true;
             bottom_polytope.keep_triangulation = true;
             //bottom_polytope.do_all_hyperplanes = false;
-            cout << "compute triangulation of bottom polytope" << endl;
+            if (C_ptr->verbose) {
+				verboseOutput() << "Computing triangulation of bottom polytope... " << flush;
+			}
             bool verbtmp = C_ptr->verbose;
             C_ptr->verbose = false;
 			time (&start);
@@ -963,7 +970,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             time (&end);
 			dif = difftime (end,start);
             C_ptr->verbose = verbtmp;
-            cout << "computing triangulation took " << dif << " sec" << endl;
+            if (C_ptr->verbose) {
+				verboseOutput() << "done." << endl;
+				verboseOutput() << "Computing triangulation took " << dif << " sec" << endl;
+			}
             assert(bottom_polytope.isComputed(ConeProperty::Triangulation));
 
             // extract bottom triangulation
@@ -975,7 +985,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             SHORTSIMPLEX<Integer> new_simplex;
             new_simplex.key = vector<key_t>(dim);
             key_t i;
-            cout << "extract triangulation from bottom polytope" << endl;
+            if (C_ptr->verbose) {
+				verboseOutput() << "Extracting and evaluating triangulation from bottom polytope..." << endl;
+			}
+ 
             for (; bottom_it != bottom_end; ++bottom_it) {
                 sort(bottom_it->key.begin(), bottom_it->key.end());
                 //cout << "org " << bottom_it->key;
@@ -999,6 +1012,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 C.Triangulation.splice(C.Triangulation.begin(), tmp_triang);
                 C.TriangulationSize += tmp_triang_size;
             }
+            if (C_ptr->verbose) {
+				
+				verboseOutput() << "**************************************************" << endl;
+			}
 
             return;
         }

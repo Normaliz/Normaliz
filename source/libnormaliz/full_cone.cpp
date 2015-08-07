@@ -2386,7 +2386,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     if (SimplCone.isDeg1ExtremeRays()) return; // no approx possible
 
     if (verbose) {
-        verboseOutput() << "Computing bottom candidates via approximation ..." << flush;
+        verboseOutput() << "Computing bottom candidates via approximation... " << flush;
     }
     SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
     SimplCone.do_approximation=true;  // as indicted by do_approximation
@@ -2398,7 +2398,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     SimplCone.compute();
     sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
     if (verbose) {
-        verboseOutput() << "done" << endl;
+        verboseOutput() << "done." << endl;
     }
 }
 
@@ -4584,6 +4584,10 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<Hilbert_Series;
 }
 
+
+template void Full_Cone<long>::compute_sub_div_elements(const Matrix<long>& gens,list<vector<long> >& sub_div_elements);
+template void Full_Cone<long long>::compute_sub_div_elements(const Matrix<long long>& gens,list<vector<long long> >& sub_div_elements);
+template void Full_Cone<mpz_class>::compute_sub_div_elements(const Matrix<mpz_class>& gens,list<vector<mpz_class> >& sub_div_elements);
 } //end namespace
 
 
