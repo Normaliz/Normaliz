@@ -365,8 +365,7 @@ We want to investigate the cone $C=\RR_+(2,1)+\RR_+(1.3)\subset \RR^2$:
 This cone is defined in the input file \verb|2cone.in|:
 \begin{Verbatim}
 amb_space 2
-cone
-2
+cone 2
 2 1
 1 3
 \end{Verbatim}
@@ -451,8 +450,7 @@ If the order is not fixed for some reason, Normaliz sorts vector lists as follow
 Instead using generators, we can define the cone by inequalities just computed (\verb|2cone_ineq.in|):
 \begin{Verbatim}
 amb_space 2
-inequalities
-2
+inequalities 2
 -1  2
 3 -1
 \end{Verbatim}
@@ -467,8 +465,7 @@ Now we want to compute the lattice points in the interior of our cone. If the co
 The input file \verb|2cone_int.in| says
 \begin{Verbatim}
 amb_space 2
-strict_inequalities
-2
+strict_inequalities 2
 -1  2
 3 -1
 \end{Verbatim}
@@ -552,12 +549,11 @@ The support hyperplanes are exactly those that we have used to define the polyhe
 
 \subsection{A lattice polytope}\label{lattice_polytope}\label{polytope_ex}
 
-The file \ttt{polytop.in} contains
+The file \ttt{polytope.in} contains
 
 \begin{Verbatim}
 amb_space 4
-polytope
-4
+polytope 4
 0 0 0
 2 0 0
 0 3 0
@@ -596,8 +592,7 @@ $$
 in $\RR^3$ is to be computed. The generators of the Ehrhart monoid are obtained by attaching a further coordinate $1$ to the vertices, and this explains \verb|amb_space 4|. In fact, the input type \verb|polytope| is nothing but a convenient (perhaps superfluous)  version of
 \begin{Verbatim}
 amb_space 4
-cone
-4
+cone 4
 0 0 0 1
 2 0 0 1
 0 3 0 1
@@ -697,11 +692,10 @@ $$
 
 \subsubsection{Only the lattice points}
 
-Suppose we want to compute only the lattice points in our polytope. In the language of graded monoids these are the degree $1$ elements, and so we add \verb|Deg1Elements| to our input file (\verb|polytop_deg1.in|):
+Suppose we want to compute only the lattice points in our polytope. In the language of graded monoids these are the degree $1$ elements, and so we add \verb|Deg1Elements| to our input file (\verb|polytope_deg1.in|):
 \begin{Verbatim}
 amb_space 4
-polytope
-4
+polytope 4
 0 0 0
 2 0 0
 0 3 0
@@ -752,8 +746,7 @@ For this example the procedure above yields the input file \ttt{rational.in}:
 
 \begin{Verbatim}
 amb_space 3
-cone
-3
+cone 3
 1 1 2
 -1 -1 3
 1 -2 4
@@ -866,8 +859,7 @@ this fact or at least verify it by several examples.
 We extract the support hyperplanes of our polytope from the output file and use them as input (\verb|poly_ineq.in|):
 \begin{Verbatim}
 amb_space 3
-inequalities
-3
+inequalities 3
 -8  2 3
 1 -1 0
 2  7 3
@@ -920,8 +912,7 @@ This system is encoded in the file
 \ttt{3x3magic.in}:
 \begin{Verbatim}
 amb_space 9
-equations
-7
+equations 7
 1 1 1 -1 -1 -1  0  0  0
 1 1 1  0  0  0 -1 -1 -1
 0 1 1 -1  0  0 -1  0  0
@@ -1092,8 +1083,7 @@ We change our definition of magic square by requiring that the
 entries in the $4$ corners are all even. Then we have to
 augment the input file by the following (\ttt{3x3magiceven.in}):
 \begin{Verbatim}
-congruences
-4
+congruences 4
 1 0 0 0 0 0 0 0 0 2
 0 0 1 0 0 0 0 0 0 2
 0 0 0 0 0 0 1 0 0 2
@@ -1187,8 +1177,7 @@ It is possible to define the lattice by generators. We demonstrate this for the 
 
 \begin{Verbatim}
 amb_space 9
-lattice
-3
+lattice 3
 2 0 -2 -4 0  4  2 0 -2
 0 1  2  3 1 -1  0 1  2
 0 0  6  8 2 -4 -2 4  4
@@ -1201,8 +1190,7 @@ It produces the same output as the version starting from equations and congruenc
 
 \begin{Verbatim}
 amb_space 9
-saturation
-3
+saturation 3
 2 0 -2 -4 0  4  2 0 -2
 0 1  2  3 1 -1  0 1  2
 0 0  6  8 2 -4 -2 4  4
@@ -1223,8 +1211,7 @@ $$
 Input (\verb|NumSemi.in|):
 \begin{Verbatim}
 amb_space 3
-inhom_equations
-1
+inhom_equations 1
 6 10 15 -97
 \end{Verbatim}
 
@@ -1282,8 +1269,7 @@ We increase the size of the magic squares to $5\times 5$. Normaliz can do the sa
 
 \begin{Verbatim}
 amb_space 25
-equations
-11
+equations 11
 1 1 1 1 1 -1 -1 -1 -1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 ...
 1 1 1 1 0  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0  0
@@ -1311,8 +1297,7 @@ We want to compute the polyhedron defined by the inequalities
 They are contained in the input file \verb|InhomIneq.in|:
 \begin{Verbatim}
 amb_space 2
-inhom_inequalities
-3
+inhom_inequalities 3
 0  2  1
 0 -2  3
 2 -2  3
@@ -1415,13 +1400,11 @@ The Hilbert series reflects the disjoint decomposition $((-1,0)+\ZZ_+(1,0))\cup(
 If the polyhedron is given by its vertices and the recession cone, we can define it by these data (\verb|InhomIneq_gen.in|):
 \begin{Verbatim}
 amb_space 2
-vertices
-2
+vertices 2
 -4 -1 2
 0  3 2
-cone
-1
-1 0 0
+cone 1
+1 0
 grading
 1 0 
 \end{Verbatim}
@@ -1438,8 +1421,7 @@ We want to find the probability for $k\to\infty$ that there is a Condorcet winne
 
 \begin{Verbatim}
 amb_space 24
-inequalities
-3
+inequalities 3
 1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
 1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
 1 1 1 1 1 1  1  1  1 -1 -1 -1   1  1  1 -1 -1 -1  -1 -1 -1 -1 -1 -1
@@ -1462,8 +1444,7 @@ Since there are $4$ candidates, the probability for the existence of a Condorcet
 Now we are more anbitious and want to compoute the Hilbert series for the Condorcet paradoxon, or more precisely, the number of election outcomes having $A$ as the Condorcet winner depending on the number $k$ of voters. Moreover, as it is customary in social choice theory, we want to exclude ties. The minput file chjanges to \verb|CondorcetSemi.in|:
 \begin{Verbatim}
 amb_space 24
-excluded_faces
-3
+excluded_faces 3
 1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
 1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
 1 1 1 1 1 1  1  1  1 -1 -1 -1   1  1  1 -1 -1 -1  -1 -1 -1 -1 -1 -1
@@ -1482,8 +1463,7 @@ It is justified to ask why we don't use \verb|strict_inequalities| instead of \v
 Suppose we are only interested in elections in which every preference order is chosen by at least one voter. This can be modeled as follows (\verb|Condorcet_one.in|):
 \begin{Verbatim}
 amb_space 24
-inequalities
-3
+inequalities 3
 1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
 1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
 1 1 1 1 1 1  1  1  1 -1 -1 -1   1  1  1 -1 -1 -1  -1 -1 -1 -1 -1 -1
@@ -1504,8 +1484,7 @@ If we want the interior of the Condorcet cone, we must use \verb|strict_inequali
 We want to test the monoid $A_{4\times 4\times 3}$ defined by $4\times4\times3$ contingency tables for normality (see \cite{BHIKS} for the background). The input file is \ttt{A443.in}:
 \begin{Verbatim}
 amb_space 40
-cone_and_lattice
-48
+cone_and_lattice 48
 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
 ...
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1
@@ -1535,8 +1514,7 @@ We want to compute the nonnegative solutions of the simultaneous inhomogeneous c
 in two veriables. As usual we move the right hand side over to the left. The input file \verb|InhomCong.in| is
 \begin{Verbatim}
 amb_space 2
-inhom_congruenes
-2
+inhom_congruences 2
 1 2 -3 7
 2 2 -4 13
 \end{Verbatim}
@@ -1590,7 +1568,7 @@ The set of solutions to the inhomogeneous system is an affine lattice in $\RR^2$
 amb_space 2
 offset
 1 1
-lattice 
+lattice 2
 32 33
 91 91
 \end{Verbatim}
@@ -1602,8 +1580,7 @@ Suppose we want to solve the system of congruences under the condition that both
 
 \begin{Verbatim}
 amb_space 2
-inhom_congruenes
-2
+inhom_congruences 2
 1 2 -3 7
 2 2 -4 13
 signs
@@ -1627,12 +1604,12 @@ Next, let us discuss the example \ttt{MonIdeal.in} (typeset in two columns):
 
 \begin{Verbatim}
 amb_space 5
-rees_algebra
-9                       0 2 3 4
+rees_algebra 9
 1 2 1 2                 1 0 3 4
 3 1 1 3                 5 1 0 1
 2 5 1 0                 2 4 1 5
 0 2 4 3                 2 2 2 4
+0 2 3 4
 \end{Verbatim}
 The input vectors are the exponent vectors of a monomial ideal $I$  in the ring $K[X_1,X_2,X_3,X_4]$. We want to compute the normalization of the Rees algebra of the ideal. In particular we can extract from it the integral closure of the ideal. Since we must introduce an extra variable $T$, we have \verb|amb_space 5|.  
 
@@ -1669,13 +1646,11 @@ The support hyperplanes which are not just sign conditions describe primary deco
 If only the integral closure of the ideal is to be computed, one can choose the input as follows (\verb|IntClMonId.in|):
 \begin{Verbatim}
 amb_space 4
-vertices
-9
+vertices 9
 1 2 1 2 1
 ...
 2 2 2 4 1
-cone
-4
+cone 4
 1 0 0 0
 0 1 0 0
 0 0 1 0
@@ -1690,14 +1665,12 @@ Normaliz computes convex hulls as should be very clear by now, and the only purp
 
 \begin{Verbatim}
 amb_space 4
-vertices
-9
+vertices 9
 1 2 1 2 1
 ...
 2 2 2 4 1
 vertices
-cone
-4
+cone 4
 1 0 0 0
 ...
 0 0 0 1
@@ -1717,8 +1690,7 @@ We want to find an embedding of the toric ring it defines and
 the normalization of the toric ring. The input vectors are obtained as the differences of the two exponent vectors in the binomials. So the input ideal \verb+lattice_ideal.in+ is
 \begin{Verbatim}
 amb_space 6
-lattice_ideal
-3
+lattice_ideal 3
 2 1  0 -1 -1  -1
 1 0 -1  2 -1  -1
 1 1  1  0 -2  -1
@@ -1752,9 +1724,9 @@ size of triangulation   = 5
 resulting sum of |det|s = 10
 
 grading:
-1 -1 1 
+-2 1 1
 \end{Verbatim}
-This is the hrading on the ambient space (or polynomial ring) defining the standard grading on our subalgebra. The enumerative data that follow are those of the normalization! 
+This is the grading on the ambient space (or polynomial ring) defining the standard grading on our subalgebra. The enumerative data that follow are those of the normalization! 
 \begin{Verbatim}
 
 degrees of extreme rays:
@@ -1872,16 +1844,14 @@ indicates that polyhedra and lattices are subobjects of $\RR^5$. The ambient lat
 
 A matrix is built as follows:
 \begin{Verbatim}
-<T>
-<m>
+<T> <m>
 <x_1>
 ...
 <x_m>
 \end{Verbatim}
 Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},dots,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example:
 \begin{Verbatim}
-cone
-3
+cone 3
 1 2 3
 4 5 6
 11 12 13
