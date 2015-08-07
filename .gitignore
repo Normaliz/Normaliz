@@ -51,3 +51,6 @@ BUILD*
 *.sav
 .*.swp
 *.diff
+
+# ignore Word files
+homepage/*-Dateien/*
