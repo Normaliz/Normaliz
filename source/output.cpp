@@ -513,7 +513,23 @@ void Output<Integer>::write_files() const {
     if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
         //write the suport hyperplanes of the full dimensional cone
         Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Support_Hyperplanes);
-        Support_Hyperplanes_Full_Cone.print(name,"esp");
+        // Support_Hyperplanes_Full_Cone.print(name,"esp");
+        string esp_string = name+".esp";
+        const char* esp_file = esp_string.c_str();
+        ofstream esp_out(esp_file);
+        Support_Hyperplanes_Full_Cone.print(esp_out);
+        esp_out << "inequalities" << endl;
+        if (Result->isComputed(ConeProperty::Grading)) {
+            esp_out << 1 << endl << rank << endl;
+            esp_out << BasisChange.to_sublattice_dual(Result->getGrading());
+            esp_out << "grading" << endl;
+        }
+        if (Result->isComputed(ConeProperty::Dehomogenization)) {
+            esp_out << 1 << endl << rank << endl;
+            esp_out << BasisChange.to_sublattice_dual(Result->getDehomogenization());
+            esp_out << "dehomogenization" << endl;
+        }
+        esp_out.close();
     }
     if (tgn)
         Generators.print(name,"tgn");
@@ -773,27 +789,19 @@ void Output<Integer>::write_files() const {
                     write_matrix_gen(complete_Hilbert_Basis);
                 } else {
                     write_matrix_gen(Hilbert_Basis);
-                }
+                }                
             }
             if (egn || typ) {
                 Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
+                if (Result->isComputed(ConeProperty::ModuleGenerators)) {
+                    Hilbert_Basis_Full_Cone.append(BasisChange.to_sublattice(Result->getModuleGeneratorsMatrix()));
+                }
                 if (egn) {
                     string egn_string = name+".egn";
                     const char* egn_file = egn_string.c_str();
-                    ofstream egn_out(egn_file);
-        
+                    ofstream egn_out(egn_file);        
                     Hilbert_Basis_Full_Cone.print(egn_out);
-                    egn_out<<"integral_closure"<<endl;
-                    if (Result->isComputed(ConeProperty::Grading)) {
-                        egn_out << 1 << endl << rank << endl;
-                        egn_out << BasisChange.to_sublattice_dual(Result->getGrading());
-                        egn_out << "grading" << endl;
-                    }
-                    if (Result->isComputed(ConeProperty::Dehomogenization)) {
-                        egn_out << 1 << endl << rank << endl;
-                        egn_out << BasisChange.to_sublattice_dual(Result->getDehomogenization());
-                        egn_out << "dehomogenization" << endl;
-                    }                    
+                    // egn_out<<"cone"<<endl;
                     egn_out.close();
                 }    
 

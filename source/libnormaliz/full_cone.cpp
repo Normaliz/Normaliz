@@ -2571,7 +2571,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     }
     
     if(verbose && GMP_hyp+GMP_scal_prod+GMP_mat>0)
-        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " scalar_products " << GMP_scal_prod << endl; 
+        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations " << GMP_scal_prod << endl; 
 
 }
     
@@ -3179,6 +3179,27 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     if(inhomogeneous && gen_levels.size()==nr_gen)
         order_by_perm(gen_levels,perm);
     compose_perm_gens(perm);
+
+    if(triangulate){
+        Integer roughness;
+        if(isComputed(ConeProperty::Grading)){
+                roughness=gen_degrees[nr_gen-1]/gen_degrees[0];
+        }
+        else{
+            Integer max_norm=0, min_norm=0;
+            for(size_t i=0;i<dim;++i){
+            max_norm+=Iabs(Generators[nr_gen-1][i]);
+            min_norm+=Iabs(Generators[0][i]); 
+            }
+            roughness=max_norm/min_norm;
+        }
+        if(roughness >= 5){
+            do_bottom_dec=true;
+            if(verbose){
+                    verboseOutput() << "Bottom decomposition activated" << endl;
+            }
+        }
+    }
     
     if (verbose) {
         if(triangulate){

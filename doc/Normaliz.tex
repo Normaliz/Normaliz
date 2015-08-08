@@ -1967,7 +1967,7 @@ The main type is \verb|cone|. The other two types are added for special computat
 	
 	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytop.in|
 	
-	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| by in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|.
+	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|.
 \end{itemize}
 
 Moreover, it is possible to define a cone and a lattice by the same matrix:
@@ -2006,9 +2006,9 @@ There are $3$ types:
 	\itemtt[signs] is a vector with $d$ entries in $\{-1,0,1\}$.
 	It stands for a matrix of type \verb|inequalities| composed of the sign inequalities $x_i\ge 0$ for the entry $1$ at the $i$-th component and the inequality $x_i\le 0$ for the entry $-1$. The entry $0$ does not impose an inequality. See \ref{sign_ex}, \verb|InhomCongSigns.in|.
 	
-	\itemtt[nonnegative] It stands for a vector of type \verb|sign| with all entries equal to $1$. See Section \ref{Condorcet}, \verb|Condorcet.in|.
+	\itemtt[nonnegative] It stands for a vector of type \verb|sign| with all entries equal to $1$. See Section \ref{Condorcet}, \verb|CondPar.in|.
 	
-	\itemtt[excluded\_faces]  is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents a inequality
+	\itemtt[excluded\_faces]  is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an inequality
 	$$
 	\xi_1x_1+\dots+\xi_dx_d> 0
 	$$
@@ -2086,7 +2086,7 @@ There are $3$ types:
 	$$
 	Section \ref{strict_ex}, \verb|2cone_int.in|.
 	
-	\itemtt[strict\_signs] is a vector with $d$ components in $\{-1,0,1\}$. It is the ''strict'' counterpart to \verb|signs|. An entry $1$ in component $i$ represents the inequality $x_i>0$, an entry $-1$ the opposite inequality, whereas $0$ imposes no condition on $x_i$. \ref{strict_signs_ex}, \verb|Condorcet_one.in|
+	\itemtt[strict\_signs] is a vector with $d$ components in $\{-1,0,1\}$. It is the ''strict'' counterpart to \verb|signs|. An entry $1$ in component $i$ represents the inequality $x_i>0$, an entry $-1$ the opposite inequality, whereas $0$ imposes no condition on $x_i$. \ref{strict_signs_ex}, \verb|CondPar_one.in|
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -2144,7 +2144,7 @@ This type is accessory. A $\ZZ$-valued grading can be specified in two ways:
 	\item \emph{explicitly} by including a grading in the input, or
 	\item \emph{implicitly}. In this case Normaliz checks whether
 	the extreme integral generators of the monoid lie in an
-	(affine) hyperplane $A$ with an equation $\lambda(x)=1$ with a $\ZZ$-linear form $\lambda$. If so, then  $\lambda$ is used as the grading.
+	(affine) hyperplane $A$ given by an equation $\lambda(x)=1$ with a $\ZZ$-linear form $\lambda$. If so, then  $\lambda$ is used as the grading.
 	
 	\emph{Implicit gradings are only possible for homogeneous computations.}
 \end{arab}
@@ -2153,7 +2153,7 @@ Explicit definition of a grading:
 \begin{itemize}
 	\itemtt[grading] is a vector of length $d$ representing the linear form that gives the grading. Section \ref{rational}, \verb|rational.in|.
 	
-	\itemtt[total\_degree] represents a vector of length $d$ with all entries equal to $1$. Section \ref{Condorcet}, \verb|Condorcet.in|.
+	\itemtt[total\_degree] represents a vector of length $d$ with all entries equal to $1$. Section \ref{Condorcet}, \verb|CondPar.in|.
 \end{itemize}
 
 Before Normaliz can apply the degree, it must be restricted
@@ -2190,7 +2190,7 @@ Like the grading, one can define the dehomogenization explicitly:
 
 The dehomogenization can be any linear form $\delta$  satisfying the condition $\delta(x)\ge 0$ on the cone that is truncated. (In combination with constraints, the condition $\delta(x)\ge 0$ is automatically satisfied since $\delta$ is added to the constraints.)
 
-The input type \verb|dehomogenization| can only be combined with homogeneous input types, but makes the computation inhomogeneous, resulting in inhomogeneous output. The polyhedron computed is the intersection of the cone $\CC$ (and the lattice $\EE$) defined by the remaining components of the input with the hyperplane given by $\delta(x)=1$, and the recession cone is $\CC\cap\{x:\delta(x)=0\}$.
+The input type \verb|dehomogenization| can only be combined with homogeneous input types, but makes the computation inhomogeneous, resulting in inhomogeneous output. The polyhedron computed is the intersection of the cone $\CC$ (and the lattice $\EE$) with the hyperplane given by $\delta(x)=1$, and the recession cone is $\CC\cap\{x:\delta(x)=0\}$.
 
 A potential application is the adaptation of other input formats to Normaliz. The output must then be interpreted accordingly.
 
@@ -2235,7 +2235,7 @@ All computation goals and algorithmic variants can be communicated to Normaliz i
 	\item in the input file, for example \verb|HilbertBasis|,
 	\item via a verbatim command line option, for example \verb|--HilbertBasis|.
 \end{arab}
-For the most important choices there are single letter command line options, for example \verb|-N| for \verb|HilbertBasis|. The single letter options ensure backward compatibility to Normaliz 2.In jNormaliz they are also accessible via their full names.
+For the most important choices there are single letter command line options, for example \verb|-N| for \verb|HilbertBasis|. The single letter options ensure backward compatibility to Normaliz 2. In jNormaliz they are also accessible via their full names.
 
 Some computation goals apply only to homogeneous computations, and some others make sense only for inhomogeneous computations.
 
@@ -2260,8 +2260,7 @@ If set explicitly in the input file or on the command line the following adds th
 	\itemtt[DefaultMode]
 \end{itemize}
 
-If \verb|DefaultMode| is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals. If a computation goals is set explicitly and cannot be reached, an exception will be thrown and Normaliz terminates.
-
+It is possible to set \verb|DefaultMode| explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
 \subsection{Computation goals}\label{goals}
 
@@ -2383,7 +2382,8 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 \begin{itemize}
 	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set.
 	
-	\itemtt[ApproximateRatPolytope, -r] activates the approximation algorithm for the computation of degree $1$ elements and therefore implies \verb|Deg1Elements|.
+	\itemtt[ApproximateRatPolytope, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|ApproximateRatPolytope|.)
+	% and therefore implies \verb|Deg1Elements|.
 	
 	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
 	
@@ -2579,7 +2579,7 @@ Normaliz 3 takes the following approach: simplicial subcones $S$ with rational v
 Another option that is often favorable is \verb|DualMode| in connection with \verb|Deg1Elements|. So there are three choices for the computation of lattice points in polytopes:
 \begin{itemize}
 	\itemtt[Deg1Elements, -1] with local approximation of rational polytopes,
-	\itemtt [ApproximateRationalPolytope, -r] with global approximation,
+	\itemtt [ApproximateRationalPolytope Deg1Elements, -r1] combined with global approximation,
 	\itemtt[DualMode Deg1Elements, -d1] dual mode optimized for the computation of degree $1$ elements.
 \end{itemize}
 
@@ -2604,12 +2604,13 @@ inequalities
 grading
 0 0 0 0 1
 ApproximateRationalPolytope
+Deg1Elements
 \end{Verbatim}
 set up for global approximation. (This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036.)
 
 Despite of the large number of lattice points, the computation is extremely fast. Now replace \verb|ApproximateRationalPolytope| by \verb|Deg1Elements|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
 
-The third choice using the dual algorithm is still o.k. though it takes the most time.
+The third choice using the dual algorithm is still o.k. though it takes the most time in this case. In other cases it may very well be the fastest.
 
 You can also use inhomogeneous input with the default computation mode or dual mode. This is equivalent to homogeneous input with \verb|Deg1Elements| and \verb|DualMode|, respectively, in addition.
 
@@ -2661,9 +2662,13 @@ We look at the \emph{bottom} (the union of the compact faces) of the polyhedron 
 \end{center}
 With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz 3.0 computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
 
-Normaliz does not use the bottom decomposition by default since its computation requires some time and administrative overhead. However, for medium to large examples with generators of varying degree, it is worthwhile trying. In particular it is used in connection with the subdivision of large simplicial cones discussed in the next section.
+Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 5$ activates the bottom decomposition.
+
+The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
 Also see Section \ref{ele3}.
+
+Note: the bottom decomposition cannot be activated by Normaliz if \verb|KeepOrder| is used. In this case \verb|BottomDecomposition| must be set explicitly if it is wanted.
 
 
 \subsection{Subdivision of large simplicial cones}
@@ -2685,18 +2690,30 @@ The following table contains some performance data for subdivisions based on SCI
 \setlength{\tabcolsep}{3.2pt}
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{|c|c|c|c|}
-	\hline
-	& \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
-	simplex volume & $9.83\times 10^7$ & $4.17\times 10^{14}$ & $2.8\times 10^{14}$ \\ \hline
-	bottom volume  & $8.10\times 10^5$ & $3.86\times 10^7$ & $2.02\times 10^7$ \\ \hline 
-	our volume     & $3.93\times 10^6$ & $5.47\times 10^7$ & $2.39\times 10^7$ \\ \hline
-	%improvement factor & 25 &  $7.62\times10^6$ & $1.17\times 10^7$\\ \hline
-	old runtime    &  2s & >12d &  >8d \\ \hline
-	new runtime    &  0.5s & 46s & 5.1s \\ \hline
+\hline
+& \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
+simplex volume & $9.83\times 10^7$ & $4.17\times 10^{14}$ & $2.8\times 10^{14}$ \\ \hline
+volume under bottom  & $8.10\times 10^5$ & $3.86\times 10^7$ & $2.02\times 10^7$ \\ \hline 
+volume used     & $3.93\times 10^6$ & $5.47\times 10^7$ & $2.39\times 10^7$ \\ \hline
+%improvement factor & 25 &  $7.62\times10^6$ & $1.17\times 10^7$\\ \hline
+runtime without subdivision   &  2 s & >12 d &  >8 d \\ \hline
+runtime with subdivision    &  0.5 s & 46 s & 5.1 s \\ \hline
 \end{tabular}
 \end{center}
 
-Performance data for approximation ...
+Performance data for approximation:
+
+\begin{center}
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|}
+\hline
+& \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
+volume used     & $3.9 \times 10^6$ & $9.1\times 10^7$ & $2.3\times 10^9$ \\ \hline
+%improvement factor & 25 &  $7.62\times10^6$ & $9.4\times 10^9$\\ \hline
+runtime with subdivision    &  & & \\ \hline
+\end{tabular}
+\end{center}
 
 A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in|.
 
@@ -2821,7 +2838,7 @@ Note: with the option \verb|t-T| previous versions of Normaliz exported the tria
 If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation} defined as follows: it is a map from a rooted tree to the set of full-dimensional simplicial subcones of $C$ with the following properties:
 \begin{arab}
 \item the root is mapped to $C$,
-\item each other node is mapped to a simplicial subcone,
+\item each other node is mapped to a full dimensional simplicial subcone,
 \item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $X$.
 \end{arab}
 
@@ -2976,9 +2993,9 @@ The example \verb|CondEffPlur.in| is one of the largest that Normaliz has master
 	\end{tabular}
 \end{center}
 
-The results show that the determinant sum bottom decomposition based on th extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
+The results show that the determinant sum of the bottom decomposition based on th extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
 
-As long as the determinants are rather small (as in this case), the two cases $\det=1$ and $\det>1$ make a difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
+As long as the determinants are rather small (as in this computation), the two cases $\det=1$ and $\det>1$ make the difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
 
 Note: though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}. It converts the computation time from days to hours.
 
@@ -3065,6 +3082,7 @@ type of monoid generated by the Hilbert basis (up to
 row and column permutations). In the language of
 \cite{BG} it contains the \emph{standard embedding}. 
 
+Note: the explicit choice of an optional output file does \emph{not} imply a computation goal. Output files that would contain unknown data are simply not written without a warning or error message.
 
 \subsection{Modifications in the inhomogeneous case}
 

@@ -304,6 +304,9 @@ vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scala
     vector<Integer> w(v.size());
     if(v_scalar_mult_mod_inner(w,v,scalar,modulus))
         return w;
+    
+    #pragma omp atomic
+    GMP_scal_prod++;
     vector<mpz_class> x,y(v.size());
     convert(x,v);
     v_scalar_mult_mod_inner(y,x,convertTo<mpz_class>(scalar),convertTo<mpz_class>(modulus));
