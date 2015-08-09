@@ -1,0 +1,11 @@
+amb_space 3
+inequalities 4
+0 -1  1
+1  0  0
+-1  0  1
+0  1  0
+strict_inequalities 1
+1 1 0
+grading
+0 0 1
+
