@@ -116,7 +116,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 	//cout << "The volume is " << volume << endl;
 	//cout << "The product of the gradings is " << grading_product << endl;
 	long max_app_lvl;
-	double stuff_under_root = convert_to_double(grading_product)*1000000/convert_to_double(volume);
+	double stuff_under_root = convert_to_double(grading_product)*100000/convert_to_double(volume); // current volume goal is 10^5
 	//cout << "The stuff under the root is " << stuff_under_root << endl;
 	max_app_lvl = round(pow(stuff_under_root,1.0/dim));
 	//cout << "The maximal approximation level is " << max_app_lvl << endl;
@@ -243,7 +243,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     //if (!big_simplices.empty()) big_simplices.front().pretty_print(cout);
     if (app_level<max_app_lvl && !big_simplices.empty()){
 		if(verbose){
-			verboseOutput() << "There are " << big_simplices.size() << " big simplices (vol>100*BOUND) remaining. We approximate them again." << endl;
+			verboseOutput() << "There are " << big_simplices.size() << " big simplices (vol>1000*BOUND) remaining. We approximate them again." << endl;
 		}
 		for (auto it = big_simplices.begin(); it != big_simplices.end(); ++it){
 			// now we approximate this simplex again. maybe we're lucky.
@@ -356,7 +356,7 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
     else {
 		//cout << "Could not find a new point! " << endl;
 		// store the simplex into the big simplices list
-		if (volume > 100*ScipBound) {
+		if (volume > 1000*ScipBound) { // current bound for big simplices is 10^9
 		    #pragma omp critical
             big_simplices.push_back(gens);
         }
