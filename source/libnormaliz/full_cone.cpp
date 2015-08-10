@@ -2337,9 +2337,9 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     if (verbose) {
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
     }
-    typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
-    for (size_t j = 0; j < lss; ++j) {
-        evaluate_large_simplex(LS, j, lss);
+    size_t j;
+    for (j = 0; j < lss; ++j) {
+        evaluate_large_simplex(j, lss);
     }
     if (!LargeSimplices.empty()) {
         use_bottom_points = false;
@@ -2347,8 +2347,8 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
         if (verbose) {
             verboseOutput() << "Continue evaluation of " << lss << " large simplices without new decompositions of simplicial cones." << endl;
         }
-        for (LS = LargeSimplices.begin(); LS!=LargeSimplices.end(); ++j) {
-            evaluate_large_simplex(LS, j, lss);
+        for (; j < lss; ++j) {
+            evaluate_large_simplex(j, lss);
         }
     }
     assert(LargeSimplices.empty());
@@ -2362,21 +2362,22 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::evaluate_large_simplex() {
+void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
     if (verbose) {
         verboseOutput() << "Large simplex " << j+1 << " / " << lss << endl;
     }
+
     if (do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation) {
-        compute_deg1_elements_via_approx_simplicial(LS->get_key());
+        compute_deg1_elements_via_approx_simplicial(LargeSimplices.front().get_key());
     }
     else {
-        LS->Simplex_parallel_evaluation();
+        LargeSimplices.front().Simplex_parallel_evaluation();
         if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
             Results[0].transfer_candidates();
             update_reducers();
         }
     }
-    LS = LargeSimplices.erase(LS);
+    LargeSimplices.pop_front();
 }
 
 //---------------------------------------------------------------------------

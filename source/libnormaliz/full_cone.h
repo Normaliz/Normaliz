@@ -294,6 +294,7 @@ public:
     bool check_evaluation_buffer_size();
     void evaluate_triangulation();
     void evaluate_large_simplices();
+    void evaluate_large_simplex(size_t j, size_t lss);
     void transfer_triangulation_to_top();
     void primal_algorithm();
     void primal_algorithm_initialize();
