@@ -2324,42 +2324,59 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 }
 
 //---------------------------------------------------------------------------
+
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_large_simplices(){
 
     assert(omp_get_level()==0);
 
-    size_t lss=LargeSimplices.size();
+    size_t lss = LargeSimplices.size();
     if (lss == 0)
         return;
 
-    if(verbose){
+    if (verbose) {
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
     }
     typename list< SimplexEvaluator<Integer> >::iterator LS = LargeSimplices.begin();
-    for (size_t j=0; LS!=LargeSimplices.end(); ++LS, ++j) {
-        if (j>=lss) use_bottom_points =false;
+    for (size_t j = 0; j < lss; ++j) {
+        evaluate_large_simplex(LS, j, lss);
+    }
+    if (!LargeSimplices.empty()) {
+        use_bottom_points = false;
+        lss += LargeSimplices.size();
         if (verbose) {
-            verboseOutput() << "Large simplex " << j+1 << " / " << lss << endl;
+            verboseOutput() << "Continue evaluation of " << lss << " large simplices without new decompositions of simplicial cones." << endl;
         }
-
-        if(do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation){
-            compute_deg1_elements_via_approx_simplicial(LS->get_key());        
-        }
-        else{
-            LS->Simplex_parallel_evaluation();
-            if(do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound){       
-                Results[0].transfer_candidates();
-                update_reducers();
-            }
+        for (LS = LargeSimplices.begin(); LS!=LargeSimplices.end(); ++j) {
+            evaluate_large_simplex(LS, j, lss);
         }
     }
-    LargeSimplices.clear();
+    assert(LargeSimplices.empty());
 
     for(size_t i=0;i<Results.size();++i)
         Results[i].transfer_candidates(); // any remaining ones
-        
+
     update_reducers();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::evaluate_large_simplex() {
+    if (verbose) {
+        verboseOutput() << "Large simplex " << j+1 << " / " << lss << endl;
+    }
+    if (do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation) {
+        compute_deg1_elements_via_approx_simplicial(LS->get_key());
+    }
+    else {
+        LS->Simplex_parallel_evaluation();
+        if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
+            Results[0].transfer_candidates();
+            update_reducers();
+        }
+    }
+    LS = LargeSimplices.erase(LS);
 }
 
 //---------------------------------------------------------------------------

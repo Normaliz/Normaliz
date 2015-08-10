@@ -41,7 +41,6 @@ void skip_comment(istream& in) {
     while (in.good()) {
         in.ignore(numeric_limits<streamsize>::max(), '*'); //ignore everything until next '*'
         i = in.get();
-        cout << i << endl;
         if (in.good() && i == '/') return; // successfully skipped comment
     }
     cerr << "Error: Incomplete comment!" << endl;
