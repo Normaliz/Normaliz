@@ -382,7 +382,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         offset[dim-1]=1;
         LatticeGenerators.append(offset);
     }
-    if(inhom_input &&  Generators.nr_of_rows()!=0 && !exists_element(multi_input_data,Type::vertices)){
+    if(inhom_input &&  Generators.nr_of_rows()!=0 && !exists_element(multi_input_data,Type::vertices) 
+                && !exists_element(multi_input_data,Type::polyhedron)){
         vector<Integer> vertex(dim);
         vertex[dim-1]=1;
         Generators.append(vertex);
