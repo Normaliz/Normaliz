@@ -1324,7 +1324,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.check_sanity(inhomogeneous);
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure) && !isComputed(ConeProperty::OriginalMonoidGenerators)){
         errorOutput() << "Generators of integral closure/original monoid only computable if original monoid is defined"
-                << endl << flush;
+                << endl;
         throw BadInputException();
     }
 
@@ -1334,7 +1334,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     ToCompute.reset(is_Computed);
     if (ToCompute.none()){
-        is_Computed.set(ConeProperty::Sublattice);
         return ToCompute;
     }
 
@@ -1550,15 +1549,15 @@ void Cone<Integer>::compute_generators_inner() {
 
 
 template<typename Integer>
-ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
+void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none() || !( ToCompute.test(ConeProperty::Deg1Elements)
                             || ToCompute.test(ConeProperty::HilbertBasis))) {
-        return ToCompute;
+        return;
     }
 
-/*    if (change_integer_type) {
+    if (change_integer_type) {
         try {
             compute_dual_inner<MachineInteger>(ToCompute);
         } catch(const ArithmeticException& e) {
@@ -1566,12 +1565,11 @@ ConeProperties Cone<Integer>::compute_dual(ConeProperties ToCompute) {
             change_integer_type = false;
         }
     }
-    if (!change_integer_type) {*/
+    if (!change_integer_type) {
         compute_dual_inner<Integer>(ToCompute);
-//    }
-    is_Computed.set(ConeProperty::DualMode);
+    }
+    ToCompute.reset(ConeProperty::DualMode);
     ToCompute.reset(is_Computed);
-    return ToCompute;
 }
 
 template<typename Integer>
@@ -1602,7 +1600,6 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             Help.append(SupportHyperplanes);
             SupportHyperplanes=Help;
         }
-
     }
 
     if((do_only_Deg1_Elements || inhomogeneous) && !isComputed(ConeProperty::ExtremeRays)){
@@ -1638,18 +1635,22 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     }
 
     size_t i,j;
-    Matrix<Integer> Inequ_on_Ker = BasisChange.to_sublattice_dual(SupportHyperplanes);
+    Matrix<IntegerFC> Inequ_on_Ker;
+    BasisChange.convert_to_sublattice_dual(Inequ_on_Ker,SupportHyperplanes);
     size_t newdim = Inequ_on_Ker.nr_of_columns();
     //now sort the inequalities, hopefully this makes the computation faster
-    Integer norm;
-    vector< Integer > hyperplane;
-    multimap <Integer , vector <Integer> >  SortingHelp;
-    typename multimap <Integer , vector <Integer> >::const_iterator ii;
+    IntegerFC norm;
+    vector< IntegerFC > hyperplane;
+    multimap <IntegerFC , vector <IntegerFC> >  SortingHelp;
+    typename multimap <IntegerFC , vector <IntegerFC> >::const_iterator ii;
 
     size_t i_start=0;
-    if(inhomogeneous){  // in the inhomogeneous case the truncation will be (re)inserted below
+    if (inhomogeneous) {
+        // in the inhomogeneous case the truncation will be (re)inserted below
         i_start=1;
-        if(Inequ_on_Ker[0]!=BasisChange.to_sublattice_dual(Dehomogenization))
+        vector< IntegerFC > help;
+        BasisChange.convert_to_sublattice_dual(help, Dehomogenization);
+        if(Inequ_on_Ker[0] != help)
             i_start=0;
     }
     for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
@@ -1658,36 +1659,41 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         for (j = 0; j <newdim; j++) {
             norm+=Iabs(hyperplane[j]);
         }
-        SortingHelp.insert(pair <Integer , vector <Integer> > (norm,hyperplane));
+        SortingHelp.insert(make_pair(norm,hyperplane));
     }
     size_t inhom_corr=0;
     if(inhomogeneous || do_only_Deg1_Elements)
         inhom_corr=1;
-    Matrix<Integer> Inequ_Ordered(Inequ_on_Ker.nr_of_rows()+inhom_corr,newdim);
-    if(inhomogeneous)
-        Inequ_Ordered[0]=BasisChange.to_sublattice_dual_no_div(Dehomogenization);   // inseert truncation as the first inequality
-    if(do_only_Deg1_Elements)
-        Inequ_Ordered[0]=BasisChange.to_sublattice_dual(Grading);           // in this case the grading acts as truncation and it is a NEW inrquality
+    Matrix<IntegerFC> Inequ_Ordered(Inequ_on_Ker.nr_of_rows()+inhom_corr,newdim);
+    if (inhomogeneous) {
+        // insert truncation as the first inequality
+        BasisChange.convert_to_sublattice_dual_no_div(Inequ_Ordered[0], Dehomogenization);
+    }
+    if (do_only_Deg1_Elements) {
+        // in this case the grading acts as truncation and it is a NEW inequality
+        BasisChange.convert_to_sublattice_dual(Inequ_Ordered[0], Grading);
+    }
     i=inhom_corr;
     for (ii=SortingHelp.begin(); ii != SortingHelp.end(); ii++) {
         Inequ_Ordered[i]=(*ii).second;
         i++;
     }
 
-    Cone_Dual_Mode<Integer> ConeDM(Inequ_Ordered);
+    Cone_Dual_Mode<IntegerFC> ConeDM(Inequ_Ordered);
     ConeDM.verbose=verbose;
     ConeDM.inhomogeneous=inhomogeneous;
     ConeDM.do_only_Deg1_Elements=do_only_Deg1_Elements;
     if(isComputed(ConeProperty::Generators))
-        ConeDM.Generators=BasisChange.to_sublattice(Generators);
+        BasisChange.convert_to_sublattice(ConeDM.Generators, Generators);
     if(isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
 
-    //create a Full_Cone out of ConeDM
-    //if ( ConeDM.Generators.rank() < ConeDM.dim ) {
-        Sublattice_Representation<Integer> SR(ConeDM.Generators,true);
-        ConeDM.to_sublattice(SR);
+    // check if the rank of the sublattice has changed
+    if ( ConeDM.Generators.rank() < ConeDM.dim ) {
+        Sublattice_Representation<IntegerFC> SR_(ConeDM.Generators,true);
+        Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(ConeDM.Generators),true); //TODO other conversion!
+        ConeDM.to_sublattice(SR_);
         compose_basis_change(SR);
         // handle zero cone as special case, makes our life easier
         if (BasisChange.getRank() == 0) {
@@ -1695,19 +1701,21 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             ToCompute.reset(is_Computed);
             return;
         }
-    //}
-    Full_Cone<Integer> FC(ConeDM);
+    }
+    is_Computed.set(ConeProperty::Sublattice);
+    // create a Full_Cone out of ConeDM
+    Full_Cone<IntegerFC> FC(ConeDM);
     FC.verbose=verbose;
     // Give extra data to FC
     if ( isComputed(ConeProperty::Grading) ) {
-        FC.Grading = BasisChange.to_sublattice_dual(Grading);
+        BasisChange.convert_to_sublattice_dual(FC.Grading, Grading);
         FC.is_Computed.set(ConeProperty::Grading);
 
         if(!inhomogeneous)
             FC.set_degrees();
     }
     if(inhomogeneous)
-        FC.Truncation=BasisChange.to_sublattice_dual(Dehomogenization);
+        BasisChange.convert_to_sublattice_dual(FC.Truncation, Dehomogenization);
     FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
     FC.dual_mode();
     extract_data(FC);

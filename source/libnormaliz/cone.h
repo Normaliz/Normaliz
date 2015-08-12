@@ -299,7 +299,7 @@ private:
     void compute_generators_inner();
 
     /* compute method for the dual_mode, used in compute(mode) */
-    ConeProperties compute_dual(ConeProperties ToCompute);
+    void compute_dual(ConeProperties& ToCompute);
     template<typename IntegerFC>
     void compute_dual_inner(ConeProperties& ToCompute);
 

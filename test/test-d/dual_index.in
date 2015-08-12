@@ -1,0 +1,6 @@
+amb_space 2
+nonnegative
+inequalities 1
+0 -1
+congruences 1
+0 1 2
