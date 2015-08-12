@@ -82,11 +82,6 @@ public:
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
 
-    /* DEPRECATED ** use version with type as first argument! */
-    Cone(const vector< vector<Integer> >& input_data,
-         InputType type = Type::integral_closure);
-
-
 //---------------------------------------------------------------------------
 //                          give additional data
 //---------------------------------------------------------------------------
@@ -96,6 +91,8 @@ public:
      * returns the old value
      */
     bool setVerbose (bool v);
+
+    void deactivateChangeOfPrecision();
 
     /* Sets the linear form which is used to grade.
      * It has to be an N-grading, i.e. all generators must have a value >=1.

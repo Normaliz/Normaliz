@@ -152,14 +152,6 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone<Integer>::Cone(const vector< vector<Integer> >& Input, InputType input_type) {
-    // convert single matrix into a map
-    map< InputType, vector< vector<Integer> > > multi_input_data;
-    multi_input_data[input_type] = Input;
-    process_multi_input(multi_input_data);
-}
-
-template<typename Integer>
 Cone<Integer>::Cone(InputType input_type, const vector< vector<Integer> >& Input) {
     // convert to a map
     map< InputType, vector< vector<Integer> > > multi_input_data;
@@ -894,6 +886,12 @@ bool Cone<Integer>::setVerbose (bool v) {
     bool old = verbose;
     verbose = v;
     return old;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::deactivateChangeOfPrecision() {
+    change_integer_type = false;
 }
 
 //---------------------------------------------------------------------------

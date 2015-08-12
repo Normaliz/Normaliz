@@ -113,20 +113,7 @@ int main(int argc, char* argv[])
         printHeader();
     }
 
-    if(options.isUseBigInteger()) {
-#ifndef NMZ_MIC_OFFLOAD
-        //if the program works with the indefinite precision arithmetic, no arithmetic tests are performed
-        // test_arithmetic_overflow=false;
-        //Read and process Input
-        return process_data<mpz_class>(options);
-#else // NMZ_MIC_OFFLOAD*/
-      cerr << "Error: option \"-B\" not supported with mic offload!" << endl;
-      exit(1);
-#endif // NMZ_MIC_OFFLOAD
-    } else {
-        //Read and process Input
-        return process_data<long long int>(options);
-    }
+    process_data<mpz_class>(options);
 
     if (options.anyNmzIntegrateOption()) {
         //cout << "argv[0] = "<< argv[0] << endl;
@@ -193,6 +180,9 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
+    if (options.isUseBigInteger()) {
+        MyCone.deactivateChangeOfPrecision();
+    }
 //    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
     try {
         MyCone.compute(options.getToCompute());
