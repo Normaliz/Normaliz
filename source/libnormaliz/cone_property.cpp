@@ -160,6 +160,10 @@ void ConeProperties::prepare_compute_options() {
         CPs.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode
         CPs.reset(ConeProperty::ApproximateRatPolytope); // or by approximation if the
     }                                            // Stanley decomposition must be computed anyway
+    if (CPs.test(ConeProperty::ApproximateRatPolytope)
+            && !CPs.test(ConeProperty::Deg1Elements)) {
+        errorOutput() << "Warning: ApproximateRatPolytope is ignored since Deg1Elements is not set."<< std::endl;
+    }
 }
 
 
