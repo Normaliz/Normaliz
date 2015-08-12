@@ -1874,9 +1874,10 @@ grading
 \end{Verbatim}
 
 
-For certain vectors there exist shortcuts. Example:
+For certain vectors there exist shortcuts. Examples:
 \begin{Verbatim}
 total_degree
+unit_vector 25
 \end{Verbatim}
 
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
@@ -2131,11 +2132,16 @@ as a sublattice of $\AA$. Normaliz computes the image of $\ZZ^d_+$ in $L$ and it
 	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of the subgroup $U$. Section \ref{binom_ex}, \verb|lattice_ideal.in|.
 \end{itemize}
 
-
-
-
 The type \ttt{lattice\_ideal} cannot be combined with any other input type (except
 \ttt{grading})---such a combination would not make sense. (See Section \ref{grad_lattid} for the use of a grading in this case.)
+
+\subsection{Unit vectors}
+
+A grading or a dehomogenization is often given by a unit vector:
+\begin{itemize}
+\itemtt[unit\_vector] is followed by a number $n$. $1\le n \le d$. It represents the $n$th unit vector in $\RR^d$-
+\end{itemize}
+This shortcut cannot be used as a row of a matrix. It can be used whenever a single vector is asked for, namely after \verb|grading|, \verb|dehomogenization|, \verb|signs| and \verb|strict_signs|. See Section \ref{???}, \verb|???.in|
 
 \subsection{Grading}\label{grading}
 
@@ -2719,6 +2725,25 @@ A good nonsimplicial example showing the subdivision at work is \verb|hickerson_
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}.
 
+\subsection{Division of labor: primalvs. dual}
+
+The choice between the primal and the dual algorithm for Hilbert basis computations is presently left to the user. Normaliz does not make a guess which algorithm might be faster. if the number of support hyperplanes is small relative to the dimension, then the dual algorithm can be much faster. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
+The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm. Note that the dual algorithm is arithmetically less critical than the primal algorithm since it basically only requires addition of vectors.
+
+When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| abd the computation goal \verb|HilbertSeries|:
+\begin{Verbatim}
+amb_space 9
+equations 2
+1 6 -7 -18 25 -36 6 8 -9
+7 -13 15 6 -9 -8 11 12 -2
+grading
+1 1 1 1 1 1 1 1 1
+DualMode
+HilbertSeries
+\end{Verbatim}
+The computation time (20 parallel threads) is ??? whereas the default mode needs ???.
+
+In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant szm of the Hilbert series computation is only $\approx 8.4\times 10^9$.
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehogenization.in|
@@ -3107,15 +3132,6 @@ With \verb|-a| the files \verb|egn| and \verb|esp| are produced. These files con
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  LARGE COMPUTATIONS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Performance}\label{Perf}
-
-\subsection{Primal vs.\ dual}
-
-It has been pointed out several times above that the dual algorithm can be much faster if the number of support hyperplanes is small relative to the dimension. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
-
-The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm.
-
-Note that the dual algorithm is arithmetically much more stable than the primal algorithm since it basically only requires addition of vectors.
-
 
 \subsection{Parallelization}\label{PerfPar}
 
