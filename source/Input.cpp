@@ -105,7 +105,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 skip_comment(in);
             } else {
                 in >> type_string;
-                if (!in.good()) {
+                if (in.fail()) {
                     cerr << "Error: Could not read type string!" << endl;
                     throw BadInputException();
                 }
@@ -136,7 +136,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     in >> nr_rows;
                 }
                 nr_columns = dim + type_nr_columns_correction(input_type);
-                if(!in.good() || nr_rows < 0) {
+                if(in.fail() || nr_rows < 0) {
                     cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) form the input!" << endl;
                     throw BadInputException();
                 }
@@ -148,7 +148,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 }
                 save_matrix(input_map, input_type, type_string, M);
             }
-            if (!in.good()) {
+            if (in.fail()) {
                 cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) form the input!" << endl;
                 throw BadInputException();
             }
