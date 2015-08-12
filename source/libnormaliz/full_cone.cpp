@@ -3211,7 +3211,11 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             }
             roughness=max_norm/min_norm;
         }
-        if(roughness >= 5){
+        if(verbose){
+            verboseOutput() << "Roughness " << roughness <<  endl;
+        }
+        
+        if(roughness >= 10){
             do_bottom_dec=true;
             if(verbose){
                     verboseOutput() << "Bottom decomposition activated" << endl;
