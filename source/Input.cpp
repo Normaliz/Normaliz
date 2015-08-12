@@ -131,6 +131,30 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
 
                 if (type_is_vector(input_type)) {
                     nr_rows = 1;
+                    in >> std::ws;  // eat up any leading white spaces
+                    c = in.peek();
+                    if (!std::isdigit(c) && c != '-') {
+                        string vec_kind;
+                        in >> vec_kind;
+                        if (vec_kind == "unit_vector") {
+                            long pos = 0;
+                            in >> pos;
+                            if (in.fail()) {
+                                cerr << "Error while reading " << type_string << " as a unit_vector form the input!" << endl;
+                                throw BadInputException();
+                            }
+
+                            vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),0));
+                            if (pos < 1 || pos > e_i[0].size()) {
+                                cerr << "Error while reading " << type_string << " as a unit_vector "<< pos <<" form the input!" << endl;
+                                throw BadInputException();
+                            }
+                            pos--; // in input file counting starts from 1
+                            e_i[0].at(pos) = 1;
+                            save_matrix(input_map, input_type, type_string, e_i);
+                            continue;
+                        }
+                    }
                 } else {
                     in >> nr_rows;
                 }

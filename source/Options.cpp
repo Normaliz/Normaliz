@@ -175,6 +175,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'e':  //check for arithmetic overflow
                 // test_arithmetic_overflow=true;
+                cerr << "WARNING: deprecated option -e is ignored." << endl;
                 break;
             case 'B':  //use Big Integer
                 use_Big_Integer=true;
