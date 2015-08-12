@@ -42,7 +42,7 @@ OptionsHandler::OptionsHandler() {
     filename_set = false;
     write_extra_files = false, write_all_files = false;
 	use_Big_Integer = false;
-	ignoreInFileOpt=false;
+	ignoreInFileOpt = false;
 	nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
     nr_threads = 0;
 }
@@ -271,18 +271,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     }
 
 	return false; //no need to print help text
-}
-
-void OptionsHandler::handle_input_file_option(const string& s) {
-    ConeProperty::Enum prop;
-    try {
-        prop = toConeProperty(s);
-    } catch (const BadInputException& e) {};
-    cerr << "Error: Unknown input file option " << s << endl;
-    throw BadInputException();
-    if (!ignoreInFileOpt) {
-        to_compute.set(prop);
-    }
 }
 
 template<typename Integer>

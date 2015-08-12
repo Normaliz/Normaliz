@@ -114,7 +114,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     throw BadInputException();
                 }
                 if (isConeProperty(cp, type_string)) {
-                    options.activateConeProperty(cp);
+                    options.activateInputFileConeProperty(cp);
                     continue;
                 }
                 if (type_string == "total_degree") {

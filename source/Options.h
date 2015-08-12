@@ -53,8 +53,6 @@ public:
     template<typename Integer>
     void applyOutputOptions(Output<Integer>& Out);
 
-    void handle_input_file_option(const string& s);
-
     // returns whether any nmzIntegrate option is set
     bool anyNmzIntegrateOption() const;
 
@@ -74,6 +72,10 @@ public:
 
     void activateConeProperty(ConeProperty::Enum cp) {
         to_compute.set(cp, true);
+    }
+
+    void activateInputFileConeProperty(ConeProperty::Enum cp) {
+        if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
 
     const ConeProperties& getToCompute() const {
