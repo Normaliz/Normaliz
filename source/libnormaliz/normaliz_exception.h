@@ -25,7 +25,8 @@
 #define NORMALIZ_EXEPTION_H_
 
 #include <exception>
-//#include "libnormaliz.h"
+#include "libnormaliz.h"
+#include "cone_property.h"
 
 namespace libnormaliz {
 
@@ -45,6 +46,16 @@ class BadInputException: public NormalizException {
     public:
 	virtual const char* what() const throw() {
 		return "Some error in the normaliz input data detected!";
+	}
+};
+
+
+//class ConeProperties; // forward decl
+class NotComputableException: public NormalizException {
+    public:
+    NotComputableException(const ConeProperties& props){};
+	virtual const char* what() const throw() {
+		return "Could not compute: ...";
 	}
 };
 

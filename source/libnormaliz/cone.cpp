@@ -1374,11 +1374,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
-    if (ToCompute.any()) {
-        errorOutput() << "Warning: Cone could not compute everything that was asked for!"<<endl;
+    ToCompute.reset_compute_options();
+    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.any()) {
+        errorOutput() << "ERROR: Cone could not compute everything that was asked for!"<<endl;
         errorOutput() << "Missing: " << ToCompute << endl;
+        throw NotComputableException(ToCompute);
     }
-
+    ToCompute.reset(ConeProperty::DefaultMode);
     return ToCompute;
 }
 
@@ -1424,26 +1426,19 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
      && ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_approximation = true;
         FC.do_deg1_elements = true;
-        is_Computed.set(ConeProperty::ApproximateRatPolytope);
     }
     if (ToCompute.test(ConeProperty::DefaultMode)) {
         FC.do_default_mode = true;
-        is_Computed.set(ConeProperty::DefaultMode);
     }
-
     if (ToCompute.test(ConeProperty::BottomDecomposition)) {
-		FC.do_bottom_dec = true;
-		is_Computed.set(ConeProperty::BottomDecomposition);
-	}
-
-	if (ToCompute.test(ConeProperty::KeepOrder)) {
-		FC.keep_order = true;
-		is_Computed.set(ConeProperty::KeepOrder);
-	}
-
-	if (ToCompute.test(ConeProperty::ClassGroup)) {
-		FC.do_class_group=true;
-	}
+        FC.do_bottom_dec = true;
+    }
+    if (ToCompute.test(ConeProperty::KeepOrder)) {
+        FC.keep_order = true;
+    }
+    if (ToCompute.test(ConeProperty::ClassGroup)) {
+        FC.do_class_group=true;
+    }
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays = ExtremeRaysIndicator;

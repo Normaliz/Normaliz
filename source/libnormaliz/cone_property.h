@@ -96,6 +96,7 @@ public:
     /* reset (=unset) properties */
     ConeProperties& reset(ConeProperty::Enum Property);
     ConeProperties& reset(const ConeProperties&);
+    ConeProperties& reset_compute_options();
 
     /* test which/how many properties are set */
     bool test(ConeProperty::Enum Property) const;

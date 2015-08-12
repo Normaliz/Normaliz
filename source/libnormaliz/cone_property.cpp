@@ -93,6 +93,12 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
     CPs &= ~ConeProps.CPs;
     return *this;
 }
+ConeProperties& ConeProperties::reset_compute_options() {
+    CPs.set(ConeProperty::ApproximateRatPolytope, false);
+    CPs.set(ConeProperty::BottomDecomposition, false);
+    CPs.set(ConeProperty::KeepOrder, false);
+    return *this;
+}
 
 /* test which/how many properties are set */
 bool ConeProperties::test(ConeProperty::Enum Property) const {
