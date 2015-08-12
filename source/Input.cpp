@@ -81,7 +81,6 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
     bool new_input_syntax = !std::isdigit(c);
 
     if (new_input_syntax) {
-        cout << "NEW INPUT SYNTAX NOT YET IMPLEMENTED COMPLETELY!" << endl;
         long dim;
         while (in.peek() == '/') {
             skip_comment(in);

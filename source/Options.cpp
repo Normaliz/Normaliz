@@ -39,7 +39,7 @@ using namespace libnormaliz;
 
 
 OptionsHandler::OptionsHandler() {
-    filename_set = false;
+    project_name_set = false;
     write_extra_files = false, write_all_files = false;
 	use_Big_Integer = false;
 	ignoreInFileOpt = false;
@@ -82,34 +82,34 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
 				}
 			}
 		} else {
-		    setOutputName(argv[i]);
+		    setProjectName(argv[i]);
 		}
 	}
 	return handle_options(LongOptions, ShortOptions);
 }
 
-void OptionsHandler::setOutputName(const string& s) {
-    if (filename_set) {
-        cerr << "Error: Second file name " << s << " in command line!" << endl;
+void OptionsHandler::setProjectName(const string& s) {
+    if (project_name_set) {
+        cerr << "Error: Second project name " << s << " in command line!" << endl;
         throw BadInputException();
     }
-    output_name = s;
+    project_name = s;
     // check if we can read the .in file
-    string name_in= output_name+".in";
+    string name_in= project_name+".in";
     const char* file_in=name_in.c_str();
     ifstream in2;
     in2.open(file_in,ifstream::in);
     if (in2.is_open()==false) {
         //check if user added ".in" and ignore it in this case
         string suffix (".in");
-        size_t found = output_name.rfind(suffix);
+        size_t found = project_name.rfind(suffix);
         if (found!=string::npos) {
-            output_name.erase(found);
+            project_name.erase(found);
         }
     } else {
         in2.close();
     }
-    filename_set = true;
+    project_name_set = true;
 }
 
 bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {
@@ -333,7 +333,11 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         }
     }
 
-    Out.set_name(output_name);
+    if (!project_name_set) {
+        cerr << "ERROR: No project name set!" << endl;
+        throw BadInputException();
+    }
+    Out.set_name(project_name);
 }
 
 bool OptionsHandler::anyNmzIntegrateOption() const {
@@ -361,7 +365,7 @@ string OptionsHandler::getNmzIntegrateOptions() const {
         nmz_options.append(" -I");
     }
     nmz_options.append(" \"");
-    nmz_options.append(output_name);
+    nmz_options.append(project_name);
     nmz_options.append("\"");
     return nmz_options;
 }

@@ -59,7 +59,7 @@ public:
     string getNmzIntegrateOptions() const;
 
     bool isFilenameSet() const {
-        return filename_set;
+        return project_name_set;
     }
 
     bool isIgnoreInFileOpt() const {
@@ -87,16 +87,16 @@ public:
     }
 
     const string& getOutputName() const {
-        return output_name;
+        return project_name;
     }
 
-    void setOutputName(const string& s);
+    void setProjectName(const string& s);
 
 //---------------------------------------------------------------------------
 
 private:
-	bool filename_set;
-	string output_name;
+	bool project_name_set;
+	string project_name;
 
 	bool use_Big_Integer;
     bool ignoreInFileOpt;
