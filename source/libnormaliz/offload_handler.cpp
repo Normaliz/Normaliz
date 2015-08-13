@@ -164,7 +164,7 @@ void OffloadHandler<Integer>::transfer_bools()
       offload_fc_ptr->pointed = foo_loc.pointed;
       offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
     }
-    verbose = true;
+    offload_fc_ptr->verbose = true;
     string fstr = "/tmp/mic";
     fstr.push_back(static_cast<char>('0'+mic_nr));
     fstr.append(".log");
