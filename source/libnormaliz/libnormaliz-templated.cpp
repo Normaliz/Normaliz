@@ -50,11 +50,8 @@ template class Matrix<long long int>;
 template class Sublattice_Representation<long long int>;
 
 template class Matrix<mpz_class>;
-
-#ifndef NMZ_MIC_OFFLOAD  //offload with mpz_class is not supported
 template class Cone<mpz_class>;
 template class Sublattice_Representation<mpz_class>;
-#endif
 
 template size_t decimal_length<long>(long);
 template size_t decimal_length<long long int>(long long int);

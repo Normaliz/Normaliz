@@ -38,6 +38,7 @@
 #include "HilbertSeries.h"
 #include "reduction.h"
 // #include "sublattice_representation.h"
+#include "offload_handler.h"
 
 namespace libnormaliz {
 using std::list;
@@ -52,9 +53,6 @@ template<typename Integer> class CandidateList;
 template<typename Integer> class Candidate;
 template<typename Integer> class Simplex;
 template<typename Integer> class Collector;
-#ifdef NMZ_MIC_OFFLOAD
-template<typename Integer> class MicOffloader;
-#endif
 
 template<typename Integer>
 class Full_Cone {
@@ -205,7 +203,7 @@ public:
     vector< Collector<Integer> > Results; // one per thread
     vector<Integer> Order_Vector;  // vector for the disjoint decomposition of the cone
 #ifdef NMZ_MIC_OFFLOAD
-    MicOffloader<Integer> mic_offloader;
+    MicOffloader<long long> mic_offloader;
 #endif
 
     // defining semiopen cones
@@ -328,9 +326,9 @@ public:
 
 
 #ifdef NMZ_MIC_OFFLOAD
-    void try_offload(const size_t max_level);
+    void try_offload(size_t max_level);
 #else
-    void try_offload(const size_t max_level) {};
+    void try_offload(size_t max_level) {};
 #endif
 
 

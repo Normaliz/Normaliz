@@ -21,6 +21,10 @@
  * terms of service.
  */
 
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (push, target(mic))
+#endif
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -660,3 +664,6 @@ template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_cl
 
 } // namespace
 
+#ifdef NMZ_MIC_OFFLOAD
+#pragma offload_attribute (pop)
+#endif

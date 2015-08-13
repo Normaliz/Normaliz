@@ -1522,7 +1522,6 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
 
     LargeRecPyrs.clear();
-    
 }
 
 //---------------------------------------------------------------------------
@@ -1538,11 +1537,12 @@ bool Full_Cone<Integer>::check_pyr_buffer(const size_t level){
 //---------------------------------------------------------------------------
 
 #ifdef NMZ_MIC_OFFLOAD
-template<typename Integer>
-void Full_Cone<Integer>::try_offload(const size_t max_level) {
+template<>
+void Full_Cone<long long>::try_offload(size_t max_level) {
 
-    if (_Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
+    if (!is_pyramid && _Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
     {
+        if (max_level >= nrPyramids.size()) max_level = nrPyramids.size()-1;
         for (size_t level = 0; level <= max_level; ++level) {
             if (nrPyramids[level] >= 100) {
                 cout << "Try offload of level " << level << " pyramids ..." << endl;
@@ -1551,6 +1551,10 @@ void Full_Cone<Integer>::try_offload(const size_t max_level) {
             }
         }
     }
+}
+
+template<typename Integer>
+void Full_Cone<Integer>::try_offload(size_t max_level) {
 }
 //else it is implemented in the header
 #endif // NMZ_MIC_OFFLOAD

@@ -337,7 +337,7 @@ void OffloadHandler<Integer>::primal_algorithm_initialize()
 {
   #pragma offload target(mic:mic_nr) signal(&running)
   {
-    offload_fc_ptr->do_vars_check();
+    offload_fc_ptr->do_vars_check(false);
     if (offload_fc_ptr->inhomogeneous)
       offload_fc_ptr->set_levels();
     offload_fc_ptr->set_degrees();
@@ -777,7 +777,6 @@ void MicOffloader<Integer>::finalize()
     is_init = false;
   }
 }
-
 
 /***************** Instantiation for template parameter long long *****************/
 
