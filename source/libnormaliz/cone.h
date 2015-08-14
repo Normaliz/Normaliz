@@ -201,9 +201,14 @@ public:
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();
     const vector< vector<Integer> >& getOriginalMonoidGenerators();
     size_t getNrOriginalMonoidGenerators();
-    // the following methods return const refs to avoid copying of big data objects
+
     const Sublattice_Representation<Integer>& getSublattice();
     const HilbertSeries& getHilbertSeries(); //general purpose object
+
+    // the following 2 methods give information about the last used triangulation
+    // if no triangulation was computed so far they return false
+    bool isTriangulationNested();
+    bool isTriangulationPartial();
     const vector< pair<vector<key_t>, Integer> >& getTriangulation();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
@@ -230,6 +235,8 @@ private:
     Matrix<Integer> PreComputedSupportHyperplanes;
     size_t TriangulationSize;
     Integer TriangulationDetSum;
+    bool triangulation_is_nested;
+    bool triangulation_is_partial;
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;

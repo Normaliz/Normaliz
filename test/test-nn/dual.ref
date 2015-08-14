@@ -7,7 +7,7 @@ embedding dimension = 7
 rank = 7 (maximal)
 external index = 1
 
-size of triangulation   = 1
+size of partial triangulation   = 1
 resulting sum of |det|s = 2
 
 grading:

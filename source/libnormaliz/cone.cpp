@@ -814,6 +814,8 @@ void Cone<Integer>::initialize() {
     dim = 0;
     inhomogeneous=false;
     rees_primary = false;
+    triangulation_is_nested = false;
+    triangulation_is_partial = false;
     verbose = libnormaliz::verbose; //take the global default
     if (using_GMP<Integer>()) {
         change_integer_type = true;
@@ -1264,6 +1266,17 @@ template<typename Integer>
 Integer Cone<Integer>::getReesPrimaryMultiplicity() {
     compute(ConeProperty::ReesPrimaryMultiplicity);
     return ReesPrimaryMultiplicity;
+}
+
+// the information about the triangulation will just be returned
+// if no triangulation was computed so far they return false
+template<typename Integer>
+bool Cone<Integer>::isTriangulationNested() {
+    return triangulation_is_nested;
+}
+template<typename Integer>
+bool Cone<Integer>::isTriangulationPartial() {
+    return triangulation_is_partial;
 }
 
 
@@ -1809,13 +1822,19 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     }
     if (FC.isComputed(ConeProperty::TriangulationSize)) {
         TriangulationSize = FC.totalNrSimplices;
+        triangulation_is_nested = FC.triangulation_is_nested;
+        triangulation_is_partial= FC.triangulation_is_partial;
         is_Computed.set(ConeProperty::TriangulationSize);
+        is_Computed.reset(ConeProperty::Triangulation);
+        Triangulation.clear();
     }
     if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
         convert(TriangulationDetSum, FC.detSum);
         is_Computed.set(ConeProperty::TriangulationDetSum);
     }
     if (FC.isComputed(ConeProperty::Triangulation)) {
+        triangulation_is_nested = FC.triangulation_is_nested;
+        triangulation_is_partial= FC.triangulation_is_partial;
         size_t tri_size = FC.Triangulation.size();
         Triangulation = vector< pair<vector<key_t>, Integer> >(tri_size);
         SHORTSIMPLEX<IntegerFC> simp;

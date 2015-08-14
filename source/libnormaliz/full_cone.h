@@ -110,6 +110,8 @@ public:
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool use_bottom_points;
     ConeProperties is_Computed;    
+    bool triangulation_is_nested;
+    bool triangulation_is_partial;
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1

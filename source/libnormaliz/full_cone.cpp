@@ -870,6 +870,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
         // restore the local generator numbering, needed in extend_triangulation
         newsimplex.key=key;
     }
+    if (height == 0) Top_Cone->triangulation_is_partial = true;
     
     if (keep_triangulation){
         Triangulation.push_back(newsimplex);
@@ -1018,8 +1019,11 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             skip_triang = false;
             if (Top_Cone->do_partial_triangulation && hyp->ValNewGen>=-1) { //ht1 criterion
                 skip_triang = is_hyperplane_included(*hyp);
-                if (skip_triang && !recursive) {
-                    continue;
+                if (skip_triang) {
+                    Top_Cone->triangulation_is_partial = true;
+                    if (!recursive) {
+                        continue;
+                    }
                 }
             }
 
@@ -4123,6 +4127,8 @@ void Full_Cone<Integer>::reset_tasks(){
     nrSimplicialPyr=0;
     totalNrPyr=0;
     is_pyramid = false;
+    triangulation_is_nested = false;
+    triangulation_is_partial = false;
 }
 
 

@@ -9,7 +9,7 @@ external index = 4
 internal index = 1
 original monoid is not integrally closed
 
-size of triangulation   = 53
+size of partial triangulation   = 53
 resulting sum of |det|s = 149
 
 grading:

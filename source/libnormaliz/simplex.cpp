@@ -917,6 +917,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
         // cout << new_points.size() << " new points " << endl << new_points << endl;
         if (!new_points.empty()) {
+            C.triangulation_is_nested = true;
             // add new_points to the Top_Cone generators
             int nr_new_points = new_points.size();
             int nr_old_gen = C.nr_gen;
