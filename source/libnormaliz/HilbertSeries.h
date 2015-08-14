@@ -157,6 +157,7 @@ private:
     void performAdd(const vector<num_t>& num, const vector<denom_t>& gen_degrees) const;
     void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
 
+    void computeDegreeAsRationalFunction() const;
     void computeHilbertQuasiPolynomial() const;
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
