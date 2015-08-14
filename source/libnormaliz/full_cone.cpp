@@ -4616,13 +4616,13 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<< Grading;
     verboseOutput()<<"\nMultiplicity is "<<multiplicity<<".\n";
     verboseOutput()<<"\nGenerators are:\n";
-    Generators.read();
+    Generators.pretty_print(verboseOutput());
     verboseOutput()<<"\nExtreme_rays are:\n";
     verboseOutput()<< Extreme_Rays;
     verboseOutput()<<"\nSupport Hyperplanes are:\n";
-    verboseOutput()<< Support_Hyperplanes;
-    verboseOutput()<<"\nTriangulation is:\n";
-    verboseOutput()<< Triangulation;
+    Support_Hyperplanes.pretty_print(verboseOutput());
+    //verboseOutput()<<"\nTriangulation is:\n";
+    //verboseOutput()<< Triangulation;
     verboseOutput()<<"\nHilbert basis is:\n";
     verboseOutput()<< Hilbert_Basis;
     verboseOutput()<<"\nDeg1 elements are:\n";
@@ -4631,10 +4631,4 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<Hilbert_Series;
 }
 
-
-template void Full_Cone<long>::compute_sub_div_elements(const Matrix<long>& gens,list<vector<long> >& sub_div_elements);
-template void Full_Cone<long long>::compute_sub_div_elements(const Matrix<long long>& gens,list<vector<long long> >& sub_div_elements);
-template void Full_Cone<mpz_class>::compute_sub_div_elements(const Matrix<mpz_class>& gens,list<vector<mpz_class> >& sub_div_elements);
 } //end namespace
-
-

@@ -183,6 +183,8 @@ Integer v_max_abs(const vector<Integer>& v){
 
 vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
 
+// swaps entry i and j of the vector<bool> v
+void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j);
 
 //---------------------------------------------------------------------------
 //							  Special

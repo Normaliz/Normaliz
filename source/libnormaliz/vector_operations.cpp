@@ -557,6 +557,14 @@ vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b) {
     return result;
 }
 
+// swaps entry i and j of the vector<bool> v
+void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
+    if (v[i] != v[j]) {
+        v[i].flip();
+        v[j].flip();
+    }
+}
+
 
 //---------------------------------------------------------------
 
@@ -667,7 +675,8 @@ void order_by_perm(vector<bool>& v, const vector<key_t>& permfix){
         inv[perm[i]]=i;
     for(key_t i=0;i<perm.size();++i){
         key_t j=perm[i];
-        v.swap(v[i],v[perm[i]]);        
+        // v.swap(v[i],v[perm[i]]);
+        v_bool_entry_swap(v,i,perm[i]);
         swap(perm[i],perm[inv[i]]);        
         swap(inv[i],inv[j]);                
     }

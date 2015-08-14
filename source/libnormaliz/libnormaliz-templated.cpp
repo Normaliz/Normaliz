@@ -43,15 +43,18 @@ namespace libnormaliz {
 template class Cone<long>;
 template class Matrix<long>;
 template class Sublattice_Representation<long>;
+template class Full_Cone<long>;
 #endif
 
-template class Cone<long long int>;
-template class Matrix<long long int>;
-template class Sublattice_Representation<long long int>;
+template class Cone<long long>;
+template class Matrix<long long>;
+template class Sublattice_Representation<long long>;
+template class Full_Cone<long long>;
 
-template class Matrix<mpz_class>;
 template class Cone<mpz_class>;
+template class Matrix<mpz_class>;
 template class Sublattice_Representation<mpz_class>;
+template class Full_Cone<mpz_class>;
 
 template size_t decimal_length<long>(long);
 template size_t decimal_length<long long int>(long long int);
