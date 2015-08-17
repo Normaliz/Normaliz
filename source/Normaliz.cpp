@@ -48,8 +48,8 @@ void printHeader() {
     cout << "                    Normaliz " << string( STRINGIFY(NMZ_VERSION) "           " ,11)
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
-    cout << "      (C) W. Bruns  B. Ichim  T. Roemer  C. Soeger     \\..|"<<endl;
-    cout << "                       May 2015                         \\.|"<<endl;
+    cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
+    cout << "                    September 2015                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {

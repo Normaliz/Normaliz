@@ -171,7 +171,7 @@ The first main goal of Normaliz is to compute a system of generators for
 $$
 P\cap L.
 $$
-The minimal system of generators of the monoid $M=C\cap L_0$ is the Hilbert basis $\Hilb(M)$ of $M$, and the homogeneous case, in which $P=C$ and $L=L_0$, is undoubtedly the most important one. In the general case the system of generators consists of $\Hilb(M)$ and finitely many points $u_1,\dots,u_s\in P\cap L$ such that
+The minimal system of generators of the monoid $M=C\cap L_0$ is the Hilbert basis $\Hilb(M)$ of $M$. The homogeneous case, in which $P=C$ and $L=L_0$, is undoubtedly the most important one, and in this case $\Hilb(M)$ is the system of generators to be computed. In the general case the system of generators consists of $\Hilb(M)$ and finitely many points $u_1,\dots,u_s\in P\cap L$ such that
 $$
 P\cap L=\bigcup_{j=1}^s u_j+M.
 $$
@@ -187,22 +187,23 @@ The computation goals of Normaliz can be set by the user. In particular, they ca
 
 Performance data of Normaliz can be found in \cite{BIS}.
 
-\emph{Acknowledgement.}\enspace The development of Normaliz is currently supported by the DFG SPP 1489  ``Ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
+\emph{Acknowledgement.}\enspace The development of Normaliz is currently supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
-\subsection{Platforms and access from other systems}
+\subsection{Platforms, implementation and access from other systems}
 
 Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}).
 
-Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). 
+Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP.
 
 The executables provided by us use the integer optimization program SCIP \cite{Scip} for certain subtasks, but the inclusion of SCIP must be activated at compile time.
+
+Normaliz consists of twom parts: the front end normaliz for input and output and the C++ library libnormaliz that does the computations.
 
 Normaliz can be accessed from the following systems:
 \begin{itemize}
 	\item \textsc{Singular} via the library \ttt{normaliz.lib},
-	\item \textsc{Macaulay 2} via the package
-	\ttt{Normaliz.m2},
-	\item \textsc{CoCoA} via an external library,
+	\item \textsc{Macaulay 2} via the package \ttt{Normaliz.m2},
+	\item \textsc{CoCoA} via an external library and libnormaliz,
 	\item \textsc{GAP} via the GAP package \textsc{NormalizInterface} \cite{GAP-NmzInterface} which uses libnormaliz,
 	\item \textsc{polymake} (thanks to the \textsc{polymake}
 	team),
@@ -230,7 +231,7 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 	
 	\item Automatic choice of integer type.
 	
-	\item Reduction of the arithmetical complexity by subdivision of large simplicial cones.
+	\item Reduction of the arithmetical complexity by subdivision of large simplicial cones and bottom decomposition based on SCIP and approximation methods.
 	
 	\item Improvement of Fourier-Motzkin elimination by ordering the generators.
 	
@@ -246,6 +247,7 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 \begin{arab}
 	\item Exploitation of symmetries.
 	\item Access from further systems.
+	\item Gröbner and Graver bases.
 \end{arab}
 
 \subsection{Download and installation}
@@ -262,7 +264,7 @@ from the Normaliz website\medskip
 \centerline{\url{http://www.math.uos.de/normaliz}}\medskip
 
 and unzip both in the same directory of your choice. In it, a
-directory \ttt{Normaliz2.12} (called Normaliz directory in the
+directory \ttt{Normaliz3.0} (called Normaliz directory in the
 following) is created with several subdirectories. (Some
 versions of the Windows executables may need the installation
 of a runtime library; see our website.)
@@ -276,7 +278,7 @@ For the precise interpretation of parts of the Normaliz output some terminology 
 As pointed out in the introduction, Normaliz ``computes'' intersections $P\cap L$ where $P$ is a rational polyhedron in $\RR^d$ and $L$ is an affine sublattice of $\ZZ^d$. It proceeds as follows:
 
 \begin{arab}
-	\item If the input is inhomogeneous, then it is homogenized by introducing a homogenizing coordinate: the polyhedron $P$ is replaced by the cone $C(P)$: it is the closure of $\RR_+(P\times \{1\}$ in $\RR^{d+1}$. Similarly $L$ is replaced by $\widetilde L=\ZZ(L\times \{1\})$. In the homogeneous case in which $P$ is a cone and $L$ is a subgroup of $\ZZ$, we set $C(P)=P$ and $\widetilde L=L$.
+	\item If the input is inhomogeneous, then it is homogenized by introducing a homogenizing coordinate: the polyhedron $P$ is replaced by the cone $C(P)$: it is the closure of $\RR_+(P\times \{1\}$ in $\RR^{d+1}$. Similarly $L$ is replaced by $\widetilde L=\ZZ(L\times \{1\})$. In the homogeneous case in which $P$ is a cone and $L$ is a subgroup of $\ZZ^d$, we set $C(P)=P$ and $\widetilde L=L$.
 	
 	\item The computations take place in the \emph{efficient lattice} 
 	$$
@@ -284,7 +286,7 @@ As pointed out in the introduction, Normaliz ``computes'' intersections $P\cap L
 	$$
 	where $\RR C(P)$ is the linear subspace generated by $C(P)$. The internal coordinates are chosen with respect to a basis of $\EE$. The \emph{efficient cone} is
 	$$
-	\CC=\RR_+\EE.
+	\CC=\RR_+(C(P)\cap \EE).
 	$$
 	
 	\item Inhomogeneous computations are truncated using the dehomogenization (defined implicitly or explicitly).
@@ -404,11 +406,11 @@ The original monoid is integrally closed if and only if the it contains the Hilb
 size of triangulation   = 1
 resulting sum of |det|s = 5
 \end{Verbatim}
-The primal algorithm of Normaliz relies on a (partial) triangulation. In pour case the triangulation consists of a single simplicial cone, and (the absolute value of) its determinant is~$5$.
+The primal algorithm of Normaliz relies on a (partial) triangulation. In our case the triangulation consists of a single simplicial cone, and (the absolute value of) its determinant is~$5$.
 \begin{Verbatim}
 No implicit grading found
 \end{Verbatim}
-If you do not define a grading explicitly, Normaliz tries to find one itself: It is defined if and only if there is a linear form $\gamma$ on $\EE$ under which all extreme rays of the efficient cone $\CC$ have value $1$, and if so, $\gamma$ is the implicit grading. This does not exist in our case.
+If you do not define a grading explicitly, Normaliz tries to find one itself: It is defined if and only if there is a linear form $\gamma$ on $\EE$ under which all extreme rays of the efficient cone $\CC$ have value $1$, and if so, $\gamma$ is the implicit grading. Such does not exist in our case.
 
 The last information before we come to the vector lists:
 \begin{Verbatim}
@@ -447,7 +449,7 @@ If the order is not fixed for some reason, Normaliz sorts vector lists as follow
 
 \subsubsection{The cone by inequalities}\label{ineq_ex}
 
-Instead using generators, we can define the cone by inequalities just computed (\verb|2cone_ineq.in|):
+Instead by generators, we can define the cone by the inequalities just computed (\verb|2cone_ineq.in|):
 \begin{Verbatim}
 amb_space 2
 inequalities 2
@@ -509,7 +511,7 @@ embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
 rank of recession monoid = 2
 \end{Verbatim}
-The only surprise may be the embedding dimension: Normaliz always takes the dimension of the space in which the computation is done. It is the number of components of the output vectors. Because of the homogenization is has increased by $1$.
+The only surprise may be the embedding dimension: Normaliz always takes the dimension of the space in which the computation is done. It is the number of components of the output vectors. Because of the homogenization it has increased by $1$.
 \begin{Verbatim}
 size of triangulation   = 1
 resulting sum of |det|s = 25
@@ -533,7 +535,7 @@ The output of inhomogeneous computations is always given in homogenized form. Th
                               1 3 0
                               2 1 0
 \end{Verbatim}
-The module generators are $(1,1)$ and $(2,1)$.
+The module generators are $(1,1)$ and $(1,2)$.
 \begin{Verbatim}
 1 vertices of polyhedron:
 3 4 5
@@ -599,7 +601,7 @@ cone 4
 0 0 5 1
 \end{Verbatim}
 
-Running \ttt{normaliz} produces the file \ttt{polytop.out}:
+Running \ttt{normaliz} produces the file \ttt{polytope.out}:
 \begin{Verbatim}
 19 Hilbert basis elements
 18 Hilbert basis elements of degree 1
@@ -856,6 +858,8 @@ by the following fact: $e_i$ is the common period of the
 coefficients $p_{r-i},\dots,p_{r-1}$. The user should prove
 this fact or at least verify it by several examples.
 
+\emph{Warning}: It is tempting, but not a good idea to define the poyltope by the input type \verb|vertices|. It would Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
+
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
 
 We extract the support hyperplanes of our polytope from the output file and use them as input (\verb|poly_ineq.in|):
@@ -993,7 +997,7 @@ rank of class group = 1
 finite cyclic summands:
 2: 2  
 \end{Verbatim}
-So the class group is $\ZZ\oplus \ZZ/2\ZZ$.
+So the class group is $\ZZ\oplus (\ZZ/2\ZZ)^2$.
 \begin{Verbatim}
 5 Hilbert basis elements of degree 1:
 0 2 1 2 1 0 1 0 2
@@ -1343,8 +1347,10 @@ dehomogenization:
 
 grading:
 1 0 0 
+\end{Verbatim}
+The interpretation of the grading requires some care in the inhomogeneous case. We have extended the input grading vector by an entry $0$ to match the embedding dimension. For the computation of the degrees of \emph{lattice points} in the ambient space you can either use only the first $2$ coordinates or take the full scalar product of the point in homogenized coordinates and the extended grading vector.
 
-
+\begin{Verbatim}
 module rank = 2
 multiplicity = 2
 \end{Verbatim}
@@ -1393,9 +1399,6 @@ with common denominator = 1
 0  2 1
 2 -2 3
 \end{Verbatim}
-
-The module rank is $2$ in this case since we have two ``layers'' in the solution module that are parallel to the recession monoid.
-The Hilbert series reflects the disjoint decomposition $((-1,0)+\ZZ_+(1,0))\cup((0,1)+\ZZ_+(1,0))$ of the solution module: $(-1,0)$ has degree $-1$, $(0,1)$ has degree $0$.
 
 \subsubsection{Defining it by generators}\label{polyh_ex}
 
@@ -1504,7 +1507,9 @@ The output files also shows that there is a grading on $\ZZ^{24}$ under which al
 
 It is no problem to compute the Hilbert series as well if you are interested in it. Simply add \verb|-q| to the command line or remove \verb|HilberBasis| from the input file.
 
-Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal. The Hilbert series can still be constructed, but the computation time will grow considerably. In fact, for the computation of Hilbert bases, Normaliz tries to use only a partial triangulation, whereas a full triangulation is needed for the Hilbert series.
+Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal. Even on a standard PC or laptop, the Hilbert basis computation does not take very long because Normaliz uses only a partial triangulation to find then Hilbert basis elements (see \cite{BHIKS}).
+
+The Hilbert series can still be constructed, but the computation time will grow considerably since the Hilbert series requires a full triangulation (see \cite{BIS} for computation times).
 
 \subsection{Inhomogeneous congruences}\label{ChinRem}
 
@@ -1539,7 +1544,7 @@ Easy to check: if $(1,1)$ is a solution, then it must generate the module of sol
 12  1 0
 91  0 0
 \end{Verbatim}
-Strange, why not the vertex $(0,0,1)$, representing the origin in $\RR^2$ as well? Well the vertex shown represents an extreme ray of the lattice $\EE$, and $(0,0,1)$ does not belong to $\EE$.
+Strange, why not the vertex $(0,0,1)$, representing the origin in $\RR^2$ as well? Well the vertex shown represents an extreme ray in the lattice $\EE$, and $(0,0,1)$ does not belong to $\EE$.
 \begin{Verbatim}
 
 2 extreme rays of recession cone:
@@ -1829,16 +1834,18 @@ The input syntax of Normaliz 2 can still be used. It is explained in Appendix \r
 
 The ambient space is specified as follows:
 \begin{Verbatim}
-amb_space <N>
+amb_space <d>
 \end{Verbatim}
-where \ttt{<N>} stands for the dimension $d$ of the ambient vector space $\RR^d$ in which the geometric objects live.  The \emph{ambient lattice} $\AA$ is set to $\ZZ^d$. 
+where \ttt{<d>} stands for the dimension $d$ of the ambient vector space $\RR^d$ in which the geometric objects live.  The \emph{ambient lattice} $\AA$ is set to $\ZZ^d$. 
+
+\emph{In the following the letter $d$ will always denote the dimension set with} \verb|amb_space|.
 
 
 An example:
 \begin{Verbatim}
 amb_space 5
 \end{Verbatim}
-indicates that polyhedra and lattices are subobjects of $\RR^5$. The ambient lattice is $\ZZ$. 
+indicates that polyhedra and lattices are subobjects of $\RR^5$. The ambient lattice is $\ZZ^5$. 
 
 \emph{The first non-comment input item must specify the ambient space.} There are no further rules for the order of the items in the input file.
 
@@ -1851,7 +1858,7 @@ A matrix is built as follows:
 ...
 <x_m>
 \end{Verbatim}
-Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},dots,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example:
+Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},...,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example (with \verb|amb_soace 3|):
 \begin{Verbatim}
 cone 3
 1 2 3
@@ -1867,7 +1874,9 @@ A vector is built as follows:
 <T>
 <x>
 \end{Verbatim}
-Again \ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. Example:
+Again \ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. The number of components is determined by the type of the vector and the dimension of the ambient space. At present, all vectors have length $d$.
+
+ Example:
 \begin{Verbatim}
 grading
 1 0 0
@@ -1900,7 +1909,7 @@ where \ttt{<text>} stands for the text of the comment. It can have arbitrary len
 /* This is a comment
 */
 \end{Verbatim}
-Comments are only allowed at places where also a new keyword would be allowed, especially not between the entries of a matrix or a vector.
+Comments are only allowed at places where also a new keyword would be allowed, especially not between the entries of a matrix or a vector. Comments can not be nested.
 
 \subsubsection{Restrictions}
 
@@ -1918,6 +1927,7 @@ Input items can almost freely be combined, but there are some restrictions:
 		\ttt {lattice}, \ttt{saturation}, \ttt{cone\_and\_lattice}	
 	\end{center}
 	exclude each other mutually.
+	\item \verb|polytope| can not be combined with \verb|grading|.
 	\item The only type that can be combined with \ttt{lattice\_ideal} is \ttt{grading}.
 	\item The following types cannot be combined with inhomogeneous types or \verb|dehomogenization|:
 	\begin{center}
@@ -1966,7 +1976,7 @@ The main type is \verb|cone|. The other two types are added for special computat
 \begin{itemize}
 	\itemtt[cone] is a matrix with $d$ columns. Every row represents a vector, and they define the cone generated by them. Section \ref{cone_ex}, \verb|2cone.in|
 	
-	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytop.in|
+	\itemtt[polytope] is a matrix with $d-1$ columns. It is internally converted to \verb|cone| extending each row by an entry $1$.  Section \ref{polytope_ex}, \verb|polytope.in|
 	
 	\itemtt[rees\_algebra] is a matrix with $d-1$ columns. It is internally converted to type \verb|cone| in two steps: (i) each row is extended by an entry $1$ to length $d$. (ii) The first $d-1$ unit vectors of length $d$ are appended. Section \ref{Rees}, \verb|MonIdeal.in|.
 \end{itemize}
@@ -2049,6 +2059,8 @@ There are $3$ types:
 	\textbf{Note:}\enspace \verb|vertices| and \verb|cone| together define a polyhedron. If \verb|vertices| is present in the input, then the default choice for \verb|cone| is the empty matrix.
 \end{itemize}
 
+The Normaliz 2 input type \verb|polyhedron| can still be used.
+
 \subsubsection{Lattices}
 
 \begin{itemize}
@@ -2125,7 +2137,7 @@ The rows of the input matrix of this type are interpreted as
 generators of a subgroup $U\subset\ZZ^d$, and Normaliz computes an affine monoid and its normalization  as explained in Section \ref{binomials}.
 
 Set $G=\ZZ^d/U$ and $L=G/\textup{torsion}(G)$. Then the ambient lattice
-is $\AA=\ZZ^r$, $r=\rank L$, and the essential lattice is $L$, realized
+is $\AA=\ZZ^r$, $r=\rank L$, and the efficient lattice is $L$, realized
 as a sublattice of $\AA$. Normaliz computes the image of $\ZZ^d_+$ in $L$ and its normalization.
 
 \begin{itemize}
@@ -2139,7 +2151,7 @@ The type \ttt{lattice\_ideal} cannot be combined with any other input type (exce
 
 A grading or a dehomogenization is often given by a unit vector:
 \begin{itemize}
-\itemtt[unit\_vector] is followed by a number $n$. $1\le n \le d$. It represents the $n$th unit vector in $\RR^d$-
+\itemtt[unit\_vector <n>]  represents the $n$th unit vector in $\RR^d$ where $n$ is the number given by \verb|<n>|.
 \end{itemize}
 This shortcut cannot be used as a row of a matrix. It can be used whenever a single vector is asked for, namely after \verb|grading|, \verb|dehomogenization|, \verb|signs| and \verb|strict_signs|. See Section \ref{???}, \verb|???.in|
 
@@ -2166,12 +2178,11 @@ Before Normaliz can apply the degree, it must be restricted
 to the effective lattice $\EE$. Even if the entries of the
 grading vector are coprime, it often happens that all degrees
 of vectors in $\EE$ are divisible by a greatest common divisor
-$ d>1$. Then $d$ is extracted from the degrees, and it will
+$ g>1$. Then $g$ is extracted from the degrees, and it will
 appear as \ttt{denominator} in the output file.
 
 Normaliz checks whether all generators of the (recession) monoid have
 positive degree. Vertices of polyhedra may have degrees $\le 0$.
-
 
 \subsubsection{\ttt{lattice\_ideal}} \label{grad_lattid}
 
@@ -2253,7 +2264,7 @@ Normaliz can call NmzIntegrate. The three computation goals that require NmzInte
 
 If several computation goals are set, all of them are pursued. In particular, computation goals in the input file and on the command line are accumulated. But
 \begin{itemize}
-	\itemtt[Ignore, -i] switches off the computation goals and algorithmic variants set in the input file.
+	\itemtt[-{}-ignore, -i] on the command line switches off the computation goals and algorithmic variants set in the input file.
 \end{itemize}
 
 The default computation goal is set if neither the input file nor command line contains a computation goal or an algorithmic variant that implies a computation goal. It is
@@ -2290,11 +2301,11 @@ Normaliz tries to find a grading. In the inhomogeneous case the module rank is c
 
 \begin{itemize}
 	
-	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. For inhomogeneous computations it contains \verb|ModuleGenerators|.
+	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it aks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis. Requires the presence of a grading. Forbidden in inhomogeneous computations.
 	
-	\itemtt[ModuleGeneratorsOfIntegralClosure, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Not possible in inhomogeneous computations and requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
+	\itemtt[ModuleGeneratorsOfIntegralClosure, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
 \end{itemize}
 
 \subsubsection{Enumerative data}
@@ -2405,10 +2416,12 @@ There is no need to worry about the integer type chosen by Normaliz. All prepara
 
 Note that Normaliz tries to avoid overflows by intermediate results. It such overflow should happen, the computation is repeated locally with indefinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
 
+\verb|BigInt| is not a cone property.
+
 \subsection{Control of computations}
 
 In addition to the computation goals in Section \ref{goals}, 
-the following elements of \verb|ConeProperties| control the work flow in \verb|libnormaliz| and can be used by calling programs to ensure the availability of the data that are controlled by them.
+the following elements of \verb|ConeProperties| control the work flow in \verb|libnormaliz| and can be used by programs calling Normaliz to ensure the availability of the data that are controlled by them.
 
 \begin{itemize}
 	
@@ -2452,11 +2465,11 @@ The standard form for  calling Normaliz is
 \end{quote}
 where \verb|<proect>| is the name of the project. Note that \verb|normaliz| may require to be prefixed by a path name, and the same applies to \verb|<project>|. A typical example on a Linux or Mac system:
 \begin{quote}
-	\verb|./normaliz --Console -x=5 ../example/big|
+	\verb|./normaliz --verbose -x=5 ../example/big|
 \end{quote}
 that for MS Windows must be converted to
 \begin{quote}
-	\verb|.\normaliz --Console -x=5 example\big|
+	\verb|.\normaliz --verbose -x=5 example\big|
 \end{quote}
 
 Normaliz uses the standard conventions for calls from the command line:
@@ -2473,7 +2486,7 @@ The options for computation goals and algorithms variants have been explained in
 
 \begin{enumerate}
 	\item If no \ttt{<project>} is given, the
-	program will ask you for it or display a help screen.
+	program will terminate.
 	
 	\item The option \ttt{-x} differs from the other ones: \ttt{<T>} in \verb|-x=<T>|
 	represents a positive number assigned to \ttt{-x}; see
@@ -2503,7 +2516,13 @@ The options for computation goals and algorithms variants have been explained in
 	
 \end{enumerate}
 
-A help screen can be displayed by \ttt{normaliz -?}.
+\subsection{Info about Normaliz}
+
+\begin{itemize}
+\itemtt [-{}-help, -?] displays a help screen lisiting the Normaliz options.
+
+\itemtt [-{}-version] displays information about the Normaliz executable.
+\end{itemize}
 
 
 \subsection{Control of execution}\label{exec}
@@ -2511,7 +2530,7 @@ A help screen can be displayed by \ttt{normaliz -?}.
 The options that control the execution are:
 
 \begin{itemize}
-	\itemtt[{-}{-}Console, -c] activates the verbose (``console'') behavior of
+	\itemtt[{-}{-}verbose, -c] activates the verbose (``console'') behavior of
 	Normaliz in which Normaliz writes additional
 	information about its current activities to the
 	standard output.
@@ -2553,7 +2572,7 @@ see Section \ref{optionaloutput}. There may be several options \verb|--<suffix>|
 
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
 \begin{itemize}
-	\itemtt[{-}{-}Ignore, -i] This option disables all settings in the input file.
+	\itemtt[{-}{-}ignore, -i] This option disables all settings in the input file.
 \end{itemize} 
 
 
@@ -2614,7 +2633,7 @@ Deg1Elements
 \end{Verbatim}
 set up for global approximation. (This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036.)
 
-Despite of the large number of lattice points, the computation is extremely fast. Now replace \verb|ApproximateRationalPolytope| by \verb|Deg1Elements|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
+Despite of the large number of lattice points, the computation is extremely fast. Now remove \verb|ApproximateRationalPolytope|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
 
 The third choice using the dual algorithm is still o.k. though it takes the most time in this case. In other cases it may very well be the fastest.
 
@@ -2725,9 +2744,9 @@ A good nonsimplicial example showing the subdivision at work is \verb|hickerson_
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}.
 
-\subsection{Division of labor: primalvs. dual}
+\subsection{Primal vs. dual -- division of labor}
 
-The choice between the primal and the dual algorithm for Hilbert basis computations is presently left to the user. Normaliz does not make a guess which algorithm might be faster. if the number of support hyperplanes is small relative to the dimension, then the dual algorithm can be much faster. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
+The choice between the primal and the dual algorithm for Hilbert basis computations is presently left to the user. Normaliz does not make a guess which algorithm might be faster. If the number of support hyperplanes is small relative to the dimension, then the dual algorithm can be much faster. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
 The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm. Note that the dual algorithm is arithmetically less critical than the primal algorithm since it basically only requires addition of vectors.
 
 When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| abd the computation goal \verb|HilbertSeries|:
@@ -2743,7 +2762,7 @@ HilbertSeries
 \end{Verbatim}
 The computation time (20 parallel threads) is ??? whereas the default mode needs ???.
 
-In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant szm of the Hilbert series computation is only $\approx 8.4\times 10^9$.
+In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant sum of the Hilbert series computation is only $\approx 8.4\times 10^9$.
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehogenization.in|
@@ -2854,17 +2873,15 @@ tgn             tri
 
 We see the $4$ vertices $v_1,\dots,v_4$ in homogenized coordinates in \verb|tgn| and the $2$ simplices (or the simplicial cones over them) in \verb|tri|: both have multiplicity $2$. The last word \verb|plain| indicates that Normaliz has computed a triangulation in the strict sense, namely a simplicial subdivision in which neighboring simplicial cones match along common faces. The alternative is \verb|nested| that we discuss below.
 
-In addition to the files \verb|<project>.tgn| and \verb|<project>.tri, also the file \verb|<object>.inv| is written. It contains the data of the file \verb|<project>.out| above the line of stars in a human and machine readable format.
-
-Note: with the option \verb|t-T| previous versions of Normaliz exported the triangulation, but suppressed the computation of the determinants. The combination \verb|-tT| is still admissible, but the determinants will always be computed when \verb|-T| is set.
+In addition to the files \verb|<project>.tgn| and \verb|<project>.tri|, also the file \verb|<object>.inv| is written. It contains the data of the file \verb|<project>.out| above the line of stars in a human and machine readable format.
 
 \subsubsection{Nested triangulations}\label{nested}
 
-If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation} defined as follows: it is a map from a rooted tree to the set of full-dimensional simplicial subcones of $C$ with the following properties:
+If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation}, namely a map from a rooted tree to the set of full-dimensional subcones of $C$ with the following properties:
 \begin{arab}
 \item the root is mapped to $C$,
-\item each other node is mapped to a full dimensional simplicial subcone,
-\item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $X$.
+\item every other node is mapped to a full dimensional simplicial subcone,
+\item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $x$.
 \end{arab}
 
 The following figure shows a nested triangulation:
@@ -2943,7 +2960,7 @@ option \ttt{-ahTy} activated. We recommend you to inspect all
 the output files in the subdirectory \ttt{example} of the
 distribution.
 
-\subsection{Minimal module generators of integral closure}\label{MinMod}
+\subsection{Minimal module generators of the integral closure}\label{MinMod}
 
 Suppose that the original generators are well defined in the input. This is always the case when these consists just of a \verb|cone| or a \verb|cone_and _lattice|. Let $M$ be the monoid generated by them. Then Normaliz computes the integral closure $N$ of $M$ in the effective lattice $\EE$. It is often interesting to understand the difference set $N\setminus M$. After the introduction of a field $K$ of coefficients, this amounts to understanding the quotient $K[N]/K[M]$ as a $K[M]$-module. With the option \verb|ModuleGeneratorsofIntegralClosure, -M| Normaliz computes a minimal generating set $T$ of this module. Combinatorially this means that we find an irreducible  cover
 $$
@@ -3038,7 +3055,7 @@ writes additional output files whose names are of type
 ...
 <x_m>
 \end{Verbatim}
-where each row has \verb|<n>| entries. Exceptions are the files with suffixes \verb|cst|, \verb|inv|, and the files con
+where each row has \verb|<n>| entries. Exceptions are the files with suffixes \verb|cst|, \verb|inv|, \verb|esp|.
 
 \subsection{The homogeneous case}
 
@@ -3077,9 +3094,9 @@ If \ttt{-a} is activated, then the following files are written
 	
 	\itemtt[egn,esp] These contain the Hilbert basis and
 	support hyperplanes in the coordinates with respect to
-	a basis of $\EE$. \ttt{egn} contains the grading in the
-	coordinates of $\EE$ if one exists. Note that no
-	equations for $C\cap\EE$ or congruences for $\EE$ are
+	a basis of $\EE$. \ttt{esp} contains the grading and the dehomogenization in the
+	coordinates of $\EE$. Note that no
+	equations for $\CC\cap\EE$ or congruences for $\EE$ are
 	necessary.
 	
     \itemtt[lat] contains the basis of the lattice $\EE$.
@@ -3198,7 +3215,7 @@ dimension $24$.
 (3) Another critical parameter are the determinants of the
 generator matrices of the simplicial cones. To get some feeling
 for their sizes, one can restrict the input to a subset (of the
-extreme rays computed in (1)) and use the option \ttt{-v}.
+extreme rays computed in (1)) and use the option \ttt{-v} or the computation goal \verb|DeeterminantSum| if there is no grading.
 
 The output file contains the number of simplicial cones as well
 as the sum of the absolute values of the determinants. The
@@ -3233,16 +3250,16 @@ In order to install Normaliz you should first download the
 basic package containing the documentation, examples, source
 code, jNormaliz, NmzIntegrate and the packages for Singular
 and Macaulay2. Then unzip the downloaded file
-\ttt{Normaliz2.12.zip} in a directory of your choice. (Any other
+\ttt{Normaliz3.0.zip} in a directory of your choice. (Any other
 downloaded zip file for Normaliz should be unzipped in this
 directory, too.)
 
-This process will create a directory \ttt{Normaliz2.12} (called
+This process will create a directory \ttt{Normaliz3.0} (called
 Normaliz directory) and several subdirectories in
-\ttt{Normaliz2.12}. The names of the subdirectories created are
+\ttt{Normaliz3.0}. The names of the subdirectories created are
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
-	\item In the main directory \ttt{Normaliz2.12} you should
+	\item In the main directory \ttt{Normaliz3.0} you should
 	find \ttt{jNormaliz.jar}, \ttt{Copying} and
 	subdirectories.
 	
@@ -3273,10 +3290,10 @@ self-explanatory. Nevertheless we give an overview:
 
 We provide executables for Windows, Linux (each in a 32 bit and
 a 64 bit version) and Mac. Download the archive file
-corresponding to your system \ttt{Normaliz2.12<systemname>.zip}
+corresponding to your system \ttt{Normaliz3.0<systemname>.zip}
 and unzip it. This process will store the executables of
 Normaliz and NmzIntegrate in the directory
-\ttt{Normaliz2.12}. In case you want to run Normaliz from the
+\ttt{Normaliz3.0}. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.
@@ -3370,7 +3387,7 @@ The source files for Visual Studio are identical to those for GCC.
 
 \section{Copyright and how to cite}
 
-Normaliz 2.12 is free software licensed under the GNU General
+Normaliz 3.0 is free software licensed under the GNU General
 Public License, version 3. You can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3 of
@@ -3882,7 +3899,7 @@ Round 500
 
 \section{Normaliz 2 input syntax}\label{OldSyntax}
 
-The Normaliz 2 input file contains a sequence of matrices. Comments or options are not allowed in it. A matrix has the format
+A Normaliz 2 input file contains a sequence of matrices. Comments or options are not allowed in it. A matrix has the format
 \begin{Verbatim}
 <m>
 <n>
@@ -3965,7 +3982,7 @@ have become obsolete later on.
 	
 	\bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.6}.
 	Available from\\
-	{\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.11/jNormaliz1.5Documentation.pdf}}
+	{\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz3.0/jNormaliz1.6Documentation.pdf}}
 	
 	\bibitem{LatInt} V. Baldoni, N. Berline, J.A. De Loera, B. Dutra, M. Köppe, S. Moreinis, G. Pinto, M. Vergne, J. Wu,
 	\emph{A User's Guide for LattE integrale v1.7.2, 2013.} Software package
@@ -3996,7 +4013,7 @@ have become obsolete later on.
 	
 	\bibitem{NmzInt} W. Bruns and C. Söger. {\em NmzIntegrate
 		1.3.} Available from\\
-	{\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz2.11/NmzIntegrate_1.2.pdf}}
+	{\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz3.0/NmzIntegrate.pdf}}
 	
 	\bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~Söger,
 	\emph{NormalizInterface for GAP}. 

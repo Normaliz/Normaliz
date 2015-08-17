@@ -293,6 +293,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             throw BadInputException();
         }
     }
+    if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
+           errorOutput() << "No explicit grading allowed with polytope!" << endl;
+           throw BadInputException();                     
+    }
 
     //determine dimension
     it = multi_input_data.begin();
