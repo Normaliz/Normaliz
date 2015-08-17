@@ -659,7 +659,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     } // end !skip_remaining
     } //END parallel
     
-    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 //=====================================================================
 // parallel until here
 
@@ -823,7 +823,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
     } // parallel
 
-    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
     // GensInCone.push_back(new_generator); // now in extend_cone
     TriSectionFirst.push_back(++oldTriBack);
@@ -1058,7 +1058,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 #endif
     } // end parallel loop over hyperplanes
 
-    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
     if (!omp_in_parallel())
         try_offload(0);
@@ -1122,7 +1122,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 }
 #endif
                 } // end critical
-                if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+                if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
             } else {
                 store_key(Pyramid_key,height,0,Triangulation);
                 nrTotalComparisons+=dim*dim/2;
@@ -1523,7 +1523,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #endif
     }
     } // parallel
-    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
     LargeRecPyrs.clear();
 }
@@ -1647,7 +1647,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            }
 #endif
         } //end parallel for
-        if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
         // remove done pyramids
         p = Pyramids[level].begin();
@@ -1786,7 +1786,7 @@ void Full_Cone<Integer>::build_cone() {
             }
 #endif
         }  //end parallel for
-        if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
         if(!is_new_generator)
             continue;
@@ -2291,7 +2291,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
         Results[tn].transfer_candidates();
     } // end parallel
-    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
     if (verbose)
         verboseOutput()  << endl;

@@ -773,7 +773,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
     } // parallel
 
-    if (tmp_exception != std::exception_ptr()) std::rethrow_exception(tmp_exception);
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 
     if(skip_remaining){
             

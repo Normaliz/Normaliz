@@ -202,7 +202,7 @@ template<typename Integer> int process_data(OptionsHandler& options) {
         std::cout << "std::exception caught...";
     }
 
-    if (excep != std::exception_ptr()) {
+    if (!(excep == 0)) {
         cout << "rethrowing the exception!" << endl;
         std::rethrow_exception (excep);
     }
