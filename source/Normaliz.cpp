@@ -186,7 +186,7 @@ template<typename Integer> int process_data(OptionsHandler& options) {
 //    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
     try {
         MyCone.compute(options.getToCompute());
-    } catch(const NotComputableException& e) {
+    } catch(const NotComputableException& ) {
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << "Writing only available data." << endl;
     }
@@ -194,10 +194,10 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     Out.write_files();
 
 #ifndef NCATCH
-    } catch(const NormalizException& e) {
+    } catch(const NormalizException& ) {
         excep = std::current_exception();
         std::cout << "NormalizException caught...";
-    } catch(const std::exception& e) {
+    } catch(const std::exception& ) {
         excep = std::current_exception();
         std::cout << "std::exception caught...";
     }

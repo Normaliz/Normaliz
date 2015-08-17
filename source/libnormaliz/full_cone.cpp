@@ -468,7 +468,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
        }
 #ifndef NCATCH
-       } catch(const std::exception& e) {
+       } catch(const std::exception& ) {
            tmp_exception = std::current_exception();
            skip_remaining = true;
            #pragma omp flush(skip_remaining)
@@ -649,7 +649,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            }
         }
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
@@ -808,7 +808,7 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
         } // for vertex
 
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
         }
 #endif
@@ -1050,7 +1050,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
             }
 
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)
@@ -1117,7 +1117,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                     store_key(Pyramid_key,height,0,Triangulation);
                     nrTotalComparisons+=dim*dim/2;
 #ifndef NCATCH
-                } catch(const std::exception& e) {
+                } catch(const std::exception& ) {
                     tmp_exception = std::current_exception();
                 }
 #endif
@@ -1517,7 +1517,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #endif
             match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
         }
 #endif
@@ -1640,7 +1640,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
                    skip_remaining = true;
                }
 #ifndef NCATCH
-           } catch(const std::exception& e) {
+           } catch(const std::exception& ) {
                tmp_exception = std::current_exception();
                skip_remaining = true;
                #pragma omp flush(skip_remaining)
@@ -1781,7 +1781,7 @@ void Full_Cone<Integer>::build_cone() {
                     nr_pos++;
                 }
 #ifndef NCATCH
-            } catch(const std::exception& e) {
+            } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
             }
 #endif
@@ -2282,7 +2282,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 if(do_Hilbert_basis && Results[tn].get_collected_elements_size() > AdjustedReductionBound)
                     skip_remaining=true;
 #ifndef NCATCH
-            } catch(const std::exception& e) {
+            } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)

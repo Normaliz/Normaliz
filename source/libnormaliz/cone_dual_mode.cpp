@@ -298,7 +298,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Negative_Irred.sort_by_val();
         Negative_Irred.last_hyp=hyp_counter;
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
         }
 #endif
@@ -313,7 +313,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         Positive_Irred.sort_by_val();
         Positive_Irred.last_hyp=hyp_counter;
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
         }
 #endif
@@ -552,7 +552,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
                 }
             }
 #ifndef NCATCH
-        } catch(const std::exception& e) {
+        } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
             skip_remaining = true;
             #pragma omp flush(skip_remaining)

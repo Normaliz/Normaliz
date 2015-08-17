@@ -1374,7 +1374,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (change_integer_type) {
         try {
             compute_inner<MachineInteger>(ToCompute);
-        } catch(const ArithmeticException& e) {
+        } catch(const ArithmeticException& ) {
             errorOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
             change_integer_type = false;
         }
@@ -1499,7 +1499,7 @@ void Cone<Integer>::compute_generators() {
         if (change_integer_type) {
             try {
                 compute_generators_inner<MachineInteger>();
-            } catch(const ArithmeticException& e) {
+            } catch(const ArithmeticException& ) {
                 errorOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
                 change_integer_type = false;
             }
@@ -1566,7 +1566,7 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
     if (change_integer_type) {
         try {
             compute_dual_inner<MachineInteger>(ToCompute);
-        } catch(const ArithmeticException& e) {
+        } catch(const ArithmeticException& ) {
             errorOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
             change_integer_type = false;
         }
@@ -1734,7 +1734,7 @@ Integer Cone<Integer>::compute_primary_multiplicity() {
     if (change_integer_type) {
         try {
             return compute_primary_multiplicity_inner<MachineInteger>();
-        } catch(const ArithmeticException& e) {
+        } catch(const ArithmeticException& ) {
             errorOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
             change_integer_type = false;
         }

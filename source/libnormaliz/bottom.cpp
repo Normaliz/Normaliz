@@ -122,7 +122,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 	long max_app_lvl;
 	double stuff_under_root = convert_to_double(grading_product)*100000/convert_to_double(volume); // current volume goal is 10^5
 	//cout << "The stuff under the root is " << stuff_under_root << endl;
-	max_app_lvl = round(pow(stuff_under_root,1.0/dim));
+	//max_app_lvl = lround(pow(stuff_under_root,1.0/dim));
+    max_app_lvl = floor(pow(stuff_under_root,1.0/dim)+0.5);
 	//cout << "The maximal approximation level is " << max_app_lvl << endl;
 	if (app_level>1 && verbose){
 		verboseOutput() << "simplex volume " << volume << endl;
@@ -205,7 +206,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #endif
             bottom_points_inner(bottom_candidates, scip, q_gens[i], local_new_points, local_q_gens,big_simplices,app_level);
 #ifndef NCATCH
-            } catch(const std::exception& e) {
+            } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
             }
 #endif
@@ -233,7 +234,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #endif // NMZ_SCIP
 
 #ifndef NCATCH
-    } catch(const std::exception& e) {
+    } catch(const std::exception& ) {
         tmp_exception = std::current_exception();
     }
 #endif
