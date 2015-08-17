@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
         else
             normalizExec+=" -T";
                 
-        normalizExec+="e";  // error check always activated
+        // normalizExec+="e";  // error check always activated // NO LONGER ncessary
         
 
         if(verbose_INT)

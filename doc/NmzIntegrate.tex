@@ -1,3 +1,5 @@
+% !TeX spellcheck = en_US
+
 \documentclass[12pt,a4paper]{scrartcl}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -96,7 +98,7 @@
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf NmzIntegrate 1.2} \vspace*{1cm}
+ \centerline{\Large\bf NmzIntegrate 1.3} \vspace*{1cm}
  %\vspace*{1cm}
 
 
@@ -124,14 +126,14 @@ Söger\\[14pt] \tt
 
 We assume in the following that the reader is familiar with
 Normaliz, in particular with its treatment of Ehrhart series
-and quasipolynomials. NmzIntegrate 1.2 requires Normaliz 2.11.
+and quasipolynomials. NmzIntegrate 1.3 requires Normaliz 3.0.
 
 Normaliz computes certain data for a monoid $$ M=C\cap L $$
 where $C\subset\RR^n$ is a rational, polyhedral and pointed
 cone, and $L\subset \ZZ^n$ is a sublattice. These data are
 defined by the input to Normaliz. NmzIntegrate requires
 that $M$ has been endowed with a grading $\deg$ (see the manual
-of Normaliz 2.11).
+of Normaliz 3.0).
 
 For such graded monoids Normaliz can compute the volume of
 the rational polytope
@@ -175,7 +177,7 @@ $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account and the algorithm used by NmzIntegrate.
 
-NmzIntegrate 1.2, like Normaliz 2.11 can compute Ehrhart series for
+NmzIntegrate 1.3, like Normaliz 3.0 can compute Ehrhart series for
 \emph{semiopen} cones. For them the monoid $M$ is replaced by the set
 $$
 M'=C'\cap L
@@ -251,18 +253,12 @@ CoCoALib, on which the multivariate polynomial algebra in
 NmzIntegrate is based.
 \medskip
 
- The development of Normaliz is currently supported by the DFG SPP 1489 ``Ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
+ The development of Normaliz is currently supported by the DFG SPP 1489 ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
 
 \section{Major changes in this version}
 
-\begin{enumerate}
-\item Generalized Ehrhart series of semiopen cones.
-
-\item More flexible input of polynomials.
-
-\item NmzIntegrate 1.2 requires Normaliz 2.11.
-\end{enumerate}
+None.
 
 \section{Input files}
 
@@ -282,6 +278,7 @@ provided the latter is accessible.
 For mutual calls it is necessary that the executables of
 Normaliz and NmzIntegrate reside in the same directory.
 
+Note: NmzIntegrate can only use the \emph{homogeneous} input types of Normaliz (including \verb|excluded_faces|).
 
 \subsection{Basic input files}
 
@@ -415,15 +412,9 @@ If the option \verb+-F=<polynomial>+ is omitted, the
 polynomial is read from \verb+<project>.pnm+.
 
 The options \verb+-c+ and \verb+-x=<T>+ are passed form
-Normaliz to NmzIntegrate and vice versa. NmzIntegrate
-passes also the option \verb+-e+ to Normaliz as a precaution
-against overflow errors. If such an error occurs or it is a
-priori clear that 64 bit precision is not sufficient for
-Normaliz, it must be run beforehand with the option \verb+-B+
-(and \verb+-T+ or \verb+-y+). NmzIntegrate itself works
-always with infinite precision.
+Normaliz to NmzIntegrate and vice versa. There is no need to worry about the integer precision of Normaliz or NmzIntegrate: Normaliz chooses it automatically and NmzIntegrate does always work with infinite precision.
 
-It is not possible (presently) to use the option \verb+<polynomial>.pnm+ if
+It is not possible (presently) to use the option \verb+-F=<polynomial>.pnm+ if
 NmzIntegrate is called from Normaliz.
 
 Note that NmzIntegrate may need much more memory than
@@ -462,19 +453,17 @@ for NmzIntegrate --- look out for files with the suffix
 \subsection{A generalized Ehrhart series}
 
 We choose an example from combinatorial voting theory which is discussed in
-more detail in \cite{BS}. The file \ttt{CondParSymm.in} from the directory
-\ttt{examples} contains the following (typeset in two
-columns):
+more detail in \cite{BS}. The file \ttt{CondorcetSymm.in} from the directory
+\ttt{examples} contains the following:
 
 \begin{Verbatim}
-1                                      3
-8                                      8
-1 1 1 1 1 1 1 1                        1 -1 1 1 1 -1 -1 -1
-signs                                  1 1 -1 1 -1 1 -1 -1
-1                                      1 1 1 -1 -1 -1 1 -1
-8                                      inequalities
-1 1 1 1 1 1 1 1
-grading
+amb_space 8
+inequalities 3
+1 -1 1 1 1 -1 -1 -1
+1 1 -1 1 -1 1 -1 -1
+1 1 1 -1 -1 -1 1 -1
+nonnegative
+total_degree
 \end{Verbatim}
 
 
@@ -483,7 +472,7 @@ forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut ou
 $$
 f(x)=\binom{x_1+5}{5}(x_2+1)(x_3+1)(x_4+1)(x_5+1)(x_6+1)(x_7+1)\binom{x_8+5}{5}.
 $$
-It is given in \ttt{CondParSymm.pnm} by
+It is given in \ttt{CondorcetSymm.pnm} by
 
 \begin{Verbatim}
 1/120*(x[1]+5)*(x[1]+4)*(x[1]+3)*(x[1]+2)*(x[1]+1)*
@@ -495,12 +484,12 @@ It is given in \ttt{CondParSymm.pnm} by
 From the Normaliz directory we invoke NmzIntegrate by
 
 \begin{Verbatim}
-nmzIntegrate -c example/CondParSymm
+nmzIntegrate -c example/CondorcetSymm
 \end{Verbatim}
 
  (replace the slash by a backslash in MS Windows, and similarly
  below).
-The file \ttt{CondParSymm.} \ttt{intOut} starts with the factorization:
+The file \ttt{CondorcetSymm.} \ttt{intOut} starts with the factorization:
 
 \begin{Verbatim}
 Factorization of polynomial:
@@ -569,14 +558,14 @@ Virtual multiplicity: 1717/8192
 Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
 customary in voting theory (in order to exclude draws). Then we replace
 \ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
-\ttt{CondParSmmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
+\ttt{CondorcetSmmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
 is called by
 
 \begin{Verbatim}
-nmzIntegrate -c -F=CondParSymm example/CondParSymmSemi
+nmzIntegrate -c -F=CondorcetSymm example/CondorcetSymmSemi
 \end{Verbatim}
 
-The output file is now in \ttt{CondParSymmSemi.CondParSymm.intOut}.
+The output file is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
 
 \subsection{An integral}
 The paper \cite{JMV} asks for the computation of the integral
@@ -585,32 +574,30 @@ $$
 $$
 taken over the intersection of the unit cube in $\RR^m$ and the hyperplane of constant coordinate sum $t$. It is supposed that $t\le m \le n$. We compute the integral for $t=2$, $m=4$ and $n=6$.
 
-The polytope is specified in the input file \ttt{j462.in} (typeset in 3
+The polytope is specified in the input file \ttt{j462.in} (typeset in 2
 columns):
 
 \begin{Verbatim}
-8                  0 0 0 1 0              1
-5                  -1 0 0 0 1             5
-1 0 0 0 0          0 -1 0 0 1             -1 -1 -1 -1 2
-0 1 0 0 0          0 0 -1 0 1             equations
-0 0 1 0 0          0 0 0 -1 1
-                   inequalities
+amb_space 5          -1 0 0 0 1   
+inequalities 8       0 -1 0 0 1   
+1 0 0 0 0            0 0 -1 0 1   
+0 1 0 0 0            0 0 0 -1 1   
+0 0 1 0 0            equations 1  
+0 0 0 1 0            -1 -1 -1 -1 2
 \end{Verbatim}
 
-The $8$ inequalities describe the unit cube in $\RR^4$ by the $0\le z_i\le 1$
-and the equation gives the hyperplane $z_1+\dots+z_4=2$. There is no need to
+The $8$ inequalities describe the unit cube in $\RR^4$ by the inequalities  $0\le z_i\le 1$
+and the equation gives the hyperplane $z_1+\dots+z_4=2$ (we must use homogenized coordinates!). There is no need to
 specify the grading since Normaliz finds it because the polytope is a lattice
 polytope. If one doesn't know this in advance, it is better to give the grading
 explicitly by
 
 \begin{Verbatim}
-1
-5
-0 0 0 0 1
 grading
+unit_vector 5
 \end{Verbatim}
 
-See the Normaliz documentation, Section 3.2.3 how to define rational polytopes
+See the Normaliz documentation, Section 3.2.5 how to define rational polytopes
 by inequalities and equations.
 
 The polynomial does not depend on $t$ so that we can use the same polynomial
@@ -659,7 +646,7 @@ Therefore NmzIntegrate does not need a separate installation.
 \section{Compilation}\label{Comp}
 
 Before the compilation of NmzIntegrate you must compile
-Normaliz 2.11 and CoCoALib 0.99533 \cite{CoC} (not
+Normaliz 3.0 and CoCoALib 0.99538 \cite{CoC} (not
 contained in the Normaliz distribution).
 %NmzIntegrate will not compile with earlier versions of CoCoALib or Normaliz.
 
@@ -671,7 +658,7 @@ For the compilation of CoCoALib run
 in the CoCoA root directory. The option \ttt{threadsafe-hack} is necessary to ensure correct parallel execution of nmzIntegrate.
 If you want to use Normaliz inside CoCoA or CoCoALib also add
 
-\centerline{\ttt{-{}-with-libnormaliz=/path/to/Normaliz2.11/source/libnormaliz/libnormaliz.a}}
+\centerline{\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.0/source/libnormaliz/libnormaliz.a}}
 
 to the configuration call, where the path to Normaliz has to be adjusted to your system. If the configuration was successful,
 
@@ -720,6 +707,15 @@ rational cones and affine monoids. Available from
 \url{http://www.math.uos.de/normaliz}.
 \end{center}
 
+The corresponding \verb|\bibitem| is
+
+\begin{Verbatim}
+\bibitem W. Bruns, B. Ichim, T. Römer and C. Söger: Normaliz. Algorithms for
+rational cones and affine monoids. Available from
+\url{http://www.math.uos.de/normaliz}.
+\end{Verbatim}
+
+
 You can add a reference to \cite{BS} in order to indicate that
 NmzIntegrate has been used.
 
@@ -749,6 +745,14 @@ other small changes reflecting the development of CoCoALib.
 project.
 \end{enumerate}
 
+\subsection{1.2 $\to$ 1.3}
+
+\begin{enumerate}
+\item Adaptation to CoCoALib 0.99538.
+\item Adaptation (of this manual) to Normalizn 3.0..
+
+\end{enumerate}
+
 \begin{thebibliography}{15.}
 
 \bibitem{CoC} J. Abbott and A. Bigatti, \emph{CoCoALib}. A GPL
@@ -756,7 +760,7 @@ project.
     Available from \url{http://cocoa.dima.unige.it/cocoalib/}
 
 \bibitem{BS} W. Bruns and C. Söger, \emph{Generalized Ehrhart
-    series and integration in Normaliz}.  J. Symb. Comp., to appear. \url{http://arxiv.org/abs/1211.5178}
+    series and integration in Normaliz}. J. Symb. Comp. 68 (2015) 75--86.
 
 \bibitem{JMV} J. Jeffries, J. Montaño and M. Varbaro, \emph{Multiplicities of
 classical varieties}. \url{http://arxiv.org/abs/1308.0582}
