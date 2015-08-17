@@ -145,7 +145,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             }
 
                             vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),0));
-                            if (pos < 1 || pos > e_i[0].size()) {
+                            if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
                                 cerr << "Error while reading " << type_string << " as a unit_vector "<< pos <<" form the input!" << endl;
                                 throw BadInputException();
                             }

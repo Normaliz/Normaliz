@@ -3,8 +3,8 @@
 
 #define NMZ_VERSION_MAJOR  2
 #define NMZ_VERSION_MINOR  99
-#define NMZ_VERSION_PATCH  2
-#define NMZ_VERSION        2.99.2
+#define NMZ_VERSION_PATCH  3
+#define NMZ_VERSION        2.99.3
 #define NMZ_RELEASE (NMZ_VERSION_MAJOR * 10000 + NMZ_VERSION_MINOR * 100 + NMZ_VERSION_PATCH)
 
 namespace libnormaliz {
