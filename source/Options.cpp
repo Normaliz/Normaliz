@@ -243,7 +243,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             printVersion();
             exit(0);
         }
-        if(LongOptions[i]=="big-int"){
+        if(LongOptions[i]=="BigInt"){
             use_Big_Integer=true;
             continue;
         }
@@ -266,7 +266,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         try {
             to_compute.set(toConeProperty(LongOptions[i]));
             continue;
-        } catch (const BadInputException& e) {};
+        } catch (const BadInputException& ) {};
         cerr << "Error: Unknown option --" << LongOptions[i] << endl;
         throw BadInputException();
     }

@@ -77,6 +77,9 @@ public:
     void activateInputFileConeProperty(ConeProperty::Enum cp) {
         if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
+    void activateInputFileBigInt() {
+        if (!ignoreInFileOpt) use_Big_Integer = true;
+    }
 
     const ConeProperties& getToCompute() const {
         return to_compute;

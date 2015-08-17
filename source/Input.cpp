@@ -116,6 +116,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     options.activateInputFileConeProperty(cp);
                     continue;
                 }
+                if (type_string == "BigInt") {
+                    options.activateInputFileBigInt();
+                    continue;
+                }
                 if (type_string == "total_degree") {
                     input_type = Type::grading;
                     save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
@@ -126,6 +130,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
+
 
                 input_type = to_type(type_string);
 
