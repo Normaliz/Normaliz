@@ -68,7 +68,7 @@ namespace ConeProperty {
         ClassGroup,
         ModuleGeneratorsOfIntegralClosure,
         // the following are more compute options than real properties of the cone
-        ApproximateRatPolytope,
+        Approximate,
         BottomDecomposition,
         DefaultMode,
         DualMode,

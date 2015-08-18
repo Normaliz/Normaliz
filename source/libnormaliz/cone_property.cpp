@@ -94,7 +94,7 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
     return *this;
 }
 ConeProperties& ConeProperties::reset_compute_options() {
-    CPs.set(ConeProperty::ApproximateRatPolytope, false);
+    CPs.set(ConeProperty::Approximate, false);
     CPs.set(ConeProperty::BottomDecomposition, false);
     CPs.set(ConeProperty::KeepOrder, false);
     return *this;
@@ -158,17 +158,17 @@ void ConeProperties::prepare_compute_options() {
 
     // dual mode has priority, approximation makes no sense if HB is computed
     if(CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::HilbertBasis))
-        CPs.reset(ConeProperty::ApproximateRatPolytope);
+        CPs.reset(ConeProperty::Approximate);
 
-    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::ApproximateRatPolytope))
+    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::Approximate))
         && (CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::StanleyDec))
          && !CPs.test(ConeProperty::HilbertBasis)){
         CPs.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode
-        CPs.reset(ConeProperty::ApproximateRatPolytope); // or by approximation if the
+        CPs.reset(ConeProperty::Approximate); // or by approximation if the
     }                                            // Stanley decomposition must be computed anyway
-    if (CPs.test(ConeProperty::ApproximateRatPolytope)
+    if (CPs.test(ConeProperty::Approximate)
             && !CPs.test(ConeProperty::Deg1Elements)) {
-        errorOutput() << "Warning: ApproximateRatPolytope is ignored since Deg1Elements is not set."<< std::endl;
+        errorOutput() << "Warning: Approximate is ignored since Deg1Elements is not set."<< std::endl;
     }
 }
 
@@ -182,7 +182,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
-                  || prop == ConeProperty::ApproximateRatPolytope
+                  || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
                   || prop == ConeProperty::ModuleGeneratorsOfIntegralClosure
                 ) {
@@ -241,7 +241,7 @@ namespace {
         CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
         CPN.at(ConeProperty::ModuleGeneratorsOfIntegralClosure) = "ModuleGeneratorsOfIntegralClosure";
         // the following are more compute options than real properties of the cone
-        CPN.at(ConeProperty::ApproximateRatPolytope) = "ApproximateRatPolytope";
+        CPN.at(ConeProperty::Approximate) = "Approximate";
         CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
         CPN.at(ConeProperty::DualMode) = "DualMode";

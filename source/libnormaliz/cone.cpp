@@ -1437,7 +1437,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
     }
-    if (ToCompute.test(ConeProperty::ApproximateRatPolytope)
+    if (ToCompute.test(ConeProperty::Approximate)
      && ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_approximation = true;
         FC.do_deg1_elements = true;
