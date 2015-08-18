@@ -5,4 +5,4 @@ vertices 2
 cone 1
 1 0
 grading
-1 0 
+unit_vector 1

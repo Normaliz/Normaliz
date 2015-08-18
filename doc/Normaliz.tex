@@ -755,9 +755,10 @@ cone 3
 -1 -1 3
 1 -2 4
 grading
-0 0 1
+unit_vector 3
 HilbertSeries
 \end{Verbatim}
+This is the first time that the we used the shortcut \verb|unit_vector <n>| which represents the $n$-th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
 
 From the output file we only list the data of the Ehrhart series.
 \begin{Verbatim}
@@ -776,19 +777,13 @@ cyclotomic denominator:
 1: 3  2: 2  3: 1  4: 1  
 
 Hilbert quasi-polynomial of period 12:
-0:   48 28 15
-1:   11 22 15
-2:  -20 28 15
-3:   39 22 15
-4:   32 28 15
-5:   -5 22 15
+0:   48 28 15			7:   23 22 15
+1:   11 22 15			8:   16 28 15
+2:  -20 28 15			9:   27 22 15
+3:   39 22 15			10:   -4 28 15
+4:   32 28 15			11:    7 22 15
+5:   -5 22 15			with common denominator = 48
 6:   12 28 15
-7:   23 22 15
-8:   16 28 15
-9:   27 22 15
-10:   -4 28 15
-11:    7 22 15
-with common denominator = 48
 \end{Verbatim}
 The multiplicity is a rational number. Since in dimension $2$
 the normalized area (of full-dimensional polytopes) is twice
@@ -870,7 +865,7 @@ inequalities 3
 1 -1 0
 2  7 3
 grading
-0 0 1
+unit_vector 3
 HilbertSeries
 \end{Verbatim}
 
@@ -1308,7 +1303,7 @@ inhom_inequalities 3
 0 -2  3
 2 -2  3
 grading
-1 0 
+unit_vector 1
 \end{Verbatim}
 The grading says that we want to count points by the first coordinate.
 \begin{center}
@@ -1411,7 +1406,7 @@ vertices 2
 cone 1
 1 0
 grading
-1 0 
+unit_vector 1
 \end{Verbatim}
 The output is identical to the version starting from the inequalities.
 
@@ -1771,32 +1766,21 @@ This is an embedding of the toric ring defined by the binomials. There are many 
 
 Now the generators of the normalization:
 \begin{Verbatim}
-9 Hilbert basis elements of degree 1:
-0 0 1
-0 1 0
-1 0 3
-1 1 2
-1 2 1
+9 Hilbert basis elements of degree 1:    5 extreme rays:
+0 0 1                                    0 0 1
+0 1 0                                    0 1 0
+1 0 3                                    1 0 3
+1 1 2                                    1 3 0
+1 2 1                                    3 5 2
 1 3 0
-2 3 2
-2 4 1
-3 5 2
+2 3 2                                    5 support hyperplanes:
+2 4 1                                    -15 7 5
+3 5 2                                    -3 1 2
+                                         0 0 1  
+                                         0 1 0
+                                         1 0 0 
 
-0 further Hilbert basis elements of higher degree:
-
-5 extreme rays:
-0 0 1
-0 1 0
-1 0 3
-1 3 0
-3 5 2
-
-5 support hyperplanes:
--15 7 5
--3 1 2
-0 0 1
-0 1 0
-1 0 0
+0 further Hilbert basis elements of higher degree:	  
 \end{Verbatim}
 
 
@@ -2147,7 +2131,7 @@ as a sublattice of $\AA$. Normaliz computes the image of $\ZZ^d_+$ in $L$ and it
 The type \ttt{lattice\_ideal} cannot be combined with any other input type (except
 \ttt{grading})---such a combination would not make sense. (See Section \ref{grad_lattid} for the use of a grading in this case.)
 
-\subsection{Unit vectors}
+\subsection{Unit vectors}\label{unit_vectors}
 
 A grading or a dehomogenization is often given by a unit vector:
 \begin{itemize}
@@ -2399,7 +2383,7 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 \begin{itemize}
 	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set.
 	
-	\itemtt[ApproximateRatPolytope, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|ApproximateRatPolytope|.)
+	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|Approximate|.)
 	% and therefore implies \verb|Deg1Elements|.
 	
 	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
@@ -2587,7 +2571,7 @@ In this section we discuss some advanced features of Normaliz.
 
 In order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vectors that are needed for the Hilbert basis computations, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
 
-Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept.This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by th e option \verb|ApproximateRationalPolytope|, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should be not too large.
+Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept.This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by th e option \verb|Approximate|, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should be not too large.
 \begin{center}
 	\begin{tikzpicture}[scale=0.6]
 	\filldraw[fill=orange] (0,0) -- (0,1) -- (1,3) -- (2,4) -- (3,4) -- (4,1) -- (3,0) --cycle;
@@ -2604,17 +2588,15 @@ Normaliz 3 takes the following approach: simplicial subcones $S$ with rational v
 Another option that is often favorable is \verb|DualMode| in connection with \verb|Deg1Elements|. So there are three choices for the computation of lattice points in polytopes:
 \begin{itemize}
 	\itemtt[Deg1Elements, -1] with local approximation of rational polytopes,
-	\itemtt [ApproximateRationalPolytope Deg1Elements, -r1] combined with global approximation,
+	\itemtt [Approximate Deg1Elements, -r1] combined with global approximation,
 	\itemtt[DualMode Deg1Elements, -d1] dual mode optimized for the computation of degree $1$ elements.
 \end{itemize}
 
 Our demonstration example is \verb|max_polytope_cand| with the input file
 
 \begin{Verbatim}
-11
 amb_space 5
-inequalities
-11
+inequalities 11
 -3  -3 -10  14  88
 26  -3  19  14 361
 -4  25   6 -49 133
@@ -2627,13 +2609,13 @@ inequalities
 -8 -13 -28  45 241
 -8  27  12 -35 321  
 grading
-0 0 0 0 1
-ApproximateRationalPolytope
+unit_vector 5
+Approximate
 Deg1Elements
 \end{Verbatim}
 set up for global approximation. (This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036.)
 
-Despite of the large number of lattice points, the computation is extremely fast. Now remove \verb|ApproximateRationalPolytope|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
+Despite of the large number of lattice points, the computation is extremely fast. Now remove \verb|Approximate|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
 
 The third choice using the dual algorithm is still o.k. though it takes the most time in this case. In other cases it may very well be the fastest.
 
@@ -2736,7 +2718,7 @@ Performance data for approximation:
 & \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
 volume used     & $3.9 \times 10^6$ & $9.1\times 10^7$ & $2.3\times 10^9$ \\ \hline
 %improvement factor & 25 &  $7.62\times10^6$ & $9.4\times 10^9$\\ \hline
-runtime with subdivision    &  & & \\ \hline
+runtime with subdivision    & 0.7 s & 58 s& 2 m 36 s\\ \hline
 \end{tabular}
 \end{center}
 
@@ -2755,25 +2737,23 @@ amb_space 9
 equations 2
 1 6 -7 -18 25 -36 6 8 -9
 7 -13 15 6 -9 -8 11 12 -2
-grading
-1 1 1 1 1 1 1 1 1
+total_degree
 DualMode
 HilbertSeries
 \end{Verbatim}
-The computation time (20 parallel threads) is ??? whereas the default mode needs ???.
+The computation time (20 parallel threads) is 2 m 54 s whereas the default mode needs ???.
 
 In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant sum of the Hilbert series computation is only $\approx 8.4\times 10^9$.
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
-Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehogenization.in|
+Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
 \begin{Verbatim}
 amb_space 3
-inequalities
-2
+inequalities 2
 -1 1 0
 -1 0 1
 dehomogenization
-1 0 0
+unit_vector 1
 \end{Verbatim}
 indicates that in this case the first variable is the homogenizing one. The output file
 \begin{Verbatim}
@@ -2805,16 +2785,12 @@ module rank = 1
 0 0 1
 0 1 0
 
-1 vertices of polyhedron:
-1 1 1
-
+1 vertices of polyhedron:                   2 support hyperplanes of polyhedron:
+1 1 1                                       -1 0 1
+                                            -1 1 0
 2 extreme rays of recession cone:
 0 0 1
 0 1 0
-
-2 support hyperplanes of polyhedron:
--1 0 1
--1 1 0
 \end{Verbatim}
 shows that Normaliz does the computation in the same way as with implicit dehomogenization, except that now the first coordinate decides what is in the polyhedron and what belongs to the recession cone, roughly speaking.
 
@@ -2849,14 +2825,12 @@ The following example is the $2$-dimensional cross polytope with one excluded fa
 
 \begin{Verbatim}
 amb_space 3
-polytope
-4                           
+polytope 4                           
 1  0                      
 0  1                
 -1  0
 0 -1
-excluded_faces
-1
+excluded_faces 1
 1  1 -1                         
 \end{Verbatim}
 
@@ -2962,7 +2936,7 @@ distribution.
 
 \subsection{Minimal module generators of the integral closure}\label{MinMod}
 
-Suppose that the original generators are well defined in the input. This is always the case when these consists just of a \verb|cone| or a \verb|cone_and _lattice|. Let $M$ be the monoid generated by them. Then Normaliz computes the integral closure $N$ of $M$ in the effective lattice $\EE$. It is often interesting to understand the difference set $N\setminus M$. After the introduction of a field $K$ of coefficients, this amounts to understanding the quotient $K[N]/K[M]$ as a $K[M]$-module. With the option \verb|ModuleGeneratorsofIntegralClosure, -M| Normaliz computes a minimal generating set $T$ of this module. Combinatorially this means that we find an irreducible  cover
+Suppose that the original generators are well defined in the input. This is always the case when these consists just of a \verb|cone| or a \verb|cone_and_lattice|. Let $M$ be the monoid generated by them. Then Normaliz computes the integral closure $N$ of $M$ in the effective lattice $\EE$. It is often interesting to understand the difference set $N\setminus M$. After the introduction of a field $K$ of coefficients, this amounts to understanding the quotient $K[N]/K[M]$ as a $K[M]$-module. With the option \verb|ModuleGeneratorsofIntegralClosure, -M| Normaliz computes a minimal generating set $T$ of this module. Combinatorially this means that we find an irreducible  cover
 $$
 N\setminus M\subset\bigcup_{x\in T} x+M.
 $$
@@ -2993,15 +2967,11 @@ As an example, we can run \verb|2cone.in| with the option \verb|-M| on the comma
 1 3
 2 1
 
-2 extreme rays:
-1 3
-2 1
-
-4 module generators of integral closure/original monoid:
-1 1
-1 2
-2 2
-2 3
+2 extreme rays:          4 module generators of integral closure/original monoid:
+1 3                      1 1
+2 1                      1 2
+                         2 2
+                         2 3
 \end{Verbatim} 
 
 
@@ -3010,21 +2980,19 @@ As an example, we can run \verb|2cone.in| with the option \verb|-M| on the comma
 Computing the support hyperplanes can be a very time consuming task, and if it has been the first step in the exploration of a difficult example, it may be desirable, to use the support hyperplanes as additional input in order to save computation time. This is especially true if Normaliz must do an intermediate computation of the support hyperplanes because of a large number of simplicial cones to be evaluated. The file \verb|2cone_supp.in| is just a toy example:
 \begin{Verbatim}
 amb_space 2
-cone
-2
+cone 2
 2 1
 1 3
-support_hyperplanes
-2
--1 2
-3 -1
+inequalities 2
+-1  2
+ 3 -1
 \end{Verbatim}
 
 As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
 \subsection{A very large computation}\label{ele3}
 
-The example \verb|CondEffPlur.in| is one of the largest that Normaliz has mastered. The gaol is to compute the Condorcet efficiency of plurality voting for $4$ candidates  (see \cite{BS} and the references therein), even in the refined form of the Hilbert series. The Hilbert basis computation is extremely fast in \verb|DualMode| so that it can be used as input. We tried three different setups (each with $30$ parallel threads): 
+The example \verb|CondEffPlur.in| is one of the largest that Normaliz has mastered. The goal is to compute the Condorcet efficiency of plurality voting for $4$ candidates  (see \cite{BS} and the references therein), even in the refined form of the Hilbert series. The Hilbert basis computation is extremely fast in \verb|DualMode| so that it can be used as input. We tried three different setups (each with $30$ parallel threads): 
 
 \begin{center}
 	\begin{tabular}{|r|r|r|r|}\hline
@@ -3981,6 +3949,8 @@ have become obsolete later on.
 \begin{thebibliography}{15.}
 	\small
 	
+		\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}
+	
 	\bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.6}.
 	Available from\\
 	{\footnotesize\url{http://www.mathematik.uni-osnabrueck.de/normaliz/Normaliz3.0/jNormaliz1.6Documentation.pdf}}
@@ -4025,8 +3995,6 @@ have become obsolete later on.
 		Barvinok algorithm.} Electron. J. Comb.
 	15, No. 1, Research Paper R16, 19 p. (2008).
 	
-	\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}
-
 	\bibitem{Po} L. Pottier. {\em The Euclide algorithm in dimension
 		$n$}. Research report, ISSAC 96, ACM Press 1996.
 \end{thebibliography}
