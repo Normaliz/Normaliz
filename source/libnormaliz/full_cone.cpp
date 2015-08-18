@@ -404,7 +404,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     vector<key_t> key(nr_gen);
     size_t nr_missing;
     bool common_subfacet;
-    #pragma omp for schedule(dynamic) nowait
+    // we cannot use nowait here because of the way we handle exceptions in this loop
+    #pragma omp for schedule(dynamic) //nowait
     for (size_t i =0; i<nr_PosSimp; i++){ //Positive Simp vs.Negative Non Simp
 
         if (skip_remaining) continue;

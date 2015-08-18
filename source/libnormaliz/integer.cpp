@@ -57,7 +57,7 @@ bool try_convert(long long& ret, const mpz_class& val) {
         return false;
     }
     mpz_class quot;
-    ret = mpz_tdiv_q_ui(quot.get_mpz_t(), val.get_mpz_t(), LONG_MAX); //returns remainder
+    ret = mpz_fdiv_q_ui(quot.get_mpz_t(), val.get_mpz_t(), LONG_MAX); //returns remainder
     if (!quot.fits_slong_p()){
         return false;
     }
