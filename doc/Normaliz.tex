@@ -1498,13 +1498,17 @@ original monoid is integrally closed
 \end{Verbatim}
 Actually the output file reveals that $M$ is even integrally closed in $\ZZ^{24}$: the external index is $1$, and therefore $\gp(M)$ is integrally closed in $\ZZ^{24} $. 
 
-The output files also shows that there is a grading on $\ZZ^{24}$ under which all our generators have degree $1$. We could have seen this ourselves: Every generator has exactly one entry $1$ in the first $16$ coordinates. (This is clear from the construction of $M$.) 
+The output files also shows that there is a grading on $\ZZ^{24}$ under which all our generators have degree $1$. We could have seen this ourselves: Every generator has exactly one entry $1$ in the first $16$ coordinates. (This is clear from the construction of $M$.)
 
-It is no problem to compute the Hilbert series as well if you are interested in it. Simply add \verb|-q| to the command line or remove \verb|HilberBasis| from the input file.
+A noteworthy detail from the output file:
+\begin{Verbatim}
+size of partial triangulation   = 48
+\end{Verbatim}
+It shows that Normaliz uses only a partial triangulation in Hilbert basis computations; see \cite{BHIKS}.
 
-Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal. Even on a standard PC or laptop, the Hilbert basis computation does not take very long because Normaliz uses only a partial triangulation to find then Hilbert basis elements (see \cite{BHIKS}).
+It is no problem to compute the Hilbert series as well if you are interested in it. Simply add \verb|-q| to the command line or remove \verb|HilberBasis| from the input file. Then a full triangulation is needed (size $2,654,272$).
 
-The Hilbert series can still be constructed, but the computation time will grow considerably since the Hilbert series requires a full triangulation (see \cite{BIS} for computation times).
+Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal. Even on a standard PC or laptop, the Hilbert basis computation does not take very long because Normaliz uses only a partial triangulation. The Hilbert series can still be determined, but the computation time will grow considerably since the it requires a full triangulation. See \cite{BIS} for timings.
 
 \subsection{Inhomogeneous congruences}\label{ChinRem}
 
@@ -2621,7 +2625,7 @@ The third choice using the dual algorithm is still o.k. though it takes the most
 
 You can also use inhomogeneous input with the default computation mode or dual mode. This is equivalent to homogeneous input with \verb|Deg1Elements| and \verb|DualMode|, respectively, in addition.
 
-\subsection{The bottom decomposition}
+\subsection{The bottom decomposition}\label{bottom_dec}
 
 The triangulation size and the determinant sum of the triangulation are critical size parameters in Normaliz computations. Normaliz always tries to order the generators in such a way that the determinant sum is close to the minimum, and on the whole this works out well. The use of the bottom decomposition by \verb|BottomDecomposition, -b| enables Normaliz to compute a triangulation with the optimal determinant sum for the given set of generators, as we will explain in the following. 
 
@@ -3015,7 +3019,7 @@ Note: though Normaliz can compute this example, it is really a case for NmzInteg
 
 When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a}, Normaliz
 writes additional output files whose names are of type
-\ttt{<project>.<type>}. (Note that the options \verb|-T, Triangulation|, \verb|-y, StanleyDEC| and the options calling NmzIntegrate also write files in addition to \verb|<project>.out|.) Moreover one can select the optional output files individually via command line options. Most of these files contain matrices in a simple format:
+\ttt{<project>.<type>}. (Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec| as well as the options calling NmzIntegrate also write files in addition to \verb|<project>.out|.) Moreover one can select the optional output files individually via command line options. Most of these files contain matrices in a simple format:
 \begin{Verbatim}
 <m>
 <n>
@@ -3373,10 +3377,16 @@ http://www.gnu.org/licenses/.
 Please refer to Normaliz in any publication for which it has
 been used:
 \begin{center}
-	W. Bruns, B. Ichim, T. Römer and C. Söger: Normaliz. Algorithms for
+	W. Bruns, B. Ichim, R. Sieg, T. Römer and C. Söger: Normaliz. Algorithms for
 	rational cones and affine monoids. Available from
 	http://www.math.uos.de/normaliz.
 \end{center}
+The corresponding \verb|\bibitem|:
+\begin{Verbatim}
+\bibitem W. Bruns, B. Ichim, R. Sieg, T. Römer and C. Söger: Normaliz. Algorithms
+for rational cones and affine monoids. Available from
+http://www.math.uos.de/normaliz.
+\end{Verbatim}
 
 It is now customary to evaluate mathematicians by such data as
 numbers of publications, citations and impact factors. The data
@@ -3699,11 +3709,12 @@ we get the following terminal output.
 Compute: DefaultMode 
 ************************************************************
 starting primal algorithm with full triangulation ...
+Roughness 1
 Generators sorted by degree and lexicographically
 Generators per degree:
 1: 48 
 \end{Verbatim}
-Self explanatory so far. Now the generators are inserted.
+Self explanatory so far (see Section \ref{bottom_dec} for the definition of roughness). Now the generators are inserted.
 \begin{Verbatim}
 Start simplex 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 19 22 25 26 27 28 31 34 
 37 38 39 40 43 46 
