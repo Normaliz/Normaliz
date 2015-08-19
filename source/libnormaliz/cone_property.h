@@ -51,7 +51,6 @@ namespace ConeProperty {
         ModuleGenerators,
         Deg1Elements,
         HilbertSeries,
-        HilbertFunction,
         Grading,
         IsPointed,
         IsDeg1ExtremeRays,

@@ -53,6 +53,7 @@ class BadInputException: public NormalizException {
 //class ConeProperties; // forward decl
 class NotComputableException: public NormalizException {
     public:
+    NotComputableException(){};
     NotComputableException(const ConeProperties& props){};
 	virtual const char* what() const throw() {
 		return "Could not compute: ...";

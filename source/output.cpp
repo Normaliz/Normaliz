@@ -472,8 +472,9 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"vector "<< HSdenom.size() <<" hilbert_series_denom = ";
                 inv << HSdenom;
 
-                vector< vector <mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
-                if (hqp.size()>0) {
+                HS.computeHilbertQuasiPolynomial();
+                if (HS.isHilbertQuasiPolynomialComputed()) {
+                    vector< vector <mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
                     inv << "matrix " << hqp.size() << " " << hqp[0].size()
                         << " hilbert_quasipolynomial = ";
                     inv << endl << hqp;
@@ -705,10 +706,10 @@ void Output<Integer>::write_files() const {
                 out << HS.getCyclotomicDenom();
                 out << endl;
                 // Hilbert quasi-polynomial
-                vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
-                if (hilbert_quasi_poly.size() > 0) { // == 0 means not computed
+                HS.computeHilbertQuasiPolynomial();
+                if (HS.isHilbertQuasiPolynomialComputed()) {
                     out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
-                    Matrix<mpz_class> HQP(hilbert_quasi_poly);
+                    Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
                     HQP.pretty_print(out,true);
                     out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
                 }

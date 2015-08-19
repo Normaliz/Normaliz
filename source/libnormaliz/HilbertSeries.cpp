@@ -314,21 +314,23 @@ long HilbertSeries::getPeriod() const {
     return period;
 }
 
+long HilbertSeries::isHilbertQuasiPolynomialComputed() const {
+    return is_simplified && !quasi_poly.size()==0;
+}
+
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
-    if(!is_simplified || quasi_poly.size()==0) {
-        computeHilbertQuasiPolynomial();
-    }
+    computeHilbertQuasiPolynomial();
+    if (quasi_poly.size()==0) throw NotComputableException();
     return quasi_poly;
 }
 
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
-    if(!is_simplified || quasi_poly.size()==0) {
-        computeHilbertQuasiPolynomial();
-    }
+    if (quasi_poly.size()==0) throw NotComputableException();
     return quasi_denom;
 }
 
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
+    if (isHilbertQuasiPolynomialComputed()) return;
     simplify();
     if (period > 200000) {
         errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;

@@ -109,6 +109,9 @@ public:
     long getDegreeAsRationalFunction() const;
 
     long getPeriod() const;
+
+    void computeHilbertQuasiPolynomial() const;
+    long isHilbertQuasiPolynomialComputed() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
 
@@ -158,7 +161,6 @@ private:
     void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
 
     void computeDegreeAsRationalFunction() const;
-    void computeHilbertQuasiPolynomial() const;
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 

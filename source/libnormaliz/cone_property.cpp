@@ -137,9 +137,6 @@ void ConeProperties::set_preconditions() {
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
 
-    if (CPs.test(ConeProperty::HilbertFunction))
-        CPs.set(ConeProperty::HilbertSeries);
-
     // inhomogenous preconditions
     if (CPs.test(ConeProperty::VerticesOfPolyhedron))
         CPs.set(ConeProperty::ExtremeRays);
@@ -224,7 +221,6 @@ namespace {
         CPN.at(ConeProperty::ModuleGenerators) = "ModuleGenerators";
         CPN.at(ConeProperty::Deg1Elements) = "Deg1Elements";
         CPN.at(ConeProperty::HilbertSeries) = "HilbertSeries";
-        CPN.at(ConeProperty::HilbertFunction) = "HilbertFunction";
         CPN.at(ConeProperty::Grading) = "Grading";
         CPN.at(ConeProperty::IsPointed) = "IsPointed";
         CPN.at(ConeProperty::IsDeg1ExtremeRays) = "IsDeg1ExtremeRays";
@@ -248,7 +244,7 @@ namespace {
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 37,
+        static_assert (ConeProperty::EnumSize == 36,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {
