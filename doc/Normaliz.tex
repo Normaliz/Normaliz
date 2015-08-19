@@ -2992,6 +2992,121 @@ inequalities 2
 
 As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
+\subsection{Shift, denominator, qusipolynomial and multiplicty}\label{sdqm}
+
+In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
+\begin{Verbatim}
+amb_space 2
+inhom_inequalities 3
+0  2  1
+0 -2  3
+2 -2  3
+grading
+7 0 
+\end{Verbatim}
+The output related to the grading is
+\begin{Verbatim}
+grading:
+7 0 0 
+with denominator = 7
+
+
+module rank = 2
+multiplicity = 2
+
+Hilbert series:
+1 1 
+denominator with 1 factors:
+1: 1  
+
+shift = -1
+
+degree of Hilbert Series as rational function = -1
+
+Hilbert polynomial:
+2 
+with common denominator = 1
+\end{Verbatim}
+The Hilbert serues computed by hand is
+$$
+\frac{t^{-7}+1}{1-t^7}.
+$$
+
+We obtain it from the output as follows. The printed series is
+$$
+\frac{1+t}{1-t}.
+$$
+Now the shift is applied and yields
+$$
+\frac{t^{-1}+1}{1-t}.
+$$
+Finally we make the substitution $t\mapsto t^7$, and obtain the desired result.
+
+Now we add the complication $x_1\equiv -1 \mod 8$ ((\verb|InhomIneq_7_8.in|):
+\begin{Verbatim}
+amb_space 2
+inhom_inequalities 3
+0  2  1
+0 -2  3
+2 -2  3
+grading
+7 0 
+inhom_congruences 1
+1 0 1 8
+\end{Verbatim}
+The result:
+\begin{Verbatim}
+grading:
+7 0 0 
+with denominator = 7
+
+
+module rank = 2
+multiplicity = 1/4
+
+Hilbert series:
+1 0 0 0 0 0 0 0 1 
+denominator with 1 factors:
+8: 1  
+
+shift = -1
+
+degree of Hilbert Series as rational function = -1
+
+Hilbert series with cyclotomic denominator:
+-1 0 0 0 0 0 0 0 -1 
+cyclotomic denominator:
+1: 1  2: 1  4: 1  8: 1  
+
+Hilbert quasi-polynomial of period 8:
+0:  0
+1:  0
+2:  0
+3:  0
+4:  0
+5:  0
+6:  0
+7:  2
+with common denominator = 1
+\end{Verbatim}
+The printed Hilbert series is
+$$
+\frac{1+t^8}{1-t^8}.
+$$
+The application of the shift yields
+$$
+\frac{t^{-1}+t^7}{1-t^8}.
+$$
+the correct rresult for the divided grading. \emph{The Hilbert qasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
+$$
+\frac{t^{-7}+t^{49}}{1-t^{56}}
+$$
+for the original grading.
+
+Like the quasipolynomial, \emph{the multiplity is computed for the divided grading}. 
+
+A more economical presentation of the result would use the denominator $56$ and the shift $-7$. At present Normaliz does not find it. This may change in future versions.
+
 \subsection{A very large computation}\label{ele3}
 
 The example \verb|CondEffPlur.in| is one of the largest that Normaliz has mastered. The goal is to compute the Condorcet efficiency of plurality voting for $4$ candidates  (see \cite{BS} and the references therein), even in the refined form of the Hilbert series. The Hilbert basis computation is extremely fast in \verb|DualMode| so that it can be used as input. We tried three different setups (each with $30$ parallel threads): 
@@ -3032,7 +3147,7 @@ where each row has \verb|<n>| entries. Exceptions are the files with suffixes \v
 The option \ttt{-f} makes Normaliz write the following files:
 
 \begin{itemize}
-	\itemtt[gen] contains the Hilbert basis.
+	\itemtt[gen] contains the Hilbert basis. If you want to use this file as an input file and reproduce the computation results, then you must make it a matrix of type \verb|cone_and_lattice| (and add the dehomogenization in the inhomogeneous case).
 	
 	\itemtt[cst] contains the constraints defining the cone
 	and the lattice in the same format as they would appear
