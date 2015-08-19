@@ -907,7 +907,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
        
 #endif
-		bottom_points(new_points, Generators,C.Grading,C.approx_level);
+		bottom_points(new_points, Generators,C.Grading,C.approx_level,0);
         time (&end);
 		double dif = difftime (end,start);
 
