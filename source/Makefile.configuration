@@ -11,7 +11,7 @@ CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 
-SCIPPATH = $(HOME)/src/scipoptsuite-3.1.1
+SCIPPATH = $(HOME)/src/scipoptsuite-3.2.0
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)
@@ -33,12 +33,12 @@ GMPFLAGS = -lgmpxx -lgmp
 ## use SCIP?
 ifeq ($(SCIP),yes)
   CXXFLAGS += -DNMZ_SCIP
-  CXXFLAGS += -I $(SCIPPATH)/scip-3.1.1/src
+  CXXFLAGS += -I $(SCIPPATH)/scip-3.2.0/src
 
   SCIPFLAGS = -L $(SCIPPATH)/lib  \
-    -lscipopt-3.1.1.linux.x86_64.gnu.opt \
+    -lscipopt-3.2.0.linux.x86_64.gnu.opt# \
     -lreadline \
     -lz
 endif
 
-LINKFLAGS += $(GMPFLAGS) $(SCIPFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS)

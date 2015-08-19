@@ -131,6 +131,18 @@ IF (NMZ_BUILD_STATIC)
   ENDIF ()
 ENDIF (NMZ_BUILD_STATIC)
 
+
+# handle usage of SCIP
+SET (NMZ_SCIP "NO" CACHE BOOL "Use SCIP")
+IF (NMZ_SCIP)
+  FIND_PACKAGE(SCIP REQUIRED)
+  SET (NMZ_SCIP_FLAGS "-DNMZ_SCIP")
+  INCLUDE_DIRECTORIES(${SCIP_INCLUDE_DIR})
+  MESSAGE(STATUS "Adding to compiler flags NMZ_SCIP_FLAGS=${NMZ_SCIP_FLAGS}")
+  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NMZ_SCIP_FLAGS}")
+ENDIF (NMZ_SCIP)
+
+
 # find gmp
 FIND_PACKAGE(GMP REQUIRED)
 INCLUDE_DIRECTORIES(${GMP_INCLUDE_DIR})
@@ -149,11 +161,15 @@ IF (GMPXX_FOUND)
   MESSAGE(STATUS "GMPXX found with static lib : ${GMPXX_STATIC_LIBRARIES}")
 ENDIF()
 
+
 # handle offload to mic (intel xeon phi)
 SET (NMZ_MIC_OFFLOAD "NO" CACHE BOOL "Use offload to mic (intel xeon phi)")
 IF (NMZ_MIC_OFFLOAD)
   IF ( NOT UNIX OR APPLE )
     MESSAGE (FATAL_ERROR "Offload to mic only supported on Linux")
+  ENDIF()
+  IF ( NMZ_SCIP )
+    MESSAGE (FATAL_ERROR "Simultaneous use of offload and scip not supported")
   ENDIF()
 
   # find gmp for mic
@@ -195,10 +211,14 @@ ELSE (NMZ_BUILD_STATIC)
   TARGET_LINK_LIBRARIES (normaliz ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 ENDIF (NMZ_BUILD_STATIC)
 
+#link optional libs
+IF (NMZ_SCIP)
+  MESSAGE(STATUS "Adding scip libraries to link ${SCIP_LIBRARY}")
+  TARGET_LINK_LIBRARIES (normaliz ${SCIP_LIBRARY})
+ENDIF (NMZ_SCIP)
 
 
 INSTALL(TARGETS normaliz DESTINATION bin)
-
 
 
 #custom make targets

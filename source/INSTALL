@@ -93,6 +93,19 @@ See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
 
+**** Using SCIP ****
+
+Download scip at http://scip.zib.de/ . Notice that SCIP is not distributed under GPL, but the ZIB Academic License (http://scip.zib.de/academic.txt).
+Unpack it and compile it with
+
+make ZLIB=false GMP=false READLINE=false scipoptlib
+
+Then configure Normaliz with e.g.
+
+SCIP_DIR=$HOME/scipoptsuite-3.2.0/ cmake ../source/ -DNMZ_SCIP=ON
+
+Currently our cmake module to find scip only supports version 3.1.1 and 3.2.0.
+
 **** Build for Intel Xeon Phi Mic ****
 
 This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
