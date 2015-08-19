@@ -853,7 +853,7 @@ by the following fact: $e_i$ is the common period of the
 coefficients $p_{r-i},\dots,p_{r-1}$. The user should prove
 this fact or at least verify it by several examples.
 
-\emph{Warning}: It is tempting, but not a good idea to define the poyltope by the input type \verb|vertices|. It would Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
+\emph{Warning}: It is tempting, but not a good idea to define the poyltope by the input type \verb|vertices|. It would make Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
 
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
 
@@ -3065,18 +3065,18 @@ module rank = 2
 multiplicity = 1/4
 
 Hilbert series:
-1 0 0 0 0 0 0 0 1 
+1 0 0 0 0 0 0 1 
 denominator with 1 factors:
 8: 1  
 
 shift = -1
 
-degree of Hilbert Series as rational function = -1
+degree of Hilbert Series as rational function = -2
 
 Hilbert series with cyclotomic denominator:
--1 0 0 0 0 0 0 0 -1 
+-1 1 -1 1 -1 1 -1 
 cyclotomic denominator:
-1: 1  2: 1  4: 1  8: 1  
+1: 1  4: 1  8: 1  
 
 Hilbert quasi-polynomial of period 8:
 0:  0
@@ -3085,27 +3085,25 @@ Hilbert quasi-polynomial of period 8:
 3:  0
 4:  0
 5:  0
-6:  0
-7:  2
+6:  1
+7:  1
 with common denominator = 1
 \end{Verbatim}
 The printed Hilbert series is
 $$
-\frac{1+t^8}{1-t^8}.
+\frac{1+t^7}{1-t^8}.
 $$
 The application of the shift yields
 $$
-\frac{t^{-1}+t^7}{1-t^8}.
+\frac{t^{-1}+t^6}{1-t^8}.
 $$
-the correct rresult for the divided grading. \emph{The Hilbert qasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
+the correct result for the divided grading. \emph{The Hilbert qasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
 $$
-\frac{t^{-7}+t^{49}}{1-t^{56}}
+\frac{t^{-7}+t^{42}}{1-t^{56}}
 $$
 for the original grading.
 
 Like the quasipolynomial, \emph{the multiplity is computed for the divided grading}. 
-
-A more economical presentation of the result would use the denominator $56$ and the shift $-7$. At present Normaliz does not find it. This may change in future versions.
 
 \subsection{A very large computation}\label{ele3}
 
@@ -3783,17 +3781,18 @@ with coefficients $q^{(j)}_i\in \QQ$. It is not hard to show that in the case of
 $$
 q_{r-1}=\frac{\vol(Q)}{(r-1)!},
 $$
-where $\vol$ is the lattice normalized volume of $Q$ (a lattice simplex of smallest possible volume has volume $1$). It is called the \emph{multiplicity} of $M$.
+where $\vol$ is the lattice normalized volume of $Q$ (a lattice simplex of smallest possible volume has volume $1$). The \emph{multiplicity} of $M$, denoted by $e(M)$ is $(r-1)!q_{r-1}=\vol(Q)$.
 
-Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. If $\ZZ^d$ is endowed with a grading whose restriction to $M$ satisfies our conditions, then the Hilbert series
+Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. Then we must give up the condition that $\deg$ takes the value $1$ on $\gp(M)$ (see Section \ref{sdqm} for an example). But the Hilbert series
 $$
 H_N(t)=\sum_{x\in N} t^{\deg x}
 $$
-is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k\gg 0$. The leading coefficient is still constant  and given by
+is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k>r$ where $r$ is the degree of the Hilbert series as a rational function. 
+
+Let $m$ be the gcd of the numbers $\deg x$, $x\in M$. (For $M=\{0\}$ we set $m=1$.) Then we must define $e(M)=e'(M)/m$ where $e'(M)$ is the multiplicity of $M$ with respect to the normalized grading $\deg/m$. The multiplicity of $N$ is given by
 $$
-q_{r-1}=\mrank(N)\frac{\vol(Q)}{(r-1)!},\qquad Q=\rec(P)\cap A_1.
+e(N)=\mrank(N)e(M).
 $$
-The \emph{multiplicity} of $N$ is $\mrank(N)\vol(Q)$.
 
 Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by subtracting a constant, called the \emph{shift}. (The shift may also be positive.)
 
