@@ -31,13 +31,13 @@
 #include <map>
 #include <algorithm>
 
-#include "HilbertSeries.h"
-#include "vector_operations.h"
-#include "map_operations.h"
-#include "integer.h"
-#include "convert.h"
+#include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/map_operations.h"
+#include "libnormaliz/integer.h"
+#include "libnormaliz/convert.h"
 
-#include "matrix.h"
+#include "libnormaliz/matrix.h"
 
 //---------------------------------------------------------------------------
 

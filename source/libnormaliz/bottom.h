@@ -28,7 +28,7 @@
 #include <vector>
 #include <list>
 
-#include "matrix.h"
+#include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
 using namespace std;

@@ -27,10 +27,10 @@
 #include <list>
 #include <vector>
 
-#include "libnormaliz.h"
-#include "matrix.h"
-#include "sublattice_representation.h"
-#include "reduction.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/reduction.h"
 
 namespace libnormaliz {
 using std::list;

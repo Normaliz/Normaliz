@@ -21,8 +21,8 @@
  * terms of service.
  */
 
-#include "libnormaliz.h"
-#include "general.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/general.h"
 
 namespace libnormaliz {
 

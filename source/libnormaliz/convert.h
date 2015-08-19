@@ -29,8 +29,8 @@
 //---------------------------------------------------------------------------
 
 //#include <ostream>
-#include "normaliz_exception.h"
-#include "integer.h"
+#include "libnormaliz/normaliz_exception.h"
+#include "libnormaliz/integer.h"
 
 namespace libnormaliz {
 //using std::ostream;

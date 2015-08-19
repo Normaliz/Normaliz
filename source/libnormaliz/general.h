@@ -49,8 +49,8 @@ typedef long long MachineInteger;
 
 } /* end namespace libnormaliz */
 
-#include "libnormaliz.h"
-#include "normaliz_exception.h"
-#include "cone_property.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/normaliz_exception.h"
+#include "libnormaliz/cone_property.h"
 
 #endif /* GENERAL_H_ */

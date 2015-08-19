@@ -1,5 +1,5 @@
-#include "HilbertSeries.h"
-#include "vector_operations.h"
+#include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/vector_operations.h"
 #include <iostream>
 
 

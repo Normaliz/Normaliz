@@ -23,11 +23,11 @@
 
 #include <list>
 
-#include "vector_operations.h"
-#include "map_operations.h"
-#include "convert.h"
-#include "cone.h"
-#include "full_cone.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/map_operations.h"
+#include "libnormaliz/convert.h"
+#include "libnormaliz/cone.h"
+#include "libnormaliz/full_cone.h"
 
 namespace libnormaliz {
 using namespace std;

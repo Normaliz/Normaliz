@@ -1,14 +1,14 @@
 #ifdef NMZ_MIC_OFFLOAD
 
 #pragma offload_attribute (push, target(mic))
-#include "offload_handler.h"
-#include "offload.h"  // offload system header
-#include "matrix.h"
-#include "full_cone.h"
-#include "list_operations.h"
-#include "vector_operations.h"
-#include "my_omp.h"
-#include "HilbertSeries.h"
+#include "libnormaliz/offload_handler.h"
+#include "libnormaliz/offload.h"  // offload system header
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/full_cone.h"
+#include "libnormaliz/list_operations.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/my_omp.h"
+#include "libnormaliz/HilbertSeries.h"
 #include <iostream>
 #include <fstream>
 

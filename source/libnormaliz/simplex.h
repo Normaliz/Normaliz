@@ -37,10 +37,10 @@
 
 #include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz.h"
-#include "cone.h"
-#include "HilbertSeries.h"
-#include "reduction.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/cone.h"
+#include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/reduction.h"
 
 //---------------------------------------------------------------------------
 

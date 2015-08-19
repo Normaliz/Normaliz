@@ -4,7 +4,7 @@ SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp offloa
 SET(headers cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h)
 
 # add the necessary include directories
-INCLUDE_DIRECTORIES(.)
+INCLUDE_DIRECTORIES(..)
 FIND_PACKAGE(Boost REQUIRED)
 #IF (Boost_FOUND)
 #  MESSAGE(STATUS "Boost found with include dir: ${Boost_INCLUDE_DIR}")

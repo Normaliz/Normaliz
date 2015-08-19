@@ -32,8 +32,8 @@
  */
 
 
-#include "sublattice_representation.h"
-#include "vector_operations.h"
+#include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/vector_operations.h"
 
 //---------------------------------------------------------------------------
 

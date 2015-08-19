@@ -33,18 +33,17 @@
 #include <algorithm>
 #include <queue>
 
-#include "bottom.h"
-#include "libnormaliz.h"
-#include "vector_operations.h"
-#include "integer.h"
-//#include "my_omp.h"
-#include "full_cone.h"
+#include "libnormaliz/bottom.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/integer.h"
+//#include "libnormaliz/my_omp.h"
+#include "libnormaliz/full_cone.h"
 
 #ifdef NMZ_SCIP
-#include "scip/scip.h"
-#include "scip/scipdefplugins.h"  //TODO needed?
-#include "scip/cons_linear.h"
-//#include "objscip/objscip.h"
+#include <scip/scip.h>
+#include <scip/scipdefplugins.h>  //TODO needed?
+#include <scip/cons_linear.h>
 #else
 class SCIP;
 #endif // NMZ_SCIP

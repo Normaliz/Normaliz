@@ -30,8 +30,8 @@
 #include <iostream>
 #include <string>
 
-#include "full_cone.h"
-#include "list_operations.h"
+#include "libnormaliz/full_cone.h"
+#include "libnormaliz/list_operations.h"
 
 //---------------------------------------------------------------------------
 

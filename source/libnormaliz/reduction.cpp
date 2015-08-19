@@ -23,7 +23,7 @@
 
 //---------------------------------------------------------------------------
 
-#include "reduction.h"
+#include "libnormaliz/reduction.h"
 
 namespace libnormaliz {
 using namespace std;

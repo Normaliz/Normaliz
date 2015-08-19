@@ -27,11 +27,11 @@
 #include <iostream>
 #include <string>
 
-#include "integer.h"
-#include "vector_operations.h"
-#include "matrix.h"
-#include "simplex.h"
-#include "list_operations.h"
+#include "libnormaliz/integer.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/simplex.h"
+#include "libnormaliz/list_operations.h"
 
 //---------------------------------------------------------------------------
 

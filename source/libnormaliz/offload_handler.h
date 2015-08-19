@@ -7,10 +7,10 @@
 #define FREE alloc_if(0) free_if(1)
 #define REUSE alloc_if(0) free_if(0)
 
-#include "libnormaliz.h"
+#include "libnormaliz/libnormaliz.h"
 #include <list>
 #include <vector>
-#include "offload.h"  // offload system header
+#include "libnormaliz/offload.h"  // offload system header
 
 namespace libnormaliz {
 

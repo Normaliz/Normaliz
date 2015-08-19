@@ -29,11 +29,11 @@
 #include <utility> //for pair
 //#include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz.h"
-#include "cone_property.h"
-#include "sublattice_representation.h"
-#include "matrix.h"
-#include "HilbertSeries.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/cone_property.h"
+#include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
 using std::vector;

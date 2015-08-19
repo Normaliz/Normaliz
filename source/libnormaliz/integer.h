@@ -24,12 +24,12 @@
 #ifndef INTEGER_H_
 #define INTEGER_H_
 
-#include "general.h"
+#include "libnormaliz/general.h"
 
 #include <list>
 #include <vector>
 #include <iostream>
-#include "limits.h"
+#include <limits.h>
 
 
 // Integer should (may) support:

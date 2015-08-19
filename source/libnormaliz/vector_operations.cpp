@@ -26,11 +26,11 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include<list>
+#include <list>
 
-#include "integer.h"
-#include "vector_operations.h"
-#include "matrix.h"
+#include "libnormaliz/integer.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/matrix.h"
 
 //---------------------------------------------------------------------------
 

@@ -30,16 +30,17 @@
 #include <set>
 #include <deque>
 
-#include "time.h"
-#include "integer.h"
-#include "vector_operations.h"
-#include "matrix.h"
-#include "simplex.h"
-#include "list_operations.h"
-#include "HilbertSeries.h"
-#include "cone.h"
-#include "my_omp.h"
-#include "bottom.h"
+#include <time.h>
+
+#include "libnormaliz/integer.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/simplex.h"
+#include "libnormaliz/list_operations.h"
+#include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/cone.h"
+#include "libnormaliz/my_omp.h"
+#include "libnormaliz/bottom.h"
 
 //---------------------------------------------------------------------------
 

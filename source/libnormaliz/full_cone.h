@@ -30,15 +30,15 @@
 //#include <set>
 #include <boost/dynamic_bitset.hpp>
 
-#include "libnormaliz.h"
-#include "cone_property.h"
-#include "matrix.h"
-#include "simplex.h"
-#include "cone_dual_mode.h"
-#include "HilbertSeries.h"
-#include "reduction.h"
-// #include "sublattice_representation.h"
-#include "offload_handler.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/cone_property.h"
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/simplex.h"
+#include "libnormaliz/cone_dual_mode.h"
+#include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/reduction.h"
+// #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/offload_handler.h"
 
 namespace libnormaliz {
 using std::list;

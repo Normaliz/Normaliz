@@ -31,8 +31,8 @@
 #include <vector>
 #include <list>
 
-#include "libnormaliz.h"
-#include "simplex.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/simplex.h"
 
 namespace libnormaliz {
 

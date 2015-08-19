@@ -32,9 +32,9 @@
 #include <iostream>
 #include <string>
 
-#include "libnormaliz.h"
-#include "integer.h"
-#include "convert.h"
+#include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/integer.h"
+#include "libnormaliz/convert.h"
 
 //---------------------------------------------------------------------------
 

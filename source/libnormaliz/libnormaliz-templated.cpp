@@ -25,17 +25,17 @@
 #pragma offload_attribute (push, target(mic))
 #endif
 
-#include "libnormaliz.cpp"
-#include "integer.cpp"
-#include "vector_operations.cpp"
-#include "matrix.cpp"
-#include "simplex.cpp"
-#include "list_operations.cpp"
-#include "sublattice_representation.cpp"
-#include "reduction.cpp"
-#include "full_cone.cpp"
-#include "cone_dual_mode.cpp"
-#include "cone.cpp"
+#include "libnormaliz/libnormaliz.cpp"
+#include "libnormaliz/integer.cpp"
+#include "libnormaliz/vector_operations.cpp"
+#include "libnormaliz/matrix.cpp"
+#include "libnormaliz/simplex.cpp"
+#include "libnormaliz/list_operations.cpp"
+#include "libnormaliz/sublattice_representation.cpp"
+#include "libnormaliz/reduction.cpp"
+#include "libnormaliz/full_cone.cpp"
+#include "libnormaliz/cone_dual_mode.cpp"
+#include "libnormaliz/cone.cpp"
 
 namespace libnormaliz {
 

@@ -32,14 +32,14 @@
 #include <time.h>
 #include <deque>
 
-#include "full_cone.h"
-#include "vector_operations.h"
-#include "list_operations.h"
-#include "map_operations.h"
-#include "my_omp.h"
-#include "integer.h"
-// #include "sublattice_representation.h"
-#include "offload_handler.h"
+#include "libnormaliz/full_cone.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/list_operations.h"
+#include "libnormaliz/map_operations.h"
+#include "libnormaliz/my_omp.h"
+#include "libnormaliz/integer.h"
+// #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/offload_handler.h"
 
 //---------------------------------------------------------------------------
 

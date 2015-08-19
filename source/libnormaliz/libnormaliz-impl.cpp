@@ -21,7 +21,7 @@
  * terms of service.
  */
 
-#include "libnormaliz.cpp"
+include "libnormaliz/libnormaliz.cpp"
 
 namespace libnormaliz {
 

@@ -31,9 +31,9 @@
 #include <string>
 #include <algorithm>
 
-#include "cone_dual_mode.h"
-#include "vector_operations.h"
-#include "list_operations.h"
+#include "libnormaliz/cone_dual_mode.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/list_operations.h"
 
 //---------------------------------------------------------------------------
 

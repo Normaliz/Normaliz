@@ -28,10 +28,10 @@
 #include <algorithm>
 #include <math.h>
 
-#include "matrix.h"
-#include "vector_operations.h"
-#include "normaliz_exception.h"
-#include "sublattice_representation.h"
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/vector_operations.h"
+#include "libnormaliz/normaliz_exception.h"
+#include "libnormaliz/sublattice_representation.h"
 
 //---------------------------------------------------------------------------
 
