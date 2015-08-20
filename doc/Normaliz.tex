@@ -758,7 +758,7 @@ grading
 unit_vector 3
 HilbertSeries
 \end{Verbatim}
-This is the first time that the we used the shortcut \verb|unit_vector <n>| which represents the $n$-th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
+This is the first time that we used the shortcut \verb|unit_vector <n>| which represents the $n$th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
 
 From the output file we only list the data of the Ehrhart series.
 \begin{Verbatim}
@@ -1807,10 +1807,10 @@ An item cannot include another item. In particular, comments can only be include
 Matrices and vectors are classified by the following attributes:
 \begin{arab}
 	\item generators, constraints, accessory,
-	\item cone/polyhedron, (affine) lattice.
+	\item cone/polyhedron, (affine) lattice,
 	\item homogeneous, inhomogeneous.
 \end{arab} 
-In this classification equations are considered as constraints on the lattice because Normaliz treats them as such -- for good reason: it is very easy to intersect a lattice with a hyperplane.
+In this classification, equations are considered as constraints on the lattice because Normaliz treats them as such -- for good reason: it is very easy to intersect a lattice with a hyperplane.
 
 The line structure is irrelevant for the interpretation of the input, but it is advisable to use it for the readability of the input file.
 
@@ -1846,7 +1846,7 @@ A matrix is built as follows:
 ...
 <x_m>
 \end{Verbatim}
-Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},...,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example (with \verb|amb_soace 3|):
+Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},...,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example (with \verb|amb_space 3|):
 \begin{Verbatim}
 cone 3
 1 2 3
@@ -1944,7 +1944,7 @@ If the input is inhomogeneous, then Normaliz provides default values for vertice
 
 The input may contain several cone defining items and several lattice defining items.
 
-The sublattice $L$ is defined by the lattice input items is the \emph{intersection} of the sublattices defined by the single items. The polyhedron $P$ is defined as the intersection of all polyhedra defined by the single  polyhedron defining items. The object then computed by Normaliz is
+The sublattice $L$  defined by the lattice input items is the \emph{intersection} of the sublattices defined by the single items. The polyhedron $P$ is defined as the intersection of all polyhedra defined by the single  polyhedron defining items. The object then computed by Normaliz is
 $$
 P\cap L.
 $$
@@ -2011,7 +2011,7 @@ There are $3$ types:
 	$$
 	\xi_1x_1+\dots+\xi_dx_d> 0
 	$$
-	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behave like \verb|inequalities| in every other respect . 
+	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
 	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
@@ -2141,7 +2141,7 @@ A grading or a dehomogenization is often given by a unit vector:
 \begin{itemize}
 \itemtt[unit\_vector <n>]  represents the $n$th unit vector in $\RR^d$ where $n$ is the number given by \verb|<n>|.
 \end{itemize}
-This shortcut cannot be used as a row of a matrix. It can be used whenever a single vector is asked for, namely after \verb|grading|, \verb|dehomogenization|, \verb|signs| and \verb|strict_signs|. See Section \ref{???}, \verb|???.in|
+This shortcut cannot be used as a row of a matrix. It can be used whenever a single vector is asked for, namely after \verb|grading|, \verb|dehomogenization|, \verb|signs| and \verb|strict_signs|. See Section \ref{rational}, \verb|rational.in|
 
 \subsection{Grading}\label{grading}
 
@@ -2269,7 +2269,7 @@ It is possible to set \verb|DefaultMode| explicitly in addition to other computa
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and |\verb|SupportHyperplanes|.
+The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|.
 
 \subsubsection{Lattice data}
 
@@ -2402,7 +2402,7 @@ There is no need to worry about the integer type chosen by Normaliz. All prepara
 	\itemtt[BigInt, -B]	
 \end{itemize}
 
-Note that Normaliz tries to avoid overflows by intermediate results. It such overflow should happen, the computation is repeated locally with indefinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
+Note that Normaliz tries to avoid overflows by intermediate results. If such overflow should happen, the computation is repeated locally with indefinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
 
 \verb|BigInt| is not a cone property.
 
@@ -2420,11 +2420,13 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 		
 	\itemtt[VerticesOfPolyhedron] controls the vertices of the polyhedron in the inhomogeneous case.
 	
+	\itemtt[HilbertFunction] controls the Hilbert (quasi)polynomial.
+	
 	\itemtt[RecessionRank]  controls the rank of the recession monoid in inhomogeneous computations.
 	
 	\itemtt[AffineDim]  controls the affine dimension of the polyhedron in inhomogeneous computations.
 	
-	\itemtt[ModuleRank] in inhomogeneous computations computes it controls the rank of the module of lattice points in the polyhedron as a module over the recession monoid. 
+	\itemtt[ModuleRank] in inhomogeneous computations it controls the rank of the module of lattice points in the polyhedron as a module over the recession monoid. 
 	
 	\itemtt[ExcludedFaces] controls the excluded faces.
 	
@@ -2690,7 +2692,7 @@ If we are just interested in the degree $1$ points, Normaliz uses the approximat
 \item computation of candidate subdivision points by approximation of the given simplicial cone by an overcone that is generated by vectors  of `low denominator''.
 \end{arab}
 
-Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
+Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. Furthermore, if some big simplices are still remaining, method (2) is applied again in both cases with a higher approximation level. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
 
 The use of SCIP requires a Normaliz executable that is compiled with the option \verb|SCIP=yes| after the installation of SCIP. Without SCIP only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this vase the approximation method will be tried as well. 
 
@@ -2743,7 +2745,7 @@ total_degree
 DualMode
 HilbertSeries
 \end{Verbatim}
-The computation time (20 parallel threads) is 2 m 54 s whereas the default mode needs ???.
+The computation time (20 parallel threads) is 2 m 54 s whereas the default mode needs 4 h 4 m 20 s. 
 
 In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant sum of the Hilbert series computation is only $\approx 8.4\times 10^9$.
 
