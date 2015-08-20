@@ -1796,8 +1796,8 @@ several items. There are several types of items:
 
 \begin{arab}
 	\item definition of the ambient space,
-	\item matrices,
-	\item vectors,
+	\item matrices with integer entries,
+	\item vectors with integer entries,
 	\item computation goals and algorithmic variants,
 	\item comments.
 \end{arab}
@@ -2673,7 +2673,7 @@ We look at the \emph{bottom} (the union of the compact faces) of the polyhedron 
 \end{center}
 With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz 3.0 computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
 
-Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 5$ activates the bottom decomposition.
+Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition.
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
@@ -2987,7 +2987,7 @@ amb_space 2
 cone 2
 2 1
 1 3
-inequalities 2
+support_hyperplanes 2
 -1  2
  3 -1
 \end{Verbatim}
@@ -3300,7 +3300,7 @@ dimension $24$.
 (3) Another critical parameter are the determinants of the
 generator matrices of the simplicial cones. To get some feeling
 for their sizes, one can restrict the input to a subset (of the
-extreme rays computed in (1)) and use the option \ttt{-v} or the computation goal \verb|DeeterminantSum| if there is no grading.
+extreme rays computed in (1)) and use the option \ttt{-v} or the computation goal \verb|TriangulationDetSum| if there is no grading.
 
 The output file contains the number of simplicial cones as well
 as the sum of the absolute values of the determinants. The
