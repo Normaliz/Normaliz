@@ -1998,7 +1998,7 @@ There are $3$ types:
 \begin{itemize}
 	\itemtt[inequalities] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents a homogeneous inequality
 	$$
-	\xi_1x_1+\dots+\xi_dx_d\ge 0
+	\xi_1x_1+\dots+\xi_dx_d\ge 0, \qquad \xi_i\in\ZZ,
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Sections \ref{ineq_ex}, \ref{rat_ineq} , \verb|2cone_ineq.in|, \verb|poly_ineq.in|
 	
@@ -2009,7 +2009,7 @@ There are $3$ types:
 	
 	\itemtt[excluded\_faces]  is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an inequality
 	$$
-	\xi_1x_1+\dots+\xi_dx_d> 0
+	\xi_1x_1+\dots+\xi_dx_d> 0, \qquad \xi_i\in\ZZ,
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
@@ -2022,13 +2022,13 @@ There are $3$ types:
 \begin{itemize}
 	\itemtt[equations] is a matrix with $d$ columns. Every row $(\xi_1,\dots,\xi_d)$ represents an equation
 	$$
-	\xi_1x_1+\dots+\xi_dx_d= 0
+	\xi_1x_1+\dots+\xi_dx_d= 0, \qquad \xi_i\in\ZZ,
 	$$
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. Section \ref{eq_ex}, \verb|3x3magic.in|
 	
 	\itemtt[congruences] is a matrix with $d+1$ columns. Each row $(\xi_1,\dots,\xi_d,c)$ represents a congruence
 	$$
-	\xi_1z_1+\dots+\xi_dz_d\equiv 0 \mod c
+	\xi_1z_1+\dots+\xi_dz_d\equiv 0 \mod c, \qquad \xi_i,c\in\ZZ,
 	$$
 	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. Section \ref{cong_ex}, \verb|3x3magiceven.in|.
 \end{itemize}
@@ -2040,7 +2040,7 @@ There are $3$ types:
 \begin{itemize}
 	\itemtt[vertices] is a matrix with $d+1$ columns. Each row $(p_1,\dots,p_d,q)$, $q>0$, specifies a generator of a polyhedron (not necessarily a vertex), namely
 	$$
-	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr),
+	v_i=\biggl(\frac{p_{1}}{q},\dots,\frac{p_{n}}{q}\biggr), \qquad p_i\in\ZZ,q\in\ZZ_{>0},
 	$$
 	Section \ref{polyh_ex}, \verb|InhomIneq_gen.in|
 	
@@ -2109,7 +2109,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	
 	\itemtt[inhom\_congruences] We consider a matrix with $d+2$ columns. Each  the row $(\xi_1,\dots,\xi_d,-\eta,c)$ represents a congruence
 	$$
-	\xi_1z_1+\dots+\xi_dz_d\equiv \eta \mod c
+	\xi_1z_1+\dots+\xi_dz_d\equiv \eta \mod c, \qquad \xi_i,\eta,c\in\ZZ,
 	$$
 	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. Section \ref{ChinRem}, \verb|InhomCong.in|.
 \end{itemize}
@@ -2575,7 +2575,7 @@ In this section we discuss some advanced features of Normaliz.
 
 In order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vectors that are needed for the Hilbert basis computations, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
 
-Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept.This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by th e option \verb|Approximate|, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should be not too large.
+Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept. This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by the option \verb|Approximate|, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should not be too large.
 \begin{center}
 	\begin{tikzpicture}[scale=0.6]
 	\filldraw[fill=orange] (0,0) -- (0,1) -- (1,3) -- (2,4) -- (3,4) -- (4,1) -- (3,0) --cycle;
@@ -2689,7 +2689,7 @@ Especially in computations with rational polytopes one encounters very large det
 If we are just interested in the degree $1$ points, Normaliz uses the approximation method of Section \ref{approx} and finds $44$ degree $1$ points very quickly. If we use these points together with the extreme rays of the simplex, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
 \begin{arab}
 \item computation of subdivision points by the IP solver SCIP,
-\item computation of candidate subdivision points by approximation of the given simplicial cone by an overcone that is generated by vectors  of `low denominator''.
+\item computation of candidate subdivision points by approximation of the given simplicial cone by an overcone that is generated by vectors  of ``low denominator''.
 \end{arab}
 
 Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. Furthermore, if some big simplices are still remaining, method (2) is applied again in both cases with a higher approximation level. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
@@ -2735,7 +2735,7 @@ Note: After subdivision the decomposition of the cone may no longer be a triangu
 The choice between the primal and the dual algorithm for Hilbert basis computations is presently left to the user. Normaliz does not make a guess which algorithm might be faster. If the number of support hyperplanes is small relative to the dimension, then the dual algorithm can be much faster. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
 The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm. Note that the dual algorithm is arithmetically less critical than the primal algorithm since it basically only requires addition of vectors.
 
-When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| abd the computation goal \verb|HilbertSeries|:
+When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| and the computation goal \verb|HilbertSeries|:
 \begin{Verbatim}
 amb_space 9
 equations 2
@@ -2750,7 +2750,7 @@ The computation time (20 parallel threads) is 2 m 54 s whereas the default mode 
 In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant sum of the Hilbert series computation is only $\approx 8.4\times 10^9$.
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
-Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate, The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
+Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate. The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
 \begin{Verbatim}
 amb_space 3
 inequalities 2
@@ -2803,7 +2803,7 @@ Note that the dehomogenization need not be a coordinate. It can be any linear fo
 \subsection{Exporting the triangulation}
 
 The option \ttt{-T} asks Normaliz to export the triangulation by writing the files 
-writes \ttt{<project>.tgn} and \verb|<project>.tri|:
+ \ttt{<project>.tgn} and \verb|<project>.tri|:
 
 \begin{itemize}
 	
@@ -2901,7 +2901,7 @@ triangulation this file contains a block of data:
 	generators $v_{i_1},\dots,v_{i_m}$ relative to the
 	order in \ttt{tgn} (as in \ttt{tri}, $m=\rank \EE$);
 	
-	\item[(ii)] a $\mu\times m$ matrix where $\mu$ the
+	\item[(ii)] a $\mu\times m$ matrix where $\mu$ is the
 	multiplicity of $\Delta$ (see above).
 	
 	In the notation of \cite{BIS}, each line lists an
@@ -2994,7 +2994,7 @@ support_hyperplanes 2
 
 As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
-\subsection{Shift, denominator, qusipolynomial and multiplicty}\label{sdqm}
+\subsection{Shift, denominator, quasipolynomial and multiplicty}\label{sdqm}
 
 In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
 \begin{Verbatim}
@@ -3029,7 +3029,7 @@ Hilbert polynomial:
 2 
 with common denominator = 1
 \end{Verbatim}
-The Hilbert serues computed by hand is
+The Hilbert series computed by hand is
 $$
 \frac{t^{-7}+1}{1-t^7}.
 $$
@@ -3054,7 +3054,7 @@ inhom_inequalities 3
 grading
 7 0 
 inhom_congruences 1
-1 0 1 8
+1 1 1 8
 \end{Verbatim}
 The result:
 \begin{Verbatim}
@@ -3081,15 +3081,11 @@ cyclotomic denominator:
 1: 1  4: 1  8: 1  
 
 Hilbert quasi-polynomial of period 8:
-0:  0
-1:  0
-2:  0
-3:  0
-4:  0
-5:  0
-6:  1
-7:  1
-with common denominator = 1
+0:  0           4:  0
+1:  0           5:  0
+2:  0           6:  1
+3:  0           7:  1
+                with common denominator = 1
 \end{Verbatim}
 The printed Hilbert series is
 $$
@@ -3115,12 +3111,12 @@ The example \verb|CondEffPlur.in| is one of the largest that Normaliz has master
 	\begin{tabular}{|r|r|r|r|}\hline
 		input	& triangulation size& determinant sum& computation time\\ \hline
 		inequalities & 347,225,775,338 &4,111,428,313,448  & 112:43:17 h\\ \hline
-		inequalities \ttt{-b} & 288,509,390,884 & 1,509,605,641,358 & 84:26:19 h\\ \hline
+		inequalities, \ttt{-b} & 288,509,390,884 & 1,509,605,641,358 & 84:26:19 h\\ \hline
 		Hilbert basis, \ttt{-b}& 335,331,680,623&1,433,431,230,802& 97:50:05 h \\ \hline
 	\end{tabular}
 \end{center}
 
-The results show that the determinant sum of the bottom decomposition based on th extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
+The results show that the determinant sum of the bottom decomposition based on the extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
 
 As long as the determinants are rather small (as in this computation), the two cases $\det=1$ and $\det>1$ make the difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
 
@@ -3130,7 +3126,7 @@ Note: though Normaliz can compute this example, it is really a case for NmzInteg
 \section{Optional output files}\label{optionaloutput}
 
 
-When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a}, Normaliz
+When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a} is activated, Normaliz
 writes additional output files whose names are of type
 \ttt{<project>.<type>}. (Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec| as well as the options calling NmzIntegrate also write files in addition to \verb|<project>.out|.) Moreover one can select the optional output files individually via command line options. Most of these files contain matrices in a simple format:
 \begin{Verbatim}
