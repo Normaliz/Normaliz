@@ -3910,7 +3910,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
         if(!non_zero){  // not impossible if the hyperplane contains the vector space spanned by the cone
             errorOutput() << "Fatal error: excluded face contains the full cone" << endl;
             throw FatalException();
-        }
+        }       
     }
     
     vector<bool> essential(ExcludedFaces.nr_of_rows(),true);
@@ -3929,10 +3929,14 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
         }
     if(remove_one){
         Matrix<Integer> Help(0,dim);
+        vector<boost::dynamic_bitset<> > HelpGensInExcl;
         for(size_t i=0;i<essential.size();++i)
-            if(essential[i])
+            if(essential[i]){
                 Help.append(ExcludedFaces[i]);
+                HelpGensInExcl.push_back(GensInExcl[i]);
+            }
         ExcludedFaces=Help;
+        GensInExcl=HelpGensInExcl;
     }
     is_Computed.set(ConeProperty::ExcludedFaces);
     
