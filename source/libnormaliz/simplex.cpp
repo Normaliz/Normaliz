@@ -678,7 +678,10 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     s.vol=volume;
     if(C_ptr->do_only_multiplicity)
         return true;
-    if (volume>SimplexParallelEvaluationBound && !C_ptr->do_Stanley_dec) //&& omp_get_max_threads()>1) // to be postponed for parallel evaluation
+    // large simplicies to be postponed for parallel evaluation
+    if ( (volume > SimplexParallelEvaluationBound ||
+           (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
+       && !C_ptr->do_Stanley_dec) //&& omp_get_max_threads()>1)
         return false;
     take_care_of_0vector(C_ptr->Results[tn]);
     if(volume!=1)
@@ -887,7 +890,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
-    if (C_ptr->use_bottom_points && volume >= ScipBound && C_ptr->approx_level==1)
+    if (C_ptr->use_bottom_points && volume >= SimplexParallelEvaluationBound
+        && C_ptr->approx_level==1)
     {
 
         Full_Cone<Integer>& C = *C_ptr;
