@@ -1439,6 +1439,16 @@ multiplicity = 1717/8192
 \end{Verbatim}
 Since there are $4$ candidates, the probability for the existence of a Condorcet winner is $1717/2048$.
 
+We can refine the information on the Condorcet paradoxon by computing the Hilbert series. Either we delete \verb|Multiplicity| from the input file or, better, we add \verb|--HilbertSeries|(or simply \verb|-q|) on the command line. The result:
+\begin{Verbatim}
+Hilbert series:
+1 5 133 363 4581 8655 69821 100915 ... 12346 890 481 15 6 
+denominator with 24 factors:
+1: 1  2: 14  4: 9
+
+degree of Hilbert Series as rational function = -25
+\end{Verbatim}
+
 \subsubsection{Excluding ties}\label{excluded_ex}
 
 Now we are more ambitious and want to compute the Hilbert series for the Condorcet paradoxon, or more precisely, the number of election outcomes having $A$ as the Condorcet winner depending on the number $k$ of voters. Moreover, as it is customary in social choice theory, we want to exclude ties. The input file changes to \verb|CondorcetSemi.in|:
@@ -1454,7 +1464,18 @@ HilbertSeries
 \end{Verbatim}
 We could omit \verb|HilbertSeries|, and the computation would include the Hilbert basis. The type \verb|excluded_faces| only affects the Hilbert series. In every other respect it is equivalent to \verb|inequalities|.
 
-Please have a look at \verb|CondorcetSemi.out|.
+From the file \verb|CondorcetSemi.out| we only display the Hilbert series:
+\begin{Verbatim}
+Hilbert series:
+6 15 481 890 12346 ... 100915 69821 8655 4581 363 133 5 1 
+denominator with 24 factors:
+1: 1  2: 14  4: 9  
+
+shift = 1
+
+degree of Hilbert Series as rational function = -24
+\end{Verbatim}
+Surprisingly, this looks like the Hilbert series in the previous section read backwards, roughly speaking. Thois is true, and one can explain it. 
 
 It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. If there are many excluded faces, then it is better to use \verb|strict_inequalities|. However, at present NmzIntegrate can only work with \verb|excluded_faces|.
 
@@ -1474,10 +1495,23 @@ HilbertSeries
 \end{Verbatim}
 The entry $1$ at position $i$ of the vector \verb|strict_signs| imposes the inequality $x_i\ge1$. A $-1$ would impose the inequality $x_i\le -1$, and the entry $0$ imposes no condition on the $i$-th coordinate.
 
-In the output file we see the numerator polynomial of the Hilbert series of \verb|CondorcetSemi.in| in reverse order of coefficients. This is an example of generalized Ehrhart reciprocity; see \cite[Theorem 6.70]{BG}.
+\begin{Verbatim}
+Hilbert series:
+1 5 133 363 4581 8655 69821 100915 ... 12346 890 481 15 6 
+denominator with 24 factors:
+1: 1  2: 14  4: 9  
 
-If we want the interior of the Condorcet cone, we must use \verb|strict_inequalities| on place of \verb|inequalities| in order to see an example of ``ordinary'' Ehrhart reciprocity.
+shift = 24
 
+degree of Hilbert Series as rational function = -1
+\end{Verbatim}
+Again we encounter (almost) the Hilbert series of the Condorect paradoxon (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ trhe ideal of lattice points in the interior of $C$. Moreover, let $\mathbf e\in\ZZ^{24}$ be the vector with all entries $1$. 
+
+Since $\mathbf e$ lies in the three facets defining the ties, it follows that $I_2=M+\mathbf e$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathbf e$, and generalized reciprocity follows from ordinary reciprocity in this very special case.
+
+The essential point in these arguments (apart from reciprocity) is that $\mathbf e$ lies in all support hyperplanes of $C$ except the coordinate hyperplanes.
+
+You can easily compute the Hilbert series of $I_3$ by making all inequalities strict.
 
 \subsection{Testing normality}\label{normalization_ex}
 
