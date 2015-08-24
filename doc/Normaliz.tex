@@ -198,7 +198,7 @@ Normaliz is written in C++, and should be compilable on every system that has a 
 
 The executables provided by us use the integer optimization program SCIP \cite{Scip} for certain subtasks, but the inclusion of SCIP must be activated at compile time.
 
-Normaliz consists of twom parts: the front end normaliz for input and output and the C++ library libnormaliz that does the computations.
+Normaliz consists of two parts: the front end normaliz for input and output and the C++ library libnormaliz that does the computations.
 
 Normaliz can be accessed from the following systems:
 \begin{itemize}
@@ -854,7 +854,7 @@ by the following fact: $e_i$ is the common period of the
 coefficients $p_{r-i},\dots,p_{r-1}$. The user should prove
 this fact or at least verify it by several examples.
 
-\emph{Warning}: It is tempting, but not a good idea to define the poyltope by the input type \verb|vertices|. It would make Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
+\emph{Warning}: It is tempting, but not a good idea to define the polytope by the input type \verb|vertices|. It would make Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
 
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
 
@@ -1506,7 +1506,7 @@ shift = 24
 
 degree of Hilbert Series as rational function = -1
 \end{Verbatim}
-Again we encounter (almost) the Hilbert series of the Condorect paradoxon (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ the ideal of lattice points in the interior of $C$. Moreover, let $\mathds{1}\in\ZZ^{24}$ be the vector with all entries $1$. 
+Again we encounter (almost) the Hilbert series of the Condorcet paradoxon (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ the ideal of lattice points in the interior of $C$. Moreover, let $\mathds{1}\in\ZZ^{24}$ be the vector with all entries $1$. 
 
 Since $\mathds{1}$ lies in the three facets defining the ties, it follows that $I_2=M+\mathds{1}$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathds{1}$, and generalized reciprocity follows from ordinary reciprocity in this very special case.
 
@@ -2324,11 +2324,11 @@ Normaliz tries to find a grading. In the inhomogeneous case the module rank is c
 
 \begin{itemize}
 	
-	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it aks for the Hilbert basis of the recession monoid \emph{and} the module generators.
+	\itemtt[HilbertBasis, -N] triggers the computation of the Hilbert basis. In inhomogeneous computations it asks for the Hilbert basis of the recession monoid \emph{and} the module generators.
 	
 	\itemtt[Deg1Elements, -1] restricts the computation to the degree $1$ elements of the Hilbert basis. Requires the presence of a grading. Forbidden in inhomogeneous computations.
 	
-	\itemtt[ModuleGeneratorsOfIntegralClosure, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
+	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators. Forbidden in inhomogeneous computations.
 \end{itemize}
 
 \subsubsection{Enumerative data}
@@ -3029,7 +3029,7 @@ support_hyperplanes 2
 
 As pointed out in Section \ref{HomConstrCone}, Normaliz must trust you---here is no way of checking the correctness of this input without recomputing it.
 
-\subsection{Shift, denominator, quasipolynomial and multiplicty}\label{sdqm}
+\subsection{Shift, denominator, quasipolynomial and multiplicity}\label{sdqm}
 
 In this section we discuss the interplay of shift, denominator of the grading and the quasipolynomial. As long as the denominator is $1$, the situation is very simple and no ambiguity arises. See Section \ref{inhom_ineq_ex}. We modify the example from that section as follows (\verb|InhomIneq_7.in|):
 \begin{Verbatim}
@@ -3130,13 +3130,13 @@ The application of the shift yields
 $$
 \frac{t^{-1}+t^6}{1-t^8}.
 $$
-the correct result for the divided grading. \emph{The Hilbert qasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
+the correct result for the divided grading. \emph{The Hilbert quasipolynomial is computed for the divided grading}, as already explained in Section \ref{cong_ex}. As a last step, we can apply the substitution $t\mapsto t^7$ in order obtain the Hilbert series
 $$
 \frac{t^{-7}+t^{42}}{1-t^{56}}
 $$
 for the original grading.
 
-Like the quasipolynomial, \emph{the multiplity is computed for the divided grading}. 
+Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. 
 
 \subsection{A very large computation}\label{ele3}
 
@@ -4042,7 +4042,7 @@ A Normaliz 2 input file contains a sequence of matrices. Comments or options are
 <x_m>
 <type>
 \end{Verbatim}
-where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<m>| entries each. All matrix types of Normaliz 3 re allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
+where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>...<x_n>| are the rows with \verb|<m>| entries each. All matrix types of Normaliz 3 are allowed (with Normaliz 3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
 
 The optional output files of with suffix \verb|cst| are still in this format. Just create one and inspect it.
 

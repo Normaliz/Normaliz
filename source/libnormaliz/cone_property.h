@@ -65,7 +65,7 @@ namespace ConeProperty {
         InclusionExclusionData,
         Sublattice,
         ClassGroup,
-        ModuleGeneratorsOfIntegralClosure,
+        ModuleGeneratorsOverOriginalMonoid,
         // the following are more compute options than real properties of the cone
         Approximate,
         BottomDecomposition,

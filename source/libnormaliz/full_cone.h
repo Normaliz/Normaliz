@@ -125,7 +125,7 @@ public:
     Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
-    list<vector<Integer> > ModuleGeneratorsOfIntegralClosure;
+    list<vector<Integer> > ModuleGeneratorsOverOriginalMonoid;
     CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
@@ -361,7 +361,7 @@ Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constru
     Matrix<Integer> getSupportHyperplanes() const;
     void getTriangulation(list< vector<key_t> >& Triang, list<Integer>& TriangVol) const;
     Matrix<Integer> getHilbertBasis() const;
-    Matrix<Integer> getModuleGeneratorsOfIntegralClosure()const;
+    Matrix<Integer> getModuleGeneratorsOverOriginalMonoid()const;
     Matrix<Integer> getDeg1Elements() const;
     vector<Integer> getHVector() const;
     Matrix<Integer> getExcludedFaces()const;

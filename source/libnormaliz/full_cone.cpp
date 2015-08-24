@@ -1990,7 +1990,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
         nrPyramids[0]++;
     }
     if(verbose)
-        verboseOutput() << "Botttom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
+        verboseOutput() << "Bottom decomposition computed, " << nrPyramids[0] << " subcones" << endl;
 }
 
 template<typename Integer>
@@ -2621,11 +2621,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
                 
     if (do_Hilbert_basis) {
         if(do_module_gens_intcl){
-            NewCandidates.extract(ModuleGeneratorsOfIntegralClosure);
+            NewCandidates.extract(ModuleGeneratorsOverOriginalMonoid);
             // cout << "Mod " << endl;
-            // Matrix<Integer>(ModuleGeneratorsOfIntegralClosure).pretty_print(cout);
+            // Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid).pretty_print(cout);
             // cout << "--------" << endl;
-            is_Computed.set(ConeProperty::ModuleGeneratorsOfIntegralClosure,true);
+            is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
             NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2
             update_reducers(true); // must be forced -- otherwise not done in the simplicial case         
         }
@@ -3883,7 +3883,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
                                    // which generators lie in the excluded faces
 
     for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){ // now we produce these indicators
-        bool first_neq_0=true;           // and check whether the inear forms in ExcludedFaces
+        bool first_neq_0=true;           // and check whether the linear forms in ExcludedFaces
         bool non_zero=false;             // have the cone on one side
         GensInExcl[j].resize(nr_gen,false);
         for(size_t i=0; i< nr_gen;++i){
@@ -3896,11 +3896,11 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
             if(first_neq_0){
                 first_neq_0=false;
                 if(test<0){
-                    for(size_t k=0;k<dim;++k)  // replace linear dorm by its negative
+                    for(size_t k=0;k<dim;++k)     // replace linear form by its negative
                         ExcludedFaces[j][k]*=-1;  // to get cone in positive halfspace 
                     test*=-1;                     // (only for error check)
                 }    
-             }
+            }
             if(test<0){
                 errorOutput() << "Fatal error: excluded hyperplane does not define a face" << endl;
                 throw FatalException();
@@ -4584,11 +4584,11 @@ Matrix<Integer> Full_Cone<Integer>::getHilbertBasis()const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::getModuleGeneratorsOfIntegralClosure()const{
-    if(ModuleGeneratorsOfIntegralClosure.empty())
+Matrix<Integer> Full_Cone<Integer>::getModuleGeneratorsOverOriginalMonoid()const{
+    if(ModuleGeneratorsOverOriginalMonoid.empty())
         return Matrix<Integer>(0,dim);
     else
-        return Matrix<Integer>(ModuleGeneratorsOfIntegralClosure);
+        return Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid);
 }
 
 

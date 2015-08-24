@@ -191,7 +191,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 				break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
-                to_compute.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
+                to_compute.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
                 break;
             case '?':  //print help text and exit
                 return true;

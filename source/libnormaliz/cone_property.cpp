@@ -181,7 +181,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Triangulation
                   || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
-                  || prop == ConeProperty::ModuleGeneratorsOfIntegralClosure
+                  || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
                 ) {
                     errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
@@ -235,7 +235,7 @@ namespace {
         CPN.at(ConeProperty::InclusionExclusionData) = "InclusionExclusionData";
         CPN.at(ConeProperty::Sublattice) = "Sublattice";
         CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
-        CPN.at(ConeProperty::ModuleGeneratorsOfIntegralClosure) = "ModuleGeneratorsOfIntegralClosure";
+        CPN.at(ConeProperty::ModuleGeneratorsOverOriginalMonoid) = "ModuleGeneratorsOverOriginalMonoid";
         // the following are more compute options than real properties of the cone
         CPN.at(ConeProperty::Approximate) = "Approximate";
         CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";

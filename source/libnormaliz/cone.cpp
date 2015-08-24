@@ -1153,19 +1153,19 @@ size_t Cone<Integer>::getNrHilbertBasis() {
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsOfIntegralClosureMatrix() {
-    compute(ConeProperty::ModuleGeneratorsOfIntegralClosure);
-    return ModuleGeneratorsOfIntegralClosure;
+const Matrix<Integer>& Cone<Integer>::getModuleGeneratorsOverOriginalMonoidMatrix() {
+    compute(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+    return ModuleGeneratorsOverOriginalMonoid;
 }
 template<typename Integer>
-const vector< vector<Integer> >& Cone<Integer>::getModuleGeneratorsOfIntegralClosure() {
-    compute(ConeProperty::ModuleGeneratorsOfIntegralClosure);
-    return ModuleGeneratorsOfIntegralClosure.get_elements();
+const vector< vector<Integer> >& Cone<Integer>::getModuleGeneratorsOverOriginalMonoid() {
+    compute(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+    return ModuleGeneratorsOverOriginalMonoid.get_elements();
 }
 template<typename Integer>
-size_t Cone<Integer>::getNrModuleGeneratorsOfIntegralClosure() {
-    compute(ConeProperty::ModuleGeneratorsOfIntegralClosure);
-    return ModuleGeneratorsOfIntegralClosure.nr_of_rows();
+size_t Cone<Integer>::getNrModuleGeneratorsOverOriginalMonoid() {
+    compute(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
+    return ModuleGeneratorsOverOriginalMonoid.nr_of_rows();
 }
 
 template<typename Integer>
@@ -1336,8 +1336,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options();
     ToCompute.check_sanity(inhomogeneous);
-    if(ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure) && !isComputed(ConeProperty::OriginalMonoidGenerators)){
-        errorOutput() << "Generators of integral closure/original monoid only computable if original monoid is defined"
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) && !isComputed(ConeProperty::OriginalMonoidGenerators)){
+        errorOutput() << "ERROR: Module generators over original monoid only computable if original monoid is defined!"
                 << endl;
         throw BadInputException();
     }
@@ -1403,8 +1403,8 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     Matrix<IntegerFC> FC_Gens;
     BasisChange.convert_to_sublattice(FC_Gens, Generators);
-    Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure));
-    // !ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure) blocks make_prime in full_cone.cpp
+    Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
+    // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
 
@@ -1481,7 +1481,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         FC.do_all_hyperplanes = false;
     }
 
-    if(ToCompute.test(ConeProperty::ModuleGeneratorsOfIntegralClosure)){
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
         FC.do_module_gens_intcl=true;
     }
 
@@ -1799,10 +1799,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
 
-    if (FC.isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) { // must prece extreme rays
-        BasisChange.convert_from_sublattice(ModuleGeneratorsOfIntegralClosure, FC.getModuleGeneratorsOfIntegralClosure());
-        ModuleGeneratorsOfIntegralClosure.sort_by_weights(WeightsGrad,GradAbs);
-        is_Computed.set(ConeProperty::ModuleGeneratorsOfIntegralClosure);
+    if (FC.isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) { // must prece extreme rays
+        BasisChange.convert_from_sublattice(ModuleGeneratorsOverOriginalMonoid, FC.getModuleGeneratorsOverOriginalMonoid());
+        ModuleGeneratorsOverOriginalMonoid.sort_by_weights(WeightsGrad,GradAbs);
+        is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
 
     if (FC.isComputed(ConeProperty::Generators)) {
@@ -2038,7 +2038,7 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRays=Generators.submatrix(choice);
-    if(isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)){  // not possible in inhomogeneous case
+    if(isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){  // not possible in inhomogeneous case
         Matrix<Integer> ExteEmbedded=BasisChange.to_sublattice(ExtremeRays);
         for(size_t i=0;i<ExteEmbedded.nr_of_rows();++i)
             v_make_prime(ExteEmbedded[i]);

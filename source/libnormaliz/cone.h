@@ -168,9 +168,9 @@ public:
     const vector< vector<Integer> >& getHilbertBasis();
     size_t getNrHilbertBasis();
 
-    const Matrix<Integer>& getModuleGeneratorsOfIntegralClosureMatrix();
-    const vector< vector<Integer> >& getModuleGeneratorsOfIntegralClosure();
-    size_t getNrModuleGeneratorsOfIntegralClosure();
+    const Matrix<Integer>& getModuleGeneratorsOverOriginalMonoidMatrix();
+    const vector< vector<Integer> >& getModuleGeneratorsOverOriginalMonoid();
+    size_t getNrModuleGeneratorsOverOriginalMonoid();
 
     const Matrix<Integer>& getModuleGeneratorsMatrix();
     const vector< vector<Integer> >& getModuleGenerators();
@@ -242,7 +242,7 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
     Matrix<Integer> HilbertBasis;
-    Matrix<Integer> ModuleGeneratorsOfIntegralClosure;
+    Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
     vector<Integer> Grading;

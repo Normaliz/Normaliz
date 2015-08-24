@@ -404,8 +404,9 @@ void Output<Integer>::write_inv_file() const{
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
         }
-        if (Result->isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
-            inv<<"integer mod_gen_intcl = "<<Result->getNrModuleGeneratorsOfIntegralClosure()<<endl;
+        if (Result->isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
+            inv << "integer number_module_generators_original_monoid = "
+                << Result->getNrModuleGeneratorsOverOriginalMonoid() << endl;
         }
 
         inv << "integer embedding_dim = " << dim << endl;
@@ -578,8 +579,8 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             out << Result->getNrExtremeRays() <<" extreme rays" << of_cone << endl;
         }
-        if(Result->isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
-            out << Result->getNrModuleGeneratorsOfIntegralClosure() <<" module generators of integral closure/original monoid" << endl;    
+        if(Result->isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
+            out << Result->getNrModuleGeneratorsOverOriginalMonoid() <<" module generators over original monoid" << endl;    
         }
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
             out << Result->getNrSupportHyperplanes() <<" support hyperplanes"
@@ -845,12 +846,12 @@ void Output<Integer>::write_files() const {
             }
         }
         
-        if(Result->isComputed(ConeProperty::ModuleGeneratorsOfIntegralClosure)) {
-            out << Result->getNrModuleGeneratorsOfIntegralClosure() <<" module generators of integral closure/original monoid:" << endl;
-            Result->getModuleGeneratorsOfIntegralClosureMatrix().pretty_print(out);
+        if(Result->isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
+            out << Result->getNrModuleGeneratorsOverOriginalMonoid() <<" module generators over original monoid:" << endl;
+            Result->getModuleGeneratorsOverOriginalMonoidMatrix().pretty_print(out);
             out << endl;
             if(mod)
-                write_matrix_mod(Result->getModuleGeneratorsOfIntegralClosureMatrix());
+                write_matrix_mod(Result->getModuleGeneratorsOverOriginalMonoidMatrix());
         }
 
         //write constrains (support hyperplanes, congruences, equations)
