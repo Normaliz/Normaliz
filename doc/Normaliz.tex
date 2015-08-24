@@ -12,6 +12,7 @@
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{multicol}
+\usepackage{dsfont}
 
 \usepackage{booktabs}
 
@@ -1439,7 +1440,7 @@ multiplicity = 1717/8192
 \end{Verbatim}
 Since there are $4$ candidates, the probability for the existence of a Condorcet winner is $1717/2048$.
 
-We can refine the information on the Condorcet paradoxon by computing the Hilbert series. Either we delete \verb|Multiplicity| from the input file or, better, we add \verb|--HilbertSeries|(or simply \verb|-q|) on the command line. The result:
+We can refine the information on the Condorcet paradoxon by computing the Hilbert series. Either we delete \verb|Multiplicity| from the input file or, better, we add \verb|--HilbertSeries| (or simply \verb|-q|) on the command line. The result:
 \begin{Verbatim}
 Hilbert series:
 1 5 133 363 4581 8655 69821 100915 ... 12346 890 481 15 6 
@@ -1475,7 +1476,7 @@ shift = 1
 
 degree of Hilbert Series as rational function = -24
 \end{Verbatim}
-Surprisingly, this looks like the Hilbert series in the previous section read backwards, roughly speaking. Thois is true, and one can explain it. 
+Surprisingly, this looks like the Hilbert series in the previous section read backwards, roughly speaking. This is true, and one can explain it. 
 
 It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. If there are many excluded faces, then it is better to use \verb|strict_inequalities|. However, at present NmzIntegrate can only work with \verb|excluded_faces|.
 
@@ -1505,9 +1506,9 @@ shift = 24
 
 degree of Hilbert Series as rational function = -1
 \end{Verbatim}
-Again we encounter (almost) the Hilbert series of the Condorect paradoxon (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ trhe ideal of lattice points in the interior of $C$. Moreover, let $\mathbf e\in\ZZ^{24}$ be the vector with all entries $1$. 
+Again we encounter (almost) the Hilbert series of the Condorect paradoxon (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ the ideal of lattice points in the interior of $C$. Moreover, let $\mathds{1}\in\ZZ^{24}$ be the vector with all entries $1$. 
 
-Since $\mathbf e$ lies in the three facets defining the ties, it follows that $I_2=M+\mathbf e$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathbf e$, and generalized reciprocity follows from ordinary reciprocity in this very special case.
+Since $\mathds{1}$ lies in the three facets defining the ties, it follows that $I_2=M+\mathds{1}$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathds{1}$, and generalized reciprocity follows from ordinary reciprocity in this very special case.
 
 The essential point in these arguments (apart from reciprocity) is that $\mathbf e$ lies in all support hyperplanes of $C$ except the coordinate hyperplanes.
 
@@ -3526,7 +3527,7 @@ been used:
 \end{center}
 The corresponding \verb|\bibitem|:
 \begin{Verbatim}
-\bibitem W. Bruns, B. Ichim, R. Sieg, T. R\"mer and C. S\"ger: Normaliz. Algorithms
+\bibitem W. Bruns, B. Ichim, R. Sieg, T. R\"omer and C. S\"oger: Normaliz. Algorithms
 for rational cones and affine monoids. Available at
 http://www.math.uos.de/normaliz.
 \end{Verbatim}
@@ -3534,7 +3535,7 @@ http://www.math.uos.de/normaliz.
 A BibTeX entry:
 \begin{Verbatim}
 @Misc{Normaliz,
-author = {W. Bruns and B. Ichim and R. Sieg and T. R\"mer and C. S\"ger},
+author = {W. Bruns and B. Ichim and R. Sieg and T. R\"omer and C. S\"oger},
 title = Algorithms for rational cones and affine monoids,
 howpublished ={Available at \texttthttp://www.math.uos.de/normaliz}}
 }
