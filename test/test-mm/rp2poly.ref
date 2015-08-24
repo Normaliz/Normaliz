@@ -1,0 +1,91 @@
+11 Hilbert basis elements
+10 Hilbert basis elements of degree 1
+10 extreme rays
+1 module generators over original monoid
+22 support hyperplanes
+
+embedding dimension = 6
+rank = 6 (maximal)
+external index = 3
+internal index = 1
+original monoid is not integrally closed
+
+size of partial triangulation   = 1
+resulting sum of |det|s = 2
+
+grading:
+1 1 1 1 1 1 
+with denominator = 3
+
+degrees of extreme rays:
+1: 10  
+
+Hilbert basis elements are not of degree 1
+
+***********************************************************************
+
+10 Hilbert basis elements of degree 1:
+ 0 0 1 1 0 1
+ 0 0 1 1 1 0
+ 0 1 0 0 1 1
+ 0 1 0 1 1 0
+ 0 1 1 0 0 1
+ 1 0 0 0 1 1
+ 1 0 0 1 0 1
+ 1 0 1 0 1 0
+ 1 1 0 1 0 0
+ 1 1 1 0 0 0
+
+1 further Hilbert basis elements of higher degree:
+ 1 1 1 1 1 1
+
+10 extreme rays:
+ 0 0 1 1 0 1
+ 0 0 1 1 1 0
+ 0 1 0 0 1 1
+ 0 1 0 1 1 0
+ 0 1 1 0 0 1
+ 1 0 0 0 1 1
+ 1 0 0 1 0 1
+ 1 0 1 0 1 0
+ 1 1 0 1 0 0
+ 1 1 1 0 0 0
+
+1 module generators over original monoid:
+ 1 1 1 1 1 1
+
+22 support hyperplanes:
+ -2  1  1  1  1  1
+ -1 -1  2  2 -1  2
+ -1 -1  2  2  2 -1
+ -1  2 -1 -1  2  2
+ -1  2 -1  2  2 -1
+ -1  2  2 -1 -1  2
+  0  0  0  0  0  1
+  0  0  0  0  1  0
+  0  0  0  1  0  0
+  0  0  1  0  0  0
+  0  1  0  0  0  0
+  1 -2  1  1  1  1
+  1  0  0  0  0  0
+  1  1 -2  1  1  1
+  1  1  1 -2  1  1
+  1  1  1  1 -2  1
+  1  1  1  1  1 -2
+  2 -1 -1 -1  2  2
+  2 -1 -1  2 -1  2
+  2 -1  2 -1  2 -1
+  2  2 -1  2 -1 -1
+  2  2  2 -1 -1 -1
+
+1 congruences:
+ 1 1 1 1 1 1 3
+
+6 basis elements of lattice:
+ 1 0 0 0 0 -1
+ 0 1 0 0 0 -1
+ 0 0 1 0 0 -1
+ 0 0 0 1 0 -1
+ 0 0 0 0 1 -1
+ 0 0 0 0 0  3
+

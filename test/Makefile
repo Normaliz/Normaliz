@@ -14,6 +14,7 @@ TEST_FILES_S = $(patsubst %.in,%.diff,$(wildcard test-s/*.in))
 TEST_FILES_V = $(patsubst %.in,%.diff,$(wildcard test-v/*.in))
 TEST_FILES_N = $(patsubst %.in,%.diff,$(wildcard test-n/*.in))
 TEST_FILES_NN = $(patsubst %.in,%.diff,$(wildcard test-nn/*.in))
+TEST_FILES_MM = $(patsubst %.in,%.diff,$(wildcard test-mm/*.in))
 TEST_FILES_H = $(patsubst %.in,%.diff,$(wildcard test-h/*.in))
 TEST_FILES_P = $(patsubst %.in,%.diff,$(wildcard test-p/*.in))
 TEST_FILES_Q = $(patsubst %.in,%.diff,$(wildcard test-q/*.in))
@@ -24,8 +25,8 @@ TEST_FILES_R1 = $(patsubst %.in,%.diff,$(wildcard test-r1/*.in))
 TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
 
 
-#fehlen noch: tests testr1
-all: testv testn test1 testN testq testp testd testh testdefault testd1 testr1
+#fehlen noch: tests testM
+all: testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)
@@ -38,6 +39,7 @@ testdefault: $(TEST_FILES_DEFAULT)
 testd: $(TEST_FILES_D)
 testd1: $(TEST_FILES_D1)
 testr1: $(TEST_FILES_R1)
+testM: $(TEST_FILES_MM)
 
 #compare rule
 %.diff: %.out %.ref
@@ -54,6 +56,8 @@ test-n/%.out: $(NORMALIZ) test-n/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -n test-n/$*
 test-nn/%.out: $(NORMALIZ) test-nn/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -N test-nn/$*
+test-mm/%.out: $(NORMALIZ) test-mm/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -M test-mm/$*
 test-p/%.out: $(NORMALIZ) test-p/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -p test-p/$*
 test-q/%.out: $(NORMALIZ) test-q/%.in
@@ -82,6 +86,7 @@ distclean: clean
 .PRECIOUS: test-1/%.out
 .PRECIOUS: test-n/%.out
 .PRECIOUS: test-nn/%.out
+.PRECIOUS: test-mm/%.out
 .PRECIOUS: test-p/%.out
 .PRECIOUS: test-q/%.out
 .PRECIOUS: test-d/%.out
