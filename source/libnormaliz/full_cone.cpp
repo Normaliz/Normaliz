@@ -2217,7 +2217,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             }
             do_module_gens_intcl=save_do_module_gens_intcl; // restore
             if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
-                OldCandidates.auto_reduce();
+                  OldCandidates.auto_reduce();
+               else
+                   OldCandidates.sort_by_deg();
         }
     }
     
@@ -2627,7 +2629,10 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
             // cout << "--------" << endl;
             is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
             NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2
-            update_reducers(true); // must be forced -- otherwise not done in the simplicial case         
+            // update_reducers(true); // must be forced -- otherwise not done in the simplicial case
+            NewCandidates.sort_by_deg();
+            OldCandidates.merge(NewCandidates);
+            OldCandidates.auto_reduce();            
         }
         OldCandidates.sort_by_val();
         OldCandidates.extract(Hilbert_Basis);
@@ -3804,6 +3809,8 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
         return;
     }
     
+    cout << "CHECK 1" << Deg1_Elements.size() << Hilbert_Basis.size() << endl;
+    
     if (isComputed(ConeProperty::Deg1Elements)) {
         deg1_hilbert_basis = (Deg1_Elements.size() == Hilbert_Basis.size());
     } else {
@@ -3817,6 +3824,8 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
         }
     }
     is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
+    
+    cout << "D1HB " << deg1_hilbert_basis << endl;
 }
 
 //---------------------------------------------------------------------------
