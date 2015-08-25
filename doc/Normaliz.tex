@@ -2302,6 +2302,8 @@ If set explicitly in the input file or on the command line the following adds th
 
 It is possible to set \verb|DefaultMode| explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
+Normaliz collects all computation goals and algorithmic variants set in the input file and on the command line. Note that some options may block others during trhe computation. For example, \verb|KeepOrder| blocks \verb|BottomDrecomposition|. Moreover, Normaliz tries to omit superfluous computations. For example, if the dual mode is called for the degree $1$ elements, but lso the Hilbert series is to be computed, then the dual mode will be skipped since the degree $1$ elements can be got as a cheap byproduct of the Hilbert series.
+
 \subsection{Computation goals}\label{goals}
 
 The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|.
@@ -2423,11 +2425,10 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set.
 	
 	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|Approximate|.)
-	% and therefore implies \verb|Deg1Elements|.
 	
 	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
 	
-	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined.
+	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Blocks \verb|BottomDecomposition|.
 \end{itemize}
 
 \subsection{Integer type}
@@ -2523,7 +2524,7 @@ The options for computation goals and algorithms variants have been explained in
 	as the input file. If this file doesn't exist,
 	\ttt{rafa2416.in} will be loaded.
 	
-	\item The options can be given in arbitrary order. All options, including those in the input file, are accumulated, and there is no mutual exclusion.
+	\item The options can be given in arbitrary order. All options, including those in the input file, are accumulated, and syntactically there is no mutual exclusion. However, some options may block others during the computation. For example, \verb|KeepOrder| blocks \verb|BottomDrecomposition|.
 	
 	\item If Normaliz cannot perform a computation explicitly asked for by the
 	user, it will terminate. Typically this happens if no grading is given although

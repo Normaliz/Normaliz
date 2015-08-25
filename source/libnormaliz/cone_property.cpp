@@ -140,6 +140,9 @@ void ConeProperties::set_preconditions() {
     // inhomogenous preconditions
     if (CPs.test(ConeProperty::VerticesOfPolyhedron))
         CPs.set(ConeProperty::ExtremeRays);
+    
+    if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
+            CPs.set(ConeProperty::HilbertBasis);        
 
     if (CPs.test(ConeProperty::ModuleGenerators))
         CPs.set(ConeProperty::HilbertBasis);
@@ -152,6 +155,9 @@ void ConeProperties::prepare_compute_options() {
     if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
         CPs.set(ConeProperty::HilbertBasis);
     }
+    
+    if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) // can't be computed in dual mode
+        CPs.reset(ConeProperty::DualMode);
 
     // dual mode has priority, approximation makes no sense if HB is computed
     if(CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::HilbertBasis))
