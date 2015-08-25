@@ -112,6 +112,7 @@ public:
     ConeProperties is_Computed;    
     bool triangulation_is_nested;
     bool triangulation_is_partial;
+    bool has_generator_with_common_divisor;
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1

@@ -3735,6 +3735,7 @@ void Full_Cone<Integer>::deg1_check() {
      && !isComputed(ConeProperty::IsDeg1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
+            if (has_generator_with_common_divisor) Extreme.make_prime();
             //cout << "the extreme rays are:" << endl;
             //Extreme.pretty_print(cout);
             Grading = Extreme.find_linear_form();
@@ -3746,7 +3747,13 @@ void Full_Cone<Integer>::deg1_check() {
             }
         } else // extreme rays not known
         if (!deg1_generated_computed) {
-            Grading = Generators.find_linear_form();
+            if (has_generator_with_common_divisor) {
+                Matrix<Integer> GenCopy = Generators;
+                GenCopy.make_prime();
+                Grading = GenCopy.find_linear_form();
+            } else {
+                Grading = Generators.find_linear_form();
+            }
             if (Grading.size() == dim && v_scalar_product(Grading,Generators[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
@@ -3771,11 +3778,18 @@ void Full_Cone<Integer>::deg1_check() {
     }
     
     set_degrees();
-        
+
+    vector<long> divided_gen_degrees = gen_degrees;
+    if (has_generator_with_common_divisor) {
+        Matrix<Integer> GenCopy = Generators;
+        GenCopy.make_prime();
+        convert(divided_gen_degrees, GenCopy.MxV(Grading));
+    }
+
     if (!deg1_generated_computed) {
         deg1_generated = true;
         for (size_t i = 0; i < nr_gen; i++) {
-            if (gen_degrees[i] != 1) {
+            if (divided_gen_degrees[i] != 1) {
                 deg1_generated = false;
                 break;
             }
@@ -3790,7 +3804,7 @@ void Full_Cone<Integer>::deg1_check() {
       && isComputed(ConeProperty::ExtremeRays)) {
         deg1_extreme_rays = true;
         for (size_t i = 0; i < nr_gen; i++) {
-            if (Extreme_Rays[i] && gen_degrees[i] != 1) {
+            if (Extreme_Rays[i] && divided_gen_degrees[i] != 1) {
                 deg1_extreme_rays = false;
                 break;
             }
@@ -4164,8 +4178,18 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     index=Iabs(index);
 
     //make the generators coprime, remove 0 rows and duplicates
-    if(do_make_prime)
+    has_generator_with_common_divisor = false;
+    if (do_make_prime) {
         Generators.make_prime();
+    } else {
+        nr_gen = Generators.nr_of_rows();
+        for (size_t i = 0; i < nr_gen; ++i) {
+            if (v_gcd(Generators[i]) != 1) {
+                has_generator_with_common_divisor = true;
+                break;
+            }
+        }
+    }
     Generators.remove_duplicate_and_zero_rows();
     nr_gen = Generators.nr_of_rows();
 
@@ -4261,6 +4285,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     Generators = C.get_generators();
     nr_gen = Generators.nr_of_rows();
     is_Computed.set(ConeProperty::Generators);
+    has_generator_with_common_divisor = false;
     Extreme_Rays=C.get_extreme_rays();
     is_Computed.set(ConeProperty::ExtremeRays);
 
@@ -4381,6 +4406,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     Generators = C.Generators.submatrix(Key);
     dim = Generators.nr_of_columns();
     nr_gen = Generators.nr_of_rows();
+    has_generator_with_common_divisor = C.has_generator_with_common_divisor;
     is_simplicial = nr_gen == dim;
     
     Top_Cone=C.Top_Cone; // relate to top cone
