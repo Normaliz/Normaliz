@@ -1270,6 +1270,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
             #pragma omp atomic
             TotDet++;
         }
+    } else if (do_partial_triangulation) {
+        triangulation_is_partial = true;
     }
     
     if(do_triangulation){ // we must prepare the sections of the triangulation
