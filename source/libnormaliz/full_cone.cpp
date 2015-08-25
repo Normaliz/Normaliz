@@ -3808,9 +3808,7 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
         errorOutput() << "WARNING: unsatisfied preconditions in check_deg1_hilbert_basis()!" <<endl;
         return;
     }
-    
-    cout << "CHECK 1" << Deg1_Elements.size() << Hilbert_Basis.size() << endl;
-    
+
     if (isComputed(ConeProperty::Deg1Elements)) {
         deg1_hilbert_basis = (Deg1_Elements.size() == Hilbert_Basis.size());
     } else {
@@ -3824,8 +3822,6 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
         }
     }
     is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
-    
-    cout << "D1HB " << deg1_hilbert_basis << endl;
 }
 
 //---------------------------------------------------------------------------
