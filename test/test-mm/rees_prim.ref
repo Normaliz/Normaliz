@@ -1,7 +1,7 @@
 8 Hilbert basis elements
 5 generators of integral closure of the ideal
 6 extreme rays
-2 module generators over original monoid
+3 module generators over original monoid
 5 support hyperplanes
 
 embedding dimension = 4
@@ -45,7 +45,8 @@ multiplicity of the ideal = 15
  1 0 0 0
  3 0 0 1
 
-2 module generators over original monoid:
+3 module generators over original monoid:
+ 0 0 0 0
  1 4 0 1
  2 2 0 1
 

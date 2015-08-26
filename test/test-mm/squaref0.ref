@@ -1,7 +1,7 @@
 155 Hilbert basis elements
 0 Hilbert basis elements of degree 1
 19 extreme rays
-143 module generators over original monoid
+144 module generators over original monoid
 134 support hyperplanes
 
 embedding dimension = 9
@@ -201,7 +201,8 @@ degrees of extreme rays:
  1 1 1 0 1 0 0 0 0
  1 1 1 1 0 0 0 0 0
 
-143 module generators over original monoid:
+144 module generators over original monoid:
+ 0 0 0 0 0 0 0 0 0
  0 1 1 1 1 1 1 0 0
  1 1 0 0 1 1 1 0 1
  1 1 0 1 1 1 0 0 1

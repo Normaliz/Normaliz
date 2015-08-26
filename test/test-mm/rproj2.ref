@@ -1,7 +1,7 @@
 17 Hilbert basis elements
 16 Hilbert basis elements of degree 1
 16 extreme rays
-1 module generators over original monoid
+2 module generators over original monoid
 24 support hyperplanes
 
 embedding dimension = 7
@@ -62,7 +62,8 @@ Hilbert basis elements are not of degree 1
  1 1 0 1 0 0 1
  1 1 1 0 0 0 1
 
-1 module generators over original monoid:
+2 module generators over original monoid:
+ 0 0 0 0 0 0 0
  1 1 1 1 1 1 2
 
 24 support hyperplanes:

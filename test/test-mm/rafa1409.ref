@@ -1,6 +1,6 @@
 14 Hilbert basis elements
 14 extreme rays
-0 module generators over original monoid
+1 module generators over original monoid
 34 support hyperplanes
 
 embedding dimension = 9
@@ -48,7 +48,8 @@ No implicit grading found
  1 1 0 1 1 0 0 0 1
  1 1 1 1 0 0 0 0 1
 
-0 module generators over original monoid:
+1 module generators over original monoid:
+ 0 0 0 0 0 0 0 0 0
 
 34 support hyperplanes:
  0 0 0 0 0 0 0 0  1

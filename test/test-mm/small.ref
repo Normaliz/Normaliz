@@ -1,7 +1,7 @@
 34591 Hilbert basis elements
 34591 Hilbert basis elements of degree 1
 190 extreme rays
-67847 module generators over original monoid
+67848 module generators over original monoid
 32 support hyperplanes
 
 embedding dimension = 6
@@ -34810,7 +34810,8 @@ Hilbert basis elements are of degree 1
  11  0  6  6  0 1
  11  0  7  5  0 1
 
-67847 module generators over original monoid:
+67848 module generators over original monoid:
+  0  0  0  0  0 0
   0  0  0  1  7 1
   0  0  0  1  8 1
   0  0  0  1  9 1
