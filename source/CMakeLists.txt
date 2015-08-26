@@ -111,9 +111,11 @@ IF (NOT MSVC)
   else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
   endif()
-  IF (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND (COMPILER_SUPPORTS_CXX11 OR COMPILER_SUPPORTS_CXX0X) )
-    # using regular Clang or AppleClang with c++11
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  IF (${APPLE})
+    IF (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND (COMPILER_SUPPORTS_CXX11 OR COMPILER_SUPPORTS_CXX0X) )
+      # using clang with new c++11 library on Apple
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    ENDIF ()
   ENDIF ()
 ENDIF()
 
