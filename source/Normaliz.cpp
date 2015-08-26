@@ -53,9 +53,9 @@ void printHeader() {
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
-    cout << "usage: "<<command<<" [-sSvVnNpPhH1dBface?] [-x=<T>] [PROJECT]"<<endl;
+    cout << "Usage: "<<command<<" [options] PROJECT"<<endl;
     cout << "  runs normaliz on PROJECT.in"<<endl;
-    cout << "options:"<<endl;
+    cout << "Options:"<<endl;
     cout << "  -?\tprint this help text and exit"<<endl;
     cout << "  -s\tcompute support hyperplanes"<<endl;
     cout << "  -t\tcompute triangulation"<<endl;
@@ -72,7 +72,6 @@ void printHelp(char* command) {
     cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
     cout << "  -T\tthe file .tri is written (triangulation)"<<endl;
     cout << "  -a\tall output files are written (except .tri)"<<endl;
-    cout << "  -e\tperform tests for arithmetic errors"<<endl;
     cout << "  -B\tuse indefinite precision arithmetic"<<endl;
     cout << "  -c\tverbose (prints control data)"<<endl;
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
@@ -104,7 +103,7 @@ int main(int argc, char* argv[])
     bool print_help = options.handle_commandline(argc, argv);
 
 	if (print_help) {
-        printHeader();
+        //printHeader();
         printHelp(argv[0]);
         exit(0);
 	}
@@ -128,7 +127,7 @@ int main(int argc, char* argv[])
             nmz_int_exec.replace (found,8,"nmzIntegrate");
         } else {
             cerr << "Error: Could not start nmzIntegrate" << endl;
-            return 2;
+            return 10;
         }
         nmz_int_exec.append("\"");
 
@@ -148,7 +147,6 @@ int main(int argc, char* argv[])
 template<typename Integer> int process_data(OptionsHandler& options) {
 
 #ifndef NCATCH
-    std::exception_ptr excep;
     try {
 #endif
 
@@ -161,8 +159,8 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     ifstream in;
     in.open(file_in,ifstream::in);
     if ( !in.is_open() ) {
-        cerr<<"error: Failed to open file "<<name_in<<"."<<endl;
-        return 1;
+        cerr << "error: Failed to open file "<<name_in<<"."<<endl;
+        exit(1);
     }
 
     //read the file
@@ -194,17 +192,19 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     Out.write_files();
 
 #ifndef NCATCH
+    } catch(const BadInputException& ) {
+        cerr << "BadIputException caught... exiting." << endl;
+        exit(1);
+    } catch(const FatalException& e) {
+        cerr << e.what() << endl;
+        cerr << "FatalException caught... exiting." << endl;
+        exit(2);
     } catch(const NormalizException& ) {
-        excep = std::current_exception();
-        std::cout << "NormalizException caught...";
+        cerr << "NormalizException caught... exiting." << endl;
+        exit(3);
     } catch(const std::exception& ) {
-        excep = std::current_exception();
-        std::cout << "std::exception caught...";
-    }
-
-    if (!(excep == 0)) {
-        cout << "rethrowing the exception!" << endl;
-        std::rethrow_exception (excep);
+        cerr << "std::exception caught... exiting." << endl;
+        exit(4);
     }
 #endif
 
