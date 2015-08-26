@@ -2626,6 +2626,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     if (do_Hilbert_basis) {
         if(do_module_gens_intcl){
             NewCandidates.extract(ModuleGeneratorsOverOriginalMonoid);
+            vector<Integer> Zero(dim,0);
+            ModuleGeneratorsOverOriginalMonoid.push_front(Zero);
             // cout << "Mod " << endl;
             // Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid).pretty_print(cout);
             // cout << "--------" << endl;
