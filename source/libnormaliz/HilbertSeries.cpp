@@ -233,7 +233,7 @@ void HilbertSeries::simplify() const {
         poly = cyclotomicPoly<mpz_class>(i);
         while (cyclo_i > 0) {
             poly_div(q, r, num, poly);
-            if (r.size() == 0) { // numerator is divisable by poly
+            if (r.empty()) { // numerator is divisable by poly
                 num = q;
                 cyclo_i--;
             }
@@ -315,17 +315,18 @@ long HilbertSeries::getPeriod() const {
 }
 
 long HilbertSeries::isHilbertQuasiPolynomialComputed() const {
-    return is_simplified && !quasi_poly.size()==0;
+    return is_simplified && !quasi_poly.empty();
 }
 
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
     computeHilbertQuasiPolynomial();
-    if (quasi_poly.size()==0) throw NotComputableException();
+    if (quasi_poly.empty()) throw NotComputableException();
     return quasi_poly;
 }
 
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
-    if (quasi_poly.size()==0) throw NotComputableException();
+    computeHilbertQuasiPolynomial();
+    if (quasi_poly.empty()) throw NotComputableException();
     return quasi_denom;
 }
 
@@ -357,7 +358,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         if (d != period) {
             //norm_num *= (1-t^p / 1-t^d)^denom[d]
             poly_div(factor, r, coeff_vector<mpz_class>(period), coeff_vector<mpz_class>(d));
-            assert(r.size()==0); //assert remainder r is 0
+            assert(r.empty()); //assert remainder r is 0
             //TODO more efficient method *=
             for (i=0; i < rit->second; ++i) {
                 norm_num = poly_mult(norm_num, factor);
@@ -652,7 +653,7 @@ vector<Integer> cyclotomicPoly(long n) {
                 for (long d = 1; d < i; ++d) { // <= i/2 should be ok
                     if( i % d == 0) {
                         poly_div(q, r, poly, CyclotomicPoly[d]);
-                        assert(r.size()==0);
+                        assert(r.empty());
                         poly = q;
                     }
                 }
