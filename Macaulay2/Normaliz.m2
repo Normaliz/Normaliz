@@ -175,7 +175,7 @@ getNmzExec=()->
 -- removes the files created for and by normaliz
 rmNmzFiles=()->
 (
-    suffixes:={"in","gen","out","sup","egn","esp","inv","tri","typ","ht1","ext","cst","tgn"};
+    suffixes:={"in","gen","out","sup","egn","esp","inv","tri","typ","ht1","ext","cst","tgn","lat","mod","dec"};
 
     checkNmzFile("rmNmzFiles");
 
