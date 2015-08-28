@@ -5,6 +5,8 @@ include $(COCOA_ROOT)/configuration/autoconf.mk
 
 include ../Makefile.configuration
 
+CXXFLAGS += -I ..
+
 ALL_C=$(wildcard *.C)
 ALL_EXECS=$(ALL_C:.C=)
 
