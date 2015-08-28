@@ -43,7 +43,6 @@ namespace ConeProperty {
         TriangulationDetSum,
         Triangulation,
         Multiplicity,
-        Shift,
         RecessionRank,
         AffineDim,
         ModuleRank,

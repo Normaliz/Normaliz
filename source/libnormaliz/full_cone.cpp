@@ -3126,11 +3126,6 @@ void Full_Cone<Integer>::find_grading_inhom(){
         Grading[i] = Grading[i] - shift * Truncation[i];
         
     // shift--;  // NO LONGER correction for the Hilbert series computation to have it start in degree 0
-    
-    is_Computed.set(ConeProperty::Shift);
-        
-    // cout << "Shift " << shift << endl;
-    // cout << Grading;
 }
 
 //---------------------------------------------------------------------------

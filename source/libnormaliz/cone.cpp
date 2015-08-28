@@ -938,7 +938,6 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     Deg1Elements = Matrix<Integer>(0,dim);
     is_Computed.reset(ConeProperty::HilbertSeries);
     is_Computed.reset(ConeProperty::Multiplicity);
-    is_Computed.reset(ConeProperty::Shift);
 
 }
 
@@ -1280,13 +1279,6 @@ bool Cone<Integer>::isTriangulationNested() {
 template<typename Integer>
 bool Cone<Integer>::isTriangulationPartial() {
     return triangulation_is_partial;
-}
-
-
-template<typename Integer>
-Integer Cone<Integer>::getShift() {
-    compute(ConeProperty::Shift);
-    return shift;
 }
 
 template<typename Integer>
@@ -1882,10 +1874,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         }
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
-    if (FC.isComputed(ConeProperty::Shift)) {
-        convert(shift, FC.getShift());
-        is_Computed.set(ConeProperty::Shift);
-    }
     if (FC.isComputed(ConeProperty::RecessionRank)) {
         recession_rank = FC.level0_dim;
         is_Computed.set(ConeProperty::RecessionRank);
@@ -2115,9 +2103,6 @@ void Cone<Integer>::set_zero_cone() {
     if (inhomogeneous) {  // empty set of solutions
         VerticesOfPolyhedron = Matrix<Integer>(0,dim);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
-
-        shift = 0;
-        is_Computed.set(ConeProperty::Shift);
 
         module_rank = 0;
         is_Computed.set(ConeProperty::ModuleRank);

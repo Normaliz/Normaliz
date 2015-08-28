@@ -121,6 +121,7 @@ public:
     // adjust the shift so that the series starts in degree 0
     // it does not change the (quasi) polynomial
     void adjustShift();
+    // returns the shift of the Hilbert series, that is the lowest degree of an element
     long getShift() const;
 
     // methods for textual transfer of a Hilbert Series

@@ -197,7 +197,6 @@ public:
     bool isIntegrallyClosed();
     bool isReesPrimary();
     Integer getReesPrimaryMultiplicity();
-    Integer getShift();
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();
     const vector< vector<Integer> >& getOriginalMonoidGenerators();
     size_t getNrOriginalMonoidGenerators();
@@ -257,7 +256,6 @@ private:
     bool integrally_closed;
     bool rees_primary;
     Integer ReesPrimaryMultiplicity;
-    Integer shift; // needed in the inhomogeneous case to make degrees positive
     int affine_dim; //dimension of polyhedron
     size_t recession_rank; // rank of recession monoid
     size_t module_rank; // for the inhomogeneous case

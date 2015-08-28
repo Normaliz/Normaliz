@@ -194,7 +194,6 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 }
             } else { // homgeneous
                 if ( prop == ConeProperty::VerticesOfPolyhedron
-                  || prop == ConeProperty::Shift
                   || prop == ConeProperty::ModuleRank
                   || prop == ConeProperty::ModuleGenerators ) {
                     errorOutput() << toString(prop) << " only computable in the inhomogeneous case." << endl;
@@ -219,7 +218,6 @@ namespace {
         CPN.at(ConeProperty::TriangulationDetSum) = "TriangulationDetSum";
         CPN.at(ConeProperty::Triangulation) = "Triangulation";
         CPN.at(ConeProperty::Multiplicity) = "Multiplicity";
-        CPN.at(ConeProperty::Shift) = "Shift";
         CPN.at(ConeProperty::RecessionRank) = "RecessionRank";
         CPN.at(ConeProperty::AffineDim) = "AffineDim";
         CPN.at(ConeProperty::ModuleRank) = "ModuleRank";
@@ -250,7 +248,7 @@ namespace {
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 36,
+        static_assert (ConeProperty::EnumSize == 35,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {
