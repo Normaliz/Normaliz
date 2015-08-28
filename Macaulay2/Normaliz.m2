@@ -11,8 +11,8 @@ the License, or any later version.
 
 newPackage(
            "Normaliz",
-           Version=>"2.4",
-           Date=>"June 30, 2015",
+           Version=>"2.5",
+           Date=>"August 28, 2015",
            Authors=>{{Name=> "Gesa Kaempf",
                     Email=>"gkaempf@uni-osnabrueck.de"},
                     {Name=> "Christof Soeger",
@@ -105,14 +105,14 @@ nmzNumberThreads=1;
 nmzFile="";        -- Internal name of the data files
 nmzVersion="";     -- normaliz
 nmzExecVersion=""; -- needs to be at least nmzMinExecVersion
-nmzMinExecVersion="2.8"; -- minimal normaliz version
+nmzMinExecVersion="2.11"; -- minimal normaliz version
 nmzGen=true;      -- indicates whether ".gen" is generated
+
 -- component 1 is name of option
 -- 2 is default value
 -- 3 is command line option to be passed to Normaliz
 -- 4 indicates whether file "gen" is generated
 -- value 2 of 4 indicates "no influence"
-
 nmzOptions= new MutableList from {
             new MutableList from {"supp",false,"-s",false},
             new MutableList from {"triang",false,"-tT",false},
@@ -497,7 +497,7 @@ showNmzOptions=()->
 checkNmzExecVersion=()->
 (
   if (nmzExecVersion=="") then (
-    cmd := "! " | getNmzExec() | " 2>&1 </dev/null || true";
+    cmd := "! " | getNmzExec() | " --version 2>&1 </dev/null || true";
     result := get cmd;
     if not match("Normaliz ([0-9.]*)",result) then error("normaliz executable not found: " | getNmzExec());
     nmzExecVersion = replace("(.|\n)*Normaliz ([0-9.]+)(.|\n)*", "\\2", result);
