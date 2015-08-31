@@ -1,0 +1,21 @@
+amb_space 2
+cone 2
+-1 1
+1 -2
+signs
+-1 0
+strict_signs 
+0 -1
+lattice 2
+2 0
+0 3
+offset
+1 1
+inhom_inequalities 1
+1 -1 2
+congruences 1
+1 0 7
+inhom_congruences 1
+0 3 7 19
+grading
+-1 -2
