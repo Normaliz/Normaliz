@@ -1,6 +1,6 @@
 //// Singular library normaliz.lib
 
-version="version normaliz.lib 4.0.1.0 Jan_2015 "; // $Id: c95d3329501ff768a1a262abad95a50b4b4f5452 $
+version="version normaliz.lib 4.0.2.0 Sept_2015 "; // $Id: c95d3329501ff768a1a262abad95a50b4b4f5452 $
 category="Commutative Algebra";
 info="
 LIBRARY: normaliz.lib  Provides an interface for the use of Normaliz 2.11 or
@@ -1092,7 +1092,6 @@ example
   nmz_hilbert_basis_elements;
   nmz_number_extreme_rays;
   nmz_rank;
-  nmz_index;
   nmz_number_support_hyperplanes;
   nmz_multiplicity;
   nmz_primary;
