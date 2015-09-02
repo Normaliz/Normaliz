@@ -292,6 +292,7 @@ void HilbertSeries::simplify() const {
     }*/
     is_simplified = true;
     computeDegreeAsRationalFunction();
+    quasi_poly.clear();
 }
 
 void HilbertSeries::computeDegreeAsRationalFunction() const {
