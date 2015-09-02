@@ -25,8 +25,8 @@
 #define NORMALIZ_EXEPTION_H_
 
 #include <exception>
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/cone_property.h"
+#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/cone_property.h>
 
 namespace libnormaliz {
 

@@ -29,9 +29,9 @@
 #include <ostream>
 #include <list>
 
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/integer.h"
-#include "libnormaliz/convert.h"
+#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/integer.h>
+#include <libnormaliz/convert.h>
 
 namespace libnormaliz {
 using std::vector;

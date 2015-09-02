@@ -35,8 +35,8 @@
 #define SUBLATTICE_REPRESENTATION_H
 
 #include <vector>
-#include "libnormaliz/libnormaliz.h"
-#include "libnormaliz/matrix.h"
+#include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/matrix.h>
 
 //---------------------------------------------------------------------------
 

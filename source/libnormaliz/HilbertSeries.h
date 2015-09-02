@@ -50,7 +50,7 @@
 #include <ostream>
 #include <string>
 
-#include "libnormaliz/general.h"
+#include <libnormaliz/general.h>
 
 //---------------------------------------------------------------------------
 
