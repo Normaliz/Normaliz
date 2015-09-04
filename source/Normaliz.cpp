@@ -202,8 +202,8 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     } catch(const NormalizException& ) {
         cerr << "NormalizException caught... exiting." << endl;
         exit(3);
-    } catch(const std::exception& ) {
-        cerr << "std::exception caught... exiting." << endl;
+    } catch(const std::exception& e) {
+        cerr << "std::exception caught... \""<< e.what()<<"\" ...  exiting." << endl;
         exit(4);
     }
 #endif
