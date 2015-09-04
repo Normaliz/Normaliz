@@ -74,11 +74,11 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
                     #else
 					cerr << "Error: Compiled without OpenMP support, option "
 							<< argv[i] << " ignored." << endl;
-					throw BadInputException();
+					exit(1);
 					#endif
 				} else {
 					cerr << "Error: Invalid option string " << argv[i] << endl;
-					throw BadInputException();
+					exit(1);
 				}
 			}
 		} else {
@@ -91,7 +91,7 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
 void OptionsHandler::setProjectName(const string& s) {
     if (project_name_set) {
         cerr << "Error: Second project name " << s << " in command line!" << endl;
-        throw BadInputException();
+        exit(1);
     }
     project_name = s;
     // check if we can read the .in file
@@ -198,7 +198,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'x': //should be separated from other options
                 cerr<<"Error: Option -x=<T> has to be separated from other options"<<endl;
-                throw BadInputException();
+                exit(1);
                 break;
             case 'I':  //nmzIntegrate -I (integrate)
                 nmzInt_I = true;
@@ -219,7 +219,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
-                throw BadInputException();
+                exit(1);
                 break;
         }
     }
@@ -268,7 +268,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             continue;
         } catch (const BadInputException& ) {};
         cerr << "Error: Unknown option --" << LongOptions[i] << endl;
-        throw BadInputException();
+        exit(1);
     }
 
 	return false; //no need to print help text
@@ -336,7 +336,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 
     if (!project_name_set) {
         cerr << "ERROR: No project name set!" << endl;
-        throw BadInputException();
+        exit(1);
     }
     Out.set_name(project_name);
 }
