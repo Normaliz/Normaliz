@@ -320,6 +320,7 @@ void Output<Integer>::write_tri() const{
             out << tit->second << endl;
         }
         if (Result->isTriangulationNested()) out << "nested" << endl;
+        else out << "plain" << endl;
         if (Result->isTriangulationPartial()) out << "partial" << endl;
         out.close();
     }
