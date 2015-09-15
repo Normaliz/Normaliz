@@ -1356,7 +1356,6 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     size_t subfacet_dim=dim-2;
     size_t nr_missing;
     typename list<FACETDATA*>::iterator a;
-    // FACETDATA *hp_t;
     list<FACETDATA> NewHyps;
     Matrix<Integer> Test(0,dim);
     
@@ -2152,7 +2151,6 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
     is_Computed.set(ConeProperty::SupportHyperplanes);
     do_all_hyperplanes = false;
-    // exit(1);   
 }
 
 
@@ -3659,7 +3657,7 @@ void Full_Cone<Integer>::select_deg1_elements(const Full_Cone& C) {  // from vec
 
 
 // so far only for experiments
-
+/*
 template<typename Integer>
 void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vectors computed in 
                                                               // the auxiliary cone C
@@ -3674,7 +3672,7 @@ void Full_Cone<Integer>::select_Hilbert_Basis(const Full_Cone& C) {  // from vec
     exit(0);
     is_Computed.set(ConeProperty::Deg1Elements,true);
 }
-
+*/
 
 //---------------------------------------------------------------------------
 
@@ -3733,8 +3731,6 @@ void Full_Cone<Integer>::deg1_check() {
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
             if (has_generator_with_common_divisor) Extreme.make_prime();
-            //cout << "the extreme rays are:" << endl;
-            //Extreme.pretty_print(cout);
             Grading = Extreme.find_linear_form();
             if (Grading.size() == dim && v_scalar_product(Grading,Extreme[0])==1) {
                 is_Computed.set(ConeProperty::Grading);

@@ -262,7 +262,7 @@ public:
     void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
     void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
-    void select_Hilbert_Basis(const Full_Cone& C);
+//    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
     
     void build_top_cone(); 
     void build_cone();
