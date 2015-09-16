@@ -6,19 +6,13 @@ For compiling Normaliz the following libraries are needed:
 * openmp enabled compiler (to use parallelization)
 
 On Ubuntu the following packages should be installed:
-apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
+sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 
-We offer two ways of compilation, eighter use the supplied makefile or use cmake to create a more powerfull makefile. cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
+We offer two ways of compilation, either use the supplied makefile or use cmake to create a more powerfull makefile. cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
 
-
-
-**** MAKE ****
-
-A1) Go to the source directory
-A2) Check the configurations in Makefile.configuration
-A3) Say "make"
-It should work without changing the Makefile on many systems that have a system installation of the needed librarys.
-
+REQUIRES some c++11 features, supported by:
+gcc 4.4, clang 2.9, icc 12.0
+See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
 
 
 **** CMAKE ****
@@ -28,27 +22,27 @@ This has better capabilities to find libraries and allow to change settings with
 
 We assume you start in the normaliz root dir (with subdirs source, examples, ...).
 
-B1) Create a build directory where normaliz will be build and cd into it, e.g.
+[1] Create a build directory where normaliz will be build and cd into it, e.g.
   mkdir BUILD; cd BUILD
 
-B2) Initial configuration, have a look at the end of the file for further config infos.
-(can be skipped if step B3 is done, but it shows some information about what compiler, libraries, etc. it uses)
+[2] Initial configuration, have a look at the next sections for further config infos.
+(can be skipped if step [3] is done, but it shows some information about what compiler, libraries, etc. it uses)
   cmake ../source
 
-B3) (Optional) Check configuration and maybe edit something
+[3] (Optional) Check configuration and maybe edit something
   ccmake ../source
 In the ccmake interface you can use this workflow:
 * c  (for configure)
 * change entries if you like, then press c again
 * g  (generate and exit)
 
-B4) compile
+[4] compile
   make
 This make has dependency checking included and other nice features.
 If you want to see what happens behind the scenes use
   make VERBOSE=1
 
-B5) install it
+[5] install it
   make install
 This will install the produced libnormaliz and the normaliz executable.
 The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
@@ -65,14 +59,15 @@ Specifiy installation location:
 Different compiler:
   CC=gcc-4 CXX=g++-4  cmake  ../source/
 
+Specify gmp dirs:
 To specify search paths for gmp you can add before the cmake
+GMP_DIR=/path/to/gmp     (it will look inside for subfolders with the headers and lib)
+If this is not successfull you can specify the paths seperatly:
 GMP_INC_DIR=/path/to/include  (for headers)
 GMP_LIB_DIR=/path/to/lib     (for libs)
-GMP_DIR=/path/to/gmp        (for both)
 
-e.g. on my linux laptop I can do
-GMP_DIR=~/usr/local/   cmake   ../source/
-to use my locally installed gmp version
+e.g. to use your own gmp version installed to the 'local' folder in the home directory use
+GMP_DIR=$HOME/local/   cmake   ../source/
 
 Change architecture:
 For MacOS you can set CMAKE_OSX_ARCHITECTURES eigther with the cmake command-line option
@@ -81,7 +76,7 @@ or by setting it in ccmake to x86_64.
 See also: http://stackoverflow.com/questions/5334095/cmake-multiarchitecture-compilation
 
 
-Specify Boost dirs
+Specify Boost dirs:
 BOOST_ROOT                 - Preferred installation prefix
 BOOST_INCLUDEDIR           - Preferred include directory e.g. <prefix>/include
 BOOST_LIBRARYDIR           - Preferred library directory e.g. <prefix>/lib
@@ -98,19 +93,22 @@ See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 Download scip at http://scip.zib.de/ . Notice that SCIP is not distributed under GPL, but the ZIB Academic License (http://scip.zib.de/academic.txt).
 Unpack it and compile it with
 
-make ZLIB=false GMP=false READLINE=false scipoptlib
+  make ZLIB=false GMP=false READLINE=false scipoptlib
 
 Then configure Normaliz with e.g.
 
-SCIP_DIR=$HOME/scipoptsuite-3.2.0/ cmake ../source/ -DNMZ_SCIP=ON
+  SCIP_DIR=$HOME/scipoptsuite-3.2.0/ cmake ../source/ -DNMZ_SCIP=ON
 
 Currently our cmake module to find scip only supports version 3.1.1 and 3.2.0.
+
+
 
 **** Build for Intel Xeon Phi Mic ****
 
 This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
 
 First you need (as usual) the libraries boost and gmp. The libgmp and libgmpxx must be compiled twice, once for the host and once for the target-architecture of the mic. You will probably not find a compiled version for the mic, so we recommend to compile both yourself. Download the gmp sources and extract them.
+
 The following description is based on gmp 6.0.0 and icc 15.0.2
 
 Compile gmp with icc:
@@ -144,3 +142,22 @@ If you get an error saying it cannot find boost/dynamic_bitset.hpp or similar, t
 
 If you want to compile Normaliz for running it NATIVELY on the Phi, give 
 CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
+
+
+
+
+
+**** plain MAKE ****
+
+You can still use our old simple plain Makefile. But the CMAKE configuration is much more powerfull.
+
+1) Go to the source directory
+2) Check the configurations in Makefile.configuration
+3) Say "make"
+It should work without changing the Makefile on many systems that have a system installation of the needed librarys.
+
+This make accepts two optional arguments
+make OPENMP=no  # deactivates OpenMP
+make SCIP=yes   # compile with SCIP
+You must make sure that everything is compiled with the same set of options!
+In doubt use make clean before.

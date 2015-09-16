@@ -2493,7 +2493,7 @@ The standard form for  calling Normaliz is
 \begin{quote}
 	\verb|normaliz [options]| <project>
 \end{quote}
-where \verb|<proect>| is the name of the project. Note that \verb|normaliz| may require to be prefixed by a path name, and the same applies to \verb|<project>|. A typical example on a Linux or Mac system:
+where \verb|<project>| is the name of the project, and the corresponding input file is \verb|<project>.in|. Note that \verb|normaliz| may require to be prefixed by a path name, and the same applies to \verb|<project>|. A typical example on a Linux or Mac system:
 \begin{quote}
 	\verb|./normaliz --verbose -x=5 ../example/big|
 \end{quote}
@@ -2586,10 +2586,10 @@ In the default setting Normaliz writes only the output file
 amount of output files can be
 increased as follows:
 \begin{itemize}
-	\itemtt[{-}{-}Files, -f] Normaliz writes the additional output files
+	\itemtt[{-}{-}files, -f] Normaliz writes the additional output files
 	with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
 	provided the data of these files have been computed.
-	\itemtt[{-}{-}AllFiles, -a] includes \ttt{Files}, Normaliz writes all
+	\itemtt[{-}{-}all-files, -a] includes \ttt{Files}, Normaliz writes all
 	available output files (except \verb|typ|, the triangulation or the
 	Stanley decomposition, unless these have been requested).
 	\itemtt [{-}{-}<suffix>] chooses the output file with suffix \verb|<suffix>|.
@@ -3424,9 +3424,6 @@ executables.
 Please remove old versions of \ttt{normaliz}, \ttt{norm64} and \ttt{normbig}
 from your search path.
 
-Running NmzIntegrate requires the additional download of its
-executable for your system.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Compilation}\label{Compile}
@@ -3434,77 +3431,86 @@ executable for your system.
 We only describe the compilation of Normaliz. See the
 documentation of NmzIntegrate for its compilation.
 
-\subsection{GCC}
+\subsection{General}
 
-
-Produce the executables by calling \ttt{make} in the subdirectory
-\ttt{source}. You may have to transport the executables to a
-directory in your search path. \textbf{jNormaliz expects them in
-	its own directory.}
-
-Note that \ttt{normaliz} needs GMP (including the C++ wrapper) and
-the Boost collection. Therefore you must install them first.
-
-We are using OpenMP 3.0. Please make sure that your GCC version is
-compatible with it (version $\ge$ 4.4).
-
-Note the following \textbf{exceptions:}
-\begin{enumerate}
-	\item One can compile Windows executables with the Cygwin
-	port of GCC. Unfortunately it is not compatible to
-	OpenMP.
-	\item Mac versions of GCC older than 4.5 have a bug that
-	makes it impossible to use OpenMP.
-\end{enumerate}
-In any case, or if you want to avoid parallelization, you can
-call \texttt{make OPENMP=no}.
-
-\subsection{Visual Studio project}
-
-The Windows executables provided by us have been compiled with
-MS Visual Studio and Intel C++ Composer XE. (Visual C++ itself can
-only be used without OpenMP.)
-
-If you want to compile Normaliz yourself in this way, please unzip
-the corresponding zip file on the Normaliz home page. This will
-create a subdirectory \ttt{Visual Studio} of the Normaliz
-directory. This directory contains the predefined project. We have
-provided
-
-\begin{enumerate}
-	\item two configurations: \ttt{Release} (with OpenMP) and
-	\ttt{ReleaseSerial} (without OpenMP), and
-	\item two platforms, \ttt{Win32} and \ttt{x64}.
-\end{enumerate}
-
-Instead of GMP we use the MPIR library for the Windows version
-of \ttt{normaliz}. For convenience, the MPIR files have been
-included in the distribution (in the subdirectory \ttt{MPIR} of
-\ttt{Visual Studio}). Please
+For compiling Normaliz the following libraries are needed:
 \begin{itemize}
-	\item copy the library files for Win32 into the \ttt{lib}
-	subdirectory of the Visual C++ compiler,
-	
-	\item the library files for x64 to the subdirectory
-	\ttt{amd64} (or \ttt{x64}) of \ttt{lib}, and
-	
-	\item the two header files to the \ttt{include}
-	subdirectory of the compiler.
+\item GMP including the C++ wrapper (libgmpxx and libgmp)
+\item boost (headers only)
+\item OpenMP 3.0 enabled compiler (to use parallelization, optional)
 \end{itemize}
-Moreover, you must install the Boost collection available from
-http://www.boost.org/. We only use Boost libraries that are
-entirely implemented in their headers. So the only preparation
-beyond downloading and unzipping is to add the Boost root
-directory to the list of include paths. In the Visual Studio C++ IDE,
-click ``Tools | Options... | Projects | VC++ directories''.
-Then, in ``Show Directories for'', select ``Include files'' and
-add the path to the Boost root directory.
 
-After the compilation with the Intel compiler you must copy the executable
-to the directories where they are expected (the Normaliz
-directory or a directory in the search path).
+Furthermore we require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
+\begin{itemize}
+\item GNU g++ 4.4,
+\item clang++ 2.9,
+\item Intel icpc 12.0
+\end{itemize}
+See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
 
-The source files for Visual Studio are identical to those for GCC.
+The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
+
+In the following we describe the configuration/build process using cmake.
+This has capabilities to find libraries and allow to change settings in a nice interface. It supports the compilation of the library as static and dynamic version, installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
+
+We will only handle the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths.
+
+\subsection{Linux}
+
+On Ubuntu the following packages should be installed:
+\begin{verbatim}
+sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
+\end{verbatim}
+
+We assume you start in the normaliz root dir (with subdirs source, examples, ...).
+
+\begin{enumerate}
+\item Create a build directory where normaliz will be build and cd into it, e.g.
+\begin{verbatim}
+  mkdir BUILD; cd BUILD
+\end{verbatim}
+
+\item Initial configuration, have a look at the next sections for further information about the configuration.
+\begin{verbatim}
+  cmake ../source
+\end{verbatim}
+
+\item{} [Optional] Check configuration and maybe edit something (note the two \verb|'c'|s at the beginning)
+\begin{verbatim}
+  ccmake ../source
+\end{verbatim}
+In the ccmake interface you can use this work flow:
+\begin{itemize}
+\item \verb|c|  (configure)
+\item change entries if you like (use cursor keys and enter), then press \verb|c| again
+\item \verb|g|  (generate and exit)
+\end{itemize}
+
+\item compile
+\begin{verbatim}
+  make
+\end{verbatim}
+
+\item install it
+\begin{verbatim}
+  make install
+\end{verbatim}
+This will install the library headers, the produced libnormaliz and the normaliz executable.
+The path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
+\end{enumerate}
+
+
+\subsection{MacOs X}
+
+Currently Apple does not supply a compiler which supports OpenMP. We recommend the use of a current gcc. Mac versions older than 4.5 have a bug that makes it impossible to use OpenMP.
+
+You can then follow the instruction for Linux.
+
+\subsection{Windows}
+
+One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
+
+Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The supplied executables are compiled with icpc with a manually created project. Please contact us if you want to build Normaliz on Windows.
 
 
 
@@ -3534,17 +3540,17 @@ been used:
 \end{center}
 The corresponding \verb|\bibitem|:
 \begin{Verbatim}
-\bibitem W. Bruns, B. Ichim, R. Sieg, T. R\"omer and C. S\"oger: Normaliz. Algorithms
-for rational cones and affine monoids. Available at
-http://www.math.uos.de/normaliz.
+\bibitem W. Bruns, B. Ichim, R. Sieg, T. R\"omer and C. S\"oger:
+Normaliz. Algorithms for rational cones and affine monoids.
+Available at http://www.math.uos.de/normaliz.
 \end{Verbatim}
 
 A BibTeX entry:
 \begin{Verbatim}
 @Misc{Normaliz,
 author = {W. Bruns and B. Ichim and R. Sieg and T. R\"omer and C. S\"oger},
-title = Algorithms for rational cones and affine monoids,
-howpublished ={Available at \texttthttp://www.math.uos.de/normaliz}}
+title = Normaliz. Algorithms for rational cones and affine monoids,
+howpublished ={Available at \texttt{http://www.math.uos.de/normaliz}}
 }
 \end{Verbatim}
 
@@ -4171,3 +4177,51 @@ have become obsolete later on.
 		$n$}. Research report, ISSAC 96, ACM Press 1996.
 \end{thebibliography}
 \end{document}
+
+% currently not availabe to users anymore, but maybe again later?
+\subsection{Visual Studio project}
+
+The Windows executables provided by us have been compiled with
+MS Visual Studio and Intel C++ Composer XE. (Visual C++ itself can
+only be used without OpenMP.)
+
+If you want to compile Normaliz yourself in this way, please unzip
+the corresponding zip file on the Normaliz home page. This will
+create a subdirectory \ttt{Visual Studio} of the Normaliz
+directory. This directory contains the predefined project. We have
+provided
+
+\begin{enumerate}
+	\item two configurations: \ttt{Release} (with OpenMP) and
+	\ttt{ReleaseSerial} (without OpenMP), and
+	\item two platforms, \ttt{Win32} and \ttt{x64}.
+\end{enumerate}
+
+Instead of GMP we use the MPIR library for the Windows version
+of \ttt{normaliz}. For convenience, the MPIR files have been
+included in the distribution (in the subdirectory \ttt{MPIR} of
+\ttt{Visual Studio}). Please
+\begin{itemize}
+	\item copy the library files for Win32 into the \ttt{lib}
+	subdirectory of the Visual C++ compiler,
+
+	\item the library files for x64 to the subdirectory
+	\ttt{amd64} (or \ttt{x64}) of \ttt{lib}, and
+
+	\item the two header files to the \ttt{include}
+	subdirectory of the compiler.
+\end{itemize}
+Moreover, you must install the Boost collection available from
+http://www.boost.org/. We only use Boost libraries that are
+entirely implemented in their headers. So the only preparation
+beyond downloading and unzipping is to add the Boost root
+directory to the list of include paths. In the Visual Studio C++ IDE,
+click ``Tools | Options... | Projects | VC++ directories''.
+Then, in ``Show Directories for'', select ``Include files'' and
+add the path to the Boost root directory.
+
+After the compilation with the Intel compiler you must copy the executable
+to the directories where they are expected (the Normaliz
+directory or a directory in the search path).
+
+The source files for Visual Studio are identical to those for GCC.
