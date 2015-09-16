@@ -422,6 +422,14 @@ Normaliz, especially with a high number of parallel threads,
 due to the fact that it may have to cope with very long
 polynomials.
 
+\subsection{A workround}
+
+For polynomials with a large number of terms NmzIntegrate may terminate with a segmentation fault because CoCoALib (version 0.99538) fails to factorize the polynomial. If the polynomial is given as a product of linear combinations of monomials (for example, when it is a product of binomial coefficients), there is a way out: use NmzIntegrate 1.1. Note that NmzIntegrate 1.1 cannot handle excluded faces, however.
+
+The last version of Normaliz that was bundled with NmzIntegrate 1.1 is 2.10.1. You can still find it on the Normaliz web site. Please extract the executable of NmzIntegrate.
+
+There is one more step necessary (unless you use Normaliz 2.10.1 with NmzIntegrate 1.1): open the file \verb|<project>.dec| and remove the first line \verb|Stanley_dec|. Then run NmzIntegrate 1.1.
+
 \section{The output file}\label{output}
 
 If the option \verb+-F=<polynomial>+ is not set, the output is written to

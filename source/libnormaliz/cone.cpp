@@ -320,7 +320,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     if(lf.size()==1){
         if(inhom_input)
             lf[0].push_back(0); // first we extend grading trivially to have the right dimension
-        setGrading (lf[0]);     // will eveantually be set in full_cone.cpp
+        setGrading (lf[0]);     // will eventually be set in full_cone.cpp
 
     }
 
@@ -432,7 +432,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             set_original_monoid_generators(Generators);
         }
 
-        if(cone_sat_eq && !cone_sat_cong){ // multiply generators by annihilator mod sublattice
+        if(cone_sat_eq && !cone_sat_cong){ // multiply generators by anniullator mod sublattice
             for(size_t i=0;i<Generators.nr_of_rows();++i)
                 v_scalar_multiplication(Generators[i],BasisChange.getAnnihilator());
             cone_sat_cong=true;
