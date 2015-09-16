@@ -1,0 +1,18 @@
+**** INSTALLATION OF NmzIntegrate ****
+
+1) compile libnormaliz with the old plain makefile
+
+2) download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
+   configure it with the threadsafe-hack, and compile:
+        mkdir ~/CoCoA/
+        cd ~/CoCoA/
+        wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99538.tgz
+        tar xvf CoCoALib-0.99538.tgz
+        cd CoCoALib-0.99538
+        ./configure --threadsafe-hack
+        make library -j2
+
+3) compile nmzIntegrate
+        cd source/genEhrhart
+        make
+

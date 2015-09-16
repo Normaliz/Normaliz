@@ -1,0 +1,38 @@
+Singular distributes a version of the Normaliz interface. To use it just start
+Singular and do
+    LIB "normaliz.lib";
+
+
+Instructions to use another version:
+
+* start from the directory containing normaliz.lib
+* run in Singular
+    LIB "./normaliz.lib";
+  the "./" ensures only a the local version is used
+
+Additional instructions for developers:
+
+* get and compile Singular git version
+    git clone https://github.com/Singular/Sources.git
+    cd Singular.git
+    mkdir BUILD; cd BUILD
+    ../configure --with-flint=no
+* compile libparse via
+    cd Singular; make libparse
+
+* build manual and run examples
+   sudo apt-get install texinfo
+   ... follow instructions of lib2doc webpage
+   make normaliz.ps
+   make normaliz.html
+
+Recources:
+
+general Singular compile instructions for Debian
+https://github.com/Singular/Sources/wiki/Installation%20from%20GitHub%20on%20Debian
+
+
+lib2doc Documentation tool
+http://www.singular.uni-kl.de/Manual/latest/sing_60.htm#SEC96
+
+
