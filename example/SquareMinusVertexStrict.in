@@ -1,15 +1,11 @@
-4
-3
+amb_space 3
+inequalities 4
 0 -1  1
 1  0  0
 -1  0  1
 0  1  0
-inequalities
-1
-3
+strict_inequalities 1
 1 1 0
-strict_inequalities
-1
-3
-0 0 1
 grading
+0 0 1
+

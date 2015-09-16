@@ -1,12 +1,9 @@
-1 24
-1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-strict_signs
-3 24
+amb_space 24
+strict_inequalities 3
 1 1 1 1 1 1 -1 -1 -1 -1 -1 -1 1 1 -1 -1 1 -1 1 1 -1 -1 1 -1
 1 1 1 1 1 1 1 1 -1 -1 1 -1 -1 -1 -1 -1 -1 -1 1 1 1 -1 -1 -1
 1 1 1 1 1 1 1 1 1 -1 -1 -1 1 1 1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-strict_inequalities
-1 24
+strict_signs
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-grading
-
+total_degree
+Multiplicity

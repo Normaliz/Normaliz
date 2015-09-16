@@ -1,5 +1,5 @@
-24
-16
+amb_space 16
+cone_and_lattice 24
 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0
 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0
 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0
@@ -24,8 +24,8 @@
 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1
 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1
 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 1
-normalization
 
+/*
 **************************************************************
 
 Dear Winfried:
@@ -48,4 +48,5 @@ Rafael
 
 Das Beispiel laeuft ohne Probleme durch.
 Version aus versand1 braucht auf elib 26310.00u 0.07s 7:30:11.06 -61.-6%
-Version aus versand2 braucht auf elib 173.76u 0.04s 2:56.91 98.2%
+Version aus versand2 braucht auf elib 173.76u 0.04s 2:56.91 98.2% 
+*/

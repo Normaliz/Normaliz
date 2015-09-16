@@ -1,9 +1,0 @@
-amb_space 6
-inequalities 4
- 1   -1   0   0    0    0
-  0    1  -1   0    0   -1
-  0    0   1  -1   -1    1
- -1    1  -1  -1    1    1
-nonnegative
-total_degree
-

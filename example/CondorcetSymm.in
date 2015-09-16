@@ -1,15 +1,9 @@
-1                                      
-8                                      
-1 1 1 1 1 1 1 1                        
-signs                                  
-3                                                         
-8                                                         
+amb_space 8
+inequalities 3
 1 -1 1 1 1 -1 -1 -1
 1 1 -1 1 -1 1 -1 -1
 1 1 1 -1 -1 -1 1 -1
-inequalities       
-1              
-8              
-1 1 1 1 1 1 1 1
-grading        
+nonnegative
+total_degree
+   
                

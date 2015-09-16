@@ -1,5 +1,5 @@
-8
-5
+amb_space 5
+inequalities 8
 1 0 0 0 0
 0 1 0 0 0
 0 0 1 0 0
@@ -9,10 +9,8 @@
 0 -1 0 0 1
 0 0 -1 0 1
 0 0 0 -1 1
-inequalities
-1
-5
+equations 1
 -1 -1 -1 -1 2
-equations
+
 
 
