@@ -56,7 +56,7 @@ void printHelp(char* command) {
     cout << "Usage: "<<command<<" [options] PROJECT"<<endl;
     cout << "  runs normaliz on PROJECT.in"<<endl;
     cout << "Options:"<<endl;
-    cout << "  -?\tprint this help text and exit"<<endl;
+    cout << "  -S\tcompute sublattice"<<endl;
     cout << "  -s\tcompute support hyperplanes"<<endl;
     cout << "  -t\tcompute triangulation"<<endl;
     cout << "  -v\tcompute volume"<<endl;
@@ -67,18 +67,39 @@ void printHelp(char* command) {
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
     cout << "  -1\tcompute degree 1 elements"<<endl;
     cout << "  -y\tcompute Stanley decomposition"<<endl;
+    cout << "  -C\tcompute class group"<<endl;
+    cout << "  -M\tcompute module generators over original monoid"<<endl;
+
+    cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
-    cout << "  -r\tcomputation mode: approximate rational polytope"<<endl;
-    cout << "  -f\tthe files .out .gen .inv .cst are written"<<endl;
-    cout << "  -T\tthe file .tri is written (triangulation)"<<endl;
-    cout << "  -a\tall output files are written (except .tri)"<<endl;
-    cout << "  -B\tuse indefinite precision arithmetic"<<endl;
-    cout << "  -c\tverbose (prints control data)"<<endl;
-    cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
+    cout << "  -r\tcomputation mode: approximate"<<endl;
+    cout << "  -b\tcomputation mode: bottom decomposition"<<endl;
+    cout << "  -k\tcomputation mode: keep order"<<endl;
+
+    cout << endl;
+    cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
+
+    cout << endl;
+    cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
+    cout << "  -a, --all-files  write all output files (except .tri)"<<endl;
+    cout << "  -T               write the file .tri (triangulation)"<<endl;
+    cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be on of"<<endl;
+    cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, typ"<<endl;
+
+    cout << endl;
+    cout << "  -B, --BigInt     directly use indefinite precision arithmetic"<<endl;
+    cout << "  -i, --ignore     ignore the compute options set in the input file"<<endl;
+    cout << "  -x=<T>           limit the number of threads to <T>"<<endl;
+    cout << "  -?, --help       print this help text and exit"<<endl;
+    cout << "  -c, --verbose    verbose (prints control data)"<<endl;
+    cout << "      --version    print version info and exit"<<endl;
+    cout << endl;
+    cout << "Please report bugs to <normaliz@uos.de> or directly to our issue tracker:" << endl;
+    cout << "https://github.com/Normaliz/Normaliz/issues" << endl;
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2015  Winfried Bruns, Bogdan Ichim, Christof Soeger"<<endl
+    cout<<"Copyright (C) 2007-2015  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;

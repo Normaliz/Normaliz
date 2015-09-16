@@ -224,6 +224,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
     }
 
+    // Remember to update also the --help text and the documentation when changing this!
     vector<string> AdmissibleOut;
     string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"}; // "mod" must be last
     for(size_t i=0;i<10;++i)
