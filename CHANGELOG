@@ -1,5 +1,17 @@
 # ChangeLog
 
+## [3.0.0] - 2015-09-18
+- new, more natural comfortable input syntax (with backward compatibility)
+- standardization of output improved, especially for Hilbert series (not backward compatible)
+- new computation goals: module generators over original monoid and class group
+- Additional input types, in particular generators for lattices; free combination of generators and constraints
+- computation goals can be set in the input file
+- long options available
+- automatic choice of integer type
+- improved linear algebra with much better protection against overflows
+- reduction of the arithmetical complexity by subdivision of large simplicial cones and bottom decomposition based on SCIP and approximation methods
+- improvement of Fourier-Motzkin elimination by ordering the generators
+
 ## [2.12.2] - 2014-01-22
 - bug fix in volume computation "-v"
 - change max_rank_submatrix back to pre2.12 version, avoids some overflows
