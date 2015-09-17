@@ -3387,7 +3387,7 @@ self-explanatory. Nevertheless we give an overview:
 	subdirectories.
 	
 	\item The subdirectory \ttt{source} contains the source
-	files and a \ttt{Makefile} for compilation with GCC.
+	files.
 	The subdirectory \ttt{genEhrhart} contains the
 	NmzIntegrate source.
 	
@@ -3397,9 +3397,10 @@ self-explanatory. Nevertheless we give an overview:
 	\item In the subdirectory \ttt{example} are the input
 	and output files for some examples. It contains all
 	input files of examples of this documentation, except the toy
-	examples of Section \ref{input}. Some very large output files
-	are contained in an extra zip file accessible from the
-	Normaliz home page.
+	examples of Section \ref{input}.
+
+	\item Automated tests which run Normaliz on different inputs
+	and options are contained in the subdirectory \ttt{test}.
 	
 	\item The subdirectory \ttt{singular} contains the
 	\textsc{Singular} library \ttt{normaliz.lib} and a PDF file with
@@ -3451,7 +3452,7 @@ See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussio
 The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
 
 In the following we describe the configuration/build process using cmake.
-This has capabilities to find libraries and allow to change settings in a nice interface. It supports the compilation of the library as static and dynamic version, installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
+This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version, installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
 
 We will only handle the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths.
 
@@ -3462,7 +3463,7 @@ On Ubuntu the following packages should be installed:
 sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 \end{verbatim}
 
-We assume you start in the normaliz root dir (with subdirs source, examples, ...).
+We assume you start in the normaliz root dir (with subdirs source, example, ...).
 
 \begin{enumerate}
 \item Create a build directory where normaliz will be build and cd into it, e.g.
@@ -3496,7 +3497,7 @@ In the ccmake interface you can use this work flow:
   make install
 \end{verbatim}
 This will install the library headers, the produced libnormaliz and the normaliz executable.
-The path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
+The installation path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
 \end{enumerate}
 
 
@@ -3504,7 +3505,7 @@ The path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
 
 Currently Apple does not supply a compiler which supports OpenMP. We recommend the use of a current gcc. Mac versions older than 4.5 have a bug that makes it impossible to use OpenMP.
 
-You can then follow the instruction for Linux.
+You can then follow the instructions for Linux.
 
 \subsection{Windows}
 
