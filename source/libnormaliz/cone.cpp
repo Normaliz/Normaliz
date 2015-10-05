@@ -1496,10 +1496,9 @@ void Cone<Integer>::compute_generators() {
                 compute_generators_inner<MachineInteger>();
             } catch(const ArithmeticException& ) {
                 errorOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
-                change_integer_type = false;
+                compute_generators_inner<Integer>();
             }
-        }
-        if (!change_integer_type) {
+        } else {
             compute_generators_inner<Integer>();
         }
     }
