@@ -4337,6 +4337,7 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
+    verbose = C.verbose;
     OldCandidates.dual=false;
     OldCandidates.verbose=verbose;
     NewCandidates.dual=false;

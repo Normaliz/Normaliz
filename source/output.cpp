@@ -54,6 +54,7 @@ Output<Integer>::Output(){
     ht1=false;
     dec=false;
     lat=false;
+    mod=false;
 }
 
 //---------------------------------------------------------------------------

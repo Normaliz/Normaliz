@@ -46,6 +46,7 @@ Candidate<Integer>::Candidate(const vector<Integer>& v, const Full_Cone<Integer>
 : cand(v)
 {
     compute_values_deg(C);
+    reducible=true;
     original_generator=false;
 }
 
@@ -89,6 +90,7 @@ template<typename Integer>
 CandidateList<Integer>::CandidateList()
 : tmp_candidate(0,0)
 {
+    verbose = false;
     dual = false;
     last_hyp = 0;
 }
@@ -100,6 +102,7 @@ template<typename Integer>
 CandidateList<Integer>::CandidateList(bool dual_algorithm)
 : tmp_candidate(0,0)
 {
+    verbose = false;
     dual = dual_algorithm;  
     last_hyp = 0;
 }

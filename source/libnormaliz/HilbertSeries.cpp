@@ -61,6 +61,7 @@ long lcm_of_keys(const map<long, denom_t>& m){
 HilbertSeries::HilbertSeries() {
     num = vector<mpz_class>(1,0);
     //denom just default constructed
+    is_simplified = false;
     shift = 0;
     verbose = false;
 }
@@ -69,6 +70,7 @@ HilbertSeries::HilbertSeries() {
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1,0);
     add(numerator, gen_degrees);
+    is_simplified = false;
     shift = 0;
     verbose = false;
 }
@@ -85,6 +87,7 @@ HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long,
 // Constructor, string as created by to_string_rep
 HilbertSeries::HilbertSeries(const string& str) {
     from_string_rep(str);
+    is_simplified = false;
     shift = 0;
     verbose = false;
 }
