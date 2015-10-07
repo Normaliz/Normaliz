@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <assert.h>
+#include <cstddef>
 
 #ifdef _WIN32 //for 32 and 64 bit windows
     #define NMZ_MPIR //always use MPIR
