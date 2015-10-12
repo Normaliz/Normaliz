@@ -891,7 +891,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         verboseOutput() << "simplex volume " << volume << endl;
     }
     if (C_ptr->use_bottom_points && volume >= SimplexParallelEvaluationBound
-        && C_ptr->approx_level==1)
+        && C_ptr->approx_level==1 && !C_ptr->deg1_triangulation)
     {
 
         Full_Cone<Integer>& C = *C_ptr;
