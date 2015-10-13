@@ -1262,15 +1262,15 @@ Matrix<Integer> Matrix<Integer>::row_column_trigonalize(size_t& rk, bool& succes
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon(bool& success, bool do_compute_vol, Integer& det){
     
-    if(using_GMP<Integer>()){
+/*    if(using_GMP<Integer>()){
         return row_echelon_inner_bareiss(success,det);;
     }
-    else{ 
+    else{ */
         size_t rk=row_echelon_inner_elem(success);
         if(do_compute_vol)
             det=compute_vol(success);
         return rk;
-    }
+//    }
 }
 
 //---------------------------------------------------------------------------
