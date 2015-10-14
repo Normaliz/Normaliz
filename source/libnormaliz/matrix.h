@@ -98,7 +98,8 @@ template<typename Integer> class Matrix {
     // right side from column vectors pointed to by RS
     // both in a single matrix    
     void solve_system_submatrix_outer(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col);
+         Integer& denom, bool ZZ_invertible, bool transpose, size_t red_col, size_t sign_col,
+         bool compute_denom=true, bool make_sol_prime=false);
                     
     size_t row_echelon_inner_elem(bool& success); // does the work and checks for overflows
     // size_t row_echelon_inner_bareiss(bool& success, Integer& det);
@@ -144,6 +145,8 @@ template<typename Integer> class Matrix {
     Matrix bundle_matrices(const Matrix<Integer>& Right_side)const;
     Matrix extract_solution() const;
     vector<vector<Integer>* > row_pointers();
+    void customize_solution(size_t dim, Integer& denom, size_t red_col, 
+                     size_t sign_col, bool make_sol_prime);
                     
 public:
 
@@ -267,8 +270,10 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     //this=this div scalar, all the elem of this must be divisible with the scalar
     void reduction_modulo(const Integer& modulo);     //this=this mod scalar
     Integer matrix_gcd() const; //returns the gcd of all elem
-    vector<Integer> make_prime();         //each row of this is reduced by its gcd
-    //return a vector containing the gcd of the rows
+    vector<Integer> make_prime();         //each row of this is reduced by its gcd, 
+                                          // vector of gcds returned
+    void make_cols_prime(size_t from_col, size_t to_col);   
+             // the columns of this in the specified range are reduced by their gcd
 
     Matrix multiply_rows(const vector<Integer>& m) const;  //returns matrix were row i is multiplied by m[i]
 
@@ -339,11 +344,11 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     // solve the system this*Solution=denom*Right_side. 
 
     // system is defined by submatrix of mother given by key (left side) and column vectors pointed to by RS (right side)
-    // NOTE: this is used as the matrix for the woek     
+    // NOTE: this is used as the matrix for the work     
     void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          vector< Integer >& diagonal, Integer& denom, size_t red_col, size_t sign_col);
     void solve_system_submatrix(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
-         Integer& denom, size_t red_col, size_t sign_col);
+         Integer& denom, size_t red_col, size_t sign_col, bool compute_denom=true, bool make_sol_prime=false);
     // the left side gets transposed
     void solve_system_submatrix_trans(const Matrix& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom, size_t red_col, size_t sign_col);
@@ -375,7 +380,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     //this*Solution=denom*I. "this" should be a quadratic matrix with nonzero determinant. 
     Matrix invert(Integer& denom) const;
     
-    void invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv) const;
+    void invert_submatrix(const vector<key_t>& key, Integer& denom, Matrix<Integer>& Inv, 
+                bool compute_denom=true, bool make_sol_prime=false) const;
                     
 // find linear form that is constant on the rows 
 
@@ -401,7 +407,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 //for simplicial subcones
 
     // computes support hyperplanes and volume
-    void simplex_data(const vector<key_t>& key, Integer& vol, Matrix& Supp) const; 
+    void simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const; 
     
 // Sorting of rows
     

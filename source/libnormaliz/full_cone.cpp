@@ -1095,7 +1095,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         if(recursive){ // the facets may be facets of the mother cone and if recursive==true must be given back
             Matrix<Integer> H(dim,dim);
             Integer dummy_vol;
-            Generators.simplex_data(Pyramid_key,dummy_vol,H);
+            Generators.simplex_data(Pyramid_key,H, dummy_vol,false);
             list<FACETDATA> NewFacets;
             FACETDATA NewFacet;
             NewFacet.GenInHyp.resize(nr_gen);
@@ -1223,7 +1223,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     }
     Matrix<Integer> H(dim,dim);
     Integer vol;
-    Generators.simplex_data(key,vol,H);
+    Generators.simplex_data(key,H,vol,do_partial_triangulation || do_triangulation);
     
     // H.pretty_print(cout);
     

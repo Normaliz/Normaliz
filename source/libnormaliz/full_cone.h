@@ -100,6 +100,7 @@ public:
 	bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
+    bool do_module_rank;
     
     bool do_extreme_rays;
     bool do_pointed;
