@@ -1445,6 +1445,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::ClassGroup)) {
         FC.do_class_group=true;
     }
+    if (ToCompute.test(ConeProperty::ModuleRank)) {
+        FC.do_module_rank=true;
+    }
+    
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays = ExtremeRaysIndicator;

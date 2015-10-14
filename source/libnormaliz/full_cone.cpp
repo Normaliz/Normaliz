@@ -2693,6 +2693,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     if (do_Stanley_dec)     keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
+    if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
     if (do_determinants)    do_triangulation = true;
     if (do_h_vector)        do_triangulation = true;
     if (do_deg1_elements)   do_partial_triangulation = true;
@@ -2885,6 +2886,9 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     assert(elements_from_approx.empty());
 
     Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
+    /* cout << "====================" << endl;
+    C_approx.Generators.pretty_print(cout);
+    cout << "====================" << endl; */
     C_approx.verbose=verbose;
     C_approx.is_approximation=true;
     C_approx.approx_level = approx_level;
@@ -3007,13 +3011,15 @@ void Full_Cone<Integer>::find_level0_dim(){
 
 template<typename Integer>
 void Full_Cone<Integer>::find_module_rank(){
+    
+    if(isComputed(ConeProperty::ModuleRank))
+        return;   
 
     if(level0_dim==dim){
         module_rank=0;
         is_Computed.set(ConeProperty::ModuleRank);
         return;
-    } 
-    
+    }     
     if(isComputed(ConeProperty::HilbertBasis)){
         find_module_rank_from_HB();
         return;
@@ -3021,7 +3027,8 @@ void Full_Cone<Integer>::find_module_rank(){
 
     // size_t HBrank = module_rank;
 
-    find_module_rank_from_proj();
+    if(do_module_rank)
+        find_module_rank_from_proj();
     
     /* if(isComputed(ConeProperty::HilbertBasis))
         assert(HBrank==module_rank);
@@ -3061,6 +3068,12 @@ void Full_Cone<Integer>::find_module_rank_from_proj(){
 
 template<typename Integer>
 void Full_Cone<Integer>::find_module_rank_from_HB(){
+    
+    if(level0_dim==0){
+        module_rank=Hilbert_Basis.size();
+        is_Computed.set(ConeProperty::ModuleRank);
+        return;        
+    }
 
     
     set<vector<Integer> > Quotient;
@@ -4134,6 +4147,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_default_mode=false;
     do_class_group = false;
     do_module_gens_intcl = false;
+    do_module_rank = false;
     
     do_extreme_rays=false;
     do_pointed=false;
