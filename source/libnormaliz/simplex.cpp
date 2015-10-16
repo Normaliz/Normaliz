@@ -249,7 +249,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     if(potentially_unimodular){ // very likely unimodular, Indicator computed first, uses transpose of Gen
         RS_pointers.clear();    
         RS_pointers.push_back(&(C.Order_Vector));
-        LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume,0,1);        
+        LinSys.solve_system_submatrix_trans(Generators,id_key, RS_pointers,volume,0,1);    // 1: replace components of solution by sign   
         for (i=0; i<dim; i++)
             Indicator[i]=LinSys[i][dim];  // extract solution
 
@@ -282,7 +282,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         if(Ind0_key.size()>0){            
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
             LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,GDiag,volume,0,RS_pointers.size());
-            
+                               // RS_pointers.size(): all columns of solution replaced by sign vevctors
             for(size_t i=0;i<dim;++i)
                 for(size_t j=dim;j<dim+Ind0_key.size();++j) 
                     InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j];       
@@ -331,6 +331,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         
         // LinSys.solve_destructive(volume);
         LinSys.solve_system_submatrix_trans(Generators,id_key,RS_pointers,volume,Last_key.size(),RS_pointers.size()-Last_key.size());
+                                         // Last_key.dize(): these columns of solution reduced by volume
         for(i=0;i<Last_key.size();i++){ // extract solutions as selected rows of InvGen
             for(j=0;j<dim;j++){
                 InvGenSelRows[Last_key[i]][j]=LinSys[j][dim+i]; // %volume; //makes reduction mod volume easier
