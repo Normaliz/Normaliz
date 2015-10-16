@@ -1546,10 +1546,14 @@ void Matrix<Integer>::customize_solution(size_t dim, Integer& denom, size_t red_
                      size_t sign_col, bool make_sol_prime) {
                          
     assert(!(make_sol_prime && (sign_col>0 || red_col>0)));
-              
-    for(size_t j=0;j<red_col;++j)  // reduce first red_col columns of solution mod denom
-       for(size_t k=0;k<dim;++k)
+
+    for(size_t j=0;j<red_col;++j){  // reduce first red_col columns of solution mod denom
+        for(size_t k=0;k<dim;++k){
           elem[k][dim+j]%=denom;
+          if(elem[k][dim+j]<0)
+              elem[k][dim+j]+=Iabs(denom);
+       }
+    }
         
     for(size_t j=0;j<sign_col;++j)   // replace entries in the next sign_col columns by their signs
       for(size_t k=0;k<dim;++k){
@@ -1563,7 +1567,7 @@ void Matrix<Integer>::customize_solution(size_t dim, Integer& denom, size_t red_
         }       
       }
       
-    if(make_sol_prime) // make columns of solution coprime 
+    if(make_sol_prime) // make columns of solution coprime if wanted
         make_cols_prime(dim,nc-1);
 }
 
@@ -1629,7 +1633,7 @@ template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          vector< Integer >& diagonal, Integer& denom, size_t red_col, size_t sign_col) {
 
-    solve_system_submatrix_outer(mother,key,RS,denom,true,false,0,0);
+    solve_system_submatrix_outer(mother,key,RS,denom,true,false,red_col,sign_col);
     assert(diagonal.size()==nr);
     for(size_t i=0;i<nr;++i)
         diagonal[i]=elem[i][i];
@@ -1643,7 +1647,7 @@ template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom, size_t red_col, size_t sign_col, bool compute_denom, bool make_sol_prime) {
 
-    solve_system_submatrix_outer(mother,key,RS,denom,false,false,0,0, 
+    solve_system_submatrix_outer(mother,key,RS,denom,false,false,red_col,sign_col, 
                 compute_denom, make_sol_prime);
 }
 
@@ -1653,7 +1657,7 @@ template<typename Integer>
 void Matrix<Integer>::solve_system_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& key, const vector<vector<Integer>* >& RS,
          Integer& denom, size_t red_col, size_t sign_col) {
          
-    solve_system_submatrix_outer(mother,key,RS,denom,false,true,0,0);
+    solve_system_submatrix_outer(mother,key,RS,denom,false,true,red_col,sign_col);
 }
 
 //---------------------------------------------------------------------------

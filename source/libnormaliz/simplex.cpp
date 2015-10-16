@@ -330,19 +330,19 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         }
         
         // LinSys.solve_destructive(volume);
-        
         LinSys.solve_system_submatrix_trans(Generators,id_key,RS_pointers,volume,Last_key.size(),RS_pointers.size()-Last_key.size());
-        for(i=0;i<Last_key.size();i++) // extract solutions as selected rows of InvGen
+        for(i=0;i<Last_key.size();i++){ // extract solutions as selected rows of InvGen
             for(j=0;j<dim;j++){
-                InvGenSelRows[Last_key[i]][j]=LinSys[j][dim+i]%volume; //makes reduction mod volume easier
-                if(InvGenSelRows[Last_key[i]][j] <0)
-                    InvGenSelRows[Last_key[i]][j]+=volume;
+                InvGenSelRows[Last_key[i]][j]=LinSys[j][dim+i]; // %volume; //makes reduction mod volume easier
+                /* if(InvGenSelRows[Last_key[i]][j] <0)         //   Now in matrix.cpp
+                    InvGenSelRows[Last_key[i]][j]+=volume;*/
             }
+        }
         if(!potentially_unimodular){ // extract Indicator
             for (i=0; i<dim; i++)
                 Indicator[i]=LinSys[i][dim+Last_key.size()];
         }
-    }
+    } 
     
     // if not potentially unimodular we must still take care of the 0 ntries of the indicator
 
@@ -352,7 +352,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 Ind0_key.push_back(i);
         if(Ind0_key.size()>0){
             RS_pointers=unit_matrix.submatrix_pointers(Ind0_key);
-            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume,RS_pointers.size(),0);
+            LinSys.solve_system_submatrix(Generators,id_key,RS_pointers,volume,0,RS_pointers.size());
             for(size_t i=0;i<dim;++i)
                 for(size_t j=dim;j<dim+Ind0_key.size();++j)
                     InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j]; 
