@@ -33,7 +33,6 @@
 #include <libnormaliz/integer.h>
 
 namespace libnormaliz {
-//using std::ostream;
 
 // conversion for integers, throws ArithmeticException if conversion fails
 template<typename ToType, typename FromType>

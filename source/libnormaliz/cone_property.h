@@ -25,7 +25,7 @@
 #define CONE_PROPERTY_H_
 
 #include <bitset>
-#include <iostream>
+#include <ostream>
 
 namespace libnormaliz {
 

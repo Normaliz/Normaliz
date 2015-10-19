@@ -35,14 +35,13 @@
 
 namespace libnormaliz {
 using std::vector;
-using std::ostream;
 
 //---------------------------------------------------------------------------
 //							Data access
 //---------------------------------------------------------------------------
 
 template <typename T>
-ostream& operator<< (ostream& out, const vector<T>& vec) {
+std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
     for (size_t i=0; i<vec.size(); ++i) {
         out << vec[i] << " ";
     }

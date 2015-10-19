@@ -173,7 +173,7 @@ class CandidateTable {  // for parallelized reduction with moving of reducer to 
 
   public:
 
-  list < pair< size_t, vector<Integer>* > > ValPointers;
+  list < std::pair< size_t, vector<Integer>* > > ValPointers;
   bool dual;
   size_t last_hyp;
 
