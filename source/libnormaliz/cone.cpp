@@ -1652,6 +1652,10 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if (inhomogeneous) {
         // in the inhomogeneous case the truncation will be (re)inserted below
         i_start=1;
+        // due to the preceding computations the dehomogenization might have been 
+        // eliminated or might appear later in the system (doubling doesn't hurt).
+        // If it is not the first, then we take all inequalities and insert it in
+        // first place below.
         vector< IntegerFC > help;
         BasisChange.convert_to_sublattice_dual(help, Dehomogenization);
         if(Inequ_on_Ker[0] != help)
