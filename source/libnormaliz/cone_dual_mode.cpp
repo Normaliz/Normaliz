@@ -97,7 +97,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
         throw BadInputException();
     }
     M.remove_duplicate_and_zero_rows();
-    // now we sort by L_1-norm abd then lex
+    // now we sort by L_1-norm and then lex
     Matrix<Integer> Weights(0,dim);
     vector<bool> absolute;
     Weights.append(vector<Integer>(dim,1));
@@ -148,7 +148,7 @@ const size_t ReportBound=100000;
 //---------------------------------------------------------------------------
 
 // In the inhomogeneous case or when only degree 1 elements are to be found,
-// we truncate the Hilbert basis at level 1. The level is the ordinaryl degree in
+// we truncate the Hilbert basis at level 1. The level is the ordinary degree
 // for degree 1 elements and the degree of the homogenizing variable 
 // in the inhomogeneous case.
 //
