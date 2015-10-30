@@ -373,11 +373,9 @@ string OptionsHandler::getNmzIntegrateOptions() const {
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    int proper_properties = to_compute.count();
-    if (to_compute.test(ConeProperty::Approximate)) proper_properties--;
-    if (to_compute.test(ConeProperty::BottomDecomposition)) proper_properties--;
-    if (to_compute.test(ConeProperty::KeepOrder)) proper_properties--;
-    if (proper_properties > 0) return false;
-    to_compute.set(ConeProperty::DefaultMode);
-    return true;
+    if (to_compute.goals().none()) {
+        to_compute.set(ConeProperty::DefaultMode);
+        return true;
+    }
+    return false;
 }

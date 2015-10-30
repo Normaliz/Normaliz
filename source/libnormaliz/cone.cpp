@@ -1372,13 +1372,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
-    ToCompute.reset_compute_options();
-    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.any()) {
+    if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         errorOutput() << "ERROR: Cone could not compute everything that was asked for!"<<endl;
-        errorOutput() << "Missing: " << ToCompute << endl;
-        throw NotComputableException(ToCompute);
+        errorOutput() << "Missing: " << ToCompute.goals() << endl;
+        throw NotComputableException(ToCompute.goals());
     }
-    ToCompute.reset(ConeProperty::DefaultMode);
+    ToCompute.reset_compute_options();
     return ToCompute;
 }
 
@@ -1573,6 +1572,9 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
     }
     ToCompute.reset(ConeProperty::DualMode);
     ToCompute.reset(is_Computed);
+    if (ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().none()) {
+        ToCompute.reset(ConeProperty::DefaultMode);
+    }
 }
 
 template<typename Integer>

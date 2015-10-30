@@ -35,6 +35,7 @@ namespace libnormaliz {
  */
 namespace ConeProperty {
     enum Enum {
+        // goals that can be computed
         Generators,
         ExtremeRays,
         VerticesOfPolyhedron,
@@ -65,7 +66,7 @@ namespace ConeProperty {
         Sublattice,
         ClassGroup,
         ModuleGeneratorsOverOriginalMonoid,
-        // the following are more compute options than real properties of the cone
+        // compute options
         Approximate,
         BottomDecomposition,
         DefaultMode,
@@ -101,6 +102,10 @@ public:
     bool any() const;
     bool none() const;
     size_t count () const;
+
+    /* return the restriction of this to the goals / options */
+    ConeProperties goals();
+    ConeProperties options();
 
     /* the following methods are used internally */
     void set_preconditions();    // activate properties which are needed implicitly

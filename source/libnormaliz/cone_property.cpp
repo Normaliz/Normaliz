@@ -93,11 +93,32 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
     CPs &= ~ConeProps.CPs;
     return *this;
 }
+
 ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::Approximate, false);
     CPs.set(ConeProperty::BottomDecomposition, false);
+    CPs.set(ConeProperty::DefaultMode, false);
+    CPs.set(ConeProperty::DualMode, false);
     CPs.set(ConeProperty::KeepOrder, false);
     return *this;
+}
+
+/* return a new ConeProperties object with only the goals/options set,
+ * which are set in this object
+ */
+ConeProperties ConeProperties::goals() {
+    ConeProperties ret(*this);
+    ret.reset_compute_options();
+    return ret;
+}
+ConeProperties ConeProperties::options() {
+    ConeProperties ret;
+    ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
+    ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::BottomDecomposition));
+    ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
+    ret.set(ConeProperty::DualMode, CPs.test(ConeProperty::DualMode));
+    ret.set(ConeProperty::KeepOrder, CPs.test(ConeProperty::KeepOrder));
+    return ret;
 }
 
 /* test which/how many properties are set */
@@ -142,7 +163,7 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::ExtremeRays);
     
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
-            CPs.set(ConeProperty::HilbertBasis);        
+        CPs.set(ConeProperty::HilbertBasis);
 
     if (CPs.test(ConeProperty::ModuleGenerators))
         CPs.set(ConeProperty::HilbertBasis);
