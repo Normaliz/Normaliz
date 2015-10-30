@@ -51,7 +51,6 @@ public:
     bool inhomogeneous;
     bool do_only_Deg1_Elements;
     bool truncate;  // = inhomogeneous || do_only_Deg1_Elements
-    bool first_pointed; // indicates in the course of the algorithm the first ppointed cone
     
     Matrix<Integer> SupportHyperplanes;
     Matrix<Integer> Generators;
@@ -113,7 +112,7 @@ public:
     void select_HB(CandidateList<Integer>& Cand, size_t guaranteed_HB_deg, 
                                 CandidateList<Integer>& Irred, bool all_irreducible);
 
-    Cone_Dual_Mode(const Matrix<Integer>& M);            //main constructor
+    Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation);            //main constructor
 
 /*---------------------------------------------------------------------------
  *                      Data access

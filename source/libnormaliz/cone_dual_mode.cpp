@@ -89,20 +89,29 @@ void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t gua
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Cone_Dual_Mode<Integer>::Cone_Dual_Mode(const Matrix<Integer>& M){
+Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation){
     dim=M.nr_of_columns();
     if (dim!=M.rank()) {
         errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
         // M.pretty_print(errorOutput());
         throw BadInputException();
     }
-    SupportHyperplanes = M;
-    // support hyperplanes are already coprime (except for truncation/grading)
-    // so just remove 0 rows
-    SupportHyperplanes.remove_zero_rows();
+    M.remove_duplicate_and_zero_rows();
+    // now we sort by L_1-norm abd then lex
+    Matrix<Integer> Weights(0,dim);
+    vector<bool> absolute;
+    Weights.append(vector<Integer>(dim,1));
+    absolute.push_back(true);
+    vector<key_t> perm=M.perm_by_weights(Weights,absolute);
+    M.order_rows_by_perm(perm);
+
+    SupportHyperplanes=Matrix<Integer>(0,dim);
+    if(Truncation.size()!=0)
+        SupportHyperplanes.append(Truncation);       
+    SupportHyperplanes.append(M);
     nr_sh = SupportHyperplanes.nr_of_rows();
     // hyp_size = dim + nr_sh;
-    first_pointed = true;
+
     Intermediate_HB.dual=true;
 
     if (nr_sh != static_cast<size_t>(static_cast<key_t>(nr_sh))) {
@@ -205,9 +214,11 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         (halfspace_gen_as_cand.values)[hyp_counter]=orientation; // value under the new linear form
         halfspace_gen_as_cand.sort_deg=convertTo<long>(orientation);
         assert(orientation!=0);
-        Positive_Irred.push_back(halfspace_gen_as_cand);
-        Pos_Gen0.push_back(&Positive_Irred.Candidates.front());
-        pos_gen0_size=1;
+        if(!truncate || halfspace_gen_as_cand.values[0] <=1){ // the only critical case is the positive halfspace gen in round 0
+            Positive_Irred.push_back(halfspace_gen_as_cand);  // it must have value <= 1 under the truncation. 
+            Pos_Gen0.push_back(&Positive_Irred.Candidates.front()); //  Later on all these elements have value 0 under it. 
+            pos_gen0_size=1;
+        }
         v_scalar_multiplication<Integer>(halfspace_gen_as_cand.cand,-1);    
         Negative_Irred.push_back(halfspace_gen_as_cand);
         Neg_Gen0.push_back(&Negative_Irred.Candidates.front());
@@ -688,8 +699,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     if (verbose) {
         verboseOutput()<<"Final sizes: Pos " << pos_gen0_size << " Neg " << neg_gen0_size  << " Neutral " << Neutral_Irred.size() <<endl;
     }
-    
-    
 
     Intermediate_HB.clear();
     Intermediate_HB.Candidates.splice(Intermediate_HB.Candidates.begin(),Positive_Irred.Candidates);

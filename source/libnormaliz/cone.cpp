@@ -669,13 +669,6 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
 
-    if(inhomogeneous){
-        SupportHyperplanes=Matrix<Integer>(1,dim);  // insert truncation as first inequality
-        SupportHyperplanes[0]=Dehomogenization;
-    }
-    else
-        SupportHyperplanes=Matrix<Integer>(0,dim); // here we start from the empty matrix
-
     if (Inequalities.nr_of_rows() == 0) {
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
@@ -684,7 +677,7 @@ void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
             vector<Integer> test(dim);
             test[dim-1]=1;
             size_t matsize=dim;
-            if(test==Dehomogenization) // in this case "last coordinate >= 0" is already there
+            if(test==Dehomogenization) // in this case "last coordinate >= 0" will come in through the dehomogenization
                 matsize=dim-1;   // we don't check for any other coincidence
             Inequalities= Matrix<Integer>(matsize,dim);
             for(size_t j=0;j<matsize;++j)
@@ -693,8 +686,7 @@ void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
         else
             Inequalities = Matrix<Integer>(dim);
     }
-
-    SupportHyperplanes.append(Inequalities);  // now the (remaining) inequalities are inserted
+    SupportHyperplanes=Inequalities;
 }
 
 
@@ -1491,7 +1483,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
 template<typename Integer>
 void Cone<Integer>::compute_generators() {
     //create Generators from SupportHyperplanes
-    if (!isComputed(ConeProperty::Generators) && SupportHyperplanes.nr_of_rows()!=0) {
+    if (!isComputed(ConeProperty::Generators) && (SupportHyperplanes.nr_of_rows()!=0 ||inhomogeneous)) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
         }
@@ -1512,8 +1504,15 @@ void Cone<Integer>::compute_generators() {
 template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner() {
+    
     Matrix<IntegerFC> Dual_Gen;
     BasisChange.convert_to_sublattice_dual(Dual_Gen, SupportHyperplanes);
+    if(inhomogeneous){
+        vector<IntegerFC> Help;
+        BasisChange.convert_to_sublattice_dual(Help,Dehomogenization);
+        Dual_Gen.append(Help);
+    }
+    
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
@@ -1590,32 +1589,16 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         Matrix<IntegerFC> Tmp_Gens;
         BasisChange.convert_to_sublattice(Tmp_Gens,Generators);
         Full_Cone<IntegerFC> Tmp_Cone(Tmp_Gens);
-        Tmp_Cone.verbose=verbose;
-        /* if (ToCompute.test(ConeProperty::KeepOrder)) {
-            Tmp_Cone.keep_order = true;
-            Tmp_Cone.is_Computed.set(ConeProperty::KeepOrder);
-        }*/
         Tmp_Cone.do_extreme_rays=true;
         Tmp_Cone.dualize_cone();        // also marks extreme rays
         extract_data(Tmp_Cone);
-        if(inhomogeneous){
-            Matrix<Integer> Help(SupportHyperplanes.nr_of_rows()+1,dim);  // make Dehomogenization the first inequality
-            Help[0]=Dehomogenization;
-            Help.append(SupportHyperplanes);
-            SupportHyperplanes=Help;
-        }
     }
 
     if((do_only_Deg1_Elements || inhomogeneous) && !isComputed(ConeProperty::ExtremeRays)){
         if (verbose) {
             verboseOutput() << "Computing extreme rays for the dual mode:"<< endl;
         }
-        Matrix<Integer> Help(0,dim);
-        if(inhomogeneous)                        // we must guard ourselves against loosing the truncation
-            Help=SupportHyperplanes;
         compute_generators();   // computes extreme rays, but does not find grading !
-        if(inhomogeneous)                        // we must guard ourselves against loosing the truncation
-            SupportHyperplanes=Help;
         if (BasisChange.getRank() == 0) {
             set_zero_cone();
             ToCompute.reset(is_Computed);
@@ -1638,56 +1621,20 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         throw FatalException();
     }
 
-    size_t i,j;
     Matrix<IntegerFC> Inequ_on_Ker;
     BasisChange.convert_to_sublattice_dual(Inequ_on_Ker,SupportHyperplanes);
-    size_t newdim = Inequ_on_Ker.nr_of_columns();
-    //now sort the inequalities, hopefully this makes the computation faster
-    IntegerFC norm;
-    vector< IntegerFC > hyperplane;
-    multimap <IntegerFC , vector <IntegerFC> >  SortingHelp;
-    typename multimap <IntegerFC , vector <IntegerFC> >::const_iterator ii;
-
-    size_t i_start=0;
-    if (inhomogeneous) {
-        // in the inhomogeneous case the truncation will be (re)inserted below
-        i_start=1;
-        // due to the preceding computations the dehomogenization might have been 
-        // eliminated or might appear later in the system (doubling doesn't hurt).
-        // If it is not the first, then we take all inequalities and insert it in
-        // first place below.
-        vector< IntegerFC > help;
-        BasisChange.convert_to_sublattice_dual(help, Dehomogenization);
-        if(Inequ_on_Ker[0] != help)
-            i_start=0;
-    }
-    for (i = i_start; i < Inequ_on_Ker.nr_of_rows() ; i++) {
-        hyperplane=Inequ_on_Ker[i];
-        norm=0;
-        for (j = 0; j <newdim; j++) {
-            norm+=Iabs(hyperplane[j]);
-        }
-        SortingHelp.insert(make_pair(norm,hyperplane));
-    }
-    size_t inhom_corr=0;
-    if(inhomogeneous || do_only_Deg1_Elements)
-        inhom_corr=1;
-    Matrix<IntegerFC> Inequ_Ordered(Inequ_on_Ker.nr_of_rows()+inhom_corr,newdim);
-    if (inhomogeneous) {
-        // insert truncation as the first inequality
-        BasisChange.convert_to_sublattice_dual_no_div(Inequ_Ordered[0], Dehomogenization);
+     
+    vector<IntegerFC> Truncation;
+    if(inhomogeneous){
+        BasisChange.convert_to_sublattice_dual_no_div(Truncation, Dehomogenization);
     }
     if (do_only_Deg1_Elements) {
         // in this case the grading acts as truncation and it is a NEW inequality
-        BasisChange.convert_to_sublattice_dual(Inequ_Ordered[0], Grading);
-    }
-    i=inhom_corr;
-    for (ii=SortingHelp.begin(); ii != SortingHelp.end(); ii++) {
-        Inequ_Ordered[i]=(*ii).second;
-        i++;
+        BasisChange.convert_to_sublattice_dual(Truncation, Grading);
     }
 
-    Cone_Dual_Mode<IntegerFC> ConeDM(Inequ_Ordered);
+    Cone_Dual_Mode<IntegerFC> ConeDM(Inequ_on_Ker, Truncation); // Inequ_on_Ker is NOT const
+    Inequ_on_Ker=Matrix<IntegerFC>(0,0);  // destroy it
     ConeDM.verbose=verbose;
     ConeDM.inhomogeneous=inhomogeneous;
     ConeDM.do_only_Deg1_Elements=do_only_Deg1_Elements;
@@ -1798,7 +1745,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
 
-    if (FC.isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) { // must prece extreme rays
+    if (FC.isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) { // must precede extreme rays
         BasisChange.convert_from_sublattice(ModuleGeneratorsOverOriginalMonoid, FC.getModuleGeneratorsOverOriginalMonoid());
         ModuleGeneratorsOverOriginalMonoid.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
