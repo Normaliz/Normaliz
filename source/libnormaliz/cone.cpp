@@ -1589,6 +1589,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         Matrix<IntegerFC> Tmp_Gens;
         BasisChange.convert_to_sublattice(Tmp_Gens,Generators);
         Full_Cone<IntegerFC> Tmp_Cone(Tmp_Gens);
+        Tmp_Cone.verbose=verbose;
         Tmp_Cone.do_extreme_rays=true;
         Tmp_Cone.dualize_cone();        // also marks extreme rays
         extract_data(Tmp_Cone);
