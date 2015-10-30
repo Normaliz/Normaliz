@@ -775,18 +775,13 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
     for (hyp_counter = 0; hyp_counter < nr_sh; hyp_counter++) {
         Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
     }
-    
-    if(ExtremeRays.size()==0){  // no precomputed generators
-        extreme_rays_rank();
-        relevant_support_hyperplanes();
-        ExtremeRayList.clear();
-        
-    }
-    else{  // must produce the relevant support hyperplanes from the generators
-           // since the Hilbert basis may have been truncated
+
+    if (ExtremeRays.size() > 0) {
+        // must produce the relevant support hyperplanes from the generators
+        // since the Hilbert basis may have been truncated
         vector<Integer> test(SupportHyperplanes.nr_of_rows());
         vector<key_t> key;
-        vector <key_t> relevant_sh;
+        vector<key_t> relevant_sh;
         size_t realdim=Generators.rank();
         for(key_t h=0;h<SupportHyperplanes.nr_of_rows();++h){
             key.clear();
@@ -796,8 +791,13 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
                     key.push_back(i);
             if (key.size() >= realdim-1 && Generators.submatrix(key).rank() >= realdim-1)
                 relevant_sh.push_back(h);
-        }    
+        }
         SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
+    }
+    if (!truncate && ExtremeRays.size()==0){  // no precomputed generators
+        extreme_rays_rank();
+        relevant_support_hyperplanes();
+        ExtremeRayList.clear();
     }
         
     /* if(verbose)

@@ -1597,7 +1597,20 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         extract_data(Tmp_Cone);
     }
 
-    if((do_only_Deg1_Elements || inhomogeneous) && !isComputed(ConeProperty::ExtremeRays)){
+    bool do_extreme_rays_first = false;
+    if (!isComputed(ConeProperty::ExtremeRays)) {
+        if (do_only_Deg1_Elements && !isComputed(ConeProperty::Grading))
+            do_extreme_rays_first =  true;
+        else if ( (do_only_Deg1_Elements || inhomogeneous) &&
+                   (ToCompute.test(ConeProperty::DefaultMode)
+                 || ToCompute.test(ConeProperty::ExtremeRays)
+                 || ToCompute.test(ConeProperty::SupportHyperplanes)
+                 || ToCompute.test(ConeProperty::Sublattice)
+                 || SupportHyperplanes.rank() != dim) )
+            do_extreme_rays_first =  true;
+    }
+
+    if (do_extreme_rays_first) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays for the dual mode:"<< endl;
         }
@@ -1648,6 +1661,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     ConeDM.hilbert_basis_dual();
 
     // check if the rank of the sublattice has changed
+    if (isComputed(ConeProperty::Generators) || !(do_only_Deg1_Elements || inhomogeneous)) {
     if ( ConeDM.Generators.rank() < ConeDM.dim ) {
         Sublattice_Representation<IntegerFC> SR_(ConeDM.Generators,true);
         Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(ConeDM.Generators),true); //TODO other conversion!
@@ -1661,6 +1675,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         }
     }
     is_Computed.set(ConeProperty::Sublattice);
+    }
     // create a Full_Cone out of ConeDM
     Full_Cone<IntegerFC> FC(ConeDM);
     FC.verbose=verbose;

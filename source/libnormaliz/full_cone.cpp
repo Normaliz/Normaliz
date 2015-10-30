@@ -4291,10 +4291,10 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     dim = C.dim;
     Generators = C.get_generators();
     nr_gen = Generators.nr_of_rows();
-    is_Computed.set(ConeProperty::Generators);
+    if (Generators.nr_of_rows() > 0) is_Computed.set(ConeProperty::Generators);
     has_generator_with_common_divisor = false;
     Extreme_Rays=C.get_extreme_rays();
-    is_Computed.set(ConeProperty::ExtremeRays);
+    if (Extreme_Rays.size() > 0) is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
     in_triang = vector<bool>(nr_gen,false);
@@ -4310,10 +4310,12 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     
     reset_tasks();
     
-    Support_Hyperplanes = C.SupportHyperplanes;
-    Support_Hyperplanes.remove_duplicate_and_zero_rows();  // we can assume that all entries on C.Supp.. are relevant
-    is_Computed.set(ConeProperty::SupportHyperplanes);     // but there may be duplicates in the coordinates of the Full_Cone
-    
+    if (Extreme_Rays.size() > 0) { // only then we can assume that all entries on C.Supp.. are relevant
+        Support_Hyperplanes = C.SupportHyperplanes;
+        // there may be duplicates in the coordinates of the Full_Cone
+        Support_Hyperplanes.remove_duplicate_and_zero_rows();
+        is_Computed.set(ConeProperty::SupportHyperplanes);
+    }
     if(!C.do_only_Deg1_Elements){
         Hilbert_Basis = C.Hilbert_Basis;
         is_Computed.set(ConeProperty::HilbertBasis);
