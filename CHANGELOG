@@ -20,19 +20,19 @@
 - bug fix in dual algorithm
 - workaround for compiler bug in intel windows compiler for -v
 
-## [2.12.0]
+## [2.12.0] - 2014-10-17
 - dual algorithm thoroughly revised
 - internal parallelization of simplicial cones with large determinants
 - improvement of linear algebra
 
-## [2.11.2]
+## [2.11.2] - 2014
 - improvement of intermediate reduction
 - bug fix
 
-## [2.11.1]
+## [2.11.1] - 2014
 - bug fix
 
-## [2.11.0]
+## [2.11.0] - 2014-04-30
 - addition of inhomogeneous input possibilities
 - Hilbert series of semiopen cones.
 - integral approximation of rational polytopes.
@@ -40,10 +40,10 @@
 - improvement in Fourier-Motzkin elimination by better use of pyramid decomposition.
 - substantial improvement in computing ``large'' simplicial cones.
 
-## [2.10.1]
-- bug fix
+## [2.10.1] - 2013-06-27
+- bug fix (wrong multiplicity in computation mode -v (volume) for some non-integral polytopes)
 
-## [2.10.0]
+## [2.10.0] - 2013-05-13
 - now avoids the production of duplicates of candidates for the Hilbert basis
 - improvement of NmzIntegrate
 - corrections in the output forwarded to NmzIntegrate
