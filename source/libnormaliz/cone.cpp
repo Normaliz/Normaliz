@@ -961,6 +961,11 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
 
 
 /* getter */
+
+template<typename Integer>
+Cone<Integer>& Cone<Integer>::getIntHullCone() {
+    return *IntHullCone;
+}
 template<typename Integer>
 size_t Cone<Integer>::getRank() {
     compute(ConeProperty::Sublattice);
@@ -1318,7 +1323,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     ToCompute.set_preconditions();
-    ToCompute.prepare_compute_options();
+    ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) && !isComputed(ConeProperty::OriginalMonoidGenerators)){
         errorOutput() << "ERROR: Module generators over original monoid only computable if original monoid is defined!"
@@ -1369,6 +1374,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (!change_integer_type) {
         compute_inner<Integer>(ToCompute);
     }
+    
+    if(ToCompute.test(ConeProperty::IntegerHull)) {
+        compute_integer_hull();
+    }
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
@@ -1379,6 +1388,45 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     ToCompute.reset_compute_options();
     return ToCompute;
+}
+
+template<typename Integer>
+void Cone<Integer>::compute_integer_hull() {
+
+    Matrix<Integer> IntHullGen;
+    bool IntHullComputable=true;
+    if(inhomogeneous){
+        if(!isComputed(ConeProperty::HilbertBasis))
+            IntHullComputable=false;
+        IntHullGen=HilbertBasis;
+        IntHullGen.append(ModuleGenerators);
+    }
+    else{
+        if(!isComputed(ConeProperty::Deg1Elements))
+            IntHullComputable=false;
+        IntHullGen=Deg1Elements; 
+    }
+    if(IntHullGen.nr_of_rows()==0){
+        IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
+    }
+    // IntHullGen.pretty_print(cout);
+    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
+    ConeProperties IntHullCompute;
+    IntHullCompute.set(ConeProperty::SupportHyperplanes);
+    if(!IntHullComputable){
+        errorOutput() << "Integer hull not computable: no integer points available." << endl;
+        throw NotComputableException(IntHullCompute);
+    }
+    IntHullCone->inhomogeneous=inhomogeneous;
+    if(inhomogeneous)
+        IntHullCone->Dehomogenization=Dehomogenization;
+    IntHullCone->verbose=verbose;
+    if(verbose){
+        verboseOutput() << "Computing integer hull" << endl;
+    }
+    IntHullCone->compute(IntHullCompute);
+    if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
+        is_Computed.set(ConeProperty::IntegerHull);
 }
 
 template<typename Integer>

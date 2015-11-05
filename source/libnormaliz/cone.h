@@ -137,6 +137,8 @@ public:
     size_t getRecessionRank();
     long getAffineDim();
     size_t getModuleRank();
+    
+    Cone<Integer>& getIntHullCone();
 
     const Matrix<Integer>& getGeneratorsMatrix();
     const vector< vector<Integer> >& getGenerators();
@@ -270,6 +272,8 @@ private:
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
+    
+    Cone<Integer>* IntHullCone;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
@@ -323,6 +327,8 @@ private:
     Integer compute_primary_multiplicity();
     template<typename IntegerFC>
     Integer compute_primary_multiplicity_inner();
+    
+    void compute_integer_hull();
 
 };
 

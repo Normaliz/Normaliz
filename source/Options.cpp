@@ -217,6 +217,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'i':
                 ignoreInFileOpt=true;
                 break;
+            case 'H':
+                to_compute.set(ConeProperty::IntegerHull);
+                break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
                 exit(1);

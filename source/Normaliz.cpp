@@ -211,6 +211,14 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     }
     Out.setCone(MyCone);
     Out.write_files();
+    
+    if(MyCone.isComputed(ConeProperty::IntegerHull)){
+        Output<Integer> IntHullOut;
+        options.applyOutputOptions(IntHullOut);
+        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.setCone(MyCone.getIntHullCone());
+        IntHullOut.write_files();        
+    }
 
 #ifndef NCATCH
     } catch(const BadInputException& ) {

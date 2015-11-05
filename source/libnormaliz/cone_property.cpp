@@ -171,8 +171,16 @@ void ConeProperties::set_preconditions() {
 }
 
 /* removes ignored compute options and sets implications */
-void ConeProperties::prepare_compute_options() {
+void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     // -d without -1 means: compute Hilbert basis in dual mode
+    if (CPs.test(ConeProperty::IntegerHull)){
+        if(inhomogeneous){
+            CPs.set(ConeProperty::HilbertBasis);
+        }
+        else{
+            CPs.set(ConeProperty::Deg1Elements);
+        }
+    }       
     if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
         CPs.set(ConeProperty::HilbertBasis);
     }
@@ -267,9 +275,10 @@ namespace {
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
+        CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 35,
+        static_assert (ConeProperty::EnumSize == 36,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

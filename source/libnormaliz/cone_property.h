@@ -72,6 +72,7 @@ namespace ConeProperty {
         DefaultMode,
         DualMode,
         KeepOrder,
+        IntegerHull,
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }
@@ -109,7 +110,7 @@ public:
 
     /* the following methods are used internally */
     void set_preconditions();    // activate properties which are needed implicitly
-    void prepare_compute_options();
+    void prepare_compute_options(bool inhomogeneous);
     void check_sanity(bool inhomogeneous);
 
     /* print it in a nice way */
