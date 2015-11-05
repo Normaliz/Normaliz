@@ -1527,6 +1527,7 @@ void Cone<Integer>::compute_generators_inner() {
             //get minmal set of support_hyperplanes
             Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
             BasisChange.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
+            SupportHyperplanes.sort_lex();
             is_Computed.set(ConeProperty::SupportHyperplanes);
         }
         Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
