@@ -423,6 +423,14 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     
     void saturate();
 
+// find the indices of the rows in which the linear form L takes its max and min values
+    
+    vector<key_t> max_and_min(const vector<Integer>& L) const;
+    
+// try to sort the rows in such a way that the extreme points of the polytope spanned by the rows come first
+    
+    size_t extreme_points_first();
+
 };
 //class end *****************************************************************
 

@@ -1392,9 +1392,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 void Cone<Integer>::compute_integer_hull() {
+    
+    if(verbose){
+        verboseOutput() << "Computing integer hull" << endl;
+    }
 
     Matrix<Integer> IntHullGen;
     bool IntHullComputable=true;
+    size_t nr_extr;
     if(inhomogeneous){
         if(!isComputed(ConeProperty::HilbertBasis))
             IntHullComputable=false;
@@ -1404,7 +1409,8 @@ void Cone<Integer>::compute_integer_hull() {
     else{
         if(!isComputed(ConeProperty::Deg1Elements))
             IntHullComputable=false;
-        IntHullGen=Deg1Elements; 
+        IntHullGen=Deg1Elements;
+        nr_extr=IntHullGen.extreme_points_first();
     }
     if(IntHullGen.nr_of_rows()==0){
         IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
@@ -1413,6 +1419,8 @@ void Cone<Integer>::compute_integer_hull() {
     IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
     ConeProperties IntHullCompute;
     IntHullCompute.set(ConeProperty::SupportHyperplanes);
+    if(!inhomogeneous && IntHullGen.nr_of_rows()/nr_extr > 5)  // we suppress the ordering in full_cone only if we have found few extreme rays
+        IntHullCompute.set(ConeProperty::KeepOrder);
     if(!IntHullComputable){
         errorOutput() << "Integer hull not computable: no integer points available." << endl;
         throw NotComputableException(IntHullCompute);
@@ -1421,12 +1429,12 @@ void Cone<Integer>::compute_integer_hull() {
     if(inhomogeneous)
         IntHullCone->Dehomogenization=Dehomogenization;
     IntHullCone->verbose=verbose;
-    if(verbose){
-        verboseOutput() << "Computing integer hull" << endl;
-    }
     IntHullCone->compute(IntHullCompute);
     if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
         is_Computed.set(ConeProperty::IntegerHull);
+    if(verbose){
+        verboseOutput() << "integer hull finished" << endl;
+    }
 }
 
 template<typename Integer>

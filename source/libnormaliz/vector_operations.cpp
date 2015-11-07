@@ -682,6 +682,15 @@ void order_by_perm(vector<bool>& v, const vector<key_t>& permfix){
     }
 }
 
+// make random vector of length n with entries between -m and m
+template <typename Integer>
+vector<Integer> v_random(size_t n, long m){
+    vector<Integer> result(n);
+    for(size_t i=0;i<n;++i)
+        result[i]=rand()%(2*m+1)-m;
+    return result;    
+}
+
 
 
 template long      v_make_prime(vector<long     >&);

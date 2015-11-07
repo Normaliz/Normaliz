@@ -2252,4 +2252,72 @@ void Matrix<Integer>::saturate(){
     *this=kernel().kernel();    
 }
 
+//---------------------------------------------------
+
+template<typename Integer>
+vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L) const{
+
+    vector<key_t> result(2,0);
+    if(nr==0)
+        return result;
+    key_t maxind=0,minind=0;
+    Integer maxval=v_scalar_product(L,elem[0]);
+    Integer minval=maxval;
+    for(key_t i=0;i<nr;++i){
+        Integer val=v_scalar_product(L,elem[i]);
+        if(val>maxval){
+            maxind=i;
+            maxval=val;            
+        }
+        if(i<minval){
+            minind=i;
+            minval=val;            
+        }        
+    }
+    result[0]=maxind;
+    result[1]=minind;
+    return result;
+}
+
+template<typename Integer>
+size_t Matrix<Integer>::extreme_points_first(){
+    
+    if(nr==0)
+        return 1;
+    
+    size_t nr_extr=0;
+    Matrix<long long> HelpMat(nr,nc);
+    convert(HelpMat,*this);
+    
+    vector<vector<size_t> > sorthelp(nr,vector<size_t> (2,0));
+    for(size_t i=0;i<nr;++i)
+        sorthelp[i][1]=i;
+    size_t no_success=0;
+    // size_t nr_attempt=0;
+    while(true){
+        // nr_attempt++; cout << nr_attempt << endl;
+        vector<long long> L=v_random<long long>(nc,10);
+        vector<key_t> max_min_ind=HelpMat.max_and_min(L);
+        if(sorthelp[max_min_ind[0]][0]!=0 && sorthelp[max_min_ind[1]][0]!=0)
+            no_success++;
+        else
+            no_success=0;
+        if(no_success > 100)
+            break;
+        sorthelp[max_min_ind[0]][0]++;
+        sorthelp[max_min_ind[1]][0]++;
+    }
+    sort(sorthelp.begin(),sorthelp.end());
+    vector<key_t> perm(nr);
+    for(size_t i=0;i<nr;++i) {  // we must invert the order
+        perm[nr-i-1]=sorthelp[i][1];
+        if(sorthelp[i][0]!=0)
+            nr_extr++;
+    }
+    order_by_perm(elem,perm);  
+    cout << "nr_extr " << nr_extr << endl;
+    return nr_extr;
+    // exit(0);
+}
+
 }  // namespace
