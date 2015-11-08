@@ -2269,7 +2269,7 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L) const{
             maxind=i;
             maxval=val;            
         }
-        if(i<minval){
+        if(val<minval){
             minind=i;
             minval=val;            
         }        
@@ -2302,7 +2302,7 @@ size_t Matrix<Integer>::extreme_points_first(){
             no_success++;
         else
             no_success=0;
-        if(no_success > 100)
+        if(no_success > 1000)
             break;
         sorthelp[max_min_ind[0]][0]++;
         sorthelp[max_min_ind[1]][0]++;
@@ -2311,11 +2311,12 @@ size_t Matrix<Integer>::extreme_points_first(){
     vector<key_t> perm(nr);
     for(size_t i=0;i<nr;++i) {  // we must invert the order
         perm[nr-i-1]=sorthelp[i][1];
+        cout << sorthelp[i];
         if(sorthelp[i][0]!=0)
             nr_extr++;
     }
-    order_by_perm(elem,perm);  
-    cout << "nr_extr " << nr_extr << endl;
+    order_by_perm(elem,perm); 
+    cout << nr_extr << "extreme points found"  << endl;
     return nr_extr;
     // exit(0);
 }

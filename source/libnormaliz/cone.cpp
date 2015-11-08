@@ -1399,7 +1399,7 @@ void Cone<Integer>::compute_integer_hull() {
 
     Matrix<Integer> IntHullGen;
     bool IntHullComputable=true;
-    size_t nr_extr;
+    size_t nr_extr=1;
     if(inhomogeneous){
         if(!isComputed(ConeProperty::HilbertBasis))
             IntHullComputable=false;
@@ -1410,10 +1410,12 @@ void Cone<Integer>::compute_integer_hull() {
         if(!isComputed(ConeProperty::Deg1Elements))
             IntHullComputable=false;
         IntHullGen=Deg1Elements;
-        nr_extr=IntHullGen.extreme_points_first();
     }
     if(IntHullGen.nr_of_rows()==0){
         IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
+    }
+    if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){
+        nr_extr=IntHullGen.extreme_points_first();
     }
     // IntHullGen.pretty_print(cout);
     IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
