@@ -138,7 +138,7 @@ public:
     long getAffineDim();
     size_t getModuleRank();
     
-    Cone<Integer>& getIntHullCone();
+    Cone<Integer>& getIntHullCone() const;
 
     const Matrix<Integer>& getGeneratorsMatrix();
     const vector< vector<Integer> >& getGenerators();

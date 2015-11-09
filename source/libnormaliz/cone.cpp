@@ -963,7 +963,7 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
 /* getter */
 
 template<typename Integer>
-Cone<Integer>& Cone<Integer>::getIntHullCone() {
+Cone<Integer>& Cone<Integer>::getIntHullCone() const {
     return *IntHullCone;
 }
 template<typename Integer>
@@ -1399,7 +1399,7 @@ void Cone<Integer>::compute_integer_hull() {
 
     Matrix<Integer> IntHullGen;
     bool IntHullComputable=true;
-    size_t nr_extr=1;
+    size_t nr_extr=0;
     if(inhomogeneous){
         if(!isComputed(ConeProperty::HilbertBasis))
             IntHullComputable=false;
@@ -1411,31 +1411,38 @@ void Cone<Integer>::compute_integer_hull() {
             IntHullComputable=false;
         IntHullGen=Deg1Elements;
     }
+    ConeProperties IntHullCompute;
+    IntHullCompute.set(ConeProperty::SupportHyperplanes);
+    if(!IntHullComputable){
+        errorOutput() << "Integer hull not computable: no integer points available." << endl;
+        throw NotComputableException(IntHullCompute);
+    }
+    
     if(IntHullGen.nr_of_rows()==0){
         IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
     }
     if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){
         nr_extr=IntHullGen.extreme_points_first();
+        if(verbose){
+            verboseOutput() << nr_extr << " extreme points found"  << endl;
+        }
     }
     // IntHullGen.pretty_print(cout);
     IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
-    ConeProperties IntHullCompute;
-    IntHullCompute.set(ConeProperty::SupportHyperplanes);
-    if(!inhomogeneous && IntHullGen.nr_of_rows()/nr_extr > 5)  // we suppress the ordering in full_cone only if we have found few extreme rays
+    if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);
-    if(!IntHullComputable){
-        errorOutput() << "Integer hull not computable: no integer points available." << endl;
-        throw NotComputableException(IntHullCompute);
-    }
-    IntHullCone->inhomogeneous=inhomogeneous;
+
+    IntHullCone->inhomogeneous=true; // inhomogeneous;
     if(inhomogeneous)
         IntHullCone->Dehomogenization=Dehomogenization;
+    else
+        IntHullCone->Dehomogenization=Grading;
     IntHullCone->verbose=verbose;
     IntHullCone->compute(IntHullCompute);
     if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
         is_Computed.set(ConeProperty::IntegerHull);
     if(verbose){
-        verboseOutput() << "integer hull finished" << endl;
+        verboseOutput() << "Integer hull finished" << endl;
     }
 }
 

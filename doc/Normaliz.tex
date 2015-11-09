@@ -1727,6 +1727,91 @@ SupportHyperplanes
 
 As you can see from the output, the support hyperplanes of the polyhedron are computed as well as the extreme rays.
 
+\subsection{The integer hull}\label{IntHull}
+
+The integer hull of a polyhedron $P$ is the convex hull of the set of lattice points in $P$ (despite of its name, it usually does not contain $P$). Normaliz computes by first finding the lattice points and then computing the convex hull. The computation of the integer hull is requested by the computation goal \verb|IntegerHull|.
+
+The computation is somewhat special since it creates a second cone (and lattice) $C_\textup{int}$. In homogeneous computations the degree $1$ vectors generate $C_\textup{int}$ by an input matrix of type \verb|cone_and_lattice|. In inhomogeneous computations the module generators and the Hilbert basis of the recession cone are combined and generate $C_\textup{int}$. Therefore the recession cone is reproduced, even if the polyhedron should not contain a lattice point.
+
+The integer hull computation itself is always inhomogeneous. The output file for $C_\textup{int}$ is \verb|<project>.IntHull.out|.
+
+As a very simple example we take \verb|rationalIH.in| (\verb|rational.in| augmented by \verb|IntegerHull|):
+\begin{Verbatim}
+amb_space 3
+cone 3
+1 1 2
+-1 -1 3
+1 -2 4
+grading
+unit_vector 3
+HilbertSeries
+IntegerHull
+\end{Verbatim}
+It is our rational polytope from Section \ref{rational}. We know already that the origin is the only lattice point it contains. Nevertheless let us have a look at \verb|rationalIH.IntHull.out|:
+
+\begin{Verbatim}
+1 vertices of polyhedron
+0 extreme rays of recession cone
+0 support hyperplanes of polyhedron
+
+embedding dimension = 3
+affine dimension of the polyhedron = 0
+rank of recession monoid = 0
+internal index = 1
+
+
+***********************************************************************
+
+1 vertices of polyhedron:
+ 0 0 1
+
+0 extreme rays of recession cone:
+
+0 support hyperplanes of polyhedron:
+
+2 equations:
+ 1 0 0
+ 0 1 0
+
+1 basis elements of lattice:
+ 0 0 1
+\end{Verbatim}
+Since the lattice points in $P$ are already known, the goal was to compute the constraints defining the integer hull. Note that all the constraints defining the integer hull can be different from those defining $P$. In this case the integer hull is cit out by the $2$ equations.
+
+As a second example we take the polyhedron of Section \ref{inhom_ineq_ex}. The integer hull is the ''green'' polyhedron:
+\begin{center}
+	\begin{tikzpicture}[scale=0.7]
+	
+	\filldraw[yellow] (5,-0.5) -- (-2,-0.5) -- (0,1.5) -- (5,1.5) -- cycle;
+	\filldraw[green] (5,0) -- (-1,-0) -- (0,1) -- (5,1) -- cycle;
+	
+	\foreach \x in {-2,...,5}
+	\foreach \y in {-1,...,2}
+	{
+		\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+	}
+	\draw[->] (-2.5,0) -- (5.5,0);
+	\draw[->] (0,-1.5) -- (0,2.5);
+	\draw (5,-0.5) -- (-2,-0.5) -- (0,1.5) -- (5,1.5); 
+	\draw[thick] (5,0) -- (-1,-0) -- (0,1) -- (5,1);
+	\end{tikzpicture}
+\end{center}
+
+The input is \verb|InhomIneqIH.in| ( \verb|InhomIneq.in| augmented by \verb|IntegerHull|). The data of the integer hull are found in \verb|InhomIneqIH.IntHull.out|:
+\begin{Verbatim}
+...
+2 vertices of polyhedron:
+-1 0 1
+0 1 1
+
+1 extreme rays of recession cone:
+1 0 0
+
+3 support hyperplanes of polyhedron:
+0 -1 1
+0  1 0
+1 -1 1
+\end{Verbatim}
 
 \subsection{Starting from a binomial ideal}\label{binom_ex}
 
@@ -2368,6 +2453,14 @@ Can only be set by single letter command line options:
 	\itemtt [ClassGroup, -C] is self explanatory, includes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.
 \end{itemize}
 
+\subsubsection{Integer hull}
+
+\begin{itemize}
+	\itemtt [IntegerHull, -H] computes the integer hull of a polyhedron. Implies the computation of the lattice points in it.
+\end{itemize}
+
+More precisely: n homogeneous computations it implies \verb|Deg1Elements|, in inhomogeneous computations it implies \verb|HilbertBasis|. See Section \ref{IntHull}.
+
 \subsubsection{Triangulation and Stanley decomposition}
 
 \begin{itemize}
@@ -2595,6 +2688,8 @@ increased as follows:
 
 For the list of potential output files, their suffixes and their interpretation
 see Section \ref{optionaloutput}. There may be several options \verb|--<suffix>|.
+
+If the computation goal \verb|IntegerHull| is set, Normaliz computes a second cone and lattice. The output is contained in \verb|<project>.IntHull.out|. The options for the output of \verb|<project>| are applied to \verb|<project>.IntHull| as well. There is no way to control the output of the two computations individually.
 
 \subsection{Overriding the options in the input file}
 
@@ -3177,6 +3272,8 @@ writes additional output files whose names are of type
 <x_m>
 \end{Verbatim}
 where each row has \verb|<n>| entries. Exceptions are the files with suffixes \verb|cst|, \verb|inv|, \verb|esp|.
+
+As pointed out in Section \ref{outcontrol}, the optional output files for the integer hull are the same as for the original computation, as far as their content has been computed.
 
 \subsection{The homogeneous case}
 

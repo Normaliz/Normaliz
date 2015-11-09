@@ -2287,36 +2287,50 @@ size_t Matrix<Integer>::extreme_points_first(){
     
     size_t nr_extr=0;
     Matrix<long long> HelpMat(nr,nc);
-    convert(HelpMat,*this);
+    try{
+        convert(HelpMat,*this);
+    }
+    catch(ArithmeticException){
+        return nr_extr;        
+    }
+
+    HelpMat.sort_lex();
     
-    vector<vector<size_t> > sorthelp(nr,vector<size_t> (2,0));
-    for(size_t i=0;i<nr;++i)
-        sorthelp[i][1]=i;
+    vector<bool> marked(nr,false);
     size_t no_success=0;
     // size_t nr_attempt=0;
     while(true){
         // nr_attempt++; cout << nr_attempt << endl;
         vector<long long> L=v_random<long long>(nc,10);
         vector<key_t> max_min_ind=HelpMat.max_and_min(L);
-        if(sorthelp[max_min_ind[0]][0]!=0 && sorthelp[max_min_ind[1]][0]!=0)
+        if(marked[max_min_ind[0]] && marked[max_min_ind[1]])
             no_success++;
         else
             no_success=0;
         if(no_success > 1000)
             break;
-        sorthelp[max_min_ind[0]][0]++;
-        sorthelp[max_min_ind[1]][0]++;
+        marked[max_min_ind[0]]=true;
+        marked[max_min_ind[1]]=true;
     }
-    sort(sorthelp.begin(),sorthelp.end());
+    Matrix<long long> Extr(nr_extr,nc);  // the recognized extreme rays
+    Matrix<long long> NonExtr(nr_extr,nc); // the other generators
+    size_t j=0;
     vector<key_t> perm(nr);
-    for(size_t i=0;i<nr;++i) {  // we must invert the order
-        perm[nr-i-1]=sorthelp[i][1];
-        cout << sorthelp[i];
-        if(sorthelp[i][0]!=0)
-            nr_extr++;
+    for(size_t i=0;i<nr;++i) {
+        if(marked[i]){
+            perm[j]=i;;
+            j++;
+        }
     }
-    order_by_perm(elem,perm); 
-    cout << nr_extr << "extreme points found"  << endl;
+    nr_extr=j;
+    for(size_t i=0;i<nr;++i) {
+        if(!marked[i]){
+            perm[j]=i;;
+            j++;
+        }
+    }
+    order_rows_by_perm(perm);    
+    // cout << nr_extr << "extreme points found"  << endl;
     return nr_extr;
     // exit(0);
 }
