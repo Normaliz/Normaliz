@@ -97,7 +97,6 @@ template<typename Integer>
 void Output<Integer>::setCone(Cone<Integer> & C) {
     this->Result = &C;
     dim = Result->getEmbeddingDim();
-    rank = Result->getRank();
     homogeneous = !Result->isInhomogeneous();
     if (homogeneous) {
         of_cone       = "";
@@ -355,7 +354,7 @@ void Output<Integer>::write_Stanley_dec() const {
 
         out << StanleyDec.size() << endl; 
         for (; S!=StanleyDec.end(); ++S) {
-            for (i=0; i<rank; ++i)
+            for (i=0; i < S->key.size(); ++i)
                 out << S->key[i]+1 <<" ";
             out << endl;
             S->offsets.print(out);
@@ -413,15 +412,17 @@ void Output<Integer>::write_inv_file() const{
 
         inv << "integer embedding_dim = " << dim << endl;
         if (homogeneous) {
-            inv << "integer rank = " << rank << endl;
-            inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
+            if (Result->isComputed(ConeProperty::Sublattice)) {
+                inv << "integer rank = " << Result->getRank() << endl;
+                inv << "integer external_index = " << Result->getSublattice().getExternalIndex() << endl;
+            }
         } else {
             if (Result->isComputed(ConeProperty::AffineDim))
                 inv << "integer affine_dim_polyhedron = " << Result->getAffineDim() << endl;
             if (Result->isComputed(ConeProperty::RecessionRank))
                 inv << "integer recession_rank = "  << Result->getRecessionRank() << endl;
         }
-        
+
         if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
             inv << "integer internal_index = " << Result->getIndex() << endl;           
         }
@@ -510,15 +511,13 @@ void Output<Integer>::write_inv_file() const{
 
 template<typename Integer>
 void Output<Integer>::write_files() const {
-    const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
     size_t i, nr;
-    const Matrix<Integer>& Generators = Result->getGeneratorsMatrix();
-    const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
     vector<libnormaliz::key_t> rees_ideal_key;
 
-    if (esp && Result->isComputed(ConeProperty::SupportHyperplanes)) {
+    if (esp && Result->isComputed(ConeProperty::SupportHyperplanes) && Result->isComputed(ConeProperty::Sublattice)) {
         //write the suport hyperplanes of the full dimensional cone
-        Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Support_Hyperplanes);
+        const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
+        Matrix<Integer> Support_Hyperplanes_Full_Cone = BasisChange.to_sublattice_dual(Result->getSupportHyperplanesMatrix());
         // Support_Hyperplanes_Full_Cone.print(name,"esp");
         string esp_string = name+".esp";
         const char* esp_file = esp_string.c_str();
@@ -526,19 +525,19 @@ void Output<Integer>::write_files() const {
         Support_Hyperplanes_Full_Cone.print(esp_out);
         esp_out << "inequalities" << endl;
         if (Result->isComputed(ConeProperty::Grading)) {
-            esp_out << 1 << endl << rank << endl;
+            esp_out << 1 << endl << Result->getRank() << endl;
             esp_out << BasisChange.to_sublattice_dual(Result->getGrading());
             esp_out << "grading" << endl;
         }
         if (Result->isComputed(ConeProperty::Dehomogenization)) {
-            esp_out << 1 << endl << rank << endl;
+            esp_out << 1 << endl << Result->getRank() << endl;
             esp_out << BasisChange.to_sublattice_dual(Result->getDehomogenization());
             esp_out << "dehomogenization" << endl;
         }
         esp_out.close();
     }
-    if (tgn)
-        Generators.print(name,"tgn");
+    if (tgn && Result->isComputed(ConeProperty::Generators))
+        Result->getGeneratorsMatrix().print(name,"tgn");
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
     }
@@ -595,9 +594,11 @@ void Output<Integer>::write_files() const {
         }
         out << "embedding dimension = " << dim << endl;
         if (homogeneous) {
-            out << "rank = "<< rank << is_maximal(rank,dim) << endl;
-            //out << "index E:G = "<< BasisChange.get_index() << endl;
-            out << "external index = "<< BasisChange.getExternalIndex() << endl;
+            if (Result->isComputed(ConeProperty::Sublattice)) {
+                auto rank = Result->getRank();
+                out << "rank = "<< rank << is_maximal(rank,dim) << endl;
+                out << "external index = "<< Result->getSublattice().getExternalIndex() << endl;
+            }
         } else { // now inhomogeneous case
             if (Result->isComputed(ConeProperty::AffineDim))
                 out << "affine dimension of the polyhedron = "
@@ -800,7 +801,8 @@ void Output<Integer>::write_files() const {
                     write_matrix_gen(Hilbert_Basis);
                 }                
             }
-            if (egn || typ) {
+            if ((egn || typ) && Result->isComputed(ConeProperty::Sublattice)) {
+                const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
                 Matrix<Integer> Hilbert_Basis_Full_Cone = BasisChange.to_sublattice(Hilbert_Basis);
                 if (Result->isComputed(ConeProperty::ModuleGenerators)) {
                     Hilbert_Basis_Full_Cone.append(BasisChange.to_sublattice(Result->getModuleGeneratorsMatrix()));
@@ -815,7 +817,7 @@ void Output<Integer>::write_files() const {
                 }    
 
                 if (typ && homogeneous) {
-                    write_matrix_typ(Hilbert_Basis_Full_Cone.multiplication(BasisChange.to_sublattice_dual(Support_Hyperplanes).transpose()));
+                    write_matrix_typ(Hilbert_Basis_Full_Cone.multiplication(BasisChange.to_sublattice_dual(Result->getSupportHyperplanesMatrix()).transpose()));
                 }
             }
 
@@ -859,12 +861,14 @@ void Output<Integer>::write_files() const {
         //write constrains (support hyperplanes, congruences, equations)
 
         if (Result->isComputed(ConeProperty::SupportHyperplanes)) {
+            const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
             out << Support_Hyperplanes.nr_of_rows() <<" support hyperplanes" 
                 << of_polyhedron << ":" << endl;
             Support_Hyperplanes.pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(ConeProperty::Sublattice)) {
+            const Sublattice_Representation<Integer>& BasisChange = Result->getSublattice();
             //equations
             const Matrix<Integer>& Equations = BasisChange.getEquationsMatrix();
             size_t nr_of_equ = Equations.nr_of_rows();
@@ -903,7 +907,8 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
 
-            if(cst) {
+            if (cst && Result->isComputed(ConeProperty::SupportHyperplanes)) {
+                const Matrix<Integer>& Support_Hyperplanes = Result->getSupportHyperplanesMatrix();
                 string cst_string = name+".cst";
                 const char* cst_file = cst_string.c_str();
                 ofstream cst_out(cst_file);

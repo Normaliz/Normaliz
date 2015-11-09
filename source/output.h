@@ -52,7 +52,6 @@ class Output {
     bool mod;
     Cone<Integer>* Result;
     size_t dim;
-    size_t rank;
     bool homogeneous;
     string of_cone;
     string of_monoid;

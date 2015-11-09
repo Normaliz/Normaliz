@@ -2014,6 +2014,8 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
 
 template<typename Integer>
 void Cone<Integer>::set_zero_cone() {
+    // The basis change already is transforming to zero.
+    is_Computed.set(ConeProperty::Sublattice);
 
     Generators = Matrix<Integer>(0,dim);
     is_Computed.set(ConeProperty::Generators);
