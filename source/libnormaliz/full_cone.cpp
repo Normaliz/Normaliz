@@ -4397,7 +4397,7 @@ void Full_Cone<Integer>::dual_mode() {
         if (isComputed(ConeProperty::Grading)) check_deg1_hilbert_basis();
     }
 
-    if(inhomogeneous){
+    if (inhomogeneous && isComputed(ConeProperty::Generators)) {
        set_levels();
        find_level0_dim();
        find_module_rank();
