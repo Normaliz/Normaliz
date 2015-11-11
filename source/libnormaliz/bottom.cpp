@@ -158,7 +158,9 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     q_gens.push_back(gens);
     int level = 0;
 
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
 
 	// list for the simplices that could not be decomposed
     vector< Matrix<Integer> > big_simplices;
@@ -238,7 +240,9 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     }
 #endif
     } // end parallel
+#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
 	// if we still have big_simplices we approx again
 

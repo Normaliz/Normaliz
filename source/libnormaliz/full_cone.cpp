@@ -333,7 +333,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 // parallel from here
 
     bool skip_remaining = false;
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
 
     #pragma omp parallel private(jj)
     {
@@ -660,7 +662,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     } // end !skip_remaining
     } //END parallel
     
+#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 //=====================================================================
 // parallel until here
 
@@ -709,7 +713,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     // listsize = visible.size(); // now acczmulated above
     // cout << "Pyr Level " << pyr_level << " Visible " << listsize <<  " Triang " << TriangulationSize << endl;
 
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
 
     typename list< SHORTSIMPLEX<Integer> >::iterator oldTriBack = --Triangulation.end();
     #pragma omp parallel private(i)
@@ -824,7 +830,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
     } // parallel
 
+#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
     // GensInCone.push_back(new_generator); // now in extend_cone
     TriSectionFirst.push_back(++oldTriBack);
@@ -984,7 +992,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
     deque<bool> done(old_nr_supp_hyps,false);
     bool skip_remaining;
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
     typename list< FACETDATA >::iterator hyp;
     size_t nr_done=0;
 
@@ -1059,7 +1069,9 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 #endif
     } // end parallel loop over hyperplanes
 
+#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
     if (!omp_in_parallel())
         try_offload(0);
@@ -1109,7 +1121,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
         }
         if (height != 0 && (do_triangulation || do_partial_triangulation)) {
             if(multithreaded_pyramid) {
+#ifndef NCATCH
                 std::exception_ptr tmp_exception;
+#endif
                 #pragma omp critical(TRIANG)
                 {
 #ifndef NCATCH
@@ -1123,7 +1137,9 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 }
 #endif
                 } // end critical
+#ifndef NCATCH
                 if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
             } else {
                 store_key(Pyramid_key,height,0,Triangulation);
                 nrTotalComparisons+=dim*dim/2;
@@ -1503,7 +1519,9 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     collect_pos_supphyps(PosHyps,Zero_P,nr_pos);
     
     nrTotalComparisons+=nr_pos*nrLargeRecPyrs;
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
     
     #pragma omp parallel
     {
@@ -1525,7 +1543,9 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #endif
     }
     } // parallel
+#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
     LargeRecPyrs.clear();
 }
@@ -1606,7 +1626,9 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     typename list<vector<key_t> >::iterator p;
     size_t ppos;
     bool skip_remaining;
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
 
     while (nrPyramids[level] > eval_down_to) {
 
@@ -1649,7 +1671,9 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
            }
 #endif
         } //end parallel for
+#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
         // remove done pyramids
         p = Pyramids[level].begin();
@@ -1761,7 +1785,9 @@ void Full_Cone<Integer>::build_cone() {
 
         long long nr_pos=0; long long nr_neg=0;
         vector<Integer> L;           
+#ifndef NCATCH
         std::exception_ptr tmp_exception;
+#endif
         
         size_t lpos=0;
         #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
@@ -1788,7 +1814,9 @@ void Full_Cone<Integer>::build_cone() {
             }
 #endif
         }  //end parallel for
+#ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
         if(!is_new_generator)
             continue;
@@ -2240,7 +2268,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     deque<bool> done(TriangulationSize,false);
     bool skip_remaining;
+#ifndef NCATCH
     std::exception_ptr tmp_exception;
+#endif
 
     do{ // allows multiple run of loop below in case of interruption for the update of reducers
     
@@ -2294,7 +2324,9 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         }
         Results[tn].transfer_candidates();
     } // end parallel
+#ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
 
     if (verbose)
         verboseOutput()  << endl;
