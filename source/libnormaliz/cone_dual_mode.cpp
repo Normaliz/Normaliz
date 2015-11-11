@@ -91,11 +91,6 @@ void Cone_Dual_Mode<Integer>::select_HB(CandidateList<Integer>& Cand, size_t gua
 template<typename Integer>
 Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer>& Truncation){
     dim=M.nr_of_columns();
-    if (dim!=M.rank()) {
-        errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
-        // M.pretty_print(errorOutput());
-        throw BadInputException();
-    }
     M.remove_duplicate_and_zero_rows();
     // now we sort by L_1-norm and then lex
     Matrix<Integer> Weights(0,dim);
@@ -111,6 +106,12 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     SupportHyperplanes.append(M);
     nr_sh = SupportHyperplanes.nr_of_rows();
     // hyp_size = dim + nr_sh;
+
+    if (SupportHyperplanes.rank() != dim) {
+        errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
+        M.pretty_print(errorOutput());
+        //throw BadInputException();
+    }
 
     Intermediate_HB.dual=true;
 
