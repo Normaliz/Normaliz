@@ -1606,14 +1606,13 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     bool do_extreme_rays_first = false;
     if (!isComputed(ConeProperty::ExtremeRays)) {
         if (do_only_Deg1_Elements && !isComputed(ConeProperty::Grading))
-            do_extreme_rays_first =  true;
+            do_extreme_rays_first = true;
         else if ( (do_only_Deg1_Elements || inhomogeneous) &&
                    (ToCompute.test(ConeProperty::DefaultMode)
                  || ToCompute.test(ConeProperty::ExtremeRays)
                  || ToCompute.test(ConeProperty::SupportHyperplanes)
-                 || ToCompute.test(ConeProperty::Sublattice)
-                 || SupportHyperplanes.rank() != dim) )
-            do_extreme_rays_first =  true;
+                 || ToCompute.test(ConeProperty::Sublattice) ) )
+            do_extreme_rays_first = true;
     }
 
     if (do_extreme_rays_first) {
