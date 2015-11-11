@@ -109,8 +109,8 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
 
     if (SupportHyperplanes.rank() != dim) {
         errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
-        M.pretty_print(errorOutput());
-        //throw BadInputException();
+        //SupportHyperplanes.pretty_print(errorOutput());
+        throw BadInputException();
     }
 
     Intermediate_HB.dual=true;
