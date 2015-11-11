@@ -213,7 +213,7 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     
     //check if a factor can be extraced from B  //TODO necessary?
     Integer g = B.matrix_gcd();
-    g = gcd(g,c);  //TODO necessary??
+    g = libnormaliz::gcd(g,c);  //TODO necessary??
     if (g > 1) {
         c /= g;
         B.scalar_division(g);

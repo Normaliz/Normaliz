@@ -735,7 +735,7 @@ Integer Matrix<Integer>::matrix_gcd() const{
     Integer g=0,h;
     for (size_t i = 0; i <nr; i++) {
         h = v_gcd(elem[i]);
-        g = gcd<Integer>(g, h);
+        g = libnormaliz::gcd<Integer>(g, h);
         if (g==1) return g;
     }
     return g;
@@ -760,7 +760,7 @@ void Matrix<Integer>::make_cols_prime(size_t from_col, size_t to_col) {
     for (size_t k = from_col; k <= to_col; k++) {
         Integer g=0;
         for (size_t i = 0; i < nr; i++){
-            g=gcd(g,elem[i][k]);
+            g = libnormaliz::gcd(g,elem[i][k]);
             if (g==1) {
                 break;
             }
@@ -1804,7 +1804,7 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
             return vector<Integer>();
         }
     }
-    Integer total_gcd =gcd(denom,v_gcd(Linear_Form)); // extract the gcd of denom and solution
+    Integer total_gcd = libnormaliz::gcd(denom,v_gcd(Linear_Form)); // extract the gcd of denom and solution
     denom/=total_gcd;
     v_scalar_division(Linear_Form,total_gcd);
     return Linear_Form;

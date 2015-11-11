@@ -240,7 +240,7 @@ Integer v_gcd(const vector<Integer>& v){
     size_t i, size=v.size();
     Integer g=0;
     for (i = 0; i < size; i++) {
-        g=gcd(g,v[i]);
+        g = libnormaliz::gcd(g,v[i]);
         if (g==1) {
             return 1;
         }
@@ -255,7 +255,7 @@ Integer v_lcm(const vector<Integer>& v){
     size_t i,size=v.size();
     Integer g=1;
     for (i = 0; i < size; i++) {
-        g=lcm(g,v[i]);
+        g = libnormaliz::lcm(g,v[i]);
         if (g==0) {
             return 0;
         }

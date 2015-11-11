@@ -402,7 +402,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     //divide by gcd //TODO operate directly on vector
     Matrix<mpz_class> QP(quasi_poly);
     mpz_class g = QP.matrix_gcd();
-    g = gcd(g,quasi_denom);
+    g = libnormaliz::gcd(g,quasi_denom);
     quasi_denom /= g;
     QP.scalar_division(g);
     //we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
