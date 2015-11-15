@@ -106,6 +106,12 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     SupportHyperplanes.append(M);
     nr_sh = SupportHyperplanes.nr_of_rows();
     // hyp_size = dim + nr_sh;
+    
+    if (dim!=SupportHyperplanes.rank()) {
+        errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
+        // M.pretty_print(errorOutput());
+        throw BadInputException();
+    }
 
     if (SupportHyperplanes.rank() != dim) {
         errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
@@ -867,28 +873,32 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     if (verbose) {
         verboseOutput() << "Find relevant support hyperplanes" << endl;
     }
-    list <key_t> zero_list;
+    // list <key_t> zero_list;
     typename list<Candidate<Integer>* >::iterator gen_it;
-    vector <key_t> relevant_sh;
-    relevant_sh.reserve(nr_sh);
-    size_t i,k;
+    // vector <key_t> relevant_sh;
+    // relevant_sh.reserve(nr_sh);
+    size_t i,k,k1;
     
     size_t realdim = Generators.rank();
+    
+    vector<vector<bool> > ind(nr_sh,vector<bool>(ExtremeRayList.size(),false));
+    vector<bool> relevant(nr_sh,true);      
 
     for (i = 0; i < nr_sh; ++i) {
-        Matrix<Integer> Test(0,dim);
-        k = 0;
-        for (gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it) {
+        // Matrix<Integer> Test(0,dim);
+        k = 0; k1=0;
+        for (gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it, ++k) {
             if ((*gen_it)->values[i]==0) {
-                Test.append((*gen_it)->cand);
-                k++;
+                ind[i][k]=true;
+                k1++;
             }
         }
-        if (k >= realdim-1 && Test.rank()>=realdim-1) {
-            relevant_sh.push_back(i);
+        if (k1<realdim-1) {
+            relevant[i]=false;
         }
-    }
-    SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
+    }    
+    maximal_subsets(ind,relevant);
+    SupportHyperplanes = SupportHyperplanes.submatrix(relevant);
 }
 
 //---------------------------------------------------------------------------

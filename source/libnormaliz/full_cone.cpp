@@ -3542,6 +3542,50 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
 
 //---------------------------------------------------------------------------
 
+void maximal_subsets(const vector<vector<bool> >& ind, vector<bool> is_max_subset){
+// determines the maximal subsets in a vector of subsets given by their indicator vectors
+// result reurned in is_max_subset -- must be initialized outside
+// only set to false in this routine
+// if a set occurs more than once, only the last instance is recognized as maximal
+    
+    if(ind.size()==0)
+        return;
+    
+    size_t nr_sets=ind.size();
+    size_t card=ind[0].size();
+    vector<key_t> elem(card);
+    
+    for (size_t i = 0; i <nr_sets; i++) {
+        if(!is_max_subset[i])  // already known to be non-maximal
+            continue;
+        
+        size_t k=0; // counts the number of elements in set with index i
+        for (size_t j = 0; j <card; j++) {
+            if (ind[i][j]) {
+                elem[k]=j;
+                k++;
+            }
+        }
+        
+        for (size_t j = 0; j <nr_sets; j++) {
+            if (i==j && !is_max_subset[j] ) // don't compare with itself or something known not to be maximal
+                continue;
+            size_t t;
+            for (t = 0; t<k; t++) {
+                if (!ind[j][elem[t]])
+                    break; // not a superset
+            }
+            if (t==k) { // fpound a superset
+                is_max_subset[i]=false;
+                break; // the loop over j
+            }
+        }
+    }
+    
+}
+//---------------------------------------------------------------------------
+
+
 template<typename Integer>
 void Full_Cone<Integer>::compute_extreme_rays_compare(){
 
@@ -3552,7 +3596,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
             Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
         use_Facets=true;
 
-    size_t i,j,k,l,t;
+    size_t i,j,k;
     // Matrix<Integer> SH=getSupportHyperplanes().transpose();
     // Matrix<Integer> Val=Generators.multiplication(SH);
     size_t nc=Support_Hyperplanes.nr_of_rows();
@@ -3561,17 +3605,13 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     for (i=0;i<nr_gen;++i)
        Val[i].resize(nc);
         
-    // Attention: in this routine Val[i][j]==0, i.e. false, indicates that
+    // In this routine Val[i][j]==1, i.e. true, indicates that
     // the i-th generator is contained in the j-th support hyperplane
     
     vector<key_t> Zero(nc);
-    vector<key_t> nr_zeroes(nr_gen);
+    vector<key_t> nr_ones(nr_gen);
 
     for (i = 0; i <nr_gen; i++) {
-/*        if (isComputed(ConeProperty::Triangulation)) { // && !in_triang[i]) {
-            Extreme_Rays[i]=false;
-            continue;
-        }*/
         k=0;
         Extreme_Rays[i]=true;
         if(use_Facets){
@@ -3579,54 +3619,28 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
             for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i)){
                     k++;
-                    Val[i][j]=false;                
+                    Val[i][j]=true;                
                 }
                 else
-                Val[i][j]=true;  
+                Val[i][j]=false;  
             }          
         }
         else{
             for (j = 0; j <nc; ++j) {
                 if (v_scalar_product(Generators[i],Support_Hyperplanes[j])==0) {
                     k++;
-                    Val[i][j]=false;                
+                    Val[i][j]=true;                
                 }
                 else
-                    Val[i][j]=true;  
+                    Val[i][j]=false;  
             }
         }
-        nr_zeroes[i]=k;
+        nr_ones[i]=k;
         if (k<dim-1||k==nc)  // not contained in enough facets or in all (0 as generator)
             Extreme_Rays[i]=false;
     }
-
-    for (i = 0; i <nr_gen; i++) {
-        if(!Extreme_Rays[i])  // already known to be non-extreme
-            continue;
-
-        k=0;
-        for (j = 0; j <nc; j++) {
-            if (Val[i][j]==false) {
-                Zero[k]=j;
-                k++;
-            }
-        }
-
-        for (j = 0; j <nr_gen; j++) {
-            if (i!=j && Extreme_Rays[j]                // not compare with itself or a known nonextreme ray
-                     && nr_zeroes[i]<nr_zeroes[j]) {   // or something whose zeroes cannot be a superset
-                l=0;
-                for (t = 0; t < nr_zeroes[i]; t++) {
-                    if (Val[j][Zero[t]]==false)
-                        l++;
-                    if (l>=nr_zeroes[i]) {
-                        Extreme_Rays[i]=false;
-                        break;
-                    }
-                }
-            }
-        }
-    }
+    
+    maximal_subsets(Val,Extreme_Rays);    
 
     is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
