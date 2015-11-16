@@ -105,7 +105,7 @@ void Output<Integer>::setCone(Cone<Integer> & C) {
     } else {
         of_cone       = " of recession cone";
         of_monoid     = " of recession monoid";
-        of_polyhedron = " of polyhedron";
+        of_polyhedron = " of polyhedron (homogenized)";
     }
 }
 

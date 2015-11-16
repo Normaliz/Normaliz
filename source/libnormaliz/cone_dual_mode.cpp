@@ -101,8 +101,12 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     M.order_rows_by_perm(perm);
 
     SupportHyperplanes=Matrix<Integer>(0,dim);
-    if(Truncation.size()!=0)
-        SupportHyperplanes.append(Truncation);       
+    if(Truncation.size()!=0){
+        vector<Integer> help=Truncation;
+        v_make_prime(help); // truncation need not be coprime
+        M.remove_row(help); // remove truncation if it should be a support hyperplane
+        SupportHyperplanes.append(Truncation);  // now we insert it again as the first hyperplane  
+    }
     SupportHyperplanes.append(M);
     nr_sh = SupportHyperplanes.nr_of_rows();
     // hyp_size = dim + nr_sh;
@@ -827,6 +831,8 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
             verboseOutput() << "(truncated) ";
         verboseOutput() << Hilbert_Basis.size() << endl;
     }
+    if(SupportHyperplanes.nr_of_rows()>0 && inhomogeneous)
+        v_make_prime(SupportHyperplanes[0]); // it could be that the truncation was not coprime
 }
 
 //---------------------------------------------------------------------------

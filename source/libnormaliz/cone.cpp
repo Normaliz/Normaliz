@@ -686,7 +686,9 @@ void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
         else
             Inequalities = Matrix<Integer>(dim);
     }
-    SupportHyperplanes=Inequalities;
+    if(inhomogeneous)
+        SupportHyperplanes.append(Dehomogenization);
+    SupportHyperplanes.append(Inequalities);
 }
 
 
@@ -1587,13 +1589,7 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner() {
     
     Matrix<IntegerFC> Dual_Gen;
-    BasisChange.convert_to_sublattice_dual(Dual_Gen, SupportHyperplanes);
-    if(inhomogeneous){
-        vector<IntegerFC> Help;
-        BasisChange.convert_to_sublattice_dual(Help,Dehomogenization);
-        Dual_Gen.append(Help);
-    }
-    
+    BasisChange.convert_to_sublattice_dual(Dual_Gen, SupportHyperplanes);   
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
@@ -1770,7 +1766,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             FC.set_degrees();
     }
     if(inhomogeneous)
-        BasisChange.convert_to_sublattice_dual(FC.Truncation, Dehomogenization);
+        BasisChange.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
     FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
     FC.dual_mode();
     extract_data(FC);
@@ -1859,12 +1855,12 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         set_extreme_rays(FC.getExtremeRays());
     }
     if (FC.isComputed(ConeProperty::SupportHyperplanes)) {
-        if (inhomogeneous) {
+        /* if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
             vector<IntegerFC> irr_hyp_subl;
             BasisChange.convert_to_sublattice_dual(irr_hyp_subl, Dehomogenization);
             FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
-        }
+        } */
         BasisChange.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
         SupportHyperplanes.sort_lex();
         is_Computed.set(ConeProperty::SupportHyperplanes);
