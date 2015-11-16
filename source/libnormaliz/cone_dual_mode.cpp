@@ -873,19 +873,15 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     if (verbose) {
         verboseOutput() << "Find relevant support hyperplanes" << endl;
     }
-    // list <key_t> zero_list;
     typename list<Candidate<Integer>* >::iterator gen_it;
-    // vector <key_t> relevant_sh;
-    // relevant_sh.reserve(nr_sh);
     size_t i,k,k1;
     
-    size_t realdim = Generators.rank();
+    // size_t realdim = Generators.rank();
     
     vector<vector<bool> > ind(nr_sh,vector<bool>(ExtremeRayList.size(),false));
     vector<bool> relevant(nr_sh,true);      
 
     for (i = 0; i < nr_sh; ++i) {
-        // Matrix<Integer> Test(0,dim);
         k = 0; k1=0;
         for (gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it, ++k) {
             if ((*gen_it)->values[i]==0) {
@@ -893,7 +889,7 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
                 k1++;
             }
         }
-        if (k1<realdim-1) {
+        if (/* k1<realdim-1 || */ k1==Generators.nr_of_rows()) { // discard everything that vanishes on the cone
             relevant[i]=false;
         }
     }    

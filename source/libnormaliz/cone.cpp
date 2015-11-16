@@ -1427,6 +1427,18 @@ void Cone<Integer>::compute_integer_hull() {
             verboseOutput() << nr_extr << " extreme points found"  << endl;
         }
     }
+    else{ // now an unbounded polyhedron
+        if(isComputed(ConeProperty::Grading)){
+            nr_extr=IntHullGen.extreme_points_first(Grading);
+        }
+        else{
+            if(isComputed(ConeProperty::SupportHyperplanes)){
+                vector<Integer> aux_grading=SupportHyperplanes.find_inner_point();
+                nr_extr=IntHullGen.extreme_points_first(aux_grading);
+            }    
+        }
+    }    
+    
     // IntHullGen.pretty_print(cout);
     IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
     if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays

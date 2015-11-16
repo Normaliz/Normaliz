@@ -3542,7 +3542,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
 
 //---------------------------------------------------------------------------
 
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool> is_max_subset){
+void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset){
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result reurned in is_max_subset -- must be initialized outside
 // only set to false in this routine
@@ -3568,7 +3568,7 @@ void maximal_subsets(const vector<vector<bool> >& ind, vector<bool> is_max_subse
         }
         
         for (size_t j = 0; j <nr_sets; j++) {
-            if (i==j && !is_max_subset[j] ) // don't compare with itself or something known not to be maximal
+            if (i==j || !is_max_subset[j] ) // don't compare with itself or something known not to be maximal
                 continue;
             size_t t;
             for (t = 0; t<k; t++) {

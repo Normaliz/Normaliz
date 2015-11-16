@@ -2255,24 +2255,42 @@ void Matrix<Integer>::saturate(){
 //---------------------------------------------------
 
 template<typename Integer>
-vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L) const{
+vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vector<Integer>& norm) const{
 
     vector<key_t> result(2,0);
     if(nr==0)
         return result;
     key_t maxind=0,minind=0;
     Integer maxval=v_scalar_product(L,elem[0]);
+    Integer maxnorm=1,minnorm=1;
+    if(norm.size()>0){
+        maxnorm=v_scalar_product(norm,elem[0]);
+        minnorm=maxnorm;              
+    }
     Integer minval=maxval;
     for(key_t i=0;i<nr;++i){
         Integer val=v_scalar_product(L,elem[i]);
-        if(val>maxval){
-            maxind=i;
-            maxval=val;            
+        if(norm.size()==0){
+            if(val>maxval){
+                maxind=i;
+                maxval=val;            
+            }
+            if(val<minval){
+                minind=i;
+                minval=val;            
+            }
         }
-        if(val<minval){
-            minind=i;
-            minval=val;            
-        }        
+        else{
+            Integer nm=v_scalar_product(norm,elem[i]);
+            if(maxnorm*val>nm*maxval){
+                maxind=i;
+                maxval=val;            
+            }
+            if(minnorm*val<nm*minval){
+                minind=i;
+                minval=val;            
+            }
+        }            
     }
     result[0]=maxind;
     result[1]=minind;
@@ -2280,15 +2298,18 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L) const{
 }
 
 template<typename Integer>
-size_t Matrix<Integer>::extreme_points_first(){
+size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
     
     if(nr==0)
         return 1;
+    
+    vector<long long> norm_copy;
     
     size_t nr_extr=0;
     Matrix<long long> HelpMat(nr,nc);
     try{
         convert(HelpMat,*this);
+        convert(norm_copy,norm);
     }
     catch(ArithmeticException){
         return nr_extr;        
@@ -2302,7 +2323,9 @@ size_t Matrix<Integer>::extreme_points_first(){
     while(true){
         // nr_attempt++; cout << nr_attempt << endl;
         vector<long long> L=v_random<long long>(nc,10);
-        vector<key_t> max_min_ind=HelpMat.max_and_min(L);
+        vector<key_t> max_min_ind;
+        max_min_ind=HelpMat.max_and_min(L,norm_copy);
+            
         if(marked[max_min_ind[0]] && marked[max_min_ind[1]])
             no_success++;
         else
@@ -2333,6 +2356,15 @@ size_t Matrix<Integer>::extreme_points_first(){
     // cout << nr_extr << "extreme points found"  << endl;
     return nr_extr;
     // exit(0);
+}
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::find_inner_point(){
+    vector<key_t> simplex=max_rank_submatrix_lex();
+    vector<Integer> point(nc);
+    for(size_t i=0;i<simplex.size();++i)
+        point=v_add(point,elem[simplex[i]]);
+   return point;    
 }
 
 }  // namespace
