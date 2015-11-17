@@ -1541,11 +1541,11 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
 
     if (SupportHyperplanes.nr_of_rows()!=0) {
         BasisChange.convert_to_sublattice_dual(FC.Support_Hyperplanes, SupportHyperplanes);
-        if (inhomogeneous) {
+        /* if (inhomogeneous) {
             vector<IntegerFC> Help;
             BasisChange.convert_to_sublattice_dual(Help,Dehomogenization);
             FC.Support_Hyperplanes.append(Help);
-        }
+        }*/
    }
     if (isComputed(ConeProperty::SupportHyperplanes)){
         FC.is_Computed.set(ConeProperty::SupportHyperplanes);
