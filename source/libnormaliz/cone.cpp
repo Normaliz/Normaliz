@@ -1740,9 +1740,11 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
 
     // check if the rank of the sublattice has changed
     if (isComputed(ConeProperty::Generators) || !(do_only_Deg1_Elements || inhomogeneous)) {
-    if ( ConeDM.Generators.rank() < ConeDM.dim ) {
-        Sublattice_Representation<IntegerFC> SR_(ConeDM.Generators,true);
-        Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(ConeDM.Generators),true); //TODO other conversion!
+        Matrix<IntegerFC> Help=ConeDM.Generators;
+        size_t new_rank=Help.row_echelon();
+    if ( new_rank < ConeDM.dim ) {
+        Sublattice_Representation<IntegerFC> SR_(Help,true);
+        Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(Help),true); //TODO other conversion!
         ConeDM.to_sublattice(SR_);
         compose_basis_change(SR);
         // handle zero cone as special case, makes our life easier
