@@ -2,7 +2,7 @@
 4 Hilbert basis elements of recession monoid
 4 vertices of polyhedron
 4 extreme rays of recession cone
-5 support hyperplanes of polyhedron
+6 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 6
 affine dimension of the polyhedron = 3
@@ -46,8 +46,9 @@ module rank = 1
   9 0 1 1 0 0
  14 0 2 0 1 0
 
-5 support hyperplanes of polyhedron:
+6 support hyperplanes of polyhedron (homogenized):
  -3  23  28 0 -14 -121
+  0   0   0 0   0    1
   0   1   0 0   0    0
   1  -7  -8 0   4   38
   1   0   0 0   0    0

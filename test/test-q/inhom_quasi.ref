@@ -1,6 +1,6 @@
 2 vertices of polyhedron
 4 extreme rays of recession cone
-5 support hyperplanes of polyhedron
+6 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
@@ -55,9 +55,10 @@ with common denominator = 6
  1 0 1 0
  1 1 1 0
 
-5 support hyperplanes of polyhedron:
+6 support hyperplanes of polyhedron (homogenized):
  -1  0 1 1
   0 -1 1 1
+  0  0 0 1
   0  1 0 0
   1 -1 1 1
   1  0 0 2

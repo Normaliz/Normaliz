@@ -2,7 +2,7 @@
 1 Hilbert basis elements of recession monoid
 1 vertices of polyhedron
 1 extreme rays of recession cone
-1 support hyperplanes of polyhedron
+2 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
 affine dimension of the polyhedron = 1
@@ -54,7 +54,8 @@ with common denominator = 1
 1 extreme rays of recession cone:
  2 0 0
 
-1 support hyperplanes of polyhedron:
+2 support hyperplanes of polyhedron (homogenized):
+ 0 0 1
  1 0 1
 
 1 equations:
