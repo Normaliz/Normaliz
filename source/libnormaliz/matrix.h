@@ -107,7 +107,7 @@ template<typename Integer> class Matrix {
     
     size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
     size_t row_echelon(bool& success, Integer& det); // computes also |det|
-    size_t row_echelon(bool& success, bool do_compute_vol, Integer& det); // chooses elem or bareiss
+    size_t row_echelon(bool& success, bool do_compute_vol, Integer& det); // chooses elem (or bareiss in former time)
     
     // reduces the rows a matrix in row echelon form upwards, from left to right
     bool reduce_rows_upwards();
@@ -293,7 +293,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 // Normal forms
 
-    // converts this to row echelon form over QQ and returns rank, GMP protected
+// converts this to row echelon form over ZZ and returns rank, GMP protected, uses only elementary transformations over ZZ
     size_t row_echelon();
 
     // public version of row_echelon_reduce (), GMP protected, uses only elementary transformations over ZZ

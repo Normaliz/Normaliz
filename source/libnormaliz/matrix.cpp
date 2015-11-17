@@ -1126,6 +1126,7 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
 
 //---------------------------------------------------------------------------
 
+/*
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
 // no overflow checks since this is supposed to be only used with GMP
@@ -1229,7 +1230,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
     
     return rk;
 }
-
+*/
 
 //---------------------------------------------------------------------------
 
@@ -1897,7 +1898,7 @@ size_t Matrix<Integer>::row_echelon(){
         return rk;
     Matrix<mpz_class> mpz_Copy(nr,nc);
     mat_to_mpz(Copy,mpz_Copy);
-    rk=mpz_Copy.row_echelon_reduce(success);
+    rk=mpz_Copy.row_echelon(success);
     mat_to_Int(mpz_Copy,*this);
         return rk;
 }
