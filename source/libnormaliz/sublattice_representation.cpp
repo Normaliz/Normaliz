@@ -53,6 +53,7 @@ Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
     c = 1;
     Equations_computed=false;
     Congruences_computed=false;
+    is_identity=true;
 }
 
 //---------------------------------------------------------------------------
@@ -88,6 +89,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
 
     Equations_computed=false;
     Congruences_computed=false;
+    is_identity=false;
 
     success=true;
 
@@ -105,12 +107,10 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     if(rank==dim && take_saturation){
         A = B = Matrix<Integer>(dim);
         c=1;
-        // cout << "Ausgang 0" << endl;
+        is_identity=true;
         return;   
     }
-    
-    A=Matrix<Integer>(rank, dim);
-    B=Matrix<Integer>(dim,rank);
+
     
     mpz_class row_index=1;
     vector<key_t> col(rank);
@@ -126,6 +126,16 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
             v_scalar_multiplication<Integer>(N[k],-1);
         row_index*=convertTo<mpz_class>(N[k][j]);
     }
+    
+    if(row_index==1 && rank==dim){
+        A = B = Matrix<Integer>(dim);
+        c=1;
+        is_identity=true;
+        return;   
+    }
+    
+    A=Matrix<Integer>(rank, dim);
+    B=Matrix<Integer>(dim,rank);
     
     if(row_index==1){
     
@@ -170,6 +180,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     Matrix<Integer> R=R_inv.invert_unprotected(c,success);   // yields c=1 as it should be in this case
     if(!success)
         return;
+    
     for (size_t i = 0; i < rank; i++) {
         for (size_t j = 0; j < dim; j++) {
                 A[i][j]=R[i][j];
@@ -190,6 +201,14 @@ template<typename Integer>
 void Sublattice_Representation<Integer>::compose(const Sublattice_Representation& SR) {
     assert(rank == SR.dim); //TODO vielleicht doch exception?
     
+    if(SR.is_identity)
+        return;
+    
+    if(is_identity){
+        *this=SR;
+        return;
+    }        
+    
     Equations_computed=false;
     Congruences_computed=false;
 
@@ -207,6 +226,7 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
         c /= g;
         B.scalar_division(g);
     }
+    is_identity&=SR.is_identity;
 }
 
 //---------------------------------------------------------------------------
@@ -215,27 +235,42 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
 
 template<typename Integer>
 Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice (const Matrix<Integer>& M) const {
-    Matrix<Integer> N = M.multiplication(B);
+    Matrix<Integer> N;
+    if(is_identity)
+        N=M;
+    else        
+        N = M.multiplication(B);
     if (c!=1) N.scalar_division(c);
     return N;
 }
-
 template<typename Integer>
 Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice (const Matrix<Integer>& M) const {
-    Matrix<Integer> N = M.multiplication(A);
+    Matrix<Integer> N;
+    if(is_identity)
+        N=M;
+    else        
+        N = M.multiplication(A);
     return N;
 }
 
 template<typename Integer>
 Matrix<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const Matrix<Integer>& M) const {
-    Matrix<Integer> N = M.multiplication(A.transpose());
+    Matrix<Integer> N;
+    if(is_identity)
+        N=M;
+    else        
+        N = M.multiplication(A.transpose());
     N.make_prime();
     return N;
 }
 
 template<typename Integer>
 Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const Matrix<Integer>& M) const {
-    Matrix<Integer> N = M.multiplication(B.transpose());
+    Matrix<Integer> N;
+    if(is_identity)
+        N=M;
+    else        
+        N =  M.multiplication(B.transpose());
     N.make_prime();
     return N;
 }
@@ -243,6 +278,8 @@ Matrix<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const 
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice (const vector<Integer>& V) const {
+    if(is_identity)
+        return V;
     vector<Integer> N = B.VxM(V);
     if (c!=1) v_scalar_division(N,c);
     return N;
@@ -250,26 +287,38 @@ vector<Integer> Sublattice_Representation<Integer>::to_sublattice (const vector<
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::from_sublattice (const vector<Integer>& V) const {
+    if(is_identity)
+        return V;
     vector<Integer> N = A.VxM(V);
     return N;
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual (const vector<Integer>& V) const {
-    vector<Integer> N = A.MxV(V);
+    vector<Integer> N;
+    if(is_identity)
+        N=V;
+    else    
+        N = A.MxV(V);
     v_make_prime(N);
     return N;
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::from_sublattice_dual (const vector<Integer>& V) const {
-    vector<Integer> N = B.MxV(V);
+    vector<Integer> N; 
+    if(is_identity)
+        N=V;
+    else    
+        N = B.MxV(V);
     v_make_prime(N);
     return N;
 }
 
 template<typename Integer>
 vector<Integer> Sublattice_Representation<Integer>::to_sublattice_dual_no_div (const vector<Integer>& V) const {
+    if(is_identity)
+        return V;
     vector<Integer> N = A.MxV(V);
     return N;
 }
@@ -322,6 +371,13 @@ const vector<vector<Integer> >& Sublattice_Representation<Integer>::getProjectio
 template<typename Integer>
 Integer Sublattice_Representation<Integer>::getAnnihilator() const {
     return c;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Sublattice_Representation<Integer>::IsIdentity() const{ 
+    return is_identity;
 }
 
 //---------------------------------------------------------------------------

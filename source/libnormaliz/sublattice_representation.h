@@ -150,6 +150,7 @@ public:
 	size_t getRank() const;
 
 	Integer getAnnihilator() const;
+    bool IsIdentity()const; 
 
     const Matrix<Integer>& getEquationsMatrix() const;
     const vector<vector<Integer> >& getEquations() const;
