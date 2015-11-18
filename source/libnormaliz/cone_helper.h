@@ -21,20 +21,21 @@
  * terms of service.
  */
 
-#include "libnormaliz/libnormaliz.cpp"
-#include "libnormaliz/integer.cpp"
-#include "libnormaliz/vector_operations.cpp"
-#include "libnormaliz/matrix.cpp"
-#include "libnormaliz/simplex.cpp"
-#include "libnormaliz/list_operations.cpp"
-#include "libnormaliz/sublattice_representation.cpp"
-#include "libnormaliz/full_cone.cpp"
-#include "libnormaliz/reduction.cpp"
-#include "libnormaliz/cone_dual_mode.cpp"
-#include "libnormaliz/cone.cpp"
-#include "libnormaliz/cone_property.cpp"
-#include "libnormaliz/HilbertSeries.cpp"
+#ifndef CONE_HELPER_H_
+#define CONE_HELPER_H_
 
-#include "libnormaliz/bottom.cpp"
-#include "libnormaliz/cone_helper.cpp"
-#include "libnormaliz/offload_handler.cpp"
+#include <vector>
+#include "libnormaliz/general.h"
+
+namespace libnormaliz {
+using std::vector;
+
+// determines the maximal subsets in a vector of subsets given by their indicator vectors
+// result returned in is_max_subset -- must be initialized outside
+// only set to false in this routine
+// if a set occurs more than once, only the last instance is recognized as maximal
+void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
+
+} //end namespace libnormaliz
+
+#endif /* CONE_HELPER_H_ */
