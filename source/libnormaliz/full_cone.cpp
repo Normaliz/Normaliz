@@ -4225,7 +4225,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
         throw BadInputException();
     }
     
-    index=1;
+    index=1;                      // not used at present
     for(size_t i=0;i<dim;++i)
         index*=M[i][i];
     index=Iabs(index);

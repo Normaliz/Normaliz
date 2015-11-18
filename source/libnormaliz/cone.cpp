@@ -1344,7 +1344,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* preparation: get generators if necessary */
     compute_generators();
-    is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
     if (BasisChange.getRank() == 0) {
         set_zero_cone();
         ToCompute.reset(is_Computed);
@@ -1610,6 +1609,7 @@ void Cone<Integer>::compute_generators_inner() {
         }
         Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
         compose_basis_change(Basis_Change);
+        is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
 
         // check grading and compute denominator
         if (isComputed(ConeProperty::Grading) && Generators.nr_of_rows() > 0) {
@@ -1739,22 +1739,22 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     ConeDM.hilbert_basis_dual();
 
     // check if the rank of the sublattice has changed
-    if (isComputed(ConeProperty::Generators) || !(do_only_Deg1_Elements || inhomogeneous)) {
+    if (!isComputed(ConeProperty::Sublattice) && !(do_only_Deg1_Elements || inhomogeneous)) {
         Matrix<IntegerFC> Help=ConeDM.Generators;
         size_t new_rank=Help.row_echelon();
-    if ( new_rank < ConeDM.dim ) {
-        Sublattice_Representation<IntegerFC> SR_(Help,true);
-        Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(Help),true); //TODO other conversion!
-        ConeDM.to_sublattice(SR_);
-        compose_basis_change(SR);
-        // handle zero cone as special case, makes our life easier
-        if (BasisChange.getRank() == 0) {
-            set_zero_cone();
-            ToCompute.reset(is_Computed);
-            return;
+        if ( new_rank < ConeDM.dim ) {
+            Sublattice_Representation<IntegerFC> SR_(Help,true);
+            Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(Help),true); //TODO other conversion!
+            ConeDM.to_sublattice(SR_);
+            compose_basis_change(SR);
+            // handle zero cone as special case, makes our life easier
+            if (BasisChange.getRank() == 0) {
+                set_zero_cone();
+                ToCompute.reset(is_Computed);
+                return;
+            }
         }
-    }
-    is_Computed.set(ConeProperty::Sublattice);
+        is_Computed.set(ConeProperty::Sublattice);
     }
     // create a Full_Cone out of ConeDM
     Full_Cone<IntegerFC> FC(ConeDM);
