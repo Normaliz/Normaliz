@@ -3,7 +3,8 @@
 
 embedding dimension = 4
 rank = 4 (maximal)
-index = 30
+external index = 1
+internal index = 30
 
 grading:
 0 0 0 1 
@@ -15,13 +16,13 @@ degrees of extreme rays:
 
 4 extreme rays:
  0 0 0 1
- 2 0 0 1
- 0 3 0 1
  0 0 5 1
+ 0 3 0 1
+ 2 0 0 1
 
 4 support hyperplanes:
- -15 -10  -6  30
-   1   0   0   0
-   0   1   0   0
-   0   0   1   0
+ -15 -10 -6 30
+   0   0  1  0
+   0   1  0  0
+   1   0  0  0
 

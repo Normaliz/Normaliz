@@ -1,0 +1,24 @@
+1 vertices of polyhedron
+2 extreme rays of recession cone
+3 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 3
+
+dehomogenization:
+1 0 0 
+
+
+***********************************************************************
+
+1 vertices of polyhedron:
+ 1 1 1
+
+2 extreme rays of recession cone:
+ 0 0 1
+ 0 1 0
+
+3 support hyperplanes of polyhedron (homogenized):
+ -1 0 1
+ -1 1 0
+  1 0 0
+

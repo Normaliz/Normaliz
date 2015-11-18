@@ -1,0 +1,38 @@
+3 vertices of polyhedron
+4 extreme rays of recession cone
+7 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 3 (maximal)
+rank of recession monoid = 3
+internal index = 2
+
+dehomogenization:
+0 0 0 1 
+
+grading:
+0 0 1 0 
+
+
+***********************************************************************
+
+3 vertices of polyhedron:
+ 0 1 0 2
+ 1 0 0 2
+ 1 1 0 2
+
+4 extreme rays of recession cone:
+ 0 0 1 0
+ 0 1 1 0
+ 1 0 1 0
+ 1 1 1 0
+
+7 support hyperplanes of polyhedron (homogenized):
+ -2  0 2  1
+  0 -2 2  1
+  0  0 0  1
+  0  0 1  0
+  0  1 0  0
+  1  0 0  0
+  2  2 0 -1
+

@@ -3,7 +3,7 @@
 
 embedding dimension = 5
 rank = 2
-index = 1
+external index = 1
 
 grading:
 -1 -1 0 0 0 
@@ -14,15 +14,19 @@ degrees of extreme rays:
 ***********************************************************************
 
 2 extreme rays:
-  0 -1  1  0  0
-  1 -2  3 -1  0
+ 0 -1 1  0 0
+ 1 -2 3 -1 0
 
 2 support hyperplanes:
- -2 -1  0  0  0
-  1  0  0  0  0
+ -2 -1 0 0 0
+  1  0 0 0 0
 
 3 equations:
- -1  1  1  0  0
-  1  0  0  1  0
-  0  0  0  0  1
+ 1 0 0 1 0
+ 0 1 1 1 0
+ 0 0 0 0 1
+
+2 basis elements of lattice:
+ 1 0  1 -1 0
+ 0 1 -1  0 0
 

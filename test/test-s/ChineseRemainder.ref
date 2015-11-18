@@ -1,31 +1,29 @@
 1 vertices of polyhedron
 1 extreme rays of recession cone
-1 support hyperplanes of polyhedron
+2 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 2
-affine dimension of the polyhedron = 1 (maximal)
-rank of recession monoid = 1
 
 dehomogenization:
 0 1 
 
-grading:
-1 1 
-
-
-module rank = 1
 
 ***********************************************************************
 
 1 vertices of polyhedron:
-   0 385
+ 0 385
 
 1 extreme rays of recession cone:
- 385   0
+ 385 0
 
-1 support hyperplanes of polyhedron:
+2 support hyperplanes of polyhedron (homogenized):
+ 0 1
  1 0
 
 1 congruences:
-  51 383 385
+ 167 1 385
+
+2 basis elements of lattice:
+ 1 -167
+ 0  385
 
