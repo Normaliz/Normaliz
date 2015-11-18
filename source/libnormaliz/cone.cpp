@@ -1741,7 +1741,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     // check if the rank of the sublattice has changed
     if (!isComputed(ConeProperty::Sublattice) && !(do_only_Deg1_Elements || inhomogeneous)) {
         Matrix<IntegerFC> Help=ConeDM.Generators;
-        size_t new_rank=Help.row_echelon();
+        size_t new_rank=Help.row_echelon_reduce(); //sppeds up the following computations
         if ( new_rank < ConeDM.dim ) {
             Sublattice_Representation<IntegerFC> SR_(Help,true);
             Sublattice_Representation<Integer> SR(convertTo<Matrix<Integer>>(Help),true); //TODO other conversion!

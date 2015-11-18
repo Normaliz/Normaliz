@@ -1855,17 +1855,22 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::row_echelon_reduce(){
-    
+size_t Matrix<Integer>::row_echelon_reduce(){
+
+    size_t rk;
     Matrix<Integer> Copy(*this);
     bool success;
-    row_echelon_reduce(success);
-    if(success)
-        return;
+    rk=row_echelon_reduce(success);
+    if(success){
+        Shrink_nr_rows(rk);
+        return rk;
+    }
     Matrix<mpz_class> mpz_Copy(nr,nc);
     mat_to_mpz(Copy,mpz_Copy);
-    mpz_Copy.row_echelon_reduce(success);
-    mat_to_Int(mpz_Copy,*this);     
+    rk=mpz_Copy.row_echelon_reduce(success);
+    mat_to_Int(mpz_Copy,*this);
+    Shrink_nr_rows(rk); 
+    return rk;
 }
 //---------------------------------------------------------------------------
 
@@ -1894,13 +1899,16 @@ size_t Matrix<Integer>::row_echelon(){
     bool success;
     size_t rk;
     rk=row_echelon(success);
-    if(success)
+    if(success){
+        Shrink_nr_rows(rk);
         return rk;
+    }
     Matrix<mpz_class> mpz_Copy(nr,nc);
     mat_to_mpz(Copy,mpz_Copy);
-    rk=mpz_Copy.row_echelon(success);
+    rk=mpz_Copy.row_echelon_reduce(success); // reduce to make entries small
     mat_to_Int(mpz_Copy,*this);
-        return rk;
+    Shrink_nr_rows(rk);  
+    return rk;
 }
 
 //---------------------------------------------------------------------------
@@ -2366,6 +2374,15 @@ vector<Integer> Matrix<Integer>::find_inner_point(){
     for(size_t i=0;i<simplex.size();++i)
         point=v_add(point,elem[simplex[i]]);
    return point;    
+}
+
+template<typename Integer>
+void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
+
+    if(new_nr_rows>=nr)
+        return;
+    nr=new_nr_rows;
+    elem.resize(nr);
 }
 
 }  // namespace
