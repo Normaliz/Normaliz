@@ -53,10 +53,10 @@ class Sublattice_Representation {
     template<typename> friend class Sublattice_Representation;
     
 	size_t dim, rank;
+    bool is_identity;
 	Matrix<Integer> A;
 	Matrix<Integer> B;
 	Integer c;
-	mpz_class index;
     mutable mpz_class external_index;
     mutable Matrix<Integer> Equations;
     mutable bool Equations_computed;
@@ -148,9 +148,6 @@ public:
 
 	/* returns the rank of the sublattice */
 	size_t getRank() const;
-
-	/* returns the index of the sublattice */
-	// mpz_class get_index() const;
 
 	Integer getAnnihilator() const;
 

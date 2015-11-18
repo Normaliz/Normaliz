@@ -47,7 +47,7 @@ template<typename Integer>
 Sublattice_Representation<Integer>::Sublattice_Representation(size_t n) {
     dim = n;
     rank = n;
-    index = 1;
+    external_index = 1;
     A = Matrix<Integer>(n);
     B = Matrix<Integer>(n);
     c = 1;
@@ -77,7 +77,6 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
         B=Matrix<Integer>(mpz_SLR.B.nr,mpz_SLR.B.nc);
         mat_to_Int(mpz_SLR.A,A);
         mat_to_Int(mpz_SLR.B,B);
-        index=mpz_SLR.index;
         convert(c, mpz_SLR.c);
         rank=mpz_SLR.rank;        
     }
@@ -105,10 +104,6 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     
     if(rank==dim && take_saturation){
         A = B = Matrix<Integer>(dim);
-        index=1;
-        for(size_t k=0;k<dim;++k)
-            index*=convertTo<mpz_class>(N[k][k]);
-        index=Iabs(index);
         c=1;
         // cout << "Ausgang 0" << endl;
         return;   
@@ -132,7 +127,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         row_index*=convertTo<mpz_class>(N[k][j]);
     }
     
-    if(row_index==1){  // ==> index=1, sublattice is saturated and we can take a projection
+    if(row_index==1){
     
         for(size_t k=0;k<rank;++k)
             A[k]=N[k];
@@ -142,8 +137,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
                 B[k][j]=1;
                 j++;
             }
-        }
-        index=1;
+        };
         c=1;
         return;               
     }
@@ -162,7 +156,6 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         Matrix<Integer> Q=P.invert_unprotected(c,success);
         if(!success)
             return;
-        index=1;
         
         for(k=0;k<dim;++k)
             for(size_t j=0;j<rank;++j)
@@ -183,9 +176,6 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
                 B[j][i]=R_inv[j][i];
         }
     }
-    index=1;
-    for(size_t k=0;k<rank;++k)
-        index*=convertTo<mpz_class>(N[k][k]);
     return; 
 }
 
@@ -204,7 +194,6 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     Congruences_computed=false;
 
     rank = SR.rank;
-    index = SR.index;
     // A = SR.A * A
     A = SR.A.multiplication(A);
     // B = B * SR.B
@@ -303,16 +292,6 @@ size_t Sublattice_Representation<Integer>::getRank() const {
     return rank;
 }
 
-//---------------------------------------------------------------------------
-
-// returns the index of the sublattice */
-
-/*
-template<typename Integer>
-mpz_class Sublattice_Representation<Integer>::get_index() const {
-    return index;
-}
-*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
