@@ -73,6 +73,7 @@ namespace ConeProperty {
         DualMode,
         KeepOrder,
         IntegerHull,
+        MaximalSubspace,
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }

@@ -1020,10 +1020,27 @@ const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() {
     return Generators;
 }
 template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getMaximalSubspace() {
+    compute(ConeProperty::MaximalSubspace);
+    return BasisMaxSubspace.get_elements();
+}
+template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getMaximalSubspaceMatrix() {
+    compute(ConeProperty::MaximalSubspace);
+    return BasisMaxSubspace;
+}
+template<typename Integer>
+size_t Cone<Integer>::getDimMaximalSubspace() {
+    compute(ConeProperty::MaximalSubspace);
+    return BasisMaxSubspace.nr_of_rows();
+}
+
+template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getGenerators() {
     compute(ConeProperty::Generators);
     return Generators.get_elements();
 }
+
 template<typename Integer>
 size_t Cone<Integer>::getNrGenerators() {
     compute(ConeProperty::Generators);
@@ -1737,10 +1754,18 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
-
+ 
+    cout << "Generators" << endl;
+    ConeDM.Generators.pretty_print(cout);
+    cout << "SuppHyps" << endl;
+    ConeDM.SupportHyperplanes.pretty_print(cout);
+    cout << "Unit group" << endl;
+    ConeDM.BasisMaxSubspace.pretty_print(cout);
+    
     // check if the rank of the sublattice has changed
     if (!isComputed(ConeProperty::Sublattice) && !(do_only_Deg1_Elements || inhomogeneous)) {
         Matrix<IntegerFC> Help=ConeDM.Generators;
+        Help.append(ConeDM.BasisMaxSubspace);
         size_t new_rank=Help.row_echelon_reduce(); //sppeds up the following computations
         if ( new_rank < ConeDM.dim ) {
             Sublattice_Representation<IntegerFC> SR_(Help,true);
@@ -2003,6 +2028,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if (FC.isComputed(ConeProperty::ClassGroup)) {
         convert(ClassGroup, FC.ClassGroup);
         is_Computed.set(ConeProperty::ClassGroup);
+    }
+    
+    if (FC.isComputed(ConeProperty::MaximalSubspace)) {
+        BasisChange.convert_from_sublattice(BasisMaxSubspace, FC.Basis_Max_Subspace);
+        is_Computed.set(ConeProperty::MaximalSubspace);
     }
 
     check_integrally_closed();

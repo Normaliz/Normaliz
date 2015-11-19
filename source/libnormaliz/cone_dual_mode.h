@@ -58,6 +58,7 @@ public:
     list<Candidate<Integer>* > ExtremeRayList; //only temporarily used
     CandidateList<Integer> Intermediate_HB; // intermediate Hilbert basis
     list<vector<Integer> > Hilbert_Basis; //the final result
+    Matrix<Integer> BasisMaxSubspace; // a basis of the maximal linear subspace of the cone
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines

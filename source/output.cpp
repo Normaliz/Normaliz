@@ -55,6 +55,7 @@ Output<Integer>::Output(){
     dec=false;
     lat=false;
     mod=false;
+    msp=false;
 }
 
 //---------------------------------------------------------------------------
@@ -206,6 +207,14 @@ template<typename Integer>
 void Output<Integer>::set_write_lat(const bool& flag) {
     lat=flag;
 }
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_write_msp(const bool& flag) {
+    msp=flag;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -231,6 +240,7 @@ void Output<Integer>::set_write_all_files(){
     ht1=true;
     lat=true;
     mod=true;
+    msp=true;
 }
 
 
@@ -296,6 +306,14 @@ template<typename Integer>
 void Output<Integer>::write_matrix_gen(const Matrix<Integer>& M) const {
     if (gen==true) {
         M.print(name,"gen");
+    }
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
+    if (msp==true) {
+        M.print(name,"msp");
     }
 }
 
@@ -404,6 +422,10 @@ void Output<Integer>::write_inv_file() const{
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
             size_t nr_ex_rays = Result->getNrExtremeRays();
             inv<<"integer number_extreme_rays = "<<nr_ex_rays<<endl;
+        }
+        if (Result->isComputed(ConeProperty::MaximalSubspace)) {
+            size_t dim_max_subspace = Result->getDimMaximalSubspace();
+            inv<<"integer dim_max_subspace = "<<dim_max_subspace<<endl;
         }
         if (Result->isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
             inv << "integer number_module_generators_original_monoid = "
@@ -605,6 +627,12 @@ void Output<Integer>::write_files() const {
                     << Result->getAffineDim() << is_maximal(Result->getAffineDim(),dim-1) << endl;
             if (Result->isComputed(ConeProperty::RecessionRank))
                 out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
+        }
+        
+        if(Result->isComputed(ConeProperty::MaximalSubspace)){
+            size_t dim_max_subspace=Result->getDimMaximalSubspace();
+            if(dim_max_subspace>0)
+                out << "dimension of maximal subsapce = " << dim_max_subspace << endl;      
         }
         
         if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
@@ -848,6 +876,14 @@ void Output<Integer>::write_files() const {
                     write_matrix_ext(Result->getExtremeRaysMatrix());
                 }
             }
+        }
+        
+        if(Result->isComputed(ConeProperty::MaximalSubspace)){
+            out << Result->getDimMaximalSubspace() <<" basis elements of maximal subspace:" << endl;
+            Result->getMaximalSubspaceMatrix().pretty_print(out);
+            out << endl;
+            if(msp)
+                write_matrix_msp(Result->getMaximalSubspaceMatrix());            
         }
         
         if(Result->isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {

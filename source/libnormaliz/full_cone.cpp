@@ -4344,8 +4344,11 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
 
     multiplicity = 0;
     in_triang = vector<bool>(nr_gen,false);
+ 
+    Basis_Max_Subspace=C.BasisMaxSubspace;
+    is_Computed.set(ConeProperty::MaximalSubspace);
     
-    pointed = true;
+    pointed = (Basis_Max_Subspace.nr_of_rows()==0);
     is_simplicial = nr_gen == dim;
     is_Computed.set(ConeProperty::IsPointed);
     deg1_extreme_rays = false;
@@ -4423,7 +4426,7 @@ void Full_Cone<Integer>::dual_mode() {
     
     // Support_Hyperplanes.remove_duplicate_and_zero_rows(); //now in constructor
 
-    if(dim>0 && !inhomogeneous) {            //correction needed to include the 0 cone;
+    if(dim>0 && !inhomogeneous && Basis_Max_Subspace.nr_of_rows()==0) {            //correction needed to include the 0 cone;
         deg1_check();
         if (isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Deg1Elements)) {
             if (verbose) { 

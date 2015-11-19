@@ -229,8 +229,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
     // Remember to update also the --help text and the documentation when changing this!
     vector<string> AdmissibleOut;
-    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","mod"}; // "mod" must be last
-    for(size_t i=0;i<10;++i)
+    string AdmissibleOutarray[]={"gen","cst","inv","ext","ht1","esp","egn","typ","lat","msp","mod"}; // "mod" must be last
+    for(size_t i=0;i<11;++i)
         AdmissibleOut.push_back(AdmissibleOutarray[i]);
     assert(AdmissibleOut.back()=="mod");
 
@@ -330,6 +330,10 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         }
         if(OutFiles[i]=="lat"){
             Out.set_write_lat(true);
+            continue;
+        }
+        if(OutFiles[i]=="msp"){
+            Out.set_write_msp(true);
             continue;
         }
         if(OutFiles[i]=="mod"){

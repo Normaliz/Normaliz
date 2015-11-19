@@ -155,6 +155,10 @@ public:
     const Matrix<Integer>& getSupportHyperplanesMatrix();
     const vector< vector<Integer> >& getSupportHyperplanes();
     size_t getNrSupportHyperplanes();
+    
+    const Matrix<Integer>& getMaximalSubspaceMatrix();
+    const vector< vector<Integer> >& getMaximalSubspace();
+    size_t getDimMaximalSubspace();
 
     // depends on the ConeProperty::s SupportHyperplanes and Sublattice
     map< InputType, vector< vector<Integer> > > getConstraints();
@@ -243,6 +247,7 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
     Matrix<Integer> HilbertBasis;
+    Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;

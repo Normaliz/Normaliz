@@ -101,6 +101,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     M.order_rows_by_perm(perm);
 
     SupportHyperplanes=Matrix<Integer>(0,dim);
+    BasisMaxSubspace=Matrix<Integer>(dim);      // dim x dim identity matrix
     if(Truncation.size()!=0){
         vector<Integer> help=Truncation;
         v_make_prime(help); // truncation need not be coprime
@@ -111,17 +112,11 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     nr_sh = SupportHyperplanes.nr_of_rows();
     // hyp_size = dim + nr_sh;
     
-    if (dim!=SupportHyperplanes.rank()) {
+    /* if (dim!=SupportHyperplanes.rank()) {
         errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
         // M.pretty_print(errorOutput());
         throw BadInputException();
-    }
-
-    if (SupportHyperplanes.rank() != dim) {
-        errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
-        //SupportHyperplanes.pretty_print(errorOutput());
-        throw BadInputException();
-    }
+    }*/
 
     Intermediate_HB.dual=true;
 
@@ -726,14 +721,14 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& Basis_Max_Subspace){
-    size_t i,rank_subspace=Basis_Max_Subspace.nr_of_rows();
+Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& BasisMaxSubspace){
+    size_t i,rank_subspace=BasisMaxSubspace.nr_of_rows();
 
     vector <Integer> restriction,lin_form=SupportHyperplanes[hyp_counter],old_lin_subspace_half;
     bool lifting=false;
-    Matrix<Integer> New_Basis_Max_Subspace=Basis_Max_Subspace; // the new maximal subspace is the intersection of the old with the new haperplane
+    Matrix<Integer> New_BasisMaxSubspace=BasisMaxSubspace; // the new maximal subspace is the intersection of the old with the new haperplane
     if (rank_subspace!=0) {
-        restriction=Basis_Max_Subspace.MxV(lin_form);  // the restriction of the new linear form to Max_Subspace
+        restriction=BasisMaxSubspace.MxV(lin_form);  // the restriction of the new linear form to Max_Subspace
         for (i = 0; i <rank_subspace; i++)
             if (restriction[i]!=0)
                 break;
@@ -747,7 +742,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
             size_t dummy_rank;
             Matrix<Integer> NewBasisOldMaxSubspace=M.AlmostHermite(dummy_rank).transpose(); // compute kernel of restriction and complementary subspace            
             
-            Matrix<Integer> NewBasisOldMaxSubspaceAmbient=NewBasisOldMaxSubspace.multiplication(Basis_Max_Subspace); 
+            Matrix<Integer> NewBasisOldMaxSubspaceAmbient=NewBasisOldMaxSubspace.multiplication(BasisMaxSubspace); 
             // in coordinates of the ambient space
 
             old_lin_subspace_half=NewBasisOldMaxSubspaceAmbient[0];            
@@ -758,14 +753,14 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
             Matrix<Integer> temp(rank_subspace-1,dim);
             for(size_t k=1;k<rank_subspace;++k)            
                 temp[k-1]=NewBasisOldMaxSubspaceAmbient[k];
-            New_Basis_Max_Subspace=temp;
+            New_BasisMaxSubspace=temp;
         }
     }
-    bool pointed=(Basis_Max_Subspace.nr_of_rows()==0);
+    bool pointed=(BasisMaxSubspace.nr_of_rows()==0);
 
     cut_with_halfspace_hilbert_basis(hyp_counter, lifting,old_lin_subspace_half,pointed);
 
-    return New_Basis_Max_Subspace;
+    return New_BasisMaxSubspace;
 }
 
 //---------------------------------------------------------------------------
@@ -788,9 +783,8 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
     }
     
     size_t hyp_counter;      // current hyperplane
-    Matrix<Integer> Basis_Max_Subspace(dim);      //identity matrix
     for (hyp_counter = 0; hyp_counter < nr_sh; hyp_counter++) {
-        Basis_Max_Subspace=cut_with_halfspace(hyp_counter,Basis_Max_Subspace);
+        BasisMaxSubspace=cut_with_halfspace(hyp_counter,BasisMaxSubspace);
     }
 
     if (ExtremeRays.size() > 0) {
@@ -842,6 +836,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     if (verbose) {
         verboseOutput() << "Find extreme rays" << endl;
     }
+    size_t quotient_dim=dim-BasisMaxSubspace.nr_of_rows();
     
     typename list < Candidate <Integer> >::iterator c;
     vector <key_t> zero_list;
@@ -854,15 +849,16 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
             }
         }
         k=zero_list.size();
-        if (k>=dim-1) {
+        if (k>=quotient_dim-1) {
 
             // Matrix<Integer> Test=SupportHyperplanes.submatrix(zero_list);
-            if (SupportHyperplanes.rank_submatrix(zero_list)>=dim-1) {
+            if (SupportHyperplanes.rank_submatrix(zero_list)>=quotient_dim-1) {
                 ExtremeRayList.push_back(&(*c));
             }
         }
     }
     size_t s = ExtremeRayList.size();
+    cout << "nr extreme " << s << endl;
     Generators = Matrix<Integer>(s,dim);
    
     typename  list< Candidate<Integer>* >::const_iterator l;
