@@ -383,10 +383,6 @@ Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constru
     /* adds generators, they have to lie inside the existing cone */
     void add_generators(const Matrix<Integer>& new_points);
 
-    /* computes the multiplicity of the ideal in case of a Rees algebra
-     * (not the same as the multiplicity of the semigroup) */
-    // Integer primary_multiplicity() const;  // replaced by function in cone.cpp
-
     void dual_mode();
 
     void error_msg(string s) const;

@@ -4085,52 +4085,6 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
 }
 
 //---------------------------------------------------------------------------
-
-/*
-template<typename Integer>
-Integer Full_Cone<Integer>::primary_multiplicity() const{
-    size_t h,i,j,k;
-    Integer primary_multiplicity=0;
-    vector <key_t> key,new_key(dim-1);
-    Matrix<Integer> Projection(nr_gen,dim-1);
-    for (i = 0; i < nr_gen; i++) {
-        for (j = 0; j < dim-1; j++) {
-            Projection.write(i,j,Generators[i][j]);
-        }
-    }
-    typename list< SHORTSIMPLEX<Integer> >::const_iterator t;
-    for (h = 0;  h < Support_Hyperplanes.nr_of_rows(); ++h){
-        if (Support_Hyperplanes.get_elem(h,dim-1) != 0) {
-            for (t =Triangulation.begin(); t!=Triangulation.end(); ++t){
-                key=t->key;
-                for (i = 0; i <dim; i++) {
-                    k=0;
-                    for (j = 0; j < dim; j++) {
-                        if (j!=i && Generators[key[j]][dim-1]==1) {
-                            if (v_scalar_product(Generators[key[j]],Support_Hyperplanes[h])==0) {
-                                k++;
-                            }
-                        }
-                        if (k==dim-1) {
-                            for (j = 0; j <i; j++) {
-                                new_key[j]=key[j];
-                            }
-                            for (j = i; j <dim-1; j++) {
-                                new_key[j]=key[j+1];
-                            }
-                            // add the volume of the projected simplex
-                            primary_multiplicity +=
-                              Projection.vol_submatrix(new_key); //    Projection.submatrix(new_key).vol_destructive();
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return primary_multiplicity;
-}
-*/
-//---------------------------------------------------------------------------
 // Constructors
 //---------------------------------------------------------------------------
 

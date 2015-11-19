@@ -720,8 +720,7 @@ template<typename Integer>
 Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector< vector<Integer> >& InputV) {
     Matrix<Integer> Input(InputV);
     int i,j,k,nr_rows=Input.nr_of_rows(), nr_columns=Input.nr_of_columns();
-    rees_primary=true;
-    // Integer number;
+    // create cone generator matrix
     Matrix<Integer> Full_Cone_Generators(nr_rows+nr_columns,nr_columns+1,0);
     for (i = 0; i < nr_columns; i++) {
         Full_Cone_Generators[i][i]=1;
@@ -732,8 +731,9 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_3(const vector< vector<Integer
             Full_Cone_Generators[i+nr_columns][j]=Input[i][j];
         }
     }
+    // primarity test
     vector<bool>  Prim_Test(nr_columns,false);
-    for(i=0; i<nr_rows; i++){           //preparing the matrix for primarity test
+    for (i=0; i<nr_rows; i++) {
         k=0;
         size_t v=0;
         for(j=0; j<nr_columns; j++)
@@ -1355,14 +1355,19 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         throw FatalException();
     }
 
+    if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
+            || ToCompute.test(ConeProperty::Multiplicity)
+            || ToCompute.test(ConeProperty::HilbertSeries)
+            || ToCompute.test(ConeProperty::DefaultMode) ) ) {
+        ReesPrimaryMultiplicity = compute_primary_multiplicity();
+        is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
+    }
+
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
         return ToCompute;
     }
-
-    /* if (rees_primary) // && ToCompute.test(ConeProperty::ReesPrimaryMultiplicity))
-        ToCompute.set(ConeProperty::Triangulation); */
 
     // the actual computation
     if (change_integer_type) {
@@ -1835,11 +1840,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if(isComputed(ConeProperty::Grading))
         WeightsGrad.append(Grading);
     GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
-
-    if (rees_primary){
-        ReesPrimaryMultiplicity = compute_primary_multiplicity();
-        is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
-    }
 
     if (FC.isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) { // must precede extreme rays
         BasisChange.convert_from_sublattice(ModuleGeneratorsOverOriginalMonoid, FC.getModuleGeneratorsOverOriginalMonoid());
