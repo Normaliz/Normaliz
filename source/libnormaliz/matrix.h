@@ -196,6 +196,8 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix submatrix(const vector<int>& rows) const;
     Matrix submatrix(const vector<bool>& rows) const;
 
+    void swap (Matrix<Integer>& x);
+
 	// returns the permutation created by sorting the rows with a grading function
     // or by 1-norm if computed is false
     vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;

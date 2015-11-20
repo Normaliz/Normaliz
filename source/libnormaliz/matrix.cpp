@@ -406,7 +406,7 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     while (from < nr && v_is_zero(elem[from])) from++; //skip zero rows
     while (from < nr) {  // go over matrix
         // now from is a non-zero row
-        if (to != from) swap(elem[to],elem[from]);
+        if (to != from) elem[to].swap(elem[from]);
         ++to; ++from;
         while (from < nr && v_is_zero(elem[from])) from++; //skip zero rows
     }
@@ -415,6 +415,14 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
     return *this;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::swap(Matrix<Integer>& x) {
+    size_t tmp = nr; nr = x.nr; x.nr = tmp;
+    tmp = nc; nc = x.nc; x.nc = tmp;
+    elem.swap(x.elem);
+}
 
 //---------------------------------------------------------------------------
 
