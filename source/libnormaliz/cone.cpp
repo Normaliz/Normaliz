@@ -1605,25 +1605,40 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner() {
     
     Matrix<IntegerFC> Dual_Gen;
-    BasisChange.convert_to_sublattice_dual(Dual_Gen, SupportHyperplanes);   
-    Full_Cone<IntegerFC> Dual_Cone(Dual_Gen);
+    BasisChange.convert_to_sublattice_dual(Dual_Gen, SupportHyperplanes);
+    Sublattice_Representation<IntegerFC> Dual_Gen_Subspace(Dual_Gen,true);
+    Matrix<IntegerFC> Dual_Gen_Emb;
+    Dual_Gen_Subspace.convert_to_sublattice(Dual_Gen_Emb, Dual_Gen);
+    
+    Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Emb);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
     Dual_Cone.dualize_cone();
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         //get the extreme rays of the primal cone
         Matrix<Integer> Extreme_Rays;
-        convert(Extreme_Rays, Dual_Cone.getSupportHyperplanes());
+        Matrix<IntegerFC> Supp_Lifted;
+        Dual_Gen_Subspace.convert_from_sublattice_dual(Supp_Lifted,
+                          Dual_Cone.getSupportHyperplanes());
+        convert(Extreme_Rays, Supp_Lifted);
         Generators = BasisChange.from_sublattice(Extreme_Rays);
         is_Computed.set(ConeProperty::Generators);
+        Matrix<Integer> Basis_Max_Subspace_Emb;
+        convert(Basis_Max_Subspace_Emb,Dual_Gen_Subspace.getEquationsMatrix());
+        BasisMaxSubspace = BasisChange.from_sublattice(Basis_Max_Subspace_Emb);
+        is_Computed.set(ConeProperty::MaximalSubspace);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
-            //get minmal set of support_hyperplanes
+            //get minmal set of support_hyperplanes 
             Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
-            BasisChange.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
+            Matrix<IntegerFC> Supp_Hyp_Lifted;
+            Dual_Gen_Subspace.convert_from_sublattice(Supp_Hyp_Lifted,Supp_Hyp);
+            BasisChange.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp_Lifted);
             SupportHyperplanes.sort_lex();
             is_Computed.set(ConeProperty::SupportHyperplanes);
         }
+        // append the maximal subspace
+        Extreme_Rays.append(Basis_Max_Subspace_Emb); 
         Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
         compose_basis_change(Basis_Change);
         is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore

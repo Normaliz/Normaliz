@@ -595,7 +595,7 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
         } // steps
 
-        Pos_Gen0.splice(Pos_Gen0.end(),Pos_Gen1); // the new generation has becomeold
+        Pos_Gen0.splice(Pos_Gen0.end(),Pos_Gen1); // the new generation has become old
         pos_gen0_size+=pos_gen1_size;
         pos_gen1_size=0;
         Neg_Gen0.splice(Neg_Gen0.end(),Neg_Gen1);
