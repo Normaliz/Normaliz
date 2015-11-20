@@ -80,6 +80,9 @@ public:
     void activateInputFileBigInt() {
         if (!ignoreInFileOpt) use_Big_Integer = true;
     }
+    void activateInputFileLongLong() {
+        if (!ignoreInFileOpt) use_long_long = true;
+    }
 
     const ConeProperties& getToCompute() const {
         return to_compute;
@@ -87,6 +90,9 @@ public:
 
     bool isUseBigInteger() const {
         return use_Big_Integer;
+    }
+    bool isUseLongLong() const {
+        return use_long_long;
     }
 
     const string& getOutputName() const {
@@ -102,6 +108,7 @@ private:
 	string project_name;
 
 	bool use_Big_Integer;
+	bool use_long_long;
     bool ignoreInFileOpt;
     bool nmzInt_E, nmzInt_I, nmzInt_L;
 

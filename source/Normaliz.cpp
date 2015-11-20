@@ -30,6 +30,7 @@
 using namespace std;
 
 #include "Normaliz.h"
+#include "libnormaliz/integer.h"
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
 //#include "libnormaliz/libnormaliz.cpp"
@@ -88,6 +89,7 @@ void printHelp(char* command) {
 
     cout << endl;
     cout << "  -B, --BigInt     directly use indefinite precision arithmetic"<<endl;
+    cout << "      --LongLong   only use long long arithmetic, no conversion possible"<<endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file"<<endl;
     cout << "  -x=<T>           limit the number of threads to <T>"<<endl;
     cout << "  -?, --help       print this help text and exit"<<endl;
@@ -133,7 +135,13 @@ int main(int argc, char* argv[])
         printHeader();
     }
 
-    process_data<mpz_class>(options);
+    if (!options.isUseLongLong()) {
+        process_data<mpz_class>(options);
+    }
+    // the previous process_data might return unsuccessfully if the input file specifies to use long long
+    if (options.isUseLongLong()) {
+        process_data<long long>(options);
+    }
 
     if (options.anyNmzIntegrateOption()) {
         //cout << "argv[0] = "<< argv[0] << endl;
@@ -192,6 +200,11 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
     in.close();
+
+    // if the input file specifies to use long long, we stop here and do it again in long long
+    if (using_GMP<Integer>() && options.isUseLongLong()) {
+        return 1;
+    }
 
     if (verbose) {
         cout << "************************************************************" << endl;

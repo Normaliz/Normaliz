@@ -120,6 +120,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     options.activateInputFileBigInt();
                     continue;
                 }
+                if (type_string == "LongLong") {
+                    options.activateInputFileLongLong();
+                    continue;
+                }
                 if (type_string == "total_degree") {
                     input_type = Type::grading;
                     save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
