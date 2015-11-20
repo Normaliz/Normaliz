@@ -397,7 +397,12 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
     
     bool do_only_selection=truncate && all_positice_level;
     
-    size_t round=0;        
+    size_t round=0;
+
+    if(do_only_selection){
+            pos_gen0_size=pos_gen1_size; // otherwise wrong sizes in message at the end
+            neg_gen0_size=neg_gen1_size;
+    }
     
     while(not_done && !do_only_selection) {
 
