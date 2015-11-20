@@ -2,6 +2,8 @@
 4 extreme rays
 4 support hyperplanes
 
+1 excluded faces
+
 embedding dimension = 3
 rank = 3 (maximal)
 external index = 1
@@ -36,4 +38,7 @@ degrees of extreme rays:
  -1  1 1
   1 -1 1
   1  1 1
+
+1 excluded faces:
+ -1 -1 1
 

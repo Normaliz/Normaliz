@@ -2567,16 +2567,7 @@ void Full_Cone<Integer>::primal_algorithm(){
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_initialize() {
 
-    if (ExcludedFaces.nr_of_rows() > 0) {
-        if (!do_h_vector && !do_Stanley_dec) {
-            errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition" << endl
-                << "Therefore excluded faces will be ignored" << endl;
-        }
-        else {
-            do_excluded_faces=true;
-            prepare_inclusion_exclusion();
-        }
-    }
+    prepare_inclusion_exclusion();
 
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
     for(size_t i=0;i<SimplexEval.size();++i)
@@ -3903,14 +3894,30 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
      //cout << "-------" << endl;
     
     return(M);
-} 
+}
 
-//---------------------------------------------------------------------------       
+//---------------------------------------------------------------------------
+
 template<typename Integer>
-void Full_Cone<Integer>::prepare_inclusion_exclusion(){
- 
-    vector<boost::dynamic_bitset<> > GensInExcl(ExcludedFaces.nr_of_rows()); // indicates
-                                   // which generators lie in the excluded faces
+void Full_Cone<Integer>::prepare_inclusion_exclusion() {
+
+    if (ExcludedFaces.nr_of_rows() == 0)
+        return;
+
+    do_excluded_faces = do_h_vector || do_Stanley_dec;
+
+    if (!do_excluded_faces) {
+        errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition"
+                      << endl << "Therefore excluded faces will be ignored" << endl;
+    }
+
+    if (isComputed(ConeProperty::ExcludedFaces) &&
+            (isComputed(ConeProperty::InclusionExclusionData) || !do_excluded_faces) ) {
+        return;
+    }
+
+    // indicates which generators lie in the excluded faces
+    vector<boost::dynamic_bitset<> > GensInExcl(ExcludedFaces.nr_of_rows());
 
     for(size_t j=0;j<ExcludedFaces.nr_of_rows();++j){ // now we produce these indicators
         bool first_neq_0=true;           // and check whether the linear forms in ExcludedFaces
@@ -3934,7 +3941,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
             if(test<0){
                 errorOutput() << "Fatal error: excluded hyperplane does not define a face" << endl;
                 throw FatalException();
-            }            
+            }
                 
         }
         if(!non_zero){  // not impossible if the hyperplane contains the vector space spanned by the cone
@@ -3969,7 +3976,13 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion(){
         GensInExcl=HelpGensInExcl;
     }
     is_Computed.set(ConeProperty::ExcludedFaces);
-    
+
+
+
+    if (isComputed(ConeProperty::InclusionExclusionData) || !do_excluded_faces) {
+        return;
+    }
+
     vector< pair<boost::dynamic_bitset<> , long> > InExScheme;  // now we produce the formal 
     boost::dynamic_bitset<> all_gens(nr_gen);             // inclusion-exclusion scheme
     all_gens.set();                         // by forming all intersections of
@@ -4068,10 +4081,11 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
     if (inhomogeneous) {
         set_levels();
     }
-    // excluded faces
-    if (do_excluded_faces) {
-        prepare_inclusion_exclusion();
-    }
+    // excluded faces have to be reinitialized
+    is_Computed.set(ConeProperty::ExcludedFaces, false);
+    is_Computed.set(ConeProperty::InclusionExclusionData, false);
+    prepare_inclusion_exclusion();
+
     if (do_Hilbert_basis) {
         // add new points to HilbertBasis
         for (size_t i = nr_old_gen; i < nr_gen; ++i) {

@@ -4,6 +4,8 @@
 2 module generators over original monoid
 4 support hyperplanes
 
+1 excluded faces
+
 embedding dimension = 3
 rank = 3 (maximal)
 external index = 1
@@ -47,4 +49,7 @@ Hilbert basis elements are of degree 1
  -1  1 1
   1 -1 1
   1  1 1
+
+1 excluded faces:
+ -1 -1 1
 

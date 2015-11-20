@@ -1532,6 +1532,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ExcludedFaces.nr_of_rows()!=0) {
         BasisChange.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);
     }
+    if (isComputed(ConeProperty::ExcludedFaces)) {
+        FC.is_Computed.set(ConeProperty::ExcludedFaces);
+    }
 
     if (inhomogeneous){
         BasisChange.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
@@ -1563,6 +1566,11 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
 
     /* do the computation */
     FC.compute();
+
+    // make sure we minimize the excluded faces if requested
+    if(ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {
+        FC.prepare_inclusion_exclusion();
+    }
 
     extract_data(FC);
 }

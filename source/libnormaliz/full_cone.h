@@ -319,6 +319,7 @@ public:
 
     void compute_multiplicity();
     
+    void minimize_excluded_faces();
     void prepare_inclusion_exclusion();
 
     void do_vars_check(bool with_default);
