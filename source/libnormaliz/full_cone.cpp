@@ -4255,17 +4255,17 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
+Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
 
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
 
     dim = C.dim;
-    Generators = C.get_generators();
+    Generators.swap(C.Generators);
     nr_gen = Generators.nr_of_rows();
     if (Generators.nr_of_rows() > 0) is_Computed.set(ConeProperty::Generators);
     has_generator_with_common_divisor = false;
-    Extreme_Rays=C.get_extreme_rays();
-    if (Extreme_Rays.size() > 0) is_Computed.set(ConeProperty::ExtremeRays);
+    Extreme_Rays.swap(C.ExtremeRays);
+    if (!Extreme_Rays.empty()) is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
     in_triang = vector<bool>(nr_gen,false);
@@ -4281,18 +4281,18 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     
     reset_tasks();
     
-    if (Extreme_Rays.size() > 0) { // only then we can assume that all entries on C.Supp.. are relevant
-        Support_Hyperplanes = C.SupportHyperplanes;
+    if (!Extreme_Rays.empty()) { // only then we can assume that all entries on C.Supp.. are relevant
+        Support_Hyperplanes.swap(C.SupportHyperplanes);
         // there may be duplicates in the coordinates of the Full_Cone
         Support_Hyperplanes.remove_duplicate_and_zero_rows();
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     if(!C.do_only_Deg1_Elements){
-        Hilbert_Basis = C.Hilbert_Basis;
+        Hilbert_Basis.swap(C.Hilbert_Basis);
         is_Computed.set(ConeProperty::HilbertBasis);
     }
-    else{
-        Deg1_Elements =C.Hilbert_Basis;
+    else {
+        Deg1_Elements.swap(C.Hilbert_Basis);
         is_Computed.set(ConeProperty::Deg1Elements);
     }
     if(dim==0){            //correction needed to include the 0 cone;
