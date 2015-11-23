@@ -878,7 +878,7 @@ void Output<Integer>::write_files() const {
             }
         }
         
-        if(Result->isComputed(ConeProperty::MaximalSubspace)){
+        if(Result->isComputed(ConeProperty::MaximalSubspace) && Result->getDimMaximalSubspace()>0){
             out << Result->getDimMaximalSubspace() <<" basis elements of maximal subspace:" << endl;
             Result->getMaximalSubspaceMatrix().pretty_print(out);
             out << endl;

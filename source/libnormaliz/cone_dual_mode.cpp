@@ -912,6 +912,7 @@ void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Inte
     vector<Integer> tmp;
     
     Generators = SR.to_sublattice(Generators);
+    BasisMaxSubspace=SR.to_sublattice(BasisMaxSubspace);
 
     for (it = Hilbert_Basis.begin(); it != Hilbert_Basis.end(); ) {
         tmp = SR.to_sublattice(*it);
