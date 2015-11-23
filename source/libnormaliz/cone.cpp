@@ -1340,6 +1340,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.reset(is_Computed);
         return ToCompute;
     }
+    
+    BasisChangePointed=BasisChange; 
 
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options(inhomogeneous);
@@ -1604,43 +1606,57 @@ template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner() {
     
-    Matrix<IntegerFC> Dual_Gen;
-    BasisChange.convert_to_sublattice_dual(Dual_Gen, SupportHyperplanes);
-    Sublattice_Representation<IntegerFC> Dual_Gen_Subspace(Dual_Gen,true);
-    Matrix<IntegerFC> Dual_Gen_Emb;
-    Dual_Gen_Subspace.convert_to_sublattice(Dual_Gen_Emb, Dual_Gen);
+    Matrix<Integer> Dual_Gen;
+    Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
+    // first we take the quotient of the efficient sublattice modulo the maximal subspace
+    Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
+    BasisChangePointed.compose(Pointed); // primal cone now pointed, may not yet be full dimensional
+    cout << "Pointed is identity " << Pointed.IsIdentity() << endl;
+    Matrix<IntegerFC> Dual_Gen_Pointed;
+    // restrict the supphyps to efficient sublattice and push to quotient mod subspace
+    BasisChangePointed.convert_to_sublattice(Dual_Gen_Pointed, SupportHyperplanes);
+
+    Dual_Gen_Pointed.pretty_print(cout);
     
-    Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Emb);
+    Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
     Dual_Cone.dualize_cone();
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         //get the extreme rays of the primal cone
-        Matrix<Integer> Extreme_Rays;
-        Matrix<IntegerFC> Supp_Lifted;
-        Dual_Gen_Subspace.convert_from_sublattice_dual(Supp_Lifted,
+        BasisChangePointed.convert_from_sublattice_dual(Generators,
                           Dual_Cone.getSupportHyperplanes());
-        convert(Extreme_Rays, Supp_Lifted);
-        Generators = BasisChange.from_sublattice(Extreme_Rays);
+        Generators.pretty_print(cout);
         is_Computed.set(ConeProperty::Generators);
-        Matrix<Integer> Basis_Max_Subspace_Emb;
-        convert(Basis_Max_Subspace_Emb,Dual_Gen_Subspace.getEquationsMatrix());
-        BasisMaxSubspace = BasisChange.from_sublattice(Basis_Max_Subspace_Emb);
-        is_Computed.set(ConeProperty::MaximalSubspace);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
-        if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
-            //get minmal set of support_hyperplanes 
+        is_Computed.set(ConeProperty::ExtremeRays);
+        // now we get the basis of the maximal subspace
+        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        is_Computed.set(ConeProperty::MaximalSubspace);
+
+        
+        //get minmal set of support_hyperplanes if possible
+        if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
             Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
-            Matrix<IntegerFC> Supp_Hyp_Lifted;
-            Dual_Gen_Subspace.convert_from_sublattice(Supp_Hyp_Lifted,Supp_Hyp);
-            BasisChange.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp_Lifted);
+            BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
             SupportHyperplanes.sort_lex();
             is_Computed.set(ConeProperty::SupportHyperplanes);
         }
+        
+        // now the final transformations
+        // first to full-dimensional pointed
+        Matrix<Integer> Help;
+        Help=BasisChangePointed.to_sublattice(Generators);
+        Sublattice_Representation<Integer> PointedHelp(Help,true);
+        cout << "PointedHelp is identity " << PointedHelp.IsIdentity() << endl;
+        BasisChangePointed.compose(PointedHelp);
+        // second to efficient sublattice
+        Help=BasisChange.to_sublattice(Generators);
         // append the maximal subspace
-        Extreme_Rays.append(Basis_Max_Subspace_Emb); 
-        Sublattice_Representation<Integer> Basis_Change(Extreme_Rays,true);
-        compose_basis_change(Basis_Change);
+        Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
+        Sublattice_Representation<Integer> EmbHelp(Help,true);
+        cout << "EmbHelp is identity " << EmbHelp.IsIdentity() << endl;
+        compose_basis_change(EmbHelp);
         is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
 
         // check grading and compute denominator

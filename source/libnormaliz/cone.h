@@ -226,6 +226,7 @@ private:
     size_t dim;
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
+    Sublattice_Representation<Integer> BasisChangePointed; // to the pointed cone
     bool BC_set;
     bool verbose;
     ConeProperties is_Computed;
