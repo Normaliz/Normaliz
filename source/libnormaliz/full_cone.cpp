@@ -2555,7 +2555,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     /***** Main Work is done in build_top_cone() *****/
 
     check_pointed();
-    if(!pointed) return;
+    if(!pointed){
+        throw NonpointedException();
+    }
 
     primal_algorithm_finalize();
     primal_algorithm_set_computed();
@@ -2642,7 +2644,9 @@ template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_set_computed() {
 
     extreme_rays_and_deg1_check();
-    if(!pointed) return;
+    if(!pointed){
+        throw NonpointedException();
+    }
 
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);
@@ -2985,7 +2989,9 @@ void Full_Cone<Integer>::support_hyperplanes() {
 template<typename Integer>
 void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
     check_pointed();
-    if(!pointed) return;
+    if(!pointed){
+        throw NonpointedException();
+    }
     //cout << "Generators" << endl;
     //Generators.pretty_print(cout);
     //cout << "SupportHyperplanes" << endl;
@@ -3010,7 +3016,9 @@ void Full_Cone<Integer>::find_grading(){
             }
             get_supphyps_from_copy(true);
             extreme_rays_and_deg1_check();
-            if(!pointed) return;
+            if(!pointed){
+                throw NonpointedException();
+            };
 
             // We keep the SupportHyperplanes, so we do not need to recompute them
             // for the last generator, and use them to make a global reduction earlier
@@ -3482,8 +3490,9 @@ void Full_Cone<Integer>::compute_extreme_rays(){
     assert(isComputed(ConeProperty::SupportHyperplanes));
     
     check_pointed();
-    if(!pointed)
-        return;
+    if(!pointed){
+        throw NonpointedException();
+    }
 
     if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
          compute_extreme_rays_rank();
@@ -4346,11 +4355,10 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     in_triang = vector<bool>(nr_gen,false);
  
     Basis_Max_Subspace=C.BasisMaxSubspace;
-    is_Computed.set(ConeProperty::MaximalSubspace);
-    
+    is_Computed.set(ConeProperty::MaximalSubspace);    
     pointed = (Basis_Max_Subspace.nr_of_rows()==0);
-    is_simplicial = nr_gen == dim;
     is_Computed.set(ConeProperty::IsPointed);
+    is_simplicial = nr_gen == dim;
     deg1_extreme_rays = false;
     deg1_generated = false;
     deg1_generated_computed = false;

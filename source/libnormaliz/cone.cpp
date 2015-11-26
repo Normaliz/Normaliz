@@ -1570,9 +1570,27 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     }
 
     /* do the computation */
-    FC.compute();
 
-    extract_data(FC);
+    
+    try {     
+        FC.compute();
+        extract_data(FC);
+    } catch(const NonpointedException& ) {
+        errorOutput() << "Cone not pointed. Restarting computation." << endl;
+        extract_data(FC);
+        FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC
+        Matrix<Integer> Dual_Gen;
+        Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
+        Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
+        BasisChangePointed.compose(Pointed);
+        is_Computed.set(ConeProperty::Sublattice);
+        // now we get the basis of the maximal subspace
+        BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
+        is_Computed.set(ConeProperty::MaximalSubspace);
+        pointed=(BasisMaxSubspace.nr_of_rows()>0);
+        is_Computed.set(ConeProperty::IsPointed); 
+        compute_inner<IntegerFC>(ToCompute);           
+    }
 }
 
 
@@ -1617,7 +1635,10 @@ void Cone<Integer>::compute_generators_inner() {
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
-    Dual_Cone.dualize_cone();
+    try {     
+        Dual_Cone.dualize_cone();
+    } catch(const NonpointedException& ){};
+    
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         //get the extreme rays of the primal cone
         BasisChangePointed.convert_from_sublattice(Generators,
@@ -1629,6 +1650,8 @@ void Cone<Integer>::compute_generators_inner() {
         // now we get the basis of the maximal subspace
         BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
         is_Computed.set(ConeProperty::MaximalSubspace);
+        pointed=(BasisMaxSubspace.nr_of_rows()>0);
+        is_Computed.set(ConeProperty::IsPointed);
         
         //get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
@@ -1833,6 +1856,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeDM.to_sublattice(BothRepFC[1]);
     }
     // create a Full_Cone out of ConeDM
+    // BasisMaxSubspace will be extrateted from it if not yet set
     Full_Cone<IntegerFC> FC(ConeDM);
     FC.verbose=verbose;
     // Give extra data to FC
@@ -2058,7 +2082,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         HSeries = FC.Hilbert_Series;
         is_Computed.set(ConeProperty::HilbertSeries);
     }
-    if (FC.isComputed(ConeProperty::IsPointed)) {
+    if (FC.isComputed(ConeProperty::IsPointed) && !isComputed(ConeProperty::IsPointed)) {
         pointed = FC.isPointed();
         is_Computed.set(ConeProperty::IsPointed);
     }
@@ -2081,7 +2105,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if (FC.isComputed(ConeProperty::MaximalSubspace)) {
+    if (FC.isComputed(ConeProperty::MaximalSubspace) && 
+                                   !isComputed(ConeProperty::MaximalSubspace)) {
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace, FC.Basis_Max_Subspace);
         is_Computed.set(ConeProperty::MaximalSubspace);
     }

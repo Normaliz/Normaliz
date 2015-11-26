@@ -629,15 +629,16 @@ void Output<Integer>::write_files() const {
                 out << "rank of recession monoid = "  << Result->getRecessionRank() << endl;
         }
         
-        if(Result->isComputed(ConeProperty::MaximalSubspace)){
-            size_t dim_max_subspace=Result->getDimMaximalSubspace();
-            if(dim_max_subspace>0)
-                out << "dimension of maximal subsapce = " << dim_max_subspace << endl;      
-        }
-        
         if(Result->isComputed(ConeProperty::OriginalMonoidGenerators)){
             out << "internal index = " << Result->getIndex() << endl;           
         }
+        
+        if(Result->isComputed(ConeProperty::MaximalSubspace)){
+            size_t dim_max_subspace=Result->getDimMaximalSubspace();
+            if(dim_max_subspace>0)
+                out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
+        }
+        
         
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {

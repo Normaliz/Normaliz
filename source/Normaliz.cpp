@@ -228,7 +228,8 @@ template<typename Integer> int process_data(OptionsHandler& options) {
         cerr << e.what() << endl;
         cerr << "FatalException caught... exiting." << endl;
         exit(2);
-    } catch(const NormalizException& ) {
+    } catch(const NormalizException& e) {
+        cerr << e.what() << endl;
         cerr << "NormalizException caught... exiting." << endl;
         exit(3);
     } catch(const std::exception& e) {
