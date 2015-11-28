@@ -3007,6 +3007,17 @@ void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
 template<typename Integer>
 void Full_Cone<Integer>::find_grading(){
     
+    if(Grading.size()>0){
+        vector<Integer> Degrees = Generators.MxV(Grading);
+        size_t i=0;
+        for(; i< Degrees.size();++i){
+            if(Degrees[i]<=0)
+                break;
+        }
+        if(i==Degrees.size())
+            is_Computed.set(ConeProperty::Grading);
+    }
+    
     if(inhomogeneous) // in the inhomogeneous case we do not allow implicit grading
         return;
 
@@ -3014,7 +3025,7 @@ void Full_Cone<Integer>::find_grading(){
     if (!isComputed(ConeProperty::Grading) && (do_multiplicity || do_deg1_elements || do_h_vector)) {
         if (!isComputed(ConeProperty::ExtremeRays)) {
             if (verbose) {
-                verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
+                verboseOutput() << "Cannot find grading s.t. all generators have the degree 1! Computing Extreme rays first:" << endl;
             }
             get_supphyps_from_copy(true);
             extreme_rays_and_deg1_check();
@@ -3761,6 +3772,10 @@ void Full_Cone<Integer>::check_pointed() {
 
     pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
+    if(pointed && Grading.size()>0){
+        errorOutput() << "Grading not positive on pointed cone" << endl;
+        throw BadInputException();
+    }
     if (verbose) verboseOutput() << "done." << endl;
 }
 
@@ -3829,6 +3844,7 @@ void Full_Cone<Integer>::deg1_check() {
     //now we hopefully have a grading
 
     if (!isComputed(ConeProperty::Grading)) {
+        Grading.clear(); // we have (ab)used this vector in computations
         if (isComputed(ConeProperty::ExtremeRays)) {
             // there is no hope to find a grading later
             deg1_generated = false;

@@ -858,7 +858,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
         }
     }
     size_t s = ExtremeRayList.size();
-    cout << "nr extreme " << s << endl;
+    // cout << "nr extreme " << s << endl;
     Generators = Matrix<Integer>(s,dim);
    
     typename  list< Candidate<Integer>* >::const_iterator l;
