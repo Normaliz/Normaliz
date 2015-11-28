@@ -190,6 +190,27 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     return; 
 }
 
+//---------------------------------------------------------------------------
+//                       Constructor by conversion
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+template<typename IntegerFC>
+Sublattice_Representation<Integer>::Sublattice_Representation(const 
+             Sublattice_Representation<IntegerFC>& Original) {
+                 
+    convert(A,Original.A);
+    convert(B,Original.B);
+    dim=Original.dim;
+    rank=Original.rank;
+    convert(c,Original.c);
+    is_identity=Original.is_identity;
+    Equations_computed=Original.Equations_computed;
+    Congruences_computed=Original.Congruences_computed;
+    convert(Equations,Original.Equations);
+    convert(Congruences,Original.Congruences);
+    external_index=Original.external_index;    
+}
 
 
 //---------------------------------------------------------------------------

@@ -91,6 +91,8 @@ public:
 	Sublattice_Representation(const Matrix<Integer>& M, bool take_saturation);
 	// Sublattice_Representation(const Lineare_Transformation<Integer>& LT, bool take_saturation);
 
+    template<typename IntegerFC>
+    Sublattice_Representation(const Sublattice_Representation<IntegerFC>& Original);
 //---------------------------------------------------------------------------
 //                       Manipulation operations
 //---------------------------------------------------------------------------	

@@ -903,13 +903,17 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
         << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
+    bool positively_graded=true;
     if (isComputed(ConeProperty::Generators) && Generators.nr_of_rows() > 0) {
         vector<Integer> degrees = Generators.MxV(lf);
         for (size_t i=0; i<degrees.size(); ++i) {
-            if (degrees[i]<1 && (!inhomogeneous || Generators[i][dim-1]==0)) { // in the inhomogeneous case: test only generators of tail cone
-                errorOutput() << "Grading gives non-positive value " << degrees[i]
-                << " for generator " << i+1 << "!" << endl;
-                throw BadInputException();
+            if (degrees[i]<=0 && (!inhomogeneous || Generators[i][dim-1]==0)) { // in the inhomogeneous case: test only generators of tail cone
+                positively_graded=false;;
+                if(degrees[i]<0){
+                    errorOutput() << "Grading gives negative value " << degrees[i]
+                    << " for generator " << i+1 << "!" << endl;
+                    throw BadInputException();
+                }
             }
         }
         // GradingDenom = degrees[0] / v_scalar_product(BasisChange.to_sublattice_dual(lf),BasisChange.to_sublattice(Generators[0])); //TODO in Sublattice Rep berechnen lassen
@@ -923,7 +927,11 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
         return;
     }
     Grading = lf;
-    is_Computed.set(ConeProperty::Grading);
+    if(positively_graded)
+        is_Computed.set(ConeProperty::Grading);
+    else
+        is_Computed.reset(ConeProperty::Grading); // the new grading is not positive
+        
 
     //remove data that depend on the grading
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
@@ -1549,12 +1557,14 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (inhomogeneous){
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
     }
-    if ( isComputed(ConeProperty::Grading) ) {  // IMPORTANT: Truncation must be set before Grading
+    if ( Grading.size()>0 ) {  // IMPORTANT: Truncation must be set before Grading
         BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
-        FC.is_Computed.set(ConeProperty::Grading);
-        if (inhomogeneous)
-            FC.find_grading_inhom();
-        FC.set_degrees();
+        if(isComputed(ConeProperty::Grading) ){    // is grading positive?
+            FC.is_Computed.set(ConeProperty::Grading);
+            if (inhomogeneous)
+                FC.find_grading_inhom();
+            FC.set_degrees();
+        }
     }
 
     if (SupportHyperplanes.nr_of_rows()!=0) {
@@ -1578,7 +1588,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     } catch(const NonpointedException& ) {
         errorOutput() << "Cone not pointed. Restarting computation." << endl;
         extract_data(FC);
-        FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC
+        FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC (almost)
         Matrix<Integer> Dual_Gen;
         Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
@@ -1621,29 +1631,23 @@ void Cone<Integer>::compute_generators_inner() {
     
     Matrix<Integer> Dual_Gen;
     Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
-    // Dual_Gen.pretty_print(cout);
     // first we take the quotient of the efficient sublattice modulo the maximal subspace
     Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
     BasisChangePointed.compose(Pointed); // primal cone now pointed, may not yet be full dimensional
-    // cout << "Pointed is identity " << Pointed.IsIdentity() << endl;
-    Matrix<IntegerFC> Dual_Gen_Pointed;
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
-    BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);
-
-    // Dual_Gen_Pointed.pretty_print(cout);
-    
+    Matrix<IntegerFC> Dual_Gen_Pointed;
+    BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);    
     Full_Cone<IntegerFC> Dual_Cone(Dual_Gen_Pointed);
     Dual_Cone.verbose=verbose;
     Dual_Cone.do_extreme_rays=true; // we try to find them, need not exist
     try {     
         Dual_Cone.dualize_cone();
-    } catch(const NonpointedException& ){};
+    } catch(const NonpointedException& ){}; // we don't mind if the dual cone is not pointed
     
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         //get the extreme rays of the primal cone
         BasisChangePointed.convert_from_sublattice(Generators,
                           Dual_Cone.getSupportHyperplanes());
-        // Generators.pretty_print(cout);
         is_Computed.set(ConeProperty::Generators);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
         is_Computed.set(ConeProperty::ExtremeRays);
@@ -1666,21 +1670,15 @@ void Cone<Integer>::compute_generators_inner() {
         Matrix<Integer> Help;
         Help=BasisChangePointed.to_sublattice(Generators);
         Sublattice_Representation<Integer> PointedHelp(Help,true);
-        // cout << "PointedHelp is identity " << PointedHelp.IsIdentity() << endl;
         BasisChangePointed.compose(PointedHelp);
         // second to efficient sublattice
         Help=BasisChange.to_sublattice(Generators);
         // append the maximal subspace
         Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
         Sublattice_Representation<Integer> EmbHelp(Help,true);
-        // cout << "EmbHelp is identity " << EmbHelp.IsIdentity() << endl;
         compose_basis_change(EmbHelp);
         is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
 
-        // check grading and compute denominator
-        /* cout << "-------------" << endl;
-        Generators.pretty_print(cout); */
-        
         if (isComputed(ConeProperty::Grading) && Generators.nr_of_rows() > 0) {
             setGrading(Grading);
         }
@@ -1825,34 +1823,23 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
- 
-    /* cout << "Generators from dual algorithm" << endl;
-    ConeDM.Generators.pretty_print(cout);
-    cout << "SuppHyps from dual algorithm" << endl;
-    ConeDM.SupportHyperplanes.pretty_print(cout);
-    cout << "Unit group from dual algorithm" << endl;
-    ConeDM.BasisMaxSubspace.pretty_print(cout); */
     
-    // check if the rank of the sublattice has changed
+    // now we may have to pass to a pointed full-dimensional cone
     if (!isComputed(ConeProperty::Sublattice) && !(do_only_Deg1_Elements || inhomogeneous)) {
         // At this point we still have BasisChange==BasisChangePointed
-        Matrix<Integer> HelpGen;  // Matrices of type Integer, living is BasisChange
-        convert(HelpGen,ConeDM.Generators);
-        Matrix<Integer> HelpSub;
-        convert(HelpSub,ConeDM.BasisMaxSubspace);
         
-        vector<Sublattice_Representation<Integer> > BothRep=MakeSubAndQuot(HelpGen,HelpSub);
         vector<Sublattice_Representation<IntegerFC> > BothRepFC=MakeSubAndQuot
                     (ConeDM.Generators,ConeDM.BasisMaxSubspace);
-                    
-        BasisChange.compose(BothRep[0]);
-        BasisChangePointed.compose(BothRep[1]);
+        if(!BothRepFC[0].IsIdentity())        
+            BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
+        if(!BothRepFC[1].IsIdentity())
+            BasisChangePointed.compose(Sublattice_Representation<Integer>(BothRepFC[1]));
+        is_Computed.set(ConeProperty::Sublattice);
         if (BasisChange.getRank() == 0) {
             set_zero_cone();                
             ToCompute.reset(is_Computed);
             return;
-        }
-        is_Computed.set(ConeProperty::Sublattice);        
+        }        
         ConeDM.to_sublattice(BothRepFC[1]);
     }
     // create a Full_Cone out of ConeDM

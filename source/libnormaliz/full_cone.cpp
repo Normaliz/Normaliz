@@ -1964,7 +1964,9 @@ void Full_Cone<Integer>::find_bottom_facets() {
     BottomPolyhedron.verbose=verbose;
     BottomPolyhedron.do_extreme_rays=true;
     BottomPolyhedron.keep_order = true;
-    BottomPolyhedron.dualize_cone();    // includes finding extreme rays
+    try {     
+        BottomPolyhedron.dualize_cone();  // includes finding extreme rays
+    } catch(const NonpointedException& ){};
 
     // transfer pointedness
     assert( BottomPolyhedron.isComputed(ConeProperty::IsPointed) );
@@ -2007,7 +2009,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
      if (!pointed)
-        return;
+        throw NonpointedException();
 
     vector<key_t> facet;
     for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
