@@ -1593,6 +1593,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
         BasisChangePointed.compose(Pointed);
+        cout << "+++++++++++" << endl;
+        Pointed.getEmbeddingMatrix().pretty_print(cout);
+        Pointed.getProjectionMatrix().pretty_print(cout);
         is_Computed.set(ConeProperty::Sublattice);
         // now we get the basis of the maximal subspace
         BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
@@ -1758,8 +1761,17 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         Full_Cone<IntegerFC> Tmp_Cone(Tmp_Gens);
         Tmp_Cone.verbose=verbose;
         Tmp_Cone.do_extreme_rays=true;
-        Tmp_Cone.dualize_cone();        // also marks extreme rays
-        extract_data(Tmp_Cone);
+        try{
+            Tmp_Cone.dualize_cone();
+            extract_data(Tmp_Cone);            
+        } catch(const NonpointedException& ){
+            extract_data(Tmp_Cone);
+            Generators=Matrix<Integer>(0,dim);
+            ExtremeRays=Matrix<Integer>(0,dim);
+            ExtremeRaysIndicator.clear();
+            is_Computed.reset(ConeProperty::Generators);
+            is_Computed.reset(ConeProperty::ExtremeRays);
+        };
     }
 
     bool do_extreme_rays_first = false;

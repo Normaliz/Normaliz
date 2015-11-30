@@ -4245,7 +4245,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     dim=M.nr_of_columns();
     
     Generators=M;
-
+    cout << "----------" << endl;
+    M.pretty_print(cout);
     
     if (M.row_echelon() < dim) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
