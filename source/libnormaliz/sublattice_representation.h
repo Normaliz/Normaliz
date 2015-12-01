@@ -102,6 +102,9 @@ public:
 
 	/* first this then SR when going from Z^n to Z^r */
 	void compose(const Sublattice_Representation<Integer>& SR);
+    
+    /* compose with the dual of SR */
+    void compose_dual(const Sublattice_Representation<Integer>& SR);
 
 //---------------------------------------------------------------------------
 //                       Transformations

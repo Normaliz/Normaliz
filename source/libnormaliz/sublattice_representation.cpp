@@ -250,6 +250,41 @@ void Sublattice_Representation<Integer>::compose(const Sublattice_Representation
     is_identity&=SR.is_identity;
 }
 
+template<typename Integer>
+void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Representation& SR) {
+
+    assert(rank == SR.dim); //
+    assert(SR.c==1);
+    
+    if(SR.is_identity)
+        return;
+    
+    Equations_computed=false;
+    Congruences_computed=false;    
+    rank = SR.rank;
+    
+    if(is_identity){
+        A=SR.B.transpose();
+        B=SR.A.transpose();
+        is_identity=false;
+        return;
+    }
+    
+    // Now we compose with the dual of SR
+    A = SR.B.transpose().multiplication(A);
+    // B = B * SR.B
+    B = B.multiplication(SR.A.transpose());
+    
+    //check if a factor can be extraced from B  //TODO necessary?
+    Integer g = B.matrix_gcd();
+    g = libnormaliz::gcd(g,c);  //TODO necessary??
+    if (g > 1) {
+        c /= g;
+        B.scalar_division(g);
+    }
+    is_identity&=SR.is_identity;
+}
+
 //---------------------------------------------------------------------------
 //                       Transformations
 //---------------------------------------------------------------------------

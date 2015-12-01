@@ -4245,8 +4245,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     dim=M.nr_of_columns();
     
     Generators=M;
-    cout << "----------" << endl;
-    M.pretty_print(cout);
+    // M.pretty_print(cout);
+    assert(M.row_echelon()== dim);
     
     if (M.row_echelon() < dim) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
@@ -4453,7 +4453,7 @@ void Full_Cone<Integer>::dual_mode() {
     
     // Support_Hyperplanes.remove_duplicate_and_zero_rows(); //now in constructor
 
-    if(dim>0 && !inhomogeneous && Basis_Max_Subspace.nr_of_rows()==0) {            //correction needed to include the 0 cone;
+    if(dim>0 && !inhomogeneous) { 
         deg1_check();
         if (isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Deg1Elements)) {
             if (verbose) { 

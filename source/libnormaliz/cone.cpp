@@ -453,7 +453,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
-        is_Computed.set(ConeProperty::Sublattice);
+        // is_Computed.set(ConeProperty::Sublattice);
     }
 
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
@@ -466,6 +466,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         SupportHyperplanes=PreComputedSupportHyperplanes;
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
+    
+    BasisChangePointed=BasisChange; 
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -1349,8 +1351,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
-    BasisChangePointed=BasisChange; 
-
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
@@ -1490,6 +1490,7 @@ template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     Matrix<IntegerFC> FC_Gens;
+
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
     Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
@@ -1584,22 +1585,20 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     
     try {     
         FC.compute();
+        is_Computed.set(ConeProperty::Sublattice);
         extract_data(FC);
     } catch(const NonpointedException& ) {
         errorOutput() << "Cone not pointed. Restarting computation." << endl;
         extract_data(FC);
         FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC (almost)
         Matrix<Integer> Dual_Gen;
-        Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
-        Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
-        BasisChangePointed.compose(Pointed);
-        cout << "+++++++++++" << endl;
-        Pointed.getEmbeddingMatrix().pretty_print(cout);
-        Pointed.getProjectionMatrix().pretty_print(cout);
+        Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+        Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual lattice
+        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        is_Computed.set(ConeProperty::MaximalSubspace);
+        BasisChangePointed.compose_dual(Pointed);        
         is_Computed.set(ConeProperty::Sublattice);
         // now we get the basis of the maximal subspace
-        BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
-        is_Computed.set(ConeProperty::MaximalSubspace);
         pointed=(BasisMaxSubspace.nr_of_rows()>0);
         is_Computed.set(ConeProperty::IsPointed); 
         compute_inner<IntegerFC>(ToCompute);           
@@ -1633,10 +1632,20 @@ template<typename IntegerFC>
 void Cone<Integer>::compute_generators_inner() {
     
     Matrix<Integer> Dual_Gen;
-    Dual_Gen=BasisChange.to_sublattice_dual(SupportHyperplanes);
+    Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
     // first we take the quotient of the efficient sublattice modulo the maximal subspace
-    Sublattice_Representation<Integer> Pointed(Dual_Gen,true);
-    BasisChangePointed.compose(Pointed); // primal cone now pointed, may not yet be full dimensional
+    Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual space
+
+    // now we get the basis of the maximal subspace
+    if(!isComputed(ConeProperty::MaximalSubspace)){
+        BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        is_Computed.set(ConeProperty::MaximalSubspace);
+    }
+    if(!isComputed(ConeProperty::IsPointed)){
+        pointed=(BasisMaxSubspace.nr_of_rows()>0);
+        is_Computed.set(ConeProperty::IsPointed);
+    }
+    BasisChangePointed.compose_dual(Pointed); // primal cone now pointed, may not yet be full dimensional
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
     Matrix<IntegerFC> Dual_Gen_Pointed;
     BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);    
@@ -1654,11 +1663,6 @@ void Cone<Integer>::compute_generators_inner() {
         is_Computed.set(ConeProperty::Generators);
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
         is_Computed.set(ConeProperty::ExtremeRays);
-        // now we get the basis of the maximal subspace
-        BasisMaxSubspace = BasisChange.from_sublattice(Pointed.getEquationsMatrix());
-        is_Computed.set(ConeProperty::MaximalSubspace);
-        pointed=(BasisMaxSubspace.nr_of_rows()>0);
-        is_Computed.set(ConeProperty::IsPointed);
         
         //get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
@@ -1671,14 +1675,14 @@ void Cone<Integer>::compute_generators_inner() {
         // now the final transformations
         // first to full-dimensional pointed
         Matrix<Integer> Help;
-        Help=BasisChangePointed.to_sublattice(Generators);
+        Help=BasisChangePointed.to_sublattice(Generators); // sublattice of the primal space
         Sublattice_Representation<Integer> PointedHelp(Help,true);
         BasisChangePointed.compose(PointedHelp);
         // second to efficient sublattice
         Help=BasisChange.to_sublattice(Generators);
         // append the maximal subspace
         Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
-        Sublattice_Representation<Integer> EmbHelp(Help,true);
+        Sublattice_Representation<Integer> EmbHelp(Help,true); // sublattice of the primal space
         compose_basis_change(EmbHelp);
         is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
 
@@ -1735,13 +1739,14 @@ vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>
     Sublattice_Representation<Integer> Sub(Help,true);
     Sublattice_Representation<Integer> Quot=Sub;
     if(Ker.nr_of_rows()>0){
-        Matrix<Integer> HelpQuot=Sub.to_sublattice(Ker).kernel();        
-        Sublattice_Representation<Integer> SubToQuot(HelpQuot,true);
-        Quot.compose(SubToQuot);
+        Matrix<Integer> HelpQuot=Sub.to_sublattice(Ker).kernel();   // kernel here to be interpreted as subspace of the dual
+                                                                    // namely the linear forms vanishing on Ker
+        Sublattice_Representation<Integer> SubToQuot(HelpQuot,true); // sublattice of the dual
+        Quot.compose_dual(SubToQuot);
     }
     Result.push_back(Sub);
     Result.push_back(Quot);
-
+    
     return Result;    
 }
 
@@ -1835,7 +1840,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
-    
+
     // now we may have to pass to a pointed full-dimensional cone
     if (!isComputed(ConeProperty::Sublattice) && !(do_only_Deg1_Elements || inhomogeneous)) {
         // At this point we still have BasisChange==BasisChangePointed
@@ -1919,7 +1924,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if(verbose) {
         verboseOutput() << "transforming data..."<<flush;
     }
-
+    
     if (FC.isComputed(ConeProperty::Grading)) {
         if (!isComputed(ConeProperty::Grading)) {
             BasisChangePointed.convert_from_sublattice_dual(Grading, FC.getGrading());
