@@ -1,0 +1,66 @@
+1 module generators
+1 Hilbert basis elements of recession monoid
+1 vertices of polyhedron
+1 extreme rays of recession cone
+2 support hyperplanes of polyhedron (homogenized)
+
+embedding dimension = 4
+affine dimension of the polyhedron = 2
+rank of recession monoid = 1
+dimension of maximal subspace = 1
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+dehomogenization:
+0 0 0 1 
+
+grading:
+1 0 0 0 
+
+
+module rank = 1
+multiplicity = 1
+
+Hilbert series:
+1 
+denominator with 1 factors:
+1: 1  
+
+shift = -1
+
+degree of Hilbert Series as rational function = -2
+
+Hilbert polynomial:
+1 
+with common denominator = 1
+
+***********************************************************************
+
+1 module generators:
+ -1 0 0 1
+
+1 Hilbert basis elements of recession monoid:
+ 1 0 0 0
+
+1 vertices of polyhedron:
+ -1 0 0 1
+
+1 extreme rays of recession cone:
+ 1 0 0 0
+
+1 basis elements of maximal subspace:
+ 0 1 0 0
+
+2 support hyperplanes of polyhedron (homogenized):
+ 0 0 0 1
+ 1 0 0 1
+
+1 equations:
+ 0 0 1 0
+
+3 basis elements of lattice:
+ 1 0 0 0
+ 0 1 0 0
+ 0 0 0 1
+

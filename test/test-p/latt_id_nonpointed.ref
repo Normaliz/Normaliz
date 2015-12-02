@@ -1,0 +1,53 @@
+5 original generators of the toric ring
+2 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 1
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+grading:
+1 1 
+
+degrees of extreme rays:
+1: 2  
+
+multiplicity = 1
+
+Hilbert series:
+1 
+denominator with 2 factors:
+1: 2  
+
+degree of Hilbert Series as rational function = -2
+
+Hilbert polynomial:
+1 1 
+with common denominator = 1
+
+***********************************************************************
+
+5 original generators:
+ 0 1
+ 1 0
+ 1 1
+ 0 0
+ 0 0
+
+2 Hilbert basis elements of degree 1:
+ 0 1
+ 1 0
+
+2 extreme rays:
+ 0 1
+ 1 0
+
+2 support hyperplanes:
+ 0 1
+ 1 0
+

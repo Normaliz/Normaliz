@@ -1,0 +1,40 @@
+5 original generators of the toric ring
+2 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 1
+
+size of partial triangulation   = 0
+resulting sum of |det|s = 0
+
+grading:
+1 1 
+
+degrees of extreme rays:
+1: 2  
+
+***********************************************************************
+
+5 original generators:
+ 0 1
+ 1 0
+ 1 1
+ 0 0
+ 0 0
+
+2 Hilbert basis elements of degree 1:
+ 0 1
+ 1 0
+
+2 extreme rays:
+ 0 1
+ 1 0
+
+2 support hyperplanes:
+ 0 1
+ 1 0
+
