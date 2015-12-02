@@ -787,7 +787,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         BasisMaxSubspace=cut_with_halfspace(hyp_counter,BasisMaxSubspace);
     }
 
-    if (ExtremeRays.size() > 0) {
+    if (ExtremeRays.size() > 0) { // implies that we have transformed everything to a pointed full-dimensional cone
         // must produce the relevant support hyperplanes from the generators
         // since the Hilbert basis may have been truncated
         vector<Integer> test(SupportHyperplanes.nr_of_rows());

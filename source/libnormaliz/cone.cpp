@@ -1761,22 +1761,10 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         if (verbose) {
             verboseOutput()<<  "Computing support hyperplanes for the dual mode:"<< endl;
         }
-        Matrix<IntegerFC> Tmp_Gens;
-        BasisChangePointed.convert_to_sublattice(Tmp_Gens,Generators); // TAKE POINTED ??
-        Full_Cone<IntegerFC> Tmp_Cone(Tmp_Gens);
-        Tmp_Cone.verbose=verbose;
-        Tmp_Cone.do_extreme_rays=true;
-        try{
-            Tmp_Cone.dualize_cone();
-            extract_data(Tmp_Cone);            
-        } catch(const NonpointedException& ){
-            extract_data(Tmp_Cone);
-            Generators=Matrix<Integer>(0,dim);
-            ExtremeRays=Matrix<Integer>(0,dim);
-            ExtremeRaysIndicator.clear();
-            is_Computed.reset(ConeProperty::Generators);
-            is_Computed.reset(ConeProperty::ExtremeRays);
-        };
+        ConeProperties Dualize;
+        Dualize.set(ConeProperty::SupportHyperplanes);
+        Dualize.set(ConeProperty::ExtremeRays);
+        compute(Dualize);
     }
 
     bool do_extreme_rays_first = false;
