@@ -1595,9 +1595,6 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual lattice
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
-        cout << "=============" << endl;
-        BasisMaxSubspace.pretty_print(cout);
-        cout << "=============" << endl;
         is_Computed.set(ConeProperty::MaximalSubspace);
         BasisChangePointed.compose_dual(Pointed);        
         is_Computed.set(ConeProperty::Sublattice);
