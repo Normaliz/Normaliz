@@ -432,9 +432,7 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip,
                         const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp,
                         const vector<Integer>& grading) {
-    double SCIPFactor =1.0;
-    double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]))-1;
-    upper_bound*=SCIPFactor;
+    double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]))-0.5;
     // TODO make the test more strict
     long dim = grading.size();
     // create variables
@@ -506,7 +504,7 @@ vector<Integer> opt_sol(SCIP* scip,
 		}
 	}
 	
-	// set objective limit. feasible solution has to have at least this objective value
+	// set objective limit, feasible solution has to have a better objective value
     SCIPsetObjlimit(scip,upper_bound);
 
 
