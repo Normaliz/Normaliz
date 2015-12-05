@@ -611,6 +611,8 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
     TESTV[4]=18;
     TESTV[5]=2;
     
+    // Coll.HB_Elements.search();
+    
     
     Full_Cone<Integer>& C = *C_ptr;
     bool inserted;
@@ -623,10 +625,10 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
             
             // cout << "Vor " << *jj;
             // transform to global coordinates
-            if(*jj==TESTV)
-                cout << "ER LÄUFT DURCH" << endl;
             vector<Integer> help=*jj; // we need a copy
             transform_to_global(help,*jj);
+            if(*jj==TESTV)
+                cout << "ER LÄUFT DURCH" << endl;
             // v_scalar_division(*jj,volume);
             // cout << "Nach " << *jj;
             
@@ -641,6 +643,7 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
                 Coll.collected_elements_size++;
         }
     }
+    // Coll.HB_Elements.search();
 }
 
 //---------------------------------------------------------------------------

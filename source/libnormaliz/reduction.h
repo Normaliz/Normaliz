@@ -155,6 +155,7 @@ class CandidateList {
   void clear();
   size_t size();
   bool empty();
+  void search();
 
 }; // end class
 

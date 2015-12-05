@@ -367,6 +367,26 @@ bool CandidateList<Integer>::empty(){
     return Candidates.empty();
 }
 
+template<typename Integer>
+void CandidateList<Integer>::search(){
+    
+    vector<Integer> TESTV(6);
+    TESTV[0]=2;
+    TESTV[1]=6;
+    TESTV[2]=0;
+    TESTV[3]=15;
+    TESTV[4]=18;
+    TESTV[5]=2;
+    
+    typename list<Candidate<Integer> >::iterator h;
+    for(h=Candidates.begin();h!=Candidates.end();++h){
+        if(h->cand==TESTV){
+            assert(h->cand!=TESTV);
+        }
+        
+    }
+
+}
 
 //---------------------------------------------------------------------------
 
