@@ -592,6 +592,56 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     }
 }
 
+//---------------------------------------------------------------------------
+
+
+
+
+// 2  6  0 15 18 2
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) {
+//inverse transformation and reduction against global reducers
+    
+    vector<Integer> TESTV(6);
+    TESTV[0]=2;
+    TESTV[1]=6;
+    TESTV[2]=0;
+    TESTV[3]=15;
+    TESTV[4]=18;
+    TESTV[5]=2;
+    
+    
+    Full_Cone<Integer>& C = *C_ptr;
+    bool inserted;
+    typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
+    for(;jj != Hilbert_Basis.end();++jj) {
+        jj->pop_back(); //remove the norm entry at the end
+        if(*jj==TESTV)
+            cout << "ER LÄUFT DURCH" << endl;
+        if (!isDuplicate(*jj)) { //skip the element
+            
+            // cout << "Vor " << *jj;
+            // transform to global coordinates
+            if(*jj==TESTV)
+                cout << "ER LÄUFT DURCH" << endl;
+            vector<Integer> help=*jj; // we need a copy
+            transform_to_global(help,*jj);
+            // v_scalar_division(*jj,volume);
+            // cout << "Nach " << *jj;
+            
+            // reduce against global reducers in C.OldCandidates and insert into HB_Elements
+            if (C.is_simplicial) { // no global reduction necessary
+                Coll.HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
+                inserted=true;
+            }
+            else
+                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);                
+            if(inserted)
+                Coll.collected_elements_size++;
+        }
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -633,31 +683,8 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 
     // cout << "local HB " << Hilbert_Basis.size() << endl;
     
-    //inverse transformation and reduction against global reducers
-    //some test for arithmetic overflow may be implemented here
-    bool inserted;
-    typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
-    for(;jj != Hilbert_Basis.end();++jj) {
-        if (!isDuplicate(*jj)) { //skip the element
-            jj->pop_back(); //remove the norm entry at the end
-            // cout << "Vor " << *jj;
-            // transform to global coordinates
-            vector<Integer> help=*jj; // we need a copy
-            transform_to_global(help,*jj);
-            // v_scalar_division(*jj,volume);
-            // cout << "Nach " << *jj;
-            
-            // reduce against global reducers in C.OldCandidates and insert into HB_Elements
-            if (C.is_simplicial) { // no global reduction necessary
-                Coll.HB_Elements.Candidates.push_back(Candidate<Integer>(*jj,C));
-                inserted=true;
-            }
-            else
-                inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);                
-            if(inserted)
-                Coll.collected_elements_size++;
-        }
-    }
+    reduce_against_global(Coll);
+    
 	// cout << "local reduction finished " << Coll.collected_elements_size << endl;
 
     Hilbert_Basis.clear(); // this is not a local variable !!    
@@ -1123,16 +1150,18 @@ void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>
 template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // reduce new against old elements
-    //now done directly    reduce(Coll.Candidates, Hilbert_Basis);
     
-    if(C_ptr->do_module_gens_intcl){
-        Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
+    Coll.Candidates.sort(compare_last<Integer>);
+    
+    if(C_ptr->do_module_gens_intcl){  // in this case there is no local reduction
+        Hilbert_Basis.splice(Hilbert_Basis.begin(),Coll.Candidates); // but direct reduction against global old candidates
+        reduce_against_global(Coll);
+        Hilbert_Basis.clear();
         Coll.candidates_size = 0;
         return;
     }
 
     // interreduce
-    Coll.Candidates.sort(compare_last<Integer>);
     reduce(Coll.Candidates, Coll.Candidates,Coll.candidates_size);
 
     // reduce old elements by new ones
