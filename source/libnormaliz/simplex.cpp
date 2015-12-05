@@ -575,7 +575,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     if (C.do_Hilbert_basis) {
         vector<Integer> candi = v_merge(element,norm);
-        if (!is_reducible(candi, Hilbert_Basis)) {
+        if (!is_reducible(candi, Hilbert_Basis) ||  C_ptr->do_module_gens_intcl) {
             Coll.Candidates.push_back(candi);
             Coll.candidates_size++;
             if (Coll.candidates_size >= 1000 && sequential_evaluation) {
@@ -594,41 +594,21 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
 //---------------------------------------------------------------------------
 
-
-
-
-// 2  6  0 15 18 2
-
 template<typename Integer>
 void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) {
-//inverse transformation and reduction against global reducers
-    
-    vector<Integer> TESTV(6);
-    TESTV[0]=2;
-    TESTV[1]=6;
-    TESTV[2]=0;
-    TESTV[3]=15;
-    TESTV[4]=18;
-    TESTV[5]=2;
-    
-    // Coll.HB_Elements.search();
-    
+//inverse transformation and reduction against global reducers    
     
     Full_Cone<Integer>& C = *C_ptr;
     bool inserted;
     typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
     for(;jj != Hilbert_Basis.end();++jj) {
         jj->pop_back(); //remove the norm entry at the end
-        if(*jj==TESTV)
-            cout << "ER LÄUFT DURCH" << endl;
         if (!isDuplicate(*jj)) { //skip the element
             
             // cout << "Vor " << *jj;
             // transform to global coordinates
             vector<Integer> help=*jj; // we need a copy
             transform_to_global(help,*jj);
-            if(*jj==TESTV)
-                cout << "ER LÄUFT DURCH" << endl;
             // v_scalar_division(*jj,volume);
             // cout << "Nach " << *jj;
             

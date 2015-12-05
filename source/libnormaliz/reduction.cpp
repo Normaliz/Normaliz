@@ -367,6 +367,7 @@ bool CandidateList<Integer>::empty(){
     return Candidates.empty();
 }
 
+/* 
 template<typename Integer>
 void CandidateList<Integer>::search(){
     
@@ -387,6 +388,7 @@ void CandidateList<Integer>::search(){
     }
 
 }
+*/
 
 //---------------------------------------------------------------------------
 

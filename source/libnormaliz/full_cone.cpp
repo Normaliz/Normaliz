@@ -2338,8 +2338,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     } while(skip_remaining);
         
     } // do_evaluation
-    
-    // NewCandidates.search();
             
     if (verbose)
     {

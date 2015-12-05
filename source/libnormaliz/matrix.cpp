@@ -220,22 +220,11 @@ void Matrix<Integer>::print(ostream& out) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
-    
-    vector<Integer> TESTV(6);
-    TESTV[0]=2;
-    TESTV[1]=6;
-    TESTV[2]=0;
-    TESTV[3]=15;
-    TESTV[4]=18;
-    TESTV[5]=2;
-    
+void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{    
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
-        if(elem[i]==TESTV)
-            cout << "GEFUNDEN" << endl;
         if (with_row_nr) {
             for (k= 0; k <= max_index_length - decimal_length(i); k++) {
                 out<<" ";
