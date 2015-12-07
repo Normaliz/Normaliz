@@ -939,19 +939,14 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             addMult(-volume,C.Results[0]);
             // delete this large simplex
             C.totalNrSimplices--;
-            list < SHORTSIMPLEX<Integer> > tmp_triang;
-            size_t tmp_triang_size = 0;
             if (C.keep_triangulation) {
-                tmp_triang.splice(tmp_triang.begin(), C.Triangulation);
-                typename list < SHORTSIMPLEX<Integer> >::iterator it = tmp_triang.begin();
-                for (; it != tmp_triang.end(); ++it) {
+                typename list < SHORTSIMPLEX<Integer> >::iterator it = C.Triangulation.begin();
+                for (; it != C.Triangulation.end(); ++it) {
                     if (it->key == key) {
-                        tmp_triang.erase(it);
+                        C.Triangulation.erase(it);
                         break;
                     }
                 }
-                tmp_triang_size = C.TriangulationSize - 1;
-                C.TriangulationSize = 0;
             }
 
             // create subcone key
@@ -1011,21 +1006,15 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                     new_simplex.height = bottom_it->vol; // best replacement for height
                     new_simplex.vol    = bottom_it->vol;
                     //cout << "new " << new_simplex.key;
-                    C.Triangulation.push_back(new_simplex);
-                    C.TriangulationSize++;
+                    C.TriangulationBuffer.push_back(new_simplex);
+                    C.TriangulationBufferSize++;
                 }
             }
 
             // evaluate created triangulation
             C.evaluate_triangulation();
 
-
-            if (C.keep_triangulation) {
-                C.Triangulation.splice(C.Triangulation.begin(), tmp_triang);
-                C.TriangulationSize += tmp_triang_size;
-            }
             if (C_ptr->verbose) {
-				
 				verboseOutput() << "**************************************************" << endl;
 			}
 
