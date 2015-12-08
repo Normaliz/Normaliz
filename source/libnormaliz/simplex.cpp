@@ -575,7 +575,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     if (C.do_Hilbert_basis) {
         vector<Integer> candi = v_merge(element,norm);
-        if (!is_reducible(candi, Hilbert_Basis) ||  C_ptr->do_module_gens_intcl) {
+        if ( C_ptr->do_module_gens_intcl || !is_reducible(candi, Hilbert_Basis)){
             Coll.Candidates.push_back(candi);
             Coll.candidates_size++;
             if (Coll.candidates_size >= 1000 && sequential_evaluation) {
@@ -1134,6 +1134,7 @@ template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // reduce new against old elements
     
+    assert(sequential_evaluation);
     Coll.Candidates.sort(compare_last<Integer>);
     
     if(C_ptr->do_module_gens_intcl){  // in this case there is no local reduction

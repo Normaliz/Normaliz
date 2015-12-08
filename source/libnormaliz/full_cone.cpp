@@ -2240,7 +2240,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
             for (size_t i = 0; i <nr_gen; i++) {               
                 // cout << gen_levels[i] << " ** " << Generators[i];
-                if(!inhomogeneous || gen_levels[i]<=1) {
+                if(!inhomogeneous || gen_levels[i]==0 || (!save_do_module_gens_intcl && gen_levels[i]<=1)) {
                     OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
                     OldCandidates.Candidates.back().original_generator=true;
                 }
@@ -2643,6 +2643,72 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::make_module_gens(){
+
+    if(!inhomogeneous){
+        NewCandidates.extract(ModuleGeneratorsOverOriginalMonoid);
+        vector<Integer> Zero(dim,0);
+        ModuleGeneratorsOverOriginalMonoid.push_front(Zero);
+        // cout << "Mod " << endl;
+        // Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid).pretty_print(cout);
+        // cout << "--------" << endl;
+        is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
+        return;
+    }
+    
+    CandidateList<Integer> Level1OriGens;
+    for(size_t i=0;i<nr_gen;++i){
+            if(gen_levels[i]==1){
+                Level1OriGens.push_back(Candidate<Integer>(Generators[i],*this));    
+            }
+    }
+    CandidateList<Integer> Level1Generators=Level1OriGens;
+    Candidate<Integer> new_cand(dim,Support_Hyperplanes.nr_of_rows());
+    typename list<Candidate<Integer> >::const_iterator lnew,l1;
+    for(lnew=NewCandidates.Candidates.begin();lnew!=NewCandidates.Candidates.end();++lnew){
+        Integer level=v_scalar_product(lnew->cand,Truncation);
+        if(level==1){
+            new_cand=*lnew;
+            Level1Generators.reduce_by_and_insert(new_cand,OldCandidates);
+        }
+        else{
+            for(l1=Level1OriGens.Candidates.begin();l1!=Level1OriGens.Candidates.end();++l1){
+                new_cand=sum(*l1,*lnew);
+                Level1Generators.reduce_by_and_insert(new_cand,OldCandidates);
+            }
+        }        
+    }
+    Level1Generators.extract(ModuleGeneratorsOverOriginalMonoid);
+    ModuleGeneratorsOverOriginalMonoid.sort();
+    ModuleGeneratorsOverOriginalMonoid.unique();
+    is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
+    
+    for (size_t i = 0; i <nr_gen; i++) { // the level 1 input generators have not yet ben inserted into OldCandidates              
+        if(gen_levels[i]==1) {          // but they are needed for the truncated Hilbert basis comüputation
+            NewCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+            NewCandidates.Candidates.back().original_generator=true;
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::make_module_gens_and_extract_HB(){
+       
+    make_module_gens();
+    
+    NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2    
+    NewCandidates.sort_by_deg();
+    
+    OldCandidates.merge(NewCandidates);
+    OldCandidates.auto_reduce(); 
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_set_computed() {
 
     extreme_rays_and_deg1_check();
@@ -2661,18 +2727,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
                 
     if (do_Hilbert_basis) {
         if(do_module_gens_intcl){
-            NewCandidates.extract(ModuleGeneratorsOverOriginalMonoid);
-            vector<Integer> Zero(dim,0);
-            ModuleGeneratorsOverOriginalMonoid.push_front(Zero);
-            // cout << "Mod " << endl;
-            // Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid).pretty_print(cout);
-            // cout << "--------" << endl;
-            is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
-            NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2
-            // update_reducers(true); // must be forced -- otherwise not done in the simplicial case
-            NewCandidates.sort_by_deg();
-            OldCandidates.merge(NewCandidates);
-            OldCandidates.auto_reduce();            
+                make_module_gens_and_extract_HB();
         }
         OldCandidates.sort_by_val();
         OldCandidates.extract(Hilbert_Basis);
@@ -3323,87 +3378,6 @@ template<typename Integer>
 void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
     order_by_perm(PermGens,perm);
 }
-/*    
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
-    // if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
-    // return;
-    
-    if(keep_order)
-            return;
-    
-    list<vector<Integer> > genList;
-    vector<Integer> v;
-    if(inhomogeneous)
-        v.resize(dim+4);
-    else
-        v.resize(dim+3);
-    vector<Integer> w(dim);
-    unsigned long i,j;
-    
-    for(i=0;i<nr_gen;i++){
-        v[0]=0;
-        if(triangulate){
-            if(isComputed(ConeProperty::Grading))
-                v[0]=gen_degrees[i];
-            else{
-                v[0]=0;
-                for(j=0;j<dim;++j)
-                    v[0]+=Iabs(Generators[i][j]);       
-            }
-        }
-                
-        // v[1]=i;                // keep the input order as far as possible
-        v[1]=0; // we disregard the input order now
-        w=Generators[i];
-        for(j=0;j<dim;j++)
-            v[j+2]=w[j];
-        v[dim+2]=0;
-        if(Extreme_Rays[i]) // after sorting we must recover the extreme rays
-            v[dim+2]=1;
-        if(inhomogeneous)
-            v[dim+3]=gen_levels[i];
-        genList.push_back(v);
-    }
-    genList.sort();
-    
-    i=0;
-    typename list<vector<Integer> >::iterator g=genList.begin();
-    for(;g!=genList.end();++g){
-        v=*g;
-        if(isComputed(ConeProperty::Grading))
-            gen_degrees[i]=convertTo<long>(v[0]);
-        if(inhomogeneous)
-            gen_levels[i]=convertTo<long>(v[dim+3]);
-        Extreme_Rays[i]=false;
-        if(v[dim+2]>0)
-            Extreme_Rays[i]=true;
-        for(j=0;j<dim;j++)
-            w[j]=v[j+2];
-        Generators[i]=w;
-        i++;
-    }
-    
-    if (verbose) {
-        if(triangulate){
-            if(isComputed(ConeProperty::Grading)){
-                verboseOutput() << endl << "Generators sorted by degree and lexicographically" << endl;
-                verboseOutput() << "Generators per degree:" << endl;
-                verboseOutput() << count_in_map<long,long>(gen_degrees);
-            }
-            else
-                verboseOutput() << endl << "Generators sorted by 1-norm and lexicographically" << endl;
-        }
-        else{
-            verboseOutput() << endl << "Generators sorted lexicographically" << endl;
-        }
-    }
-    keep_order=true;
-}
-*/
-
 
 //---------------------------------------------------------------------------
 

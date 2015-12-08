@@ -219,7 +219,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Triangulation
                   || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
-                  || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
+                 // || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
                 ) {
                     errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
