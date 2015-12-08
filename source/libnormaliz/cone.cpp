@@ -196,6 +196,14 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+Cone<Integer>::~Cone() {
+    if(IntHullCone!=NULL)
+        delete IntHullCone;
+}
+
+//---------------------------------------------------------------------------
+
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
@@ -822,6 +830,7 @@ void Cone<Integer>::initialize() {
     } else {
         change_integer_type = false;
     }
+    IntHullCone=NULL;
 }
 
 //---------------------------------------------------------------------------
