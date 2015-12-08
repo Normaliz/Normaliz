@@ -1012,7 +1012,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             }
 
             // evaluate created triangulation
-            C.evaluate_triangulation();
+            if (C.check_evaluation_buffer())
+                C.evaluate_triangulation();
 
             if (C_ptr->verbose) {
 				verboseOutput() << "**************************************************" << endl;

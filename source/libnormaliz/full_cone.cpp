@@ -2380,6 +2380,11 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     for (j = 0; j < lss; ++j) {
         evaluate_large_simplex(j, lss);
     }
+
+    // decomposition might have created new simplices
+    evaluate_triangulation();
+
+    // also new large simplices are possible
     if (!LargeSimplices.empty()) {
         use_bottom_points = false;
         lss += LargeSimplices.size();
