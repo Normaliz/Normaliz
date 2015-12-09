@@ -629,17 +629,17 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
+void SimplexEvaluator<Integer>::add_hvect_to_HS(Collector<Integer>& Coll) {
 
     Full_Cone<Integer>& C = *C_ptr;
-
+    
     if(C.do_h_vector) {
         if(C.inhomogeneous){
             Coll.Hilbert_Series.add(Coll.inhom_hvector,level0_gen_degrees);
             for (size_t i=0; i<Coll.inhom_hvector.size(); i++)
                 Coll.inhom_hvector[i]=0;
             // cout << "WAU " << endl;
-            }
+        }
         else{
             Coll.Hilbert_Series.add(Coll.hvector,gen_degrees);
             for (size_t i=0; i<Coll.hvector.size(); i++)
@@ -654,8 +654,17 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
         }
     }
     
-    // cout << Coll.Hilbert_Series << endl;
+    // cout << Coll.Hilbert_Series << endl;       
+}
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
+
+    Full_Cone<Integer>& C = *C_ptr;
+
+    add_hvect_to_HS(Coll);
 
     if(volume==1 || !C.do_Hilbert_basis || !sequential_evaluation)
         return;  // no further action in this case
@@ -1049,7 +1058,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
     collect_vectors();   // --> Results[0]
     for(size_t i=1;i<C_ptr->Results.size();++i)  // takes care of h-vectors
-        conclude_evaluation(C_ptr->Results[i]);
+        add_hvect_to_HS(C_ptr->Results[i]);
     sequential_evaluation=true;   
     conclude_evaluation(C_ptr->Results[0]);  // h-vector in Results[0] and collected elements
 
