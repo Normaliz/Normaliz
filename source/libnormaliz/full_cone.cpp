@@ -4450,8 +4450,15 @@ void Full_Cone<Integer>::dual_mode() {
                 is_Computed.set(ConeProperty::Grading);
         }   
     }
-    if(isComputed(ConeProperty::Deg1Elements))
-        is_Computed.set(ConeProperty::Grading); 
+    if(isComputed(ConeProperty::Deg1Elements)){
+        auto hb=Deg1_Elements.begin();
+        for(;hb!=Deg1_Elements.end();++hb){
+            if(v_scalar_product(*hb,Grading)<=0)
+                break;
+        }
+        if(hb==Deg1_Elements.end())
+            is_Computed.set(ConeProperty::Grading);
+    }
     
     if(Grading.size()>0 && !isComputed(ConeProperty::Grading)){
         errorOutput() << "Grading not positive on pointed cone." << endl;
