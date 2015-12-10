@@ -1524,6 +1524,24 @@ void Cone<Integer>::compute_integer_hull() {
 }
 
 template<typename Integer>
+void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
+    if(Grading.size()>0){
+        vector<Integer> test=BasisMaxSubspace.MxV(Grading);
+        if(test!=vector<Integer>(test.size())){
+                errorOutput() << "Grading does not vanish on maximal subspace." << endl;
+                throw BadInputException();
+        }
+    }
+    if(Dehomogenization.size()>0){
+        vector<Integer> test=BasisMaxSubspace.MxV(Dehomogenization);
+        if(test!=vector<Integer>(test.size())){
+            errorOutput() << "Dehomogenization does not vanish on maximal subspace." << endl;
+            throw BadInputException();
+        }
+    }    
+}
+
+template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     Matrix<IntegerFC> FC_Gens;
@@ -1632,6 +1650,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual lattice
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
         BasisChangePointed.compose_dual(Pointed);        
         is_Computed.set(ConeProperty::Sublattice);
@@ -1676,6 +1695,7 @@ void Cone<Integer>::compute_generators_inner() {
     // now we get the basis of the maximal subspace
     if(!isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
     }
     if(!isComputed(ConeProperty::IsPointed)){
@@ -1870,6 +1890,9 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         
         vector<Sublattice_Representation<IntegerFC> > BothRepFC=MakeSubAndQuot
                     (ConeDM.Generators,ConeDM.BasisMaxSubspace);
+        BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
+        check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
+        is_Computed.set(ConeProperty::MaximalSubspace);
         if(!BothRepFC[0].IsIdentity())        
             BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
         if(!BothRepFC[1].IsIdentity())
@@ -2135,7 +2158,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     
     if (FC.isComputed(ConeProperty::MaximalSubspace) && 
                                    !isComputed(ConeProperty::MaximalSubspace)) {
+        FC.Basis_Max_Subspace.pretty_print(cout);
+        cout << "================" << endl;
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace, FC.Basis_Max_Subspace);
+        check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
     }
 
