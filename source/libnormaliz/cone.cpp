@@ -463,6 +463,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::Generators);
         // is_Computed.set(ConeProperty::Sublattice);
     }
+    
+    checkGrading();
 
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
     if(isComputed(ConeProperty::Grading))
@@ -771,7 +773,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
 
     Matrix<Integer> Binomials(find_input_matrix(multi_input_data,Type::lattice_ideal));
 
-    if (isComputed(ConeProperty::Grading)) {
+    if (Grading.size()>0) {
         //check if binomials are homogeneous
         vector<Integer> degrees = Binomials.MxV(Grading);
         for (size_t i=0; i<degrees.size(); ++i) {
@@ -780,8 +782,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
                               << " for binomial " << i+1 << "!" << endl;
                 throw BadInputException();
             }
-            if (Grading[i] <= 0) {
-                errorOutput() << "Grading gives non-positive value " << Grading[i]
+            if (Grading[i] <0) {
+                errorOutput() << "Grading gives negative value " << Grading[i]
                             << " for generator " << i+1 << "!" << endl;
                 throw BadInputException();
             }
@@ -802,7 +804,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(map< InputType, vector< vector<I
     dim = Positive_Embedded_Generators.nr_of_columns();
     multi_input_data.insert(make_pair(Type::normalization,Positive_Embedded_Generators.get_elements())); // this is the cone defined by the binomials
 
-    if (isComputed(ConeProperty::Grading)) {
+    if (Grading.size()>0) {
         // solve GeneratorsOfToricRing * grading = old_grading
         Integer dummyDenom;
         // Grading must be set directly since map entry has been processed already
@@ -908,42 +910,68 @@ void Cone<Integer>::deactivateChangeOfPrecision() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::checkGrading () {
+    
+    if (isComputed(ConeProperty::Grading) || Grading.size()==0) {
+        return;
+    }
+    
+    bool positively_graded=true;
+    bool nonnegative=true;
+    size_t neg_index=0;
+    Integer neg_value;
+    if (Generators.nr_of_rows() > 0) {
+        vector<Integer> degrees = Generators.MxV(Grading);
+        for (size_t i=0; i<degrees.size(); ++i) {
+            if (degrees[i]<=0 && (!inhomogeneous || v_scalar_product(Generators[i],Dehomogenization)==0)) { 
+                // in the inhomogeneous case: test only generators of tail cone
+                positively_graded=false;;
+                if(degrees[i]<0){
+                    nonnegative=false;
+                    neg_index=i;
+                    neg_value=degrees[i];
+                }
+            }
+        }
+        if(positively_graded){
+            vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(Grading);
+            GradingDenom=v_make_prime(test_grading);
+        }
+        else
+            GradingDenom = 1; 
+    } else {
+        GradingDenom = 1;
+    }
+
+    if (isComputed(ConeProperty::Generators)){        
+        if(!nonnegative){
+            errorOutput() << "Grading gives negative value " << neg_value
+            << " for generator " << neg_index+1 << "!" << endl;
+            throw BadInputException();
+        }
+        if(positively_graded)
+            is_Computed.set(ConeProperty::Grading);
+    }
+    
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Cone<Integer>::setGrading (const vector<Integer>& lf) {
+    
+    if (isComputed(ConeProperty::Grading) && Grading == lf) {
+        return;
+    }
+    
     if (lf.size() != dim) {
         errorOutput() << "Grading linear form has wrong dimension " << lf.size()
         << " (should be " << dim << ")" << endl;
         throw BadInputException();
     }
-    bool positively_graded=true;
-    if (isComputed(ConeProperty::Generators) && Generators.nr_of_rows() > 0) {
-        vector<Integer> degrees = Generators.MxV(lf);
-        for (size_t i=0; i<degrees.size(); ++i) {
-            if (degrees[i]<=0 && (!inhomogeneous || Generators[i][dim-1]==0)) { // in the inhomogeneous case: test only generators of tail cone
-                positively_graded=false;;
-                if(degrees[i]<0){
-                    errorOutput() << "Grading gives negative value " << degrees[i]
-                    << " for generator " << i+1 << "!" << endl;
-                    throw BadInputException();
-                }
-            }
-        }
-        // GradingDenom = degrees[0] / v_scalar_product(BasisChange.to_sublattice_dual(lf),BasisChange.to_sublattice(Generators[0])); //TODO in Sublattice Rep berechnen lassen
-        vector<Integer> test_grading=BasisChange.to_sublattice_dual_no_div(lf);
-        GradingDenom=v_make_prime(test_grading);
-    } else {
-        GradingDenom = 1;
-    }
-    //check if the linear forms are the same
-    if (isComputed(ConeProperty::Grading) && Grading == lf) {
-        return;
-    }
+    
     Grading = lf;
-    if(positively_graded)
-        is_Computed.set(ConeProperty::Grading);
-    else
-        is_Computed.reset(ConeProperty::Grading); // the new grading is not positive
-        
-
+    checkGrading();
+    
     //remove data that depend on the grading
     is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
     is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
@@ -1695,9 +1723,7 @@ void Cone<Integer>::compute_generators_inner() {
         compose_basis_change(EmbHelp);
         is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
 
-        if (isComputed(ConeProperty::Grading) && Generators.nr_of_rows() > 0) {
-            setGrading(Grading);
-        }
+        checkGrading();
         // compute grading, so that it is also known if nothing else is done afterwards
         if (!isComputed(ConeProperty::Grading) && !inhomogeneous) {
             // Generators = ExtremeRays
@@ -1775,10 +1801,10 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         Dualize.set(ConeProperty::ExtremeRays);
         compute(Dualize);
     }
-
+    
     bool do_extreme_rays_first = false;
     if (!isComputed(ConeProperty::ExtremeRays)) {
-        if (do_only_Deg1_Elements && !isComputed(ConeProperty::Grading))
+        if (do_only_Deg1_Elements && Grading.size()==0)
             do_extreme_rays_first = true;
         else if ( (do_only_Deg1_Elements || inhomogeneous) &&
                    (ToCompute.test(ConeProperty::DefaultMode)
@@ -1800,7 +1826,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         }
     }
 
-    if(do_only_Deg1_Elements && !isComputed(ConeProperty::Grading)){
+    if(do_only_Deg1_Elements && Grading.size()==0){
         vector<Integer> lf= Generators.submatrix(ExtremeRaysIndicator).find_linear_form_low_dim();
         if(Generators.nr_of_rows()==0 || (lf.size()==dim && v_scalar_product(Generators[0],lf)==1))
             setGrading(lf);
@@ -1861,12 +1887,10 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     Full_Cone<IntegerFC> FC(ConeDM);
     FC.verbose=verbose;
     // Give extra data to FC
-    if ( isComputed(ConeProperty::Grading) ) {
+    if (Grading.size()>0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
-        FC.is_Computed.set(ConeProperty::Grading);
-
-        if(!inhomogeneous)
-            FC.set_degrees();
+        if(isComputed(ConeProperty::Grading))
+            FC.is_Computed.set(ConeProperty::Grading);
     }
     if(inhomogeneous)
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
@@ -1922,11 +1946,18 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         verboseOutput() << "transforming data..."<<flush;
     }
     
+    if (FC.isComputed(ConeProperty::Generators)) {
+        BasisChangePointed.convert_from_sublattice(Generators,FC.getGenerators());
+        is_Computed.set(ConeProperty::Generators);
+    }
+    
+    // checkGrading();  // we check the given grading if it exists
+    
     if (FC.isComputed(ConeProperty::Grading)) {
-        if (!isComputed(ConeProperty::Grading)) {
+        if (Grading.size()==0) {
             BasisChangePointed.convert_from_sublattice_dual(Grading, FC.getGrading());
-            is_Computed.set(ConeProperty::Grading);
         }
+        is_Computed.set(ConeProperty::Grading);
         //compute denominator of Grading
         if(BasisChangePointed.getRank()!=0){
             vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
@@ -1950,10 +1981,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
     }
 
-    if (FC.isComputed(ConeProperty::Generators)) {
-        BasisChangePointed.convert_from_sublattice(Generators,FC.getGenerators());
-        is_Computed.set(ConeProperty::Generators);
-    }
     if (FC.isComputed(ConeProperty::ExtremeRays)) {
         set_extreme_rays(FC.getExtremeRays());
     }

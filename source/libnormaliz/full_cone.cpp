@@ -4339,7 +4339,8 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     dim = C.dim;
     Generators = C.get_generators();
     nr_gen = Generators.nr_of_rows();
-    if (Generators.nr_of_rows() > 0) is_Computed.set(ConeProperty::Generators);
+    if (Generators.nr_of_rows() > 0) 
+        is_Computed.set(ConeProperty::Generators);
     has_generator_with_common_divisor = false;
     Extreme_Rays=C.get_extreme_rays();
     if (Extreme_Rays.size() > 0) is_Computed.set(ConeProperty::ExtremeRays);
@@ -4425,9 +4426,39 @@ void Full_Cone<Integer>::dual_mode() {
     
     compute_class_group();
     
-    // Support_Hyperplanes.remove_duplicate_and_zero_rows(); //now in constructor
-
-    if(dim>0 && !inhomogeneous) { 
+    if(dim>0 && Grading.size()>0 && !isComputed(ConeProperty::Grading)) {
+        if(isComputed(ConeProperty::Generators)){
+            vector<Integer> degrees=Generators.MxV(Grading);
+            vector<Integer> levels;
+            if(inhomogeneous)
+                levels=Generators.MxV(Truncation);
+            size_t i=0;
+            for(;i<degrees.size();++i){
+                if(degrees[i]<=0 &&(!inhomogeneous || levels[i]==0))
+                    break;
+            }
+            if(i==degrees.size())
+                is_Computed.set(ConeProperty::Grading);
+        }
+        else if(isComputed(ConeProperty::HilbertBasis)){
+            auto hb=Hilbert_Basis.begin();
+            for(;hb!=Hilbert_Basis.end();++hb){
+                if(v_scalar_product(*hb,Grading)<=0 && (!inhomogeneous || v_scalar_product(*hb,Truncation)==0))
+                    break;
+            }
+            if(hb==Hilbert_Basis.end())
+                is_Computed.set(ConeProperty::Grading);
+        }   
+    }
+    if(isComputed(ConeProperty::Deg1Elements))
+        is_Computed.set(ConeProperty::Grading); 
+    
+    if(Grading.size()>0 && !isComputed(ConeProperty::Grading)){
+        errorOutput() << "Grading not positive on pointed cone." << endl;
+        throw BadInputException();
+    }        
+        
+    if(dim>0 && !inhomogeneous){
         deg1_check();
         if (isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Deg1Elements)) {
             if (verbose) { 
@@ -4436,6 +4467,7 @@ void Full_Cone<Integer>::dual_mode() {
             select_deg1_elements();
         }
     }
+    
     if(dim==0){
         deg1_extreme_rays = deg1_generated = true;
         Grading=vector<Integer>(dim);
