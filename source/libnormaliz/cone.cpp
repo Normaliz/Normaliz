@@ -461,7 +461,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
-        // is_Computed.set(ConeProperty::Sublattice);
+        is_Computed.set(ConeProperty::Sublattice);
     }
     
     checkGrading();
@@ -1387,7 +1387,7 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
-
+    
     // handle zero cone as special case, makes our life easier
     if (BasisChange.getRank() == 0) {
         set_zero_cone();
@@ -1408,7 +1408,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
     }
-    ToCompute.reset(is_Computed);
+    ToCompute.reset(is_Computed); 
     if (ToCompute.none()){
         return ToCompute;
     }
@@ -1551,6 +1551,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
 template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
+    
     Matrix<IntegerFC> FC_Gens;
 
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
@@ -1648,20 +1649,23 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     try {     
         FC.compute();
         is_Computed.set(ConeProperty::Sublattice);
-        isComputed(ConeProperty::MaximalSubspace);
         extract_data(FC);
+        if(isComputed(ConeProperty::IsPointed) && pointed)
+            is_Computed.set(ConeProperty::MaximalSubspace);
     } catch(const NonpointedException& ) {
-        errorOutput() << "Cone not pointed. Restarting computation." << endl;
+        is_Computed.set(ConeProperty::Sublattice);
         extract_data(FC);
+        if(verbose){
+            verboseOutput() << "Cone not pointed. Restarting computation." << endl;
+        }
         FC=Full_Cone<IntegerFC>(Matrix<IntegerFC>(1)); // to kill the old FC (almost)
         Matrix<Integer> Dual_Gen;
         Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<Integer> Pointed(Dual_Gen,true); // sublattice of the dual lattice
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
         check_vanishing_of_grading_and_dehom();
-        is_Computed.set(ConeProperty::MaximalSubspace);
-        BasisChangePointed.compose_dual(Pointed);        
-        is_Computed.set(ConeProperty::Sublattice);
+        BasisChangePointed.compose_dual(Pointed);
+        is_Computed.set(ConeProperty::MaximalSubspace);        
         // now we get the basis of the maximal subspace
         pointed=(BasisMaxSubspace.nr_of_rows()>0);
         is_Computed.set(ConeProperty::IsPointed); 
@@ -1891,14 +1895,13 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(isComputed(ConeProperty::ExtremeRays))
         ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
+    
+    if(!isComputed(ConeProperty::MaximalSubspace)){
+        BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
+        check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
+    }
 
-    if (!isComputed(ConeProperty::Sublattice)){
-        if(!isComputed(ConeProperty::MaximalSubspace)){
-            BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
-            check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
-            is_Computed.set(ConeProperty::MaximalSubspace);
-        }
-        
+    if (!isComputed(ConeProperty::Sublattice) || !isComputed(ConeProperty::MaximalSubspace)){
         if(!(do_only_Deg1_Elements || inhomogeneous)) {
             // At this point we still have BasisChange==BasisChangePointed
             // now we can pass to a pointed full-dimensional cone
@@ -1907,9 +1910,9 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
                         (ConeDM.Generators,ConeDM.BasisMaxSubspace);
             if(!BothRepFC[0].IsIdentity())        
                 BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
+            is_Computed.set(ConeProperty::Sublattice);
             if(!BothRepFC[1].IsIdentity())
                 BasisChangePointed.compose(Sublattice_Representation<Integer>(BothRepFC[1]));
-            is_Computed.set(ConeProperty::Sublattice);
             if (BasisChange.getRank() == 0) {
                 set_zero_cone();                
                 ToCompute.reset(is_Computed);
@@ -1917,10 +1920,11 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             }        
             ConeDM.to_sublattice(BothRepFC[1]);
         }
-        else{ // in this case we can only transfer the maximal subspace
-            
-        }
     }
+    
+    is_Computed.set(ConeProperty::MaximalSubspace); // NOT EARLIER !!!!
+    
+    
     // create a Full_Cone out of ConeDM
     // BasisMaxSubspace will be extrateted from it if not yet set
     Full_Cone<IntegerFC> FC(ConeDM);
@@ -1990,7 +1994,12 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::Generators);
     }
     
-    // checkGrading();  // we check the given grading if it exists
+    if (FC.isComputed(ConeProperty::IsPointed) && !isComputed(ConeProperty::IsPointed)) {
+        pointed = FC.isPointed();
+        if(pointed)
+            is_Computed.set(ConeProperty::MaximalSubspace);
+        is_Computed.set(ConeProperty::IsPointed);
+    }    
     
     if (FC.isComputed(ConeProperty::Grading)) {
         if (Grading.size()==0) {
@@ -2093,7 +2102,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         }
         is_Computed.set(ConeProperty::InclusionExclusionData);
     }
-    if (FC.isComputed(ConeProperty::RecessionRank) && isComputed(ConeProperty::Sublattice)) {
+    if (FC.isComputed(ConeProperty::RecessionRank) && isComputed(ConeProperty::MaximalSubspace)) {
         recession_rank = FC.level0_dim+BasisMaxSubspace.nr_of_rows();
         is_Computed.set(ConeProperty::RecessionRank);
         if (getRank() == recession_rank) {
@@ -2148,10 +2157,6 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         HSeries = FC.Hilbert_Series;
         is_Computed.set(ConeProperty::HilbertSeries);
-    }
-    if (FC.isComputed(ConeProperty::IsPointed) && !isComputed(ConeProperty::IsPointed)) {
-        pointed = FC.isPointed();
-        is_Computed.set(ConeProperty::IsPointed);
     }
     if (FC.isComputed(ConeProperty::IsDeg1ExtremeRays)) {
         deg1_extreme_rays = FC.isDeg1ExtremeRays();
