@@ -287,7 +287,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     if(inhom_input){
         if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)){
-            errorOutput() << "dehomogenizaion and support_hyperplanes not allowed with inhomogeneous input!" << endl;
+            errorOutput() << "dehomogenization and support_hyperplanes not allowed with inhomogeneous input!" << endl;
             throw BadInputException();
         }
     }
@@ -297,7 +297,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             throw BadInputException();
         }
         if(exists_element(multi_input_data,Type::excluded_faces)){
-            errorOutput() << "excluded_faces not allowed with inhomogeneous input or dehomogenizaion!"<< endl;
+            errorOutput() << "excluded_faces not allowed with inhomogeneous input or dehomogenization!"<< endl;
             throw BadInputException();
         }
     }
@@ -465,6 +465,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     checkGrading();
+    checkDehomogenization();
 
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
     if(isComputed(ConeProperty::Grading))
@@ -607,14 +608,6 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
         }
     }
 
-    if(exists_element(multi_input_data,Type::dehomogenization)){
-        vector<Integer> test=Generators.MxV(Dehomogenization);
-        for(size_t i=0;i<test.size();++i)
-            if(test[i]<0){
-                errorOutput() << "Dehomogenization has has negative value on generator " << Generators[i];
-                throw BadInputException();
-            }
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -953,6 +946,20 @@ void Cone<Integer>::checkGrading () {
             is_Computed.set(ConeProperty::Grading);
     }
     
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::checkDehomogenization () {
+    if(Dehomogenization.size()>0){
+        vector<Integer> test=Generators.MxV(Dehomogenization);
+        for(size_t i=0;i<test.size();++i)
+            if(test[i]<0){
+                errorOutput() << "Dehomogenization has has negative value on generator " << Generators[i];
+                throw BadInputException();
+            }
+    }
 }
 //---------------------------------------------------------------------------
 
@@ -1884,26 +1891,34 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeDM.ExtremeRays=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
 
-    // now we may have to pass to a pointed full-dimensional cone
-    if (!isComputed(ConeProperty::Sublattice) && !(do_only_Deg1_Elements || inhomogeneous)) {
-        // At this point we still have BasisChange==BasisChangePointed
+    if (!isComputed(ConeProperty::Sublattice)){
         
-        vector<Sublattice_Representation<IntegerFC> > BothRepFC=MakeSubAndQuot
-                    (ConeDM.Generators,ConeDM.BasisMaxSubspace);
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
         check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
         is_Computed.set(ConeProperty::MaximalSubspace);
-        if(!BothRepFC[0].IsIdentity())        
-            BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
-        if(!BothRepFC[1].IsIdentity())
-            BasisChangePointed.compose(Sublattice_Representation<Integer>(BothRepFC[1]));
-        is_Computed.set(ConeProperty::Sublattice);
-        if (BasisChange.getRank() == 0) {
-            set_zero_cone();                
-            ToCompute.reset(is_Computed);
-            return;
-        }        
-        ConeDM.to_sublattice(BothRepFC[1]);
+        
+        if(!(do_only_Deg1_Elements || inhomogeneous)) {
+            // At this point we still have BasisChange==BasisChangePointed
+            // now we can pass to a pointed full-dimensional cone
+            
+            vector<Sublattice_Representation<IntegerFC> > BothRepFC=MakeSubAndQuot
+                        (ConeDM.Generators,ConeDM.BasisMaxSubspace);
+            is_Computed.set(ConeProperty::MaximalSubspace);
+            if(!BothRepFC[0].IsIdentity())        
+                BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
+            if(!BothRepFC[1].IsIdentity())
+                BasisChangePointed.compose(Sublattice_Representation<Integer>(BothRepFC[1]));
+            is_Computed.set(ConeProperty::Sublattice);
+            if (BasisChange.getRank() == 0) {
+                set_zero_cone();                
+                ToCompute.reset(is_Computed);
+                return;
+            }        
+            ConeDM.to_sublattice(BothRepFC[1]);
+        }
+        else{ // in this case we can only transfer the maximal subspace
+            
+        }
     }
     // create a Full_Cone out of ConeDM
     // BasisMaxSubspace will be extrateted from it if not yet set
@@ -2156,14 +2171,12 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if (FC.isComputed(ConeProperty::MaximalSubspace) && 
+    /* if (FC.isComputed(ConeProperty::MaximalSubspace) && 
                                    !isComputed(ConeProperty::MaximalSubspace)) {
-        FC.Basis_Max_Subspace.pretty_print(cout);
-        cout << "================" << endl;
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace, FC.Basis_Max_Subspace);
         check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
-    }
+    }*/
 
     check_integrally_closed();
 

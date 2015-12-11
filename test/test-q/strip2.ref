@@ -13,19 +13,18 @@ dehomogenization:
 0 0 1 
 
 grading:
-0 1 0 
-with denominator = 0
+1 0 0 
 
 
 module rank = 2
 multiplicity = 2
 
 Hilbert series:
-2 
+1 1 
 denominator with 0 factors:
 
 
-degree of Hilbert Series as rational function = 0
+degree of Hilbert Series as rational function = 1
 
 Hilbert polynomial:
 

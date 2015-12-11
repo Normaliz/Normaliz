@@ -13,8 +13,7 @@ dehomogenization:
 0 0 1 
 
 grading:
-0 1 0 
-with denominator = 0
+1 0 0 
 
 
 module rank = 2
