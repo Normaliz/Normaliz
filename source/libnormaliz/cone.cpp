@@ -1648,6 +1648,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     try {     
         FC.compute();
         is_Computed.set(ConeProperty::Sublattice);
+        isComputed(ConeProperty::MaximalSubspace);
         extract_data(FC);
     } catch(const NonpointedException& ) {
         errorOutput() << "Cone not pointed. Restarting computation." << endl;
@@ -1892,10 +1893,11 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     ConeDM.hilbert_basis_dual();
 
     if (!isComputed(ConeProperty::Sublattice)){
-        
-        BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
-        check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
-        is_Computed.set(ConeProperty::MaximalSubspace);
+        if(!isComputed(ConeProperty::MaximalSubspace)){
+            BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
+            check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
+            is_Computed.set(ConeProperty::MaximalSubspace);
+        }
         
         if(!(do_only_Deg1_Elements || inhomogeneous)) {
             // At this point we still have BasisChange==BasisChangePointed
@@ -1903,7 +1905,6 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             
             vector<Sublattice_Representation<IntegerFC> > BothRepFC=MakeSubAndQuot
                         (ConeDM.Generators,ConeDM.BasisMaxSubspace);
-            is_Computed.set(ConeProperty::MaximalSubspace);
             if(!BothRepFC[0].IsIdentity())        
                 BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
             if(!BothRepFC[1].IsIdentity())
