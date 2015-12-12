@@ -4332,7 +4332,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
+Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
 
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
 
@@ -4368,11 +4368,11 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     if(!C.do_only_Deg1_Elements){
-        Hilbert_Basis = C.Hilbert_Basis;
+        Hilbert_Basis.splice(Hilbert_Basis.begin(),C.Hilbert_Basis);
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     else{
-        Deg1_Elements =C.Hilbert_Basis;
+        Deg1_Elements.splice(Deg1_Elements.begin(),C.Hilbert_Basis);
         is_Computed.set(ConeProperty::Deg1Elements);
     }
     if(dim==0){            //correction needed to include the 0 cone;
@@ -4417,15 +4417,11 @@ Full_Cone<Integer>::Full_Cone(const Cone_Dual_Mode<Integer> &C) {
     verbose=C.verbose;
 }
 
-template<typename Integer>
-void Full_Cone<Integer>::dual_mode() {
+//---------------------------------------------------------------------------
 
-    use_existing_facets=false; // completely irrelevant here
-    start_from=0;
-    old_nr_supp_hyps=0;
-    
-    compute_class_group();
-    
+template<typename Integer>
+void Full_Cone<Integer>::check_grading_after_dual_mode(){
+
     if(dim>0 && Grading.size()>0 && !isComputed(ConeProperty::Grading)) {
         if(isComputed(ConeProperty::Generators)){
             vector<Integer> degrees=Generators.MxV(Grading);
@@ -4459,11 +4455,23 @@ void Full_Cone<Integer>::dual_mode() {
         if(hb==Deg1_Elements.end())
             is_Computed.set(ConeProperty::Grading);
     }
-    
+
     if(Grading.size()>0 && !isComputed(ConeProperty::Grading)){
         errorOutput() << "Grading not positive on pointed cone." << endl;
         throw BadInputException();
-    }        
+    }
+}
+
+template<typename Integer>
+void Full_Cone<Integer>::dual_mode() {
+
+    use_existing_facets=false; // completely irrelevant here
+    start_from=0;
+    old_nr_supp_hyps=0;
+    
+    compute_class_group();
+    
+    check_grading_after_dual_mode();      
         
     if(dim>0 && !inhomogeneous){
         deg1_check();

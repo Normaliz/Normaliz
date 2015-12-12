@@ -904,6 +904,9 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Integer>& SR) {
     assert(SR.getDim() == dim);
+    
+    if(SR.IsIdentity())
+        return;
 
     dim = SR.getRank();
     // hyp_size = dim+nr_sh;

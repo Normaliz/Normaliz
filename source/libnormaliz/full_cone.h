@@ -308,6 +308,7 @@ public:
     void remove_duplicate_ori_gens_from_HB();
     void compute_class_group();
     void compose_perm_gens(const vector<key_t>& perm);
+    void check_grading_after_dual_mode();
 
     void minimize_support_hyperplanes();   
     void compute_extreme_rays();
@@ -344,7 +345,7 @@ public:
  *---------------------------------------------------------------------------
  */
 Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constructor
-    Full_Cone(const Cone_Dual_Mode<Integer> &C);
+    Full_Cone(Cone_Dual_Mode<Integer> &C);
     Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
 
 /*---------------------------------------------------------------------------
