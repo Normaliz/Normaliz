@@ -100,16 +100,6 @@ public:
 
     void deactivateChangeOfPrecision();
 
-    /* Sets the linear form which is used to grade.
-     * It has to be an N-grading, i.e. all generators must have a value >=1.
-     * If it is not, a subclass of NormalizException will be thrown at the
-     * time of detection which can be in this method or later!
-     * It will delete all data from the cone that depend on the grading!
-     */
-    void setGrading (const vector<Integer>& lf);
-    void setDehomogenization (const vector<Integer>& lf);
-
-
 //---------------------------------------------------------------------------
 //                           make computations
 //---------------------------------------------------------------------------
@@ -299,6 +289,9 @@ private:
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
+    
+    void setGrading (const vector<Integer>& lf);
+    void setDehomogenization (const vector<Integer>& lf);
     void checkGrading();
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();

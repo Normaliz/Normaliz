@@ -455,17 +455,22 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
 
-    assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);
+    assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    
+        
+    checkGrading();
+    checkDehomogenization();
 
     if(Generators.nr_of_rows()==0)
         prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
         is_Computed.set(ConeProperty::Sublattice);
+        if(isComputed(ConeProperty::Grading)) {// cone known to be pointed
+            is_Computed.set(ConeProperty::MaximalSubspace);
+            pointed=true;
+            is_Computed.set(ConeProperty::IsPointed);
+        }            
     }
-    
-    checkGrading();
-    checkDehomogenization();
 
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
     if(isComputed(ConeProperty::Grading))
@@ -478,7 +483,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
     
-    BasisChangePointed=BasisChange; 
+    BasisChangePointed=BasisChange;
+    BasisMaxSubspace=Matrix<Integer>(0,dim);
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -978,15 +984,6 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     
     Grading = lf;
     checkGrading();
-    
-    //remove data that depend on the grading
-    is_Computed.reset(ConeProperty::IsDeg1ExtremeRays);
-    is_Computed.reset(ConeProperty::IsDeg1HilbertBasis);
-    is_Computed.reset(ConeProperty::Deg1Elements);
-    Deg1Elements = Matrix<Integer>(0,dim);
-    is_Computed.reset(ConeProperty::HilbertSeries);
-    is_Computed.reset(ConeProperty::Multiplicity);
-
 }
 
 //---------------------------------------------------------------------------
@@ -1898,7 +1895,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     
     if(!isComputed(ConeProperty::MaximalSubspace)){
         BasisChangePointed.convert_from_sublattice(BasisMaxSubspace,ConeDM.BasisMaxSubspace);
-        check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice will kill it
+        check_vanishing_of_grading_and_dehom(); // all this must be done here because to_sublattice may kill it
     }
 
     if (!isComputed(ConeProperty::Sublattice) || !isComputed(ConeProperty::MaximalSubspace)){
@@ -1926,7 +1923,6 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     
     
     // create a Full_Cone out of ConeDM
-    // BasisMaxSubspace will be extrateted from it if not yet set
     Full_Cone<IntegerFC> FC(ConeDM);
     FC.verbose=verbose;
     // Give extra data to FC
