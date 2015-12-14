@@ -102,12 +102,14 @@ public:
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;
+    bool do_decomposition;
     
     bool do_extreme_rays;
     bool do_pointed;
 
     // internal helper control variables
     bool do_only_multiplicity;
+    bool do_only_mult_and_decomp;
     bool do_evaluation;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool use_bottom_points;
@@ -299,6 +301,7 @@ public:
     // void compute_support_hyperplanes(bool do_extreme_rays=false);
     bool check_evaluation_buffer();
     bool check_evaluation_buffer_size();
+    void prepare_old_candidates_and_support_hyperplanes();
     void evaluate_triangulation();
     void evaluate_large_simplices();
     void evaluate_large_simplex(size_t j, size_t lss);

@@ -133,6 +133,7 @@ class SimplexEvaluator {
     void update_mult_inhom(Integer& multiplicity);
     
     Integer start_evaluation(SHORTSIMPLEX<Integer>& s, Collector<Integer>& Coll);
+    void find_excluded_facets();
     void take_care_of_0vector(Collector<Integer>& Coll);
     // void evaluation_loop_sequential(Collector<Integer>& Coll);
     void evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll);
