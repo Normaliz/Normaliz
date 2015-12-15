@@ -2810,16 +2810,18 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
     do_vars_check(false);
-    explicit_full_triang=do_triangulation;
+    explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
-    
+
     start_message();
-    
-    minimize_support_hyperplanes();
+
+    minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
         set_levels();
     
+    check_given_grading();
+
     if (!do_triangulation && !do_partial_triangulation){
         support_hyperplanes();
     }
@@ -3060,18 +3062,49 @@ void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::find_grading(){
+void Full_Cone<Integer>::check_given_grading(){
     
-    if(Grading.size()>0){
-        vector<Integer> Degrees = Generators.MxV(Grading);
-        size_t i=0;
-        for(; i< Degrees.size();++i){
-            if(Degrees[i]<=0)
-                break;
+    if(Grading.size()==0)
+        return;
+
+    bool positively_graded=true;
+    
+    if(!isComputed(ConeProperty::Grading)){
+        size_t neg_index=0;
+        Integer neg_value;
+        bool nonnegative=true;
+        vector<Integer> degrees = Generators.MxV(Grading);
+        for (size_t i=0; i<degrees.size(); ++i) {
+            if (degrees[i]<=0 && (!inhomogeneous || gen_levels[i]==0)) { 
+                // in the inhomogeneous case: test only generators of tail cone
+                positively_graded=false;;
+                if(degrees[i]<0){
+                    nonnegative=false;
+                    neg_index=i;
+                    neg_value=degrees[i];
+                }
+            }
         }
-        if(i==Degrees.size())
-            is_Computed.set(ConeProperty::Grading);
+
+        if(!nonnegative){
+            errorOutput() << "Grading gives negative value " << neg_value
+            << " for generator " << neg_index+1 << "!" << endl;
+            throw BadInputException();
+        }
     }
+    
+    if(positively_graded){
+        is_Computed.set(ConeProperty::Grading);    
+        if(inhomogeneous)
+            find_grading_inhom();
+        set_degrees();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::find_grading(){
     
     if(inhomogeneous) // in the inhomogeneous case we do not allow implicit grading
         return;

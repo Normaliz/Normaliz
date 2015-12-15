@@ -456,20 +456,21 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
 
     assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    
-        
-    checkGrading();
-    checkDehomogenization();
 
     if(Generators.nr_of_rows()==0)
         prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
-        is_Computed.set(ConeProperty::Sublattice);
-        if(isComputed(ConeProperty::Grading)) {// cone known to be pointed
-            is_Computed.set(ConeProperty::MaximalSubspace);
-            pointed=true;
-            is_Computed.set(ConeProperty::IsPointed);
-        }            
+        is_Computed.set(ConeProperty::Sublattice);          
+    }
+    
+    checkGrading();
+    checkDehomogenization();
+    
+    if(isComputed(ConeProperty::Grading)) {// cone known to be pointed
+        is_Computed.set(ConeProperty::MaximalSubspace);
+        pointed=true;
+        is_Computed.set(ConeProperty::IsPointed);
     }
 
     WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
@@ -1622,9 +1623,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         BasisChangePointed.convert_to_sublattice_dual(FC.Grading, Grading);
         if(isComputed(ConeProperty::Grading) ){    // is grading positive?
             FC.is_Computed.set(ConeProperty::Grading);
-            if (inhomogeneous)
+            /*if (inhomogeneous)
                 FC.find_grading_inhom();
-            FC.set_degrees();
+            FC.set_degrees();*/
         }
     }
 
@@ -1665,7 +1666,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         is_Computed.set(ConeProperty::MaximalSubspace);        
         // now we get the basis of the maximal subspace
         pointed=(BasisMaxSubspace.nr_of_rows()>0);
-        is_Computed.set(ConeProperty::IsPointed); 
+        is_Computed.set(ConeProperty::IsPointed);
         compute_inner<IntegerFC>(ToCompute);           
     }
 }

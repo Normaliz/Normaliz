@@ -284,6 +284,7 @@ public:
     void extreme_rays_and_deg1_check();
     void find_grading();
     void find_grading_inhom();
+    void check_given_grading();
     void disable_grading_dep_comp();
     void set_degrees();
     void set_levels(); // for truncation in the inhomogeneous case
