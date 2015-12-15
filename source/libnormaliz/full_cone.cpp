@@ -2822,12 +2822,17 @@ void Full_Cone<Integer>::compute() {
     
     check_given_grading();
 
-    if (!do_triangulation && !do_partial_triangulation){
+    if ((!do_triangulation && !do_partial_triangulation)
+            || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
+            // in the second case there are only two possibilities:
+            // either nonpointed or bad grading
+        do_triangulation=false;
+        do_partial_triangulation=false;
         support_hyperplanes();
     }
     else{
         // look for a grading if it is needed
-        find_grading();
+        find_grading();        
         if(isComputed(ConeProperty::IsPointed) && !pointed){
             end_message();
             return;
@@ -3252,6 +3257,9 @@ void Full_Cone<Integer>::find_grading_inhom(){
         errorOutput() << "Cannot find grading in the inhomogeneous case! THIS SHOULD NOT HAPPEN." << endl;
          throw BadInputException(); 
     }
+    
+    if(shift!=0)  // to avoid double computation
+        return;
 
     bool first=true;
     Integer level,degree,quot=0,min_quot=0;
@@ -3818,32 +3826,32 @@ void Full_Cone<Integer>::deg1_check() {
     if(inhomogeneous)  // deg 1 check disabled since it makes no sense in this case
         return;
         
-    if (!isComputed(ConeProperty::Grading)          // we still need it and
+    if (!isComputed(ConeProperty::Grading) && Grading.size()==0          // we still need it and
      && !isComputed(ConeProperty::IsDeg1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
-            if (has_generator_with_common_divisor) Extreme.make_prime();
+            if (has_generator_with_common_divisor) 
+                Extreme.make_prime();
             Grading = Extreme.find_linear_form();
             if (Grading.size() == dim && v_scalar_product(Grading,Extreme[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_extreme_rays = false;
+                Grading.clear();
                 is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
             }
         } else // extreme rays not known
         if (!deg1_generated_computed) {
-            if (has_generator_with_common_divisor) {
-                Matrix<Integer> GenCopy = Generators;
+            Matrix<Integer> GenCopy = Generators;
+            if (has_generator_with_common_divisor)
                 GenCopy.make_prime();
-                Grading = GenCopy.find_linear_form();
-            } else {
-                Grading = Generators.find_linear_form();
-            }
-            if (Grading.size() == dim && v_scalar_product(Grading,Generators[0])==1) {
+            Grading = GenCopy.find_linear_form();
+            if (Grading.size() == dim && v_scalar_product(Grading,GenCopy[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_generated = false;
                 deg1_generated_computed = true;
+                Grading.clear();
             }
         }
     }
@@ -3851,7 +3859,6 @@ void Full_Cone<Integer>::deg1_check() {
     //now we hopefully have a grading
 
     if (!isComputed(ConeProperty::Grading)) {
-        Grading.clear(); // we have (ab)used this vector in computations
         if (isComputed(ConeProperty::ExtremeRays)) {
             // there is no hope to find a grading later
             deg1_generated = false;
