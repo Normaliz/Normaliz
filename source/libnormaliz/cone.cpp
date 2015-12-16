@@ -1564,6 +1564,16 @@ template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     
+    if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
+        if (verbose) {
+            verboseOutput()<<  "Checking pointedness first"<< endl;
+        }
+        ConeProperties Dualize;
+        Dualize.set(ConeProperty::SupportHyperplanes);
+        Dualize.set(ConeProperty::ExtremeRays);
+        compute(Dualize);
+    }    
+    
     Matrix<IntegerFC> FC_Gens;
 
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
