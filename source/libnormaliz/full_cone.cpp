@@ -2003,7 +2003,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
-     if (!pointed)
+    if (!pointed)
         throw NonpointedException();
 
     vector<key_t> facet;
@@ -2769,7 +2769,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
 template<typename Integer>
 void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
-    do_extreme_rays=true; // we always want to dom this if compute() is called
+    do_extreme_rays=true; // we always want to do this if compute() is called
 
     if (do_default_mode && with_default) {
         do_Hilbert_basis = true;
@@ -2796,8 +2796,9 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     }
     if (do_determinants)    do_evaluation = true;
 
+    // deactivate
     if (do_triangulation)   do_partial_triangulation = false;
-    if (do_Hilbert_basis)   do_deg1_elements = false; //they will be extracted later
+    if (do_Hilbert_basis)   do_deg1_elements = false; // they will be extracted later
 }
 
 
@@ -2806,10 +2807,19 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 // if no bool is set it does support hyperplanes and extreme rays
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
+
     do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
+    if (do_integrally_closed) {
+        if (do_Hilbert_basis) {
+            do_integrally_closed = false; // don't interrupt the computation
+        } else {
+            do_Hilbert_basis = true;
+            do_vars_check(false);
+        }
+    }
 
     start_message();
 
@@ -4154,6 +4164,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_partial_triangulation = false;
     do_determinants = false;
     do_multiplicity=false;
+    do_integrally_closed = false;
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     keep_triangulation = false;

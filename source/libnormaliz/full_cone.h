@@ -88,6 +88,7 @@ public:
     bool do_partial_triangulation;
     bool do_determinants;
     bool do_multiplicity;
+    bool do_integrally_closed;
     bool do_Hilbert_basis;
     bool do_deg1_elements;
     bool do_h_vector;
@@ -127,6 +128,7 @@ public:
     Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
+    vector<Integer> Witness;    // for not integrally closed
     Matrix<Integer> Basis_Max_Subspace; // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode
     list<vector<Integer> > ModuleGeneratorsOverOriginalMonoid;
     CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis

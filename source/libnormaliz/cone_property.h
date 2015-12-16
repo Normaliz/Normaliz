@@ -56,6 +56,7 @@ namespace ConeProperty {
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
+        WitnessNotIntegrallyClosed,
         OriginalMonoidGenerators,
         IsReesPrimary,
         ReesPrimaryMultiplicity,

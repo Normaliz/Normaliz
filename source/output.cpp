@@ -645,6 +645,11 @@ void Output<Integer>::write_files() const {
                 out << "original monoid is integrally closed"<<endl;
             } else {
                 out << "original monoid is not integrally closed"<<endl;
+                if ( Result->isComputed(ConeProperty::IsIntegrallyClosed)
+                       && !Result->isComputed(ConeProperty::HilbertBasis)) {
+                    out << "witness for not integrally closed:" << endl;
+                    out << Result->getWitnessNotIntegrallyClosed();
+                }
             }
         }
         out << endl;
