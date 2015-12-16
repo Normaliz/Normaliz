@@ -291,6 +291,7 @@ private:
     void check_excluded_faces();
     
     void setGrading (const vector<Integer>& lf);
+    void setWeights ();
     void setDehomogenization (const vector<Integer>& lf);
     void checkGrading();
     void checkDehomogenization();

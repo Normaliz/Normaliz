@@ -473,10 +473,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         is_Computed.set(ConeProperty::IsPointed);
     }
 
-    WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
-    if(isComputed(ConeProperty::Grading))
-        WeightsGrad.append(Grading);
-    GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
+    setWeights();  // make matrix of weights for sorting
 
     if(PreComputedSupportHyperplanes.nr_of_rows()>0){
         check_precomputed_support_hyperplanes();
@@ -987,6 +984,18 @@ void Cone<Integer>::setGrading (const vector<Integer>& lf) {
     checkGrading();
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::setWeights () {
+
+    if(WeightsGrad.nr_of_columns()!=dim){
+        WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
+    }
+    if(Grading.size()>0 && WeightsGrad.nr_of_rows()==0)
+        WeightsGrad.append(Grading);
+    GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1739,8 +1748,6 @@ void Cone<Integer>::compute_generators_inner() {
         BasisChangePointed.convert_from_sublattice(Generators,
                           Dual_Cone.getSupportHyperplanes());
         is_Computed.set(ConeProperty::Generators);
-        set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true));
-        is_Computed.set(ConeProperty::ExtremeRays);
         
         //get minmal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {            
@@ -1775,6 +1782,9 @@ void Cone<Integer>::compute_generators_inner() {
                     setGrading(test_lf);
             }
         }
+        setWeights();
+        set_extreme_rays(vector<bool>(Generators.nr_of_rows(),true)); // here since they get sorted
+        is_Computed.set(ConeProperty::ExtremeRays);
     }
 }
 
@@ -2014,18 +2024,14 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             BasisChangePointed.convert_from_sublattice_dual(Grading, FC.getGrading());
         }
         is_Computed.set(ConeProperty::Grading);
+        setWeights();
         //compute denominator of Grading
         if(BasisChangePointed.getRank()!=0){
             vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
             GradingDenom=v_make_prime(test_grading);
         }
     }
-
-    WeightsGrad=Matrix<Integer> (0,dim);  // weight matrix for ordering
-    if(isComputed(ConeProperty::Grading))
-        WeightsGrad.append(Grading);
-    GradAbs=vector<bool>(WeightsGrad.nr_of_rows(),false);
-
+        
     if (FC.isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) { // must precede extreme rays
         BasisChangePointed.convert_from_sublattice(ModuleGeneratorsOverOriginalMonoid, FC.getModuleGeneratorsOverOriginalMonoid());
         ModuleGeneratorsOverOriginalMonoid.sort_by_weights(WeightsGrad,GradAbs);
