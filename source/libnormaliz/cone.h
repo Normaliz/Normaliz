@@ -81,6 +81,12 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
+    
+//---------------------------------------------------------------------------
+//                                Destructor
+//---------------------------------------------------------------------------
+
+    ~Cone();
 
 //---------------------------------------------------------------------------
 //                          give additional data
@@ -93,16 +99,6 @@ public:
     bool setVerbose (bool v);
 
     void deactivateChangeOfPrecision();
-
-    /* Sets the linear form which is used to grade.
-     * It has to be an N-grading, i.e. all generators must have a value >=1.
-     * If it is not, a subclass of NormalizException will be thrown at the
-     * time of detection which can be in this method or later!
-     * It will delete all data from the cone that depend on the grading!
-     */
-    void setGrading (const vector<Integer>& lf);
-    void setDehomogenization (const vector<Integer>& lf);
-
 
 //---------------------------------------------------------------------------
 //                           make computations
@@ -155,6 +151,10 @@ public:
     const Matrix<Integer>& getSupportHyperplanesMatrix();
     const vector< vector<Integer> >& getSupportHyperplanes();
     size_t getNrSupportHyperplanes();
+    
+    const Matrix<Integer>& getMaximalSubspaceMatrix();
+    const vector< vector<Integer> >& getMaximalSubspace();
+    size_t getDimMaximalSubspace();
 
     // depends on the ConeProperty::s SupportHyperplanes and Sublattice
     map< InputType, vector< vector<Integer> > > getConstraints();
@@ -222,6 +222,7 @@ private:
     size_t dim;
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
+    Sublattice_Representation<Integer> BasisChangePointed; // to the pointed cone
     bool BC_set;
     bool verbose;
     ConeProperties is_Computed;
@@ -243,6 +244,7 @@ private:
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
     Matrix<Integer> HilbertBasis;
+    Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
@@ -287,6 +289,12 @@ private:
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
+    
+    void setGrading (const vector<Integer>& lf);
+    void setDehomogenization (const vector<Integer>& lf);
+    void checkGrading();
+    void checkDehomogenization();
+    void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);

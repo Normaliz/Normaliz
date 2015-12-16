@@ -149,13 +149,13 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             long pos = 0;
                             in >> pos;
                             if (in.fail()) {
-                                cerr << "Error while reading " << type_string << " as a unit_vector form the input!" << endl;
+                                cerr << "Error while reading " << type_string << " as a unit_vector from the input!" << endl;
                                 throw BadInputException();
                             }
 
                             vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),0));
                             if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
-                                cerr << "Error while reading " << type_string << " as a unit_vector "<< pos <<" form the input!" << endl;
+                                cerr << "Error while reading " << type_string << " as a unit_vector "<< pos <<" from the input!" << endl;
                                 throw BadInputException();
                             }
                             pos--; // in input file counting starts from 1
@@ -169,7 +169,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 }
                 nr_columns = dim + type_nr_columns_correction(input_type);
                 if(in.fail() || nr_rows < 0) {
-                    cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) form the input!" << endl;
+                    cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) from the input!" << endl;
                     throw BadInputException();
                 }
                 vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
@@ -193,7 +193,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 break;
             in >> nr_columns;
             if((nr_rows <0) || (nr_columns < 0)){
-                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
+                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix from the input!" << endl;
                 throw BadInputException();
             }
             vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
@@ -207,7 +207,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             in >> type_string;
 
             if ( in.fail() ) {
-                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix form the input!" << endl;
+                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix from the input!" << endl;
                 throw BadInputException();
             }
 

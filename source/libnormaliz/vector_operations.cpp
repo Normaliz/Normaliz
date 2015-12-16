@@ -150,26 +150,6 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
 
 //---------------------------------------------------------------------------
 
-/* 
- * template<typename Integer>
-vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integer>& b){
-    size_t i,s=a.size();
-    Integer test;
-    vector<Integer> d(s);
-    for (i = 0; i <s; i++) {
-        d[i]=a[i]+b[i];
-        test=(a[i]%overflow_test_modulus + b[i]%overflow_test_modulus); // %overflow_test_modulus;
-        if((d[i]-test) % overflow_test_modulus !=0){
-            errorOutput()<<"Arithmetic failure in vector addition. Moat likely arithmetic overflow.\n";
-            throw ArithmeticException();
-        }
-    }
-    return d;
-}
-*/
-
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
    assert(a.size() == b.size());

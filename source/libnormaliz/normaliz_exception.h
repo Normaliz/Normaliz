@@ -42,6 +42,13 @@ class ArithmeticException: public NormalizException {
 	}
 };
 
+class NonpointedException: public NormalizException {
+    public:
+	virtual const char* what() const throw() {
+		return "Cone is not pointed.";
+	}
+};
+
 class BadInputException: public NormalizException {
     public:
 	virtual const char* what() const throw() {

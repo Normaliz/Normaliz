@@ -76,6 +76,21 @@ Candidate<Integer>::Candidate(size_t cand_size, size_t val_size){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Candidate<Integer> sum(const Candidate<Integer>& C,const Candidate<Integer>& D){
+    
+    Candidate<Integer> the_sum=C;
+    the_sum.cand=v_add(the_sum.cand,D.cand);
+    the_sum.values=v_add(the_sum.values,D.values);
+    the_sum.sort_deg+=D.sort_deg;
+    the_sum.original_generator=false;
+    the_sum.reducible=true;
+    return the_sum;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Candidate<Integer>::compute_values_deg(const Full_Cone<Integer>& C) {
     C.Support_Hyperplanes.MxV(values, cand);
     convert(sort_deg, v_scalar_product(cand,C.Sorting));
@@ -367,6 +382,28 @@ bool CandidateList<Integer>::empty(){
     return Candidates.empty();
 }
 
+/* 
+template<typename Integer>
+void CandidateList<Integer>::search(){
+    
+    vector<Integer> TESTV(6);
+    TESTV[0]=2;
+    TESTV[1]=6;
+    TESTV[2]=0;
+    TESTV[3]=15;
+    TESTV[4]=18;
+    TESTV[5]=2;
+    
+    typename list<Candidate<Integer> >::iterator h;
+    for(h=Candidates.begin();h!=Candidates.end();++h){
+        if(h->cand==TESTV){
+            assert(h->cand!=TESTV);
+        }
+        
+    }
+
+}
+// */
 
 //---------------------------------------------------------------------------
 

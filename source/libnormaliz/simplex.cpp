@@ -575,7 +575,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
 
     if (C.do_Hilbert_basis) {
         vector<Integer> candi = v_merge(element,norm);
-        if (!is_reducible(candi, Hilbert_Basis)) {
+        if ( C_ptr->do_module_gens_intcl || !is_reducible(candi, Hilbert_Basis)){
             Coll.Candidates.push_back(candi);
             Coll.candidates_size++;
             if (Coll.candidates_size >= 1000 && sequential_evaluation) {
@@ -592,54 +592,19 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     }
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
-
+void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) {
+//inverse transformation and reduction against global reducers    
+    
     Full_Cone<Integer>& C = *C_ptr;
-
-    if(C.do_h_vector) {
-        if(C.inhomogeneous){
-            Coll.Hilbert_Series.add(Coll.inhom_hvector,level0_gen_degrees);
-            for (size_t i=0; i<Coll.inhom_hvector.size(); i++)
-                Coll.inhom_hvector[i]=0;
-            // cout << "WAU " << endl;
-            }
-        else{
-            Coll.Hilbert_Series.add(Coll.hvector,gen_degrees);
-            for (size_t i=0; i<Coll.hvector.size(); i++)
-                Coll.hvector[i]=0;
-            if(C.do_excluded_faces)
-                for(size_t i=0;i<nrInExSimplData;++i){
-                    Coll.Hilbert_Series.add(Coll.InEx_hvector[i],InExSimplData[i].gen_degrees);
-                    for(size_t j=0;j<Coll.InEx_hvector[i].size();++j)
-                        Coll.InEx_hvector[i][j]=0;
-                    
-                }
-        }
-    }
-    
-    // cout << Coll.Hilbert_Series << endl;
-
-
-    if(volume==1 || !C.do_Hilbert_basis || !sequential_evaluation)
-        return;  // no further action in this case
-
-    // cout << "Starting local reduction" << endl;
-        
-    local_reduction(Coll);
-
-    // cout << "local HB " << Hilbert_Basis.size() << endl;
-    
-    //inverse transformation and reduction against global reducers
-    //some test for arithmetic overflow may be implemented here
     bool inserted;
     typename list< vector<Integer> >::iterator jj = Hilbert_Basis.begin();
     for(;jj != Hilbert_Basis.end();++jj) {
+        jj->pop_back(); //remove the norm entry at the end
         if (!isDuplicate(*jj)) { //skip the element
-            jj->pop_back(); //remove the norm entry at the end
+            
             // cout << "Vor " << *jj;
             // transform to global coordinates
             vector<Integer> help=*jj; // we need a copy
@@ -658,6 +623,60 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
                 Coll.collected_elements_size++;
         }
     }
+    // Coll.HB_Elements.search();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::add_hvect_to_HS(Collector<Integer>& Coll) {
+
+    Full_Cone<Integer>& C = *C_ptr;
+    
+    if(C.do_h_vector) {
+        if(C.inhomogeneous){
+            Coll.Hilbert_Series.add(Coll.inhom_hvector,level0_gen_degrees);
+            for (size_t i=0; i<Coll.inhom_hvector.size(); i++)
+                Coll.inhom_hvector[i]=0;
+            // cout << "WAU " << endl;
+        }
+        else{
+            Coll.Hilbert_Series.add(Coll.hvector,gen_degrees);
+            for (size_t i=0; i<Coll.hvector.size(); i++)
+                Coll.hvector[i]=0;
+            if(C.do_excluded_faces)
+                for(size_t i=0;i<nrInExSimplData;++i){
+                    Coll.Hilbert_Series.add(Coll.InEx_hvector[i],InExSimplData[i].gen_degrees);
+                    for(size_t j=0;j<Coll.InEx_hvector[i].size();++j)
+                        Coll.InEx_hvector[i][j]=0;
+                    
+                }
+        }
+    }
+    
+    // cout << Coll.Hilbert_Series << endl;       
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
+
+    Full_Cone<Integer>& C = *C_ptr;
+
+    add_hvect_to_HS(Coll);
+
+    if(volume==1 || !C.do_Hilbert_basis || !sequential_evaluation)
+        return;  // no further action in this case
+
+    // cout << "Starting local reduction" << endl;
+        
+    local_reduction(Coll);
+
+    // cout << "local HB " << Hilbert_Basis.size() << endl;
+    
+    reduce_against_global(Coll);
+    
 	// cout << "local reduction finished " << Coll.collected_elements_size << endl;
 
     Hilbert_Basis.clear(); // this is not a local variable !!    
@@ -1030,7 +1049,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
     collect_vectors();   // --> Results[0]
     for(size_t i=1;i<C_ptr->Results.size();++i)  // takes care of h-vectors
-        conclude_evaluation(C_ptr->Results[i]);
+        add_hvect_to_HS(C_ptr->Results[i]);
     sequential_evaluation=true;   
     conclude_evaluation(C_ptr->Results[0]);  // h-vector in Results[0] and collected elements
 
@@ -1114,16 +1133,19 @@ void SimplexEvaluator<Integer>::addMult(Integer multiplicity, Collector<Integer>
 template<typename Integer>
 void SimplexEvaluator<Integer>::local_reduction(Collector<Integer>& Coll) {
     // reduce new against old elements
-    //now done directly    reduce(Coll.Candidates, Hilbert_Basis);
     
-    if(C_ptr->do_module_gens_intcl){
-        Hilbert_Basis.merge(Coll.Candidates,compare_last<Integer>);
+    assert(sequential_evaluation);
+    Coll.Candidates.sort(compare_last<Integer>);
+    
+    if(C_ptr->do_module_gens_intcl){  // in this case there is no local reduction
+        Hilbert_Basis.splice(Hilbert_Basis.begin(),Coll.Candidates); // but direct reduction against global old candidates
+        reduce_against_global(Coll);
+        Hilbert_Basis.clear();
         Coll.candidates_size = 0;
         return;
     }
 
     // interreduce
-    Coll.Candidates.sort(compare_last<Integer>);
     reduce(Coll.Candidates, Coll.Candidates,Coll.candidates_size);
 
     // reduce old elements by new ones

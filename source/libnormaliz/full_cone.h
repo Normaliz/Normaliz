@@ -127,6 +127,7 @@ public:
     Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
+    Matrix<Integer> Basis_Max_Subspace; // a basis of the maximal linear subspace of the cone --- only used in connection with dual mode
     list<vector<Integer> > ModuleGeneratorsOverOriginalMonoid;
     CandidateList<Integer> OldCandidates,NewCandidates;   // for the Hilbert basis
     size_t CandidatesSize;
@@ -284,6 +285,7 @@ public:
     void extreme_rays_and_deg1_check();
     void find_grading();
     void find_grading_inhom();
+    void check_given_grading();
     void disable_grading_dep_comp();
     void set_degrees();
     void set_levels(); // for truncation in the inhomogeneous case
@@ -303,9 +305,12 @@ public:
     void primal_algorithm_initialize();
     void primal_algorithm_finalize();
     void primal_algorithm_set_computed();
+    void make_module_gens();
+    void make_module_gens_and_extract_HB();
     void remove_duplicate_ori_gens_from_HB();
     void compute_class_group();
     void compose_perm_gens(const vector<key_t>& perm);
+    void check_grading_after_dual_mode();
 
     void minimize_support_hyperplanes();   
     void compute_extreme_rays();

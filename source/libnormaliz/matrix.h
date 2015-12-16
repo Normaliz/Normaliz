@@ -107,7 +107,7 @@ template<typename Integer> class Matrix {
     
     size_t row_echelon(bool& success); // transforms this into row echelon form and returns rank
     size_t row_echelon(bool& success, Integer& det); // computes also |det|
-    size_t row_echelon(bool& success, bool do_compute_vol, Integer& det); // chooses elem or bareiss
+    size_t row_echelon(bool& success, bool do_compute_vol, Integer& det); // chooses elem (or bareiss in former time)
     
     // reduces the rows a matrix in row echelon form upwards, from left to right
     bool reduce_rows_upwards();
@@ -214,6 +214,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void resize(size_t nr_rows);
     void resize(size_t nr_rows, size_t nr_cols);
     void resize_columns(size_t nr_cols);
+    void Shrink_nr_rows(size_t new_nr_rows);
 
     vector<Integer> diagonal() const;     //returns the diagonale of this
                                   //this should be a quadratic matrix
@@ -295,11 +296,11 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 // Normal forms
 
-    // converts this to row echelon form over QQ and returns rank, GMP protected
+// converts this to row echelon form over ZZ and returns rank, GMP protected, uses only elementary transformations over ZZ
     size_t row_echelon();
 
-    // public version of row_echelon_reduce (), GMP protected, uses only elementary transformations over ZZ
-    void row_echelon_reduce();
+    // public version of row_echelon_reduce, GMP protected, uses only elementary transformations over ZZ
+    size_t row_echelon_reduce();
 
     // transforms matrix into lower triangular form via column transformations
     // assumes that rk is the rank and that the matrix is zero after the first rk rows
@@ -436,7 +437,6 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 // find an inner point in the cone spanned by the rows of the matrix
     
     vector<Integer> find_inner_point();
-
 };
 //class end *****************************************************************
 

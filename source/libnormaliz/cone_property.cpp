@@ -167,6 +167,9 @@ void ConeProperties::set_preconditions() {
 
     if (CPs.test(ConeProperty::ModuleGenerators))
         CPs.set(ConeProperty::HilbertBasis);
+    
+    if (CPs.test(ConeProperty::MaximalSubspace))
+        CPs.set(ConeProperty::SupportHyperplanes);
 
 }
 
@@ -216,7 +219,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::Triangulation
                   || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
-                  || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
+                 // || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
                 ) {
                     errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
                     throw BadInputException();
@@ -276,9 +279,10 @@ namespace {
         CPN.at(ConeProperty::DualMode) = "DualMode";
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
         CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
+        CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 36,
+        static_assert (ConeProperty::EnumSize == 37,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

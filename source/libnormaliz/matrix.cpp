@@ -220,7 +220,7 @@ void Matrix<Integer>::print(ostream& out) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
+void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{    
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
@@ -1134,6 +1134,7 @@ size_t Matrix<Integer>::row_echelon_inner_elem(bool& success){
 
 //---------------------------------------------------------------------------
 
+/*
 template<typename Integer>
 size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
 // no overflow checks since this is supposed to be only used with GMP
@@ -1237,7 +1238,7 @@ size_t Matrix<Integer>::row_echelon_inner_bareiss(bool& success, Integer& det){
     
     return rk;
 }
-
+*/
 
 //---------------------------------------------------------------------------
 
@@ -1862,17 +1863,22 @@ vector<Integer> Matrix<Integer>::find_linear_form_low_dim () const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::row_echelon_reduce(){
-    
+size_t Matrix<Integer>::row_echelon_reduce(){
+
+    size_t rk;
     Matrix<Integer> Copy(*this);
     bool success;
-    row_echelon_reduce(success);
-    if(success)
-        return;
+    rk=row_echelon_reduce(success);
+    if(success){
+        Shrink_nr_rows(rk);
+        return rk;
+    }
     Matrix<mpz_class> mpz_Copy(nr,nc);
     mat_to_mpz(Copy,mpz_Copy);
-    mpz_Copy.row_echelon_reduce(success);
-    mat_to_Int(mpz_Copy,*this);     
+    rk=mpz_Copy.row_echelon_reduce(success);
+    mat_to_Int(mpz_Copy,*this);
+    Shrink_nr_rows(rk); 
+    return rk;
 }
 //---------------------------------------------------------------------------
 
@@ -1901,13 +1907,16 @@ size_t Matrix<Integer>::row_echelon(){
     bool success;
     size_t rk;
     rk=row_echelon(success);
-    if(success)
+    if(success){
+        Shrink_nr_rows(rk);
         return rk;
+    }
     Matrix<mpz_class> mpz_Copy(nr,nc);
     mat_to_mpz(Copy,mpz_Copy);
-    rk=mpz_Copy.row_echelon_reduce(success);
+    rk=mpz_Copy.row_echelon_reduce(success); // reduce to make entries small
     mat_to_Int(mpz_Copy,*this);
-        return rk;
+    Shrink_nr_rows(rk);  
+    return rk;
 }
 
 //---------------------------------------------------------------------------
@@ -2373,6 +2382,15 @@ vector<Integer> Matrix<Integer>::find_inner_point(){
     for(size_t i=0;i<simplex.size();++i)
         point=v_add(point,elem[simplex[i]]);
    return point;    
+}
+
+template<typename Integer>
+void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
+
+    if(new_nr_rows>=nr)
+        return;
+    nr=new_nr_rows;
+    elem.resize(nr);
 }
 
 }  // namespace

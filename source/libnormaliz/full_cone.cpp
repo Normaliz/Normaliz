@@ -1959,7 +1959,9 @@ void Full_Cone<Integer>::find_bottom_facets() {
     BottomPolyhedron.verbose=verbose;
     BottomPolyhedron.do_extreme_rays=true;
     BottomPolyhedron.keep_order = true;
-    BottomPolyhedron.dualize_cone();    // includes finding extreme rays
+    try {     
+        BottomPolyhedron.dualize_cone();  // includes finding extreme rays
+    } catch(const NonpointedException& ){};
 
     // transfer pointedness
     assert( BottomPolyhedron.isComputed(ConeProperty::IsPointed) );
@@ -2002,7 +2004,7 @@ void Full_Cone<Integer>::find_bottom_facets() {
     is_Computed.set(ConeProperty::SupportHyperplanes);
     
      if (!pointed)
-        return;
+        throw NonpointedException();
 
     vector<key_t> facet;
     for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
@@ -2233,7 +2235,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
             for (size_t i = 0; i <nr_gen; i++) {               
                 // cout << gen_levels[i] << " ** " << Generators[i];
-                if(!inhomogeneous || gen_levels[i]<=1) {
+                if(!inhomogeneous || gen_levels[i]==0 || (!save_do_module_gens_intcl && gen_levels[i]<=1)) {
                     OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
                     OldCandidates.Candidates.back().original_generator=true;
                 }
@@ -2556,7 +2558,9 @@ void Full_Cone<Integer>::primal_algorithm(){
     /***** Main Work is done in build_top_cone() *****/
 
     check_pointed();
-    if(!pointed) return;
+    if(!pointed){
+        throw NonpointedException();
+    }
 
     primal_algorithm_finalize();
     primal_algorithm_set_computed();
@@ -2631,10 +2635,78 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::make_module_gens(){
+
+    if(!inhomogeneous){
+        NewCandidates.extract(ModuleGeneratorsOverOriginalMonoid);
+        vector<Integer> Zero(dim,0);
+        ModuleGeneratorsOverOriginalMonoid.push_front(Zero);
+        // cout << "Mod " << endl;
+        // Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid).pretty_print(cout);
+        // cout << "--------" << endl;
+        is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
+        return;
+    }
+    
+    CandidateList<Integer> Level1OriGens;
+    for(size_t i=0;i<nr_gen;++i){
+            if(gen_levels[i]==1){
+                Level1OriGens.push_back(Candidate<Integer>(Generators[i],*this));    
+            }
+    }
+    CandidateList<Integer> Level1Generators=Level1OriGens;
+    Candidate<Integer> new_cand(dim,Support_Hyperplanes.nr_of_rows());
+    typename list<Candidate<Integer> >::const_iterator lnew,l1;
+    for(lnew=NewCandidates.Candidates.begin();lnew!=NewCandidates.Candidates.end();++lnew){
+        Integer level=v_scalar_product(lnew->cand,Truncation);
+        if(level==1){
+            new_cand=*lnew;
+            Level1Generators.reduce_by_and_insert(new_cand,OldCandidates);
+        }
+        else{
+            for(l1=Level1OriGens.Candidates.begin();l1!=Level1OriGens.Candidates.end();++l1){
+                new_cand=sum(*l1,*lnew);
+                Level1Generators.reduce_by_and_insert(new_cand,OldCandidates);
+            }
+        }        
+    }
+    Level1Generators.extract(ModuleGeneratorsOverOriginalMonoid);
+    ModuleGeneratorsOverOriginalMonoid.sort();
+    ModuleGeneratorsOverOriginalMonoid.unique();
+    is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
+    
+    for (size_t i = 0; i <nr_gen; i++) { // the level 1 input generators have not yet ben inserted into OldCandidates              
+        if(gen_levels[i]==1) {          // but they are needed for the truncated Hilbert basis comüputation
+            NewCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+            NewCandidates.Candidates.back().original_generator=true;
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::make_module_gens_and_extract_HB(){
+       
+    make_module_gens();
+    
+    NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2    
+    NewCandidates.sort_by_deg();
+    
+    OldCandidates.merge(NewCandidates);
+    OldCandidates.auto_reduce(); 
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_set_computed() {
 
     extreme_rays_and_deg1_check();
-    if(!pointed) return;
+    if(!pointed){
+        throw NonpointedException();
+    }
 
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);
@@ -2647,18 +2719,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
                 
     if (do_Hilbert_basis) {
         if(do_module_gens_intcl){
-            NewCandidates.extract(ModuleGeneratorsOverOriginalMonoid);
-            vector<Integer> Zero(dim,0);
-            ModuleGeneratorsOverOriginalMonoid.push_front(Zero);
-            // cout << "Mod " << endl;
-            // Matrix<Integer>(ModuleGeneratorsOverOriginalMonoid).pretty_print(cout);
-            // cout << "--------" << endl;
-            is_Computed.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid,true);
-            NewCandidates.divide_sortdeg_by2(); // was previously multplied by 2
-            // update_reducers(true); // must be forced -- otherwise not done in the simplicial case
-            NewCandidates.sort_by_deg();
-            OldCandidates.merge(NewCandidates);
-            OldCandidates.auto_reduce();            
+                make_module_gens_and_extract_HB();
         }
         OldCandidates.sort_by_val();
         OldCandidates.extract(Hilbert_Basis);
@@ -2741,22 +2802,29 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
     do_vars_check(false);
-    explicit_full_triang=do_triangulation;
+    explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
-    
+
     start_message();
-    
-    minimize_support_hyperplanes();
+
+    minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
         set_levels();
     
-    if (!do_triangulation && !do_partial_triangulation){
+    check_given_grading();
+
+    if ((!do_triangulation && !do_partial_triangulation)
+            || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
+            // in the second case there are only two possibilities:
+            // either nonpointed or bad grading
+        do_triangulation=false;
+        do_partial_triangulation=false;
         support_hyperplanes();
     }
     else{
         // look for a grading if it is needed
-        find_grading();
+        find_grading();        
         if(isComputed(ConeProperty::IsPointed) && !pointed){
             end_message();
             return;
@@ -2977,13 +3045,57 @@ void Full_Cone<Integer>::support_hyperplanes() {
 template<typename Integer>
 void Full_Cone<Integer>::extreme_rays_and_deg1_check() {
     check_pointed();
-    if(!pointed) return;
+    if(!pointed){
+        throw NonpointedException();
+    }
     //cout << "Generators" << endl;
     //Generators.pretty_print(cout);
     //cout << "SupportHyperplanes" << endl;
     //Support_Hyperplanes.pretty_print(cout);
     compute_extreme_rays();
     deg1_check();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::check_given_grading(){
+    
+    if(Grading.size()==0)
+        return;
+
+    bool positively_graded=true;
+    
+    if(!isComputed(ConeProperty::Grading)){
+        size_t neg_index=0;
+        Integer neg_value;
+        bool nonnegative=true;
+        vector<Integer> degrees = Generators.MxV(Grading);
+        for (size_t i=0; i<degrees.size(); ++i) {
+            if (degrees[i]<=0 && (!inhomogeneous || gen_levels[i]==0)) { 
+                // in the inhomogeneous case: test only generators of tail cone
+                positively_graded=false;;
+                if(degrees[i]<0){
+                    nonnegative=false;
+                    neg_index=i;
+                    neg_value=degrees[i];
+                }
+            }
+        }
+
+        if(!nonnegative){
+            errorOutput() << "Grading gives negative value " << neg_value
+            << " for generator " << neg_index+1 << "!" << endl;
+            throw BadInputException();
+        }
+    }
+    
+    if(positively_graded){
+        is_Computed.set(ConeProperty::Grading);    
+        if(inhomogeneous)
+            find_grading_inhom();
+        set_degrees();
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -2998,11 +3110,13 @@ void Full_Cone<Integer>::find_grading(){
     if (!isComputed(ConeProperty::Grading) && (do_multiplicity || do_deg1_elements || do_h_vector)) {
         if (!isComputed(ConeProperty::ExtremeRays)) {
             if (verbose) {
-                verboseOutput() << "Cannot find grading s.t. all generators have the same degree! Computing Extreme rays first:" << endl;
+                verboseOutput() << "Cannot find grading s.t. all generators have the degree 1! Computing Extreme rays first:" << endl;
             }
             get_supphyps_from_copy(true);
             extreme_rays_and_deg1_check();
-            if(!pointed) return;
+            if(!pointed){
+                throw NonpointedException();
+            };
 
             // We keep the SupportHyperplanes, so we do not need to recompute them
             // for the last generator, and use them to make a global reduction earlier
@@ -3135,6 +3249,9 @@ void Full_Cone<Integer>::find_grading_inhom(){
         errorOutput() << "Cannot find grading in the inhomogeneous case! THIS SHOULD NOT HAPPEN." << endl;
          throw BadInputException(); 
     }
+    
+    if(shift!=0)  // to avoid double computation
+        return;
 
     bool first=true;
     Integer level,degree,quot=0,min_quot=0;
@@ -3294,87 +3411,6 @@ template<typename Integer>
 void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
     order_by_perm(PermGens,perm);
 }
-/*    
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
-    // if(deg1_extreme_rays)  // gen_degrees.size()==0 || 
-    // return;
-    
-    if(keep_order)
-            return;
-    
-    list<vector<Integer> > genList;
-    vector<Integer> v;
-    if(inhomogeneous)
-        v.resize(dim+4);
-    else
-        v.resize(dim+3);
-    vector<Integer> w(dim);
-    unsigned long i,j;
-    
-    for(i=0;i<nr_gen;i++){
-        v[0]=0;
-        if(triangulate){
-            if(isComputed(ConeProperty::Grading))
-                v[0]=gen_degrees[i];
-            else{
-                v[0]=0;
-                for(j=0;j<dim;++j)
-                    v[0]+=Iabs(Generators[i][j]);       
-            }
-        }
-                
-        // v[1]=i;                // keep the input order as far as possible
-        v[1]=0; // we disregard the input order now
-        w=Generators[i];
-        for(j=0;j<dim;j++)
-            v[j+2]=w[j];
-        v[dim+2]=0;
-        if(Extreme_Rays[i]) // after sorting we must recover the extreme rays
-            v[dim+2]=1;
-        if(inhomogeneous)
-            v[dim+3]=gen_levels[i];
-        genList.push_back(v);
-    }
-    genList.sort();
-    
-    i=0;
-    typename list<vector<Integer> >::iterator g=genList.begin();
-    for(;g!=genList.end();++g){
-        v=*g;
-        if(isComputed(ConeProperty::Grading))
-            gen_degrees[i]=convertTo<long>(v[0]);
-        if(inhomogeneous)
-            gen_levels[i]=convertTo<long>(v[dim+3]);
-        Extreme_Rays[i]=false;
-        if(v[dim+2]>0)
-            Extreme_Rays[i]=true;
-        for(j=0;j<dim;j++)
-            w[j]=v[j+2];
-        Generators[i]=w;
-        i++;
-    }
-    
-    if (verbose) {
-        if(triangulate){
-            if(isComputed(ConeProperty::Grading)){
-                verboseOutput() << endl << "Generators sorted by degree and lexicographically" << endl;
-                verboseOutput() << "Generators per degree:" << endl;
-                verboseOutput() << count_in_map<long,long>(gen_degrees);
-            }
-            else
-                verboseOutput() << endl << "Generators sorted by 1-norm and lexicographically" << endl;
-        }
-        else{
-            verboseOutput() << endl << "Generators sorted lexicographically" << endl;
-        }
-    }
-    keep_order=true;
-}
-*/
-
 
 //---------------------------------------------------------------------------
 
@@ -3474,8 +3510,9 @@ void Full_Cone<Integer>::compute_extreme_rays(){
     assert(isComputed(ConeProperty::SupportHyperplanes));
     
     check_pointed();
-    if(!pointed)
-        return;
+    if(!pointed){
+        throw NonpointedException();
+    }
 
     if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
          compute_extreme_rays_rank();
@@ -3698,6 +3735,10 @@ void Full_Cone<Integer>::check_pointed() {
 
     pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
+    if(pointed && Grading.size()>0){
+        errorOutput() << "Grading not positive on pointed cone" << endl;
+        throw BadInputException();
+    }
     if (verbose) verboseOutput() << "done." << endl;
 }
 
@@ -3733,32 +3774,32 @@ void Full_Cone<Integer>::deg1_check() {
     if(inhomogeneous)  // deg 1 check disabled since it makes no sense in this case
         return;
         
-    if (!isComputed(ConeProperty::Grading)          // we still need it and
+    if (!isComputed(ConeProperty::Grading) && Grading.size()==0          // we still need it and
      && !isComputed(ConeProperty::IsDeg1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
-            if (has_generator_with_common_divisor) Extreme.make_prime();
+            if (has_generator_with_common_divisor) 
+                Extreme.make_prime();
             Grading = Extreme.find_linear_form();
             if (Grading.size() == dim && v_scalar_product(Grading,Extreme[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_extreme_rays = false;
+                Grading.clear();
                 is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
             }
         } else // extreme rays not known
         if (!deg1_generated_computed) {
-            if (has_generator_with_common_divisor) {
-                Matrix<Integer> GenCopy = Generators;
+            Matrix<Integer> GenCopy = Generators;
+            if (has_generator_with_common_divisor)
                 GenCopy.make_prime();
-                Grading = GenCopy.find_linear_form();
-            } else {
-                Grading = Generators.find_linear_form();
-            }
-            if (Grading.size() == dim && v_scalar_product(Grading,Generators[0])==1) {
+            Grading = GenCopy.find_linear_form();
+            if (Grading.size() == dim && v_scalar_product(Grading,GenCopy[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
                 deg1_generated = false;
                 deg1_generated_computed = true;
+                Grading.clear();
             }
         }
     }
@@ -4143,14 +4184,15 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     dim=M.nr_of_columns();
     
     Generators=M;
-
+    // M.pretty_print(cout);
+    assert(M.row_echelon()== dim);
     
     if (M.row_echelon() < dim) {
         error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
         throw BadInputException();
     }
     
-    index=1;
+    index=1;                      // not used at present
     for(size_t i=0;i<dim;++i)
         index*=M[i][i];
     index=Iabs(index);
@@ -4262,17 +4304,20 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     dim = C.dim;
     Generators.swap(C.Generators);
     nr_gen = Generators.nr_of_rows();
-    if (Generators.nr_of_rows() > 0) is_Computed.set(ConeProperty::Generators);
+    if (Generators.nr_of_rows() > 0) 
+        is_Computed.set(ConeProperty::Generators);
     has_generator_with_common_divisor = false;
     Extreme_Rays.swap(C.ExtremeRays);
     if (!Extreme_Rays.empty()) is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
     in_triang = vector<bool>(nr_gen,false);
-    
-    pointed = true;
-    is_simplicial = nr_gen == dim;
+ 
+    Basis_Max_Subspace=C.BasisMaxSubspace;
+    is_Computed.set(ConeProperty::MaximalSubspace);    
+    pointed = (Basis_Max_Subspace.nr_of_rows()==0);
     is_Computed.set(ConeProperty::IsPointed);
+    is_simplicial = nr_gen == dim;
     deg1_extreme_rays = false;
     deg1_generated = false;
     deg1_generated_computed = false;
@@ -4337,6 +4382,51 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     verbose=C.verbose;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::check_grading_after_dual_mode(){
+
+    if(dim>0 && Grading.size()>0 && !isComputed(ConeProperty::Grading)) {
+        if(isComputed(ConeProperty::Generators)){
+            vector<Integer> degrees=Generators.MxV(Grading);
+            vector<Integer> levels;
+            if(inhomogeneous)
+                levels=Generators.MxV(Truncation);
+            size_t i=0;
+            for(;i<degrees.size();++i){
+                if(degrees[i]<=0 &&(!inhomogeneous || levels[i]==0))
+                    break;
+            }
+            if(i==degrees.size())
+                is_Computed.set(ConeProperty::Grading);
+        }
+        else if(isComputed(ConeProperty::HilbertBasis)){
+            auto hb=Hilbert_Basis.begin();
+            for(;hb!=Hilbert_Basis.end();++hb){
+                if(v_scalar_product(*hb,Grading)<=0 && (!inhomogeneous || v_scalar_product(*hb,Truncation)==0))
+                    break;
+            }
+            if(hb==Hilbert_Basis.end())
+                is_Computed.set(ConeProperty::Grading);
+        }   
+    }
+    if(isComputed(ConeProperty::Deg1Elements)){
+        auto hb=Deg1_Elements.begin();
+        for(;hb!=Deg1_Elements.end();++hb){
+            if(v_scalar_product(*hb,Grading)<=0)
+                break;
+        }
+        if(hb==Deg1_Elements.end())
+            is_Computed.set(ConeProperty::Grading);
+    }
+
+    if(Grading.size()>0 && !isComputed(ConeProperty::Grading)){
+        errorOutput() << "Grading not positive on pointed cone." << endl;
+        throw BadInputException();
+    }
+}
+
 template<typename Integer>
 void Full_Cone<Integer>::dual_mode() {
 
@@ -4346,9 +4436,9 @@ void Full_Cone<Integer>::dual_mode() {
     
     compute_class_group();
     
-    // Support_Hyperplanes.remove_duplicate_and_zero_rows(); //now in constructor
-
-    if(dim>0 && !inhomogeneous) {            //correction needed to include the 0 cone;
+    check_grading_after_dual_mode();      
+        
+    if(dim>0 && !inhomogeneous){
         deg1_check();
         if (isComputed(ConeProperty::Grading) && !isComputed(ConeProperty::Deg1Elements)) {
             if (verbose) { 
@@ -4357,6 +4447,7 @@ void Full_Cone<Integer>::dual_mode() {
             select_deg1_elements();
         }
     }
+    
     if(dim==0){
         deg1_extreme_rays = deg1_generated = true;
         Grading=vector<Integer>(dim);
