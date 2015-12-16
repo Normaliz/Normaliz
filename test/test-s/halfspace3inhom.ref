@@ -1,12 +1,10 @@
-1 module generators
-1 Hilbert basis elements of recession monoid
 1 vertices of polyhedron
 1 extreme rays of recession cone
 2 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 4
 affine dimension of the polyhedron = 2
-rank of recession monoid = 1
+rank of recession monoid = 2
 dimension of maximal subspace = 1
 
 dehomogenization:
@@ -16,15 +14,7 @@ grading:
 1 0 0 0 
 
 
-module rank = 1
-
 ***********************************************************************
-
-1 module generators:
- -1 0 0 1
-
-1 Hilbert basis elements of recession monoid:
- 1 0 0 0
 
 1 vertices of polyhedron:
  -1 0 0 1
