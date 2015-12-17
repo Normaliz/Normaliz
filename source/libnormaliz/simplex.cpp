@@ -628,7 +628,9 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
                         C.Witness = *jj;
                         C.is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
                     }
-                    break;
+                    if (!C.do_triangulation) {
+                        throw NotIntegrallyClosedException();
+                    }
                 }
             }
         }

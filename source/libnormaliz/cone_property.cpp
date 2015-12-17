@@ -175,7 +175,6 @@ void ConeProperties::set_preconditions() {
 
 /* removes ignored compute options and sets implications */
 void ConeProperties::prepare_compute_options(bool inhomogeneous) {
-    // -d without -1 means: compute Hilbert basis in dual mode
     if (CPs.test(ConeProperty::IntegerHull)){
         if(inhomogeneous){
             CPs.set(ConeProperty::HilbertBasis);
@@ -184,6 +183,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
             CPs.set(ConeProperty::Deg1Elements);
         }
     }       
+    // -d without -1 means: compute Hilbert basis in dual mode
     if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
         CPs.set(ConeProperty::HilbertBasis);
     }

@@ -1408,6 +1408,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
+    ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
@@ -1428,11 +1429,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
     }
-    ToCompute.reset(is_Computed); 
 
     if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
         find_witness();
     }
+
+    ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         return ToCompute;
     }
@@ -1482,6 +1484,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
+    if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
+        // this can happen when we were looking for a witness earlier
+        compute(ToCompute);
+    }
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         errorOutput() << "ERROR: Cone could not compute everything that was asked for!"<<endl;
         errorOutput() << "Missing: " << ToCompute.goals() << endl;
@@ -1691,7 +1697,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     /* do the computation */
     
     try {     
-        FC.compute();
+        try {
+            FC.compute();
+        } catch (const NotIntegrallyClosedException& ) {
+        }
         is_Computed.set(ConeProperty::Sublattice);
         // make sure we minimize the excluded faces if requested
         if(ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {

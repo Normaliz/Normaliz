@@ -49,6 +49,13 @@ class NonpointedException: public NormalizException {
 	}
 };
 
+class NotIntegrallyClosedException: public NormalizException {
+    public:
+	virtual const char* what() const throw() {
+		return "Original monoid is not integrally closed.";
+	}
+};
+
 class BadInputException: public NormalizException {
     public:
 	virtual const char* what() const throw() {
