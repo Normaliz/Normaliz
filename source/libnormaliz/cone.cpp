@@ -1026,7 +1026,7 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
 /* getter */
 
 template<typename Integer>
-Cone<Integer>& Cone<Integer>::getIntHullCone() const {
+Cone<Integer>& Cone<Integer>::getIntegerHullCone() const {
     return *IntHullCone;
 }
 template<typename Integer>

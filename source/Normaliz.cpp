@@ -230,7 +230,7 @@ template<typename Integer> int process_data(OptionsHandler& options) {
         Output<Integer> IntHullOut;
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getOutputName()+".IntHull");
-        IntHullOut.setCone(MyCone.getIntHullCone());
+        IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.write_files();        
     }
 
