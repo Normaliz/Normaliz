@@ -2486,11 +2486,11 @@ These computation goals require a homogeneous computation.
 
 \subsubsection{Boolean valued computation goals}\label{bool}
 
-They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others:
+They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may infuence the course of the computations:
 
 \begin{itemize}
 
-	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}).
+	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}).
 	
 	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section \ref{IsPointed}.
 \end{itemize}
@@ -2507,7 +2507,7 @@ The remaining ones:
 	
 \end{itemize}
 
-These computation goals are not really useful for Normaliz since they will be answered automatically. Note that they may trigger extensive computations.
+The last three computation goals are not really useful for Normaliz since they will be answered automatically. Note that they may trigger extensive computations.
 
 
 \subsection{Algorithmic variants}
@@ -2516,7 +2516,7 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 
 
 \begin{itemize}
-	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set.
+	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
 	
 	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|Approximate|.)
 	
