@@ -2279,14 +2279,23 @@ void Cone<Integer>::find_witness() {
             || !isComputed(ConeProperty::HilbertBasis) )
         return;
 
-    long nr_gen = OriginalMonoidGenerators.nr_of_rows();
+    long nr_gens = OriginalMonoidGenerators.nr_of_rows();
     long nr_hilb = HilbertBasis.nr_of_rows();
+    // if the cone is not pointed, we have to check it on the quotion
+    Matrix<Integer> gens_quot;
+    Matrix<Integer> hilb_quot;
+    if (!pointed) {
+        gens_quot = BasisChangePointed.to_sublattice(OriginalMonoidGenerators);
+        hilb_quot = BasisChangePointed.to_sublattice(HilbertBasis);
+    }
+    Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
+    Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
     integrally_closed = true;
     typename list< vector<Integer> >::iterator h;
     for (long h = 0; h < nr_hilb; ++h) {
         integrally_closed = false;
-        for (long i = 0; i < nr_gen; ++i) {
-            if (HilbertBasis[h] == OriginalMonoidGenerators[i]) {
+        for (long i = 0; i < nr_gens; ++i) {
+            if (hilb[h] == gens[i]) {
                 integrally_closed = true;
                 break;
             }
