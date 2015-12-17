@@ -3099,6 +3099,11 @@ module rank = 1
 
 The ``vertex'' of the polyhedron shown is of course the lifted version of the vertex modulo the maximal subspace. It is not the input ``vertex'', but agrees with it up to a unit.
 
+\subsubsection{Checking pointedness first}
+
+Nonpoited cones will be an exception in Normaliz computations, and therefore Normaliz assumes that the (recession) cone it must compute is pointed. Only in rare circumstances it could be advisable to have this property checked first. There is no need to do so when the dual algorithm is used since it does not require the cone to be pointed. Moreover, if an explicit grading is given or a grading dependent computation is asked for, one cannot save time by checking the pointedness first.
+
+The exceptional case is a computation, say of a Hilbert basis, by the primal algorithm in which the computation of the support hyperplanes is completed after a very long time. If you are afraid this may happen, you can force Normaliz to compute the support hyperplanes right away by adding \verb|IsPointed| to the computation goals. This is a disadvantage only if the cone is unexpectedly pointed.
 
 \subsection{Exporting the triangulation}
 
