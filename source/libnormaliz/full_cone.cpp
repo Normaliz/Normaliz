@@ -2220,6 +2220,11 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             get_supphyps_from_copy(false);
         }
         
+        check_pointed();
+        if(!pointed){
+            throw NonpointedException();
+        }
+        
         int max_threads = omp_get_max_threads();
         size_t Memory_per_gen=8*nrSupport_Hyperplanes;
         size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
