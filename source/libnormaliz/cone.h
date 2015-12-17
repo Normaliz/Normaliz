@@ -166,6 +166,8 @@ public:
     size_t getTriangulationSize();
     Integer getTriangulationDetSum();
 
+    vector<Integer> getWitnessNotIntegrallyClosed();
+
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector< vector<Integer> >& getHilbertBasis();
     size_t getNrHilbertBasis();
@@ -243,6 +245,7 @@ private:
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
+    vector<Integer> WitnessNotIntegrallyClosed;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
@@ -328,7 +331,11 @@ private:
     /* set ExtremeRays, in inhomogeneous case also VerticesOfPolyhedron */
     void set_extreme_rays(const vector<bool>&);
 
+    /* If the Hilbert basis and the original monoid generators are computed,
+     * use them to check whether the original monoid is integrally closed. */
     void check_integrally_closed();
+    /* try to find a witness for not integrally closed in the Hilbert basis */
+    void find_witness();
 
     /* set this object to the zero cone */
     void set_zero_cone();

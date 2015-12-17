@@ -619,8 +619,20 @@ void SimplexEvaluator<Integer>::reduce_against_global(Collector<Integer>& Coll) 
             }
             else
                 inserted=Coll.HB_Elements.reduce_by_and_insert(*jj,C,C.OldCandidates);                
-            if(inserted)
+            if (inserted) {
                 Coll.collected_elements_size++;
+                if (C.do_integrally_closed) {
+                    #pragma omp critical
+                    {
+                        C.do_Hilbert_basis = false;
+                        C.Witness = *jj;
+                        C.is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
+                    }
+                    if (!C.do_triangulation) {
+                        throw NotIntegrallyClosedException();
+                    }
+                }
+            }
         }
     }
     // Coll.HB_Elements.search();

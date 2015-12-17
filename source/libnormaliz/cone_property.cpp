@@ -138,8 +138,8 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions() {
-    if (CPs.test(ConeProperty::IsIntegrallyClosed))
-        CPs.set(ConeProperty::HilbertBasis);
+    if (CPs.test(ConeProperty::WitnessNotIntegrallyClosed))
+        CPs.set(ConeProperty::IsIntegrallyClosed);
 
     if (CPs.test(ConeProperty::IsDeg1HilbertBasis)) {
         CPs.set(ConeProperty::HilbertBasis);
@@ -175,7 +175,6 @@ void ConeProperties::set_preconditions() {
 
 /* removes ignored compute options and sets implications */
 void ConeProperties::prepare_compute_options(bool inhomogeneous) {
-    // -d without -1 means: compute Hilbert basis in dual mode
     if (CPs.test(ConeProperty::IntegerHull)){
         if(inhomogeneous){
             CPs.set(ConeProperty::HilbertBasis);
@@ -184,6 +183,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
             CPs.set(ConeProperty::Deg1Elements);
         }
     }       
+    // -d without -1 means: compute Hilbert basis in dual mode
     if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
         CPs.set(ConeProperty::HilbertBasis);
     }
@@ -217,6 +217,8 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
+                  || prop == ConeProperty::IsIntegrallyClosed
+                  || prop == ConeProperty::WitnessNotIntegrallyClosed
                   || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
                  // || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
@@ -262,6 +264,7 @@ namespace {
         CPN.at(ConeProperty::IsDeg1ExtremeRays) = "IsDeg1ExtremeRays";
         CPN.at(ConeProperty::IsDeg1HilbertBasis) = "IsDeg1HilbertBasis";
         CPN.at(ConeProperty::IsIntegrallyClosed) = "IsIntegrallyClosed";
+        CPN.at(ConeProperty::WitnessNotIntegrallyClosed) = "WitnessNotIntegrallyClosed";
         CPN.at(ConeProperty::OriginalMonoidGenerators) = "OriginalMonoidGenerators";
         CPN.at(ConeProperty::IsReesPrimary) = "IsReesPrimary";
         CPN.at(ConeProperty::ReesPrimaryMultiplicity) = "ReesPrimaryMultiplicity";
@@ -282,7 +285,7 @@ namespace {
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 37,
+        static_assert (ConeProperty::EnumSize == 38,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

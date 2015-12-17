@@ -63,6 +63,7 @@ void printHelp(char* command) {
     cout << "  -v\tcompute volume"<<endl;
     cout << "  -n\tcompute Hilbert basis (with full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
+    cout << "  -w\tcheck for integrally closed and compute witness if not"<<endl;
     cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
     cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements"<<endl;
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;

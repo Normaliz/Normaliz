@@ -1213,6 +1213,12 @@ Integer Cone<Integer>::getTriangulationDetSum() {
 }
 
 template<typename Integer>
+vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed() {
+    compute(ConeProperty::WitnessNotIntegrallyClosed);
+    return WitnessNotIntegrallyClosed;
+}
+
+template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() {
     compute(ConeProperty::HilbertBasis);
     return HilbertBasis;
@@ -1402,21 +1408,34 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
     
+    ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
-    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) && !isComputed(ConeProperty::OriginalMonoidGenerators)){
-        errorOutput() << "ERROR: Module generators over original monoid only computable if original monoid is defined!"
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
+        if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
+            errorOutput() << "ERROR: Module generators over original monoid only computable if original monoid is defined!"
                 << endl;
-        throw BadInputException();
+            throw NotComputableException();
+        }
+        if (ToCompute.test(ConeProperty::IsIntegrallyClosed)
+                || ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
+            errorOutput() << "ERROR: Original monoid is not defined, cannot check for it for being integrally closed"
+                << endl;
+            throw NotComputableException();
+        }
     }
-
 
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
     }
-    ToCompute.reset(is_Computed); 
-    if (ToCompute.none()){
+
+    if (ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
+        find_witness();
+    }
+
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
         return ToCompute;
     }
 
@@ -1465,6 +1484,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
+    if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
+        // this can happen when we were looking for a witness earlier
+        compute(ToCompute);
+    }
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         errorOutput() << "ERROR: Cone could not compute everything that was asked for!"<<endl;
         errorOutput() << "Missing: " << ToCompute.goals() << endl;
@@ -1592,6 +1615,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::HilbertBasis)) {
         FC.do_Hilbert_basis = true;
     }
+    if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
+        FC.do_integrally_closed = true;
+    }
     if (ToCompute.test(ConeProperty::Triangulation)) {
         FC.keep_triangulation = true;
     }
@@ -1671,7 +1697,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     /* do the computation */
     
     try {     
-        FC.compute();
+        try {
+            FC.compute();
+        } catch (const NotIntegrallyClosedException& ) {
+        }
         is_Computed.set(ConeProperty::Sublattice);
         // make sure we minimize the excluded faces if requested
         if(ToCompute.test(ConeProperty::ExcludedFaces) || ToCompute.test(ConeProperty::SupportHyperplanes)) {
@@ -2144,6 +2173,12 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             is_Computed.set(ConeProperty::Multiplicity);
         }
     }
+    if (FC.isComputed(ConeProperty::WitnessNotIntegrallyClosed)) {
+        BasisChangePointed.convert_from_sublattice(WitnessNotIntegrallyClosed,FC.Witness);
+        is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
+        integrally_closed = false;
+        is_Computed.set(ConeProperty::IsIntegrallyClosed);
+    }
     if (FC.isComputed(ConeProperty::HilbertBasis)) {
         if (inhomogeneous) {
             // separate (capped) Hilbert basis to the Hilbert basis of the level 0 cone
@@ -2214,27 +2249,61 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
 
 template<typename Integer>
 void Cone<Integer>::check_integrally_closed() {
-    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || isComputed(ConeProperty::IsIntegrallyClosed)
-               || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators)
+            || isComputed(ConeProperty::IsIntegrallyClosed)
+            || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
 
-    integrally_closed = false;
-    long nr_gen = OriginalMonoidGenerators.nr_of_rows();
+    if (HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+        integrally_closed = false;
+        is_Computed.set(ConeProperty::IsIntegrallyClosed);
+    } else {
+        find_witness();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::find_witness() {
+    if (!isComputed(ConeProperty::OriginalMonoidGenerators)
+            || inhomogeneous) {
+        // no original monoid defined
+        throw NotComputableException(ConeProperties(ConeProperty::WitnessNotIntegrallyClosed));
+    }
+    if (isComputed(ConeProperty::IsIntegrallyClosed) && integrally_closed) {
+        // original monoid is integrally closed
+        throw NotComputableException(ConeProperties(ConeProperty::WitnessNotIntegrallyClosed));
+    }
+    if (isComputed(ConeProperty::WitnessNotIntegrallyClosed)
+            || !isComputed(ConeProperty::HilbertBasis) )
+        return;
+
+    long nr_gens = OriginalMonoidGenerators.nr_of_rows();
     long nr_hilb = HilbertBasis.nr_of_rows();
-    if (nr_hilb <= nr_gen) {
-        integrally_closed = true;
-        typename list< vector<Integer> >::iterator h;
-        for (long h = 0; h < nr_hilb; ++h) {
-            integrally_closed = false;
-            for (long i = 0; i < nr_gen; ++i) {
-                if (HilbertBasis[h] == OriginalMonoidGenerators[i]) {
-                    integrally_closed = true;
-                    break;
-                }
-            }
-            if (!integrally_closed) {
+    // if the cone is not pointed, we have to check it on the quotion
+    Matrix<Integer> gens_quot;
+    Matrix<Integer> hilb_quot;
+    if (!pointed) {
+        gens_quot = BasisChangePointed.to_sublattice(OriginalMonoidGenerators);
+        hilb_quot = BasisChangePointed.to_sublattice(HilbertBasis);
+    }
+    Matrix<Integer>& gens = pointed ? OriginalMonoidGenerators : gens_quot;
+    Matrix<Integer>& hilb = pointed ? HilbertBasis : hilb_quot;
+    integrally_closed = true;
+    typename list< vector<Integer> >::iterator h;
+    for (long h = 0; h < nr_hilb; ++h) {
+        integrally_closed = false;
+        for (long i = 0; i < nr_gens; ++i) {
+            if (hilb[h] == gens[i]) {
+                integrally_closed = true;
                 break;
             }
+        }
+        if (!integrally_closed) {
+            WitnessNotIntegrallyClosed = HilbertBasis[h];
+            is_Computed.set(ConeProperty::WitnessNotIntegrallyClosed);
+            break;
         }
     }
     is_Computed.set(ConeProperty::IsIntegrallyClosed);
