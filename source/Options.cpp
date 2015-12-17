@@ -151,6 +151,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'N':
                 to_compute.set(ConeProperty::HilbertBasis);
                 break;
+            case 'w':
+                to_compute.set(ConeProperty::IsIntegrallyClosed);
+                break;
             case '1':
                 to_compute.set(ConeProperty::Deg1Elements);
                 break;
