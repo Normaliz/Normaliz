@@ -1548,6 +1548,8 @@ It is no problem to compute the Hilbert series as well if you are interested in 
 
 Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal. Even on a standard PC or laptop, the Hilbert basis computation does not take very long because Normaliz uses only a partial triangulation. The Hilbert series can still be determined, but the computation time will grow considerably since the it requires a full triangulation. See \cite{BIS} for timings.
 
+\subsubsection{Computing just a witness}\label{IsIC}
+
 \subsection{Inhomogeneous congruences}\label{ChinRem}
 
 We want to compute the nonnegative solutions of the simultaneous inhomogeneous congruences
@@ -2410,6 +2412,8 @@ Normaliz tries to find a grading. In the inhomogeneous case the module rank is c
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}
 
+The boolean valued computation goal \verb|IsIntegrallyClosed| is also related to the Hilbert basis; see Scection \ref{bool}.
+
 \subsubsection{Enumerative data}
 
 The computation goals in this section require a grading. They include \verb|SupportHyperplanes|.
@@ -2480,19 +2484,24 @@ The computation goals that require calling NmzIntegrate can only be set on the c
 
 These computation goals require a homogeneous computation.
 
-\subsubsection{Boolean valued computation goals}
+\subsubsection{Boolean valued computation goals}\label{bool}
 
-They tell Normaliz to find out the answers to the questions they ask. 
+They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others:
 
 \begin{itemize}
+
+	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}).
 	
-	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed?
+	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section \ref{IsPointed}.
+\end{itemize}
+
+The remaining ones:
+
+\begin{itemize}
 	
 	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree $1$?
 	
 	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree 1?
-	
-	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed?.
 	
 	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?
 	
@@ -2518,14 +2527,22 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 
 \subsection{Integer type}
 
-There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use indefinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with indefinite precision. The $64$ bit attempt can be surpassed by
+There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use infinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with infinite precision.
+
+The amount of computations done with infinite precision is usually very small, but the transformation of the computation results from 64 bit integers to infinite precision may take some time. If you need the highest possible speed, you can suppress infinite precision completely by 
+\begin{itemize}
+	\itemtt[LongLong]	
+\end{itemize}
+However, in this case Normaliz cannot restart a failed computation.
+
+On the other hand, the $64$ bit attempt can be surpassed by
 \begin{itemize}
 	\itemtt[BigInt, -B]	
 \end{itemize}
 
-Note that Normaliz tries to avoid overflows by intermediate results. If such overflow should happen, the computation is repeated locally with indefinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
+Note that Normaliz tries to avoid overflows by intermediate results (even if \verb|LongLong| is set). If such overflow should happen, the computation is repeated locally with infinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
 
-\verb|BigInt| is not a cone property.
+\verb|BigInt| and \verb|LongLong| are  not cone properties.
 
 \subsection{Control of computations}
 
@@ -3019,7 +3036,9 @@ In the preamble we learn that the cone contains a nontrivial subspace. In this c
 
 Normaliz has found a grading. Of course it vanishes on the unit group, but is positive on the quotient monoid modulo the unit group.
 
-Note that the data of type ``dimension'' (embedding dimension, rank, rank of recession monoid in the inhomogeneous case, affine dimension of the polyhedron)) are measured before the passage to the quotient modulo the maximal subspace. The same is true for equations and congruences (which are trivial for the example above).  
+Note that the data of type ``dimension'' (embedding dimension, rank, rank of recession monoid in the inhomogeneous case, affine dimension of the polyhedron)) are measured before the passage to the quotient modulo the maximal subspace. The same is true for equations and congruences (which are trivial for the example above).
+
+The example discussed above is defined by constraints. If original monoid generators are defined, all information related to them, for example ``Original monoid is integrally closed'', must be understood modulo the unit group of the integral closure. It is not checked whether the original generators really generate the integral closure as a monoid. However, it can be decided whether they do so: it is the case if and only if the original monoid is integrally closed modulo the group of units and the external index is $1$.
 
 \subsubsection{A polyhedron without vertices}
 
@@ -3099,11 +3118,11 @@ module rank = 1
 
 The ``vertex'' of the polyhedron shown is of course the lifted version of the vertex modulo the maximal subspace. It is not the input ``vertex'', but agrees with it up to a unit.
 
-\subsubsection{Checking pointedness first}
+\subsubsection{Checking pointedness first}\label{IsPointed}
 
 Nonpoited cones will be an exception in Normaliz computations, and therefore Normaliz assumes that the (recession) cone it must compute is pointed. Only in rare circumstances it could be advisable to have this property checked first. There is no need to do so when the dual algorithm is used since it does not require the cone to be pointed. Moreover, if an explicit grading is given or a grading dependent computation is asked for, one cannot save time by checking the pointedness first.
 
-The exceptional case is a computation, say of a Hilbert basis, by the primal algorithm in which the computation of the support hyperplanes is completed after a very long time. If you are afraid this may happen, you can force Normaliz to compute the support hyperplanes right away by adding \verb|IsPointed| to the computation goals. This is a disadvantage only if the cone is unexpectedly pointed.
+The exceptional case is a computation, say of a Hilbert basis, by the primal algorithm in which the computation of the support hyperplanes needs very long time to be completed. If you are afraid this may happen, you can force Normaliz to compute the support hyperplanes right away by adding \verb|IsPointed| to the computation goals. This is a disadvantage only if the cone is unexpectedly pointed.
 
 \subsection{Exporting the triangulation}
 
