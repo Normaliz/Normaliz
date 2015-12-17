@@ -1695,7 +1695,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         BasisChangePointed.compose_dual(Pointed);
         is_Computed.set(ConeProperty::MaximalSubspace);        
         // now we get the basis of the maximal subspace
-        pointed=(BasisMaxSubspace.nr_of_rows()>0);
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
         is_Computed.set(ConeProperty::IsPointed);
         compute_inner<IntegerFC>(ToCompute);           
     }
@@ -1739,7 +1739,7 @@ void Cone<Integer>::compute_generators_inner() {
         is_Computed.set(ConeProperty::MaximalSubspace);
     }
     if(!isComputed(ConeProperty::IsPointed)){
-        pointed=(BasisMaxSubspace.nr_of_rows()>0);
+        pointed = (BasisMaxSubspace.nr_of_rows() == 0);
         is_Computed.set(ConeProperty::IsPointed);
     }
     BasisChangePointed.compose_dual(Pointed); // primal cone now pointed, may not yet be full dimensional
