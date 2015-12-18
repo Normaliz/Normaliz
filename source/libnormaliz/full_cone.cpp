@@ -2788,7 +2788,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
     if (do_Stanley_dec)     keep_triangulation = true;
-    if (do_decompositiom)   keep_triangulation = true;
+    if (do_cone_dec)        keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
     if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
@@ -2798,9 +2798,13 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     if (do_Hilbert_basis)   do_partial_triangulation = true;
     // activate 
     do_only_multiplicity = do_determinants;
+    stop_after_cone_dec = true;
+    if(do_cone_dec)          do_only_multiplicity=false;
+        
     if (do_Stanley_dec || do_h_vector || do_deg1_elements 
-                     || do_Hilbert_basis || do_decomposition) {
+                     || do_Hilbert_basis) {
         do_only_multiplicity = false;
+        stop_after_cone_dec = false;
         do_evaluation = true;
     }
     if (do_determinants)    do_evaluation = true;
@@ -4185,7 +4189,8 @@ void Full_Cone<Integer>::reset_tasks(){
     do_class_group = false;
     do_module_gens_intcl = false;
     do_module_rank = false;
-    do_decomposition=false;
+    do_cone_dec=false;
+    stop_after_cone_dec=false;
     
     do_extreme_rays=false;
     do_pointed=false;

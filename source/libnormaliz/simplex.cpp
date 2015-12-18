@@ -309,7 +309,6 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         return volume;
     }
 
-
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
     // for those i for which Gdiag[i]>1 combined with computation
     // of Indicator in case of potentially_unimodular==false (uses transpose of Gen)
@@ -358,10 +357,8 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 for(size_t j=dim;j<dim+Ind0_key.size();++j)
                     InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j]; 
         }
-    }
-    
+    }   
 
-        
    /*  if(Ind0_key.size()>0){
         #pragma omp atomic
         NonDecided++;
