@@ -205,6 +205,9 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
             && !CPs.test(ConeProperty::Deg1Elements)) {
         errorOutput() << "Warning: Approximate is ignored since Deg1Elements is not set."<< std::endl;
     }
+    if (CPs.test(ConeProperty::ConeDecomposition))
+        CPs.reset(ConeProperty::Triangulation);
+        
 }
 
 
@@ -217,6 +220,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                 if ( prop == ConeProperty::Deg1Elements
                   || prop == ConeProperty::StanleyDec
                   || prop == ConeProperty::Triangulation
+                  || prop == ConeProperty::ConeDecomposition
                   || prop == ConeProperty::IsIntegrallyClosed
                   || prop == ConeProperty::WitnessNotIntegrallyClosed
                   || prop == ConeProperty::Approximate
@@ -283,9 +287,10 @@ namespace {
         CPN.at(ConeProperty::KeepOrder) = "KeepOrder";
         CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
+        CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 38,
+        static_assert (ConeProperty::EnumSize == 39,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

@@ -2603,6 +2603,9 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     if (keep_triangulation) {
         is_Computed.set(ConeProperty::Triangulation);
     }
+    if (do_cone_dec) {
+        is_Computed.set(ConeProperty::ConeDecomposition);
+    }
 
     evaluate_triangulation();
     evaluate_large_simplices();

@@ -309,6 +309,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
         return volume;
     }
 
+
     // now we must compute the matrix InvGenSelRows (selected rows of InvGen)
     // for those i for which Gdiag[i]>1 combined with computation
     // of Indicator in case of potentially_unimodular==false (uses transpose of Gen)
@@ -357,8 +358,10 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
                 for(size_t j=dim;j<dim+Ind0_key.size();++j)
                     InvGenSelCols[i][Ind0_key[j-dim]]=LinSys[i][j]; 
         }
-    }   
+    }
+    
 
+        
    /*  if(Ind0_key.size()>0){
         #pragma omp atomic
         NonDecided++;
@@ -372,7 +375,7 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void SimplexEvaluator<Integer>::find_excluded_facets(){
+void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
 
     size_t i,j;
     Integer Test;
@@ -406,20 +409,10 @@ void SimplexEvaluator<Integer>::find_excluded_facets(){
                     break;
             }
         }
-    }    
+    }
     
-    
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
-
-    size_t i;
-    size_t Deg0_offset=0;
-    long level_offset=0; // level_offset is the level of the lement in par + its offset in the Stanley dec
-
+    if(C_ptr->stop_after_cone_dec)
+        return;
 
     if (C_ptr->do_h_vector) {
         if(C_ptr->inhomogeneous){
@@ -723,10 +716,16 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     // large simplicies to be postponed for parallel evaluation
     if ( (volume > SimplexParallelEvaluationBound ||
            (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
-       && !C_ptr->do_Stanley_dec) //&& omp_get_max_threads()>1)
-        return false;
-    find_excluded_facets();
+       && !C_ptr->do_Stanley_dec){ //&& omp_get_max_threads()>1)
+           if(C_ptr->do_cone_dec)
+               s.Excluded.resize(0);
+        return false;        
+    }
     take_care_of_0vector(C_ptr->Results[tn]);
+    if(C_ptr->do_cone_dec)
+        s.Excluded=Excluded;
+    if(C_ptr->stop_after_cone_dec)
+        return true;
     if(volume!=1)
         evaluate_block(1,convertTo<long>(volume)-1,C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
@@ -1064,8 +1063,12 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             return;
         }
     }
-    find_excluded_facets();
+
     take_care_of_0vector(C_ptr->Results[0]);
+    if(C_ptr->do_cone_dec)
+        
+    if(C_ptr->stop_after_cone_dec)
+        return;
     sequential_evaluation=false;
 
     evaluation_loop_parallel();

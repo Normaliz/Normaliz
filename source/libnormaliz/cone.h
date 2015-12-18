@@ -215,7 +215,7 @@ public:
     // if no triangulation was computed so far they return false
     bool isTriangulationNested();
     bool isTriangulationPartial();
-    const vector< pair<vector<key_t>, Integer> >& getTriangulation();
+    const vector< pair<vector<long>, Integer> >& getTriangulation();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
 
@@ -244,7 +244,7 @@ private:
     Integer TriangulationDetSum;
     bool triangulation_is_nested;
     bool triangulation_is_partial;
-    vector< pair<vector<key_t>, Integer> > Triangulation;
+    vector< pair<vector<long>, Integer> > Triangulation;
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
