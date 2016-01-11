@@ -325,17 +325,26 @@ void Output<Integer>::write_tri() const{
         string file_name = name+".tri";
         ofstream out(file_name.c_str());
 
-        const vector< pair<vector<long>,Integer> >& Tri = Result->getTriangulation();
-        typename vector< pair<vector<long>,Integer> >::const_iterator tit = Tri.begin();
+        const vector< pair<vector<libnormaliz::key_t>,Integer> >& Tri = Result->getTriangulation();
+        typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();        
+        const vector<vector<bool> >& Dec=Result->getOpenFacets_no_computation();
+        typename vector< vector<bool> >::const_iterator idd = Dec.begin();
 
         out << Tri.size() << endl;
         out << Result->getSublattice().getRank()+1 << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
-                out << tit->first[i] << " ";
+                out << tit->first[i] +1 << " ";
             }
-            out << tit->second << endl;
+            out << tit->second;
+            if(Result->isComputed(ConeProperty::ConeDecomposition)){
+                for (size_t i=0; i<tit->first.size(); i++) {
+                    out << " " << (*idd)[i];
+                }                
+                idd++;
+            }
+            out << endl;
         }
         if (Result->isTriangulationNested()) out << "nested" << endl;
         else out << "plain" << endl;
