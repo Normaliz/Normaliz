@@ -331,7 +331,10 @@ void Output<Integer>::write_tri() const{
         typename vector< vector<bool> >::const_iterator idd = Dec.begin();
 
         out << Tri.size() << endl;
-        out << Result->getSublattice().getRank()+1 << endl; //works also for empty list
+        size_t nr_extra_enttries=1;
+        if (Result->isComputed(ConeProperty::ConeDecomposition))
+            nr_extra_enttries+=Result->getSublattice().getRank();
+        out << Result->getSublattice().getRank()+nr_extra_enttries << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
