@@ -2120,10 +2120,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             Triangulation[i].first.resize(dim);
             for(size_t k=0;k<dim;++k){
                 Triangulation[i].first[k]=simp.key[k]+1;
-                cout << "Ohne " << Triangulation[i].first[k] << endl;
+                // cout << "Ohne " << Triangulation[i].first[k] << endl;
                 if(FC.isComputed(ConeProperty::ConeDecomposition) && simp.Excluded[k])
                     Triangulation[i].first[k]*=-1;
-                cout << "Mit " << Triangulation[i].first[k] << endl;
+                // cout << "Mit " << Triangulation[i].first[k] << endl;
             }
             simp.key.clear();
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
