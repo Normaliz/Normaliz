@@ -128,7 +128,7 @@
 \begin{center}Winfried Bruns, Tim Römer, Richard Sieg and Christof
 	Söger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
-	\url{http://www.math.uos.de/normaliz}\\[14pt]
+	\url{http://normaliz.uos.de}\\[14pt]
 	\url{mailto:normaliz@uos.de}
 \end{center}
 
@@ -232,6 +232,8 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 	\item Normality test without computation of full Hilbert basis (in the negative case).
 	
 	\item Normaliz can be run from the beginning with integers of type \verb|long long|.	
+	
+	\item Computation of disjoint decomposition of the cone.
 
 \end{arab}
 
@@ -255,7 +257,7 @@ Download
 \end{itemize}
 from the Normaliz website\medskip
 
-\centerline{\url{http://www.math.uos.de/normaliz}}\medskip
+\centerline{\url{http://normaliz.uos.de}}\medskip
 
 and unzip both in the same directory of your choice. In it, a
 directory \ttt{Normaliz3.0} (called Normaliz directory in the
@@ -1550,6 +1552,29 @@ Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not
 
 \subsubsection{Computing just a witness}\label{IsIC}
 
+Often one wants to know whether a monoid is integrally closed, but the full Hilbert basis in the negative case is not of interest. In this case it is enough to find a single element that is not a linear combination with nonnegative integer coefficients of the original generators: it is enough to compute a witness showing the monoid is not integrally closed. We choose \verb|A643.in|:
+
+\begin{Verbatim}
+amb_space 54
+cone_and_lattice 72
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...
+...
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ... 
+IsIntegrallyClosed
+\end{Verbatim}
+
+The command line option representing the computation goal \verb|IsIntegrallyClosed| is \verb|-w|. The witness appears in the output:
+
+\begin{Verbatim}
+original monoid is not integrally closed
+witness for not being integrally closed:
+0 0 1 0 1 1 0 1 1 1 0 0 1 1 0 0 1 0 1 0 ...
+\end{Verbatim}
+
+The command line option is \verb|-w|.
+
+The example just used is harmless in the sense that the full Hilbert basis can be computed without any problem. The situation changes if the number of support hyperplanes is significantly larger and the Hilbert basis becomes large since Normaliz saves the scalar products of the Hilbert basis candidatesand the normal vectors of the support hyperplanes. If just a witness is asked for, only the original generators appear in the list of candidates, and their number is usually rather small.
+
 \subsection{Inhomogeneous congruences}\label{ChinRem}
 
 We want to compute the nonnegative solutions of the simultaneous inhomogeneous congruences
@@ -2457,6 +2482,8 @@ More precisely: n homogeneous computations it implies \verb|Deg1Elements|, in in
 	
 	\itemtt[Triangulation, -T] makes Normaliz to compute, store and export the full triangulation.
 	
+	\itemtt[ConeDecomposition, -D] Normaliz computes a disjoint decomposition of the cone by semiopen simplicial cones. Implies \verb|Triangulation|.
+	
 	\itemtt[TriangulationSize, -t] makes Normaliz count the simplicial cones in the full triangulation.
 	
 	\itemtt[TriangulationDetSum] makes Normaliz additionally sum the absolute values of their determinants.
@@ -2535,12 +2562,12 @@ The amount of computations done with infinite precision is usually very small, b
 \end{itemize}
 However, in this case Normaliz cannot restart a failed computation.
 
-On the other hand, the $64$ bit attempt can be surpassed by
+On the other hand, the $64$ bit attempt can be bypassed by
 \begin{itemize}
 	\itemtt[BigInt, -B]	
 \end{itemize}
 
-Note that Normaliz tries to avoid overflows by intermediate results (even if \verb|LongLong| is set). If such overflow should happen, the computation is repeated locally with infinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must globally restart the computation.
+Note that Normaliz tries to avoid overflows by intermediate results (even if \verb|LongLong| is set). If such overflow should happen, the computation is repeated locally with infinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must restart the computation globally.
 
 \verb|BigInt| and \verb|LongLong| are  not cone properties.
 
@@ -3120,7 +3147,7 @@ The ``vertex'' of the polyhedron shown is of course the lifted version of the ve
 
 \subsubsection{Checking pointedness first}\label{IsPointed}
 
-Nonpoited cones will be an exception in Normaliz computations, and therefore Normaliz assumes that the (recession) cone it must compute is pointed. Only in rare circumstances it could be advisable to have this property checked first. There is no need to do so when the dual algorithm is used since it does not require the cone to be pointed. Moreover, if an explicit grading is given or a grading dependent computation is asked for, one cannot save time by checking the pointedness first.
+Nonpointed cones will be an exception in Normaliz computations, and therefore Normaliz assumes that the (recession) cone it must compute is pointed. Only in rare circumstances it could be advisable to have this property checked first. There is no need to do so when the dual algorithm is used since it does not require the cone to be pointed. Moreover, if an explicit grading is given or a grading dependent computation is asked for, one cannot save time by checking the pointedness first.
 
 The exceptional case is a computation, say of a Hilbert basis, by the primal algorithm in which the computation of the support hyperplanes needs very long time to be completed. If you are afraid this may happen, you can force Normaliz to compute the support hyperplanes right away by adding \verb|IsPointed| to the computation goals. This is a disadvantage only if the cone is unexpectedly pointed.
 
@@ -3136,7 +3163,8 @@ The option \ttt{-T} asks Normaliz to export the triangulation by writing the fil
 	the triangulation.
 	
 	\itemtt[tri]
-	The file \ttt{tri} lists the simplicial subcones as follows:
+	The file \ttt{tri} lists the simplicial subcones. There are two variants, depending on whether \verb|ConeDecomposition| had been set.  Here we ssume that \verb|ConeDecomposition| is not computed. See Section \ref{Disjoint} for the variant with \verb|ConeDecomposition|.
+	
 	The first line contains the number of simplicial cones
 	in the triangulation, and the next line contains the
 	number $m+1$ where $m=\rank \EE$. Each of the following
@@ -3167,8 +3195,8 @@ Its \verb|tgn| and \verb|tri| files are
 tgn             tri
 4               2
 3               4
-1 0 1           1 2 3 2
-0 1 1           1 3 4 2
+1 0 1           1 2 3    2
+0 1 1           1 3 4    2
 -1 0 1          plain
 0 -1 1                 
 \end{Verbatim}
@@ -3200,6 +3228,64 @@ The following figure shows a nested triangulation:
 For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T|, Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz.
 
 The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
+
+\subsubsection{Disjooint decomposition}\label{Disjoint}
+
+Normaliz can export the disjoint decomposition of the cone that it has computed. This decomposition is always computed together with a full triangulation, unless only the multiplicity is asked for. It represents the cone as the diskoint union of semiopen simplicial subcones. The corresponding closed cones constitute the triangulation, and from each of them some facets are removed so that one obtains a disjoint decomposition. See \cite{BIS} for more information. In the following figure, the facets separating the triangles are omitted in the triangle on the $-$ side.
+
+\begin{center}
+	\begin{scriptsize}
+		%\tikzstyle{every node}=[circle, draw, fill=black, inner sep=0pt, minimum width=3pt]
+		\begin{tikzpicture}
+		[scale=0.7,auto=left, thick]
+		%\foreach \from/\to in {n2/n4,n2/n5,n4/n5,n4/n6,n5/n7,n6/n7}
+		%  \foreach \x in {0, 1, ..., 9}
+		\foreach \x/\y in {0/2, 2/0, 5/0, 5/2, 5/4, 7/0, 7/4, 9/2}
+		\node [circle, draw, fill=black, inner sep=0pt, minimum width=2.5pt](n\x\y) at (\x,\y) {};
+		\node [circle, draw, fill=black, inner sep=0pt, minimum width=2.5pt](n23) at (2.5,3) {};
+		%\node [circle, draw, inner sep=0pt, minimum width=3pt, label=above:$O_C$](OC) at (2.8,1.7) {};
+		
+		%  \draw (\from) -- node[above]{$+$} node[below]{$-$} (\to);
+		\draw (n20) -- node[right=-2pt, pos=0.4]{$+$} node[left=-2pt, pos=0.4]{$-$} (n23);
+		\draw (n20) -- node[above=-2pt]{$+$} (n02);
+		\draw (n50) -- node[right=-2pt]{$-$} node[left=-2pt]{$+$} (n23);
+		\draw (n50) -- node[near end, right=-2pt]{$-$} node[near end, left=-2pt]{$+$} (n52);
+		\draw (n52) -- node[right=-2pt]{$-$} node[left=-2pt]{$+$} (n54);
+		\draw (n70) -- node[right=-2pt, pos=0.4]{$-$} node[left=-2pt, pos=0.4]{$+$} (n74);
+		
+		\draw (n52) -- node[below=-2pt]{$+$} node[above=-2pt]{$-$} (n23);
+		\draw (n52) -- node[below=-2pt]{$-$} node[above]{$+$} (n74);
+		\draw (n50) -- node[right=-2pt]{$-$} node[left=-2pt]{$+$} (n74);
+		
+		\draw (n02) -- node[below=-2pt]{$+$} (n23);
+		\draw (n23) -- node[right=5pt]{$+$} (n54);
+		\draw (n20) -- node[above=-2pt]{$+$} (n50);
+		\draw (n50) -- node[above=-2pt]{$+$} (n70);
+		\draw (n54) -- node[below=-2pt]{$+$} (n74);
+		\draw (n70) -- node[above=-2pt]{$+$} (n92);
+		\draw (n74) -- node[below=-2pt]{$+$} (n92);
+		
+		
+		%  \draw[to] (daq) -- node[midway,right] {raw event data\\level 1} (buffer);
+		% \draw[to] (monitor) -- node[midway,above] {events} node[midway,below] {level 1} (datastore);
+		\end{tikzpicture}
+	\end{scriptsize}
+\end{center}
+
+If you want to access the disjoint decomposition, you must The computation goal \verb|ConeDecomposition| or use the command line option is \verb|-D|. As an example we compute \verb|cross2.in| with the computation goal \verb|ConeDecomposition|. The file \verb|cross2.tri| now looks as follows:
+
+\begin{Verbatim}
+2
+7
+1 2 3    2    0 0 0
+2 3 4    2    0 0 1
+plain
+\end{Verbatim}
+
+As before the first line contains the size of the triangulation and the second is the number of entries of each row.
+The first $3$ entries in each line are the indices of the extreme rays with respect to the \verb|tgn| file and the fourth entry is the determinant. They are followed by a $0/1$ vector indicating the open facets in the order in which they are opposite to the extreme rays. If the corresponding entry is $1$, the facet must be removed. 
+
+In our example all facets of the first simplicial cone are kept, and from the second simplicial cone the facet opposite to the third extreme ray (with index $4$ relative to \verb|tgn|) must be removed. 
 
 
 \subsection{Exporting the Stanley decomposition}
@@ -3904,24 +3990,23 @@ http://www.gnu.org/licenses/.
 Please refer to Normaliz in any publication for which it has
 been used:
 \begin{center}
-	W. Bruns, B. Ichim, R. Sieg, T. Römer and C. Söger: Normaliz. Algorithms for
+	W. Bruns, B. Ichim, T. Römer, R. Sieg and C. Söger: Normaliz. Algorithms for
 	rational cones and affine monoids. Available at
-	http://www.math.uos.de/normaliz.
+	\texttt{texthttp://www.normaliz.uos.de}
 \end{center}
 The corresponding \verb|\bibitem|:
 \begin{Verbatim}
-\bibitem W. Bruns, B. Ichim, R. Sieg, T. R\"omer and C. S\"oger:
+\bibitem{Normaliz} W. Bruns, B. Ichim, T. R\"omer, R. Sieg and C. S\"oger:
 Normaliz. Algorithms for rational cones and affine monoids.
-Available at http://www.math.uos.de/normaliz.
+Available at \texttt{http://www.math.uos.de/normaliz}.
 \end{Verbatim}
 
 A BibTeX entry:
 \begin{Verbatim}
 @Misc{Normaliz,
-author = {W. Bruns and B. Ichim and R. Sieg and T. R\"omer and C. S\"oger},
+author = {W. Bruns and B. Ichim and T. R\"omer and R. Sieg and C. S\"oger},
 title = Normaliz. Algorithms for rational cones and affine monoids,
 howpublished ={Available at \texttt{http://www.math.uos.de/normaliz}}
-}
 \end{Verbatim}
 
 It is now customary to evaluate mathematicians by such data as
@@ -4526,7 +4611,9 @@ Computation goals:
 	
 	\item Normality test without computation of full Hilbert basis (in the negative case).
 	
-	\item Generators over original monoid also in the inhomogeneous case.	
+	\item Generators over original monoid also in the inhomogeneous case.
+	
+	\item Disjoint decomposition of the cone.	
 	
 \end{enumerate}
 

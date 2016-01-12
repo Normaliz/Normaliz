@@ -340,8 +340,9 @@ void Output<Integer>::write_tri() const{
             for (size_t i=0; i<tit->first.size(); i++) {
                 out << tit->first[i] +1 << " ";
             }
-            out << tit->second;
+            out << "   " << tit->second;
             if(Result->isComputed(ConeProperty::ConeDecomposition)){
+                out << "   ";
                 for (size_t i=0; i<tit->first.size(); i++) {
                     out << " " << (*idd)[i];
                 }                
@@ -659,7 +660,7 @@ void Output<Integer>::write_files() const {
                 out << "original monoid is not integrally closed"<<endl;
                 if ( Result->isComputed(ConeProperty::IsIntegrallyClosed)
                        && !Result->isComputed(ConeProperty::HilbertBasis)) {
-                    out << "witness for not integrally closed:" << endl;
+                    out << "witness for not being integrally closed:" << endl;
                     out << Result->getWitnessNotIntegrallyClosed();
                 }
             }
