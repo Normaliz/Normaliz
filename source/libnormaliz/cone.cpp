@@ -1189,6 +1189,17 @@ const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() {
 }
 
 template<typename Integer>
+const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
+    compute(ConeProperty::ConeDecomposition);
+    return OpenFacets;
+}
+
+template<typename Integer>
+const vector<vector<bool> >& Cone<Integer>::getOpenFacets_no_computation() {
+    // compute(ConeProperty::ConeDecomposition);
+    return OpenFacets;
+}
+template<typename Integer>
 const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() {
     compute(ConeProperty::InclusionExclusionData);
     return InExData;
@@ -1620,6 +1631,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     }
     if (ToCompute.test(ConeProperty::Triangulation)) {
         FC.keep_triangulation = true;
+    }
+    if (ToCompute.test(ConeProperty::ConeDecomposition)) {
+        FC.do_cone_dec = true;
     }
     if (ToCompute.test(ConeProperty::Multiplicity) ) {
         FC.do_multiplicity = true;
@@ -2103,25 +2117,30 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         convert(TriangulationDetSum, FC.detSum);
         is_Computed.set(ConeProperty::TriangulationDetSum);
     }
+    
     if (FC.isComputed(ConeProperty::Triangulation)) {
-        triangulation_is_nested = FC.triangulation_is_nested;
-        triangulation_is_partial= FC.triangulation_is_partial;
         size_t tri_size = FC.Triangulation.size();
         Triangulation = vector< pair<vector<key_t>, Integer> >(tri_size);
+        if(FC.isComputed(ConeProperty::ConeDecomposition))
+            OpenFacets.resize(tri_size);
         SHORTSIMPLEX<IntegerFC> simp;
         for (size_t i = 0; i<tri_size; ++i) {
-            SHORTSIMPLEX<IntegerFC> simp;
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
-            sort(Triangulation[i].first.begin(), Triangulation[i].first.end());
+            // sort(Triangulation[i].first.begin(), Triangulation[i].first.end());
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
                 convert(Triangulation[i].second, simp.vol);
             else
                 Triangulation[i].second = 0;
+            if(FC.isComputed(ConeProperty::ConeDecomposition))
+                OpenFacets[i].swap(simp.Excluded);
             FC.Triangulation.pop_front();
         }
+        if(FC.isComputed(ConeProperty::ConeDecomposition))
+            is_Computed.set(ConeProperty::ConeDecomposition);
         is_Computed.set(ConeProperty::Triangulation);
     }
+
     if (FC.isComputed(ConeProperty::StanleyDec)) {
         StanleyDec.clear();
         //StanleyDec.splice(StanleyDec.end(),FC.StanleyDec);

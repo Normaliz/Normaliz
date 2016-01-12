@@ -2206,51 +2206,58 @@ void Full_Cone<Integer>::update_reducers(bool forced){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes(){
+
+    if(!isComputed(ConeProperty::SupportHyperplanes)){
+        if (verbose) {
+            verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
+        }
+        get_supphyps_from_copy(false);
+    }
+    
+    check_pointed();
+    if(!pointed){
+        throw NonpointedException();
+    }
+
+    int max_threads = omp_get_max_threads();
+    size_t Memory_per_gen=8*nrSupport_Hyperplanes;
+    size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
+    // cout << "max_nr_gen " << max_nr_gen << endl;
+    AdjustedReductionBound=max_nr_gen;
+    if(AdjustedReductionBound < 2000)
+        AdjustedReductionBound=2000;
+
+
+    Sorting=compute_degree_function();
+    if (!is_approximation) {
+        bool save_do_module_gens_intcl=do_module_gens_intcl;
+        do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
+        for (size_t i = 0; i <nr_gen; i++) {               
+            // cout << gen_levels[i] << " ** " << Generators[i];
+            if(!inhomogeneous || gen_levels[i]==0 || (!save_do_module_gens_intcl && gen_levels[i]<=1)) {
+                OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
+                OldCandidates.Candidates.back().original_generator=true;
+            }
+        }
+        do_module_gens_intcl=save_do_module_gens_intcl; // restore
+        if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
+            OldCandidates.auto_reduce();
+        else
+            OldCandidates.sort_by_deg();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
     assert(omp_get_level()==0);
 
     // prepare reduction 
     if (do_Hilbert_basis && OldCandidates.Candidates.empty()) {
-    
-        if(!isComputed(ConeProperty::SupportHyperplanes)){
-            if (verbose) {
-                verboseOutput() << "**** Computing support hyperplanes for reduction:" << endl;
-            }
-            get_supphyps_from_copy(false);
-        }
-        
-        check_pointed();
-        if(!pointed){
-            throw NonpointedException();
-        }
-        
-        int max_threads = omp_get_max_threads();
-        size_t Memory_per_gen=8*nrSupport_Hyperplanes;
-        size_t max_nr_gen=RAM_Size/(Memory_per_gen*max_threads);
-        // cout << "max_nr_gen " << max_nr_gen << endl;
-        AdjustedReductionBound=max_nr_gen;
-        if(AdjustedReductionBound < 2000)
-            AdjustedReductionBound=2000;
-        
-        
-        Sorting=compute_degree_function();
-        if (!is_approximation) {
-            bool save_do_module_gens_intcl=do_module_gens_intcl;
-            do_module_gens_intcl=false; // to avoid multiplying sort_deg by 2 for the original generators
-            for (size_t i = 0; i <nr_gen; i++) {               
-                // cout << gen_levels[i] << " ** " << Generators[i];
-                if(!inhomogeneous || gen_levels[i]==0 || (!save_do_module_gens_intcl && gen_levels[i]<=1)) {
-                    OldCandidates.Candidates.push_back(Candidate<Integer>(Generators[i],*this));
-                    OldCandidates.Candidates.back().original_generator=true;
-                }
-            }
-            do_module_gens_intcl=save_do_module_gens_intcl; // restore
-            if(!do_module_gens_intcl) // if do_module_gens_intcl we don't want to change the original monoid
-                  OldCandidates.auto_reduce();
-               else
-                   OldCandidates.sort_by_deg();
-        }
+        prepare_old_candidates_and_support_hyperplanes();
     }
     
     if (TriangulationBufferSize == 0)
@@ -2596,6 +2603,9 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     if (keep_triangulation) {
         is_Computed.set(ConeProperty::Triangulation);
     }
+    if (do_cone_dec) {
+        is_Computed.set(ConeProperty::ConeDecomposition);
+    }
 
     evaluate_triangulation();
     evaluate_large_simplices();
@@ -2781,6 +2791,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
     if (do_Stanley_dec)     keep_triangulation = true;
+    if (do_cone_dec)        keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
     if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
@@ -2790,8 +2801,13 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     if (do_Hilbert_basis)   do_partial_triangulation = true;
     // activate 
     do_only_multiplicity = do_determinants;
-    if (do_Stanley_dec || do_h_vector || do_deg1_elements || do_Hilbert_basis) {
+    stop_after_cone_dec = true;
+    if(do_cone_dec)          do_only_multiplicity=false;
+        
+    if (do_Stanley_dec || do_h_vector || do_deg1_elements 
+                     || do_Hilbert_basis) {
         do_only_multiplicity = false;
+        stop_after_cone_dec = false;
         do_evaluation = true;
     }
     if (do_determinants)    do_evaluation = true;
@@ -4176,6 +4192,8 @@ void Full_Cone<Integer>::reset_tasks(){
     do_class_group = false;
     do_module_gens_intcl = false;
     do_module_rank = false;
+    do_cone_dec=false;
+    stop_after_cone_dec=false;
     
     do_extreme_rays=false;
     do_pointed=false;

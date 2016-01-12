@@ -48,6 +48,9 @@ template<typename Integer> struct SHORTSIMPLEX {
     vector<key_t> key;                // full key of simplex
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
+    vector<bool> Excluded;           // for disjoint decomposition of cone
+                                      // true in position i indictate sthat the facet 
+                                      // opposite of generator i must be excluded
 };
 
 template<typename Integer> struct STANLEYDATA {
@@ -213,6 +216,8 @@ public:
     bool isTriangulationNested();
     bool isTriangulationPartial();
     const vector< pair<vector<key_t>, Integer> >& getTriangulation();
+    const vector< vector<bool> >& getOpenFacets();
+    const vector< vector<bool> >& getOpenFacets_no_computation();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
 
@@ -242,6 +247,7 @@ private:
     bool triangulation_is_nested;
     bool triangulation_is_partial;
     vector< pair<vector<key_t>, Integer> > Triangulation;
+    vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
