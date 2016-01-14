@@ -6,7 +6,7 @@ rank = 6 (maximal)
 external index = 3
 internal index = 1
 original monoid is not integrally closed
-witness for not integrally closed:
+witness for not being integrally closed:
 1 1 1 1 1 1 
 
 grading:
