@@ -1195,11 +1195,6 @@ const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
 }
 
 template<typename Integer>
-const vector<vector<bool> >& Cone<Integer>::getOpenFacets_no_computation() {
-    // compute(ConeProperty::ConeDecomposition);
-    return OpenFacets;
-}
-template<typename Integer>
 const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() {
     compute(ConeProperty::InclusionExclusionData);
     return InExData;
