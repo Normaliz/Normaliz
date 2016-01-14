@@ -3184,7 +3184,7 @@ The option \ttt{-T} asks Normaliz to export the triangulation by writing the fil
 	the triangulation.
 	
 	\itemtt[tri]
-	The file \ttt{tri} lists the simplicial subcones. There are two variants, depending on whether \verb|ConeDecomposition| had been set.  Here we ssume that \verb|ConeDecomposition| is not computed. See Section \ref{Disjoint} for the variant with \verb|ConeDecomposition|.
+	The file \ttt{tri} lists the simplicial subcones. There are two variants, depending on whether \verb|ConeDecomposition| had been set. Here we assume that \verb|ConeDecomposition| is not computed. See Section \ref{Disjoint} for the variant with \verb|ConeDecomposition|.
 	
 	The first line contains the number of simplicial cones
 	in the triangulation, and the next line contains the
@@ -3250,9 +3250,9 @@ For the Normaliz computations, nested triangulations are as good as ordinary tri
 
 The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
 
-\subsubsection{Disjooint decomposition}\label{Disjoint}
+\subsubsection{Disjoint decomposition}\label{Disjoint}
 
-Normaliz can export the disjoint decomposition of the cone that it has computed. This decomposition is always computed together with a full triangulation, unless only the multiplicity is asked for. It represents the cone as the diskoint union of semiopen simplicial subcones. The corresponding closed cones constitute the triangulation, and from each of them some facets are removed so that one obtains a disjoint decomposition. See \cite{BIS} for more information. In the following figure, the facets separating the triangles are omitted in the triangle on the $-$ side.
+Normaliz can export the disjoint decomposition of the cone that it has computed. This decomposition is always computed together with a full triangulation, unless only the multiplicity is asked for. It represents the cone as the disjoint union of semiopen simplicial subcones. The corresponding closed cones constitute the triangulation, and from each of them some facets are removed so that one obtains a disjoint decomposition. See \cite{BIS} for more information. In the following figure, the facets separating the triangles are omitted in the triangle on the $-$ side.
 
 \begin{center}
 	\begin{scriptsize}
@@ -3293,7 +3293,7 @@ Normaliz can export the disjoint decomposition of the cone that it has computed.
 	\end{scriptsize}
 \end{center}
 
-If you want to access the disjoint decomposition, you must The computation goal \verb|ConeDecomposition| or use the command line option is \verb|-D|. As an example we compute \verb|cross2.in| with the computation goal \verb|ConeDecomposition|. The file \verb|cross2.tri| now looks as follows:
+If you want to access the disjoint decomposition, you must activate the computation goal \verb|ConeDecomposition| or use the command line option is \verb|-D|. As an example we compute \verb|cross2.in| with the computation goal \verb|ConeDecomposition|. The file \verb|cross2.tri| now looks as follows:
 
 \begin{Verbatim}
 2
@@ -3917,7 +3917,7 @@ Furthermore we require some C++11 features (e.g. \verb|std::exception_ptr|), sup
 \item clang++ 2.9,
 \item Intel icpc 12.0
 \end{itemize}
-See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
+See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed discussion.
 
 The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
 
@@ -3977,9 +3977,9 @@ Currently Apple does not supply a compiler which supports OpenMP.
 We recommend the use of a current gcc.
 
 To install this, and other prerequisites, we recommend using a package
-manager such as <a href="http://www.finkproject.org/">Fink</a>,
-<a href="http://brew.sh/">Homebrew</a>
-or <a href="https://www.macports.org/">MacPort</a>.
+manager such as Fink \url{http://www.finkproject.org/},
+Homebrew \url{http://brew.sh/},
+or MacPort \url{https://www.macports.org/}.
 
 You can then follow the instructions for Linux.
 
@@ -4006,20 +4006,20 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public
 License along with the program. If not, see
-http://www.gnu.org/licenses/.
+\url{http://www.gnu.org/licenses/}.
 
 Please refer to Normaliz in any publication for which it has
 been used:
 \begin{center}
 	W. Bruns, B. Ichim, T. Römer, R. Sieg and C. Söger: Normaliz. Algorithms for
 	rational cones and affine monoids. Available at
-	\texttt{texthttp://www.normaliz.uos.de}
+	\url{http://normaliz.uos.de}
 \end{center}
 The corresponding \verb|\bibitem|:
 \begin{Verbatim}
 \bibitem{Normaliz} W. Bruns, B. Ichim, T. R\"omer, R. Sieg and C. S\"oger:
 Normaliz. Algorithms for rational cones and affine monoids.
-Available at \texttt{http://www.math.uos.de/normaliz}.
+Available at \url{http://normaliz.uos.de}.
 \end{Verbatim}
 
 A BibTeX entry:
@@ -4027,7 +4027,7 @@ A BibTeX entry:
 @Misc{Normaliz,
 author = {W. Bruns and B. Ichim and T. R\"omer and R. Sieg and C. S\"oger},
 title = Normaliz. Algorithms for rational cones and affine monoids,
-howpublished ={Available at \texttt{http://www.math.uos.de/normaliz}}
+howpublished ={Available at \url{http://normaliz.uos.de}}
 \end{Verbatim}
 
 It is now customary to evaluate mathematicians by such data as
@@ -4646,8 +4646,8 @@ Computation goals:
 
 \begin{thebibliography}{15.}
 	\small
-	
-		\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}
+
+	\bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}
 	
 	\bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.7}.
 	Available from\\
@@ -4686,7 +4686,7 @@ Computation goals:
 	
 	\bibitem{GAP-NmzInterface} S.~Gutsche, M.~Horn, C.~Söger,
 	\emph{NormalizInterface for GAP}. 
-	Available at \url{https://github.com/fingolfin/NormalizInterface}.
+	Available at \url{https://github.com/gap-packages/NormalizInterface}.
 	
 	\bibitem{KV} M. Köppe and S. Verdoolaege. {\em  Computing
 		parametric rational generating functions with a primal
