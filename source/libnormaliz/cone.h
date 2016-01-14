@@ -217,7 +217,6 @@ public:
     bool isTriangulationPartial();
     const vector< pair<vector<key_t>, Integer> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
-    const vector< vector<bool> >& getOpenFacets_no_computation();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
 

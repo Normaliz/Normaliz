@@ -327,14 +327,15 @@ void Output<Integer>::write_tri() const{
 
         const vector< pair<vector<libnormaliz::key_t>,Integer> >& Tri = Result->getTriangulation();
         typename vector< pair<vector<libnormaliz::key_t>,Integer> >::const_iterator tit = Tri.begin();        
-        const vector<vector<bool> >& Dec=Result->getOpenFacets_no_computation();
+        const vector<vector<bool> >& Dec = Result->isComputed(ConeProperty::ConeDecomposition) ?
+                Result->getOpenFacets() : vector<vector<bool> >();
         typename vector< vector<bool> >::const_iterator idd = Dec.begin();
 
         out << Tri.size() << endl;
-        size_t nr_extra_enttries=1;
+        size_t nr_extra_entries=1;
         if (Result->isComputed(ConeProperty::ConeDecomposition))
-            nr_extra_enttries+=Result->getSublattice().getRank();
-        out << Result->getSublattice().getRank()+nr_extra_enttries << endl; //works also for empty list
+            nr_extra_entries+=Result->getSublattice().getRank();
+        out << Result->getSublattice().getRank()+nr_extra_entries << endl; //works also for empty list
 
         for(; tit != Tri.end(); ++tit) {
             for (size_t i=0; i<tit->first.size(); i++) {
