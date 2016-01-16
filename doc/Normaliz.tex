@@ -4638,7 +4638,522 @@ Computation goals:
 	
 \end{enumerate}
 
+\section{libnormaliz}
 
+The kernel of Normaliz is the C++ class library \verb|libnormaliz|. It implements all the classes that are necessary for the computations. The central class is \verb|Cone|. It realizes the communication with the calling program and starts the computations most of which are implemented in other classes. In the following we describe th class \verb|Cone|; other classes of \verb|libnormaliz| may follow in the future.
+
+Of course, Normaliz itself is the prime example for the use of \verb|libnormaliz|, but it is rather complicated because of the input and output it must nadle. Therefore we have a deded a simple example program at the end of this introduction.
+
+\verb|libnormaliz| defines its own name space. In the following we assume that
+\begin{Verbatim}
+using namespace std;
+using namespace libnormaliz;
+\end{Verbatim}
+have been declared. It is clear that opening these name spaces is dangerous. In this documentation we only do it to avoid constant repetition of \verb|std::| and \verb|libnormaliz::|
+
+\subsection{Integer type as a template parameter}
+
+A cone can be constructed for two integer types, \verb|long long| and \verb|mpz_class|. It is reasonable to choose \verb|mpz_class| since the main computations will then be tried with \verb|long long| and restarted with \verb|mpz_class| if \verb|long long| cannot store the results. This internal change of integer type is not possible if the cone is cosntructed for \verb|long long|. (Nevertheless, the linear algebra routines can use \verb|mpz_class| locally if intermediate results exceed \verb|long long|; have a look into \verb|matrix.cpp|.)
+
+Internally the template parameter is called \verb|Integer. |Iin the following we assume that the integer type has been fixed as follows:
+\begin{Verbatim}
+typedef mpz_class Integer;
+\end{Verbatim}
+The predefined alternative to \verb|mpz_class| is \verb|long long|. It is of course possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|. Then the user must take care of the conversion routines himself.
+
+The internal passage from \verb|mpz_class| to \verb|long long| can besuppressed by
+\begin{Verbatim}
+MyCone.deactivateChangeOfPrecision();
+\end{Verbatim}
+where we ssume that \verb|MyCone| has been constructed as described in the next section.
+
+\subsection{Construction of a cone}
+
+There is no default constructor for cones. The construction requires the specification of input data consissting of one or more matrices and the input types they represent.
+
+The term ``matrix'' stands for
+\begin{Verbatim}
+vector<vector<Integer> >
+\end{Verbatim}
+
+The available input types (from \verb|libnormaliz.h|) are defined as follows:
+\begin{Verbatim}
+namespace Type {
+enum InputType {
+integral_closure,
+polyhedron,
+normalization,
+polytope,
+rees_algebra,
+inequalities,
+strict_inequalities,
+signs,
+strict_signs,
+equations,
+congruences,
+inhom_inequalities,
+dehomogenization,
+inhom_equations,
+inhom_congruences,
+lattice_ideal,
+grading,
+excluded_faces,
+lattice,
+saturation,
+cone,
+offset,
+vertices,
+support_hyperplanes,
+cone_and_lattice
+};
+} //end namespace Type
+\end{Verbatim}
+The input types are explained in Section \ref{input}. In certain environments it is not possible to use the enumeration. Therefore we provide a function that converts a string into the corresponding input type:
+\begin{Verbatim}
+Type::InputType to_type(const string& type_string)
+\end{Verbatim}
+
+The types \verb|grading|, \verb|dehomoneization| and \verb|offset| must be encoded as matrices with a single row. We come back to this point below.
+
+The simplest constructor has the syntax
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType input_type, const vector< vector<Integer> >& Input)
+\end{Verbatim}
+and can be used as in the following example:
+\begin{Verbatim}
+vector<vector <Integer> > Data = ...
+Type::InputType type = cone;
+Cone<Integer> MyCone = Cone<Integer>(type, Data);
+\end{Verbatim}
+For two and three pairs of type and matrix there are the constructors
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+                    InputType type2, const vector< vector<Integer> >& Input2)
+                    
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+                    InputType type2, const vector< vector<Integer> >& Input2,
+                    InputType type3, const vector< vector<Integer> >& Input3)
+\end{Verbatim}
+
+If you have to combine more that three matrices, you can define a
+\begin{Verbatim}
+map <InputType, vector< vector<Integer> > >
+\end{Verbatim}
+and use the constructor with syntax
+\begin{Verbatim}
+Cone<Integer>::Cone(const map< InputType, 
+                    vector< vector<Integer> > >& multi_input_data)
+\end{Verbatim}
+
+For convenience we provide the function
+\begin{Verbatim}
+vector<vector<Integer> > to_matrix<Integer>(vector<Integer> v)
+\end{Verbatim}
+It returns a matrix whose first row is \verb|v|. A typical example:
+\begin{Verbatim}
+size_t dim = ...
+vector<vector <Integer> > Data = ...
+Type::InputType type = cone;
+vector<Integer> total_degree(dim,1);
+Type::InputType grad = grading;
+Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matix(total_degree));
+\end{Verbatim}
+
+
+\subsection{Computations in a cone}
+
+Before starting a computation in a (previously constructed) cone, one must decide what should be computed and in which way it should be computed. The computation goals and algorithmic variants (see Section \ref{Goals}) are defined as follows (\verb|cone_property.h|):
+\begin{Verbatim}
+namespace ConeProperty {
+enum Enum {
+// goals that can be computed
+Generators,
+ExtremeRays,
+VerticesOfPolyhedron,
+SupportHyperplanes,
+TriangulationSize,
+TriangulationDetSum,
+Triangulation,
+Multiplicity,
+RecessionRank,
+AffineDim,
+ModuleRank,
+HilbertBasis,
+ModuleGenerators,
+Deg1Elements,
+HilbertSeries,
+Grading,
+IsPointed,
+IsDeg1ExtremeRays,
+IsDeg1HilbertBasis,
+IsIntegrallyClosed,
+WitnessNotIntegrallyClosed,
+OriginalMonoidGenerators,
+IsReesPrimary,
+ReesPrimaryMultiplicity,
+StanleyDec,
+ExcludedFaces,
+Dehomogenization,
+InclusionExclusionData,
+Sublattice,
+ClassGroup,
+ModuleGeneratorsOverOriginalMonoid,
+// compute options
+Approximate,
+BottomDecomposition,
+DefaultMode,
+DualMode,
+KeepOrder,
+IntegerHull,
+MaximalSubspace,
+ConeDecomposition,
+EnumSize // this has to be the last entry, to get the number of entries in the enum
+}; // remember to change also the string conversion function if you change this enum
+}
+\end{Verbatim}
+
+The class \verb|ConeProperties| is based on this enumeration. Its instantiation are essentialle boolean vectors that can be accessed via the names in the enumeration. Instantiations of the class are used to set computation goals and algorithmic variants and to check whether the goals have been reched.
+
+There exist versions of \verb|compute| for up to $3$ cone properties:
+\begin{Verbatim}
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp)
+
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, 
+                   ConeProperty::Enum cp2)
+		
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, 
+                   ConeProperty::Enum cp2, ConeProperty::Enum cp3)
+\end{Verbatim}
+
+An example:
+\begin{Verbatim}
+MyCone.compute(ConeProperty::HilberBasis, ConeProperty::Multiplicity)
+\end{Verbatim}
+
+If you want to specify more than $3$ cone properties, you can define an instance of \verb|ConeProoerties| yourself and call
+\begin{Verbatim}
+ConeProperties Cone<Integer>::compute(ConeProperties ToCompute)
+\end{Verbatim}
+
+An example:
+\begin{Verbatim}
+ConeProperties Wanted;
+Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
+MyCone.compute(Wanted);
+\end{Verbatim}
+
+All \verb|get...| functions that are listed in the next section, try to compute tha data asked for if they have not yet been computed. Unless you are interested in more than a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. 
+
+Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the clas \verb|ConeProperties|. Here we only mention the constructors
+\begin{Verbatim}
+ConeProperties::ConeProperties(ConeProperty::Enum p1)
+
+ConeProperties::ConeProperties(ConeProperty::Enum p1, ConeProperty::Enum p2)
+
+ConeProperties::ConeProperties(ConeProperty::Enum p1, ConeProperty::Enum p2,
+                               ConeProperty::Enum p3)
+\end{Verbatim}
+and the functions
+\begin{Verbatim}
+ConeProperties& ConeProperties::set(ConeProperty::Enum p1, bool value)
+
+ConeProperties& ConeProperties::set(ConeProperty::Enum p1, ConeProperty::Enum p2)
+
+bool ConeProperties::test(ConeProperty::Enum Property) const
+\end{Verbatim}
+
+The return value of \verb|compute| can be used to check whether the computationngoals have been reached: the reached goals are set to \verb|false|, and the ``surviving'' ones are those that have not been reached. But there is a more explicit way to do this that we will explain in the next section. 
+
+A string can be converted to a cone property and conversely:
+\begin{Verbatim}
+ConeProperty::Enum toConeProperty(const string&)
+const string& toString(ConeProperty::Enum)
+\end{Verbatim}
+
+\subsection{Retrieving results}
+
+As remarked above, all \verb|get...| functions that are listed below, try to compute tha data asked for if they have not yet been computed.
+
+\subsubsection{Chcking computations}
+In order to check whether a computation goal has been reached, one can use
+\begin{Verbatim}
+bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const 
+\end{Verbatim}
+for example
+\begin{Verbatim}
+bool done=MyCone.isComputed(ConeProperty::HilbertBasis)
+\end{Verbatim}
+
+\subsubsection{Lattice data and dimensions}
+
+\begin{Verbatim}
+size_t Cone<Integer>::getRank()
+Integer Cone<Integer>::getIndex()
+size_t Cone<Integer>::getRecessionRank()
+long Cone<Integer>::getAffineDim()
+map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints ()
+\end{Verbatim}
+
+\subsubsection{Support hyperplanes}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes()
+size_t Cone<Integer>::getNrSupportHyperplanes()
+\end{Verbatim}
+
+The first function returns the support hyperplanes of the (homogenized) cone.
+The second function returns the number of support hyperplanes. 
+
+\subsubsection{Extreme rays and vertices}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getExtremeRays()
+size_t Cone<Integer>::getNrExtremeRays()
+const vector< vector<Integer> >& Cone<Integer>::getVerticesOfPolyhedron()
+size_t Cone<Integer>::getNrVerticesOfPolyhedron()
+\end{Verbatim}
+
+In the inhomogeneous case the first function returns the extreme rays of the recession cone, and the second the vertices of the polyhedron. (Together they form the extreme rays of the homogenized cone.) 
+
+\subsubsection{Generators}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators()
+size_t Cone<Integer>::getNrOriginalMonoidGenerators()
+\end{Verbatim}
+Note that original generators are not always defined. The system of generators of the cone that is used in the computations and its cardinality are returned by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getGenerators()
+size_t Cone<Integer>::getNrGenerators()
+\end{Verbatim}
+
+\subsubsection{Lattice points in polytopes and elements of degree $1$}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements()
+size_t Cone<Integer>::getNrDeg1Elements()
+\end{Verbatim}
+
+
+\subsubsection{Hilbert basis and related systems of vectors}
+
+In the nonpointed case we need the maximal linear subspace of the cone:
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getMaximalSubspace()
+size_t Cone<Integer>::getDimMaximalSubspace()
+\end{Verbatim}
+
+One of the prime results of Normaliz and its cardinality are returned by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getHilbertBasis()
+size_t Cone<Integer>::getNrHilbertBasis()
+\end{Verbatim}
+Inhomogeneous case the functions refer to the the Hilbert basis of the recession cone. The module generaors of the lattice points in the polyhedron are accessed by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators()
+size_t Cone<Integer>::getNrModuleGenerators()
+\end{Verbatim}
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed()
+\end{Verbatim}
+
+
+\subsubsection{Grading and dehomogenization}
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getGrading()
+Integer Cone<Integer>::getGradingDenom()
+\end{Verbatim}
+The second function returns the denomionator of the grading.
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getDehomogenization()
+\end{Verbatim}
+
+\subsubsection{Enumerative data}
+
+\begin{Verbatim}
+mpq_class Cone<Integer>::getMultiplicity()
+\end{Verbatim}
+Don't forget that the multiplicity is measured by a rational, not necessarily integral polytope. Therefore it need not be an integer.
+
+The Hilbert series is stored in a class of its own. It is retrieved by
+\begin{Verbatim}
+const HilbertSeries& Cone<Integer>::getHilbertSeries()
+\end{Verbatim}
+It contains several data fields that can be accessed as follows (see \verb|hilbert_series.h|):
+\begin{Verbatim}
+const vector<mpz_class>& getNum() const;
+const map<long, denom_t>& getDenom() const;
+
+const vector<mpz_class>& getCyclotomicNum() const;
+const map<long, denom_t>& getCyclotomicDenom() const;
+
+long getDegreeAsRationalFunction() const;
+long getShift() const;
+
+long isHilbertQuasiPolynomialComputed() const;
+vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
+long getPeriod() const;
+mpz_class getHilbertQuasiPolynomialDenom() const;
+\end{Verbatim}
+
+The first four functions refer to two representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In both cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
+
+The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. >since the denominator has a nonzero constant term in both cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
+
+For the input type \verb|rees_algebra| we provide
+\begin{Verbatim}
+Integer Cone<Integer>::getReesPrimaryMultiplicity()
+\end{Verbatim}
+
+\begin{Verbatim}
+
+NOCH ZU BEARBEITEN:
+
+Cone<Integer>& Cone<Integer>::getIntegerHullCone() const {
+	return *IntHullCone;
+}
+
+
+
+
+const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() {
+	compute(ConeProperty::Sublattice);
+	return BasisChange;
+}
+
+
+const Matrix<Integer>& Cone<Integer>::getExcludedFacesMatrix() {
+	compute(ConeProperty::ExcludedFaces);
+	return ExcludedFaces;
+}
+
+const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces() {
+	compute(ConeProperty::ExcludedFaces);
+	return ExcludedFaces.get_elements();
+}
+
+size_t Cone<Integer>::getNrExcludedFaces() {
+	compute(ConeProperty::ExcludedFaces);
+	return ExcludedFaces.nr_of_rows();
+}
+
+
+const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() {
+	compute(ConeProperty::Triangulation);
+	return Triangulation;
+}
+
+
+const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
+	compute(ConeProperty::ConeDecomposition);
+	return OpenFacets;
+}
+
+
+const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() {
+	compute(ConeProperty::InclusionExclusionData);
+	return InExData;
+}
+
+
+const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() {
+	compute(ConeProperty::StanleyDec);
+	return StanleyDec;
+}
+
+
+size_t Cone<Integer>::getTriangulationSize() {
+	compute(ConeProperty::TriangulationSize);
+	return TriangulationSize;
+}
+
+
+Integer Cone<Integer>::getTriangulationDetSum() {
+	compute(ConeProperty::TriangulationDetSum);
+	return TriangulationDetSum;
+}
+
+
+const HilbertSeries& Cone<Integer>::getHilbertSeries() {
+	compute(ConeProperty::HilbertSeries);
+	return HSeries;
+}
+
+
+
+
+mpq_class Cone<Integer>::getMultiplicity() {
+	compute(ConeProperty::Multiplicity);
+	return multiplicity;
+}
+
+
+bool Cone<Integer>::isPointed() {
+	compute(ConeProperty::IsPointed);
+	return pointed;
+}
+
+
+bool Cone<Integer>::isInhomogeneous() {
+	return inhomogeneous;
+}
+
+
+bool Cone<Integer>::isDeg1ExtremeRays() {
+	compute(ConeProperty::IsDeg1ExtremeRays);
+	return deg1_extreme_rays;
+}
+
+
+bool Cone<Integer>::isDeg1HilbertBasis() {
+	compute(ConeProperty::IsDeg1HilbertBasis);
+	return deg1_hilbert_basis;
+}
+
+
+bool Cone<Integer>::isIntegrallyClosed() {
+	compute(ConeProperty::IsIntegrallyClosed);
+	return integrally_closed;
+}
+
+
+bool Cone<Integer>::isReesPrimary() {
+	compute(ConeProperty::IsReesPrimary);
+	return rees_primary;
+}
+
+
+// the information about the triangulation will just be returned
+// if no triangulation was computed so far they return false
+
+bool Cone<Integer>::isTriangulationNested() {
+	return triangulation_is_nested;
+}
+
+bool Cone<Integer>::isTriangulationPartial() {
+	return triangulation_is_partial;
+}
+
+
+size_t Cone<Integer>::getModuleRank() {
+	compute(ConeProperty::ModuleRank);
+	return module_rank;
+}
+
+
+vector<Integer> Cone<Integer>::getClassGroup() {
+	compute(ConeProperty::ClassGroup);
+	return ClassGroup;
+}
+\end{Verbatim}
+
+
+\subsection{Exception jandling}
+
+\subsection{A simple program}
 
 \end{small}
 
