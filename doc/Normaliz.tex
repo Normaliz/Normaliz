@@ -3172,7 +3172,7 @@ Nonpointed cones will be an exception in Normaliz computations, and therefore No
 
 The exceptional case is a computation, say of a Hilbert basis, by the primal algorithm in which the computation of the support hyperplanes needs very long time to be completed. If you are afraid this may happen, you can force Normaliz to compute the support hyperplanes right away by adding \verb|IsPointed| to the computation goals. This is a disadvantage only if the cone is unexpectedly pointed.
 
-\subsection{Exporting the triangulation}
+\subsection{Exporting the triangulation}\label{Triang}
 
 The option \ttt{-T} asks Normaliz to export the triangulation by writing the files 
  \ttt{<project>.tgn} and \verb|<project>.tri|:
@@ -3309,7 +3309,7 @@ The first $3$ entries in each line are the indices of the extreme rays with resp
 In our example all facets of the first simplicial cone are kept, and from the second simplicial cone the facet opposite to the third extreme ray (with index $4$ relative to \verb|tgn|) must be removed. 
 
 
-\subsection{Exporting the Stanley decomposition}
+\subsection{Exporting the Stanley decomposition}\label{Stanley}
 
 The option \ttt{-y} makes Normaliz 
 write the files  \ttt{<project>.tgn}, \verb|<project>.dec| and \verb|<project>.inv|.   Stanley decomposition is contained in the file with the suffix \verb|dec|. But this file also contains the inclusion/exclusion data if there are excluded faces:
@@ -4659,13 +4659,27 @@ Internally the template parameter is called \verb|Integer. |Iin the following we
 \begin{Verbatim}
 typedef mpz_class Integer;
 \end{Verbatim}
-The predefined alternative to \verb|mpz_class| is \verb|long long|. It is of course possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|. Then the user must take care of the conversion routines himself.
 
 The internal passage from \verb|mpz_class| to \verb|long long| can besuppressed by
 \begin{Verbatim}
 MyCone.deactivateChangeOfPrecision();
 \end{Verbatim}
 where we ssume that \verb|MyCone| has been constructed as described in the next section.
+
+\subsubsection{Alternative integer types}
+
+The predefined alternative to \verb|mpz_class| is \verb|long long|. It is of course possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|, but we have tested only these types.
+
+In an alternative Configuration  you have to include \verb|libnormaliz-all.cpp|. (In this case you do not need to link \verb|libnormaliz.a|). If you want to use other types, you probably have to implement some conversion functions which you can find in \verb|integer.h|. Namely
+\begin{Verbatim}
+bool libnormaliz::try_convert(TypeA, TypeB); 
+            // converts TypeB to TypeA, returns false if not possible
+\end{Verbatim}
+where one type is your type and the other is \verb|long| or \verb|long long| (and maybe mpz\_class?).
+Additionally, if your type uses infinte precision (for example, it is some wrapper for GMP), you must also implement
+\begin{Verbatim}
+template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
+\end{Verbatim}
 
 \subsection{Construction of a cone}
 
@@ -4884,17 +4898,22 @@ for example
 bool done=MyCone.isComputed(ConeProperty::HilbertBasis)
 \end{Verbatim}
 
-\subsubsection{Lattice data and dimensions}
+\subsubsection{Rank, index and dimension}
 
 \begin{Verbatim}
 size_t Cone<Integer>::getRank()
 Integer Cone<Integer>::getIndex()
+
 size_t Cone<Integer>::getRecessionRank()
 long Cone<Integer>::getAffineDim()
-map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints ()
+size_t Cone<Integer>::getModuleRank()
 \end{Verbatim}
 
-\subsubsection{Support hyperplanes}
+The function \verb|getIndex()| returns the \emph{internal} index which is only defined if original generators are defined. See Section \ref{coord} for the external index.
+
+The last three functions reurn values that are only well-defined after inhomogeneous computations.
+
+\subsubsection{Support hyperplanes and constraints}
 
 \begin{Verbatim}
 const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes()
@@ -4902,7 +4921,18 @@ size_t Cone<Integer>::getNrSupportHyperplanes()
 \end{Verbatim}
 
 The first function returns the support hyperplanes of the (homogenized) cone.
-The second function returns the number of support hyperplanes. 
+The second function returns the number of support hyperplanes.
+
+Together with the equations and congruences the support hyperplanes can also be accessed by
+\begin{Verbatim}
+map< InputType , vector< vector<Integer> > > Cone<Integer>::getConstraints ()
+\end{Verbatim}
+The map returned contains three pairs whose keys are
+\begin{Verbatim}
+Type::inequalities
+Type::equations
+Type::congruences
+\end{Verbatim}
 
 \subsubsection{Extreme rays and vertices}
 
@@ -4935,7 +4965,7 @@ size_t Cone<Integer>::getNrDeg1Elements()
 \end{Verbatim}
 
 
-\subsubsection{Hilbert basis and related systems of vectors}
+\subsubsection{Hilbert basis}
 
 In the nonpointed case we need the maximal linear subspace of the cone:
 \begin{Verbatim}
@@ -4954,10 +4984,13 @@ const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators()
 size_t Cone<Integer>::getNrModuleGenerators()
 \end{Verbatim}
 
-\begin{Verbatim}
-vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed()
-\end{Verbatim}
+\subsubsection{Module generators over original monoid}
 
+\begin{Verbatim}
+const vector< vector<Integer> >& 
+               Cone<Integer>::getModuleGeneratorsOverOriginalMonoid()
+size_t Cone<Integer>::getNrModuleGeneratorsOverOriginalMonoid()
+\end{Verbatim}
 
 \subsubsection{Grading and dehomogenization}
 
@@ -5003,155 +5036,161 @@ The first four functions refer to two representations of the Hilbert series as a
 
 The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. >since the denominator has a nonzero constant term in both cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
 
+The Hilbert quasiipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
+
 For the input type \verb|rees_algebra| we provide
 \begin{Verbatim}
 Integer Cone<Integer>::getReesPrimaryMultiplicity()
 \end{Verbatim}
 
+\subsubsection{Triangulation and disjoint decomposition}
+
+The triangulation, the size and the sum of the determinants are returned by
 \begin{Verbatim}
+const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation()
+size_t Cone<Integer>::getTriangulationSize()
+Integer Cone<Integer>::getTriangulationDetSum() 
+\end{Verbatim}
+See Section \ref{Triang} for the interpretation of these data. The first component of the pair is the vector of indices of the simplicial cones in the triangulation. Note that the indices are here counted from $0$ (whereas they start from $1$ in the \verb|tri| file). The second component is the determinant.
 
-NOCH ZU BEARBEITEN:
-
-Cone<Integer>& Cone<Integer>::getIntegerHullCone() const {
-	return *IntHullCone;
-}
-
-
-
-
-const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() {
-	compute(ConeProperty::Sublattice);
-	return BasisChange;
-}
-
-
-const Matrix<Integer>& Cone<Integer>::getExcludedFacesMatrix() {
-	compute(ConeProperty::ExcludedFaces);
-	return ExcludedFaces;
-}
-
-const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces() {
-	compute(ConeProperty::ExcludedFaces);
-	return ExcludedFaces.get_elements();
-}
-
-size_t Cone<Integer>::getNrExcludedFaces() {
-	compute(ConeProperty::ExcludedFaces);
-	return ExcludedFaces.nr_of_rows();
-}
-
-
-const vector< pair<vector<key_t>,Integer> >& Cone<Integer>::getTriangulation() {
-	compute(ConeProperty::Triangulation);
-	return Triangulation;
-}
-
-
-const vector<vector<bool> >& Cone<Integer>::getOpenFacets() {
-	compute(ConeProperty::ConeDecomposition);
-	return OpenFacets;
-}
-
-
-const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData() {
-	compute(ConeProperty::InclusionExclusionData);
-	return InExData;
-}
-
-
-const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() {
-	compute(ConeProperty::StanleyDec);
-	return StanleyDec;
-}
-
-
-size_t Cone<Integer>::getTriangulationSize() {
-	compute(ConeProperty::TriangulationSize);
-	return TriangulationSize;
-}
-
-
-Integer Cone<Integer>::getTriangulationDetSum() {
-	compute(ConeProperty::TriangulationDetSum);
-	return TriangulationDetSum;
-}
-
-
-const HilbertSeries& Cone<Integer>::getHilbertSeries() {
-	compute(ConeProperty::HilbertSeries);
-	return HSeries;
-}
-
-
-
-
-mpq_class Cone<Integer>::getMultiplicity() {
-	compute(ConeProperty::Multiplicity);
-	return multiplicity;
-}
-
-
-bool Cone<Integer>::isPointed() {
-	compute(ConeProperty::IsPointed);
-	return pointed;
-}
-
-
-bool Cone<Integer>::isInhomogeneous() {
-	return inhomogeneous;
-}
-
-
-bool Cone<Integer>::isDeg1ExtremeRays() {
-	compute(ConeProperty::IsDeg1ExtremeRays);
-	return deg1_extreme_rays;
-}
-
-
-bool Cone<Integer>::isDeg1HilbertBasis() {
-	compute(ConeProperty::IsDeg1HilbertBasis);
-	return deg1_hilbert_basis;
-}
-
-
-bool Cone<Integer>::isIntegrallyClosed() {
-	compute(ConeProperty::IsIntegrallyClosed);
-	return integrally_closed;
-}
-
-
-bool Cone<Integer>::isReesPrimary() {
-	compute(ConeProperty::IsReesPrimary);
-	return rees_primary;
-}
-
-
-// the information about the triangulation will just be returned
-// if no triangulation was computed so far they return false
-
-bool Cone<Integer>::isTriangulationNested() {
-	return triangulation_is_nested;
-}
-
-bool Cone<Integer>::isTriangulationPartial() {
-	return triangulation_is_partial;
-}
-
-
-size_t Cone<Integer>::getModuleRank() {
-	compute(ConeProperty::ModuleRank);
-	return module_rank;
-}
-
-
-vector<Integer> Cone<Integer>::getClassGroup() {
-	compute(ConeProperty::ClassGroup);
-	return ClassGroup;
-}
+The type of triangulation can be retrieved by
+\begin{Verbatim}
+bool Cone<Integer>::isTriangulationNested()
+bool Cone<Integer>::isTriangulationPartial()
 \end{Verbatim}
 
+If the disjoint decomposition has been computed, one egts the $0/1$ vectors describing the facets to be removed 
 
-\subsection{Exception jandling}
+\begin{Verbatim}
+const vector<vector<bool> >& Cone<Integer>::getOpenFacets()
+\end{Verbatim}
+
+\subsubsection{Stanley decomposition}
+
+The Stanley decomposition is stored in a list whose netries correspond to the simplicial cones in the triangulation:
+\begin{Verbatim}
+const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec()
+\end{Verbatim}
+Each entry is a record of type \verb|STANLEYDATA| defined as follows:
+\begin{Verbatim}
+struct STANLEYDATA {
+vector<key_t> key;
+Matrix<Integer> offsets;
+};
+\end{Verbatim}
+The key has the same interpretation as for the triangulation, namely as the vector of indices of the generators of the simplicial cone (counted from $0$). The matrix contains the coordinate vectors of the offsets of the components of the decomposition that belong to the simplicial cone defined by the key. See Section \ref{Stanley} for the interpretation. The format of the matrix can be accesed by the following functions of class \verb|Matrix<Integer>|:
+\begin{Verbatim}
+    size_t nr_of_rows() const;
+    size_t nr_of_columns() const;     
+\end{Verbatim}
+The entries are accessed in the same way as those of \verb|vector<vector<Integer> >|.
+
+\subsubsection{Coordinate transformation}\label{coord}
+
+The coordinate transformation from the ambient lattice to the sublattice generated by the Hilbert basis and the basis of the maximal subspace can be returned as follows:
+\begin{Verbatim}
+const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice()
+\end{Verbatim}
+An object of type \verb|Sublattice_Representation| models a sequence of $\ZZ$-homomorphisms
+$$
+\ZZ^r\xrightarrow{\phi}\ZZ^n\xrightarrow{\pi}\ZZ^r
+$$
+with the following property: there exists $c\in\ZZ$, $c\neq 0$, such that $\pi\circ \phi=c\cdot\operatorname{id}_{\ZZ^r}$. In particular $\phi$ is injective. One should view the two maps as a pair of coordinate transformations: $\phi$ is determined by a choice of basis in the sublattice $U=\phi(\ZZ^r)$, and it allows us to transfer vectors from $U\cong \ZZ^r$ to the ambient lattice $\ZZ^n$. The map $\pi$ is used to realize vectors from $U$ as linear combinations of the given basis of $U\cong\ZZ^r$: after the application of $\pi$ one divides by $c$. (If $U$ is a direct summand of $\ZZ^n$, one can choose $c=1$, and conversely.) Normaliz considers vectors as rows of matrices. Therefore $\phi$ is given as an $r\times n$-matrix and $\pi$ is given as an $n\times r$ matrix.
+
+The data just described can be accessed as follows (\verb|sublattice_representation.h|):
+\begin{Verbatim}
+const vector<vector<Integer> >& getEmbedding() const
+const vector<vector<Integer> >& getProjection() const
+Integer getAnnihilator() const
+\end{Verbatim}
+Here ``Embedding'' refers to $\phi$ and ``Projection'' to $\pi$ (though $\pi$ is not always surjective). The ``Annihilator'' is the number $c$ above. (It annihilates $\ZZ1r$ modulo $\pi(\ZZ1n)$.)
+
+The numbers $n$ and $r$ are accessed in this order by
+\begin{Verbatim}
+size_t getDim() const
+size_t getRank() const
+\end{Verbatim}
+The external index, namely the order of the torsion subgroup of $\ZZ^n/U$, is returned by
+\begin{Verbatim}
+mpz_class getExternalIndex() const;
+\end{Verbatim}
+Very often $\phi$ and $\psi$ are identity maps, and this property can be tested by
+\begin{Verbatim}
+bool IsIdentity()const
+\end{Verbatim}
+The constraints computed by Normaliz are ``hidden'' in the sublattice representation. They van be accessed by
+\begin{Verbatim}
+const vector<vector<Integer> >& getEquations() const
+const vector<vector<Integer> >& getCongruences() const
+\end{Verbatim}
+	
+
+\subsubsection{Class group}
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getClassGroup()
+\end{Verbatim}
+The return value is to be interpreted as follows: The entry for index $0$ is the rank of the class group. The remaining entries contain the orders of the summands in a direct sum decomposition of the torsion subgroup.
+
+\subsubsection{Integer hull}
+
+For the computation of the integer hull an auxiliary cone is constructed. A refernce to it is returned by
+\begin{Verbatim}
+Cone<Integer>& Cone<Integer>::getIntegerHullCone() const
+\end{Verbatim}
+
+For example, the support hyperplanes of the integer hull can be accessed by
+\begin{Verbatim}
+MyCone.getIntegerHullCone().getSupportHyperplanes()
+\end{Verbatim}
+
+\subsubsection{Excluded faces}
+
+Before using the excluded faces Normaliz makes the collection irredundant by discarding those that are contained in others. The irredundant collection (given by hyperplanes that intersect the cone in the faces) and its cardinality are returned by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces()
+size_t Cone<Integer>::getNrExcludedFaces()
+\end{Verbatim}
+For the computation of the Hilbert series the all intersections of the excluded faces are computed, and for each resulting face the weight with which it must be counted is computed. These data can be accessed by 
+\begin{Verbatim}
+const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData()
+\end{Verbatim}
+The first component of each pair contains the indices of the generators that lie in the face and the second component is the weight.
+
+\subsubsection{Boolean valued results}
+
+All the ``questions'' to the cone that can be asked by the boolean valued funtions in this section start a computation if the answer is not yet known.
+
+The first,
+The question
+\begin{Verbatim}
+bool Cone<Integer>::isIntegrallyClosed()
+\end{Verbatim}
+does not trigger a computation of the full Hilbert basis. The computation stops as soon as the answer can be given, and this is the case when an element in the integral closure has been found that is not in the original monoid. Such an element is retrieved by
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed()
+\end{Verbatim}
+
+As discussed in Section \ref{IsPointed} it can sometimes be useful to aks
+\begin{Verbatim}
+bool Cone<Integer>::isPointed()
+\end{Verbatim}
+before a more complex computation is started.
+
+The next two functions answer the question hether the Hilbert basis or at least the extreme rays live in degree $1$.
+\begin{Verbatim}
+bool Cone<Integer>::isDeg1ExtremeRays()
+bool Cone<Integer>::isDeg1HilbertBasis()
+\end{Verbatim}
+
+Finally wqe have
+\begin{Verbatim}
+bool Cone<Integer>::isInhomogeneous()
+bool Cone<Integer>::isReesPrimary()
+\end{Verbatim}
+\verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
+
+\subsection{Exception handling}
 
 \subsection{A simple program}
 
