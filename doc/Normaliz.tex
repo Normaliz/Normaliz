@@ -4655,28 +4655,28 @@ have been declared. It is clear that opening these name spaces is dangerous. In 
 
 A cone can be constructed for two integer types, \verb|long long| and \verb|mpz_class|. It is reasonable to choose \verb|mpz_class| since the main computations will then be tried with \verb|long long| and restarted with \verb|mpz_class| if \verb|long long| cannot store the results. This internal change of integer type is not possible if the cone is cosntructed for \verb|long long|. (Nevertheless, the linear algebra routines can use \verb|mpz_class| locally if intermediate results exceed \verb|long long|; have a look into \verb|matrix.cpp|.)
 
-Internally the template parameter is called \verb|Integer. |Iin the following we assume that the integer type has been fixed as follows:
+Internally the template parameter is called \verb|Integer|. In the following we assume that the integer type has been fixed as follows:
 \begin{Verbatim}
 typedef mpz_class Integer;
 \end{Verbatim}
 
-The internal passage from \verb|mpz_class| to \verb|long long| can besuppressed by
+The internal passage from \verb|mpz_class| to \verb|long long| can be suppressed by
 \begin{Verbatim}
 MyCone.deactivateChangeOfPrecision();
 \end{Verbatim}
-where we ssume that \verb|MyCone| has been constructed as described in the next section.
+where we assume that \verb|MyCone| has been constructed as described in the next section.
 
 \subsubsection{Alternative integer types}
 
-The predefined alternative to \verb|mpz_class| is \verb|long long|. It is of course possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|, but we have tested only these types.
+The predefined alternative to \verb|mpz_class| is \verb|long long|. It is possible to use libnormaliz with other integer types than \verb|mpz_class| or \verb|long long|, but we have tested only these types.
 
-In an alternative Configuration  you have to include \verb|libnormaliz-all.cpp|. (In this case you do not need to link \verb|libnormaliz.a|). If you want to use other types, you probably have to implement some conversion functions which you can find in \verb|integer.h|. Namely
+In an alternative configuration  you have to include \verb|libnormaliz-all.cpp|. (In this case you do not need to link \verb|libnormaliz.a|). If you want to use other types, you probably have to implement some conversion functions which you can find in \verb|integer.h|. Namely the functions
 \begin{Verbatim}
 bool libnormaliz::try_convert(TypeA, TypeB); 
             // converts TypeB to TypeA, returns false if not possible
 \end{Verbatim}
-where one type is your type and the other is \verb|long| or \verb|long long| (and maybe mpz\_class?).
-Additionally, if your type uses infinte precision (for example, it is some wrapper for GMP), you must also implement
+where one type is your type and the other is \verb|long|, \verb|long long| or \verb|mpz_class|.
+Additionally, if your type uses infinite precision (for example, it is some wrapper for GMP), you must also implement
 \begin{Verbatim}
 template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
 \end{Verbatim}
@@ -4888,7 +4888,7 @@ const string& toString(ConeProperty::Enum)
 
 As remarked above, all \verb|get...| functions that are listed below, try to compute tha data asked for if they have not yet been computed.
 
-\subsubsection{Chcking computations}
+\subsubsection{Checking computations}
 In order to check whether a computation goal has been reached, one can use
 \begin{Verbatim}
 bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const 
@@ -5026,7 +5026,7 @@ const map<long, denom_t>& getCyclotomicDenom() const;
 long getDegreeAsRationalFunction() const;
 long getShift() const;
 
-long isHilbertQuasiPolynomialComputed() const;
+bool isHilbertQuasiPolynomialComputed() const;
 vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
 long getPeriod() const;
 mpz_class getHilbertQuasiPolynomialDenom() const;
@@ -5036,7 +5036,7 @@ The first four functions refer to two representations of the Hilbert series as a
 
 The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. >since the denominator has a nonzero constant term in both cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
 
-The Hilbert quasiipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
+The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
 
 For the input type \verb|rees_algebra| we provide
 \begin{Verbatim}
@@ -5080,8 +5080,8 @@ Matrix<Integer> offsets;
 \end{Verbatim}
 The key has the same interpretation as for the triangulation, namely as the vector of indices of the generators of the simplicial cone (counted from $0$). The matrix contains the coordinate vectors of the offsets of the components of the decomposition that belong to the simplicial cone defined by the key. See Section \ref{Stanley} for the interpretation. The format of the matrix can be accesed by the following functions of class \verb|Matrix<Integer>|:
 \begin{Verbatim}
-    size_t nr_of_rows() const;
-    size_t nr_of_columns() const;     
+    size_t nr_of_rows() const
+    size_t nr_of_columns() const    
 \end{Verbatim}
 The entries are accessed in the same way as those of \verb|vector<vector<Integer> >|.
 
@@ -5103,7 +5103,7 @@ const vector<vector<Integer> >& getEmbedding() const
 const vector<vector<Integer> >& getProjection() const
 Integer getAnnihilator() const
 \end{Verbatim}
-Here ``Embedding'' refers to $\phi$ and ``Projection'' to $\pi$ (though $\pi$ is not always surjective). The ``Annihilator'' is the number $c$ above. (It annihilates $\ZZ1r$ modulo $\pi(\ZZ1n)$.)
+Here ``Embedding'' refers to $\phi$ and ``Projection'' to $\pi$ (though $\pi$ is not always surjective). The ``Annihilator'' is the number $c$ above. (It annihilates $\ZZ^r$ modulo $\pi(\ZZ^n)$.)
 
 The numbers $n$ and $r$ are accessed in this order by
 \begin{Verbatim}
@@ -5112,7 +5112,7 @@ size_t getRank() const
 \end{Verbatim}
 The external index, namely the order of the torsion subgroup of $\ZZ^n/U$, is returned by
 \begin{Verbatim}
-mpz_class getExternalIndex() const;
+mpz_class getExternalIndex() const
 \end{Verbatim}
 Very often $\phi$ and $\psi$ are identity maps, and this property can be tested by
 \begin{Verbatim}
@@ -5153,7 +5153,8 @@ size_t Cone<Integer>::getNrExcludedFaces()
 \end{Verbatim}
 For the computation of the Hilbert series the all intersections of the excluded faces are computed, and for each resulting face the weight with which it must be counted is computed. These data can be accessed by 
 \begin{Verbatim}
-const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData()
+const vector< pair<vector<key_t>,long> >& 
+                            Cone<Integer>::getInclusionExclusionData()
 \end{Verbatim}
 The first component of each pair contains the indices of the generators that lie in the face and the second component is the weight.
 
@@ -5177,13 +5178,13 @@ bool Cone<Integer>::isPointed()
 \end{Verbatim}
 before a more complex computation is started.
 
-The next two functions answer the question hether the Hilbert basis or at least the extreme rays live in degree $1$.
+The next two functions answer the question whether the Hilbert basis or at least the extreme rays live in degree $1$.
 \begin{Verbatim}
 bool Cone<Integer>::isDeg1ExtremeRays()
 bool Cone<Integer>::isDeg1HilbertBasis()
 \end{Verbatim}
 
-Finally wqe have
+Finally we have
 \begin{Verbatim}
 bool Cone<Integer>::isInhomogeneous()
 bool Cone<Integer>::isReesPrimary()
