@@ -292,7 +292,7 @@ As pointed out in the introduction, Normaliz ``computes'' intersections $P\cap L
 
 Normaliz computes inequalities, equations and congruences defining $\EE$ and $\CC$. The output contains only those constraints that are really needed. They must always be used jointly: the equations and congruences define $\EE$, and the equations and inequalities define $\CC$. Altogether they define the monoid $M=\CC\cap\EE$. In the homogeneous case this is the monoid to be computed. In the inhomogeneous case we must intersect $M$ with the dehomogenizing hyperplane to obtain $P\cap L$.
 
-In this section, only pointed cones (and polyhedra with vertices) will be discussed. Nonpointed cones will be addressed in Section \ref{nonpointed_sec}. 
+In this section, only pointed cones (and polyhedra with vertices) will be discussed. Nonpointed cones will be addressed in Section \ref{Nonpointed}. 
 
 
 \subsection{Practical preparations}
@@ -3012,9 +3012,9 @@ shows that Normaliz does the computation in the same way as with implicit dehomo
 
 Note that the dehomogenization need not be a coordinate. It can be any linear form that is nonnegative on the cone generators.
 
-\subsection{Nonpointed cones}
+\subsection{Nonpointed cones}\label{Nonpointed}
 
-Nonpointed cones and nonpositive monoids contain nontrivial invertible elements. The main effect is that certain data are no longer unique, or may even require a new definition. We refer the reader to Section \ref{Blabla} for more information. An important point to note is that cones always split off their unit groups as direct summands and the same holds for normal affine monoids. Since Normaliz computes only normal affine monoids, we can always pass to the quotient by the unit groups. Roughly speaking, all data are computed for the pointed quotient and then lifted back to the original cone and monoid. It is inevitable that some data are no longer uniquely determined, but are unique only modulo the unit group, for example the Hilbert basis and the extreme rays.
+Nonpointed cones and nonpositive monoids contain nontrivial invertible elements. The main effect is that certain data are no longer unique, or may even require a new definition. An important point to note is that cones always split off their unit groups as direct summands and the same holds for normal affine monoids. Since Normaliz computes only normal affine monoids, we can always pass to the quotient by the unit groups. Roughly speaking, all data are computed for the pointed quotient and then lifted back to the original cone and monoid. It is inevitable that some data are no longer uniquely determined, but are unique only modulo the unit group, for example the Hilbert basis and the extreme rays. Also the multiplicity and the Hilbert series are computed for the pointed quotient. From the algebraic viewpoint this means to replace the field $K$ of coefficients by the group ring $L$ of the unit group, which is a Laurent polynomial ring over $K$: instead of $K$-vector space dimensions one considers ranks over $L$.
 
 \subsubsection{A nonpointeed cone}
 
@@ -4888,6 +4888,8 @@ const string& toString(ConeProperty::Enum)
 
 As remarked above, all \verb|get...| functions that are listed below, try to compute tha data asked for if they have not yet been computed.
 
+The functions that return a matrix encoded as \verb|vector<vector<Integer> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<Integer>|. These are not listed below; see \verb|cone.h|. 
+
 \subsubsection{Checking computations}
 In order to check whether a computation goal has been reached, one can use
 \begin{Verbatim}
@@ -5134,7 +5136,7 @@ The return value is to be interpreted as follows: The entry for index $0$ is the
 
 \subsubsection{Integer hull}
 
-For the computation of the integer hull an auxiliary cone is constructed. A refernce to it is returned by
+For the computation of the integer hull an auxiliary cone is constructed. A reference to it is returned by
 \begin{Verbatim}
 Cone<Integer>& Cone<Integer>::getIntegerHullCone() const
 \end{Verbatim}
@@ -5192,6 +5194,27 @@ bool Cone<Integer>::isReesPrimary()
 \verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
 
 \subsection{Exception handling}
+
+All exceptions that are thrown in \verb|libnormaliz| are derived from the abstract class \verb|NormalizException| that itself is derived from \verb|std::exception|:
+\begin{Verbatim}
+class NormalizException: public std::exception
+\end{Verbatim}
+
+The following exceptions must be caught by the calling program:
+\begin{Verbatim}
+class ArithmeticException: public NormalizException
+class BadInputException: public NormalizException
+class NotComputableException: public NormalizException
+class FatalException: public NormalizException
+\end{Verbatim}
+The \verb|ArithmeticException| is leaves \verb|libnormaliz| if a nonrecoverable overflow occurs (it is also used internally for the change of integer type). This should not happen for cones of integer type \verb|mpz_class|, unless it is caused by a bug in the program. The \verb|BadInputException| is thrown whenever the input is inconsistent; the reasons for this are manifold. The \verb|NotComputableException| is thrown if a computation goal cannot be reached. The \verb|FatalException| should never appear. It covers error situations that can only be caused by a bug in the program. At many places \verb|libnormaliz| has \verb|assert| verifications built in that serve the same purpose. 
+
+There are two more exceptions for the communication within \verb|libnormaliz| that should not leave it:
+\begin{Verbatim}
+class NonpointedException: public NormalizException 
+class NotIntegrallyClosedException: public NormalizException
+\end{Verbatim}
+
 
 \subsection{A simple program}
 
