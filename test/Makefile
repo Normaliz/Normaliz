@@ -24,9 +24,11 @@ TEST_FILES_D = $(patsubst %.in,%.diff,$(wildcard test-d/*.in))
 TEST_FILES_D1 = $(patsubst %.in,%.diff,$(wildcard test-d1/*.in))
 TEST_FILES_R1 = $(patsubst %.in,%.diff,$(wildcard test-r1/*.in))
 TEST_FILES_DEFAULT = $(patsubst %.in,%.diff,$(wildcard test-/*.in))
+TEST_FILES_HH = $(patsubst %.in,%.diff,$(wildcard test-hh/*.in))
+TEST_FILES_HH_INTHULL = $(patsubst %.in,%.IntHull.diff,$(wildcard test-hh/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testr1 testM testw testH
 tests: $(TEST_FILES_S)
 testv: $(TEST_FILES_V)
 testN: $(TEST_FILES_NN)
@@ -41,6 +43,7 @@ testd: $(TEST_FILES_D)
 testd1: $(TEST_FILES_D1)
 testr1: $(TEST_FILES_R1)
 testM: $(TEST_FILES_MM)
+testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 
 #compare rule
 %.diff: %.out %.ref
@@ -75,6 +78,10 @@ test-d1/%.out: $(NORMALIZ) test-d1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -d1 test-d1/$*
 test-r1/%.out: $(NORMALIZ) test-r1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
+# for this rule with two targets USING PATTERNS, make will execute it only once
+# to create the two target files
+test-hh/%.out test-hh/%.IntHull.out: $(NORMALIZ) test-hh/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-hh/$*
 
 
 
@@ -98,4 +105,5 @@ distclean: clean
 .PRECIOUS: test-r1/%.out
 .PRECIOUS: test-h/%.out
 .PRECIOUS: test-/%.out
+.PRECIOUS: test-hh/%.out
 .PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testH clean distclean
