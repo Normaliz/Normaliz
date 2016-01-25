@@ -5215,13 +5215,11 @@ class NotIntegrallyClosedException: public NormalizException
 
 \subsection{A simple program}
 
-The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036. Its goal is to find a maximal normal lattice polytope polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
+The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036 are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
 
-The program generates normal lattice simplices and checks them for maximality. The dimension is set in the program as well as the bound for the random entries of the vertices.
+The program generates normal lattice simplices and checks them for maximality. The dimension is set in the program, as well as the bound for the random coordinates of the vertices.
 
-
-
-First the more or less standard preamble:
+Let us have a look at \verb|source/manual/maxsimplex.cpp|. First the more or less standard preamble:
 
 \begin{Verbatim}
 #include <stdlib.h>
@@ -5238,12 +5236,12 @@ using namespace std;
 using namespace libnormaliz;
 \end{Verbatim}
 
-Since we want to perform a high speed experiment which is not expected to be arithmetically demanding, we choose the integer type as follows:
+Since we want to perform a high speed experiment which is not expected to be arithmetically demanding, we choose $64$ bit integers:
 \begin{Verbatim}
 typedef long long Integer;
 \end{Verbatim}
 
-First the routine that finds a random normal simplex of dimension \verb|dim|. The coordinates of the vertices are integers between $0$ and \verb|bound|. We are optimistic that such a simplex can be found, and this is iondeed no problem in dimension $4$ or $5$.
+The first routine finds a random normal simplex of dimension \verb|dim|. The coordinates of the vertices are integers between $0$ and \verb|bound|. We are optimistic that such a simplex can be found, and this is iondeed no problem in dimension $4$ or $5$.
 
 \begin{Verbatim}
 Cone<Integer> rand_simplex(size_t dim, long bound){
@@ -5275,11 +5273,11 @@ bool exists_jump_over(Cone<Integer>& Polytope,
     test_polytope.resize(test_polytope.size()+1); 
     for(size_t i=0;i<jump_cands.size();++i){
         test_polytope[test_polytope.size()-1]=jump_cands[i];
-    Cone<Integer> TestCone(Type::cone,test_polytope);
-    if(TestCone.getNrDeg1Elements()!=Polytope.getNrDeg1Elements()+1)
-        continue;
-    if(TestCone.isDeg1HilbertBasis())
-        return true;        
+        Cone<Integer> TestCone(Type::cone,test_polytope);
+        if(TestCone.getNrDeg1Elements()!=Polytope.getNrDeg1Elements()+1)
+            continue;
+        if(TestCone.isDeg1HilbertBasis())
+           return true;        
     }    
     return false;    
 }
@@ -5360,7 +5358,7 @@ Among the polytopes that have survived the height $1$ test, most nevertheless ha
     if(exists_jump_over(Candidate,Candidate2.getDeg1Elements()))
         continue;
 \end{Verbatim}
-Now we can be optimistic that a maximal polytope $P$ has been found, and we test all candidates for $z$ that satisfy the maximum possible bound on their lattice distance to $P$.
+Now we can be optimistic that a maximal polytope $P$ has been found, and we test all candidates $z$ that satisfy the maximum possible bound on their lattice distance to $P$.
 \begin{Verbatim}		
     cout << "No ht <= 1+dim jump" << endl;
     vector<Integer> widths=lattice_widths(Candidate);
@@ -5394,7 +5392,7 @@ Success!
 \begin{Verbatim}
     cout << "Maximal simplex found" << endl;
     cout << "Vertices" << endl;
-    Candidate.getExtremeRaysMatrix().pretty_print(cout);
+    Candidate.getExtremeRaysMatrix().pretty_print(cout); // a goody from matrix.h
     cout << "Number of lattice points = " << Candidate.getNrDeg1Elements();
     cout << " Multiplicity = " << Candidate.getMultiplicity() << endl; 
     
@@ -5402,7 +5400,7 @@ Success!
 }
 \end{Verbatim}
 
-Running the program needs a little bit of patience. However, within a few hours a amaximal simplex should have emerged. From a log file:
+For the compilation of \verb|maxsimplex.cpp| we have added a \verb|Makefile|. Running the program needs a little bit of patience. However, within a few hours a amaximal simplex should have emerged. From a log file:
 \begin{Verbatim}
 simplex 143000
 No ht 1 jump #latt 9

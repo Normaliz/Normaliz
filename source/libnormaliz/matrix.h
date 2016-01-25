@@ -449,6 +449,14 @@ public:
     vector<Integer>* v;
 };
 
+template<typename Integer>
+vector<vector<Integer> > to_matrix(const vector<Integer>& v){
+    
+    vector<vector<Integer> > mat(1);
+    mat[0]=v;
+    return mat;    
+}
+
 //---------------------------------------------------------------------------
 //                  Conversion between integer types
 //---------------------------------------------------------------------------
