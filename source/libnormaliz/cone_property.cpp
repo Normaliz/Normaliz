@@ -203,7 +203,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     }                                            // Stanley decomposition must be computed anyway
     if (CPs.test(ConeProperty::Approximate)
             && !CPs.test(ConeProperty::Deg1Elements)) {
-        errorOutput() << "Warning: Approximate is ignored since Deg1Elements is not set."<< std::endl;
+        errorOutput() << "WARNING: Approximate is ignored since Deg1Elements is not set."<< std::endl;
     }
     if (CPs.test(ConeProperty::ConeDecomposition))
         CPs.reset(ConeProperty::Triangulation);

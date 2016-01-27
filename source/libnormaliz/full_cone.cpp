@@ -3893,7 +3893,9 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
         return;
 
     if ( !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::HilbertBasis)) {
-        errorOutput() << "WARNING: unsatisfied preconditions in check_deg1_hilbert_basis()!" <<endl;
+        if (verbose) {
+            errorOutput() << "WARNING: unsatisfied preconditions in check_deg1_hilbert_basis()!" <<endl;
+        }
         return;
     }
 
@@ -3978,8 +3980,8 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 
     do_excluded_faces = do_h_vector || do_Stanley_dec;
 
-    if (!do_excluded_faces) {
-        errorOutput() << endl << "Warning: exluded faces, but no h-vector computation or Stanley decomposition"
+    if (verbose && !do_excluded_faces) {
+        errorOutput() << endl << "WARNING: exluded faces, but no h-vector computation or Stanley decomposition"
                       << endl << "Therefore excluded faces will be ignored" << endl;
     }
 

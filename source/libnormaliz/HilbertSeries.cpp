@@ -265,7 +265,9 @@ void HilbertSeries::simplify() const {
     period = lcm_of_keys(cdenom);
     i = period;
     if (period > 10000) {
-        errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
+        if (verbose) {
+            errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
+        }
         i = cdenom.rbegin()->first;
     }
     while (!cdenom.empty()) {
@@ -338,7 +340,9 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     if (isHilbertQuasiPolynomialComputed()) return;
     simplify();
     if (period > 200000) {
-        errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
+        if (verbose) {
+            errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
+        }
         return;
     }
     if (verbose && period > 1) {
