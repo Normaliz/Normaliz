@@ -5212,6 +5212,22 @@ class NonpointedException: public NormalizException
 class NotIntegrallyClosedException: public NormalizException
 \end{Verbatim}
 
+\subsection{Control of output}
+By using
+\begin{Verbatim}
+bool setVerboseDefault(bool v)
+\end{Verbatim}
+one can control the verbose output of \verb|libnormaliz|. The default value is \verb|false|. This is a global setting that effects all cones constructed afterwards. However, for every cone one can set an individual value of \verb|verbose| by
+\begin{Verbatim}
+bool Cone<Integer>::setVerbose(bool v)
+\end{Verbatim}
+Both functions return the previous value.
+
+The default values of verbose output and error output are \verb|std::cout| and \verb|std::cerr|. These values can be changed by
+\begin{Verbatim}
+void setVerboseOutput(std::ostream&)
+void setErrorOutput(std::ostream&)
+\end{Verbatim}
 
 \subsection{A simple program}
 
@@ -5248,19 +5264,19 @@ Cone<Integer> rand_simplex(size_t dim, long bound){
 
     vector<vector<Integer> > vertices(dim+1,vector<Integer> (dim));    
     while(true){ // an eternal loop ...
-    for(size_t i=0;i<=dim;++i){
-        for(size_t j=0;j<dim;++j)
-            vertices[i][j]=rand()%(bound+1);            
-    }
+        for(size_t i=0;i<=dim;++i){
+            for(size_t j=0;j<dim;++j)
+                vertices[i][j]=rand()%(bound+1);            
+        }
 
-    Cone<Integer> Simplex(Type::polytope,vertices);
-    // we must check the rank and normality
-    if(Simplex.getRank()==dim+1 && Simplex.isDeg1HilbertBasis())
-        return Simplex;        
+        Cone<Integer> Simplex(Type::polytope,vertices);
+        // we must check the rank and normality
+        if(Simplex.getRank()==dim+1 && Simplex.isDeg1HilbertBasis())
+            return Simplex;        
     }
     vector<vector<Integer> > dummy_gen(1,vector<Integer>(1,1)); 
     // to make the compiler happy
-	return Cone<Integer>(Type::cone,dummy_gen); 
+    return Cone<Integer>(Type::cone,dummy_gen); 
 }
 \end{Verbatim}
 
@@ -5301,7 +5317,7 @@ vector<Integer> lattice_widths(Cone<Integer>& Polytope){
                 widths[i]=test;
         }
     }
-	return widths;    
+    return widths;    
 }
 \end{Verbatim}
 
@@ -5337,24 +5353,22 @@ Maximality is tested in $3$ steps. Most often there exists a lattice  point $z$ 
 \begin{Verbatim}
     vector<vector<Integer> > supp_hyps_moved=Candidate.getSupportHyperplanes();
     for(size_t i=0;i<supp_hyps_moved.size();++i)
-    supp_hyps_moved[i][polytope_dim]+=1;
+        supp_hyps_moved[i][polytope_dim]+=1;
     Cone<Integer> Candidate1(Type::inequalities,supp_hyps_moved, 
                                        Type::grading,to_matrix(grading));
     if(Candidate1.getNrDeg1Elements()>Candidate.getNrDeg1Elements()) 
-                             // there exists a point of height 1
-        continue;
+        continue;                     // there exists a point of height 1        
 \end{Verbatim}
 Among the polytopes that have survived the height $1$ test, most nevertheless have suitable points $z$ close to them, and it makes sense not to use the maximum possible height immediately. Note that we must now test normality explicitly.
 \begin{Verbatim}
     cout << "No ht 1 jump"<< " #latt " << Candidate.getNrDeg1Elements() << endl; 
+    // move the hyperplanes further outward
     for(size_t i=0;i<supp_hyps_moved.size();++i)
         supp_hyps_moved[i][polytope_dim]+=polytope_dim; 
-                   // move the hyperplanes further outward
     Cone<Integer> Candidate2(Type::inequalities,supp_hyps_moved,
                               Type::grading,to_matrix(grading));
     cout << "Testing " << Candidate2.getNrDeg1Elements() 
-                    << " jump candidates" << endl; 
-                    // this includes the lattice points in P
+         << " jump candidates" << endl; // including the lattice points in P                    
     if(exists_jump_over(Candidate,Candidate2.getDeg1Elements()))
         continue;
 \end{Verbatim}
@@ -5381,8 +5395,7 @@ Since $P$ doesn't have many vertices (even if we use these routines for more gen
     Cone<mpz_class> Candidate3(Type::inequalities,mpz_supp_hyps,
                                 Type::grading,to_matrix(mpz_grading));
     Candidate3.compute(ConeProperty::Deg1Elements,ConeProperty::Approximate);
-    vector<vector<Integer> > jumps_cand; 
-                           // we need this matrix for conversion from mpz_class
+    vector<vector<Integer> > jumps_cand; // for conversion from mpz_class                           
     convert(jumps_cand,Candidate3.getDeg1Elements());
     cout << "Testing " << jumps_cand.size() << " jump candidates" << endl;
     if(exists_jump_over(Candidate, jumps_cand))
@@ -5397,7 +5410,7 @@ Success!
     cout << " Multiplicity = " << Candidate.getMultiplicity() << endl; 
     
     } // end while
-}
+} // end main
 \end{Verbatim}
 
 For the compilation of \verb|maxsimplex.cpp| we have added a \verb|Makefile|. Running the program needs a little bit of patience. However, within a few hours a amaximal simplex should have emerged. From a log file:
