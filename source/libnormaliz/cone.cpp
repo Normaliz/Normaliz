@@ -1076,11 +1076,6 @@ size_t Cone<Integer>::getNrOriginalMonoidGenerators() {
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() {
-    compute(ConeProperty::Generators);
-    return Generators;
-}
-template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getMaximalSubspace() {
     compute(ConeProperty::MaximalSubspace);
     return BasisMaxSubspace.get_elements();
@@ -1094,6 +1089,12 @@ template<typename Integer>
 size_t Cone<Integer>::getDimMaximalSubspace() {
     compute(ConeProperty::MaximalSubspace);
     return BasisMaxSubspace.nr_of_rows();
+}
+
+template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getGeneratorsMatrix() {
+    compute(ConeProperty::Generators);
+    return Generators;
 }
 
 template<typename Integer>

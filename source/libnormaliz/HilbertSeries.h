@@ -111,7 +111,7 @@ public:
     long getPeriod() const;
 
     void computeHilbertQuasiPolynomial() const;
-    long isHilbertQuasiPolynomialComputed() const;
+    bool isHilbertQuasiPolynomialComputed() const;
     vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
     mpz_class getHilbertQuasiPolynomialDenom() const;
 

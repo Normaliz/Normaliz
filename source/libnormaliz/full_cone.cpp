@@ -2960,7 +2960,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
         module_rank=Hilbert_Basis.size();
         is_Computed.set(ConeProperty::ModuleRank);
         if(isComputed(ConeProperty::Grading) && module_rank>0){
-            multiplicity=1;// module_rank;
+            multiplicity=module_rank;
             is_Computed.set(ConeProperty::Multiplicity);
             vector<num_t> hv(1);
             typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();

@@ -320,7 +320,7 @@ long HilbertSeries::getPeriod() const {
     return period;
 }
 
-long HilbertSeries::isHilbertQuasiPolynomialComputed() const {
+bool HilbertSeries::isHilbertQuasiPolynomialComputed() const {
     return is_simplified && !quasi_poly.empty();
 }
 
