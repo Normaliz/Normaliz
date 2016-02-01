@@ -275,14 +275,12 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     bool gen_error=false;
     if(nr_cone_gen>2)
         gen_error=true;
-    if(nr_cone_gen==1 && exists_element(multi_input_data,Type::subspace))
-        gen_error=true;
-    if(nr_cone_gen>1 && !exists_element(multi_input_data,Type::subspace))
-        gen_error=true;
-    if(nr_cone_gen==2 && !(exists_element(multi_input_data,Type::cone)
+
+    if(nr_cone_gen==2 && (!exists_element(multi_input_data,Type::subspace)
+                      || !(exists_element(multi_input_data,Type::cone)
                           || exists_element(multi_input_data,Type::cone_and_lattice)
                           || exists_element(multi_input_data,Type::integral_closure)
-                          || exists_element(multi_input_data,Type::normalization)  )
+                          || exists_element(multi_input_data,Type::normalization) ) )
     )
         gen_error=true;
     
@@ -333,10 +331,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     // check for excluded faces
     ExcludedFaces = find_input_matrix(multi_input_data,Type::excluded_faces);
     PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
-
-    // check for subspace
-    BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
-
+    
     // check for a grading
     vector< vector<Integer> > lf = find_input_matrix(multi_input_data,Type::grading);
     if (lf.size() > 1) {
@@ -366,6 +361,11 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 
     if(inhom_input)
         homogenize_input(multi_input_data);
+    
+    // check for subspace
+    BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
+    if(BasisMaxSubspace.nr_of_rows()==0)
+        BasisMaxSubspace=Matrix<Integer>(0,dim);
 
     // check for dehomogenization
     lf = find_input_matrix(multi_input_data,Type::dehomogenization);
@@ -501,7 +501,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     BasisChangePointed=BasisChange;
-    BasisMaxSubspace=Matrix<Integer>(0,dim);
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -1446,8 +1445,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
-        ToCompute.set(ConeProperty::IsPointed);
-        BasisMaxSubspace=Matrix<Integer>(0,dim);        
+        BasisMaxSubspace=Matrix<Integer>(0,dim);
+        compute(ConeProperty::MaximalSubspace);      
     }
     
     ToCompute.reset(is_Computed);
