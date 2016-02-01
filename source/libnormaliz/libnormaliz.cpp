@@ -150,6 +150,9 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="cone_and_lattice") {
         return Type::cone_and_lattice;
     }
+    if (type_string=="subspace") {
+        return Type::subspace;
+    }
 
     errorOutput() << "ERROR: Unknown type \"" << type_string<<"\"!" << std::endl;
     throw BadInputException();
