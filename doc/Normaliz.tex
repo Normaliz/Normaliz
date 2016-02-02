@@ -2078,7 +2078,7 @@ Input items can almost freely be combined, but there are some restrictions:
 		\ttt {cone, cone\_and\_lattice, polytope, rees\_algebra}	
 	\end{center}
 	exclude each other mutually.
-	\item The input type \verb|subspace| can only appear in combination with \verb|cone| or \verb|cone_and_lattice|.
+	\item The input type \verb|subspace| can excludes \verb|polytope| and \verb|rees_algebra|.
 	\item The types
 	\begin{center}
 		\ttt {lattice}, \ttt{saturation}, \ttt{cone\_and\_lattice}	
@@ -3180,9 +3180,7 @@ The exceptional case is a computation, say of a Hilbert basis, by the primal alg
 
 \subsubsection{Input of a subspace} \label{subspace}
 
-If a linear subspace contained in the cone is known a priori, it can be given to Normaliz via the input type \verb|subspace|. Note that this input type is only allowed in connection with \verb|cone| or \verb|cone_and_lattice|.
-
-If Normaliz detects a \verb|subspace|, it appends the rows of the matrix to the generators of the cone, and additionally the negative of the sum of the rows (since we must add the subspace as a cone). If \verb|subspace| is combined with \verb|cone_and_lattice|, then the rows of \verb|subspace| are also appended to the generators of the lattice. It is not assumed that the vectors in \verb|subspace| are linearly independent or generate the maximal linear subspace of the cone. A simple example:
+If a linear subspace contained in the cone is known a priori, it can be given to Normaliz via the input type \verb|subspace|. If Normaliz detects a \verb|subspace|, it appends the rows of the matrix to the generators of the cone, and additionally the negative of the sum of the rows (since we must add the subspace as a cone). If \verb|subspace| is combined with \verb|cone_and_lattice|, then the rows of \verb|subspace| are also appended to the generators of the lattice. It is not assumed that the vectors in \verb|subspace| are linearly independent or generate the maximal linear subspace of the cone. A simple example (\verb|subspace4.in|):
 \begin{Verbatim}
 amb_space 4
 cone 4
