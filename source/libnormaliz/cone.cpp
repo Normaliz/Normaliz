@@ -285,8 +285,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         gen_error=true;
     
     if(gen_error){
-            errorOutput() << "Illegal combination of  cone generator types!" << endl;
-            throw BadInputException();
+        errorOutput() << "Illegal combination of cone generator types!" << endl;
+        throw BadInputException();
     }
     
     
