@@ -70,12 +70,12 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
                      if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
                          omp_set_num_threads(nr_threads);
                      } else {
-                         cerr<<"Warning: Invalid option string "<<argv[i]<<endl;
+                         cerr<<"Error: Invalid option string "<<argv[i]<<endl;
+                        exit(1);
                      }
                     #else
-					cerr << "Error: Compiled without OpenMP support, option "
+					cerr << "Warning: Compiled without OpenMP support, option "
 							<< argv[i] << " ignored." << endl;
-					exit(1);
 					#endif
 				} else {
 					cerr << "Error: Invalid option string " << argv[i] << endl;
