@@ -253,6 +253,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             case Type::rees_algebra:
             case Type::polytope:
             case Type::cone:
+            case Type::subspace:
                 nr_cone_gen++;
                 break;
             case Type::normalization:
@@ -271,10 +272,24 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 
     }
 
-    if(nr_cone_gen>1){
-        errorOutput() << "Only one matrix of cone generators allowed!" << endl;
+    bool gen_error=false;
+    if(nr_cone_gen>2)
+        gen_error=true;
+
+    if(nr_cone_gen==2 && (!exists_element(multi_input_data,Type::subspace)
+                      || !(exists_element(multi_input_data,Type::cone)
+                          || exists_element(multi_input_data,Type::cone_and_lattice)
+                          || exists_element(multi_input_data,Type::integral_closure)
+                          || exists_element(multi_input_data,Type::normalization) ) )
+    )
+        gen_error=true;
+    
+    if(gen_error){
+        errorOutput() << "Illegal combination of cone generator types!" << endl;
         throw BadInputException();
     }
+    
+    
     if(nr_latt_gen>1){
         errorOutput() << "Only one matrix of lattice generators allowed!" << endl;
         throw BadInputException();
@@ -313,11 +328,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
-
     // check for excluded faces
     ExcludedFaces = find_input_matrix(multi_input_data,Type::excluded_faces);
     PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
-
+    
     // check for a grading
     vector< vector<Integer> > lf = find_input_matrix(multi_input_data,Type::grading);
     if (lf.size() > 1) {
@@ -347,8 +361,13 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 
     if(inhom_input)
         homogenize_input(multi_input_data);
+    
+    // check for subspace
+    BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
+    if(BasisMaxSubspace.nr_of_rows()==0)
+        BasisMaxSubspace=Matrix<Integer>(0,dim);
 
-    // check for a dehomogenization
+    // check for dehomogenization
     lf = find_input_matrix(multi_input_data,Type::dehomogenization);
     if (lf.size() > 1) {
         errorOutput() << "ERROR: Bad dehomogenization, has "
@@ -482,7 +501,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     BasisChangePointed=BasisChange;
-    BasisMaxSubspace=Matrix<Integer>(0,dim);
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -574,6 +592,12 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
     // find specific generator type -- there is only one, as checked already
 
     normalization=false;
+    
+    vector<Integer> neg_sum_subspace(dim,0);
+    for(size_t i=0;i<BasisMaxSubspace.nr_of_rows();++i)
+        neg_sum_subspace=v_add(neg_sum_subspace,BasisMaxSubspace[i]);
+    v_scalar_multiplication<Integer>(neg_sum_subspace,-1);
+    
 
     Generators=Matrix<Integer>(0,dim);
     for(; it != multi_input_data.end(); ++it) {
@@ -582,11 +606,17 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
             case Type::cone_and_lattice:
                 normalization=true;
                 LatticeGenerators.append(it->second);
+                if(BasisMaxSubspace.nr_of_rows()>0)
+                    LatticeGenerators.append(BasisMaxSubspace);
             case Type::vertices:
             case Type::polyhedron:
             case Type::cone:
             case Type::integral_closure:
                 Generators.append(it->second);
+                break;
+            case Type::subspace:
+                Generators.append(it->second);
+                Generators.append(neg_sum_subspace);
                 break;
             case Type::polytope:
                 Generators.append(prepare_input_type_2(it->second));
@@ -611,7 +641,6 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
             default: break;
         }
     }
-
 }
 
 //---------------------------------------------------------------------------
@@ -1413,6 +1442,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         set_zero_cone();
         ToCompute.reset(is_Computed);
         return ToCompute;
+    }
+    
+    if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
+        BasisMaxSubspace=Matrix<Integer>(0,dim);
+        compute(ConeProperty::MaximalSubspace);      
     }
     
     ToCompute.reset(is_Computed);
