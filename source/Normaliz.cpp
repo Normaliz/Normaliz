@@ -70,6 +70,8 @@ void printHelp(char* command) {
     cout << "  -1\tcompute degree 1 elements"<<endl;
     cout << "  -y\tcompute Stanley decomposition"<<endl;
     cout << "  -C\tcompute class group"<<endl;
+    cout << "  -D\tcompute cone decomposition"<<endl;
+    cout << "  -H\tcompute integer hull"<<endl;
     cout << "  -M\tcompute module generators over original monoid"<<endl;
 
     cout << endl;
