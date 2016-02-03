@@ -56,6 +56,7 @@ Output<Integer>::Output(){
     lat=false;
     mod=false;
     msp=false;
+    lattice_ideal_input = false;
 }
 
 //---------------------------------------------------------------------------
