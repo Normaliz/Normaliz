@@ -362,11 +362,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     if(inhom_input)
         homogenize_input(multi_input_data);
     
-    // check for subspace
-    BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
-    if(BasisMaxSubspace.nr_of_rows()==0)
-        BasisMaxSubspace=Matrix<Integer>(0,dim);
-
     // check for dehomogenization
     lf = find_input_matrix(multi_input_data,Type::dehomogenization);
     if (lf.size() > 1) {
@@ -592,6 +587,11 @@ void Cone<Integer>::prepare_input_generators(map< InputType, vector< vector<Inte
     // find specific generator type -- there is only one, as checked already
 
     normalization=false;
+    
+    // check for subspace
+    BasisMaxSubspace = find_input_matrix(multi_input_data,Type::subspace);
+    if(BasisMaxSubspace.nr_of_rows()==0)
+        BasisMaxSubspace=Matrix<Integer>(0,dim);
     
     vector<Integer> neg_sum_subspace(dim,0);
     for(size_t i=0;i<BasisMaxSubspace.nr_of_rows();++i)
