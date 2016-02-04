@@ -1,5 +1,12 @@
 # ChangeLog
 
+## [3.1.0] 2016-02-04
+
+- support for nonpointed cones / input of subspace
+- new computation goals: IsIntegrallyClosed and WitnessNotIntegrallyClosed
+- new computation goal: IntegerHull
+- new computation goal: ConeDecomposition
+
 ## [3.0.0] - 2015-09-18
 - new, more natural comfortable input syntax (with backward compatibility)
 - standardization of output improved, especially for Hilbert series (not backward compatible)
