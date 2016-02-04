@@ -788,6 +788,7 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     
     do{
     skip_remaining=false;
+    sequential_evaluation=false;
 
     #pragma omp parallel
     {
@@ -823,6 +824,8 @@ void SimplexEvaluator<Integer>::evaluation_loop_parallel() {
     } // for
     
     } // parallel
+    
+    sequential_evaluation=true;
 
 #ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
@@ -1068,14 +1071,12 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     }
 
     take_care_of_0vector(C_ptr->Results[0]);
-    sequential_evaluation=false;
 
     evaluation_loop_parallel();
 
     collect_vectors();   // --> Results[0]
     for(size_t i=1;i<C_ptr->Results.size();++i)  // takes care of h-vectors
-        add_hvect_to_HS(C_ptr->Results[i]);
-    sequential_evaluation=true;   
+        add_hvect_to_HS(C_ptr->Results[i]); 
     conclude_evaluation(C_ptr->Results[0]);  // h-vector in Results[0] and collected elements
 
     if(C_ptr->verbose){
