@@ -13,7 +13,9 @@ addons:
       - libboost-dev
 
 script:
-  - ( mkdir -p BUILDt && cd BUILDt )
+  - mkdir -p BUILD
+  - cd BUILD
+  - pwd
   - cmake ../source
   - make -j2
   - OMP_NUM_THREADS=4 make check
