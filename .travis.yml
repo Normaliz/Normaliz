@@ -1,0 +1,19 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+
+branches:
+  except:
+    - gh-pages
+
+addons:
+  apt_packages:
+      - libgmp-dev
+      - libboost-dev
+
+script:
+  - ( mkdir -p BUILDt && cd BUILDt )
+  - cmake ../source
+  - make -j2
+  - OMP_NUM_THREADS=4 make check
