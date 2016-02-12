@@ -2932,7 +2932,7 @@ void Full_Cone<Integer>::compute() {
         for (size_t i=nrSupport_Hyperplanes;i-->0;){
             boost::dynamic_bitset<> new_facet(Hilbert_Basis.size());
             for (size_t j=0;j<Hilbert_Basis.size();j++){
-                if (v_scalar_product(SH[i],HB[j])==0) new_facet[j]=1;
+                if (v_scalar_product(SH[i],HB[j])==0) new_facet[new_facet.size()-1-j]=1;
             }
             facet_list.push_back(new_facet);
         }
@@ -2940,17 +2940,15 @@ void Full_Cone<Integer>::compute() {
         cout << "Hilbert Basis:" << endl;
         HB.pretty_print(cout);
         
-        // TODO: FIX THIS!
-        facet_list.sort();
-        facet_list.reverse();
-        cout << "Facets:" << endl;
+        // TODO: force the order while creating the faces
+        facet_list.sort(); // should be sorted lex
         cout << "size: " << facet_list.size() << " | " << facet_list << endl;
         
         // save a heights vector of length=Hilbert_Basis.size()
         // with all entries 1
         // each entry is the height of the ideal up to that generator
         vector<size_t> ideal_heights(Hilbert_Basis.size(),1);
-        heights(facet_list,facet_list,0,ideal_heights);
+        heights(facet_list,facet_list,Hilbert_Basis.size()-1,ideal_heights);
         cout << "The heights vector:" << endl;
         cout << ideal_heights << endl;
     }
@@ -2959,12 +2957,19 @@ void Full_Cone<Integer>::compute() {
     end_message();
 }
 
+// TODO: We can skip inner points and should do that
 // recursive method to compute the heights
-// at the moment: facets are a parameter. global would be better
+// TODO: at the moment: facets are a parameter. global would be better
 template<typename Integer>
 void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost::dynamic_bitset<>> faces, size_t index,vector<size_t>& ideal_heights){
-    if (index==Hilbert_Basis.size()) return;
-    cout << "starting calculation for HB element nr " << index << endl;
+    if (faces.empty()){
+        // if the last points are inner points, the face list could be empty but there are still gens left
+        for (size_t i=Hilbert_Basis.size()-index-1;i<Hilbert_Basis.size();i++){
+            ideal_heights[i]=ideal_heights[Hilbert_Basis.size()-index-2];
+        }
+        return;
+    }
+    cout << "starting calculation for HB element nr " << Hilbert_Basis.size()-1 - index << endl;
     list<boost::dynamic_bitset<>> not_in_faces;
 
     for (auto it=faces.begin();it!=faces.end();++it){
@@ -2985,12 +2990,12 @@ void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost
     cout << not_in_faces << endl;
     
     // update the heights
-    if (index>0){
+    if (index<Hilbert_Basis.size()-1){
         if (!not_in_faces.empty()){
-            ideal_heights[index] = ideal_heights[index-1];
+            ideal_heights[Hilbert_Basis.size()-1-index] = ideal_heights[Hilbert_Basis.size()-index-2];
             //cout << "ideal_heights of " << index << " is " << ideal_heights[index] << endl;
         } else{
-            ideal_heights[index] = ideal_heights[index-1]+1;
+            ideal_heights[Hilbert_Basis.size()-1-index] = ideal_heights[Hilbert_Basis.size()-index-2]+1;
             //cout << "ideal_heights of " << index << " is " << ideal_heights[index] << endl;
         }
     }
@@ -3005,36 +3010,53 @@ void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost
     // main loop
     for (auto it=facets.begin();it!=facets.end();++it){
         // check whether the facet only contains the previous generators
-        for (size_t i = index+1;i<Hilbert_Basis.size();i++){
+        for (size_t i = 0;i<index;i++){
             if (it->test(i)) break;
-            if (i==Hilbert_Basis.size()-1){
+            if (i==index-1){
             cout << "the facet " << *it << " contains all previous gens. delete it." << endl;
             it = facets.erase(it);
             }
         }
         if (it==facets.end()) break;
-    // check whether the facet is contained in the faces not containing the generator
-    // and the previous generators
-    // and check whether the generator is in the facet    
-    
-    // set all previous generators
-    if (!faces.empty()){
-        for (size_t i=0;i<index;i++) union_faces[i]=true; 
-        if(!it->is_subset_of(union_faces) && !it->test(index)){ 
-            cout << "building intersections with facet: " << *it << endl;
-            for (auto it2=faces.begin();it2!=faces.end();++it2){
-                boost::dynamic_bitset<> intersection = *it & *it2;
-                if (intersection.any()) new_faces.push_back(intersection); // take the intersection
+        // check whether the facet is contained in the faces not containing the generator
+        // and the previous generators
+        // and check whether the generator is in the facet    
+        if (!faces.empty()){
+            // set all previous generators
+            for (size_t i=index+1;i<Hilbert_Basis.size();i++) union_faces[i]=true; 
+            if(!it->is_subset_of(union_faces) && !it->test(index)){ 
+                cout << "building intersections with facet: " << *it << endl;
+                for (auto it2=faces.begin();it2!=faces.end();++it2){
+                    // TODO: Take intersections after index
+                    boost::dynamic_bitset<> intersection = *it & *it2; // take the intersection
+                    if (intersection.any()) new_faces.push_back(intersection); 
+                }
+            }
+        }
+
+    }
+    // the new faces need to be sort in lex order anyway. this can be used to reduce operations
+    // for subset checking
+    // TODO: is there a way to force this order while creating intersections or make it cheaper?
+    new_faces.splice(new_faces.begin(),not_in_faces);
+    new_faces.sort();
+    // filter maximal faces
+    // if F < G in lex, F could only be a subface of G!
+    // TODO: Needs to be optimized
+    cout << "filter maximal faces... " ;
+    for (auto it1=new_faces.begin();it1!=new_faces.end();it1++){
+        for (auto it2 = new_faces.begin();it2!=it1;it2++){
+            // TODO: check subset after index
+            if (it2->is_subset_of(*it1)){
+                it2 = new_faces.erase(it2);
+                if (it2==it1) break;
             }
         }
     }
-    /////////// BIG TODO: FIND MAXIMAL FACES!!!!!!!! /////////////
-    }
-    new_faces.splice(new_faces.begin(),not_in_faces);
-    // TODO: Sort??
+    cout << "done." << endl;
     cout << "the new faces: " << endl;
     cout << new_faces << endl;
-    heights(facets,new_faces,index+1,ideal_heights);
+    heights(facets,new_faces,index-1,ideal_heights);
 }
 
 
