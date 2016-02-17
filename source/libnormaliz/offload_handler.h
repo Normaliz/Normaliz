@@ -10,7 +10,7 @@
 #include "libnormaliz/libnormaliz.h"
 #include <list>
 #include <vector>
-#include "libnormaliz/offload.h"  // offload system header
+#include <offload.h>  // offload system header
 
 namespace libnormaliz {
 

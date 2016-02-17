@@ -2,14 +2,14 @@
 
 #pragma offload_attribute (push, target(mic))
 #include "libnormaliz/offload_handler.h"
-#include "libnormaliz/offload.h"  // offload system header
+#include <offload.h>  // offload system header
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/full_cone.h"
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/HilbertSeries.h"
-#include <cstream> // for strcpy
+#include <cstring> // for strcpy
 #include <iostream>
 #include <fstream>
 
@@ -263,13 +263,12 @@ void OffloadHandler<Integer>::transfer_grading()
     delete[] data;
   }
 
-  if (local_fc_ref.isComputed(ConeProperty::Shift))
+  if (local_fc_ref.shift != 0)
   {
     auto shift = local_fc_ref.shift;
     #pragma offload target(mic:mic_nr) in(shift)
     {
       offload_fc_ptr->shift = shift;
-      offload_fc_ptr->is_Computed.set(ConeProperty::Shift);
     }
   }
 
