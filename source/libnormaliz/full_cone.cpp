@@ -2962,6 +2962,7 @@ void Full_Cone<Integer>::compute() {
 // TODO: at the moment: facets are a parameter. global would be better
 template<typename Integer>
 void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost::dynamic_bitset<>> faces, size_t index,vector<size_t>& ideal_heights){
+
     if (faces.empty()){
         // if the last points are inner points, the face list could be empty but there are still gens left
         for (size_t i=Hilbert_Basis.size()-index-1;i<Hilbert_Basis.size();i++){
@@ -2969,16 +2970,19 @@ void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost
         }
         return;
     }
+    // size of all faces should be index+1
     cout << "starting calculation for HB element nr " << Hilbert_Basis.size()-1 - index << endl;
     list<boost::dynamic_bitset<>> not_in_faces;
 
     for (auto it=faces.begin();it!=faces.end();++it){
         
-        if (it->test(index)){ 
+        if (it->test(index)){ // check whether index is set
             cout << "critical face: " << *it << endl;
             not_in_faces.splice(not_in_faces.begin(),faces,faces.begin(),it);
             break;
         }
+        // resize not_in_faces
+        it->resize(index);
         // need to be careful with inner points
         if (next(it)==faces.end()){
             cout << "inner point " << endl;
@@ -2993,22 +2997,29 @@ void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost
     if (index<Hilbert_Basis.size()-1){
         if (!not_in_faces.empty()){
             ideal_heights[Hilbert_Basis.size()-1-index] = ideal_heights[Hilbert_Basis.size()-index-2];
-            //cout << "ideal_heights of " << index << " is " << ideal_heights[index] << endl;
         } else{
             ideal_heights[Hilbert_Basis.size()-1-index] = ideal_heights[Hilbert_Basis.size()-index-2]+1;
-            //cout << "ideal_heights of " << index << " is " << ideal_heights[index] << endl;
         }
     }
+    if (index==0) return;
+    // if inner point, we can skip now
+    if (faces.empty()){
+        heights(facets,not_in_faces,index-1,ideal_heights);
+        return;
+    }
     // take the union of these faces
-    boost::dynamic_bitset<> union_faces(Hilbert_Basis.size());
+    boost::dynamic_bitset<> union_faces(index);
     for (auto it=not_in_faces.begin();it!=not_in_faces.end();++it){
         union_faces |= *it; // take the union
     }
+    union_faces.resize(index+1); // for taking subset
+    // the not_in_faces now already have a size one smaller
     cout << "their union:" << endl;
     cout << union_faces << endl;
     list<boost::dynamic_bitset<>> new_faces;
     // main loop
     for (auto it=facets.begin();it!=facets.end();++it){
+
         // check whether the facet only contains the previous generators
         for (size_t i = 0;i<index;i++){
             if (it->test(i)) break;
@@ -3018,17 +3029,20 @@ void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost
             }
         }
         if (it==facets.end()) break;
+        // resize facets
+        it->resize(index+1);
         // check whether the facet is contained in the faces not containing the generator
         // and the previous generators
         // and check whether the generator is in the facet    
         if (!faces.empty()){
             // set all previous generators
-            for (size_t i=index+1;i<Hilbert_Basis.size();i++) union_faces[i]=true; 
+            //for (size_t i=index+1;i<Hilbert_Basis.size();i++) union_faces[i]=true; 
             if(!it->is_subset_of(union_faces) && !it->test(index)){ 
                 cout << "building intersections with facet: " << *it << endl;
                 for (auto it2=faces.begin();it2!=faces.end();++it2){
-                    // TODO: Take intersections after index
                     boost::dynamic_bitset<> intersection = *it & *it2; // take the intersection
+                    // resize intersection
+                    intersection.resize(index);
                     if (intersection.any()) new_faces.push_back(intersection); 
                 }
             }
@@ -3042,15 +3056,27 @@ void Full_Cone<Integer>::heights(list<boost::dynamic_bitset<>> facets,list<boost
     new_faces.sort();
     // filter maximal faces
     // if F < G in lex, F could only be a subface of G!
-    // TODO: Needs to be optimized
     cout << "filter maximal faces... " ;
     for (auto it1=new_faces.begin();it1!=new_faces.end();it1++){
-        for (auto it2 = new_faces.begin();it2!=it1;it2++){
-            // TODO: check subset after index
-            if (it2->is_subset_of(*it1)){
-                it2 = new_faces.erase(it2);
-                if (it2==it1) break;
+        // work with a not-key vector
+        size_t nr_zeros = it1->size()-it1->count();
+        vector<key_t> face_not_key(nr_zeros);
+        size_t j=0;
+        for (size_t i=0;i<it1->size();i++){
+            if (!it1->test(i)){
+                face_not_key[j]=i;
+                j++;
             }
+        }
+
+        for (auto it2 = new_faces.begin();it2!=it1;it2++){
+            
+            for (size_t i=0;i<face_not_key.size();i++){
+                if (it2->test(face_not_key[i])) break; //it2 has an element which is not in it1
+                if (i==face_not_key.size()-1) it2 = new_faces.erase(it2); //it2 is a subface of it1
+                
+            }
+            if (it2==it1) break;
         }
     }
     cout << "done." << endl;
