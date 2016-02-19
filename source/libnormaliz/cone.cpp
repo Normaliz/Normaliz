@@ -1438,7 +1438,7 @@ template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     // handle zero cone as special case, makes our life easier
-    if (BasisChange.getRank() == 0) {
+    if (BasisChangePointed.getRank() == 0) {
         set_zero_cone();
         ToCompute.reset(is_Computed);
         return ToCompute;
@@ -1628,6 +1628,12 @@ template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     
+    if (BasisChangePointed.getRank() == 0) {
+        set_zero_cone();
+        ToCompute.reset(is_Computed);
+        return;
+    }
+    
     if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
         if (verbose) {
             verboseOutput()<<  "Checking pointedness first"<< endl;
@@ -1816,6 +1822,12 @@ void Cone<Integer>::compute_generators_inner() {
         is_Computed.set(ConeProperty::IsPointed);
     }
     BasisChangePointed.compose_dual(Pointed); // primal cone now pointed, may not yet be full dimensional
+
+    if (BasisChangePointed.getRank() == 0) {
+        set_zero_cone();
+        return;
+    }  
+    
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
     Matrix<IntegerFC> Dual_Gen_Pointed;
     BasisChangePointed.convert_to_sublattice_dual(Dual_Gen_Pointed, SupportHyperplanes);    
@@ -1953,11 +1965,12 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             verboseOutput() << "Computing extreme rays for the dual mode:"<< endl;
         }
         compute_generators();   // computes extreme rays, but does not find grading !
-        if (BasisChangePointed.getRank() == 0) {
-            set_zero_cone();
-            ToCompute.reset(is_Computed);
-            return;
-        }
+    }
+    
+    if (BasisChangePointed.getRank() == 0) {
+        set_zero_cone();
+        ToCompute.reset(is_Computed);
+        return;
     }
 
     if(do_only_Deg1_Elements && Grading.size()==0){
@@ -1970,7 +1983,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         }
     }
 
-    if (SupportHyperplanes.nr_of_rows()==0) {
+    if (SupportHyperplanes.nr_of_rows()==0 && !isComputed(ConeProperty::SupportHyperplanes)) {
         errorOutput()<<"FATAL ERROR: Could not get SupportHyperplanes. This should not happen!"<<endl;
         throw FatalException();
     }
@@ -2015,7 +2028,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             is_Computed.set(ConeProperty::Sublattice);
             if(!BothRepFC[1].IsIdentity())
                 BasisChangePointed.compose(Sublattice_Representation<Integer>(BothRepFC[1]));
-            if (BasisChange.getRank() == 0) {
+            if (BasisChangePointed.getRank() == 0) {
                 set_zero_cone();                
                 ToCompute.reset(is_Computed);
                 return;
