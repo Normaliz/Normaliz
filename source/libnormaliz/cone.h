@@ -342,9 +342,6 @@ private:
     /* try to find a witness for not integrally closed in the Hilbert basis */
     void find_witness();
 
-    /* set this object to the zero cone */
-    void set_zero_cone();
-
     Integer compute_primary_multiplicity();
     template<typename IntegerFC>
     Integer compute_primary_multiplicity_inner();

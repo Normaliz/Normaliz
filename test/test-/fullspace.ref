@@ -4,8 +4,11 @@
 0 support hyperplanes
 
 embedding dimension = 2
-rank = 0
+rank = 2 (maximal)
 external index = 1
+internal index = 1
+dimension of maximal subspace = 2
+original monoid is integrally closed
 
 size of triangulation   = 0
 resulting sum of |det|s = 0
@@ -42,11 +45,9 @@ class group is free
 
 0 extreme rays:
 
-0 support hyperplanes:
-
-2 equations:
+2 basis elements of maximal subspace:
  1 0
  0 1
 
-0 basis elements of lattice:
+0 support hyperplanes:
 

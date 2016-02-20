@@ -1726,7 +1726,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 /* builds the cone successively by inserting generators */
 template<typename Integer>
 void Full_Cone<Integer>::build_cone() {
-    if(dim>0){            //correction needed to include the 0 cone;
+    // if(dim>0){            //correction needed to include the 0 cone;
     
     // cout << "Pyr " << pyr_level << endl;
 
@@ -1918,7 +1918,7 @@ void Full_Cone<Integer>::build_cone() {
         Top_Cone->evaluate_triangulation();
     }  
 
-    } // end if (dim>0)
+    // } // end if (dim>0)
     
     Facets.clear(); 
 
@@ -2823,6 +2823,11 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 // if no bool is set it does support hyperplanes and extreme rays
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
+    
+    if(dim==0){
+        set_zero_cone();
+        return;
+    }
 
     do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
@@ -3448,6 +3453,11 @@ void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
 // an alternative to compute() for the basic tasks that need no triangulation
 template<typename Integer>
 void Full_Cone<Integer>::dualize_cone(bool print_message){
+    
+    if(dim==0){
+        set_zero_cone();
+        return;
+    }
 
     // DO NOT CALL do_vars_check!!
 
@@ -4218,8 +4228,8 @@ void Full_Cone<Integer>::reset_tasks(){
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constructor of the top cone
     dim=M.nr_of_columns();
-    
-    Generators=M;
+    if(dim>0)
+        Generators=M;
     // M.pretty_print(cout);
     assert(M.row_echelon()== dim);
     
@@ -4465,6 +4475,11 @@ void Full_Cone<Integer>::check_grading_after_dual_mode(){
 
 template<typename Integer>
 void Full_Cone<Integer>::dual_mode() {
+    
+    if(dim==0){
+        set_zero_cone();
+        return;
+    }
 
     use_existing_facets=false; // completely irrelevant here
     start_from=0;
@@ -4603,6 +4618,73 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
 	
 	do_bottom_dec=false;
 	keep_order=true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::set_zero_cone() {
+    
+    assert(dim==0);
+    
+    if (verbose) {
+        verboseOutput() << "Zero cone detected!" << endl;
+    }
+    
+    // The basis change already is transforming to zero.
+    is_Computed.set(ConeProperty::Sublattice);
+    is_Computed.set(ConeProperty::Generators);
+    is_Computed.set(ConeProperty::ExtremeRays);
+    Support_Hyperplanes=Matrix<Integer> (0);
+    is_Computed.set(ConeProperty::SupportHyperplanes);    
+    totalNrSimplices = 0;
+    is_Computed.set(ConeProperty::TriangulationSize);    
+    detSum = 0;
+    is_Computed.set(ConeProperty::TriangulationDetSum);
+    is_Computed.set(ConeProperty::Triangulation);
+    is_Computed.set(ConeProperty::StanleyDec);
+    multiplicity = 1;
+    is_Computed.set(ConeProperty::Multiplicity);
+    is_Computed.set(ConeProperty::HilbertBasis);
+    is_Computed.set(ConeProperty::Deg1Elements);
+    
+    Hilbert_Series = HilbertSeries(vector<num_t>(1,1),vector<denom_t>()); // 1/1
+    is_Computed.set(ConeProperty::HilbertSeries);
+    
+    if (!is_Computed.test(ConeProperty::Grading)) {
+        Grading = vector<Integer>(dim);
+        // GradingDenom = 1;
+        is_Computed.set(ConeProperty::Grading);
+    }
+    
+    pointed = true;
+    
+    deg1_extreme_rays = true;
+    is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
+    
+    deg1_hilbert_basis = true;
+    is_Computed.set(ConeProperty::IsDeg1HilbertBasis);
+    
+    if (inhomogeneous) {  // empty set of solutions
+        is_Computed.set(ConeProperty::VerticesOfPolyhedron);        
+        module_rank = 0;
+        is_Computed.set(ConeProperty::ModuleRank);
+        is_Computed.set(ConeProperty::ModuleGenerators);             
+        level0_dim=0;
+        is_Computed.set(ConeProperty::RecessionRank);
+    }
+    
+    if (!inhomogeneous) {
+        ClassGroup.resize(1,0);
+        is_Computed.set(ConeProperty::ClassGroup);
+    }
+    
+    if (inhomogeneous || ExcludedFaces.nr_of_rows() != 0) {
+        multiplicity = 0;
+        is_Computed.set(ConeProperty::Multiplicity);        
+        Hilbert_Series.reset(); // 0/1
+        is_Computed.set(ConeProperty::HilbertSeries);        
+    }
 }
 
 //---------------------------------------------------------------------------

@@ -1,8 +1,5 @@
 
-embedding dimension = 3
-
-dehomogenization:
-0 0 1 
+embedding dimension = 2
 
 
 ***********************************************************************

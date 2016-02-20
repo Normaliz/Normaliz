@@ -340,6 +340,8 @@ public:
     
     void start_message();
     void end_message();
+    
+    void set_zero_cone();
 
 
 #ifdef NMZ_MIC_OFFLOAD
