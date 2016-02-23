@@ -2285,12 +2285,44 @@ void Cone<Integer>::check_integrally_closed() {
             || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
 
-    if (HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+    if (index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
         integrally_closed = false;
         is_Computed.set(ConeProperty::IsIntegrallyClosed);
-    } else {
-        find_witness();
+        return;
+    } 
+    if(BasisMaxSubspace.nr_of_rows()>0){
+        if(!origens_saturated_in_subspace()){
+            integrally_closed = false;
+            is_Computed.set(ConeProperty::IsIntegrallyClosed);
+            return;
+        }
     }
+
+    find_witness();
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool Cone<Integer>::origens_saturated_in_subspace() {
+    assert(isComputed(ConeProperty::MaximalSubspace));
+    // we want to compute in the maximal linear subspace
+    Sublattice_Representation<Integer> Sub(BasisMaxSubspace,true);
+    Matrix<Integer> origens_in_subspace(0,dim);
+    // wqe must collect all original generetors that lie in the maximal subspace 
+    for(size_t i=0;i<OriginalMonoidGenerators.nr_of_rows();++i){
+        size_t j;
+        for(j=0;j<SupportHyperplanes.nr_of_rows();++j){
+                if(v_scalar_product(OriginalMonoidGenerators[i],SupportHyperplanes[j])!=0)
+                    break;
+        }
+        if(j==SupportHyperplanes.nr_of_rows())
+            origens_in_subspace.append(OriginalMonoidGenerators[i]);
+    }
+    // saturation <==> index==1
+    Matrix<Integer> M=Sub.to_sublattice(origens_in_subspace);
+    // cout << "INDEX " << M.full_rank_index();
+    return M.full_rank_index()==1;
 }
 
 //---------------------------------------------------------------------------

@@ -339,6 +339,7 @@ private:
     /* If the Hilbert basis and the original monoid generators are computed,
      * use them to check whether the original monoid is integrally closed. */
     void check_integrally_closed();
+    bool origens_saturated_in_subspace();
     /* try to find a witness for not integrally closed in the Hilbert basis */
     void find_witness();
 
