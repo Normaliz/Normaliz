@@ -9,6 +9,7 @@ external index = 1
 internal index = 1
 dimension of maximal subspace = 4
 original monoid is not integrally closed
+unit group index = 2
 
 grading:
 0 0 0 1 0 

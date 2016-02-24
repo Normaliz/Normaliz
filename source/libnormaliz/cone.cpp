@@ -848,6 +848,7 @@ void Cone<Integer>::initialize() {
     BC_set=false;
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     dim = 0;
+    unit_group_index = 1;
     inhomogeneous=false;
     rees_primary = false;
     triangulation_is_nested = false;
@@ -1068,6 +1069,12 @@ template<typename Integer>    // computation depends on OriginalMonoidGenerators
 Integer Cone<Integer>::getIndex() {
     compute(ConeProperty::OriginalMonoidGenerators);
     return index;
+}
+
+template<typename Integer>
+Integer Cone<Integer>::getUnitGroupIndex() {
+    compute(ConeProperty::OriginalMonoidGenerators,ConeProperty::IsIntegrallyClosed);
+    return unit_group_index;
 }
 
 template<typename Integer>
@@ -2285,26 +2292,21 @@ void Cone<Integer>::check_integrally_closed() {
             || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
 
-    if (index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()) {
+    if(BasisMaxSubspace.nr_of_rows()>0)
+        compute_unit_group_index();
+    if (index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()
+            || unit_group_index>1) {
         integrally_closed = false;
         is_Computed.set(ConeProperty::IsIntegrallyClosed);
         return;
     } 
-    if(BasisMaxSubspace.nr_of_rows()>0){
-        if(!origens_saturated_in_subspace()){
-            integrally_closed = false;
-            is_Computed.set(ConeProperty::IsIntegrallyClosed);
-            return;
-        }
-    }
-
     find_witness();
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool Cone<Integer>::origens_saturated_in_subspace() {
+void Cone<Integer>::compute_unit_group_index() {
     assert(isComputed(ConeProperty::MaximalSubspace));
     // we want to compute in the maximal linear subspace
     Sublattice_Representation<Integer> Sub(BasisMaxSubspace,true);
@@ -2319,10 +2321,9 @@ bool Cone<Integer>::origens_saturated_in_subspace() {
         if(j==SupportHyperplanes.nr_of_rows())
             origens_in_subspace.append(OriginalMonoidGenerators[i]);
     }
-    // saturation <==> index==1
     Matrix<Integer> M=Sub.to_sublattice(origens_in_subspace);
-    // cout << "INDEX " << M.full_rank_index();
-    return M.full_rank_index()==1;
+    unit_group_index= M.full_rank_index();
+    // cout << "Unit group index " << unit_group_index;
 }
 
 //---------------------------------------------------------------------------
