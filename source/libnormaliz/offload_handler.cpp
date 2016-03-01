@@ -173,6 +173,7 @@ void OffloadHandler<Integer>::transfer_bools()
     ofstream *fout = new ofstream(fstr.c_str());
     setVerboseOutput(*fout);
     setErrorOutput(*fout);
+    verboseOutput() << "Start logging" << endl;
   }
 //  cout << "mic " << mic_nr<< ": transfer_bools done" << endl;
 }
@@ -393,6 +394,7 @@ void OffloadHandler<Integer>::evaluate_pyramids()
   #pragma offload target(mic:mic_nr) signal(&running)
   {
     offload_fc_ptr->evaluate_stored_pyramids(0);
+    offload_fc_ptr->evaluate_triangulation();
   }
   running = true;
 }
