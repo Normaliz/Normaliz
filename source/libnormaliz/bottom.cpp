@@ -660,7 +660,9 @@ vector<Integer> opt_sol(SCIP* scip,
 }
 #endif // NMZ_SCIP
 
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level,long recursion_depth);
+#endif // NMZ_MIC_OFFLOAD
 template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,const vector<long long>& grading,long app_level,long recursion_depth);
 template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,const vector<mpz_class>& grading,long app_level,long recursion_depth);
 
