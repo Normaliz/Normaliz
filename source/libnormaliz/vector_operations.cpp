@@ -47,7 +47,7 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
     size_t i,n=av.size();
 
 
-#ifdef __MIC__
+#if 0 // #ifdef __MIC__   // not for newer compiler versions
     // this version seems to be better vectorizable on the mic
     for (i=0; i<n; ++i)
         ans += av[i]*bv[i];
