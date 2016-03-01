@@ -364,14 +364,23 @@ void OffloadHandler<Integer>::transfer_pyramids(const list< vector<key_t> >& pyr
   key_t *data = new key_t[size];
   fill_plain(data, size, pyramids);
 
+  transfer_pyramids_inner(data, size);
+
+  delete[] data;
+  cout << "mic " << mic_nr << ": transfered " << pyramids.size() << " pyramids. avg. key size:" << static_cast<double>(size)/pyramids.size()-1 << endl;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void OffloadHandler<Integer>::transfer_pyramids_inner(key_t *data, long size)
+{
   wait();
   #pragma offload target(mic:mic_nr) in(size) in(data: length(size) ONCE)
   {
     fill_list_vector(offload_fc_ptr->Pyramids[0], size, data);
     offload_fc_ptr->nrPyramids[0] = offload_fc_ptr->Pyramids[0].size();
   }
-  delete[] data;
-  cout << "mic " << mic_nr << ": transfered " << pyramids.size() << " pyramids." << endl;
 }
 
 //---------------------------------------------------------------------------
