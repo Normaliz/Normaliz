@@ -6,7 +6,8 @@ include ../Makefile.configuration
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
 
-CXXFLAGS += -I ..
+## -I .. necessary since we include files libnormaliz/*.h and *.cpp
+CXXFLAGS += -I .. 
 
 default: libnormaliz.a
 
