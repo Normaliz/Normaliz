@@ -1,0 +1,54 @@
+2 Hilbert basis elements
+2 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 1
+original monoid is integrally closed
+
+size of triangulation   = 1
+resulting sum of |det|s = 1
+
+grading:
+-12345678901234567889 1 
+
+degrees of extreme rays:
+1: 2  
+
+Hilbert basis elements are of degree 1
+
+multiplicity = 1
+
+Hilbert series:
+1 
+denominator with 2 factors:
+1: 2  
+
+degree of Hilbert Series as rational function = -2
+
+Hilbert polynomial:
+1 1 
+with common denominator = 1
+
+rank of class group = 0
+class group is free
+
+***********************************************************************
+
+2 Hilbert basis elements of degree 1:
+ 0                    1
+ 1 12345678901234567890
+
+0 further Hilbert basis elements of higher degree:
+
+2 extreme rays:
+ 0                    1
+ 1 12345678901234567890
+
+2 support hyperplanes:
+ -12345678901234567890 1
+                     1 0
+

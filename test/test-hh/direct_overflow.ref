@@ -1,0 +1,32 @@
+2 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 1
+internal index = 1
+
+size of partial triangulation   = 0
+resulting sum of |det|s = 0
+
+grading:
+-12345678901234567889 1 
+
+degrees of extreme rays:
+1: 2  
+
+***********************************************************************
+
+2 Hilbert basis elements of degree 1:
+ 0                    1
+ 1 12345678901234567890
+
+2 extreme rays:
+ 0                    1
+ 1 12345678901234567890
+
+2 support hyperplanes:
+ -12345678901234567890 1
+                     1 0
+
