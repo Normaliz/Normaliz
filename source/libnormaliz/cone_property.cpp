@@ -227,15 +227,13 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::ClassGroup
                  // || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
                 ) {
-                    errorOutput() << toString(prop) << " not computable in the inhomogeneous case." << endl;
-                    throw BadInputException();
+                    throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
                 }
             } else { // homgeneous
                 if ( prop == ConeProperty::VerticesOfPolyhedron
                   || prop == ConeProperty::ModuleRank
                   || prop == ConeProperty::ModuleGenerators ) {
-                    errorOutput() << toString(prop) << " only computable in the inhomogeneous case." << endl;
-                    throw BadInputException();
+                    throw BadInputException(toString(prop) + " only computable in the inhomogeneous case.");
                 }
             }
         }  //end if test(i)
@@ -319,8 +317,7 @@ bool isConeProperty(ConeProperty::Enum& cp, const std::string& s) {
 ConeProperty::Enum toConeProperty(const std::string& s) {
     ConeProperty::Enum cp;
     if (isConeProperty(cp, s)) return cp;
-    errorOutput() << "Unknown ConeProperty string \"" << s << "\"" << std::endl;
-    throw BadInputException();
+    throw BadInputException("Unknown ConeProperty string \"" + s + "\"");
 }
 
 const std::string& toString(ConeProperty::Enum cp) {

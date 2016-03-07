@@ -89,8 +89,7 @@ Matrix<Integer>::Matrix(const vector< vector<Integer> >& new_elem){
         //check if all rows have the same length
         for (size_t i=1; i<nr; i++) {
             if (elem[i].size() != nc) {
-                errorOutput() << "Inconsistent lengths of rows in matrix!" << endl;
-                throw BadInputException();
+                throw BadInputException("Inconsistent lengths of rows in matrix!");
             }
         }
     } else {
@@ -112,8 +111,7 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
             nc = (*it).size();
         } else {
             if ((*it).size() != nc) {
-                errorOutput() << "Inconsistent lengths of rows in matrix!" << endl;
-                throw BadInputException();
+                throw BadInputException("Inconsistent lengths of rows in matrix!");
             }
         }
         elem[i]=(*it);

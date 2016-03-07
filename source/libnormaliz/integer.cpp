@@ -273,8 +273,7 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
             if(Iabs(v->values[i])>= test){
             // cout << *v;
             // cout << "i " << i << " " << Iabs((*v)[i]) << endl;
-                errorOutput()<<"Vector out of range. Imminent danger of arithmetic overflow.\n";
-                throw ArithmeticException();
+                throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");
             }
                     
     }
@@ -302,6 +301,20 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
     }
 }
 
+//---------------------------------------------------------------------------
+//                     String conversion functions
+//---------------------------------------------------------------------------
 
-
+template<typename Integer> string toString(Integer a) {
+    ostringstream ostream;
+    ostream << a;
+    return ostream.str();
 }
+template<> string toString(mpz_class a) {
+    return a.get_str();
+}
+template<> string toString(mpq_class a) {
+    return a.get_str();
+}
+
+} //end namespace libnormaliz

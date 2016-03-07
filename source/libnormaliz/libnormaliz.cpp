@@ -71,8 +71,8 @@ InputType to_type(const std::string& type_string) {
       || type_string=="4" || type_string=="5" || type_string=="6"
       || type_string=="hyperplanes"
       || type_string=="10") {
-        errorOutput() << "Error: deprecated type \"" << type_string<<"\", please use new type string!" << std::endl;
-        throw BadInputException();
+        throw BadInputException("Error: deprecated type \"" + type_string
+                + "\", please use new type string!");
     }
 
     if (type_string=="0"||type_string=="integral_closure") {
@@ -154,8 +154,7 @@ InputType to_type(const std::string& type_string) {
         return Type::subspace;
     }
 
-    errorOutput() << "ERROR: Unknown type \"" << type_string<<"\"!" << std::endl;
-    throw BadInputException();
+    throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
 }
 

@@ -28,7 +28,8 @@
 
 #include <list>
 #include <vector>
-#include <iostream>
+#include <ostream>
+#include <string>
 #include <limits.h>
 
 
@@ -145,7 +146,13 @@ template<typename Integer> size_t decimal_length(Integer a);
 template<typename Integer> Integer permutations(const size_t& a, const size_t& b);
 template<typename Integer> Integer permutations_modulo(const size_t& a, const size_t& b, long m);
 
-}
+//---------------------------------------------------------------------------
+//                     String conversion functions
+//---------------------------------------------------------------------------
+
+template<typename Integer> string toString(Integer a);
+
+} // end libnormaliz
 
 //---------------------------------------------------------------------------
 #endif /* INTEGER_H_ */

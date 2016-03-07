@@ -221,8 +221,9 @@ template<typename Integer> int process_data(OptionsHandler& options) {
 //    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
     try {
         MyCone.compute(options.getToCompute());
-    } catch(const NotComputableException& ) {
+    } catch(const NotComputableException& e) {
         std::cout << "Not all desired properties could be computed." << endl;
+        std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);

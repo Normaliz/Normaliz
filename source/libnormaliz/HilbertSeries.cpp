@@ -326,13 +326,13 @@ bool HilbertSeries::isHilbertQuasiPolynomialComputed() const {
 
 vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const {
     computeHilbertQuasiPolynomial();
-    if (quasi_poly.empty()) throw NotComputableException();
+    if (quasi_poly.empty()) throw NotComputableException("HilbertQuasiPolynomial");
     return quasi_poly;
 }
 
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
     computeHilbertQuasiPolynomial();
-    if (quasi_poly.empty()) throw NotComputableException();
+    if (quasi_poly.empty()) throw NotComputableException("HilbertQuasiPolynomial");
     return quasi_denom;
 }
 

@@ -121,8 +121,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     Intermediate_HB.dual=true;
 
     if (nr_sh != static_cast<size_t>(static_cast<key_t>(nr_sh))) {
-        errorOutput()<<"Too many support hyperplanes to fit in range of key_t!"<<endl;
-        throw FatalException();
+        throw FatalException("Too many support hyperplanes to fit in range of key_t!");
     }
 }
 
@@ -783,8 +782,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
     }
     
     if(Generators.nr_of_rows()!=ExtremeRays.size()){
-        errorOutput() << "Mismatch of extreme rays and generators in cone dual mode. THIS SHOULD NOT HAPPEN." << endl;
-        throw FatalException(); 
+        throw FatalException("Mismatch of extreme rays and generators in cone dual mode. THIS SHOULD NOT HAPPEN."); 
     }
     
     size_t hyp_counter;      // current hyperplane

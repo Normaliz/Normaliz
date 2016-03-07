@@ -3038,8 +3038,7 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     C_approx.compute();
     verbose = verbose_tmp;
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
-        errorOutput() << "Wrong approximating cone. Fatal error. PLEASE CONTACT THE AUTHORS" << endl;
-        throw FatalException();
+        throw FatalException("Wrong approximating cone.");
     }
 
     if(verbose)
@@ -3115,9 +3114,9 @@ void Full_Cone<Integer>::check_given_grading(){
         }
 
         if(!nonnegative){
-            errorOutput() << "Grading gives negative value " << neg_value
-            << " for generator " << neg_index+1 << "!" << endl;
-            throw BadInputException();
+            throw BadInputException("Grading gives negative value "
+                    + toString(neg_value) + " for generator "
+                    + toString(neg_index+1) + "!");
         }
     }
     
@@ -3161,8 +3160,7 @@ template<typename Integer>
 void Full_Cone<Integer>::find_level0_dim(){
 
     if(!isComputed(ConeProperty::Generators)){
-        errorOutput() << "Missing Generators. THIS SHOULD NOT HAPPEN!"  << endl;
-        throw FatalException();
+        throw FatalException("Missing Generators.");
     }
     
     Matrix<Integer> Help(nr_gen,dim);
@@ -3277,8 +3275,7 @@ template<typename Integer>
 void Full_Cone<Integer>::find_grading_inhom(){
 
     if(Grading.size()==0 || Truncation.size()==0){
-        errorOutput() << "Cannot find grading in the inhomogeneous case! THIS SHOULD NOT HAPPEN." << endl;
-         throw BadInputException(); 
+         throw FatalException("Cannot find grading in the inhomogeneous case!");
     }
     
     if(shift!=0)  // to avoid double computation
@@ -3324,8 +3321,9 @@ void Full_Cone<Integer>::set_degrees() {
         vector<Integer> gen_degrees_Integer=Generators.MxV(Grading);
         for (size_t i=0; i<nr_gen; i++) {
             if (gen_degrees_Integer[i] < 1) {
-                errorOutput() << "Grading gives non-positive value " << gen_degrees_Integer[i] << " for generator " << i+1 << "." << endl;
-                throw BadInputException();
+                throw BadInputException("Grading gives non-positive value "
+                        + toString(gen_degrees_Integer[i])
+                        + " for generator " + toString(i+1) + ".");
             }
             convert(gen_degrees[i], gen_degrees_Integer[i]);
         }
@@ -3338,8 +3336,7 @@ void Full_Cone<Integer>::set_degrees() {
 template<typename Integer>
 void Full_Cone<Integer>::set_levels() {
     if(inhomogeneous && Truncation.size()!=dim){
-        errorOutput() << "Truncsation not defined in inhomogeneous case. THIS SHOULD NOT HAPPEN !" << endl;
-        throw BadInputException();
+        throw FatalException("Truncation not defined in inhomogeneous case.");
     }    
     
     // cout <<"trunc " << Truncation;
@@ -3350,9 +3347,9 @@ void Full_Cone<Integer>::set_levels() {
         vector<Integer> gen_levels_Integer=Generators.MxV(Truncation);
         for (size_t i=0; i<nr_gen; i++) {
             if (gen_levels_Integer[i] < 0) {
-                errorOutput() << "Truncation gives non-positive value " << gen_levels_Integer[i] << " for generator " << i+1 << "." << endl;
-                errorOutput() << "THIS SHOULD NOT HAPPEN !" << endl;
-                throw BadInputException();
+                throw FatalException("Truncation gives non-positive value "
+                        + toString(gen_levels_Integer[i]) + " for generator "
+                        + toString(i+1) + ".");
             }
             convert(gen_levels[i], gen_levels_Integer[i]);
             // cout << "Gen " << Generators[i];
@@ -3767,8 +3764,7 @@ void Full_Cone<Integer>::check_pointed() {
     pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
     if(pointed && Grading.size()>0){
-        errorOutput() << "Grading not positive on pointed cone" << endl;
-        throw BadInputException();
+        throw BadInputException("Grading not positive on pointed cone.");
     }
     if (verbose) verboseOutput() << "done." << endl;
 }
@@ -3790,9 +3786,7 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
                 do_partial_triangulation=true;
             }
         } else {
-            errorOutput() << "No grading specified and cannot find one. "
-                          << "Cannot compute some requested properties!" << endl;
-            throw BadInputException();
+            throw BadInputException("No grading specified and cannot find one. Cannot compute some requested properties!");
         }
     }
 }
@@ -4013,14 +4007,12 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
                 }    
             }
             if(test<0){
-                errorOutput() << "Fatal error: excluded hyperplane does not define a face" << endl;
-                throw FatalException();
+                throw FatalException("Excluded hyperplane does not define a face.");
             }
                 
         }
         if(!non_zero){  // not impossible if the hyperplane contains the vector space spanned by the cone
-            errorOutput() << "Fatal error: excluded face contains the full cone" << endl;
-            throw FatalException();
+            throw FatalException("Excluded face contains the full cone.");
         }       
     }
     
@@ -4224,8 +4216,10 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     assert(M.row_echelon()== dim);
     
     if (M.row_echelon() < dim) {
-        error_msg("error: Matrix with rank = number of columns needed in the constructor of the object Full_Cone<Integer>.\nProbable reason: Cone not full dimensional (<=> dual cone not pointed)!");
-        throw BadInputException();
+        throw BadInputException(string("Matrix with rank = number of columns needed")
+                + "in the constructor of the object Full_Cone<Integer>.\n"
+                + "Probable reason: Cone not full dimensional "
+                + "(<=> dual cone not pointed)!");
     }
     
     index=1;                      // not used at present
@@ -4250,8 +4244,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     nr_gen = Generators.nr_of_rows();
 
     if (nr_gen != static_cast<size_t>(static_cast<key_t>(nr_gen))) {
-        error_msg("Too many generators to fit in range of key_t!");
-        throw FatalException();
+        throw FatalException("Too many generators to fit in range of key_t!");
     }
     
     multiplicity = 0;
@@ -4458,8 +4451,7 @@ void Full_Cone<Integer>::check_grading_after_dual_mode(){
     }
 
     if(Grading.size()>0 && !isComputed(ConeProperty::Grading)){
-        errorOutput() << "Grading not positive on pointed cone." << endl;
-        throw BadInputException();
+        throw BadInputException("Grading not positive on pointed cone.");
     }
 }
 

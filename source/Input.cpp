@@ -35,16 +35,14 @@ void skip_comment(istream& in) {
     int i = in.get();
     int j = in.get();
     if (i != '/' || j != '*') {
-        cerr << "Error: Bad comment start!" << endl;
-        throw BadInputException();
+        throw BadInputException("Bad comment start!");
     }
     while (in.good()) {
         in.ignore(numeric_limits<streamsize>::max(), '*'); //ignore everything until next '*'
         i = in.get();
         if (in.good() && i == '/') return; // successfully skipped comment
     }
-    cerr << "Error: Incomplete comment!" << endl;
-    throw BadInputException();
+    throw BadInputException("Incomplete comment!");
 }
 
 template<typename Integer>
@@ -52,9 +50,8 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
         InputType input_type, const string& type_string, const vector<vector<Integer> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
-        cerr << "Error: Multiple inputs of type \"" << type_string
-                << "\" are not allowed!" << endl;
-        throw BadInputException();
+        throw BadInputException("Multiple inputs of type \"" + type_string
+                + "\" are not allowed!");
     }
     input_map[input_type] = M;
 }
@@ -75,8 +72,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
     if ( c == EOF ) {
-        cerr << "Error: Empty input file!" << endl;
-        throw BadInputException();
+        throw BadInputException("Empty input file!");
     }
     bool new_input_syntax = !std::isdigit(c);
 
@@ -88,13 +84,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
         }
         in >> type_string;
         if (!in.good() || type_string != "amb_space") {
-            cerr << "Error: First entry must be \"amb_space\"!" << endl;
-            throw BadInputException();
+            throw BadInputException("First entry must be \"amb_space\"!");
         }
         in >> dim;
         if (!in.good() || dim <= 0) {
-            cerr << "Error: Bad amb_space value!" << endl;
-            throw BadInputException();
+            throw BadInputException("Bad amb_space value!");
         }
         while (in.good()) {
             in >> std::ws;  // eat up any leading white spaces
@@ -105,12 +99,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             } else {
                 in >> type_string;
                 if (in.fail()) {
-                    cerr << "Error: Could not read type string!" << endl;
-                    throw BadInputException();
+                    throw BadInputException("Could not read type string!");
                 }
                 if (std::isdigit(c)) {
-                    cerr << "Error: Unexpected number "<< type_string << " when expecting a type !" << endl;
-                    throw BadInputException();
+                    throw BadInputException("Unexpected number " + type_string
+                            + " when expecting a type!");
                 }
                 if (isConeProperty(cp, type_string)) {
                     options.activateInputFileConeProperty(cp);
@@ -149,14 +142,16 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             long pos = 0;
                             in >> pos;
                             if (in.fail()) {
-                                cerr << "Error while reading " << type_string << " as a unit_vector from the input!" << endl;
-                                throw BadInputException();
+                                throw BadInputException("Error while reading "
+                                        + type_string 
+                                        + " as a unit_vector from the input!");
                             }
 
                             vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),0));
                             if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
-                                cerr << "Error while reading " << type_string << " as a unit_vector "<< pos <<" from the input!" << endl;
-                                throw BadInputException();
+                                throw BadInputException("Error while reading "
+                                        + type_string + " as a unit_vector "
+                                        + toString(pos) + " from the input!");
                             }
                             pos--; // in input file counting starts from 1
                             e_i[0].at(pos) = 1;
@@ -169,8 +164,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 }
                 nr_columns = dim + type_nr_columns_correction(input_type);
                 if(in.fail() || nr_rows < 0) {
-                    cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) from the input!" << endl;
-                    throw BadInputException();
+                    throw BadInputException("Error while reading "
+                            + type_string + " (a " + toString(nr_rows)
+                            + "x" + toString(nr_columns)
+                            + " matrix) from the input!");
                 }
                 vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
                 for(i=0; i<nr_rows; i++){
@@ -181,8 +178,9 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 save_matrix(input_map, input_type, type_string, M);
             }
             if (in.fail()) {
-                cerr << "Error while reading " << type_string << " (a "<<nr_rows<<"x"<<nr_columns<<" matrix) form the input!" << endl;
-                throw BadInputException();
+                throw BadInputException("Error while reading " + type_string
+                        + " (a " + toString(nr_rows) + "x"
+                        + toString(nr_columns) + " matrix) form the input!");
             }
         }
     } else {
@@ -193,8 +191,9 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 break;
             in >> nr_columns;
             if((nr_rows <0) || (nr_columns < 0)){
-                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix from the input!" << endl;
-                throw BadInputException();
+                throw BadInputException("Error while reading a "
+                        + toString(nr_rows) + "x" + toString(nr_columns)
+                        + " matrix from the input!");
             }
             vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
             for(i=0; i<nr_rows; i++){
@@ -207,8 +206,9 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             in >> type_string;
 
             if ( in.fail() ) {
-                cerr << "Error while reading a "<<nr_rows<<"x"<<nr_columns<<" matrix from the input!" << endl;
-                throw BadInputException();
+                throw BadInputException("Error while reading a " 
+                        + toString(nr_rows) + "x" + toString(nr_columns)
+                        + " matrix from the input!");
             }
 
             input_type = to_type(type_string);

@@ -1308,8 +1308,7 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
         // we need the generators to be sorted by degree
         hv_max = C_ptr->gen_degrees[C_ptr->nr_gen-1] * C_ptr->dim;
         if (hv_max > 1000000) {
-            errorOutput() << "Error: generator degrees are to huge, h-vector would contain more than 10^6 entires." << endl;
-            throw BadInputException();
+            throw BadInputException("Generator degrees are too huge, h-vector would contain more than 10^6 entires.");
         }
 
         hvector.resize(hv_max,0);
