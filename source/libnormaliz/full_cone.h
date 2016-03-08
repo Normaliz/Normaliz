@@ -104,6 +104,7 @@ public:
     bool do_module_rank;
     bool do_cone_dec;
     bool stop_after_cone_dec;
+    bool do_hsop;
     
     bool do_extreme_rays;
     bool do_pointed;

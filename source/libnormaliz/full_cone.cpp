@@ -2790,6 +2790,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
+    if (do_hsop)            do_Hilbert_basis = true;
     if (do_Stanley_dec)     keep_triangulation = true;
     if (do_cone_dec)        keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
@@ -2921,8 +2922,7 @@ void Full_Cone<Integer>::compute() {
     
     // COMPUTE HSOP here
     
-    if (isComputed(ConeProperty::HilbertBasis) && isComputed(ConeProperty::SupportHyperplanes)){
-        // first take the generators and hyperplanes and compute the 0/1 vectors for the facets
+    if (do_hsop){
         
         Matrix<Integer> HB = getHilbertBasis(); 
         Matrix<Integer> SH = getSupportHyperplanes();
@@ -2946,13 +2946,9 @@ void Full_Cone<Integer>::compute() {
             facet_keys.push_back(key);
         }
         
-        cout << "Hilbert Basis:" << endl;
-        HB.pretty_print(cout);
-        
-       
         facet_list.sort(); // should be sorted lex
         cout << "size: " << facet_list.size() << " | " << facet_list << endl;
-        cout << "facet non_keys: " << facet_keys << endl;
+        //cout << "facet non_keys: " << facet_keys << endl;
         
         // save a heights vector of length=Hilbert_Basis.size()
         // with all entries 1

@@ -1670,6 +1670,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         FC.do_module_rank=true;
     }
     
+    if (ToCompute.test(ConeProperty::HSOP)) {
+        FC.do_hsop=true;
+    }
+    
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays = ExtremeRaysIndicator;

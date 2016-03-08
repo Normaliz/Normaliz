@@ -100,6 +100,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::DefaultMode, false);
     CPs.set(ConeProperty::DualMode, false);
     CPs.set(ConeProperty::KeepOrder, false);
+    CPs.set(ConeProperty::HSOP, false);
     return *this;
 }
 
@@ -118,6 +119,7 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
     ret.set(ConeProperty::DualMode, CPs.test(ConeProperty::DualMode));
     ret.set(ConeProperty::KeepOrder, CPs.test(ConeProperty::KeepOrder));
+    ret.set(ConeProperty::HSOP, CPs.test(ConeProperty::HSOP));
     return ret;
 }
 
@@ -157,7 +159,11 @@ void ConeProperties::set_preconditions() {
 
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
-
+        
+    if (CPs.test(ConeProperty::HSOP)){
+        CPs.set(ConeProperty::SupportHyperplanes);
+        CPs.set(ConeProperty::HilbertBasis);
+    }
     // inhomogenous preconditions
     if (CPs.test(ConeProperty::VerticesOfPolyhedron))
         CPs.set(ConeProperty::ExtremeRays);
@@ -286,9 +292,9 @@ namespace {
         CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
-
+        CPN.at(ConeProperty::HSOP) = "HSOP";
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 39,
+        static_assert (ConeProperty::EnumSize == 40,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {
