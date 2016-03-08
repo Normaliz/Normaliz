@@ -110,14 +110,7 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     }
     SupportHyperplanes.append(M);
     nr_sh = SupportHyperplanes.nr_of_rows();
-    // hyp_size = dim + nr_sh;
     
-    /* if (dim!=SupportHyperplanes.rank()) {
-        errorOutput()<<"Cone_Dual_Mode error: constraints do not define pointed cone!"<<endl;
-        // M.pretty_print(errorOutput());
-        throw BadInputException();
-    }*/
-
     Intermediate_HB.dual=true;
 
     if (nr_sh != static_cast<size_t>(static_cast<key_t>(nr_sh))) {
@@ -912,7 +905,6 @@ void Cone_Dual_Mode<Integer>::to_sublattice(const Sublattice_Representation<Inte
         return;
 
     dim = SR.getRank();
-    // hyp_size = dim+nr_sh;
     SupportHyperplanes = SR.to_sublattice_dual(SupportHyperplanes);
     typename list<vector<Integer> >::iterator it;
     vector<Integer> tmp;
