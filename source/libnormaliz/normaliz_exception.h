@@ -40,6 +40,7 @@ class NormalizException: public std::exception {
 class ArithmeticException: public NormalizException {
     public:
     ArithmeticException() : msg("Arithmetic Overflow detected, try a bigger integer type!") {}
+    ~ArithmeticException() throw() {}
 
     template<typename Integer>
     ArithmeticException(const Integer& convert_number){
@@ -76,6 +77,7 @@ class BadInputException: public NormalizException {
     BadInputException(const std::string& message) :
             msg("Some error in the normaliz input data detected: " + message)
     {}
+    ~BadInputException() throw() {}
 
 	virtual const char* what() const throw() {
 		return msg.c_str();
@@ -93,6 +95,7 @@ class NotComputableException: public NormalizException {
         stream << "Could not compute: " << missing << "!";
         msg = stream.str();
     }
+    ~NotComputableException() throw() {}
 
     virtual const char* what() const throw() {
 		return msg.c_str();
@@ -107,6 +110,7 @@ class FatalException: public NormalizException {
     FatalException(const std::string& message) :
             msg("Fatal error: " + message +"\nThis should not happen, please contact the developers!")
     {}
+    ~FatalException() throw() {}
 
 	virtual const char* what() const throw() {
 		return msg.c_str();
