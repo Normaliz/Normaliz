@@ -24,7 +24,9 @@
 //---------------------------------------------------------------------------
 
 #include <algorithm>
+#include <sstream>
 #include "libnormaliz/integer.h"
+#include "libnormaliz/vector_operations.h"
 
 //---------------------------------------------------------------------------
 
