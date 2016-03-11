@@ -473,6 +473,13 @@ void Output<Integer>::write_inv_file() const{
             inv << "integer sum_dets = " << Result->getTriangulationDetSum() << endl;
         }
 
+        if (!Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
+	  if(Result->isIntegrallyClosed())
+            inv << "boolean integrally_closed = true" << endl;
+	  else
+	    inv << "boolean integrally_closed = false" << endl;
+        }
+        
         if (!Result->isComputed(ConeProperty::Dehomogenization)) {
             inv << "boolean inhomogeneous = false" << endl;
         }
@@ -653,7 +660,7 @@ void Output<Integer>::write_files() const {
             if(dim_max_subspace>0)
                 out << "dimension of maximal subspace = " << dim_max_subspace << endl;      
         }
-        
+            
         
         if (homogeneous && Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
             if (Result->isIntegrallyClosed()) {
@@ -664,6 +671,9 @@ void Output<Integer>::write_files() const {
                        && !Result->isComputed(ConeProperty::HilbertBasis)) {
                     out << "witness for not being integrally closed:" << endl;
                     out << Result->getWitnessNotIntegrallyClosed();
+                }
+                if(Result->getUnitGroupIndex()>1){
+                    out << "unit group index = " << Result->getUnitGroupIndex() << endl;
                 }
             }
         }

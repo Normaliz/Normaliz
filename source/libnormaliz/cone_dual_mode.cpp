@@ -765,7 +765,8 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 
-    assert(dim>0);         
+    if(dim==0)
+        return;
     if (verbose==true) {
         verboseOutput()<<"************************************************************\n";
         verboseOutput()<<"computing Hilbert basis";

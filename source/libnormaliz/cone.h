@@ -131,7 +131,8 @@ public:
     // dimension and rank invariants
     size_t getEmbeddingDim() const { return dim; };   // is always known
     size_t getRank();                           // depends on ExtremeRays
-    Integer getIndex();                         // depends on OriginalMonoidGenerators
+    Integer getIndex(); // depends on OriginalMonoidGenerators
+    Integer getUnitGroupIndex(); // ditto
     // only for inhomogeneous case:
     size_t getRecessionRank();
     long getAffineDim();
@@ -259,7 +260,8 @@ private:
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
     Integer GradingDenom;
-    Integer index;
+    Integer index;  // the internal index
+    Integer unit_group_index;
 
     bool pointed;
     bool inhomogeneous;
@@ -339,11 +341,9 @@ private:
     /* If the Hilbert basis and the original monoid generators are computed,
      * use them to check whether the original monoid is integrally closed. */
     void check_integrally_closed();
+    void compute_unit_group_index();
     /* try to find a witness for not integrally closed in the Hilbert basis */
     void find_witness();
-
-    /* set this object to the zero cone */
-    void set_zero_cone();
 
     Integer compute_primary_multiplicity();
     template<typename IntegerFC>
