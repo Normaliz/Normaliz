@@ -48,9 +48,9 @@ This will install the produced libnormaliz and the normaliz executable.
 The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
 
 
-**** ADDITIONALLY CMAKE CONFIGURATION ****
+**** ADDITIONAL CMAKE CONFIGURATION ****
 
-If you want to overide system defaults you can change values with ccmake or set enviroment variables.
+If you want to override system defaults you can change values with ccmake or set enviroment variables.
 IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. If you want to change it later clean your build directory first, or use another fresh build directory.
 Some examples:
 Specifiy installation location:
