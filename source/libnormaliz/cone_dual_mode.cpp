@@ -110,6 +110,11 @@ Cone_Dual_Mode<Integer>::Cone_Dual_Mode(Matrix<Integer>& M, const vector<Integer
     }
     SupportHyperplanes.append(M);
     nr_sh = SupportHyperplanes.nr_of_rows();
+
+    verbose = false;
+    inhomogeneous = false;
+    do_only_Deg1_Elements = false;
+    truncate = false;
     
     Intermediate_HB.dual=true;
 
@@ -166,8 +171,6 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
         verboseOutput()<<"==================================================" << endl;
         verboseOutput()<<"cut with halfspace "<<hyp_counter+1 <<" ..."<<endl;
     }
-    
-    truncate=inhomogeneous || do_only_Deg1_Elements;
     
     size_t i;
     int sign;
@@ -765,8 +768,11 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_co
 template<typename Integer>
 void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
 
+    truncate = inhomogeneous || do_only_Deg1_Elements;
+
     if(dim==0)
         return;
+
     if (verbose==true) {
         verboseOutput()<<"************************************************************\n";
         verboseOutput()<<"computing Hilbert basis";
