@@ -441,9 +441,12 @@ void readTri(const string& project, const long& dim, list <TRIDATA>& triang){
     long dummy;
     in >> dummy; // number of simpl in triang, not needed here
     in >> dummy;
-    if(dim!=dummy-1){
+    if(dim!=dummy-1 && 2*dim!=dummy-1){
             inputError(file_in,"wrong dimension in file.");
     }
+    bool with_decomposition=false;
+    if(2*dim==dummy-1)
+        with_decomposition=true;
 
     long i;
     TRIDATA newSimpl;
@@ -457,6 +460,10 @@ void readTri(const string& project, const long& dim, list <TRIDATA>& triang){
             in >> newSimpl.key[i];
         sort(newSimpl.key.begin(),newSimpl.key.end()); // should come sorted, nevertheless for stability
         in >> newSimpl.vol;
+        if(with_decomposition){ // skip 0-1-vector describing disjoint decomposition
+            for(i=0;i<dim;++i)
+                in >> dummy;
+        }
         triang.push_back(newSimpl);        
     }
 }
