@@ -473,11 +473,11 @@ void Output<Integer>::write_inv_file() const{
             inv << "integer sum_dets = " << Result->getTriangulationDetSum() << endl;
         }
 
-        if (!Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
-	  if(Result->isIntegrallyClosed())
-            inv << "boolean integrally_closed = true" << endl;
-	  else
-	    inv << "boolean integrally_closed = false" << endl;
+        if (Result->isComputed(ConeProperty::IsIntegrallyClosed)) {
+            if(Result->isIntegrallyClosed())
+                inv << "boolean integrally_closed = true" << endl;
+            else
+                inv << "boolean integrally_closed = false" << endl;
         }
         
         if (!Result->isComputed(ConeProperty::Dehomogenization)) {
