@@ -238,7 +238,8 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     }
 
 #ifndef NCATCH
-    } catch(const BadInputException& ) {
+    } catch(const BadInputException& e) {
+        cerr << e.what() << endl;
         cerr << "BadInputException caught... exiting." << endl;
         exit(1);
     } catch(const FatalException& e) {
