@@ -50,10 +50,113 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
         InputType input_type, const string& type_string, const vector<vector<Integer> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
-        throw BadInputException("Multiple inputs of type \"" + type_string
-                + "\" are not allowed!");
+        /*throw BadInputException("Multiple inputs of type \"" + type_string
+                + "\" are not allowed!");*/
+        for(size_t i=0;i<M.size();++i)
+            input_map[input_type].push_back(M[i]);
+        return;
     }
     input_map[input_type] = M;
+}
+
+template <typename Integer>
+void append_row(const vector<Integer> row, map <Type::InputType, vector< vector<Integer> > >& input_map,
+                    const string& type_string) {
+    
+    vector<vector<Integer> > one_row(1,row);
+    InputType input_type=to_type(type_string);
+    save_matrix(input_map,input_type,type_string,one_row); 
+}
+
+template <typename Integer>
+void process_constraint(const string& rel, const vector<Integer>& left, Integer right, const Integer modulus, 
+                        map <Type::InputType, vector< vector<Integer> > >& input_map) {
+    
+    vector<Integer> row=left;
+    bool inhomogeneous=false;
+    if(right!=0 || rel=="<" || rel==">")
+        inhomogeneous=true;
+    string modified_rel=rel;
+    if(rel=="<"){
+        right-=1;
+        modified_rel="<=";
+    }
+    if(rel==">"){
+        right+=1;
+        modified_rel=">=";
+    }
+    if(inhomogeneous)
+        row.push_back(-right); // rhs --> lhs
+    if(modified_rel=="<="){ // convert <= to >=
+        for(size_t j=0; j<row.size();++j)
+            row[j]=-row[j];
+        modified_rel=">=";
+    }
+    if(rel=="~")
+        row.push_back(modulus);
+
+    if(inhomogeneous){
+        if(modified_rel=="="){
+            append_row(row,input_map,"inhom_equations");
+        }
+        if(modified_rel==">="){
+            append_row(row,input_map,"inhom_inequalities");
+        }
+        if(modified_rel=="~"){
+            append_row(row,input_map,"inhom_congruences");
+        }
+    }
+    else {
+        if(modified_rel=="="){
+            append_row(row,input_map,"equations");
+        }
+        if(modified_rel==">="){
+            append_row(row,input_map,"inequalities");
+        }
+        if(modified_rel=="~"){
+            append_row(row,input_map,"congruences");
+        }                
+    }
+}
+
+template <typename Integer>
+void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map) {
+
+    size_t nr_constraints;
+    in >> nr_constraints;
+    
+    if(in.fail() || nr_constraints < 0) {
+        throw BadInputException("Error while reading "
+        + to_string(nr_constraints) + " constraints from the input!");
+    }
+    for(size_t i=0;i< nr_constraints; ++i) {
+        vector<Integer> left(dim);
+        for(size_t j=0;j<dim;++j){
+            in >> left[j];
+        }
+        string rel, modulus_str;
+        Integer right, modulus=0;
+        in >> rel;
+        in >> right;
+        if(rel=="~") {
+            bool bad_modulus=false;
+            in >> modulus_str;
+            if(modulus_str[0]!='(' || modulus_str[modulus_str.size()-1]!=')')
+                bad_modulus=true;
+            if(!bad_modulus){
+                modulus_str.erase(0,1);
+                modulus_str.erase(modulus_str.size()-1,1);
+                if(!(istringstream(modulus_str) >> modulus) || modulus==0)
+                    bad_modulus=true;
+            }
+            if(bad_modulus)
+                throw BadInputException("Error while reading modulus of congruence form the input!");
+        }
+        if (in.fail()) {
+            throw BadInputException("Error while reading constraint form the input!");
+        }
+        process_constraint(rel,left,right,modulus,input_map);        
+    }
 }
 
 template <typename Integer>
@@ -125,6 +228,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 if (type_string == "nonnegative") {
                     input_type = Type::signs;
                     save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    continue;
+                }
+                if(type_string == "constraints") {
+                    read_constraints(in,dim,input_map);
                     continue;
                 }
 
