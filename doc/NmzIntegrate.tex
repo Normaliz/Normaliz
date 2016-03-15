@@ -98,17 +98,17 @@
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf NmzIntegrate 1.3} \vspace*{1cm}
- %\vspace*{1cm}
-
-
-
+ \centerline{\Large\bf NmzIntegrate 1.3.1} \vspace*{0.5cm}
+ 
+ \centerline{\today}
+ 
+ \vspace*{1cm}
 
 
 \begin{center}Winfried Bruns and Christof
 Söger\\[14pt] \tt
 \url{mailto:normaliz@uos.de}\\[14pt]
-\url{http://www.math.uos.de/normaliz}
+\url{https://normaliz.uos.de}
 \end{center}
 %\vspace*{1cm}
 
@@ -126,7 +126,7 @@ Söger\\[14pt] \tt
 
 We assume in the following that the reader is familiar with
 Normaliz, in particular with its treatment of Ehrhart series
-and quasipolynomials. NmzIntegrate 1.3 requires Normaliz 3.0.
+and quasipolynomials. NmzIntegrate 1.3.1 requires Normaliz 3.1.1.
 
 Normaliz computes certain data for a monoid $$ M=C\cap L $$
 where $C\subset\RR^n$ is a rational, polyhedral and pointed
@@ -177,7 +177,7 @@ $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account and the algorithm used by NmzIntegrate.
 
-NmzIntegrate 1.3, like Normaliz 3.0 can compute Ehrhart series for
+NmzIntegrate 1.3.1, like Normaliz 3.1.1 can compute Ehrhart series for
 \emph{semiopen} cones. For them the monoid $M$ is replaced by the set
 $$
 M'=C'\cap L
@@ -635,7 +635,7 @@ NmzIntegrate is contained in the basic package of Normaliz
 that you can download from
 \medskip
 
-\centerline{\url{http://www.math.uos.de/normaliz}}\medskip
+\centerline{\url{https://normaliz.uos.de}}\medskip
 
 The installation is described in the Normaliz documentation.
 
@@ -646,11 +646,8 @@ Therefore NmzIntegrate does not need a separate installation.
 \section{Compilation}\label{Comp}
 
 Before the compilation of NmzIntegrate you must compile
-Normaliz 3.0 and CoCoALib 0.99538 \cite{CoC} (not
+Normaliz 3.1.1 and CoCoALib 0.99540 \cite{CoC} (not
 contained in the Normaliz distribution).
-For this CoCoALib we added a patch by the CoCoALib team for a improved factorization,
-which will be included in the next release. You can find the patch in the nmzIntegrate source directory.
-%NmzIntegrate will not compile with earlier versions of CoCoALib or Normaliz.
 
 First compile Normaliz including libnormaliz by running \ttt{make} in the source directory.
 For the compilation of CoCoALib run
@@ -706,13 +703,13 @@ NmzIntegrate it has been used:
 \begin{center}
 	W. Bruns, B. Ichim, R. Sieg, T. Römer and C. Söger: Normaliz. Algorithms for
 	rational cones and affine monoids. Available at
-	http://www.math.uos.de/normaliz.
+	\url{https://normaliz.uos.de}.
 \end{center}
 The corresponding \verb|\bibitem|:
 \begin{Verbatim}
 \bibitem W. Bruns, B. Ichim, R. Sieg, T. R\"omer and C. S\"oger:
 Normaliz. Algorithms for rational cones and affine monoids.
-Available at http://www.math.uos.de/normaliz.
+Available at \url{https://normaliz.uos.de}.
 \end{Verbatim}
 
 A BibTeX entry:
@@ -720,7 +717,7 @@ A BibTeX entry:
 @Misc{Normaliz,
 author = {W. Bruns and B. Ichim and R. Sieg and T. R\"omer and C. S\"oger},
 title = Normaliz. Algorithms for rational cones and affine monoids,
-howpublished ={Available at \texttthttp://www.math.uos.de/normaliz}}
+howpublished ={Available at \url{https://normaliz.uos.de}.}
 }
 \end{Verbatim}
 
@@ -761,6 +758,14 @@ project.
 
 \end{enumerate}
 
+\subsection{1.3 $\to$ 1.3.1}
+
+\begin{enumerate}
+\item Adaptation to CoCoALib 0.99540.
+\item Changes implied by new features of Normaliz 3.1.1.
+
+\end{enumerate}
+
 \begin{thebibliography}{15.}
 
 \bibitem{CoC} J. Abbott and A. Bigatti, \emph{CoCoALib}. A GPL
@@ -771,7 +776,7 @@ project.
     series and integration in Normaliz}. J. Symb. Comp. 68 (2015) 75--86.
 
 \bibitem{JMV} J. Jeffries, J. Montaño and M. Varbaro, \emph{Multiplicities of
-classical varieties}. \url{http://arxiv.org/abs/1308.0582}
+classical varieties}.  Proc. Lond. Math. Soc. (3) 110 (2015), 1033--1055.
 
 
 \end{thebibliography}
