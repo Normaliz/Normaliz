@@ -47,13 +47,12 @@ void skip_comment(istream& in) {
 
 template<typename Integer>
 void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
-        InputType input_type, const string& type_string, const vector<vector<Integer> >& M) {
+        InputType input_type, const vector<vector<Integer> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
         /*throw BadInputException("Multiple inputs of type \"" + type_string
                 + "\" are not allowed!");*/
-        for(size_t i=0;i<M.size();++i)
-            input_map[input_type].push_back(M[i]);
+	input_map[input_type].insert(input_map[input_type].end(),M.begin(),M.end());
         return;
     }
     input_map[input_type] = M;
@@ -61,11 +60,10 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
 
 template <typename Integer>
 void append_row(const vector<Integer> row, map <Type::InputType, vector< vector<Integer> > >& input_map,
-                    const string& type_string) {
+                    Type::InputType input_type) {
     
     vector<vector<Integer> > one_row(1,row);
-    InputType input_type=to_type(type_string);
-    save_matrix(input_map,input_type,type_string,one_row); 
+    save_matrix(input_map,input_type,one_row); 
 }
 
 template <typename Integer>
@@ -97,37 +95,64 @@ void process_constraint(const string& rel, const vector<Integer>& left, Integer 
 
     if(inhomogeneous){
         if(modified_rel=="="){
-            append_row(row,input_map,"inhom_equations");
+            append_row(row,input_map,Type::inhom_equations);
+            return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,"inhom_inequalities");
+            append_row(row,input_map,Type::inhom_inequalities);
+            return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,"inhom_congruences");
+            append_row(row,input_map,Type::inhom_congruences);
+            return;
         }
     }
     else {
         if(modified_rel=="="){
-            append_row(row,input_map,"equations");
+            append_row(row,input_map,Type::equations);
+            return;
         }
         if(modified_rel==">="){
-            append_row(row,input_map,"inequalities");
+            append_row(row,input_map,Type::inequalities);
+            return;
         }
         if(modified_rel=="~"){
-            append_row(row,input_map,"congruences");
+            append_row(row,input_map,Type::congruences);
+            return;
         }                
     }
+    throw BadInputException("Illegal constrint type "+rel+" !");
+}
+
+template <typename Integer>
+bool read_modulus(istream& in, Integer& modulus) {
+
+    in >> std::ws;  // eat up any leading white space
+    if(in.peek() != '(')
+      return false;
+    char dummy;
+    in >> dummy;
+    in >> modulus;
+    if(modulus==0)
+      return false;
+    if(in.fail())
+      return false;;
+    in >> std::ws;  // eat up any white space before closing
+    if(in.peek() != ')')
+      return false;;
+    in >> dummy; 
+    return true;
 }
 
 template <typename Integer>
 void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map) {
 
-    size_t nr_constraints;
+    long nr_constraints;
     in >> nr_constraints;
     
     if(in.fail() || nr_constraints < 0) {
-        throw BadInputException("Error while reading "
-        + to_string(nr_constraints) + " constraints from the input!");
+        throw BadInputException("Cannot read "
+        + to_string(nr_constraints) + " constraints!");
     }
     for(size_t i=0;i< nr_constraints; ++i) {
         vector<Integer> left(dim);
@@ -139,21 +164,11 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         in >> rel;
         in >> right;
         if(rel=="~") {
-            bool bad_modulus=false;
-            in >> modulus_str;
-            if(modulus_str[0]!='(' || modulus_str[modulus_str.size()-1]!=')')
-                bad_modulus=true;
-            if(!bad_modulus){
-                modulus_str.erase(0,1);
-                modulus_str.erase(modulus_str.size()-1,1);
-                if(!(istringstream(modulus_str) >> modulus) || modulus==0)
-                    bad_modulus=true;
-            }
-            if(bad_modulus)
-                throw BadInputException("Error while reading modulus of congruence form the input!");
+            if(!read_modulus(in,modulus))
+                throw BadInputException("Error while reading modulus of congruence!");
         }
         if (in.fail()) {
-            throw BadInputException("Error while reading constraint form the input!");
+            throw BadInputException("Error while reading constraint!");
         }
         process_constraint(rel,left,right,modulus,input_map);        
     }
@@ -222,12 +237,12 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 }
                 if (type_string == "total_degree") {
                     input_type = Type::grading;
-                    save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    save_matrix(input_map, input_type, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
                 if (type_string == "nonnegative") {
                     input_type = Type::signs;
-                    save_matrix(input_map, input_type, type_string, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    save_matrix(input_map, input_type, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
                 if(type_string == "constraints") {
@@ -262,7 +277,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             }
                             pos--; // in input file counting starts from 1
                             e_i[0].at(pos) = 1;
-                            save_matrix(input_map, input_type, type_string, e_i);
+                            save_matrix(input_map, input_type, e_i);
                             continue;
                         }
                     }
@@ -282,12 +297,12 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         in >> M[i][j];
                     }
                 }
-                save_matrix(input_map, input_type, type_string, M);
+                save_matrix(input_map, input_type, M);
             }
             if (in.fail()) {
                 throw BadInputException("Error while reading " + type_string
                         + " (a " + toString(nr_rows) + "x"
-                        + toString(nr_columns) + " matrix) form the input!");
+                        + toString(nr_columns) + " matrix) from the input!");
             }
         }
     } else {
@@ -321,7 +336,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             input_type = to_type(type_string);
 
             //check if this type already exists
-            save_matrix(input_map, input_type, type_string, M);
+            save_matrix(input_map, input_type, M);
         }
     }
     return input_map;

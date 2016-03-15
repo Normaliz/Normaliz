@@ -1606,13 +1606,23 @@ We want to compute the nonnegative solutions of the simultaneous inhomogeneous c
 	x_1 + 2x_2 &\equiv 3\pod 7,\\
 	2x_1 + 2x_2 &\equiv 4\pod{13}
 \end{align*}
-in two variables. As usual we move the right hand side over to the left. The input file \verb|InhomCong.in| is
+in two variables. The input file \verb|InhomCong.in| is
+\begin{Verbatim}
+amb_space 2
+constraints 2
+1 2 ~ 3 (7)
+2 2 ~ 4 (13)
+\end{Verbatim}
+This is an example of input of generic constraints. We use \verb|~| as the best ASCII character for representing the congruence sign $\equiv$.	
+
+Alternatively one can use a matrix in the input As for which we must move the right hand side over to the left.
 \begin{Verbatim}
 amb_space 2
 inhom_congruences 2
 1 2 -3 7
 2 2 -4 13
 \end{Verbatim}
+It is certainly harder to read.
 
 The first vector list in the output:
 
@@ -1971,6 +1981,7 @@ several items. There are several types of items:
 	\item definition of the ambient space,
 	\item matrices with integer entries,
 	\item vectors with integer entries,
+	\item constraints in generic format,
 	\item computation goals and algorithmic variants,
 	\item comments.
 \end{arab}
@@ -2048,7 +2059,30 @@ For certain vectors there exist shortcuts. Examples:
 \begin{Verbatim}
 total_degree
 unit_vector 25
+\end{Verbatim} 
+
+\subsubsection{Constraints in generic format}\label{const_syntax}
+
+This input type is closer to standard notation than the encoding of constraints in matrices. The general type of equations and inequalities is
+\begin{Verbatim}
+<x> <rel> <rhs>
 \end{Verbatim}
+where \verb|<x>| denots a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<rhs>| is an integer.
+
+Congruences have the form
+\begin{Verbatim}
+<x> ~ <rhs> (<mod>)
+\end{Verbatim}
+where \verb|<mod>| is a nonzero integer.
+
+Examples:
+\begin{Verbatim}
+1 -2 >= 5
+1 -1 = 0
+-1 1 ~ 7 (9)
+\end{Verbatim}
+
+Note: all numbers and relation signs must be separated by white space.
 
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
@@ -2290,8 +2324,33 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	$$
 	\xi_1z_1+\dots+\xi_dz_d\equiv \eta \mod c, \qquad \xi_i,\eta,c\in\ZZ,
 	$$
-	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. Section \ref{ChinRem}, \verb|InhomCong.in|.
+	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. Section \ref{ChinRem}, \verb|InhomCongSigns.in|.
 \end{itemize}
+
+\subsection{Generic constraints}
+
+\begin{itemize}
+	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format tha is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of generic constraints has been desribed in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right han side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
+	$$
+		\xi_1x_1+\dots \xi_dx_d \texttt{ rel } \eta
+	$$
+	is staisfied, where \verb|rel| can take the values $=,\leq,\geq,<,>$ with the represented by input strings \verb|=,<=,>=,<,>|, respectively.
+	
+	The input string \verb|~| represents a congruence $\equiv$ and requires the additional input of a modulus. It represents the congruence
+	$$
+	\xi_1x_1+\dots \xi_dx_d \equiv \eta \pmod c. 
+	$$
+	Section \ref{ChinRem}, \verb|InhomCong.in|.
+\end{itemize}
+
+A right hand side $\neq 0$ makes the input inhomogeneous, as well as the relations $<$ and $>$. Strict inequalities are always understood as conditions for integers. So
+$$
+\xi_1x_1+\dots \xi_dx_d < \eta
+$$
+is interpreted as
+$$
+\xi_1x_1+\dots \xi_dx_d \le \eta-1,
+$$
 
 \subsection{Relations}\label{relations}
 
