@@ -122,7 +122,7 @@
 \begin{document}
 \vspace*{2cm}
 
-\centerline{\Large\textbf{Normaliz 3.1}} \vspace*{0.5cm}
+\centerline{\Large\textbf{Normaliz 3.1.1}} \vspace*{0.5cm}
 
 \centerline{\today}
 
@@ -240,6 +240,14 @@ Normaliz does not have its own interactive shell. We recommend the access via GA
 	
 	\item Computation of disjoint decomposition of the cone.
 
+\end{arab}
+
+For version 3.1.1 we have added
+
+\begin{arab}	
+	\item Input of generic constraints,
+	
+	\item Input of formatted vectors and matrices.
 \end{arab}
 
 
@@ -453,14 +461,13 @@ If the order is not fixed for some reason, Normaliz sorts vector lists as follow
 
 \subsubsection{The cone by inequalities}\label{ineq_ex}
 
-Instead by generators, we can define the cone by the inequalities just computed (\verb|2cone_ineq.in|):
+Instead by generators, we can define the cone by the inequalities just computed (\verb|2cone_ineq.in|). We use this example to show the input of a formamtted matrix:
 \begin{Verbatim}
-amb_space 2
-inequalities 2
--1  2
-3 -1
+amb_space auto
+inequalities
+[[-1  2] [3 -1]]
 \end{Verbatim}
-A matrix of input type \verb|inequalities| contains \emph{homogeneous} inequalities.
+A matrix of input type \verb|inequalities| contains \emph{homogeneous} inequalities. Normaliz can determine the dimension of the ambient space from the formatted matrix. Therefore we can declare the ambient space as being `auto determined'' (but \verb|amb_space 2| is not forbidden).
 
 We get the same result as with \verb|2cone.in| except that the data depending on the original monoid cannot be computed: the internal index and the information on the original monoid are missing since there is no original monoid.
 
@@ -499,6 +506,20 @@ This is our first example of inhomogeneous input.
 	\draw[blue,thick] (0.6,0.8) circle (4pt);
 	\end{tikzpicture}
 \end{center}
+Alternatively we could use the following two equivalent input files:
+\begin{Verbatim}
+amb_space 2
+constraints 2
+-1  2 > 0
+3 -1 > 0
+\end{Verbatim}
+\begin{Verbatim}
+amb_space 2
+constraints 2
+-1  2 >= 1
+3 -1 >= 1
+\end{Verbatim}
+which are perhaps more easily understood.
 
 Normaliz homogenizes inhomogeneous computations by introducing an auxiliary homogenizing coordinate $x_{d+1}$. The polyhedron is obtained by intersecting the homogenized cone with the hyperplane $x_{d+1}=1$. The recession cone is the intersection with the hyperplane $x_{d+1}=0$. The recession monoid is the monoid of lattice points in the recession cone, and the set of lattice points in the polyhedron is represented by its system of module generators over the recession monoid.
 
@@ -885,6 +906,24 @@ These inequalities are inhomogeneous, but we are using the homogeneous input typ
 
 Why don't we define it by the ``natural'' inhomogeneous inequalities using \verb|inhom_inequalities|? We could do it, but then only the polytope itself would be the object of computation, and we would have no access to the Ehrhart series. We could just compute the lattice points in the polytope. (Try it.)
 
+The inequalities as written above look somewhat artificial. It is certainly more natural to write them in the form
+\begin{align*}
+8x_1-2x_2&\le 3,\\
+x_1-x_2&\ge0,\\
+2x_1+7x_2&\ge -3.
+\end{align*}
+and for the direct transformation into Normaliz input we have introduced the type \verb|constraints|. But Normaliz would then interpret the input as inhomogeneous and we run into the same problem as with \verb|inhom_inequalities|. The way out: we tell Normaliz that we want a homogeneous computation (\verb|poly_hom_const.in|):
+\begin{Verbatim}
+amb_space 3
+hom_constraints 3
+8 -2 <= 3
+1 -1 >= 0
+2 7  >= -3
+grading
+unit_vector 3
+HilbertSeries
+\end{Verbatim}
+
 
 \subsection{Magic squares}\label{eq_ex}
 
@@ -1102,6 +1141,15 @@ x_1\equiv 0\mod 2
 $$
 is the first congruence etc.
 
+We could also define these congruences in a better readable form:
+\begin{Verbatim}
+constraints 4
+1 0 0 0 0 0 0 0 0 ~ 0(2)
+0 0 1 0 0 0 0 0 0 ~ 0(2)
+0 0 0 0 0 0 1 0 0 ~ 0(2)
+0 0 0 0 0 0 0 0 1 ~ 0(2)
+\end{Verbatim}
+
 The output changes accordingly:
 
 
@@ -1220,8 +1268,8 @@ $$
 Input (\verb|NumSemi.in|):
 \begin{Verbatim}
 amb_space 3
-inhom_equations 1
-6 10 15 -97
+constraints 1
+6 10 15 = 97
 \end{Verbatim}
 \end{minipage}
 \hspace{1cm}
@@ -1300,17 +1348,17 @@ The size $6\times 6$ is out of reach for the Hilbert series, but the Hilbert bas
 
 We want to compute the polyhedron defined by the inequalities
 \begin{align*}
-	\xi_2 &\ge -1/2      &\iff&&  0\xi_1+2\xi_2+1&\ge 0\\
-	\xi_2 &\le 3/2       &\iff&&  0\xi_1-2\xi_2+3&\ge 0\\
-	\xi_2 &\le \xi_1+3/2 &\iff&&  2\xi_1-2\xi_2+3&\ge 0
+	\xi_2 &\ge -1/2,\\
+	\xi_2 &\le 3/2,\\
+	\xi_2 &\le \xi_1+3/2.
 \end{align*}
 They are contained in the input file \verb|InhomIneq.in|:
 \begin{Verbatim}
 amb_space 2
-inhom_inequalities 3
-0  2  1
-0 -2  3
-2 -2  3
+constraints 3
+ 0 2 >= -1
+ 0 2 <=  3
+-2 2 <=  3
 grading
 unit_vector 1
 \end{Verbatim}
@@ -1986,7 +2034,7 @@ several items. There are several types of items:
 	\item comments.
 \end{arab}
 
-An item cannot include another item. In particular, comments can only be included between other items, but not within another item.
+An item cannot include another item. In particular, comments can only be included between other items, but not within another item. Matrices and vectors can have two different formats, plain and formatted.
 
 Matrices and vectors are classified by the following attributes:
 \begin{arab}
@@ -2008,7 +2056,13 @@ The ambient space is specified as follows:
 \begin{Verbatim}
 amb_space <d>
 \end{Verbatim}
-where \ttt{<d>} stands for the dimension $d$ of the ambient vector space $\RR^d$ in which the geometric objects live.  The \emph{ambient lattice} $\AA$ is set to $\ZZ^d$. 
+where \ttt{<d>} stands for the dimension $d$ of the ambient vector space $\RR^d$ in which the geometric objects live.  The \emph{ambient lattice} $\AA$ is set to $\ZZ^d$.
+
+Alternatively one can define the ambient space implicitly by
+\begin{Verbatim}
+amb_space auto
+\end{Verbatim}
+In this case the dimension of the ambient space is determined by Normaliz from the first formatted vector or matrix in the input file. It is clear that in this case any input item that requites the knowledge of the dimension can only follow after the first formatted vector or matrix.
 
 \emph{In the following the letter $d$ will always denote the dimension set with} \verb|amb_space|.
 
@@ -2021,9 +2075,9 @@ indicates that polyhedra and lattices are subobjects of $\RR^5$. The ambient lat
 
 \emph{The first non-comment input item must specify the ambient space.} There are no further rules for the order of the items in the input file.
 
-\subsubsection{Matrices}
+\subsubsection{Plain matrices}
 
-A matrix is built as follows:
+A plain matrix is built as follows:
 \begin{Verbatim}
 <T> <m>
 <x_1>
@@ -2038,10 +2092,27 @@ cone 3
 11 12 13
 \end{Verbatim}
 
+\subsubsection{Formatted matrices}
 
-\subsubsection{Vectors}
+A formatted matrix is built as follows:
+\begin{Verbatim}
+<T>
+[ <x_1>
+...
+<x_m>  ]
+\end{Verbatim}
+Here \ttt{<T>} denotes the type of the matrix and \verb|<x_1>|,\dots,\verb|<x_m>| are formatted vectors. The formatted vectors need not be separated. Legal separators are white space, commas and semidolons. An example showing all possibilities (not really recommended):
+\begin{Verbatim}
+cone [
+[ 2 1][3 4];
+[0 1],
+[9 10] [11 12]
+]
+\end{Verbatim} 
 
-A vector is built as follows:
+\subsubsection{Plain ectors}
+
+A plain vector is built as follows:
 \begin{Verbatim}
 <T>
 <x>
@@ -2059,7 +2130,20 @@ For certain vectors there exist shortcuts. Examples:
 \begin{Verbatim}
 total_degree
 unit_vector 25
-\end{Verbatim} 
+\end{Verbatim}
+
+\subsubsection{Formatted ectors}
+
+A formatted vector is built as follows:
+\begin{Verbatim}
+<T>
+[ <x> ]
+\end{Verbatim}
+where \ttt{<T>} denotes the type and \ttt{<x>} is the vector itself. The components can be separated by white space, commas or semicolons. An example showing all possibilities (not recommended):
+\begin{Verbatim}
+grading
+[1,0; 0 5]
+\end{Verbatim}
 
 \subsubsection{Constraints in generic format}\label{const_syntax}
 
@@ -2330,7 +2414,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 \subsection{Generic constraints}
 
 \begin{itemize}
-	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format tha is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of generic constraints has been desribed in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right han side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
+	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of generic constraints has been desribed in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right han side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
 	$$
 		\xi_1x_1+\dots \xi_dx_d \texttt{ rel } \eta
 	$$
@@ -2340,7 +2424,7 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	$$
 	\xi_1x_1+\dots \xi_dx_d \equiv \eta \pmod c. 
 	$$
-	Section \ref{ChinRem}, \verb|InhomCong.in|.
+	Sections \ref{strict_ex}, \verb|2cone_int.in|, \ref{strict_ex}, \ref{cong_ex}, \ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{inhom_ineq_ex}, \verb|InhomIneq.in|. \ref{ChinRem}, \verb|InhomCong.in|.
 \end{itemize}
 
 A right hand side $\neq 0$ makes the input inhomogeneous, as well as the relations $<$ and $>$. Strict inequalities are always understood as conditions for integers. So
@@ -2351,6 +2435,14 @@ is interpreted as
 $$
 \xi_1x_1+\dots \xi_dx_d \le \eta-1,
 $$
+
+\subsubsection{Forced homogeneity}
+
+It is often more natural to write inequalities in inhomogeneous form, even when one wants the computation to be homogeneous. They type \verb|constraints| does not loow this. Therefore we have introduced
+\begin{itemize}
+	\itemtt[hom\_constraints] allows the input of equations, non-strict inequalities and congruences in the same format as \verb|constraints|, except that these constraints are interpreted as meant to be for a homogeneous computation. It is clear that the left hand side has only $d-1$ entries now. See Section \ref{rat_ineq}, \verb|poly_hom_const.in|.
+\end{itemize}
+
 
 \subsection{Relations}\label{relations}
 
@@ -4687,102 +4779,11 @@ The optional output files of with suffix \verb|cst| are still in this format. Ju
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CHANGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Changes relative to version 2.12}
 
-\begin{small}
-
-For the history of changes starting from 2.0 see the manuals of
-versions 2.7 and 2.12 (still accessible at the web site). Note that some changes
-have become obsolete later on.
-
-\subsection{2.12 $\to$ 3.0}
-	
-	Documentation:
-	
-	\begin{enumerate}
-		
-		\item Manual completely rewritten.
-		
-	\end{enumerate}
-	
-	User control, input and output:
-	
-	\begin{enumerate}
-		
-		\item New syntax for input files and command line options (with backward compatibility).
-		
-		\item Balance between generator input and constraints input.
-		
-		\item Generator and constraints input can be mixed.
-		
-		\item Output augmented and order of vectors in lists standardized.
-		
-		\item Console output improved.
-		
-	\end{enumerate}
-	
-	Computation goals:
-	
-	\begin{enumerate}
-		\item Minimal module generators of integral closure can be computed.
-		
-		\item Computation of class group added.
-		
-		\item Implicit grading restricted to the case in which all extreme rays have degree $1$ (instead of constant degree).
-	\end{enumerate}
-	
-	Algorithms and implementation:
-	
-	\begin{enumerate}
-		\item Improved linear algebra, especially better coordinate transformations.
-		
-		\item Local GMP transitions if intermediate results do not fit 64 bit integers.
-		
-		\item Global GMP transition if final results do not fit 64 bit integers.
-		
-		\item Local approximation of rational simplicial cones for degree $1$ points.
-		
-		\item Subdivision of large simplicial cones via SCIP and approximation.
-		
-		\item Bottom decomposition introduced.
-		
-		\item Recognition of polytopes in the computation of polyhedra.
-	\end{enumerate}
-	
-\subsection{3.0 $\to$ 3.1}
-
-	
-	Range of objects computed:
-
-\begin{enumerate}
-	
-	\item Cones and polyhedra without vertices.
-\end{enumerate}
-
-User control:
-
-\begin{enumerate}	
-	\item Normaliz can be run from the beginning with integers of type \verb|long long|.
-\end{enumerate}
-
-Computation goals:
-
-\begin{enumerate}
-	
-	\item Rational and integral solutions of inhomogeneous systems can be separated.
-	
-	\item Integer hull computation.
-	
-	\item Normality test without computation of full Hilbert basis (in the negative case).
-	
-	\item Generators over original monoid also in the inhomogeneous case.
-	
-	\item Disjoint decomposition of the cone.	
-	
-\end{enumerate}
 
 \section{libnormaliz}
+
+\begin{small}
 
 The kernel of Normaliz is the C++ class library \verb|libnormaliz|. It implements all the classes that are necessary for the computations. The central class is \verb|Cone|. It realizes the communication with the calling program and starts the computations most of which are implemented in other classes. In the following we describe th class \verb|Cone|; other classes of \verb|libnormaliz| may follow in the future.
 
@@ -5687,3 +5688,100 @@ to the directories where they are expected (the Normaliz
 directory or a directory in the search path).
 
 The source files for Visual Studio are identical to those for GCC.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CHANGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Changes relative to version 2.12}
+
+\begin{small}
+	
+	For the history of changes starting from 2.0 see the manuals of
+	versions 2.7 and 2.12 (still accessible at the web site). Note that some changes
+	have become obsolete later on.
+	
+	\subsection{2.12 $\to$ 3.0}
+	
+	Documentation:
+	
+	\begin{enumerate}
+		
+		\item Manual completely rewritten.
+		
+	\end{enumerate}
+	
+	User control, input and output:
+	
+	\begin{enumerate}
+		
+		\item New syntax for input files and command line options (with backward compatibility).
+		
+		\item Balance between generator input and constraints input.
+		
+		\item Generator and constraints input can be mixed.
+		
+		\item Output augmented and order of vectors in lists standardized.
+		
+		\item Console output improved.
+		
+	\end{enumerate}
+	
+	Computation goals:
+	
+	\begin{enumerate}
+		\item Minimal module generators of integral closure can be computed.
+		
+		\item Computation of class group added.
+		
+		\item Implicit grading restricted to the case in which all extreme rays have degree $1$ (instead of constant degree).
+	\end{enumerate}
+	
+	Algorithms and implementation:
+	
+	\begin{enumerate}
+		\item Improved linear algebra, especially better coordinate transformations.
+		
+		\item Local GMP transitions if intermediate results do not fit 64 bit integers.
+		
+		\item Global GMP transition if final results do not fit 64 bit integers.
+		
+		\item Local approximation of rational simplicial cones for degree $1$ points.
+		
+		\item Subdivision of large simplicial cones via SCIP and approximation.
+		
+		\item Bottom decomposition introduced.
+		
+		\item Recognition of polytopes in the computation of polyhedra.
+	\end{enumerate}
+	
+	\subsection{3.0 $\to$ 3.1}
+	
+	
+	Range of objects computed:
+	
+	\begin{enumerate}
+		
+		\item Cones and polyhedra without vertices.
+	\end{enumerate}
+	
+	User control:
+	
+	\begin{enumerate}	
+		\item Normaliz can be run from the beginning with integers of type \verb|long long|.
+	\end{enumerate}
+	
+	Computation goals:
+	
+	\begin{enumerate}
+		
+		\item Rational and integral solutions of inhomogeneous systems can be separated.
+		
+		\item Integer hull computation.
+		
+		\item Normality test without computation of full Hilbert basis (in the negative case).
+		
+		\item Generators over original monoid also in the inhomogeneous case.
+		
+		\item Disjoint decomposition of the cone.	
+		
+	\end{enumerate}

@@ -1,5 +1,4 @@
-amb_space 2
-inequalities 2
--1 2
-3 -1
+amb_space auto
+inequalities
+[[-1  2] [3 -1]]
 

@@ -68,22 +68,29 @@ void append_row(const vector<Integer> row, map <Type::InputType, vector< vector<
 
 template <typename Integer>
 void process_constraint(const string& rel, const vector<Integer>& left, Integer right, const Integer modulus, 
-                        map <Type::InputType, vector< vector<Integer> > >& input_map) {
+                        map <Type::InputType, vector< vector<Integer> > >& input_map, bool forced_hom) {
     
     vector<Integer> row=left;
     bool inhomogeneous=false;
     if(right!=0 || rel=="<" || rel==">")
         inhomogeneous=true;
     string modified_rel=rel;
+    bool strict_inequality=false;
     if(rel=="<"){
+        strict_inequality=true;
         right-=1;
         modified_rel="<=";
+        
     }
     if(rel==">"){
+        strict_inequality=true;
         right+=1;
         modified_rel=">=";
     }
-    if(inhomogeneous)
+    if(strict_inequality && forced_hom){
+            throw BadInputException("Strict inequality not allowed in hom_constraints!");
+    }
+    if(inhomogeneous || forced_hom)
         row.push_back(-right); // rhs --> lhs
     if(modified_rel=="<="){ // convert <= to >=
         for(size_t j=0; j<row.size();++j)
@@ -93,7 +100,7 @@ void process_constraint(const string& rel, const vector<Integer>& left, Integer 
     if(rel=="~")
         row.push_back(modulus);
 
-    if(inhomogeneous){
+    if(inhomogeneous && !forced_hom){
         if(modified_rel=="="){
             append_row(row,input_map,Type::inhom_equations);
             return;
@@ -143,7 +150,7 @@ bool read_modulus(istream& in, Integer& modulus) {
 }
 
 template <typename Integer>
-void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map) {
+void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
     in >> nr_constraints;
@@ -152,9 +159,12 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         throw BadInputException("Cannot read "
         + to_string(nr_constraints) + " constraints!");
     }
+    long hom_correction=0;
+    if(forced_hom)
+        hom_correction=1;
     for(size_t i=0;i< nr_constraints; ++i) {
-        vector<Integer> left(dim);
-        for(size_t j=0;j<dim;++j){
+        vector<Integer> left(dim-hom_correction);
+        for(size_t j=0;j<dim-hom_correction;++j){
             in >> left[j];
         }
         string rel, modulus_str;
@@ -168,7 +178,7 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         if (in.fail()) {
             throw BadInputException("Error while reading constraint!");
         }
-        process_constraint(rel,left,right,modulus,input_map);        
+        process_constraint(rel,left,right,modulus,input_map,forced_hom);        
     }
 }
 
@@ -329,7 +339,14 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
-                    read_constraints(in,dim,input_map);
+                    read_constraints(in,dim,input_map,false);
+                    continue;
+                }
+                if(type_string == "hom_constraints") {
+                    if(!dim_known){
+                        throw BadInputException("Ambient space must be known for "+type_string+"!");
+                    }
+                    read_constraints(in,dim,input_map,true);
                     continue;
                 }
 
