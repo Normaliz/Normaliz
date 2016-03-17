@@ -1,6 +1,10 @@
 amb_space 2
-inhom_inequalities 2
+/* inhom_inequalities 2
 -2 0 3
-2 0 1
+2 0 1*/
+inhom_inequalities transpose 2
+-2 2
+0 0
+3 1
 grading
 unit_vector 1

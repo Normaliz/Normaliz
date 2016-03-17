@@ -59,6 +59,20 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
 }
 
 template <typename Integer>
+vector<vector<Integer> > transpose_mat(const vector<vector<Integer> >& mat){
+
+    if(mat.size()==0 || mat[0].size()==0)
+        return vector<vector<Integer> >(0);
+    size_t m=mat[0].size();
+    size_t n=mat.size();
+    vector<vector<Integer> > transpose(m,vector<Integer> (n,0));
+    for(size_t i=0;i<m;++i)
+        for(size_t j=0;j<n;++j)
+            transpose[i][j]=mat[j][i];
+    return transpose;
+}
+
+template <typename Integer>
 void append_row(const vector<Integer> row, map <Type::InputType, vector< vector<Integer> > >& input_map,
                     Type::InputType input_type) {
     
@@ -213,7 +227,7 @@ bool read_formatted_vector(istream& in, vector<Integer>& input_vec) {
 }
 
 template <typename Integer>
-bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat) {
+bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat, bool transpose) {
     input_mat.clear();
     in >> std::ws;
     char dummy;
@@ -225,6 +239,8 @@ bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat) {
         in >> std::ws;
         if(!one_more_entry_required && in.peek()==']'){ // closing ] found
             in >> dummy;
+            if(transpose)
+                input_mat=transpose_mat(input_mat);
             return true;
         }
         vector<Integer> input_vec;
@@ -250,7 +266,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
 
     string type_string;
     long i,j;
-    long nr_rows,nr_columns;
+    long nr_rows,nr_columns,nr_rows_or_columns;
     InputType input_type;
     Integer number;
     ConeProperty::Enum cp;
@@ -293,6 +309,8 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             dim_known=true;
         }
         while (in.good()) {
+            
+            bool transpose=false;
             in >> std::ws;  // eat up any leading white spaces
             c = in.peek();
             if (c == EOF) break;
@@ -411,9 +429,20 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 } else {  // end vector, it is a matrix. Plain vector read as a one row matrix
                     in >> std::ws;
                     c = in.peek();
+                    
+                    if(c=='t'){ // must be transpose
+                        string transpose_str;
+                        in >> transpose_str;
+                        if(transpose_str!="transpose"){
+                                throw BadInputException("Illegal keyword "+transpose_str+" following matrix type!");
+                        }
+                        transpose=true;
+                        in >> std::ws;
+                        c = in.peek();                                               
+                    }
                     if(c=='['){ // it is a formatted matrix
                         vector<vector<Integer> > formatted_mat;
-                        bool success=read_formatted_matrix(in,formatted_mat);
+                        bool success=read_formatted_matrix(in,formatted_mat, transpose);
                         if(!success){
                             throw BadInputException("Error while reading formatted matrix "
                             + type_string + "!");    
@@ -435,14 +464,18 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         continue;
                     }  // only plain matrix left
                     
-                    in >> nr_rows;
+                    in >> nr_rows_or_columns; // is number of columns if transposed
+                    nr_rows=nr_rows_or_columns; // most of the time
                 }
                 
                 if(!dim_known){
                     throw BadInputException("Ambient space must be known for plain matrix or vector "+type_string+"!");
                 }
+                
+                if(transpose)
+                    swap(nr_rows,nr_columns);
 
-                if(in.fail() || nr_rows < 0) {
+                if(in.fail() || nr_rows_or_columns < 0) {
                     throw BadInputException("Error while reading "
                             + type_string + " (a " + toString(nr_rows)
                             + "x" + toString(nr_columns)
@@ -454,6 +487,8 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         in >> M[i][j];
                     }
                 }
+                if(transpose)
+                    M=transpose_mat(M);
                 save_matrix(input_map, input_type, M);
             }
             if (in.fail()) {
