@@ -426,11 +426,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         continue;
                     } // end formatted vector
 
-                } else {  // end vector, it is a matrix. Plain vector read as a one row matrix
+                } else {  // end vector, it is a matrix. Plain vector read as a one row matrix later on
                     in >> std::ws;
                     c = in.peek();
                     
-                    if(c=='t'){ // must be transpose
+                    if(c!='[' && !std::isdigit(c)){ // must be transpose
                         string transpose_str;
                         in >> transpose_str;
                         if(transpose_str!="transpose"){
