@@ -382,8 +382,8 @@ This cone is defined in the input file \verb|2cone.in|:
 \begin{Verbatim}
 amb_space 2
 cone 2
-2 1
 1 3
+2 1
 \end{Verbatim}
 The input tells Normaliz that the ambient space is $\RR^2$, and then a cone with 2 generators is defined, namely the cone $C$ from above.
 
@@ -393,8 +393,8 @@ If you prefer to consider the columns of a matrix as input vectors (or have got 
 \begin{Verbatim}
 amb_space 2
 cone transpose 2
-2 1
-1 3
+1 2
+3 1
 \end{Verbatim}
 Of course, for a symmetric input matrix transposition makes no difference---just exchange the two input vectors to test \verb|transpose|. Note that the \verb|2| following \verb|transpose| is now the number of \emph{columns}. Later on we will also show the use of formatted matrices.
 
@@ -478,7 +478,7 @@ amb_space auto
 inequalities
 [[-1  2] [3 -1]]
 \end{Verbatim}
-A matrix of input type \verb|inequalities| contains \emph{homogeneous} inequalities. Normaliz can determine the dimension of the ambient space from the formatted matrix. Therefore we can declare the ambient space as being `auto determined'' (but \verb|amb_space 2| is not forbidden).
+A matrix of input type \verb|inequalities| contains \emph{homogeneous} inequalities. Normaliz can determine the dimension of the ambient space from the formatted matrix. Therefore we can declare the ambient space as being ``auto determined'' (but \verb|amb_space 2| is not forbidden).
 
 We get the same result as with \verb|2cone.in| except that the data depending on the original monoid cannot be computed: the internal index and the information on the original monoid are missing since there is no original monoid.
 
@@ -938,7 +938,7 @@ HilbertSeries
 
 \subsection{Magic squares}\label{eq_ex}
 
-Suppose that you are interested in the following `type of `square''
+Suppose that you are interested in the following type of ``square''
 \begin{center}
 	\begin{tabular}{|l|l|l|}
 		\hline
@@ -2073,7 +2073,7 @@ Alternatively one can define the ambient space implicitly by
 \begin{Verbatim}
 amb_space auto
 \end{Verbatim}
-In this case the dimension of the ambient space is determined by Normaliz from the first formatted vector or matrix in the input file. It is clear that in this case any input item that requites the knowledge of the dimension can only follow after the first formatted vector or matrix.
+In this case the dimension of the ambient space is determined by Normaliz from the first formatted vector or matrix in the input file. It is clear that any input item that requites the knowledge of the dimension can only follow after the first formatted vector or matrix.
 
 \emph{In the following the letter $d$ will always denote the dimension set with} \verb|amb_space|.
 
@@ -2084,9 +2084,9 @@ amb_space 5
 \end{Verbatim}
 indicates that polyhedra and lattices are subobjects of $\RR^5$. The ambient lattice is $\ZZ^5$. 
 
-\emph{The first non-comment input item must specify the ambient space.} There are no further rules for the order of the items in the input file.
+\emph{The first non-comment input item must specify the ambient space.}
 
-\subsubsection{Plain ectors}
+\subsubsection{Plain vectors}
 
 A plain vector is built as follows:
 \begin{Verbatim}
@@ -2108,7 +2108,7 @@ total_degree
 unit_vector 25
 \end{Verbatim}
 
-\subsubsection{Formatted ectors}
+\subsubsection{Formatted vectors}
 
 A formatted vector is built as follows:
 \begin{Verbatim}
@@ -2147,7 +2147,7 @@ Normaliz allows the input of matrices in transposed form:
 \end{Verbatim}
 Note that \verb|<n>| is now the number of \emph{columns} of the matrix that follows it (assumed to be the number of input vectors). The number of rows is determined by the dimension of the ambient space and the type of the matrix.  Example:
 \begin{Verbatim}
-cone rranspose 3
+cone transpose 3
 1 0 3
 0 1 4
 \end{Verbatim}
@@ -2164,11 +2164,11 @@ cone 3
 A formatted matrix is built as follows:
 \begin{Verbatim}
 <T>
-[ <x_1>
+[ [<x_1>]
 ...
-<x_m>  ]
+[<x_m>]  ]
 \end{Verbatim}
-Here \ttt{<T>} denotes the type of the matrix and \verb|<x_1>|,\dots,\verb|<x_m>| are formatted vectors. The formatted vectors need not be separated. Legal separators are white space, commas and semicolons. An example showing all possibilities (not really recommended):
+Here \ttt{<T>} denotes the type of the matrix and \verb|<x_1>|,\dots,\verb|<x_m>| are vectors. Legal separators are white space, commas and semicolons. An example showing all possibilities (not really recommended):
 \begin{Verbatim}
 cone [
 [ 2 1][3 4];
@@ -2184,7 +2184,7 @@ This input type is closer to standard notation than the encoding of constraints 
 \begin{Verbatim}
 <x> <rel> <rhs>
 \end{Verbatim}
-where \verb|<x>| denots a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<rhs>| is an integer.
+where \verb|<x>| denotes a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<rhs>| is an integer.
 
 Congruences have the form
 \begin{Verbatim}
@@ -2447,11 +2447,11 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 \subsection{Generic constraints}
 
 \begin{itemize}
-	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of generic constraints has been desribed in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right han side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
+	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of generic constraints has been described in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
 	$$
 		\xi_1x_1+\dots \xi_dx_d \texttt{ rel } \eta
 	$$
-	is staisfied, where \verb|rel| can take the values $=,\leq,\geq,<,>$ with the represented by input strings \verb|=,<=,>=,<,>|, respectively.
+	is satisfied, where \verb|rel| can take the values $=,\leq,\geq,<,>$ with the represented by input strings \verb|=,<=,>=,<,>|, respectively.
 	
 	The input string \verb|~| represents a congruence $\equiv$ and requires the additional input of a modulus. It represents the congruence
 	$$
