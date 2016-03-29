@@ -1,0 +1,9 @@
+amb_space 3
+hom_constraints 3
+8 -2 <= 3
+1 -1 >= 0
+2 7  >= -3
+grading
+unit_vector 3
+HilbertSeries
+
