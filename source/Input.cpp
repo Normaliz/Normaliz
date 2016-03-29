@@ -176,9 +176,9 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
-    for(size_t i=0;i< nr_constraints; ++i) {
+    for(long i=0;i< nr_constraints; ++i) {
         vector<Integer> left(dim-hom_correction);
-        for(size_t j=0;j<dim-hom_correction;++j){
+        for(long j=0;j<dim-hom_correction;++j){
             in >> left[j];
         }
         string rel, modulus_str;
@@ -417,7 +417,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             dim_known=true;
                             nr_columns = dim + type_nr_columns_correction(input_type);
                         }
-                        if(!success || formatted_vec.size()!=nr_columns){
+                        if(!success || (long) formatted_vec.size()!=nr_columns){
                             throw BadInputException("Error while reading "
                             + type_string 
                             + " as a formatted vector!");
@@ -455,7 +455,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             nr_columns = dim + type_nr_columns_correction(input_type);
                         }
                         
-                        if(formatted_mat[0].size()!=nr_columns){
+                        if((long) formatted_mat[0].size()!=nr_columns){
                             throw BadInputException("Error while reading formatted matrix "
                                 + type_string + "!");    
                         }
