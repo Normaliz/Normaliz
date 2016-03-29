@@ -396,7 +396,7 @@ cone transpose 2
 1 2
 3 1
 \end{Verbatim}
-Of course, for a symmetric input matrix transposition makes no difference---just exchange the two input vectors to test \verb|transpose|. Note that the \verb|2| following \verb|transpose| is now the number of \emph{columns}. Later on we will also show the use of formatted matrices.
+Note that the \verb|2| following \verb|transpose| is now the number of \emph{columns}. Later on we will also show the use of formatted matrices.
 
 \subsubsection{The Hilbert basis}
 In order to compute the Hilbert basis, we run Normaliz from jNormaliz or by
@@ -5035,7 +5035,7 @@ Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 \end{Verbatim}
 
-All \verb|get...| functions that are listed in the next section, try to compute tha data asked for if they have not yet been computed. Unless you are interested in more than a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. 
+All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested in more than a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. 
 
 Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the clas \verb|ConeProperties|. Here we only mention the constructors
 \begin{Verbatim}
@@ -5065,7 +5065,7 @@ const string& toString(ConeProperty::Enum)
 
 \subsection{Retrieving results}
 
-As remarked above, all \verb|get...| functions that are listed below, try to compute tha data asked for if they have not yet been computed.
+As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed.
 
 The functions that return a matrix encoded as \verb|vector<vector<Integer> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<Integer>|. These are not listed below; see \verb|cone.h|. 
 
