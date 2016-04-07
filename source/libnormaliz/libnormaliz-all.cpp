@@ -35,6 +35,8 @@
 #include "libnormaliz/cone_property.cpp"
 #include "libnormaliz/HilbertSeries.cpp"
 
+#include "libnormaliz/automorph.cpp"
+
 #include "libnormaliz/bottom.cpp"
 #include "libnormaliz/cone_helper.cpp"
 #include "libnormaliz/offload_handler.cpp"

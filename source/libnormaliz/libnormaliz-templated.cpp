@@ -37,6 +37,8 @@
 #include "libnormaliz/cone_dual_mode.cpp"
 #include "libnormaliz/cone.cpp"
 
+#include "libnormaliz/automorph.cpp"
+
 namespace libnormaliz {
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported

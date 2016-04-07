@@ -41,6 +41,7 @@
 #include "libnormaliz/integer.h"
 // #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
+#include "libnormaliz/automorph.h"
 
 //---------------------------------------------------------------------------
 

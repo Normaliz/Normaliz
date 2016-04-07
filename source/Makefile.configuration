@@ -30,6 +30,8 @@ CXXFLAGS += -static
 
 GMPFLAGS = -lgmpxx -lgmp
 
+NAUTY-FLAGS = nauty.a
+
 ## use SCIP?
 ifeq ($(SCIP),yes)
   CXXFLAGS += -DNMZ_SCIP
