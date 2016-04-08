@@ -20,3 +20,14 @@
  * device limits and/or redistribution restrictions that are required by its
  * terms of service.
  */
+
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/nmz_nauty.h"
+
+namespace libnormaliz {
+using namespace std;
+    
+template<typename Integer>
+vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms);
+
+} // namespace

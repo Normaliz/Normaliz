@@ -23,4 +23,17 @@
 
 //---------------------------------------------------------------------------
 
+#include "libnormaliz/matrix.h"
+#include "libnormaliz/nmz_nauty.h"
 
+namespace libnormaliz {
+using namespace std;
+    
+template<typename Integer>
+vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms){
+    
+    vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), LinForms.get_elements());
+    return Automs;
+}
+
+} // namespace

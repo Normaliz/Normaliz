@@ -2768,6 +2768,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         is_Computed.set(ConeProperty::StanleyDec);
     }
     
+    compute_automs(Generators.submatrix(Extreme_Rays),Support_Hyperplanes);
+    
 }
 
    

@@ -34,7 +34,7 @@ namespace libnormaliz {
 using std::vector;
 
 template<typename Integer>
-vector<vector<long> > compute_automs(const vector<vector<Integer> >& Generators, const vector<vector<Integer> >& Support_Hyperplanes);
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, const vector<vector<Integer> >& Support_Hyperplanes);
 
 
 } // namespace libnormaliz
