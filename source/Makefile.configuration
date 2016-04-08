@@ -30,7 +30,13 @@ CXXFLAGS += -static
 
 GMPFLAGS = -lgmpxx -lgmp
 
-NAUTY-FLAGS = nauty.a
+# skip nauty?
+ifeq ($(NAUTY),no)
+
+else
+  CXXFLAGS += -DNMZ_NAUTY
+  NAUTYFLAGS = -lnauty
+endif
 
 ## use SCIP?
 ifeq ($(SCIP),yes)
@@ -43,4 +49,4 @@ ifeq ($(SCIP),yes)
     -lz
 endif
 
-LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS) $(NAUTYFLAGS)

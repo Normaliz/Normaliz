@@ -30,11 +30,14 @@ cone_helper.o: $(LIBHEADERS) cone_helper.cpp
 
 hilbert_series.o: $(LIBHEADERS) HilbertSeries.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c HilbertSeries.cpp -o $@
+	
+nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
 
 libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz-templated.cpp -o $@
 
-libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o libnormaliz-templated.o bottom.o offload_handler.o
+libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o nmz_nauty.o libnormaliz-templated.o bottom.o offload_handler.o
 	ar -cr $@ $^
 
 clean:
