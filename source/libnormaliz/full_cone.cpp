@@ -1253,7 +1253,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
        
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
-        NewFacet.Hyp=H.read(i);
+        NewFacet.Hyp=H[i];
         for(j=0;j < dim;j++)
             if(j!=i)
                 NewFacet.GenInHyp.set(key[j]);
