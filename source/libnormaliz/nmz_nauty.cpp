@@ -63,7 +63,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
      *   Here we change those options that we want to be different from the
      *   defaults.  writeautoms=TRUE causes automorphisms to be written.     */
     
-    options.writeautoms = TRUE;
+    options.writeautoms = FALSE;
     options.defaultptn = FALSE;
     
     size_t mm=Generators.size();
@@ -185,12 +185,36 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     
     printf("\n===================\n");
     
-    auto it=CollectedAutoms.begin();
-    for(;it!=CollectedAutoms.end();++it)
-        cout << *it;
-    // }
+    vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
+    AutomsAndOrbits.reserve(2*CollectedAutoms.size()+2);
+
+    for(k=0;k<CollectedAutoms.size();++k){
+        vector<long> GenPerm(mm);
+        for(i=0;i<mm;++i)
+            GenPerm[i]=CollectedAutoms[k][i];
+        AutomsAndOrbits[k]=GenPerm;
+        vector<long> LFPerm(nn);
+        for(i=mm;i<mm+nn;++i)
+            LFPerm[i-mm]=CollectedAutoms[k][i]-mm;
+        AutomsAndOrbits[k+CollectedAutoms.size()]=LFPerm;        
+    }
+    
+    vector<long> GenOrbits(mm);
+    for(i=0;i<mm;++i)
+        GenOrbits[i]=orbits[i];
+    AutomsAndOrbits.push_back(GenOrbits);
+    
+    vector<long> LFOrbits(mm);
+    for(i=0;i<mm;++i)
+        LFOrbits[i]=orbits[i+mm]-mm;
+    AutomsAndOrbits.push_back(LFOrbits);
+    
+    
+    for(k=0;k<AutomsAndOrbits.size();++k){
+        cout << AutomsAndOrbits[k] << endl;
+    }
 	
-	return CollectedAutoms;
+	return AutomsAndOrbits;
         
 }
 
