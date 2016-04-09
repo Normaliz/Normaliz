@@ -2319,4 +2319,40 @@ void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
     elem.resize(nr);
 }
 
+template<typename Integer>
+Matrix<Integer>  readMatrix(const string project){
+// reads one matrix from file with name project
+// format: nr of rows, nr of colimns, entries
+// all separated by white space
+    
+    string name_in=project;
+    const char* file_in=name_in.c_str();
+    ifstream in;
+    in.open(file_in,ifstream::in);
+    if (in.is_open()==false){
+        cerr << "Cannot find input file" << endl;
+        exit(1);
+    }
+    
+    int nrows,ncols;
+    in >> nrows;
+    in >> ncols;
+    
+    if(nrows==0 || ncols==0){
+        cerr << "Matrix empty" << endl;
+        exit(1);
+    }
+    
+    
+    int i,j,entry;
+    Matrix<Integer> result(nrows,ncols);
+    
+    for(i=0;i<nrows;++i)
+        for(j=0;j<ncols;++j){
+            in >> entry;
+            result[i][j]=entry;
+        }
+    return result;
+}
+
 }  // namespace

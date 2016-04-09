@@ -433,6 +433,10 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 };
 //class end *****************************************************************
 
+//---------------------------------------------------------------------------
+//                  Utilities
+//---------------------------------------------------------------------------
+
 template<typename Integer> class order_helper {
     
 public:
@@ -449,6 +453,9 @@ vector<vector<Integer> > to_matrix(const vector<Integer>& v){
     mat[0]=v;
     return mat;    
 }
+
+template<typename Integer>
+Matrix<Integer>  readMatrix(const string project);
 
 //---------------------------------------------------------------------------
 //                  Conversion between integer types
