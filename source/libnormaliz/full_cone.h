@@ -31,6 +31,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/automorph.h"
 #include "libnormaliz/cone_property.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/simplex.h"
@@ -104,6 +105,7 @@ public:
     bool do_module_rank;
     bool do_cone_dec;
     bool stop_after_cone_dec;
+    bool exploit_automorphisms;
     
     bool do_extreme_rays;
     bool do_pointed;
@@ -233,6 +235,8 @@ public:
     
     long approx_level;
     bool is_approximation;
+    
+    Automorphism_Group<Integer> Automs;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -342,6 +346,8 @@ public:
     void end_message();
     
     void set_zero_cone();
+    
+    void compute__automorphisms();
 
 
 #ifdef NMZ_MIC_OFFLOAD

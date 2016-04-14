@@ -45,6 +45,7 @@ class Output {
     bool gen;
     bool cst;
     bool tri;
+    bool aut;
     bool tgn;
     bool ht1;
     bool dec;
@@ -89,6 +90,7 @@ public:
     void set_write_gen(const bool& flag);             //sets the write .gen flag
     void set_write_cst(const bool& flag);             //sets the write .cst flag
     void set_write_tri(const bool& flag);             //sets the write .tri flag
+    void set_write_aut(const bool& flag);             //sets the write .aut flag
     void set_write_tgn(const bool& flag);             //sets the write .tgn flag
     void set_write_ht1(const bool& flag);             //sets the write .ht1 flag
     void set_write_dec(const bool& flag);             //sets the write .dec flag
@@ -107,6 +109,7 @@ public:
     void write_matrix_mod(const Matrix<Integer>& M) const; //writes M to file name.mod 
     void write_matrix_msp(const Matrix<Integer>& M) const; //writes M to file name.msp
     void write_tri() const; //writes the .tri file
+    void write_aut() const; //writes the .aut file
     void write_Stanley_dec() const;
     void write_matrix_ht1(const Matrix<Integer>& M) const; //writes M to file name.ht1
 

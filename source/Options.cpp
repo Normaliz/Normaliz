@@ -224,6 +224,12 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'H':
                 to_compute.set(ConeProperty::IntegerHull);
                 break;
+            case 'U':
+                to_compute.set(ConeProperty::FullAutomorphismGroup);
+                break;
+            case 'A':
+                to_compute.set(ConeProperty::AmbientAutomorphismGroup);
+                break;
             case 'D':
                 to_compute.set(ConeProperty::ConeDecomposition);
                 break;
@@ -305,6 +311,9 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_dec(true);
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
+    }
+    if (to_compute.test(ConeProperty::FullAutomorphismGroup)) {
+        Out.set_write_aut(true);
     }
     for(size_t i=0;i<OutFiles.size();++i){
         if(OutFiles[i]=="gen"){

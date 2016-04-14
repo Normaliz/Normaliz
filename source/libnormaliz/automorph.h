@@ -21,13 +21,69 @@
  * terms of service.
  */
 
+#ifndef AUTOMORPHISM_H
+#define AUTOMORPHISM_H
+
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
 
 namespace libnormaliz {
 using namespace std;
+
+template<typename Integer> class Cone;
+template<typename Integer> class Full_Cone;
+
+template<typename Integer>
+class Automorphism_Group {
+    
+public:
+    
+    friend class Cone<Integer>;
+    friend class Full_Cone<Integer>;
+    
+    Matrix<Integer> Gens, LinForms;
+
+    vector<vector<key_t> > GenPerms; 
+    vector<vector<key_t> > LinFormPerms;
+    
+    vector<vector<key_t> > GenOrbits;
+    vector<vector<key_t> > LinFormOrbits;
+    
+    vector<Matrix<Integer> > LinMaps; 
+    
+    bool from_ambient_space;
+    bool LinMaps_computed;
+    bool graded;
+    bool inhomogeneous;
+    
+    
+    vector<vector<key_t> > getGenPerms() const;
+    vector<vector<key_t> > getLinFormPerms() const;
+    vector<vector<key_t> > getGenOrbits() const;
+    vector<vector<key_t> > getLinFormOrbits() const;
+    vector<Matrix<Integer> > getLinMaps() const;
+    bool isFromAmbeientSpace() const;
+    bool isGraded() const;
+    bool isInhomogeneous() const;
+    bool isLinMapsComputed() const;
+    void setFromAmbeientSpace(bool on_off);
+    void setGraded(bool on_off);
+    void setInhomogeneous(bool on_off);
+    
+    void makeLinMaps();
+    void compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms);
+    
+    Automorphism_Group();
+    
+}; // end class   
     
 template<typename Integer>
 vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms);
 
+vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
+
 } // namespace
+
+//---------------------------------------------------------------------------
+#endif
+//---------------------------------------------------------------------------

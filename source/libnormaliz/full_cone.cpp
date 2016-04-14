@@ -2613,6 +2613,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     FreeSimpl.clear();
     
     compute_class_group();
+    compute__automorphisms();
     
     // collect accumulated data from the SimplexEvaluators
     for (int zi=0; zi<omp_get_max_threads(); zi++) {
@@ -2766,10 +2767,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     }
     if(do_Stanley_dec){
         is_Computed.set(ConeProperty::StanleyDec);
-    }
-    
-    compute_automs(Generators.submatrix(Extreme_Rays),Support_Hyperplanes);
-    
+    }    
 }
 
    
@@ -2919,7 +2917,6 @@ void Full_Cone<Integer>::compute() {
             find_module_rank();
             // cout << "module rank " << module_rank << endl;
         }
-        
     }  
     end_message();
 }
@@ -3074,6 +3071,7 @@ void Full_Cone<Integer>::support_hyperplanes() {
         find_module_rank();
     }
     compute_class_group();
+    compute__automorphisms();
 }
 
 //---------------------------------------------------------------------------
@@ -4106,9 +4104,24 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
     }
      
     is_Computed.set(ConeProperty::InclusionExclusionData);
-} 
+}
 
+//---------------------------------------------------------------------------
 
+template<typename Integer>
+void Full_Cone<Integer>::compute__automorphisms(){
+    
+    if(!exploit_automorphisms || isComputed(ConeProperty::FullAutomorphismGroup)){
+        return;
+    }
+
+    if(!isComputed(ConeProperty::SupportHyperplanes)){
+            return;
+    }
+    
+    Automs.compute(Generators,Support_Hyperplanes);    
+    is_Computed.set(ConeProperty::FullAutomorphismGroup);
+}
 
 //---------------------------------------------------------------------------
 
@@ -4215,6 +4228,8 @@ void Full_Cone<Integer>::reset_tasks(){
     is_pyramid = false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
+    
+    exploit_automorphisms=false;
 }
 
 

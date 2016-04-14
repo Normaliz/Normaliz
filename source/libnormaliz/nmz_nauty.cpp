@@ -204,8 +204,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         GenOrbits[i]=orbits[i];
     AutomsAndOrbits.push_back(GenOrbits);
     
-    vector<long> LFOrbits(mm);
-    for(i=0;i<mm;++i)
+    vector<long> LFOrbits(nn);
+    for(i=0;i<nn;++i)
         LFOrbits[i]=orbits[i+mm]-mm;
     AutomsAndOrbits.push_back(LFOrbits);
     

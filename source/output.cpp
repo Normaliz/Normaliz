@@ -177,6 +177,13 @@ void Output<Integer>::set_write_tri(const bool& flag) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Output<Integer>::set_write_aut(const bool& flag) {
+    aut=flag;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Output<Integer>::set_write_tgn(const bool& flag) {
     tgn=flag;
 }
@@ -316,6 +323,25 @@ void Output<Integer>::write_matrix_msp(const Matrix<Integer>& M) const {
     if (msp==true) {
         M.print(name,"msp");
     }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::write_aut() const{
+    if(aut==false)
+        return; 
+    string file_name = name+".aut";
+    ofstream out(file_name.c_str());
+    
+    out << Result->Automs.GenPerms;
+    out << "--------------------" << endl;
+    out << Result->Automs.LinFormPerms;
+    out << "--------------------" << endl;
+    out << Result->Automs.GenOrbits;
+    out << "--------------------" << endl;
+    out << Result->Automs.LinFormOrbits;
+    out.close();
 }
 
 //---------------------------------------------------------------------------
@@ -584,6 +610,11 @@ void Output<Integer>::write_files() const {
         Result->getGeneratorsMatrix().print(name,"tgn");
     if (tri && Result->isComputed(ConeProperty::Triangulation)) {     //write triangulation
         write_tri();
+    }
+    
+    if (aut && Result->isComputed(ConeProperty::FullAutomorphismGroup)) {     //write automorphism group
+        write_aut();
+        cout << "IN SCHREIBE" << endl;
     }
 
     if (out==true) {  //printing .out file

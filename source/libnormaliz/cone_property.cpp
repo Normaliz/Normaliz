@@ -212,6 +212,9 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
 
 
 void ConeProperties::check_sanity(bool inhomogeneous) {
+    
+    if(CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup))
+        throw BadInputException("Only one of full or ambient automorphism group allowed");
     ConeProperty::Enum prop;
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
@@ -286,9 +289,11 @@ namespace {
         CPN.at(ConeProperty::IntegerHull) = "IntegerHull";
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
+        CPN.at(ConeProperty::FullAutomorphismGroup) = "FullAutomorphismGroup";
+        CPN.at(ConeProperty::AmbientAutomorphismGroup) = "AmbientAutomorphismGroup";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 39,
+        static_assert (ConeProperty::EnumSize == 41,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

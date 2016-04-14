@@ -30,6 +30,7 @@
 //#include <boost/dynamic_bitset.hpp>
 
 #include <libnormaliz/libnormaliz.h>
+#include <libnormaliz/automorph.h>
 #include <libnormaliz/cone_property.h>
 #include <libnormaliz/sublattice_representation.h>
 #include <libnormaliz/matrix.h>
@@ -225,6 +226,8 @@ public:
 //                          private part
 //---------------------------------------------------------------------------
 
+    Automorphism_Group<Integer> Automs;
+    
 private:
     size_t dim;
 
@@ -262,6 +265,7 @@ private:
     Integer GradingDenom;
     Integer index;  // the internal index
     Integer unit_group_index;
+
 
     bool pointed;
     bool inhomogeneous;

@@ -1649,6 +1649,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
     }
+    if (ToCompute.test(ConeProperty::FullAutomorphismGroup) || ToCompute.test(ConeProperty::AmbientAutomorphismGroup)) {
+        FC.exploit_automorphisms = true;
+    }
     if (ToCompute.test(ConeProperty::Approximate)
      && ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_approximation = true;
@@ -2247,6 +2250,16 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if (FC.isComputed(ConeProperty::ClassGroup)) {
         convert(ClassGroup, FC.ClassGroup);
         is_Computed.set(ConeProperty::ClassGroup);
+    }
+    
+    if(FC.isComputed(ConeProperty::FullAutomorphismGroup)){
+        Automs.graded=FC.Automs.graded;
+        Automs.inhomogeneous=FC.Automs.inhomogeneous;
+        Automs.GenPerms=FC.Automs.GenPerms;
+        Automs.LinFormPerms=FC.Automs.LinFormPerms;
+        Automs.GenOrbits=FC.Automs.GenOrbits;
+        Automs.LinFormOrbits=FC.Automs.LinFormOrbits;         
+        is_Computed.set(ConeProperty::FullAutomorphismGroup);        
     }
     
     /* if (FC.isComputed(ConeProperty::MaximalSubspace) && 
