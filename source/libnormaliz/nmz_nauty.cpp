@@ -29,7 +29,8 @@
 
 #ifdef NMZ_NAUTY
 
-#define MAXN 5000    /* Define this before including nauty.h */
+// #define MAXN 5000    /* Define this before including nauty.h */
+// we use dynamic allocation
 
 #include <nauty/nauty.h>
 
@@ -39,8 +40,7 @@ using namespace std;
 vector<vector<long> > CollectedAutoms;
 
 void getmyautoms(int count, int *perm, int *orbits,
-               int numorbits, int stabvertex, int n)
-{
+               int numorbits, int stabvertex, int n){
     int i;
     vector<long> this_perm(n);
     for (i = 0; i < n; ++i) this_perm[i] = perm[i];
@@ -50,8 +50,10 @@ void getmyautoms(int count, int *perm, int *orbits,
 template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, const vector<vector<Integer> >& Support_Hyperplanes){
   
-    graph g[MAXN*MAXM];
-    int lab[MAXN],ptn[MAXN],orbits[MAXN];
+    DYNALLSTAT(graph,g,g_sz);
+    DYNALLSTAT(int,lab,lab_sz);
+    DYNALLSTAT(int,ptn,ptn_sz);
+    DYNALLSTAT(int,orbits,orbits_sz);
     static DEFAULTOPTIONS_GRAPH(options);
     statsblk stats;
     
@@ -114,31 +116,16 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     
     size_t layer_size=mm+nn;
     n=ll*layer_size;
-    
-    if (n > MAXN)
-    {
-        printf("n must be in the range 1..%d\n",MAXN);
-        exit(1);
-    }
-    
-    /* The nauty parameter m is a value such that an array of
-        *       m setwords is sufficient to hold n bits.  The type setword
-        *       is defined in nauty.h.  The number of bits in a setword is
-        *       WORDSIZE, which is 16, 32 or 64.  Here we calculate
-        *       m = ceiling(n/WORDSIZE).                                  */
-    
     m = SETWORDSNEEDED(n);
-    
-    /* The following optional call verifies that we are linking
-        *       to compatible versions of the nauty routines.            */
     
     nauty_check(WORDSIZE,m,n,NAUTYVERSIONID);
     
-    /* Now we create the cycle.  First we zero the graph, than for
-        *       each v, we add the edge (v,v+1), where values are mod n. */
+    DYNALLOC2(graph,g,g_sz,m,n,"malloc");
+    DYNALLOC1(int,lab,lab_sz,n,"malloc");
+    DYNALLOC1(int,ptn,ptn_sz,n,"malloc");
+    DYNALLOC1(int,orbits,orbits_sz,n,"malloc");
     
     EMPTYGRAPH(g,m,n);
-    // for (v = 0; v < n; ++v)  ADDONEEDGE(g,v,(v+1)%n,m);
     
     for(i=0;i<layer_size;++i){   // make vertical edges for all vertices
         for(k=1;k<ll;++k)
@@ -170,14 +157,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     } 
     
     printf("Generators for Aut(C[%d]):\n",n);
-    
-    /* Since we are not requiring a canonical labelling, the last
-        *       parameter to densenauty() is not required and can be NULL. */
-    
+
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,NULL);
-    
-    /* The size of the group is returned in stats.grpsize1 and
-        *       stats.grpsize2. */
     
     printf("Automorphism group size = ");
     writegroupsize(stdout,stats.grpsize1,stats.grpsize2);
@@ -214,6 +195,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         cout << AutomsAndOrbits[k] << endl;
     }
 	
+	nauty_freedyn();
+    
 	return AutomsAndOrbits;
         
 }

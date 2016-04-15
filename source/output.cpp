@@ -334,13 +334,51 @@ void Output<Integer>::write_aut() const{
     string file_name = name+".aut";
     ofstream out(file_name.c_str());
     
-    out << Result->Automs.GenPerms;
-    out << "--------------------" << endl;
-    out << Result->Automs.LinFormPerms;
-    out << "--------------------" << endl;
-    out << Result->Automs.GenOrbits;
-    out << "--------------------" << endl;
-    out << Result->Automs.LinFormOrbits;
+    if(Result->Automs.from_ambient_space){
+        out << "Automorphism group in ambient space" << endl << endl; 
+    } else{
+        out << "Full automorphism group" << endl << endl;
+    }
+
+    out << "Permutations of extreme rays " << endl;
+    out << Result->Automs.GenPerms.size() << endl;
+    if(Result->Automs.GenPerms.size()>0){
+        out << Result-> Automs.GenPerms[0].size()<< endl;
+        for(size_t i=0;i<Result->Automs.GenPerms.size();++i)
+            out << Result->Automs.GenPerms[i];
+    }
+    out << endl;
+    if(Result->Automs.from_ambient_space){
+        out << "Permutations of coordinates" << endl; 
+    } else{
+        out << "Permutations of support hyperplanes" << endl;
+    }
+    out << Result->Automs.LinFormPerms.size() << endl;
+    if(Result->Automs.LinFormPerms.size()>0){
+        out << Result-> Automs.LinFormPerms[0].size()<< endl;
+        for(size_t i=0;i<Result->Automs.LinFormPerms.size();++i)
+            out << Result->Automs.LinFormPerms[i];
+    }
+    out << endl;
+    
+    out << "Orbits of extreme rays " << endl;
+    out << Result->Automs.GenOrbits.size()<< endl;
+    for(size_t i=0;i<Result->Automs.GenOrbits.size();++i){
+        out << "Orbit " << i << " , length " << Result->Automs.GenOrbits[i].size()
+        << ": " << Result->Automs.GenOrbits[i];
+    }
+    out << endl;
+
+    if(Result->Automs.from_ambient_space){
+        out << "Orbits of coordinates" << endl; 
+    } else{
+        out << "Orbits of support hyperplanes" << endl;
+    }
+    out << Result->Automs.LinFormOrbits.size() << endl;;
+    for(size_t i=0;i<Result->Automs.LinFormOrbits.size();++i){
+        out << "Orbit " << i << " , length " << Result->Automs.LinFormOrbits[i].size()
+        << ": " << Result->Automs.LinFormOrbits[i];
+    }
     out.close();
 }
 
@@ -614,7 +652,6 @@ void Output<Integer>::write_files() const {
     
     if (aut && Result->isComputed(ConeProperty::FullAutomorphismGroup)) {     //write automorphism group
         write_aut();
-        cout << "IN SCHREIBE" << endl;
     }
 
     if (out==true) {  //printing .out file
