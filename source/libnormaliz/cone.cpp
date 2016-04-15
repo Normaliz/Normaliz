@@ -2253,6 +2253,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     }
     
     if(FC.isComputed(ConeProperty::FullAutomorphismGroup)){
+        Automs.order=FC.Automs.order;
         Automs.graded=FC.Automs.graded;
         Automs.inhomogeneous=FC.Automs.inhomogeneous;
         Automs.GenPerms=FC.Automs.GenPerms;

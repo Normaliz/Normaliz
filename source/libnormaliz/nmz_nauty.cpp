@@ -48,7 +48,8 @@ void getmyautoms(int count, int *perm, int *orbits,
 }
 
 template<typename Integer>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, const vector<vector<Integer> >& Support_Hyperplanes){
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, 
+                                              const vector<vector<Integer> >& LinForms, mpz_class& group_order){
   
     DYNALLSTAT(graph,g,g_sz);
     DYNALLSTAT(int,lab,lab_sz);
@@ -69,14 +70,14 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     options.defaultptn = FALSE;
     
     size_t mm=Generators.size();
-    size_t nn=Support_Hyperplanes.size();
+    size_t nn=LinForms.size();
     
     vector<vector<Integer> >  MM(mm,vector<Integer> (nn));
     size_t i,j,k;
     
     for(i=0;i<mm; ++i){
         for(j=0;j<nn;++j)
-            MM[i][j]=v_scalar_product(Generators[i],Support_Hyperplanes[j]);      
+            MM[i][j]=v_scalar_product(Generators[i],LinForms[j]);      
     }
         
     bool first=true;
@@ -95,7 +96,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     
     // printf("max %d\n",maxi);
     // printf("min %d\n",mini);
-    cout << "max " << maxi << " min " << mini << endl;
+    // cout << "max " << maxi << " min " << mini << endl;
     
     for(i=0;i<mm;++i)
         for(j=0;j<nn;++j)
@@ -111,7 +112,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         test*=2;        
     }
     
-    cout << "log " << ll << endl;
+    // cout << "log " << ll << endl;
     vector<long> bin_exp(ll);
     
     size_t layer_size=mm+nn;
@@ -156,15 +157,15 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         ptn[(k+1)*layer_size-1]=0; // column indices in the next
     } 
     
-    printf("Generators for Aut(C[%d]):\n",n);
+    // printf("Generators for Aut(C[%d]):\n",n);
 
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,NULL);
     
-    printf("Automorphism group size = ");
+    /*printf("Automorphism group size = ");
     writegroupsize(stdout,stats.grpsize1,stats.grpsize2);
     printf("\n");
     
-    printf("\n===================\n");
+    printf("\n===================\n");*/
     
     vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
     AutomsAndOrbits.reserve(2*CollectedAutoms.size()+2);
@@ -191,22 +192,49 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     AutomsAndOrbits.push_back(LFOrbits);
     
     
-    for(k=0;k<AutomsAndOrbits.size();++k){
+    /*for(k=0;k<AutomsAndOrbits.size();++k){
         cout << AutomsAndOrbits[k] << endl;
-    }
-	
-	nauty_freedyn();
+    }*/
+        
+    mpf_set_default_prec(1024);
+    mpf_t bridge_f;
+    mpf_init(bridge_f);
+    mpf_set_d(bridge_f,stats.grpsize1);
+    mpz_t bridge_z;
+    mpz_init(bridge_z);
+    mpz_set_f (bridge_z, bridge_f);    
+    group_order=mpz_class(bridge_z);
+    
+    nauty_freedyn();
     
 	return AutomsAndOrbits;
         
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, const vector<vector<long> >& Support_Hyperplanes);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, const vector<vector<long> >& LinForms,  mpz_class& group_order);
 #endif // NMZ_MIC_OFFLOAD
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, const vector<vector<long long> >& Support_Hyperplanes);
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, const vector<vector<mpz_class> >& Support_Hyperplanes);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, const vector<vector<long long> >& LinForms,  mpz_class& group_order);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, const vector<vector<mpz_class> >& LinForms,  mpz_class& group_order);
 
 } // namespace
 
 #endif // NMZ_NAUTY
+
+/*
+void
+writegroupsize(FILE *f, double gpsize1, int gpsize2)
+{
+    if (gpsize2 == 0)
+        fprintf(f,"%.0f",gpsize1+0.1);
+    else
+    {   
+        while (gpsize1 >= 10.0)
+        {   
+            gpsize1 /= 10.0;
+            ++gpsize2;
+        }
+        fprintf(f,"%14.12fe%d",gpsize1,gpsize2);
+    }
+}
+*/

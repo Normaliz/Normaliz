@@ -49,7 +49,9 @@ public:
     vector<vector<key_t> > GenOrbits;
     vector<vector<key_t> > LinFormOrbits;
     
-    vector<Matrix<Integer> > LinMaps; 
+    vector<Matrix<Integer> > LinMaps;
+    
+    mpz_class order;
     
     bool from_ambient_space;
     bool LinMaps_computed;
@@ -78,7 +80,7 @@ public:
 }; // end class   
     
 template<typename Integer>
-vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms);
+vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, mpz_class& group_order);
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 

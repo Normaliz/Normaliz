@@ -335,9 +335,9 @@ void Output<Integer>::write_aut() const{
     ofstream out(file_name.c_str());
     
     if(Result->Automs.from_ambient_space){
-        out << "Automorphism group in ambient space" << endl << endl; 
+        out << "Automorphism group of order " << Result->Automs.order << " in ambient space" << endl << endl; 
     } else{
-        out << "Full automorphism group" << endl << endl;
+        out << "Full automorphism groupof order " << Result->Automs.order << endl << endl;
     }
 
     out << "Permutations of extreme rays " << endl;

@@ -106,7 +106,7 @@ void Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
 
     Gens=GivenGens;
     LinForms=GivenLinForms;
-    vector<vector<long> > result=compute_automs(Gens,LinForms);
+    vector<vector<long> > result=compute_automs(Gens,LinForms,order);
     size_t nr_automs=result.size()/2-2;
     for(size_t i=0;i<nr_automs;++i){
         vector<key_t> dummy(result[0].size());
@@ -119,9 +119,9 @@ void Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
         LinFormPerms.push_back(dummy_too);
     }
     GenOrbits=convert_to_orbits(result[result.size()-2]);
-    cout << GenOrbits;
+    // cout << GenOrbits;
     LinFormOrbits=convert_to_orbits(result[result.size()-1]);
-    cout << LinFormOrbits;
+    // cout << LinFormOrbits;
 }
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
@@ -141,9 +141,9 @@ vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
 }
     
 template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms){
-    
-    vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), LinForms.get_elements());
+vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, mpz_class& group_order){
+
+    vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), LinForms.get_elements(), group_order);
     return Automs;
 }
 
