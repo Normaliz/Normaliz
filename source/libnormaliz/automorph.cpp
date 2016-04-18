@@ -107,7 +107,7 @@ void Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     Gens=GivenGens;
     LinForms=GivenLinForms;
     vector<vector<long> > result=compute_automs(Gens,LinForms,order);
-    size_t nr_automs=result.size()/2-2;
+    size_t nr_automs=(result.size()-2)/2;
     for(size_t i=0;i<nr_automs;++i){
         vector<key_t> dummy(result[0].size());
         for(size_t j=0;j<dummy.size();++j)
@@ -115,7 +115,7 @@ void Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
         GenPerms.push_back(dummy);
         vector<key_t> dummy_too(result[nr_automs].size());
         for(size_t j=0;j<dummy_too.size();++j)
-            dummy_too[j]=result[i][j];
+            dummy_too[j]=result[i+nr_automs][j];
         LinFormPerms.push_back(dummy_too);
     }
     GenOrbits=convert_to_orbits(result[result.size()-2]);
@@ -138,6 +138,41 @@ vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
         }
     }
     return orbits;    
+}
+vector<vector<key_t> > cycle_decomposition(vector<key_t> perm){
+
+    vector<vector<key_t> > dec;
+    vector<bool> in_cycle(perm.size(),false);
+    for (size_t i=0;i<perm.size();++i){
+	if(perm[i]==i || in_cycle[i])
+	    continue;
+	in_cycle[i]=true;
+	key_t next=i;
+	vector<key_t> cycle(1,i);
+	while(true){
+	    next=perm[next];
+	  if(next==i)
+	    break;
+	  cycle.push_back(next);
+      }
+      dec.push_back(cycle);
+    }
+    return dec;
+}
+
+void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
+    
+  for(size_t i=0;i<dec.size();++i){
+	out << "(";
+	for(size_t j=0;j<dec[i].size();++j){
+	    out << dec[i][j];
+	    if(j!=dec[i].size()-1)
+	      out << " ";
+	}
+	out << ") ";
+      
+  }
+  out << "--" << endl;
 }
     
 template<typename Integer>

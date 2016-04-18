@@ -84,6 +84,10 @@ vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<In
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 
+vector<vector<key_t> > cycle_decomposition(vector<key_t> perm);
+
+void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out);
+
 } // namespace
 
 //---------------------------------------------------------------------------

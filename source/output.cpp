@@ -36,6 +36,7 @@
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
+#include "libnormaliz/automorph.h"
 
 //---------------------------------------------------------------------------
 
@@ -337,7 +338,7 @@ void Output<Integer>::write_aut() const{
     if(Result->Automs.from_ambient_space){
         out << "Automorphism group of order " << Result->Automs.order << " in ambient space" << endl << endl; 
     } else{
-        out << "Full automorphism groupof order " << Result->Automs.order << endl << endl;
+        out << "Full automorphism group of order " << Result->Automs.order << endl << endl;
     }
 
     out << "Permutations of extreme rays " << endl;
@@ -348,6 +349,15 @@ void Output<Integer>::write_aut() const{
             out << Result->Automs.GenPerms[i];
     }
     out << endl;
+    
+    out << "Cycle decompositions " << endl<< endl;;
+    for(size_t i=0;i<Result->Automs.GenPerms.size();++i){
+	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.GenPerms[i]);
+	out << "Perm " << i << ": ";
+	pretty_print_cycle_dec(dec,out);
+    }
+    out << endl;
+    
     if(Result->Automs.from_ambient_space){
         out << "Permutations of coordinates" << endl; 
     } else{
@@ -360,6 +370,15 @@ void Output<Integer>::write_aut() const{
             out << Result->Automs.LinFormPerms[i];
     }
     out << endl;
+    
+    out << "Cycle decompositions " << endl<<endl;
+    for(size_t i=0;i<Result->Automs.LinFormPerms.size();++i){
+	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.LinFormPerms[i]);
+	out << "Perm " << i << ": ";
+	pretty_print_cycle_dec(dec,out);
+    }
+    out << endl;
+    
     
     out << "Orbits of extreme rays " << endl;
     out << Result->Automs.GenOrbits.size()<< endl;

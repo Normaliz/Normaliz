@@ -181,6 +181,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         AutomsAndOrbits[k+CollectedAutoms.size()]=LFPerm;        
     }
     
+    
     vector<long> GenOrbits(mm);
     for(i=0;i<mm;++i)
         GenOrbits[i]=orbits[i];
