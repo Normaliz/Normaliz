@@ -2850,75 +2850,93 @@ void Full_Cone<Integer>::compute() {
         set_levels();
     
     check_given_grading();
+    
+    bool save_do_triangulation, save_dopartial_triangulation;
 
-    if ((!do_triangulation && !do_partial_triangulation)
+    if (exploit_automorphisms || (!do_triangulation && !do_partial_triangulation)
             || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
-            // in the second case there are only two possibilities:
+            // in the last case there are only two possibilities:
             // either nonpointed or bad grading
+        save_do_triangulation=do_triangulation;
+        save_dopartial_triangulation=do_partial_triangulation;
         do_triangulation=false;
         do_partial_triangulation=false;
         support_hyperplanes();
-    }
-    else{
-        // look for a grading if it is needed
-        find_grading();        
-        if(isComputed(ConeProperty::IsPointed) && !pointed){
+        do_triangulation=save_do_triangulation;
+        do_partial_triangulation=save_dopartial_triangulation;
+        if(!exploit_automorphisms){ // only sipport hyperplanes asked for
             end_message();
             return;
         }
-        
-        if (!isComputed(ConeProperty::Grading))
-            disable_grading_dep_comp();
-
-        bool polyhedron_is_polytope=inhomogeneous;
-        if(inhomogeneous){
-            find_level0_dim();
-            for(size_t i=0;i<nr_gen;++i)
-                if(gen_levels[i]==0){
-                    polyhedron_is_polytope=false;
-                    break;
-                }                
+    }
+    
+    if(exploit_automorphisms){
+        compute__automorphisms();
+        if(!do_triangulation && !do_partial_triangulation){
+            end_message();
+            return;
         }
+    }
+    
+    // look for a grading if it is needed
+    find_grading();        
+    if(isComputed(ConeProperty::IsPointed) && !pointed){
+        end_message();
+        return;
+    }
+    
+    if (!isComputed(ConeProperty::Grading))
+        disable_grading_dep_comp();
 
-        set_degrees();
-        sort_gens_by_degree(true);
+    bool polyhedron_is_polytope=inhomogeneous;
+    if(inhomogeneous){
+        find_level0_dim();
+        for(size_t i=0;i<nr_gen;++i)
+            if(gen_levels[i]==0){
+                polyhedron_is_polytope=false;
+                break;
+            }                
+    }
 
-        if(do_approximation && !deg1_generated){
-            if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)){
-                do_extreme_rays=true;
-                dualize_cone(false);// no start or end message
-            }
-            if(verbose)
-                verboseOutput() << "Approximating rational by lattice polytope" << endl;
-            if(do_deg1_elements){
-                compute_deg1_elements_via_approx_global();
-                is_Computed.set(ConeProperty::Deg1Elements,true);
-                if(do_triangulation){
-                    do_deg1_elements=false;
-                    do_partial_triangulation=false;
-                    do_only_multiplicity = do_determinants;
-                    primal_algorithm();            
-                }
-            } else { // now we want subdividing elements for a simplicial cone
-                assert(do_Hilbert_basis);
-                compute_elements_via_approx(Hilbert_Basis);            
-            }
-            
+    set_degrees();
+    sort_gens_by_degree(true);
+
+    if(do_approximation && !deg1_generated){
+        if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)){
+            do_extreme_rays=true;
+            dualize_cone(false);// no start or end message
         }
-        else{
-            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
-                convert_polyhedron_to_polytope();                  // lattice points in a polytope
-            }
-            else
+        if(verbose)
+            verboseOutput() << "Approximating rational by lattice polytope" << endl;
+        if(do_deg1_elements){
+            compute_deg1_elements_via_approx_global();
+            is_Computed.set(ConeProperty::Deg1Elements,true);
+            if(do_triangulation){
+                do_deg1_elements=false;
+                do_partial_triangulation=false;
+                do_only_multiplicity = do_determinants;
                 primal_algorithm();            
+            }
+        } else { // now we want subdividing elements for a simplicial cone
+            assert(do_Hilbert_basis);
+            compute_elements_via_approx(Hilbert_Basis);            
         }
-            
-        if(inhomogeneous){
-            find_module_rank();
-            // cout << "module rank " << module_rank << endl;
+        
+    }
+    else{
+        if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
+            convert_polyhedron_to_polytope();                  // lattice points in a polytope
         }
-    }  
-    end_message();
+        else
+            primal_algorithm();            
+    }
+        
+    if(inhomogeneous){
+        find_module_rank();
+        // cout << "module rank " << module_rank << endl;
+        }
+    end_message();  
+    
 }
 
 template<typename Integer>
@@ -3071,7 +3089,6 @@ void Full_Cone<Integer>::support_hyperplanes() {
         find_module_rank();
     }
     compute_class_group();
-    compute__automorphisms();
 }
 
 //---------------------------------------------------------------------------
@@ -4111,16 +4128,25 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 template<typename Integer>
 void Full_Cone<Integer>::compute__automorphisms(){
     
-    if(!exploit_automorphisms || isComputed(ConeProperty::FullAutomorphismGroup)){
+     if(!exploit_automorphisms || isComputed(ConeProperty::FullAutomorphismGroup)
+        || isComputed(ConeProperty::AmbientAutomorphismGroup)){
         return;
     }
 
-    if(!isComputed(ConeProperty::SupportHyperplanes)){
+    if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
+        throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
             return;
     }
-    
-    Automs.compute(Generators,Support_Hyperplanes);    
-    is_Computed.set(ConeProperty::FullAutomorphismGroup);
+    if(Generators.submatrix(Extreme_Rays).full_rank_index()==1){ // extreme rays generate lattice
+        if(verbose)
+            verboseOutput() << "Coputing automorphism group ...";
+        Automs.compute(Generators.submatrix(Extreme_Rays),Support_Hyperplanes);
+        is_Computed.set(ConeProperty::FullAutomorphismGroup);
+        verboseOutput() << "done" <<endl;
+    }else{
+        
+    }
+
 }
 
 //---------------------------------------------------------------------------
