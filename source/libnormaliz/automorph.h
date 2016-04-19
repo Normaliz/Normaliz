@@ -72,10 +72,11 @@ public:
     void setGraded(bool on_off);
     void setInhomogeneous(bool on_off);
     
-    void makeLinMaps();
-    void compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms);
+    bool make_linear_maps_primal();
+    bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms);
     
     Automorphism_Group();
+    void reset();
     
 }; // end class   
     

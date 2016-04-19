@@ -90,11 +90,7 @@ void Automorphism_Group<Integer>::setInhomogeneous(bool on_off){
 }
 
 template<typename Integer>
-void Automorphism_Group<Integer>::makeLinMaps(){
-}
-
-template<typename Integer>
-Automorphism_Group<Integer>::Automorphism_Group(){
+void Automorphism_Group<Integer>::reset(){
     LinMaps_computed=false;
     from_ambient_space=false;
     graded=false;
@@ -102,12 +98,46 @@ Automorphism_Group<Integer>::Automorphism_Group(){
 }
 
 template<typename Integer>
-void Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms){
+Automorphism_Group<Integer>::Automorphism_Group(){
+    reset();
+}
+
+template<typename Integer>
+bool Automorphism_Group<Integer>::make_linear_maps_primal(){
+
+    LinMaps.clear();
+    vector<key_t> PreKey=Gens.max_rank_submatrix_lex();
+    vector<key_t> ImKey(PreKey.size());
+    for(size_t i=0;i<GenPerms.size();++i){
+        for(size_t j=0;j<ImKey.size();++j)
+            ImKey[j]=GenPerms[i][PreKey[j]];
+        Matrix<Integer> Pre=Gens.submatrix(PreKey);
+        Matrix<Integer> Im=Gens.submatrix(ImKey);
+        Integer denom,g;
+        Matrix<Integer> Map=Pre.solve(Im,denom);
+        g=Map.matrix_gcd();
+        if(g%denom !=0)
+            return false;
+        Map.scalar_division(denom);
+        if(Map.vol()!=1)
+            return false;
+        LinMaps.push_back(Map);
+        //Map.pretty_print(cout);
+        // cout << "--------------------------------------" << endl;
+    }
+    LinMaps_computed=true;
+    return true;    
+}
+
+template<typename Integer>
+bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms){
 
     Gens=GivenGens;
     LinForms=GivenLinForms;
     vector<vector<long> > result=compute_automs(Gens,LinForms,order);
     size_t nr_automs=(result.size()-2)/2;
+    GenPerms.clear();
+    LinFormPerms.clear();
     for(size_t i=0;i<nr_automs;++i){
         vector<key_t> dummy(result[0].size());
         for(size_t j=0;j<dummy.size();++j)
@@ -122,6 +152,7 @@ void Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     // cout << GenOrbits;
     LinFormOrbits=convert_to_orbits(result[result.size()-1]);
     // cout << LinFormOrbits;
+    return make_linear_maps_primal();
 }
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){

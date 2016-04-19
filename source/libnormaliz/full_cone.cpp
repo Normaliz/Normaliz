@@ -4151,15 +4151,13 @@ void Full_Cone<Integer>::compute__automorphisms(){
         throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
             return;
     }
-    if(Generators.submatrix(Extreme_Rays).full_rank_index()==1){ // extreme rays generate lattice
-        if(verbose)
-            verboseOutput() << "Coputing automorphism group ...";
-        Automs.compute(Generators.submatrix(Extreme_Rays),Support_Hyperplanes);
-        is_Computed.set(ConeProperty::FullAutomorphismGroup);
-        verboseOutput() << "done" <<endl;
-    }else{
-        
-    }
+    
+    if(verbose)
+        verboseOutput() << "Coputing automorphism group ...";
+    bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Support_Hyperplanes);
+    assert(success==true);
+    is_Computed.set(ConeProperty::FullAutomorphismGroup);
+    verboseOutput() << "done" <<endl;
 
 }
 
