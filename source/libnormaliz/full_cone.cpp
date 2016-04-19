@@ -1975,8 +1975,22 @@ void Full_Cone<Integer>::find_bottom_facets() {
     // find extreme rays of Bottom among the generators
     vector<key_t> BottomExtRays;
     for(size_t i=0;i<nr_gen;++i)
-        if(BottomPolyhedron.Extreme_Rays[i+nr_gen])
+        if(BottomPolyhedron.Extreme_Rays_Ind[i+nr_gen])
             BottomExtRays.push_back(i);
+    /* vector<key_t> BottomExtRays; // can be used if the bool vector should not exist anymore
+    size_t start_search=0;
+    for(size_t i=0;i<ExtStrahl.nr_of_rows();++i){
+        if(BottomPolyhedron.ExtStrahl[i][dim]==1){
+            BottomPolyhedron.ExtStrahl[i].resize(dim);
+            for(size_t j=0;j<nr_gen;++j){
+                size_t k=(j+start_search) % nr_gen;
+                if(BottomPolyhedron.ExtStrahl[i]==Generators[k]){
+                    BottomExtRays.push_back(k);
+                    start_search++;
+                }
+            }
+        }
+    }*/
 
     if(verbose)
         verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
@@ -2151,7 +2165,7 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
         copy.use_existing_facets=true;
         copy.keep_order=true;
         copy.HypCounter=HypCounter;
-        copy.Extreme_Rays=Extreme_Rays;
+        copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
         copy.in_triang=in_triang;
         copy.old_nr_supp_hyps=old_nr_supp_hyps;
         if(isComputed(ConeProperty::ExtremeRays))
@@ -2942,7 +2956,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
         Polytope.is_Computed.set(ConeProperty::SupportHyperplanes);     
     }
     if(isComputed(ConeProperty::ExtremeRays)){
-        Polytope.Extreme_Rays=Extreme_Rays;
+        Polytope.Extreme_Rays_Ind=Extreme_Rays_Ind;
         Polytope.is_Computed.set(ConeProperty::ExtremeRays);        
     }
     Polytope.do_deg1_elements=true;
@@ -2956,7 +2970,7 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     }
     if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
                     !isComputed(ConeProperty::ExtremeRays)){
-        Extreme_Rays=Polytope.Extreme_Rays;
+        Extreme_Rays_Ind=Polytope.Extreme_Rays_Ind;
         is_Computed.set(ConeProperty::ExtremeRays);     
     }
     if(Polytope.isComputed(ConeProperty::Deg1Elements)){
@@ -3389,7 +3403,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     
     vector<key_t> perm=Generators.perm_by_weights(Weights,absolute);
     Generators.order_rows_by_perm(perm);
-    order_by_perm(Extreme_Rays,perm);
+    order_by_perm(Extreme_Rays_Ind,perm);
     if(isComputed(ConeProperty::Grading))
         order_by_perm(gen_degrees,perm);
     if(inhomogeneous && gen_levels.size()==nr_gen)
@@ -3527,7 +3541,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
     Dual.Support_Hyperplanes = Generators;
     Dual.is_Computed.set(ConeProperty::SupportHyperplanes);
     Dual.compute_extreme_rays();
-    Support_Hyperplanes = Dual.Generators.submatrix(Dual.Extreme_Rays); //only essential hyperplanes
+    Support_Hyperplanes = Dual.Generators.submatrix(Dual.Extreme_Rays_Ind); //only essential hyperplanes
     is_Computed.set(ConeProperty::SupportHyperplanes);
     nrSupport_Hyperplanes=Support_Hyperplanes.nr_of_rows();
     do_all_hyperplanes=false;
@@ -3601,7 +3615,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
             Ext[i]=true;   
     }
     for(i=0; i<nr_gen;++i)
-        Extreme_Rays[i]=Ext[i];
+        Extreme_Rays_Ind[i]=Ext[i];
 
     is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
@@ -3636,7 +3650,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
 
     for (i = 0; i <nr_gen; i++) {
         k=0;
-        Extreme_Rays[i]=true;
+        Extreme_Rays_Ind[i]=true;
         if(use_Facets){
             typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
             for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
@@ -3660,10 +3674,10 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
         }
         nr_ones[i]=k;
         if (k<dim-1||k==nc)  // not contained in enough facets or in all (0 as generator)
-            Extreme_Rays[i]=false;
+            Extreme_Rays_Ind[i]=false;
     }
     
-    maximal_subsets(Val,Extreme_Rays);    
+    maximal_subsets(Val,Extreme_Rays_Ind);    
 
     is_Computed.set(ConeProperty::ExtremeRays);
     if (verbose) verboseOutput() << "done." << endl;
@@ -3812,7 +3826,7 @@ void Full_Cone<Integer>::deg1_check() {
     if (!isComputed(ConeProperty::Grading) && Grading.size()==0          // we still need it and
      && !isComputed(ConeProperty::IsDeg1ExtremeRays)) { // we have not tried it
         if (isComputed(ConeProperty::ExtremeRays)) {
-            Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays);
+            Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays_Ind);
             if (has_generator_with_common_divisor) 
                 Extreme.make_prime();
             Grading = Extreme.find_linear_form();
@@ -3880,7 +3894,7 @@ void Full_Cone<Integer>::deg1_check() {
       && isComputed(ConeProperty::ExtremeRays)) {
         deg1_extreme_rays = true;
         for (size_t i = 0; i < nr_gen; i++) {
-            if (Extreme_Rays[i] && divided_gen_degrees[i] != 1) {
+            if (Extreme_Rays_Ind[i] && divided_gen_degrees[i] != 1) {
                 deg1_extreme_rays = false;
                 break;
             }
@@ -3954,7 +3968,7 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     
     list<vector<Integer> > L; // collects the generators of the approximating cone
     for(size_t i=0;i<nr_gen;++i){
-        if(Extreme_Rays[i]){
+        if(Extreme_Rays_Ind[i]){
             list<vector<Integer> > approx;
             //cout << "point before transformation: " << Generators[i];
             approx_simplex(T.MxV(Generators[i]),approx,approx_level);
@@ -4148,10 +4162,10 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
     nr_gen += nr_new_points;
     set_degrees();
     Top_Key.resize(nr_gen);
-    Extreme_Rays.resize(nr_gen);
+    Extreme_Rays_Ind.resize(nr_gen);
     for (size_t i=nr_old_gen; i<nr_gen; ++i) {
         Top_Key[i] = i;
-        Extreme_Rays[i] = false;
+        Extreme_Rays_Ind[i] = false;
     }
     // inhom cones
     if (inhomogeneous) {
@@ -4269,7 +4283,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     
     reset_tasks();
     
-    Extreme_Rays = vector<bool>(nr_gen,false);
+    Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     in_triang = vector<bool> (nr_gen,false);
     deg1_triangulation = true;
     if(dim==0){            //correction needed to include the 0 cone;
@@ -4346,8 +4360,8 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     if (Generators.nr_of_rows() > 0) 
         is_Computed.set(ConeProperty::Generators);
     has_generator_with_common_divisor = false;
-    Extreme_Rays.swap(C.ExtremeRays);
-    if (!Extreme_Rays.empty()) is_Computed.set(ConeProperty::ExtremeRays);
+    Extreme_Rays_Ind.swap(C.ExtremeRaysInd);
+    if (!Extreme_Rays_Ind.empty()) is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
     in_triang = vector<bool>(nr_gen,false);
@@ -4365,7 +4379,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     
     reset_tasks();
     
-    if (!Extreme_Rays.empty()) { // only then we can assume that all entries on C.Supp.. are relevant
+    if (!Extreme_Rays_Ind.empty()) { // only then we can assume that all entries on C.Supp.. are relevant
         Support_Hyperplanes.swap(C.SupportHyperplanes);
         // there may be duplicates in the coordinates of the Full_Cone
         Support_Hyperplanes.remove_duplicate_and_zero_rows();
@@ -4531,11 +4545,11 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
   
     multiplicity = 0;
     
-    Extreme_Rays = vector<bool>(nr_gen,false);
+    Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
     if(isComputed(ConeProperty::ExtremeRays))
         for(size_t i=0;i<nr_gen;i++)
-            Extreme_Rays[i]=C.Extreme_Rays[Key[i]];
+            Extreme_Rays_Ind[i]=C.Extreme_Rays_Ind[Key[i]];
     in_triang = vector<bool> (nr_gen,false);
     deg1_triangulation = true;
 
@@ -4761,7 +4775,7 @@ const Matrix<Integer>& Full_Cone<Integer>::getGenerators()const{
 
 template<typename Integer>
 vector<bool> Full_Cone<Integer>::getExtremeRays()const{
-    return Extreme_Rays;
+    return Extreme_Rays_Ind;
 }
 
 //---------------------------------------------------------------------------
@@ -4829,7 +4843,7 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<"\nGenerators are:\n";
     Generators.pretty_print(verboseOutput());
     verboseOutput()<<"\nExtreme_rays are:\n";
-    verboseOutput()<< Extreme_Rays;
+    verboseOutput()<< Extreme_Rays_Ind;
     verboseOutput()<<"\nSupport Hyperplanes are:\n";
     Support_Hyperplanes.pretty_print(verboseOutput());
     verboseOutput()<<"\nHilbert basis is:\n";

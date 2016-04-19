@@ -1672,7 +1672,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
-        FC.Extreme_Rays = ExtremeRaysIndicator;
+        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
         FC.is_Computed.set(ConeProperty::ExtremeRays);
     }
     if (ExcludedFaces.nr_of_rows()!=0) {
@@ -1964,7 +1964,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(isComputed(ConeProperty::Generators))
         BasisChangePointed.convert_to_sublattice(ConeDM.Generators, Generators);
     if(isComputed(ConeProperty::ExtremeRays))
-        ConeDM.ExtremeRays=ExtremeRaysIndicator;
+        ConeDM.ExtremeRaysInd=ExtremeRaysIndicator;
     ConeDM.hilbert_basis_dual();
     
     if(!isComputed(ConeProperty::MaximalSubspace)){
