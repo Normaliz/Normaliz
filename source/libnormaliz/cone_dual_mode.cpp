@@ -139,7 +139,7 @@ Matrix<Integer> Cone_Dual_Mode<Integer>::get_generators()const{
 
 template<typename Integer>
 vector<bool> Cone_Dual_Mode<Integer>::get_extreme_rays() const{
-    return ExtremeRays;
+    return ExtremeRaysInd;
 
 }
 
@@ -781,7 +781,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         verboseOutput() << " ..." << endl;
     }
     
-    if(Generators.nr_of_rows()!=ExtremeRays.size()){
+    if(Generators.nr_of_rows()!=ExtremeRaysInd.size()){
         throw FatalException("Mismatch of extreme rays and generators in cone dual mode. THIS SHOULD NOT HAPPEN."); 
     }
     
@@ -790,7 +790,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         BasisMaxSubspace=cut_with_halfspace(hyp_counter,BasisMaxSubspace);
     }
 
-    if (ExtremeRays.size() > 0) { // implies that we have transformed everything to a pointed full-dimensional cone
+    if (ExtremeRaysInd.size() > 0) { // implies that we have transformed everything to a pointed full-dimensional cone
         // must produce the relevant support hyperplanes from the generators
         // since the Hilbert basis may have been truncated
         vector<Integer> test(SupportHyperplanes.nr_of_rows());
@@ -808,7 +808,7 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         }
         SupportHyperplanes = SupportHyperplanes.submatrix(relevant_sh);
     }
-    if (!truncate && ExtremeRays.size()==0){  // no precomputed generators
+    if (!truncate && ExtremeRaysInd.size()==0){  // no precomputed generators
         extreme_rays_rank();
         relevant_support_hyperplanes();
         ExtremeRayList.clear();
@@ -868,7 +868,7 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     for (i=0, l=ExtremeRayList.begin(); l != ExtremeRayList.end(); ++l, ++i) {
         Generators[i]= (*l)->cand;
     }
-    ExtremeRays=vector<bool>(s,true);
+    ExtremeRaysInd=vector<bool>(s,true);
 }
 
 //---------------------------------------------------------------------------

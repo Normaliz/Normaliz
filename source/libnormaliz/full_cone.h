@@ -128,8 +128,9 @@ public:
     vector<Integer> Sorting;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
+    Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
-    vector<bool> Extreme_Rays;
+    vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;

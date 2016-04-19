@@ -288,13 +288,13 @@ void OffloadHandler<Integer>::transfer_triangulation_info()
   if (local_fc_ref.isComputed(ConeProperty::ExtremeRays))
   {
     bool *data = new bool[nr_gen];
-    fill_plain(data, nr_gen, local_fc_ref.Extreme_Rays);
+    fill_plain(data, nr_gen, local_fc_ref.Extreme_Rays_Ind);
 
     #pragma offload target(mic:mic_nr) in(nr_gen) in(data: length(nr_gen) ONCE)
     {
 
-      offload_fc_ptr->Extreme_Rays = vector<bool>(nr_gen);
-      fill_vector(offload_fc_ptr->Extreme_Rays, nr_gen, data);
+      offload_fc_ptr->Extreme_Rays_Ind = vector<bool>(nr_gen);
+      fill_vector(offload_fc_ptr->Extreme_Rays_Ind, nr_gen, data);
       offload_fc_ptr->is_Computed.set(ConeProperty::ExtremeRays);
     }
     delete[] data;

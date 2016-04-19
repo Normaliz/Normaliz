@@ -119,7 +119,7 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 void Matrix<Integer>::write(istream& in){
     size_t i,j;
@@ -129,31 +129,7 @@ void Matrix<Integer>::write(istream& in){
         }
     }
 }
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::write(size_t row, const vector<Integer>& data){
-    assert(row >= 0);
-    assert(row < nr); 
-    assert(nc == data.size());
-    
-    elem[row]=data;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::write(size_t row, const vector<int>& data){
-    assert(row >= 0);
-    assert(row < nr); 
-    assert(nc == data.size());
-
-    for (size_t i = 0; i < nc; i++) {
-        elem[row][i]=data[i];
-    }
-}
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -165,18 +141,6 @@ void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
     for (size_t i = 0; i < nr; i++) {
         elem[i][col]=data[i];
     }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::write(size_t row, size_t col, Integer data){
-    assert(row >= 0);
-    assert(row < nr); 
-    assert(col >= 0);
-    assert(col < nc); 
-
-    elem[row][col]=data;
 }
 
 //---------------------------------------------------------------------------
@@ -238,42 +202,6 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
         out<<endl;
     }
 }
-//---------------------------------------------------------------------------
-
-
-template<typename Integer>
-void Matrix<Integer>::read() const{      //to overload for files
-    size_t i,j;
-    for(i=0; i<nr; i++){
-        cout << "\n" ;
-        for(j=0; j<nc; j++) {
-            cout << elem[i][j] << " ";
-        }
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> Matrix<Integer>::read(size_t row) const{
-    assert(row >= 0);
-    assert(row < nr);
-
-    return elem[row];
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Integer Matrix<Integer>::read (size_t row, size_t col) const{
-    assert(row >= 0);
-    assert(row < nr); 
-    assert(col >= 0);
-    assert(col < nc); 
-
-    return elem[row][col];
-}
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2390,5 +2318,47 @@ void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
     nr=new_nr_rows;
     elem.resize(nr);
 }
+
+template<typename Integer>
+Matrix<Integer>  readMatrix(const string project){
+// reads one matrix from file with name project
+// format: nr of rows, nr of colimns, entries
+// all separated by white space
+    
+    string name_in=project;
+    const char* file_in=name_in.c_str();
+    ifstream in;
+    in.open(file_in,ifstream::in);
+    if (in.is_open()==false){
+        cerr << "Cannot find input file" << endl;
+        exit(1);
+    }
+    
+    int nrows,ncols;
+    in >> nrows;
+    in >> ncols;
+    
+    if(nrows==0 || ncols==0){
+        cerr << "Matrix empty" << endl;
+        exit(1);
+    }
+    
+    
+    int i,j,entry;
+    Matrix<Integer> result(nrows,ncols);
+    
+    for(i=0;i<nrows;++i)
+        for(j=0;j<ncols;++j){
+            in >> entry;
+            result[i][j]=entry;
+        }
+    return result;
+}
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template Matrix<long>  readMatrix(const string project);
+#endif // NMZ_MIC_OFFLOAD
+template Matrix<long long>  readMatrix(const string project);
+template Matrix<mpz_class>  readMatrix(const string project);
 
 }  // namespace

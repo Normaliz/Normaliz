@@ -699,7 +699,7 @@ void Output<Integer>::write_files() const {
             const Matrix<Integer>& Hilbert_Basis = Result->getHilbertBasisMatrix();
             nr = Hilbert_Basis.nr_of_rows();
             for (i = 0; i < nr; i++) {
-                if (Hilbert_Basis.read(i,dim-1)==1) {
+                if (Hilbert_Basis[i][dim-1]==1) {
                     rees_ideal_key.push_back(i);
                  }
             }

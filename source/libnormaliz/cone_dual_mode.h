@@ -53,7 +53,7 @@ public:
     
     Matrix<Integer> SupportHyperplanes;
     Matrix<Integer> Generators;
-    vector<bool> ExtremeRays;
+    vector<bool> ExtremeRaysInd;
     list<Candidate<Integer>* > ExtremeRayList; //only temporarily used
     CandidateList<Integer> Intermediate_HB; // intermediate Hilbert basis
     list<vector<Integer> > Hilbert_Basis; //the final result
