@@ -4154,7 +4154,18 @@ void Full_Cone<Integer>::compute__automorphisms(){
     
     if(verbose)
         verboseOutput() << "Coputing automorphism group" << endl;
-    bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Support_Hyperplanes);
+    
+    size_t nr_special_linforms=0;
+    Matrix<Integer> Help=Support_Hyperplanes;
+    if(isComputed(ConeProperty::Grading) && Grading.size()>0){
+        nr_special_linforms++;
+        Help.append(Grading);
+    }
+    if(inhomogeneous){
+        nr_special_linforms++;
+        Help.append(Truncation);
+    }
+    bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Support_Hyperplanes,nr_special_linforms);
     // bool success=false;
     if(success==false){
         if(verbose)
@@ -4175,7 +4186,7 @@ void Full_Cone<Integer>::compute__automorphisms(){
                 do_partial_triangulation=false;
             }
         }
-        success=Automs.compute(Matrix<Integer>(Hilbert_Basis),Support_Hyperplanes);
+        success=Automs.compute(Matrix<Integer>(Hilbert_Basis),Support_Hyperplanes,nr_special_linforms);
     }
     assert(success==true);
     is_Computed.set(ConeProperty::FullAutomorphismGroup);

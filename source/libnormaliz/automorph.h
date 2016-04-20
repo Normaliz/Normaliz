@@ -73,7 +73,7 @@ public:
     void setInhomogeneous(bool on_off);
     
     bool make_linear_maps_primal();
-    bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms);
+    bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms);
     
     Automorphism_Group();
     void reset();
@@ -81,7 +81,7 @@ public:
 }; // end class   
     
 template<typename Integer>
-vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, mpz_class& group_order);
+vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, const size_t nr_special_linforms, mpz_class& group_order);
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 
