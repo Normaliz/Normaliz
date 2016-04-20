@@ -2006,6 +2006,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(inhomogeneous)
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
     FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
+    FC.exploit_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
     FC.dual_mode();
     extract_data(FC);
 }

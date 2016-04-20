@@ -2626,9 +2626,6 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     evaluate_large_simplices();
     FreeSimpl.clear();
     
-    compute_class_group();
-    compute__automorphisms();
-    
     // collect accumulated data from the SimplexEvaluators
     for (int zi=0; zi<omp_get_max_threads(); zi++) {
         detSum += Results[zi].getDetSum();
@@ -2757,10 +2754,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         OldCandidates.Candidates.clear();
         Hilbert_Basis.unique();
         is_Computed.set(ConeProperty::HilbertBasis,true);
-        if (isComputed(ConeProperty::Grading)) {
-            select_deg1_elements();
-            check_deg1_hilbert_basis();
-        }
+    }
+    
+    if (isComputed(ConeProperty::Grading) && isComputed(ConeProperty::HilbertBasis)) {
+        select_deg1_elements();
+        check_deg1_hilbert_basis();
     }
     
     if (do_deg1_elements) {
@@ -2864,24 +2862,17 @@ void Full_Cone<Integer>::compute() {
         set_levels();
     
     check_given_grading();
-    
-    bool save_do_triangulation, save_dopartial_triangulation;
 
-    if (exploit_automorphisms || (!do_triangulation && !do_partial_triangulation)
+    if ((!do_triangulation && !do_partial_triangulation)
             || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
             // in the last case there are only two possibilities:
             // either nonpointed or bad grading
-        save_do_triangulation=do_triangulation;
-        save_dopartial_triangulation=do_partial_triangulation;
-        do_triangulation=false;
-        do_partial_triangulation=false;
+
         support_hyperplanes();
-        do_triangulation=save_do_triangulation;
-        do_partial_triangulation=save_dopartial_triangulation;
-        if(!exploit_automorphisms){ // only sipport hyperplanes asked for
-            end_message();
-            return;
-        }
+        compute_class_group();
+        compute__automorphisms();
+        end_message(); 
+        return;
     }
     
     if(exploit_automorphisms){
@@ -2948,7 +2939,11 @@ void Full_Cone<Integer>::compute() {
     if(inhomogeneous){
         find_module_rank();
         // cout << "module rank " << module_rank << endl;
-        }
+    }
+    
+    compute_class_group();
+    compute__automorphisms();
+    
     end_message();  
     
 }
@@ -3102,7 +3097,6 @@ void Full_Cone<Integer>::support_hyperplanes() {
         find_level0_dim();
         find_module_rank();
     }
-    compute_class_group();
 }
 
 //---------------------------------------------------------------------------
@@ -4146,6 +4140,12 @@ void Full_Cone<Integer>::compute__automorphisms(){
         || isComputed(ConeProperty::AmbientAutomorphismGroup)){
         return;
     }
+    
+    if(do_module_gens_intcl && !isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
+        return;  // in this case we postpone the computation (and do not try to exploit it)
+    
+    get_supphyps_from_copy(true);
+    extreme_rays_and_deg1_check();
 
     if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
         throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
@@ -4153,11 +4153,34 @@ void Full_Cone<Integer>::compute__automorphisms(){
     }
     
     if(verbose)
-        verboseOutput() << "Coputing automorphism group ...";
+        verboseOutput() << "Coputing automorphism group" << endl;
     bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Support_Hyperplanes);
+    // bool success=false;
+    if(success==false){
+        if(verbose)
+            verboseOutput() << "Coputation of automorphism group from extreme rays failed, using Hilbert basis" << endl;
+        cout << "HB comp" << isComputed(ConeProperty::HilbertBasis) << endl;
+        if(!isComputed(ConeProperty::HilbertBasis)){
+            if(verbose)
+                verboseOutput() << "Must compute Hilbert basis first, making copy" << endl;
+            Full_Cone<Integer> Copy=*this;
+            Copy.reset_tasks();
+            Copy.do_Hilbert_basis=true;
+            Copy.compute();
+            if(Copy.isComputed(ConeProperty::HilbertBasis)){
+                Hilbert_Basis.clear();
+                Hilbert_Basis.splice(Hilbert_Basis.begin(),Copy.Hilbert_Basis);
+                is_Computed.set(ConeProperty::HilbertBasis);
+                do_Hilbert_basis=false;
+                do_partial_triangulation=false;
+            }
+        }
+        success=Automs.compute(Matrix<Integer>(Hilbert_Basis),Support_Hyperplanes);
+    }
     assert(success==true);
     is_Computed.set(ConeProperty::FullAutomorphismGroup);
-    verboseOutput() << "done" <<endl;
+    if(verbose)
+        verboseOutput() << "Automorphism group done" <<endl;
 
 }
 
@@ -4475,6 +4498,8 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     is_approximation=false;
     
     verbose=C.verbose;
+    
+    cout << "HB HB HB " << isComputed(ConeProperty::HilbertBasis) << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -4535,7 +4560,9 @@ void Full_Cone<Integer>::dual_mode() {
     
     compute_class_group();
     
-    check_grading_after_dual_mode();      
+    check_grading_after_dual_mode();
+    
+    compute__automorphisms();
         
     if(dim>0 && !inhomogeneous){
         deg1_check();
