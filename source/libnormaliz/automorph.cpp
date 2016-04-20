@@ -134,6 +134,10 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
                                           const size_t nr_special_linforms){
     Gens=GivenGens;
     LinForms=GivenLinForms;
+    
+    cout << "SPECIAL " << nr_special_linforms << " " << LinForms.nr_of_rows() << endl;
+    for(size_t i=0;i<Gens.nr_of_rows();++i)
+        cout << v_scalar_product(Gens[i],LinForms[LinForms.nr_of_rows()-1]) << endl;
     vector<vector<long> > result=compute_automs(Gens,LinForms,nr_special_linforms,order);
     size_t nr_automs=(result.size()-2)/2;
     GenPerms.clear();
@@ -175,18 +179,19 @@ vector<vector<key_t> > cycle_decomposition(vector<key_t> perm){
     vector<vector<key_t> > dec;
     vector<bool> in_cycle(perm.size(),false);
     for (size_t i=0;i<perm.size();++i){
-	if(perm[i]==i || in_cycle[i])
-	    continue;
-	in_cycle[i]=true;
-	key_t next=i;
-	vector<key_t> cycle(1,i);
-	while(true){
-	    next=perm[next];
-	  if(next==i)
-	    break;
-	  cycle.push_back(next);
-      }
-      dec.push_back(cycle);
+        if(perm[i]==i || in_cycle[i])
+            continue;
+        in_cycle[i]=true;
+        key_t next=i;
+        vector<key_t> cycle(1,i);
+        while(true){
+            next=perm[next];
+        if(next==i)
+            break;
+        cycle.push_back(next);
+        in_cycle[next]=true;
+        }
+        dec.push_back(cycle);
     }
     return dec;
 }
