@@ -24,6 +24,7 @@
 #ifndef AUTOMORPHISM_H
 #define AUTOMORPHISM_H
 
+#include <boost/dynamic_bitset.hpp>
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
 
@@ -73,7 +74,10 @@ public:
     void setInhomogeneous(bool on_off);
     
     bool make_linear_maps_primal();
+    void gen_data_via_lin_maps();
     bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms);
+    bool compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
+                 const size_t nr_special_linforms);
     
     Automorphism_Group();
     void reset();
@@ -85,9 +89,18 @@ vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<In
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 
-vector<vector<key_t> > cycle_decomposition(vector<key_t> perm);
+vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points=false);
 
 void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out);
+
+vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition);
+
+list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >& Orbits);
+
+list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<> >& P1,
+                                               const list<boost::dynamic_bitset<> >& P2);
+
+vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms);
 
 } // namespace
 

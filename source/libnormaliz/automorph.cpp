@@ -121,7 +121,7 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(){
         Map.scalar_division(denom);
         if(Map.vol()!=1)
             return false;
-        LinMaps.push_back(Map);
+        LinMaps.push_back(Map.transpose());
         //Map.pretty_print(cout);
         // cout << "--------------------------------------" << endl;
     }
@@ -135,9 +135,8 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     Gens=GivenGens;
     LinForms=GivenLinForms;
     
-    cout << "SPECIAL " << nr_special_linforms << " " << LinForms.nr_of_rows() << endl;
-    for(size_t i=0;i<Gens.nr_of_rows();++i)
-        cout << v_scalar_product(Gens[i],LinForms[LinForms.nr_of_rows()-1]) << endl;
+    /* for(size_t i=0;i<Gens.nr_of_rows();++i)
+        cout << v_scalar_product(Gens[i],LinForms[LinForms.nr_of_rows()-1]) << endl;*/
     vector<vector<long> > result=compute_automs(Gens,LinForms,nr_special_linforms,order);
     size_t nr_automs=(result.size()-2)/2;
     GenPerms.clear();
@@ -159,6 +158,106 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     return make_linear_maps_primal();
 }
 
+template<typename Integer>
+bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
+             const size_t nr_special_linforms){
+    
+    bool success=compute(ComputeFrom,GivenLinForms,nr_special_linforms);
+    if(!success)
+        return false;
+    Gens=GivenGens;
+    gen_data_via_lin_maps();
+    return true;
+}
+
+template<typename Integer>
+void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
+
+    GenPerms.clear();
+    map<vector<Integer>,key_t> S;
+    for(key_t k=0;k<Gens.nr_of_rows();++k)
+        S[Gens[k]]=k;
+    for(size_t i=0; i<LinMaps.size();++i){
+        vector<key_t> Perm(Gens.nr_of_rows());
+        for(key_t j=0;j<Perm.size();++j){
+            vector<Integer> Im=LinMaps[i].MxV(Gens[j]);
+            assert(S.find(Im)!=S.end()); // for safety
+            Perm[j]=S[Im];
+        }
+        GenPerms.push_back(Perm);            
+    } 
+    GenOrbits=orbits(GenPerms);
+}
+
+vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition){
+    
+    vector<vector<key_t> > Keys;
+    auto p=Partition.begin();
+    for(;p!=Partition.end();++p){
+        vector<key_t> key;
+        for(size_t j=0;j< p->size();++j)
+            if(p->test(j))
+                key.push_back(j);
+        Keys.push_back(key);
+    }
+    return Keys;
+}
+
+list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >& Orbits){
+    
+    list<boost::dynamic_bitset<> > Part;
+    for(size_t i=0;i<Orbits.size();++i){
+        boost::dynamic_bitset<> p(n);
+        for(size_t j=0;j<Orbits[i].size();++j)
+            p.set(Orbits[i][j],true);
+        Part.push_back(p);
+    }
+    return Part;
+}
+
+list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<> >& P1,
+                                               const list<boost::dynamic_bitset<> >& P2){
+    list<boost::dynamic_bitset<> > J=P1; // work copy pf P1
+    auto p2=P2.begin();
+    for(;p2!=P2.end();++p2){
+        auto p1=J.begin();
+        for(;p1!=J.end();++p1){ // search the first member of J that intersects p1
+            if((*p2).intersects(*p1))
+                break;
+        }
+        if((*p2).is_subset_of(*p1)) // is contained in that member, nothing to do
+            continue;
+        // now we join the members of J that intersect p2
+        assert(p1!=J.end()); // to be on the safe side
+        auto p3=p1;
+        p3++;
+        while(p3!=J.end()){
+            if((*p2).intersects(*p3)){
+                *p1= *p1 | *p3; //the union
+                p3=J.erase(p3);
+            }else
+                p3++;
+        }
+    }
+    return J;
+}
+
+
+vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms){
+    
+    vector<vector<key_t> > Orbits;
+    if(Perms.size()==0)
+        return Orbits;
+    Orbits=cycle_decomposition(Perms[0],true); // with fixed points!
+    list<boost::dynamic_bitset<> > P1=partition(Perms[0].size(),Orbits);
+    for(size_t i=1;i<Perms.size();++i){
+        vector<vector<key_t> > Orbits_1=cycle_decomposition(Perms[i]);
+        list<boost::dynamic_bitset<> > P2=partition(Perms[0].size(),Orbits_1);
+        P1=join_partitions(P1,P2);
+    }
+    return keys(P1);
+}
+
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
     
     vector<key_t> key(raw_orbits.size());
@@ -174,13 +273,21 @@ vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
     }
     return orbits;    
 }
-vector<vector<key_t> > cycle_decomposition(vector<key_t> perm){
+vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points){
 
     vector<vector<key_t> > dec;
     vector<bool> in_cycle(perm.size(),false);
     for (size_t i=0;i<perm.size();++i){
-        if(perm[i]==i || in_cycle[i])
+        if(in_cycle[i])
             continue;
+        if(perm[i]==i){
+            if(!with_fixed_points)
+                continue;
+            vector<key_t> cycle(1,i);
+            in_cycle[i]=true;
+            dec.push_back(cycle);
+            continue;            
+        }
         in_cycle[i]=true;
         key_t next=i;
         vector<key_t> cycle(1,i);

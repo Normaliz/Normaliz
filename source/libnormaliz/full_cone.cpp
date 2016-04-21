@@ -4165,18 +4165,21 @@ void Full_Cone<Integer>::compute__automorphisms(){
         nr_special_linforms++;
         Help.append(Truncation);
     }
-    bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Help,nr_special_linforms);
+    success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Help,nr_special_linforms);
     // bool success=false;
     if(success==false){
         if(verbose)
             verboseOutput() << "Coputation of automorphism group from extreme rays failed, using Hilbert basis" << endl;
-        cout << "HB comp" << isComputed(ConeProperty::HilbertBasis) << endl;
         if(!isComputed(ConeProperty::HilbertBasis)){
             if(verbose)
                 verboseOutput() << "Must compute Hilbert basis first, making copy" << endl;
-            Full_Cone<Integer> Copy=*this;
-            Copy.reset_tasks();
+            Full_Cone<Integer> Copy(Generators);
             Copy.do_Hilbert_basis=true;
+            Copy.verbose=verbose;
+            Copy.Support_Hyperplanes=Support_Hyperplanes;
+            Copy.is_Computed.set(ConeProperty::SupportHyperplanes);
+            Copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
+            Copy.is_Computed.set(ConeProperty::ExtremeRays);
             Copy.compute();
             if(Copy.isComputed(ConeProperty::HilbertBasis)){
                 Hilbert_Basis.clear();
@@ -4186,7 +4189,7 @@ void Full_Cone<Integer>::compute__automorphisms(){
                 do_partial_triangulation=false;
             }
         }
-        success=Automs.compute(Matrix<Integer>(Hilbert_Basis),Help,nr_special_linforms);
+        success=Automs.compute(Matrix<Integer>(Hilbert_Basis),Generators.submatrix(Extreme_Rays_Ind),Help,nr_special_linforms);
     }
     assert(success==true);
     is_Computed.set(ConeProperty::FullAutomorphismGroup);
@@ -4509,8 +4512,6 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     is_approximation=false;
     
     verbose=C.verbose;
-    
-    cout << "HB HB HB " << isComputed(ConeProperty::HilbertBasis) << endl;
 }
 
 //---------------------------------------------------------------------------
