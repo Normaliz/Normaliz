@@ -335,68 +335,71 @@ void Output<Integer>::write_aut() const{
     string file_name = name+".aut";
     ofstream out(file_name.c_str());
     
-    if(Result->Automs.from_ambient_space){
-        out << "Automorphism group of order " << Result->Automs.order << " in ambient space" << endl << endl; 
+    if(Result->Automs.isFromAmbientSpace()){
+        out << "Ambient automorphism group of order " << Result->Automs.getOrder() << " in ambient space" << endl << endl; 
     } else{
-        out << "Full automorphism group of order " << Result->Automs.order << endl << endl;
+        out << "Full automorphism group of order " << Result->Automs.getOrder() << endl << endl;
     }
 
     out << "Permutations of extreme rays " << endl;
-    out << Result->Automs.GenPerms.size() << endl;
-    if(Result->Automs.GenPerms.size()>0){
-        out << Result-> Automs.GenPerms[0].size()<< endl;
-        for(size_t i=0;i<Result->Automs.GenPerms.size();++i)
-            out << Result->Automs.GenPerms[i];
+    size_t nr_items=Result->Automs.getGenPerms().size();
+    out << nr_items << endl;
+    if(nr_items>0){
+        out << Result-> Automs.getGenPerms()[0].size()<< endl;
+        for(size_t i=0;i<nr_items;++i)
+            out << Result->Automs.getGenPerms()[i];
     }
     out << endl;
     
     out << "Cycle decompositions " << endl<< endl;;
-    for(size_t i=0;i<Result->Automs.GenPerms.size();++i){
-	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.GenPerms[i]);
-	out << "Perm " << i << ": ";
+    for(size_t i=0;i<nr_items;++i){
+        vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getGenPerms()[i]);
+        out << "Perm " << i << ": ";
 	pretty_print_cycle_dec(dec,out);
+    }
+    out << endl;    
+    
+    out << "Orbits of extreme rays " << endl;
+    nr_items=Result->Automs.getGenOrbits().size();
+    out << nr_items << endl;
+    for(size_t i=0;i<nr_items;++i){
+        out << "Orbit " << i << " , length " << Result->Automs.getGenOrbits()[i].size()
+        << ": " << Result->Automs.getGenOrbits()[i];
     }
     out << endl;
     
-    if(Result->Automs.from_ambient_space){
+    if(Result->Automs.isFromAmbientSpace()){
         out << "Permutations of coordinates" << endl; 
     } else{
         out << "Permutations of support hyperplanes" << endl;
     }
-    out << Result->Automs.LinFormPerms.size() << endl;
-    if(Result->Automs.LinFormPerms.size()>0){
-        out << Result-> Automs.LinFormPerms[0].size()<< endl;
-        for(size_t i=0;i<Result->Automs.LinFormPerms.size();++i)
-            out << Result->Automs.LinFormPerms[i];
+    nr_items=Result->Automs.getLinFormPerms().size();
+    out << nr_items << endl;
+    if(nr_items>0){
+        out << Result-> Automs.getLinFormPerms()[0].size()<< endl;
+        for(size_t i=0;i<nr_items;++i)
+            out << Result->Automs.getLinFormPerms()[i];
     }
     out << endl;
     
     out << "Cycle decompositions " << endl<<endl;
-    for(size_t i=0;i<Result->Automs.LinFormPerms.size();++i){
-	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.LinFormPerms[i]);
+    for(size_t i=0;i<nr_items;++i){
+	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getLinFormPerms()[i]);
 	out << "Perm " << i << ": ";
 	pretty_print_cycle_dec(dec,out);
     }
     out << endl;
-    
-    
-    out << "Orbits of extreme rays " << endl;
-    out << Result->Automs.GenOrbits.size()<< endl;
-    for(size_t i=0;i<Result->Automs.GenOrbits.size();++i){
-        out << "Orbit " << i << " , length " << Result->Automs.GenOrbits[i].size()
-        << ": " << Result->Automs.GenOrbits[i];
-    }
-    out << endl;
 
-    if(Result->Automs.from_ambient_space){
+    if(Result->Automs.isFromAmbientSpace()){
         out << "Orbits of coordinates" << endl; 
     } else{
         out << "Orbits of support hyperplanes" << endl;
     }
-    out << Result->Automs.LinFormOrbits.size() << endl;;
-    for(size_t i=0;i<Result->Automs.LinFormOrbits.size();++i){
-        out << "Orbit " << i << " , length " << Result->Automs.LinFormOrbits[i].size()
-        << ": " << Result->Automs.LinFormOrbits[i];
+    nr_items=Result->Automs.getLinFormOrbits().size();
+    out << nr_items << endl;;
+    for(size_t i=0;i<nr_items;++i){
+        out << "Orbit " << i << " , length " << Result->Automs.getLinFormOrbits()[i].size()
+        << ": " << Result->Automs.getLinFormOrbits()[i];
     }
     out.close();
 }

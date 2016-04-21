@@ -35,6 +35,11 @@ vector<vector<key_t> > Automorphism_Group<Integer>::getGenPerms() const{
 }
 
 template<typename Integer>
+mpz_class Automorphism_Group<Integer>::getOrder() const{
+    return order;
+}
+
+template<typename Integer>
 vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormPerms() const{
     return LinFormPerms;
 }
@@ -46,16 +51,16 @@ vector<vector<key_t> > Automorphism_Group<Integer>::getGenOrbits() const{
 
 template<typename Integer>
 vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormOrbits() const{
-    return GenPerms;
+    return LinFormOrbits;
 }
 
 template<typename Integer>
 vector<Matrix<Integer> > Automorphism_Group<Integer>::getLinMaps() const{
-    return GenPerms;
+    return LinMaps;
 }
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::isFromAmbeientSpace() const{
+bool Automorphism_Group<Integer>::isFromAmbientSpace() const{
     return from_ambient_space;
 }
 

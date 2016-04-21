@@ -4165,7 +4165,7 @@ void Full_Cone<Integer>::compute__automorphisms(){
         nr_special_linforms++;
         Help.append(Truncation);
     }
-    success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Help,nr_special_linforms);
+    bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Help,nr_special_linforms);
     // bool success=false;
     if(success==false){
         if(verbose)

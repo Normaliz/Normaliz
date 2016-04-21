@@ -37,10 +37,8 @@ template<typename Integer> class Full_Cone;
 template<typename Integer>
 class Automorphism_Group {
     
-public:
-    
-    friend class Cone<Integer>;
-    friend class Full_Cone<Integer>;
+    template<typename> friend class Cone;
+    template<typename> friend class Full_Cone;
     
     Matrix<Integer> Gens, LinForms;
 
@@ -59,13 +57,19 @@ public:
     bool graded;
     bool inhomogeneous;
     
+    bool make_linear_maps_primal();
+    void gen_data_via_lin_maps();
+    void reset();
     
+public:
+    
+    mpz_class getOrder() const;
     vector<vector<key_t> > getGenPerms() const;
     vector<vector<key_t> > getLinFormPerms() const;
     vector<vector<key_t> > getGenOrbits() const;
     vector<vector<key_t> > getLinFormOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
-    bool isFromAmbeientSpace() const;
+    bool isFromAmbientSpace() const;
     bool isGraded() const;
     bool isInhomogeneous() const;
     bool isLinMapsComputed() const;
@@ -73,14 +77,11 @@ public:
     void setGraded(bool on_off);
     void setInhomogeneous(bool on_off);
     
-    bool make_linear_maps_primal();
-    void gen_data_via_lin_maps();
     bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms);
     bool compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
                  const size_t nr_special_linforms);
     
     Automorphism_Group();
-    void reset();
     
 }; // end class   
     
