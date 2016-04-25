@@ -13,9 +13,6 @@ default: libnormaliz.a
 
 all: default
 
-libnormaliz.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-impl.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz-impl.cpp -o libnormaliz.o
-
 cone_property.o: cone_property.h cone_property.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_property.cpp -o $@
 
