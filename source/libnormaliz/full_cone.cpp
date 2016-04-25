@@ -2875,14 +2875,6 @@ void Full_Cone<Integer>::compute() {
         return;
     }
     
-    if(exploit_automorphisms){
-        compute__automorphisms();
-        if(!do_triangulation && !do_partial_triangulation){
-            end_message();
-            return;
-        }
-    }
-    
     // look for a grading if it is needed
     find_grading();        
     if(isComputed(ConeProperty::IsPointed) && !pointed){
@@ -2892,6 +2884,24 @@ void Full_Cone<Integer>::compute() {
     
     if (!isComputed(ConeProperty::Grading))
         disable_grading_dep_comp();
+    
+    if(exploit_automorphisms){
+        compute__automorphisms();
+        if(!do_triangulation && !do_partial_triangulation){
+            end_message();
+            return;
+        }
+    }
+    
+    if(do_only_multiplicity){
+        if(isComputed(ConeProperty::FullAutomorphismGroup) 
+            && Automs.getOrder()> 1 && nr_gen>dim+5 
+            && Automs.LinFormOrbits.size()*4 < Support_Hyperplanes.nr_of_rows()){
+            compute_multiplicity_via_automs();
+            end_message();
+            return;            
+        }        
+    }
 
     bool polyhedron_is_polytope=inhomogeneous;
     if(inhomogeneous){
@@ -3009,6 +3019,75 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
             is_Computed.set(ConeProperty::HilbertSeries);
         }  
     }   
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+mpq_class Full_Cone<Integer>::facet_multiplicity(key_t facet_key){
+
+    Matrix<Integer> Facet_Gens(0,dim);
+    for(size_t i=0; i<nr_gen;++i){
+        if(Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Support_Hyperplanes[facet_key])==0)
+            Facet_Gens.append(Generators[i]);        
+    }
+    
+    if(Mother->dim-dim <=3){
+        cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ";
+        for(size_t i=0;i<Mother->dim-dim;++i)
+            cout << "--";
+        cout << " " << Facet_Gens.nr_of_rows() << endl; }
+    
+    Sublattice_Representation<Integer> Facet_Sub(Facet_Gens,true);
+    Matrix<Integer> Transformed_Facet_Gens=Facet_Sub.to_sublattice(Facet_Gens);
+    Full_Cone Facet(Transformed_Facet_Gens);
+    Facet.verbose=verbose;
+    Facet.do_multiplicity=true;
+    Facet.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
+    Facet.is_Computed.set(ConeProperty::Grading);
+    Facet.Mother=Mother;
+    if(Transformed_Facet_Gens.nr_of_rows()>=dim+4 && Mother->dim-dim <= 2)
+        Facet.exploit_automorphisms=true;
+    Facet.compute();
+    return Facet.multiplicity;
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_via_automs(){
+
+    if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
+        !isComputed(ConeProperty::Grading))
+            return;
+            
+    size_t mini=0;
+    key_t min_orbit=0;
+    for(size_t i=0;i<Automs.GenOrbits.size();++i)
+        if(mini==0 || Automs.GenOrbits[i].size()<mini){
+            mini=Automs.GenOrbits[i].size();
+            min_orbit=i;
+        }
+    
+    vector<Integer> fixed_point(dim);
+    Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
+    for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i)
+        fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
+    v_make_prime(fixed_point);
+    Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
+    
+    for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
+        cout << "FACET LEVEL " << Mother->dim-dim << " NR " << k << "/" << Automs.LinFormOrbits.size()<< "/" << Support_Hyperplanes.nr_of_rows() << endl;
+        key_t first_facet=Automs.LinFormOrbits[k][0];
+        if(first_facet==Support_Hyperplanes.nr_of_rows())
+            continue;
+        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[first_facet]);
+        cout << "FP Deg " << deg_fixed_point << " HT " << ht << endl;
+        if(ht >0){
+            long long orbit_size=Automs.LinFormOrbits[k].size();
+            multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
+                        *facet_multiplicity(first_facet)/convertTo<mpz_class>(deg_fixed_point);
+        }
+    }
+    is_Computed.set(ConeProperty::Multiplicity);    
 }
 
 //---------------------------------------------------------------------------
@@ -4194,7 +4273,7 @@ void Full_Cone<Integer>::compute__automorphisms(){
     assert(success==true);
     is_Computed.set(ConeProperty::FullAutomorphismGroup);
     if(verbose)
-        verboseOutput() << "Automorphism group done" <<endl;
+        verboseOutput() << "Automorphism group of order " << Automs.getOrder() << "  done" <<endl;
 
 }
 
@@ -4424,6 +4503,8 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     PermGens.resize(nr_gen);
     for(size_t i=0;i<nr_gen;++i)
         PermGens[i]=i;
+    
+    Mother=&(*this);
 }
 
 //---------------------------------------------------------------------------

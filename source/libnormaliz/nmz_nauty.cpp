@@ -51,7 +51,8 @@ template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, 
                                               const vector<vector<Integer> >& LinForms, 
                                               const size_t nr_special_linforms, mpz_class& group_order){
-  
+    CollectedAutoms.clear();
+    
     DYNALLSTAT(graph,g,g_sz);
     DYNALLSTAT(int,lab,lab_sz);
     DYNALLSTAT(int,ptn,ptn_sz);
