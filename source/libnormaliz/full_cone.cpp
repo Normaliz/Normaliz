@@ -66,6 +66,10 @@ const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
+long expense_factor_automs=2; // divide by 2: estimate for the expense of using automorpjisms for multiplicity
+
+size_t autom_codim=6; // maximal codim of face for which multiüplicity is computed via automs
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -2856,6 +2860,17 @@ void Full_Cone<Integer>::compute() {
     }
 
     start_message();
+    
+    if(exploit_automorphisms && Mother->dim==dim){
+        string name_open="automorohism.cfg";
+        const char* file=name_open.c_str();
+        ifstream in(file);
+        if(in.good()){
+            in >> expense_factor_automs;
+            in >> autom_codim;
+            cout << "WHOW WHOW " << expense_factor_automs << " " << autom_codim << endl;
+        }       
+    }
 
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
@@ -2895,11 +2910,12 @@ void Full_Cone<Integer>::compute() {
     
     if(do_only_multiplicity){
         if(isComputed(ConeProperty::FullAutomorphismGroup) 
-            && Automs.getOrder()> 1 && nr_gen>dim+5 
-            && Automs.LinFormOrbits.size()*4 < Support_Hyperplanes.nr_of_rows()){
+            && Automs.getOrder()> 1 && nr_gen>=dim+4){
             compute_multiplicity_via_automs();
-            end_message();
-            return;            
+            if(isComputed(ConeProperty::Multiplicity)){
+                end_message();
+                return;
+            }
         }        
     }
 
@@ -3023,19 +3039,14 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-mpq_class Full_Cone<Integer>::facet_multiplicity(key_t facet_key){
+mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key){
 
-    Matrix<Integer> Facet_Gens(0,dim);
-    for(size_t i=0; i<nr_gen;++i){
-        if(Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Support_Hyperplanes[facet_key])==0)
-            Facet_Gens.append(Generators[i]);        
-    }
-    
-    if(Mother->dim-dim <=3){
+    Matrix<Integer> Facet_Gens=Generators.submatrix(facet_key);
+
         cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ";
         for(size_t i=0;i<Mother->dim-dim;++i)
             cout << "--";
-        cout << " " << Facet_Gens.nr_of_rows() << endl; }
+        cout << " " << Facet_Gens.nr_of_rows() << endl; 
     
     Sublattice_Representation<Integer> Facet_Sub(Facet_Gens,true);
     Matrix<Integer> Transformed_Facet_Gens=Facet_Sub.to_sublattice(Facet_Gens);
@@ -3045,7 +3056,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(key_t facet_key){
     Facet.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
     Facet.is_Computed.set(ConeProperty::Grading);
     Facet.Mother=Mother;
-    if(Transformed_Facet_Gens.nr_of_rows()>=dim+4 && Mother->dim-dim <= 2)
+    if(Transformed_Facet_Gens.nr_of_rows()>=dim+3 && Mother->dim-dim+1<= autom_codim) // otherwise it wouldn't be used anyway
         Facet.exploit_automorphisms=true;
     Facet.compute();
     return Facet.multiplicity;
@@ -3073,21 +3084,44 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
         fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
     v_make_prime(fixed_point);
     Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
+
+    size_t all_facets=0, good_facets=0;
+    vector<vector<key_t> > facet_keys(Automs.LinFormOrbits.size());
+    for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
+        key_t facet_nr=Automs.LinFormOrbits[k][0];
+        if(facet_nr>=Support_Hyperplanes.nr_of_rows())
+            continue;
+        vector<key_t> facet_gens;
+        for(size_t i=0; i<nr_gen;++i){
+            if(Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Support_Hyperplanes[facet_nr])==0)
+                facet_gens.push_back(i);        
+        }
+        facet_keys[k]=facet_gens;
+        all_facets+=facet_gens.size();
+        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
+        if(ht ==0 || expense_factor_automs*deg_fixed_point<=2*ht*Automs.LinFormOrbits[k].size())
+            good_facets+=facet_gens.size();              
+    }
+    cout << "ALL FACETS " << all_facets << " GOOD " << good_facets << endl;
+    if(2*good_facets < all_facets) // not worth using automorphisms
+        return;
     
     for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
-        cout << "FACET LEVEL " << Mother->dim-dim << " NR " << k << "/" << Automs.LinFormOrbits.size()<< "/" << Support_Hyperplanes.nr_of_rows() << endl;
-        key_t first_facet=Automs.LinFormOrbits[k][0];
-        if(first_facet==Support_Hyperplanes.nr_of_rows())
+        key_t facet_nr=Automs.LinFormOrbits[k][0];
+        if(facet_nr>=Support_Hyperplanes.nr_of_rows())
             continue;
-        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[first_facet]);
+        cout << "FACET LEVEL " << Mother->dim-dim << " NR " << k << "/" << Automs.LinFormOrbits.size()<< "/" << Support_Hyperplanes.nr_of_rows() << endl;
+ 
+        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
         cout << "FP Deg " << deg_fixed_point << " HT " << ht << endl;
         if(ht >0){
             long long orbit_size=Automs.LinFormOrbits[k].size();
             multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
-                        *facet_multiplicity(first_facet)/convertTo<mpz_class>(deg_fixed_point);
+                        *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
         }
     }
-    is_Computed.set(ConeProperty::Multiplicity);    
+    is_Computed.set(ConeProperty::Multiplicity);
+    
 }
 
 //---------------------------------------------------------------------------
