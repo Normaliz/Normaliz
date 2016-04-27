@@ -95,7 +95,6 @@ Integer v_lcm(const vector<Integer>& v);
 template<typename Integer>
 Integer v_make_prime(vector<Integer>& v);
 
-
 //---------------------------------------------------------------------------
 //							Scalar operations
 //---------------------------------------------------------------------------
@@ -161,6 +160,10 @@ bool compare_last (const vector<Integer>& a, const vector<Integer>& b)
 //returns a key vector containing the positions of non-zero entrys of v
 template<typename Integer>
 vector<key_t> v_non_zero_pos(const vector<Integer>& v);
+
+// counts the number of positive entries
+template<typename Integer>
+size_t v_nr_positive(const vector<Integer>& v);
 
 // check whether the vector only contains 0
 template<typename Integer>

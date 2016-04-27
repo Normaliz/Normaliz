@@ -212,7 +212,6 @@ vector<Integer> v_abs_value(vector<Integer>& v){
     return w;
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -467,6 +466,17 @@ bool v_is_zero(const vector<Integer>& v) {
         if (v[i] != 0) return false;
     }
     return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t v_nr_positive(const vector<Integer>& v) {
+    size_t tmp=0;
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] >0) tmp++;
+    }
+    return tmp;
 }
 
 //---------------------------------------------------------------------------
