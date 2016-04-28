@@ -66,9 +66,9 @@ const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
-long expense_factor_automs=2; // divide by 2: estimate for the expense of using automorpjisms for multiplicity
+float expense_factor_automs=1.5; // estimate for the expense of using automorpjisms for multiplicity
 
-size_t autom_codim=6; // maximal codim of face for which multiüplicity is computed via automs
+size_t autom_codim=3; // maximal codim of face for which multiüplicity is computed via automs
 
 //---------------------------------------------------------------------------
 
@@ -3085,7 +3085,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     v_make_prime(fixed_point);
     Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
 
-    size_t all_facets=0, good_facets=0;
+    float expense_no_automs=0, expense__automs=0;
     vector<vector<key_t> > facet_keys(Automs.LinFormOrbits.size());
     for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
         key_t facet_nr=Automs.LinFormOrbits[k][0];
@@ -3097,13 +3097,16 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
                 facet_gens.push_back(i);        
         }
         facet_keys[k]=facet_gens;
-        all_facets+=facet_gens.size();
+        expense_no_automs+=(float) facet_gens.size();
         Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
-        if(ht ==0 || expense_factor_automs*deg_fixed_point<=2*ht*Automs.LinFormOrbits[k].size())
-            good_facets+=facet_gens.size();              
+        if(ht>0){            
+            expense__automs+= convertTo<float>(deg_fixed_point * (long) facet_gens.size()) 
+                 /convertTo<float>( ht*(long)Automs.LinFormOrbits[k].size() );
+        }            
     }
-    cout << "ALL FACETS " << all_facets << " GOOD " << good_facets << endl;
-    if(2*good_facets < all_facets) // not worth using automorphisms
+    expense__automs*=expense_factor_automs;
+    cout << "NO AUTOMS " << expense_no_automs << " AUTOMS " << expense__automs << endl;
+    if(expense_no_automs < expense__automs) // not worth using automorphisms
         return;
     
     for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
