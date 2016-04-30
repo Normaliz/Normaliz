@@ -2158,10 +2158,13 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
+void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch, bool with_extreme_rays){
 
-    if(isComputed(ConeProperty::SupportHyperplanes)) // we have them already
+    if(isComputed(ConeProperty::SupportHyperplanes)){ // we have them already
+        if(with_extreme_rays)
+            compute_extreme_rays();        
         return;
+    }
     
     Full_Cone copy((*this).Generators);
     copy.verbose=verbose;
@@ -2173,8 +2176,10 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
         copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
         copy.in_triang=in_triang;
         copy.old_nr_supp_hyps=old_nr_supp_hyps;
-        if(isComputed(ConeProperty::ExtremeRays))
+        if(isComputed(ConeProperty::ExtremeRays)){
             copy.is_Computed.set(ConeProperty::ExtremeRays);
+            with_extreme_rays=false;
+        }
         copy.GensInCone=GensInCone;
         copy.nrGensInCone=nrGensInCone;
         copy.Comparisons=Comparisons;
@@ -2190,6 +2195,12 @@ void Full_Cone<Integer>::get_supphyps_from_copy(bool from_scratch){
     }
     
     copy.dualize_cone();
+    if(with_extreme_rays){
+        copy.do_extreme_rays=true;
+        copy.compute();
+        Extreme_Rays_Ind=copy.Extreme_Rays_Ind;
+        is_Computed.set(ConeProperty::ExtremeRays);
+    }
     
     std::swap(Support_Hyperplanes,copy.Support_Hyperplanes);
     nrSupport_Hyperplanes = copy.nrSupport_Hyperplanes;
@@ -2862,13 +2873,13 @@ void Full_Cone<Integer>::compute() {
     start_message();
     
     if(exploit_automorphisms && Mother->dim==dim){
-        string name_open="automorohism.cfg";
+        string name_open="automorphism.cfg";
         const char* file=name_open.c_str();
         ifstream in(file);
         if(in.good()){
             in >> expense_factor_automs;
             in >> autom_codim;
-            cout << "WHOW WHOW " << expense_factor_automs << " " << autom_codim << endl;
+            // cout << "WHOW WHOW " << expense_factor_automs << " " << autom_codim << endl;
         }       
     }
 
@@ -2908,7 +2919,7 @@ void Full_Cone<Integer>::compute() {
         }
     }
     
-    if(do_only_multiplicity){
+    if(do_only_multiplicity && exploit_automorphisms){
         if(isComputed(ConeProperty::FullAutomorphismGroup) 
             && Automs.getOrder()> 1 && nr_gen>=dim+4){
             compute_multiplicity_via_automs();
@@ -2969,6 +2980,9 @@ void Full_Cone<Integer>::compute() {
     
     compute_class_group();
     compute__automorphisms();
+    
+    /* if(do_only_multiplicity && exploit_automorphisms && isComputed(ConeProperty::Multiplicity))
+        Mother->FaceClasses.add_type(*this); */
     
     end_message();  
     
@@ -3052,14 +3066,40 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Matrix<Integer> Transformed_Facet_Gens=Facet_Sub.to_sublattice(Facet_Gens);
     Full_Cone Facet(Transformed_Facet_Gens);
     Facet.verbose=verbose;
-    Facet.do_multiplicity=true;
+
     Facet.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
     Facet.is_Computed.set(ConeProperty::Grading);
     Facet.Mother=Mother;
-    if(Transformed_Facet_Gens.nr_of_rows()>=dim+3 && Mother->dim-dim+1<= autom_codim) // otherwise it wouldn't be used anyway
-        Facet.exploit_automorphisms=true;
+    Facet.exploit_automorphisms=true;
+    Facet.keep_order=true;
     Facet.compute();
-    return Facet.multiplicity;
+    bool found;
+    const IsoType<Integer>& face_class=Mother->FaceClasses.find_type(Facet,found);
+    if(found){
+        mpq_class mmm=face_class.getMultiplicity();       
+        return mmm;        
+    } else{
+        Full_Cone Facet_2(Transformed_Facet_Gens);
+        Facet_2.Automs=Facet.Automs;
+        Facet_2.is_Computed.set(ConeProperty::FullAutomorphismGroup);
+        Facet_2.Extreme_Rays_Ind=Facet.Extreme_Rays_Ind;
+        Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
+        Facet_2.Support_Hyperplanes=Facet.Support_Hyperplanes;
+        Facet_2.nrSupport_Hyperplanes=Facet.nrSupport_Hyperplanes;
+        Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
+        Facet_2.exploit_automorphisms=true;
+        Facet.keep_order=true;
+        if(!(Transformed_Facet_Gens.nr_of_rows()>=dim+3 && Mother->dim-dim+1<= autom_codim)) // otherwise it wouldn't be used anyway
+            Facet_2.exploit_automorphisms=false;
+        Facet_2.verbose=verbose;        
+        Facet_2.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
+        Facet_2.is_Computed.set(ConeProperty::Grading);
+        Facet_2.Mother=Mother;
+        Facet_2.do_multiplicity=true;
+        Facet_2.compute();
+        Mother->FaceClasses.add_type(Facet_2);
+        return Facet_2.multiplicity;
+    }    
 }
 
 //---------------------------------------------------------------------------
@@ -3085,7 +3125,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     v_make_prime(fixed_point);
     Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
 
-    float expense_no_automs=0, expense__automs=0;
+    mpq_class expense_no_automs=0, expense__automs=0;
     vector<vector<key_t> > facet_keys(Automs.LinFormOrbits.size());
     for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
         key_t facet_nr=Automs.LinFormOrbits[k][0];
@@ -3097,17 +3137,22 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
                 facet_gens.push_back(i);        
         }
         facet_keys[k]=facet_gens;
-        expense_no_automs+=(float) facet_gens.size();
+        mpz_class dummy1(facet_gens.size());
+        expense_no_automs+=dummy1;
         Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
-        if(ht>0){            
-            expense__automs+= convertTo<float>(deg_fixed_point * (long) facet_gens.size()) 
-                 /convertTo<float>( ht*(long)Automs.LinFormOrbits[k].size() );
+        if(ht>0){
+            Integer dum1=deg_fixed_point * facet_gens.size();
+            Integer dum2=ht* Automs.LinFormOrbits[k].size();
+            mpz_class dummy1=convertTo<mpz_class>(dum1);
+            mpz_class dummy2=convertTo<mpz_class>(dum2);
+            expense__automs+= dummy1/dummy2;
         }            
     }
     expense__automs*=expense_factor_automs;
     cout << "NO AUTOMS " << expense_no_automs << " AUTOMS " << expense__automs << endl;
-    if(expense_no_automs < expense__automs) // not worth using automorphisms
-        return;
+    /* if(expense_no_automs < expense__automs){ // not worth using automorphism
+        return; 
+    } */
     
     for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
         key_t facet_nr=Automs.LinFormOrbits[k][0];
@@ -3123,8 +3168,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
                         *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
         }
     }
-    is_Computed.set(ConeProperty::Multiplicity);
-    
+    is_Computed.set(ConeProperty::Multiplicity);    
 }
 
 //---------------------------------------------------------------------------
@@ -4975,6 +5019,17 @@ const Matrix<Integer>& Full_Cone<Integer>::getGenerators()const{
 template<typename Integer>
 vector<bool> Full_Cone<Integer>::getExtremeRays()const{
     return Extreme_Rays_Ind;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+size_t Full_Cone<Integer>::getNrExtremeRays() const{
+    size_t n=0;
+    for(size_t j=0;j<nr_gen;++j)
+        if(Extreme_Rays_Ind[j])
+            ++n;
+    return n;
 }
 
 //---------------------------------------------------------------------------

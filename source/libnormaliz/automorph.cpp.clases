@@ -275,9 +275,6 @@ void Isomorphism_Classes<Integer>::add_type(Full_Cone<Integer>& C){
     Classes.push_back(IsoType<Integer>(C));  
 }
 
-size_t NOT_FOUND=0;
-size_t FOUND=0;
-
 template<typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Integer>& C, bool& found) const{
 
@@ -288,13 +285,10 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
     for(;it!=Classes.end();++it){
         if(it->isOfType(C)){
             found=true;
-            FOUND++;
-            cout << "FOUND FOUND FOUND " << FOUND << endl;
+            cout << "FOUND FOUND FOUND" << endl;
             return *it;
         }
     }
-    NOT_FOUND++;
-    cout << "NOT FOUND " <<   NOT_FOUND << endl;
     return *Classes.begin();
 }
 

@@ -25,20 +25,23 @@
 #define AUTOMORPHISM_H
 
 #include <boost/dynamic_bitset.hpp>
-#include "libnormaliz/matrix.h"
+#include "libnormaliz/matrix.h" 
 #include "libnormaliz/nmz_nauty.h"
+#include "libnormaliz/HilbertSeries.h"
 
 namespace libnormaliz {
 using namespace std;
 
 template<typename Integer> class Cone;
 template<typename Integer> class Full_Cone;
+template<typename Integer> class Isomorphism_Classes;
 
 template<typename Integer>
 class Automorphism_Group {
     
     template<typename> friend class Cone;
     template<typename> friend class Full_Cone;
+    template<typename> friend class Isomorphism_Classes;
     
     Matrix<Integer> Gens, LinForms;
 
@@ -52,6 +55,8 @@ class Automorphism_Group {
     
     mpz_class order;
     
+    // vector<unsigned long> CanLabelling; // see nauty
+    
     bool from_ambient_space;
     bool LinMaps_computed;
     bool graded;
@@ -62,6 +67,8 @@ class Automorphism_Group {
     void reset();
     
 public:
+    
+    vector<unsigned long> CanLabelling; // see nauty
     
     mpz_class getOrder() const;
     vector<vector<key_t> > getGenPerms() const;
@@ -77,16 +84,81 @@ public:
     void setGraded(bool on_off);
     void setInhomogeneous(bool on_off);
     
+    vector<unsigned long> getCanLabelling();
+    
     bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms);
     bool compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
                  const size_t nr_special_linforms);
     
     Automorphism_Group();
     
-}; // end class   
-    
+}; // end class
+
+template<typename Integer> class Isomorphism_Classes;
+
 template<typename Integer>
-vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, const size_t nr_special_linforms, mpz_class& group_order);
+class IsoType {
+    
+    template<typename> friend class Isomorphism_Classes;
+
+    size_t rank;
+    Matrix<Integer> ExtremeRays;
+    size_t nrExtremeRays;
+    Matrix<Integer> SupportHyperplanes;
+    size_t nrSupportHyperplanes;
+    Matrix<Integer> HilbertBasis;
+    size_t nrHilbertBasis;
+    vector<Integer> Grading;
+    vector<Integer> Dehomogenization;
+    HilbertSeries HilbertSer;
+    mpq_class Multiplicity;
+    bool needs_Hilbert_basis;
+    
+    vector<unsigned long> CanLabelling;
+    IsoType(); // constructs a dummy object
+
+public:
+    
+    bool isOfType(Full_Cone<Integer>& C) const;
+    bool isOfType(Cone<Integer>& C) const;
+    
+    IsoType(Full_Cone<Integer>& C, bool slim=true);
+    IsoType(Cone<Integer>& C, bool slim=true);
+    
+    size_t getRank();
+    Matrix<Integer> getExtremeRays() const;
+    Matrix<Integer> getSupportHyperplanes() const;
+    Matrix<Integer> getHilbert_Basis() const;
+    vector<Integer> getGrading() const;
+    vector<Integer> getTruncation() const;
+    HilbertSeries getHilbertSeries() const;
+    mpq_class getMultiplicity() const;
+    vector<unsigned long> getCanLabelling();
+};
+
+template<typename Integer>
+class Isomorphism_Classes {
+    
+    template<typename> friend class Cone;
+    template<typename> friend class Full_Cone;
+    
+    list<IsoType<Integer> >  Classes;
+    
+public:
+    
+    Isomorphism_Classes();
+    const IsoType<Integer>& find_type(Full_Cone<Integer>& C, bool& found) const;
+    const IsoType<Integer>& find_type(Cone<Integer>& C, bool& found) const;
+    void add_type(Full_Cone<Integer>& C);
+    void add_type(Cone<Integer>& C);
+};
+
+
+// returns all data of nauty
+template<typename Integer>
+vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
+                                    const size_t nr_special_linforms, mpz_class& group_order,
+                                    vector<unsigned long>& CanLabelling); 
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 

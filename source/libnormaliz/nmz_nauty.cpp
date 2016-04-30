@@ -50,10 +50,12 @@ void getmyautoms(int count, int *perm, int *orbits,
 template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, 
                                               const vector<vector<Integer> >& LinForms, 
-                                              const size_t nr_special_linforms, mpz_class& group_order){
+                                              const size_t nr_special_linforms, mpz_class& group_order,
+                                              vector<unsigned long>& CanLabelling){
     CollectedAutoms.clear();
     
     DYNALLSTAT(graph,g,g_sz);
+    DYNALLSTAT(graph,cg,cg_sz);
     DYNALLSTAT(int,lab,lab_sz);
     DYNALLSTAT(int,ptn,ptn_sz);
     DYNALLSTAT(int,orbits,orbits_sz);
@@ -61,6 +63,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     statsblk stats;
     
     options.userautomproc = getmyautoms;
+    options.getcanon = TRUE;
     
     int n,m;
     
@@ -124,6 +127,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     nauty_check(WORDSIZE,m,n,NAUTYVERSIONID);
     
     DYNALLOC2(graph,g,g_sz,m,n,"malloc");
+    DYNALLOC2(graph,cg,cg_sz,n,m,"malloc");
     DYNALLOC1(int,lab,lab_sz,n,"malloc");
     DYNALLOC1(int,ptn,ptn_sz,n,"malloc");
     DYNALLOC1(int,orbits,orbits_sz,n,"malloc");
@@ -164,7 +168,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     
     // printf("Generators for Aut(C[%d]):\n",n);
 
-    densenauty(g,lab,ptn,orbits,&options,&stats,m,n,NULL);
+    densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
     
     /*printf("Automorphism group size = ");
     writegroupsize(stdout,stats.grpsize1,stats.grpsize2);
@@ -202,14 +206,19 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         cout << AutomsAndOrbits[k] << endl;
     }*/
         
-    mpf_set_default_prec(1024);
+    /*mpf_set_default_prec(1024);
     mpf_t bridge_f;
     mpf_init(bridge_f);
     mpf_set_d(bridge_f,stats.grpsize1);
     mpz_t bridge_z;
     mpz_init(bridge_z);
     mpz_set_f (bridge_z, bridge_f);    
-    group_order=mpz_class(bridge_z);
+    group_order=mpz_class(bridge_z);*/
+    group_order=mpz_class(stats.grpsize1);
+    
+    CanLabelling.resize(m*n);
+    for(size_t i=0;i<CanLabelling.size();++i)
+        CanLabelling[i]=cg[i];
     
     nauty_freedyn();
     
@@ -218,29 +227,18 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   mpz_class& group_order);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, 
+                        const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
+                        mpz_class& group_order, vector<unsigned long>& CanLabelling);
 #endif // NMZ_MIC_OFFLOAD
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   mpz_class& group_order);
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   mpz_class& group_order);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, 
+                        const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   
+                        mpz_class& group_order, vector<unsigned long>& CanLabelling);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, 
+                        const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
+                        mpz_class& group_order,vector<unsigned long>& CanLabelling);
 
 } // namespace
 
 #endif // NMZ_NAUTY
 
-/*
-void
-writegroupsize(FILE *f, double gpsize1, int gpsize2)
-{
-    if (gpsize2 == 0)
-        fprintf(f,"%.0f",gpsize1+0.1);
-    else
-    {   
-        while (gpsize1 >= 10.0)
-        {   
-            gpsize1 /= 10.0;
-            ++gpsize2;
-        }
-        fprintf(f,"%14.12fe%d",gpsize1,gpsize2);
-    }
-}
-*/

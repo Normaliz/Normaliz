@@ -40,6 +40,7 @@
 #include "libnormaliz/reduction.h"
 // #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
+#include "libnormaliz/automorph.h"
 
 namespace libnormaliz {
 using std::list;
@@ -181,6 +182,8 @@ public:
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
     size_t apex; // indicates which generator of mother cone is apex of pyramid
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
+    
+    Isomorphism_Classes<Integer> FaceClasses;
 
     // control of pyramids, recusrion and parallelization
     bool is_pyramid; // false for top cone
@@ -279,7 +282,7 @@ public:
     
     void build_top_cone(); 
     void build_cone();
-    void get_supphyps_from_copy(bool from_scratch);   // if evealuation starts before support hyperplanes are fully computed
+    void get_supphyps_from_copy(bool from_scratch, bool with_extreme_rays=false);   // if evealuation starts before support hyperplanes are fully computed
     void update_reducers(bool forced=false);   // update list of reducers after evaluation of simplices
     
 
@@ -383,6 +386,7 @@ public:
     size_t getModuleRank()const;
     const Matrix<Integer>& getGenerators() const;
     vector<bool> getExtremeRays() const;
+    size_t getNrExtremeRays() const;
     Matrix<Integer> getSupportHyperplanes() const;
     Matrix<Integer> getHilbertBasis() const;
     Matrix<Integer> getModuleGeneratorsOverOriginalMonoid()const;
