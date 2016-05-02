@@ -75,16 +75,14 @@ bool try_convert(mpz_class& ret, const long long& val) {
     return true;
 }
 
-/*
 
-bool try_convert(float ret,const mpz_class& val){
+bool try_convert(float& ret,const mpz_class& val){
     if(!val.fits_slong_p())
         return false;
     long dummy=convertTo<long>(val);
     ret=(float) dummy;
     return true;    
 }
-*/
 
 bool fits_long_range(long long a) {
     return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
