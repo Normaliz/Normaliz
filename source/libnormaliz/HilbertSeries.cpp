@@ -56,21 +56,38 @@ long lcm_of_keys(const map<long, denom_t>& m){
 }
 
 // compute the new numerator by multiplying the HS with a denominator
-// of the form (1-t^i)
+// of the form product of (1-t^i)
 vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
-        vector<mpz_class> mult=convertTo<vector<mpz_class> >(cyclo_num);
-        vector<mpz_class> result, remainder;
+    
+        // get the denominator as a polynomial by mutliplying the (1-t^i) terms
+        vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);;
         long e = 1;
         for (size_t i=0;i<new_denom.size();i++){
             if (i<new_denom.size()-1 && new_denom[i]==new_denom[i+1]){
                 e++; 
                 continue;
             }
-            poly_mult_to(mult,new_denom[i],e);
+            poly_mult_to(new_denom_poly,new_denom[i],e);
             e=1;
         }
-        vector<mpz_class> denom_vector=convertTo<vector<mpz_class> >(to_vector(cyclo_denom));
-        poly_div(result,remainder,mult,denom_vector);
+        cout << "new denominator as polynomial: " << new_denom_poly << endl;
+
+        vector<mpz_class>  quot,remainder,poly;
+        //first divide the new denom by the cyclo polynomials
+        vector<denom_t> denom_vector=to_vector(cyclo_denom);
+        for(size_t i=0;i<denom_vector.size();i++){
+                poly = cyclotomicPoly<mpz_class>(convertTo<long>(denom_vector[i]));
+                // TODO: easier polynomial division possible?
+                poly_div(quot,remainder,new_denom_poly,poly);
+                new_denom_poly=quot;
+                //cout << "the quotient: " << new_denom_poly << endl; 
+                assert(remainder.size()==0);
+        }
+        // multiply with the old numerator
+        vector<mpz_class> result = poly_mult(new_denom_poly,cyclo_num);
+        // TODO: overwrite old denom and num
+        //num = result;
+        //denom=count_in_map<long,denom_t>(new_denom);
         return result;
 }
 

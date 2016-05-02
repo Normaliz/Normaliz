@@ -91,9 +91,9 @@ Integer v_gcd(const vector<Integer>& v);
 template<typename Integer>
 Integer v_lcm(const vector<Integer>& v);
 
-//returns lcm of the elements of v up to index j
+//returns lcm of the elements of v from index k up to index j
 template<typename Integer>
-Integer v_lcm_to(const vector<Integer>& v,const size_t j);
+Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j);
 
 //divides the elements by their gcd and returns the gcd
 template<typename Integer>

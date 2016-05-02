@@ -2959,9 +2959,14 @@ void Full_Cone<Integer>::compute() {
         
         if(isComputed(ConeProperty::Grading)){
             vector<Integer> er_deg = ER.MxV(Grading);
-            vector<Integer> hsop_deg = degrees_hsop(er_deg,ideal_heights);
+            vector<long> hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
             cout << "Degrees of HSOP:" << endl; 
             cout << hsop_deg << endl;
+            if(isComputed(ConeProperty::HilbertSeries)){
+                vector<mpz_class> numerator = Hilbert_Series.new_num(hsop_deg);
+                cout << "The numerator:" << endl;
+                cout << numerator << endl;
+            }
         }
     }
     

@@ -244,10 +244,11 @@ Integer v_lcm(const vector<Integer>& v){
 }
 
 template<typename Integer>
-Integer v_lcm_to(const vector<Integer>& v,const size_t j){
+Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j){
+    assert(k <= j);
     size_t i;
     Integer g=1;
-    for (i = 0; i < j; i++) {
+    for (i = k; i <= j; i++) {
         g = libnormaliz::lcm(g,v[i]);
         if (g==0) {
             return 0;
@@ -695,7 +696,7 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
     }
     for (size_t i=k;i<heights.size();i++){
             if (heights[i]>heights[i-1]){
-                hsop[j]=v_lcm_to(gen_degrees,i);
+                hsop[j]=v_lcm_to(gen_degrees,k-1,i);
                 j++;
             }
     }
