@@ -91,6 +91,10 @@ Integer v_gcd(const vector<Integer>& v);
 template<typename Integer>
 Integer v_lcm(const vector<Integer>& v);
 
+//returns lcm of the elements of v up to index j
+template<typename Integer>
+Integer v_lcm_to(const vector<Integer>& v,const size_t j);
+
 //divides the elements by their gcd and returns the gcd
 template<typename Integer>
 Integer v_make_prime(vector<Integer>& v);
@@ -194,6 +198,10 @@ template<typename Integer>
 void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx,const long k);
 
 vector<key_t> identity_key(size_t n);
+
+// compute the degree vector of a hsop
+template<typename Integer>
+vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights);
 
 //---------------------------------------------------------------------------
 //                            Sorting

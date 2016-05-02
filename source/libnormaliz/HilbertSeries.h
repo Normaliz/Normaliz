@@ -129,6 +129,10 @@ public:
     void from_string_rep(const string&);
 
     void setVerbose(bool v) { verbose = v; }
+    
+    // compute the new numerator by multiplying the HS with a denominator
+    // of the form (1-t^i)
+    vector<mpz_class> new_num(vector<denom_t> new_denom);
 
 private:
     // collected data in denominator classes

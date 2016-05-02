@@ -2926,7 +2926,6 @@ void Full_Cone<Integer>::compute() {
         
         Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
         Matrix<Integer> SH = getSupportHyperplanes();
-        
         list<boost::dynamic_bitset<>> facet_list;
         list<vector<key_t>> facet_keys;
         vector<key_t> key;
@@ -2957,6 +2956,13 @@ void Full_Cone<Integer>::compute() {
         heights(facet_keys,facet_list,Extreme_Rays.size()-1,ideal_heights);
         cout << "The heights vector:" << endl;
         cout << ideal_heights << endl;
+        
+        if(isComputed(ConeProperty::Grading)){
+            vector<Integer> er_deg = ER.MxV(Grading);
+            vector<Integer> hsop_deg = degrees_hsop(er_deg,ideal_heights);
+            cout << "Degrees of HSOP:" << endl; 
+            cout << hsop_deg << endl;
+        }
     }
     
     

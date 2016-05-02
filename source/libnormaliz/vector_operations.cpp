@@ -243,6 +243,19 @@ Integer v_lcm(const vector<Integer>& v){
     return g;
 }
 
+template<typename Integer>
+Integer v_lcm_to(const vector<Integer>& v,const size_t j){
+    size_t i;
+    Integer g=1;
+    for (i = 0; i < j; i++) {
+        g = libnormaliz::lcm(g,v[i]);
+        if (g==0) {
+            return 0;
+        }
+    }
+    return g;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -669,6 +682,24 @@ vector<Integer> v_random(size_t n, long m){
     for(size_t i=0;i<n;++i)
         result[i]=rand()%(2*m+1)-m;
     return result;    
+}
+template<typename Integer>
+vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights){
+    vector<Integer> hsop(heights.back());
+    size_t j=1;
+    hsop[0]=gen_degrees[0];
+    size_t k=1;
+    while (heights[k]>heights[k-1]){
+        hsop[k]=gen_degrees[k];
+        k++;
+    }
+    for (size_t i=k;i<heights.size();i++){
+            if (heights[i]>heights[i-1]){
+                hsop[j]=v_lcm_to(gen_degrees,i);
+                j++;
+            }
+    }
+    return hsop;
 }
 
 
