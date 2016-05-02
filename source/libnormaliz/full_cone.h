@@ -174,9 +174,13 @@ public:
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
     size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished 
-        
+
+    // the absolute top cone in recursive algorithms where faces are evalutated themselves
+    Full_Cone<Integer>* God_Father;
+    
     // data relating a pyramid to its ancestores
-    Full_Cone<Integer>* Top_Cone; // reference to cone on top level
+    Full_Cone<Integer>* Top_Cone; // reference to cone on top level relative to pyramid formation
+
     vector<key_t> Top_Key;        // indices of generators w.r.t Top_Cone
     Full_Cone<Integer>* Mother;   // reference to the mother of the pyramid
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother

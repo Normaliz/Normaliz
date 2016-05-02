@@ -1734,6 +1734,9 @@ void Full_Cone<Integer>::build_cone() {
     // if(dim>0){            //correction needed to include the 0 cone;
     
     // cout << "Pyr " << pyr_level << endl;
+    
+    if(start_from==0)    
+        in_triang = vector<bool> (nr_gen,false);
 
     long long RecBoundSuppHyp = dim*dim;
     RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
@@ -2872,7 +2875,7 @@ void Full_Cone<Integer>::compute() {
 
     start_message();
     
-    if(exploit_automorphisms && Mother->dim==dim){
+    if(exploit_automorphisms && God_Father->dim==dim){
         string name_open="automorphism.cfg";
         const char* file=name_open.c_str();
         ifstream in(file);
@@ -2917,17 +2920,19 @@ void Full_Cone<Integer>::compute() {
             end_message();
             return;
         }
-    }
+    }    
     
     if(do_only_multiplicity && exploit_automorphisms){
-        if(isComputed(ConeProperty::FullAutomorphismGroup) 
-            && Automs.getOrder()> 1 && nr_gen>=dim+4){
+        if(God_Father->dim-dim<autom_codim && nr_gen>= dim+4){ // othewise direct computation
             compute_multiplicity_via_automs();
             if(isComputed(ConeProperty::Multiplicity)){
+                if(God_Father->dim==dim){
+                    compute_class_group();
+                }
                 end_message();
                 return;
             }
-        }        
+        }
     }
 
     bool polyhedron_is_polytope=inhomogeneous;
@@ -2981,12 +2986,123 @@ void Full_Cone<Integer>::compute() {
     compute_class_group();
     compute__automorphisms();
     
-    /* if(do_only_multiplicity && exploit_automorphisms && isComputed(ConeProperty::Multiplicity))
-        Mother->FaceClasses.add_type(*this); */
-    
     end_message();  
     
 }
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_via_automs(){
+    
+    if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
+        !isComputed(ConeProperty::Grading))
+        return;
+            
+    // find fixed ppoint of low degree
+    size_t mini=0;
+    key_t min_orbit=0;
+    for(size_t i=0;i<Automs.GenOrbits.size();++i)
+        if(mini==0 || Automs.GenOrbits[i].size()<mini){
+            mini=Automs.GenOrbits[i].size();
+            min_orbit=i;
+        }
+    
+    vector<Integer> fixed_point(dim);
+    Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
+    for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i)
+        fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
+    v_make_prime(fixed_point);
+    Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
+
+    vector<vector<key_t> > facet_keys; // collect facets
+    vector<key_t> facet_nrs;
+    vector<size_t> orbit_sizes;
+    for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
+        key_t facet_nr=Automs.LinFormOrbits[k][0];
+        if(facet_nr>=Support_Hyperplanes.nr_of_rows()) // to exclude the orbits of Grading and Truncation
+            continue;
+        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
+        if(ht==0)   // fixed point in facet, does not contribute to multiplicity
+            continue;
+        vector<key_t> facet_gens;
+        for(size_t i=0; i<nr_gen;++i){
+            if(Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Support_Hyperplanes[facet_nr])==0)
+                facet_gens.push_back(i);        
+        }
+        facet_keys.push_back(facet_gens); 
+        facet_nrs.push_back(facet_nr);
+        orbit_sizes.push_back(Automs.LinFormOrbits[k].size());
+    }
+    
+    cout << "CODIM " << God_Father->dim-dim+1 << endl;
+    
+    cout << "FIXED POINT IN " << Automs.LinFormOrbits.size()-1-facet_keys.size() << " OF " 
+                    << Automs.LinFormOrbits.size()-1 << " ORBITS " << "OF " << nrSupport_Hyperplanes << " SUPP HYPS" << endl;
+    
+    for(size_t k=0;k<facet_keys.size();++k){
+
+        cout << " ORBIT " << k+1 << endl;
+ 
+        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nrs[k]]);
+        cout << "FP DEG " << deg_fixed_point << " HT " << ht << endl;
+        long long orbit_size=orbit_sizes[k];;
+            multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
+                        *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
+    }
+    is_Computed.set(ConeProperty::Multiplicity);    
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key){
+    
+    Matrix<Integer> Facet_Gens=Generators.submatrix(facet_key);
+    
+    for(size_t i=0;i<God_Father->dim-dim+1;++i)
+        cout << "$$$$";
+    cout << " " << Facet_Gens.nr_of_rows() << endl; 
+    
+    Sublattice_Representation<Integer> Facet_Sub(Facet_Gens,true);
+    Matrix<Integer> Transformed_Facet_Gens=Facet_Sub.to_sublattice(Facet_Gens);
+    Full_Cone Facet(Transformed_Facet_Gens);
+    Facet.verbose=verbose;
+    
+    Facet.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
+    Facet.is_Computed.set(ConeProperty::Grading);
+    Facet.Mother=&(*this);
+    Facet.God_Father=God_Father;
+    Facet.exploit_automorphisms=true;
+    Facet.keep_order=true;
+    Facet.compute();
+    bool found;
+    const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(Facet,found);
+    if(found){
+        mpq_class mmm=face_class.getMultiplicity();       
+        return mmm;        
+    } else{
+        Full_Cone Facet_2(Transformed_Facet_Gens);
+        Facet_2.Automs=Facet.Automs;
+        Facet_2.is_Computed.set(ConeProperty::FullAutomorphismGroup);
+        Facet_2.Extreme_Rays_Ind=Facet.Extreme_Rays_Ind;
+        Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
+        Facet_2.Support_Hyperplanes=Facet.Support_Hyperplanes;
+        Facet_2.nrSupport_Hyperplanes=Facet.nrSupport_Hyperplanes;
+        Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
+        Facet_2.exploit_automorphisms=true;
+        Facet.keep_order=true;
+        Facet_2.verbose=verbose;        
+        Facet_2.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
+        Facet_2.is_Computed.set(ConeProperty::Grading);
+        Facet_2.Mother=&(*this);
+        Facet_2.God_Father=God_Father;
+        Facet_2.do_multiplicity=true;
+        Facet_2.compute();
+        God_Father->FaceClasses.add_type(Facet_2);
+        return Facet_2.multiplicity;
+    }    
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
@@ -3016,160 +3132,41 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     Polytope.verbose=verbose;
     Polytope.compute();
     if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
-                    !isComputed(ConeProperty::SupportHyperplanes)){
+        !isComputed(ConeProperty::SupportHyperplanes)){
         Support_Hyperplanes=Polytope.Support_Hyperplanes;
-        nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
-        is_Computed.set(ConeProperty::SupportHyperplanes);  
-    }
-    if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
-                    !isComputed(ConeProperty::ExtremeRays)){
-        Extreme_Rays_Ind=Polytope.Extreme_Rays_Ind;
+    nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
+    is_Computed.set(ConeProperty::SupportHyperplanes);  
+        }
+        if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
+            !isComputed(ConeProperty::ExtremeRays)){
+            Extreme_Rays_Ind=Polytope.Extreme_Rays_Ind;
         is_Computed.set(ConeProperty::ExtremeRays);     
-    }
-    if(Polytope.isComputed(ConeProperty::Deg1Elements)){
-        Hilbert_Basis=Polytope.Deg1_Elements;
-        is_Computed.set(ConeProperty::HilbertBasis);
-        module_rank=Hilbert_Basis.size();
-        is_Computed.set(ConeProperty::ModuleRank);
-        if(isComputed(ConeProperty::Grading) && module_rank>0){
-            multiplicity=1; // of the recession cone;
-            is_Computed.set(ConeProperty::Multiplicity);
-            vector<num_t> hv(1);
-            typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
-            for(;hb!=Hilbert_Basis.end();++hb){
-                size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
-                if(deg+1>hv.size())
-                    hv.resize(deg+1);
-                hv[deg]++;                        
-            }    
-            Hilbert_Series.add(hv,vector<denom_t>());
-            Hilbert_Series.setShift(convertTo<long>(shift));
-            Hilbert_Series.adjustShift();
-            Hilbert_Series.simplify();
-            is_Computed.set(ConeProperty::HilbertSeries);
-        }  
-    }   
+            }
+            if(Polytope.isComputed(ConeProperty::Deg1Elements)){
+                Hilbert_Basis=Polytope.Deg1_Elements;
+                is_Computed.set(ConeProperty::HilbertBasis);
+                module_rank=Hilbert_Basis.size();
+                is_Computed.set(ConeProperty::ModuleRank);
+                if(isComputed(ConeProperty::Grading) && module_rank>0){
+                    multiplicity=1; // of the recession cone;
+                    is_Computed.set(ConeProperty::Multiplicity);
+                    vector<num_t> hv(1);
+                    typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
+                    for(;hb!=Hilbert_Basis.end();++hb){
+                        size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
+                        if(deg+1>hv.size())
+                            hv.resize(deg+1);
+                        hv[deg]++;                        
+                    }    
+                    Hilbert_Series.add(hv,vector<denom_t>());
+                    Hilbert_Series.setShift(convertTo<long>(shift));
+                    Hilbert_Series.adjustShift();
+                    Hilbert_Series.simplify();
+                    is_Computed.set(ConeProperty::HilbertSeries);
+                }  
+            }   
 }
 
-//---------------------------------------------------------------------------
-template<typename Integer>
-mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key){
-
-    Matrix<Integer> Facet_Gens=Generators.submatrix(facet_key);
-
-        cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ ";
-        for(size_t i=0;i<Mother->dim-dim;++i)
-            cout << "--";
-        cout << " " << Facet_Gens.nr_of_rows() << endl; 
-    
-    Sublattice_Representation<Integer> Facet_Sub(Facet_Gens,true);
-    Matrix<Integer> Transformed_Facet_Gens=Facet_Sub.to_sublattice(Facet_Gens);
-    Full_Cone Facet(Transformed_Facet_Gens);
-    Facet.verbose=verbose;
-
-    Facet.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
-    Facet.is_Computed.set(ConeProperty::Grading);
-    Facet.Mother=Mother;
-    Facet.exploit_automorphisms=true;
-    Facet.keep_order=true;
-    Facet.compute();
-    bool found;
-    const IsoType<Integer>& face_class=Mother->FaceClasses.find_type(Facet,found);
-    if(found){
-        mpq_class mmm=face_class.getMultiplicity();       
-        return mmm;        
-    } else{
-        Full_Cone Facet_2(Transformed_Facet_Gens);
-        Facet_2.Automs=Facet.Automs;
-        Facet_2.is_Computed.set(ConeProperty::FullAutomorphismGroup);
-        Facet_2.Extreme_Rays_Ind=Facet.Extreme_Rays_Ind;
-        Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
-        Facet_2.Support_Hyperplanes=Facet.Support_Hyperplanes;
-        Facet_2.nrSupport_Hyperplanes=Facet.nrSupport_Hyperplanes;
-        Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
-        Facet_2.exploit_automorphisms=true;
-        Facet.keep_order=true;
-        if(!(Transformed_Facet_Gens.nr_of_rows()>=dim+3 && Mother->dim-dim+1<= autom_codim)) // otherwise it wouldn't be used anyway
-            Facet_2.exploit_automorphisms=false;
-        Facet_2.verbose=verbose;        
-        Facet_2.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
-        Facet_2.is_Computed.set(ConeProperty::Grading);
-        Facet_2.Mother=Mother;
-        Facet_2.do_multiplicity=true;
-        Facet_2.compute();
-        Mother->FaceClasses.add_type(Facet_2);
-        return Facet_2.multiplicity;
-    }    
-}
-
-//---------------------------------------------------------------------------
-template<typename Integer>
-void Full_Cone<Integer>::compute_multiplicity_via_automs(){
-
-    if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
-        !isComputed(ConeProperty::Grading))
-            return;
-            
-    size_t mini=0;
-    key_t min_orbit=0;
-    for(size_t i=0;i<Automs.GenOrbits.size();++i)
-        if(mini==0 || Automs.GenOrbits[i].size()<mini){
-            mini=Automs.GenOrbits[i].size();
-            min_orbit=i;
-        }
-    
-    vector<Integer> fixed_point(dim);
-    Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
-    for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i)
-        fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
-    v_make_prime(fixed_point);
-    Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
-
-    mpq_class expense_no_automs=0, expense__automs=0;
-    vector<vector<key_t> > facet_keys(Automs.LinFormOrbits.size());
-    for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
-        key_t facet_nr=Automs.LinFormOrbits[k][0];
-        if(facet_nr>=Support_Hyperplanes.nr_of_rows())
-            continue;
-        vector<key_t> facet_gens;
-        for(size_t i=0; i<nr_gen;++i){
-            if(Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Support_Hyperplanes[facet_nr])==0)
-                facet_gens.push_back(i);        
-        }
-        facet_keys[k]=facet_gens;
-        mpz_class dummy1(facet_gens.size());
-        expense_no_automs+=dummy1;
-        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
-        if(ht>0){
-            Integer dum1=deg_fixed_point * facet_gens.size();
-            Integer dum2=ht* Automs.LinFormOrbits[k].size();
-            mpz_class dummy1=convertTo<mpz_class>(dum1);
-            mpz_class dummy2=convertTo<mpz_class>(dum2);
-            expense__automs+= dummy1/dummy2;
-        }            
-    }
-    expense__automs*=expense_factor_automs;
-    cout << "NO AUTOMS " << expense_no_automs << " AUTOMS " << expense__automs << endl;
-    /* if(expense_no_automs < expense__automs){ // not worth using automorphism
-        return; 
-    } */
-    
-    for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
-        key_t facet_nr=Automs.LinFormOrbits[k][0];
-        if(facet_nr>=Support_Hyperplanes.nr_of_rows())
-            continue;
-        cout << "FACET LEVEL " << Mother->dim-dim << " NR " << k << "/" << Automs.LinFormOrbits.size()<< "/" << Support_Hyperplanes.nr_of_rows() << endl;
- 
-        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
-        cout << "FP Deg " << deg_fixed_point << " HT " << ht << endl;
-        if(ht >0){
-            long long orbit_size=Automs.LinFormOrbits[k].size();
-            multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
-                        *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
-        }
-    }
-    is_Computed.set(ConeProperty::Multiplicity);    
-}
 
 //---------------------------------------------------------------------------
 
@@ -4523,7 +4520,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     reset_tasks();
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
-    in_triang = vector<bool> (nr_gen,false);
+    // in_triang = vector<bool> (nr_gen,false); // now in build_cone
     deg1_triangulation = true;
     if(dim==0){            //correction needed to include the 0 cone;
         multiplicity = 1;
@@ -4533,6 +4530,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     }
     pyr_level=-1;
     Top_Cone=this;
+    God_Father=this;
     Top_Key.resize(nr_gen);
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=i;
@@ -4605,7 +4603,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     if (!Extreme_Rays_Ind.empty()) is_Computed.set(ConeProperty::ExtremeRays);
 
     multiplicity = 0;
-    in_triang = vector<bool>(nr_gen,false);
+    // in_triang = vector<bool>(nr_gen,false);
  
     Basis_Max_Subspace=C.BasisMaxSubspace;
     is_Computed.set(ConeProperty::MaximalSubspace);    
@@ -4641,6 +4639,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     }
     pyr_level=-1;
     Top_Cone=this;
+    God_Father=this;
     Top_Key.resize(nr_gen);
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=i;
@@ -4782,6 +4781,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     is_simplicial = nr_gen == dim;
     
     Top_Cone=C.Top_Cone; // relate to top cone
+    C.God_Father=C.God_Father;
     Top_Key.resize(nr_gen);
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=C.Top_Key[Key[i]];
@@ -4793,7 +4793,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     if(isComputed(ConeProperty::ExtremeRays))
         for(size_t i=0;i<nr_gen;i++)
             Extreme_Rays_Ind[i]=C.Extreme_Rays_Ind[Key[i]];
-    in_triang = vector<bool> (nr_gen,false);
+    // in_triang = vector<bool> (nr_gen,false); // now in build_cone
     deg1_triangulation = true;
 
     // not used in a pyramid, but set precaution
