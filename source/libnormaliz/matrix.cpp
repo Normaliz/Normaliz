@@ -2355,10 +2355,59 @@ Matrix<Integer>  readMatrix(const string project){
     return result;
 }
 
+// insert binary expansion of val at "planar" coordinates (i,j)
+template<typename Integer>
+void BinaryMatrix::insert(Integer val, key_t i,key_t j){
+    
+    assert(i<nr_rows);
+    assert(j<nr_columns);
+    
+    vector<bool> bin_exp;
+    while(val!=0){ // binary expansion of val
+        Integer bin_digit=val%2;
+        if(bin_digit==1)
+            bin_exp.push_back(true);
+        else
+            bin_exp.push_back(false);
+        val/=2;
+    }
+
+    long add_layers=bin_exp.size()-nr_layers();
+    for(long k =0; k<add_layers; ++k)
+        Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+    
+    for(size_t k=0;k<bin_exp.size();++k){
+         if(bin_exp[k])
+             Layers[k][i][j]=true;
+    }
+}
+
+
+// test bit k in binary expansion at "planar" coordiantes (i,j)
+bool BinaryMatrix::test(key_t i,key_t j, key_t k){
+    
+    assert(i<nr_rows);
+    assert(j<nr_columns);
+    assert(k<Layers.size());
+    return Layers[k][i].test(j);
+}
+
+BinaryMatrix::BinaryMatrix(size_t m,size_t n){
+        nr_rows=m;
+        nr_columns=n;
+}
+
+size_t BinaryMatrix::nr_layers(){
+    return Layers.size();
+}
+
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template Matrix<long>  readMatrix(const string project);
+template void BinaryMatrix::insert(long val, key_t i, key_t j);
 #endif // NMZ_MIC_OFFLOAD
 template Matrix<long long>  readMatrix(const string project);
+template void BinaryMatrix::insert(long long val, key_t i, key_t j);
 template Matrix<mpz_class>  readMatrix(const string project);
+template void BinaryMatrix::insert(mpz_class val, key_t i, key_t j);
 
 }  // namespace

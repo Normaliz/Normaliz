@@ -32,6 +32,8 @@
 #include <iostream>
 #include <string>
 
+#include <boost/dynamic_bitset.hpp>
+
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
@@ -475,6 +477,23 @@ void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const 
 
 template<typename Integer>
 void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
+
+//---------------------------------------------------------------------------
+//                  Matrices of binary expansions
+//---------------------------------------------------------------------------
+class BinaryMatrix {
+    
+    vector<vector<boost::dynamic_bitset<> > > Layers;
+    size_t nr_rows, nr_columns;
+    
+public:
+    
+    template<typename Integer>  void insert(Integer val, key_t i, key_t j);
+    bool test(key_t i, key_t j, key_t k);
+    BinaryMatrix(size_t m, size_t n);
+    size_t nr_layers();
+    
+};
 
 } // namespace
 

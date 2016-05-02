@@ -23,7 +23,10 @@
 
 //---------------------------------------------------------------------------
 
+#include <boost/dynamic_bitset.hpp>
+
 #include "libnormaliz/integer.h"
+#include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
 #include "libnormaliz/vector_operations.h"
 
@@ -77,49 +80,20 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     size_t mm=Generators.size();
     size_t nn=LinForms.size();
     
-    vector<vector<Integer> >  MM(mm,vector<Integer> (nn));
-    size_t i,j,k;
+    BinaryMatrix MM(mm,nn);
+    
+    key_t i,j,k;
     
     for(i=0;i<mm; ++i){
-        for(j=0;j<nn;++j)
-            MM[i][j]=v_scalar_product(Generators[i],LinForms[j]);      
-    }
-        
-    bool first=true;
-    Integer mini=0;
-    Integer maxi=0;
-    
-    for(i=0;i<mm;++i){
         for(j=0;j<nn;++j){
-            if(first || MM[i][j]< mini)
-                mini= MM[i][j];
-            if(first || MM[i][j] > maxi)
-                maxi= MM[i][j];
-            first=FALSE;
+            Integer val=v_scalar_product(Generators[i],LinForms[j]);
+            assert(val >= 0);
+            MM.insert(val,i,j);
         }
     }
-    
-    // printf("max %d\n",maxi);
-    // printf("min %d\n",mini);
-    // cout << "max " << maxi << " min " << mini << endl;
-    
-    for(i=0;i<mm;++i)
-        for(j=0;j<nn;++j)
-            MM[i][j]-=mini;
-    maxi-=mini;
-    
-    Integer test=1;
-    long ll=0;
-    for(i=0;;++i){
-        if(test>maxi)
-            break;
-        ll++;
-        test*=2;        
-    }
-    
-    // cout << "log " << ll << endl;
-    vector<long> bin_exp(ll);
-    
+        
+    size_t ll=MM.nr_layers();
+        
     size_t layer_size=mm+nn;
     n=ll*layer_size;
     m = SETWORDSNEEDED(n);
@@ -134,20 +108,15 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     
     EMPTYGRAPH(g,m,n);
     
-    for(i=0;i<layer_size;++i){   // make vertical edges for all vertices
+    for(i=0;i<layer_size;++i){   // make vertical edges over all layers
         for(k=1;k<ll;++k)
             ADDONEEDGE(g,(k-1)*layer_size+i,k*layer_size+i,m);
     }
     
     for(i=0;i<mm;++i){   // make horizontal edges layer by layer
         for(j=0;j<nn;++j){
-            test=MM[i][j];
-            for(k=0;k<ll;++k){ // binary expansion of matrix entry
-                bin_exp[k]=convertTo<long>(test%2);
-                test/=2;
-            }
             for(k=0;k<ll;++k){
-                if(bin_exp[k]==1)  // k is the number of layers below the current one
+                if(MM.test(i,j,k))  // k is the number of layers below the current one
                     ADDONEEDGE(g,k*layer_size+i,k*layer_size+mm+j,m);
             }
         }
@@ -162,19 +131,10 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         ptn[k*layer_size+ mm-1]=0; // row vertices in one partition
         ptn[(k+1)*layer_size-1]=0; // column indices in the next
         for(size_t s=0; s< nr_special_linforms;++s) // special linear forms in extra partitions
-            ptn[(k+1)*layer_size-2-s]=0;
-            
+            ptn[(k+1)*layer_size-2-s]=0;            
     } 
-    
-    // printf("Generators for Aut(C[%d]):\n",n);
 
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
-    
-    /*printf("Automorphism group size = ");
-    writegroupsize(stdout,stats.grpsize1,stats.grpsize2);
-    printf("\n");
-    
-    printf("\n===================\n");*/
     
     vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
     AutomsAndOrbits.reserve(2*CollectedAutoms.size()+2);
@@ -188,8 +148,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         for(i=mm;i<mm+nn;++i)
             LFPerm[i-mm]=CollectedAutoms[k][i]-mm;
         AutomsAndOrbits[k+CollectedAutoms.size()]=LFPerm;        
-    }
-    
+    }    
     
     vector<long> GenOrbits(mm);
     for(i=0;i<mm;++i)
@@ -200,20 +159,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     for(i=0;i<nn;++i)
         LFOrbits[i]=orbits[i+mm]-mm;
     AutomsAndOrbits.push_back(LFOrbits);
-    
-    
-    /*for(k=0;k<AutomsAndOrbits.size();++k){
-        cout << AutomsAndOrbits[k] << endl;
-    }*/
-        
-    /*mpf_set_default_prec(1024);
-    mpf_t bridge_f;
-    mpf_init(bridge_f);
-    mpf_set_d(bridge_f,stats.grpsize1);
-    mpz_t bridge_z;
-    mpz_init(bridge_z);
-    mpz_set_f (bridge_z, bridge_f);    
-    group_order=mpz_class(bridge_z);*/
+ 
     group_order=mpz_class(stats.grpsize1);
     
     CanLabelling.resize(m*n);

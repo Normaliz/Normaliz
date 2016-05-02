@@ -3041,7 +3041,7 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     
     for(size_t k=0;k<facet_keys.size();++k){
 
-        cout << " ORBIT " << k+1 << endl;
+        cout << "ORBIT " << k+1 << endl;
  
         Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nrs[k]]);
         cout << "FP DEG " << deg_fixed_point << " HT " << ht << endl;

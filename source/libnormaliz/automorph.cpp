@@ -244,7 +244,7 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool slim){
     nrSupportHyperplanes=C.nrSupport_Hyperplanes;
     if(C.isComputed(ConeProperty::Multiplicity))
         Multiplicity=C.multiplicity;
-    cout << "TYPE " << C.getNrExtremeRays() << " MULT " << C.multiplicity << endl;
+    cout << "TYPE WITH " << C.getNrExtremeRays() << " GENS, MULT " << C.multiplicity << endl;
 }
 
 template<typename Integer>
@@ -289,7 +289,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
         if(it->isOfType(C)){
             found=true;
             FOUND++;
-            cout << "FOUND FOUND FOUND " << FOUND << endl;
+            cout << "FOUND " << FOUND << endl;
             return *it;
         }
     }
