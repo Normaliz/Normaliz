@@ -58,7 +58,7 @@ long lcm_of_keys(const map<long, denom_t>& m){
 // compute the new numerator by multiplying the HS with a denominator
 // of the form (1-t^i)
 vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
-        vector<num_t> mult(cyclo_num);
+        vector<mpz_class> mult=convertTo<vector<mpz_class> >(cyclo_num);
         vector<mpz_class> result, remainder;
         long e = 1;
         for (size_t i=0;i<new_denom.size();i++){
@@ -69,7 +69,7 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
             poly_mult_to(mult,new_denom[i],e);
             e=1;
         }
-        vector<mpz_class> denom_vector(to_vector(cyclo_denom));
+        vector<mpz_class> denom_vector=convertTo<vector<mpz_class> >(to_vector(cyclo_denom));
         poly_div(result,remainder,mult,denom_vector);
         return result;
 }
