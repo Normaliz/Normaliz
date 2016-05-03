@@ -696,7 +696,7 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
     }
     for (size_t i=k;i<heights.size();i++){
             if (heights[i]>heights[i-1]){
-                hsop[j]=v_lcm_to(gen_degrees,k-1,i);
+                hsop[j]=v_lcm_to(gen_degrees,k,i);
                 j++;
             }
     }

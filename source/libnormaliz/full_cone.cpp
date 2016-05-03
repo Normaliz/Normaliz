@@ -2931,9 +2931,9 @@ void Full_Cone<Integer>::compute() {
         vector<key_t> key;
         
         for (size_t i=nrSupport_Hyperplanes;i-->0;){
-            boost::dynamic_bitset<> new_facet(Extreme_Rays.size());
+            boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
             key.clear();
-            for (size_t j=0;j<Extreme_Rays.size();j++){
+            for (size_t j=0;j<ER.nr_of_rows();j++){
                 if (v_scalar_product(SH[i],ER[j])==0){
                     new_facet[new_facet.size()-1-j]=1;
                 } else {
@@ -2952,8 +2952,8 @@ void Full_Cone<Integer>::compute() {
         // save a heights vector of length=Hilbert_Basis.size()
         // with all entries 1
         // each entry is the height of the ideal up to that generator
-        vector<size_t> ideal_heights(Extreme_Rays.size(),1);
-        heights(facet_keys,facet_list,Extreme_Rays.size()-1,ideal_heights);
+        vector<size_t> ideal_heights(ER.nr_of_rows(),1);
+        heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights);
         cout << "The heights vector:" << endl;
         cout << ideal_heights << endl;
         
@@ -2981,13 +2981,13 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
 
     if (faces.empty()){
         // if the last points are inner points, the face list could be empty but there are still gens left
-        for (size_t i=Extreme_Rays.size()-index-1;i<Extreme_Rays.size();i++){
-            ideal_heights[i]=ideal_heights[Extreme_Rays.size()-index-2];
+        for (size_t i=ideal_heights.size()-index-1;i<ideal_heights.size();i++){
+            ideal_heights[i]=ideal_heights[ideal_heights.size()-index-2];
         }
         return;
     }
    
-    cout << "starting calculation for extreme ray nr " << Extreme_Rays.size()-1 - index << endl;
+    cout << "starting calculation for extreme ray nr " << ideal_heights.size()-1 - index << endl;
     list<boost::dynamic_bitset<>> not_in_faces;
 
     for (auto it=faces.begin();it!=faces.end();++it){
@@ -3010,11 +3010,11 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
     cout << not_in_faces << endl;
     
     // update the heights
-    if (index<Extreme_Rays.size()-1){
+    if (index<ideal_heights.size()-1){
         if (!not_in_faces.empty()){
-            ideal_heights[Extreme_Rays.size()-1-index] = ideal_heights[Extreme_Rays.size()-index-2];
+            ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2];
         } else{
-            ideal_heights[Extreme_Rays.size()-1-index] = ideal_heights[Extreme_Rays.size()-index-2]+1;
+            ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
         }
     }
     if (index==0) return;
@@ -3039,15 +3039,15 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
         // check whether the facet only contains the previous generators
         size_t counter=0;
         for (size_t i=0;i<it->size();i++){
-            if (it->at(i)<=Extreme_Rays.size()-1-index) continue;
+            if (it->at(i)<=ideal_heights.size()-1-index) continue;
             counter = i;
             break;
         }
-        for (size_t j=Extreme_Rays.size()-index;j<Extreme_Rays.size();j++){
+        for (size_t j=ideal_heights.size()-index;j<ideal_heights.size();j++){
                 if (it->at(counter)!=j){
                     break;
                 } else if (counter<it->size()-1) counter++;
-                if (j==Extreme_Rays.size()-1){
+                if (j==ideal_heights.size()-1){
                     cout << "the facet " << *it << " contains only previous gens. delete it." << endl;
                     it = facet_keys.erase(it);
                     break; 
@@ -3065,17 +3065,17 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
             size_t counter2=0;
             //cout << "check critical for facet " << *it << endl;
             for (size_t i=0;i<it->size();i++){
-                if (it->at(i)==Extreme_Rays.size()-1-index){
+                if (it->at(i)==ideal_heights.size()-1-index){
                     not_containing_el = true;
-                    //cout << "the facet does not contain the element " << Extreme_Rays.size()-1-index << endl;
+                    //cout << "the facet does not contain the element " << ideal_heights.size()-1-index << endl;
                 }
-                if (it->at(i)<=Extreme_Rays.size()-1-index && i<it->size()-1) continue;
+                if (it->at(i)<=ideal_heights.size()-1-index && i<it->size()-1) continue;
                 counter2=i; // no we have elements which are bigger than the element
                 if (not_containing_el){
-                    for (size_t j=Extreme_Rays.size()-index;j<Extreme_Rays.size();j++){
+                    for (size_t j=ideal_heights.size()-index;j<ideal_heights.size();j++){
                         if (it->at(counter2)!=j){ // i.e. j is in the facet
-                                //cout << "check union_faces at position "<< Extreme_Rays.size()-1-j << " for element " << j << endl;
-                                if (!union_faces.test(Extreme_Rays.size()-1-j)){
+                                //cout << "check union_faces at position "<< ideal_heights.size()-1-j << " for element " << j << endl;
+                                if (!union_faces.test(ideal_heights.size()-1-j)){
                                     containing_critical_el = true;
                                     //cout << "the facet " << *it << " contains the critical element " << j << endl;
                                     break;
@@ -3093,7 +3093,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                     //cout << "current face: " << *it2 << endl;
                     boost::dynamic_bitset<> intersection(*it2);
                     for (size_t i=0;i<it->size();i++){
-                        if (it->at(i)>Extreme_Rays.size()-1-index) intersection.set(Extreme_Rays.size()-1-it->at(i),false);
+                        if (it->at(i)>ideal_heights.size()-1-index) intersection.set(ideal_heights.size()-1-it->at(i),false);
                     }
                     //cout << "after intersection: " << intersection << endl;
                     intersection.resize(index);
