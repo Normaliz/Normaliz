@@ -58,9 +58,9 @@ long lcm_of_keys(const map<long, denom_t>& m){
 // compute the new numerator by multiplying the HS with a denominator
 // of the form product of (1-t^i)
 vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
-        
+
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
-        vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);;
+        vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);
         long e = 1;
         for (size_t i=0;i<new_denom.size();i++){
             if (i<new_denom.size()-1 && new_denom[i]==new_denom[i+1]){
@@ -72,17 +72,17 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
         }
         cout << "new denominator as polynomial: " << new_denom_poly << endl;
 
-        vector<mpz_class>  quot,remainder,poly;
+        vector<mpz_class>  quot,remainder,cyclo_poly;
         //first divide the new denom by the cyclo polynomials
-        vector<denom_t> denom_vector=to_vector(cyclo_denom);
-        for(size_t i=0;i<denom_vector.size();i++){
-                poly = cyclotomicPoly<mpz_class>(convertTo<long>(denom_vector[i]));
-                cout << "the cyclotomic polynomial is " << poly << endl;
+        vector<denom_t> cyclo_denom_vector=to_vector(cyclo_denom);
+        cout << "cyclo_denom: " << cyclo_denom_vector << endl;
+        for(size_t i=0;i<cyclo_denom_vector.size();i++){
+                cyclo_poly = cyclotomicPoly<mpz_class>(cyclo_denom_vector[i]);
+                cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
                 // TODO: easier polynomial division possible?
-                poly_div(quot,remainder,new_denom_poly,poly);
+                poly_div(quot,remainder,new_denom_poly,cyclo_poly);
                 cout << "the quotient is " << quot << endl;
                 new_denom_poly=quot;
-                quot.clear();
                 if (new_denom_poly.size()==1) break;
                 assert(remainder.size()==0);
         }
@@ -90,6 +90,7 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
         vector<mpz_class> result = poly_mult(new_denom_poly,cyclo_num);
         cout << "the new numerator is " << result << endl;
         // TODO: overwrite old denom and num
+        // TODO: Do not compute usual num and denom in HSOP case
         num = result;
         denom=count_in_map<long,denom_t>(new_denom);
         return result;
@@ -690,8 +691,8 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
     // the static variable is initialized only once and then stored
-    static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
-    if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
+    map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
+    //if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
         vector<Integer> poly, q, r;
         for (long i = 1; i <= n; ++i) {
             // compute needed and uncomputed factors
@@ -711,7 +712,7 @@ vector<Integer> cyclotomicPoly(long n) {
                 //cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
             }
         }
-    }
+    //}
     assert(CyclotomicPoly.count(n)>0);
     return CyclotomicPoly[n];
 }
