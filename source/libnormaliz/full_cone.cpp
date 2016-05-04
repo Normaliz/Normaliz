@@ -2953,7 +2953,7 @@ void Full_Cone<Integer>::compute() {
         // with all entries 1
         // each entry is the height of the ideal up to that generator
         vector<size_t> ideal_heights(ER.nr_of_rows(),1);
-        heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights);
+        heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,dim);
         cout << "The heights vector:" << endl;
         cout << ideal_heights << endl;
         
@@ -2977,7 +2977,7 @@ void Full_Cone<Integer>::compute() {
 // recursive method to compute the heights
 // TODO: at the moment: facets are a parameter. global would be better
 template<typename Integer>
-void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dynamic_bitset<>> faces, size_t index,vector<size_t>& ideal_heights){
+void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dynamic_bitset<>> faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
 
     if (faces.empty()){
         // if the last points are inner points, the face list could be empty but there are still gens left
@@ -3013,14 +3013,36 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
     if (index<ideal_heights.size()-1){
         if (!not_in_faces.empty()){
             ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2];
+            // compute the dimensions of not_in_faces
+            // TODO: If no intersections were taken before, we can scip this!
+            Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
+            for (auto it=not_in_faces.begin();it!=not_in_faces.end();++it){
+                cout << "not_in_face: " << *it << endl;
+                // generate the key vector
+                vector<key_t> face_key(ER.nr_of_rows());
+                for (size_t i=0;i<it->size();++i){
+                    if (it->test(i)) face_key[ER.nr_of_rows()-1-i]=1;
+                }
+                cout << "face_key: " << face_key << endl;
+                size_t face_dim = ER.rank_submatrix(face_key);
+                cout << "face_dim: " << face_dim << endl;
+                if (face_dim<max_dim){
+                    max_dim=face_dim;
+                    ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
+                    cout << "The dimension dropped!" << endl;
+                    break;
+                }
+            }
+            
         } else{
             ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
+            --max_dim;
         }
     }
     if (index==0) return;
     // if inner point, we can skip now
     if (faces.empty()){
-        heights(facet_keys,not_in_faces,index-1,ideal_heights);
+        heights(facet_keys,not_in_faces,index-1,ideal_heights,max_dim);
         return;
     }
     // take the union of these faces
@@ -3134,7 +3156,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
     cout << "done." << endl;
     cout << "the new faces: " << endl;
     cout << new_faces << endl;
-    heights(facet_keys,new_faces,index-1,ideal_heights);
+    heights(facet_keys,new_faces,index-1,ideal_heights,max_dim);
 }
 
 

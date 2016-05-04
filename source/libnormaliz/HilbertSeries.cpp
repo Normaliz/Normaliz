@@ -58,7 +58,7 @@ long lcm_of_keys(const map<long, denom_t>& m){
 // compute the new numerator by multiplying the HS with a denominator
 // of the form product of (1-t^i)
 vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
-    
+        
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
         vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);;
         long e = 1;
@@ -77,17 +77,21 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
         vector<denom_t> denom_vector=to_vector(cyclo_denom);
         for(size_t i=0;i<denom_vector.size();i++){
                 poly = cyclotomicPoly<mpz_class>(convertTo<long>(denom_vector[i]));
+                cout << "the cyclotomic polynomial is " << poly << endl;
                 // TODO: easier polynomial division possible?
                 poly_div(quot,remainder,new_denom_poly,poly);
+                cout << "the quotient is " << quot << endl;
                 new_denom_poly=quot;
-                //cout << "the quotient: " << new_denom_poly << endl; 
+                quot.clear();
+                if (new_denom_poly.size()==1) break;
                 assert(remainder.size()==0);
         }
         // multiply with the old numerator
         vector<mpz_class> result = poly_mult(new_denom_poly,cyclo_num);
+        cout << "the new numerator is " << result << endl;
         // TODO: overwrite old denom and num
-        //num = result;
-        //denom=count_in_map<long,denom_t>(new_denom);
+        num = result;
+        denom=count_in_map<long,denom_t>(new_denom);
         return result;
 }
 
