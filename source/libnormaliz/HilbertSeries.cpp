@@ -58,7 +58,7 @@ long lcm_of_keys(const map<long, denom_t>& m){
 // compute the new numerator by multiplying the HS with a denominator
 // of the form product of (1-t^i)
 vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
-
+    
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
         vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);
         long e = 1;
@@ -74,10 +74,9 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
 
         vector<mpz_class>  quot,remainder,cyclo_poly;
         //first divide the new denom by the cyclo polynomials
-        vector<denom_t> cyclo_denom_vector=to_vector(cyclo_denom);
-        cout << "cyclo_denom: " << cyclo_denom_vector << endl;
-        for(size_t i=0;i<cyclo_denom_vector.size();i++){
-                cyclo_poly = cyclotomicPoly<mpz_class>(cyclo_denom_vector[i]);
+        for (auto it=cyclo_denom.begin();it!=cyclo_denom.end();++it){
+            for(long i=0;i<it->second;i++){
+                cyclo_poly = cyclotomicPoly<mpz_class>(it->first);
                 cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
                 // TODO: easier polynomial division possible?
                 poly_div(quot,remainder,new_denom_poly,cyclo_poly);
@@ -85,6 +84,7 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
                 new_denom_poly=quot;
                 if (new_denom_poly.size()==1) break;
                 assert(remainder.size()==0);
+            }
         }
         // multiply with the old numerator
         vector<mpz_class> result = poly_mult(new_denom_poly,cyclo_num);
@@ -691,8 +691,8 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
     // the static variable is initialized only once and then stored
-    map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
-    //if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
+    static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
+    if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
         vector<Integer> poly, q, r;
         for (long i = 1; i <= n; ++i) {
             // compute needed and uncomputed factors
@@ -712,7 +712,7 @@ vector<Integer> cyclotomicPoly(long n) {
                 //cout << i << "-th cycl. pol.: " << CyclotomicPoly[i];
             }
         }
-    //}
+    }
     assert(CyclotomicPoly.count(n)>0);
     return CyclotomicPoly[n];
 }
