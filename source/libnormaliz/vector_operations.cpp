@@ -687,13 +687,13 @@ vector<Integer> v_random(size_t n, long m){
 template<typename Integer>
 vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights){
     vector<Integer> hsop(heights.back());
-    size_t j=1;
     hsop[0]=gen_degrees[0];
     size_t k=1;
     while (k<heights.size() && heights[k]>heights[k-1]){
         hsop[k]=gen_degrees[k];
         k++;
     }
+    size_t j=k;
     for (size_t i=k;i<heights.size();i++){
             if (heights[i]>heights[i-1]){
                 hsop[j]=v_lcm_to(gen_degrees,k,i);
