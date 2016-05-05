@@ -3031,10 +3031,10 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                      }
                 }
                 size_t face_dim = ER.rank_submatrix(face_key);
-                if (face_dim < max_dim) {
-                        max_dim = face_dim;
+                if (face_dim==max_dim) break;
+                if (next(it)==not_in_faces.end()) {
+                        --max_dim;
                         ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
-                        break;
                 }
                 
             }
