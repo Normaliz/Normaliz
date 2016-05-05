@@ -132,7 +132,7 @@ public:
     
     // compute the new numerator by multiplying the HS with a denominator
     // of the form (1-t^i)
-    vector<mpz_class> new_num(vector<denom_t> new_denom);
+    void new_num(vector<denom_t> new_denom);
 
 private:
     // collected data in denominator classes

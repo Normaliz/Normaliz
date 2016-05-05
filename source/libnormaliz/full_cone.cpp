@@ -2923,7 +2923,9 @@ void Full_Cone<Integer>::compute() {
     // COMPUTE HSOP here
     
     if (do_hsop){
-        
+        if(verbose){
+            verboseOutput() << "Computing heights... ";
+        }
         Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
         Matrix<Integer> SH = getSupportHyperplanes();
         list<boost::dynamic_bitset<>> facet_list;
@@ -2946,7 +2948,7 @@ void Full_Cone<Integer>::compute() {
         }
         
         facet_list.sort(); // should be sorted lex
-        cout << "size: " << facet_list.size() << " | " << facet_list << endl;
+        //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
         //cout << "facet non_keys: " << facet_keys << endl;
         
         // save a heights vector of length=Hilbert_Basis.size()
@@ -2954,23 +2956,18 @@ void Full_Cone<Integer>::compute() {
         // each entry is the height of the ideal up to that generator
         vector<size_t> ideal_heights(ER.nr_of_rows(),1);
         heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,dim-1);
-        cout << "The heights vector:" << endl;
-        cout << ideal_heights << endl;
-        
-        if(isComputed(ConeProperty::Grading)){
-            vector<Integer> er_deg = ER.MxV(Grading);
-            vector<long> hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
-            cout << "Degrees of HSOP:" << endl; 
-            cout << hsop_deg << endl;
-            if(isComputed(ConeProperty::HilbertSeries)){
-                vector<mpz_class> numerator = Hilbert_Series.new_num(hsop_deg);
-                cout << "The numerator:" << endl;
-                cout << numerator << endl;
-            }
+        if(verbose){
+            verboseOutput() << "done." << endl;
+            verboseOutput() << "Heights vector: " << ideal_heights << endl;   
         }
+
+        vector<Integer> er_deg = ER.MxV(Grading);
+        vector<long> hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
+        if(verbose){
+            verboseOutput() << "Degrees of HSOP: " << hsop_deg << endl;   
+        }
+        Hilbert_Series.new_num(hsop_deg);
     }
-    
-    
     end_message();
 }
 
@@ -2987,13 +2984,13 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
         return;
     }
    
-    cout << "starting calculation for extreme ray nr " << ideal_heights.size()-1 - index << endl;
+    //cout << "starting calculation for extreme ray nr " << ideal_heights.size()-1 - index << endl;
     list<boost::dynamic_bitset<>> not_in_faces;
 
     for (auto it=faces.begin();it!=faces.end();++it){
         
         if (it->test(index)){ // check whether index is set
-            cout << "critical face: " << *it << endl;
+            //cout << "critical face: " << *it << endl;
             not_in_faces.splice(not_in_faces.begin(),faces,faces.begin(),it);
             break;
         }
@@ -3001,13 +2998,13 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
         it->resize(index);
         // need to be careful with inner points
         if (next(it)==faces.end()){
-            cout << "inner point " << endl;
+            //cout << "inner point " << endl;
             not_in_faces.splice(not_in_faces.begin(),faces);
             break;
         }
     }
-    cout << "faces not containing it:" << endl;
-    cout << not_in_faces << endl;
+    //cout << "faces not containing it:" << endl;
+    //cout << not_in_faces << endl;
     
     // update the heights
     if (index<ideal_heights.size()-1){
@@ -3030,7 +3027,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                 if (face_dim<max_dim){
                     max_dim=face_dim;
                     ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
-                    cout << "The dimension dropped!" << endl;
+                    //cout << "The dimension dropped!" << endl;
                     break;
                 }
             }
@@ -3052,8 +3049,8 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
         union_faces |= *it; // take the union
     }
     // the not_in_faces now already have a size one smaller
-    cout << "their union:" << endl;
-    cout << union_faces << endl;
+    //cout << "their union:" << endl;
+    //cout << union_faces << endl;
     union_faces.resize(index+1);
     list<boost::dynamic_bitset<>> new_faces;
     // main loop
@@ -3071,7 +3068,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                     break;
                 } else if (counter<it->size()-1) counter++;
                 if (j==ideal_heights.size()-1){
-                    cout << "the facet " << *it << " contains only previous gens. delete it." << endl;
+                    //cout << "the facet " << *it << " contains only previous gens. delete it." << endl;
                     it = facet_keys.erase(it);
                     break; 
                 }
@@ -3109,7 +3106,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                 break;
             }
             if(not_containing_el && containing_critical_el){ 
-                cout << "building intersections with facet: " << *it << endl;
+                //cout << "building intersections with facet: " << *it << endl;
                 for (auto it2=faces.begin();it2!=faces.end();++it2){
                     // Use intersection with non-key
                     // i.e. just set bits to 0
@@ -3131,7 +3128,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
     // TODO: is there a way to force this order while creating intersections or make it cheaper?
     new_faces.splice(new_faces.begin(),not_in_faces);
     new_faces.sort();
-    cout << "filter maximal faces... " ;
+   //cout << "filter maximal faces... " ;
     for (auto it1=new_faces.begin();it1!=new_faces.end();it1++){
         // work with a not-key vector
         size_t nr_zeros = it1->size()-it1->count();
@@ -3154,9 +3151,9 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
             if (it2==it1) break;
         }
     }
-    cout << "done." << endl;
-    cout << "the new faces: " << endl;
-    cout << new_faces << endl;
+    //cout << "done." << endl;
+    //cout << "the new faces: " << endl;
+    //cout << new_faces << endl;
     heights(facet_keys,new_faces,index-1,ideal_heights,max_dim);
 }
 

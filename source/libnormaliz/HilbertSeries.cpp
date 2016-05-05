@@ -57,7 +57,7 @@ long lcm_of_keys(const map<long, denom_t>& m){
 
 // compute the new numerator by multiplying the HS with a denominator
 // of the form product of (1-t^i)
-vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
+void HilbertSeries::new_num(vector<denom_t> new_denom){
     
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
         vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);
@@ -70,30 +70,27 @@ vector<mpz_class> HilbertSeries::new_num(vector<denom_t> new_denom){
             poly_mult_to(new_denom_poly,new_denom[i],e);
             e=1;
         }
-        cout << "new denominator as polynomial: " << new_denom_poly << endl;
+        //cout << "new denominator as polynomial: " << new_denom_poly << endl;
 
         vector<mpz_class>  quot,remainder,cyclo_poly;
         //first divide the new denom by the cyclo polynomials
         for (auto it=cyclo_denom.begin();it!=cyclo_denom.end();++it){
             for(long i=0;i<it->second;i++){
                 cyclo_poly = cyclotomicPoly<mpz_class>(it->first);
-                cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
+                //cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
                 // TODO: easier polynomial division possible?
                 poly_div(quot,remainder,new_denom_poly,cyclo_poly);
-                cout << "the quotient is " << quot << endl;
+                //cout << "the quotient is " << quot << endl;
                 new_denom_poly=quot;
                 if (new_denom_poly.size()==1) break;
                 assert(remainder.size()==0);
             }
         }
         // multiply with the old numerator
-        vector<mpz_class> result = poly_mult(new_denom_poly,cyclo_num);
-        cout << "the new numerator is " << result << endl;
-        // TODO: overwrite old denom and num
+        num = poly_mult(new_denom_poly,cyclo_num);
+        //cout << "the new numerator is " << result << endl;
         // TODO: Do not compute usual num and denom in HSOP case
-        num = result;
         denom=count_in_map<long,denom_t>(new_denom);
-        return result;
 }
 
 //---------------------------------------------------------------------------
