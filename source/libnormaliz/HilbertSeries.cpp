@@ -58,7 +58,8 @@ long lcm_of_keys(const map<long, denom_t>& m){
 // compute the new numerator by multiplying the HS with a denominator
 // of the form product of (1-t^i)
 void HilbertSeries::new_num(vector<denom_t> new_denom){
-    
+        // HOTFIX! MUST BE SOLVED!
+        computeHilbertQuasiPolynomial();
         // get the denominator as a polynomial by mutliplying the (1-t^i) terms
         vector<mpz_class> new_denom_poly=vector<mpz_class>(1,1);
         long e = 1;
@@ -82,7 +83,7 @@ void HilbertSeries::new_num(vector<denom_t> new_denom){
                 poly_div(quot,remainder,new_denom_poly,cyclo_poly);
                 //cout << "the quotient is " << quot << endl;
                 new_denom_poly=quot;
-                if (new_denom_poly.size()==1) break;
+                //if (new_denom_poly.size()==1) break;
                 assert(remainder.size()==0);
             }
         }

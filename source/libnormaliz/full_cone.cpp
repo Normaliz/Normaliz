@@ -2961,13 +2961,18 @@ void Full_Cone<Integer>::compute() {
             verboseOutput() << "Heights vector: " << ideal_heights << endl;   
         }
 
-        vector<Integer> er_deg = ER.MxV(Grading);
+        
         //cout << "Degrees of Extreme Rays: " << er_deg << endl;
-        vector<long> hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
-        if(verbose){
+        if(isComputed(ConeProperty::Grading)){
+            vector<Integer> er_deg = ER.MxV(Grading);
+            vector<long> hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
+            if(verbose){
             verboseOutput() << "Degrees of HSOP: " << hsop_deg << endl;   
+            Hilbert_Series.new_num(hsop_deg);
         }
-        Hilbert_Series.new_num(hsop_deg);
+
+        }
+        
     }
     end_message();
 }
@@ -3014,6 +3019,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
             // compute the dimensions of not_in_faces
             // TODO: If no intersections were taken before, we can scip this!
             Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
+
             for (auto it=not_in_faces.begin();it!=not_in_faces.end();++it){
                 // generate the key vector
                 vector<key_t> face_key(it->count());
@@ -3025,12 +3031,12 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                      }
                 }
                 size_t face_dim = ER.rank_submatrix(face_key);
-                if (face_dim<max_dim){
-                    max_dim=face_dim;
-                    ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
-                    //cout << "The dimension dropped!" << endl;
-                    break;
+                if (face_dim < max_dim) {
+                        max_dim = face_dim;
+                        ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
+                        break;
                 }
+                
             }
             
         } else{
