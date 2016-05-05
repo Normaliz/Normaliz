@@ -690,7 +690,7 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
     size_t j=1;
     hsop[0]=gen_degrees[0];
     size_t k=1;
-    while (heights[k]>heights[k-1]){
+    while (k<heights.size() && heights[k]>heights[k-1]){
         hsop[k]=gen_degrees[k];
         k++;
     }

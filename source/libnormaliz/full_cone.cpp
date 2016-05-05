@@ -2962,6 +2962,7 @@ void Full_Cone<Integer>::compute() {
         }
 
         vector<Integer> er_deg = ER.MxV(Grading);
+        //cout << "Degrees of Extreme Rays: " << er_deg << endl;
         vector<long> hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
         if(verbose){
             verboseOutput() << "Degrees of HSOP: " << hsop_deg << endl;   
