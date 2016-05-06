@@ -2624,7 +2624,7 @@ Moreover, Normaliz tries to omit superfluous computations. For example, if the d
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, apart from certain computation goals based on the edual algorithm; see Section \ref{InhomDual}.
+The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, apart from certain computation goals based on the dual algorithm; see Section \ref{InhomDual}.
 
 \subsubsection{Lattice data}
 
@@ -2651,7 +2651,7 @@ Normaliz tries to find a grading. In the inhomogeneous case the module rank is c
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section \ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}
 
-The boolean valued computation goal \verb|IsIntegrallyClosed| is also related to the Hilbert basis; see Scection \ref{bool}.
+The boolean valued computation goal \verb|IsIntegrallyClosed| is also related to the Hilbert basis; see Section \ref{bool}.
 
 \subsubsection{Enumerative data}
 
@@ -3441,7 +3441,7 @@ unit group index = 2
 1 module generators over original monoid:
 0 0 0 0 0
 \end{Verbatim}
-The original monoid is not integrally closed since the unit group of the integral closure is strictly larger than that of the original monoid: the extension has index $2$, as indicated. The quotients modulo the unit groups are equal, as can be seen from the generator over the original modoid or the Hilbert basis (of the integral closure) that is contained in the original monoid.
+The original monoid is not integrally closed since the unit group of the integral closure is strictly larger than that of the original monoid: the extension has index $2$, as indicated. The quotients modulo the unit groups are equal, as can be seen from the generator over the original monoid or the Hilbert basis (of the integral closure) that is contained in the original monoid.
 
 
 \subsection{Exporting the triangulation}\label{Triang}
@@ -5161,7 +5161,7 @@ One of the prime results of Normaliz and its cardinality are returned by
 const vector< vector<Integer> >& Cone<Integer>::getHilbertBasis()
 size_t Cone<Integer>::getNrHilbertBasis()
 \end{Verbatim}
-Inhomogeneous case the functions refer to the the Hilbert basis of the recession cone. The module generaors of the lattice points in the polyhedron are accessed by
+Inhomogeneous case the functions refer to the the Hilbert basis of the recession cone. The module generators of the lattice points in the polyhedron are accessed by
 \begin{Verbatim}
 const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators()
 size_t Cone<Integer>::getNrModuleGenerators()
