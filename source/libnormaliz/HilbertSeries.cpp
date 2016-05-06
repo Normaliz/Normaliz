@@ -359,17 +359,19 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     }
     map<long, denom_t>::reverse_iterator rit;
     long d;
-    vector<mpz_class> factor, r;
+    vector<mpz_class> r;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
         d = rit->first;
         //nothing to do if it already has the correct t-power
         if (d != period) {
             //norm_num *= (1-t^p / 1-t^d)^denom[d]
-            poly_div(factor, r, coeff_vector<mpz_class>(period), coeff_vector<mpz_class>(d));
-            assert(r.empty()); //assert remainder r is 0
-            //TODO more efficient method *=
+            //first by multiply: norm_num *= (1-t^p)^denom[d]
+            poly_mult_to(norm_num, period, rit->second);
+
+            //then divide: norm_num /= (1-t^d)^denom[d]
             for (i=0; i < rit->second; ++i) {
-                norm_num = poly_mult(norm_num, factor);
+                poly_div(norm_num, r, norm_num, coeff_vector<mpz_class>(d));
+                assert(r.empty()); //assert remainder r is 0
             }
         }
     }
