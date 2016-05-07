@@ -3073,6 +3073,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.God_Father=God_Father;
     Facet.exploit_automorphisms=true;
     Facet.keep_order=true;
+    Facet.Support_Hyperplanes=Facet_Sub.to_sublattice_dual(Support_Hyperplanes);
     Facet.compute();
     bool found;
     const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(Facet,found);
@@ -3706,7 +3707,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
                         << "computing the extreme rays of the dual cone" << endl;
     }
     Full_Cone<Integer> Dual(Support_Hyperplanes);
-    Dual.verbose=verbose;
+    Dual.verbose=false; // verbose;
     Dual.Support_Hyperplanes = Generators;
     Dual.is_Computed.set(ConeProperty::SupportHyperplanes);
     Dual.compute_extreme_rays();
