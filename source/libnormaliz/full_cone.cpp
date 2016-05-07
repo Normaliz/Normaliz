@@ -2924,11 +2924,11 @@ void Full_Cone<Integer>::compute() {
     
     if (do_hsop){
         if(verbose){
-            verboseOutput() << "Computing heights... ";
+            verboseOutput() << "Computing heights ... " << flush;
         }
         Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
         Matrix<Integer> SH = getSupportHyperplanes();
-        list<boost::dynamic_bitset<>> facet_list;
+        list<pair<boost::dynamic_bitset<> , size_t>> facet_list;
         list<vector<key_t>> facet_keys;
         vector<key_t> key;
         
@@ -2943,7 +2943,7 @@ void Full_Cone<Integer>::compute() {
                 }
             }
 
-            facet_list.push_back(new_facet);
+            facet_list.push_back(make_pair(new_facet,dim-1));
             facet_keys.push_back(key);
         }
         
@@ -2977,10 +2977,12 @@ void Full_Cone<Integer>::compute() {
     end_message();
 }
 
+
+
 // recursive method to compute the heights
 // TODO: at the moment: facets are a parameter. global would be better
 template<typename Integer>
-void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dynamic_bitset<>> faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
+void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
 
     if (faces.empty()){
         // if the last points are inner points, the face list could be empty but there are still gens left
@@ -2991,17 +2993,17 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
     }
    
     //cout << "starting calculation for extreme ray nr " << ideal_heights.size()-1 - index << endl;
-    list<boost::dynamic_bitset<>> not_in_faces;
+    list<pair<boost::dynamic_bitset<>,size_t>> not_in_faces;
 
     for (auto it=faces.begin();it!=faces.end();++it){
         
-        if (it->test(index)){ // check whether index is set
+        if (it->first.test(index)){ // check whether index is set
             //cout << "critical face: " << *it << endl;
             not_in_faces.splice(not_in_faces.begin(),faces,faces.begin(),it);
             break;
         }
         // resize not_in_faces
-        it->resize(index);
+        it->first.resize(index);
         // need to be careful with inner points
         if (next(it)==faces.end()){
             //cout << "inner point " << endl;
@@ -3019,19 +3021,26 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
             // compute the dimensions of not_in_faces
             // TODO: If no intersections were taken before, we can scip this!
             Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
-
+            int tn;
+            if(omp_get_level()==0)
+                tn=0;
+            else  tn = omp_get_ancestor_thread_num(1);
+            Matrix<Integer>& Test = Top_Cone->RankTest[tn];
             for (auto it=not_in_faces.begin();it!=not_in_faces.end();++it){
+                if (it->second==0){ // dimension has not yet been computed
                 // generate the key vector
-                vector<key_t> face_key(it->count());
+                vector<key_t> face_key(it->first.count());
                 size_t counter=0;
-                for (size_t i=0;i<it->size();++i){
-                    if (it->test(i)){
+                for (size_t i=0;i<it->first.size();++i){
+                    if (it->first.test(i)){
                          face_key[counter]=ER.nr_of_rows()-1-i;
                          counter++;
                      }
                 }
-                size_t face_dim = ER.rank_submatrix(face_key);
-                if (face_dim==max_dim) break;
+                it->second = Test.rank_submatrix(ER,face_key);
+                ranks_computed++;
+                }
+                if (it->second==max_dim) break;
                 if (next(it)==not_in_faces.end()) {
                         --max_dim;
                         ideal_heights[ideal_heights.size()-1-index] = ideal_heights[ideal_heights.size()-index-2]+1;
@@ -3053,13 +3062,13 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
     // take the union of these faces
     boost::dynamic_bitset<> union_faces(index);
     for (auto it=not_in_faces.begin();it!=not_in_faces.end();++it){
-        union_faces |= *it; // take the union
+        union_faces |= it->first; // take the union
     }
     // the not_in_faces now already have a size one smaller
     //cout << "their union:" << endl;
     //cout << union_faces << endl;
     union_faces.resize(index+1);
-    list<boost::dynamic_bitset<>> new_faces;
+    list<pair<boost::dynamic_bitset<>,size_t>> new_faces;
     // main loop
     for (auto it=facet_keys.begin();it!=facet_keys.end();++it){
         
@@ -3118,13 +3127,13 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
                     // Use intersection with non-key
                     // i.e. just set bits to 0
                     //cout << "current face: " << *it2 << endl;
-                    boost::dynamic_bitset<> intersection(*it2);
+                    boost::dynamic_bitset<> intersection(it2->first);
                     for (size_t i=0;i<it->size();i++){
                         if (it->at(i)>ideal_heights.size()-1-index) intersection.set(ideal_heights.size()-1-it->at(i),false);
                     }
                     //cout << "after intersection: " << intersection << endl;
                     intersection.resize(index);
-                    if (intersection.any()) new_faces.push_back(intersection); 
+                    if (intersection.any()) new_faces.push_back(make_pair(intersection,0)); 
                 }
             }
         }
@@ -3138,11 +3147,11 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
    //cout << "filter maximal faces... " ;
     for (auto it1=new_faces.begin();it1!=new_faces.end();it1++){
         // work with a not-key vector
-        size_t nr_zeros = it1->size()-it1->count();
+        size_t nr_zeros = (it1->first.size())-(it1->first.count());
         vector<key_t> face_not_key(nr_zeros);
         size_t j=0;
-        for (size_t i=0;i<it1->size();i++){
-            if (!it1->test(i)){
+        for (size_t i=0;i<it1->first.size();i++){
+            if (!it1->first.test(i)){
                 face_not_key[j]=i;
                 j++;
             }
@@ -3151,7 +3160,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<boost::dyn
         for (auto it2 = new_faces.begin();it2!=it1;it2++){
             
             for (size_t i=0;i<face_not_key.size();i++){
-                if (it2->test(face_not_key[i])) break; //it2 has an element which is not in it1
+                if (it2->first.test(face_not_key[i])) break; //it2 has an element which is not in it1
                 if (i==face_not_key.size()-1) it2 = new_faces.erase(it2); //it2 is a subface of it1
                 
             }
