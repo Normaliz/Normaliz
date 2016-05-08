@@ -2373,8 +2373,14 @@ void BinaryMatrix::insert(Integer val, key_t i,key_t j){
     }
 
     long add_layers=bin_exp.size()-nr_layers();
-    for(long k =0; k<add_layers; ++k)
-        Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+    if(add_layers>0){
+        for(long k =0; k<add_layers; ++k)
+            Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+    }
+    else{
+        for(long k ==bin_exp.size(); k<nr_layers(); ++k)  // to be on the safe side
+            Layers[k][i][j]=false;                        // in case this object was used before
+    }
     
     for(size_t k=0;k<bin_exp.size();++k){
          if(bin_exp[k])
@@ -2395,6 +2401,13 @@ bool BinaryMatrix::test(key_t i,key_t j, key_t k){
 BinaryMatrix::BinaryMatrix(size_t m,size_t n){
         nr_rows=m;
         nr_columns=n;
+}
+
+BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){
+    nr_rows=m;
+    nr_columns=n;
+    for(long k =0; k<height; ++k)
+        Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
 }
 
 size_t BinaryMatrix::nr_layers(){

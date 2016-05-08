@@ -491,6 +491,7 @@ public:
     template<typename Integer>  void insert(Integer val, key_t i, key_t j);
     bool test(key_t i, key_t j, key_t k);
     BinaryMatrix(size_t m, size_t n);
+    BinaryMatrix(size_t m,size_t n, size_t height);
     size_t nr_layers();
     
 };
