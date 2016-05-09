@@ -54,7 +54,7 @@ template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, 
                                               const vector<vector<Integer> >& LinForms, 
                                               const size_t nr_special_linforms, mpz_class& group_order,
-                                              vector<unsigned long>& CanLabelling){
+                                              BinaryMatrix& CanType){
     CollectedAutoms.clear();
     
     DYNALLSTAT(graph,g,g_sz);
@@ -69,10 +69,6 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     options.getcanon = TRUE;
     
     int n,m;
-    
-    /* Default options are set by the DEFAULTOPTIONS_GRAPH macro above.
-     *   Here we change those options that we want to be different from the
-     *   defaults.  writeautoms=TRUE causes automorphisms to be written.     */
     
     options.writeautoms = FALSE;
     options.defaultptn = FALSE;
@@ -162,11 +158,15 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
  
     group_order=mpz_class(stats.grpsize1);
     
-    CanLabelling.resize(m*n);
-    for(size_t i=0;i<CanLabelling.size();++i)
-        CanLabelling[i]=cg[i];
+    vector<key_t> row_order(mm), col_order(nn);
+    for(key_t i=0;i<mm;++i)
+        row_order[i]=lab[i];
+    for(key_t i=0;i<nn;++i)
+        col_order[i]=lab[mm+i]-mm;
     
     nauty_freedyn();
+    
+    CanType=MM.reordered(row_order,col_order);
     
 	return AutomsAndOrbits;
         
@@ -175,14 +175,14 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, 
                         const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, vector<unsigned long>& CanLabelling);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 #endif // NMZ_MIC_OFFLOAD
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, 
                         const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, vector<unsigned long>& CanLabelling);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order,vector<unsigned long>& CanLabelling);
+                        mpz_class& group_order,BinaryMatrix& CanType);
 
 } // namespace
 

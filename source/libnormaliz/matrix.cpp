@@ -2378,7 +2378,7 @@ void BinaryMatrix::insert(Integer val, key_t i,key_t j){
             Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
     }
     else{
-        for(long k ==bin_exp.size(); k<nr_layers(); ++k)  // to be on the safe side
+        for(size_t k =bin_exp.size(); k<nr_layers(); ++k)  // to be on the safe side
             Layers[k][i][j]=false;                        // in case this object was used before
     }
     
@@ -2388,14 +2388,35 @@ void BinaryMatrix::insert(Integer val, key_t i,key_t j){
     }
 }
 
+BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const{
+    
+    assert(nr_rows==row_order.size());
+    assert(nr_columns==col_order.size());
+    size_t ll=nr_layers();
+    BinaryMatrix MatReordered(nr_rows,nr_columns,ll);
+    for(size_t i=0;i<nr_rows;++i){
+        for(size_t j=0;j<nr_columns;++j){
+            for(size_t k=0;k<ll;++k){
+                MatReordered.Layers[k][i][j]=Layers[k][row_order[i]][col_order[j]];
+            }
+        }
+    }
+    return MatReordered;
+}
+
 
 // test bit k in binary expansion at "planar" coordiantes (i,j)
-bool BinaryMatrix::test(key_t i,key_t j, key_t k){
+bool BinaryMatrix::test(key_t i,key_t j, key_t k) const{
     
     assert(i<nr_rows);
     assert(j<nr_columns);
     assert(k<Layers.size());
     return Layers[k][i].test(j);
+}
+
+BinaryMatrix::BinaryMatrix(){
+    nr_rows=0;
+    nr_columns=0;
 }
 
 BinaryMatrix::BinaryMatrix(size_t m,size_t n){
@@ -2406,12 +2427,22 @@ BinaryMatrix::BinaryMatrix(size_t m,size_t n){
 BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){
     nr_rows=m;
     nr_columns=n;
-    for(long k =0; k<height; ++k)
+    for(size_t k =0; k<height; ++k)
         Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
 }
 
-size_t BinaryMatrix::nr_layers(){
+size_t BinaryMatrix::nr_layers() const{
     return Layers.size();
+}
+
+bool BinaryMatrix::equal(const BinaryMatrix& Comp) const{
+    
+    if(nr_rows!= Comp.nr_rows || nr_columns!=Comp.nr_columns || nr_layers()!=Comp.nr_layers())
+        return false;
+    for(size_t i=0;i<nr_layers();++i)
+        if(Layers[i]!=Comp.Layers[i])
+            return false;
+    return true;
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported

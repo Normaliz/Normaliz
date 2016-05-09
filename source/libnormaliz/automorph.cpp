@@ -144,7 +144,7 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     
     /* for(size_t i=0;i<Gens.nr_of_rows();++i)
         cout << v_scalar_product(Gens[i],LinForms[LinForms.nr_of_rows()-1]) << endl;*/
-    vector<vector<long> > result=compute_automs(Gens,LinForms,nr_special_linforms,order,CanLabelling);
+    vector<vector<long> > result=compute_automs(Gens,LinForms,nr_special_linforms,order,CanType);
     size_t nr_automs=(result.size()-2)/2;
     GenPerms.clear();
     LinFormPerms.clear();
@@ -238,7 +238,7 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool slim){
         C.exploit_automorphisms=true;
         C.compute();
     }
-    CanLabelling=C.Automs.CanLabelling;
+    CanType=C.Automs.CanType;
     rank=C.dim;
     nrExtremeRays=C.getNrExtremeRays();
     nrSupportHyperplanes=C.nrSupport_Hyperplanes;
@@ -253,7 +253,7 @@ bool IsoType<Integer>::isOfType(Full_Cone<Integer>& C) const{
     if(C.dim!=rank || C.nrSupport_Hyperplanes!=nrSupportHyperplanes
             || nrExtremeRays!=C.getNrExtremeRays())
         return false;
-    if(CanLabelling != C.Automs.CanLabelling)
+    if(!CanType.equal(C.Automs.CanType))
         return false;
     return true;    
 }
@@ -429,10 +429,10 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
 template<typename Integer>
 vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, vector<unsigned long>& CanLabelling){
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType){
 
     vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), LinForms.get_elements(), 
-                                                         nr_special_linforms, group_order, CanLabelling);
+                                                         nr_special_linforms, group_order, CanType);
     return Automs;
 }
 

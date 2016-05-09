@@ -489,10 +489,13 @@ class BinaryMatrix {
 public:
     
     template<typename Integer>  void insert(Integer val, key_t i, key_t j);
-    bool test(key_t i, key_t j, key_t k);
+    bool test(key_t i, key_t j, key_t k) const;
+    BinaryMatrix();
     BinaryMatrix(size_t m, size_t n);
     BinaryMatrix(size_t m,size_t n, size_t height);
-    size_t nr_layers();
+    size_t nr_layers() const;
+    BinaryMatrix reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const;
+    bool equal(const BinaryMatrix& Comp) const;
     
 };
 

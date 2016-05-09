@@ -55,8 +55,6 @@ class Automorphism_Group {
     
     mpz_class order;
     
-    // vector<unsigned long> CanLabelling; // see nauty
-    
     bool from_ambient_space;
     bool LinMaps_computed;
     bool graded;
@@ -68,7 +66,7 @@ class Automorphism_Group {
     
 public:
     
-    vector<unsigned long> CanLabelling; // see nauty
+    BinaryMatrix CanType; // see nauty
     
     mpz_class getOrder() const;
     vector<vector<key_t> > getGenPerms() const;
@@ -84,7 +82,7 @@ public:
     void setGraded(bool on_off);
     void setInhomogeneous(bool on_off);
     
-    vector<unsigned long> getCanLabelling();
+    BinaryMatrix getCanType();
     
     bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms);
     bool compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
@@ -114,7 +112,7 @@ class IsoType {
     mpq_class Multiplicity;
     bool needs_Hilbert_basis;
     
-    vector<unsigned long> CanLabelling;
+    BinaryMatrix CanType;
     IsoType(); // constructs a dummy object
 
 public:
@@ -133,7 +131,7 @@ public:
     vector<Integer> getTruncation() const;
     HilbertSeries getHilbertSeries() const;
     mpq_class getMultiplicity() const;
-    vector<unsigned long> getCanLabelling();
+    BinaryMatrix getCanType();
 };
 
 template<typename Integer>
@@ -158,7 +156,7 @@ public:
 template<typename Integer>
 vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
                                     const size_t nr_special_linforms, mpz_class& group_order,
-                                    vector<unsigned long>& CanLabelling); 
+                                    BinaryMatrix& CanType); 
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 
