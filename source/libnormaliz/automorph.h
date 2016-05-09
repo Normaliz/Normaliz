@@ -50,6 +50,7 @@ class Automorphism_Group {
     
     vector<vector<key_t> > GenOrbits;
     vector<vector<key_t> > LinFormOrbits;
+    vector<vector<key_t> > SuppHypOrbits;
     
     vector<Matrix<Integer> > LinMaps;
     
@@ -73,6 +74,7 @@ public:
     vector<vector<key_t> > getLinFormPerms() const;
     vector<vector<key_t> > getGenOrbits() const;
     vector<vector<key_t> > getLinFormOrbits() const;
+    vector<vector<key_t> > getSuppHypOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
     bool isFromAmbientSpace() const;
     bool isGraded() const;

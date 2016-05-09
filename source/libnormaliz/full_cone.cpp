@@ -2921,7 +2921,7 @@ void Full_Cone<Integer>::compute() {
             return;
         }
     }    
-    
+
     if(do_only_multiplicity && exploit_automorphisms){
         if(God_Father->dim-dim<autom_codim && nr_gen>= dim+4){ // othewise direct computation
             compute_multiplicity_via_automs();
@@ -3017,10 +3017,9 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     vector<vector<key_t> > facet_keys; // collect facets
     vector<key_t> facet_nrs;
     vector<size_t> orbit_sizes;
-    for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
-        key_t facet_nr=Automs.LinFormOrbits[k][0];
-        if(facet_nr>=Support_Hyperplanes.nr_of_rows()) // to exclude the orbits of Grading and Truncation
-            continue;
+    for(size_t k=0;k<Automs.SuppHypOrbits.size();++k){
+        key_t facet_nr=Automs.SuppHypOrbits[k][0];
+        assert(facet_nr<nrSupport_Hyperplanes); // for safety
         Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
         if(ht==0)   // fixed point in facet, does not contribute to multiplicity
             continue;
@@ -3031,13 +3030,13 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
         }
         facet_keys.push_back(facet_gens); 
         facet_nrs.push_back(facet_nr);
-        orbit_sizes.push_back(Automs.LinFormOrbits[k].size());
+        orbit_sizes.push_back(Automs.SuppHypOrbits[k].size());
     }
     
     cout << "CODIM " << God_Father->dim-dim+1 << endl;
     
-    cout << "FIXED POINT IN " << Automs.LinFormOrbits.size()-1-facet_keys.size() << " OF " 
-                    << Automs.LinFormOrbits.size()-1 << " ORBITS " << "OF " << nrSupport_Hyperplanes << " SUPP HYPS" << endl;
+    cout << "FIXED POINT IN " << Automs.SuppHypOrbits.size()-1-facet_keys.size() << " OF " 
+    << Automs.SuppHypOrbits.size()-1 << " ORBITS " << "OF " << nrSupport_Hyperplanes << " SUPP HYPS" << endl;
     
     for(size_t k=0;k<facet_keys.size();++k){
 
@@ -3062,7 +3061,13 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         cout << "$$$$";
     cout << " " << Facet_Gens.nr_of_rows() << endl; 
     
-    Sublattice_Representation<Integer> Facet_Sub(Facet_Gens,true);
+    Sublattice_Representation<Integer> Facet_Sub(Facet_Gens,false);
+    // By this choice we guarantee that the extreme Rays that generate the facet also
+    // generate the lattice in which the multiplicity is computed.
+    // This allows for more efficient isomorphism check.
+    // The lattice can be smaller than the intersection of the facet with the full lattice.
+    // We take care of this by mutiplying the computed multiplicity with the external index (see below).
+    
     Matrix<Integer> Transformed_Facet_Gens=Facet_Sub.to_sublattice(Facet_Gens);
     Full_Cone Facet(Transformed_Facet_Gens);
     Facet.verbose=verbose;
@@ -3079,7 +3084,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(Facet,found);
     if(found){
         mpq_class mmm=face_class.getMultiplicity();       
-        return mmm;        
+        return mmm*Facet_Sub.getExternalIndex();        
     } else{
         Full_Cone Facet_2(Transformed_Facet_Gens);
         Facet_2.Automs=Facet.Automs;
@@ -3099,7 +3104,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.do_multiplicity=true;
         Facet_2.compute();
         God_Father->FaceClasses.add_type(Facet_2);
-        return Facet_2.multiplicity;
+        return Facet_2.multiplicity*Facet_Sub.getExternalIndex();
     }    
 }
 

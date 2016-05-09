@@ -57,6 +57,11 @@ vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormOrbits() const{
 }
 
 template<typename Integer>
+vector<vector<key_t> > Automorphism_Group<Integer>::getSuppHypOrbits() const{
+    return SuppHypOrbits;
+}
+
+template<typename Integer>
 vector<Matrix<Integer> > Automorphism_Group<Integer>::getLinMaps() const{
     return LinMaps;
 }
@@ -159,9 +164,14 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
         LinFormPerms.push_back(dummy_too);
     }
     GenOrbits=convert_to_orbits(result[result.size()-2]);
-    // cout << GenOrbits;
     LinFormOrbits=convert_to_orbits(result[result.size()-1]);
-    // cout << LinFormOrbits;
+    
+    SuppHypOrbits.clear(); // extract support hyperplanes from LinFormOrbits
+    size_t nr_supp=GivenLinForms.nr_of_rows()-nr_special_linforms;
+    for(size_t k=0;k<LinFormOrbits.size();++k){
+        if(LinFormOrbits[k][0]<nr_supp)
+            SuppHypOrbits.push_back(LinFormOrbits[k]);        
+    }
     return make_linear_maps_primal();
 }
 
