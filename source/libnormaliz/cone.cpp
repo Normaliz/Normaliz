@@ -2259,8 +2259,10 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         Automs.inhomogeneous=FC.Automs.inhomogeneous;
         Automs.GenPerms=FC.Automs.GenPerms;
         Automs.LinFormPerms=FC.Automs.LinFormPerms;
+        Automs.SuppHypPerms=FC.Automs.SuppHypPerms;
         Automs.GenOrbits=FC.Automs.GenOrbits;
-        Automs.LinFormOrbits=FC.Automs.LinFormOrbits;         
+        Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
+        Automs.SuppHypOrbits=FC.Automs.SuppHypOrbits;
         is_Computed.set(ConeProperty::FullAutomorphismGroup);        
     }
     

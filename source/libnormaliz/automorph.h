@@ -43,10 +43,11 @@ class Automorphism_Group {
     template<typename> friend class Full_Cone;
     template<typename> friend class Isomorphism_Classes;
     
-    Matrix<Integer> Gens, LinForms;
+    Matrix<Integer> Gens, LinForms, SuppHyps;
 
     vector<vector<key_t> > GenPerms; 
     vector<vector<key_t> > LinFormPerms;
+    vector<vector<key_t> > SuppHypPerms;
     
     vector<vector<key_t> > GenOrbits;
     vector<vector<key_t> > LinFormOrbits;
@@ -72,6 +73,7 @@ public:
     mpz_class getOrder() const;
     vector<vector<key_t> > getGenPerms() const;
     vector<vector<key_t> > getLinFormPerms() const;
+    vector<vector<key_t> > getSuppHypPerms() const;
     vector<vector<key_t> > getGenOrbits() const;
     vector<vector<key_t> > getLinFormOrbits() const;
     vector<vector<key_t> > getSuppHypOrbits() const;

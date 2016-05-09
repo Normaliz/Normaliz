@@ -47,6 +47,11 @@ vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormPerms() const{
 }
 
 template<typename Integer>
+vector<vector<key_t> > Automorphism_Group<Integer>::getSuppHypPerms() const{
+    return LinFormPerms;
+}
+
+template<typename Integer>
 vector<vector<key_t> > Automorphism_Group<Integer>::getGenOrbits() const{
     return GenOrbits;
 }
@@ -153,6 +158,7 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     size_t nr_automs=(result.size()-2)/2;
     GenPerms.clear();
     LinFormPerms.clear();
+    SuppHypPerms.clear();
     for(size_t i=0;i<nr_automs;++i){
         vector<key_t> dummy(result[0].size());
         for(size_t j=0;j<dummy.size();++j)
@@ -162,6 +168,9 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
         for(size_t j=0;j<dummy_too.size();++j)
             dummy_too[j]=result[i+nr_automs][j];
         LinFormPerms.push_back(dummy_too);
+        SuppHypPerms.push_back(dummy_too);
+        // remove the (automatically fixed) special linear forms
+        SuppHypPerms.back().resize(dummy_too.size()-nr_special_linforms);       
     }
     GenOrbits=convert_to_orbits(result[result.size()-2]);
     LinFormOrbits=convert_to_orbits(result[result.size()-1]);

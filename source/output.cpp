@@ -373,18 +373,18 @@ void Output<Integer>::write_aut() const{
     } else{
         out << "Permutations of support hyperplanes" << endl;
     }
-    nr_items=Result->Automs.getLinFormPerms().size();
+    nr_items=Result->Automs.getSuppHypPerms().size();
     out << nr_items << endl;
     if(nr_items>0){
-        out << Result-> Automs.getLinFormPerms()[0].size()<< endl;
+        out << Result-> Automs.getSuppHypPerms()[0].size()<< endl;
         for(size_t i=0;i<nr_items;++i)
-            out << Result->Automs.getLinFormPerms()[i];
+            out << Result->Automs.getSuppHypPerms()[i];
     }
     out << endl;
     
     out << "Cycle decompositions " << endl<<endl;
     for(size_t i=0;i<nr_items;++i){
-	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getLinFormPerms()[i]);
+	vector<vector<libnormaliz::key_t> > dec=cycle_decomposition(Result->Automs.getSuppHypPerms()[i]);
 	out << "Perm " << i << ": ";
 	pretty_print_cycle_dec(dec,out);
     }
@@ -395,11 +395,11 @@ void Output<Integer>::write_aut() const{
     } else{
         out << "Orbits of support hyperplanes" << endl;
     }
-    nr_items=Result->Automs.getLinFormOrbits().size();
+    nr_items=Result->Automs.getSuppHypOrbits().size();
     out << nr_items << endl;;
     for(size_t i=0;i<nr_items;++i){
-        out << "Orbit " << i << " , length " << Result->Automs.getLinFormOrbits()[i].size()
-        << ": " << Result->Automs.getLinFormOrbits()[i];
+        out << "Orbit " << i << " , length " << Result->Automs.getSuppHypOrbits()[i].size()
+        << ": " << Result->Automs.getSuppHypOrbits()[i];
     }
     out.close();
 }
