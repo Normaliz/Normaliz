@@ -142,6 +142,13 @@ make
 
 If you get an error saying it cannot find boost/dynamic_bitset.hpp or similar, try to set BOOST_INCLUDE_DIR directly to a path which is not a system default path (e.g. by using "ccmake ." after the first configuration.)
 
+For running the executable you also have to set the MIC_LD_LIBRARY_PATH, e.g. by an entry in the .profile
+
+if [ $HOSTNAME == 'phi' ] ; then	#only on the system with mics
+   export     LD_LIBRARY_PATH=$HOME/local/lib/:$LD_LIBRARY_PATH
+   export MIC_LD_LIBRARY_PATH=$HOME/mic_local/lib/:$MIC_LD_LIBRARY_PATH
+fi
+
 
 If you want to compile Normaliz for running it NATIVELY on the Phi, give 
 CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
