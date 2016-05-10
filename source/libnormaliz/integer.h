@@ -149,7 +149,17 @@ template<typename Integer> Integer permutations_modulo(const size_t& a, const si
 //                     String conversion functions
 //---------------------------------------------------------------------------
 
-template<typename Integer> string toString(Integer a);
+template<typename Integer> string toString(Integer a) {
+    ostringstream ostream;
+    ostream << a;
+    return ostream.str();
+}
+template<> string toString(mpz_class a) {
+    return a.get_str();
+}
+template<> string toString(mpq_class a) {
+    return a.get_str();
+}
 
 } // end libnormaliz
 

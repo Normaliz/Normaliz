@@ -303,20 +303,5 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
     }
 }
 
-//---------------------------------------------------------------------------
-//                     String conversion functions
-//---------------------------------------------------------------------------
-
-template<typename Integer> string toString(Integer a) {
-    ostringstream ostream;
-    ostream << a;
-    return ostream.str();
-}
-template<> string toString(mpz_class a) {
-    return a.get_str();
-}
-template<> string toString(mpq_class a) {
-    return a.get_str();
-}
 
 } //end namespace libnormaliz

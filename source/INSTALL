@@ -130,13 +130,13 @@ CC=icc CXX=icpc CFLAGS="-mmic" CXXFLAGS="-mmic" LDFLAGS="-mmic" ../configure --h
 make
 make install
 
-The intel compiler had problems with User-defined literals from c++11, so I had to commend some lines (1925-1944) in $HOME/local/include/gmpxx.h and the same for the mic dir.
+The intel compiler had problems with User-defined literals from c++11, so I had to comment some lines (1925-1944) in $HOME/local/include/gmpxx.h and the same for the mic dir.
 
 Now we are ready to compile Normaliz:
 
 cd normaliz
-mkdir BUILD_mic
-cd BUILD_mic
+mkdir BUILD_OFFLOAD
+cd BUILD_OFFLOAD
 CC=icc CXX=icpc GMP_DIR=$HOME/local MIC_GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DNMZ_MIC_OFFLOAD=ON ../source/
 make
 
