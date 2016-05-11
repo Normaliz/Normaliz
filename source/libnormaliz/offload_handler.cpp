@@ -696,12 +696,18 @@ template<typename Integer>
 void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_t level)
 {
     if (!is_init) init(fc);
-    size_t fraction = 5;
-    if (level > 0) fraction = 10;
+
+    size_t fraction = 6;
+    if (fc.start_from == fc.nr_gen) { //all gens are done
+        fraction = 12;
+        if (level > 0) fraction = 20;
+    }
+    if (fraction < nr_handlers) fraction = nr_handlers; //ensure every card can get some
 
     // offload some pyramids
     list< vector<key_t> > pyrs;
     vector<bool> started(nr_handlers, false);
+
     size_t nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
     if (nr_transfer == 0) return;
 
@@ -716,8 +722,6 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
         fc.nrPyramids[level] -= nr_transfer;
         handlers[i]->transfer_pyramids(pyrs);
         pyrs.clear();
-        nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
-        if (nr_transfer == 0) break;
       }
     }
 
