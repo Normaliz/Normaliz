@@ -154,10 +154,10 @@ template<typename Integer> string toString(Integer a) {
     ostream << a;
     return ostream.str();
 }
-template<> string toString(mpz_class a) {
+inline template<> string toString(mpz_class a) {
     return a.get_str();
 }
-template<> string toString(mpq_class a) {
+inline template<> string toString(mpq_class a) {
     return a.get_str();
 }
 
