@@ -2992,13 +2992,56 @@ void Full_Cone<Integer>::compute() {
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::compute_multiplicity_via_automs(){
+void Full_Cone<Integer>::get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
+                                      list<vector<Integer> >& facet_H){
+
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::compute_HB_via_automs(){
     
-    if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
-        !isComputed(ConeProperty::Grading))
+    if(!do_Hilbert_basis || isComputed(ConeProperty::HilbertBasis)
+               || !isComputed(ConeProperty::FullAutomorphismGroup))
         return;
+    
+    prepare_old_candidates_and_support_hyperplanes();
+
+    list<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
+    vector<Integer> fixed_point=get_fixed_point();
+    vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,false);
+
+    for(size_t k=0;k<facet_keys.size();++k){
+        list<vector<Integer> > facet_HB;
+        get_facet_HB(fixed_point,facet_keys[k], facet_HB);
+        
+        CandidateList<Integer> Cands_from_facet; // first we sort out the reducible elements
+        for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
+            Cands_from_facet.reduce_by_and_insert(*jj,*this,OldCandidates);
             
-    // find fixed ppoint of low degree
+        list<vector<Integer> > union_of_orbits; // we must spead the irreducibles over their orbit
+        typename list<Candidate<Integer> >::iterator c;
+        for(c=Cands_from_facet.Candidates.begin();c!=Cands_from_facet.Candidates.end();++c){
+            list<vector<Integer> > orbit_of_cand=Automs.orbit_primal(c->cand);
+            union_of_orbits.splice(union_of_orbits.end(),orbit_of_cand);
+        }
+        union_of_orbits.sort();
+        union_of_facets.merge(union_of_orbits);
+    }
+    union_of_facets.unique(); // necesary since dupocates cannot be avoided
+    for(auto v=union_of_facets.begin();v!=union_of_facets.end();++v)
+        NewCandidates.push_back(Candidate<Integer>(*v,*this));
+    update_reducers(true); // we always want reduction
+    remove_duplicate_ori_gens_from_HB();
+
+    is_Computed.set(ConeProperty::HilbertBasis);    
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+vector<Integer> Full_Cone<Integer>::get_fixed_point(){
+// find fixed ppoint of low degree
+        
     size_t mini=0;
     key_t min_orbit=0;
     for(size_t i=0;i<Automs.GenOrbits.size();++i)
@@ -3006,17 +3049,24 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
             mini=Automs.GenOrbits[i].size();
             min_orbit=i;
         }
-    
+        
     vector<Integer> fixed_point(dim);
     Matrix<Integer> Extreme_Rays=Generators.submatrix(Extreme_Rays_Ind);
     for(size_t i=0;i<Automs.GenOrbits[min_orbit].size();++i)
         fixed_point=v_add(fixed_point,Extreme_Rays[Automs.GenOrbits[min_orbit][i]]);
     v_make_prime(fixed_point);
-    Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
+    return fixed_point;
+}
 
-    vector<vector<key_t> > facet_keys; // collect facets
-    vector<key_t> facet_nrs;
-    vector<size_t> orbit_sizes;
+//---------------------------------------------------------------------------
+template<typename Integer>
+vector<vector<key_t> > Full_Cone<Integer>::get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes){
+// We collect only the facets that do not contain the fixed point.
+// The last one (or two) entries of each key vector are abused for 
+// (the orbit size and )  the number of the suport hyperplane.
+// Everything for the first hyperplane in the orbit.
+
+    vector<vector<key_t> > facet_keys;
     for(size_t k=0;k<Automs.SuppHypOrbits.size();++k){
         key_t facet_nr=Automs.SuppHypOrbits[k][0];
         assert(facet_nr<nrSupport_Hyperplanes); // for safety
@@ -3028,10 +3078,25 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
             if(Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Support_Hyperplanes[facet_nr])==0)
                 facet_gens.push_back(i);        
         }
-        facet_keys.push_back(facet_gens); 
-        facet_nrs.push_back(facet_nr);
-        orbit_sizes.push_back(Automs.SuppHypOrbits[k].size());
+        facet_keys.push_back(facet_gens);
+        if(with_orbit_sizes)
+            facet_keys.back().push_back(Automs.SuppHypOrbits[k].size());
+        facet_keys.back().push_back(facet_nr);
     }
+    return facet_keys;
+}
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_via_automs(){
+    
+    if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
+        !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::FullAutomorphismGroup))
+        return;
+    
+    vector<Integer> fixed_point=get_fixed_point();
+    Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
+
+    vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,true);
     
     cout << "CODIM " << God_Father->dim-dim+1 << endl;
     
@@ -3041,11 +3106,13 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     for(size_t k=0;k<facet_keys.size();++k){
 
         cout << "ORBIT " << k+1 << endl;
- 
-        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nrs[k]]);
+        key_t facet_nr=facet_keys[k].back();
+        facet_keys[k].pop_back();
+        Integer ht=v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]);
         cout << "FP DEG " << deg_fixed_point << " HT " << ht << endl;
-        long long orbit_size=orbit_sizes[k];;
-            multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
+        long long orbit_size=facet_keys[k].back();
+        facet_keys[k].pop_back();
+        multiplicity+=convertTo<mpz_class>(orbit_size)*convertTo<mpz_class>(ht)
                         *facet_multiplicity(facet_keys[k])/convertTo<mpz_class>(deg_fixed_point);
     }
     is_Computed.set(ConeProperty::Multiplicity);    

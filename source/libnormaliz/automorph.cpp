@@ -215,6 +215,33 @@ void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
     GenOrbits=orbits(GenPerms);
 }
 
+template<typename Integer>
+void Automorphism_Group<Integer>::add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const{
+    
+    for(size_t i=0;i<LinMaps.size();++i){
+        vector<Integer> w=LinMaps[i].MxV(v);
+        typename set<vector<Integer> >::iterator f;
+        f=orbit.find(w);
+        if(f!=orbit.end())
+            continue;
+        else{
+            orbit.insert(w);
+            add_images_to_orbit(w,orbit);
+        }        
+    }
+}
+
+template<typename Integer>
+list<vector<Integer> > Automorphism_Group<Integer>::orbit_primal(const vector<Integer>& v) const{
+    
+    set<vector<Integer> > orbit;    
+    add_images_to_orbit(v,orbit); 
+    list<vector<Integer> > orbit_list;
+    for(auto c=orbit.begin();c!=orbit.end();++c)
+        orbit_list.push_back(*c);
+    return orbit_list;
+}
+
 /* MUCH TO DO
 template<typename Integer>
 IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool with_Hilbert_basis){

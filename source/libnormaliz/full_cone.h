@@ -358,6 +358,10 @@ public:
     void compute__automorphisms();
     mpq_class facet_multiplicity(const vector<key_t>& facet_key);
     void compute_multiplicity_via_automs();
+    vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);
+    vector<Integer> get_fixed_point();
+    void compute_HB_via_automs();
+    void get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, list<vector<Integer> >& facet_H);
 
 #ifdef NMZ_MIC_OFFLOAD
     void try_offload(size_t max_level);

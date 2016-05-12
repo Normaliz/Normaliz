@@ -24,6 +24,7 @@
 #ifndef AUTOMORPHISM_H
 #define AUTOMORPHISM_H
 
+#include <set>
 #include <boost/dynamic_bitset.hpp>
 #include "libnormaliz/matrix.h" 
 #include "libnormaliz/nmz_nauty.h"
@@ -85,6 +86,8 @@ public:
     void setFromAmbeientSpace(bool on_off);
     void setGraded(bool on_off);
     void setInhomogeneous(bool on_off);
+    list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
+    void add_images_to_orbit(const vector<Integer>& v,set<vector<Integer> >& orbit) const;
     
     BinaryMatrix getCanType();
     
