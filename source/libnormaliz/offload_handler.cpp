@@ -699,8 +699,8 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
 
     size_t fraction = 6;
     if (fc.start_from == fc.nr_gen) { //all gens are done
-        fraction = 12;
-        if (level > 0) fraction = 20;
+        fraction = 20;
+        if (level > 0) fraction = 30;
     }
     if (fraction < nr_handlers) fraction = nr_handlers; //ensure every card can get some
 
