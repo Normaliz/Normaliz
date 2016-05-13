@@ -162,7 +162,6 @@ void ConeProperties::set_preconditions() {
         
     if (CPs.test(ConeProperty::HSOP)){
         CPs.set(ConeProperty::SupportHyperplanes);
-        CPs.set(ConeProperty::HilbertBasis);
         CPs.set(ConeProperty::HilbertSeries);
     }
     // inhomogenous preconditions

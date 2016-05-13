@@ -339,6 +339,8 @@ public:
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
+
+    void compute_hsop();
     void heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
     
     void start_message();

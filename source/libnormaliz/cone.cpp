@@ -2234,6 +2234,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         HSeries = FC.Hilbert_Series;
         is_Computed.set(ConeProperty::HilbertSeries);
     }
+    if (FC.isComputed(ConeProperty::HSOP)) {
+        is_Computed.set(ConeProperty::HSOP);
+    }
     if (FC.isComputed(ConeProperty::IsDeg1ExtremeRays)) {
         deg1_extreme_rays = FC.isDeg1ExtremeRays();
         is_Computed.set(ConeProperty::IsDeg1ExtremeRays);
