@@ -2923,14 +2923,27 @@ void Full_Cone<Integer>::compute() {
     }    
 
     if(do_only_multiplicity && exploit_automorphisms){
-        if(God_Father->dim-dim<autom_codim && nr_gen>= dim+4){ // othewise direct computation
+        if(descent_level<autom_codim && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
             compute_multiplicity_via_automs();
             if(isComputed(ConeProperty::Multiplicity)){
-                if(God_Father->dim==dim){
+                if(descent_level==0){
                     compute_class_group();
                 }
                 end_message();
                 return;
+            }
+        }
+    }
+    
+    if(do_Hilbert_basis && !do_multiplicity && exploit_automorphisms){
+        if(descent_level<autom_codim && nr_gen>= dim+1 && Automs.getOrder()>1){ // otherwise direct computation
+            compute_HB_via_automs();
+            if(isComputed(ConeProperty::HilbertBasis)){
+                if(descent_level==0){
+                    compute_class_group();
+                }
+            end_message();
+            return;
             }
         }
     }
@@ -2993,8 +3006,32 @@ void Full_Cone<Integer>::compute() {
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Full_Cone<Integer>::get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
-                                      list<vector<Integer> >& facet_H){
+                                      list<vector<Integer> >& Facet_HB){
+  
+  
+    Matrix<Integer> Facet_Gens(0,dim);
+    Facet_Gens.append(fixed_point);
+    Facet_Gens.append(Generators.submatrix(facet_key));   
+    
+    for(size_t i=0;i<descent_level+1;++i)
+        cout << "$$$$$$  ";
+    cout << " " << Facet_Gens.nr_of_rows() << endl;
+    
+    Full_Cone ConeOverFacet(Facet_Gens);
+    ConeOverFacet.verbose=verbose;
 
+    if(isComputed(ConeProperty::Grading)){
+      ConeOverFacet.Grading=Grading;
+      ConeOverFacet.is_Computed.set(ConeProperty::Grading);
+    }
+    ConeOverFacet.descent_level=descent_level+1;
+    ConeOverFacet.Mother=&(*this);
+    ConeOverFacet.God_Father=God_Father;
+    ConeOverFacet.exploit_automorphisms=true;
+    ConeOverFacet.keep_order=true;
+    // ConeOverFacet.Support_Hyperplanes=Support_Hyperplanes;
+    ConeOverFacet.do_Hilbert_basis=true;
+    ConeOverFacet.compute();
 }
 
 //---------------------------------------------------------------------------
@@ -3008,18 +3045,23 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     prepare_old_candidates_and_support_hyperplanes();
 
     list<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
-    vector<Integer> fixed_point=get_fixed_point();
+    vector<Integer> fixed_point=get_fixed_point(descent_level); // this is the number of cone points so far
+    
+    cout << "DESCENT " << descent_level << " FIXED POINT " << fixed_point;
+    
     vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,false);
 
     for(size_t k=0;k<facet_keys.size();++k){
         list<vector<Integer> > facet_HB;
+        // key_t facet_nr=facet_keys[k].back();
+        facet_keys[k].pop_back();
         get_facet_HB(fixed_point,facet_keys[k], facet_HB);
         
         CandidateList<Integer> Cands_from_facet; // first we sort out the reducible elements
         for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
             Cands_from_facet.reduce_by_and_insert(*jj,*this,OldCandidates);
             
-        list<vector<Integer> > union_of_orbits; // we must spead the irreducibles over their orbit
+        list<vector<Integer> > union_of_orbits; // we must spread the irreducibles over their orbit
         typename list<Candidate<Integer> >::iterator c;
         for(c=Cands_from_facet.Candidates.begin();c!=Cands_from_facet.Candidates.end();++c){
             list<vector<Integer> > orbit_of_cand=Automs.orbit_primal(c->cand);
@@ -3032,20 +3074,23 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     for(auto v=union_of_facets.begin();v!=union_of_facets.end();++v)
         NewCandidates.push_back(Candidate<Integer>(*v,*this));
     update_reducers(true); // we always want reduction
-    remove_duplicate_ori_gens_from_HB();
+    OldCandidates.extract(Hilbert_Basis);
+    Hilbert_Basis.sort();
+    Hilbert_Basis.unique();
 
     is_Computed.set(ConeProperty::HilbertBasis);    
 }
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-vector<Integer> Full_Cone<Integer>::get_fixed_point(){
+vector<Integer> Full_Cone<Integer>::get_fixed_point(size_t nr_cone_points){
 // find fixed ppoint of low degree
         
     size_t mini=0;
     key_t min_orbit=0;
     for(size_t i=0;i<Automs.GenOrbits.size();++i)
-        if(mini==0 || Automs.GenOrbits[i].size()<mini){
+        if((mini==0 || Automs.GenOrbits[i].size()<mini)
+                && Automs.GenOrbits[i][0]>=nr_cone_points){
             mini=Automs.GenOrbits[i].size();
             min_orbit=i;
         }
@@ -3093,15 +3138,17 @@ void Full_Cone<Integer>::compute_multiplicity_via_automs(){
         !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::FullAutomorphismGroup))
         return;
     
-    vector<Integer> fixed_point=get_fixed_point();
+    vector<Integer> fixed_point=get_fixed_point(0); // no cone points in this case
     Integer deg_fixed_point=v_scalar_product(fixed_point,Grading);
 
     vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,true);
     
+        cout << facet_keys.size() << " FP " << fixed_point;
+    
     cout << "CODIM " << God_Father->dim-dim+1 << endl;
     
-    cout << "FIXED POINT IN " << Automs.SuppHypOrbits.size()-1-facet_keys.size() << " OF " 
-    << Automs.SuppHypOrbits.size()-1 << " ORBITS " << "OF " << nrSupport_Hyperplanes << " SUPP HYPS" << endl;
+    cout << "FIXED POINT IN " << Automs.SuppHypOrbits.size()-facet_keys.size() << " OF " 
+    << Automs.SuppHypOrbits.size() << " ORBITS " << "OF " << nrSupport_Hyperplanes << " SUPP HYPS" << endl;
     
     for(size_t k=0;k<facet_keys.size();++k){
 
@@ -3124,7 +3171,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     
     Matrix<Integer> Facet_Gens=Generators.submatrix(facet_key);
     
-    for(size_t i=0;i<God_Father->dim-dim+1;++i)
+    for(size_t i=0;i<descent_level+1;++i)
         cout << "$$$$";
     cout << " " << Facet_Gens.nr_of_rows() << endl; 
     
@@ -3144,6 +3191,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.Mother=&(*this);
     Facet.God_Father=God_Father;
     Facet.exploit_automorphisms=true;
+    Facet.descent_level=descent_level+1;
     Facet.keep_order=true;
     Facet.Support_Hyperplanes=Facet_Sub.to_sublattice_dual(Support_Hyperplanes);
     Facet.compute();
@@ -3163,7 +3211,8 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
         Facet_2.exploit_automorphisms=true;
         Facet.keep_order=true;
-        Facet_2.verbose=verbose;        
+        Facet_2.verbose=verbose;
+	Facet_2.descent_level=descent_level+1;
         Facet_2.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
         Facet_2.is_Computed.set(ConeProperty::Grading);
         Facet_2.Mother=&(*this);
@@ -4602,6 +4651,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
         is_Computed.set(ConeProperty::Triangulation);
     }
     pyr_level=-1;
+    descent_level=0;
     Top_Cone=this;
     God_Father=this;
     Top_Key.resize(nr_gen);
@@ -4741,7 +4791,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     NewCandidates.dual=false;
     NewCandidates.verbose=verbose;
     
-    
+    descent_level=0;
     approx_level = 1;
     is_approximation=false;
     
@@ -4895,6 +4945,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     is_pyramid=true;
     
     pyr_level=C.pyr_level+1;
+    descent_level=0;
 
     totalNrSimplices=0;
     detSum = 0;

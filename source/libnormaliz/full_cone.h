@@ -186,6 +186,8 @@ public:
     vector<key_t> Mother_Key;     // indices of generators w.r.t Mother
     size_t apex; // indicates which generator of mother cone is apex of pyramid
     int pyr_level;  // -1 for top cone, increased by 1 for each level of pyramids
+    int descent_level; // measures the decent in recursive algorithms that exploit compute__automorphisms
+		       // 0 for God_father, increases by 1 with each passge to a facet
     
     Isomorphism_Classes<Integer> FaceClasses;
 
@@ -359,7 +361,7 @@ public:
     mpq_class facet_multiplicity(const vector<key_t>& facet_key);
     void compute_multiplicity_via_automs();
     vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);
-    vector<Integer> get_fixed_point();
+    vector<Integer> get_fixed_point(size_t nr_cone_points);
     void compute_HB_via_automs();
     void get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, list<vector<Integer> >& facet_H);
 
