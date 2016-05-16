@@ -396,6 +396,7 @@ void OffloadHandler<Integer>::evaluate_pyramids()
     offload_fc_ptr->evaluate_stored_pyramids(0);
     offload_fc_ptr->evaluate_triangulation();
   }
+cout << "Nach Start evaluate mic" << mic_nr << endl;
   running = true;
 }
 

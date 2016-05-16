@@ -217,6 +217,8 @@ public:
 #ifdef NMZ_MIC_OFFLOAD
     MicOffloader<long long> mic_offloader;
 #endif
+void try_offload_loc(long place,size_t max_level);
+
 
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;

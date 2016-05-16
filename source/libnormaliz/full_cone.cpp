@@ -1069,7 +1069,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 #endif
 
     if (!omp_in_parallel())
-        try_offload(0);
+        try_offload_loc(0,0);
     
     if (start_level==0 && check_evaluation_buffer_size()) {
         Top_Cone->evaluate_triangulation();
@@ -1563,10 +1563,12 @@ void Full_Cone<long long>::try_offload(size_t max_level) {
 
     if (!is_pyramid && _Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
     {
+        
         if (max_level >= nrPyramids.size()) max_level = nrPyramids.size()-1;
-        for (size_t level = 0; level <= max_level; ++level) {
+        for (size_t level = 0; level <= max_level; ++level) {           
+            
             if (nrPyramids[level] >= 100) {
-                cout << "Try offload of level " << level << " pyramids ..." << endl;
+                // cout << "Try offload of level " << level << " pyramids ..." << endl;
                 mic_offloader.offload_pyramids(*this, level);
                 break;
             }
@@ -1578,6 +1580,14 @@ template<typename Integer>
 void Full_Cone<Integer>::try_offload(size_t max_level) {
 }
 //else it is implemented in the header
+
+
+template<typename Integer>
+void Full_Cone<Integer>::try_offload_loc(long place,size_t max_level){
+	verboseOutput() << "From place " << place << " " << "level " << max_level << endl;
+	try_offload(max_level);
+}
+
 #endif // NMZ_MIC_OFFLOAD
 
 //---------------------------------------------------------------------------
@@ -1586,10 +1596,49 @@ template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
 
+
+#ifdef NMZ_MIC_OFFLOAD    
+    if(level==0 && _Offload_get_device_number() >=  0){
+verboseOutput() << "Start 00000 evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
+verboseOutput() << "In parallel " << omp_in_parallel() << endl;
+}
+
+#endif // NMZ_MIC_OFFLOAD
+
+
+
+
     assert(!omp_in_parallel());
+assert(!is_pyramid);
+
+#ifdef NMZ_MIC_OFFLOAD    
+    if(level==0 && _Offload_get_device_number() >=  0){
+verboseOutput() << "Start 1111 evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
+}
+
+#endif // NMZ_MIC_OFFLOAD
+
 
     if(Pyramids[level].empty())
         return;
+
+#ifdef NMZ_MIC_OFFLOAD    
+    if(level==0 && _Offload_get_device_number() >=  0){
+verboseOutput() << "Start 2222 evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
+if(nrPyramids[level] < 100){
+auto p=Pyramids[level].begin();
+for(;p!=Pyramids[level].end();++p){
+verboseOutput() << *p;
+verboseOutput() << "-------------------" << endl;
+}
+
+}
+        
+        
+        
+    }
+#endif // NMZ_MIC_OFFLOAD
+    
     if (Pyramids.size() < level+2) {
         Pyramids.resize(level+2);      // provide space for a new generation
         nrPyramids.resize(level+2, 0);
@@ -1682,14 +1731,14 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
             }
         }
 
-        try_offload(level+1);
+        try_offload_loc(1,level+1);
 
         if (check_evaluation_buffer_size()) {
             if (verbose)
                 verboseOutput() << nrPyramids[level] <<
                     " pyramids remaining on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
-            try_offload(level+1);
+            try_offload_loc(2,level+1);
         }
 
         if (Top_Cone->check_pyr_buffer(level+1)) {
@@ -1822,7 +1871,7 @@ void Full_Cone<Integer>::build_cone() {
             deg1_triangulation = (gen_degrees[i] == 1);
         
         if (!omp_in_parallel())
-            try_offload(0);
+            try_offload_loc(3,0);
             
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
@@ -2073,10 +2122,28 @@ void Full_Cone<Integer>::build_top_cone() {
     }
     else{
         find_bottom_facets();
+        start_from=nr_gen;
         deg1_triangulation=false;
+
+                vector<list<vector<key_t> >::iterator > level0_order;
+                level0_order.reserve(nrPyramids[0]);
+                auto p=Pyramids[0].begin();
+                for(size_t k=0;k<nrPyramids[0];++k,++p){
+                    level0_order.push_back(p);
+                }
+                for(size_t k=0;k<5*nrPyramids[0];++k){
+                    swap(level0_order[rand()%nrPyramids[0]],level0_order[rand()%nrPyramids[0]]);
+                }
+                list<vector<key_t> > new_order;
+                for(size_t k=0;k<nrPyramids[0];++k){
+                    new_order.push_back(*level0_order[k]);
+                }
+                Pyramids[0].clear();
+                Pyramids[0].splice(Pyramids[0].begin(),new_order);
+
     }   
 
-    try_offload(0);
+    try_offload_loc(4 ,0);
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
 #ifdef NMZ_MIC_OFFLOAD
