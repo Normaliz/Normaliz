@@ -171,7 +171,7 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
     
     if(in.fail() || nr_constraints < 0) {
         throw BadInputException("Cannot read "
-        + to_string(nr_constraints) + " constraints!");
+        + toString(nr_constraints) + " constraints!");
     }
     long hom_correction=0;
     if(forced_hom)
