@@ -148,7 +148,7 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(){
 
 template<typename Integer>
 bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
-                                          const size_t nr_special_linforms){
+                                          const size_t nr_special_linforms, size_t nr_special_gens){
     Gens=GivenGens;
     LinForms=GivenLinForms;
     
@@ -186,7 +186,7 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
 
 template<typename Integer>
 bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
-                                          const size_t nr_special_linforms){
+                                          const size_t nr_special_linforms, size_t nr_special_gens){
     
     bool success=compute(ComputeFrom,GivenLinForms,nr_special_linforms);
     if(!success)
@@ -475,10 +475,10 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
 template<typename Integer>
 vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType){
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType, size_t nr_special_gens){
 
     vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), LinForms.get_elements(), 
-                                                         nr_special_linforms, group_order, CanType);
+                                                         nr_special_linforms, group_order, CanType, nr_special_gens);
     return Automs;
 }
 

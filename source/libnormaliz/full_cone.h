@@ -357,7 +357,7 @@ public:
     
     void set_zero_cone();
     
-    void compute__automorphisms();
+    void compute__automorphisms(size_t nr_special_gens=0);
     mpq_class facet_multiplicity(const vector<key_t>& facet_key);
     void compute_multiplicity_via_automs();
     vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);

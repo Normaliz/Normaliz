@@ -54,7 +54,7 @@ template<typename Integer>
 vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, 
                                               const vector<vector<Integer> >& LinForms, 
                                               const size_t nr_special_linforms, mpz_class& group_order,
-                                              BinaryMatrix& CanType){
+                                              BinaryMatrix& CanType, size_t nr_special_gens){
     CollectedAutoms.clear();
     
     DYNALLSTAT(graph,g,g_sz);
@@ -125,6 +125,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     
     for(k=0;k<ll;++k){ // make partitions layer by layer
         ptn[k*layer_size+ mm-1]=0; // row vertices in one partition
+        for(size_t s=0; s< nr_special_gens;++s) // speciall generators in extra partitions (makes them fixed points)
+            ptn[k*layer_size+s]=0;
         ptn[(k+1)*layer_size-1]=0; // column indices in the next
         for(size_t s=0; s< nr_special_linforms;++s) // special linear forms in extra partitions
             ptn[(k+1)*layer_size-2-s]=0;            
@@ -175,14 +177,14 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, 
                         const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, BinaryMatrix& CanType);
+                        mpz_class& group_order, BinaryMatrix& CanType, size_t nr_special_gens);
 #endif // NMZ_MIC_OFFLOAD
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, 
                         const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, BinaryMatrix& CanType);
+                        mpz_class& group_order, BinaryMatrix& CanType, size_t nr_special_gens);
 template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order,BinaryMatrix& CanType);
+                        mpz_class& group_order,BinaryMatrix& CanType, size_t nr_special_gens);
 
 } // namespace
 

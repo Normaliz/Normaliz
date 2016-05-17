@@ -91,9 +91,9 @@ public:
     
     BinaryMatrix getCanType();
     
-    bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms);
+    bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms, size_t nr_special_gens=0);
     bool compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
-                 const size_t nr_special_linforms);
+                 const size_t nr_special_linforms, size_t nr_special_gens=0);
     
     Automorphism_Group();
     
@@ -163,7 +163,7 @@ public:
 template<typename Integer>
 vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
                                     const size_t nr_special_linforms, mpz_class& group_order,
-                                    BinaryMatrix& CanType); 
+                                    BinaryMatrix& CanType, size_t nr_special_gens=0); 
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 

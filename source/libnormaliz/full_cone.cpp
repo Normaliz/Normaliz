@@ -2915,7 +2915,7 @@ void Full_Cone<Integer>::compute() {
         disable_grading_dep_comp();
     
     if(exploit_automorphisms){
-        compute__automorphisms();
+        compute__automorphisms(descent_level); // we protect the cone apices
         if(!do_triangulation && !do_partial_triangulation){
             end_message();
             return;
@@ -4413,7 +4413,7 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute__automorphisms(){
+void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
     
      if(!exploit_automorphisms || isComputed(ConeProperty::FullAutomorphismGroup)
         || isComputed(ConeProperty::AmbientAutomorphismGroup)){
