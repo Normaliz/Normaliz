@@ -125,36 +125,47 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
 }
 
 //---------------------------------------------------------------------------
-
+// produces the linear combination needed for a Fourier-Motzkin step
 template<typename Integer>
-void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                            list<FACETDATA>& NewHyps){
-// adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed)
-
-    size_t k;
-    
-    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);        
-    
-    for (k = 0; k <dim; k++) {
-        NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
-        if(!check_range(NewFacet.Hyp[k]))
+vector<Integer> Full_Cone<Integer>::FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
+					    const vector<Integer>& Neg, const Integer& NegVal){
+  size_t k;
+  vector<Integer> NewFacet(dim);
+  for (k = 0; k <dim; k++) {
+        NewFacet[k]=PosVal*Neg[k]-NegVal*Pos[k];
+        if(!check_range(NewFacet[k]))
             break;    
     }
     
     if(k==dim)
-        v_make_prime(NewFacet.Hyp);
+        v_make_prime(NewFacet);
     else{
         #pragma omp atomic
         GMP_hyp++;
         vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
-        convert(mpz_neg, negative.Hyp);
-        convert(mpz_pos, positive.Hyp);
+        convert(mpz_neg, Neg);
+        convert(mpz_pos, Pos);
+	mpz_class mpz_NV, mpz_PV;
+	mpz_NV=convertTo<mpz_class>(NegVal);
+	mpz_PV=convertTo<mpz_class>(PosVal);
         for (k = 0; k <dim; k++)
-            mpz_sum[k]=convertTo<mpz_class>(positive.ValNewGen)*mpz_neg[k]-convertTo<mpz_class>(negative.ValNewGen)*mpz_pos[k];
+            mpz_sum[k]=mpz_PV*mpz_neg[k]-mpz_NV*mpz_pos[k];
         v_make_prime(mpz_sum);
-        convert(NewFacet.Hyp, mpz_sum);
+        convert(NewFacet,mpz_sum);
     }
     
+    return NewFacet;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
+                            list<FACETDATA>& NewHyps){
+// adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed so far)
+    
+    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);        
+    
+    NewFacet.Hyp=FM_comb(positive.Hyp,positive.ValNewGen,negative.Hyp,negative.ValNewGen);
     NewFacet.ValNewGen=0; 
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
@@ -3005,8 +3016,27 @@ void Full_Cone<Integer>::compute() {
 
 //---------------------------------------------------------------------------
 template<typename Integer>
+Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr){
+  
+  Matrix<Integer> SuppHyps(0,dim);
+  vector<Integer> Facet=Support_Hyperplanes[facet_nr];
+  SuppHyps.append(Facet);
+  Integer h=v_scalar_product(fixed_point,Facet);
+  vector<Integer> NewFacet(dim);
+  for(key_t i=0;i<nrSupport_Hyperplanes;++i){
+    if(i==facet_nr)
+	continue;
+    Integer hN=v_scalar_product(fixed_point,Support_Hyperplanes[i]);
+    NewFacet=FM_comb(Facet,h,Support_Hyperplanes[i],hN);
+    SuppHyps.append(NewFacet);
+  }
+  return SuppHyps;
+  
+}
+//---------------------------------------------------------------------------
+template<typename Integer>
 void Full_Cone<Integer>::get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
-                                      list<vector<Integer> >& Facet_HB){
+                                      const key_t facet_nr, list<vector<Integer> >& Facet_HB){
   
   
     Matrix<Integer> Facet_Gens(0,dim);
@@ -3029,7 +3059,7 @@ void Full_Cone<Integer>::get_facet_HB(const vector<Integer>& fixed_point, const 
     ConeOverFacet.God_Father=God_Father;
     ConeOverFacet.exploit_automorphisms=true;
     ConeOverFacet.keep_order=true;
-    // ConeOverFacet.Support_Hyperplanes=Support_Hyperplanes;
+    ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=true;
     ConeOverFacet.compute();
 }
@@ -3053,9 +3083,9 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
 
     for(size_t k=0;k<facet_keys.size();++k){
         list<vector<Integer> > facet_HB;
-        // key_t facet_nr=facet_keys[k].back();
+        key_t facet_nr=facet_keys[k].back();
         facet_keys[k].pop_back();
-        get_facet_HB(fixed_point,facet_keys[k], facet_HB);
+        get_facet_HB(fixed_point,facet_keys[k],facet_nr, facet_HB);
         
         CandidateList<Integer> Cands_from_facet; // first we sort out the reducible elements
         for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
