@@ -365,7 +365,7 @@ public:
     vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);
     vector<Integer> get_fixed_point(size_t nr_cone_points);
     void compute_HB_via_automs();
-    void get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr, list<vector<Integer> >& facet_H);
+    void get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr, list<vector<Integer> >& facet_H);
     Matrix<Integer>  push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr);
 
 #ifdef NMZ_MIC_OFFLOAD

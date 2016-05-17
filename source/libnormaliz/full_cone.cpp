@@ -3035,7 +3035,7 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
 }
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Full_Cone<Integer>::get_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
+void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
                                       const key_t facet_nr, list<vector<Integer> >& Facet_HB){
   
   
@@ -3085,7 +3085,7 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
         list<vector<Integer> > facet_HB;
         key_t facet_nr=facet_keys[k].back();
         facet_keys[k].pop_back();
-        get_facet_HB(fixed_point,facet_keys[k],facet_nr, facet_HB);
+        get_cone_over_facet_HB(fixed_point,facet_keys[k],facet_nr, facet_HB);
         
         CandidateList<Integer> Cands_from_facet; // first we sort out the reducible elements
         for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
