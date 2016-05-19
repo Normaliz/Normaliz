@@ -3240,7 +3240,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.nrSupport_Hyperplanes=Facet.nrSupport_Hyperplanes;
         Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
         Facet_2.exploit_automorphisms=true;
-        Facet.keep_order=true;
+        Facet_2.keep_order=true;
         Facet_2.verbose=verbose;
 	Facet_2.descent_level=descent_level+1;
         Facet_2.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
@@ -3249,7 +3249,8 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.God_Father=God_Father;
         Facet_2.do_multiplicity=true;
         Facet_2.compute();
-        God_Father->FaceClasses.add_type(Facet_2);
+        bool added;
+        God_Father->FaceClasses.add_type(Facet_2, added);
         return Facet_2.multiplicity*Facet_Sub.getExternalIndex();
     }    
 }
@@ -4462,7 +4463,7 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
     }
     
     if(verbose)
-        verboseOutput() << "Coputing automorphism group" << endl;
+        verboseOutput() << "Computing automorphism group" << endl;
     
     size_t nr_special_linforms=0;
     Matrix<Integer> Help=Support_Hyperplanes;
