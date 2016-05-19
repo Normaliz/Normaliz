@@ -2936,13 +2936,31 @@ void Full_Cone<Integer>::compute_hsop(){
             if(verbose){
             verboseOutput() << "Computing heights ... " << flush;
             }
-            Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
+            vector<bool> choice = Extreme_Rays;
+            if (inhomogeneous){
+                for (size_t i=0; i<Generators.nr_of_rows(); i++) {
+                    if (Extreme_Rays[i] && v_scalar_product(Generators[i],Truncation) != 0) {
+                        choice[i]=false;
+                    }
+                }
+            }
+            Matrix<Integer> ER = Generators.submatrix(choice);
             Matrix<Integer> SH = getSupportHyperplanes();
+            if (inhomogeneous){
+                    Sublattice_Representation<Integer> recession_lattice(ER,true);
+                    Matrix<Integer> SH_raw = recession_lattice.to_sublattice_dual(SH);
+                    Matrix<Integer> ER_embedded = recession_lattice.to_sublattice(ER);
+                    Full_Cone<Integer> recession_cone(ER_embedded);
+                    recession_cone.Support_Hyperplanes = SH_raw;
+                    recession_cone.dualize_cone();
+                    SH = recession_lattice.from_sublattice_dual(recession_cone.getSupportHyperplanes());
+            }
             list<pair<boost::dynamic_bitset<> , size_t>> facet_list;
             list<vector<key_t>> facet_keys;
             vector<key_t> key;
-            
-            for (size_t i=nrSupport_Hyperplanes;i-->0;){
+            size_t d = dim;
+            if (inhomogeneous) d = level0_dim;
+            for (size_t i=SH.nr_of_rows();i-->0;){
                 boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
                 key.clear();
                 for (size_t j=0;j<ER.nr_of_rows();j++){
@@ -2952,16 +2970,14 @@ void Full_Cone<Integer>::compute_hsop(){
                         key.push_back(j);
                     }
                 }
-    
-                facet_list.push_back(make_pair(new_facet,dim-1));
+                facet_list.push_back(make_pair(new_facet,d-1));
                 facet_keys.push_back(key);
             }
-            
             facet_list.sort(); // should be sorted lex
             //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
             //cout << "facet non_keys: " << facet_keys << endl;
             vector<size_t> ideal_heights(ER.nr_of_rows(),1);
-            heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,dim-1);
+            heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,d-1);
             if(verbose){
                 verboseOutput() << "done." << endl;
                 verboseOutput() << "Heights vector: " << ideal_heights << endl;   
@@ -3002,7 +3018,15 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
         if (!not_faces.empty()){
             ideal_heights[ER_nr] = ideal_heights[ER_nr-1];
             // compute the dimensions of not_faces
-            Matrix<Integer> ER = Generators.submatrix(Extreme_Rays);
+            vector<bool> choice = Extreme_Rays;
+            if (inhomogeneous){
+                for (size_t i=0; i<Generators.nr_of_rows(); i++) {
+                    if (Extreme_Rays[i] && v_scalar_product(Generators[i],Truncation) != 0) {
+                        choice[i]=false;
+                    }
+                }
+            }
+            Matrix<Integer> ER = Generators.submatrix(choice);
             int tn;
             if(omp_get_level()==0)
                 tn=0;
