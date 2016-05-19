@@ -54,9 +54,13 @@ class Automorphism_Group {
     vector<vector<key_t> > LinFormOrbits;
     vector<vector<key_t> > SuppHypOrbits;
     
+    vector<key_t> CanLabellingGens;
+    
     vector<Matrix<Integer> > LinMaps;
     
     mpz_class order;
+    
+    bool HB_needed; // indicates whether the Hilbert basis was needed for the computation
     
     bool from_ambient_space;
     bool LinMaps_computed;
@@ -79,9 +83,11 @@ public:
     vector<vector<key_t> > getLinFormOrbits() const;
     vector<vector<key_t> > getSuppHypOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
+    vector<key_t> getCanLabellingGens() const;
     bool isFromAmbientSpace() const;
     bool isGraded() const;
     bool isInhomogeneous() const;
+    bool isHB_needed() const;
     bool isLinMapsComputed() const;
     void setFromAmbeientSpace(bool on_off);
     void setGraded(bool on_off);
@@ -109,15 +115,21 @@ class IsoType {
     size_t rank;
     Matrix<Integer> ExtremeRays;
     size_t nrExtremeRays;
-    Matrix<Integer> SupportHyperplanes;
+    // Matrix<Integer> SupportHyperplanes;
     size_t nrSupportHyperplanes;
-    Matrix<Integer> HilbertBasis;
-    size_t nrHilbertBasis;
+    Matrix<Integer> HilbertBasis; // without extreme rays
+    // size_t nrHilbertBasis; // with extreme rays, but not used
     vector<Integer> Grading;
-    vector<Integer> Dehomogenization;
-    HilbertSeries HilbertSer;
+    vector<Integer> Truncation;
+    // HilbertSeries HilbertSer;
     mpq_class Multiplicity;
     bool needs_Hilbert_basis;
+
+    // For the coordinate transformation to the canonical basis
+    vector<key_t> CanLabellingGens;
+    Matrix<Integer> CanTransform;
+    Integer CanDenom;
+    vector<key_t> CanBasisKey;
     
     BinaryMatrix CanType;
     IsoType(); // constructs a dummy object
@@ -125,19 +137,21 @@ class IsoType {
 public:
     
     bool isOfType(Full_Cone<Integer>& C) const;
-    bool isOfType(Cone<Integer>& C) const;
+    // bool isOfType(Cone<Integer>& C) const;
     
-    IsoType(Full_Cone<Integer>& C, bool slim=true);
-    IsoType(Cone<Integer>& C, bool slim=true);
+    IsoType(Full_Cone<Integer>& C,bool& success); // success indicates whether a class could be created
+    // IsoType(Cone<Integer>& C, bool slim=true);
     
-    size_t getRank();
-    Matrix<Integer> getExtremeRays() const;
-    Matrix<Integer> getSupportHyperplanes() const;
-    Matrix<Integer> getHilbert_Basis() const;
-    vector<Integer> getGrading() const;
-    vector<Integer> getTruncation() const;
-    HilbertSeries getHilbertSeries() const;
+    // size_t getRank();
+    // Matrix<Integer> getExtremeRays() const;
+    // Matrix<Integer> getSupportHyperplanes() const;
+    const Matrix<Integer>& getHilbertBasis() const;
+    // vector<Integer> getGrading() const;
+    // vector<Integer> getTruncation() const;
+    // HilbertSeries getHilbertSeries() const;
     mpq_class getMultiplicity() const;
+    const Matrix<Integer>& getCanTransform() const;
+    Integer getCanDenom() const;
     BinaryMatrix getCanType();
 };
 
@@ -154,7 +168,7 @@ public:
     Isomorphism_Classes();
     const IsoType<Integer>& find_type(Full_Cone<Integer>& C, bool& found) const;
     const IsoType<Integer>& find_type(Cone<Integer>& C, bool& found) const;
-    void add_type(Full_Cone<Integer>& C);
+    void add_type(Full_Cone<Integer>& C, bool& success);
     void add_type(Cone<Integer>& C);
 };
 
@@ -178,7 +192,7 @@ list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >&
 list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<> >& P1,
                                                const list<boost::dynamic_bitset<> >& P2);
 
-vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms);
+vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N);
 
 } // namespace
 

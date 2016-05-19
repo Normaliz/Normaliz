@@ -637,6 +637,7 @@ void Matrix<Integer>::scalar_multiplication(const Integer& scalar){
 
 template<typename Integer>
 void Matrix<Integer>::scalar_division(const Integer& scalar){
+    
     size_t i,j;
     assert(scalar != 0);
     for(i=0; i<nr;i++){
@@ -1350,7 +1351,7 @@ Integer Matrix<Integer>::vol() const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) const{
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success, vector<key_t> perm) const{
 
     success=true;
     size_t max_rank=min(nr,nc);
@@ -1362,12 +1363,19 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
     key.reserve(max_rank);
     size_t rk=0;
     
+    bool perm_set=false;
+    if(perm.size()>0)
+      perm_set=true;
+    
     vector<vector<bool> > col_done(max_rank,vector<bool>(nc,false));
     
     vector<Integer> Test_vec(nc);
      
-    for(size_t i=0;i<nr;++i){    
-        Test_vec=elem[i];            
+    for(size_t i=0;i<nr;++i){
+	if(perm_set)
+	   Test_vec=elem[perm[i]]; 
+	else
+	    Test_vec=elem[i];            
         for(size_t k=0;k<rk;++k){
             if(Test_vec[col[k]]==0)
                 continue;
@@ -1391,7 +1399,10 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
             continue;
             
         col.push_back(j);
-        key.push_back(i);
+	if(perm_set)
+	  key.push_back(perm[i]);
+	else
+	  key.push_back(i);
         
         if(rk>0){
             col_done[rk]=col_done[rk-1];
@@ -1410,9 +1421,10 @@ vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex_inner(bool& success) cons
 }
 
 //---------------------------------------------------------------------------
-
+// perm allows a reordering of the matrix
+// vectors are inserted into the test according to the order given by perm
 template<typename Integer>
-vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex() const{
+vector<key_t>  Matrix<Integer>::max_rank_submatrix_lex(vector<key_t> perm) const{
     bool success;
     vector<key_t> key=max_rank_submatrix_lex_inner(success);
     if(!success){
@@ -2388,7 +2400,7 @@ void BinaryMatrix::insert(Integer val, key_t i,key_t j){
     }
 }
 
-BinaryMatrix BinaryMatrix::reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const{
+BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
     
     assert(nr_rows==row_order.size());
     assert(nr_columns==col_order.size());

@@ -118,7 +118,7 @@ template<typename Integer> class Matrix {
     // computes rank and index simultaneously, returns rank
     Integer full_rank_index(bool& success);
     
-    vector<key_t> max_rank_submatrix_lex_inner(bool& success) const;
+    vector<key_t> max_rank_submatrix_lex_inner(bool& success, vector<key_t> perm=vector<key_t>(0)) const;
     
     // A version of invert that circumvents protection and leaves it to the calling routine
     Matrix invert_unprotected(Integer& denom, bool& sucess) const;
@@ -322,7 +322,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     
 // find linearly indepenpendent submatrix of maximal rank
 
-    vector<key_t>  max_rank_submatrix_lex() const; //returns a vector with entries
+    vector<key_t>  max_rank_submatrix_lex(vector<key_t> perm=vector<key_t>(0)) const; //returns a vector with entries
     //the indices of the first rows in lexicographic order of this forming
     //a submatrix of maximal rank.
     
@@ -494,7 +494,7 @@ public:
     BinaryMatrix(size_t m, size_t n);
     BinaryMatrix(size_t m,size_t n, size_t height);
     size_t nr_layers() const;
-    BinaryMatrix reordered(const vector<key_t>& row_order, const vector<key_t>& col_order) const;
+    BinaryMatrix reordered(const vector<long>& row_order, const vector<long>& col_order) const;
     bool equal(const BinaryMatrix& Comp) const;
     
 };

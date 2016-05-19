@@ -160,17 +160,19 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
  
     group_order=mpz_class(stats.grpsize1);
     
-    vector<key_t> row_order(mm), col_order(nn);
+    vector<long> row_order(mm), col_order(nn);
     for(key_t i=0;i<mm;++i)
         row_order[i]=lab[i];
     for(key_t i=0;i<nn;++i)
         col_order[i]=lab[mm+i]-mm;
     
+    AutomsAndOrbits.push_back(row_order);
+    
     nauty_freedyn();
     
     CanType=MM.reordered(row_order,col_order);
     
-	return AutomsAndOrbits;
+    return AutomsAndOrbits;
         
 }
 

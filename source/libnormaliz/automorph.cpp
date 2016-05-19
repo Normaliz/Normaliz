@@ -22,6 +22,7 @@
  */
 
 //---------------------------------------------------------------------------
+#include<set>
 
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/nmz_nauty.h"
@@ -72,6 +73,11 @@ vector<Matrix<Integer> > Automorphism_Group<Integer>::getLinMaps() const{
 }
 
 template<typename Integer>
+vector<key_t> Automorphism_Group<Integer>::getCanLabellingGens() const{
+        return CanLabellingGens;
+}
+
+template<typename Integer>
 bool Automorphism_Group<Integer>::isFromAmbientSpace() const{
     return from_ambient_space;
 }
@@ -89,6 +95,11 @@ bool Automorphism_Group<Integer>::isGraded() const{
 template<typename Integer>
 bool Automorphism_Group<Integer>::isInhomogeneous() const{
     return inhomogeneous;
+}
+
+template<typename Integer>
+bool Automorphism_Group<Integer>::isHB_needed() const{
+    return HB_needed;
 }
 
 template<typename Integer>
@@ -112,6 +123,7 @@ void Automorphism_Group<Integer>::reset(){
     from_ambient_space=false;
     graded=false;
     inhomogeneous=false;
+    HB_needed=false;
 }
 
 template<typename Integer>
@@ -152,10 +164,8 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
     Gens=GivenGens;
     LinForms=GivenLinForms;
     
-    /* for(size_t i=0;i<Gens.nr_of_rows();++i)
-        cout << v_scalar_product(Gens[i],LinForms[LinForms.nr_of_rows()-1]) << endl;*/
     vector<vector<long> > result=compute_automs(Gens,LinForms,nr_special_linforms,order,CanType);
-    size_t nr_automs=(result.size()-2)/2;
+    size_t nr_automs=(result.size()-3)/2; // the last 3 have special information
     GenPerms.clear();
     LinFormPerms.clear();
     SuppHypPerms.clear();
@@ -172,8 +182,11 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const
         // remove the (automatically fixed) special linear forms
         SuppHypPerms.back().resize(dummy_too.size()-nr_special_linforms);       
     }
-    GenOrbits=convert_to_orbits(result[result.size()-2]);
-    LinFormOrbits=convert_to_orbits(result[result.size()-1]);
+    GenOrbits=convert_to_orbits(result[result.size()-3]);
+    LinFormOrbits=convert_to_orbits(result[result.size()-2]);
+    CanLabellingGens.resize(result[result.size()-1].size());
+    for(size_t i=0;i<CanLabellingGens.size();++i)
+        CanLabellingGens[i]=result[result.size()-1][i];
     
     SuppHypOrbits.clear(); // extract support hyperplanes from LinFormOrbits
     size_t nr_supp=GivenLinForms.nr_of_rows()-nr_special_linforms;
@@ -193,6 +206,7 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ComputeFrom, co
         return false;
     Gens=GivenGens;
     gen_data_via_lin_maps();
+    HB_needed=true;  // This routine is called with the HB in the role of ComputeFrom
     return true;
 }
 
@@ -211,8 +225,8 @@ void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
             Perm[j]=S[Im];
         }
         GenPerms.push_back(Perm);            
-    } 
-    GenOrbits=orbits(GenPerms);
+    }
+    GenOrbits=orbits(GenPerms,Gens.nr_of_rows());
 }
 
 template<typename Integer>
@@ -278,19 +292,74 @@ IsoType<Integer>::IsoType(){ // constructs a dummy object
 }
     
 template<typename Integer>
-IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool slim){
+IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool& success){
+    
+    success=false;
 
+    // we don't want the zero cone here. It should have been filtered out.
+    assert(C.dim>0);
+    // We insist that cones arriving here are have their extreme rays as generators
+    nrExtremeRays=C.getNrExtremeRays();
+    assert(nrExtremeRays==C.nr_gen);
+    
+    if(C.isComputed(ConeProperty::Grading))
+        Grading=C.Grading;
+    if(C.inhomogeneous)
+        Truncation=C.Truncation;
+    
     if(!C.isComputed(ConeProperty::FullAutomorphismGroup)){
         C.exploit_automorphisms=true;
         C.compute();
     }
+
+    if(C.Automs.isHB_needed()) // not useful
+        return;
     CanType=C.Automs.CanType;
+    CanLabellingGens=C.Automs.getCanLabellingGens();
     rank=C.dim;
-    nrExtremeRays=C.getNrExtremeRays();
     nrSupportHyperplanes=C.nrSupport_Hyperplanes;
     if(C.isComputed(ConeProperty::Multiplicity))
         Multiplicity=C.multiplicity;
     cout << "TYPE WITH " << C.getNrExtremeRays() << " GENS, MULT " << C.multiplicity << endl;
+    
+    if(C.isComputed(ConeProperty::HilbertBasis)){
+        HilbertBasis=Matrix<Integer>(0,rank);
+        ExtremeRays=C.Generators;
+        // we compute the coordinate transformation to the first max linearly indepndent
+        // of extreme rays in canonical order
+        CanBasisKey=ExtremeRays.max_rank_submatrix_lex(CanLabellingGens);
+        CanTransform=ExtremeRays.submatrix(CanBasisKey).invert(CanDenom);
+        
+        // now we remove the extreme rays from the stored Hilbert CanBasisKey
+        // since the isomorphic copy knows its own extreme rays
+        if(C.Hilbert_Basis.size()>nrExtremeRays){ // otherwise nothing to do
+            set<vector<Integer> > ERSet;
+            typename set<vector<Integer> >::iterator e;
+            for(size_t i=0;i<nrExtremeRays;++i)
+                ERSet.insert(ExtremeRays[i]);
+            for(auto h=C.Hilbert_Basis.begin();h!=C.Hilbert_Basis.end();++h){
+                e=ERSet.find(*h);
+                if(e==ERSet.end())
+                    HilbertBasis.append(*h);
+            }            
+        }       
+    }
+    success=true;
+}
+
+template<typename Integer>
+const Matrix<Integer>& IsoType<Integer>::getHilbertBasis() const{
+    return HilbertBasis;    
+}
+
+template<typename Integer>
+const Matrix<Integer>& IsoType<Integer>::getCanTransform() const{
+    return CanTransform;    
+}
+
+template<typename Integer>
+Integer IsoType<Integer>::getCanDenom() const{
+    return CanDenom;
 }
 
 template<typename Integer>
@@ -316,9 +385,11 @@ Isomorphism_Classes<Integer>::Isomorphism_Classes(){
 }
 
 template<typename Integer>
-void Isomorphism_Classes<Integer>::add_type(Full_Cone<Integer>& C){
+void Isomorphism_Classes<Integer>::add_type(Full_Cone<Integer>& C, bool& success){
     
-    Classes.push_back(IsoType<Integer>(C));  
+    Classes.push_back(IsoType<Integer>(C,success));
+    if(!success)
+        Classes.pop_back();
 }
 
 size_t NOT_FOUND=0;
@@ -327,8 +398,11 @@ size_t FOUND=0;
 template<typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Integer>& C, bool& found) const{
 
+    assert(C.getNrExtremeRays()==C.nr_gen);
     cout << "SEARCHING " << Classes.size() << endl;
     found=false;
+    if(C.Automs.HB_needed)
+        return *Classes.begin();
     auto it=Classes.begin();
     ++it;
     for(;it!=Classes.end();++it){
@@ -398,11 +472,15 @@ list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<
 }
 
 
-vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms){
+vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     
     vector<vector<key_t> > Orbits;
-    if(Perms.size()==0)
+    if(Perms.size()==0){  //each element is its own orbit
+        Orbits.reserve(N);
+        for(size_t i=0;i<N;++i)
+            Orbits.push_back(vector<key_t>(1,i));
         return Orbits;
+    }
     Orbits=cycle_decomposition(Perms[0],true); // with fixed points!
     list<boost::dynamic_bitset<> > P1=partition(Perms[0].size(),Orbits);
     for(size_t i=1;i<Perms.size();++i){
