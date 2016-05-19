@@ -3047,6 +3047,8 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
         cout << "$$$$$$  ";
     cout << " " << Facet_Gens.nr_of_rows() << endl;
     
+    cout << "Height FP over facet " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
+    
     Full_Cone ConeOverFacet(Facet_Gens);
     ConeOverFacet.verbose=verbose;
 
@@ -3062,6 +3064,8 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=true;
     ConeOverFacet.compute();
+    Facet_HB.clear();
+    Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
 }
 
 //---------------------------------------------------------------------------
