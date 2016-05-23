@@ -48,11 +48,6 @@ vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormPerms() const{
 }
 
 template<typename Integer>
-vector<vector<key_t> > Automorphism_Group<Integer>::getSuppHypPerms() const{
-    return LinFormPerms;
-}
-
-template<typename Integer>
 vector<vector<key_t> > Automorphism_Group<Integer>::getGenOrbits() const{
     return GenOrbits;
 }
@@ -60,11 +55,6 @@ vector<vector<key_t> > Automorphism_Group<Integer>::getGenOrbits() const{
 template<typename Integer>
 vector<vector<key_t> > Automorphism_Group<Integer>::getLinFormOrbits() const{
     return LinFormOrbits;
-}
-
-template<typename Integer>
-vector<vector<key_t> > Automorphism_Group<Integer>::getSuppHypOrbits() const{
-    return SuppHypOrbits;
 }
 
 template<typename Integer>
@@ -83,6 +73,11 @@ bool Automorphism_Group<Integer>::isFromAmbientSpace() const{
 }
 
 template<typename Integer>
+bool Automorphism_Group<Integer>::isFromHB() const{
+    return from_HB;
+}
+
+template<typename Integer>
 bool Automorphism_Group<Integer>::isLinMapsComputed() const{
     return LinMaps_computed;
 }
@@ -98,21 +93,6 @@ bool Automorphism_Group<Integer>::isInhomogeneous() const{
 }
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::isHB_needed() const{
-    return HB_needed;
-}
-
-template<typename Integer>
-void Automorphism_Group<Integer>::setFromAmbeientSpace(bool on_off){
-    from_ambient_space=on_off;
-}
-
-template<typename Integer>
-void Automorphism_Group<Integer>::setGraded(bool on_off){
-    graded=on_off;
-}
-
-template<typename Integer>
 void Automorphism_Group<Integer>::setInhomogeneous(bool on_off){
     inhomogeneous=on_off;
 }
@@ -123,7 +103,7 @@ void Automorphism_Group<Integer>::reset(){
     from_ambient_space=false;
     graded=false;
     inhomogeneous=false;
-    HB_needed=false;
+    from_HB=false;
 }
 
 template<typename Integer>
@@ -159,54 +139,62 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(){
 }
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
-                                          const size_t nr_special_linforms, size_t nr_special_gens){
-    Gens=GivenGens;
-    LinForms=GivenLinForms;
+bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
+                                          const Matrix<Integer>& SuppHyps,const Matrix<Integer>& GivenLinForms, bool given_lf_are_supps, 
+                                          size_t nr_special_gens, const size_t nr_special_linforms){
+    Gens=ExtRays;
+    LinForms=SuppHyps;
+    SpecialLinForms=Matrix<Integer>(0,ExtRays[0].size());
+    for(size_t i=GivenLinForms.nr_of_rows()-1-nr_special_linforms;i<GivenLinForms.nr_of_rows()-1;++i){
+        SpecialLinForms.append(GivenLinForms[i]);
+    }
     
-    vector<vector<long> > result=compute_automs(Gens,LinForms,nr_special_linforms,order,CanType);
+    
+    from_HB=!given_gens_are_extrays;
+    from_ambient_space=!given_lf_are_supps;
+    
+    vector<vector<long> > result=compute_automs(GivenGens,nr_special_gens, GivenLinForms,nr_special_linforms,order,CanType);
     size_t nr_automs=(result.size()-3)/2; // the last 3 have special information
-    GenPerms.clear();
-    LinFormPerms.clear();
-    SuppHypPerms.clear();
-    for(size_t i=0;i<nr_automs;++i){
+
+    vector<vector<key_t> > ComputedGenPerms, ComputedLFPerms;
+    for(size_t i=0;i<nr_automs;++i){ // decode results
         vector<key_t> dummy(result[0].size());
         for(size_t j=0;j<dummy.size();++j)
             dummy[j]=result[i][j];
-        GenPerms.push_back(dummy);
+        ComputedGenPerms.push_back(dummy);
         vector<key_t> dummy_too(result[nr_automs].size());
         for(size_t j=0;j<dummy_too.size();++j)
             dummy_too[j]=result[i+nr_automs][j];
         LinFormPerms.push_back(dummy_too);
-        SuppHypPerms.push_back(dummy_too);
-        // remove the (automatically fixed) special linear forms
-        SuppHypPerms.back().resize(dummy_too.size()-nr_special_linforms);       
+        ComputedLFPerms.push_back(dummy_too);     
     }
-    GenOrbits=convert_to_orbits(result[result.size()-3]);
-    LinFormOrbits=convert_to_orbits(result[result.size()-2]);
-    CanLabellingGens.resize(result[result.size()-1].size());
-    for(size_t i=0;i<CanLabellingGens.size();++i)
-        CanLabellingGens[i]=result[result.size()-1][i];
     
-    SuppHypOrbits.clear(); // extract support hyperplanes from LinFormOrbits
-    size_t nr_supp=GivenLinForms.nr_of_rows()-nr_special_linforms;
-    for(size_t k=0;k<LinFormOrbits.size();++k){
-        if(LinFormOrbits[k][0]<nr_supp)
-            SuppHypOrbits.push_back(LinFormOrbits[k]);        
-    }
-    return make_linear_maps_primal();
-}
-
-template<typename Integer>
-bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
-                                          const size_t nr_special_linforms, size_t nr_special_gens){
-    
-    bool success=compute(ComputeFrom,GivenLinForms,nr_special_linforms);
-    if(!success)
+    if(!make_linear_maps_primal())
         return false;
-    Gens=GivenGens;
-    gen_data_via_lin_maps();
-    HB_needed=true;  // This routine is called with the HB in the role of ComputeFrom
+    
+    if(given_gens_are_extrays){
+        GenPerms=ComputedGenPerms;
+        GenOrbits=convert_to_orbits(result[result.size()-3]);
+    }
+    else{
+        gen_data_via_lin_maps();
+    }
+    
+    if(given_lf_are_supps){
+        LinFormPerms=ComputedLFPerms;
+        LinFormOrbits=convert_to_orbits(result[result.size()-2]);
+    }
+    else{
+        linform_data_via_lin_maps();        
+    }
+    
+    CanLabellingGens.clear();
+    if(given_gens_are_extrays){
+        CanLabellingGens.resize(result[result.size()-1].size());
+        for(size_t i=0;i<CanLabellingGens.size();++i)
+            CanLabellingGens[i]=result[result.size()-1][i];
+    }
+    
     return true;
 }
 
@@ -227,6 +215,27 @@ void Automorphism_Group<Integer>::gen_data_via_lin_maps(){
         GenPerms.push_back(Perm);            
     }
     GenOrbits=orbits(GenPerms,Gens.nr_of_rows());
+}
+
+template<typename Integer>
+void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
+
+    LinFormPerms.clear();
+    map<vector<Integer>,key_t> S;
+    for(key_t k=0;k<LinForms.nr_of_rows();++k)
+        S[LinForms[k]]=k;
+    for(size_t i=0; i<LinMaps.size();++i){
+        vector<key_t> Perm(LinForms.nr_of_rows());
+        Integer dummy;
+        Matrix<Integer> LM=LinMaps[i].invert(dummy).transpose();
+        for(key_t j=0;j<Perm.size();++j){
+            vector<Integer> Im=LM.MxV(LinForms[j]);
+            assert(S.find(Im)!=S.end()); // for safety
+            Perm[j]=S[Im];
+        }
+        LinFormPerms.push_back(Perm);            
+    }
+    LinFormOrbits=orbits(LinFormPerms,LinForms.nr_of_rows());
 }
 
 template<typename Integer>
@@ -312,7 +321,7 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool& success){
         C.compute();
     }
 
-    if(C.Automs.isHB_needed()) // not useful
+    if(C.Automs.isFromHB()) // not useful
         return;
     CanType=C.Automs.CanType;
     CanLabellingGens=C.Automs.getCanLabellingGens();
@@ -401,7 +410,7 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
     assert(C.getNrExtremeRays()==C.nr_gen);
     cout << "SEARCHING " << Classes.size() << endl;
     found=false;
-    if(C.Automs.HB_needed)
+    if(C.Automs.from_HB)
         return *Classes.begin();
     auto it=Classes.begin();
     ++it;
@@ -552,11 +561,11 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
 }
     
 template<typename Integer>
-vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType, size_t nr_special_gens){
+vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType){
 
-    vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), LinForms.get_elements(), 
-                                                         nr_special_linforms, group_order, CanType, nr_special_gens);
+    vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
+                                                         nr_special_linforms, group_order, CanType);
     return Automs;
 }
 

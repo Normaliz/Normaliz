@@ -211,10 +211,14 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
 }
 
 
-void ConeProperties::check_sanity(bool inhomogeneous) {
+void ConeProperties::check_sanity(bool inhomogeneous, bool input_automorphisms) {
     
     if(CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup))
         throw BadInputException("Only one of full or ambient automorphism group allowed");
+    if(input_automorphisms && (CPs.test(ConeProperty::FullAutomorphismGroup) && CPs.test(ConeProperty::AmbientAutomorphismGroup)))
+        throw BadInputException("Only one definition of automorphism group allowed");
+     if(CPs.test(ConeProperty::AutomorphismGroup))
+        throw BadInputException("AutomorphismGroup only for internal use");
     ConeProperty::Enum prop;
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
@@ -291,9 +295,10 @@ namespace {
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(ConeProperty::FullAutomorphismGroup) = "FullAutomorphismGroup";
         CPN.at(ConeProperty::AmbientAutomorphismGroup) = "AmbientAutomorphismGroup";
+        CPN.at(ConeProperty::AutomorphismGroup) = "AutomorphismGroup";
 
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 41,
+        static_assert (ConeProperty::EnumSize == 42,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

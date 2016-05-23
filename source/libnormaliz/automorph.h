@@ -44,15 +44,13 @@ class Automorphism_Group {
     template<typename> friend class Full_Cone;
     template<typename> friend class Isomorphism_Classes;
     
-    Matrix<Integer> Gens, LinForms, SuppHyps;
+    Matrix<Integer> Gens, LinForms, SpecialLinForms;
 
     vector<vector<key_t> > GenPerms; 
     vector<vector<key_t> > LinFormPerms;
-    vector<vector<key_t> > SuppHypPerms;
     
     vector<vector<key_t> > GenOrbits;
     vector<vector<key_t> > LinFormOrbits;
-    vector<vector<key_t> > SuppHypOrbits;
     
     vector<key_t> CanLabellingGens;
     
@@ -60,15 +58,18 @@ class Automorphism_Group {
     
     mpz_class order;
     
-    bool HB_needed; // indicates whether the Hilbert basis was needed for the computation
+    bool from_HB; // indicates whether the Hilbert basis was used for the computation
     
     bool from_ambient_space;
+    bool from_input;
+    
     bool LinMaps_computed;
     bool graded;
     bool inhomogeneous;
     
     bool make_linear_maps_primal();
     void gen_data_via_lin_maps();
+    void linform_data_via_lin_maps();
     void reset();
     
 public:
@@ -78,16 +79,14 @@ public:
     mpz_class getOrder() const;
     vector<vector<key_t> > getGenPerms() const;
     vector<vector<key_t> > getLinFormPerms() const;
-    vector<vector<key_t> > getSuppHypPerms() const;
     vector<vector<key_t> > getGenOrbits() const;
     vector<vector<key_t> > getLinFormOrbits() const;
-    vector<vector<key_t> > getSuppHypOrbits() const;
     vector<Matrix<Integer> > getLinMaps() const;
     vector<key_t> getCanLabellingGens() const;
     bool isFromAmbientSpace() const;
     bool isGraded() const;
     bool isInhomogeneous() const;
-    bool isHB_needed() const;
+    bool isFromHB() const;
     bool isLinMapsComputed() const;
     void setFromAmbeientSpace(bool on_off);
     void setGraded(bool on_off);
@@ -97,9 +96,9 @@ public:
     
     BinaryMatrix getCanType();
     
-    bool compute(const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, const size_t nr_special_linforms, size_t nr_special_gens=0);
-    bool compute(const Matrix<Integer>& ComputeFrom, const Matrix<Integer>& GivenGens,const Matrix<Integer>& GivenLinForms, 
-                 const size_t nr_special_linforms, size_t nr_special_gens=0);
+    bool compute(const Matrix<Integer>& ExtRays,const Matrix<Integer>& GivenGens, bool given_gens_are_extrays,
+                 const Matrix<Integer>& SupHyps,const Matrix<Integer>& GivenLinForms, bool given_llf_are_supps, 
+                 size_t nr_special_gens, const size_t nr_special_linforms);
     
     Automorphism_Group();
     
@@ -175,9 +174,8 @@ public:
 
 // returns all data of nauty
 template<typename Integer>
-vector<vector<long>> compute_automs(const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms, 
-                                    const size_t nr_special_linforms, mpz_class& group_order,
-                                    BinaryMatrix& CanType, size_t nr_special_gens=0); 
+vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType);
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits);
 

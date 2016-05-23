@@ -828,6 +828,7 @@ void Cone<Integer>::initialize() {
     dim = 0;
     unit_group_index = 1;
     inhomogeneous=false;
+    input_automorphisms=false;
     rees_primary = false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
@@ -1427,7 +1428,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options(inhomogeneous);
-    ToCompute.check_sanity(inhomogeneous);
+    ToCompute.check_sanity(inhomogeneous, input_automorphisms);
+    
+    ToCompute.set(ConeProperty::AutomorphismGroup, ToCompute.test(ConeProperty::FullAutomorphismGroup)
+                || ToCompute.test(ConeProperty::AmbientAutomorphismGroup) || input_automorphisms);
+    
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
         if (ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
             errorOutput() << "ERROR: Module generators over original monoid only computable if original monoid is defined!"
@@ -1610,7 +1615,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     Matrix<IntegerFC> FC_Gens;
 
     BasisChangePointed.convert_to_sublattice(FC_Gens, Generators);
-    Full_Cone<IntegerFC> FC(FC_Gens,!ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
+    Full_Cone<IntegerFC> FC(FC_Gens, !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid));
     // !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid) blocks make_prime in full_cone.cpp
 
     /* activate bools in FC */
@@ -1649,8 +1654,14 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::StanleyDec)) {
         FC.do_Stanley_dec = true;
     }
-    if (ToCompute.test(ConeProperty::FullAutomorphismGroup) || ToCompute.test(ConeProperty::AmbientAutomorphismGroup)) {
+    if (ToCompute.test(ConeProperty::AutomorphismGroup)) {
         FC.exploit_automorphisms = true;
+        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphismGroup);
+        if (ToCompute.test(ConeProperty::AmbientAutomorphismGroup)){
+            convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
+        }
+        FC.full_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
+        FC.input_automorphisms=input_automorphisms;
     }
     if (ToCompute.test(ConeProperty::Approximate)
      && ToCompute.test(ConeProperty::Deg1Elements)) {
@@ -2006,7 +2017,16 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
     if(inhomogeneous)
         BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Truncation, Dehomogenization);
     FC.do_class_group=ToCompute.test(ConeProperty::ClassGroup);
-    FC.exploit_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
+    if (ToCompute.test(ConeProperty::AutomorphismGroup)) {
+        FC.exploit_automorphisms = true;
+        FC.ambient_automorphisms=ToCompute.test(ConeProperty::AmbientAutomorphismGroup);
+        if (ToCompute.test(ConeProperty::AmbientAutomorphismGroup)){
+            convert(FC.Embedding,BasisChangePointed.getEmbeddingMatrix());
+        }
+        FC.full_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
+        FC.input_automorphisms=input_automorphisms;
+    }
+
     FC.dual_mode();
     extract_data(FC);
 }
@@ -2253,17 +2273,17 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::ClassGroup);
     }
     
-    if(FC.isComputed(ConeProperty::FullAutomorphismGroup)){
+    if(FC.isComputed(ConeProperty::AutomorphismGroup)){
         Automs.order=FC.Automs.order;
         Automs.graded=FC.Automs.graded;
         Automs.inhomogeneous=FC.Automs.inhomogeneous;
         Automs.GenPerms=FC.Automs.GenPerms;
         Automs.LinFormPerms=FC.Automs.LinFormPerms;
-        Automs.SuppHypPerms=FC.Automs.SuppHypPerms;
         Automs.GenOrbits=FC.Automs.GenOrbits;
         Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
-        Automs.SuppHypOrbits=FC.Automs.SuppHypOrbits;
-        is_Computed.set(ConeProperty::FullAutomorphismGroup);        
+        is_Computed.set(ConeProperty::AutomorphismGroup);
+        is_Computed.set(ConeProperty::FullAutomorphismGroup);
+        is_Computed.set(ConeProperty::AmbientAutomorphismGroup);        
     }
     
     /* if (FC.isComputed(ConeProperty::MaximalSubspace) && 

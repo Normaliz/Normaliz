@@ -51,10 +51,10 @@ void getmyautoms(int count, int *perm, int *orbits,
 }
 
 template<typename Integer>
-vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, 
+vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Generators, size_t nr_special_gens, 
                                               const vector<vector<Integer> >& LinForms, 
                                               const size_t nr_special_linforms, mpz_class& group_order,
-                                              BinaryMatrix& CanType, size_t nr_special_gens){
+                                              BinaryMatrix& CanType){
     CollectedAutoms.clear();
     
     DYNALLSTAT(graph,g,g_sz);
@@ -118,9 +118,9 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         }
     }           
     
-    for(i=0;i<n;++i){ // prepare partitions
-        lab[i]=i;
-        ptn[i]=1;
+    for(int ii=0;ii<n;++ii){ // prepare partitions
+        lab[ii]=ii;
+        ptn[ii]=1;
     }
     
     for(k=0;k<ll;++k){ // make partitions layer by layer
@@ -135,17 +135,19 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     densenauty(g,lab,ptn,orbits,&options,&stats,m,n,cg);
     
     vector<vector<long> > AutomsAndOrbits(2*CollectedAutoms.size());
-    AutomsAndOrbits.reserve(2*CollectedAutoms.size()+2);
+    AutomsAndOrbits.reserve(2*CollectedAutoms.size()+3);
 
     for(k=0;k<CollectedAutoms.size();++k){
         vector<long> GenPerm(mm);
         for(i=0;i<mm;++i)
             GenPerm[i]=CollectedAutoms[k][i];
         AutomsAndOrbits[k]=GenPerm;
-        vector<long> LFPerm(nn);
-        for(i=mm;i<mm+nn;++i)
+        vector<long> LFPerm(nn-nr_special_linforms);  // we remove the special linear forms here
+        for(i=mm;i<mm+nn-nr_special_linforms;++i)
             LFPerm[i-mm]=CollectedAutoms[k][i]-mm;
-        AutomsAndOrbits[k+CollectedAutoms.size()]=LFPerm;        
+        AutomsAndOrbits[k+CollectedAutoms.size()]=LFPerm;
+        AutomsAndOrbits[k+CollectedAutoms.size()];
+        
     }    
     
     vector<long> GenOrbits(mm);
@@ -153,8 +155,8 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
         GenOrbits[i]=orbits[i];
     AutomsAndOrbits.push_back(GenOrbits);
     
-    vector<long> LFOrbits(nn);
-    for(i=0;i<nn;++i)
+    vector<long> LFOrbits(nn-nr_special_linforms); // we remove the special linear forms here
+    for(i=0;i<nn-nr_special_linforms;++i)
         LFOrbits[i]=orbits[i+mm]-mm;
     AutomsAndOrbits.push_back(LFOrbits);
  
@@ -177,16 +179,16 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
 }
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, 
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, BinaryMatrix& CanType, size_t nr_special_gens);
+                        mpz_class& group_order, BinaryMatrix& CanType);
 #endif // NMZ_MIC_OFFLOAD
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, 
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<long long> >& Generators, size_t nr_special_gens, 
                         const vector<vector<long long> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order, BinaryMatrix& CanType, size_t nr_special_gens);
-template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, 
+                        mpz_class& group_order, BinaryMatrix& CanType);
+template vector<vector<long> > compute_automs_by_nauty(const vector<vector<mpz_class> >& Generators, size_t nr_special_gens, 
                         const vector<vector<mpz_class> >& LinForms,const size_t nr_special_linforms,   
-                        mpz_class& group_order,BinaryMatrix& CanType, size_t nr_special_gens);
+                        mpz_class& group_order,BinaryMatrix& CanType);
 
 } // namespace
 

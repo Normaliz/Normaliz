@@ -269,6 +269,7 @@ private:
 
     bool pointed;
     bool inhomogeneous;
+    bool input_automorphisms;
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
     bool integrally_closed;

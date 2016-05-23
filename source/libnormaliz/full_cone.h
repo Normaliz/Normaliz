@@ -107,7 +107,9 @@ public:
     bool do_cone_dec;
     bool stop_after_cone_dec;
     bool exploit_automorphisms;
-    
+    bool input_automorphisms;
+    bool full_automorphisms;
+    bool ambient_automorphisms;
     bool do_extreme_rays;
     bool do_pointed;
 
@@ -173,7 +175,11 @@ public:
     };
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
-    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished 
+    size_t old_nr_supp_hyps; // must be remembered since Facets gets extended before the current generators is finished
+    
+    // Pointer to the cone by which the Full_Cone has been constructed (if any)
+    // Cone<Integer>* Creator;
+    Matrix<Integer> Embedding; // temporary solution
 
     // the absolute top cone in recursive algorithms where faces are evalutated themselves
     Full_Cone<Integer>* God_Father;
