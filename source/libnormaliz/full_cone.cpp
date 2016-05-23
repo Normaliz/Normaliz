@@ -3263,7 +3263,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.compute();
     bool found;
     const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(Facet,found);
-    if(false){
+    if(found){
         mpq_class mmm=face_class.getMultiplicity();       
         return mmm*Facet_Sub.getExternalIndex();        
     } else{
@@ -3285,8 +3285,10 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.God_Father=God_Father;
         Facet_2.do_multiplicity=true;
         Facet_2.compute();
+        mpq_class mult_before=Facet_2.multiplicity;
         bool added;
         God_Father->FaceClasses.add_type(Facet_2, added);
+        assert(mult_before==Facet_2.multiplicity);
         return Facet_2.multiplicity*Facet_Sub.getExternalIndex();
     }    
 }

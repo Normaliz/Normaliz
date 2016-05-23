@@ -135,10 +135,10 @@ class IsoType {
 
 public:
     
-    bool isOfType(Full_Cone<Integer>& C) const;
+    bool isOfType(const Full_Cone<Integer>& C) const;
     // bool isOfType(Cone<Integer>& C) const;
     
-    IsoType(Full_Cone<Integer>& C,bool& success); // success indicates whether a class could be created
+    IsoType(const Full_Cone<Integer>& C,bool& success); // success indicates whether a class could be created
     // IsoType(Cone<Integer>& C, bool slim=true);
     
     // size_t getRank();

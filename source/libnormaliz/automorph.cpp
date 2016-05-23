@@ -301,9 +301,10 @@ IsoType<Integer>::IsoType(){ // constructs a dummy object
 }
     
 template<typename Integer>
-IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool& success){
+IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
     
     success=false;
+    assert(C.isComputed(ConeProperty::AutomorphismGroup));
 
     // we don't want the zero cone here. It should have been filtered out.
     assert(C.dim>0);
@@ -315,13 +316,8 @@ IsoType<Integer>::IsoType(Full_Cone<Integer>& C, bool& success){
         Grading=C.Grading;
     if(C.inhomogeneous)
         Truncation=C.Truncation;
-    
-    if(!C.isComputed(ConeProperty::FullAutomorphismGroup)){
-        C.exploit_automorphisms=true;
-        C.compute();
-    }
 
-    if(C.Automs.isFromHB()) // not useful
+    if(C.Automs.isFromHB()) // not yet useful
         return;
     CanType=C.Automs.CanType;
     CanLabellingGens=C.Automs.getCanLabellingGens();
@@ -372,7 +368,7 @@ Integer IsoType<Integer>::getCanDenom() const{
 }
 
 template<typename Integer>
-bool IsoType<Integer>::isOfType(Full_Cone<Integer>& C) const{
+bool IsoType<Integer>::isOfType(const Full_Cone<Integer>& C) const{
 
     if(C.dim!=rank || C.nrSupport_Hyperplanes!=nrSupportHyperplanes
             || nrExtremeRays!=C.getNrExtremeRays())
