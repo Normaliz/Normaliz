@@ -3092,6 +3092,9 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     ConeOverFacet.Mother=&(*this);
     ConeOverFacet.God_Father=God_Father;
     ConeOverFacet.exploit_automorphisms=true;
+    ConeOverFacet.full_automorphisms=full_automorphisms;
+    ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
+    ConeOverFacet.input_automorphisms=input_automorphisms;
     ConeOverFacet.keep_order=true;
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=true;
@@ -3178,6 +3181,7 @@ vector<vector<key_t> > Full_Cone<Integer>::get_facet_keys_for_orbits(const vecto
 // Everything for the first hyperplane in the orbit.
 
     vector<vector<key_t> > facet_keys;
+    cout << "LFOrbits " << Automs.LinFormOrbits.size() << endl;
     for(size_t k=0;k<Automs.LinFormOrbits.size();++k){
         key_t facet_nr=Automs.LinFormOrbits[k][0];
         assert(facet_nr<nrSupport_Hyperplanes); // for safety
@@ -3257,6 +3261,12 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.Mother=&(*this);
     Facet.God_Father=God_Father;
     Facet.exploit_automorphisms=true;
+    Facet.full_automorphisms=full_automorphisms;
+    Facet.ambient_automorphisms=ambient_automorphisms;
+    Facet.input_automorphisms=input_automorphisms;
+    if(ambient_automorphisms){
+        Facet.Embedding=Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
+    }
     Facet.descent_level=descent_level+1;
     Facet.keep_order=true;
     Facet.Support_Hyperplanes=Facet_Sub.to_sublattice_dual(Support_Hyperplanes);
@@ -3276,6 +3286,12 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.nrSupport_Hyperplanes=Facet.nrSupport_Hyperplanes;
         Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
         Facet_2.exploit_automorphisms=true;
+        Facet_2.full_automorphisms=full_automorphisms;
+        Facet_2.ambient_automorphisms=ambient_automorphisms;
+        Facet_2.input_automorphisms=input_automorphisms;
+        if(ambient_automorphisms){
+            Facet_2.Embedding=Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
+        }
         Facet_2.keep_order=true;
         Facet_2.verbose=verbose;
 	Facet_2.descent_level=descent_level+1;
@@ -4503,7 +4519,13 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
         verboseOutput() << "Computing automorphism group" << endl;
     
     size_t nr_special_linforms=0;
-    Matrix<Integer> Help=Support_Hyperplanes;
+    Matrix<Integer> Help;
+    cout << "full " << full_automorphisms << " " << ambient_automorphisms << endl;
+    if(ambient_automorphisms)
+        Help=Embedding.transpose();
+    if(full_automorphisms)
+        Help=Support_Hyperplanes;
+    cout << "Help " << Help.nr_of_rows() << " " << Help.nr_of_columns() << " dim " << dim << " " << Grading.size() << endl;
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
         nr_special_linforms++;
         Help.append(Grading);
@@ -4513,7 +4535,7 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
         Help.append(Truncation);
     }
     bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),true,
-                                Support_Hyperplanes,Help,true,nr_special_gens,nr_special_linforms);
+                                Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
     // bool success=false;
     if(success==false){
         if(verbose)
@@ -4540,7 +4562,7 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
             }
         }
         success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Support_Hyperplanes),false,
-                               Support_Hyperplanes,Help,true,nr_special_gens,nr_special_linforms);
+                               Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
     }
     assert(success==true);
     is_Computed.set(ConeProperty::AutomorphismGroup);

@@ -112,14 +112,15 @@ Automorphism_Group<Integer>::Automorphism_Group(){
 }
 
 template<typename Integer>
-bool Automorphism_Group<Integer>::make_linear_maps_primal(){
+bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
 
     LinMaps.clear();
     vector<key_t> PreKey=Gens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
-    for(size_t i=0;i<GenPerms.size();++i){
+    cout << "ComputedGenPerms " << ComputedGenPerms.size() << endl;
+    for(size_t i=0;i<ComputedGenPerms.size();++i){
         for(size_t j=0;j<ImKey.size();++j)
-            ImKey[j]=GenPerms[i][PreKey[j]];
+            ImKey[j]=ComputedGenPerms[i][PreKey[j]];
         Matrix<Integer> Pre=Gens.submatrix(PreKey);
         Matrix<Integer> Im=Gens.submatrix(ImKey);
         Integer denom,g;
@@ -169,7 +170,7 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,const M
         ComputedLFPerms.push_back(dummy_too);     
     }
     
-    if(!make_linear_maps_primal())
+    if(!make_linear_maps_primal(GivenGens,ComputedGenPerms))
         return false;
     
     if(given_gens_are_extrays){
@@ -224,6 +225,7 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
     map<vector<Integer>,key_t> S;
     for(key_t k=0;k<LinForms.nr_of_rows();++k)
         S[LinForms[k]]=k;
+    cout << "LinMaps " << LinMaps.size() << endl;
     for(size_t i=0; i<LinMaps.size();++i){
         vector<key_t> Perm(LinForms.nr_of_rows());
         Integer dummy;
@@ -235,6 +237,7 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
         }
         LinFormPerms.push_back(Perm);            
     }
+    cout << "Perms " << LinFormPerms.size() << endl;
     LinFormOrbits=orbits(LinFormPerms,LinForms.nr_of_rows());
 }
 

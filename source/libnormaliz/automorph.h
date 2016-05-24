@@ -67,7 +67,7 @@ class Automorphism_Group {
     bool graded;
     bool inhomogeneous;
     
-    bool make_linear_maps_primal();
+    bool make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms);
     void gen_data_via_lin_maps();
     void linform_data_via_lin_maps();
     void reset();
