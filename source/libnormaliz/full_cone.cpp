@@ -4520,12 +4520,10 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
     
     size_t nr_special_linforms=0;
     Matrix<Integer> Help;
-    cout << "full " << full_automorphisms << " " << ambient_automorphisms << endl;
     if(ambient_automorphisms)
         Help=Embedding.transpose();
     if(full_automorphisms)
         Help=Support_Hyperplanes;
-    cout << "Help " << Help.nr_of_rows() << " " << Help.nr_of_columns() << " dim " << dim << " " << Grading.size() << endl;
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
         nr_special_linforms++;
         Help.append(Grading);
@@ -4534,6 +4532,7 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
         nr_special_linforms++;
         Help.append(Truncation);
     }
+
     bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),true,
                                 Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
     // bool success=false;

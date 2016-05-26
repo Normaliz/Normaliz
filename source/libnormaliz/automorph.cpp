@@ -117,7 +117,6 @@ bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>&
     LinMaps.clear();
     vector<key_t> PreKey=Gens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
-    cout << "ComputedGenPerms " << ComputedGenPerms.size() << endl;
     for(size_t i=0;i<ComputedGenPerms.size();++i){
         for(size_t j=0;j<ImKey.size();++j)
             ImKey[j]=ComputedGenPerms[i][PreKey[j]];
@@ -225,7 +224,6 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
     map<vector<Integer>,key_t> S;
     for(key_t k=0;k<LinForms.nr_of_rows();++k)
         S[LinForms[k]]=k;
-    cout << "LinMaps " << LinMaps.size() << endl;
     for(size_t i=0; i<LinMaps.size();++i){
         vector<key_t> Perm(LinForms.nr_of_rows());
         Integer dummy;
@@ -237,7 +235,6 @@ void Automorphism_Group<Integer>::linform_data_via_lin_maps(){
         }
         LinFormPerms.push_back(Perm);            
     }
-    cout << "Perms " << LinFormPerms.size() << endl;
     LinFormOrbits=orbits(LinFormPerms,LinForms.nr_of_rows());
 }
 
@@ -426,8 +423,21 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
     return *Classes.begin();
 }
 
-vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition){
+list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >& Orbits){
+// produces a list of bitsets, namely the indicator vectors of the key vectors in Orbits 
     
+    list<boost::dynamic_bitset<> > Part;
+    for(size_t i=0;i<Orbits.size();++i){
+        boost::dynamic_bitset<> p(n);
+        for(size_t j=0;j<Orbits[i].size();++j)
+            p.set(Orbits[i][j],true);
+        Part.push_back(p);
+    }
+    return Part;
+}
+
+vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition){
+// inverse operation of partition    
     vector<vector<key_t> > Keys;
     auto p=Partition.begin();
     for(;p!=Partition.end();++p){
@@ -440,20 +450,10 @@ vector<vector<key_t> > keys(const list<boost::dynamic_bitset<> >& Partition){
     return Keys;
 }
 
-list<boost::dynamic_bitset<> > partition(size_t n, const vector<vector<key_t> >& Orbits){
-    
-    list<boost::dynamic_bitset<> > Part;
-    for(size_t i=0;i<Orbits.size();++i){
-        boost::dynamic_bitset<> p(n);
-        for(size_t j=0;j<Orbits[i].size();++j)
-            p.set(Orbits[i][j],true);
-        Part.push_back(p);
-    }
-    return Part;
-}
 
 list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<> >& P1,
                                                const list<boost::dynamic_bitset<> >& P2){
+// computes the join of two partitions given as lusts of indicator vectors
     list<boost::dynamic_bitset<> > J=P1; // work copy pf P1
     auto p2=P2.begin();
     for(;p2!=P2.end();++p2){
@@ -479,7 +479,44 @@ list<boost::dynamic_bitset<> > join_partitions(const list<boost::dynamic_bitset<
     return J;
 }
 
+vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
+// Perms is a list of permutations of 0,...,N-1
+    
+    vector<vector<key_t> > Orbits;
+        if(Perms.size()==0){  //each element is its own orbit
+        Orbits.reserve(N);
+        for(size_t i=0;i<N;++i)
+            Orbits.push_back(vector<key_t>(1,i));
+        return Orbits;
+    }
+    vector<bool> InOrbit(N,false);
+    for(size_t i=0;i<N;++i){
+        if(InOrbit[i])
+            continue;
+        vector<key_t> NewOrbit;
+        NewOrbit.push_back(i);
+        InOrbit[i]=true;
+        for(size_t j=0;j<NewOrbit.size();++j){
+            for(size_t k=0;k<Perms.size();++k){
+                key_t im=Perms[k][NewOrbit[j]];
+                if(InOrbit[im])
+                    continue;
+                NewOrbit.push_back(im);
+                InOrbit[im]=true;
+            }                
+        }
+        sort(NewOrbit.begin(),NewOrbit.end());
+        Orbits.push_back(NewOrbit);
+    }
 
+    return Orbits;
+}
+
+
+/*
+*/
+
+/*
 vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     
     vector<vector<key_t> > Orbits;
@@ -498,6 +535,7 @@ vector<vector<key_t> > orbits(const vector<vector<key_t> >& Perms, size_t N){
     }
     return keys(P1);
 }
+*/
 
 vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
     
@@ -514,7 +552,10 @@ vector<vector<key_t> > convert_to_orbits(const vector<long>& raw_orbits){
     }
     return orbits;    
 }
+
+
 vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points){
+// computes the cacle decomposition of a permutation with or wothout fixed points
 
     vector<vector<key_t> > dec;
     vector<bool> in_cycle(perm.size(),false);

@@ -312,7 +312,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         Out.set_write_tgn(true);
         Out.set_write_inv(true);
     }
-    if (to_compute.test(ConeProperty::FullAutomorphismGroup)) {
+    if (to_compute.test(ConeProperty::FullAutomorphismGroup) || to_compute.test(ConeProperty::AmbientAutomorphismGroup)) {
         Out.set_write_aut(true);
     }
     for(size_t i=0;i<OutFiles.size();++i){

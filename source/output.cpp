@@ -336,7 +336,7 @@ void Output<Integer>::write_aut() const{
     ofstream out(file_name.c_str());
     
     if(Result->Automs.isFromAmbientSpace()){
-        out << "Ambient automorphism group of order " << Result->Automs.getOrder() << " in ambient space" << endl << endl; 
+        out << "Ambient automorphism group of order " << Result->Automs.getOrder() << endl << endl; 
     } else{
         out << "Full automorphism group of order " << Result->Automs.getOrder() << endl << endl;
     }
@@ -368,11 +368,8 @@ void Output<Integer>::write_aut() const{
     }
     out << endl;
     
-    if(Result->Automs.isFromAmbientSpace()){
-        out << "Permutations of coordinates" << endl; 
-    } else{
-        out << "Permutations of support hyperplanes" << endl;
-    }
+    out << "Permutations of support hyperplanes" << endl;
+
     nr_items=Result->Automs.getLinFormPerms().size();
     out << nr_items << endl;
     if(nr_items>0){
@@ -672,7 +669,7 @@ void Output<Integer>::write_files() const {
         write_tri();
     }
     
-    if (aut && Result->isComputed(ConeProperty::FullAutomorphismGroup)) {     //write automorphism group
+    if (aut && Result->isComputed(ConeProperty::AutomorphismGroup)) {     //write automorphism group
         write_aut();
     }
 
