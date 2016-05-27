@@ -115,13 +115,13 @@ template<typename Integer>
 bool Automorphism_Group<Integer>::make_linear_maps_primal(const Matrix<Integer>& GivenGens,const vector<vector<key_t> >& ComputedGenPerms){
 
     LinMaps.clear();
-    vector<key_t> PreKey=Gens.max_rank_submatrix_lex();
+    vector<key_t> PreKey=GivenGens.max_rank_submatrix_lex();
     vector<key_t> ImKey(PreKey.size());
     for(size_t i=0;i<ComputedGenPerms.size();++i){
         for(size_t j=0;j<ImKey.size();++j)
             ImKey[j]=ComputedGenPerms[i][PreKey[j]];
-        Matrix<Integer> Pre=Gens.submatrix(PreKey);
-        Matrix<Integer> Im=Gens.submatrix(ImKey);
+        Matrix<Integer> Pre=GivenGens.submatrix(PreKey);
+        Matrix<Integer> Im=GivenGens.submatrix(ImKey);
         Integer denom,g;
         Matrix<Integer> Map=Pre.solve(Im,denom);
         g=Map.matrix_gcd();
