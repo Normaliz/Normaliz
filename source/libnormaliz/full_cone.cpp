@@ -3057,7 +3057,7 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
   vector<Integer> NewFacet(dim);
   for(key_t i=0;i<nrSupport_Hyperplanes;++i){
     if(i==facet_nr)
-	continue;
+        continue;
     Integer hN=v_scalar_product(fixed_point,Support_Hyperplanes[i]);
     NewFacet=FM_comb(Facet,h,Support_Hyperplanes[i],hN);
     SuppHyps.append(NewFacet);
@@ -3065,6 +3065,38 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
   return SuppHyps;
   
 }
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
+
+    assert(isComputed(ConeProperty::FullAutomorphismGroup));
+    
+    size_t N=copy.getHilbertBasis().nr_of_rows();
+    if(N==0){
+        is_Computed.set(ConeProperty::HilbertBasis);
+        return;    
+    }
+        
+    assert(Hilbert_Basis.empty());
+    for(size_t i=0;i<nr_gen;++i)
+        Hilbert_Basis.push_back(Generators[i]);
+    
+    vector<key_t> CanBasisKey=Generators.max_rank_submatrix_lex(Automs.CanLabellingGens);    
+    Matrix<Integer> Transform=copy.getCanTransform().multiplication(Generators.submatrix(CanBasisKey));
+    Integer D=Transform.matrix_gcd();
+    if(D!=copy.getCanDenom()) // not liftable
+        return;
+    Transform.scalar_division(D);
+    for(size_t i=0;i<N;++i){
+        Hilbert_Basis.push_back(Transform.VxM(copy.getHilbertBasis()[i]));        
+    }
+    
+    is_Computed.set(ConeProperty::HilbertBasis);
+    return;     
+}
+
+
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
@@ -3104,6 +3136,89 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
 }
 
+/*
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
+                                      const key_t facet_nr, list<vector<Integer> >& Facet_HB){
+  
+  
+    Matrix<Integer> Facet_Gens(0,dim);
+    Facet_Gens.append(fixed_point);
+    Facet_Gens.append(Generators.submatrix(facet_key));   
+    
+    for(size_t i=0;i<descent_level+1;++i)
+        cout << "$$$$$$  ";
+    cout << " " << Facet_Gens.nr_of_rows() << endl;
+    cout << "Height FP over facet " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
+    
+    Full_Cone ConeOverFacet(Facet_Gens);
+    ConeOverFacet.verbose=verbose;
+
+    if(isComputed(ConeProperty::Grading)){
+      ConeOverFacet.Grading=Grading;
+      ConeOverFacet.is_Computed.set(ConeProperty::Grading);
+    }
+     ConeOverFacet.descent_level=descent_level+1;
+    ConeOverFacet.Mother=&(*this);
+    ConeOverFacet.God_Father=God_Father;
+    ConeOverFacet.exploit_automorphisms=true;
+    ConeOverFacet.full_automorphisms=full_automorphisms;
+    ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
+    ConeOverFacet.input_automorphisms=input_automorphisms;
+    ConeOverFacet.Embedding=Embedding;
+    ConeOverFacet.keep_order=true;
+    ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
+    ConeOverFacet.do_Hilbert_basis=true;
+    ConeOverFacet.compute();
+    if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis)){
+        Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
+        return;        
+    }
+    bool found;
+    const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(ConeOverFacet,found);
+    if(found){
+        ConeOverFacet.import_HB_from(face_class);
+        Facet_HB.clear();
+        Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
+        if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis))
+            return;
+    } 
+
+    Full_Cone Facet_2(Facet_Gens);
+    Facet_2.Automs=ConeOverFacet.Automs;
+    Facet_2.is_Computed.set(ConeProperty::AutomorphismGroup);
+    Facet_2.Embedding=Embedding;
+    Facet_2.full_automorphisms=full_automorphisms;
+    Facet_2.ambient_automorphisms=ambient_automorphisms;
+    Facet_2.input_automorphisms=input_automorphisms;
+    Facet_2.exploit_automorphisms=true;
+    Facet_2.keep_order=true;
+    Facet_2.Extreme_Rays_Ind=ConeOverFacet.Extreme_Rays_Ind;
+    Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
+    Facet_2.Support_Hyperplanes=ConeOverFacet.Support_Hyperplanes;
+    Facet_2.nrSupport_Hyperplanes=ConeOverFacet.nrSupport_Hyperplanes;
+    Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
+    Facet_2.verbose=verbose;
+    Facet_2.descent_level=descent_level+1;
+    Facet_2.full_automorphisms=full_automorphisms;
+    Facet_2.ambient_automorphisms=ambient_automorphisms;
+    Facet_2.input_automorphisms=input_automorphisms;
+    if(isComputed(ConeProperty::Grading)){
+        Facet_2.Grading=Grading;
+        Facet_2.is_Computed.set(ConeProperty::Grading);
+    }
+    Facet_2.Mother=&(*this);
+    Facet_2.God_Father=God_Father;
+    Facet_2.do_Hilbert_basis=true;
+    Facet_2.compute();
+    bool added;
+    God_Father->FaceClasses.add_type(Facet_2, added);
+    Facet_HB.clear();
+    Facet_HB.splice(Facet_HB.begin(),Facet_2.Hilbert_Basis);
+    return;
+}
+*/
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Full_Cone<Integer>::compute_HB_via_automs(){
@@ -4553,6 +4668,7 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
             Copy.is_Computed.set(ConeProperty::SupportHyperplanes);
             Copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
             Copy.is_Computed.set(ConeProperty::ExtremeRays);
+            Generators.pretty_print(cout);
             Copy.compute();
             if(Copy.isComputed(ConeProperty::HilbertBasis)){
                 Hilbert_Basis.clear();
@@ -4562,8 +4678,8 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
                 do_partial_triangulation=false;
             }
         }
-        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Support_Hyperplanes),false,
-                               Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
+        success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),false,
+                               Support_Hyperplanes,Help,full_automorphisms,0,nr_special_linforms);
     }
     assert(success==true);
     is_Computed.set(ConeProperty::AutomorphismGroup);
