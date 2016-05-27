@@ -3095,6 +3095,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     ConeOverFacet.full_automorphisms=full_automorphisms;
     ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
     ConeOverFacet.input_automorphisms=input_automorphisms;
+    ConeOverFacet.Embedding=Embedding;
     ConeOverFacet.keep_order=true;
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=true;
@@ -4524,6 +4525,7 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
         Help=Embedding.transpose();
     if(full_automorphisms)
         Help=Support_Hyperplanes;
+    cout << "Help " << Help.nr_of_rows() << " " << Help.nr_of_columns() << " " << Grading.size() << endl;
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
         nr_special_linforms++;
         Help.append(Grading);
