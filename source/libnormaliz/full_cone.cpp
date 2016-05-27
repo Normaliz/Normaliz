@@ -2947,7 +2947,7 @@ void Full_Cone<Integer>::compute() {
     }
     
     if(do_Hilbert_basis && !do_multiplicity && exploit_automorphisms){
-        if(descent_level< (long) autom_codim && nr_gen>= dim+1 && Automs.getOrder()>1){ // otherwise direct computation
+        if(descent_level< (long) autom_codim && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
             compute_HB_via_automs();
             if(isComputed(ConeProperty::HilbertBasis)){
                 if(descent_level==0){
@@ -3067,10 +3067,12 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
 }
 //---------------------------------------------------------------------------
 
+/*
+// not used at present
 template<typename Integer>
 void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
 
-    assert(isComputed(ConeProperty::FullAutomorphismGroup));
+    assert(isComputed(ConeProperty::AutomorphismGroup));
     
     size_t N=copy.getHilbertBasis().nr_of_rows();
     if(N==0){
@@ -3095,9 +3097,10 @@ void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
     is_Computed.set(ConeProperty::HilbertBasis);
     return;     
 }
-
+*/
 
 //---------------------------------------------------------------------------
+// version without iso classes
 template<typename Integer>
 void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
                                       const key_t facet_nr, list<vector<Integer> >& Facet_HB){
@@ -3137,7 +3140,9 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
 }
 
 /*
+
 //---------------------------------------------------------------------------
+// version with isomorphism classes -- has no real effect
 template<typename Integer>
 void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
                                       const key_t facet_nr, list<vector<Integer> >& Facet_HB){
@@ -3147,7 +3152,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     Facet_Gens.append(fixed_point);
     Facet_Gens.append(Generators.submatrix(facet_key));   
     
-    for(size_t i=0;i<descent_level+1;++i)
+    for(long i=0;i<descent_level+1;++i)
         cout << "$$$$$$  ";
     cout << " " << Facet_Gens.nr_of_rows() << endl;
     cout << "Height FP over facet " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
@@ -3169,7 +3174,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     ConeOverFacet.Embedding=Embedding;
     ConeOverFacet.keep_order=true;
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
-    ConeOverFacet.do_Hilbert_basis=true;
+    // ConeOverFacet.do_Hilbert_basis=true;
     ConeOverFacet.compute();
     if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis)){
         Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
@@ -3219,6 +3224,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     return;
 }
 */
+
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Full_Cone<Integer>::compute_HB_via_automs(){
@@ -4668,7 +4674,6 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
             Copy.is_Computed.set(ConeProperty::SupportHyperplanes);
             Copy.Extreme_Rays_Ind=Extreme_Rays_Ind;
             Copy.is_Computed.set(ConeProperty::ExtremeRays);
-            Generators.pretty_print(cout);
             Copy.compute();
             if(Copy.isComputed(ConeProperty::HilbertBasis)){
                 Hilbert_Basis.clear();

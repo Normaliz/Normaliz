@@ -83,7 +83,7 @@ vector<vector<long> > compute_automs_by_nauty(const vector<vector<Integer> >& Ge
     for(i=0;i<mm; ++i){
         for(j=0;j<nn;++j){
             Integer val=v_scalar_product(Generators[i],LinForms[j]);
-            assert(val >= 0);
+            // assert(val >= 0); -- check not always allowed !!!!!!!!!!!
             MM.insert(val,i,j);
         }
     }
