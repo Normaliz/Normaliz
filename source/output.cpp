@@ -387,11 +387,8 @@ void Output<Integer>::write_aut() const{
     }
     out << endl;
 
-    if(Result->Automs.isFromAmbientSpace()){
-        out << "Orbits of coordinates" << endl; 
-    } else{
-        out << "Orbits of support hyperplanes" << endl;
-    }
+    out << "Orbits of support hyperplanes" << endl;
+
     nr_items=Result->Automs.getLinFormOrbits().size();
     out << nr_items << endl;;
     for(size_t i=0;i<nr_items;++i){

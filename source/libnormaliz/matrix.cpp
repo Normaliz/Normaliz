@@ -2369,7 +2369,7 @@ Matrix<Integer>  readMatrix(const string project){
 
 // insert binary expansion of val at "planar" coordinates (i,j)
 template<typename Integer>
-void BinaryMatrix::insert(Integer val, key_t i,key_t j){
+void BinaryMatrix<Integer>::insert(Integer val, key_t i,key_t j){
     
     assert(i<nr_rows);
     assert(j<nr_columns);
@@ -2400,7 +2400,8 @@ void BinaryMatrix::insert(Integer val, key_t i,key_t j){
     }
 }
 
-BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
+template<typename Integer>
+BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
     
     assert(nr_rows==row_order.size());
     assert(nr_columns==col_order.size());
@@ -2416,9 +2417,9 @@ BinaryMatrix BinaryMatrix::reordered(const vector<long>& row_order, const vector
     return MatReordered;
 }
 
-
-// test bit k in binary expansion at "planar" coordiantes (i,j)
-bool BinaryMatrix::test(key_t i,key_t j, key_t k) const{
+template<typename Integer>
+bool BinaryMatrix<Integer>::test(key_t i,key_t j, key_t k) const{
+    // test bit k in binary expansion at "planar" coordiantes (i,j)
     
     assert(i<nr_rows);
     assert(j<nr_columns);
@@ -2426,30 +2427,38 @@ bool BinaryMatrix::test(key_t i,key_t j, key_t k) const{
     return Layers[k][i].test(j);
 }
 
-BinaryMatrix::BinaryMatrix(){
+template<typename Integer>
+BinaryMatrix<Integer>::BinaryMatrix(){
     nr_rows=0;
     nr_columns=0;
+    offset=0;
 }
 
-BinaryMatrix::BinaryMatrix(size_t m,size_t n){
-        nr_rows=m;
-        nr_columns=n;
+template<typename Integer>
+BinaryMatrix<Integer>::BinaryMatrix(size_t m,size_t n){
+    nr_rows=m;
+    nr_columns=n;
+    offset=0;
 }
 
-BinaryMatrix::BinaryMatrix(size_t m,size_t n, size_t height){
+template<typename Integer>
+BinaryMatrix<Integer>::BinaryMatrix(size_t m,size_t n, size_t height){
     nr_rows=m;
     nr_columns=n;
     for(size_t k =0; k<height; ++k)
         Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
 }
 
-size_t BinaryMatrix::nr_layers() const{
+template<typename Integer>
+size_t BinaryMatrix<Integer>::nr_layers() const{
     return Layers.size();
 }
 
-bool BinaryMatrix::equal(const BinaryMatrix& Comp) const{
+template<typename Integer>
+bool BinaryMatrix<Integer>::equal(const BinaryMatrix& Comp) const{
     
-    if(nr_rows!= Comp.nr_rows || nr_columns!=Comp.nr_columns || nr_layers()!=Comp.nr_layers())
+    if(nr_rows!= Comp.nr_rows || nr_columns!=Comp.nr_columns 
+        || nr_layers()!=Comp.nr_layers() || offset!=Comp.offset)
         return false;
     for(size_t i=0;i<nr_layers();++i)
         if(Layers[i]!=Comp.Layers[i])
@@ -2457,13 +2466,15 @@ bool BinaryMatrix::equal(const BinaryMatrix& Comp) const{
     return true;
 }
 
+template<typename Integer>
+void BinaryMatrix<Integer>::set_offset(Integer M){
+    offset=M;
+}
+
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template Matrix<long>  readMatrix(const string project);
-template void BinaryMatrix::insert(long val, key_t i, key_t j);
 #endif // NMZ_MIC_OFFLOAD
 template Matrix<long long>  readMatrix(const string project);
-template void BinaryMatrix::insert(long long val, key_t i, key_t j);
 template Matrix<mpz_class>  readMatrix(const string project);
-template void BinaryMatrix::insert(mpz_class val, key_t i, key_t j);
 
 }  // namespace

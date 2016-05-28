@@ -46,6 +46,7 @@ template class Matrix<long>;
 template class Sublattice_Representation<long>;
 template class Full_Cone<long>;
 template class Automorphism_Group<long>;
+template class BinaryMatrix<long>;
 #endif
 
 template class Cone<long long>;
@@ -53,12 +54,14 @@ template class Matrix<long long>;
 template class Sublattice_Representation<long long>;
 template class Full_Cone<long long>;
 template class Automorphism_Group<long long>;
+template class BinaryMatrix<long long>;
 
 template class Cone<mpz_class>;
 template class Matrix<mpz_class>;
 template class Sublattice_Representation<mpz_class>;
 template class Full_Cone<mpz_class>;
 template class Automorphism_Group<mpz_class>;
+template class BinaryMatrix<mpz_class>;
 
 template size_t decimal_length<long>(long);
 template size_t decimal_length<long long int>(long long int);

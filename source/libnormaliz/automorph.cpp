@@ -602,7 +602,7 @@ void pretty_print_cycle_dec(const vector<vector<key_t> >& dec, ostream& out){
     
 template<typename Integer>
 vector<vector<long> > compute_automs(const Matrix<Integer>& Gens, const size_t nr_special_gens,  const Matrix<Integer>& LinForms, 
-                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix& CanType){
+                                     const size_t nr_special_linforms, mpz_class& group_order, BinaryMatrix<Integer>& CanType){
 
     vector<vector<long> > Automs=compute_automs_by_nauty(Gens.get_elements(), nr_special_gens, LinForms.get_elements(), 
                                                          nr_special_linforms, group_order, CanType);
