@@ -370,6 +370,17 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
 
 
                 input_type = to_type(type_string);
+                if(type_is_number(input_type)){
+                    Integer NN;
+                    in >> NN;
+                    cout << "IN NUMBER" << endl;
+                    if (in.fail()) {
+                        throw BadInputException("Error while reading  "+type_string+"!");
+                    }
+                    save_matrix(input_map, input_type, vector<vector<Integer> > (1,vector<Integer>(1,NN)));
+                    continue;
+                }
+                    
                 if(dim_known)
                     nr_columns = dim + type_nr_columns_correction(input_type);
 

@@ -58,7 +58,8 @@ enum InputType {
     vertices,
     support_hyperplanes,
     cone_and_lattice,
-    subspace
+    subspace,
+    codim_bound
 };
 } //end namespace Type
 
@@ -73,6 +74,9 @@ long type_nr_columns_correction(InputType type);
 
 /* returns true if the input of this type is a vector */
 bool type_is_vector(InputType type);
+
+/* returns true if the input of this type is a number */
+bool type_is_number(InputType type);
 
 /* this type is used in the entries of keys
  * it has to be able to hold number of generators */

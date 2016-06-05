@@ -336,6 +336,8 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     it = multi_input_data.begin();
     size_t test_dim;
     for (; it != multi_input_data.end(); ++it) {
+        if(type_is_number(it->first))
+            continue;
         test_dim = it->second.front().size() - type_nr_columns_correction(it->first) + inhom_corr;
         if (test_dim != dim) {
             throw BadInputException("Inconsistent dimensions in input!");
@@ -345,10 +347,17 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     if(inhom_input)
         homogenize_input(multi_input_data);
     
+    // check for codim_bound
+    lf = find_input_matrix(multi_input_data,Type::codim_bound);
+    if (lf.size() > 0) {
+        autom_codim=convertTo<long>(lf[0][0]);
+        autom_codim_set=true;
+    }
+    
     // check for dehomogenization
     lf = find_input_matrix(multi_input_data,Type::dehomogenization);
     if (lf.size() > 1) {
-        throw BadInputException("Bad dehomogenization, has "
+        throw BadInputException("Bad dehomogen[0][0]ization, has "
                 + toString(lf.size()) + " rows (should be 1)!");
     }
     if(lf.size()==1){
@@ -838,6 +847,7 @@ void Cone<Integer>::initialize() {
     } else {
         change_integer_type = false;
     }
+    autom_codim_set=false;
     IntHullCone=NULL;
 }
 
@@ -1662,6 +1672,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         }
         FC.full_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
         FC.input_automorphisms=input_automorphisms;
+    }
+    if(autom_codim_set){
+        FC.autom_codim=autom_codim;
+        FC.autom_codim_set=true;        
     }
     if (ToCompute.test(ConeProperty::Approximate)
      && ToCompute.test(ConeProperty::Deg1Elements)) {

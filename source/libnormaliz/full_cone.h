@@ -123,6 +123,9 @@ public:
     bool triangulation_is_nested;
     bool triangulation_is_partial;
     bool has_generator_with_common_divisor;
+    
+    long autom_codim; // bound for the descent to faces in algorithms using automorphisms
+    bool autom_codim_set; // indicates that it has been set
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1

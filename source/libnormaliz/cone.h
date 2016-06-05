@@ -291,6 +291,9 @@ private:
     bool change_integer_type;
     
     Cone<Integer>* IntHullCone;
+    
+    long autom_codim;
+    bool autom_codim_set;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 

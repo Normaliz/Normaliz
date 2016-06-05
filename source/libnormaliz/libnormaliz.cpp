@@ -153,6 +153,9 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="subspace") {
         return Type::subspace;
     }
+    if (type_string=="codim_bound") {
+        return Type::codim_bound;
+    }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
@@ -173,6 +176,14 @@ long type_nr_columns_correction(InputType t) {
 bool type_is_vector(InputType type){
     if (type == Type::grading || type == Type::signs || type == Type::strict_signs
             || type == Type::dehomogenization || type == Type::offset) {
+        return true;
+    }
+    return false;
+}
+
+/* returns true if the input of this type is a number */
+bool type_is_number(InputType type){
+    if (type == Type::codim_bound) {
         return true;
     }
     return false;

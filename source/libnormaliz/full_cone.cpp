@@ -66,10 +66,6 @@ const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
 
-float expense_factor_automs=1.5; // estimate for the expense of using automorpjisms for multiplicity
-
-size_t autom_codim=3; // maximal codim of face for which multiüplicity is computed via automs
-
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -2886,7 +2882,7 @@ void Full_Cone<Integer>::compute() {
 
     start_message();
     
-    if(exploit_automorphisms && God_Father->dim==dim){
+    /* if(exploit_automorphisms && God_Father->dim==dim){
         string name_open="automorphism.cfg";
         const char* file=name_open.c_str();
         ifstream in(file);
@@ -2895,7 +2891,20 @@ void Full_Cone<Integer>::compute() {
             in >> autom_codim;
             // cout << "WHOW WHOW " << expense_factor_automs << " " << autom_codim << endl;
         }       
+    }*/ 
+    if(exploit_automorphisms && God_Father->dim==dim && !autom_codim_set){
+        if(do_Hilbert_basis){
+            autom_codim=1;
+        }
+        else{
+            if(do_multiplicity){
+                autom_codim=min((int) dim/4,6);
+            }
+        }
+        autom_codim_set=true;
     }
+    
+    cout << "AUTOM CODIM " << autom_codim << endl;
 
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
@@ -2934,7 +2943,7 @@ void Full_Cone<Integer>::compute() {
     } 
 
     if(do_only_multiplicity && exploit_automorphisms){
-        if(descent_level< (long) autom_codim && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
+        if(descent_level< God_Father->autom_codim && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
             compute_multiplicity_via_automs();
             if(isComputed(ConeProperty::Multiplicity)){
                 if(descent_level==0){
@@ -2947,7 +2956,8 @@ void Full_Cone<Integer>::compute() {
     }
     
     if(do_Hilbert_basis && !do_multiplicity && exploit_automorphisms){
-        if(descent_level< (long) autom_codim && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
+        if(descent_level< God_Father->autom_codim 
+                    && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
             compute_HB_via_automs();
             if(isComputed(ConeProperty::HilbertBasis)){
                 if(descent_level==0){
@@ -3126,11 +3136,13 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     ConeOverFacet.descent_level=descent_level+1;
     ConeOverFacet.Mother=&(*this);
     ConeOverFacet.God_Father=God_Father;
-    ConeOverFacet.exploit_automorphisms=true;
-    ConeOverFacet.full_automorphisms=full_automorphisms;
-    ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
-    ConeOverFacet.input_automorphisms=input_automorphisms;
-    ConeOverFacet.Embedding=Embedding;
+    if(ConeOverFacet.descent_level<God_Father->autom_codim){
+        ConeOverFacet.exploit_automorphisms=true;
+        ConeOverFacet.full_automorphisms=full_automorphisms;
+        ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
+        ConeOverFacet.input_automorphisms=input_automorphisms;
+        ConeOverFacet.Embedding=Embedding;
+    }
     ConeOverFacet.keep_order=true;
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=true;
@@ -4803,6 +4815,7 @@ void Full_Cone<Integer>::reset_tasks(){
     input_automorphisms=false; // not really nevessary since not a task
     full_automorphisms=false; // ditto
     ambient_automorphisms=false; // ditto
+    autom_codim_set=false;
 }
 
 
