@@ -373,7 +373,6 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 if(type_is_number(input_type)){
                     Integer NN;
                     in >> NN;
-                    cout << "IN NUMBER" << endl;
                     if (in.fail()) {
                         throw BadInputException("Error while reading  "+type_string+"!");
                     }

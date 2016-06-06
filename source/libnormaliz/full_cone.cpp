@@ -2892,16 +2892,23 @@ void Full_Cone<Integer>::compute() {
             // cout << "WHOW WHOW " << expense_factor_automs << " " << autom_codim << endl;
         }       
     }*/ 
-    if(exploit_automorphisms && God_Father->dim==dim && !autom_codim_set){
+    if(exploit_automorphisms && descent_level==0){
         if(do_Hilbert_basis){
-            autom_codim=1;
+            for(size_t i=0;i<nr_gen;++i)
+                Generator_Set.insert(Generators[i]);
         }
-        else{
-            if(do_multiplicity){
-                autom_codim=min((int) dim/4,6);
+        
+        if(!autom_codim_set){
+            if(do_Hilbert_basis){
+                autom_codim=1;
             }
+            else{
+                if(do_multiplicity){
+                    autom_codim=min((int) dim/4,6);
+                }
+            }
+            autom_codim_set=true;
         }
-        autom_codim_set=true;
     }
     
     cout << "AUTOM CODIM " << autom_codim << endl;
@@ -2943,7 +2950,8 @@ void Full_Cone<Integer>::compute() {
     } 
 
     if(do_only_multiplicity && exploit_automorphisms){
-        if(descent_level< God_Father->autom_codim && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
+        if(descent_level< God_Father->autom_codim && nr_gen>= dim+4 
+                && isComputed(ConeProperty::AutomorphismGroup) && Automs.getOrder()>1){ // otherwise direct computation
             compute_multiplicity_via_automs();
             if(isComputed(ConeProperty::Multiplicity)){
                 if(descent_level==0){
@@ -2956,7 +2964,7 @@ void Full_Cone<Integer>::compute() {
     }
     
     if(do_Hilbert_basis && !do_multiplicity && exploit_automorphisms){
-        if(descent_level< God_Father->autom_codim 
+        if(descent_level< God_Father->autom_codim  && isComputed(ConeProperty::AutomorphismGroup)
                     && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
             compute_HB_via_automs();
             if(isComputed(ConeProperty::HilbertBasis)){
@@ -4632,11 +4640,32 @@ void Full_Cone<Integer>::prepare_inclusion_exclusion() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
+
+bool Full_Cone<Integer>::check_extension_to_god_father(){
+
+    assert(dim==God_Father->dim);
+    vector<Integer> test(dim);
+    for(size_t k=0;k<Automs.LinMaps.size();++k){
+        for(size_t i=0;i<God_Father->nr_gen;++i){
+            test=Automs.LinMaps[k].MxV(God_Father->Generators[i]);
+            if(God_Father->Generator_Set.find(test)==God_Father->Generator_Set.end())
+                return false;
+        }        
+    }
+    return true;
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
     
      if(!exploit_automorphisms || isComputed(ConeProperty::AutomorphismGroup)){
         return;
     }
+    
+    bool only_from_god_father=false;
+    if(do_Hilbert_basis && descent_level>0)
+        only_from_god_father=true;
     
     if(do_module_gens_intcl && !isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         return;  // in this case we postpone the computation (and do not try to exploit it)
@@ -4658,7 +4687,6 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
         Help=Embedding.transpose();
     if(full_automorphisms)
         Help=Support_Hyperplanes;
-    cout << "Help " << Help.nr_of_rows() << " " << Help.nr_of_columns() << " " << Grading.size() << endl;
     if(isComputed(ConeProperty::Grading) && Grading.size()>0){
         nr_special_linforms++;
         Help.append(Grading);
@@ -4672,6 +4700,11 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
                                 Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
     // bool success=false;
     if(success==false){
+        if(only_from_god_father){
+            if(verbose)
+                verboseOutput() << "Coputation of automorphism group from extreme rays failed" << endl;
+            return;
+        }
         if(verbose)
             verboseOutput() << "Coputation of automorphism group from extreme rays failed, using Hilbert basis" << endl;
         if(!isComputed(ConeProperty::HilbertBasis)){
@@ -4699,6 +4732,10 @@ void Full_Cone<Integer>::compute__automorphisms(size_t nr_special_gens){
                                Support_Hyperplanes,Help,full_automorphisms,0,nr_special_linforms);
     }
     assert(success==true);
+    if(only_from_god_father){
+        if(!check_extension_to_god_father())
+            return;        
+    }
     is_Computed.set(ConeProperty::AutomorphismGroup);
     if(verbose)
         verboseOutput() << "Automorphism group of order " << Automs.getOrder() << "  done" << endl;

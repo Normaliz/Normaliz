@@ -134,6 +134,7 @@ public:
     vector<Integer> Sorting;
     mpq_class multiplicity;
     Matrix<Integer> Generators;
+    set<vector<Integer> > Generator_Set; //the generators as a set (if needed)
     Matrix<Integer> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
@@ -377,6 +378,7 @@ public:
     void get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr, list<vector<Integer> >& facet_H);
     Matrix<Integer>  push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr);
     void import_HB_from(const IsoType<Integer>& copy);
+    bool check_extension_to_god_father();
 
 #ifdef NMZ_MIC_OFFLOAD
     void try_offload(size_t max_level);
