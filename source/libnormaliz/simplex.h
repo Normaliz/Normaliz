@@ -114,6 +114,8 @@ class SimplexEvaluator {
     Matrix<Integer> unit_matrix;
     vector<key_t> id_key;
     Matrix<mpz_class> mpz_Generators;
+    Integer HB_bound;
+    bool HB_bound_computed;
     
 
     void local_reduction(Collector<Integer>& Coll);

@@ -126,6 +126,7 @@ public:
     
     long autom_codim; // bound for the descent to faces in algorithms using automorphisms
     bool autom_codim_set; // indicates that it has been set
+    Integer HB_bound; // only used in connection with automorphisms
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1

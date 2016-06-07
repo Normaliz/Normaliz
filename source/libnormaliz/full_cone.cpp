@@ -2941,6 +2941,9 @@ void Full_Cone<Integer>::compute() {
     if (!isComputed(ConeProperty::Grading))
         disable_grading_dep_comp();
     
+    set_degrees();
+    sort_gens_by_degree(true);
+    
     if(exploit_automorphisms){
         compute__automorphisms(descent_level); // we protect the cone apices
         if(!do_triangulation && !do_partial_triangulation){
@@ -2986,9 +2989,6 @@ void Full_Cone<Integer>::compute() {
                 break;
             }                
     }
-
-    set_degrees();
-    sort_gens_by_degree(true);
 
     if(do_approximation && !deg1_generated){
         if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)){
@@ -3951,6 +3951,16 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
                     verboseOutput() << "Bottom decomposition activated" << endl;
             }
         }
+    }
+    
+    if(exploit_automorphisms && descent_level==0 && isComputed(ConeProperty::Grading)){
+        vector<key_t> inverse_order(nr_gen); 
+        for(size_t i=0;i<nr_gen;++i)
+            inverse_order[i]=nr_gen-1-i;
+        vector<key_t> largest_simplex=Generators.max_rank_submatrix_lex(inverse_order);
+        HB_bound=-1;
+        for(size_t i=0;i<dim;++i)
+            HB_bound+=convertTo<Integer>(gen_degrees[largest_simplex[i]]);
     }
     
     if (verbose) {
