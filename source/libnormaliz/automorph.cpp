@@ -325,7 +325,6 @@ IsoType<Integer>::IsoType(const Full_Cone<Integer>& C, bool& success){
     nrSupportHyperplanes=C.nrSupport_Hyperplanes;
     if(C.isComputed(ConeProperty::Multiplicity))
         Multiplicity=C.multiplicity;
-    cout << "TYPE WITH " << C.getNrExtremeRays() << " GENS, MULT " << C.multiplicity << endl;
     
     if(C.isComputed(ConeProperty::HilbertBasis)){
         HilbertBasis=Matrix<Integer>(0,rank);
@@ -404,7 +403,6 @@ template<typename Integer>
 const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Integer>& C, bool& found) const{
 
     assert(C.getNrExtremeRays()==C.nr_gen);
-    cout << "SEARCHING " << Classes.size() << endl;
     found=false;
     if(C.Automs.from_HB)
         return *Classes.begin();
@@ -414,12 +412,10 @@ const IsoType<Integer>& Isomorphism_Classes<Integer>::find_type(Full_Cone<Intege
         if(it->isOfType(C)){
             found=true;
             FOUND++;
-            cout << "FOUND " << FOUND << endl;
             return *it;
         }
     }
     NOT_FOUND++;
-    cout << "NOT FOUND " <<   NOT_FOUND << endl;
     return *Classes.begin();
 }
 
