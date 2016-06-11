@@ -3141,14 +3141,14 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     ConeOverFacet.descent_level=descent_level+1;
     ConeOverFacet.Mother=&(*this);
     ConeOverFacet.God_Father=God_Father;
-    if(ConeOverFacet.descent_level<God_Father->autom_codim){
+    if(ConeOverFacet.descent_level < God_Father->autom_codim){ // otherwise dirct computation of HB
         ConeOverFacet.exploit_automorphisms=true;
         ConeOverFacet.full_automorphisms=full_automorphisms;
         ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
         ConeOverFacet.input_automorphisms=input_automorphisms;
         ConeOverFacet.Embedding=Embedding;
+        ConeOverFacet.keep_order=true;
     }
-    ConeOverFacet.keep_order=true;
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=true;
     ConeOverFacet.compute();
@@ -3289,7 +3289,14 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
     Hilbert_Basis.sort();
     Hilbert_Basis.unique();
 
-    is_Computed.set(ConeProperty::HilbertBasis);    
+    is_Computed.set(ConeProperty::HilbertBasis);
+    
+    if (isComputed(ConeProperty::Grading)) {
+        select_deg1_elements();
+        check_deg1_hilbert_basis();
+    }
+    
+    
 }
 
 //---------------------------------------------------------------------------
@@ -3966,6 +3973,18 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     
     if (verbose) {
         if(triangulate){
+            if(isComputed(ConeProperty::SupportHyperplanes)){
+                Matrix<Integer> TranspType(Support_Hyperplanes.nr_of_rows(),Generators.nr_of_rows());
+                for(size_t i=0;i<Support_Hyperplanes.nr_of_rows();++i)
+                    for(size_t j=0;j<Generators.nr_of_rows();++j)
+                        TranspType[i][j]=v_scalar_product(Support_Hyperplanes[i],Generators[j]);
+                 Matrix<Integer> OrderSupps=TranspType.sort_by_nr_of_zeroes();
+                 Matrix<Integer> Type=TranspType.transpose();
+                 vector<key_t> new_perm=Type.perm_by_lex();
+                 Generators.order_rows_by_perm(new_perm);
+                 compose_perm_gens(new_perm);                 
+            }
+            else{ 
             if(isComputed(ConeProperty::Grading)){
                 verboseOutput() <<"Generators sorted by degree and lexicographically" << endl;
                 verboseOutput() << "Generators per degree:" << endl;
@@ -3973,6 +3992,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             }
             else
                 verboseOutput() << "Generators sorted by 1-norm and lexicographically" << endl;
+        }
         }
         else{
             verboseOutput() << "Generators sorted lexicographically" << endl;

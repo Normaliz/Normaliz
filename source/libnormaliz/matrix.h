@@ -193,10 +193,16 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
     void swap (Matrix<Integer>& x);
 
-	// returns the permutation created by sorting the rows with a grading function
+    // returns the permutation created by sorting the rows with a grading function
     // or by 1-norm if computed is false
-    vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
+    // vector<key_t> perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const;
+    // according to the matrix of weights (taking absolute values first)
     vector<key_t> perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
+    // according to the number of zeoes -- descending -- 
+    vector<key_t> perm_by_nr_zeroes();
+    // according to lex order
+    vector<key_t> perm_by_lex();
+    
     
     void select_submatrix(const Matrix<Integer>& mother, const vector<key_t>& rows);
     void select_submatrix_trans(const Matrix<Integer>& mother, const vector<key_t>& rows);
@@ -409,9 +415,11 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     
 // Sorting of rows
     
+    void order_rows_by_perm(const vector<key_t>& perm);
+    
     Matrix& sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute);
     Matrix& sort_lex();
-    void order_rows_by_perm(const vector<key_t>& perm);
+    Matrix<Integer>& sort_by_nr_of_zeroes();
     
 // solve homogeneous congruences
     

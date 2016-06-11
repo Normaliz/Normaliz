@@ -119,18 +119,6 @@ Matrix<Integer>::Matrix(const list< vector<Integer> >& new_elem){
 }
 
 //---------------------------------------------------------------------------
-/*
-template<typename Integer>
-void Matrix<Integer>::write(istream& in){
-    size_t i,j;
-    for(i=0; i<nr; i++){
-        for(j=0; j<nc; j++) {
-            in >> elem[i][j];
-        }
-    }
-}
-*/
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Matrix<Integer>::write_column(size_t col, const vector<Integer>& data){
@@ -214,6 +202,17 @@ size_t Matrix<Integer>::nr_of_rows () const{
 template<typename Integer>
 size_t Matrix<Integer>::nr_of_columns () const{
     return nc;
+}
+
+//---------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
+
+    if(new_nr_rows>=nr)
+        return;
+    nr=new_nr_rows;
+    elem.resize(nr);
 }
 
 //---------------------------------------------------------------------------
@@ -2059,7 +2058,7 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
 
 /* sorts rows of a matrix by a degree function and returns the permuation
 * does not change matrix (yet)
- */
+
 template<typename Integer>
 vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, const vector<Integer>& grading, bool computed) const{
 
@@ -2092,6 +2091,7 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
 	}
 	return perm;
 }
+ */
 
 //---------------------------------------------------------------------------
 
@@ -2108,12 +2108,13 @@ bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
 }
 
 //---------------------------------------------------------------------------
-
+// orders the rows matrix: perm[0], perm[1}, ... 
 template<typename Integer>
 void Matrix<Integer>::order_rows_by_perm(const vector<key_t>& perm){
     order_by_perm(elem,perm);    
 }
 
+// sorts the rows accoring to the weight matrix (taking the absolute values of selected rows first)
 template<typename Integer>
 Matrix<Integer>& Matrix<Integer>::sort_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
     if(nr<=1)
@@ -2131,6 +2132,43 @@ Matrix<Integer>& Matrix<Integer>::sort_lex(){
     order_by_perm(elem,perm);
     return *this;    
 }
+
+template<typename Integer>
+// sortes rows by descending number or zeroes
+Matrix<Integer>& Matrix<Integer>::sort_by_nr_of_zeroes(){
+    if(nr<=1)
+        return *this;
+    vector<key_t> perm=perm_by_nr_zeroes();
+    order_by_perm(elem,perm);
+    return *this;    
+}
+
+template<typename Integer>
+vector<key_t> Matrix<Integer>::perm_by_lex(){
+    return perm_by_weights(Matrix<Integer>(0,nc),vector<bool>(0));
+}
+
+template<typename Integer>
+vector<key_t> Matrix<Integer>::perm_by_nr_zeroes(){// 
+// the row with index perm[0] has the maximum number of zeoes, then perm[1] etc.
+
+    vector<vector<key_t> > order(nr,vector<key_t>(2,0));
+    
+    for(key_t i=0;i<nr; ++i){
+        order[i][1]=i;
+        for(size_t j=0;j<nc;++j){
+            if(elem[i][j]==0)
+                order[i][0]++;              
+        }     
+    }
+ 
+    sort(order.rbegin(),order.rend());
+    vector<key_t> perm(nr);
+    for(size_t i=0;i<nr;++i)
+        perm[i]=order[i][1];
+    return perm;
+}
+
 
 template<typename Integer>
 vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, vector<bool> absolute){
@@ -2254,6 +2292,7 @@ vector<key_t> Matrix<Integer>::max_and_min(const vector<Integer>& L, const vecto
 
 template<typename Integer>
 size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
+// 
     
     if(nr==0)
         return 1;
@@ -2313,6 +2352,7 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
     // exit(0);
 }
 
+//---------------------------------------------------
 template<typename Integer>
 vector<Integer> Matrix<Integer>::find_inner_point(){
     vector<key_t> simplex=max_rank_submatrix_lex();
@@ -2322,14 +2362,7 @@ vector<Integer> Matrix<Integer>::find_inner_point(){
    return point;    
 }
 
-template<typename Integer>
-void Matrix<Integer>::Shrink_nr_rows(size_t new_nr_rows){
-
-    if(new_nr_rows>=nr)
-        return;
-    nr=new_nr_rows;
-    elem.resize(nr);
-}
+//---------------------------------------------------
 
 template<typename Integer>
 Matrix<Integer>  readMatrix(const string project){
@@ -2367,6 +2400,15 @@ Matrix<Integer>  readMatrix(const string project){
     return result;
 }
 
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template Matrix<long>  readMatrix(const string project);
+#endif // NMZ_MIC_OFFLOAD
+template Matrix<long long>  readMatrix(const string project);
+template Matrix<mpz_class>  readMatrix(const string project);
+
+//---------------------------------------------------
+// routines for binary matrices
+
 // insert binary expansion of val at "planar" coordinates (i,j)
 template<typename Integer>
 void BinaryMatrix<Integer>::insert(Integer val, key_t i,key_t j){
@@ -2400,6 +2442,7 @@ void BinaryMatrix<Integer>::insert(Integer val, key_t i,key_t j){
     }
 }
 
+// put rows and columns into the order determined by row_order and col:order
 template<typename Integer>
 BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<long>& row_order, const vector<long>& col_order) const{
     
@@ -2417,16 +2460,7 @@ BinaryMatrix<Integer> BinaryMatrix<Integer>::reordered(const vector<long>& row_o
     return MatReordered;
 }
 
-template<typename Integer>
-bool BinaryMatrix<Integer>::test(key_t i,key_t j, key_t k) const{
-    // test bit k in binary expansion at "planar" coordiantes (i,j)
-    
-    assert(i<nr_rows);
-    assert(j<nr_columns);
-    assert(k<Layers.size());
-    return Layers[k][i].test(j);
-}
-
+// constructors
 template<typename Integer>
 BinaryMatrix<Integer>::BinaryMatrix(){
     nr_rows=0;
@@ -2447,6 +2481,18 @@ BinaryMatrix<Integer>::BinaryMatrix(size_t m,size_t n, size_t height){
     nr_columns=n;
     for(size_t k =0; k<height; ++k)
         Layers.push_back(vector<boost::dynamic_bitset<> > (nr_rows,boost::dynamic_bitset<>(nr_columns)));
+}
+
+// data access & equality
+
+// test bit k in binary expansion at "planar" coordiantes (i,j)
+template<typename Integer>
+bool BinaryMatrix<Integer>::test(key_t i,key_t j, key_t k) const{
+    
+    assert(i<nr_rows);
+    assert(j<nr_columns);
+    assert(k<Layers.size());
+    return Layers[k][i].test(j);
 }
 
 template<typename Integer>
@@ -2471,10 +2517,5 @@ void BinaryMatrix<Integer>::set_offset(Integer M){
     offset=M;
 }
 
-#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template Matrix<long>  readMatrix(const string project);
-#endif // NMZ_MIC_OFFLOAD
-template Matrix<long long>  readMatrix(const string project);
-template Matrix<mpz_class>  readMatrix(const string project);
 
 }  // namespace
