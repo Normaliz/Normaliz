@@ -33,6 +33,21 @@ namespace libnormaliz {
 using namespace std;
 
 template<typename Integer>
+const Matrix<Integer>& Automorphism_Group<Integer>::getGens() const {
+    return Gens;
+}
+
+template<typename Integer>
+const Matrix<Integer>& Automorphism_Group<Integer>::getLinForms() const{
+    return LinForms;
+}
+
+template<typename Integer>
+const Matrix<Integer>& Automorphism_Group<Integer>::getSpecialLinForms() const{
+    return SpecialLinForms;
+}
+
+template<typename Integer>
 vector<vector<key_t> > Automorphism_Group<Integer>::getGenPerms() const{
     return GenPerms;
 }
@@ -145,10 +160,9 @@ bool Automorphism_Group<Integer>::compute(const Matrix<Integer>& ExtRays,const M
     Gens=ExtRays;
     LinForms=SuppHyps;
     SpecialLinForms=Matrix<Integer>(0,ExtRays[0].size());
-    for(size_t i=GivenLinForms.nr_of_rows()-1-nr_special_linforms;i<GivenLinForms.nr_of_rows()-1;++i){
+    for(size_t i=GivenLinForms.nr_of_rows()-nr_special_linforms;i<GivenLinForms.nr_of_rows();++i){
         SpecialLinForms.append(GivenLinForms[i]);
-    }
-    
+    }    
     
     from_HB=!given_gens_are_extrays;
     from_ambient_space=!given_lf_are_supps;

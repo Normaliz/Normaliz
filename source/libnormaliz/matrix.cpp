@@ -2054,6 +2054,50 @@ void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, 
             convert(sub[j][i], mother[selection[i]][j]);
 }
 
+//---------------------------------------------------
+
+template<typename Integer>
+Matrix<Integer> Matrix<Integer>::solve_congruences(bool& zero_modulus) const{
+ 
+    
+    zero_modulus=false;
+    size_t i,j;
+    size_t nr_cong=nr, dim=nc-1;
+    if(nr_cong==0)
+        return Matrix<Integer>(dim); // give back unit matrix
+    
+    //add slack variables to convert congruences into equaitions
+    Matrix<Integer> Cong_Slack(nr_cong, dim+nr_cong);
+    for (i = 0; i < nr_cong; i++) {
+        for (j = 0; j < dim; j++) {
+            Cong_Slack[i][j]=elem[i][j];
+        }
+        Cong_Slack[i][dim+i]=elem[i][dim];
+        if(elem[i][dim]==0){
+            zero_modulus=true;
+            return Matrix<Integer>(0,dim);
+        }
+    }
+    
+    //compute kernel
+    
+    Matrix<Integer> Help=Cong_Slack.kernel(); // gives the solutions to the the system with slack variables
+    Matrix<Integer> Ker_Basis(dim,dim);   // must now project to first dim coordinates to get rid of them
+    for(size_t i=0;i<dim;++i)
+        for(size_t j=0;j<dim;++j)
+            Ker_Basis[i][j]=Help[i][j];
+    return Ker_Basis;
+        
+}
+
+//---------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::saturate(){
+    
+    *this=kernel().kernel();    
+}
+
 //---------------------------------------------------------------------------
 
 /* sorts rows of a matrix by a degree function and returns the permuation
@@ -2094,7 +2138,7 @@ vector<key_t> Matrix<Integer>::perm_sort_by_degree(const vector<key_t>& key, con
  */
 
 //---------------------------------------------------------------------------
-
+// sorting routines
 
 template<typename Integer>
 bool weight_lex(const order_helper<Integer>& a, const order_helper<Integer>& b){
@@ -2177,11 +2221,19 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
     assert(Weights.nc==nc);
     assert(absolute.size()==Weights.nr);
 
-    list<order_helper<Integer> > order;
+    vector<order_helper<Integer> > order(nr);
     order_helper<Integer> entry;
     entry.weight.resize(Weights.nr);
+
+#ifndef NCATCH
+        std::exception_ptr tmp_exception;
+#endif
     
+    #pragma omp parallel for firstprivate(entry)
     for(key_t i=0;i<nr; ++i){
+#ifndef NCATCH
+            try {
+#endif
         for(size_t j=0;j<Weights.nr;++j){
             if(absolute[j])
                 entry.weight[j]=v_scalar_product(Weights[j],v_abs_value(elem[i]));
@@ -2190,60 +2242,27 @@ vector<key_t> Matrix<Integer>::perm_by_weights(const Matrix<Integer>& Weights, v
         }
         entry.index=i;
         entry.v=&(elem[i]);
-        order.push_back(entry);        
+        order[i]=entry;
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+            }
+#endif
     }
-    order.sort(weight_lex<Integer>);
+    
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
+    sort(order.begin(),order.end(),weight_lex<Integer>);
     vector<key_t> perm(nr);
-    typename list<order_helper<Integer> >::const_iterator ord=order.begin();
+    auto ord=order.begin();
     for(key_t i=0;i<nr;++i, ++ord)
         perm[i]=ord->index; 
     
     return perm;
 }
 
-//---------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::solve_congruences(bool& zero_modulus) const{
- 
-    
-    zero_modulus=false;
-    size_t i,j;
-    size_t nr_cong=nr, dim=nc-1;
-    if(nr_cong==0)
-        return Matrix<Integer>(dim); // give back unit matrix
-    
-    //add slack variables to convert congruences into equaitions
-    Matrix<Integer> Cong_Slack(nr_cong, dim+nr_cong);
-    for (i = 0; i < nr_cong; i++) {
-        for (j = 0; j < dim; j++) {
-            Cong_Slack[i][j]=elem[i][j];
-        }
-        Cong_Slack[i][dim+i]=elem[i][dim];
-        if(elem[i][dim]==0){
-            zero_modulus=true;
-            return Matrix<Integer>(0,dim);
-        }
-    }
-    
-    //compute kernel
-    
-    Matrix<Integer> Help=Cong_Slack.kernel(); // gives the solutions to the the system with slack variables
-    Matrix<Integer> Ker_Basis(dim,dim);   // must now project to first dim coordinates to get rid of them
-    for(size_t i=0;i<dim;++i)
-        for(size_t j=0;j<dim;++j)
-            Ker_Basis[i][j]=Help[i][j];
-    return Ker_Basis;
-        
-}
-
-//---------------------------------------------------
-
-template<typename Integer>
-void Matrix<Integer>::saturate(){
-    
-    *this=kernel().kernel();    
-}
 
 //---------------------------------------------------
 

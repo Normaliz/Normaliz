@@ -395,6 +395,32 @@ void Output<Integer>::write_aut() const{
         out << "Orbit " << i << " , length " << Result->Automs.getLinFormOrbits()[i].size()
         << ": " << Result->Automs.getLinFormOrbits()[i];
     }
+    
+    out << endl;
+    
+    out << "Reference order of generators" << endl;
+    
+    out << Result->Automs.getGens().nr_of_rows() << endl;
+    out << Result->getEmbeddingDim() << endl;
+    Result->Automs.getGens().pretty_print(out);
+    
+    out << endl;
+    
+    out << "Reference order of support hyperplanes" << endl;
+    
+    out << Result->Automs.getLinForms().nr_of_rows() << endl;
+    out << Result->getEmbeddingDim() << endl;
+    Result->Automs.getLinForms().pretty_print(out);
+    
+    out << endl;
+    
+    out << "Invariant linear forms" << endl;
+    
+    out << Result->Automs.getSpecialLinForms().nr_of_rows() << endl;
+    out << Result->getEmbeddingDim() << endl;
+    Result->Automs.getSpecialLinForms().pretty_print(out);
+    
+    
     out.close();
 }
 

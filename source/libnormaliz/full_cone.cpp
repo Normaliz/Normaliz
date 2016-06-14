@@ -1908,7 +1908,7 @@ void Full_Cone<Integer>::build_cone() {
         
     }  // loop over i
     
-    start_from=nr_gen;
+    start_from=0; // in order that we can restart the primal algorithm again
     
     if (is_pyramid && do_all_hyperplanes)  // must give supphyps back to mother
         Mother->select_supphyps_from(Facets, apex, Mother_Key);
@@ -2831,14 +2831,15 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     if (do_Stanley_dec)     keep_triangulation = true;
     if (do_cone_dec)        keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
-    if (do_multiplicity)    do_determinants = true;
+    // if (do_multiplicity)    do_determinants = true; // removed because of automorphisms
     if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
     if (do_determinants)    do_triangulation = true;
     if (do_h_vector)        do_triangulation = true;
     if (do_deg1_elements)   do_partial_triangulation = true;
     if (do_Hilbert_basis)   do_partial_triangulation = true;
     // activate 
-    do_only_multiplicity = do_determinants;
+    do_only_multiplicity = do_determinants || do_multiplicity; // does no longer imply do_multiplicity !!
+                                                                // needed in simplex.cpp
     stop_after_cone_dec = true;
     if(do_cone_dec)          do_only_multiplicity=false;
         
@@ -2899,7 +2900,7 @@ void Full_Cone<Integer>::compute() {
         }
         
         if(!autom_codim_set){
-            if(do_Hilbert_basis){
+            if(do_Hilbert_basis || do_deg1_elements){
                 autom_codim=1;
             }
             else{
@@ -2938,26 +2939,29 @@ void Full_Cone<Integer>::compute() {
     
     if (!isComputed(ConeProperty::Grading))
         disable_grading_dep_comp();
-    
+       
     set_degrees();
     sort_gens_by_degree(true);
     
     if(exploit_automorphisms){
         compute__automorphisms(descent_level); // we protect the cone apices
         if(!do_triangulation && !do_partial_triangulation){
+            compute_class_group();
             end_message();
             return;
         }
-    } 
+    }
+    
+    // automorphsm group now computed if asked for. We disable it if not usable for further computation.
+    if(do_h_vector || do_module_gens_intcl || keep_triangulation || do_Stanley_dec || do_cone_dec || do_determinants)
+        exploit_automorphisms=false;
 
     if(do_only_multiplicity && exploit_automorphisms){
         if(descent_level< God_Father->autom_codim && nr_gen>= dim+4 
                 && isComputed(ConeProperty::AutomorphismGroup) && Automs.getOrder()>1){ // otherwise direct computation
             compute_multiplicity_via_automs();
             if(isComputed(ConeProperty::Multiplicity)){
-                if(descent_level==0){
-                    compute_class_group();
-                }
+                compute_class_group();
                 end_message();
                 return;
             }
@@ -2969,11 +2973,21 @@ void Full_Cone<Integer>::compute() {
                     && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
             compute_HB_via_automs();
             if(isComputed(ConeProperty::HilbertBasis)){
-                if(descent_level==0){
-                    compute_class_group();
-                }
-            end_message();
-            return;
+                compute_class_group();
+                end_message();
+                return;
+            }
+        }
+    }
+    
+    if(do_deg1_elements && !do_multiplicity && exploit_automorphisms){
+        if(descent_level< God_Father->autom_codim  && isComputed(ConeProperty::AutomorphismGroup)
+                    && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
+            compute_Deg1_via_automs();
+            if(isComputed(ConeProperty::Deg1Elements)){
+                compute_class_group();
+                end_message();
+                return;
             }
         }
     }
@@ -3118,8 +3132,8 @@ void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
 //---------------------------------------------------------------------------
 // version without iso classes
 template<typename Integer>
-void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
-                                      const key_t facet_nr, list<vector<Integer> >& Facet_HB){
+void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
+                                      const key_t facet_nr, list<vector<Integer> >& Facet_vectors){
   
   
     Matrix<Integer> Facet_Gens(0,dim);
@@ -3127,7 +3141,7 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
     Facet_Gens.append(Generators.submatrix(facet_key)); 
     
     if(verbose){
-        verboseOutput() << "Finding Hilbert basis for cone over codim " << descent_level+1 <<" face" << endl;
+        verboseOutput() << "Finding Hilbert basis/deg 1 elements for cone over codim " << descent_level+1 <<" face" << endl;
          verboseOutput()  << "Height of fixed point  over face " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
     }
     
@@ -3150,10 +3164,14 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
         ConeOverFacet.keep_order=true;
     }
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
-    ConeOverFacet.do_Hilbert_basis=true;
+    ConeOverFacet.do_Hilbert_basis=do_Hilbert_basis;
+    ConeOverFacet.do_deg1_elements=do_deg1_elements;
     ConeOverFacet.compute();
-    Facet_HB.clear();
-    Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
+    Facet_vectors.clear();
+    if(do_Hilbert_basis)
+        Facet_vectors.splice(Facet_vectors.begin(),ConeOverFacet.Hilbert_Basis);
+    else
+        Facet_vectors.splice(Facet_vectors.begin(),ConeOverFacet.Deg1_Elements); 
 }
 
 /*
@@ -3244,6 +3262,45 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
 
 //---------------------------------------------------------------------------
 template<typename Integer>
+void Full_Cone<Integer>::compute_Deg1_via_automs(){
+    
+    if(!do_deg1_elements || isComputed(ConeProperty::Deg1Elements)
+               || !isComputed(ConeProperty::AutomorphismGroup))
+        return;
+
+    list<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
+    vector<Integer> fixed_point=get_fixed_point(descent_level);
+
+    if(verbose){
+        verboseOutput()  << "Computing deg1 elements via automorphisms in codim " << descent_level << endl;
+        verboseOutput() << "Fixed point " << fixed_point;
+    }
+    
+    vector<vector<key_t> > facet_keys = get_facet_keys_for_orbits(fixed_point,false);
+
+    for(size_t k=0;k<facet_keys.size();++k){
+        list<vector<Integer> > facet_Deg1;
+        key_t facet_nr=facet_keys[k].back();
+        facet_keys[k].pop_back();
+        get_cone_over_facet_vectors(fixed_point,facet_keys[k],facet_nr, facet_Deg1);
+            
+        list<vector<Integer> > union_of_orbits; // we must spread the deg 1 elements over their orbit
+        auto c= facet_Deg1.begin();
+        for(;c!=facet_Deg1.end();++c){
+            list<vector<Integer> > orbit_of_deg1=Automs.orbit_primal(*c);
+            union_of_orbits.splice(union_of_orbits.end(),orbit_of_deg1);
+        }
+        union_of_orbits.sort();
+        union_of_facets.merge(union_of_orbits);
+    }
+    union_of_facets.unique(); // necesary since dupocates cannot be avoided
+    Deg1_Elements.splice(Deg1_Elements.begin(),union_of_facets);
+
+    is_Computed.set(ConeProperty::Deg1Elements);     
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
 void Full_Cone<Integer>::compute_HB_via_automs(){
     
     if(!do_Hilbert_basis || isComputed(ConeProperty::HilbertBasis)
@@ -3266,7 +3323,7 @@ void Full_Cone<Integer>::compute_HB_via_automs(){
         list<vector<Integer> > facet_HB;
         key_t facet_nr=facet_keys[k].back();
         facet_keys[k].pop_back();
-        get_cone_over_facet_HB(fixed_point,facet_keys[k],facet_nr, facet_HB);
+        get_cone_over_facet_vectors(fixed_point,facet_keys[k],facet_nr, facet_HB);
         
         CandidateList<Integer> Cands_from_facet; // first we sort out the reducible elements
         for(auto jj=facet_HB.begin();jj!=facet_HB.end();++jj)
@@ -3913,6 +3970,25 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     
     if(keep_order)
         return;
+
+    // we first order the generaors by "support hyperplanes" for computations using automorphisms
+    // in order to have an intrinsic useful sorting
+    if(isComputed(ConeProperty::SupportHyperplanes) && descent_level>0){
+        Matrix<Integer> TranspType(Support_Hyperplanes.nr_of_rows(),Generators.nr_of_rows());
+ 
+        #pragma omp parallel for
+        for(size_t i=0;i<Support_Hyperplanes.nr_of_rows();++i)
+            for(size_t j=0;j<Generators.nr_of_rows();++j)
+                TranspType[i][j]=v_scalar_product(Support_Hyperplanes[i],Generators[j]);
+
+        Matrix<Integer> OrderSupps=TranspType.sort_by_nr_of_zeroes();
+        Matrix<Integer> Type=TranspType.transpose();
+        vector<key_t> new_perm=Type.perm_by_lex();
+        Generators.order_rows_by_perm(new_perm);
+        compose_perm_gens(new_perm);
+        if(verbose)        
+            verboseOutput() << "Generators lexicographically by scalea products with support hyperplanes" << endl;
+    }
     
     Matrix<Integer> Weights(0,dim);
     vector<bool> absolute;
@@ -3928,13 +4004,15 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     }
     
     vector<key_t> perm=Generators.perm_by_weights(Weights,absolute);
-    Generators.order_rows_by_perm(perm);
-    order_by_perm(Extreme_Rays_Ind,perm);
-    if(isComputed(ConeProperty::Grading))
-        order_by_perm(gen_degrees,perm);
-    if(inhomogeneous && gen_levels.size()==nr_gen)
-        order_by_perm(gen_levels,perm);
     compose_perm_gens(perm);
+    
+    Generators.order_rows_by_perm(perm); // possibly the second reordering -- new_perm above could have been the first
+    
+    order_by_perm(Extreme_Rays_Ind,PermGens); // total reordering
+    if(isComputed(ConeProperty::Grading))
+        order_by_perm(gen_degrees,PermGens);
+    if(inhomogeneous && gen_levels.size()==nr_gen)
+        order_by_perm(gen_levels,PermGens);
 
     if(triangulate){
         Integer roughness;
@@ -3972,19 +4050,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     }
     
     if (verbose) {
-        if(triangulate){
-            if(isComputed(ConeProperty::SupportHyperplanes)){
-                Matrix<Integer> TranspType(Support_Hyperplanes.nr_of_rows(),Generators.nr_of_rows());
-                for(size_t i=0;i<Support_Hyperplanes.nr_of_rows();++i)
-                    for(size_t j=0;j<Generators.nr_of_rows();++j)
-                        TranspType[i][j]=v_scalar_product(Support_Hyperplanes[i],Generators[j]);
-                 Matrix<Integer> OrderSupps=TranspType.sort_by_nr_of_zeroes();
-                 Matrix<Integer> Type=TranspType.transpose();
-                 vector<key_t> new_perm=Type.perm_by_lex();
-                 Generators.order_rows_by_perm(new_perm);
-                 compose_perm_gens(new_perm);                 
-            }
-            else{ 
+        if(triangulate){ 
             if(isComputed(ConeProperty::Grading)){
                 verboseOutput() <<"Generators sorted by degree and lexicographically" << endl;
                 verboseOutput() << "Generators per degree:" << endl;
@@ -3992,7 +4058,6 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             }
             else
                 verboseOutput() << "Generators sorted by 1-norm and lexicographically" << endl;
-        }
         }
         else{
             verboseOutput() << "Generators sorted lexicographically" << endl;
@@ -4236,7 +4301,8 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_class_group() { // from the support hyperplanes
-    if(!do_class_group || !isComputed(ConeProperty::SupportHyperplanes) || isComputed(ConeProperty::ClassGroup))
+    if(!do_class_group || !isComputed(ConeProperty::SupportHyperplanes) || isComputed(ConeProperty::ClassGroup)
+        || descent_level!=0)
         return;
     Matrix<Integer> Trans=Support_Hyperplanes; // .transpose();
     size_t rk;
@@ -4253,7 +4319,7 @@ void Full_Cone<Integer>::compute_class_group() { // from the support hyperplanes
 template<typename Integer>
 void Full_Cone<Integer>::select_deg1_elements() { // from the Hilbert basis
 
-    if(inhomogeneous)
+    if(inhomogeneous || descent_level>0)
         return;
     typename list<vector<Integer> >::iterator h = Hilbert_Basis.begin();
     for(;h!=Hilbert_Basis.end();h++){
@@ -4456,7 +4522,7 @@ void Full_Cone<Integer>::deg1_check() {
 
 template<typename Integer>
 void Full_Cone<Integer>::check_deg1_hilbert_basis() {
-    if (isComputed(ConeProperty::IsDeg1HilbertBasis) || inhomogeneous)
+    if (isComputed(ConeProperty::IsDeg1HilbertBasis) || inhomogeneous || descent_level>0)
         return;
 
     if ( !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::HilbertBasis)) {
@@ -4695,14 +4761,11 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
     }
     
     bool only_from_god_father=false;
-    if(do_Hilbert_basis && descent_level>0)
+    if(do_integrally_closed && descent_level>0) // we can only work with automprphisms induced by God_Father
         only_from_god_father=true;
     
-    if(do_module_gens_intcl && !isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
-        return;  // in this case we postpone the computation (and do not try to exploit it)
-    
-    get_supphyps_from_copy(true);
-    extreme_rays_and_deg1_check();
+    get_supphyps_from_copy(true); // of course only if they haven't been computed
+    extreme_rays_and_deg1_check(); // ditto
 
     if(!isComputed(ConeProperty::SupportHyperplanes) || !isComputed(ConeProperty::ExtremeRays)){
         throw FatalException("Trying to compute austomorphism group without sufficient data! THIS SHOULD NOT HAPPEN!");
@@ -4712,7 +4775,7 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
     if(verbose)
         verboseOutput() << "Computing automorphism group" << endl;
     
-    size_t nr_special_linforms=0;
+    size_t nr_special_linforms=0; // the special liear forms are the grading and the truncation
     Matrix<Integer> Help;
     if(ambient_automorphisms)
         Help=Embedding.transpose();
@@ -4729,6 +4792,7 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
 
     bool success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Generators.submatrix(Extreme_Rays_Ind),true,
                                 Support_Hyperplanes,Help,full_automorphisms,nr_special_gens,nr_special_linforms);
+
     // bool success=false;
     if(success==false){
         if(only_from_god_father){
@@ -4758,6 +4822,8 @@ void Full_Cone<Integer>::compute__automorphisms( size_t nr_special_gens){
                 do_Hilbert_basis=false;
                 do_partial_triangulation=false;
             }
+            do_Hilbert_basis=true;
+            
         }
         success=Automs.compute(Generators.submatrix(Extreme_Rays_Ind),Matrix<Integer>(Hilbert_Basis),false,
                                Support_Hyperplanes,Help,full_automorphisms,0,nr_special_linforms);

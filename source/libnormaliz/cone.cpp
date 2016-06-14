@@ -866,22 +866,44 @@ void Cone<Integer>::compose_basis_change(const Sublattice_Representation<Integer
 template<typename Integer>
 void Cone<Integer>::check_precomputed_support_hyperplanes(){
 
-    if (isComputed(ConeProperty::Generators)) {
-        // check if the inequalities are at least valid
-        // if (PreComputedSupportHyperplanes.nr_of_rows() != 0) {
-            Integer sp;
-            for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
-                for (size_t j = 0; j < PreComputedSupportHyperplanes.nr_of_rows(); ++j) {
-                    if ((sp = v_scalar_product(Generators[i], PreComputedSupportHyperplanes[j])) < 0) {
-                        throw BadInputException("Precomputed inequality " + toString(j)
-                                + " is not valid for generator " + toString(i)
-                                + " (value " + toString(sp) + ")");
-                    }
-                }
-            }
-        // }
+    if (!isComputed(ConeProperty::Generators))
+        return;
+    
+    if(verbose){
+        verboseOutput() << "Checking input support hyperplanes ... " << flush;
     }
-}
+
+    Integer sp=0; // to make the compiler happy
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+    #pragma omp parallel for firstprivate(sp)
+    for (size_t i = 0; i < Generators.nr_of_rows(); ++i) {
+        for (size_t j = 0; j < PreComputedSupportHyperplanes.nr_of_rows(); ++j) {
+#ifndef NCATCH
+        try{
+#endif
+            if ((sp = v_scalar_product(Generators[i], PreComputedSupportHyperplanes[j])) < 0) {
+                throw BadInputException("Precomputed inequality " + toString(j)
+                        + " is not valid for generator " + toString(i)
+                        + " (value " + toString(sp) + ")");
+            }
+#ifndef NCATCH
+                } catch(const std::exception& ) {
+                    tmp_exception = std::current_exception();
+                }
+#endif
+        }
+    }
+#ifndef NCATCH
+                if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+                
+    if(verbose){
+        verboseOutput() << "done" << endl;
+    }
+
+}        
 
 //---------------------------------------------------------------------------
 template<typename Integer>
@@ -2296,6 +2318,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         Automs.GenOrbits=FC.Automs.GenOrbits;
         Automs.LinFormOrbits=FC.Automs.LinFormOrbits;
         Automs.from_ambient_space=FC.Automs.from_ambient_space;
+        BasisChangePointed.convert_from_sublattice(Automs.Gens,FC.Automs.Gens);
+        BasisChangePointed.convert_from_sublattice_dual(Automs.LinForms,FC.Automs.LinForms);
+        BasisChangePointed.convert_from_sublattice_dual(Automs.SpecialLinForms,FC.Automs.SpecialLinForms);
         is_Computed.set(ConeProperty::AutomorphismGroup);
         is_Computed.set(ConeProperty::FullAutomorphismGroup);
         is_Computed.set(ConeProperty::AmbientAutomorphismGroup);        

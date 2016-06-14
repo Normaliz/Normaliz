@@ -86,7 +86,6 @@ public:
     
     // control of what to compute
     bool do_triangulation;
-    bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
     bool do_partial_triangulation;
     bool do_determinants;
     bool do_multiplicity;
@@ -99,21 +98,24 @@ public:
     bool do_excluded_faces;
     bool do_approximation;
     bool do_default_mode;
-	bool do_bottom_dec;
-	bool keep_order;
+    bool do_bottom_dec;
+    bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
     bool stop_after_cone_dec;
     bool exploit_automorphisms;
+    bool do_extreme_rays;
+    bool do_pointed;    
+
+    // type of definition of automorphism group
     bool input_automorphisms;
     bool full_automorphisms;
     bool ambient_automorphisms;
-    bool do_extreme_rays;
-    bool do_pointed;
 
     // internal helper control variables
+    bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
     bool do_only_multiplicity;
     bool do_only_mult_and_decomp;
     bool do_evaluation;
@@ -376,7 +378,9 @@ public:
     vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);
     vector<Integer> get_fixed_point(size_t nr_cone_points);
     void compute_HB_via_automs();
-    void get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr, list<vector<Integer> >& facet_H);
+    void compute_Deg1_via_automs();
+    void get_cone_over_facet_vectors(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, const key_t facet_nr,
+                                     list<vector<Integer> >& facet_vectors);
     Matrix<Integer>  push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr);
     void import_HB_from(const IsoType<Integer>& copy);
     bool check_extension_to_god_father();

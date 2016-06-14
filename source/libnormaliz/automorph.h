@@ -76,6 +76,10 @@ public:
     
     BinaryMatrix<Integer> CanType; // see nauty
     
+    const Matrix<Integer>& getGens() const;
+    const Matrix<Integer>& getLinForms() const;
+    const Matrix<Integer>& getSpecialLinForms() const;
+    
     mpz_class getOrder() const;
     vector<vector<key_t> > getGenPerms() const;
     vector<vector<key_t> > getLinFormPerms() const;
