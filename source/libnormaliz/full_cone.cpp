@@ -2053,13 +2053,7 @@ void Full_Cone<Integer>::start_message() {
     
        if (verbose) {
         verboseOutput()<<"************************************************************"<<endl;
-        verboseOutput()<<"starting primal algorithm ";
-        if (do_partial_triangulation) verboseOutput()<<"with partial triangulation ";
-        if (do_triangulation) {
-            verboseOutput()<<"with full triangulation ";
-        }
-        if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
-        verboseOutput()<<"..."<<endl;
+        verboseOutput()<<"starting full cone computation" << endl;
     }   
 }
 
@@ -2658,6 +2652,17 @@ template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm_initialize() {
     
     set_primal_algorithm_control_variables();
+    
+    if(verbose){
+        verboseOutput() << "Starting primal algorithm ";    
+        if (do_partial_triangulation) 
+            verboseOutput()<<"with partial triangulation ";
+         if (do_triangulation)
+                verboseOutput()<<"with full triangulation ";
+         if (!do_triangulation && !do_partial_triangulation) verboseOutput()<<"(only support hyperplanes) ";
+         verboseOutput()<<"..."<<endl;
+    }
+    
     prepare_inclusion_exclusion();
 
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
@@ -3998,7 +4003,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         Generators.order_rows_by_perm(new_perm);
         compose_perm_gens(new_perm);
         if(verbose)        
-            verboseOutput() << "Generators lexicographically by scalea products with support hyperplanes" << endl;
+            verboseOutput() << "Generators sorted lexicographically by scalar products with support hyperplanes" << endl;
     }
     
     Matrix<Integer> Weights(0,dim);
