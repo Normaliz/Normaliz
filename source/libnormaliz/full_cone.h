@@ -84,9 +84,7 @@ public:
     bool deg1_hilbert_basis;
     bool inhomogeneous; 
     
-    // control of what to compute
-    bool do_triangulation;
-    bool do_partial_triangulation;
+    // control of what to compute (set from outside)
     bool do_determinants;
     bool do_multiplicity;
     bool do_integrally_closed;
@@ -95,19 +93,25 @@ public:
     bool do_h_vector;
     bool keep_triangulation;
     bool do_Stanley_dec;
-    bool do_excluded_faces;
-    bool do_approximation;
     bool do_default_mode;
-    bool do_bottom_dec;
-    bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
-    bool stop_after_cone_dec;
     bool exploit_automorphisms;
     bool do_extreme_rays;
-    bool do_pointed;    
+    bool do_pointed;
+    bool do_triangulation;
+    
+    // algorithmic variants
+    bool do_approximation;
+    bool do_bottom_dec;
+    bool keep_order;
+
+    // control of triangulation
+    bool do_partial_triangulation;
+    bool stop_after_cone_dec;
+    bool do_evaluation;
 
     // type of definition of automorphism group
     bool input_automorphisms;
@@ -115,10 +119,11 @@ public:
     bool ambient_automorphisms;
 
     // internal helper control variables
-    bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
+    bool do_subdivision_points;
+    bool do_excluded_faces;
+    bool no_descent_to_facets; // primal algorithm must be applied to God_Father
+    bool do_only_supp_hyps_and_aux;
     bool do_only_multiplicity;
-    bool do_only_mult_and_decomp;
-    bool do_evaluation;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool use_bottom_points;
     ConeProperties is_Computed;    
@@ -126,9 +131,12 @@ public:
     bool triangulation_is_partial;
     bool has_generator_with_common_divisor;
     
-    long autom_codim; // bound for the descent to faces in algorithms using automorphisms
-    bool autom_codim_set; // indicates that it has been set
-    Integer HB_bound; // only used in connection with automorphisms
+    long autom_codim_vectors; // bound for the descent to faces in algorithms using automorphisms
+    bool autom_codim_vectors_set; // for vector computations (HB, deg 1)
+    long autom_codim_mult; // bound ditto for multiplicity
+    bool autom_codim_mult_set; 
+    Integer HB_bound; // only degree bound used in connection with automorphisms
+                      // to discard vectors quickly 
 
     // data of the cone (input or output)
     vector<Integer> Truncation;  //used in the inhomogeneous case to suppress vectors of level > 1
@@ -363,8 +371,10 @@ public:
     void minimize_excluded_faces();
     void prepare_inclusion_exclusion();
 
-    void do_vars_check(bool with_default);
+    void set_implications();
+    void set_primal_algorithm_control_variables();
     void reset_tasks();
+    void deactivate__completed_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
     void start_message();
@@ -373,6 +383,7 @@ public:
     void set_zero_cone();
     
     void compute__automorphisms(size_t nr_special_gens=0);
+    void compute_by_automorphisms();
     mpq_class facet_multiplicity(const vector<key_t>& facet_key);
     void compute_multiplicity_via_automs();
     vector<vector<key_t> > get_facet_keys_for_orbits(const vector<Integer>& fixed_point,bool with_orbit_sizes);

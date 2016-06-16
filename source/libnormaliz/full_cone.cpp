@@ -2504,7 +2504,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     if (verbose) {
         verboseOutput() << "Computing bottom candidates via approximation... " << flush;
     }
-    SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
+    SimplCone.do_subdivision_points=true;
     SimplCone.do_approximation=true;  // as indicted by do_approximation
     SimplCone.approx_level = approx_level;
 
@@ -2602,6 +2602,11 @@ return; //TODO reactivate!
 
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
+    
+    if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation) )
+        return;
+    
+    cout << "IN PRIMAL " << endl;
 
     primal_algorithm_initialize();
 
@@ -2621,8 +2626,40 @@ void Full_Cone<Integer>::primal_algorithm(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::primal_algorithm_initialize() {
+void Full_Cone<Integer>::set_primal_algorithm_control_variables(){
+    
+    do_triangulation=false;
+    do_partial_triangulation=false;
 
+    if(do_multiplicity)     do_determinants=true;
+    if (do_determinants)    do_triangulation = true;
+    if (do_h_vector)        do_triangulation = true;
+    if (do_deg1_elements)   do_partial_triangulation = true;
+    if (do_Hilbert_basis)   do_partial_triangulation = true;
+    // activate 
+    do_only_multiplicity = do_determinants || do_multiplicity;
+
+    stop_after_cone_dec = true;
+    if(do_cone_dec)          do_only_multiplicity=false;
+        
+    if (do_Stanley_dec || do_h_vector || do_deg1_elements 
+                     || do_Hilbert_basis) {
+        do_only_multiplicity = false;
+        stop_after_cone_dec = false;
+        do_evaluation = true;
+    }
+    if (do_only_multiplicity)    do_evaluation = true;
+
+    // deactivate
+    if (do_triangulation)   do_partial_triangulation = false;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::primal_algorithm_initialize() {
+    
+    set_primal_algorithm_control_variables();
     prepare_inclusion_exclusion();
 
     SimplexEval = vector< SimplexEvaluator<Integer> >(omp_get_max_threads(),SimplexEvaluator<Integer>(*this));
@@ -2813,13 +2850,14 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
 //---------------------------------------------------------------------------
 
 // check the do_* bools, they must be set in advance
-// this method (de)activate them according to dependencies between them
+// this method (de)activates them according to dependencies between them
 template<typename Integer>
-void Full_Cone<Integer>::do_vars_check(bool with_default) {
+void Full_Cone<Integer>::set_implications() {
 
     do_extreme_rays=true; // we always want to do this if compute() is called
 
-    if (do_default_mode && with_default) {
+    // take care of default mode
+    if (do_default_mode) {
         do_Hilbert_basis = true;
         do_h_vector = true;
         if(!inhomogeneous)
@@ -2828,34 +2866,90 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
-    if (do_Stanley_dec)     keep_triangulation = true;
-    if (do_cone_dec)        keep_triangulation = true;
-    if (keep_triangulation) do_determinants = true;
+    if(do_Hilbert_basis)      do_integrally_closed=false; // since full Hilbert basis asked for explicitely
+    if(do_integrally_closed)  do_Hilbert_basis=true;  // we must switch on the computation of the Hilbert basis
+    if (do_Stanley_dec)       keep_triangulation = true;
+    if (do_cone_dec)          keep_triangulation = true;
+    if (keep_triangulation)   do_determinants = true;
     // if (do_multiplicity)    do_determinants = true; // removed because of automorphisms
     if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
-    if (do_determinants)    do_triangulation = true;
-    if (do_h_vector)        do_triangulation = true;
-    if (do_deg1_elements)   do_partial_triangulation = true;
-    if (do_Hilbert_basis)   do_partial_triangulation = true;
-    // activate 
-    do_only_multiplicity = do_determinants || do_multiplicity; // does no longer imply do_multiplicity !!
-                                                                // needed in simplex.cpp
-    stop_after_cone_dec = true;
-    if(do_cone_dec)          do_only_multiplicity=false;
-        
-    if (do_Stanley_dec || do_h_vector || do_deg1_elements 
-                     || do_Hilbert_basis) {
-        do_only_multiplicity = false;
-        stop_after_cone_dec = false;
-        do_evaluation = true;
-    }
-    if (do_determinants)    do_evaluation = true;
-
-    // deactivate
-    if (do_triangulation)   do_partial_triangulation = false;
-    if (do_Hilbert_basis)   do_deg1_elements = false; // they will be extracted later
+    if (do_Hilbert_basis)     do_deg1_elements = false; // after the Hilbert basis computation, deg 1 elements will be extracted
+    
+    no_descent_to_facets=do_h_vector || do_module_gens_intcl || keep_triangulation  // we must use the primal algorithm directly
+                || do_triangulation || do_Stanley_dec || do_cone_dec || do_determinants || do_excluded_faces || do_bottom_dec;
+                           
+    do_only_supp_hyps_and_aux= !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis;
 }
 
+// We set the do* variables to false if the corresponding task has been done
+template<typename Integer>
+void Full_Cone<Integer>::deactivate__completed_tasks() {
+
+    if(isComputed(ConeProperty::IsPointed))                    do_pointed=false;    
+    if(isComputed(ConeProperty::ExtremeRays))                  do_extreme_rays=false;
+    if(isComputed(ConeProperty::HilbertBasis)){                
+        do_Hilbert_basis=false;
+        do_integrally_closed=false;
+    }
+    if(isComputed(ConeProperty::Deg1Elements))                 do_deg1_elements=false;
+    if(isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid))      do_module_gens_intcl=false;
+    
+    if(isComputed(ConeProperty::HilbertSeries))                 do_h_vector=false;
+    if(isComputed(ConeProperty::Multiplicity))                  do_multiplicity=false;
+    
+    if(isComputed(ConeProperty::StanleyDec))                   do_Stanley_dec=false;
+    if(isComputed(ConeProperty::ConeDecomposition))             do_cone_dec=false;
+    if(isComputed(ConeProperty::Triangulation))                 keep_triangulation=false;
+    if(isComputed(ConeProperty::TriangulationDetSum))           do_determinants=false;   
+       
+    if(isComputed(ConeProperty::ModuleRank))                  do_module_rank=false;
+    
+    if(isComputed(ConeProperty::ClassGroup))                    do_class_group=false;
+}
+
+//---------------------------------------------------------------------------
+
+// do computations using automorphisms
+template<typename Integer>
+void Full_Cone<Integer>::compute_by_automorphisms() {
+    
+    if(!exploit_automorphisms || no_descent_to_facets)
+        return;
+
+    if(descent_level==0){
+        if(do_Hilbert_basis){
+            for(size_t i=0;i<nr_gen;++i)
+                Generator_Set.insert(Generators[i]);
+        }
+        
+        if(!autom_codim_vectors_set)
+            autom_codim_vectors=1;
+        if(!autom_codim_mult_set)
+            autom_codim_mult=min((int) dim/4,6);
+        autom_codim_vectors_set=true;
+        autom_codim_mult_set=true;
+    }
+    
+    if(do_multiplicity){
+        if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
+            compute_multiplicity_via_automs();
+        }
+    }
+    deactivate__completed_tasks();
+    
+    if(do_Hilbert_basis){
+        if(descent_level< God_Father->autom_codim_vectors && nr_gen>= dim+4){ // otherwise direct computation
+            compute_HB_via_automs();
+        }
+    }
+    deactivate__completed_tasks();
+    
+    if(do_deg1_elements){
+        if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
+        }
+    }
+    deactivate__completed_tasks();
+}
 
 // general purpose compute method
 // do_* bools must be set in advance, this method does sanity checks for it
@@ -2863,134 +2957,45 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
     
+    cout << "MULT " << do_multiplicity << endl;
+    
     if(dim==0){
         set_zero_cone();
         return;
     }
 
-    do_vars_check(false);
-    explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
-    if(do_default_mode)
-        do_vars_check(true);
-    if (do_integrally_closed) {
-        if (do_Hilbert_basis) {
-            do_integrally_closed = false; // don't interrupt the computation
-        } else {
-            do_Hilbert_basis = true;
-            do_vars_check(false);
-        }
-    }
-
+    set_implications();
     start_message();
-    
-    /* if(exploit_automorphisms && God_Father->dim==dim){
-        string name_open="automorphism.cfg";
-        const char* file=name_open.c_str();
-        ifstream in(file);
-        if(in.good()){
-            in >> expense_factor_automs;
-            in >> autom_codim;
-            // cout << "WHOW WHOW " << expense_factor_automs << " " << autom_codim << endl;
-        }       
-    }*/ 
-    if(exploit_automorphisms && descent_level==0){
-        if(do_Hilbert_basis){
-            for(size_t i=0;i<nr_gen;++i)
-                Generator_Set.insert(Generators[i]);
-        }
-        
-        if(!autom_codim_set){
-            if(do_Hilbert_basis || do_deg1_elements){
-                autom_codim=1;
-            }
-            else{
-                if(do_multiplicity){
-                    autom_codim=min((int) dim/4,6);
-                }
-            }
-            autom_codim_set=true;
-        }
-    }
     
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
         set_levels();
     
     check_given_grading();
-
-    if ((!do_triangulation && !do_partial_triangulation)
-            || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
-            // in the last case there are only two possibilities:
-            // either nonpointed or bad grading
-
-        support_hyperplanes();
-        compute_class_group();
-        compute__automorphisms();
-        end_message(); 
-        return;
-    }
-    
     // look for a grading if it is needed
     find_grading();        
     if(isComputed(ConeProperty::IsPointed) && !pointed){
         end_message();
         return;
     }
-    
     if (!isComputed(ConeProperty::Grading))
         disable_grading_dep_comp();
+    
+    if (do_only_supp_hyps_and_aux || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
+            // in the last case there are only two possibilities:
+            // either nonpointed or bad grading
+
+        support_hyperplanes();
+        compute_class_group();
+        compute__automorphisms();
+        deactivate__completed_tasks();
+        end_message(); 
+        return;
+    }
        
     set_degrees();
     sort_gens_by_degree(true);
     
-    if(exploit_automorphisms){
-        compute__automorphisms(descent_level); // we protect the cone apices
-        if(!do_triangulation && !do_partial_triangulation){
-            compute_class_group();
-            end_message();
-            return;
-        }
-    }
-    
-    // automorphsm group now computed if asked for. We disable it if not usable for further computation.
-    if(do_h_vector || do_module_gens_intcl || keep_triangulation || do_Stanley_dec || do_cone_dec || do_determinants)
-        exploit_automorphisms=false;
-
-    if(do_only_multiplicity && exploit_automorphisms){
-        if(descent_level< God_Father->autom_codim && nr_gen>= dim+4 
-                && isComputed(ConeProperty::AutomorphismGroup) && Automs.getOrder()>1){ // otherwise direct computation
-            compute_multiplicity_via_automs();
-            if(isComputed(ConeProperty::Multiplicity)){
-                compute_class_group();
-                end_message();
-                return;
-            }
-        }
-    }
-    
-    if(do_Hilbert_basis && !do_multiplicity && exploit_automorphisms){
-        if(descent_level< God_Father->autom_codim  && isComputed(ConeProperty::AutomorphismGroup)
-                    && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
-            compute_HB_via_automs();
-            if(isComputed(ConeProperty::HilbertBasis)){
-                compute_class_group();
-                end_message();
-                return;
-            }
-        }
-    }
-    
-    if(do_deg1_elements && !do_multiplicity && exploit_automorphisms){
-        if(descent_level< God_Father->autom_codim  && isComputed(ConeProperty::AutomorphismGroup)
-                    && nr_gen>= dim+4 && Automs.getOrder()>1){ // otherwise direct computation
-            compute_Deg1_via_automs();
-            if(isComputed(ConeProperty::Deg1Elements)){
-                compute_class_group();
-                end_message();
-                return;
-            }
-        }
-    }
 
     bool polyhedron_is_polytope=inhomogeneous;
     if(inhomogeneous){
@@ -3001,44 +3006,49 @@ void Full_Cone<Integer>::compute() {
                 break;
             }                
     }
+    if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
+            convert_polyhedron_to_polytope();
+            deactivate__completed_tasks();
+    }
 
     if(do_approximation && !deg1_generated){
         if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)){
             do_extreme_rays=true;
             dualize_cone(false);// no start or end message
         }
-        if(verbose)
-            verboseOutput() << "Approximating rational by lattice polytope" << endl;
+        assert(!(do_deg1_elements && do_subdivision_points));
         if(do_deg1_elements){
-            compute_deg1_elements_via_approx_global();
-            is_Computed.set(ConeProperty::Deg1Elements,true);
-            if(do_triangulation){
-                do_deg1_elements=false;
-                do_partial_triangulation=false;
-                do_only_multiplicity = do_determinants;
-                primal_algorithm();            
+            if(!isComputed(ConeProperty::Deg1Elements)){
+                if(verbose)
+                    verboseOutput() << "Approximating rational by lattice polytope" << endl;
+                compute_deg1_elements_via_approx_global();
+                is_Computed.set(ConeProperty::Deg1Elements,true);
+                deactivate__completed_tasks();
             }
-        } else { // now we want subdividing elements for a simplicial cone
-            assert(do_Hilbert_basis);
-            compute_elements_via_approx(Hilbert_Basis);            
-        }
+        } 
         
+        if(do_subdivision_points){ // now we want subdividing elements for a simplicial cone
+            do_Hilbert_basis=true;
+            compute_elements_via_approx(Hilbert_Basis);
+            return; // in this case really done
+        }        
     }
-    else{
-        if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
-            convert_polyhedron_to_polytope();                  // lattice points in a polytope
-        }
-        else
-            primal_algorithm();            
-    }
+    
+    compute_by_automorphisms();
+    deactivate__completed_tasks();
+    
+    cout << "MULT VOR PRIMAL" << do_multiplicity << endl;
+
+    primal_algorithm();
+    deactivate__completed_tasks();
         
     if(inhomogeneous){
         find_module_rank();
-        // cout << "module rank " << module_rank << endl;
     }
     
     compute_class_group();
     compute__automorphisms();
+    deactivate__completed_tasks();
     
     end_message();  
     
@@ -3155,7 +3165,7 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
     ConeOverFacet.descent_level=descent_level+1;
     ConeOverFacet.Mother=&(*this);
     ConeOverFacet.God_Father=God_Father;
-    if(ConeOverFacet.descent_level < God_Father->autom_codim){ // otherwise dirct computation of HB
+    if(ConeOverFacet.descent_level < God_Father->autom_codim_vectors){ // otherwise dirct computation of HB
         ConeOverFacet.exploit_automorphisms=true;
         ConeOverFacet.full_automorphisms=full_automorphisms;
         ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
@@ -3264,8 +3274,10 @@ void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_poi
 template<typename Integer>
 void Full_Cone<Integer>::compute_Deg1_via_automs(){
     
+    compute__automorphisms(descent_level);
+    
     if(!do_deg1_elements || isComputed(ConeProperty::Deg1Elements)
-               || !isComputed(ConeProperty::AutomorphismGroup))
+               || !isComputed(ConeProperty::AutomorphismGroup) || Automs.getOrder() ==1)
         return;
 
     list<vector<Integer> > union_of_facets; // collects all candidates from the orbits of the HBs of the facets
@@ -3303,8 +3315,10 @@ void Full_Cone<Integer>::compute_Deg1_via_automs(){
 template<typename Integer>
 void Full_Cone<Integer>::compute_HB_via_automs(){
     
+    compute__automorphisms(descent_level);
+    
     if(!do_Hilbert_basis || isComputed(ConeProperty::HilbertBasis)
-               || !isComputed(ConeProperty::AutomorphismGroup))
+               || !isComputed(ConeProperty::AutomorphismGroup)  || Automs.getOrder() ==1)
         return;
     
     prepare_old_candidates_and_support_hyperplanes();
@@ -3409,8 +3423,10 @@ vector<vector<key_t> > Full_Cone<Integer>::get_facet_keys_for_orbits(const vecto
 template<typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_via_automs(){
     
+    compute__automorphisms(0);
+    
     if(!do_multiplicity || isComputed(ConeProperty::Multiplicity) || 
-        !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::AutomorphismGroup))
+        !isComputed(ConeProperty::Grading) || !isComputed(ConeProperty::AutomorphismGroup)  || Automs.getOrder() ==1)
         return;
     
     vector<Integer> fixed_point=get_fixed_point(0); // no cone points in this case
@@ -3548,37 +3564,37 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
         !isComputed(ConeProperty::SupportHyperplanes)){
         Support_Hyperplanes=Polytope.Support_Hyperplanes;
-    nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
-    is_Computed.set(ConeProperty::SupportHyperplanes);  
-        }
-        if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
-            !isComputed(ConeProperty::ExtremeRays)){
-            Extreme_Rays_Ind=Polytope.Extreme_Rays_Ind;
+        nrSupport_Hyperplanes=Polytope.nrSupport_Hyperplanes;
+        is_Computed.set(ConeProperty::SupportHyperplanes);  
+    }
+    if(Polytope.isComputed(ConeProperty::ExtremeRays) &&
+        !isComputed(ConeProperty::ExtremeRays)){
+        Extreme_Rays_Ind=Polytope.Extreme_Rays_Ind;
         is_Computed.set(ConeProperty::ExtremeRays);     
-            }
-            if(Polytope.isComputed(ConeProperty::Deg1Elements)){
-                Hilbert_Basis=Polytope.Deg1_Elements;
-                is_Computed.set(ConeProperty::HilbertBasis);
-                module_rank=Hilbert_Basis.size();
-                is_Computed.set(ConeProperty::ModuleRank);
-                if(isComputed(ConeProperty::Grading) && module_rank>0){
-                    multiplicity=1; // of the recession cone;
-                    is_Computed.set(ConeProperty::Multiplicity);
-                    vector<num_t> hv(1);
-                    typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
-                    for(;hb!=Hilbert_Basis.end();++hb){
-                        size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
-                        if(deg+1>hv.size())
-                            hv.resize(deg+1);
-                        hv[deg]++;                        
-                    }    
-                    Hilbert_Series.add(hv,vector<denom_t>());
-                    Hilbert_Series.setShift(convertTo<long>(shift));
-                    Hilbert_Series.adjustShift();
-                    Hilbert_Series.simplify();
-                    is_Computed.set(ConeProperty::HilbertSeries);
-                }  
-            }   
+    }
+    if(Polytope.isComputed(ConeProperty::Deg1Elements)){
+        Hilbert_Basis=Polytope.Deg1_Elements;
+        is_Computed.set(ConeProperty::HilbertBasis);
+        module_rank=Hilbert_Basis.size();
+        is_Computed.set(ConeProperty::ModuleRank);
+        if(isComputed(ConeProperty::Grading) && module_rank>0){
+            multiplicity=1; // of the recession cone;
+            is_Computed.set(ConeProperty::Multiplicity);
+            vector<num_t> hv(1);
+            typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
+            for(;hb!=Hilbert_Basis.end();++hb){
+                size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
+                if(deg+1>hv.size())
+                    hv.resize(deg+1);
+                hv[deg]++;                        
+            }    
+            Hilbert_Series.add(hv,vector<denom_t>());
+            Hilbert_Series.setShift(convertTo<long>(shift));
+            Hilbert_Series.adjustShift();
+            Hilbert_Series.simplify();
+            is_Computed.set(ConeProperty::HilbertSeries);
+        }  
+    }
 }
 
 
@@ -4415,15 +4431,9 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
 
     if (do_multiplicity || do_deg1_elements || do_h_vector) {
         if (do_default_mode) {
-            // if (verbose)
-            //    verboseOutput() << "No grading specified and cannot find one. "
-            //                    << "Disabling some computations!" << endl;
             do_deg1_elements = false;
             do_h_vector = false;
-            if(!explicit_full_triang){
-                do_triangulation=false;
-                do_partial_triangulation=true;
-            }
+            do_multiplicity=false;
         } else {
             throw BadInputException("No grading specified and cannot find one. Cannot compute some requested properties!");
         }
@@ -4930,7 +4940,7 @@ void Full_Cone<Integer>::reset_tasks(){
     do_module_rank = false;
     do_cone_dec=false;
     stop_after_cone_dec=false;
-    
+    do_subdivision_points=false;    
     do_extreme_rays=false;
     do_pointed=false;
     
@@ -4949,7 +4959,8 @@ void Full_Cone<Integer>::reset_tasks(){
     input_automorphisms=false; // not really nevessary since not a task
     full_automorphisms=false; // ditto
     ambient_automorphisms=false; // ditto
-    autom_codim_set=false;
+    autom_codim_vectors_set=false;
+    autom_codim_mult_set=false;
 }
 
 

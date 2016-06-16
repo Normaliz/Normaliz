@@ -59,7 +59,8 @@ enum InputType {
     support_hyperplanes,
     cone_and_lattice,
     subspace,
-    codim_bound
+    codim_bound_vectors,
+    codim_bound_mult
 };
 } //end namespace Type
 

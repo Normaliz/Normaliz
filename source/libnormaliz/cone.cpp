@@ -348,10 +348,15 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         homogenize_input(multi_input_data);
     
     // check for codim_bound
-    lf = find_input_matrix(multi_input_data,Type::codim_bound);
+    lf = find_input_matrix(multi_input_data,Type::codim_bound_vectors);
     if (lf.size() > 0) {
-        autom_codim=convertTo<long>(lf[0][0]);
-        autom_codim_set=true;
+        autom_codim_vectors=convertTo<long>(lf[0][0]);
+        autom_codim_vectors_set=true;
+    }
+    lf = find_input_matrix(multi_input_data,Type::codim_bound_mult);
+    if (lf.size() > 0) {
+        autom_codim_mult=convertTo<long>(lf[0][0]);
+        autom_codim_mult_set=true;
     }
     
     // check for dehomogenization
@@ -847,7 +852,8 @@ void Cone<Integer>::initialize() {
     } else {
         change_integer_type = false;
     }
-    autom_codim_set=false;
+    autom_codim_vectors_set=false;
+    autom_codim_mult_set=false;
     IntHullCone=NULL;
 }
 
@@ -1695,9 +1701,13 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         FC.full_automorphisms=ToCompute.test(ConeProperty::FullAutomorphismGroup);
         FC.input_automorphisms=input_automorphisms;
     }
-    if(autom_codim_set){
-        FC.autom_codim=autom_codim;
-        FC.autom_codim_set=true;        
+    if(autom_codim_vectors_set){
+        FC.autom_codim_vectors=autom_codim_vectors;
+        FC.autom_codim_vectors_set=true;        
+    }
+    if(autom_codim_mult_set){
+        FC.autom_codim_mult=autom_codim_mult;
+        FC.autom_codim_mult_set=true;        
     }
     if (ToCompute.test(ConeProperty::Approximate)
      && ToCompute.test(ConeProperty::Deg1Elements)) {

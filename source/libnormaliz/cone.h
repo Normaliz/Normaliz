@@ -292,8 +292,10 @@ private:
     
     Cone<Integer>* IntHullCone;
     
-    long autom_codim;
-    bool autom_codim_set;
+    long autom_codim_vectors;
+    bool autom_codim_vectors_set;
+    long autom_codim_mult;
+    bool autom_codim_mult_set;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 

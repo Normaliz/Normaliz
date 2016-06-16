@@ -153,8 +153,11 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="subspace") {
         return Type::subspace;
     }
-    if (type_string=="codim_bound") {
-        return Type::codim_bound;
+    if (type_string=="codim_bound_vectors") {
+        return Type::codim_bound_vectors;
+    }
+    if (type_string=="codim_bound_mult") {
+        return Type::codim_bound_mult;
     }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
@@ -183,7 +186,7 @@ bool type_is_vector(InputType type){
 
 /* returns true if the input of this type is a number */
 bool type_is_number(InputType type){
-    if (type == Type::codim_bound) {
+    if (type == Type::codim_bound_vectors || type == Type::codim_bound_mult) {
         return true;
     }
     return false;
