@@ -2605,8 +2605,6 @@ void Full_Cone<Integer>::primal_algorithm(){
     
     if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation) )
         return;
-    
-    cout << "IN PRIMAL " << endl;
 
     primal_algorithm_initialize();
 
@@ -2878,7 +2876,7 @@ void Full_Cone<Integer>::set_implications() {
     no_descent_to_facets=do_h_vector || do_module_gens_intcl || keep_triangulation  // we must use the primal algorithm directly
                 || do_triangulation || do_Stanley_dec || do_cone_dec || do_determinants || do_excluded_faces || do_bottom_dec;
                            
-    do_only_supp_hyps_and_aux= !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis;
+    do_only_supp_hyps_and_aux= !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis &&!do_subdivision_points;
 }
 
 // We set the do* variables to false if the corresponding task has been done
@@ -2957,8 +2955,6 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
     
-    cout << "MULT " << do_multiplicity << endl;
-    
     if(dim==0){
         set_zero_cone();
         return;
@@ -3011,7 +3007,7 @@ void Full_Cone<Integer>::compute() {
             deactivate__completed_tasks();
     }
 
-    if(do_approximation && !deg1_generated){
+    if(do_approximation && !deg1_generated){        
         if(!isComputed(ConeProperty::ExtremeRays) || !isComputed(ConeProperty::SupportHyperplanes)){
             do_extreme_rays=true;
             dualize_cone(false);// no start or end message
@@ -3028,6 +3024,7 @@ void Full_Cone<Integer>::compute() {
         } 
         
         if(do_subdivision_points){ // now we want subdividing elements for a simplicial cone
+
             do_Hilbert_basis=true;
             compute_elements_via_approx(Hilbert_Basis);
             return; // in this case really done
@@ -3036,8 +3033,6 @@ void Full_Cone<Integer>::compute() {
     
     compute_by_automorphisms();
     deactivate__completed_tasks();
-    
-    cout << "MULT VOR PRIMAL" << do_multiplicity << endl;
 
     primal_algorithm();
     deactivate__completed_tasks();
