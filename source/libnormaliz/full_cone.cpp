@@ -2919,6 +2919,30 @@ void Full_Cone<Integer>::deactivate__completed_tasks() {
     if(isComputed(ConeProperty::ClassGroup))                    do_class_group=false;
 }
 
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::compute_multiplicity_via_recession_cone(){
+    Matrix<Integer> Level0Gens(0,dim);
+    for(size_t i=0;i<nr_gen;++i){
+        if(gen_levels[i]==0)
+            Level0Gens.append(Generators[i]);
+    }
+    Sublattice_Representation<Integer> Level0Sub(Level0Gens,true);
+    Matrix<Integer> RecGens=Level0Sub.to_sublattice(Level0Gens);
+    Full_Cone<Integer> RecCone(RecGens);
+    RecCone.Grading=Level0Sub.to_sublattice_dual_no_div(Grading);
+    RecCone.is_Computed.set(ConeProperty::Grading);
+    RecCone.do_multiplicity=true;
+    RecCone.verbose=verbose;
+    RecCone.copy_autom_params(*this);
+    if(ambient_automorphisms){
+        RecCone.Embedding=Level0Sub.getEmbeddingMatrix().multiplication(Embedding);
+    }
+    RecCone.compute();
+    multiplicity=RecCone.multiplicity;
+    is_Computed.set(ConeProperty::Multiplicity);
+}
 //---------------------------------------------------------------------------
 
 // do computations using automorphisms
@@ -2944,7 +2968,10 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     
     if(do_multiplicity){
         if(descent_level< God_Father->autom_codim_mult && nr_gen>= dim+4){ // otherwise direct computation
-            compute_multiplicity_via_automs();
+            if(inhomogeneous)
+                compute_multiplicity_via_recession_cone();
+            else    
+                compute_multiplicity_via_automs();
         }
     }
     deactivate__completed_tasks();
@@ -3051,7 +3078,7 @@ void Full_Cone<Integer>::compute() {
     primal_algorithm();
     deactivate__completed_tasks();
         
-    if(inhomogeneous){
+    if(inhomogeneous && descent_level==0){
         find_module_rank();
     }
     
@@ -3114,40 +3141,18 @@ Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vecto
   return SuppHyps;
   
 }
+
+
 //---------------------------------------------------------------------------
 
-/*
-// not used at present
 template<typename Integer>
-void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
-
-    assert(isComputed(ConeProperty::AutomorphismGroup));
-    
-    size_t N=copy.getHilbertBasis().nr_of_rows();
-    if(N==0){
-        is_Computed.set(ConeProperty::HilbertBasis);
-        return;    
-    }
-        
-    assert(Hilbert_Basis.empty());
-    for(size_t i=0;i<nr_gen;++i)
-        Hilbert_Basis.push_back(Generators[i]);
-    
-    vector<key_t> CanBasisKey=Generators.max_rank_submatrix_lex(Automs.CanLabellingGens);    
-    Matrix<Integer> Transform=copy.getCanTransform().multiplication(Generators.submatrix(CanBasisKey));
-    Integer D=Transform.matrix_gcd();
-    if(D!=copy.getCanDenom()) // not liftable
-        return;
-    Transform.scalar_division(D);
-    for(size_t i=0;i<N;++i){
-        Hilbert_Basis.push_back(Transform.VxM(copy.getHilbertBasis()[i]));        
-    }
-    
-    is_Computed.set(ConeProperty::HilbertBasis);
-    return;     
+void Full_Cone<Integer>::copy_autom_params(const Full_Cone<Integer>& C){
+    exploit_automorphisms=C.exploit_automorphisms;
+    full_automorphisms=C.full_automorphisms;
+    ambient_automorphisms=C.ambient_automorphisms;
+    input_automorphisms=C.input_automorphisms;
+    keep_order=true;
 }
-*/
-
 //---------------------------------------------------------------------------
 // version without iso classes
 template<typename Integer>
@@ -3175,16 +3180,16 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
     ConeOverFacet.Mother=&(*this);
     ConeOverFacet.God_Father=God_Father;
     if(ConeOverFacet.descent_level < God_Father->autom_codim_vectors){ // otherwise dirct computation of HB
-        ConeOverFacet.exploit_automorphisms=true;
-        ConeOverFacet.full_automorphisms=full_automorphisms;
-        ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
-        ConeOverFacet.input_automorphisms=input_automorphisms;
+        ConeOverFacet.copy_autom_params(*this);
         ConeOverFacet.Embedding=Embedding;
-        ConeOverFacet.keep_order=true;
     }
     ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
     ConeOverFacet.do_Hilbert_basis=do_Hilbert_basis;
     ConeOverFacet.do_deg1_elements=do_deg1_elements;
+    ConeOverFacet.inhomogeneous=inhomogeneous;
+    if(inhomogeneous){
+        ConeOverFacet.Truncation=Truncation;
+    }
     ConeOverFacet.compute();
     Facet_vectors.clear();
     if(do_Hilbert_basis)
@@ -3192,92 +3197,6 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
     else
         Facet_vectors.splice(Facet_vectors.begin(),ConeOverFacet.Deg1_Elements); 
 }
-
-/*
-
-//---------------------------------------------------------------------------
-// version with isomorphism classes -- has no real effect
-template<typename Integer>
-void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
-                                      const key_t facet_nr, list<vector<Integer> >& Facet_HB){
-  
-  
-    Matrix<Integer> Facet_Gens(0,dim);
-    Facet_Gens.append(fixed_point);
-    Facet_Gens.append(Generators.submatrix(facet_key));   
-    
-    for(long i=0;i<descent_level+1;++i)
-        cout << "$$$$$$  ";
-    cout << " " << Facet_Gens.nr_of_rows() << endl;
-    cout << "Height FP over facet " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
-    
-    Full_Cone ConeOverFacet(Facet_Gens);
-    ConeOverFacet.verbose=verbose;
-
-    if(isComputed(ConeProperty::Grading)){
-      ConeOverFacet.Grading=Grading;
-      ConeOverFacet.is_Computed.set(ConeProperty::Grading);
-    }
-     ConeOverFacet.descent_level=descent_level+1;
-    ConeOverFacet.Mother=&(*this);
-    ConeOverFacet.God_Father=God_Father;
-    ConeOverFacet.exploit_automorphisms=true;
-    ConeOverFacet.full_automorphisms=full_automorphisms;
-    ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
-    ConeOverFacet.input_automorphisms=input_automorphisms;
-    ConeOverFacet.Embedding=Embedding;
-    ConeOverFacet.keep_order=true;
-    ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
-    // ConeOverFacet.do_Hilbert_basis=true;
-    ConeOverFacet.compute();
-    if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis)){
-        Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
-        return;        
-    }
-    bool found;
-    const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(ConeOverFacet,found);
-    if(found){
-        ConeOverFacet.import_HB_from(face_class);
-        Facet_HB.clear();
-        Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
-        if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis))
-            return;
-    } 
-
-    Full_Cone Facet_2(Facet_Gens);
-    Facet_2.Automs=ConeOverFacet.Automs;
-    Facet_2.is_Computed.set(ConeProperty::AutomorphismGroup);
-    Facet_2.Embedding=Embedding;
-    Facet_2.full_automorphisms=full_automorphisms;
-    Facet_2.ambient_automorphisms=ambient_automorphisms;
-    Facet_2.input_automorphisms=input_automorphisms;
-    Facet_2.exploit_automorphisms=true;
-    Facet_2.keep_order=true;
-    Facet_2.Extreme_Rays_Ind=ConeOverFacet.Extreme_Rays_Ind;
-    Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
-    Facet_2.Support_Hyperplanes=ConeOverFacet.Support_Hyperplanes;
-    Facet_2.nrSupport_Hyperplanes=ConeOverFacet.nrSupport_Hyperplanes;
-    Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
-    Facet_2.verbose=verbose;
-    Facet_2.descent_level=descent_level+1;
-    Facet_2.full_automorphisms=full_automorphisms;
-    Facet_2.ambient_automorphisms=ambient_automorphisms;
-    Facet_2.input_automorphisms=input_automorphisms;
-    if(isComputed(ConeProperty::Grading)){
-        Facet_2.Grading=Grading;
-        Facet_2.is_Computed.set(ConeProperty::Grading);
-    }
-    Facet_2.Mother=&(*this);
-    Facet_2.God_Father=God_Father;
-    Facet_2.do_Hilbert_basis=true;
-    Facet_2.compute();
-    bool added;
-    God_Father->FaceClasses.add_type(Facet_2, added);
-    Facet_HB.clear();
-    Facet_HB.splice(Facet_HB.begin(),Facet_2.Hilbert_Basis);
-    return;
-}
-*/
 
 //---------------------------------------------------------------------------
 template<typename Integer>
@@ -3486,12 +3405,13 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.is_Computed.set(ConeProperty::Grading);
     Facet.Mother=&(*this);
     Facet.God_Father=God_Father;
-    Facet.exploit_automorphisms=true;
-    Facet.full_automorphisms=full_automorphisms;
-    Facet.ambient_automorphisms=ambient_automorphisms;
-    Facet.input_automorphisms=input_automorphisms;
+    Facet.copy_autom_params(*this);
     if(ambient_automorphisms){
         Facet.Embedding=Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
+    }
+    Facet.inhomogeneous=inhomogeneous;
+    if(inhomogeneous){
+        Facet.Truncation=Facet_Sub.to_sublattice_dual_no_div(Truncation);
     }
     Facet.descent_level=descent_level+1;
     Facet.keep_order=true;
@@ -3517,14 +3437,12 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
         Facet_2.Support_Hyperplanes=Facet.Support_Hyperplanes;
         Facet_2.nrSupport_Hyperplanes=Facet.nrSupport_Hyperplanes;
         Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
-        Facet_2.exploit_automorphisms=true;
-        Facet_2.full_automorphisms=full_automorphisms;
-        Facet_2.ambient_automorphisms=ambient_automorphisms;
-        Facet_2.input_automorphisms=input_automorphisms;
+        Facet_2.copy_autom_params(*this);
+        Facet_2.inhomogeneous=inhomogeneous;
+        Facet_2.Truncation=Facet.Truncation;
         if(ambient_automorphisms){
             Facet_2.Embedding=Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
         }
-        Facet_2.keep_order=true;
         Facet_2.verbose=verbose;
 	Facet_2.descent_level=descent_level+1;
         Facet_2.Grading=Facet_Sub.to_sublattice_dual_no_div(Grading);
@@ -5614,3 +5532,124 @@ void Full_Cone<Integer>::print()const{
 }
 
 } //end namespace
+
+
+/*
+
+//---------------------------------------------------------------------------
+// version with isomorphism classes -- has no real effect
+template<typename Integer>
+void Full_Cone<Integer>::get_cone_over_facet_HB(const vector<Integer>& fixed_point, const vector<key_t>& facet_key, 
+                                      const key_t facet_nr, list<vector<Integer> >& Facet_HB){
+  
+  
+    Matrix<Integer> Facet_Gens(0,dim);
+    Facet_Gens.append(fixed_point);
+    Facet_Gens.append(Generators.submatrix(facet_key));   
+    
+    for(long i=0;i<descent_level+1;++i)
+        cout << "$$$$$$  ";
+    cout << " " << Facet_Gens.nr_of_rows() << endl;
+    cout << "Height FP over facet " << v_scalar_product(fixed_point,Support_Hyperplanes[facet_nr]) << endl;
+    
+    Full_Cone ConeOverFacet(Facet_Gens);
+    ConeOverFacet.verbose=verbose;
+
+    if(isComputed(ConeProperty::Grading)){
+      ConeOverFacet.Grading=Grading;
+      ConeOverFacet.is_Computed.set(ConeProperty::Grading);
+    }
+     ConeOverFacet.descent_level=descent_level+1;
+    ConeOverFacet.Mother=&(*this);
+    ConeOverFacet.God_Father=God_Father;
+    ConeOverFacet.exploit_automorphisms=true;
+    ConeOverFacet.full_automorphisms=full_automorphisms;
+    ConeOverFacet.ambient_automorphisms=ambient_automorphisms;
+    ConeOverFacet.input_automorphisms=input_automorphisms;
+    ConeOverFacet.Embedding=Embedding;
+    ConeOverFacet.keep_order=true;
+    ConeOverFacet.Support_Hyperplanes=push_supphyps_to_cone_over_facet(fixed_point,facet_nr);
+    // ConeOverFacet.do_Hilbert_basis=true;
+    ConeOverFacet.compute();
+    if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis)){
+        Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
+        return;        
+    }
+    bool found;
+    const IsoType<Integer>& face_class=God_Father->FaceClasses.find_type(ConeOverFacet,found);
+    if(found){
+        ConeOverFacet.import_HB_from(face_class);
+        Facet_HB.clear();
+        Facet_HB.splice(Facet_HB.begin(),ConeOverFacet.Hilbert_Basis);
+        if(ConeOverFacet.isComputed(ConeProperty::HilbertBasis))
+            return;
+    } 
+
+    Full_Cone Facet_2(Facet_Gens);
+    Facet_2.Automs=ConeOverFacet.Automs;
+    Facet_2.is_Computed.set(ConeProperty::AutomorphismGroup);
+    Facet_2.Embedding=Embedding;
+    Facet_2.full_automorphisms=full_automorphisms;
+    Facet_2.ambient_automorphisms=ambient_automorphisms;
+    Facet_2.input_automorphisms=input_automorphisms;
+    Facet_2.exploit_automorphisms=true;
+    Facet_2.keep_order=true;
+    Facet_2.Extreme_Rays_Ind=ConeOverFacet.Extreme_Rays_Ind;
+    Facet_2.is_Computed.set(ConeProperty::ExtremeRays);
+    Facet_2.Support_Hyperplanes=ConeOverFacet.Support_Hyperplanes;
+    Facet_2.nrSupport_Hyperplanes=ConeOverFacet.nrSupport_Hyperplanes;
+    Facet_2.is_Computed.set(ConeProperty::SupportHyperplanes);
+    Facet_2.verbose=verbose;
+    Facet_2.descent_level=descent_level+1;
+    Facet_2.full_automorphisms=full_automorphisms;
+    Facet_2.ambient_automorphisms=ambient_automorphisms;
+    Facet_2.input_automorphisms=input_automorphisms;
+    if(isComputed(ConeProperty::Grading)){
+        Facet_2.Grading=Grading;
+        Facet_2.is_Computed.set(ConeProperty::Grading);
+    }
+    Facet_2.Mother=&(*this);
+    Facet_2.God_Father=God_Father;
+    Facet_2.do_Hilbert_basis=true;
+    Facet_2.compute();
+    bool added;
+    God_Father->FaceClasses.add_type(Facet_2, added);
+    Facet_HB.clear();
+    Facet_HB.splice(Facet_HB.begin(),Facet_2.Hilbert_Basis);
+    return;
+}
+*/
+
+//---------------------------------------------------------------------------
+
+/*
+// not used at present
+template<typename Integer>
+void Full_Cone<Integer>::import_HB_from(const IsoType<Integer>& copy){
+
+    assert(isComputed(ConeProperty::AutomorphismGroup));
+    
+    size_t N=copy.getHilbertBasis().nr_of_rows();
+    if(N==0){
+        is_Computed.set(ConeProperty::HilbertBasis);
+        return;    
+    }
+        
+    assert(Hilbert_Basis.empty());
+    for(size_t i=0;i<nr_gen;++i)
+        Hilbert_Basis.push_back(Generators[i]);
+    
+    vector<key_t> CanBasisKey=Generators.max_rank_submatrix_lex(Automs.CanLabellingGens);    
+    Matrix<Integer> Transform=copy.getCanTransform().multiplication(Generators.submatrix(CanBasisKey));
+    Integer D=Transform.matrix_gcd();
+    if(D!=copy.getCanDenom()) // not liftable
+        return;
+    Transform.scalar_division(D);
+    for(size_t i=0;i<N;++i){
+        Hilbert_Basis.push_back(Transform.VxM(copy.getHilbertBasis()[i]));        
+    }
+    
+    is_Computed.set(ConeProperty::HilbertBasis);
+    return;     
+}
+*/

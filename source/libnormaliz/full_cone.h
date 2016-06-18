@@ -396,6 +396,8 @@ public:
     Matrix<Integer>  push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr);
     void import_HB_from(const IsoType<Integer>& copy);
     bool check_extension_to_god_father();
+    void compute_multiplicity_via_recession_cone();
+    void copy_autom_params(const Full_Cone<Integer>& C);
 
 #ifdef NMZ_MIC_OFFLOAD
     void try_offload(size_t max_level);
