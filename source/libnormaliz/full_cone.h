@@ -101,17 +101,21 @@ public:
     bool exploit_automorphisms;
     bool do_extreme_rays;
     bool do_pointed;
-    bool do_triangulation;
+    bool do_triangulation_size;
     
     // algorithmic variants
     bool do_approximation;
     bool do_bottom_dec;
     bool keep_order;
 
-    // control of triangulation
+    // control of triangulation and evaluation
+    bool do_triangulation;
     bool do_partial_triangulation;
+    bool do_only_multiplicity;
     bool stop_after_cone_dec;
     bool do_evaluation;
+    bool triangulation_is_nested;
+    bool triangulation_is_partial;
 
     // type of definition of automorphism group
     bool input_automorphisms;
@@ -119,16 +123,14 @@ public:
     bool ambient_automorphisms;
 
     // internal helper control variables
+    bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
     bool do_subdivision_points;
     bool do_excluded_faces;
     bool no_descent_to_facets; // primal algorithm must be applied to God_Father
     bool do_only_supp_hyps_and_aux;
-    bool do_only_multiplicity;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool use_bottom_points;
     ConeProperties is_Computed;    
-    bool triangulation_is_nested;
-    bool triangulation_is_partial;
     bool has_generator_with_common_divisor;
     
     long autom_codim_vectors; // bound for the descent to faces in algorithms using automorphisms
@@ -230,7 +232,7 @@ public:
 
     // data that can be used to go out of build_cone and return later (not done at present)
     // but also useful at other places
-    long nextGen; // the next generator to be processed
+    // long nextGen; // the next generator to be processed
     long lastGen; // the last generator processed
     
     // Helpers for triangulation and Fourier-Motzkin
@@ -259,7 +261,6 @@ public:
     size_t nrSimplicialPyr;
     size_t totalNrPyr;
     
-    bool use_existing_facets;  // in order to avoid duplicate computation of already computed facets
     size_t start_from;
     
     size_t AdjustedReductionBound;

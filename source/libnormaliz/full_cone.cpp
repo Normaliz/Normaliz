@@ -99,6 +99,8 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at,
 
 //---------------------------------------------------------------------------
 
+// used to decide if a hyperplane has the order vector on the positive side
+// plus lex criterion
 template<typename Integer>
 bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
     if (!is_pyramid) { // in the topcone we always have ov_sp > 0
@@ -1848,8 +1850,8 @@ void Full_Cone<Integer>::build_cone() {
             }
 
             process_pyramids(i,true); //recursive
-            lastGen=i;
-            nextGen=i+1; 
+            // lastGen=i;
+            // nextGen=i+1; 
         }
         else{ // now we check whether to go to pyramids because of the size of triangulation
               // once we have done so, we must stay with it
@@ -2619,12 +2621,19 @@ void Full_Cone<Integer>::primal_algorithm(){
 
 template<typename Integer>
 void Full_Cone<Integer>::set_primal_algorithm_control_variables(){
-    
-    do_triangulation=false;
-    do_partial_triangulation=false;
+
+    do_triangulation = false;
+    do_partial_triangulation = false;
+    stop_after_cone_dec=false;
+    do_evaluation = false;
+    do_only_multiplicity=false;
+    use_bottom_points = true;
+    triangulation_is_nested = false;
+    triangulation_is_partial = false;
 
     if(do_multiplicity)     do_determinants=true;
     if (do_determinants)    do_triangulation = true;
+    if(do_triangulation_size) do_triangulation = true;
     if (do_h_vector)        do_triangulation = true;
     if (do_deg1_elements)   do_partial_triangulation = true;
     if (do_Hilbert_basis)   do_partial_triangulation = true;
@@ -2879,7 +2888,7 @@ void Full_Cone<Integer>::set_implications() {
     if (do_Hilbert_basis)     do_deg1_elements = false; // after the Hilbert basis computation, deg 1 elements will be extracted
     
     no_descent_to_facets=do_h_vector || do_module_gens_intcl || keep_triangulation  // we must use the primal algorithm directly
-                || do_triangulation || do_Stanley_dec || do_cone_dec || do_determinants || do_excluded_faces || do_bottom_dec;
+                || do_triangulation_size || do_Stanley_dec || do_cone_dec || do_determinants || do_excluded_faces || do_bottom_dec;
                            
     do_only_supp_hyps_and_aux= !no_descent_to_facets && !do_multiplicity && !do_deg1_elements && !do_Hilbert_basis &&!do_subdivision_points;
 }
@@ -4922,8 +4931,8 @@ void Full_Cone<Integer>::add_generators(const Matrix<Integer>& new_points) {
 
 template<typename Integer>
 void Full_Cone<Integer>::reset_tasks(){
-    do_triangulation = false;
-    do_partial_triangulation = false;
+
+    do_triangulation_size = false;
     do_determinants = false;
     do_multiplicity=false;
     do_integrally_closed = false;
@@ -4939,28 +4948,26 @@ void Full_Cone<Integer>::reset_tasks(){
     do_module_gens_intcl = false;
     do_module_rank = false;
     do_cone_dec=false;
-    stop_after_cone_dec=false;
     do_subdivision_points=false;    
     do_extreme_rays=false;
     do_pointed=false;
-    
-    do_evaluation = false;
-    do_only_multiplicity=false;
-
-    use_bottom_points = true;
+    do_all_hyperplanes=true;
+        
+    do_bottom_dec=false;
+    keep_order=false;
 
     nrSimplicialPyr=0;
     totalNrPyr=0;
     is_pyramid = false;
-    triangulation_is_nested = false;
-    triangulation_is_partial = false;
-    
+
     exploit_automorphisms=false;
     input_automorphisms=false; // not really nevessary since not a task
     full_automorphisms=false; // ditto
     ambient_automorphisms=false; // ditto
     autom_codim_vectors_set=false;
     autom_codim_mult_set=false;
+    
+    use_existing_facets=false;
 }
 
 
@@ -5047,11 +5054,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
       
     recursion_allowed=true;
     
-    do_all_hyperplanes=true;
-    // multithreaded_pyramid=true; now in build_cone where it is defined dynamically
-
-    
-    nextGen=0;
+    // nextGen=0;
     store_level=0;
     
     Comparisons.reserve(nr_gen);
@@ -5060,8 +5063,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     inhomogeneous=false;
     
     level0_dim=dim; // must always be defined
-    
-    use_existing_facets=false;
+
     start_from=0;
     old_nr_supp_hyps=0;
     
@@ -5072,9 +5074,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     NewCandidates.verbose=verbose;
     
     RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
-    
-    do_bottom_dec=false;
-    keep_order=false;
 
     approx_level = 1;
     is_approximation=false;
@@ -5087,7 +5086,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
 }
 
 //---------------------------------------------------------------------------
-
+// converts a Cone_Dual_Mode into a Full_Cone
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
 
@@ -5149,11 +5148,9 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     detSum = 0;
     shift = 0;
     
-    do_all_hyperplanes=true;
-    
     tri_recursion=false;
     
-    nextGen=0;
+    // nextGen=0;
     
     inhomogeneous=C.inhomogeneous;
     
@@ -5285,8 +5282,6 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     Top_Key.resize(nr_gen);
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=C.Top_Key[Key[i]];
-  
-    multiplicity = 0;
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
@@ -5295,38 +5290,54 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
             Extreme_Rays_Ind[i]=C.Extreme_Rays_Ind[Key[i]];
     // in_triang = vector<bool> (nr_gen,false); // now in build_cone
     deg1_triangulation = true;
-
-    // not used in a pyramid, but set precaution
-    deg1_extreme_rays = false;
-    deg1_generated = false;
-    deg1_generated_computed = false;
-    deg1_hilbert_basis = false;
     
     Grading=C.Grading;
     is_Computed.set(ConeProperty::Grading, C.isComputed(ConeProperty::Grading));
     Order_Vector=C.Order_Vector;
 
-    do_extreme_rays=false;
+    // Note: For the computation of pyramids we do not call primal_algorithm.
+    // Therefore it is necessary to set do_triangulation etc. here (and not only
+    // the computation goals).
     do_triangulation=C.do_triangulation;
     do_partial_triangulation=C.do_partial_triangulation;
+    do_only_multiplicity=C.do_only_multiplicity;
+    stop_after_cone_dec=C.stop_after_cone_dec;
+    
+    // now the computation goals
+    do_extreme_rays=false;
+    do_triangulation_size=C.do_triangulation;
     do_determinants=C.do_determinants;
     do_multiplicity=C.do_multiplicity;
     do_deg1_elements=C.do_deg1_elements;
     do_h_vector=C.do_h_vector;
     do_Hilbert_basis=C.do_Hilbert_basis;
     keep_triangulation=C.keep_triangulation;
-    do_only_multiplicity=C.do_only_multiplicity;
     do_evaluation=C.do_evaluation;
     do_Stanley_dec=C.do_Stanley_dec;
+    do_bottom_dec=false;
+    keep_order=true;
+    do_all_hyperplanes=true; //  must be reset for non-recursive pyramids
+    use_existing_facets=false;
+
+    // not used in a pyramid, but set for precaution
+    deg1_extreme_rays = false;
+    deg1_generated = false;
+    deg1_generated_computed = false;
+    deg1_hilbert_basis = false;    
     inhomogeneous=C.inhomogeneous;   // at present not used in proper pyramids
+    
     is_pyramid=true;
     
     pyr_level=C.pyr_level+1;
-    descent_level=0;
+    descent_level=0; // should never be used in pyramids
+    store_level = C.store_level;
 
     totalNrSimplices=0;
     detSum = 0;
+    multiplicity = 0;
     shift = C.shift;
+    level0_dim = C.level0_dim; // must always be defined
+    
     if(C.gen_degrees.size()>0){ // now we copy the degrees
         gen_degrees.resize(nr_gen);
         for (size_t i=0; i<nr_gen; i++) {
@@ -5339,22 +5350,16 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
             gen_levels[i] = C.gen_levels[Key[i]];
         }
     }
-    TriangulationBufferSize=0;
-    CandidatesSize=0;
+    
+    TriangulationBufferSize=0; // not used in pyramids
+    CandidatesSize=0; // ditto
     
     recursion_allowed=C.recursion_allowed; // must be reset if necessary 
-    do_all_hyperplanes=true; //  must be reset for non-recursive pyramids
     // multithreaded_pyramid=false; // SEE ABOVE
-    
-    nextGen=0;
-    store_level = C.store_level;
     
     Comparisons.reserve(nr_gen);
     nrTotalComparisons=0;
     
-    level0_dim = C.level0_dim; // must always be defined
-    
-    use_existing_facets=false;
     start_from=0;
     old_nr_supp_hyps=0;
     verbose=false;
@@ -5365,9 +5370,6 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     approx_level = C.approx_level;
     is_approximation = C.is_approximation;
-	
-	do_bottom_dec=false;
-	keep_order=true;
 }
 
 //---------------------------------------------------------------------------
@@ -5397,6 +5399,8 @@ void Full_Cone<Integer>::set_zero_cone() {
     is_Computed.set(ConeProperty::Multiplicity);
     is_Computed.set(ConeProperty::HilbertBasis);
     is_Computed.set(ConeProperty::Deg1Elements);
+    triangulation_is_nested = false;
+    triangulation_is_partial = false;
     
     Hilbert_Series = HilbertSeries(vector<num_t>(1,1),vector<denom_t>()); // 1/1
     is_Computed.set(ConeProperty::HilbertSeries);

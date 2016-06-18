@@ -1684,7 +1684,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         FC.do_determinants = true;
     }
     if (ToCompute.test(ConeProperty::TriangulationSize)) {
-        FC.do_triangulation = true;
+        FC.do_triangulation_size = true;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_deg1_elements = true;
@@ -2110,6 +2110,7 @@ Integer Cone<Integer>::compute_primary_multiplicity_inner() {
     Full_Cone<IntegerFC> IdCone(Ideal,false);
     IdCone.do_bottom_dec=true;
     IdCone.do_determinants=true;
+    IdCone.verbose=verbose;
     IdCone.compute();
     return convertTo<Integer>(IdCone.detSum);
 }
