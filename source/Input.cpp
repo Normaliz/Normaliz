@@ -197,6 +197,39 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
 }
 
 template <typename Integer>
+bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
+    
+    input_vec=vector<Integer> (length,0);
+    char dummy;
+    
+    while(true){
+        in >> std::ws;
+        int c = in.peek();
+        if(c==';'){
+            in >> dummy; // swallow ;
+            return true;
+        }
+        long pos;
+        in >> pos;
+        if(in.fail())
+            return false;
+        pos--;
+        if(pos<0 or pos>=length)
+            return false;
+        in >> std::ws;
+        c=in.peek();
+        if(c!=':')
+            return false;
+        in >> dummy; // skip :
+        Integer value;
+        in >> value;
+        if(in.fail())
+            return false;
+        input_vec[pos]=value;        
+    }
+}
+
+template <typename Integer>
 bool read_formatted_vector(istream& in, vector<Integer>& input_vec) {
 
     input_vec.clear();
@@ -308,7 +341,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             }
             dim_known=true;
         }
-        while (in.good()) {
+        while (in.good()) {    //main loop
             
             bool transpose=false;
             in >> std::ws;  // eat up any leading white spaces
@@ -395,7 +428,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         }
                         
                         if(!dim_known){
-                            throw BadInputException("Ambient space must be known for "+type_string+"!");
+                            throw BadInputException("Ambient space must be known for unit vector "+type_string+"!");
                         }
 
                         vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(nr_columns,0));
@@ -409,6 +442,32 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         save_matrix(input_map, input_type, e_i);
                         continue;
                     } // end unit vector
+                    
+                    if(c=='s'){   // must be "sparse"
+                        string vec_kind;
+                        in >> vec_kind;
+                        if (vec_kind != "sparse") {
+                            throw BadInputException("Error while reading "
+                            + type_string 
+                            + ": sparse vector expected!");                            
+                        }
+                        
+                        if(!dim_known){
+                            throw BadInputException("Ambient space must be known for sparse vector "+type_string+"!");
+                        }
+
+                        vector<Integer> sparse_vec;
+                        nr_columns = dim + type_nr_columns_correction(input_type);
+                        bool success = read_sparse_vector(in,sparse_vec,nr_columns);
+                        if(!success){
+                            throw BadInputException("Error while reading "
+                            + type_string 
+                            + " as a sparse vector!");
+                        }
+                        save_matrix(input_map, input_type, vector<vector<Integer> > (1,sparse_vec)); 
+                        continue;                        
+                    }
+                    
                     if (c == '[') { // must be formatted vector
                         vector<Integer> formatted_vec;
                         bool success = read_formatted_vector(in,formatted_vec);
@@ -481,10 +540,35 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             + "x" + toString(nr_columns)
                             + " matrix) !");
                 }
-                vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
-                for(i=0; i<nr_rows; i++){
-                    for(j=0; j<nr_columns; j++) {
-                        in >> M[i][j];
+                if(nr_rows==0) // nothing to read
+                    continue;
+                
+                vector< vector<Integer> > M(nr_rows);
+                in >> std::ws;
+                c=in.peek();
+                if(c=='s'){ // must be sparse
+                    string sparse_test;
+                    in >> sparse_test;
+                    if (sparse_test!= "sparse") {
+                        throw BadInputException("Error while reading "
+                        + type_string 
+                        + ": sparse matrix expected!");                            
+                    }
+                    for(long i=0;i<nr_rows;++i){
+                        bool success=read_sparse_vector(in,M[i],nr_columns);
+                        if(!success){
+                            throw BadInputException("Error while reading "
+                            + type_string 
+                            + ": corrupted sparse matrix");                        
+                        }
+                        
+                    }
+                } else{ // dense matrix
+                    for(i=0; i<nr_rows; i++){
+                        M[i].resize(nr_columns);
+                        for(j=0; j<nr_columns; j++) {
+                            in >> M[i][j];
+                        }
                     }
                 }
                 if(transpose)
