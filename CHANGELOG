@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [3.1.1] 2016-04-05
+- index of unit group extension added
+- formatted matriced in input files added
+- "constraints" in input files added
+- transposed matrices in input file added
+
 ## [3.1.0] 2016-02-04
 
 - support for nonpointed cones / input of subspace
