@@ -624,6 +624,18 @@ scale = 0.8]
 \end{tikzpicture}
 \end{minipage}
 
+This is a good place to mention that Normaliz also accepts matrices (and vectors) in sparde format:
+
+\begin{Verbatim}
+amb_space 4
+polytope 4
+;
+1:2;
+2:3;
+3:5;
+\end{Verbatim}
+Each input row, concluded by \verb|;|, lists the indices and the corresponding nonzero values in that row of the matrix.
+
 The Ehrhart monoid of the integral polytope with the $4$
 vertices
 $$
@@ -978,13 +990,18 @@ equations 7
 0 1 1  0 -1  0  0  0 -1
 1 1 0  0 -1  0 -1  0  0
 grading
-1 1 1 0 0 0 0 0 0
-\end{Verbatim} 
+sparse 1:1 2:1 3:1;
+\end{Verbatim}
+
 The input type \verb|equations| represents \emph{homogeneous} equations. The first equation reads
 $$
 x_1+x_2+x_3-x_4-x_5-x_6=0,
 $$
-and the other equations are to be interpreted analogously. The magic constant is a natural choice for the grading. 
+and the other equations are to be interpreted analogously. The magic constant is a natural choice for the grading. It is given in sparse form, equivalent to the dnse form
+\begin{Verbatim}
+grading
+1 1 1 0 0 0 0 0 0
+\end{Verbatim}
 
 It seems that we have forgotten to define the cone. This may indeed be the case, but doesn't matter: if there is no input type that defines a cone, Normaliz chooses the positive orthant, and this is exactly what we want in this case.
 
@@ -1139,6 +1156,14 @@ So one of our equations has turned out to be superfluous (why?). Note that also 
 We change our definition of magic square by requiring that the
 entries in the $4$ corners are all even. Then we have to
 augment the input file by the following (\ttt{3x3magiceven.in}):
+\begin{Verbatim}
+congruences 4 sparse
+1:1 10:2;
+3:1 10:2;
+7:1 10:2;
+9:1 10:2;
+\end{Verbatim}
+This sparse form is equivalent to the dense form
 \begin{Verbatim}
 congruences 4
 1 0 0 0 0 0 0 0 0 2
@@ -2101,12 +2126,21 @@ grading
 1 0 0
 \end{Verbatim}
 
+Normaliz allows also the input ofsparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<pos>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is concluded by the character \verb|;| . 
 
-For certain vectors there exist shortcuts. Examples:
+Exaple:
+\begin{Verbatim}
+grading
+sparse 1:1;
+\end{Verbatim}
+
+
+For certain vectors there also exist shortcuts. Examples:
 \begin{Verbatim}
 total_degree
 unit_vector 25
 \end{Verbatim}
+
 
 \subsubsection{Formatted vectors}
 
@@ -2158,6 +2192,18 @@ cone 3
 0 1
 3 4
 \end{Verbatim}
+
+Like evctors, matrices have a sparse input variant, again signalized by the key word \verb|sparse|. The rows are sparse vectors with entries \verb|<col>:<val>|, and each row is concluded by the character \verb|;|.
+
+Example:
+\begin{Verbatim}
+inequalities 3 sparse
+1:1;
+2:1;
+3:1;
+\end{Verbatim}
+chooses the $3\times 3$ unit matrix as a matrix of type \verb|inequalities|. Note that also in case of transposed matrices, sparse entry is row by row.
+
 
 \subsubsection{Formatted matrices}
 
