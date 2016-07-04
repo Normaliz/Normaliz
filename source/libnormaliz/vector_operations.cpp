@@ -482,6 +482,27 @@ size_t v_nr_positive(const vector<Integer>& v) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+size_t v_nr_negative(const vector<Integer>& v) {
+    size_t tmp=0;
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] <0) tmp++;
+    }
+    return tmp;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_non_negative(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] <0) return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t& start){
 
     size_t i,n=av.size();

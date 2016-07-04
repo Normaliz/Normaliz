@@ -704,7 +704,7 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const long SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
+const long SimplexParallelEvaluationBound= 10000000;// larger simplices are evaluated by parallel threads  
 
 //---------------------------------------------------------------------------
 

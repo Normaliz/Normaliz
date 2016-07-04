@@ -1372,8 +1372,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     
     boost::dynamic_bitset<> zero_hyp=hyp.GenInHyp & Zero_P;  // we intersect with the set of gens in positive hyps
     
-    size_t nr_zero_hyp=0;
     vector<int> key_start(nrGensInCone);
+    size_t nr_zero_hyp=0;
     size_t j;
     int last_existing=-1;
     for(size_t jj=0;jj<nrGensInCone;jj++)
@@ -2091,6 +2091,324 @@ void Full_Cone<Integer>::build_top_cone() {
 
 //---------------------------------------------------------------------------
 
+// chooses some generators such that the cone includes a given set of points
+template<typename Integer>
+void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_cone, vector<Matrix<Integer>>& approx_points){
+    
+    Matrix<Integer> gens = original_cone.getGenerators();
+    //cout << "Original generators: " << endl;
+    //gens.pretty_print(cout);
+    Generators = gens;
+    Matrix<Integer> zero_matrix(nr_gen-dim,dim);
+    Generators.append(zero_matrix);
+    //cout << "Generators: " << endl;
+    //Generators.pretty_print(cout);
+    Matrix<Integer> hyps = original_cone.getSupportHyperplanes();
+    
+    size_t min_hyp=0;
+    size_t tmp_hyp=min_hyp;
+    size_t del_point=0;
+    size_t current_original_gen=0;
+    vector<Integer> min_hyp_point;
+
+    vector<key_t> start_simplex(dim);
+    size_t i;
+    
+    for (i=0;i<dim;i++){
+        start_simplex[i]=i;
+    }
+    
+    vector<size_t> nr_approx_points; // how many points are in the approximation
+    for (size_t j=0;j<dim;++j) nr_approx_points.push_back(approx_points[j].nr_of_rows());
+    //cout << "nr approx points: " << nr_approx_points << endl;
+    
+    multithreaded_pyramid=(omp_get_level()==0);
+    
+    if(!use_existing_facets){
+        if(multithreaded_pyramid){
+            HypCounter.resize(omp_get_max_threads());
+            for(size_t i=0;i<HypCounter.size();++i)
+                HypCounter[i]=i+1;
+        } else{
+            HypCounter.resize(1);
+            HypCounter[0]=1;    
+        }
+    }
+            
+    //cout << "Start Simplex: " << start_simplex << endl;
+    
+    Matrix<Integer> H = hyps;
+    
+    for (i= 0; i < dim; i++) {
+        in_triang[start_simplex[i]]=true;
+        GensInCone.push_back(start_simplex[i]);
+    }
+    
+    nrGensInCone=dim;
+    
+    //nrTotalComparisons=dim*dim/2;
+    //Comparisons.push_back(nrTotalComparisons);
+    
+    //cout << "Start Simplex Hyperplanes:" << endl;
+    //H.pretty_print(cout);
+    
+    for (i = 0; i <dim; i++) {
+        FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
+        NewFacet.Hyp=H[i];
+        for(size_t j=0;j < dim;j++)
+            if(j!=i)
+                NewFacet.GenInHyp.set(start_simplex[j]);
+        NewFacet.ValNewGen=-1;         // must be taken negative since opposite facet
+        number_hyperplane(NewFacet,0,0); // created with gen 0
+        Facets.push_back(NewFacet);    // was visible before adding this vertex
+    }
+    
+    size_t last_to_be_inserted; // good to know in case of do_all_hyperplanes==false
+    last_to_be_inserted=nr_gen-1;  // because we don't need to compute support hyperplanes in this case 
+    for(int j=nr_gen-1;j>=0;--j){
+        if(!in_triang[j]){
+            last_to_be_inserted=j;
+            break;
+        }
+    } // last_to_be_inserted now determined
+    
+    bool is_new_generator;
+    typename list< FACETDATA >::iterator l;
+    start_from =dim;
+    size_t current_nr_hyps=dim;
+    Matrix<Integer> current_hyps=hyps;
+    // TODO: smart choice of next generator depending on original generators
+    for (i=start_from;i<nr_gen;i++) { 
+    
+        start_from=i;
+        //cout << "Current original generator: " << current_original_gen << endl;
+        while (approx_points[current_original_gen].nr_of_rows()==0){
+                current_original_gen = (current_original_gen+1) % dim;
+        }
+        
+        min_hyp = 0;
+        del_point=0;
+        min_hyp_point=approx_points[current_original_gen][0];
+        for (size_t j=0;j<approx_points[current_original_gen].nr_of_rows();j++){
+            tmp_hyp = v_nr_negative(current_hyps.MxV(approx_points[current_original_gen][j])); // nr of negative halfspaces
+            if (tmp_hyp > min_hyp){
+                min_hyp=tmp_hyp;
+                del_point=j;
+                min_hyp_point=approx_points[current_original_gen][j];
+            }
+        }
+        //cout << "min hyp point: " << min_hyp_point << endl;
+        approx_points[current_original_gen].remove_row(del_point);
+    
+        Generators[i]=min_hyp_point;
+        
+        //cout << "Generators in step " << i << endl;
+        //Generators.pretty_print(cout);
+           
+        Integer scalar_product;                                              
+        is_new_generator=false;
+        l=Facets.begin();
+        old_nr_supp_hyps=Facets.size(); // Facets will be xtended in the loop 
+
+        long long nr_pos=0; long long nr_neg=0;
+        vector<Integer> L;           
+#ifndef NCATCH
+        std::exception_ptr tmp_exception;
+#endif
+        
+        
+        size_t lpos=0;
+        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
+        for (size_t k=0; k<old_nr_supp_hyps; k++) {
+#ifndef NCATCH
+            try {
+#endif
+                for(;k > lpos; lpos++, l++) ;
+                for(;k < lpos; lpos--, l--) ;
+
+                L=Generators[i];
+                scalar_product=v_scalar_product(L,(*l).Hyp);
+                l->ValNewGen=scalar_product;
+                if (scalar_product<0) {
+                    is_new_generator=true;
+                    nr_neg++;
+                }
+                if (scalar_product>0) {
+                    nr_pos++;
+                }
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+            }
+#endif
+        }  //end parallel for
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        if(!is_new_generator)
+            continue;
+        // check whether the original points are no longer extreme rays
+        vector<key_t> gen_in_hyperplanes;
+        Matrix<Integer> M(current_nr_hyps,dim);
+        size_t k=0;
+        for (k=0;k<dim;k++){
+            // QUESTION: Is current_original_gen the only critical point we have to check?
+            if (approx_points[k].nr_of_rows()>0){ // if its 0 it was an integer point before or already contained
+                gen_in_hyperplanes.clear();
+                typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
+                for (size_t j=0; j<current_nr_hyps; ++j, ++IHV){
+                    if(IHV->GenInHyp.test(k))
+                        gen_in_hyperplanes.push_back(j);
+                }            
+                //cout << "The matrix M for the original generator " << k << endl;
+                //M.pretty_print(cout);
+                if (gen_in_hyperplanes.size() < dim-1)
+                        continue;
+                if (M.rank_submatrix(current_hyps,gen_in_hyperplanes) >= dim-1){ // still an extreme ray
+                    //cout << "The original generator " << k << " is still an extreme ray." << endl;
+                    break;
+                } else {
+                    //cout << "The original generator " << k << " is no longer an extreme ray." << endl;
+                }
+            }
+            
+        }
+        
+        // now we need to stop
+        if (k==dim){
+            //cout << "The original simplex is now contained!" << endl;
+            //cout << "The number of used hyperplanes is " << old_nr_supp_hyps << endl;
+            vector<key_t> used_gens;
+            
+            for (size_t j=0;j<dim;j++){
+                if (nr_approx_points[j]==1 && approx_points[j].nr_of_rows()>0) used_gens.push_back(j); // i.e. the original point was already good
+            }
+            for (size_t j=dim;j<=i;j++){
+                used_gens.push_back(j);
+            }
+            Generators = Generators.submatrix(used_gens);
+            nr_gen=Generators.nr_of_rows();
+            assert(Generators.rank()==dim);
+            break;
+        }
+
+        if (!omp_in_parallel())
+            try_offload(0);
+        
+        find_new_facets(i); // Fourier Motzkin
+            
+        // removing the negative hyperplanes if necessary
+        l=Facets.begin();
+        for (size_t j=0; j<old_nr_supp_hyps;j++){
+            if (l->ValNewGen<0) {
+                l=Facets.erase(l);
+            }
+            else {
+                ++l;
+            }
+        }
+        
+        // get the current supp_hyps
+        current_nr_hyps = Facets.size();
+        current_hyps = Matrix<Integer>(current_nr_hyps,dim);
+        typename list<FACETDATA>::const_iterator IHV=Facets.begin();
+        for (size_t i=0; i<current_nr_hyps; ++i, ++IHV) {
+            current_hyps[i] = IHV->Hyp;
+        }
+        
+        GensInCone.push_back(i);
+        nrGensInCone++;
+        
+        //Comparisons.push_back(nrTotalComparisons);
+        
+        if(verbose) {
+            verboseOutput() << "gen="<< i+1 <<", ";
+            if (do_all_hyperplanes || i!=last_to_be_inserted) {
+                verboseOutput() << Facets.size()<<" hyp";
+            } else {
+                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp";
+            }
+            verboseOutput()<< endl;
+        }
+        
+        in_triang[i]=true;
+        if (current_original_gen<dim-1){
+            current_original_gen++;
+        } else {
+            current_original_gen=0;
+        }
+        
+    } 
+    // --------------------------------------------------------- loop over i
+    if (i==nr_gen){
+        cout << "We had to use all points!" << endl;
+        cout << "Are all original generators no longer extreme rays?" << endl;
+        size_t k=0;
+        Matrix<Integer> M;
+        for (k=0;k<dim;k++){
+            // QUESTION: Is current_original_gen the only critical point we have to check?
+            if (approx_points[k].nr_of_rows()>0){ // if its 0 it was an integer point before or already contained
+                M = Matrix<Integer>(0,dim);
+                // TODO: make this more efficient!
+                for(l=Facets.begin(); l!=Facets.end();++l){
+                    if (l->GenInHyp.test(k)){
+                        M.append(l->Hyp);
+                    }
+                } 
+                //cout << "The matrix M for the original generator " << k << endl;
+                //M.pretty_print(cout);
+                if (M.rank()>=dim-1){ // still an extreme ray
+                    cout << "The original generator " << k << " is still an extreme ray. THIS IS BAD!!!!!!!!!!!!" << endl;
+                    cout << "original generators: " << endl;
+                    gens.pretty_print(cout);
+                    break;
+                } else {
+                    cout << "The original generator " << k << " is no longer an extreme ray." << endl;
+                }
+            }
+            
+        }
+        vector<key_t> used_gens;
+        
+        for (size_t j=0;j<dim;j++){
+            if (nr_approx_points[j]==1 && approx_points[j].nr_of_rows()>0) used_gens.push_back(j); // i.e. the original point was already good
+        }
+        for (size_t j=dim;j<nr_gen;j++){
+            used_gens.push_back(j);
+        }
+        Generators = Generators.submatrix(used_gens);
+        nr_gen=Generators.nr_of_rows();
+    }
+    
+    start_from=nr_gen;
+    
+    // transfer Facets --> SupportHyperplanes
+    if (do_all_hyperplanes) {
+        nrSupport_Hyperplanes = Facets.size();
+        Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,dim);
+        typename list<FACETDATA>::const_iterator IHV=Facets.begin();
+        for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
+            Support_Hyperplanes[i] = IHV->Hyp;
+        }
+        is_Computed.set(ConeProperty::SupportHyperplanes);
+    }    
+   
+    
+    if(do_extreme_rays && do_all_hyperplanes)
+        compute_extreme_rays();
+    
+    transfer_triangulation_to_top(); // transfer remaining simplices to top
+    if(check_evaluation_buffer()){
+        Top_Cone->evaluate_triangulation();
+    }  
+
+    // } // end if (dim>0)
+    
+    Facets.clear();     
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 bool Full_Cone<Integer>::check_evaluation_buffer(){
 
@@ -2481,7 +2799,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
     SimplCone.do_approximation=true;  // as indicted by do_approximation
     SimplCone.approx_level = approx_level;
-
+    //SimplCone.verbose=true;
     SimplCone.Truncation= N;
     SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
 
@@ -3026,8 +3344,25 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     }
     
     assert(elements_from_approx.empty());
+    vector<Matrix<Integer>> approx_points = latt_approx();
+    //cout << "Approximation points: " << endl;
+    //for (size_t j=0;j<dim;++j){
+    //    cout << "Original generator " << j << endl;
+    //    approx_points[j].pretty_print(cout);
+    //}
+    Matrix<Integer> all_approx_points(Generators);
+    for (size_t i=0;i<approx_points.size();i++){
+        all_approx_points.append(approx_points[i]);
+    }
 
-    Full_Cone C_approx(latt_approx()); // latt_approx computes a matrix of generators
+    Full_Cone C_temp(all_approx_points);
+    C_temp.build_cone_approx(*this,approx_points);
+    
+    if(verbose){
+       verboseOutput() << "using "<< C_temp.getNrGenerators() << " / " << all_approx_points.nr_of_rows()-dim << " approximating points." << flush;
+    }
+    Full_Cone C_approx(C_temp.getGenerators()); // latt_approx computes a matrix of generators
+    //Full_Cone C_approx(all_approx_points); 
     /* cout << "====================" << endl;
     C_approx.Generators.pretty_print(cout);
     cout << "====================" << endl; */
@@ -3935,8 +4270,10 @@ void Full_Cone<Integer>::check_deg1_hilbert_basis() {
 //---------------------------------------------------------------------------
 
 // Computes the generators of a supercone approximating "this" by a cone over a lattice polytope
+// for every vertex of the simplex, we get a matrix with the integer points of the respective Weyl chamber
 template<typename Integer>
-Matrix<Integer> Full_Cone<Integer>::latt_approx() {
+vector<Matrix<Integer>> Full_Cone<Integer>::latt_approx() {
+    
     assert(isComputed(ConeProperty::Grading));
     assert(isComputed(ConeProperty::ExtremeRays));
     Matrix<Integer> G(1,dim);
@@ -3966,26 +4303,30 @@ Matrix<Integer> Full_Cone<Integer>::latt_approx() {
     }
     assert(T[0] == Grading);
     
-    list<vector<Integer> > L; // collects the generators of the approximating cone
+    Matrix<Integer> M;
+    vector<Matrix<Integer>> approx_points;
     for(size_t i=0;i<nr_gen;++i){
         if(Extreme_Rays_Ind[i]){
             list<vector<Integer> > approx;
             //cout << "point before transformation: " << Generators[i];
             approx_simplex(T.MxV(Generators[i]),approx,approx_level);
-            L.splice(L.end(),approx);
+            M=Matrix<Integer>(approx);
+            for(size_t j=0;j<M.nr_of_rows();++j)  // reverse transformation
+            M[j]=U.MxV(M[j]);
+            // remove duplicates
+            for (size_t j=0;j<approx_points.size();j++){
+                M.remove_duplicate(approx_points[j]);
+            }
+            approx_points.push_back(M);
         }
     }
     
-    Matrix<Integer> M=Matrix<Integer>(L);
     
-    for(size_t j=0;j<M.nr_of_rows();++j)  // reverse transformation
-        M[j]=U.MxV(M[j]);
-        
-     //cout << "-------" << endl;
+    //cout << "-------" << endl;
      //M.print(cout);
      //cout << "-------" << endl;
     
-    return(M);
+    return(approx_points);
 }
 
 //---------------------------------------------------------------------------

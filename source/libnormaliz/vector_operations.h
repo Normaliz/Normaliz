@@ -165,6 +165,12 @@ vector<key_t> v_non_zero_pos(const vector<Integer>& v);
 template<typename Integer>
 size_t v_nr_positive(const vector<Integer>& v);
 
+template<typename Integer>
+size_t v_nr_negative(const vector<Integer>& v);
+
+template<typename Integer>
+bool v_non_negative(const vector<Integer>& v);
+
 // check whether the vector only contains 0
 template<typename Integer>
 bool v_is_zero(const vector<Integer>& v);
