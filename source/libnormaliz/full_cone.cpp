@@ -3082,7 +3082,7 @@ void Full_Cone<Integer>::support_hyperplanes() {
     extreme_rays_and_deg1_check();
     if(inhomogeneous){
         find_level0_dim();
-        find_module_rank();
+        // find_module_rank();
     }
     compute_class_group();
 }
