@@ -751,11 +751,12 @@ void Output<Integer>::write_files() const {
             if ( Result->isComputed(ConeProperty::HSOP) ){
                     HS_Denom=HS.getHSOPDenom();
                     HS_Num=HS.getHSOPNum();
+                    out << "Hilbert series (HSOP):" << endl << HS_Num;
             } else {
                     HS_Denom=HS.getDenom();
                     HS_Num=HS.getNum();
+                    out << "Hilbert series:" << endl << HS_Num;
             }
-            out << "Hilbert series:" << endl << HS_Num;
             long nr_factors = 0;
             for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
                 nr_factors += it->second;
