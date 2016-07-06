@@ -3085,7 +3085,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
                     break;
             } else if (counter < facet_it->size()-1) counter++;
         }
-        if (j==ideal_heights.size()-1){
+        if (j==ideal_heights.size()){
             facet_it = facet_keys.erase(facet_it);
         } else ++facet_it;
     }
