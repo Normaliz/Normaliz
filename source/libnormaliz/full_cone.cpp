@@ -2974,12 +2974,17 @@ void Full_Cone<Integer>::compute_hsop(){
                 facet_keys.push_back(key);
             }
             facet_list.sort(); // should be sorted lex
-            //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
+            //~ cout << "FACETS:" << endl;
+            //~ //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
+            //~ for (auto jt=facet_list.begin();jt!=facet_list.end();++jt){
+                    //~ cout << jt->first << " | " << jt->second << endl;
+            //~ }
             //cout << "facet non_keys: " << facet_keys << endl;
             vector<size_t> ideal_heights(ER.nr_of_rows(),1);
             heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,d-1);
             if(verbose){
                 verboseOutput() << "done." << endl;
+                assert(ideal_heights[ER.nr_of_rows()-1]==dim);
                 verboseOutput() << "Heights vector: " << ideal_heights << endl;   
             }
             vector<Integer> er_deg = ER.MxV(Grading);
@@ -2999,7 +3004,7 @@ template<typename Integer>
 void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
     // since we count the index backwards, this is the actual nr of the extreme ray
     size_t ER_nr = ideal_heights.size()-index-1;
-    //cout << "starting calculation for extreme ray nr " << ideal_heights.size()-1 - index << endl;
+    //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
     list<pair<boost::dynamic_bitset<>,size_t>> not_faces;
     auto face_it=faces.begin();
     for (;face_it!=faces.end();++face_it){
@@ -3010,8 +3015,14 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
         face_it->first.resize(index);
     }
     not_faces.splice(not_faces.begin(),faces,faces.begin(),face_it);
-    //cout << "faces not containing it:" << endl;
-    //cout << not_faces << endl;
+    //~ cout << "faces not containing it:" << endl;
+    //~ for (auto jt=not_faces.begin();jt!=not_faces.end();++jt){
+                    //~ cout << jt->first << " | " << jt->second << endl;
+    //~ }
+    //~ cout << "faces containing it:" << endl;
+    //~ for (auto jt=faces.begin();jt!=faces.end();++jt){
+                    //~ cout << jt->first << " | " << jt->second << endl;
+    //~ }
     auto not_faces_it=not_faces.begin();
     // update the heights
     if (ER_nr>0){
@@ -3065,6 +3076,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
     for (;not_faces_it!=not_faces.end();++not_faces_it){
         union_faces |= not_faces_it->first; // take the union
     }
+    //cout << "Their union: " << union_faces << endl;
     // the not_faces now already have a size one smaller
     union_faces.resize(index+1);
     list<pair<boost::dynamic_bitset<>,size_t>> new_faces;
@@ -3107,9 +3119,9 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
                 not_containing_el = true;
             }
             if (facet_it->at(i)<=ER_nr && i<facet_it->size()-1) continue;
-            counter=i; // no we have elements which are bigger than the current extreme ray
+            counter=i; // now we have elements which are bigger than the current extreme ray
             if (not_containing_el){
-                for (size_t j=ER_nr;j<ideal_heights.size();j++){
+                for (size_t j=ER_nr+1;j<ideal_heights.size();j++){
                     if (facet_it->at(counter)!=j){ // i.e. j is in the facet
                         if (!union_faces.test(ideal_heights.size()-1-j)){
                             containing_critical_el = true;
@@ -3121,6 +3133,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
             break;
         }
         if(not_containing_el && containing_critical_el){ //facet contributes
+            //cout << "Taking intersections with the facet " << *facet_it << endl;
             face_it =faces.begin();
             for (;face_it!=faces.end();++face_it){
                 boost::dynamic_bitset<> intersection(face_it->first);
@@ -3137,7 +3150,7 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
                     if (not_faces_it== not_faces.end()) new_faces.push_back(make_pair(intersection,0)); 
                 }
             }
-        }
+       }
     }
     // the new faces need to be sort in lex order anyway. this can be used to reduce operations
     // for subset checking
@@ -3159,12 +3172,16 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
             for (;i<face_not_key.size();++i){
                 if (inner_it->first.test(face_not_key[i])) break; //inner_it has an element which is not in outer_it
             }
-            if (i==face_not_key.size()-1){
+            if (i==face_not_key.size()){
                 inner_it = new_faces.erase(inner_it); //inner_it is a subface of outer_it
             } else ++inner_it;
         }
     }
     new_faces.merge(not_faces);
+    /*cout << "The new faces: " << endl;
+    for (auto jt=new_faces.begin();jt!=new_faces.end();++jt){
+                    cout << jt->first << " | " << jt->second << endl;
+    }*/
     
     heights(facet_keys,new_faces,index-1,ideal_heights,max_dim);
 }

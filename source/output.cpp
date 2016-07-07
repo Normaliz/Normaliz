@@ -767,11 +767,14 @@ void Output<Integer>::write_files() const {
             if (HS.getShift() != 0) {
                 out << "shift = " << HS.getShift() << endl << endl;
             }
+            
             out << "degree of Hilbert Series as rational function = "
                 << HS.getDegreeAsRationalFunction() << endl << endl;
-
+            if(v_is_symmetric(HS_Num)){
+                out << "The numerator of the Hilbert Series is symmetric." << endl << endl;
+            }
             long period = HS.getPeriod();
-            if (period == 1) {
+            if (period == 1  && (HS_Denom.begin()->first==HS_Denom.size())) {
                 out << "Hilbert polynomial:" << endl;
                 out << HS.getHilbertQuasiPolynomial()[0];
                 out << "with common denominator = ";

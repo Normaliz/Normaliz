@@ -170,6 +170,11 @@ vector<key_t> v_non_zero_pos(const vector<Integer>& v);
 template<typename Integer>
 bool v_is_zero(const vector<Integer>& v);
 
+template<typename Integer>
+bool v_is_symmetric(const vector<Integer>& v);
+
+template<typename Integer>
+bool v_is_nonnegative(const vector<Integer>& v);
 
 template<typename Integer>
 Integer v_max_abs(const vector<Integer>& v){

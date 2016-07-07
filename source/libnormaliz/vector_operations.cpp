@@ -486,6 +486,27 @@ bool v_is_zero(const vector<Integer>& v) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool v_is_symmetric(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size()/2; ++i) {
+        if (v[i] != v[v.size()-1-i]) return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_is_nonnegative(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] <0) return false;
+    }
+    return true;
+}
+
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t& start){
 
     size_t i,n=av.size();
@@ -703,7 +724,13 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
     return hsop;
 }
 
+template bool v_is_nonnegative<long>(const vector<long>&);
+template bool v_is_nonnegative<long long>(const vector<long long>&);
+template bool v_is_nonnegative<mpz_class>(const vector<mpz_class>&);
 
+template bool v_is_symmetric<long>(const vector<long>&);
+template bool v_is_symmetric<long long>(const vector<long long>&);
+template bool v_is_symmetric<mpz_class>(const vector<mpz_class>&);
 
 template long      v_make_prime(vector<long     >&);
 template long long v_make_prime(vector<long long>&);
