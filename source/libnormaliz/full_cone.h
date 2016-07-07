@@ -264,7 +264,7 @@ public:
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
 	void find_bottom_facets();                                  
-    vector<Matrix<Integer>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
@@ -275,7 +275,7 @@ public:
     
     void build_top_cone(); 
     void build_cone();
-    void build_cone_approx(const Full_Cone<Integer>& original_cone, vector<Matrix<Integer>>& approx_points);
+    void build_cone_approx(const Full_Cone<Integer>& original_cone, vector<list<vector<Integer>>>& approx_points);
     void get_supphyps_from_copy(bool from_scratch);   // if evealuation starts before support hyperplanes are fully computed
     void update_reducers(bool forced=false);   // update list of reducers after evaluation of simplices
     
