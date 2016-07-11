@@ -1069,7 +1069,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 #endif
 
     if (!omp_in_parallel())
-        try_offload_loc(0,0);
+        try_offload(0);
     
     if (start_level==0 && check_evaluation_buffer_size()) {
         Top_Cone->evaluate_triangulation();
@@ -1731,14 +1731,14 @@ verboseOutput() << "-------------------" << endl;
             }
         }
 
-        try_offload_loc(1,level+1);
+        try_offload(level+1);
 
         if (check_evaluation_buffer_size()) {
             if (verbose)
                 verboseOutput() << nrPyramids[level] <<
                     " pyramids remaining on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
-            try_offload_loc(2,level+1);
+            try_offloadlevel+1);
         }
 
         if (Top_Cone->check_pyr_buffer(level+1)) {
@@ -1871,7 +1871,7 @@ void Full_Cone<Integer>::build_cone() {
             deg1_triangulation = (gen_degrees[i] == 1);
         
         if (!omp_in_parallel())
-            try_offload_loc(3,0);
+            try_offload(0);
             
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
@@ -2143,7 +2143,7 @@ void Full_Cone<Integer>::build_top_cone() {
 
     }   
 
-    try_offload_loc(4 ,0);
+    try_offload(0);
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
 #ifdef NMZ_MIC_OFFLOAD
