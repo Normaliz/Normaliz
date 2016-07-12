@@ -618,7 +618,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
-           ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
+           if(using_GMP<Integer>())           
+                ranktest = (nr_NonSimp > 10*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+           else
+               ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
 
            if(ranktest) {
            
