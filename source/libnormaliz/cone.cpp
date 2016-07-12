@@ -1814,17 +1814,25 @@ void Cone<Integer>::compute_generators_inner() {
         }
         
         // now the final transformations
-        // first to full-dimensional pointed
-        Matrix<Integer> Help;
-        Help=BasisChangePointed.to_sublattice(Generators); // sublattice of the primal space
-        Sublattice_Representation<Integer> PointedHelp(Help,true);
-        BasisChangePointed.compose(PointedHelp);
-        // second to efficient sublattice
-        Help=BasisChange.to_sublattice(Generators);
-        // append the maximal subspace
-        Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
-        Sublattice_Representation<Integer> EmbHelp(Help,true); // sublattice of the primal space
-        compose_basis_change(EmbHelp);
+        // only necessary if the basis changes computed so far do not make the cone full-dimensional
+        // this is equaivalent to the dual cone bot being pointed
+        if(!(Dual_Cone.isComputed(ConeProperty::IsPointed) && Dual_Cone.isPointed())){
+            // first to full-dimensional pointed
+            Matrix<Integer> Help;
+            Help=BasisChangePointed.to_sublattice(Generators); // sublattice of the primal space
+            Sublattice_Representation<Integer> PointedHelp(Help,true);
+            BasisChangePointed.compose(PointedHelp);
+            // second to efficient sublattice
+            if(BasisMaxSubspace.nr_of_rows()==0){  // primal cone is pointed and we can copy
+                BasisChange=BasisChangePointed;
+            }
+            else{
+                Help=BasisChange.to_sublattice(Generators);
+                Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
+                Sublattice_Representation<Integer> EmbHelp(Help,true); // sublattice of the primal space
+                compose_basis_change(EmbHelp);
+            }
+        }
         is_Computed.set(ConeProperty::Sublattice); // will not be changed anymore
 
         checkGrading();
