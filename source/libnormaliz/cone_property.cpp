@@ -155,9 +155,6 @@ void ConeProperties::set_preconditions() {
     if (CPs.test(ConeProperty::IsPointed))
         CPs.set(ConeProperty::ExtremeRays);
 
-    if (CPs.test(ConeProperty::ExtremeRays))
-        CPs.set(ConeProperty::SupportHyperplanes);
-
     // inhomogenous preconditions
     if (CPs.test(ConeProperty::VerticesOfPolyhedron))
         CPs.set(ConeProperty::ExtremeRays);
@@ -170,7 +167,11 @@ void ConeProperties::set_preconditions() {
     
     if (CPs.test(ConeProperty::MaximalSubspace))
         CPs.set(ConeProperty::SupportHyperplanes);
-
+    
+    // always
+    
+    if (CPs.test(ConeProperty::ExtremeRays))
+        CPs.set(ConeProperty::SupportHyperplanes);
 }
 
 /* removes ignored compute options and sets implications */
@@ -182,7 +183,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         else{
             CPs.set(ConeProperty::Deg1Elements);
         }
-    }       
+    }
     // -d without -1 means: compute Hilbert basis in dual mode
     if (CPs.test(ConeProperty::DualMode) && !CPs.test(ConeProperty::Deg1Elements)){
         CPs.set(ConeProperty::HilbertBasis);
@@ -206,7 +207,10 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         errorOutput() << "WARNING: Approximate is ignored since Deg1Elements is not set."<< std::endl;
     }
     if (CPs.test(ConeProperty::ConeDecomposition))
-        CPs.reset(ConeProperty::Triangulation);
+        CPs.reset(ConeProperty::Triangulation);    
+    
+    if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
+        CPs.set(ConeProperty::AffineDim);
         
 }
 

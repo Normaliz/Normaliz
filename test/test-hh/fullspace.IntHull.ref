@@ -5,6 +5,8 @@
 0 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 2
+affine dimension of the polyhedron = -1
+rank of recession monoid = 0
 internal index = 1
 
 size of triangulation   = 0

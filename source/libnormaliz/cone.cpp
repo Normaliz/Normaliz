@@ -1556,7 +1556,7 @@ void Cone<Integer>::compute_integer_hull() {
                 nr_extr=IntHullGen.extreme_points_first(aux_grading);
             }    
         }
-    }    
+    }
     
     // IntHullGen.pretty_print(cout);
     IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
@@ -1569,11 +1569,16 @@ void Cone<Integer>::compute_integer_hull() {
     else
         IntHullCone->Dehomogenization=Grading;
     IntHullCone->verbose=verbose;
-    IntHullCone->compute(IntHullCompute);
-    if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
-        is_Computed.set(ConeProperty::IntegerHull);
-    if(verbose){
-        verboseOutput() << "Integer hull finished" << endl;
+    try{
+        IntHullCone->compute(IntHullCompute);
+        if(IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
+            is_Computed.set(ConeProperty::IntegerHull);
+        if(verbose){
+            verboseOutput() << "Integer hull finished" << endl;
+        }
+    }
+    catch (const NotComputableException& ){
+            errorOutput() << "Error in computation of integer hull" << endl;
     }
 }
 
