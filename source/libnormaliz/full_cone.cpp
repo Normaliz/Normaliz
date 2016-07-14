@@ -123,7 +123,7 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
 
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                            list<FACETDATA>& NewHyps){
+                            list<FACETDATA>& NewHyps, bool simplicial){
 // adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed)
 
     size_t k;
@@ -150,7 +150,8 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
         convert(NewFacet.Hyp, mpz_sum);
     }
     
-    NewFacet.ValNewGen=0; 
+    NewFacet.ValNewGen=0;
+    NewFacet.simplicial=simplicial;
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
@@ -212,6 +213,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         
         if (ii->ValNewGen==0) {
             ii->GenInHyp.set(new_generator);  // Must be set explicitly !!
+            ii->simplicial=false;  // simpliciality definitly gone now
             if (simplex) {
                 Neutral_Simp.push_back(&(*ii));
             }   else {
@@ -409,7 +411,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     bool common_subfacet;
     // we cannot use nowait here because of the way we handle exceptions in this loop
     #pragma omp for schedule(dynamic) //nowait
-    for (size_t i =0; i<nr_PosSimp; i++){ //Positive Simp vs.Negative Non Simp
+    for (size_t i =0; i<nr_PosSimp; i++){
 
         if (skip_remaining) continue;
 #ifndef NCATCH
@@ -431,7 +433,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
             jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
             if (jj_map!=Neg_Subfacet.end()) {
-                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i]);
+                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i],true);
                 (*jj_map).second = -1;  // block subfacet in further searches
             }
         }
@@ -442,7 +444,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
                     jj_map=Neg_Subfacet.find(subfacet);
                     if (jj_map!=Neg_Subfacet.end()) {
-                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i]);
+                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i],true);
                         (*jj_map).second = -1;
                         // Indi[j]=true;
                     }
@@ -466,7 +468,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
                
             if(common_subfacet){                 
-               add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j],NewHypsSimp[i]);
+               add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j],NewHypsSimp[i],true);
                if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
                    break;
             }
@@ -519,7 +521,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         for (j=0; j<nr_NegSubf; ++j,++jj_map) {
             if ( (*jj_map).second != -1 ) {  // skip used subfacets
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
-                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i]);
+                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i],true);
                     (*jj_map).second = -1; // has now been used
                 }
             }
@@ -558,7 +560,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            hp_j=Neg_Non_Simp[j];
            
            if(hp_i->Ident==hp_j->Mother || hp_j->Ident==hp_i->Mother){   // mother and daughter coming together
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i]);  // their intersection is a subfacet
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false);  // their intersection is a subfacet
+               // HOW TO TEST SIMPLICIALITY WITHOUT COUNTING? With false we are on the safe side.
                continue;           
            } 
            
@@ -618,6 +621,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
+           bool simplicial=(nr_common_zero==subfacet_dim);
+           
            if(using_GMP<Integer>())           
                 ranktest = (nr_NonSimp > 10*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
            else
@@ -649,7 +654,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                }                       
            } // else
            if (common_subfacet) {  //intersection of i and j is a subfacet
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i]);
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],simplicial);
                /* #pragma omp atomic
                 NrNewF++; */
                 // Indi[j]=true;
@@ -1113,6 +1118,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.Hyp = H[i];
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
+                NewFacet.simplicial=true;
                 NewFacets.push_back(NewFacet);
             }
             select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of multithreaded_pyramid
@@ -1257,6 +1263,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H[i];
+        NewFacet.simplicial=true;
         for(j=0;j < dim;j++)
             if(j!=i)
                 NewFacet.GenInHyp.set(key[j]);
@@ -1339,12 +1346,15 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
         if(new_global_hyp){
             NewFacet.Hyp=pyr_hyp->Hyp;
             NewFacet.GenInHyp.reset();
+            size_t gens_in_facet=0;
             for (i=0; i<Pyramid_key.size(); ++i) {
                 if (pyr_hyp->GenInHyp.test(i) && in_triang[Pyramid_key[i]]) {
                     NewFacet.GenInHyp.set(Pyramid_key[i]);
+                    gens_in_facet++;
                 }
             }
             NewFacet.GenInHyp.set(new_generator);
+            NewFacet.simplicial=(gens_in_facet==dim-1);
             number_hyperplane(NewFacet,nrGensInCone,0); //mother unknown
             if(multithreaded_pyramid){
                 #pragma omp critical(GIVEBACKHYPS) 
@@ -1410,7 +1420,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
 
       if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
-           add_hyperplane(new_generator,*hp_j,hyp,NewHyps);  // their intersection is a subfacet
+           add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // their intersection is a subfacet
            continue;           
        }
        
@@ -1472,7 +1482,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
         
         if(common_subfacet)
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps); // if !common_subfacet this is skipped by continue
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false); // if !common_subfacet this is skipped by continue
     } // for
 
     if(multithreaded_pyramid)
@@ -1781,7 +1791,8 @@ void Full_Cone<Integer>::build_cone() {
         l=Facets.begin();
         old_nr_supp_hyps=Facets.size(); // Facets will be xtended in the loop 
 
-        long long nr_pos=0; long long nr_neg=0;
+        long long nr_pos=0, nr_neg=0;
+        long long nr_neg_simp=0, nr_pos_simp=0;
         vector<Integer> L;           
 #ifndef NCATCH
         std::exception_ptr tmp_exception;
@@ -1802,9 +1813,15 @@ void Full_Cone<Integer>::build_cone() {
                 if (scalar_product<0) {
                     is_new_generator=true;
                     nr_neg++;
+                    if(l->simplicial)
+                        #pragma omp atomic
+                        nr_neg_simp++;
                 }
                 if (scalar_product>0) {
                     nr_pos++;
+                    if(l->simplicial)
+                        #pragma omp atomic
+                        nr_pos_simp++;
                 }
 #ifndef NCATCH
             } catch(const std::exception& ) {
@@ -1826,9 +1843,10 @@ void Full_Cone<Integer>::build_cone() {
         
         if (!omp_in_parallel())
             try_offload(0);
-            
+        // cout << nr_neg << " " << nr_pos << " " << nr_neg_simp << " " << nr_pos_simp << endl;
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
+        if (recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
+            // cout << "In Pyramids" << endl;
             if (do_triangulation)
                 tri_recursion = true; // We can not go back to classical triangulation
             if(check_evaluation_buffer()){

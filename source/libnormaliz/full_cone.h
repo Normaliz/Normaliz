@@ -167,6 +167,7 @@ public:
         size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
         size_t Mother;                     // Ident of positive mother if known, 0 if unknown
+        bool simplicial;                   // indicates whether facet is simplicial
     };
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
@@ -242,7 +243,7 @@ public:
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA& hyp);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                     list<FACETDATA>& NewHyps);
+                     list<FACETDATA>& NewHyps, bool simplicial);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
