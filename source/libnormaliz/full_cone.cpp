@@ -2940,7 +2940,7 @@ void Full_Cone<Integer>::compute() {
             
         }
         else{
-            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
+            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector || do_multiplicity)){ // inthis situation we must find the 
                 convert_polyhedron_to_polytope();                  // lattice points in a polytope
             }
             else
@@ -2995,26 +2995,30 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
         is_Computed.set(ConeProperty::ExtremeRays);     
     }
     if(Polytope.isComputed(ConeProperty::Deg1Elements)){
-        Hilbert_Basis=Polytope.Deg1_Elements;
-        is_Computed.set(ConeProperty::HilbertBasis);
-        module_rank=Hilbert_Basis.size();
+        module_rank=Polytope.Deg1_Elements.size();
+        if(do_Hilbert_basis){
+            Hilbert_Basis=Polytope.Deg1_Elements;
+            is_Computed.set(ConeProperty::HilbertBasis);
+        }
         is_Computed.set(ConeProperty::ModuleRank);
         if(isComputed(ConeProperty::Grading) && module_rank>0){
             multiplicity=1; // of the recession cone;
             is_Computed.set(ConeProperty::Multiplicity);
-            vector<num_t> hv(1);
-            typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
-            for(;hb!=Hilbert_Basis.end();++hb){
-                size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
-                if(deg+1>hv.size())
-                    hv.resize(deg+1);
-                hv[deg]++;                        
-            }    
-            Hilbert_Series.add(hv,vector<denom_t>());
-            Hilbert_Series.setShift(convertTo<long>(shift));
-            Hilbert_Series.adjustShift();
-            Hilbert_Series.simplify();
-            is_Computed.set(ConeProperty::HilbertSeries);
+            if(do_h_vector){
+                vector<num_t> hv(1);
+                typename list<vector<Integer> >::const_iterator hb=Polytope.Deg1_Elements.begin();
+                for(;hb!=Polytope.Deg1_Elements.end();++hb){
+                    size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
+                    if(deg+1>hv.size())
+                        hv.resize(deg+1);
+                    hv[deg]++;                        
+                }    
+                Hilbert_Series.add(hv,vector<denom_t>());
+                Hilbert_Series.setShift(convertTo<long>(shift));
+                Hilbert_Series.adjustShift();
+                Hilbert_Series.simplify();
+                is_Computed.set(ConeProperty::HilbertSeries);
+            }
         }  
     }   
 }
