@@ -2955,40 +2955,45 @@ void Full_Cone<Integer>::compute_hsop(){
                     recession_cone.dualize_cone();
                     SH = recession_lattice.from_sublattice_dual(recession_cone.getSupportHyperplanes());
             }
-            list<pair<boost::dynamic_bitset<> , size_t>> facet_list;
-            list<vector<key_t>> facet_keys;
-            vector<key_t> key;
-            size_t d = dim;
-            if (inhomogeneous) d = level0_dim;
-            for (size_t i=SH.nr_of_rows();i-->0;){
-                boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
-                key.clear();
-                for (size_t j=0;j<ER.nr_of_rows();j++){
-                    if (v_scalar_product(SH[i],ER[j])==0){
-                        new_facet[new_facet.size()-1-j]=1;
-                    } else {
-                        key.push_back(j);
-                    }
-                }
-                facet_list.push_back(make_pair(new_facet,d-1));
-                facet_keys.push_back(key);
-            }
-            facet_list.sort(); // should be sorted lex
-            //~ cout << "FACETS:" << endl;
-            //~ //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
-            //~ for (auto jt=facet_list.begin();jt!=facet_list.end();++jt){
-                    //~ cout << jt->first << " | " << jt->second << endl;
-            //~ }
-            //cout << "facet non_keys: " << facet_keys << endl;
             vector<size_t> ideal_heights(ER.nr_of_rows(),1);
-            heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,d-1);
-            if(verbose){
-                verboseOutput() << "done." << endl;
-                assert(ideal_heights[ER.nr_of_rows()-1]==dim);
-                verboseOutput() << "Heights vector: " << ideal_heights << endl;   
+            // the heights vector is clear in the simplicial case
+            if (is_simplicial){
+                    for (size_t j=0;j<ideal_heights.size();j++) ideal_heights[j]=j+1;
+            } else {
+                list<pair<boost::dynamic_bitset<> , size_t>> facet_list;
+                list<vector<key_t>> facet_keys;
+                vector<key_t> key;
+                size_t d = dim;
+                if (inhomogeneous) d = level0_dim;
+                for (size_t i=SH.nr_of_rows();i-->0;){
+                    boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
+                    key.clear();
+                    for (size_t j=0;j<ER.nr_of_rows();j++){
+                        if (v_scalar_product(SH[i],ER[j])==0){
+                            new_facet[new_facet.size()-1-j]=1;
+                        } else {
+                            key.push_back(j);
+                        }
+                    }
+                    facet_list.push_back(make_pair(new_facet,d-1));
+                    facet_keys.push_back(key);
+                }
+                facet_list.sort(); // should be sorted lex
+                //~ cout << "FACETS:" << endl;
+                //~ //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
+                //~ for (auto jt=facet_list.begin();jt!=facet_list.end();++jt){
+                        //~ cout << jt->first << " | " << jt->second << endl;
+                //~ }
+                //cout << "facet non_keys: " << facet_keys << endl;
+                heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,d-1);
             }
-            vector<Integer> er_deg = ER.MxV(Grading);
-            hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
+        if(verbose){
+            verboseOutput() << "done." << endl;
+            assert(ideal_heights[ER.nr_of_rows()-1]==dim);
+            verboseOutput() << "Heights vector: " << ideal_heights << endl;   
+        }
+        vector<Integer> er_deg = ER.MxV(Grading);
+        hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
         } 
         if(verbose){
             verboseOutput() << "Degrees of HSOP: " << hsop_deg << endl;   
