@@ -100,12 +100,16 @@ public:
     }
 
     void setProjectName(const string& s);
+    void setOutputDirName(const string& s);
 
 //---------------------------------------------------------------------------
 
 private:
 	bool project_name_set;
+        bool output_dir_set;
 	string project_name;
+        string output_dir;
+        string output_file;
 
 	bool use_Big_Integer;
 	bool use_long_long;

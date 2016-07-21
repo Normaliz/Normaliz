@@ -40,6 +40,7 @@ using namespace libnormaliz;
 
 OptionsHandler::OptionsHandler() {
     project_name_set = false;
+    output_dir_set=false;
     write_extra_files = false, write_all_files = false;
 	use_Big_Integer = false;
 	use_long_long = false;
@@ -111,6 +112,13 @@ void OptionsHandler::setProjectName(const string& s) {
         in2.close();
     }
     project_name_set = true;
+}
+
+void OptionsHandler::setOutputDirName(const string& s) {
+    output_dir=s;
+    if(output_dir.back()!='/')
+        output_dir+='/';
+    output_dir_set=true;
 }
 
 bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {
@@ -242,7 +250,20 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     assert(AdmissibleOut.back()=="mod");
 
     // analyzing long options
-    for(size_t i=0; i<LongOptions.size();++i){
+    for(size_t i=0; i<LongOptions.size();++i){ 
+        size_t j;
+        for(j=0;j<LongOptions[i].size();++j){
+            if(LongOptions[i][j]=='=')
+                break;            
+        }
+        if(j<LongOptions[i].size()){
+            string OptName=LongOptions[i].substr(0,j);
+            string OptValue=LongOptions[i].substr(j+1,LongOptions[i].size()-1);
+            if(OptName=="OutputDir"){
+                setOutputDirName(OptValue);
+                continue;
+            }
+        }
         if(LongOptions[i]=="help"){
             return true; // indicate printing of help text
         }
@@ -285,8 +306,19 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         cerr << "Error: Unknown option --" << LongOptions[i] << endl;
         exit(1);
     }
+    
+    if(output_dir_set){
+        long j;
+        for(j=(long) project_name.size()-1;j>=0;j--)
+            if(project_name[j]=='/')
+                break;
+        string pure_project_name=project_name.substr(j+1,project_name.size()-j-1);                       
+        output_file=output_dir+pure_project_name;
+    }
+    else
+        output_file=project_name;     
 
-	return false; //no need to print help text
+    return false; //no need to print help text
 }
 
 template<typename Integer>
@@ -357,7 +389,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         cerr << "ERROR: No project name set!" << endl;
         exit(1);
     }
-    Out.set_name(project_name);
+    Out.set_name(output_file);
 }
 
 bool OptionsHandler::anyNmzIntegrateOption() const {
