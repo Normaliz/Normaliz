@@ -10,7 +10,8 @@ AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_FILES([Makefile
 	source/Makefile
-	source/libnormaliz/version.h])
+	source/libnormaliz/version.h
+	test/Makefile])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11(noext, mandatory)

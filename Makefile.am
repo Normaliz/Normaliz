@@ -1,3 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = source
+AUTOMAKE_OPTIONS = dist-zip
+
+SUBDIRS = source test
