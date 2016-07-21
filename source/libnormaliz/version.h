@@ -4,7 +4,7 @@
 #define NMZ_VERSION_MAJOR  3
 #define NMZ_VERSION_MINOR  1
 #define NMZ_VERSION_PATCH  1
-#define NMZ_VERSION        3.1.1
+#define NMZ_VERSION        3.1.1+autotools-2016-07-21
 #define NMZ_RELEASE (NMZ_VERSION_MAJOR * 10000 + NMZ_VERSION_MINOR * 100 + NMZ_VERSION_PATCH)
 
 namespace libnormaliz {

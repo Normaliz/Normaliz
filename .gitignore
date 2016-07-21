@@ -54,3 +54,24 @@ BUILD*
 
 # ignore Word files
 homepage/*-Dateien/*
+/Makefile
+/Makefile.in
+/aclocal.m4
+autom4te.cache
+/compile
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/config.guess
+/config.status
+/config.sub
+/configure
+/missing
+.deps
+.libs
+.dirstamp
+*.la
+*.lo
+/source/Makefile
+/source/Makefile.in
