@@ -590,6 +590,10 @@ void Output<Integer>::write_files() const {
         string name_open=name+".out";                              //preparing output files
         const char* file=name_open.c_str();
         ofstream out(file);
+        if(out.fail()){
+            errorOutput() << "Cannot write to output file." << endl;
+            exit(1);
+        }
 
         // write "header" of the .out file
         size_t nr_orig_gens = 0;
