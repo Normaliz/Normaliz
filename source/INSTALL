@@ -1,5 +1,9 @@
 **** PREPARATION ****
 
+REQUIRES some c++11 features, supported by:
+gcc 4.4, clang 2.9, icc 12.0
+See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
+
 For compiling Normaliz the following libraries are needed:
 * gmp with gmpxx
 * boost (headers only)
@@ -7,13 +11,23 @@ For compiling Normaliz the following libraries are needed:
 
 On Ubuntu the following packages should be installed:
 sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
+(The latter two only needed if cmake is used for building.)
 
-We offer two ways of compilation, either use the supplied makefile or use cmake to create a more powerfull makefile. cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
+We offer three ways of compilation, either use:
+ - standard autotools (./configure && make && make install)
+ - cmake -- cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
+ - plain old makefile (Makefile.classic)
 
-REQUIRES some c++11 features, supported by:
-gcc 4.4, clang 2.9, icc 12.0
-See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
+**** AUTOTOOLS ****
 
+(If you checked out normaliz from git, first set up the autotools
+system (./bootstrap.sh) -- in this case, the system needs to have
+autoconf, automake, libtool installed.  This step is not necessary if
+you started from a normaliz distribution.)
+
+Just use
+
+  ./configure && make && make install
 
 **** CMAKE ****
 
@@ -159,15 +173,15 @@ CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCM
 
 **** plain MAKE ****
 
-You can still use our old simple plain Makefile. But the CMAKE configuration is much more powerfull.
+You can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
 
 1) Go to the source directory
 2) Check the configurations in Makefile.configuration
-3) Say "make"
+3) Say "make -f Makefile.classic"
 It should work without changing the Makefile on many systems that have a system installation of the needed librarys.
 
 This make accepts two optional arguments
-make OPENMP=no  # deactivates OpenMP
-make SCIP=yes   # compile with SCIP
+make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+make -f Makefile.classic SCIP=yes   # compile with SCIP
 You must make sure that everything is compiled with the same set of options!
 In doubt use make clean before.
