@@ -2,6 +2,10 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EXTRA_DIST =
 
+if ENABLE_OPENMP
+AM_CXXFLAGS = $(OPENMP_CXXFLAGS)
+endif
+
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
 
