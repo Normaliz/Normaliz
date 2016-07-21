@@ -2,8 +2,15 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EXTRA_DIST =
 
+AM_CXXFLAGS =
+AM_LDFLAGS =
+
 if ENABLE_OPENMP
-AM_CXXFLAGS = $(OPENMP_CXXFLAGS)
+AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
+endif
+if NMZ_SCIP
+AM_CXXFLAGS += $(SCIP_CXXFLAGS)
+AM_LDFLAGS += $(SCIP_LDFLAGS)
 endif
 
 # Installed library, shared and/or static (using libtool).

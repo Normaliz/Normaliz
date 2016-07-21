@@ -37,4 +37,36 @@ AS_IF([test x$have_openmp = xyes],
 AC_SUBST(OPENMP_CXXFLAGS)
 AM_CONDITIONAL(ENABLE_OPENMP, [test x$enable_openmp = xyes])
 
+dnl AC_ARG_WITH([scipoptsuite],
+dnl    AS_HELP_STRING([--with-scipoptsuite=DIR],
+dnl       [provide location of scipoptsuite source directory]),
+dnl    [
+dnl      ###  LDFLAGS und CPPFLAGS setzen......
+dnl    ]
+dnl # with-scipoptsuite=DIR --- for uninstalled SCIP
+dnl # with-scip=DIR -- for installed SCIP
+
+dnl #AC_ARG_WITH....
+
+AC_MSG_CHECKING([whether SCIP headers and library are available])
+SCIP_LDFLAGS="-lscip -lgmp -lz -lreadline"
+LDFLAGS_SAVED="$LDFLAGS"
+LDFLAGS="$LDFLAGS $SCIP_LDFLAGS"
+export LDFLAGS
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[#include <scip/scip.h>
+  			    ]],
+               [[ SCIP* scip = NULL;
+	          SCIPcreate(& scip); ]])],
+  [have_scip=yes],
+  [have_scip=no])
+AC_MSG_RESULT($have_scip)
+LDFLAGS="$LDFLAGS_SAVED"
+
+AC_SUBST(SCIP_CXXFLAGS)
+AC_SUBST(SCIP_LDFLAGS)
+AS_IF([test x$have_scip = xyes],
+  [AC_DEFINE(NMZ_SCIP)])
+AM_CONDITIONAL(NMZ_SCIP, test x$have_scip = xyes)
+
 AC_OUTPUT
