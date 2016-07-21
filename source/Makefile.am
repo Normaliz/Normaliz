@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = subdir-objects
 
+EXTRA_DIST =
+
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
 
@@ -27,3 +29,11 @@ noinst_HEADERS += Input.cpp Options.cpp output.cpp
 
 
 ## TODO: normaliz1 normaliz-pg
+
+## Other things that go into the distribution:
+
+# Cmake build system
+EXTRA_DIST += CMakeLists.txt LibnormalizConfig.cmake.in UseLibnormaliz.cmake cmake/Modules cmake/detect_features.cmake cmake/Modules/FindGMP.cmake cmake/Modules/FindGMPXX.cmake cmake/Modules/FindMIC_GMP.cmake cmake/Modules/FindMIC_GMPXX.cmake cmake/Modules/FindSCIP.cmake libnormaliz/CMakeLists.txt libnormaliz/LibnormalizConfig.cmake
+
+# Plain old build system
+EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic
