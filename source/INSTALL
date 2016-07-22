@@ -29,6 +29,41 @@ Just use
 
   ./configure && make && make install
 
+If libraries such as GMP are installed in a nonstandard location,
+use
+  ./configure CPPFLAGS="-I /path/to/includedir" LDFLAGS="-L/path/to/libdir"
+etc.
+
+To enable building with SCIP, it is recommended to *install* the
+scipoptsuite first, by using "make install INSTALLDIR=/usr/local" or
+similar in the scipoptsuite directory.
+
+Alternatively, you can use a non-installed scipoptsuite by configuring
+as follows:
+  ./configure --with-scipoptsuite-src=/path/to/scipoptsuite/source/directory
+
+To build nmzIntegrate, need to have CoCoALib.  Download and build it as follows:
+ - download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
+ - configure it with the threadsafe-hack, and compile:
+        mkdir ~/CoCoA/
+        cd ~/CoCoA/
+        wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99538.tgz
+        tar xvf CoCoALib-0.99538.tgz
+        cd CoCoALib-0.99538
+        ./configure --threadsafe-hack
+        make library -j2
+ - Then configure normaliz like this:
+   ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99538
+
+Some more configure options:
+ - Static build (easier for debugging):
+   ./configure --disable-shared
+ - Prefix (directory) for installation:
+   ./configure --prefix=$HOME/normaliz
+   make install
+ - For more, see
+   ./configure --help
+
 **** CMAKE ****
 
 This has better capabilities to find libraries and allow to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.

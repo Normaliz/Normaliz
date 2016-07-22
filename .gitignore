@@ -81,3 +81,4 @@ autom4te.cache
 /m4/ltversion.m4
 /m4/lt~obsolete.m4
 /test/Makefile.in
+/example/Makefile.in

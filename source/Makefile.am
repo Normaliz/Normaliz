@@ -37,9 +37,15 @@ noinst_HEADERS += Normaliz.h Options.h output.h
 # Sources included via Normaliz.cpp
 noinst_HEADERS += Input.cpp Options.cpp output.cpp
 
-
-
-## TODO: normaliz1 normaliz-pg
+# nmzIntegrate.
+if NMZ_INTEGRATE
+bin_PROGRAMS += nmzIntegrate
+nmzIntegrate_SOURCES = genEhrhart/nmzIntegrate.C
+nmzIntegrate_CPPFLAGS = -IgenEhrhart $(AM_CPPFLAGS)
+# included in nmzIntegrate.C
+noinst_HEADERS += genEhrhart/nmzIntInput.C genEhrhart/nmzIntPoly.C genEhrhart/cyclRatFunct.C genEhrhart/genEhrhart.C genEhrhart/nmzIntegral.C
+nmzIntegrate_LDADD = $(COCOA_LDFLAGS) libnormaliz.la
+endif
 
 ## Other things that go into the distribution:
 
@@ -48,3 +54,12 @@ EXTRA_DIST += CMakeLists.txt LibnormalizConfig.cmake.in UseLibnormaliz.cmake cma
 
 # Plain old build system
 EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic
+
+# Documentation
+
+# TODO: shouldn't these two be moved to toplevel?
+EXTRA_DIST += COPYING INSTALL
+
+EXTRA_DIST += libnormaliz/README
+
+# TODO: maxsimplex.
