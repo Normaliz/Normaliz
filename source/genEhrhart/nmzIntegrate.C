@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
   try
   {
     size_t i;   
-    string project="",pnm="";
+    string project="",pnm="", output_dir="";
     
     string Threads;            
 
@@ -101,6 +101,15 @@ int main(int argc, char* argv[])
             }
             project=argument;
             continue;
+        }
+        
+        if(argument[1]=='-'){
+            if(argument.substr(2,9)=="OutputDir" && argument[11]=='='){
+                output_dir=argument.substr(12,argument.size()-1);
+                if(output_dir.back()!='/')
+                    output_dir+="/";
+                continue;
+            }            
         }
         
         if(argument[1]=='x'){
@@ -211,10 +220,15 @@ int main(int argc, char* argv[])
                                                              // pnmDate irreleveant, only for completeness
 
     bool nmz_inExists=existsFile(project,"in",false,mnz_inDate); // checks if input file to Normaliz exusts
-    bool invExists=existsFile(project,"inv",false,invDate);
-    bool decExists=existsFile(project,"dec",false,decDate);
-    bool triExists=existsFile(project,"tri",false,triDate); 
-    bool tgnExists=existsFile(project,"tgn",false,tgnDate);
+    
+    string nmz_output=project;
+    if(output_dir!="")
+        nmz_output=output_dir+pureName(project);
+    cout << "NMZ_OUT " << nmz_output << endl;
+    bool invExists=existsFile(nmz_output,"inv",false,invDate);
+    bool decExists=existsFile(nmz_output,"dec",false,decDate);
+    bool triExists=existsFile(nmz_output,"tri",false,triDate); 
+    bool tgnExists=existsFile(nmz_output,"tgn",false,tgnDate);
     
     bool makeInputFiles=!invExists || !tgnExists || (do_genEhrhart && !decExists)
                               || (do_int_or_lead && !triExists && ! decExists);
@@ -268,6 +282,9 @@ int main(int argc, char* argv[])
             normalizExec+="c";
         if(Threads!="")
             normalizExec+=(" -x="+Threads);
+        if(output_dir!="")
+            normalizExec+=(" --OutputDir="+output_dir);
+            
             
         normalizExec+=(" \""); // enclose filename in by ""
         normalizExec+=project;
@@ -292,7 +309,7 @@ int main(int argc, char* argv[])
     bool homogeneous=false;
     bool appendOutput=false;
     if (do_genEhrhart) {
-        generalizedEhrhartSeries(project,pnm,homogeneous);
+        generalizedEhrhartSeries(project,output_dir,pnm,homogeneous);
         appendOutput=true;
         if(do_leadCoeff && verbose_INT){
             cout << "Suppressing computation LC since result contained in ES."  << endl;
@@ -300,14 +317,14 @@ int main(int argc, char* argv[])
     }
     // cout << "hom " << homogeneous << endl;
     if (do_leadCoeff && !do_genEhrhart) {
-        integrate(project,pnm,true,homogeneous,appendOutput);
+        integrate(project,output_dir,pnm,true,homogeneous,appendOutput);
         appendOutput=true;
     }
     if(do_integral && homogeneous && verbose_INT){
             cout << "Suppressing computation Int since result contained in ES or LC."  << endl;
     }
     if (do_integral && !homogeneous) {
-        integrate(project,pnm,false,homogeneous,appendOutput);
+        integrate(project,output_dir,pnm,false,homogeneous,appendOutput);
     }
     return 0;
   }

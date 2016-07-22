@@ -419,6 +419,11 @@ string OptionsHandler::getNmzIntegrateOptions() const {
     nmz_options.append(" \"");
     nmz_options.append(project_name);
     nmz_options.append("\"");
+    if(output_dir_set){
+        nmz_options.append(" \"");
+        nmz_options.append("--OutputDir="+output_dir);
+        nmz_options.append("\"");
+    }
     return nmz_options;
 }
 
