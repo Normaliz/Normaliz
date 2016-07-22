@@ -1,4 +1,4 @@
-**** INSTALLATION OF NmzIntegrate ****
+**** INSTALLATION OF NmzIntegrate (with classic Makefile) ****
 
 1) compile libnormaliz with the old plain makefile
 
