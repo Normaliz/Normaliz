@@ -116,8 +116,12 @@ void OptionsHandler::setProjectName(const string& s) {
 
 void OptionsHandler::setOutputDirName(const string& s) {
     output_dir=s;
-    if(output_dir.back()!='/')
-        output_dir+='/';
+    char slash='/';
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        slash='\\';
+    #endif
+    if(output_dir.back()!=slash)
+        output_dir+=slash;
     output_dir_set=true;
 }
 

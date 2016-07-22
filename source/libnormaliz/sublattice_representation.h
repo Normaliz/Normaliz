@@ -123,6 +123,8 @@ public:
 	vector<Integer> to_sublattice_dual_no_div (const vector<Integer>& M) const;
 
     // and with integrated type conversion
+    // Note: the "to" conversions assume that val has the same integer type as the SLR
+    // whereas the "from" versions assume that ret has the same integer type as the SLR.
     template<typename ToType, typename FromType>
     void convert_to_sublattice(ToType& ret, const FromType& val) const {
         convert(ret, to_sublattice(val));

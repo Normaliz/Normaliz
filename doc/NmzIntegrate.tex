@@ -370,7 +370,7 @@ nmzIntegrate <project>
 This will run the default computation (ES) on the
 \verb+<project>+. The full input syntax is
 \begin{Verbatim}
-nmzIntegrate [-cEIL] [-x=<T>] [-F=<polynomial>] <project>
+nmzIntegrate [-cEIL] [-x=<T>] [-F=<polynomial>] [--OutputDir=<outdir>] <project>
 \end{Verbatim}
 where \ttt{-c} and \ttt{-x=<T>} have the same meaning as for
 Normaliz:
@@ -421,6 +421,12 @@ Note that NmzIntegrate may need much more memory than
 Normaliz, especially with a high number of parallel threads,
 due to the fact that it may have to cope with very long
 polynomials.
+
+One can explicitly set the output directory. This information is passed from NmzIntegrate to Normaliz and vice versa. The syntax is
+\begin{itemize}
+	\itemtt[{-}{-OutputDir=<outdir>}]. The path \ttt{<outdir<} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)	
+\end{itemize}
+Note that all output files, also those of Normaliz, will be written to the chosen directory. It must be created before Normaliz or NmzIntegrate is started.
 
 \section{The output file}\label{output}
 
@@ -625,6 +631,7 @@ x[2]  mult 2                          Remaining factor 1
 x[2] -x[3]  mult 2
 x[2] -x[4]  mult 2                    Integral: 27773/29515186701000
 \end{Verbatim}
+
 
 
 

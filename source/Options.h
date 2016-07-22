@@ -130,4 +130,6 @@ private:
 
 //---------------------------------------------------------------------------
 
+string pureName(const string& fullName); // extracts the pure filename from a path
+
 #endif //NMZ_OPTIONS_H

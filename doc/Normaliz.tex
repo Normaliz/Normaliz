@@ -2931,6 +2931,8 @@ The options for computation goals and algorithms variants have been explained in
 	represents a positive number assigned to \ttt{-x}; see
 	Section \ref{exec}.
 	
+	\item Similarly the option \ttt{---OutputDir=<outdir>} sets the output directory; see \ref{outcontrol}.
+	
 	\item Normaliz will look for \ttt{<project>.in} as input
 	file.
 	
@@ -3008,6 +3010,12 @@ For the list of potential output files, their suffixes and their interpretation
 see Section \ref{optionaloutput}. There may be several options \verb|--<suffix>|.
 
 If the computation goal \verb|IntegerHull| is set, Normaliz computes a second cone and lattice. The output is contained in \verb|<project>.IntHull.out|. The options for the output of \verb|<project>| are applied to \verb|<project>.IntHull| as well. There is no way to control the output of the two computations individually.
+
+Sometimes one wants the output to be written to another directory. The output directory can be set by
+\begin{itemize}
+	\itemtt[{-}{-OutputDir=<outdir>}]. The path \ttt{<outdir<} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)	
+\end{itemize}
+Note that all output files will be written to the chosen directory. It must be created before Normaliz is started.
 
 \subsection{Overriding the options in the input file}
 
