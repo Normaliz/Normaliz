@@ -15,7 +15,7 @@ AC_CONFIG_FILES([Makefile
 	test/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_11(noext, mandatory)
+AX_CXX_COMPILE_STDCXX_11(, mandatory)
 AC_PROG_LIBTOOL
 AC_LANG(C++)
 
