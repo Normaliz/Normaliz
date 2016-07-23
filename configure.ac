@@ -13,7 +13,7 @@ AC_CONFIG_FILES([Makefile
 	source/libnormaliz/version.h
 	example/Makefile
 	test/Makefile])
-AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11(noext, mandatory)
 AC_PROG_LIBTOOL
