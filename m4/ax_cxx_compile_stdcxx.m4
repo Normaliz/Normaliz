@@ -160,10 +160,6 @@ m4_define([_AX_CXX_COMPILE_STDCXX_testbody_new_in_11], [[
 
 #error "This is not a C++ compiler"
 
-#elif __cplusplus < 201103L
-
-#error "This is not a C++11 compiler"
-
 #else
 
 namespace cxx11
