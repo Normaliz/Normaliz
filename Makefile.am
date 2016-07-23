@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = dist-zip
 
 SUBDIRS = source test example
 
-EXTRA_DIST = bootstrap.sh CHANGELOG .travis.yml
+EXTRA_DIST = bootstrap.sh CHANGELOG .travis.yml .travis-build.sh
 
 EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
 EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib

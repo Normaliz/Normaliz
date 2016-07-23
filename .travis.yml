@@ -3,6 +3,10 @@ compiler:
   - gcc
   - clang
 
+env:
+  - BUILDSYSTEM=cmake
+  - BUILDSYSTEM=autotools
+
 branches:
   except:
     - gh-pages
@@ -12,10 +16,4 @@ addons:
       - libgmp-dev
       - libboost-dev
 
-script:
-  - mkdir -p BUILD
-  - cd BUILD
-  - pwd
-  - cmake ../source
-  - make -j2
-  - OMP_NUM_THREADS=4 make check
+script: .travis-build.sh
