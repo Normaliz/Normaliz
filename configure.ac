@@ -16,7 +16,7 @@ AC_CONFIG_FILES([Makefile
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11(, optional)
-AS_IF([test $HAVE_CXX_11 = 0],
+AS_IF([test x$HAVE_CXX11 != x1],
   dnl Testing for C++ 11 above is too strict, as
   dnl it rejects the g++ 4.6.3 that is available on Travis.
   [AS_WARN([Did not find a compiler that supports C++ 11.  We keep going with C++0x])
