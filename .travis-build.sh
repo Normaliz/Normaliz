@@ -33,12 +33,12 @@ case $BUILDSYSTEM in
 	# is complete even when this source tree is not configured with nmzintegrate.
 	./configure || exit 1
 	# Rather, build the unpacked distribution with CoCoA.
-	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate" distcheck || exit 1
+	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate" distcheck || ( echo '#### Contents of config.log: ####'; cat _build/config.log; exit 1)
 	;;
     *)
 	# autotools
 	./bootstrap.sh || exit 1
-	./configure || ( echo Contents of config.log:; cat config.log; exit 1)
+	./configure || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 || exit 1
 	OMP_NUM_THREADS=4 make -j2 check || exit 1
 	;;
