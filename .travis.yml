@@ -8,6 +8,7 @@ env:
   - BUILDSYSTEM=cmake
   - BUILDSYSTEM=autotools
   - BUILDSYSTEM=autotools-makedistcheck
+  - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
 
 branches:
   except:

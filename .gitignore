@@ -82,3 +82,6 @@ autom4te.cache
 /m4/lt~obsolete.m4
 /test/Makefile.in
 /example/Makefile.in
+/source/libnormaliz/version.h
+/example/Makefile
+/test/Makefile
