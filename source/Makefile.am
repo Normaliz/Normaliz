@@ -18,7 +18,7 @@ endif
 lib_LTLIBRARIES = libnormaliz.la
 
 # Installed headers
-include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnormaliz/convert.h libnormaliz/general.h libnormaliz/HilbertSeries.h libnormaliz/integer.h libnormaliz/libnormaliz.h libnormaliz/map_operations.h libnormaliz/matrix.h libnormaliz/my_omp.h libnormaliz/normaliz_exception.h libnormaliz/sublattice_representation.h libnormaliz/vector_operations.h libnormaliz/version.h
+nobase_include_HEADERS = libnormaliz/cone.h libnormaliz/cone_property.h libnormaliz/convert.h libnormaliz/general.h libnormaliz/HilbertSeries.h libnormaliz/integer.h libnormaliz/libnormaliz.h libnormaliz/map_operations.h libnormaliz/matrix.h libnormaliz/my_omp.h libnormaliz/normaliz_exception.h libnormaliz/sublattice_representation.h libnormaliz/vector_operations.h libnormaliz/version.h
 # Sources
 libnormaliz_la_SOURCES = libnormaliz/cone_property.cpp libnormaliz/HilbertSeries.cpp libnormaliz/libnormaliz-templated.cpp libnormaliz/cone_helper.cpp libnormaliz/offload_handler.cpp libnormaliz/bottom.cpp 
 # Other headers (not installed)
