@@ -33,7 +33,7 @@ case $BUILDSYSTEM in
 	# is complete even when this source tree is not configured with nmzintegrate.
 	./configure || exit 1
 	# Rather, build the unpacked distribution with CoCoA.
-	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate" distcheck || ( echo '#### Contents of config.log: ####'; cat normaliz-*/_build/config.log; exit 1)
+	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat normaliz-*/_build/config.log; exit 1)
 	;;
     *)
 	# autotools
