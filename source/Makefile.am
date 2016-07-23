@@ -47,6 +47,11 @@ noinst_HEADERS += genEhrhart/nmzIntInput.C genEhrhart/nmzIntPoly.C genEhrhart/cy
 nmzIntegrate_LDADD = $(COCOA_LDFLAGS) libnormaliz.la
 endif
 
+# Uninstalled binary maxsimplex
+noinst_PROGRAMS = maxsimplex/maxsimplex
+maxsimplex_maxsimplex_SOURCES = maxsimplex/maxsimplex.cpp
+maxsimplex_maxsimplex_LDADD = libnormaliz.la
+
 ## Other things that go into the distribution:
 
 # Cmake build system
