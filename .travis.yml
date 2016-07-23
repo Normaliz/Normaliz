@@ -1,4 +1,9 @@
 language: cpp
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install autoconf automake libtool
+
 compiler:
   - gcc
   - clang
