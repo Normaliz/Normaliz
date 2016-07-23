@@ -18,22 +18,26 @@ case $BUILDSYSTEM in
 	# and that the distribution correctly builds it when CoCoALib is installed.
 	COCOALIB_VERSION=0.99543
 	NMZDIR=`pwd`
-	rm -Rf CoCoA
-	mkdir CoCoA || exit 1
-	cd CoCoA || exit 1
-	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-$COCOALIB_VERSION.tgz || exit 1
-	tar xf CoCoALib-$COCOALIB_VERSION.tgz || exit 1
-	cd CoCoALib-$COCOALIB_VERSION || exit 1
-	COCOALIB_DIR=`pwd` || exit 1
-	./configure --threadsafe-hack || exit 1
-	make -j2 library || exit 1
+	#rm -Rf CoCoA
+	COCOADIR=CoCoA
+	COCOALIB_DIR=`pwd`/$COCOADIR/CoCoALib-$COCOALIB_VERSION
+	if test ! -f $COCOADIR/CoCoALib-$COCOALIB_VERSION/lib/libcocoa.a ; then
+	    mkdir -p $COCOADIR || exit 1
+	    cd $COCOADIR || exit 1
+	    wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-$COCOALIB_VERSION.tgz || exit 1
+	    rm -Rf CoCoALib-$COCOALIB_VERSION
+	    tar xf CoCoALib-$COCOALIB_VERSION.tgz || exit 1
+	    cd $COCOALIB_DIR || exit 1
+	    ./configure --threadsafe-hack || exit 1
+	    make -j2 library || exit 1
+	fi
 	cd $NMZDIR || exit 1
 	./bootstrap.sh || exit 1
 	# Don't pass CoCoA flags here. We want to make sure that the distribution
 	# is complete even when this source tree is not configured with nmzintegrate.
-	./configure || exit 1
+	./configure --disable-nmzintegrate --disable-scip || exit 1
 	# Rather, build the unpacked distribution with CoCoA.
-	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat normaliz-*/_build/config.log; exit 1)
+	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat normaliz-*/_build/config.log; exit 1)
 	;;
     *)
 	# autotools
