@@ -8,12 +8,16 @@ case $BUILDSYSTEM in
 	make -j2 || exit 1
 	OMP_NUM_THREADS=4 make check || exit 1
 	;;
+    autotools-makedistcheck)
+	./bootstrap.sh || exit 1
+	./configure || exit 1
+	make -j2 distcheck || exit 1
+	;;
     *)
 	# autotools
 	./bootstrap.sh || exit 1
 	./configure || exit 1
 	make -j2 || exit 1
 	OMP_NUM_THREADS=4 make -j2 check || exit 1
-	make distcheck || exit 1
 	;;
 esac
