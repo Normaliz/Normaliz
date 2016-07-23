@@ -15,21 +15,7 @@ AC_CONFIG_FILES([Makefile
 	test/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_11(, optional)
-
-dnl Testing for C++ 11 above is too strict, as it rejects the g++
-dnl 4.6.3 that is available on Travis.  Can remove this when support
-dnl for such old compilers is not necessary any more.
-AS_IF([test x$HAVE_CXX11 != x1],
-  [AC_MSG_WARN([Did not find a compiler that supports C++ 11.  We keep going with C++0x])
-   AX_CXX_COMPILE_STDCXX_0X
-   AS_IF([test x"$ax_cv_cxx_compile_cxx0x_native" = xyes],
-     [],
-     [AS_IF([test x"$ax_cv_cxx_compile_cxx0x_cxx" = xyes],
-       [CXX="$CXX -std=c++0x"],
-       [AS_IF([test x"$ax_cv_cxx_compile_cxx0x_gxx" = xyes],
-         [CXX="$CXX -std=gnu++0x"],
-	 [AC_MSG_ERROR([*** A compiler with some support for C++0x language features is required.])])])])])
+AX_CXX_COMPILE_STDCXX(0x, , mandatory)
 
 AC_PROG_LIBTOOL
 AC_LANG(C++)

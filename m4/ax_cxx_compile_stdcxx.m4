@@ -11,7 +11,7 @@
 #   Check for baseline language coverage in the compiler for the specified
 #   version of the C++ standard.  If necessary, add switches to CXX and
 #   CXXCPP to enable support.  VERSION may be '11' (for the C++11 standard)
-#   or '14' (for the C++14 standard).
+#   or '14' (for the C++14 standard),  or '0x' for some set of C++0x features.
 #
 #   The second argument, if specified, indicates whether you insist on an
 #   extended mode (e.g. -std=gnu++11) or a strict conformance mode (e.g.
@@ -33,6 +33,7 @@
 #   Copyright (c) 2014, 2015 Google Inc.; contributed by Alexey Sokolov <sokolov@google.com>
 #   Copyright (c) 2015 Paul Norman <penorman@mac.com>
 #   Copyright (c) 2015 Moritz Klammler <moritz@klammler.eu>
+#   Copyright (c) 2016 Matthias Koeppe <mkoeppe@math.ucdavis.edu>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
@@ -133,6 +134,11 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
   AC_SUBST(HAVE_CXX$1)
 ])
 
+dnl  Test body for checking minimal C++0x support
+m4_define([_AX_CXX_COMPILE_STDCXX_testbody_0x],
+  _AX_CXX_COMPILE_STDCXX_testbody_new_in_0x
+)
+
 
 dnl  Test body for checking C++11 support
 
@@ -148,6 +154,104 @@ m4_define([_AX_CXX_COMPILE_STDCXX_testbody_14],
   _AX_CXX_COMPILE_STDCXX_testbody_new_in_14
 )
 
+
+dnl  Tests for minimal C++0x features
+
+m4_define([_AX_CXX_COMPILE_STDCXX_testbody_new_in_0x], [[
+
+#ifndef __cplusplus
+
+#error "This is not a C++ compiler"
+
+#else
+
+namespace cxx0x
+{
+
+  namespace test_static_assert
+  {
+
+    template <typename T>
+    struct check
+    {
+      static_assert(sizeof(int) <= sizeof(T), "not big enough");
+    };
+
+  }
+
+  namespace test_double_right_angle_brackets
+  {
+
+    template < typename T >
+    struct check {};
+
+    typedef check<void> single_type;
+    typedef check<check<void>> double_type;
+    typedef check<check<check<void>>> triple_type;
+    typedef check<check<check<check<void>>>> quadruple_type;
+
+  }
+
+  namespace test_decltype
+  {
+
+    int
+    f()
+    {
+      int a = 1;
+      decltype(a) b = 2;
+      return a + b;
+    }
+
+  }
+
+  namespace test_type_deduction
+  {
+
+    template < typename T1, typename T2 >
+    struct is_same
+    {
+      static const bool value = false;
+    };
+
+    template < typename T >
+    struct is_same<T, T>
+    {
+      static const bool value = true;
+    };
+
+    template < typename T1, typename T2 >
+    auto
+    add(T1 a1, T2 a2) -> decltype(a1 + a2)
+    {
+      return a1 + a2;
+    }
+
+    int
+    test(const int c, volatile int v)
+    {
+      static_assert(is_same<int, decltype(0)>::value == true, "");
+      static_assert(is_same<int, decltype(c)>::value == false, "");
+      static_assert(is_same<int, decltype(v)>::value == false, "");
+      auto ac = c;
+      auto av = v;
+      auto sumi = ac + av + 'x';
+      auto sumf = ac + av + 1.0;
+      static_assert(is_same<int, decltype(ac)>::value == true, "");
+      static_assert(is_same<int, decltype(av)>::value == true, "");
+      static_assert(is_same<int, decltype(sumi)>::value == true, "");
+      static_assert(is_same<int, decltype(sumf)>::value == false, "");
+      static_assert(is_same<int, decltype(add(c, v))>::value == true, "");
+      return (sumf > 0.0) ? sumi : add(c, v);
+    }
+
+  }
+
+}  // namespace cxx0x
+
+#endif  // __cplusplus
+
+]])
 
 dnl  Tests for new features in C++11
 
