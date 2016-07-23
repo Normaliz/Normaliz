@@ -16,4 +16,4 @@ addons:
       - libgmp-dev
       - libboost-dev
 
-script: .travis-build.sh
+script: ./.travis-build.sh
