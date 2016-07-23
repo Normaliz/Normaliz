@@ -34,12 +34,12 @@ normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
 lib:
-	$(MAKE) --directory=libnormaliz libnormaliz.a
+	$(MAKE) --directory=libnormaliz -f Makefile.classic libnormaliz.a
 
 
 .PHONY : clean
 clean:
-	$(MAKE) --directory=libnormaliz clean
+	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
 	-rm -f normaliz.o
 	-rm -f normaliz
 	-rm -f normaliz?
