@@ -68,10 +68,9 @@ AC_ARG_ENABLE([scip],
     [enable_scip=check])
 AS_IF([test "x$enable_scip" != xno],
     [AC_MSG_CHECKING([whether SCIP headers and library are available])
-     SCIP_LDFLAGS="-lscip -lgmp -lz -lreadline"
-     LDFLAGS_SAVED="$LDFLAGS"
-     LDFLAGS="$LDFLAGS $SCIP_LDFLAGS"
-     export LDFLAGS
+     SCIP_LIBS="-lscip -lgmp -lz -lreadline"
+     LIBS_SAVED="$LIBS"
+     LIBS="$LIBS $SCIP_LIBS"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include <scip/scip.h>
 				 ]],
@@ -80,7 +79,7 @@ AS_IF([test "x$enable_scip" != xno],
        [have_scip=yes],
        [have_scip=no])
      AC_MSG_RESULT($have_scip)
-     LDFLAGS="$LDFLAGS_SAVED"
+     LIBS="$LIBS_SAVED"
     ])
 AS_IF([test x$have_scip = xyes],
   [enable_scip=yes],
@@ -90,7 +89,7 @@ AS_IF([test x$have_scip = xyes],
         [AC_MSG_NOTICE([Cone decomposition with SCIP integer programming solver will not be available because the SCIP library was not found])])
      enable_scip=no])])
 AC_SUBST(SCIP_CXXFLAGS)
-AC_SUBST(SCIP_LDFLAGS)
+AC_SUBST(SCIP_LIBS)
 AS_IF([test x$enable_scip = xyes],
   [AC_DEFINE(NMZ_SCIP)])
 AM_CONDITIONAL(NMZ_SCIP, test x$enable_scip = xyes)
@@ -109,10 +108,9 @@ AC_ARG_ENABLE([nmzintegrate],
     [enable_nmzintegrate=check])
 AS_IF([test "x$enable_nmzintegrate" != xno],
     [AC_MSG_CHECKING([whether CoCoALib headers and library are available])
-     COCOA_LDFLAGS="-lcocoa -lgmp"
-     LDFLAGS_SAVED="$LDFLAGS"
-     LDFLAGS="$LDFLAGS $COCOA_LDFLAGS"
-     export LDFLAGS
+     COCOA_LIBS="-lcocoa -lgmp"
+     LIBS_SAVED="$LIBS"
+     LIBS="$LIBS $COCOA_LIBS"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM([[#include "CoCoA/library.H"
 			  using namespace CoCoA;
@@ -122,7 +120,7 @@ AS_IF([test "x$enable_nmzintegrate" != xno],
        [have_cocoa=yes],
        [have_cocoa=no])
      AC_MSG_RESULT($have_cocoa)
-     LDFLAGS="$LDFLAGS_SAVED"
+     LIBS="$LIBS_SAVED"
     ])
 AS_IF([test x$have_cocoa = xyes],
   [enable_nmzintegrate=yes],
@@ -131,7 +129,7 @@ AS_IF([test x$have_cocoa = xyes],
     [AS_IF([test "x$enable_nmzintegrate" != xno],
         [AC_MSG_NOTICE([nmzIntegrate will not be built because CoCoALib was not found])])
      enable_nmzintegrate=no])])
-AC_SUBST(COCOA_LDFLAGS)
+AC_SUBST(COCOA_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
 

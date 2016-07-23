@@ -11,6 +11,7 @@ endif
 if NMZ_SCIP
 AM_CXXFLAGS += $(SCIP_CXXFLAGS)
 AM_LDFLAGS += $(SCIP_LDFLAGS)
+LIBS += $(SCIP_LIBS)
 endif
 
 # Installed library, shared and/or static (using libtool).
@@ -44,7 +45,7 @@ nmzIntegrate_SOURCES = genEhrhart/nmzIntegrate.C
 nmzIntegrate_CPPFLAGS = -IgenEhrhart $(AM_CPPFLAGS)
 # included in nmzIntegrate.C
 noinst_HEADERS += genEhrhart/nmzIntInput.C genEhrhart/nmzIntPoly.C genEhrhart/cyclRatFunct.C genEhrhart/genEhrhart.C genEhrhart/nmzIntegral.C
-nmzIntegrate_LDADD = $(COCOA_LDFLAGS) libnormaliz.la
+nmzIntegrate_LDADD = $(COCOA_LIBS) libnormaliz.la
 endif
 
 # Uninstalled binary maxsimplex
