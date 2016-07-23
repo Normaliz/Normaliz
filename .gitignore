@@ -85,3 +85,6 @@ autom4te.cache
 /source/libnormaliz/version.h
 /example/Makefile
 /test/Makefile
+/source/maxsimplex/maxsimplex
+test/run_tests
+CoCoA
