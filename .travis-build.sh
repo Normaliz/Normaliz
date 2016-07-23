@@ -16,7 +16,7 @@ case $BUILDSYSTEM in
     *)
 	# autotools
 	./bootstrap.sh || exit 1
-	./configure || exit 1
+	./configure || ( echo Contents of config.log:; cat config.log; exit 1)
 	make -j2 || exit 1
 	OMP_NUM_THREADS=4 make -j2 check || exit 1
 	;;
