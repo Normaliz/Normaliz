@@ -1,9 +1,5 @@
 language: cpp
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install autoconf automake libtool
-
 compiler:
   - gcc
   - clang
@@ -20,5 +16,8 @@ addons:
   apt_packages:
       - libgmp-dev
       - libboost-dev
+      - autoconf
+      - automake
+      - libtool
 
 script: ./.travis-build.sh
