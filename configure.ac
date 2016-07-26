@@ -68,18 +68,44 @@ AC_ARG_ENABLE([scip],
     [enable_scip=check])
 AS_IF([test "x$enable_scip" != xno],
     [AC_MSG_CHECKING([whether SCIP headers and library are available])
-     SCIP_LIBS="-lscip -lgmp -lz -lreadline"
+     dnl SCIP can be installed in many different ways.  We try several.
+     dnl There's libscipopt and there's libscip (which depends on
+     dnl liblpispx and libsoplex or another LP solver library; but these
+     dnl dependencies may not be recorded).
      LIBS_SAVED="$LIBS"
-     LIBS="$LIBS $SCIP_LIBS"
-     AC_LINK_IFELSE(
-       [AC_LANG_PROGRAM([[#include <scip/scip.h>
-				 ]],
-		    [[ SCIP* scip = NULL;
-		       SCIPcreate(& scip); ]])],
-       [have_scip=yes],
-       [have_scip=no])
-     AC_MSG_RESULT($have_scip)
+     for SCIP_LIBS in \
+	 "-lscip" \
+	 "-lscipopt -lgmp -lz -lreadline" \
+	 "-lscipopt -lz -lreadline" \
+	 "-lscipopt -lgmp -lz" \
+	 "-lscipopt -lz" \
+	 "-lscipopt -lgmp -lreadline" \
+	 "-lscipopt -lreadline" \
+	 "-lscipopt -lgmp" \
+	 "-lscipopt" \
+	 "-lscip -lnlpi.cppad -llpispx -lsoplex -lgmp -lz -lreadline" \
+	 ; do
+	 LIBS="$LIBS_SAVED $SCIP_LIBS"
+	 dnl We use AC_RUN_IF_ELSE because on Mac OS X, running
+	 dnl the program is the only way to know whether we got
+	 dnl all dylibs working.
+	 AC_RUN_IFELSE(
+	   [AC_LANG_PROGRAM([[#include <scip/scip.h>
+				     ]],
+			[[ SCIP* scip = NULL;
+			   SCIPcreate(& scip);
+			   return 0;
+			 ]])],
+	   [have_scip=yes
+	    AC_MSG_RESULT([yes, using $SCIP_LIBS])
+	    break
+	   ],
+	   [have_scip=no])
+     done
      LIBS="$LIBS_SAVED"
+     if test $have_scip != yes ; then
+	AC_MSG_RESULT($have_scip)
+     fi
     ])
 AS_IF([test x$have_scip = xyes],
   [enable_scip=yes],
