@@ -3809,7 +3809,7 @@ void Full_Cone<Integer>::check_pointed() {
         is_Computed.set(ConeProperty::IsPointed);
         return;
     }
-    if (verbose) verboseOutput() << "Checking for pointed ... " << flush;
+    if (verbose) verboseOutput() << "Checking pointedness ... " << flush;
 
     pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
@@ -4264,13 +4264,6 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
         Generators=M;
     // M.pretty_print(cout);
     assert(M.row_echelon()== dim);
-    
-    if (M.row_echelon() < dim) {
-        throw BadInputException(string("Matrix with rank = number of columns needed")
-                + "in the constructor of the object Full_Cone<Integer>.\n"
-                + "Probable reason: Cone not full dimensional "
-                + "(<=> dual cone not pointed)!");
-    }
     
     index=1;                      // not used at present
     for(size_t i=0;i<dim;++i)
