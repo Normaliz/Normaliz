@@ -2229,13 +2229,25 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
             is_Computed.set(ConeProperty::ModuleGenerators);
         } else { // homogeneous
-            BasisChangePointed.convert_from_sublattice(HilbertBasis, FC.getHilbertBasis());
+            HilbertBasis = Matrix<Integer>(0,dim);
+            typename list< vector<IntegerFC> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
+            vector<Integer> tmp;
+            for (; FCHB != FC.Hilbert_Basis.end(); ++FCHB) {
+                BasisChangePointed.convert_from_sublattice(tmp,*FCHB);                
+                HilbertBasis.append(tmp);
+            }
         }
         HilbertBasis.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
-        BasisChangePointed.convert_from_sublattice(Deg1Elements, FC.getDeg1Elements());
+        Deg1Elements = Matrix<Integer>(0,dim);
+        typename list< vector<IntegerFC> >::const_iterator DFC(FC.Deg1_Elements.begin());
+        vector<Integer> tmp;
+        for (; DFC != FC.Deg1_Elements.end(); ++DFC) {
+            BasisChangePointed.convert_from_sublattice(tmp,*DFC);                
+            Deg1Elements.append(tmp);
+        }
         Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::Deg1Elements);
     }
