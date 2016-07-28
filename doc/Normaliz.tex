@@ -2390,7 +2390,7 @@ There are $3$ types:
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| stiil exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
 \end{itemize}
 
 \subsubsection{Lattices}

@@ -1235,6 +1235,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     vector<key_t> key=S.read_key();   // generators indexed from 0 */
     
     vector<key_t> key=find_start_simplex();
+    assert(key.size()==dim); // safety heck
     if(verbose){
         verboseOutput() << "Start simplex ";
         for(size_t i=0;i<key.size();++i)
@@ -2863,6 +2864,7 @@ void Full_Cone<Integer>::compute() {
         set_zero_cone();
         return;
     }
+    
 
     do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
@@ -2878,6 +2880,10 @@ void Full_Cone<Integer>::compute() {
     }
 
     start_message();
+    
+    if(Support_Hyperplanes.nr_of_rows()==0 && !do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
+        && !do_Stanley_dec && !do_triangulation && !do_determinants)
+        assert(Generators.max_rank_submatrix_lex().size() == dim);
 
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
@@ -4263,12 +4269,12 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     if(dim>0)
         Generators=M;
     // M.pretty_print(cout);
-    assert(M.row_echelon()== dim);
+    // assert(M.row_echelon()== dim); rank check now done later 
     
-    index=1;                      // not used at present
+    /*index=1;                      // not used at present
     for(size_t i=0;i<dim;++i)
         index*=M[i][i];
-    index=Iabs(index);
+    index=Iabs(index); */
 
     //make the generators coprime, remove 0 rows and duplicates
     has_generator_with_common_divisor = false;

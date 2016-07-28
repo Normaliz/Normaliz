@@ -685,7 +685,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
 
-    if (Inequalities.nr_of_rows() == 0) {
+    if (Inequalities.nr_of_rows() == 0 && PreComputedSupportHyperplanes.nr_of_rows()==0) {
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
