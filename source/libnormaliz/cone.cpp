@@ -1483,7 +1483,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
-                verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
             change_integer_type = false;
         }
@@ -1762,7 +1762,7 @@ void Cone<Integer>::compute_generators() {
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
-                    verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
                 }
                 compute_generators_inner<Integer>();
             }
@@ -1873,7 +1873,7 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
-                verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
             change_integer_type = false;
         }
@@ -2030,7 +2030,7 @@ Integer Cone<Integer>::compute_primary_multiplicity() {
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
-                verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
             change_integer_type = false;
         }
