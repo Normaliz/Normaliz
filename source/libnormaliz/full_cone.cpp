@@ -4264,7 +4264,7 @@ void Full_Cone<Integer>::reset_tasks(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constructor of the top cone
+Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // constructor of the top cone
     dim=M.nr_of_columns();
     if(dim>0)
         Generators=M;

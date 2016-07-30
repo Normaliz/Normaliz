@@ -357,7 +357,7 @@ public:
  *                      Constructors
  *---------------------------------------------------------------------------
  */
-    Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constructor
+    Full_Cone(const Matrix<Integer>& M, bool do_make_prime=true);            //main constructor
     Full_Cone(Cone_Dual_Mode<Integer> &C);            // removes data from the argument!
     Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
 

@@ -2414,6 +2414,18 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRays=Generators.submatrix(choice);
+    if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
+        size_t level0_dim=ExtremeRays.max_rank_submatrix_lex().size();
+        recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();
+        is_Computed.set(ConeProperty::RecessionRank);
+        if (getRank() == recession_rank) {
+            affine_dim = -1;
+        } else {
+            affine_dim = getRank()-1;
+        }
+        is_Computed.set(ConeProperty::AffineDim);
+        
+    }
     if(isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){  // not possible in inhomogeneous case
         Matrix<Integer> ExteEmbedded=BasisChangePointed.to_sublattice(ExtremeRays);
         for(size_t i=0;i<ExteEmbedded.nr_of_rows();++i)
