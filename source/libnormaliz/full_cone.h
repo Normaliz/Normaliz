@@ -321,9 +321,9 @@ public:
     void check_grading_after_dual_mode();
 
     void minimize_support_hyperplanes();   
-    void compute_extreme_rays();
-    void compute_extreme_rays_compare();
-    void compute_extreme_rays_rank();
+    void compute_extreme_rays(bool use_facets=false);
+    void compute_extreme_rays_compare(bool use_facets);
+    void compute_extreme_rays_rank(bool use_facets);
     void select_deg1_elements();
 
     void check_pointed();

@@ -1923,17 +1923,18 @@ void Full_Cone<Integer>::build_cone() {
     // transfer Facets --> SupportHyperplanes
     if (do_all_hyperplanes) {
         nrSupport_Hyperplanes = Facets.size();
-        Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,dim);
-        typename list<FACETDATA>::const_iterator IHV=Facets.begin();
+        Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,0);
+        typename list<FACETDATA>::iterator IHV=Facets.begin();
         for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
-            Support_Hyperplanes[i] = IHV->Hyp;
+            swap(Support_Hyperplanes[i],IHV->Hyp);
         }
         is_Computed.set(ConeProperty::SupportHyperplanes);
-    }    
+    } 
+    Support_Hyperplanes.set_nr_of_columns(dim);
    
     
     if(do_extreme_rays && do_all_hyperplanes)
-        compute_extreme_rays();
+        compute_extreme_rays(true);
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
     if(check_evaluation_buffer()){
@@ -3583,7 +3584,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_extreme_rays(){
+void Full_Cone<Integer>::compute_extreme_rays(bool use_facets){
 
     if (isComputed(ConeProperty::ExtremeRays))
         return;
@@ -3599,23 +3600,18 @@ void Full_Cone<Integer>::compute_extreme_rays(){
     }
 
     if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
-         compute_extreme_rays_rank();
+         compute_extreme_rays_rank(use_facets);
     } else {
-         compute_extreme_rays_compare();
+         compute_extreme_rays_compare(use_facets);
     }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_extreme_rays_rank(){
+void Full_Cone<Integer>::compute_extreme_rays_rank(bool use_facets){
 
     if (verbose) verboseOutput() << "Select extreme rays via rank ... " << flush;
-    
-    bool use_Facets=false;    
-    if(do_all_hyperplanes && !Facets.empty() && 
-            Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
-        use_Facets=true;
 
     size_t i;
     vector<key_t> gen_in_hyperplanes;
@@ -3628,7 +3624,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
 //        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
         gen_in_hyperplanes.clear();
-        if(use_Facets){
+        if(use_facets){
             typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
             for (size_t j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i))
@@ -3656,14 +3652,9 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_extreme_rays_compare(){
+void Full_Cone<Integer>::compute_extreme_rays_compare(bool use_facets){
 
     if (verbose) verboseOutput() << "Select extreme rays via comparison ... " << flush;
-
-    bool use_Facets=false;
-    if(do_all_hyperplanes && !Facets.empty() && 
-            Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
-        use_Facets=true;
 
     size_t i,j,k;
     // Matrix<Integer> SH=getSupportHyperplanes().transpose();
@@ -3683,7 +3674,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     for (i = 0; i <nr_gen; i++) {
         k=0;
         Extreme_Rays_Ind[i]=true;
-        if(use_Facets){
+        if(use_facets){
             typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
             for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i)){

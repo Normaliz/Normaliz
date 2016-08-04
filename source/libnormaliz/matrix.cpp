@@ -223,6 +223,13 @@ size_t Matrix<Integer>::nr_of_columns () const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::set_nr_of_columns(size_t c){
+    nc=c;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::random (int mod) {
     size_t i,j;
     int k;
