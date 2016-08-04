@@ -2113,7 +2113,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             BasisChangePointed.convert_to_sublattice_dual(irr_hyp_subl, Dehomogenization);
             FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         } */
-        BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+        // BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+        extract_supphyps(FC);
         SupportHyperplanes.sort_lex();
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
@@ -2287,6 +2288,22 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         verboseOutput() << " done." <<endl;
     }
 }
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::extract_supphyps(Full_Cone<IntegerFC>& FC) {
+        BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+}
+
+template<typename Integer>
+void Cone<Integer>::extract_supphyps(Full_Cone<Integer>& FC) {
+    if(BasisChangePointed.IsIdentity())
+        swap(SupportHyperplanes,FC.Support_Hyperplanes);
+    else
+        SupportHyperplanes=BasisChangePointed.from_sublattice_dual(FC.getSupportHyperplanes());
+}
+
 
 //---------------------------------------------------------------------------
 

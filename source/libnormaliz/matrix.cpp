@@ -182,7 +182,11 @@ void Matrix<Integer>::print(ostream& out) const{
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{    
+void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
+    if(nr>1000000 && !with_row_nr){
+        print(out);
+        return;
+    }
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
