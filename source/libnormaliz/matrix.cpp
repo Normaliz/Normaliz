@@ -198,14 +198,26 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
             out << i << ": ";
         }
         for (j = 0; j < nc; j++) {
-            for (k= 0; k <= max_length[j] - decimal_length(elem[i][j]); k++) {
+            ostringstream to_print;
+            to_print << elem[i][j];
+            for (k= 0; k <= max_length[j] - to_print.str().size(); k++) {
                 out<<" ";
             }
-            out<<elem[i][j];
+            out<< to_print.str();
         }
         out<<endl;
     }
 }
+
+/*
+ * string to_print;
+            ostringstream(to_print) << elem[i][j];
+            cout << elem[i][j] << " S " << to_print << " L " << decimal_length(elem[i][j]) << endl;
+            for (k= 0; k <= max_length[j] - to_print.size(); k++) {
+                out<<" ";
+            }
+            out << to_print;
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -402,12 +414,11 @@ vector<Integer> Matrix<Integer>::diagonal() const{
 
 template<typename Integer>
 size_t Matrix<Integer>::maximal_decimal_length() const{
-    size_t i,j,maxim=0;
-    for (i = 0; i <nr; i++) {
-        for (j = 0; j <nc; j++) {
-            maxim=max(maxim,decimal_length(elem[i][j]));
-        }
-    }
+    size_t i,maxim=0;
+    vector<size_t> maxim_col;
+    maxim_col=maximal_decimal_length_columnwise();
+    for (i = 0; i <nr; i++)
+        maxim=max(maxim,maxim_col[i]);
     return maxim;
 }
 
@@ -417,11 +428,21 @@ template<typename Integer>
 vector<size_t> Matrix<Integer>::maximal_decimal_length_columnwise() const{
     size_t i,j=0;
     vector<size_t> maxim(nc,0);
+    vector<Integer> pos_max(nc,0), neg_max(nc,0);
     for (i = 0; i <nr; i++) {
         for (j = 0; j <nc; j++) {
-            maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
+            // maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
+            if(elem[i][j]<0){
+                if(elem[i][j]<neg_max[j])
+                    neg_max[j]=elem[i][j];
+                continue;
+            }
+            if(elem[i][j]>pos_max[j])
+                pos_max[j]=elem[i][j];
         }
     }
+    for(size_t j=0;j<nc;++j)
+        maxim[j]=max(decimal_length(neg_max[j]),decimal_length(pos_max[j]));
     return maxim;
 }
 

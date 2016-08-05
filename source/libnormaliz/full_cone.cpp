@@ -191,7 +191,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     deque <FACETDATA*> Neg_Simp,Neg_Non_Simp;
     deque <FACETDATA*> Neutral_Simp, Neutral_Non_Simp;
     
-    boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen);
+    boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen); // here we collect the vertices that lie in a
+                                        // postive resp. negative hyperplane
 
     bool simplex;
     
@@ -200,24 +201,25 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     typename list<FACETDATA>::iterator ii = Facets.begin();
     
     for (; ii != Facets.end(); ++ii) {
-        simplex=true;
-        nr_zero_i=0;
-        for (size_t j=0; j<nr_gen; j++){
+        // simplex=true;
+        // nr_zero_i=0;
+        simplex=ii->simplicial;
+        /* for (size_t j=0; j<nr_gen; j++){
             if (ii->GenInHyp.test(j)) {
                 if (++nr_zero_i > facet_dim) {
                     simplex=false;
                     break;
                 }
             }
-        }
+        }*/
         
         if (ii->ValNewGen==0) {
             ii->GenInHyp.set(new_generator);  // Must be set explicitly !!
-            ii->simplicial=false;  // simpliciality definitly gone now
+            ii->simplicial=false;  // simpliciality definitly gone with the new generator
             if (simplex) {
-                Neutral_Simp.push_back(&(*ii));
+                Neutral_Simp.push_back(&(*ii)); // simplicial without the new generator
             }   else {
-                Neutral_Non_Simp.push_back(&(*ii));
+                Neutral_Non_Simp.push_back(&(*ii)); // nonsimüplicial already without the new generator
             }
         }
         else if (ii->ValNewGen>0) {
@@ -530,16 +532,16 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         // Now the NonSimp
 
         hp_i=Pos_Non_Simp[i];
-        zero_i=Zero_PN & hp_i->GenInHyp;
+        zero_i=Zero_PN & hp_i->GenInHyp; // these are the potential vertices in an intersection
         nr_zero_i=0;
         int last_existing=-1;
-        for(size_t jj=0;jj<nrGensInCone;jj++)
+        for(size_t jj=0;jj<nrGensInCone;jj++) // we make a "key" of the potential vertices in the intersection
         {
             j=GensInCone[jj];
             if(zero_i.test(j)){
                 key[nr_zero_i]=j;
-                for(size_t kk= last_existing+1;kk<=jj;kk++)
-                    key_start[kk]=nr_zero_i;
+                for(size_t kk= last_existing+1;kk<=jj;kk++)  // used in the extension test
+                    key_start[kk]=nr_zero_i;                 // to find out from which generator on both have existed
                 nr_zero_i++;
                 last_existing= jj;
             }
@@ -551,6 +553,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (nr_zero_i<subfacet_dim) 
             continue;
         
+        // now nr_zero_i is the number of vertices in hp_i that have a chance to lie in a negative facet
+        // and key contains the indices
+        
        missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
                                              // to have a chance for common subfacet                                            
        
@@ -560,8 +565,17 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            hp_j=Neg_Non_Simp[j];
            
            if(hp_i->Ident==hp_j->Mother || hp_j->Ident==hp_i->Mother){   // mother and daughter coming together
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false);  // their intersection is a subfacet
-               // HOW TO TEST SIMPLICIALITY WITHOUT COUNTING? With false we are on the safe side.
+               size_t common=0;
+               bool simplicial=true;
+               for(size_t u=0;u<nr_zero_i;++u){
+                   if(hp_j->GenInHyp.test(key[u]))
+                       common++;
+                   if(common>subfacet_dim){
+                       simplicial=false;
+                       break;                       
+                   }
+               }
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],simplicial);  // their intersection is a subfacet
                continue;           
            } 
            
@@ -577,11 +591,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            nr_common_zero=0;
            common_key.clear();
            size_t second_loop_bound=nr_zero_i;
-           common_subfacet=true;  
+           common_subfacet=true;
+           
+           // We use the following criterion:
+           // if the two facets are not mother and daughter (taken care of already), then
+           // they cannot have intersected in a subfacet at the time when the second was born.
+           // In other words: they can only intersect in a subfacet now, if at least one common vertex
+           // has been added after the birth of the younger one.
+           // this is indicated by "extended".
            
            if(extension_test){
                bool extended=false;
-               second_loop_bound=both_existing_from;
+               second_loop_bound=both_existing_from;  // fisrt we find the common vertices inserted from the step
+                                                      // where both facets existed the first time
                for(k=both_existing_from;k<nr_zero_i;k++){
                    if(!hp_j->GenInHyp.test(key[k])) {
                        nr_missing++;
@@ -591,7 +613,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                        }
                    }
                    else {
-                       extended=true;
+                       extended=true;  // in this case they have a common vertex added after their common existence
                        common_key.push_back(key[k]);
                        nr_common_zero++;
                    }
@@ -602,7 +624,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            }
                     
            
-           for(k=0;k<second_loop_bound;k++) {
+           for(k=0;k<second_loop_bound;k++) {  // now the remaining 
                if(!hp_j->GenInHyp.test(key[k])) {
                    nr_missing++;
                    if(nr_missing>missing_bound) {
@@ -648,7 +670,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                    hp_t=*a;
                    if ((hp_t!=hp_i) && (hp_t!=hp_j) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
                        common_subfacet=false;
-                       AllNonSimpHyp.splice(AllNonSimpHyp.begin(),AllNonSimpHyp,a);
+                       AllNonSimpHyp.splice(AllNonSimpHyp.begin(),AllNonSimpHyp,a); // for the "darwinistic" mewthod
                        break;
                    }
                }                       

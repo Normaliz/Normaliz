@@ -179,14 +179,17 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
 
 template <typename Integer>
 size_t decimal_length(Integer a){
-    size_t l=1;
+    /* size_t l=1;
     if (a<0) {
         a=-a;
         l++;
     }
     while((a/=10)!=0)
-        l++;
-    return l;
+        l++;*/
+
+    ostringstream test;
+    test << a;
+    return test.str().size();
 }
 
 //---------------------------------------------------------------------------
