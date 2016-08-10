@@ -13,6 +13,7 @@ AM_CXXFLAGS += $(SCIP_CXXFLAGS)
 AM_LDFLAGS += $(SCIP_LDFLAGS)
 LIBS += $(SCIP_LIBS)
 endif
+LIBS += -lgmpxx -lgmp
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
