@@ -13,12 +13,17 @@ On Ubuntu the following packages should be installed:
 sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 (The latter two only needed if cmake is used for building.)
 
+On Fink (Mac OS X):
+fink install boost1.58-nopython
+
 We offer three ways of compilation, either use:
  - standard autotools (./configure && make && make install)
  - cmake -- cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
  - plain old makefile (Makefile.classic)
 
+*******************
 **** AUTOTOOLS ****
+*******************
 
 (If you checked out normaliz from git, first set up the autotools
 system (./bootstrap.sh) -- in this case, the system needs to have
@@ -34,13 +39,16 @@ use
   ./configure CPPFLAGS="-I /path/to/includedir" LDFLAGS="-L/path/to/libdir"
 etc.
 
-To enable building with SCIP, it is recommended to *install* the
-scipoptsuite first, by using "make install INSTALLDIR=/usr/local" or
-similar in the scipoptsuite directory.
+To build with SCIP:
 
-Alternatively, you can use a non-installed scipoptsuite by configuring
-as follows:
-  ./configure --with-scipoptsuite-src=/path/to/scipoptsuite/source/directory
+ - download the scipoptsuite at http://scip.zib.de/ . Notice that SCIP
+   is not distributed under GPL, but the ZIB Academic License
+   (http://scip.zib.de/academic.txt).
+ - Unpack it and compile it with
+   make ZLIB=false GMP=false READLINE=false scipoptlib
+   (To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
+ - Then configure normaliz to use the non-installed scipoptsuite as follows:
+   ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
 
 To build nmzIntegrate, need to have CoCoALib.  Download and build it as follows:
  - download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
@@ -64,7 +72,9 @@ Some more configure options:
  - For more, see
    ./configure --help
 
+***************
 **** CMAKE ****
+***************
 
 This has better capabilities to find libraries and allow to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
 
@@ -137,7 +147,7 @@ See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
 
-**** Using SCIP ****
+**** CMAKE: Using SCIP ****
 
 Download scip at http://scip.zib.de/ . Notice that SCIP is not distributed under GPL, but the ZIB Academic License (http://scip.zib.de/academic.txt).
 Unpack it and compile it with
@@ -155,7 +165,7 @@ on Linux 32 and 64 bit and MacOs X.
 
 
 
-**** Build for Intel Xeon Phi Mic ****
+**** CMAKE: Build for Intel Xeon Phi Mic ****
 
 This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
 
@@ -205,8 +215,9 @@ CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCM
 
 
 
-
+********************
 **** plain MAKE ****
+********************
 
 You can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
 
