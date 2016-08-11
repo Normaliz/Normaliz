@@ -10,7 +10,6 @@ env:
   - BUILDSYSTEM=autotools-makedistcheck
   - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
   - BUILDSYSTEM=autotools-scip
-  - BUILDSYSTEM=autotools-scipshared
 
 branches:
   except:

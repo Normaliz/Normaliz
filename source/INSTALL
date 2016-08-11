@@ -49,6 +49,8 @@ To build with SCIP:
    (To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
    If your C++ compiler is too old, you may need to add
    CXXFLAGS="-std=c++0x -fPIC"
+ - ** Don't try to build scipopt as a shared library!  It does not work
+      because their build system is broken **
  - Then configure normaliz to use the non-installed scipoptsuite as follows:
    ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
 
