@@ -52,7 +52,9 @@ case $BUILDSYSTEM in
 	    cd scipoptsuite-$SCIPOPTSUITE_VERSION
 	    # Pass our own CXXFLAGS because otherwise SoPlex 2.2.1 will use "-std=c++11",
 	    # which the old compilers on Travis CI do not support.
-	    make USRCXXFLAGS="-std=c++0x" ZLIB=false GMP=false READLINE=false scipoptlib
+	    # We need to override MAKE because otherwise the top-level (scipoptsuite)
+	    # Makefile does not pass through USRCXXFLAGS.
+	    make MAKE='make -j2 USRCXXFLAGS="-std=c++0x"' ZLIB=false GMP=false READLINE=false scipoptlib
 	    touch .completed_build
 	fi
 	cd $NMZDIR
