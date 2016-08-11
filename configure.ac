@@ -46,19 +46,23 @@ AC_ARG_WITH([scipoptsuite-src],
    AS_HELP_STRING([--with-scipoptsuite-src=DIR],
       [provide location of scipoptsuite source directory]),
    [
+    AC_MSG_CHECKING([contents of scipoptsuite source directory])
+    # The following tests correspond to scipoptsuite 3.2.1 (hand-written Makefiles)
     for a in "$with_scipoptsuite_src"/scip-*.*.*@<:@0-9@:>@ ; do
         AS_IF([test -d $a ],
 	   [AS_IF([test x$scipdir != x ],
 	       [AC_MSG_ERROR([Directory $with_scipoptsuite_src contains more than one scip directory])])
-	    scipdir=$a;
+	    scipdir=`cd $a && pwd`
+	    scipoptsuitedir=`cd $with_scipoptsuite_src && pwd`
 	   ])
     done
     AS_IF([test x$scipdir = x ],
         [AC_MSG_ERROR([Directory $with_scipoptsuite_src does not contain a scip-VERSION directory. Check if it is the right directory and you compiled the scipoptsuite.])])
     AC_MSG_RESULT([Found scipoptsuite in $scipdir])
     scipincludedir="$scipdir"/src
-    sciplibdir="$scipdir"/lib
-    LDFLAGS="-L$sciplibdir $LDFLAGS"
+    scipoptsuitelibdir="$scipoptsuitedir"/lib  # this is where libscipopt is built
+    sciplibdir="$scipdir"/lib		       # this is where libscip is built
+    LDFLAGS="-L$scipoptsuitelibdir -L$sciplibdir $LDFLAGS"
     CPPFLAGS="-I $scipincludedir $CPPFLAGS"
    ])
 AC_ARG_ENABLE([scip],
