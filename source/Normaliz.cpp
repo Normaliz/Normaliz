@@ -61,16 +61,17 @@ void printHelp(char* command) {
     cout << "  -s\tcompute support hyperplanes"<<endl;
     cout << "  -t\tcompute triangulation"<<endl;
     cout << "  -v\tcompute volume"<<endl;
-    cout << "  -n\tcompute Hilbert basis (with full triangulation)"<<endl;
+    cout << "  -n\tcompute Hilbert basis and volume (needs full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
     cout << "  -w\tcheck for integrally closed and compute witness if not"<<endl;
     cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
     cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements"<<endl;
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
     cout << "  -1\tcompute degree 1 elements"<<endl;
-    cout << "  -y\tcompute Stanley decomposition"<<endl;
-    cout << "  -C\tcompute class group"<<endl;
-    cout << "  -D\tcompute cone decomposition"<<endl;
+    cout << "  -y\tcompute Stanley decomposition (output in file .dec)"<<endl;
+    cout << "  -C\tcompute class group (default)"<<endl;
+    cout << "  -T\tcompute triangulation  (output in file .tri)"<<endl;
+    cout << "  -D\tcompute cone decomposition (includes -T)"<<endl;
     cout << "  -H\tcompute integer hull"<<endl;
     cout << "  -M\tcompute module generators over original monoid"<<endl;
 
@@ -86,8 +87,7 @@ void printHelp(char* command) {
     cout << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
     cout << "  -a, --all-files  write all output files (except .tri)"<<endl;
-    cout << "  -T               write the file .tri (triangulation)"<<endl;
-    cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be on of"<<endl;
+    cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of"<<endl;
     cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, typ"<<endl;
 
     cout << endl;
@@ -95,6 +95,7 @@ void printHelp(char* command) {
     cout << "      --LongLong   only use long long arithmetic, no conversion possible"<<endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file"<<endl;
     cout << "  -x=<T>           limit the number of threads to <T>"<<endl;
+    cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)"<< endl;
     cout << "  -?, --help       print this help text and exit"<<endl;
     cout << "  -c, --verbose    verbose (prints control data)"<<endl;
     cout << "      --version    print version info and exit"<<endl;
@@ -115,7 +116,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Integer> int process_data(OptionsHandler& options);
+template<typename Integer> int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
@@ -125,25 +126,29 @@ int main(int argc, char* argv[])
     // read command line options
 
     OptionsHandler options;
+    
+    string command_line;
+    for(int i=1; i< argc;++i)
+        command_line=command_line+string(argv[i])+" ";
 
     bool print_help = options.handle_commandline(argc, argv);
 
-	if (print_help) {
+    if (print_help) {
         //printHeader();
         printHelp(argv[0]);
         exit(0);
-	}
+    }
 
-	if (verbose) {
+    if (verbose) {
         printHeader();
     }
 
     if (!options.isUseLongLong()) {
-        process_data<mpz_class>(options);
+        process_data<mpz_class>(options, command_line);
     }
     // the previous process_data might return unsuccessfully if the input file specifies to use long long
     if (options.isUseLongLong()) {
-        process_data<long long>(options);
+        process_data<long long>(options, command_line);
     }
 
     if (options.anyNmzIntegrateOption()) {
@@ -176,7 +181,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(OptionsHandler& options) {
+template<typename Integer> int process_data(OptionsHandler& options, const string& command_line) {
 
 #ifndef NCATCH
     try {
@@ -211,6 +216,7 @@ template<typename Integer> int process_data(OptionsHandler& options) {
 
     if (verbose) {
         cout << "************************************************************" << endl;
+        cout << "Command line: " << command_line << endl;
         cout << "Compute: " << options.getToCompute() << endl;
     }
 
