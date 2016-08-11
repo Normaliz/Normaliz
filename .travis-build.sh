@@ -50,7 +50,9 @@ case $BUILDSYSTEM in
 	    rm -Rf scipoptsuite-$SCIPOPTSUITE_VERSION
 	    tar xf scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
 	    cd scipoptsuite-$SCIPOPTSUITE_VERSION
-	    make ZLIB=false GMP=false READLINE=false scipoptlib
+	    # Pass our own CXXFLAGS because otherwise SoPlex 2.2.1 will use "-std=c++11",
+	    # which the old compilers on Travis CI do not support.
+	    make USRCXXFLAGS="-std=c++0x" ZLIB=false GMP=false READLINE=false scipoptlib
 	    touch .completed_build
 	fi
 	cd $NMZDIR
