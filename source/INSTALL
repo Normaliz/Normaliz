@@ -47,6 +47,8 @@ To build with SCIP:
  - Unpack it and compile it with
    make ZLIB=false GMP=false READLINE=false scipoptlib
    (To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
+   If your C++ compiler is too old, you may need to add
+   CXXFLAGS="-std=c++0x -fPIC"
  - Then configure normaliz to use the non-installed scipoptsuite as follows:
    ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
 
