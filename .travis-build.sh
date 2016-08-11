@@ -1,4 +1,5 @@
 #! /bin/sh
+set -e # exit on errors
 case $BUILDSYSTEM in
     cmake)
 	mkdir -p BUILD || exit 1
@@ -38,6 +39,25 @@ case $BUILDSYSTEM in
 	./configure --disable-nmzintegrate --disable-scip || exit 1
 	# Rather, build the unpacked distribution with CoCoA.
 	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat normaliz-*/_build/config.log; exit 1)
+	;;
+    autotools-scip)
+	SCIPOPTSUITE_VERSION=3.2.1
+	NMZDIR=`pwd`
+	if test ! -f scipoptsuite-$SCIPOPTSUITE_VERSION/.completed_build ; then
+	    if test ! -f scipoptsuite-$SCIPOPTSUITE_VERSION.tgz ; then
+		wget --post-data 'tname=normaliz-travis-ci-build&license=academic' "http://scip.zib.de/download.php?fname=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz" --output-document=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
+	    fi
+	    rm -Rf scipoptsuite-$SCIPOPTSUITE_VERSION
+	    tar xf scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
+	    cd scipoptsuite-$SCIPOPTSUITE_VERSION
+	    make ZLIB=false GMP=false READLINE=false scipoptlib
+	    touch .completed_build
+	fi
+	cd $NMZDIR
+	./bootstrap.sh || exit 1
+	./configure --enable-scip --with-scipoptsuite-src=scipoptsuite-$SCIPOPTSUITE_VERSION || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	make -j2 || exit 1
+	OMP_NUM_THREADS=4 make -j2 check || exit 1
 	;;
     *)
 	# autotools
