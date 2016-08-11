@@ -748,8 +748,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     size_t k,l;
     bool one_not_in_i, not_in_facet;
     size_t not_in_i=0;
-    size_t facet_dim=dim-1;
-    size_t nr_in_i=0;
+    // size_t facet_dim=dim-1;
+    // size_t nr_in_i=0;
 
     list< SHORTSIMPLEX<Integer> > Triangulation_kk;
     typename list< SHORTSIMPLEX<Integer> >::iterator j;
@@ -768,18 +768,19 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 #endif
         i=visible[kk];
         
-        nr_in_i=0;
+        /* nr_in_i=0;
         for(size_t m=0;m<nr_gen;m++){
             if(i->GenInHyp.test(m))
                 nr_in_i++;
             if(nr_in_i>facet_dim){
                 break;
             }
-        }
+        }*/
+        
         skip_eval = Top_Cone->do_partial_triangulation && i->ValNewGen == -1
                     && is_hyperplane_included(*i);
 
-        if (nr_in_i==facet_dim){  // simplicial
+        if (i->simplicial){  // simplicial
             l=0;
             for (k = 0; k <nr_gen; k++) {
                 if (i->GenInHyp[k]==1) {
