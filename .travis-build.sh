@@ -2,7 +2,9 @@
 set -e # exit on errors
 NMZDIR=`pwd`
 # Set up SCIP if necessary for this build
-SCIPOPTSUITE_VERSION=3.2.1
+if test x$SCIPOPTSUITE_VERSION = x ; then
+    SCIPOPTSUITE_VERSION=3.2.1
+fi
 case $BUILDSYSTEM in
     *-scipshared*)
 	SCIP_FLAVOR=shared
