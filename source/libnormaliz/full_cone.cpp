@@ -2972,10 +2972,10 @@ void Full_Cone<Integer>::compute_hsop(){
             verboseOutput() << "Computing heights ... " << flush;
             }
             
-            vector<bool> choice = Extreme_Rays;
+            vector<bool> choice = Extreme_Rays_Ind;
             if (inhomogeneous){
                 for (size_t i=0; i<Generators.nr_of_rows(); i++) {
-                    if (Extreme_Rays[i] && v_scalar_product(Generators[i],Truncation) != 0) {
+                    if (Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Truncation) != 0) {
                         choice[i]=false;
                     }
                 }
@@ -3070,10 +3070,10 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
         if (!not_faces.empty()){
             ideal_heights[ER_nr] = ideal_heights[ER_nr-1];
             // compute the dimensions of not_faces
-            vector<bool> choice = Extreme_Rays;
+            vector<bool> choice = Extreme_Rays_Ind;
             if (inhomogeneous){
                 for (size_t i=0; i<Generators.nr_of_rows(); i++) {
-                    if (Extreme_Rays[i] && v_scalar_product(Generators[i],Truncation) != 0) {
+                    if (Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Truncation) != 0) {
                         choice[i]=false;
                     }
                 }
