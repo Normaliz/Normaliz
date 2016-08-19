@@ -46,19 +46,37 @@ AC_ARG_WITH([scipoptsuite-src],
    AS_HELP_STRING([--with-scipoptsuite-src=DIR],
       [provide location of scipoptsuite source directory]),
    [
+    AC_MSG_CHECKING([contents of scipoptsuite source directory])
+    # The following tests correspond to scipoptsuite 3.2.0, 3.2.1 (hand-written Makefiles)
     for a in "$with_scipoptsuite_src"/scip-*.*.*@<:@0-9@:>@ ; do
         AS_IF([test -d $a ],
 	   [AS_IF([test x$scipdir != x ],
 	       [AC_MSG_ERROR([Directory $with_scipoptsuite_src contains more than one scip directory])])
-	    scipdir=$a;
+	    scipdir=`cd $a && pwd`
+	    scipoptsuitedir=`cd $with_scipoptsuite_src && pwd`
 	   ])
     done
     AS_IF([test x$scipdir = x ],
         [AC_MSG_ERROR([Directory $with_scipoptsuite_src does not contain a scip-VERSION directory. Check if it is the right directory and you compiled the scipoptsuite.])])
     AC_MSG_RESULT([Found scipoptsuite in $scipdir])
     scipincludedir="$scipdir"/src
-    sciplibdir="$scipdir"/lib
-    LDFLAGS="-L$sciplibdir $LDFLAGS"
+    scipoptsuitelibdir="$scipoptsuitedir"/lib  # this is where libscipopt is built
+    sciplibdir="$scipdir"/lib		       # this is where libscip is built
+    AS_IF([test -f "$scipoptsuitelibdir"/libscipopt.a ],
+        [AC_MSG_RESULT([ Found short link $a ]) ],
+        [# short link missing (not installed by 3.2.0, exists in 3.2.1)
+	 for a in "$scipoptsuitelibdir"/libscipopt-*.*.a ; do
+	    AS_IF([test -f $a ],
+	       [AC_MSG_RESULT([Found library $a])
+	        AS_IF([test x$scipsuffix != x ],
+		   [AC_MSG_ERROR([Directory $scipoptsuitelibdir contains more than one libscipopt*.a library, please create a link to libscipopt.a ])])
+		scipsuffix=`echo $a | sed 's|.*/libscipopt\(@<:@^/@:>@*\)\.a|\1|'`
+	       ])
+         done
+	 AS_IF([test x$scipsuffix = x],
+	     [AC_MSG_ERROR([Directory $scipoptsuitelibdir does not contain a libscipopt*.a library])])
+	])
+    LDFLAGS="-L$scipoptsuitelibdir $LDFLAGS"
     CPPFLAGS="-I $scipincludedir $CPPFLAGS"
    ])
 AC_ARG_ENABLE([scip],
@@ -75,13 +93,13 @@ AS_IF([test "x$enable_scip" != xno],
      LIBS_SAVED="$LIBS"
      for SCIP_LIBS in \
 	 "-lscip" \
-	 "-lscipopt -lgmp -lz -lreadline" \
-	 "-lscipopt -lz -lreadline" \
-	 "-lscipopt -lgmp -lz" \
-	 "-lscipopt -lz" \
-	 "-lscipopt -lgmp -lreadline" \
-	 "-lscipopt -lreadline" \
-	 "-lscipopt -lgmp" \
+	 "-lscipopt$scipsuffix -lgmp -lz -lreadline" \
+	 "-lscipopt$scipsuffix -lz -lreadline" \
+	 "-lscipopt$scipsuffix -lgmp -lz" \
+	 "-lscipopt$scipsuffix -lz" \
+	 "-lscipopt$scipsuffix -lgmp -lreadline" \
+	 "-lscipopt$scipsuffix -lreadline" \
+	 "-lscipopt$scipsuffix -lgmp" \
 	 "-lscipopt" \
 	 "-lscip -lnlpi.cppad -llpispx -lsoplex -lgmp -lz -lreadline" \
 	 ; do

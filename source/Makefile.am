@@ -13,6 +13,7 @@ AM_CXXFLAGS += $(SCIP_CXXFLAGS)
 AM_LDFLAGS += $(SCIP_LDFLAGS)
 LIBS += $(SCIP_LIBS)
 endif
+LIBS += -lgmpxx -lgmp
 
 # Installed library, shared and/or static (using libtool).
 lib_LTLIBRARIES = libnormaliz.la
@@ -61,6 +62,9 @@ EXTRA_DIST += CMakeLists.txt LibnormalizConfig.cmake.in UseLibnormaliz.cmake cma
 # Plain old build system
 EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic
 
+# The classic makefile creates this file, which can confuse automake builds
+CLEANFILES = normaliz.o
+
 # Documentation
 
 # TODO: shouldn't these two be moved to toplevel?
@@ -68,4 +72,3 @@ EXTRA_DIST += COPYING INSTALL
 
 EXTRA_DIST += libnormaliz/README
 
-# TODO: maxsimplex.
