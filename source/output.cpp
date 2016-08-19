@@ -513,13 +513,20 @@ void Output<Integer>::write_inv_file() const{
             }
             if (Result->isComputed(ConeProperty::HilbertSeries)) {
                 const HilbertSeries& HS = Result->getHilbertSeries();
-                vector<mpz_class> HSnum = HS.getNum();
+                vector<mpz_class> HSnum;
+                vector<denom_t> HSdenom;
+                if(Result->isComputed(ConeProperty::HSOP)){
+                    HSnum = HS.getHSOPNum();
+                    HSdenom = to_vector(HS.getHSOPDenom());
+                    
+                } else {
+                    HSnum = HS.getNum();
+                    HSdenom = to_vector(HS.getDenom());
+                }
                 inv <<"vector "<< HSnum.size() <<" hilbert_series_num = ";
                 inv << HSnum;
-                vector<denom_t> HSdenom = to_vector(HS.getDenom());
                 inv <<"vector "<< HSdenom.size() <<" hilbert_series_denom = ";
-                inv << HSdenom;
-
+                    inv << HSdenom;
                 HS.computeHilbertQuasiPolynomial();
                 if (HS.isHilbertQuasiPolynomialComputed()) {
                     vector< vector <mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
@@ -743,23 +750,35 @@ void Output<Integer>::write_files() const {
         
         if ( Result->isComputed(ConeProperty::HilbertSeries) ) {
             const HilbertSeries& HS = Result->getHilbertSeries();
-            out << "Hilbert series:" << endl << HS.getNum();
-            map<long, long> HS_Denom = HS.getDenom();
+            vector<mpz_class> HS_Num;
+            map<long, long> HS_Denom;
+            if ( Result->isComputed(ConeProperty::HSOP) ){
+                    HS_Denom=HS.getHSOPDenom();
+                    HS_Num=HS.getHSOPNum();
+                    out << "Hilbert series (HSOP):" << endl << HS_Num;
+            } else {
+                    HS_Denom=HS.getDenom();
+                    HS_Num=HS.getNum();
+                    out << "Hilbert series:" << endl << HS_Num;
+            }
             long nr_factors = 0;
             for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
                 nr_factors += it->second;
             }
             out << "denominator with " << nr_factors << " factors:" << endl;
-            out << HS.getDenom();
+            out << HS_Denom;
             out << endl;
             if (HS.getShift() != 0) {
                 out << "shift = " << HS.getShift() << endl << endl;
             }
+            
             out << "degree of Hilbert Series as rational function = "
                 << HS.getDegreeAsRationalFunction() << endl << endl;
-
+            if(v_is_symmetric(HS_Num)){
+                out << "The numerator of the Hilbert Series is symmetric." << endl << endl;
+            }
             long period = HS.getPeriod();
-            if (period == 1) {
+            if (period == 1  && (HS_Denom.begin()->first==HS_Denom.size())) {
                 out << "Hilbert polynomial:" << endl;
                 out << HS.getHilbertQuasiPolynomial()[0];
                 out << "with common denominator = ";

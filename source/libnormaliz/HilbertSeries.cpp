@@ -55,6 +55,36 @@ long lcm_of_keys(const map<long, denom_t>& m){
     return l;
 }
 
+// compute the hsop numerator by multiplying the HS with a denominator
+// of the form product of (1-t^i)
+void HilbertSeries::compute_hsop_num() const{
+        // get the denominator as a polynomial by mutliplying the (1-t^i) terms
+        vector<mpz_class> hsop_denom_poly=vector<mpz_class>(1,1);
+        map<long,denom_t>::iterator it;
+        long factor;
+        for (it=hsop_denom.begin();it!=hsop_denom.end();++it){
+            factor = it->first;
+            denom_t& denom_i = it->second;
+            poly_mult_to(hsop_denom_poly,factor,denom_i);
+        }
+        //cout << "new denominator as polynomial: " << hsop_denom_poly << endl;
+        vector<mpz_class>  quot,remainder,cyclo_poly;
+        //first divide the new denom by the cyclo polynomials
+        for (auto it=cyclo_denom.begin();it!=cyclo_denom.end();++it){
+            for(long i=0;i<it->second;i++){
+                cyclo_poly = cyclotomicPoly<mpz_class>(it->first);
+                //cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
+                // TODO: easier polynomial division possible?
+                poly_div(quot,remainder,hsop_denom_poly,cyclo_poly);
+                //cout << "the quotient is " << quot << endl;
+                hsop_denom_poly=quot;
+                assert(remainder.size()==0);
+            }
+        }
+        // multiply with the old numerator
+        hsop_num = poly_mult(hsop_denom_poly,cyclo_num);
+}
+
 //---------------------------------------------------------------------------
 
 // Constructor, creates 0/1
@@ -295,6 +325,9 @@ void HilbertSeries::simplify() const {
 /*    if (verbose) {
         verboseOutput() << "Simplified Hilbert series: " << endl << *this;
     }*/
+    if (!hsop_denom.empty()){
+        compute_hsop_num();
+    }
     is_simplified = true;
     computeDegreeAsRationalFunction();
     quasi_poly.clear();
@@ -444,6 +477,17 @@ const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const {
     return cyclo_denom;
 }
 
+const map<long, denom_t>& HilbertSeries::getHSOPDenom() const {
+    simplify();
+    return hsop_denom;
+}
+
+const vector<mpz_class>& HilbertSeries::getHSOPNum() const {
+    simplify();
+    assert(v_is_nonnegative(hsop_num));
+    return hsop_num;
+}
+
 // shift
 void HilbertSeries::setShift(long s) {
     if (shift != s) {
@@ -453,6 +497,10 @@ void HilbertSeries::setShift(long s) {
         quasi_denom = 1;
         shift = s;
     }
+}
+
+void HilbertSeries::setHSOPDenom(vector<denom_t> new_denom){
+    hsop_denom=count_in_map<long,denom_t>(new_denom);
 }
 
 long HilbertSeries::getShift() const {
@@ -533,6 +581,8 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     out << " )" << std::endl;
     return out;
 }
+
+
 
 //---------------------------------------------------------------------------
 // polynomial operations, for polynomials repr. as vector of coefficients

@@ -1675,6 +1675,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         FC.do_module_rank=true;
     }
     
+    if (ToCompute.test(ConeProperty::HSOP)) {
+        FC.do_hsop=true;
+    }
+    
     /* Give extra data to FC */
     if ( isComputed(ConeProperty::ExtremeRays) ) {
         FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
@@ -2242,6 +2246,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
         HSeries = FC.Hilbert_Series;
         is_Computed.set(ConeProperty::HilbertSeries);
+    }
+    if (FC.isComputed(ConeProperty::HSOP)) {
+        is_Computed.set(ConeProperty::HSOP);
     }
     if (FC.isComputed(ConeProperty::IsDeg1ExtremeRays)) {
         deg1_extreme_rays = FC.isDeg1ExtremeRays();

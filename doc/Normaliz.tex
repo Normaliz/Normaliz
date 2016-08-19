@@ -903,6 +903,16 @@ by the following fact: $e_i$ is the common period of the
 coefficients $p_{r-i},\dots,p_{r-1}$. The user should prove
 this fact or at least verify it by several examples.
 
+Especially in the case of a simplex the representation of the Hilbert series shown so far may not be the expected one. In fact, there is a representation in which the exponents of $t$ in the denominator are the degrees of the integral extreme generators. So one would expect the denominator to be $(1-t^2)(1-t^3)(1-t^4)$ in our case. The generalization to the nonsimplicial case uses the degrees of a homogeneous system of parameters (see \cite[p. 200]{BG}). Normaliz can compute such a denominator if the computation goal \verb|HSOP| is set (\verb|rationalHSOP.in|):
+\begin{Verbatim}
+Hilbert series (HSOP):
+1 1 1 3 4 3 2 
+denominator with 3 factors:
+2: 1  3: 1  4: 1 
+\end{Verbatim}
+
+Note that the degrees of the elements in a homogeneous system of parameters are by no means unique and that there is no optimal choice in general. To find a suitable sequence of degrees Normaliz must compute the face lattice of the cone to some extent. Therefore be careful not to ask for \verb|HSOP| if the cone has many support hyperplanes.
+
 \emph{Warning}: It is tempting, but not a good idea to define the polytope by the input type \verb|vertices|. It would make Normaliz compute the lattice points in the polytope, but not in the cone over the polytope, and we need these to determine the Ehrhart series.
 
 \subsubsection{The rational polytope by inequalities}\label{rat_ineq}
@@ -1376,7 +1386,18 @@ The choice of the dual algorithm implies the computation goal \verb|HilbertBasis
 
 The Hilbert basis contains $4828$ elements, too many to be listed here.
 
-If you want to run this example with default computation goals, use the file \verb|5x5.in|. It will compute the Hilbert basis and the Hilbert series.
+If you want to run this example with default computation goals, use the file \verb|5x5.in|. It will compute the Hilbert basis and the Hilbert series, and the latter with HSOP:
+\begin{Verbatim}
+Hilbert series (HSOP):
+1 15 356 4692 36324 198467 ... 198467 36324 4692 356 15 1 
+denominator with 15 factors:
+1: 5  2: 3  6: 2  12: 1  60: 2  420: 1  1260: 1  
+
+degree of Hilbert Series as rational function = -5
+
+The numerator of the Hilbert Series is symmetric.
+\end{Verbatim}
+In view of the length of the numerator of the Hilbert series it may be difficult to observe the symmetry. So Normaliz does it for you.  
 
 The size $6\times 6$ is out of reach for the Hilbert series, but the Hilbert basis can be computed in dual mode. It takes some hours.
 
@@ -2707,6 +2728,8 @@ The computation goals in this section require a grading. They include \verb|Supp
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
+	]
+	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
 \end{itemize}
 
 \subsubsection{Combined computation goals}
@@ -5045,6 +5068,7 @@ InclusionExclusionData,
 Sublattice,
 ClassGroup,
 ModuleGeneratorsOverOriginalMonoid,
+HSOP,
 // compute options
 Approximate,
 BottomDecomposition,
