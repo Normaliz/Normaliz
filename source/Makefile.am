@@ -33,11 +33,11 @@ libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
 # Binary.
 bin_PROGRAMS = normaliz
 
-normaliz_SOURCES = Normaliz.cpp
+normaliz_SOURCES = normaliz.cpp
 normaliz_LDADD = libnormaliz.la
-noinst_HEADERS += Normaliz.h Options.h output.h
+noinst_HEADERS += normaliz.h options.h output.h
 # Sources included via Normaliz.cpp
-noinst_HEADERS += Input.cpp Options.cpp output.cpp
+noinst_HEADERS += input.cpp options.cpp output.cpp
 
 # nmzIntegrate.
 if NMZ_INTEGRATE
