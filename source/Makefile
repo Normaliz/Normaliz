@@ -19,16 +19,16 @@ linknormaliz: lib
 	@$(MAKE) normaliz
 
 normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c Normaliz.cpp -o normaliz.o
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
 
 normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
 
 normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
 
 normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg Normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
 
 #always go down the directory and let the make there check what has to be done
