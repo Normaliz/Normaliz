@@ -685,7 +685,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
 
-    if (Inequalities.nr_of_rows() == 0) {
+    if (Inequalities.nr_of_rows() == 0 && PreComputedSupportHyperplanes.nr_of_rows()==0) {
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
@@ -1483,7 +1483,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
-                verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
             change_integer_type = false;
         }
@@ -1766,7 +1766,7 @@ void Cone<Integer>::compute_generators() {
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
-                    verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
                 }
                 compute_generators_inner<Integer>();
             }
@@ -1877,7 +1877,7 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
-                verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
             change_integer_type = false;
         }
@@ -2034,7 +2034,7 @@ Integer Cone<Integer>::compute_primary_multiplicity() {
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
-                verboseOutput() << "ArithmeticException caught. Restart with a bigger type." << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
             change_integer_type = false;
         }
@@ -2117,7 +2117,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             BasisChangePointed.convert_to_sublattice_dual(irr_hyp_subl, Dehomogenization);
             FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         } */
-        BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+        // BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+        extract_supphyps(FC);
         SupportHyperplanes.sort_lex();
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
@@ -2233,13 +2234,25 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
             is_Computed.set(ConeProperty::ModuleGenerators);
         } else { // homogeneous
-            BasisChangePointed.convert_from_sublattice(HilbertBasis, FC.getHilbertBasis());
+            HilbertBasis = Matrix<Integer>(0,dim);
+            typename list< vector<IntegerFC> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
+            vector<Integer> tmp;
+            for (; FCHB != FC.Hilbert_Basis.end(); ++FCHB) {
+                BasisChangePointed.convert_from_sublattice(tmp,*FCHB);                
+                HilbertBasis.append(tmp);
+            }
         }
         HilbertBasis.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::HilbertBasis);
     }
     if (FC.isComputed(ConeProperty::Deg1Elements)) {
-        BasisChangePointed.convert_from_sublattice(Deg1Elements, FC.getDeg1Elements());
+        Deg1Elements = Matrix<Integer>(0,dim);
+        typename list< vector<IntegerFC> >::const_iterator DFC(FC.Deg1_Elements.begin());
+        vector<Integer> tmp;
+        for (; DFC != FC.Deg1_Elements.end(); ++DFC) {
+            BasisChangePointed.convert_from_sublattice(tmp,*DFC);                
+            Deg1Elements.append(tmp);
+        }
         Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::Deg1Elements);
     }
@@ -2282,6 +2295,22 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         verboseOutput() << " done." <<endl;
     }
 }
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::extract_supphyps(Full_Cone<IntegerFC>& FC) {
+        BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
+}
+
+template<typename Integer>
+void Cone<Integer>::extract_supphyps(Full_Cone<Integer>& FC) {
+    if(BasisChangePointed.IsIdentity())
+        swap(SupportHyperplanes,FC.Support_Hyperplanes);
+    else
+        SupportHyperplanes=BasisChangePointed.from_sublattice_dual(FC.getSupportHyperplanes());
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -2409,6 +2438,18 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRays=Generators.submatrix(choice);
+    if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
+        size_t level0_dim=ExtremeRays.max_rank_submatrix_lex().size();
+        recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();
+        is_Computed.set(ConeProperty::RecessionRank);
+        if (getRank() == recession_rank) {
+            affine_dim = -1;
+        } else {
+            affine_dim = getRank()-1;
+        }
+        is_Computed.set(ConeProperty::AffineDim);
+        
+    }
     if(isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){  // not possible in inhomogeneous case
         Matrix<Integer> ExteEmbedded=BasisChangePointed.to_sublattice(ExtremeRays);
         for(size_t i=0;i<ExteEmbedded.nr_of_rows();++i)

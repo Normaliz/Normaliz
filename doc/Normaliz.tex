@@ -192,7 +192,7 @@ The computation goals of Normaliz can be set by the user. In particular, they ca
 
 Performance data of Normaliz can be found in \cite{BIS}.
 
-\emph{Acknowledgement.}\enspace The development of Normaliz is currently supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
+\emph{Acknowledgement.}\enspace The development of Normaliz has been supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
 \subsection{Platforms, implementation and access from other systems}
 
@@ -1870,25 +1870,58 @@ cone 4
 
 The generators of the integral closure appear as module generators in the output and the generators of the smallest monomial ideal with this integral closure are the vertices of the polyhedron.
 
-\subsection{Only the convex hull}
+\subsection{Convex hull computation/vertex enumeration}
 
-Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that the computation can be restricted to it by setting an explicit computation goal. We choose the input of the preceding section and add the computation goal (\verb|IntClMonIdSupp.in|):
+Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaiz can be restricted to this by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
 
+As an example we take the cyclic polytope of dimension 15 with 30 vertices:
 \begin{Verbatim}
-amb_space 4
-vertices 9
-1 2 1 2 1
+/* cyclic polytope of dimension 15 with 30 vertices */
+amb_space 16
+polytope 30
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768
 ...
-2 2 2 4 1
-vertices
-cone 4
-1 0 0 0
-...
-0 0 0 1
+30 900 27000 810000 ... 478296900000000000000 14348907000000000000000
 SupportHyperplanes
 \end{Verbatim}
-
-As you can see from the output, the support hyperplanes of the polyhedron are computed as well as the extreme rays.
+Already the entries of the vertices show that the computation cannot be done in 64 bit arithmetic. But you need not be worried. Just start Normaliz as usual. It will simply switch to infinite precision by itself, as shown by the terminal output (use the option \verb|-c| or \verb|--Verbose|).
+\begin{Verbatim}
+                                                    \.....|
+                    Normaliz 3.1.2                   \....|
+                                                      \...|
+     (C) The Normaliz Team, University of Osnabrueck   \..|
+                      July  2016                        \.|
+                                                         \|
+************************************************************
+Compute: SupportHyperplanes 
+Could not convert 15181127029874798299.
+Arithmetic Overflow detected, try a bigger integer type!
+Restarting with a bigger type.
+************************************************************
+starting primal algorithm (only support hyperplanes) ...
+Generators sorted lexicographically
+Start simplex 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 
+gen=17, 72 hyp
+gen=18, 240 hyp
+gen=19, 660 hyp
+gen=20, 1584 hyp
+gen=21, 3432 hyp
+gen=22, 6864 hyp
+gen=23, 12870 hyp
+gen=24, 22880 hyp
+gen=25, 38896 hyp
+gen=26, 63648 hyp
+gen=27, 100776 hyp
+gen=28, 155040 hyp
+gen=29, 232560 hyp
+gen=30, 341088 hyp
+Pointed since graded
+Select extreme rays via comparison ... done.
+------------------------------------------------------------
+transforming data... done.
+\end{Verbatim}
+Have a look at the output file if you are not afraid of $341088$ linear forms.
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -2411,7 +2444,7 @@ There are $3$ types:
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| stiil exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
 \end{itemize}
 
 \subsubsection{Lattices}

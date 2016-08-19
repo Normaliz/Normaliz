@@ -331,6 +331,11 @@ private:
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template<typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC);
+    template<typename IntegerFC>
+    void extract_supphyps(Full_Cone<IntegerFC>& FC);
+    
+    void extract_supphyps(Full_Cone<Integer>& FC);
+
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
