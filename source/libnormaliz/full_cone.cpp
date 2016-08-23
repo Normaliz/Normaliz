@@ -2187,8 +2187,6 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
                     if(IHV->GenInHyp.test(gen_counter))
                         gen_in_hyperplanes.push_back(j);
                 }            
-                //cout << "The matrix M for the original generator " << k << endl;
-                //M.pretty_print(cout);
                 if (gen_in_hyperplanes.size() < dim-1){ // no ER
                     approx_points[gen_counter].clear();
                     continue;
@@ -2338,7 +2336,6 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         size_t k=0;
         Matrix<Integer> M;
         for (k=0;k<dim;k++){
-            // QUESTION: Is current_original_gen the only critical point we have to check?
             if (approx_points[k].size()>0){ // if its 0 it was an integer point before or already contained
                 M = Matrix<Integer>(0,dim);
 
