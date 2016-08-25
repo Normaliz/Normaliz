@@ -270,7 +270,7 @@ ADD_CUSTOM_TARGET (check)
 IF (UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "run tests"
-    COMMAND make --directory=../test/ NORMALIZ=${CMAKE_CURRENT_BINARY_DIR}/normaliz
+    COMMAND make --directory=../test/ -f Makefile.classic NORMALIZ=${CMAKE_CURRENT_BINARY_DIR}/normaliz
     TARGET  check
     DEPENDS normaliz
   )

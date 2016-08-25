@@ -1,7 +1,16 @@
 language: cpp
+
 compiler:
   - gcc
   - clang
+
+env:
+  - BUILDSYSTEM=cmake
+  - BUILDSYSTEM=autotools
+  - BUILDSYSTEM=autotools-makedistcheck
+  - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+  - BUILDSYSTEM=autotools-scip
+  - BUILDSYSTEM=autotools-scip SCIPOPTSUITE_VERSION=3.2.0
 
 branches:
   except:
@@ -11,11 +20,8 @@ addons:
   apt_packages:
       - libgmp-dev
       - libboost-dev
+      - autoconf
+      - automake
+      - libtool
 
-script:
-  - mkdir -p BUILD
-  - cd BUILD
-  - pwd
-  - cmake ../source
-  - make -j2
-  - OMP_NUM_THREADS=4 make check
+script: ./.travis-build.sh

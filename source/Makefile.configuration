@@ -1,5 +1,6 @@
 ##
 ## Makefile configuration for normaliz
+## (for the classic build system)
 ##
 CXX = g++ 
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
