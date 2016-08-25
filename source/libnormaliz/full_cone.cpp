@@ -2180,7 +2180,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         size_t gen_counter;
         for (k=0;k<dim;k++){
             gen_counter=(k+current_original_gen)%dim;
-            if (approx_points[gen_counter].size()>0){ // if its 0 it was an integer point before or already contained
+            if (approx_points[gen_counter].size()>0 && nr_approx_points[gen_counter]>1){ // if its 0 it was an integer point before or already contained
                 gen_in_hyperplanes.clear();
                 typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
                 for (size_t j=0; j<current_nr_hyps; ++j, ++IHV){
@@ -2331,12 +2331,12 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     } 
     // --------------------------------------------------------- loop over i
     if (i==nr_gen){
-        cout << "We had to use all points!" << endl;
-        cout << "Are all original generators no longer extreme rays?" << endl;
+        //cout << "We had to use all points!" << endl;
+        //cout << "Are all original generators no longer extreme rays?" << endl;
         size_t k=0;
         Matrix<Integer> M;
         for (k=0;k<dim;k++){
-            if (approx_points[k].size()>0){ // if its 0 it was an integer point before or already contained
+            if (approx_points[k].size()>0 && nr_approx_points[k]>1){ // if its 0 it was an integer point before or already contained
                 M = Matrix<Integer>(0,dim);
 
                 for(l=Facets.begin(); l!=Facets.end();++l){
