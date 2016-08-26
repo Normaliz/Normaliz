@@ -4523,6 +4523,7 @@ void Full_Cone<Integer>::reset_tasks(){
     keep_triangulation = false;
     do_Stanley_dec=false;
     do_h_vector=false;
+    do_hsop = false;
     do_excluded_faces=false;
     do_approximation=false;
     do_default_mode=false;
