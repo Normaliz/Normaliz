@@ -14,6 +14,9 @@ CXXFLAGS += -g       ## debugging
 
 SCIPPATH = $(HOME)/src/scipoptsuite-3.2.0
 
+#COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540
+COCOA_ROOT= $(HOME)/Dropbox/CoCoA/CoCoALib-0.99540
+
 ## use OpenMP?
 ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas

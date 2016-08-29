@@ -36,7 +36,6 @@ normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 lib:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic libnormaliz.a
 
-
 .PHONY : clean
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
@@ -44,4 +43,5 @@ clean:
 	-rm -f normaliz
 	-rm -f normaliz?
 	-rm -f normaliz-pg
+
 
