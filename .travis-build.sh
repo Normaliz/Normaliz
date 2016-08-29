@@ -45,9 +45,28 @@ case $BUILDSYSTEM in
 	make -j2 || exit 1
 	OMP_NUM_THREADS=4 make check || exit 1
 	;;
+    classic-scip*)
+	cat > source/Makefile.configuration <<EOF
+CXX = g++
+CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
+SCIPPATH = $NMZDIR/$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION
+GMPFLAGS = -lgmpxx -lgmp
+CXXFLAGS += -DNMZ_SCIP -I \$(SCIPPATH)/scip-$SCIPOPTSUITE_VERSION/src
+SCIPFLAGS = -L \$(SCIPPATH)/lib -lscipopt-$SCIPOPTSUITE_VERSION.`uname | tr [A-Z] [a-z]`.`uname -m`.gnu.opt -lreadline -lz
+LINKFLAGS += \$(SCIPFLAGS) \$(GMPFLAGS)
+EOF
+	make -j2 -C source -f Makefile.classic
+	OMP_NUM_THREADS=4 make -C test -f Makefile.classic
+	;;
     classic*)
-	make -C source -f Makefile.classic
-	make -C test -f Makefile.classic
+	cat > source/Makefile.configuration <<EOF
+CXX = g++
+CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
+GMPFLAGS = -lgmpxx -lgmp
+LINKFLAGS += \$(GMPFLAGS)
+EOF
+	make -j2 -C source -f Makefile.classic
+	OMP_NUM_THREADS=4 make -C test -f Makefile.classic
 	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
