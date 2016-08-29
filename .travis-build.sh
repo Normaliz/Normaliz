@@ -45,6 +45,10 @@ case $BUILDSYSTEM in
 	make -j2 || exit 1
 	OMP_NUM_THREADS=4 make check || exit 1
 	;;
+    classic*)
+	make -C source -f Makefile.classic
+	make -C test -f Makefile.classic
+	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
 	./configure || exit 1
