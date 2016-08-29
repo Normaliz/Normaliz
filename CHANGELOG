@@ -1,5 +1,11 @@
 # ChangeLog
 
+## [3.1.2] 2016-08-25
+- additional autotools build system
+- sparse vectors and matrices in input files added
+- choice of output directory added added
+- option HSOP added
+
 ## [3.1.1] 2016-04-05
 - index of unit group extension added
 - formatted matriced in input files added

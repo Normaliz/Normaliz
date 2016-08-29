@@ -59,13 +59,13 @@ To build nmzIntegrate, need to have CoCoALib.  Download and build it as follows:
  - configure it with the threadsafe-hack, and compile:
         mkdir ~/CoCoA/
         cd ~/CoCoA/
-        wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99538.tgz
-        tar xvf CoCoALib-0.99538.tgz
-        cd CoCoALib-0.99538
+        wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99540.tgz
+        tar xvf CoCoALib-0.99540.tgz
+        cd CoCoALib-0.99540
         ./configure --threadsafe-hack
         make library -j2
  - Then configure normaliz like this:
-   ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99538
+   ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99540
 
 Some more configure options:
  - Static build (easier for debugging):
@@ -80,7 +80,7 @@ Some more configure options:
 **** CMAKE ****
 ***************
 
-This has better capabilities to find libraries and allow to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
+This has better capabilities to find libraries and allowa to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
 
 
 We assume you start in the normaliz root dir (with subdirs source, examples, ...).
@@ -109,6 +109,9 @@ If you want to see what happens behind the scenes use
   make install
 This will install the produced libnormaliz and the normaliz executable.
 The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
+
+NOTE: nmzIntegrate is not (yet) included in the cmake build system for Normaliz. 
+See the NmzIntegrate manual for the use of the plain make file of NmzIntegrate.
 
 
 **** ADDITIONAL CMAKE CONFIGURATION ****

@@ -192,7 +192,7 @@ The computation goals of Normaliz can be set by the user. In particular, they ca
 
 Performance data of Normaliz can be found in \cite{BIS}.
 
-\emph{Acknowledgement.}\enspace The development of Normaliz has been supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
+\emph{Acknowledgement.}\enspace In 2013--2016 the development of Normaliz has been supported by the DFG SPP 1489  ``Algorithmische und ex\-pe\-rimentelle Methoden in Algebra, Geometrie und Zahlentheorie''.
 
 \subsection{Platforms, implementation and access from other systems}
 
@@ -246,7 +246,7 @@ For version 3.1.1 we have added
 
 \begin{arab}
 		
-	\item Input of generic constraints,
+	\item input of generic constraints,
 	
 	\item input of formatted vectors and matrices,
 	
@@ -257,7 +257,7 @@ For version 3.1.2 we have added
 
 \begin{arab}
 	
-	\item Installation via \ttt{autotools},
+	\item installation via \ttt{autotools} (written by Matthias Köppe),
 		
 	\item sparse format for vectors and matrices,
 	
@@ -265,6 +265,8 @@ For version 3.1.2 we have added
 	
 	\item choice of an output directory.
 \end{arab}
+
+See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
 \subsection{Future extensions}
@@ -289,7 +291,7 @@ from the Normaliz website\medskip
 \centerline{\url{http://normaliz.uos.de}}\medskip
 
 and unzip both in the same directory of your choice. In it, a
-directory \ttt{Normaliz3.0} (called Normaliz directory in the
+directory \ttt{Normaliz3.1} (called Normaliz directory in the
 following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
@@ -3202,7 +3204,7 @@ We look at the \emph{bottom} (the union of the compact faces) of the polyhedron 
 	\draw (1,2) circle (4pt);  
 	\end{tikzpicture}
 \end{center}
-With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz 3.0 computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
+With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
 
 Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition.
 
@@ -4239,16 +4241,16 @@ In order to install Normaliz you should first download the
 basic package containing the documentation, examples, source
 code, jNormaliz, NmzIntegrate and the packages for Singular
 and Macaulay2. Then unzip the downloaded file
-\ttt{Normaliz3.0.zip} in a directory of your choice. (Any other
+\ttt{Normaliz3.1.zip} in a directory of your choice. (Any other
 downloaded zip file for Normaliz should be unzipped in this
 directory, too.)
 
-This process will create a directory \ttt{Normaliz3.0} (called
+This process will create a directory \ttt{Normaliz3.1} (called
 Normaliz directory) and several subdirectories in
-\ttt{Normaliz3.0}. The names of the subdirectories created are
+\ttt{Normaliz3.1}. The names of the subdirectories created are
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
-	\item In the main directory \ttt{Normaliz3.0} you should
+	\item In the main directory \ttt{Normaliz3.1} you should
 	find \ttt{jNormaliz.jar}, \ttt{Copying} and
 	subdirectories.
 	
@@ -4280,10 +4282,10 @@ self-explanatory. Nevertheless we give an overview:
 
 We provide executables for Windows, Linux (each in a 32 bit and
 a 64 bit version) and Mac. Download the archive file
-corresponding to your system \ttt{Normaliz3.0<systemname>.zip}
+corresponding to your system \ttt{Normaliz3.1<systemname>.zip}
 and unzip it. This process will store the executables of
 Normaliz and NmzIntegrate in the directory
-\ttt{Normaliz3.0}. In case you want to run Normaliz from the
+\ttt{Normaliz3.1}. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.
@@ -4320,7 +4322,16 @@ The mentioned compilers are also able to handle OpenMP 3.0, with the exception o
 In the following we describe the configuration/build process using cmake.
 This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version and the installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
 
-We will only handle the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths.
+Normaliz offers three build systems:
+\begin{enumerate}
+\item \ttt{autotools},
+\item \ttt{cmake}
+\item a ``classical'' \ttt{Makefile}.	
+\end{enumerate}
+
+We will only discuss the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. Also the use of the \ttt{autotools} system is explained in this file.
+
+The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generaous help.
 
 \subsection{Linux}
 
@@ -4389,7 +4400,7 @@ Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support O
 
 \section{Copyright and how to cite}
 
-Normaliz 3.0 is free software licensed under the GNU General
+Normaliz 3.1 is free software licensed under the GNU General
 Public License, version 3. You can redistribute it and/or
 modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation, either version 3 of
@@ -4738,7 +4749,7 @@ With
 \begin{Verbatim}
 ./normaliz -c example/A443
 \end{Verbatim}
-we get the following terminal output.
+we get the following terminal output (not yet updated to Normaliz 3.1.2---there are only changes of secondary importance).
 
 \begin{Verbatim}
                                                     \.....|
@@ -4765,7 +4776,7 @@ Normaliz starts by searching linearly independent generators with indices as sma
 \begin{Verbatim}
 gen=17, 39 hyp, 4 simpl
 \end{Verbatim}
-We have now reached a cone with $39$ support hyperplanes and the triangulation has $3$  simplices so far. We omit some generators until something interesting happens:
+We have now reached a cone with $39$ support hyperplanes and the triangulation has $4$  simplices so far. We omit some generators until something interesting happens:
 \begin{Verbatim}
 gen=35, 667 hyp, 85 pyr, 13977 simpl
 \end{Verbatim}
@@ -4829,13 +4840,14 @@ Normaliz knows two methods for finding the extreme rays. Instead of ``comparison
 ------------------------------------------------------------
 transforming data... done.
 \end{Verbatim}
+Our computation is finished.
 
 A typical pair of lines that you will see for other examples is
 \begin{Verbatim}
 auto-reduce 539511 candidates, degrees <= 1 3 7 
 reducing 30 candidates by 73521 reducers
 \end{Verbatim}
-It tells you that Normaliz has found a list of $539511$ new candidates for the Hilbert basis, and this list is reduced against itself (auto-reduce). Then the $30$ old candidates is reduced against the $73521$ survivors of the auto-reduction.
+It tells you that Normaliz has found a list of $539511$ new candidates for the Hilbert basis, and this list is reduced against itself (auto-reduce). Then the $30$ old candidates are reduced against the $73521$ survivors of the auto-reduction.
 
 \subsection{Dual mode}
 
@@ -4857,7 +4869,7 @@ The console output:
 Compute: DualMode 
 No inequalities specified in constraint mode, using non-negative orthant.
 \end{Verbatim}
-Indeed, we have used equations as the input.
+Indeed, we have used only equations as the input.
 \begin{Verbatim}
 ************************************************************
 computing Hilbert basis ...
@@ -4909,8 +4921,9 @@ The input file contains a grading.
 \begin{Verbatim}
 transforming data... done.
 \end{Verbatim}
+Our example is finished.
 
-The computation of the new Hilbert basis after the intersection with the new hyperplane proceeds in rounds, and there be many rounds \dots (not in the above example). then you can see terminal output like
+The computation of the new Hilbert basis after the intersection with the new hyperplane proceeds in rounds, and there can be many rounds \dots (not in the above example). then you can see terminal output like
 \begin{Verbatim}
 Round 100
 Round 200
@@ -5652,7 +5665,9 @@ Since the computations are rather small, we suppress parallelization (except for
 \begin{Verbatim}	
     while(true){
     
-    omp_set_num_threads(1);
+#ifdef _OPENMP
+	omp_set_num_threads(1);
+#endi
     Cone<Integer> Candidate=rand_simplex(polytope_dim,bound);
     nr_simplex++;
     if(nr_simplex%1000 ==0)
@@ -5697,7 +5712,9 @@ The computation may become arithmetically critical at this point. Therefore we u
 \end{Verbatim}
 The computation may need some time now. Therefore we allow a little bit of parallelization.
 \begin{Verbatim}
-    omp_set_num_threads(4);
+#ifdef _OPENMP
+	omp_set_num_threads(4);
+#endif
 \end{Verbatim}
 Since $P$ doesn't have many vertices (even if we use these routines for more general polytopes than simplices), we don't expect too many vertices for the enlarged polytope. In this situation it makes sense to set the algorithmic variant \verb|Approximate|.
 \begin{Verbatim}

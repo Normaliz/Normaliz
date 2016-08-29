@@ -98,7 +98,7 @@
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf NmzIntegrate 1.3.1} \vspace*{0.5cm}
+ \centerline{\Large\bf NmzIntegrate 1.3.2} \vspace*{0.5cm}
  
  \centerline{\today}
  
@@ -126,7 +126,7 @@ Söger\\[14pt] \tt
 
 We assume in the following that the reader is familiar with
 Normaliz, in particular with its treatment of Ehrhart series
-and quasipolynomials. NmzIntegrate 1.3.1 requires Normaliz 3.1.1.
+and quasipolynomials. NmzIntegrate 1.3.2 requires Normaliz 3.1.2.
 
 Normaliz computes certain data for a monoid $$ M=C\cap L $$
 where $C\subset\RR^n$ is a rational, polyhedral and pointed
@@ -177,7 +177,7 @@ $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account and the algorithm used by NmzIntegrate.
 
-NmzIntegrate 1.3.1, like Normaliz 3.1.1 can compute Ehrhart series for
+NmzIntegrate 1.3.2, like Normaliz 3.1.2 can compute Ehrhart series for
 \emph{semiopen} cones. For them the monoid $M$ is replaced by the set
 $$
 M'=C'\cap L
@@ -653,38 +653,48 @@ Therefore NmzIntegrate does not need a separate installation.
 \section{Compilation}\label{Comp}
 
 Before the compilation of NmzIntegrate you must compile
-Normaliz 3.1.1 and CoCoALib 0.99540 \cite{CoC} (not
+CoCoALib 0.99540 \cite{CoC} (not
 contained in the Normaliz distribution).
 
-First compile Normaliz including libnormaliz by running \ttt{make} in the source directory.
 For the compilation of CoCoALib run
 
 \centerline{\ttt{./configure -{}-threadsafe-hack}}
 
-in the CoCoA root directory. The option \ttt{threadsafe-hack} is necessary to ensure correct parallel execution of nmzIntegrate.
-If you want to use Normaliz inside CoCoA or CoCoALib also add
-
-\centerline{\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.0/source/libnormaliz/libnormaliz.a}}
-
-to the configuration call, where the path to Normaliz has to be adjusted to your system. If the configuration was successful,
+in the CoCoA root directory. The option \ttt{threadsafe-hack} is necessary to ensure correct parallel execution of nmzIntegrate. If the configuration was successful,
 
 \centerline{\ttt{make library}}
 
 will compile CoCoALib.
 
-At last compile nmzIntegrate.
-Navigate to the directory
-\ttt{genEhrhart} and run \ttt{make}. You should move the
+Now there are two choices:
+\begin{enumerate}
+\item Use the compilation of Normaliz via the \verb|autotoools| build system. This will also compile NmzIntegrate. You can find more details in the file \verb|INSTALL| in the directory \verb|source|.
+
+\item Build Normaliz via \verb|cmake| or the `classical'' Makefile. At present this does not include NmzIntegrate. 
+Therefore navigate to the directory
+\ttt{genEhrhart} and run \ttt{make -f Makefile.classic}. You should move the
 executable \ttt{nmzIntegrate} to the directory that contains
 \ttt{normaliz}.
 
 Depending on the location of CoCoALib, you may have to adjust
-the path leading to it in the \ttt{Makefile} in
-\ttt{genEhrhart}.
+the path leading to it in the \ttt{Makefile.classic} in
+\ttt{genEhrhart}.	
+\end{enumerate}
 
-These instructions apply for Linux and Mac OS. If you should want to compile NmzIntegrate under MS Windows,
-please contact the authors.
+These instructions apply to Linux and Mac OS. If you should want to compile NmzIntegrate under MS Windows,
+please contact the authors.\bigskip
 
+\begin{footnotesize}
+Remark.\enspace 
+If you want to use Normaliz inside CoCoA or CoCoALib, go back to the CoCoA root directory and run
+
+\centerline{	
+\ttt{./configure -{}-threadsafe-hack\ }\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.1/source/libnormaliz/libnormaliz.a}}
+
+and
+
+\centerline{\ttt{make library}}
+\end{footnotesize}
 
 
 \section{Copyright and how to cite}
@@ -771,6 +781,12 @@ project.
 \item Adaptation to CoCoALib 0.99540.
 \item Changes implied by new features of Normaliz 3.1.1.
 
+\end{enumerate}
+
+\subsection{1.3 $\to$ 1.3.2}
+
+\begin{enumerate}
+	\item OutputDir added.
 \end{enumerate}
 
 \begin{thebibliography}{15.}

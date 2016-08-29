@@ -33,6 +33,7 @@ BUILD*
 *.inv
 *.lat
 *.mod
+*.aut
 
 
 # ignore latex output files
