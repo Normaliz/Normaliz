@@ -47,7 +47,7 @@ case $BUILDSYSTEM in
 	;;
     classic-scip*)
 	cat > source/Makefile.configuration <<EOF
-CXX = g++
+CXX = ${CXX-g++}
 CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
 SCIPPATH = $NMZDIR/$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION
 GMPFLAGS = -lgmpxx -lgmp
@@ -60,7 +60,7 @@ EOF
 	;;
     classic*)
 	cat > source/Makefile.configuration <<EOF
-CXX = g++
+CXX = ${CXX-g++}
 CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
 GMPFLAGS = -lgmpxx -lgmp
 LINKFLAGS += \$(GMPFLAGS)
