@@ -11,6 +11,8 @@ env:
   - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
   - BUILDSYSTEM=autotools-scip
   - BUILDSYSTEM=autotools-scip SCIPOPTSUITE_VERSION=3.2.0
+  - BUILDSYSTEM=classic
+  - BUILDSYSTEM=classic-scip
 
 branches:
   except:
