@@ -12,10 +12,9 @@ CXXFLAGS += -g       ## debugging
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 
-SCIPPATH = $(HOME)/src/scipoptsuite-3.2.0
+SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 
-#COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540
-COCOA_ROOT= $(HOME)/Dropbox/CoCoA/CoCoALib-0.99540
+COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540
 
 ## use OpenMP?
 ifeq ($(OPENMP),no)

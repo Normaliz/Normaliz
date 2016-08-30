@@ -1,9 +1,8 @@
 # Makefile for genEhrhart
 
-COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540
-include $(COCOA_ROOT)/configuration/autoconf.mk
-
 include ../Makefile.configuration
+
+include $(COCOA_ROOT)/configuration/autoconf.mk
 
 CXXFLAGS += -I ..
 
@@ -11,7 +10,7 @@ ALL_C=$(wildcard *.C)
 ALL_EXECS=$(ALL_C:.C=)
 
 # Rule for compiling and linking C++ code in *.C files
-# LDLIBS contains COCOA_LIB and everythink it needs
+# LDLIBS contains COCOA_LIB and everything it needs
 nmzIntegrate: nmzIntegrate.C nmzIntInput.C nmzIntPoly.C cyclRatFunct.C genEhrhart.C nmzIntegral.C 
 	@echo "Compiling `basename $@`"
 	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(LDLIBS) #-pthread

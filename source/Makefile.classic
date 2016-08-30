@@ -30,6 +30,9 @@ normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
+nmzIntegrate: linknormaliz
+	@$(MAKE) --directory=genEhrhart -f Makefile.classic nmzIntegrate
+	mv genEhrhart/nmzIntegrate .
 
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
@@ -39,6 +42,7 @@ lib:
 .PHONY : clean
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
+	$(MAKE) --directory=genEhrhart -f Makefile.classic clean
 	-rm -f normaliz.o
 	-rm -f normaliz
 	-rm -f normaliz?

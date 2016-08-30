@@ -27,6 +27,7 @@ using namespace CoCoA;
 
 #include <fstream>
 #include <sstream>
+#include<string>
 #include <sys/stat.h>
 #include <sys/types.h>
 
