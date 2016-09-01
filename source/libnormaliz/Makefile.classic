@@ -34,6 +34,14 @@ libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o libnormaliz-templated.o bottom.o offload_handler.o
 	ar -cr $@ $^
 
+.PHONY : install
+install: libnormaliz.a
+	test -d $(INSTALLDIR)/lib || mkdir $(INSTALLDIR)/lib
+	install -m 0644 libnormaliz.a  $(INSTALLDIR)/lib
+	test -d $(INSTALLDIR)/include || mkdir $(INSTALLDIR)/include
+	test -d $(INSTALLDIR)/include/normaliz || mkdir $(INSTALLDIR)/include/normaliz
+	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/normaliz
+
 clean:
 	-rm -f *.o
 	-rm -f libnormaliz.a
