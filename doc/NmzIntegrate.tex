@@ -654,47 +654,7 @@ Therefore NmzIntegrate does not need a separate installation.
 
 Before the compilation of NmzIntegrate you must compile
 CoCoALib 0.99540 \cite{CoC} (not
-contained in the Normaliz distribution).
-
-For the compilation of CoCoALib run
-
-\centerline{\ttt{./configure -{}-threadsafe-hack}}
-
-in the CoCoA root directory. The option \ttt{threadsafe-hack} is necessary to ensure correct parallel execution of nmzIntegrate. If the configuration was successful,
-
-\centerline{\ttt{make library}}
-
-will compile CoCoALib.
-
-Now there are two choices:
-\begin{enumerate}
-\item Use the compilation of Normaliz via the \verb|autotoools| build system. This will also compile NmzIntegrate. You can find more details in the file \verb|INSTALL| in the directory \verb|source|.
-
-\item Build Normaliz via \verb|cmake| or the `classical'' Makefile. At present this does not include NmzIntegrate. 
-Therefore navigate to the directory
-\ttt{genEhrhart} and run \ttt{make -f Makefile.classic}. You should move the
-executable \ttt{nmzIntegrate} to the directory that contains
-\ttt{normaliz}.
-
-Depending on the location of CoCoALib, you may have to adjust
-the path leading to it in the \ttt{Makefile.classic} in
-\ttt{genEhrhart}.	
-\end{enumerate}
-
-These instructions apply to Linux and Mac OS. If you should want to compile NmzIntegrate under MS Windows,
-please contact the authors.\bigskip
-
-\begin{footnotesize}
-Remark.\enspace 
-If you want to use Normaliz inside CoCoA or CoCoALib, go back to the CoCoA root directory and run
-
-\centerline{	
-\ttt{./configure -{}-threadsafe-hack\ }\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.1/source/libnormaliz/libnormaliz.a}}
-
-and
-
-\centerline{\ttt{make library}}
-\end{footnotesize}
+contained in the Normaliz distribution). The file \verb|INSTALL| in the directory \verb|source| explains how this is done, and it also explains how to compile NmzIntegrate.	
 
 
 \section{Copyright and how to cite}
@@ -806,3 +766,15 @@ classical varieties}.  Proc. Lond. Math. Soc. (3) 110 (2015), 1033--1055.
 
 
 \end{document}
+
+\begin{footnotesize}
+Remark.\enspace 
+If you want to use Normaliz inside CoCoA or CoCoALib, go back to the CoCoA root directory and run
+
+\centerline{	
+\ttt{./configure -{}-threadsafe-hack\ }\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.1/source/libnormaliz/libnormaliz.a}}
+
+and
+
+\centerline{\ttt{make library}}
+\end{footnotesize}
