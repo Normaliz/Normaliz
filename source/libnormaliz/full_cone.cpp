@@ -1738,7 +1738,7 @@ verboseOutput() << "-------------------" << endl;
                 verboseOutput() << nrPyramids[level] <<
                     " pyramids remaining on level " << level << ", ";
             Top_Cone->evaluate_triangulation();
-            try_offloadlevel+1);
+            try_offload(level+1);
         }
 
         if (Top_Cone->check_pyr_buffer(level+1)) {

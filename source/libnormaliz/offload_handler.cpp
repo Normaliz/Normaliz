@@ -143,26 +143,39 @@ void OffloadHandler<Integer>::transfer_bools()
   Full_Cone<Integer>& foo_loc = local_fc_ref;  // prevents segfault
   //TODO segfaults should be resolved in intel compiler version 2015
   bool is_computed_pointed = local_fc_ref.isComputed(ConeProperty::IsPointed);
+    bool inhomogeneous      = foo_loc.inhomogeneous;
+    bool do_Hilbert_basis   = foo_loc.do_Hilbert_basis;
+    bool do_h_vector        = foo_loc.do_h_vector;
+    bool keep_triangulation = foo_loc.keep_triangulation;
+    bool do_multiplicity    = foo_loc.do_multiplicity;
+    bool do_determinants    = foo_loc.do_determinants;
+    bool do_triangulation   = foo_loc.do_triangulation;
+    bool do_deg1_elements   = foo_loc.do_deg1_elements;
+    bool do_Stanley_dec     = foo_loc.do_Stanley_dec;
+    bool do_approximation   = foo_loc.do_approximation;
+    bool do_default_mode    = foo_loc.do_default_mode;
+    bool deg1_generated = foo_loc.deg1_generated;
+    bool pointed = foo_loc.pointed;
   #pragma offload target(mic:mic_nr) in(mic_nr)
   {
-    bool foo = offload_fc_ptr->inhomogeneous;  // prevents segfault
-    offload_fc_ptr->inhomogeneous      = foo_loc.inhomogeneous;
-    offload_fc_ptr->do_Hilbert_basis   = foo_loc.do_Hilbert_basis;
-    offload_fc_ptr->do_h_vector        = foo_loc.do_h_vector;
-    offload_fc_ptr->keep_triangulation = foo_loc.keep_triangulation;
-    offload_fc_ptr->do_multiplicity    = foo_loc.do_multiplicity;
-    offload_fc_ptr->do_determinants    = foo_loc.do_determinants;
-    offload_fc_ptr->do_triangulation   = foo_loc.do_triangulation;
-    offload_fc_ptr->do_deg1_elements   = foo_loc.do_deg1_elements;
-    offload_fc_ptr->do_Stanley_dec     = foo_loc.do_Stanley_dec;
-    offload_fc_ptr->do_approximation   = foo_loc.do_approximation;
-    offload_fc_ptr->do_default_mode    = foo_loc.do_default_mode;
+    // bool foo = offload_fc_ptr->inhomogeneous;  // prevents segfault
+    offload_fc_ptr->inhomogeneous      = inhomogeneous;
+    offload_fc_ptr->do_Hilbert_basis   = do_Hilbert_basis;
+    offload_fc_ptr->do_h_vector        = do_h_vector;
+    offload_fc_ptr->keep_triangulation = keep_triangulation;
+    offload_fc_ptr->do_multiplicity    = do_multiplicity;
+    offload_fc_ptr->do_determinants    = do_determinants;
+    offload_fc_ptr->do_triangulation   = do_triangulation;
+    offload_fc_ptr->do_deg1_elements   = do_deg1_elements;
+    offload_fc_ptr->do_Stanley_dec     = do_Stanley_dec;
+    offload_fc_ptr->do_approximation   = do_approximation;
+    offload_fc_ptr->do_default_mode    = do_default_mode;
     offload_fc_ptr->do_all_hyperplanes = false;
     // deg1_generated could be set more precise
-    offload_fc_ptr->deg1_triangulation = foo_loc.deg1_generated;
+    offload_fc_ptr->deg1_triangulation = deg1_generated;
     if (is_computed_pointed)
     {
-      offload_fc_ptr->pointed = foo_loc.pointed;
+      offload_fc_ptr->pointed = pointed;
       offload_fc_ptr->is_Computed.set(ConeProperty::IsPointed);
     }
     offload_fc_ptr->verbose = true;
