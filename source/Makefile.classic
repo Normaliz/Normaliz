@@ -35,6 +35,10 @@ nmzIntegrate: linknormaliz
 	rm -f nmzIntegrate
 	cp genEhrhart/nmzIntegrate .
 
+.PHONY : maxsimplex
+maxsimplex: linknormaliz
+	@$(MAKE) --directory=maxsimplex -f Makefile.classic.ori
+
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
 lib:

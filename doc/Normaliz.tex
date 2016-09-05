@@ -4319,21 +4319,21 @@ See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed dis
 
 The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
 
-In the following we describe the configuration/build process using cmake.
-This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version and the installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
-
 Normaliz offers three build systems:
 \begin{enumerate}
-\item \ttt{autotools},
-\item \ttt{cmake}
-\item a ``classical'' \ttt{Makefile}.	
+	\item \ttt{autotools},
+	\item \ttt{cmake}
+	\item ``classical'' \ttt{make} using the `handwritten'' \verb|Makefile.classic|.	
 \end{enumerate}
 
-We will only discuss the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. Also the use of the \ttt{autotools} system is explained in this file.
+We will only discuss the basic use of \verb|cmake| for compilation. See the file \verb|source/INSTALL| for information on the othertwo options and also on how to use customized paths with \verb|cmake|.
 
-The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generaous help.
+The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 
 \subsection{Linux}
+
+In the following we describe the configuration/build process using cmake.
+This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version and the installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
 
 On Ubuntu the following packages should be installed:
 \begin{verbatim}
@@ -4394,8 +4394,7 @@ You can then follow the instructions for Linux.
 
 One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
 
-Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The supplied executables are compiled with icpc with a manually created project. Please contact us if you want to build Normaliz on Windows.
-
+Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
 
 \section{Copyright and how to cite}

@@ -4,6 +4,7 @@ include ../Makefile.configuration
 
 include $(COCOA_ROOT)/configuration/autoconf.mk
 
+## We want the compile options of Normaliz !!
 include ../Makefile.configuration
 
 CXXFLAGS += -I ..
@@ -15,7 +16,7 @@ ALL_EXECS=$(ALL_C:.C=)
 # LDLIBS contains COCOA_LIB and everything it needs
 nmzIntegrate: nmzIntegrate.C nmzIntInput.C nmzIntPoly.C cyclRatFunct.C genEhrhart.C nmzIntegral.C 
 	@echo "Compiling `basename $@`"
-	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(LDLIBS) #-pthread
+	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(SCIPFLAGS) $(LDLIBS) #-pthread
 
 .PHONY: library
 library:
