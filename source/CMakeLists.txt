@@ -236,6 +236,11 @@ ENDIF (NMZ_SCIP)
 
 INSTALL(TARGETS normaliz DESTINATION bin)
 
+SET (NMZ_MAX "YES" CACHE BOOL "Compile with maxsimplex")
+IF (NMZ_MAX)
+    ADD_SUBDIRECTORY(maxsimplex)
+    #TARGET_LINK_LIBRARIES (normaliz maxsimplex) 
+ENDIF (NMZ_MAX)
 
 #custom make targets
 ADD_CUSTOM_TARGET (uninstall @echo uninstall package)

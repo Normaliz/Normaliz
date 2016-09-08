@@ -46,9 +46,8 @@ lib:
 
 .PHONY : install
 install: linknormaliz
-	test -d $(INSTALLDIR) || mkdir $(INSTALLDIR)
-	test -d $(INSTALLDIR)/bin || mkdir $(INSTALLDIR)/bin
-	install -m 0755 normaliz $(INSTALLDIR)/bin
+	mkdir -p $(INSTALLDIR)/bin
+	test ! -e nmzIntegrate | install -m 0755 normaliz $(INSTALLDIR)/bin
 	test ! -e nmzIntegrate || install -m 0755 nmzIntegrate $(INSTALLDIR)/bin
 	$(MAKE) --directory=libnormaliz -f Makefile.classic install
 	

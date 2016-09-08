@@ -317,7 +317,7 @@ the optional packages and their versions.
 	make -f Makefile.classic
 	
 It should work without change of Makefile.classic or Makefile.configuration on many systems
-that have a system installation of the needed libraries.
+that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.)
 
 4) For NmzIntegrate now say 
 
