@@ -1,58 +1,58 @@
-# - Try to find the NAUTY libraries
+# - Try to find the COCOA libraries
 # This module defines:
-#  NAUTY_FOUND             - system has NAUTY lib
-#  NAUTY_INCLUDE_DIR       - the NAUTY include directory
-#  NAUTY_LIBRARY_DIR     - directory where the NAUTY libraries are located
-#  NAUTY_LIBRARY         - Link these to use NAUTY
+#  COCOA_FOUND             - system has COCOA lib
+#  COCOA_INCLUDE_DIR       - the COCOA include directory
+#  COCOA_LIBRARY_DIR     - directory where the COCOA libraries are located
+#  COCOA_LIBRARY         - Link these to use COCOA
 
 include(FindPackageHandleStandardArgs)
 
-if(NAUTY_INCLUDE_DIR)
-  set(NAUTY_in_cache TRUE)
+if(COCOA_INCLUDE_DIR)
+  set(COCOA_in_cache TRUE)
 else()
-  set(NAUTY_in_cache FALSE)
+  set(COCOA_in_cache FALSE)
 endif()
-if(NOT NAUTY_LIBRARY)
-  set(NAUTY_in_cache FALSE)
+if(NOT COCOA_LIBRARY)
+  set(COCOA_in_cache FALSE)
 endif()
 
 # Is it already configured?
-if (NAUTY_in_cache)
+if (COCOA_in_cache)
 
-  set(NAUTY_FOUND TRUE)
+  set(COCOA_FOUND TRUE)
 
 else()
 
-  find_path(NAUTY_INCLUDE_DIR
-            NAMES nauty/nauty.h
-            HINTS ENV NAUTY_INC_DIR
-                  ENV NAUTY_DIR
+  find_path(COCOA_INCLUDE_DIR
+            NAMES CoCoA/library.H
+            HINTS ENV COCOA_INC_DIR
+                  ENV COCOA_DIR
             PATH_SUFFIXES include
-  	        DOC "The directory containing the NAUTY header files"
+  	        DOC "The directory containing the COCOA header files"
            )
 
-  find_library(NAUTY_LIBRARY NAMES nauty
-    HINTS ENV NAUTY_LIB_DIR
-          ENV NAUTY_DIR
+  find_library(COCOA_LIBRARY NAMES nauty
+    HINTS ENV COCOA_LIB_DIR
+          ENV COCOA_DIR
     PATH_SUFFIXES lib
-    DOC "Path to the NAUTY library"
+    DOC "Path to the COCOA library"
     )
-  find_library(NAUTY_STATIC_LIBRARY NAMES libnauty.a
-    HINTS ENV NAUTY_LIB_DIR
-          ENV NAUTY_DIR
+  find_library(COCOA_STATIC_LIBRARY NAMES libnauty.a
+    HINTS ENV COCOA_LIB_DIR
+          ENV COCOA_DIR
     PATH_SUFFIXES lib
-    DOC "Path to the static NAUTY library"
+    DOC "Path to the static COCOA library"
     )
 
-  if ( NAUTY_LIBRARY )
-    get_filename_component(NAUTY_LIBRARY_DIR ${NAUTY_LIBRARY} PATH CACHE )
+  if ( COCOA_LIBRARY )
+    get_filename_component(COCOA_LIBRARY_DIR ${COCOA_LIBRARY} PATH CACHE )
   endif()
 
-  # Attempt to load a user-defined configuration for NAUTY if couldn't be found
-  if ( NOT NAUTY_INCLUDE_DIR OR NOT NAUTY_LIBRARY_DIR )
-    include( NAUTYConfig OPTIONAL )
+  # Attempt to load a user-defined configuration for COCOA if couldn't be found
+  if ( NOT COCOA_INCLUDE_DIR OR NOT COCOA_LIBRARY_DIR )
+    include( COCOAConfig OPTIONAL )
   endif()
 
-  find_package_handle_standard_args(NAUTY "DEFAULT_MSG" NAUTY_LIBRARY NAUTY_INCLUDE_DIR)
+  find_package_handle_standard_args(COCOA "DEFAULT_MSG" COCOA_LIBRARY COCOA_INCLUDE_DIR)
 
 endif()
