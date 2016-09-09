@@ -24,20 +24,14 @@ if (COCOA_in_cache)
 else()
 
   find_path(COCOA_INCLUDE_DIR
-            NAMES CoCoA/library.H
+            NAMES CoCoA/library.H library.H
             HINTS ENV COCOA_INC_DIR
                   ENV COCOA_DIR
             PATH_SUFFIXES include
   	        DOC "The directory containing the COCOA header files"
            )
 
-  find_library(COCOA_LIBRARY NAMES nauty
-    HINTS ENV COCOA_LIB_DIR
-          ENV COCOA_DIR
-    PATH_SUFFIXES lib
-    DOC "Path to the COCOA library"
-    )
-  find_library(COCOA_STATIC_LIBRARY NAMES libnauty.a
+  find_library(COCOA_LIBRARY NAMES lib/libcocoa.a libcocoa
     HINTS ENV COCOA_LIB_DIR
           ENV COCOA_DIR
     PATH_SUFFIXES lib
