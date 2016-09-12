@@ -50,7 +50,9 @@ the method used for building Normaliz.
  
 To build SCIP:
 
-* download the scipoptsuite at http://scip.zib.de/ . Notice that SCIP
+* download the scipoptsuite at http://scip.zib.de/ . 
+
+   Notice that SCIP
    is not distributed under GPL, but the ZIB Academic License
    (http://scip.zib.de/academic.txt).
    
