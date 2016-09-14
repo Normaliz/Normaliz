@@ -4301,7 +4301,7 @@ Normaliz offers the luxury of three build systems:
 \begin{enumerate}
 	\item \ttt{autotools},
 	\item \ttt{cmake}
-	\item ``classical'' \ttt{make} using the `handwritten'' \verb|Makefile.classic|.	
+	\item ``classical'' \ttt{make} using the ``handwritten'' \verb|Makefile.classic|.	
 \end{enumerate}
 
 The basic steps are the same for all three systems, namely
@@ -4318,7 +4318,7 @@ The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz t
 
 \subsection{Compiler prerequisites}
 
-Furthermore we require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
+We require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
 \begin{itemize}
 	\item GNU g++ 4.4,
 	\item clang++ 2.9,
@@ -4341,7 +4341,7 @@ On Ubuntu these packages can be installed  as follows:
 sudo apt-get install g++ libgmp-dev libboost-dev
 \end{Verbatim}
 
-The insdtallation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
+The installation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
 
 \subsection{Optional packages}
 
@@ -4357,7 +4357,7 @@ make ZLIB=false GMP=false READLINE=false scipoptlib
 \end{Verbatim}
 
 Another optional package is CoCoALib, but only to the extent to that NmzIntegrate
-is otional. If you want to compile NmzIntegrate, CoCoALib must be installed rfirst.
+is optional. If you want to compile NmzIntegrate, CoCoALib must be installed first.
 The following sequence of commands will install it in the subdirectory \verb|CoCoA| of your home directory.
 \begin{Verbatim}
 mkdir ~/CoCoA/
@@ -4398,7 +4398,7 @@ The last, optional step is
 \begin{Verbatim}
 sudo make install
 \end{Verbatim}
-It copies the header files, the library \verb|libnormaliz| and the executables (excrept \verb|maxsimplex|) into subdirectories of \verb|/isr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
+It copies the header files, the library \verb|libnormaliz| and the executables (excrept \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
 
 Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
 
@@ -4406,12 +4406,12 @@ Note: Unfortunately, the paths for SCIP are version dependent. We have tested ve
 
 \subsection{cmake}
 
-You may need to install \verb|camke first:|
+You may need to install \verb|cmake| first:
 \begin{Verbatim}
 sudo apt-get cmake cmake-curses-gui
 \end{Verbatim}
 
-To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working dorectory to \verb|BUILD|.
+To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working directory to \verb|BUILD|.
 
 The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
 \begin{Verbatim}
@@ -4423,13 +4423,13 @@ For the inclusion of SCIP, use (for example)
 \begin{Verbatim}
 SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
 \end{Verbatim}
-replacing \verb|$HOME/SCIP/cipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
+replacing \verb|$HOME/SCIP/scipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
 \begin{Verbatim}
 COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 cmake ../source/
 \end{Verbatim}
 Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectories \verb|genEhrhart| and \verb|maxsimplex|.
 
-The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ./source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ./source|.
+The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ../source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ../source|.
 
 Note: Unfortunately, the paths for SCIP are version dependent. The configuration files for SCIP presently can find the versions 3.2.0 and 3.2.1. For another version you must edit the file \verb|FindSCIP.cmake| in \verb|source/cmake/Modules|.
 
