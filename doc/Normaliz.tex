@@ -4402,6 +4402,8 @@ It copies the header files, the library \verb|libnormaliz| and the executables (
 
 Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
 
+Note: Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
+
 \subsection{cmake}
 
 You may need to install \verb|camke first:|
@@ -4419,17 +4421,17 @@ Then \verb|make| and \verb|make install| will complete the basic installation.
 
 For the inclusion of SCIP, use (for example)
 \begin{Verbatim}
-SCIP_DIR=$HOME/SCIP/cipoptsuite-3.2.0/ ./cmake ../source
+SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
 \end{Verbatim}
 replacing \verb|$HOME/SCIP/cipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
 \begin{Verbatim}
-COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 ./cmake ../source
+COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 cmake ../source/
 \end{Verbatim}
 Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectories \verb|genEhrhart| and \verb|maxsimplex|.
 
 The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ./source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ./source|.
 
-Note: Unfortunately, the paths for SCIP are version dependent. The configuration files for SCIP presently can find the versions 3.1.1, 3.2.0 and 3.2.1. For another version you must edit the file \verb|FindSCIP.cmake| in \verb|source/cmake/Modules|.
+Note: Unfortunately, the paths for SCIP are version dependent. The configuration files for SCIP presently can find the versions 3.2.0 and 3.2.1. For another version you must edit the file \verb|FindSCIP.cmake| in \verb|source/cmake/Modules|.
 
 
 \subsection{Mac OS X}\label{mac}
@@ -4443,6 +4445,8 @@ Homebrew \url{http://brew.sh/},
 or MacPort \url{https://www.macports.org/}.
 
 You can then follow the instructions for Linux.
+
+Note: Do not try to compile Normaliz with static libraries for Mac OS X. 
 
 \subsection{Windows}
 

@@ -32,12 +32,12 @@ ELSE()
             NAMES scip/scip.h
             HINTS ENV SCIP_INC_DIR
                   ENV SCIP_DIR
-            PATH_SUFFIXES include src scip-3.1.1/src scip-3.2.0/src
+            PATH_SUFFIXES include src scip-3.2.1/src scip-3.2.0/src
   	        DOC "The directory containing the SCIP header files"
   )
 
   FIND_LIBRARY(SCIP_LIBRARY 
-    NAMES libscipopt-3.2.0.linux.x86_64.gnu.opt.a libscipopt-3.1.1.linux.x86_64.gnu.opt.a libscipopt-3.2.0.linux.x86.gnu.opt.a libscipopt-3.1.1.linux.x86.gnu.opt.a libscipopt-3.2.0.darwin.x86_64.gnu.opt.a  libscipopt-3.1.1.darwin.x86_64.gnu.opt.a
+    NAMES libscipopt-3.2.0.linux.x86_64.gnu.opt.a libscipopt-3.2.1.linux.x86_64.gnu.opt.a libscipopt-3.2.0.linux.x86.gnu.opt.a libscipopt-3.2.1.linux.x86.gnu.opt.a libscipopt-3.2.0.darwin.x86_64.gnu.opt.a  libscipopt-3.2.1.darwin.x86_64.gnu.opt.a
     HINTS ENV SCIP_LIB_DIR
           ENV SCIP_DIR
     PATH_SUFFIXES lib

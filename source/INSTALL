@@ -238,16 +238,19 @@ Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
 See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
-**** CMAKE: Using SCIP ****
+**** CMAKE: Using SCIP and CoCoALib (for NmzIntegrate) ****
 
 Then configure Normaliz with, for example,
 
-  SCIP_DIR=$HOME/scipoptsuite-3.2.0/ cmake ../source/ -DNMZ_SCIP=ON
+  SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
 
-Currently our cmake module to find scip only supports versions 3.1.1 and 3.2.0
+Currently our cmake module for SCIP only supports versions 3.2.1 and 3.2.0
 on Linux 32 and 64 bit and MacOs X.
 
+An example for finding CoCoALib:
 
+  COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 cmake ../source/
+  
 **** CMAKE: Build for Intel Xeon Phi Mic ****
 
 This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
@@ -311,7 +314,7 @@ You can still use our old simple plain Makefile. But the autotools and CMAKE con
 
 1) Go to the source directory
 
-2) Check the configuration, in Makefile.configuration, especially the locations of
+2) Check the configuration in Makefile.configuration, especially the locations of
 the optional packages and their versions.
 
 3) Say 
