@@ -4251,7 +4251,7 @@ Normaliz directory) and several subdirectories in
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
 	\item In the main directory \ttt{Normaliz3.1} you should
-	find \ttt{jNormaliz.jar}, \ttt{Copying} and
+	find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
 	subdirectories.
 	
 	\item The subdirectory \ttt{source} contains the source
@@ -4295,90 +4295,144 @@ from your search path.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Compilation}\label{Compile}
+\section{Building Normaliz yourself}\label{Compile}
 
-We only describe the compilation of Normaliz. See the
-documentation of NmzIntegrate for its compilation.
-
-\subsection{General}
-
-For compiling Normaliz the following libraries are needed:
-\begin{itemize}
-\item GMP including the C++ wrapper (libgmpxx and libgmp)
-\item boost (headers only)
-\item OpenMP 3.0 enabled compiler (to use parallelization, optional)
-\end{itemize}
-
-Furthermore we require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
-\begin{itemize}
-\item GNU g++ 4.4,
-\item clang++ 2.9,
-\item Intel icpc 12.0
-\end{itemize}
-See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed discussion.
-
-The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
-
-Normaliz offers three build systems:
+Normaliz offers the luxury of three build systems:
 \begin{enumerate}
 	\item \ttt{autotools},
 	\item \ttt{cmake}
 	\item ``classical'' \ttt{make} using the `handwritten'' \verb|Makefile.classic|.	
 \end{enumerate}
 
-We will only discuss the basic use of \verb|cmake| for compilation. See the file \verb|source/INSTALL| for information on the othertwo options and also on how to use customized paths with \verb|cmake|.
+The basic steps are the same for all three systems, namely
+\begin{itemize}
+	\item configuration,
+	\item compilation,
+	\item installation.
+\end{itemize}
+The main difference is the way how the build system is configured whereas compilation and installation are essentially identical. In all cases the compilation of NmzIntegrate is included (as well as the compilation of the example program maxsimplex in Appendix \ref{maxsimplex}).
+
+In the following we describe the basic steps of \verb|autotools| and \verb|cmake| for Linux 64 bit under certain standard assumptions. Comments on Mac OS follow in Section \ref{mac} The file \verb|INSTALL| in the directory \verb|source| contains more information.
 
 The \verb|autotools| scripts have been written by Matthias Köppe. The Normaliz team thanks him cordially for his generous help.
 
-\subsection{Linux}
+\subsection{Compiler prerequisites}
 
-In the following we describe the configuration/build process using cmake.
-This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version and the installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
-
-On Ubuntu the following packages should be installed:
-\begin{verbatim}
-sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
-\end{verbatim}
-
-We assume you start in the normaliz root dir (with subdirs source, example, ...).
-
-\begin{enumerate}
-\item Create a build directory where normaliz will be build and cd into it, e.g.
-\begin{verbatim}
-  mkdir BUILD; cd BUILD
-\end{verbatim}
-
-\item Initial configuration, have a look at the next sections for further information about the configuration.
-\begin{verbatim}
-  cmake ../source
-\end{verbatim}
-
-\item{} [Optional] Check configuration and maybe edit something (note the two \verb|'c'|s at the beginning)
-\begin{verbatim}
-  ccmake ../source
-\end{verbatim}
-In the ccmake interface you can use this work flow:
+Furthermore we require some C++11 features (e.g. \verb|std::exception_ptr|), supported by:
 \begin{itemize}
-\item \verb|c|  (configure)
-\item change entries if you like (use cursor keys and enter), then press \verb|c| again
-\item \verb|g|  (generate and exit)
+	\item GNU g++ 4.4,
+	\item clang++ 2.9,
+	\item Intel icpc 12.0
+\end{itemize}
+See \url{https://github.com/Normaliz/Normaliz/issues/26} for a more detailed discussion.
+
+The mentioned compilers are also able to handle OpenMP 3.0, with the exception of clang++, there the first OpenMP support was introduced in 3.7.
+
+\subsection{Required libraries}
+
+For compiling Normaliz the following libraries are needed:
+\begin{itemize}
+	\item GMP including the C++ wrapper (libgmpxx and libgmp)
+	\item Boost (headers only)
 \end{itemize}
 
-\item compile
-\begin{verbatim}
-  make
-\end{verbatim}
+On Ubuntu these packages can be installed  as follows:
+\begin{Verbatim}
+sudo apt-get install g++ libgmp-dev libboost-dev
+\end{Verbatim}
 
-\item install it
-\begin{verbatim}
-  make install
-\end{verbatim}
-This will install the library headers, the produced libnormaliz and the normaliz executable.
-The installation path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
-\end{enumerate}
+The insdtallation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
+
+\subsection{Optional packages}
+
+As discussed in the manual, Normaliz can profit from the use of SCIP. If you want
+to use it, SCIP must be installed before the compilation of Normaliz, independently of
+the method used for building Normaliz.
+
+To build SCIP download the scipoptsuite at \url{http://scip.zib.de/}. Notice that SCIP
+is not distributed under GPL, but the ZIB Academic License (\url{http://scip.zib.de/academic.txt}).
+Unpack it and then compile it with
+\begin{Verbatim}
+make ZLIB=false GMP=false READLINE=false scipoptlib
+\end{Verbatim}
+
+Another optional package is CoCoALib, but only to the extent to that NmzIntegrate
+is otional. If you want to compile NmzIntegrate, CoCoALib must be installed rfirst.
+The following sequence of commands will install it in the subdirectory \verb|CoCoA| of your home directory.
+\begin{Verbatim}
+mkdir ~/CoCoA/
+cd ~/CoCoA/
+wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99540.tgz
+tar xvf CoCoALib-0.99540.tgz
+cd CoCoALib-0.99540
+./configure --threadsafe-hack
+make library -j2
+\end{Verbatim}
+
+If CoCoALib-0.99540 is no longer available, replace it by a newer version.
+
+\subsection{autotools}
+
+To build Normaliz with the \verb|autotools| system, navigate to the Normaliz directory and issue the following sequence of commands:
+\begin{Verbatim}
+./configure
+make
+\end{Verbatim}
+This will compile Normaliz, but most likely without SCIP and NmzIntegrate since they need the optional libraries mentioned above and these must be found. If they are not located at standard places, you must specify their paths. Examples (on the machine of a Normaliz team member):
+\begin{Verbatim}
+./configure --with-scipoptsuite-src=$HOME/SCIP/cipoptsuite-3.2.0/
+\end{Verbatim}
+or
+\begin{Verbatim}
+./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99540
+\end{Verbatim}
+or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and NmzIntegrate will be made, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success.
+
+The next step is
+\begin{Verbatim}
+make
+\end{Verbatim}
+After this step you will find \verb|normaliz| (and \verb|nmzIntegrate|) in the directory \verb|source| (and \verb|maxsimplex| in its directory).
+
+The last, optional step is
+\begin{Verbatim}
+sudo make install
+\end{Verbatim}
+It copies the header files, the library \verb|libnormaliz| and the executables (excrept \verb|maxsimplex|) into subdirectories of \verb|/isr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
+
+Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
+
+\subsection{cmake}
+
+You may need to install \verb|camke first:|
+\begin{Verbatim}
+sudo apt-get cmake cmake-curses-gui
+\end{Verbatim}
+
+To build Normaliz with \verb|cmake|, start by creating a build directory within the Normaliz directory, say \verb|BUILD|. Then change the working dorectory to \verb|BUILD|.
+
+The basic configuration (equivalent to \verb|configure| of \verb|autotools|) is
+\begin{Verbatim}
+cmake ../source
+\end{Verbatim}
+Then \verb|make| and \verb|make install| will complete the basic installation.
+
+For the inclusion of SCIP, use (for example)
+\begin{Verbatim}
+SCIP_DIR=$HOME/SCIP/cipoptsuite-3.2.0/ ./cmake ../source
+\end{Verbatim}
+replacing \verb|$HOME/SCIP/cipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
+\begin{Verbatim}
+COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 ./cmake ../source
+\end{Verbatim}
+Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectories \verb|genEhrhart| and \verb|maxsimplex|.
+
+The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ./source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ./source|.
+
+Note: Unfortunately, the paths for SCIP are version dependent. The configuration files for SCIP presently can find the versions 3.1.1, 3.2.0 and 3.2.1. For another version you must edit the file \verb|FindSCIP.cmake| in \verb|source/cmake/Modules|.
 
 
-\subsection{Mac OS X}
+\subsection{Mac OS X}\label{mac}
 
 Currently Apple does not supply a compiler which supports OpenMP.
 We recommend the use of a current gcc.
@@ -5550,7 +5604,7 @@ void setVerboseOutput(std::ostream&)
 void setErrorOutput(std::ostream&)
 \end{Verbatim}
 
-\subsection{A simple program}
+\subsection{A simple program}\label{maxsimplex}
 
 The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036 are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
 
@@ -5959,3 +6013,51 @@ The source files for Visual Studio are identical to those for GCC.
 		\item Disjoint decomposition of the cone.	
 		
 	\end{enumerate}
+	
+	
+\subsection{Linux}
+
+In the following we describe the configuration/build process using cmake.
+This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version and the installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
+
+On Ubuntu the following packages should be installed:
+\begin{verbatim}
+sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
+\end{verbatim}
+
+We assume you start in the normaliz root dir (with subdirs source, example, ...).
+
+\begin{enumerate}
+	\item Create a build directory where normaliz will be build and cd into it, e.g.
+	\begin{verbatim}
+	mkdir BUILD; cd BUILD
+	\end{verbatim}
+	
+	\item Initial configuration, have a look at the next sections for further information about the configuration.
+	\begin{verbatim}
+	cmake ../source
+	\end{verbatim}
+	
+	\item{} [Optional] Check configuration and maybe edit something (note the two \verb|'c'|s at the beginning)
+	\begin{verbatim}
+	ccmake ../source
+	\end{verbatim}
+	In the ccmake interface you can use this work flow:
+	\begin{itemize}
+		\item \verb|c|  (configure)
+		\item change entries if you like (use cursor keys and enter), then press \verb|c| again
+		\item \verb|g|  (generate and exit)
+	\end{itemize}
+	
+	\item compile
+	\begin{verbatim}
+	make
+	\end{verbatim}
+	
+	\item install it
+	\begin{verbatim}
+	make install
+	\end{verbatim}
+	This will install the library headers, the produced libnormaliz and the normaliz executable.
+	The installation path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
+\end{enumerate}
