@@ -3495,7 +3495,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         }
         
         if(roughness >= 10){
-            do_bottom_dec=true;
+            do_bottom_dec=false; // true;
             if(verbose){
                     verboseOutput() << "Bottom decomposition activated" << endl;
             }
