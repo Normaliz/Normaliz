@@ -13,7 +13,7 @@ CXXFLAGS += -I .
 
 .PHONY : default all linknormaliz
 default: linknormaliz
-all: lib normaliz normaliz1
+all: lib normaliz ##normaliz1
 
 linknormaliz: lib
 	@$(MAKE) -f Makefile.classic normaliz
@@ -24,11 +24,11 @@ normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
 normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
 
-normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
+##normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
+##	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
 
-normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
+## normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
+## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
 nmzIntegrate: linknormaliz
 	@$(MAKE) --directory=genEhrhart -f Makefile.classic nmzIntegrate
