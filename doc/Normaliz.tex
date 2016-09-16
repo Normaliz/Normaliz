@@ -4336,10 +4336,7 @@ For compiling Normaliz the following libraries are needed:
 	\item Boost (headers only)
 \end{itemize}
 
-On Ubuntu these packages can be installed  as follows:
-\begin{Verbatim}
-sudo apt-get install g++ libgmp-dev libboost-dev
-\end{Verbatim}
+We will only discuss the basic use of cmake for compilation, see the file \verb|source/INSTALL| for additional information, especially on how to use customized paths. Also the use of the \ttt{autotools} system is explained in this file. The ``classical'' Makefile is meant for development. Therefore you should use \verb|autotools| or \verb|cmake|.
 
 The insdtallation will store the files in standard locations, and we assume in the following that they do not need individual include paths.
 

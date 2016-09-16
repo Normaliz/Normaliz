@@ -75,6 +75,19 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) const{
+    size_t nr_gen_in_hyp=0;
+    for(size_t i=0; i<nr_gen;++i)
+        if(in_triang[i]&& hyp.GenInHyp.test(i))
+            nr_gen_in_hyp++;
+    if((hyp.simplicial &&  nr_gen_in_hyp!=dim-2) || (!hyp.simplicial &&  nr_gen_in_hyp==dim-2)){
+        // NOTE: in_triang set at END of main loop in build_cone
+        cout << "Simplicial " << hyp.simplicial << " dim " << dim << " gen_in_hyp " << nr_gen_in_hyp << endl;
+        assert(false);
+    }
+}
+
+template<typename Integer>
 void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother){
 // add identifying number, the birth day and the number of mother 
 
@@ -154,6 +167,7 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
     NewFacet.simplicial=simplicial;
     
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
+    check_simpliciality_hyperplane(NewFacet);
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     number_hyperplane(NewFacet,nrGensInCone,positive.Ident);
     
@@ -203,7 +217,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     for (; ii != Facets.end(); ++ii) {
         // simplex=true;
         // nr_zero_i=0;
-        simplex=ii->simplicial;
+        simplex=ii->simplicial; // at present simplicial, will become nonsimplicial if neutral
         /* for (size_t j=0; j<nr_gen; j++){
             if (ii->GenInHyp.test(j)) {
                 if (++nr_zero_i > facet_dim) {
@@ -1047,8 +1061,10 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
             nr_done++;
 
-            if (hyp->ValNewGen == 0)                     // MUST BE SET HERE
+            if (hyp->ValNewGen == 0){                   // MUST BE SET HERE
                 hyp->GenInHyp.set(new_generator);
+                if(recursive) hyp->simplicial=false;                  // in the recursive case
+            }
 
             if (hyp->ValNewGen >= 0) // facet not visible
                 continue;
@@ -1141,7 +1157,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.Hyp = H[i];
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
-                NewFacet.simplicial=true;
+                NewFacet.simplicial=true; // true for the simplicial pyramid, may be lost in mother cone
                 NewFacets.push_back(NewFacet);
             }
             select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of multithreaded_pyramid
@@ -1287,7 +1303,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H[i];
-        NewFacet.simplicial=true;
+        NewFacet.simplicial=true; // indeede, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
                 NewFacet.GenInHyp.set(key[j]);
@@ -1377,8 +1393,15 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
                     gens_in_facet++;
                 }
             }
+            /* for (i=0; i<nr_gen; ++i) {
+                if (NewFacet.GenInHyp.test(i) && in_triang[i]) {
+                    gens_in_facet++;
+                }
+            }*/
+            gens_in_facet++; // Note: new generator not yet in in_triang
             NewFacet.GenInHyp.set(new_generator);
-            NewFacet.simplicial=(gens_in_facet==dim-1);
+            NewFacet.simplicial=(gens_in_facet==dim-1); 
+            check_simpliciality_hyperplane(NewFacet);
             number_hyperplane(NewFacet,nrGensInCone,0); //mother unknown
             if(multithreaded_pyramid){
                 #pragma omp critical(GIVEBACKHYPS) 
@@ -1506,7 +1529,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
         
         if(common_subfacet)
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false); // if !common_subfacet this is skipped by continue
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,nr_common_zero==dim-2); // if !common_subfacet this is skipped by continue
     } // for
 
     if(multithreaded_pyramid)
