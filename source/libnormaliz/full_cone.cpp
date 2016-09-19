@@ -1157,7 +1157,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.Hyp = H[i];
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
-                NewFacet.simplicial=true; // true for the simplicial pyramid, may be lost in mother cone
+                NewFacet.simplicial=true;
                 NewFacets.push_back(NewFacet);
             }
             select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of multithreaded_pyramid
@@ -1386,11 +1386,11 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
         if(new_global_hyp){
             NewFacet.Hyp=pyr_hyp->Hyp;
             NewFacet.GenInHyp.reset();
-            size_t gens_in_facet=0;
+            // size_t gens_in_facet=0;
             for (i=0; i<Pyramid_key.size(); ++i) {
                 if (pyr_hyp->GenInHyp.test(i) && in_triang[Pyramid_key[i]]) {
                     NewFacet.GenInHyp.set(Pyramid_key[i]);
-                    gens_in_facet++;
+                    // gens_in_facet++;
                 }
             }
             /* for (i=0; i<nr_gen; ++i) {
@@ -1398,9 +1398,9 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
                     gens_in_facet++;
                 }
             }*/
-            gens_in_facet++; // Note: new generator not yet in in_triang
+            // gens_in_facet++; // Note: new generator not yet in in_triang
             NewFacet.GenInHyp.set(new_generator);
-            NewFacet.simplicial=(gens_in_facet==dim-1); 
+            NewFacet.simplicial=pyr_hyp->simplicial; // (gens_in_facet==dim-1); 
             check_simpliciality_hyperplane(NewFacet);
             number_hyperplane(NewFacet,nrGensInCone,0); //mother unknown
             if(multithreaded_pyramid){
