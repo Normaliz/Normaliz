@@ -195,7 +195,7 @@ IF (NMZ_MIC_OFFLOAD)
   IF ( NOT UNIX OR APPLE )
     MESSAGE (FATAL_ERROR "Offload to mic only supported on Linux")
   ENDIF()
-  IF ( NMZ_SCIP AND SCIP_FOUND )
+  IF ( NMZ_SCIP AND SCIP_FOUND ) 
     MESSAGE (FATAL_ERROR "Simultaneous use of offload and scip not supported")
   ENDIF()
 
