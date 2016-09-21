@@ -1466,9 +1466,20 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         hp_j=*hp_j_iterator;
 
 
-      if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
-           add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // their intersection is a subfacet
-           continue;           
+       if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
+                                            // their intersection is a subfacet
+            size_t common=0;
+            bool simplicial=true;
+            for(size_t u=0;u<nr_zero_hyp;++u){
+                if(hp_j->GenInHyp.test(key[u]))
+                    common++;
+                if(common>subfacet_dim){
+                    simplicial=false;
+                    break;                       
+                }
+            }
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,simplicial);    
+            continue;           
        }
        
        
@@ -1521,12 +1532,15 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         
        if(!common_subfacet)
             continue;
+       
+       assert(nr_common_zero >=subfacet_dim);
             
         // only rank test since we have many supphyps anyway
-        Matrix<Integer>& Test = Top_Cone->RankTest[tn];
-        if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) 
-            common_subfacet=false;     // don't make a hyperplane
-
+        if (!hp_j->simplicial){
+            Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+            if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
+                common_subfacet=false;     // don't make a hyperplane */
+        }
         
         if(common_subfacet)
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,nr_common_zero==dim-2); // if !common_subfacet this is skipped by continue
