@@ -88,6 +88,15 @@ void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) co
 }
 
 template<typename Integer>
+void Full_Cone<Integer>::set_simplicial(FACETDATA& hyp){
+    size_t nr_gen_in_hyp=0;
+    for(size_t i=0; i<nr_gen;++i)
+        if(in_triang[i]&& hyp.GenInHyp.test(i))
+            nr_gen_in_hyp++;
+    hyp.simplicial=(nr_gen_in_hyp==dim-2);
+}
+
+template<typename Integer>
 void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother){
 // add identifying number, the birth day and the number of mother 
 
@@ -136,7 +145,7 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
 
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                            list<FACETDATA>& NewHyps, bool simplicial){
+                            list<FACETDATA>& NewHyps, bool known_to_be_simplicial){
 // adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed)
 
     size_t k;
@@ -163,11 +172,14 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
         convert(NewFacet.Hyp, mpz_sum);
     }
     
-    NewFacet.ValNewGen=0;
-    NewFacet.simplicial=simplicial;
-    
+    NewFacet.ValNewGen=0;    
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
-    check_simpliciality_hyperplane(NewFacet);
+    if(known_to_be_simplicial){
+        NewFacet.simplicial=true;
+        check_simpliciality_hyperplane(NewFacet);
+    }
+    else
+        set_simplicial(NewFacet);
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     number_hyperplane(NewFacet,nrGensInCone,positive.Ident);
     
@@ -579,18 +591,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            hp_j=Neg_Non_Simp[j];
            
            if(hp_i->Ident==hp_j->Mother || hp_j->Ident==hp_i->Mother){   // mother and daughter coming together
-               size_t common=0;
-               bool simplicial=true;
-               for(size_t u=0;u<nr_zero_i;++u){
-                   if(hp_j->GenInHyp.test(key[u]))
-                       common++;
-                   if(common>subfacet_dim){
-                       simplicial=false;
-                       break;                       
-                   }
-               }
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],simplicial);  // their intersection is a subfacet
-               continue;           
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false);  // their intersection is a subfacet
+               continue;                                                           // simplicial set in add_hyperplane
            } 
            
            
@@ -657,8 +659,6 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
-           bool simplicial=(nr_common_zero==subfacet_dim);
-           
            if(using_GMP<Integer>())           
                 ranktest = (nr_NonSimp > 10*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
            else
@@ -690,7 +690,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                }                       
            } // else
            if (common_subfacet) {  //intersection of i and j is a subfacet
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],simplicial);
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
                /* #pragma omp atomic
                 NrNewF++; */
                 // Indi[j]=true;
@@ -1303,7 +1303,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H[i];
-        NewFacet.simplicial=true; // indeede, the start simplex is simplicial
+        NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
                 NewFacet.GenInHyp.set(key[j]);
@@ -1468,17 +1468,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
        if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
                                             // their intersection is a subfacet
-            size_t common=0;
-            bool simplicial=true;
-            for(size_t u=0;u<nr_zero_hyp;++u){
-                if(hp_j->GenInHyp.test(key[u]))
-                    common++;
-                if(common>subfacet_dim){
-                    simplicial=false;
-                    break;                       
-                }
-            }
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,simplicial);    
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
             continue;           
        }
        
@@ -1539,12 +1529,12 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
         if (!hp_j->simplicial){
             Matrix<Integer>& Test = Top_Cone->RankTest[tn];
             if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
-                common_subfacet=false;     // don't make a hyperplane */
+                common_subfacet=false;     // don't make a hyperplane
         }
         
         if(common_subfacet)
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,nr_common_zero==dim-2); // if !common_subfacet this is skipped by continue
-    } // for
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
+    } // for           
 
     if(multithreaded_pyramid)
         #pragma omp critical(GIVEBACKHYPS)

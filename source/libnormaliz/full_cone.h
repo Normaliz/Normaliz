@@ -244,7 +244,7 @@ public:
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA& hyp);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                     list<FACETDATA>& NewHyps, bool simplicial);
+                     list<FACETDATA>& NewHyps, bool known_to_be_simplicial);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
@@ -342,6 +342,7 @@ public:
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
     
     void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
+    void set_simplicial(FACETDATA& hyp);
     
 
     void compute_hsop();
