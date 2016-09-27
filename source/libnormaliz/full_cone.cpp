@@ -2882,6 +2882,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
+    if (do_module_gens_intcl) use_bottom_points= false;
     //if (do_hsop)            do_Hilbert_basis = true;
     if (do_Stanley_dec)     keep_triangulation = true;
     if (do_cone_dec)        keep_triangulation = true;
