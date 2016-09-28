@@ -120,7 +120,7 @@ void OptionsHandler::setOutputDirName(const string& s) {
     #ifdef _WIN32 //for 32 and 64 bit windows
         slash='\\';
     #endif
-    if(output_dir.back()!=slash)
+    if(output_dir[output_dir.size()-1]!=slash)
         output_dir+=slash;
     output_dir_set=true;
 }
