@@ -11,7 +11,7 @@
 
 ## [3.1.1] 2016-04-05
 - index of unit group extension added
-- formatted matriced in input files added
+- formatted vectors matrices in input files added
 - "constraints" in input files added
 - transposed matrices in input file added
 
