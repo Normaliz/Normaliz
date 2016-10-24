@@ -118,11 +118,14 @@
 
 \def\ttt{\texttt}
 
+\def\version{3.1.3}
+\def\NmzDir{Normaliz-\version}
+
 
 \begin{document}
 \vspace*{2cm}
 
-\centerline{\Large\textbf{Normaliz 3.1.2}\footnote{No change in version 3.1.3.}} \vspace*{0.5cm}
+\centerline{\Large\textbf{Normaliz \version}} \vspace*{0.5cm}
 
 \centerline{\today}
 
@@ -266,6 +269,8 @@ For version 3.1.2 we have added
 	\item choice of an output directory.
 \end{arab}
 
+Version 3.1.3 is a bugfix.
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -291,7 +296,7 @@ from the Normaliz website\medskip
 \centerline{\url{http://normaliz.uos.de}}\medskip
 
 and unzip both in the same directory of your choice. In it, a
-directory \ttt{Normaliz3.1} (called Normaliz directory in the
+directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
@@ -4241,16 +4246,16 @@ In order to install Normaliz you should first download the
 basic package containing the documentation, examples, source
 code, jNormaliz, NmzIntegrate and the packages for Singular
 and Macaulay2. Then unzip the downloaded file
-\ttt{Normaliz3.1.zip} in a directory of your choice. (Any other
+\ttt{\NmzDir.zip} in a directory of your choice. (Any other
 downloaded zip file for Normaliz should be unzipped in this
 directory, too.)
 
-This process will create a directory \ttt{Normaliz3.1} (called
+This process will create a directory \ttt{\NmzDir} (called
 Normaliz directory) and several subdirectories in
-\ttt{Normaliz3.1}. The names of the subdirectories created are
+it. The names of the subdirectories created are
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
-	\item In the main directory \ttt{Normaliz3.1} you should
+	\item In the Normaliz directory you should
 	find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
 	subdirectories.
 	
@@ -4282,10 +4287,9 @@ self-explanatory. Nevertheless we give an overview:
 
 We provide executables for Windows, Linux (each in a 32 bit and
 a 64 bit version) and Mac. Download the archive file
-corresponding to your system \ttt{Normaliz3.1<systemname>.zip}
+corresponding to your system \ttt{\NmzDir<systemname>.zip}
 and unzip it. This process will store the executables of
-Normaliz and NmzIntegrate in the directory
-\ttt{Normaliz3.1}. In case you want to run Normaliz from the
+Normaliz and NmzIntegrate in the Normaliz directory. In case you want to run Normaliz from the
 command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.

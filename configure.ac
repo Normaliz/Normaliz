@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(normaliz, 3.1.3)
+AC_INIT(Normaliz, 3.1.3)
 AC_SUBST(LIBNORMALIZ_VERSION_MAJOR, 3)
 AC_SUBST(LIBNORMALIZ_VERSION_MINOR, 1)
 AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 3)
