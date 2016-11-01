@@ -5231,7 +5231,7 @@ Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 \end{Verbatim}
 
-All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested in more than a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. 
+All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, is the lack of algorithmis variants if you use \verb|get...| without \verb|compute| beforehand.
 
 Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the class \verb|ConeProperties|. Here we only mention the constructors
 \begin{Verbatim}
@@ -5261,7 +5261,7 @@ const string& toString(ConeProperty::Enum)
 
 \subsection{Retrieving results}
 
-As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed.
+As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed. As also remarked above, it is often better to use \verb|compute| first.
 
 The functions that return a matrix encoded as \verb|vector<vector<Integer> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<Integer>|. These are not listed below; see \verb|cone.h|. 
 
