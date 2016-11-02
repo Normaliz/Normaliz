@@ -301,6 +301,15 @@ following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
 
+\subsection{Sometimes you have a choice}
+
+Normaliz can be started without any option and will try to compute what it can reasonably do. There is however one decision that can be critical: primal algorithm or dual algorithm for the computation of lattice points, especially of Hilbert bases? 
+
+A rule of thumb: use the primal algorithm if you start from generators and the dual algorithm for constraints input. And if your choice doesn't work, try the other one.
+
+Note that the dual algorithm must be chosen explicitly. See Sections \ref{job_dual} and \ref{div_labor} for further discussion.
+
+
 \section{Normaliz by examples}
 
 \subsection{Terminology}\label{Term}
@@ -3268,7 +3277,7 @@ A good nonsimplicial example showing the subdivision at work is \verb|hickerson_
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}.
 
-\subsection{Primal vs. dual -- division of labor}
+\subsection{Primal vs. dual -- division of labor}\label{div_labor}
 
 The choice between the primal and the dual algorithm for Hilbert basis computations is presently left to the user. Normaliz does not make a guess which algorithm might be faster. If the number of support hyperplanes is small relative to the dimension, then the dual algorithm can be much faster. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
 The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm. Note that the dual algorithm is arithmetically less critical than the primal algorithm since it basically only requires addition of vectors.
@@ -5849,7 +5858,7 @@ rational cones and affine monoids.}
 J. Algebra 324 (2010) 1098--1113.
 
 \bibitem{BIS} W. Bruns, B. Ichim and C. Söger. {\em The power of
-pyramid decompositions in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
+pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
 
 \bibitem{BK02} W .Bruns and R. Koch. {\em Computing the integral
 closure of an affine semigroup}. Univ. Iagell. Acta Math.
