@@ -1441,14 +1441,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
-    
-    cout << "Vor implicit" << endl;
-    if(Generators.nr_of_rows()==0 && SupportHyperplanes.nr_of_rows() <= 2*dim
-                && !ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
-        ToCompute.set(ConeProperty::DualMode);
-        cout <<"Angeschaltet" << endl;
-    }
-    cout << "Nach implicit" << endl;
 
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
