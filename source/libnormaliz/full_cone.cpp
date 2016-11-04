@@ -3784,7 +3784,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             verboseOutput() << "Roughness " << roughness <<  endl;
         }
         
-        if(roughness >= 10){
+        if(roughness >= 10 && !suppress_bottom_dec){
             do_bottom_dec=true;
             if(verbose){
                     verboseOutput() << "Bottom decomposition activated" << endl;
@@ -4681,6 +4681,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
     
     do_bottom_dec=false;
+    suppress_bottom_dec=false;
     keep_order=false;
 
     approx_level = 1;
@@ -4965,9 +4966,10 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     approx_level = C.approx_level;
     is_approximation = C.is_approximation;
-	
-	do_bottom_dec=false;
-	keep_order=true;
+    
+    do_bottom_dec=false;
+    suppress_bottom_dec=false;
+    keep_order=true;
 }
 
 //---------------------------------------------------------------------------

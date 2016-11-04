@@ -97,8 +97,9 @@ public:
     bool do_excluded_faces;
     bool do_approximation;
     bool do_default_mode;
-	bool do_bottom_dec;
-	bool keep_order;
+    bool do_bottom_dec;
+    bool suppress_bottom_dec;
+    bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;

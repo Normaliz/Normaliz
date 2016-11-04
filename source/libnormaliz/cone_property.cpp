@@ -97,6 +97,7 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::Approximate, false);
     CPs.set(ConeProperty::BottomDecomposition, false);
+    CPs.set(ConeProperty::NoBottomDec, false);
     CPs.set(ConeProperty::DefaultMode, false);
     CPs.set(ConeProperty::DualMode, false);
     CPs.set(ConeProperty::KeepOrder, false);
@@ -116,6 +117,7 @@ ConeProperties ConeProperties::options() {
     ConeProperties ret;
     ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
     ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::BottomDecomposition));
+    ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::NoBottomDec));
     ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
     ret.set(ConeProperty::DualMode, CPs.test(ConeProperty::DualMode));
     ret.set(ConeProperty::KeepOrder, CPs.test(ConeProperty::KeepOrder));
@@ -226,6 +228,8 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
 
 void ConeProperties::check_sanity(bool inhomogeneous) {
     ConeProperty::Enum prop;
+    if(CPs.test(ConeProperty::BottomDecomposition) && CPs.test(ConeProperty::NoBottomDec))
+        throw BadInputException("Contradictory options for bottom decomposition.");
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
             prop = static_cast<ConeProperty::Enum>(i);
@@ -300,8 +304,9 @@ namespace {
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(ConeProperty::HSOP) = "HSOP";
+        CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 40,
+        static_assert (ConeProperty::EnumSize == 41,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

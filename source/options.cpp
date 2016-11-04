@@ -196,15 +196,18 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'B':  //use Big Integer
                 use_Big_Integer=true;
                 break;
-			case 'b':  //use the bottom decomposition for the triangulation
-			    to_compute.set(ConeProperty::BottomDecomposition);
-			    break;
-			case 'C':  //compute the class group
-				to_compute.set(ConeProperty::ClassGroup);
-				break;
-			case 'k':  //keep the order of the generators in Full_Cone
-		        to_compute.set(ConeProperty::KeepOrder);
-				break;
+            case 'b':  //use the bottom decomposition for the triangulation
+                to_compute.set(ConeProperty::BottomDecomposition);
+                break;
+            case 'C':  //compute the class group
+                to_compute.set(ConeProperty::ClassGroup);
+                break;
+            case 'k':  //keep the order of the generators in Full_Cone
+                to_compute.set(ConeProperty::KeepOrder);
+                break;
+            case 'o':  //suppress bottom decomposition in Full_Cone
+                to_compute.set(ConeProperty::NoBottomDec);
+                break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
                 to_compute.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);

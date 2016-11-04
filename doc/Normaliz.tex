@@ -2895,7 +2895,9 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 	
 	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
 	
-	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Blocks \verb|BottomDecomposition|.
+	\itemtt[NoBottomDec, -o] forbids Normaliz to use bottom decomposition in the primal algorithm, even if it would otherwise be chosen because of large roughness (see Section \ref{bottom_dec}).
+	
+	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
 \end{itemize}
 
 \subsection{Integer type}
@@ -3220,14 +3222,11 @@ We look at the \emph{bottom} (the union of the compact faces) of the polyhedron 
 \end{center}
 With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
 
-Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition.
+Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition. However, you can suppress the bottom decomposition by \texttt{NoBottomDec}, \texttt{-o}. (\verb|KeepOrder|, \verb|-k| not only suppresses the bottom decomposition, but also any reordering or the generators.)
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
 Also see Section \ref{ele3}.
-
-Note: the bottom decomposition cannot be activated by Normaliz if \verb|KeepOrder| is used. In this case \verb|BottomDecomposition| must be set explicitly if it is wanted.
-
 
 \subsection{Subdivision of large simplicial cones}
 
@@ -5205,6 +5204,7 @@ KeepOrder,
 IntegerHull,
 MaximalSubspace,
 ConeDecomposition,
+NoBottomDec,
 EnumSize // this has to be the last entry, to get the number of entries in the enum
 }; // remember to change also the string conversion function if you change this enum
 }

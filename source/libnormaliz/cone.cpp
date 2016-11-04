@@ -1665,6 +1665,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::BottomDecomposition)) {
         FC.do_bottom_dec = true;
     }
+    if (ToCompute.test(ConeProperty::NoBottomDec)) {
+        FC.suppress_bottom_dec = true;
+    }
     if (ToCompute.test(ConeProperty::KeepOrder)) {
         FC.keep_order = true;
     }
