@@ -1043,11 +1043,24 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     hyp=Facets.begin();
     size_t hyppos=0;
     skip_remaining = false;
+    
+    const long VERBOSE_STEPS = 50;
+    long step_x_size = old_nr_supp_hyps-VERBOSE_STEPS;
+    const size_t RepBound=10000;
 
     #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
 
         if (skip_remaining) continue;
+        
+        if(verbose && old_nr_supp_hyps>=RepBound){
+            #pragma omp critical(VERBOSE)
+            while ((long)(kk*VERBOSE_STEPS) >= step_x_size) {
+                step_x_size += old_nr_supp_hyps;
+                verboseOutput() << "." <<flush;
+            }
+        }
+        
 #ifndef NCATCH
         try {
 #endif
@@ -1125,8 +1138,12 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     if (start_level==0 && Top_Cone->check_pyr_buffer(store_level)) {
         Top_Cone->evaluate_stored_pyramids(store_level);
     }
+    
+    if (verbose && old_nr_supp_hyps>=RepBound)
+        verboseOutput() << endl;
 
     } while (nr_done < old_nr_supp_hyps);
+    
     
     evaluate_large_rec_pyramids(new_generator);
 
