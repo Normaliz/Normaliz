@@ -5195,24 +5195,24 @@ Dehomogenization,
 InclusionExclusionData,
 Sublattice,
 ClassGroup,
-ModuleGeneratorsOverOriginalMonoid,
-HSOP,
-// compute options
+ModuleGeneratorsOverOriginalMonoid
+IntegerHull,
+MaximalSubspace,
+ConeDecomposition,
+// algorithmic variants
 Approximate,
 BottomDecomposition,
 DefaultMode,
 DualMode,
 KeepOrder,
-IntegerHull,
-MaximalSubspace,
-ConeDecomposition,
+HSOP,
 NoBottomDec,
 EnumSize // this has to be the last entry, to get the number of entries in the enum
 }; // remember to change also the string conversion function if you change this enum
 }
 \end{Verbatim}
 
-The class \verb|ConeProperties| is based on this enumeration. Its instantiation are essentially boolean vectors that can be accessed via the names in the enumeration. Instantiations of the class are used to set computation goals and algorithmic variants and to check whether the goals have been reached.
+The class \verb|ConeProperties| is based on this enumeration. Its instantiation are essentially boolean vectors that can be accessed via the names in the enumeration. Instantiations of the class are used to set computation goals and algorithmic variants and to check whether the goals have been reached. The distinction between computation goals and algorithmic variants is not completely strict. See Section \ref{Goals} for implications betwen some \verb|ConeProperties|.
 
 There exist versions of \verb|compute| for up to $3$ cone properties:
 \begin{Verbatim}

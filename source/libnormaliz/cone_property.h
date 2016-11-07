@@ -67,15 +67,15 @@ namespace ConeProperty {
         Sublattice,
         ClassGroup,
         ModuleGeneratorsOverOriginalMonoid,
-        // compute options
+        IntegerHull,
+        MaximalSubspace,
+        ConeDecomposition,
+        // algorithmic variants
         Approximate,
         BottomDecomposition,
         DefaultMode,
         DualMode,
         KeepOrder,
-        IntegerHull,
-        MaximalSubspace,
-        ConeDecomposition,
         HSOP,
         NoBottomDec,
         EnumSize // this has to be the last entry, to get the number of entries in the enum
