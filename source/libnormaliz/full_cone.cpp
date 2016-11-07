@@ -1582,6 +1582,10 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     std::exception_ptr tmp_exception;
 #endif
     
+    const long VERBOSE_STEPS = 50;
+    long step_x_size = nrLargeRecPyrs-VERBOSE_STEPS;
+    const size_t RepBound=100;
+    
     #pragma omp parallel
     {
     size_t ppos=0;
@@ -1591,6 +1595,15 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     for(size_t i=0; i<nrLargeRecPyrs; i++){
         for(; i > ppos; ++ppos, ++p) ;
         for(; i < ppos; --ppos, --p) {};
+
+        if(verbose && nrLargeRecPyrs>=RepBound){
+            #pragma omp critical(VERBOSE)
+            while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
+                step_x_size += nrLargeRecPyrs;
+                verboseOutput() << "." <<flush;
+            }
+        }
+        
 #ifndef NCATCH
         try {
 #endif
@@ -1605,6 +1618,9 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
+    
+    if(verbose && nrLargeRecPyrs>=RepBound)
+        verboseOutput() << endl;
 
     LargeRecPyrs.clear();
 }

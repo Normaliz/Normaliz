@@ -3222,7 +3222,9 @@ We look at the \emph{bottom} (the union of the compact faces) of the polyhedron 
 \end{center}
 With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz computes a triangulation that respects the bottom facets. This yields the optimal determinant sum for the given generators. If one can compute the Hilbert basis by the dual algorithm, it can be used as input, and then one obtains the absolute bottom of the cone, namely the compact facets of the convex hull of all nonzero lattice points. 
 
-Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition. However, you can suppress the bottom decomposition by \texttt{NoBottomDec}, \texttt{-o}. (\verb|KeepOrder|, \verb|-k| not only suppresses the bottom decomposition, but also any reordering or the generators.)
+Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition. 
+
+If you have the impression that the bottom decomposition slows down your computation, you can suppress it by \texttt{NoBottomDec}, \texttt{-o}. (\verb|KeepOrder|, \verb|-k| not only suppresses the bottom decomposition, but also any reordering or the generators.)
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
