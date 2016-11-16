@@ -242,6 +242,15 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'D':
                 to_compute.set(ConeProperty::ConeDecomposition);
                 break;
+            case 'P':
+                to_compute.set(ConeProperty::PrimalMode);
+                break;
+            case 'Y':
+                to_compute.set(ConeProperty::Symmetrize);
+                break;
+            case 'X':
+                to_compute.set(ConeProperty::NoSymmetrization);
+                break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
                 exit(1);

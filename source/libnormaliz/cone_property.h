@@ -35,49 +35,72 @@ namespace libnormaliz {
  */
 namespace ConeProperty {
     enum Enum {
-        // goals that can be computed
+        //
+        // goals that can be computed (or are defined by input data)
+        //
+        // matrix valued
         Generators,
         ExtremeRays,
         VerticesOfPolyhedron,
         SupportHyperplanes,
-        TriangulationSize,
-        TriangulationDetSum,
-        Triangulation,
-        Multiplicity,
-        RecessionRank,
-        AffineDim,
-        ModuleRank,
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,
-        HilbertSeries,
+        ModuleGeneratorsOverOriginalMonoid,
+        Sublattice, 
+        ExcludedFaces,
+        OriginalMonoidGenerators,
+        MaximalSubspace,
+        //vector valued
         Grading,
+        Dehomogenization,
+        WitnessNotIntegrallyClosed,
+        // Cardinalities
+        TriangulationSize,
+        // Integer valued,        
+        TriangulationDetSum,
+        ReesPrimaryMultiplicity,
+        GradingDenom, // new
+        UnitGroupIndex, // new
+        Index, // new
+        // rational valued
+        Multiplicity,
+        // dimensions
+        RecessionRank,
+        AffineDim,
+        ModuleRank,
+        Rank, // new
+        EmbeddingDim, //new      
+        // boolean valued
         IsPointed,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
-        WitnessNotIntegrallyClosed,
-        OriginalMonoidGenerators,
         IsReesPrimary,
-        ReesPrimaryMultiplicity,
-        StanleyDec,
-        ExcludedFaces,
-        Dehomogenization,
+        IsInhomogeneous, // new        
+        // complex structures
+        Triangulation,
+        HilbertSeries,
         InclusionExclusionData,
-        Sublattice,
-        ClassGroup,
-        ModuleGeneratorsOverOriginalMonoid,
+        StanleyDec,        
+        ClassGroup,        
         IntegerHull,
-        MaximalSubspace,
         ConeDecomposition,
+        Constraints, //new
+        //
         // algorithmic variants
+        //
+        DefaultMode,
         Approximate,
         BottomDecomposition,
-        DefaultMode,
+        NoBottomDec,       
         DualMode,
+        PrimalMode, //new
+        Symmetrize, // new
+        NoSymmetrization, // new
         KeepOrder,
         HSOP,
-        NoBottomDec,
+        
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }

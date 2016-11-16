@@ -102,6 +102,9 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::DualMode, false);
     CPs.set(ConeProperty::KeepOrder, false);
     CPs.set(ConeProperty::HSOP, false);
+    CPs.set(ConeProperty::Symmetrize, false);
+    CPs.set(ConeProperty::NoSymmetrization, false);
+    CPs.set(ConeProperty::PrimalMode, false);
     return *this;
 }
 
@@ -122,6 +125,9 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::DualMode, CPs.test(ConeProperty::DualMode));
     ret.set(ConeProperty::KeepOrder, CPs.test(ConeProperty::KeepOrder));
     ret.set(ConeProperty::HSOP, CPs.test(ConeProperty::HSOP));
+    ret.set(ConeProperty::Symmetrize, CPs.test(ConeProperty::Symmetrize));
+    ret.set(ConeProperty::NoSymmetrization, CPs.test(ConeProperty::NoSymmetrization));
+    ret.set(ConeProperty::PrimalMode, CPs.test(ConeProperty::PrimalMode));
     return ret;
 }
 
@@ -305,8 +311,20 @@ namespace {
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(ConeProperty::HSOP) = "HSOP";
         CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
+        
+        CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
+        CPN.at(ConeProperty::Symmetrize) = "Symmetrize";
+        CPN.at(ConeProperty::NoSymmetrization) = "NoSymmetrization";
+        CPN.at(ConeProperty::EmbeddingDim) = "EmbeddingDim";
+        CPN.at(ConeProperty::Rank) = "Rank";
+        CPN.at(ConeProperty::Index) = "Index";
+        CPN.at(ConeProperty::IsInhomogeneous) = "IsInhomogeneous";
+        CPN.at(ConeProperty::UnitGroupIndex) = "UnitGroupIndex";
+        CPN.at(ConeProperty::Constraints) = "Constraints";
+        CPN.at(ConeProperty::GradingDenom) = "GradingDenom";
+        
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 41,
+        static_assert (ConeProperty::EnumSize == 51,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

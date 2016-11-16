@@ -77,10 +77,14 @@ void printHelp(char* command) {
 
     cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
+    cout << "  -P\tcomputation mode: primal"<<endl;
     cout << "  -r\tcomputation mode: approximate"<<endl;
     cout << "  -b\tcomputation mode: bottom decomposition"<<endl;
     cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
     cout << "  -k\tcomputation mode: keep order"<<endl;
+    cout << "  -Y\tcomputation mode: symmetrization"<<endl;
+    cout << "  -X\tcomputation mode: no symmetrization"<<endl;
+
 
     cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
