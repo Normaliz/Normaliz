@@ -223,8 +223,23 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
             && !CPs.test(ConeProperty::Deg1Elements)) {
         errorOutput() << "WARNING: Approximate is ignored since Deg1Elements is not set."<< std::endl;
     }
-    if (CPs.test(ConeProperty::ConeDecomposition))
-        CPs.reset(ConeProperty::Triangulation);    
+    if (CPs.test(ConeProperty::ConeDecomposition)) // looks strange, but implication taken care of in Full_Cone
+        CPs.reset(ConeProperty::Triangulation); 
+    
+    if (CPs.test(ConeProperty::GradingDenom))
+        CPs.reset(ConeProperty::Grading);
+    
+    if(CPs.test(ConeProperty::UnitGroupIndex))
+        CPs.set(ConeProperty::HilbertBasis);
+    
+    if(CPs.test(ConeProperty::Equations) || CPs.test(ConeProperty::Congruences) || CPs.test(ConeProperty::ExternalIndex))
+        CPs.set(ConeProperty::Sublattice);
+    
+    if(CPs.test(ConeProperty::Rank))
+        CPs.set(ConeProperty::Sublattice);
+    
+    if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
+        CPs.set(ConeProperty::HilbertSeries);
     
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
@@ -234,8 +249,12 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
 
 void ConeProperties::check_sanity(bool inhomogeneous) {
     ConeProperty::Enum prop;
-    if(CPs.test(ConeProperty::BottomDecomposition) && CPs.test(ConeProperty::NoBottomDec))
-        throw BadInputException("Contradictory options for bottom decomposition.");
+    if(        
+           (CPs.test(ConeProperty::BottomDecomposition) && CPs.test(ConeProperty::NoBottomDec))
+        || (CPs.test(ConeProperty::DualMode) && CPs.test(ConeProperty::PrimalMode))
+        || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::NoSymmetrization))
+    )
+        throw BadInputException("Contradictory algorithmic variants in options.");
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
             prop = static_cast<ConeProperty::Enum>(i);
@@ -248,6 +267,15 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::WitnessNotIntegrallyClosed
                   || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
+                  || prop == ConeProperty::Symmetrize
+                  || prop == ConeProperty::NoSymmetrization
+                  || prop == ConeProperty::InclusionExclusionData
+                  || prop == ConeProperty::ExcludedFaces
+                  || prop == ConeProperty::UnitGroupIndex
+                  || prop == ConeProperty::ReesPrimaryMultiplicity
+                  || prop == ConeProperty::IsReesPrimary
+                  || prop == ConeProperty::IsDeg1HilbertBasis
+                  || prop == ConeProperty::IsDeg1ExtremeRays
                  // || prop == ConeProperty::ModuleGeneratorsOverOriginalMonoid
                 ) {
                     throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
@@ -317,14 +345,17 @@ namespace {
         CPN.at(ConeProperty::NoSymmetrization) = "NoSymmetrization";
         CPN.at(ConeProperty::EmbeddingDim) = "EmbeddingDim";
         CPN.at(ConeProperty::Rank) = "Rank";
-        CPN.at(ConeProperty::Index) = "Index";
+        CPN.at(ConeProperty::InternalIndex) = "InternalIndex";
         CPN.at(ConeProperty::IsInhomogeneous) = "IsInhomogeneous";
         CPN.at(ConeProperty::UnitGroupIndex) = "UnitGroupIndex";
-        CPN.at(ConeProperty::Constraints) = "Constraints";
         CPN.at(ConeProperty::GradingDenom) = "GradingDenom";
+        CPN.at(ConeProperty::Equations) = "Equations";
+        CPN.at(ConeProperty::Congruences) = "Congruences";
+        CPN.at(ConeProperty::ExternalIndex) = "ExernalIndex";
+        CPN.at(ConeProperty::HilbertQuasiPolynomial) = "HilbertQuasiPolynomial";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 51,
+        static_assert (ConeProperty::EnumSize == 54,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

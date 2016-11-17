@@ -457,7 +457,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
         prepare_input_type_4(Inequalities); // inserts default inequalties if necessary
     else{
         is_Computed.set(ConeProperty::Generators);
-        is_Computed.set(ConeProperty::Sublattice);          
+        is_Computed.set(ConeProperty::Sublattice); 
     }
     
     checkGrading();
@@ -478,6 +478,9 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     
     BasisChangePointed=BasisChange;
+    
+    is_Computed.set(ConeProperty::IsInhomogeneous);
+    is_Computed.set(ConeProperty::EmbeddingDim);
 
     /* if(ExcludedFaces.nr_of_rows()>0){ // Nothing to check anymore
         check_excluded_faces();
@@ -726,6 +729,8 @@ Matrix<Integer> Cone<Integer>::prepare_input_type_2(const vector< vector<Integer
     Grading = vector<Integer>(dim,0);
     Grading[dim-1] = 1;
     is_Computed.set(ConeProperty::Grading);
+    GradingDenom=1;
+    is_Computed.set(ConeProperty::GradingDenom);
     return Generators;
 }
 
@@ -952,8 +957,11 @@ void Cone<Integer>::checkGrading () {
                     + toString(neg_value) + " for generator "
                     + toString(neg_index+1) + "!");
         }
-        if(positively_graded)
+        if(positively_graded){
             is_Computed.set(ConeProperty::Grading);
+            is_Computed.set(ConeProperty::GradingDenom);
+            
+        }
     }
     
 }
@@ -1495,6 +1503,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
+    
+    complete_HilbertSeries_comp(ToCompute);
+    
+    complete_sublattice_comp(ToCompute);
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
@@ -2101,7 +2113,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             GradingDenom=v_make_prime(test_grading);
         }
         else
-            GradingDenom=1;            
+            GradingDenom=1; 
+        is_Computed.set(ConeProperty::GradingDenom);
     }
         
     if (FC.isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) { // must precede extreme rays
@@ -2324,8 +2337,10 @@ void Cone<Integer>::check_integrally_closed() {
             || !isComputed(ConeProperty::HilbertBasis) || inhomogeneous)
         return;
 
+    unit_group_index=1;
     if(BasisMaxSubspace.nr_of_rows()>0)
         compute_unit_group_index();
+    is_Computed.set(ConeProperty::UnitGroupIndex);
     if (index > 1 || HilbertBasis.nr_of_rows() > OriginalMonoidGenerators.nr_of_rows()
             || unit_group_index>1) {
         integrally_closed = false;
@@ -2417,6 +2432,7 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
     // is_Computed.set(ConeProperty::Generators);
     Matrix<Integer> M=BasisChange.to_sublattice(Input);
     index=M.full_rank_index();
+    is_Computed.set(ConeProperty::InternalIndex);
 }
 
 //---------------------------------------------------------------------------
@@ -2462,6 +2478,37 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     }
     ExtremeRays.sort_by_weights(WeightsGrad,GradAbs);
     is_Computed.set(ConeProperty::ExtremeRays);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::complete_sublattice_comp(ConeProperties& ToCompute) {
+    
+    if(!isComputed(ConeProperty::Sublattice))
+        return;
+    is_Computed.set(ConeProperty::Rank);
+    if(ToCompute.test(ConeProperty::Equations)){
+        BasisChange.getEquationsMatrix(); // just to force computation, ditto below
+        is_Computed.set(ConeProperty::Equations);
+    }
+    if(ToCompute.test(ConeProperty::Congruences) || ToCompute.test(ConeProperty::ExternalIndex)){
+        BasisChange.getCongruencesMatrix();
+        BasisChange.getExternalIndex();
+        is_Computed.set(ConeProperty::Congruences);
+        is_Computed.set(ConeProperty::ExternalIndex);
+    }
+}
+
+template<typename Integer>
+void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
+    if(!isComputed(ConeProperty::HilbertSeries))
+        return;
+    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
+        HSeries.computeHilbertQuasiPolynomial();
+    if(HSeries.isHilbertQuasiPolynomialComputed())
+        is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
+    
 }
 
 

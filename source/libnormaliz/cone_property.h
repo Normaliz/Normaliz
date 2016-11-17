@@ -51,6 +51,8 @@ namespace ConeProperty {
         ExcludedFaces,
         OriginalMonoidGenerators,
         MaximalSubspace,
+        Equations, // new
+        Congruences, // new
         //vector valued
         Grading,
         Dehomogenization,
@@ -62,7 +64,8 @@ namespace ConeProperty {
         ReesPrimaryMultiplicity,
         GradingDenom, // new
         UnitGroupIndex, // new
-        Index, // new
+        InternalIndex, // new
+        ExternalIndex, // new
         // rational valued
         Multiplicity,
         // dimensions
@@ -70,8 +73,8 @@ namespace ConeProperty {
         AffineDim,
         ModuleRank,
         Rank, // new
-        EmbeddingDim, //new      
-        // boolean valued
+        EmbeddingDim, // new      
+        // boolean valued 
         IsPointed,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
@@ -86,7 +89,7 @@ namespace ConeProperty {
         ClassGroup,        
         IntegerHull,
         ConeDecomposition,
-        Constraints, //new
+        HilbertQuasiPolynomial,
         //
         // algorithmic variants
         //
