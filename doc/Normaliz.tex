@@ -5133,7 +5133,7 @@ Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
                     InputType type3, const vector< vector<Integer> >& Input3)
 \end{Verbatim}
 
-If you have to combine more that three matrices, you can define a
+If you have to combine more than three matrices, you can define a
 \begin{Verbatim}
 map <InputType, vector< vector<Integer> > >
 \end{Verbatim}
@@ -5242,7 +5242,7 @@ Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
 MyCone.compute(Wanted);
 \end{Verbatim}
 
-All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, is the lack of algorithmis variants if you use \verb|get...| without \verb|compute| beforehand.
+All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, is the lack of algorithmic variants if you use \verb|get...| without \verb|compute| beforehand.
 
 Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the class \verb|ConeProperties|. Here we only mention the constructors
 \begin{Verbatim}
@@ -5289,7 +5289,7 @@ bool done=MyCone.isComputed(ConeProperty::HilbertBasis)
 \subsubsection{Rank, index and dimension}
 
 \begin{Verbatim}
-size_t getEmbeddingDim()
+size_t Cone<Integer>::getEmbeddingDim()
 size_t Cone<Integer>::getRank()
 Integer Cone<Integer>::getIndex()
 Integer Cone<Integer>::getUnitGroupIndex()
@@ -5303,7 +5303,7 @@ The function \verb|getIndex()| returns the \emph{internal} index which is only d
 
 The last three functions return values that are only well-defined after inhomogeneous computations.
 
-\subsubsection{Support hyperplanes and constraints}
+\subsubsection{Support hyperplanes and constraints}\label{SHC}
 
 \begin{Verbatim}
 const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes()
@@ -5407,19 +5407,19 @@ const HilbertSeries& Cone<Integer>::getHilbertSeries()
 \end{Verbatim}
 It contains several data fields that can be accessed as follows (see \verb|hilbert_series.h|):
 \begin{Verbatim}
-const vector<mpz_class>& getNum() const;
-const map<long, denom_t>& getDenom() const;
+const vector<mpz_class>& HilbertSeries::getNum() const;
+const map<long, denom_t>& HilbertSeries::getDenom() const;
 
-const vector<mpz_class>& getCyclotomicNum() const;
-const map<long, denom_t>& getCyclotomicDenom() const;
+const vector<mpz_class>& HilbertSeries::getCyclotomicNum() const;
+const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const;
 
-long getDegreeAsRationalFunction() const;
-long getShift() const;
+long HilbertSeries::getDegreeAsRationalFunction() const;
+long HilbertSeries::getShift() const;
 
-bool isHilbertQuasiPolynomialComputed() const;
-vector< vector<mpz_class> > getHilbertQuasiPolynomial() const;
-long getPeriod() const;
-mpz_class getHilbertQuasiPolynomialDenom() const;
+bool HilbertSeries::isHilbertQuasiPolynomialComputed() const;
+vector< vector<mpz_class> > HilbertSeries::getHilbertQuasiPolynomial() const;
+long HilbertSeries::getPeriod() const;
+mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
 \end{Verbatim}
 
 The first four functions refer to two representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In both cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
@@ -5487,7 +5487,7 @@ $$
 $$
 with the following property: there exists $c\in\ZZ$, $c\neq 0$, such that $\pi\circ \phi=c\cdot\operatorname{id}_{\ZZ^r}$. In particular $\phi$ is injective. One should view the two maps as a pair of coordinate transformations: $\phi$ is determined by a choice of basis in the sublattice $U=\phi(\ZZ^r)$, and it allows us to transfer vectors from $U\cong \ZZ^r$ to the ambient lattice $\ZZ^n$. The map $\pi$ is used to realize vectors from $U$ as linear combinations of the given basis of $U\cong\ZZ^r$: after the application of $\pi$ one divides by $c$. (If $U$ is a direct summand of $\ZZ^n$, one can choose $c=1$, and conversely.) Normaliz considers vectors as rows of matrices. Therefore $\phi$ is given as an $r\times n$-matrix and $\pi$ is given as an $n\times r$ matrix.
 
-The data just described can be accessed as follows (\verb|sublattice_representation.h|):
+The data just described can be accessed as follows (\verb|sublattice_representation.h|). For space reasons we omit the class specification \verb|Sublattice_Representation<Integer>::|
 \begin{Verbatim}
 const vector<vector<Integer> >& getEmbedding() const
 const vector<vector<Integer> >& getProjection() const
@@ -5513,6 +5513,8 @@ The constraints computed by Normaliz are ``hidden'' in the sublattice representa
 const vector<vector<Integer> >& getEquations() const
 const vector<vector<Integer> >& getCongruences() const
 \end{Verbatim}
+
+But see Section \ref{SHC} above for a dmore direct access.
 	
 
 \subsubsection{Class group}
