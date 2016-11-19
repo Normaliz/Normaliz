@@ -275,6 +275,8 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
+    bool explicit_HilbertSeries;
+    bool naked_dual;
 
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
@@ -327,6 +329,8 @@ private:
     void compute_dual(ConeProperties& ToCompute);
     template<typename IntegerFC>
     void compute_dual_inner(ConeProperties& ToCompute);
+    
+    void set_implicit_dual_mode(ConeProperties& ToCompute);
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template<typename IntegerFC>
