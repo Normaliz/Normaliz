@@ -132,6 +132,7 @@ public:
     size_t getEmbeddingDim() const { return dim; };   // is always known
     size_t getRank();                           // depends on ExtremeRays
     Integer getIndex(); // depends on OriginalMonoidGenerators
+    Integer getInternalIndex(); // = getIndex()
     Integer getUnitGroupIndex(); // ditto
     // only for inhomogeneous case:
     size_t getRecessionRank();

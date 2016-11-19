@@ -255,6 +255,10 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::NoSymmetrization))
     )
         throw BadInputException("Contradictory algorithmic variants in options.");
+        
+    if(CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
+        throw BadInputException("ConeProperty not allowed in compute().");
+        
     for (size_t i=0; i<ConeProperty::EnumSize; i++) {
         if (CPs.test(i)) {
             prop = static_cast<ConeProperty::Enum>(i);
@@ -353,9 +357,11 @@ namespace {
         CPN.at(ConeProperty::Congruences) = "Congruences";
         CPN.at(ConeProperty::ExternalIndex) = "ExernalIndex";
         CPN.at(ConeProperty::HilbertQuasiPolynomial) = "HilbertQuasiPolynomial";
+        CPN.at(ConeProperty::IsTriangulationNested) = "IsTriangulationNested";
+        CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 54,
+        static_assert (ConeProperty::EnumSize == 56,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

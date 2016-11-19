@@ -103,6 +103,12 @@ namespace ConeProperty {
         NoSymmetrization, // new
         KeepOrder,
         HSOP,
+        //
+        // checking properties of already computed data
+        // (cannot be used as a computation goal)
+        //
+        IsTriangulationNested,
+        IsTriangulationPartial,
         
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum

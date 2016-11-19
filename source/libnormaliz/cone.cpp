@@ -1054,6 +1054,11 @@ Integer Cone<Integer>::getIndex() {
     return index;
 }
 
+template<typename Integer>    // computation depends on OriginalMonoidGenerators
+Integer Cone<Integer>::getInternalIndex() {
+    return getIndex();
+}
+
 template<typename Integer>
 Integer Cone<Integer>::getUnitGroupIndex() {
     compute(ConeProperty::OriginalMonoidGenerators,ConeProperty::IsIntegrallyClosed);
@@ -2143,6 +2148,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         triangulation_is_nested = FC.triangulation_is_nested;
         triangulation_is_partial= FC.triangulation_is_partial;
         is_Computed.set(ConeProperty::TriangulationSize);
+        is_Computed.set(ConeProperty::IsTriangulationPartial);
+        is_Computed.set(ConeProperty::IsTriangulationNested);
         is_Computed.reset(ConeProperty::Triangulation);
         Triangulation.clear();
     }
