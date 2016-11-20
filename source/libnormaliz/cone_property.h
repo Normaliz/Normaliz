@@ -107,8 +107,8 @@ namespace ConeProperty {
         // checking properties of already computed data
         // (cannot be used as a computation goal)
         //
-        IsTriangulationNested,
-        IsTriangulationPartial,
+        IsTriangulationNested,  //new
+        IsTriangulationPartial,  //new
         
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum

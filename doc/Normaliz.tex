@@ -2714,7 +2714,7 @@ integral is to be computed. See \cite{NmzInt}.
 
 \section{Computation goals and algorithmic variants}\label{Goals}
 
-The library \verb|libnormaliz| contains a class \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The latter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz.|
+The library \verb|libnormaliz| contains a class \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The latter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz|. See Appendix \ref{libnorm} for a description of \verb|libnormaliz|.
 
 All computation goals and algorithmic variants can be communicated to Normaliz in two ways:
 \begin{arab}
@@ -2748,7 +2748,7 @@ If set explicitly in the input file or on the command line the following adds th
 
 It is possible to set \verb|DefaultMode| explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
-Normaliz collects all computation goals and algorithmic variants set in the input file and on the command line. Note that some options may block others during the computation. For example, \verb|KeepOrder| blocks \verb|BottomDecomposition|.
+Normaliz collects all computation goals and algorithmic variants set in the input file and on the command line. Note that some options may block others during the computation. For example, \verb|KeepOrder| blocks \verb|BottomDecomposition|. It is clear that contradictory options line \verb|BottomDecomposition| and \verb|NoBottomDec| cannot be used simultaneously. 
 Moreover, Normaliz tries to omit superfluous computations. For example, if the dual mode is called for the degree $1$ elements, but also the Hilbert series is to be computed, then the dual mode will be skipped since the degree $1$ elements can be got as a cheap byproduct of the Hilbert series.
  
 
@@ -2759,7 +2759,7 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 \subsubsection{Lattice data}
 
 \begin{itemize}
-	\itemtt[Sublattice, -S] (upper case S) asks Normaliz to compute the data of the efficient sublattice.
+	\itemtt[Sublattice, -S] (upper case S) asks Normaliz to compute the coordinate transformation to and from the efficient sublattice.
 \end{itemize}
 
 \subsubsection{Support hyperplanes and extreme rays}
@@ -2769,6 +2769,8 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 \end{itemize}
 
 Normaliz tries to find a grading. In the inhomogeneous case the module rank is computed.
+
+
 
 \subsubsection{Hilbert basis and related data}
 
@@ -2891,6 +2893,11 @@ The default choice is the Normaliz primal algorithm that is based on a (partial)
 \begin{itemize}
 	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
 	
+	\itemtt[PrimalMode] blocks the use of the dual algorithm.
+	
+	\itemtt[Symmetrize] lest Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (\textbf{not yet implemented}).
+	\itemtt[NoSymmetrization] blocks symmetrization.
+	
 	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|Approximate|.)
 	
 	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
@@ -2919,19 +2926,27 @@ Note that Normaliz tries to avoid overflows by intermediate results (even if \ve
 
 \verb|BigInt| and \verb|LongLong| are  not cone properties.
 
-\subsection{Control of computations}
+\subsection{Control of computations and communication with interfaces}
 
 In addition to the computation goals in Section \ref{goals}, 
 the following elements of \verb|ConeProperties| control the work flow in \verb|libnormaliz| and can be used by programs calling Normaliz to ensure the availability of the data that are controlled by them.
 
 \begin{itemize}
 	
+	\itemtt[Generators] controls the generators of the efficient cone.
+	
+	\itemtt[OriginalMonoidGenerators] controls the generators of the original monoid.
 		
 	\itemtt[ModuleGenerators] controls the module generators in inhomogeneous computation.
 	
 	\itemtt[ExtremeRays] controls the extreme rays.
 		
 	\itemtt[VerticesOfPolyhedron] controls the vertices of the polyhedron in the inhomogeneous case.
+	
+	\itemtt[MaximalSubspace] controls the maximal linear subspace of the (homogenized) cone.		
+	
+	\itemtt [EmbeddingDim] controls the embedding dimension.
+	\itemtt [Rank] controls the rank.
 	
 	\itemtt[RecessionRank]  controls the rank of the recession monoid in inhomogeneous computations.
 	
@@ -2944,18 +2959,28 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	\itemtt[InclusionExclusionData] controls data derived from the excluded faces.
 	
 	\itemtt[Grading] controls the grading.
+	\itemtt[GradingDenom] controls its denominator.
 	
 	\itemtt[Dehomogenization] controls the dehomogenization.
 	
-	\itemtt[Generators] controls the generators of the efficient cone.
-	
-	\itemtt[OriginalMonoidGenerators] controls the generators of the original monoid.
-	
 	\itemtt[ReesPrimaryMultiplicity] controls the multiplicity of a monomial ideal, provided it is primary to the maximal ideal generated by the indeterminates. Used only with the input type \verb|rees_algebra|.
 	
-	\itemtt[MaximalSubspace] controls the computation of the maximal linear subspace of the (homogenized) cone.
 	
-	\itemtt [WitnessNotIntegrallyClosed] controls the computation of the witness against integral closedness.
+	\itemtt [WitnessNotIntegrallyClosed] controls  witness against integral closedness.
+	
+	\itemtt[Equations] controls the equations.
+	\itemtt[Congruences] controls the congruences.
+	\itemtt[ExternalIndex]  controls the external index.
+	\itemtt[InternalIndex]  controls the internal index.
+	\itemtt[UnitGroupIndex]  controls the unit group index.
+
+	
+	\itemtt[IsInhomogeneous] controls the inhomogeneous case..
+	
+	\itemtt[HilbertQuasiPolynomial] controls the Hilbert quasipolynomial.
+	
+	\itemtt[IsTriangulationNested]  controls the indicator of this property.
+	\itemtt[IsTriangulationPartial]  similar.
 	
 \end{itemize}
 
@@ -5019,7 +5044,7 @@ The optional output files of with suffix \verb|cst| are still in this format. Ju
 
 
 
-\section{libnormaliz}
+\section{libnormaliz}\label{libnorm}
 
 \begin{small}
 
@@ -5163,52 +5188,84 @@ Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matix(total_degree));
 Before starting a computation in a (previously constructed) cone, one must decide what should be computed and in which way it should be computed. The computation goals and algorithmic variants (see Section \ref{Goals}) are defined as follows (\verb|cone_property.h|):
 \begin{Verbatim}
 namespace ConeProperty {
-enum Enum {
-// goals that can be computed
-Generators,
-ExtremeRays,
-VerticesOfPolyhedron,
-SupportHyperplanes,
-TriangulationSize,
-TriangulationDetSum,
-Triangulation,
-Multiplicity,
-RecessionRank,
-AffineDim,
-ModuleRank,
-HilbertBasis,
-ModuleGenerators,
-Deg1Elements,
-HilbertSeries,
-Grading,
-IsPointed,
-IsDeg1ExtremeRays,
-IsDeg1HilbertBasis,
-IsIntegrallyClosed,
-WitnessNotIntegrallyClosed,
-OriginalMonoidGenerators,
-IsReesPrimary,
-ReesPrimaryMultiplicity,
-StanleyDec,
-ExcludedFaces,
-Dehomogenization,
-InclusionExclusionData,
-Sublattice,
-ClassGroup,
-ModuleGeneratorsOverOriginalMonoid
-IntegerHull,
-MaximalSubspace,
-ConeDecomposition,
-// algorithmic variants
-Approximate,
-BottomDecomposition,
-DefaultMode,
-DualMode,
-KeepOrder,
-HSOP,
-NoBottomDec,
-EnumSize // this has to be the last entry, to get the number of entries in the enum
-}; // remember to change also the string conversion function if you change this enum
+    enum Enum {
+        //
+        // goals that can be computed (or are defined by input data)
+        //
+        // matrix valued
+        Generators,
+        ExtremeRays,
+        VerticesOfPolyhedron,
+        SupportHyperplanes,
+        HilbertBasis,
+        ModuleGenerators,
+        Deg1Elements,
+        ModuleGeneratorsOverOriginalMonoid,
+        Sublattice, 
+        ExcludedFaces,
+        OriginalMonoidGenerators,
+        MaximalSubspace,
+        Equations, 
+        Congruences, 
+        //vector valued
+        Grading,
+        Dehomogenization,
+        WitnessNotIntegrallyClosed,
+        // Cardinalities
+        TriangulationSize,
+        // Integer valued,        
+        TriangulationDetSum,
+        ReesPrimaryMultiplicity,
+        GradingDenom, 
+        UnitGroupIndex, 
+        InternalIndex, 
+        ExternalIndex, 
+        // rational valued
+        Multiplicity,
+        // dimensions
+        RecessionRank,
+        AffineDim,
+        ModuleRank,
+        Rank, 
+        EmbeddingDim,       
+        // boolean valued 
+        IsPointed,
+        IsDeg1ExtremeRays,
+        IsDeg1HilbertBasis,
+        IsIntegrallyClosed,
+        IsReesPrimary,
+        IsInhomogeneous,         
+        // complex structures
+        Triangulation,
+        HilbertSeries,
+        InclusionExclusionData,
+        StanleyDec,        
+        ClassGroup,        
+        IntegerHull,
+        ConeDecomposition,
+        HilbertQuasiPolynomial,
+        //
+        // algorithmic variants
+        //
+        DefaultMode,
+        Approximate,
+        BottomDecomposition,
+        NoBottomDec,       
+        DualMode,
+        PrimalMode, //new
+        Symmetrize, / new
+        NoSymmetrization, // new
+        KeepOrder,
+        HSOP,
+        //
+        // checking properties of already computed data
+        // (cannot be used as a computation goal)
+        //
+        IsTriangulationNested, // new
+        IsTriangulationPartial, // new
+        
+        EnumSize // this has to be the last entry, to get the number of entries in the enum
+    }; // remember to change also the string conversion function if you change this enum
 }
 \end{Verbatim}
 
@@ -5291,15 +5348,15 @@ bool done=MyCone.isComputed(ConeProperty::HilbertBasis)
 \begin{Verbatim}
 size_t Cone<Integer>::getEmbeddingDim()
 size_t Cone<Integer>::getRank()
-Integer Cone<Integer>::getIndex()
-Integer Cone<Integer>::getUnitGroupIndex()
-
 size_t Cone<Integer>::getRecessionRank()
 long Cone<Integer>::getAffineDim()
 size_t Cone<Integer>::getModuleRank()
+
+Integer Cone<Integer>::getInternalIndex()
+Integer Cone<Integer>::getUnitGroupIndex()
 \end{Verbatim}
 
-The function \verb|getIndex()| returns the \emph{internal} index which is only defined if original generators are defined. See Section \ref{coord} for the external index.
+The \emph{internal} index is only defined if original generators are defined. See Section \ref{coord} for the external index.
 
 The last three functions return values that are only well-defined after inhomogeneous computations.
 
@@ -5323,6 +5380,8 @@ Type::inequalities
 Type::equations
 Type::congruences
 \end{Verbatim}
+
+Note that \verb|equations| \verb|congruences| can also be accessed via the coordinate transformation (to which they belong internally). See Section \ref{coord}.
 
 \subsubsection{Extreme rays and vertices}
 
