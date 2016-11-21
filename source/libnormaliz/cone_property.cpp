@@ -243,10 +243,7 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
-    
-    if(CPs.test(ConeProperty::DualMode))
-        CPs.reset(ConeProperty::DefaultMode);        
-        
+
     if(CPs.test(ConeProperty::DefaultMode)){
         CPs.set(ConeProperty::HilbertBasis);
         CPs.set(ConeProperty::HilbertSeries);

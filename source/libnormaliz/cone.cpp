@@ -1428,6 +1428,7 @@ template<typename Integer>
 void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     
     if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
+                    || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)
                     || Generators.nr_of_rows()>0 || SupportHyperplanes.nr_of_rows() > 2*dim
                     || SupportHyperplanes.nr_of_rows() 
                             <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
@@ -1450,9 +1451,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute(ConeProperty::MaximalSubspace);      
     }
     
-    explicit_HilbertSeries=ToCompute.test(ConeProperty::HilbertSeries);
+    explicit_HilbertSeries=ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP);
     // must distiguish it frombeing set through DefaultMode;
-    naked_dual=ToCompute.test(ConeProperty::DualMode) && ToCompute.test(ConeProperty::DefaultMode);
+    naked_dual=ToCompute.test(ConeProperty::DualMode) 
+                && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements));
         // to control the computation of rational solutions in the inhomogeneous case
     
     ToCompute.reset(is_Computed);
@@ -1967,7 +1969,11 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
+        bool save_explicit_HilbertSeries=explicit_HilbertSeries;
+        bool save_naked_dual= naked_dual;
         compute(Dualize);
+        explicit_HilbertSeries=save_explicit_HilbertSeries;
+        naked_dual=save_naked_dual;
     }
     
     bool do_extreme_rays_first = false;
