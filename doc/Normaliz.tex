@@ -5301,6 +5301,8 @@ MyCone.compute(Wanted);
 
 All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, is the lack of algorithmic variants if you use \verb|get...| without \verb|compute| beforehand.
 
+If \verb|DefaultMode| is not set, then \verb|compute()| will throw a \verb|NotComputableException| so that \verb|compute()| cannot a value. In the presence of \verb|DefaultMode|, the returned \verb|ConeProperties| are those that have not been computed.
+
 Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the class \verb|ConeProperties|. Here we only mention the constructors
 \begin{Verbatim}
 ConeProperties::ConeProperties(ConeProperty::Enum p1)
@@ -5318,8 +5320,6 @@ ConeProperties& ConeProperties::set(ConeProperty::Enum p1, ConeProperty::Enum p2
 
 bool ConeProperties::test(ConeProperty::Enum Property) const
 \end{Verbatim}
-
-The return value of \verb|compute| can be used to check whether the computation goals have been reached: the reached goals are set to \verb|false|, and the ``surviving'' ones are those that have not been reached. But there is a more explicit way to do this that we will explain in the next section. 
 
 A string can be converted to a cone property and conversely:
 \begin{Verbatim}
