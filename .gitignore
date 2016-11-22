@@ -37,7 +37,6 @@ BUILD*
 
 
 # ignore latex output files
-*.pdf
 *.ps
 *.dvi
 *.aux
