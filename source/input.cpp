@@ -58,6 +58,14 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
     input_map[input_type] = M;
 }
 
+template<typename Integer>
+void save_empty_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
+        InputType input_type){
+    
+    vector<vector<Integer> > M;
+    save_matrix(input_map, input_type, M);   
+}
+
 template <typename Integer>
 vector<vector<Integer> > transpose_mat(const vector<vector<Integer> >& mat){
 
@@ -506,8 +514,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             throw BadInputException("Error while reading formatted matrix "
                             + type_string + "!");    
                         }
-                        if(formatted_mat.size() ==0) // empty matrix
+                        if(formatted_mat.size() ==0){ // empty matrix
+                            input_type = to_type(type_string);
+                            save_empty_matrix(input_map, input_type);
                             continue;
+                        }
                         if(!dim_known){
                             dim=formatted_mat[0].size()- type_nr_columns_correction(input_type);
                             dim_known=true;
@@ -540,8 +551,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             + "x" + toString(nr_columns)
                             + " matrix) !");
                 }
-                if(nr_rows==0) // nothing to read
+                if(nr_rows==0){
+                    input_type = to_type(type_string);
+                    save_empty_matrix(input_map, input_type);
                     continue;
+                }
                 
                 vector< vector<Integer> > M(nr_rows);
                 in >> std::ws;

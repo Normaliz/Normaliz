@@ -198,6 +198,8 @@ public:
     vector<Integer> getClassGroup();
 
     mpq_class getMultiplicity();
+    
+    bool inequalities_present;
 
     bool isPointed();
     bool isInhomogeneous();

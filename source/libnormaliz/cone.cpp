@@ -207,21 +207,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     bool lattice_ideal_input=false;
     bool inhom_input=false;
     size_t nr_latt_gen=0, nr_cone_gen=0;
+    
+    inequalities_present=false; //control choice of positive orthant
 
-    // remove empty matrices
-    it = multi_input_data.begin();
-    for(; it != multi_input_data.end();) {
-        if (it->second.size() == 0)
-            multi_input_data.erase(it++);
-        else
-            ++it;
-    }
-
-    if(multi_input_data.size()==0){
-        throw BadInputException("All input matrices empty!");
-    }
-
-
+    // NEW: Empty matrix have syntactical influence
     it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
@@ -258,6 +247,19 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
             case Type::vertices:
             case Type::offset:
                 inhom_input=true;
+            default:
+                break;
+        }
+
+        switch (it->first) {  // chceck existence of inrqualities
+            case Type::inhom_inequalities:
+            case Type::strict_inequalities:
+            case Type::strict_signs:
+            case Type::signs:
+            case Type::inequalities:
+            case Type::excluded_faces:
+            case Type::support_hyperplanes:
+                inequalities_present=true;
             default:
                 break;
         }
@@ -304,6 +306,19 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
            throw BadInputException("No explicit grading allowed with polytope!");
+    }
+    
+    // remove empty matrices
+    it = multi_input_data.begin();
+    for(; it != multi_input_data.end();) {
+        if (it->second.size() == 0)
+            multi_input_data.erase(it++);
+        else
+            ++it;
+    }
+
+    if(multi_input_data.size()==0){
+        throw BadInputException("All input matrices empty!");
     }
 
     //determine dimension
@@ -688,7 +703,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 template<typename Integer>
 void Cone<Integer>::prepare_input_type_4(Matrix<Integer>& Inequalities) {
 
-    if (Inequalities.nr_of_rows() == 0 && PreComputedSupportHyperplanes.nr_of_rows()==0) {
+    if (!inequalities_present) {
         if (verbose) {
             verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
         }
