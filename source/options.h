@@ -77,9 +77,9 @@ public:
     void activateInputFileConeProperty(ConeProperty::Enum cp) {
         if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
-    void activateInputFileBigInt() {
+    /* void activateInputFileBigInt() {
         if (!ignoreInFileOpt) use_Big_Integer = true;
-    }
+    }*/
     void activateInputFileLongLong() {
         if (!ignoreInFileOpt) use_long_long = true;
     }
@@ -88,9 +88,9 @@ public:
         return to_compute;
     }
 
-    bool isUseBigInteger() const {
+    /* bool isUseBigInteger() const {
         return use_Big_Integer;
-    }
+    }*/
     bool isUseLongLong() const {
         return use_long_long;
     }
@@ -111,7 +111,7 @@ private:
         string output_dir;
         string output_file;
 
-	bool use_Big_Integer;
+	// bool use_Big_Integer; now in ConeProperty
 	bool use_long_long;
     bool ignoreInFileOpt;
     bool nmzInt_E, nmzInt_I, nmzInt_L;

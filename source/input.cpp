@@ -370,10 +370,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     options.activateInputFileConeProperty(cp);
                     continue;
                 }
-                if (type_string == "BigInt") {
+                /* if (type_string == "BigInt") {
                     options.activateInputFileBigInt();
                     continue;
-                }
+                } */
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;

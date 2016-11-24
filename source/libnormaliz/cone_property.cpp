@@ -105,6 +105,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::Symmetrize, false);
     CPs.set(ConeProperty::NoSymmetrization, false);
     CPs.set(ConeProperty::PrimalMode, false);
+    CPs.set(ConeProperty::BigInt, false);
     return *this;
 }
 
@@ -359,9 +360,10 @@ namespace {
         CPN.at(ConeProperty::HilbertQuasiPolynomial) = "HilbertQuasiPolynomial";
         CPN.at(ConeProperty::IsTriangulationNested) = "IsTriangulationNested";
         CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
+        CPN.at(ConeProperty::BigInt) = "BigInt";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 56,
+        static_assert (ConeProperty::EnumSize == 57,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

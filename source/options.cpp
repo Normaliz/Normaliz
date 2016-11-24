@@ -42,7 +42,7 @@ OptionsHandler::OptionsHandler() {
     project_name_set = false;
     output_dir_set=false;
     write_extra_files = false, write_all_files = false;
-	use_Big_Integer = false;
+	// use_Big_Integer = false;
 	use_long_long = false;
 	ignoreInFileOpt = false;
 	nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
@@ -194,7 +194,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 cerr << "WARNING: deprecated option -e is ignored." << endl;
                 break;
             case 'B':  //use Big Integer
-                use_Big_Integer=true;
+                to_compute.set(ConeProperty::BigInt); // use_Big_Integer=true;
                 break;
             case 'b':  //use the bottom decomposition for the triangulation
                 to_compute.set(ConeProperty::BottomDecomposition);
@@ -291,10 +291,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             printVersion();
             exit(0);
         }
-        if(LongOptions[i]=="BigInt"){
+        /* if(LongOptions[i]=="BigInt"){
             use_Big_Integer=true;
             continue;
-        }
+        }*/
         if(LongOptions[i]=="LongLong"){
             use_long_long=true;
             continue;

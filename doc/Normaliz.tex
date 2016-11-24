@@ -2288,6 +2288,12 @@ inequalities 3 sparse
 \end{Verbatim}
 chooses the $3\times 3$ unit matrix as a matrix of type \verb|inequalities|. Note that also in case of transposed matrices, sparse entry is row by row.
 
+\emph{Matrices may have zero rows.} Such empty matrices like
+\begin{Verbatim}
+inhom_inequalities 0
+\end{Verbatim}
+
+can be used to make the input inhomogeneous (Section \ref{inhom_inp}) or to avoid the automatic choice of the positive orthant in certain cases (Section \ref{default}). (The empty \verb|inhom_inequalities| hve both effects simultaneously.) Apart from these effects, empty matrices have no influence on the computation.
 
 \subsubsection{Formatted matrices}
 
@@ -2306,7 +2312,7 @@ cone [
 [9 10] [11 12]
 ]
 \end{Verbatim} 
-Similarly as plain matrices, formatted matrices can be given in transposed form.
+Similarly as plain matrices, formatted matrices can be given in transposed form, and they can be empty.
 
 \subsubsection{Constraints in generic format}\label{const_syntax}
 
@@ -2383,9 +2389,11 @@ Input items can almost freely be combined, but there are some restrictions:
 	\end{center}
 \end{arab}
 
-Apart from these restrictions, homogeneous and inhomogeneous types can be combined as well as generators and constraints. A single inhomogeneous type or \verb|dehomogenization| in the input triggers an inhomogeneous computation.
+\subsubsection{Homogeneous and inhomogeneous input}\label{inhom_inp}
 
-\subsubsection{Default values}
+Apart from therestrictions listed in the previos section, homogeneous and inhomogeneous types can be combined as well as generators and constraints. A single inhomogeneous type or \verb|dehomogenization| in the input triggers an inhomogeneous computation. The input item of inhomogeneous type may be an empty matrix.
+
+\subsubsection{Default values}\label{default}
 
 If there is no lattice defining item, Normaliz (virtually) inserts the the unit matrix as an input item of type \ttt{lattice}. If there is no cone defining item, the unit matrix is (additionally) inserted as an input item of type \ttt{cone}.
 
@@ -2394,6 +2402,10 @@ If the input is inhomogeneous, then Normaliz provides default values for vertice
 	\item If there is an input matrix of lattice type lattice, but no \ttt{offset}, then the offset $0$ is inserted.
 	\item If there is an input matrix of type cone, but no \ttt{vertices}, then the vertex $0$ is inserted. 
 \end{arab}
+
+\textbf{An important point.}\enspace If the input does not contain any cone generators or inequalities, Normaliz automatically assumes that you want to compute in the positive orthant. In order to avoid this choice you can add an empty matrix of inequalities. This will not affect the results, but avoid the sign restriction.
+
+
 
 \subsubsection{Normaliz takes intersections (almost always)}
 
@@ -2924,7 +2936,7 @@ On the other hand, the $64$ bit attempt can be bypassed by
 
 Note that Normaliz tries to avoid overflows by intermediate results (even if \verb|LongLong| is set). If such overflow should happen, the computation is repeated locally with infinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must restart the computation globally.
 
-\verb|BigInt| and \verb|LongLong| are  not cone properties.
+\verb|LongLong| is  not a cone property.
 
 \subsection{Control of computations and communication with interfaces}
 
@@ -5244,6 +5256,10 @@ namespace ConeProperty {
         IntegerHull,
         ConeDecomposition,
         HilbertQuasiPolynomial,
+        //
+        // integer type for computations
+        //
+        BigInt,
         //
         // algorithmic variants
         //

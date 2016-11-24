@@ -226,10 +226,9 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
-    if (options.isUseBigInteger()) {
-        MyCone.deactivateChangeOfPrecision();
-    }
-//    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
+    /* if (options.isUseBigInteger()) {
+        MyCone.deactivateChangeOfPrecision(); 
+    } */
     try {
         MyCone.compute(options.getToCompute());
     } catch(const NotComputableException& e) {

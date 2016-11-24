@@ -1447,6 +1447,12 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    if(ToCompute.test(ConeProperty::BigInt)){
+        if(!using_GMP<Integer>())
+            throw BadInputException("BigInt can only be set for cones of Integer type GMP");
+        change_integer_type=false;
+    }
+    
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         compute(ConeProperty::MaximalSubspace);      

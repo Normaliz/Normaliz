@@ -90,6 +90,10 @@ namespace ConeProperty {
         IntegerHull,
         ConeDecomposition,
         HilbertQuasiPolynomial,
+                //
+        // integer type for computations
+        //
+        BigInt,
         //
         // algorithmic variants
         //
