@@ -1927,10 +1927,12 @@ void Full_Cone<Integer>::build_cone() {
         
         if (!omp_in_parallel())
             try_offload(0);
-        // cout << nr_neg << " " << nr_pos << " " << nr_neg_simp << " " << nr_pos_simp << endl;
+        if(!is_pyramid && verbose ) 
+            verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl;
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
-            // cout << "In Pyramids" << endl;
+            if(!is_pyramid && verbose )
+                verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
                 tri_recursion = true; // We can not go back to classical triangulation
             if(check_evaluation_buffer()){

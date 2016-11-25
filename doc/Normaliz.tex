@@ -118,7 +118,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.1.3}
+\def\version{3.1.4}
 \def\NmzDir{Normaliz-\version}
 
 
@@ -271,6 +271,15 @@ For version 3.1.2 we have added
 
 Version 3.1.3 is a bugfix.
 
+For version 3.1.4 we have added
+
+\begin{arab}
+		
+	\item automatic choice of dual or primal algorithm (unless fixed by the user),
+	
+	\item improvements of \verb|libnormaliz: |extension of enumeration \verb|ConeProperty|, constructors base on \verb|Matrix<Integer>|, additional functions for retieval of results.
+\end{arab}
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -300,15 +309,6 @@ directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
-
-\subsection{Sometimes you have a choice}
-
-Normaliz can be started without any option and will try to compute what it can reasonably do. There is however one decision that can be critical: primal algorithm or dual algorithm for the computation of lattice points, especially of Hilbert bases? 
-
-A rule of thumb: use the primal algorithm if you start from generators and the dual algorithm for constraints input. And if your choice doesn't work, try the other one.
-
-Note that the dual algorithm must be chosen explicitly. See Sections \ref{job_dual} and \ref{div_labor} for further discussion.
-
 
 \section{Normaliz by examples}
 
@@ -6079,3 +6079,13 @@ We assume you start in the normaliz root dir (with subdirs source, example, ...)
 	This will install the library headers, the produced libnormaliz and the normaliz executable.
 	The installation path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
 \end{enumerate}
+
+
+
+\subsection{Sometimes you have a choice}
+
+Normaliz can be started without any option and will try to compute what it can reasonably do. There is however one decision that can be critical: primal algorithm or dual algorithm for the computation of lattice points, especially of Hilbert bases? 
+
+A rule of thumb: use the primal algorithm if you start from generators and the dual algorithm for constraints input. And if your choice doesn't work, try the other one.
+
+Note that the dual algorithm must be chosen explicitly. See Sections \ref{job_dual} and \ref{div_labor} for further discussion.

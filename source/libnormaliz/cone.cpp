@@ -1443,19 +1443,34 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
+// this wrapper allows us to save and restore class data that depend on ToCompute
+// and may therefore be destroyed if compute() is called by itself
+template<typename Integer>
+ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
+    
+    bool save_explicit_HilbertSeries=explicit_HilbertSeries;
+    bool save_naked_dual= naked_dual;
+    ToCompute=compute(ToCompute);
+    explicit_HilbertSeries=save_explicit_HilbertSeries;
+    naked_dual=save_naked_dual;
+    return ToCompute;
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
-        compute(ConeProperty::MaximalSubspace);      
+        recursive_compute(ConeProperty::MaximalSubspace);      
     }
     
     explicit_HilbertSeries=ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP);
     // must distiguish it frombeing set through DefaultMode;
     naked_dual=ToCompute.test(ConeProperty::DualMode) 
                 && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements));
-        // to control the computation of rational solutions in the inhomogeneous case
+    // to control the computation of rational solutions in the inhomogeneous case
     
     ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
@@ -1539,7 +1554,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed); //remove what is now computed
     if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
         // this can happen when we were looking for a witness earlier
-        compute(ToCompute);
+        recursive_compute(ToCompute);
     }
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
@@ -1648,8 +1663,8 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        compute(Dualize);
-    }    
+        recursive_compute(Dualize);
+    }
     
     Matrix<IntegerFC> FC_Gens;
 
@@ -1969,11 +1984,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        bool save_explicit_HilbertSeries=explicit_HilbertSeries;
-        bool save_naked_dual= naked_dual;
-        compute(Dualize);
-        explicit_HilbertSeries=save_explicit_HilbertSeries;
-        naked_dual=save_naked_dual;
+        recursive_compute(Dualize);
     }
     
     bool do_extreme_rays_first = false;
