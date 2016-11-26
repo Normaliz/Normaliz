@@ -1491,6 +1491,40 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, ConeProperty::Enum
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
+    
+    if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
+                    || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)
+                    || Generators.nr_of_rows()>0 || SupportHyperplanes.nr_of_rows() > 2*dim
+                    || SupportHyperplanes.nr_of_rows() 
+                            <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
+        return;
+    if(ToCompute.test(ConeProperty::HilbertBasis))
+        ToCompute.set(ConeProperty::DualMode);
+    if(ToCompute.test(ConeProperty::Deg1Elements) 
+            && !(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)))
+        ToCompute.set(ConeProperty::DualMode);
+    return;
+}
+
+//---------------------------------------------------------------------------
+
+// this wrapper allows us to save and restore class data that depend on ToCompute
+// and may therefore be destroyed if compute() is called by itself
+template<typename Integer>
+ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
+    
+    bool save_explicit_HilbertSeries=explicit_HilbertSeries;
+    bool save_naked_dual= naked_dual;
+    ToCompute=compute(ToCompute);
+    explicit_HilbertSeries=save_explicit_HilbertSeries;
+    naked_dual=save_naked_dual;
+    return ToCompute;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(ToCompute.test(ConeProperty::BigInt)){
@@ -1501,8 +1535,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
-        compute(ConeProperty::MaximalSubspace);      
+        recursive_compute(ConeProperty::MaximalSubspace);      
     }
+    
+    explicit_HilbertSeries=ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP);
+    // must distiguish it frombeing set through DefaultMode;
+    naked_dual=ToCompute.test(ConeProperty::DualMode) 
+                && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements));
+    // to control the computation of rational solutions in the inhomogeneous case
     
     ToCompute.reset(is_Computed);
     ToCompute.set_preconditions();
@@ -1521,6 +1561,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
     }
+    
+    set_implicit_dual_mode(ToCompute);
 
     if (ToCompute.test(ConeProperty::DualMode)) {
         compute_dual(ToCompute);
@@ -1584,7 +1626,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed); //remove what is now computed
     if (ToCompute.test(ConeProperty::Deg1Elements) && isComputed(ConeProperty::Grading)) {
         // this can happen when we were looking for a witness earlier
-        compute(ToCompute);
+        recursive_compute(ToCompute);
     }
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
@@ -1693,8 +1735,8 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        compute(Dualize);
-    }    
+        recursive_compute(Dualize);
+    }
     
     Matrix<IntegerFC> FC_Gens;
 
@@ -1707,6 +1749,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     FC.verbose=verbose;
 
     FC.inhomogeneous=inhomogeneous;
+    FC.explicit_h_vector=explicit_HilbertSeries;
 
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
@@ -1974,9 +2017,9 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
     }
     ToCompute.reset(ConeProperty::DualMode);
     ToCompute.reset(is_Computed);
-    if (ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().none()) {
-        ToCompute.reset(ConeProperty::DefaultMode);
-    }
+    // if (ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().none()) {
+    //    ToCompute.reset(ConeProperty::DefaultMode);
+    // }
 }
 
 template<typename Integer>
@@ -2013,7 +2056,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         ConeProperties Dualize;
         Dualize.set(ConeProperty::SupportHyperplanes);
         Dualize.set(ConeProperty::ExtremeRays);
-        compute(Dualize);
+        recursive_compute(Dualize);
     }
     
     bool do_extreme_rays_first = false;
@@ -2021,7 +2064,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
         if (do_only_Deg1_Elements && Grading.size()==0)
             do_extreme_rays_first = true;
         else if ( (do_only_Deg1_Elements || inhomogeneous) &&
-                   (ToCompute.test(ConeProperty::DefaultMode)
+                   ( naked_dual
                  || ToCompute.test(ConeProperty::ExtremeRays)
                  || ToCompute.test(ConeProperty::SupportHyperplanes)
                  || ToCompute.test(ConeProperty::Sublattice) ) )

@@ -327,7 +327,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         output_file=output_dir+pureName(project_name);
     }
     else
-        output_file=project_name;     
+        output_file=project_name;
+    
+    
 
     return false; //no need to print help text
 }
@@ -439,7 +441,7 @@ string OptionsHandler::getNmzIntegrateOptions() const {
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none()) {
+    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode)) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }

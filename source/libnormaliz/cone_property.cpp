@@ -224,8 +224,8 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
             && !CPs.test(ConeProperty::Deg1Elements)) {
         errorOutput() << "WARNING: Approximate is ignored since Deg1Elements is not set."<< std::endl;
     }
-    if (CPs.test(ConeProperty::ConeDecomposition)) // looks strange, but implication taken care of in Full_Cone
-        CPs.reset(ConeProperty::Triangulation); 
+    if (CPs.test(ConeProperty::ConeDecomposition))
+        CPs.set(ConeProperty::Triangulation); 
     
     if (CPs.test(ConeProperty::GradingDenom))
         CPs.reset(ConeProperty::Grading);
@@ -244,7 +244,14 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
-        
+
+    if(CPs.test(ConeProperty::DefaultMode)){
+        CPs.set(ConeProperty::HilbertBasis);
+        CPs.set(ConeProperty::HilbertSeries);
+        if(!inhomogeneous)
+            CPs.set(ConeProperty::ClassGroup);
+        CPs.set(ConeProperty::SupportHyperplanes);        
+    }
 }
 
 

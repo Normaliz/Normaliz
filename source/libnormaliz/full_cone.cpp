@@ -1927,10 +1927,12 @@ void Full_Cone<Integer>::build_cone() {
         
         if (!omp_in_parallel())
             try_offload(0);
-        // cout << nr_neg << " " << nr_pos << " " << nr_neg_simp << " " << nr_pos_simp << endl;
+        if(!is_pyramid && verbose ) 
+            verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl;
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
-            // cout << "In Pyramids" << endl;
+            if(!is_pyramid && verbose )
+                verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
                 tri_recursion = true; // We can not go back to classical triangulation
             if(check_evaluation_buffer()){
@@ -2906,11 +2908,20 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
     do_extreme_rays=true; // we always want to do this if compute() is called
 
-    if (do_default_mode && with_default) {
+    /* if (do_default_mode && with_default) {
         do_Hilbert_basis = true;
         do_h_vector = true;
         if(!inhomogeneous)
             do_class_group=true;
+    }
+    */
+    
+    if (do_integrally_closed) {
+        if (do_Hilbert_basis) {
+            do_integrally_closed = false; // don't interrupt the computation
+        } else {
+            do_Hilbert_basis = true;
+        }
     }
 
     // activate implications
@@ -2923,7 +2934,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     if (do_multiplicity)    do_determinants = true;
     if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
     if (do_determinants)    do_triangulation = true;
-    if (do_h_vector)        do_triangulation = true;
+    if (do_h_vector && (with_default || explicit_h_vector))        do_triangulation = true;
     if (do_deg1_elements)   do_partial_triangulation = true;
     if (do_Hilbert_basis)   do_partial_triangulation = true;
     // activate 
@@ -2961,14 +2972,6 @@ void Full_Cone<Integer>::compute() {
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
-    if (do_integrally_closed) {
-        if (do_Hilbert_basis) {
-            do_integrally_closed = false; // don't interrupt the computation
-        } else {
-            do_Hilbert_basis = true;
-            do_vars_check(false);
-        }
-    }
 
     start_message();
     
