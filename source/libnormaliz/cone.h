@@ -85,6 +85,18 @@ public:
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
     
+    // Now with Matrix
+    Cone(InputType type, const Matrix<Integer>& input_data);
+
+    Cone(InputType type1, const Matrix<Integer>& input_data1,
+         InputType type2, const Matrix<Integer>& input_data2);
+
+    Cone(InputType type1, const Matrix<Integer>& input_data1,
+         InputType type2, const Matrix<Integer>& input_data2,
+         InputType type3, const Matrix<Integer>& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , Matrix<Integer> >& multi_input_data);
 //---------------------------------------------------------------------------
 //                                Destructor
 //---------------------------------------------------------------------------

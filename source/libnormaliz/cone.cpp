@@ -158,7 +158,7 @@ template<typename Integer>
 Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
                     InputType type2, const vector< vector<Integer> >& Input2) {
     if (type1 == type2) {
-        throw BadInputException("Input types must be pairwise different!");
+        throw BadInputException("Input types must  pairwise different!");
     }
     // convert to a map
     map< InputType, vector< vector<Integer> > > multi_input_data;
@@ -190,6 +190,53 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const Matrix<Integer>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<Integer> > >multi_input_data;
+    multi_input_data[input_type] = Input.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<Integer>& Input1,
+                    InputType type2, const Matrix<Integer>& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<Integer>& Input1,
+                    InputType type2, const Matrix<Integer>& Input2,
+                    InputType type3, const Matrix<Integer>& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    multi_input_data[type3] = Input3.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, Matrix<Integer> >& multi_input_data_Matrix){
+    map< InputType, vector< vector<Integer> > > multi_input_data;
+    auto it = multi_input_data_Matrix.begin();
+    for(; it != multi_input_data_Matrix.end(); ++it){
+        multi_input_data[it->first]=it->second.get_elements();
+    }
+    process_multi_input(multi_input_data);
+}
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Cone<Integer>::~Cone() {
     if(IntHullCone!=NULL)
         delete IntHullCone;
@@ -202,7 +249,6 @@ template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
-    typename map< InputType , vector< vector<Integer> > >::iterator it=multi_input_data.begin();
     // find basic input type
     bool lattice_ideal_input=false;
     bool inhom_input=false;
@@ -211,7 +257,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     inequalities_present=false; //control choice of positive orthant
 
     // NEW: Empty matrix have syntactical influence
-    it = multi_input_data.begin();
+    auto it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
