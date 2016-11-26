@@ -2885,8 +2885,7 @@ The last three computation goals are not really useful for Normaliz since they w
 
 \subsection{Algorithmic variants}
 
-The default choice is the Normaliz primal algorithm that is based on a (partial) triangulation.
-
+Normaliz tries to make a smart choice of the algorithmic approach based on the combinatorics of the example and the computation goals set by the user. See Section \ref{smart}. But the algorithmic variants can be fixed by an explicit choice.
 
 \begin{itemize}
 	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
@@ -3044,6 +3043,18 @@ The options for computation goals and algorithms variants have been explained in
 	degree $1$ elements of the Hilbert basis are selected from it.
 	
 \end{enumerate}
+
+\subsection{Normaliz tries to be smart}\label{smart}
+
+\dots but sometimes it needs your help.
+
+Normaliz has two main algorithms for the computation of Hilbert bases and degree $1$ points, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz ties to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can day that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large.
+
+While this combinatorial condition is the only criterion for Nrmaliz, it depends also on the arithmetics of the example what algorithm is better. At present Normaliz makes no attempt to measure it in some way. See Section \ref{div_labor} where Normaliz would only use the primal algorithm although the dual algorithm is much better for the Hilbert basis calculation.
+
+Within the primal algorithm one must decide whether to use bottom decomposition or not. Also in this case Normaliz decides this itself, unless \verb|BottomDecomposition| \verb|-b| or \verb|NoBottomDec| is set. See Section \ref{bottom_dec}.
+
+The approximation of rational polytopes by lattice polytopes is not switched on automatically. It must be set explicitly by \verb|Approximate|, \verb|-r|. See Section \ref{approx}.
 
 \subsection{Info about Normaliz}
 
@@ -6082,10 +6093,3 @@ We assume you start in the normaliz root dir (with subdirs source, example, ...)
 
 
 
-\subsection{Sometimes you have a choice}
-
-Normaliz can be started without any option and will try to compute what it can reasonably do. There is however one decision that can be critical: primal algorithm or dual algorithm for the computation of lattice points, especially of Hilbert bases? 
-
-A rule of thumb: use the primal algorithm if you start from generators and the dual algorithm for constraints input. And if your choice doesn't work, try the other one.
-
-Note that the dual algorithm must be chosen explicitly. See Sections \ref{job_dual} and \ref{div_labor} for further discussion.
