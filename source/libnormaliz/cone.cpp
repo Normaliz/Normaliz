@@ -2202,11 +2202,20 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         /* if (inhomogeneous) {
             // remove irrelevant support hyperplane 0 ... 0 1
             vector<IntegerFC> irr_hyp_subl;
-            BasisChangePointed.convert_to_sublattice_dual(irr_hyp_subl, Dehomogenization);
+            BasisChangePointed.convert_to_sublattice_dual(irr_hyp_subl, Dehomogenization); 
             FC.Support_Hyperplanes.remove_row(irr_hyp_subl);
         } */
         // BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, FC.getSupportHyperplanes());
         extract_supphyps(FC);
+        if(inhomogeneous && FC.dim<dim){ // make inequality for the inhomogeneous variable appear as dehomogenization
+            vector<Integer> dehom_restricted=BasisChangePointed.to_sublattice_dual(Dehomogenization);
+            for(size_t i=0;i<SupportHyperplanes.nr_of_rows();++i){
+                if(dehom_restricted==BasisChangePointed.to_sublattice_dual(SupportHyperplanes[i])){
+                    SupportHyperplanes[i]=Dehomogenization;
+                    break;
+                }
+            }
+        }
         SupportHyperplanes.sort_lex();
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }
