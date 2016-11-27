@@ -14,6 +14,84 @@ env:
   - BUILDSYSTEM=classic
   - BUILDSYSTEM=classic-scip
 
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode7.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode7.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode7.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode7.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode7
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode7
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-scip
+      
+
 branches:
   except:
     - gh-pages
