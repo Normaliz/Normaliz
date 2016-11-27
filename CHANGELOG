@@ -1,5 +1,10 @@
 # ChangeLog
 
+## [3.1.4] 2016-11-26
+- automatic choice of dual or primal algorithm (unless fixed by the user)
+--extension of ConeProperty, constructors based on Matrix<Integer>, additional functions for retieval of results
+
+
 ## [3.1.3] 2016-09-28
 - bug fixes
 
