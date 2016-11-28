@@ -103,7 +103,7 @@ EOF
 	# is complete even when this source tree is not configured with nmzintegrate.
 	./configure --disable-nmzintegrate --disable-scip || exit 1
 	# Rather, build the unpacked distribution with CoCoA.
-	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat config.log; echo '#### Contents of .../_build/.../config.log: ####'; cat normaliz-*/_build/sub/config.log; cat normaliz-*/_build/sub/config.log; exit 1)
+	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat config.log; echo '#### Contents of .../_build/.../config.log: ####'; cat normaliz-*/_build/config.log; cat normaliz-*/_build/sub/config.log; exit 1)
 	;;
     autotools-scip*)
 	./bootstrap.sh || exit 1
