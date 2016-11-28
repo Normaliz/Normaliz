@@ -103,5 +103,6 @@ addons:
       - autoconf
       - automake
       - libtool
+      - time
 
 script: ./.travis-build.sh
