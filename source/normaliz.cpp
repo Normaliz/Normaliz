@@ -121,7 +121,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Integer> int process_data(OptionsHandler& options, const string& command_line);
+template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
 
 //---------------------------------------------------------------------------
 
@@ -147,13 +147,14 @@ int main(int argc, char* argv[])
     if (verbose) {
         printHeader();
     }
-
+    string arg0(argv[0]);
+    
     if (!options.isUseLongLong()) {
-        process_data<mpz_class>(options, command_line);
+        process_data<mpz_class>(options, command_line,arg0);
     }
     // the previous process_data might return unsuccessfully if the input file specifies to use long long
     if (options.isUseLongLong()) {
-        process_data<long long>(options, command_line);
+        process_data<long long>(options, command_line,arg0);
     }
 
     if (options.anyNmzIntegrateOption()) {
@@ -186,7 +187,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(OptionsHandler& options, const string& command_line) {
+template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
 
 #ifndef NCATCH
     try {
@@ -229,6 +230,8 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
+    MyCone.set_project(options.getOutputName());
+    MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
     } catch(const NotComputableException& e) {

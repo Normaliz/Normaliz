@@ -250,9 +250,9 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
     // find basic input type
-    bool lattice_ideal_input=false;
+    lattice_ideal_input=false;
+    nr_latt_gen=0, nr_cone_gen=0;
     bool inhom_input=false;
-    size_t nr_latt_gen=0, nr_cone_gen=0;
     
     inequalities_present=false; //control choice of positive orthant
 
@@ -433,9 +433,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     Matrix<Integer> LatticeGenerators(0,dim);
     prepare_input_generators(multi_input_data, LatticeGenerators);
 
-    Matrix<Integer> Equations(0,dim), Congruences(0,dim+1);
-    Matrix<Integer> Inequalities(0,dim);
-    prepare_input_constraints(multi_input_data,Equations,Congruences,Inequalities);
+    prepare_input_constraints(multi_input_data); // sets Equations,Congruences,Inequalities
 
     // set default values if necessary
     if(inhom_input && LatticeGenerators.nr_of_rows()!=0 && !exists_element(multi_input_data,Type::offset)){
@@ -565,12 +563,14 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data,
-    Matrix<Integer>& Equations, Matrix<Integer>& Congruences, Matrix<Integer>& Inequalities) {
+void Cone<Integer>::prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data) {
 
     Matrix<Integer> Signs(0,dim), StrictSigns(0,dim);
 
     SupportHyperplanes=Matrix<Integer>(0,dim);
+    Inequalities=Matrix<Integer>(0,dim);
+    Equations=Matrix<Integer>(0,dim);
+    Congruences=Matrix<Integer>(0,dim+1);
 
     typename map< InputType , vector< vector<Integer> > >::const_iterator it=multi_input_data.begin();
 
@@ -1532,6 +1532,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw BadInputException("BigInt can only be set for cones of Integer type GMP");
         change_integer_type=false;
     }
+    
+    if(ToCompute.test(ConeProperty:: Symmetrize))
+        symmetrize(ToCompute);
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -2637,5 +2640,212 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     
 }
 
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::set_project(string name){
+    project=name;
+}
+
+template<typename Integer>
+void Cone<Integer>::set_nmz_call(const string& path){
+    nmz_call=path;
+}
+    
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
+    
+    if(!ToCompute.test(ConeProperty::Symmetrize))
+        return;
+    
+    if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim)
+        throw BadInputException("Symmetrization not posible with the given input");   
+    
+    Matrix<Integer> AllConst=Equations;
+    size_t nr_equ=AllConst.nr_of_rows();
+    vector<bool> unit_vector(dim,false);
+    for(size_t i=0;i<Inequalities.nr_of_rows();++i){
+        size_t nr_nonzero=0;
+        size_t nonzero_coord;
+        bool is_unit_vector=true;
+        for(size_t j=0;j<dim;++j){
+            if(Inequalities[i][j]==0)
+                continue;
+            if(nr_nonzero>0 || Inequalities[i][j]!=1){ // not a sign inequality
+                is_unit_vector=false;                
+                break;    
+            }
+            nr_nonzero++;
+            nonzero_coord=j;
+        }
+        if(!is_unit_vector)
+            AllConst.append(Inequalities[i]);
+        else
+            unit_vector[nonzero_coord]=true;    
+    }
+    
+    size_t nr_inequ=AllConst.nr_of_rows()-nr_equ;
+    
+    for(size_t i=0;i<dim;++i)
+        if(!unit_vector[i])
+            throw BadInputException("Symmetrization not possible: Not all sign inequalities in input");
+    
+    for(size_t i=0;i<Congruences.nr_of_rows();++i){
+        vector<Integer> help=Congruences[i];
+        help.resize(dim);
+        AllConst.append(help);
+    }
+    // now we have collected all constraints and cehcked the existence of the sign inequalities
+    
+    AllConst.append(Grading);
+    
+    AllConst.pretty_print(cout);
+    cout << "----------------------" << endl;
+    
+    AllConst=AllConst.transpose();
+    
+    map< vector<Integer>, size_t > classes;
+    typename map< vector<Integer>, size_t >::iterator C;
+
+    for(size_t j=0;j<AllConst.nr_of_rows();++j){
+        C=classes.find(AllConst[j]);
+        if(C!=classes.end())
+            C->second++;
+        else
+            classes.insert(pair<vector<Integer>, size_t>(AllConst[j],1));
+    }
+    
+
+    for(C=classes.begin();C!=classes.end();++C)
+            cout << C->first;
+
+    cout << "--------------" << endl;
+    
+    for(C=classes.begin();C!=classes.end();++C)
+            cout << C->second << " ";
+        
+    cout << endl << endl;
+    
+    vector<size_t> multiplicities;
+    Matrix<Integer> SymmConst(0,AllConst.nr_of_columns());
+    
+    for(C=classes.begin();C!=classes.end();++C){
+            multiplicities.push_back(C->second);
+            SymmConst.append(C->first);
+    }
+    SymmConst=SymmConst.transpose();
+    cout << "--------------" << endl;
+    SymmConst.pretty_print(cout);
+    cout << "--------------" << endl;
+    
+    Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
+    Matrix<Integer> SymmEqu(0,SymmConst.nr_of_columns());
+    Matrix<Integer> SymmCong(0,SymmConst.nr_of_columns());
+    
+    for(size_t i=0;i<nr_inequ;++i)
+        SymmInequ.append(SymmConst[i]);    
+    for(size_t i=nr_inequ;i<nr_inequ+nr_equ;++i)
+        SymmEqu.append(SymmConst[i]);    
+    for(size_t i=nr_inequ+nr_equ;i<SymmConst.nr_of_rows()-1;++i)
+        SymmCong.append(SymmConst[i]);
+    
+    vector<Integer> SymmGrad=SymmConst[SymmConst.nr_of_rows()-1];
+    
+    SymmInequ.pretty_print(cout);
+    cout << "===============" << endl;
+    SymmEqu.pretty_print(cout);
+    cout << "===============" << endl;
+    SymmCong.pretty_print(cout);
+    cout << "===============" << endl;
+    cout << SymmGrad;
+    
+    string polynomial;
+    
+    for(size_t i=0;i<multiplicities.size();++i){
+        for(size_t j=1;j<multiplicities[i];++j)
+            polynomial+="(x["+to_string(i+1)+"]+"+to_string(j)+")*";
+        
+    }
+    polynomial+="1";
+    mpz_class fact=1;
+    for(size_t i=0;i<multiplicities.size();++i){
+        for(size_t j=1;j<multiplicities[i];++j)
+            fact*=j;        
+    }
+    polynomial+="/"+fact.get_str()+";";   
+    
+    cout << polynomial << endl;
+    
+    string in_file=project+".symm.in";
+    string pnm_file=project+".symm.pnm";
+    
+    cout << in_file << endl;
+    
+    const char* file = in_file.c_str();
+    ofstream out(file);
+    out << "amb_space " << SymmInequ.nr_of_columns() << endl;
+    out << "inequalities " << SymmInequ.nr_of_rows() << endl;
+    SymmInequ.pretty_print(out);
+    if(SymmEqu.nr_of_rows()>0){
+        out << "equations " << SymmEqu.nr_of_rows() << endl;;
+        SymmEqu.pretty_print(out);
+    }
+    if(SymmCong.nr_of_rows()>0){
+        out << "equations " << SymmCong.nr_of_rows() << endl;;
+        SymmCong.pretty_print(out);
+    }
+    out << "nonnegative" << endl;
+    out << "grading" << endl;
+    out << SymmGrad;
+    out.close();
+    
+    file = pnm_file.c_str();
+    ofstream pnm_out(file);
+    pnm_out << polynomial << endl;
+    pnm_out.close();
+    
+        //cout << "argv[0] = "<< argv[0] << endl;
+        string nmz_int_exec("\"");
+        // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            nmz_int_exec.append("\"");
+        #endif
+        nmz_int_exec.append(nmz_call);
+        size_t found = nmz_int_exec.rfind("normaliz");
+        if (found!=std::string::npos) {
+            nmz_int_exec.replace (found,8,"nmzIntegrate");
+        } else {
+            throw FatalException("Error: Could not start nmzIntegrate");
+        }
+        nmz_int_exec.append("\"");
+        
+        if(verbose)
+            nmz_int_exec+=" -c ";
+        if(ToCompute.test(ConeProperty::HilbertSeries))
+            nmz_int_exec+=" -E ";
+        else{
+            if(ToCompute.test(ConeProperty::Multiplicity))
+                nmz_int_exec+=" -L ";
+        }
+        
+        nmz_int_exec+=project+".symm";
+        
+        #ifdef _WIN32 //for 32 and 64 bit windows
+            nmz_int_exec.append("\"");
+        #endif
+
+        cout << "executing: "<< nmz_int_exec << endl;
+        system(nmz_int_exec.c_str());
+
+        
+        
+    
+    
+    
+    
+    exit(0);
+    
+    
+}
 
 } // end namespace libnormaliz

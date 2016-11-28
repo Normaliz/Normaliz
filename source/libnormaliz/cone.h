@@ -235,13 +235,28 @@ public:
     const vector< vector<bool> >& getOpenFacets();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
+    
+    void set_project(string name);
+    void set_nmz_call(const string& path);
+    
 
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------
 
 private:
+    
+    string project;
+    string nmz_call;
     size_t dim;
+
+    // the following three matrices store the constraints of the input
+    Matrix<Integer> Inequalities;
+    Matrix<Integer> Equations;
+    Matrix<Integer> Congruences;
+    // we must register some information about thew input
+    bool lattice_ideal_input;
+    size_t nr_latt_gen, nr_cone_gen;
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     Sublattice_Representation<Integer> BasisChangePointed; // to the pointed cone
@@ -309,8 +324,7 @@ private:
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data,
-            Matrix<Integer>& equations, Matrix<Integer>& congruence, Matrix<Integer>& Inequalities);
+    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
                      Matrix<Integer>& LatticeGenerators);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
@@ -326,6 +340,8 @@ private:
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
     
     ConeProperties recursive_compute(ConeProperties ToCompute);
+    
+       void symmetrize (ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
