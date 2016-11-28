@@ -1,5 +1,12 @@
 #! /bin/sh
 set -e # exit on errors
+# Have normaliz testsuite print running time:
+NICE=time
+export NICE
+# Limit number of threads
+OMP_NUM_THREADS=4
+export OMP_NUM_THREADS
+# Top-level directory.
 NMZDIR=`pwd`
 # Set up SCIP if necessary for this build
 if test x$SCIPOPTSUITE_VERSION = x ; then
@@ -43,7 +50,7 @@ case $BUILDSYSTEM in
 	pwd
 	cmake ../source || exit 1
 	make -j2 || exit 1
-	OMP_NUM_THREADS=4 make check || exit 1
+	make check || exit 1
 	;;
     classic-scip*)
 	cat > source/Makefile.configuration <<EOF
@@ -56,7 +63,7 @@ SCIPFLAGS = -L \$(SCIPPATH)/lib -lscipopt-$SCIPOPTSUITE_VERSION.`uname | tr [A-Z
 LINKFLAGS += \$(SCIPFLAGS) \$(GMPFLAGS)
 EOF
 	make -j2 -C source -f Makefile.classic
-	OMP_NUM_THREADS=4 make -C test -f Makefile.classic
+	make -C test -f Makefile.classic
 	;;
     classic*)
 	cat > source/Makefile.configuration <<EOF
@@ -66,7 +73,7 @@ GMPFLAGS = -lgmpxx -lgmp
 LINKFLAGS += \$(GMPFLAGS)
 EOF
 	make -j2 -C source -f Makefile.classic
-	OMP_NUM_THREADS=4 make -C test -f Makefile.classic
+	make -C test -f Makefile.classic
 	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
@@ -102,13 +109,13 @@ EOF
 	./bootstrap.sh || exit 1
 	./configure --enable-scip --with-scipoptsuite-src=$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 || exit 1
-	OMP_NUM_THREADS=4 make -j2 check || exit 1
+	make -j2 check || exit 1
 	;;
     *)
 	# autotools, no SCIP
 	./bootstrap.sh || exit 1
 	./configure --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 || exit 1
-	OMP_NUM_THREADS=4 make -j2 check || exit 1
+	make -j2 check || exit 1
 	;;
 esac
