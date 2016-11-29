@@ -3124,6 +3124,8 @@ The number of threads can also be controlled by the environment
 variable \verb+OMP_NUM_THREADS+. See Section \ref{PerfPar} for
 further discussion.
 
+If the number of threads is not explicitly set by the user, Normaliz limits it to $4*\textup{embdim}$ where $\textup{embdim}$ is the dimension set by \verb|amb_space| in the homogeneous case and larger by $1$ in the imhomogeneous case. This is a measure to prevent the excessive creation of threads on systems that allow very high parallelization.
+
 
 
 \subsection{Control of output files}\label{outcontrol}
