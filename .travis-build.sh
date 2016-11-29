@@ -95,6 +95,10 @@ EOF
 	    tar xf CoCoALib-$COCOALIB_VERSION.tgz || exit 1
 	    cd $COCOALIB_DIR || exit 1
 	    ./configure --threadsafe-hack || exit 1
+            # Patch out use of Boost.  Otherwise, on Mac OS Travis builds
+            # CoCoA finds Boost and libcocoa.a has dependencies on boost libraries.
+            # As a result, our detection of libcocoa fails.
+            sed -i 's/HAVE_BOOST=yes/HAVE_BOOST=no/' configuration/autoconf.mk
 	    make -j2 library || exit 1
 	fi
 	cd $NMZDIR || exit 1
