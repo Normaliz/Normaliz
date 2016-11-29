@@ -38,6 +38,8 @@ case $BUILDSYSTEM in
 	    # which the old compilers on Travis CI do not support.
 	    make -j2 CXXFLAGS="-std=c++0x -fPIC" VERBOSE=true ZLIB=false GMP=false READLINE=false SHARED=$SCIP_SHARED scipoptlib
 	    touch .completed_build
+            SCIP_DIR=`pwd`
+            export SCIP_DIR # for cmake build
 	fi
 	;;
 esac
@@ -111,7 +113,7 @@ EOF
 	;;
     autotools-scip*)
 	./bootstrap.sh || exit 1
-	./configure --enable-scip --with-scipoptsuite-src=$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 || exit 1
 	make -j2 check || exit 1
 	;;

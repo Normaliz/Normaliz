@@ -6,6 +6,7 @@ compiler:
 
 env:
   - BUILDSYSTEM=cmake
+  - BUILDSYSTEM=cmake-scip
   - BUILDSYSTEM=autotools
   - BUILDSYSTEM=autotools-makedistcheck
   - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
