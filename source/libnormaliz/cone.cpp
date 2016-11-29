@@ -1684,8 +1684,11 @@ void Cone<Integer>::compute_integer_hull() {
         }
     }
     
+    if(!isComputed(ConeProperty::MaximalSubspace))
+        recursive_compute(ConeProperty::MaximalSubspace);
+    
     // IntHullGen.pretty_print(cout);
-    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
+    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements(), Type::subspace,BasisMaxSubspace);
     if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);
 
