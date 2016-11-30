@@ -943,7 +943,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         verboseOutput() << "simplex volume " << volume << endl;
     }
     if (C_ptr->use_bottom_points && volume >= SimplexParallelEvaluationBound
-        && C_ptr->approx_level == 1
+        && C_ptr->approx_level == 1 && !C_ptr->is_approximation
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
     {
 
@@ -962,7 +962,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 		time (&start);
 #ifndef NMZ_SCIP
         C.compute_sub_div_elements(Generators, new_points);
-        //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+        cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
        
 #endif
 		bottom_points(new_points, Generators,C.Grading,C.approx_level,0);

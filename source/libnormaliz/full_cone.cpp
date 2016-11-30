@@ -2180,7 +2180,9 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         size_t gen_counter;
         for (k=0;k<dim;k++){
             gen_counter=(k+current_original_gen)%dim;
-            if (approx_points[gen_counter].size()>0 && nr_approx_points[gen_counter]>1){ // if its 0 it was an integer point before or already contained
+            // be careful with duplicates! original point might not have been good but a duplicate was erased!
+            // && nr_approx_points[gen_counter]>1
+            if (approx_points[gen_counter].size()>0  && *(approx_points[gen_counter].begin())!=Generators[gen_counter]){ // if its 0 it was an integer point before or already contained
                 gen_in_hyperplanes.clear();
                 typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
                 for (size_t j=0; j<current_nr_hyps; ++j, ++IHV){
@@ -2188,6 +2190,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
                         gen_in_hyperplanes.push_back(j);
                 }            
                 if (gen_in_hyperplanes.size() < dim-1){ // no ER
+                    //cout << "The original generator " << k << " is no longer an extreme ray." << endl;
                     approx_points[gen_counter].clear();
                     continue;
                 }
@@ -2210,7 +2213,11 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
             vector<key_t> used_gens;
             
             for (size_t j=0;j<dim;j++){
-                if (nr_approx_points[j]==1 && approx_points[j].size()>0) used_gens.push_back(j); // i.e. the original point was already good
+                // be careful with duplicates! original point might not have been good but a duplicate was erased!
+                if (nr_approx_points[j]==1 && approx_points[j].size()>0 && *(approx_points[j].begin())==Generators[j]){
+                    cout << " The generator " << Generators[j] << " was already good" << endl;
+                     used_gens.push_back(j); // i.e. the original point was already good
+                 }
             }
             for (size_t j=dim;j<=i;j++){
                 used_gens.push_back(j);
@@ -3331,30 +3338,31 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
         support_hyperplanes(); // the only thing we can do now
         return;
     }
-    
     assert(elements_from_approx.empty());
     vector<list<vector<Integer>>> approx_points = latt_approx();
-    //cout << "Approximation points: " << endl;
-    //for (size_t j=0;j<dim;++j){
-    //    cout << "Original generator " << j << endl;
-    //    approx_points[j].pretty_print(cout);
-    //}
-    Matrix<Integer> all_approx_points(Generators);
+    cout << "Approximation points: " << endl;
+    for (size_t j=0;j<dim;++j){
+        cout << "Original generator " << j << ": " << Generators[j] << endl;
+        cout << approx_points[j] << endl;
+    }
+    //Matrix<Integer> all_approx_points(Generators);
+    Matrix<Integer> all_approx_points(approx_points.size(),dim);
     for (size_t i=0;i<approx_points.size();i++){
         all_approx_points.append(approx_points[i]);
     }
 
-    Full_Cone C_temp(all_approx_points);
-    C_temp.build_cone_approx(*this,approx_points);
+    //Full_Cone C_temp(all_approx_points);
+    //C_temp.build_cone_approx(*this,approx_points);
+    //C_temp.build_cone();
     
-    if(verbose){
-       verboseOutput() << "using "<< C_temp.getNrGenerators() << " / " << all_approx_points.nr_of_rows()-dim << " approximating points." << flush;
-    }
-    Full_Cone C_approx(C_temp.getGenerators()); // latt_approx computes a matrix of generators
-    //Full_Cone C_approx(all_approx_points); 
-    /* cout << "====================" << endl;
+    //if(verbose){
+       //verboseOutput() << "using "<< C_temp.getNrGenerators() << " / " << all_approx_points.nr_of_rows()-dim << " approximating points." << flush;
+    //}
+    Full_Cone C_approx(all_approx_points); // latt_approx computes a matrix of generators
+    cout << "Approximating generators:" << endl;
+    cout << "====================" << endl;
     C_approx.Generators.pretty_print(cout);
-    cout << "====================" << endl; */
+    cout << "====================" << endl; 
     C_approx.verbose=verbose;
     C_approx.is_approximation=true;
     C_approx.approx_level = approx_level;
@@ -3370,7 +3378,7 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     C_approx.Truncation=Truncation;
     C_approx.TruncLevel=TruncLevel;
 
-    if(verbose)
+    //if(verbose)
         verboseOutput() << "Computing elements in approximating cone with "
                         << C_approx.Generators.nr_of_rows() << " generators." << endl;
     
@@ -4298,12 +4306,14 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
         if(Extreme_Rays_Ind[i]){
             list<vector<Integer> > approx;
             //cout << "point before transformation: " << Generators[i];
-            approx_simplex(T.MxV(Generators[i]),approx,approx_level);
+            approx_simplex(T.MxV(Generators[i]),approx,approx_level+1);
             // TODO: NECESSARY?
             //approx.unique()
-            for(auto jt=approx.begin();jt!=approx.end();++jt)  // reverse transformation
+            cout << "Approximation points for generator " << i << ": " << Generators[i] << endl;
+            for(auto jt=approx.begin();jt!=approx.end();++jt){  // reverse transformation
                 *jt=U.MxV(*jt);
-            
+                cout << *jt << endl;
+            }
             //~ M=Matrix<Integer>(approx);
             //~ 
             //~ // remove duplicates
