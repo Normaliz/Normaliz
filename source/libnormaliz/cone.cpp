@@ -1753,7 +1753,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
 
     FC.inhomogeneous=inhomogeneous;
     FC.explicit_h_vector=explicit_HilbertSeries;
-
+    
+    if (ToCompute.test(ConeProperty::NoNestedTri)) {
+        FC.use_bottom_points = false;
+    }
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
     }

@@ -105,6 +105,7 @@ namespace ConeProperty {
         PrimalMode, //new
         Symmetrize, // new
         NoSymmetrization, // new
+        NoNestedTri, // new
         KeepOrder,
         HSOP,
         //

@@ -2916,6 +2916,8 @@ Normaliz tries to make a smart choice of the algorithmic approach based on the c
 	\itemtt[NoBottomDec, -o] forbids Normaliz to use bottom decomposition in the primal algorithm, even if it would otherwise be chosen because of large roughness (see Section \ref{bottom_dec}).
 	
 	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
+	
+	\itemtt[NoNestedTri] forbids Normaliz to use nested triangulations that it sometimes makes to speed up calculations; see Section \ref{nested}.
 \end{itemize}
 
 \subsection{Integer type}
@@ -3712,6 +3714,8 @@ The following figure shows a nested triangulation:
 For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T|, Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz.
 
 The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
+
+If you need a plain triangulation, you can use the option \verb|NoNestedTri| to be on the safe side.
 
 \subsubsection{Disjoint decomposition}\label{Disjoint}
 
@@ -5286,6 +5290,7 @@ namespace ConeProperty {
         PrimalMode, //new
         Symmetrize, / new
         NoSymmetrization, // new
+        NoNestedTri, // new
         KeepOrder,
         HSOP,
         //
