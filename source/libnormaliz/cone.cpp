@@ -1449,10 +1449,14 @@ Integer Cone<Integer>::getReesPrimaryMultiplicity() {
 // if no triangulation was computed so far they return false
 template<typename Integer>
 bool Cone<Integer>::isTriangulationNested() {
+    if(!isComputed(ConeProperty::IsTriangulationNested))
+        throw NotComputableException("isTriangulationNested");
     return triangulation_is_nested;
 }
 template<typename Integer>
 bool Cone<Integer>::isTriangulationPartial() {
+    if(!isComputed(ConeProperty::IsTriangulationPartial))
+        throw NotComputableException("isTriangulationPartial");
     return triangulation_is_partial;
 }
 
