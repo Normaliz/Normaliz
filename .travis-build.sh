@@ -79,7 +79,7 @@ EOF
 	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
-	./configure || exit 1
+	./configure $CONFIGURE_FLAGS || exit 1
 	make -j2 distcheck || exit 1
 	;;
     autotools-makedistcheck-nmzintegrate)
@@ -107,20 +107,20 @@ EOF
 	./bootstrap.sh || exit 1
 	# Don't pass CoCoA flags here. We want to make sure that the distribution
 	# is complete even when this source tree is not configured with nmzintegrate.
-	./configure --disable-nmzintegrate --disable-scip || exit 1
+	./configure $CONFIGURE_FLAGS --disable-nmzintegrate --disable-scip || exit 1
 	# Rather, build the unpacked distribution with CoCoA.
-	make -j2 DISTCHECK_CONFIGURE_FLAGS="--with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat config.log; echo '#### Contents of .../_build/.../config.log: ####'; cat normaliz-*/_build/config.log || cat normaliz-*/_build/sub/config.log; exit 1)
+	make -j2 DISTCHECK_CONFIGURE_FLAGS="$CONFIGURE_FLAGS --with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate --disable-scip --disable-shared" distcheck || ( echo '#### Contents of config.log: ####'; cat config.log; echo '#### Contents of .../_build/.../config.log: ####'; cat normaliz-*/_build/config.log || cat normaliz-*/_build/sub/config.log; exit 1)
 	;;
     autotools-scip*)
 	./bootstrap.sh || exit 1
-	./configure --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 || exit 1
 	make -j2 check || exit 1
 	;;
     *)
 	# autotools, no SCIP
 	./bootstrap.sh || exit 1
-	./configure --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 || exit 1
 	make -j2 check || exit 1
 	;;
