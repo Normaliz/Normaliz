@@ -52,22 +52,6 @@ matrix:
       compiler: clang
       env: BUILDSYSTEM=autotools-scip
     - os: osx
-      osx_image: xcode7.1
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: osx
-      osx_image: xcode7.1
-      compiler: clang
-      env: BUILDSYSTEM=autotools-scip
-    - os: osx
-      osx_image: xcode7
-      compiler: clang
-      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
-    - os: osx
-      osx_image: xcode7
-      compiler: clang
-      env: BUILDSYSTEM=autotools-scip
-    - os: osx
       osx_image: xcode6.4
       compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
