@@ -29,6 +29,7 @@
 #include <algorithm>
 using namespace std;
 
+#include "libnormaliz/my_omp.h"
 #include "normaliz.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/libnormaliz.h"
@@ -226,8 +227,8 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
-    long dim= (long) MyCone.getEmbeddingDim();
  #ifdef _OPENMP
+    long dim= (long) MyCone.getEmbeddingDim();
     long max_threads=omp_get_max_threads();
     if(!options.nr_threads_explicitly_set && std::getenv("OMP_NUM_THREADS")==NULL){
         max_threads=min(max_threads,4*dim); // we limit the implicit number of threads

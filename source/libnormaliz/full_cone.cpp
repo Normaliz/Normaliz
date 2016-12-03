@@ -76,6 +76,9 @@ using namespace std;
 
 template<typename Integer>
 void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) const{
+    
+    return; // we disable the check
+    
     size_t nr_gen_in_hyp=0;
     for(size_t i=0; i<nr_gen;++i)
         if(in_triang[i]&& hyp.GenInHyp.test(i))
