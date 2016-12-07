@@ -47,8 +47,8 @@ using namespace libQnormaliz;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                    Normaliz " << string( STRINGIFY(NMZ_VERSION) "           " ,11)
-                                                 << "             \\....|"<<endl;
+    cout << "                    QNormaliz " << string( STRINGIFY(NMZ_VERSION) "         " ,11)
+                                                 << "            \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
     cout << "                    November  2016                      \\.|"<<endl;

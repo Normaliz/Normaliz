@@ -70,10 +70,10 @@ inline bool using_GMP() {
   return false;
 }
 
-template<>
+/* template<>
 inline bool using_GMP<mpq_class>() {
   return true;
-} 
+} */
 //---------------------------------------------------------------------------
 
 // Should be completely remoced:
@@ -106,9 +106,9 @@ template<typename Number> string toString(Number a) {
     ostream << a;
     return ostream.str();
 }
-template<> inline string toString(mpz_class a) {
+/* template<> inline string toString(mpz_class a) {
     return a.get_str();
-}
+}*/
 template<> inline string toString(mpq_class a) {
     return a.get_str();
 }

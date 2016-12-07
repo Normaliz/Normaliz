@@ -33,6 +33,7 @@
 namespace libQnormaliz {
 using namespace std;
 
+/*
 bool try_convert(long& ret, const long long& val) {
     assert(false); return true;
 }
@@ -52,7 +53,7 @@ bool try_convert(mpq_class& ret, const long long& val) {
 bool fits_long_range(long long a) {
     return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template <typename Number>
@@ -67,6 +68,7 @@ size_t decimal_length(Number a){
 
     ostringstream test;
     test << a;
+    cout << "L " << a << " D " << test.str().size() << endl;
     return test.str().size();
 }
 

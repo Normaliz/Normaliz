@@ -119,7 +119,7 @@ public:
     Number TruncLevel; // used for approximation of simplicial cones
     vector<Number> Grading;
     vector<Number> Sorting;
-    mpq_class multiplicity;
+    // mpq_class multiplicity;
     Matrix<Number> Generators;
     Matrix<Number> ExtStrahl;
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
@@ -323,7 +323,7 @@ public:
     bool isDeg1ExtremeRays() const;
     bool isDeg1HilbertBasis() const;
     vector<Number> getGrading() const; 
-    mpq_class getMultiplicity() const;
+    // mpq_class getMultiplicity() const;
     Number getShift()const;
     size_t getModuleRank()const;
     const Matrix<Number>& getGenerators() const;

@@ -187,6 +187,9 @@ void Matrix<Number>::pretty_print(ostream& out, bool with_row_nr) const{
         print(out);
         return;
     }
+    cout << "---------------------------" << endl;
+    print(cout);
+    cout << "---------------------------" << endl;
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
@@ -200,6 +203,7 @@ void Matrix<Number>::pretty_print(ostream& out, bool with_row_nr) const{
         for (j = 0; j < nc; j++) {
             ostringstream to_print;
             to_print << elem[i][j];
+            cout << elem[i][j] << " Size " << to_print.str().size() << " Max " << max_length[j] << endl;
             for (k= 0; k <= max_length[j] - to_print.str().size(); k++) {
                 out<<" ";
             }
@@ -428,21 +432,21 @@ template<typename Number>
 vector<size_t> Matrix<Number>::maximal_decimal_length_columnwise() const{
     size_t i,j=0;
     vector<size_t> maxim(nc,0);
-    vector<Number> pos_max(nc,0), neg_max(nc,0);
     for (i = 0; i <nr; i++) {
         for (j = 0; j <nc; j++) {
-            // maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
-            if(elem[i][j]<0){
+            maxim[j]=max(maxim[j],decimal_length(elem[i][j]));
+/*            if(elem[i][j]<0){
                 if(elem[i][j]<neg_max[j])
                     neg_max[j]=elem[i][j];
                 continue;
             }
             if(elem[i][j]>pos_max[j])
                 pos_max[j]=elem[i][j];
+*/
         }
     }
-    for(size_t j=0;j<nc;++j)
-        maxim[j]=max(decimal_length(neg_max[j]),decimal_length(pos_max[j]));
+    /* for(size_t j=0;j<nc;++j)
+        maxim[j]=max(decimal_length(neg_max[j]),decimal_length(pos_max[j])); */
     return maxim;
 }
 
@@ -1700,7 +1704,8 @@ void Matrix<Number>::simplex_data(const vector<key_t>& key, Matrix<Number>& Supp
     assert(key.size() == nc);
     invert_submatrix(key,vol,Supp,compute_vol,true);
     Supp=Supp.transpose();
-    // Supp.make_prime(); now done internally
+    // Supp.make_prime(); now done internally -- but not in Q !! Therefore
+    Supp.simplify_rows();
 }
 //---------------------------------------------------------------------------
 

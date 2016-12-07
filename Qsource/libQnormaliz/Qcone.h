@@ -223,7 +223,7 @@ private:
     vector< pair<vector<key_t>, Number> > Triangulation;
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
-    mpq_class multiplicity;
+    // mpq_class multiplicity;
     vector<Number> WitnessNotIntegrallyClosed;
     Matrix<Number> HilbertBasis;
     Matrix<Number> BasisMaxSubspace;

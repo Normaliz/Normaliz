@@ -2173,14 +2173,22 @@ void Full_Cone<Number>::primal_algorithm_initialize() {
 template<typename Number>
 void Full_Cone<Number>::primal_algorithm_finalize() {
 
+    evaluate_triangulation();
+    
     if (keep_triangulation) {
         is_Computed.set(ConeProperty::Triangulation);
+        auto t=Triangulation.begin();
+        Number check=0;
+        for(;t!=Triangulation.end();++t){
+            t->vol=Generators.submatrix(t->key).vol();
+            check+=t->vol;
+        }       
     }
+    
     if (do_cone_dec) {
         is_Computed.set(ConeProperty::ConeDecomposition);
     }
-
-    evaluate_triangulation();
+    
     FreeSimpl.clear();
     
     if(verbose) {
@@ -2812,7 +2820,7 @@ Full_Cone<Number>::Full_Cone(const Matrix<Number>& M, bool do_make_prime){ // co
         throw FatalException("Too many generators to fit in range of key_t!");
     }
     
-    multiplicity = 0;
+    // multiplicity = 0;
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
     is_Computed.set(ConeProperty::Generators);
     pointed = false;
@@ -2899,7 +2907,7 @@ Full_Cone<Number>::Full_Cone(Full_Cone<Number>& C, const vector<key_t>& Key) {
     for(size_t i=0;i<nr_gen;i++)
         Top_Key[i]=C.Top_Key[Key[i]];
   
-    multiplicity = 0;
+    // multiplicity = 0;
     
     Extreme_Rays_Ind = vector<bool>(nr_gen,false);
     is_Computed.set(ConeProperty::ExtremeRays, C.isComputed(ConeProperty::ExtremeRays));
@@ -3099,7 +3107,7 @@ void Full_Cone<Number>::print()const{
     // verboseOutput()<<"\nhyp_size="<<hyp_size<<".\n";
     verboseOutput()<<"\nGrading is:\n";
     verboseOutput()<< Grading;
-    verboseOutput()<<"\nMultiplicity is "<<multiplicity<<".\n";
+    // verboseOutput()<<"\nMultiplicity is "<<multiplicity<<".\n";
     verboseOutput()<<"\nGenerators are:\n";
     Generators.pretty_print(verboseOutput());
     verboseOutput()<<"\nExtreme_rays are:\n";

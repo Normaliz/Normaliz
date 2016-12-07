@@ -260,6 +260,8 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(ConeProperty::ExtremeRays);
     copy.reset(ConeProperty::VerticesOfPolyhedron);
     copy.reset(ConeProperty::KeepOrder);
+    copy.reset(ConeProperty::Triangulation); 
+    copy.reset(ConeProperty::ConeDecomposition);
     if(copy.any())
         throw BadInputException("Cone Property not allowd for field coefficients");    
 }

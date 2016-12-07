@@ -280,6 +280,12 @@ For version 3.1.4 we have added
 	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retieval of results.
 \end{arab}
 
+For version 3.1.4 we have added
+
+\begin{arab}
+	\item  A variant QNormaliz that computes convex hulls and extreme rays over subfields of $\RR$; see Appendix \ref{QNorm}.
+\end{arab}
+
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
 
@@ -1543,7 +1549,7 @@ The dual algorithm that was used in Section \ref{job_dual} can also be applied t
 
 \subsubsection{Defining it by generators}\label{polyh_ex}
 
-If the polyhedron is given by its vertices and the recession cone, we can define it by these data (\verb|InhomIneq_gen.in|):
+If the polyhedron is given by its vertices and the recession cone, we can define it by these data (\verb|_gen.in|):
 \begin{Verbatim}
 amb_space 2
 vertices 2
@@ -4347,6 +4353,9 @@ self-explanatory. Nevertheless we give an overview:
 	\textsc{Macaulay2} package \ttt{Normaliz.m2}.
 	\item The subdirectory \ttt{lib} contains libraries for
 	jNormaliz.
+	
+	\item Moreover, there are subdirectories whose name starts with \verb|Q|. They contain
+	the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
 We provide executables for Windows, Linux (each in a 32 bit and
@@ -5928,8 +5937,38 @@ Number of lattice points = 29 Multiplicity = 275
 
 \end{small}
 
+\section{QNormaliz}\label{QNorm}
 
+The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, foor example from real algebraic exzensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to empphasize the difference.
 
+The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. Form the pratical viewpoint it is superfluous since Normaliz can process rational data (made integral). Nevertheless have a look at the examples in \verb|Qexample|.
+
+In order to specialize \verb|Number| to your field of coefficients you must of course make it available via a suitable class library in the compilation process. ????????????
+
+In the code of \verb|QNormaliz| the following adaptations are necessary:
+\begin{enumerate}
+	\item In \verb|Qnormaliz.cpp| replace \verb|mpq_class| in trhe definition of \verb|Cone|.
+	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
+	\item If your number type has a comvenient conversion to \verb|string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|. Otherwise semove the specialization for \verb|mpq_class|.
+	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
+\end{enumerate}
+
+The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. For \verb|mpq_class| this means that we multiply vectors by the least cimmon denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
+
+Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrics over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to a choice of basis in the subspace where the full cone lives, and as said, there is no canonical choice. The interpretation of the determinants is therefore left to you.
+
+The following input types are NOT allowed in QNormaliz:
+\begin{center}
+\verb|lattice    cone_and_lattice    congruences|\\
+\verb|dehomogenization    grading    inhom_congruences|
+\end{center}
+Inhomogeneous types are allowed.
+
+The only computation goals and algorithmic variants allowed are:
+\begin{center}
+\verb|SupportHyperplanes   ExtremeRays    VerticesOfPolyhedron|\
+\verb|KeepOrder    Triangulation    ConeDecomposition|
+\end{center}
 \begin{thebibliography}{15.}
 \small
 
@@ -5981,199 +6020,5 @@ Barvinok algorithm.} Electron. J. Comb.
 $n$}. Research report, ISSAC 96, ACM Press 1996.
 \end{thebibliography}
 \end{document}
-
-% currently not availabe to users anymore, but maybe again later?
-\subsection{Visual Studio project}
-
-The Windows executables provided by us have been compiled with
-MS Visual Studio and Intel C++ Composer XE. (Visual C++ itself can
-only be used without OpenMP.)
-
-If you want to compile Normaliz yourself in this way, please unzip
-the corresponding zip file on the Normaliz home page. This will
-create a subdirectory \ttt{Visual Studio} of the Normaliz
-directory. This directory contains the predefined project. We have
-provided
-
-\begin{enumerate}
-	\item two configurations: \ttt{Release} (with OpenMP) and
-	\ttt{ReleaseSerial} (without OpenMP), and
-	\item two platforms, \ttt{Win32} and \ttt{x64}.
-\end{enumerate}
-
-Instead of GMP we use the MPIR library for the Windows version
-of \ttt{normaliz}. For convenience, the MPIR files have been
-included in the distribution (in the subdirectory \ttt{MPIR} of
-\ttt{Visual Studio}). Please
-\begin{itemize}
-	\item copy the library files for Win32 into the \ttt{lib}
-	subdirectory of the Visual C++ compiler,
-
-	\item the library files for x64 to the subdirectory
-	\ttt{amd64} (or \ttt{x64}) of \ttt{lib}, and
-
-	\item the two header files to the \ttt{include}
-	subdirectory of the compiler.
-\end{itemize}
-Moreover, you must install the Boost collection available from
-http://www.boost.org/. We only use Boost libraries that are
-entirely implemented in their headers. So the only preparation
-beyond downloading and unzipping is to add the Boost root
-directory to the list of include paths. In the Visual Studio C++ IDE,
-click ``Tools | Options... | Projects | VC++ directories''.
-Then, in ``Show Directories for'', select ``Include files'' and
-add the path to the Boost root directory.
-
-After the compilation with the Intel compiler you must copy the executable
-to the directories where they are expected (the Normaliz
-directory or a directory in the search path).
-
-The source files for Visual Studio are identical to those for GCC.
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  CHANGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Changes relative to version 2.12}
-
-\begin{small}
-	
-	For the history of changes starting from 2.0 see the manuals of
-	versions 2.7 and 2.12 (still accessible at the web site). Note that some changes
-	have become obsolete later on.
-	
-	\subsection{2.12 $\to$ 3.0}
-	
-	Documentation:
-	
-	\begin{enumerate}
-		
-		\item Manual completely rewritten.
-		
-	\end{enumerate}
-	
-	User control, input and output:
-	
-	\begin{enumerate}
-		
-		\item New syntax for input files and command line options (with backward compatibility).
-		
-		\item Balance between generator input and constraints input.
-		
-		\item Generator and constraints input can be mixed.
-		
-		\item Output augmented and order of vectors in lists standardized.
-		
-		\item Console output improved.
-		
-	\end{enumerate}
-	
-	Computation goals:
-	
-	\begin{enumerate}
-		\item Minimal module generators of integral closure can be computed.
-		
-		\item Computation of class group added.
-		
-		\item Implicit grading restricted to the case in which all extreme rays have degree $1$ (instead of constant degree).
-	\end{enumerate}
-	
-	Algorithms and implementation:
-	
-	\begin{enumerate}
-		\item Improved linear algebra, especially better coordinate transformations.
-		
-		\item Local GMP transitions if intermediate results do not fit 64 bit integers.
-		
-		\item Global GMP transition if final results do not fit 64 bit integers.
-		
-		\item Local approximation of rational simplicial cones for degree $1$ points.
-		
-		\item Subdivision of large simplicial cones via SCIP and approximation.
-		
-		\item Bottom decomposition introduced.
-		
-		\item Recognition of polytopes in the computation of polyhedra.
-	\end{enumerate}
-	
-	\subsection{3.0 $\to$ 3.1}
-	
-	
-	Range of objects computed:
-	
-	\begin{enumerate}
-		
-		\item Cones and polyhedra without vertices.
-	\end{enumerate}
-	
-	User control:
-	
-	\begin{enumerate}	
-		\item Normaliz can be run from the beginning with integers of type \verb|long long|.
-	\end{enumerate}
-	
-	Computation goals:
-	
-	\begin{enumerate}
-		
-		\item Rational and integral solutions of inhomogeneous systems can be separated.
-		
-		\item Integer hull computation.
-		
-		\item Normality test without computation of full Hilbert basis (in the negative case).
-		
-		\item Generators over original monoid also in the inhomogeneous case.
-		
-		\item Disjoint decomposition of the cone.	
-		
-	\end{enumerate}
-	
-	
-\subsection{Linux}
-
-In the following we describe the configuration/build process using cmake.
-This has capabilities to find libraries and allows to change settings in a nice interface. It supports the compilation of the library as a static and a dynamic version and the installation of the library. Furthermore it can also be used to compile Normaliz including SCIP or offloads to Intel Xeon Phi cards.
-
-On Ubuntu the following packages should be installed:
-\begin{verbatim}
-sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
-\end{verbatim}
-
-We assume you start in the normaliz root dir (with subdirs source, example, ...).
-
-\begin{enumerate}
-	\item Create a build directory where normaliz will be build and cd into it, e.g.
-	\begin{verbatim}
-	mkdir BUILD; cd BUILD
-	\end{verbatim}
-	
-	\item Initial configuration, have a look at the next sections for further information about the configuration.
-	\begin{verbatim}
-	cmake ../source
-	\end{verbatim}
-	
-	\item{} [Optional] Check configuration and maybe edit something (note the two \verb|'c'|s at the beginning)
-	\begin{verbatim}
-	ccmake ../source
-	\end{verbatim}
-	In the ccmake interface you can use this work flow:
-	\begin{itemize}
-		\item \verb|c|  (configure)
-		\item change entries if you like (use cursor keys and enter), then press \verb|c| again
-		\item \verb|g|  (generate and exit)
-	\end{itemize}
-	
-	\item compile
-	\begin{verbatim}
-	make
-	\end{verbatim}
-	
-	\item install it
-	\begin{verbatim}
-	make install
-	\end{verbatim}
-	This will install the library headers, the produced libnormaliz and the normaliz executable.
-	The installation path can be changed with ccmake (\verb+CMAKE_INSTALL_PREFIX+).
-\end{enumerate}
-
 
 
