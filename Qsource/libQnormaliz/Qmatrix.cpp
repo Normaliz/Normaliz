@@ -187,9 +187,6 @@ void Matrix<Number>::pretty_print(ostream& out, bool with_row_nr) const{
         print(out);
         return;
     }
-    cout << "---------------------------" << endl;
-    print(cout);
-    cout << "---------------------------" << endl;
     size_t i,j,k;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
@@ -203,7 +200,6 @@ void Matrix<Number>::pretty_print(ostream& out, bool with_row_nr) const{
         for (j = 0; j < nc; j++) {
             ostringstream to_print;
             to_print << elem[i][j];
-            cout << elem[i][j] << " Size " << to_print.str().size() << " Max " << max_length[j] << endl;
             for (k= 0; k <= max_length[j] - to_print.str().size(); k++) {
                 out<<" ";
             }

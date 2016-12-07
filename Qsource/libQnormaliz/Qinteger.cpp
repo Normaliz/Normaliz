@@ -68,7 +68,7 @@ size_t decimal_length(Number a){
 
     ostringstream test;
     test << a;
-    cout << "L " << a << " D " << test.str().size() << endl;
+    // cout << "L " << a << " D " << test.str().size() << endl;
     return test.str().size();
 }
 
