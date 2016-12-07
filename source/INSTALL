@@ -354,3 +354,10 @@ In doubt use make clean before.
 NOTE: If Normaliz was built with SCIP=yes, you must add this option also if you make nmzIntegrate
 and maxsimplex.
 
+6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
+
+	make -f Makefile.classic clean
+
+6) QNormaliz has its own Makefile.classic in Qsource. Apply the setps 2), 5) and 6) accordingly. QNormaliz will be installed in the same directories as Normaliz. This is possible since it has its own file names.
+
+The whole point of QNormaliz is the use of a class library for filed extensions of the rational numbers. Its use may require the adaptation of the Makefile.classic.
