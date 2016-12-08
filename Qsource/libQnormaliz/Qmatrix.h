@@ -267,7 +267,7 @@ size_t row_echelon_inner_bareiss(bool& success, Number& det);
     //this=this div scalar, all the elem of this must be divisible with the scalar
     void reduction_modulo(const Number& modulo);     //this=this mod scalar
     Number matrix_gcd() const; //returns the gcd of all elem
-    vector<Number> simplify_rows();         //each row of this is reduced by its gcd, 
+    void simplify_rows();         //each row of this is reduced by its gcd, 
                                           // vector of gcds returned
     void make_cols_prime(size_t from_col, size_t to_col);   
              // the columns of this in the specified range are reduced by their gcd

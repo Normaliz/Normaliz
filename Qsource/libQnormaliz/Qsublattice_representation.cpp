@@ -374,7 +374,8 @@ void Sublattice_Representation<Number>::make_equations() const{
     if(rank==dim)
         Equations=Matrix<Number>(0,dim);
     else
-        Equations=A.kernel();    
+        Equations=A.kernel(); 
+        Equations.simplify_rows();
     Equations_computed=true;
 }
 

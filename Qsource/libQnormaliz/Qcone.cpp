@@ -1322,6 +1322,7 @@ void Cone<Number>::compute_inner(ConeProperties& ToCompute) {
         Dual_Gen=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
         Sublattice_Representation<Number> Pointed(Dual_Gen,true); // sublattice of the dual lattice
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        BasisMaxSubspace.simplify_rows();
         // check_vanishing_of_grading_and_dehom();
         BasisChangePointed.compose_dual(Pointed);
         is_Computed.set(ConeProperty::MaximalSubspace);        
@@ -1359,6 +1360,7 @@ void Cone<Number>::compute_generators_inner() {
     // now we get the basis of the maximal subspace
     if(!isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace = BasisChangePointed.from_sublattice(Pointed.getEquationsMatrix());
+        BasisMaxSubspace.simplify_rows();
         // check_vanishing_of_grading_and_dehom();
         is_Computed.set(ConeProperty::MaximalSubspace);
     }
@@ -1584,10 +1586,13 @@ void Cone<Number>::set_extreme_rays(const vector<bool>& ext) {
                 choice[i]=false;
             }
         }
-        VerticesOfPolyhedron=Generators.submatrix(VOP).sort_by_weights(WeightsGrad,GradAbs);
+        VerticesOfPolyhedron=Generators.submatrix(VOP);
+        VerticesOfPolyhedron.simplify_rows();
+        VerticesOfPolyhedron.sort_by_weights(WeightsGrad,GradAbs);
         is_Computed.set(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRays=Generators.submatrix(choice);
+    ExtremeRays.simplify_rows();
     if(inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)){
         size_t level0_dim=ExtremeRays.max_rank_submatrix_lex().size();
         recession_rank = level0_dim+BasisMaxSubspace.nr_of_rows();

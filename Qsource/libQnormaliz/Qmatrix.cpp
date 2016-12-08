@@ -701,12 +701,12 @@ void Matrix<Number>::reduction_modulo(const Number& modulo){
 //---------------------------------------------------------------------------
 
 template<typename Number>
-vector<Number> Matrix<Number>::simplify_rows() {
-    vector<Number> g(nr);
+void Matrix<Number>::simplify_rows() {
+    // vector<Number> g(nr);
     for (size_t i = 0; i <nr; i++) {
-        g[i] = v_simplify(elem[i]);
+        v_simplify(elem[i]);
     }
-    return g;
+    // return g;
 }
 
 //---------------------------------------------------------------------------
