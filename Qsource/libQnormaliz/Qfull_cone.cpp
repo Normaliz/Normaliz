@@ -2177,12 +2177,16 @@ void Full_Cone<Number>::primal_algorithm_finalize() {
     
     if (keep_triangulation) {
         is_Computed.set(ConeProperty::Triangulation);
+        totalNrSimplices=0;
         auto t=Triangulation.begin();
-        Number check=0;
+        detSum=0;
         for(;t!=Triangulation.end();++t){
+            totalNrSimplices++;
             t->vol=Generators.submatrix(t->key).vol();
-            check+=t->vol;
-        }       
+            detSum+=t->vol;
+        }
+        is_Computed.set(ConeProperty::TriangulationDetSum);
+        is_Computed.set(ConeProperty::TriangulationSize);
     }
     
     if (do_cone_dec) {
@@ -2208,10 +2212,13 @@ void Full_Cone<Number>::primal_algorithm_set_computed() {
     if(!pointed){
         throw NonpointedException();
     }
-
+    
     if (do_triangulation || do_partial_triangulation) {
         is_Computed.set(ConeProperty::TriangulationSize,true);
-    }    
+        if (do_evaluation) {
+            is_Computed.set(ConeProperty::TriangulationDetSum,true);
+        }
+    }
 }
 
    

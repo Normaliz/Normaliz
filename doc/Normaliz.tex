@@ -191,6 +191,8 @@ offspring NmzIntegrate \cite{NmzInt}, Normaliz computes generalized
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
+Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This ext4ends the applicability of Normaliz to certain nonrational polyhredra, but limits its applicability to convex hull computations and triangulation since finiote genaration of the lattice points in such polyhedar is no longer given.
+
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
 Performance data of Normaliz can be found in \cite{BIS}.
@@ -5957,7 +5959,7 @@ The last point is extremely important since the coefficients of the linear forms
 
 In the output file we use the same terminology as in that of Normaliz, or example, `basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
 
-As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they beed not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.)
+As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.)
 
 Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrics over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis mentioned above.
 
