@@ -75,15 +75,22 @@ void v_add_result(vector<Number>& result, const size_t length, const vector<Numb
 
 //v = v * scalar
 template<typename Number>
-void v_scalar_multiplication(vector<Number>& v, const Number& scalar){
+void v_scalar_multiplication(vector<Number>& v, const Number scalar){
     size_t i,size=v.size();
     for (i = 0; i <size; i++) {
         v[i] *= scalar;
     }
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Number>
-void v_scalar_division(vector<Number>& v, const Number& scalar);
+void v_scalar_division(vector<Number>& v, const Number scalar){
+    size_t i,size=v.size();
+    for (i = 0; i <size; i++) {
+        v[i] /= scalar;
+    }
+}
 
 //---------------------------------------------------------------------------
 //							   General vector operations

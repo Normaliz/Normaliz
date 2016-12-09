@@ -923,10 +923,10 @@ bool Matrix<Number>::reduce_rows_upwards () {
         for(col=0;col<nc;++col)
             if(elem[row][col]!=0)
                 break;
-        if(col==nc)
+        if(col==nc) // zero row
             continue;
-        if(elem[row][col]<0)
-            v_scalar_division<Number>(elem[row],elem[row][col]); // !!!!!!!!!!!!!!!!!!
+        if(elem[row][col]!=0)
+            v_scalar_division<Number>(elem[row],elem[row][col]); // corner --> 1
         
         for(long i=row-1;i>=0;--i){
             Number quot;
@@ -936,12 +936,9 @@ bool Matrix<Number>::reduce_rows_upwards () {
             elem[i][col]=0; // rem
             for(size_t j=col+1;j<nc;++j){
                 elem[i][j]-=quot* elem[row][j];
-                if ( !check_range(elem[i][j]) ) {
-                    return false;
-                }
             }                                           
         }
-    }
+   }
     return true;
 }
 

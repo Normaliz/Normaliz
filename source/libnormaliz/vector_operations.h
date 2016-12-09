@@ -105,20 +105,27 @@ Integer v_make_prime(vector<Integer>& v);
 
 //v = v * scalar
 template<typename Integer>
-void v_scalar_multiplication(vector<Integer>& v, const Integer& scalar){
+void v_scalar_multiplication(vector<Integer>& v, const Integer scalar){
     size_t i,size=v.size();
     for (i = 0; i <size; i++) {
         v[i] *= scalar;
     }
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void v_scalar_division(vector<Integer>& v, const Integer scalar){
+    size_t i,size=v.size();
+    for (i = 0; i <size; i++) {
+        assert(v[i]%scalar == 0);
+        v[i] /= scalar;
+    }
+}
+
 //returns v * scalar mod modulus
 template<typename Integer>
 vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus, bool& success);
-
-template<typename Integer>
-void v_scalar_division(vector<Integer>& v, const Integer& scalar);
-//v = v / scalar, all the elements of v must be divisible with the scalar
 
 template<typename Integer>
 void v_reduction_modulo(vector<Integer>& v, const Integer& modulo);

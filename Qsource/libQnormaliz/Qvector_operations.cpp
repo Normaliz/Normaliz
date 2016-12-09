@@ -196,15 +196,6 @@ mpq_class v_simplify(vector<mpq_class>& v){
         v[i]/=g;
     return 1;
 }
-//---------------------------------------------------------------------------
-
-template<typename Number>
-void v_scalar_division(vector<Number>& v, const Number& scalar){
-    size_t i,size=v.size();
-    for (i = 0; i <size; i++) {
-        v[i] /= scalar;
-    }
-}
 
 //---------------------------------------------------------------------------
 
