@@ -44,8 +44,9 @@
 
 //---------------------------------------------------------------------------
 
-const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
+// const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
                                        // we pass to (non-recirsive) pyramids
+                                       // now in build_cone
 
 const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
@@ -1318,6 +1319,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     nrGensInCone=dim;
     
     nrTotalComparisons=dim*dim/2;
+    if(using_GMP<Integer>())
+        nrTotalComparisons*=10; // because of the linear algebra involved in this routine
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1830,8 +1833,14 @@ void Full_Cone<Integer>::build_cone() {
     
     // cout << "Pyr " << pyr_level << endl;
 
-    long long RecBoundSuppHyp = dim*dim;
-    RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
+    long long RecBoundSuppHyp;
+    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 100
+    if(using_GMP<Integer>())
+        RecBoundSuppHyp*=10; // pyramid building us more difficult for complicated arithmetic
+        
+    size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
+    if(using_GMP<Integer>())
+        RecBoundTriang*=10;
     
     tri_recursion=false; 
     
@@ -1864,6 +1873,9 @@ void Full_Cone<Integer>::build_cone() {
 
 
     for (size_t i=start_from;i<nr_gen;++i) { 
+        
+        time_t start,end;
+        time (&start);
     
         start_from=i;
     
@@ -1967,6 +1979,13 @@ void Full_Cone<Integer>::build_cone() {
             if(do_all_hyperplanes || i!=last_to_be_inserted) 
                 find_new_facets(i);
         }
+        
+        time (&end);        
+        /* double dif = difftime (end,start);
+
+        if (verbose) {
+            verboseOutput() << "Generator took " << dif << " sec " <<endl;
+        }*/
         
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){

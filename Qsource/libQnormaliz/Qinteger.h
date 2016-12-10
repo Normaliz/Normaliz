@@ -70,10 +70,10 @@ inline bool using_GMP() {
   return false;
 }
 
-/* template<>
+template<>
 inline bool using_GMP<mpq_class>() {
   return true;
-} */
+}
 //---------------------------------------------------------------------------
 
 // Should be completely remoced:
