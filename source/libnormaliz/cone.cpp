@@ -2746,8 +2746,10 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         SymmInequ.append(SymmConst[i]);    
     for(size_t i=nr_inequ;i<nr_inequ+nr_equ;++i)
         SymmEqu.append(SymmConst[i]);    
-    for(size_t i=nr_inequ+nr_equ;i<SymmConst.nr_of_rows()-1;++i)
+    for(size_t i=nr_inequ+nr_equ;i<SymmConst.nr_of_rows()-1;++i){
         SymmCong.append(SymmConst[i]);
+        SymmCong[SymmCong.nr_of_rows()-1].push_back(Congruences[i-(nr_inequ+nr_equ)][dim]); // restore modulus
+    }
     
     vector<Integer> SymmGrad=SymmConst[SymmConst.nr_of_rows()-1];
     
