@@ -62,9 +62,11 @@ const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored lev
                                               
 const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
 
-const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
+const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
+
+const long GMP_time_factor=20; // factor by which GMP arithmetic differs from long long
 
 //---------------------------------------------------------------------------
 
@@ -653,7 +655,7 @@ void Full_Cone<Number>::find_new_facets(const size_t& new_generator){
            NrCSF++;*/
            
            if(using_GMP<Number>())           
-                ranktest = (nr_NonSimp > 10*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+                ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
            else
                ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
 
@@ -1294,7 +1296,7 @@ void Full_Cone<Number>::find_and_evaluate_start_simplex(){
     
     nrTotalComparisons=dim*dim/2;
     if(using_GMP<Number>())
-        nrTotalComparisons*=10; // because of the linear algebra involved in this routine
+        nrTotalComparisons*=GMP_time_factor/2; // because of the linear algebra involved in this routine
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1461,8 +1463,7 @@ void Full_Cone<Number>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t
 
     for (;hp_j_iterator!=PosHyps.end();++hp_j_iterator){ //match hyp with the given Pos
         hp_j=*hp_j_iterator;
-
-
+        
        if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
                                             // their intersection is a subfacet
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
@@ -1479,7 +1480,8 @@ void Full_Cone<Number>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t
        nr_common_zero=0;
        common_key.clear();
        size_t second_loop_bound=nr_zero_hyp;
-       common_subfacet=true;  
+       common_subfacet=true;
+       boost::dynamic_bitset<> common_zero(nr_gen);
        
        if(extension_test){
            bool extended=false;
@@ -1495,6 +1497,7 @@ void Full_Cone<Number>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t
                else {
                    extended=true;
                    common_key.push_back(key[k]);
+                   common_zero.set(key[k]);
                    nr_common_zero++;
                }
            }
@@ -1513,6 +1516,7 @@ void Full_Cone<Number>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t
            }
            else {
                common_key.push_back(key[k]);
+               common_zero.set(key[k]);
                nr_common_zero++;
            }
         }
@@ -1522,12 +1526,36 @@ void Full_Cone<Number>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_t
        
        assert(nr_common_zero >=subfacet_dim);
             
-        // only rank test since we have many supphyps anyway
+
         if (!hp_j->simplicial){
-            Matrix<Number>& Test = Top_Cone->RankTest[tn];
-            if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
-                common_subfacet=false;     // don't make a hyperplane
-        }
+            
+            bool ranktest;
+            /* if(using_GMP<Number>())           
+                ranktest = (old_nr_supp_hyps > 10*GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+           else
+               ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
+           
+           ranktest=true;
+            
+            if(ranktest){
+                // cout << "Rank" << endl;
+                Matrix<Number>& Test = Top_Cone->RankTest[tn];
+                if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
+                    common_subfacet=false;     // don't make a hyperplane
+            }
+            else{                 // now the comparison test
+                // cout << "Compare" << endl;
+                auto hp_t=Facets.begin();
+                for (;hp_t!=Facets.end();++hp_t){
+                    if(hp_t->simplicial)
+                        continue;
+                    if ((hp_t->Ident!=hyp.Ident) && (hp_t->Ident!=hp_j->Ident) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+                        common_subfacet=false;
+                        break;
+                    }
+                }                       
+            } // else
+        } // !simplicial
         
         if(common_subfacet)
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
@@ -1780,13 +1808,13 @@ void Full_Cone<Number>::build_cone() {
     // cout << "Pyr " << pyr_level << endl;
 
     long long RecBoundSuppHyp;
-    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 100
+    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 50
     if(using_GMP<Number>())
-        RecBoundSuppHyp*=1000; // pyramid building is more difficult for complicated arithmetic
+        RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
         
     size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
     if(using_GMP<Number>())
-        RecBoundTriang*=100;
+        RecBoundTriang*=GMP_time_factor;
     
     tri_recursion=false; 
     
