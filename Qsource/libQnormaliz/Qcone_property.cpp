@@ -262,6 +262,19 @@ void ConeProperties::check_Q_permissible() {
     copy.reset(ConeProperty::KeepOrder);
     copy.reset(ConeProperty::Triangulation); 
     copy.reset(ConeProperty::ConeDecomposition);
+    copy.reset(ConeProperty::DefaultMode);
+    copy.reset(ConeProperty::Generators);
+    copy.reset(ConeProperty::Sublattice);
+    copy.reset(ConeProperty::MaximalSubspace);
+    copy.reset(ConeProperty::Equations);
+    copy.reset(ConeProperty::Dehomogenization);
+    copy.reset(ConeProperty::Rank);
+    copy.reset(ConeProperty::EmbeddingDim);
+    copy.reset(ConeProperty::IsPointed);
+    copy.reset(ConeProperty::IsInhomogeneous);
+    copy.reset(ConeProperty::DefaultMode);
+    
+    //bvverboseOutput() << copy << endl;
     if(copy.any())
         throw BadInputException("Cone Property not allowd for field coefficients");    
 }

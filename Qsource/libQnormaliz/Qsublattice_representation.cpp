@@ -82,7 +82,7 @@ void Sublattice_Representation<Number>::initialize(const Matrix<Number>& M) {
     Matrix<Number> N=M;    
 
     bool success; // dummy for field coefficients
-    rank=N.row_echelon_reduce(success); // cleans corner columns and makes corner elements  =1
+    rank=N.row_echelon_reduce(success); // cleans corner columns and makes corner elements positive
 
     if(rank==dim){
         A = B = Matrix<Number>(dim);
@@ -112,8 +112,8 @@ void Sublattice_Representation<Number>::initialize(const Matrix<Number>& M) {
     size_t j=0;
     for(size_t k=0;k<dim;++k){
         if(col_is_corner[k]){
-            B[k][j]=1;
-            j++;
+            B[k][j]=1/A[j][k]; //to make the inverse of the diagonal matrix that we get 
+            j++;               // by extracting the corner columns
         }
     };
     c=1;

@@ -913,8 +913,7 @@ bool Matrix<Number>::reduce_rows_upwards () {
 // and reduces eevery column in which the rank jumps 
 // by its lowest element
 //
-// IN THIS FIELD CASE IT MAKES THE CORNER ELEMENTS tTO 1
-    
+// Aplies v_simplify to make rows "nice"
     if(nr==0)
         return true;
 
@@ -925,12 +924,11 @@ bool Matrix<Number>::reduce_rows_upwards () {
                 break;
         if(col==nc) // zero row
             continue;
-        if(elem[row][col]!=0)
-            v_scalar_division<Number>(elem[row],elem[row][col]); // corner --> 1
+        if(elem[row][col]<0)
+            v_scalar_multiplication<Number>(elem[row],-1); // make corner posizive
         
         for(long i=row-1;i>=0;--i){
-            Number quot;
-            
+            Number quot;            
             //minimal_remainder(elem[i][col],elem[row][col],quot,rem);
             quot=elem[i][col]/elem[row][col];
             elem[i][col]=0; // rem
@@ -938,7 +936,10 @@ bool Matrix<Number>::reduce_rows_upwards () {
                 elem[i][j]-=quot* elem[row][j];
             }                                           
         }
-   }
+    }
+    
+    simplify_rows();
+           
     return true;
 }
 
