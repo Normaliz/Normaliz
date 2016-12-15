@@ -1188,7 +1188,10 @@ ConeProperties Cone<Number>::recursive_compute(ConeProperties ToCompute) {
 template<typename Number>
 ConeProperties Cone<Number>::compute(ConeProperties ToCompute) {
     
-        ToCompute.check_Q_permissible();
+    ToCompute.check_Q_permissible();
+    
+    if(ToCompute.test(ConeProperty::DefaultMode))
+        ToCompute.set(ConeProperty::SupportHyperplanes);
     
     change_integer_type=false;
     
