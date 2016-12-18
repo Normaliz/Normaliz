@@ -4480,7 +4480,7 @@ Note: In case you have checked out Normaliz from GitHub, the very first step is 
 
 Note: Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
 
-\subsection{cmake}
+\subsection{cmake}\label{cmake}
 
 You may need to install \verb|cmake| first:
 \begin{Verbatim}
@@ -5943,7 +5943,7 @@ Number of lattice points = 29 Multiplicity = 275
 
 The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, foor example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to empphasize the difference.
 
-The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. Form the pratical viewpoint it is superfluous since Normaliz can process rational data (made integral). Nevertheless have a look at the examples in \verb|Qexample|.
+The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the pratical viewpoint it is superfluous since Normaliz can process rational data (made integral). Nevertheless have a look at the examples in \verb|Qexample|.
 
 \subsection{Prerequisites}
 
@@ -5966,7 +5966,7 @@ The following input types are NOT allowed in QNormaliz:
 \tt
 \begin{tabular}{lll}
 lattice& congruences&grading\\
-cone\_and\_lattice& inhom\_congruences
+cone\_and\_lattice& inhom\_congruences& offset
 \end{tabular}
 \end{center}
 Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be intepreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
@@ -6000,7 +6000,9 @@ Note that there is no way for QNormaliz to define an invariant volume function o
 
 \subsection{Installation}
 
-As for Normaliz and QNormaliz one can use the `classical''Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+As for Normaliz and QNormaliz one can use the ``classical''Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+
+Moreover, QNormaliz cabn be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmale ../Qsource|, followed by \verb|make| and \verb|make install|. With the defualt settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
 
 
 

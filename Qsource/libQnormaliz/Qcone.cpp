@@ -254,6 +254,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         || exists_element(multi_input_data,Type::congruences)
         || exists_element(multi_input_data,Type::inhom_congruences)
         || exists_element(multi_input_data,Type::dehomogenization)
+        || exists_element(multi_input_data,Type::offset)
         || exists_element(multi_input_data,Type::grading))
         throw BadInputException("Input types not allowed for field coefficients");    
 
