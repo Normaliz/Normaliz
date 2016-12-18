@@ -1927,8 +1927,8 @@ void Full_Cone<Integer>::build_cone() {
         
         if (!omp_in_parallel())
             try_offload(0);
-        if(!is_pyramid && verbose ) 
-            verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl;
+        /* if(!is_pyramid && verbose ) 
+            verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
         if (recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
             if(!is_pyramid && verbose )
@@ -3043,8 +3043,12 @@ void Full_Cone<Integer>::compute() {
             if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector || do_multiplicity)){ // inthis situation we must find the 
                 convert_polyhedron_to_polytope();                  // lattice points in a polytope
             }
-            else
-                primal_algorithm();            
+            else{
+                if(do_partial_triangulation || do_triangulation)
+                    primal_algorithm();
+                else
+                    return;
+            }
         }
             
         if(inhomogeneous){
@@ -4193,7 +4197,8 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
             do_h_vector = false;
             if(!explicit_full_triang){
                 do_triangulation=false;
-                do_partial_triangulation=true;
+                if(do_Hilbert_basis)
+                    do_partial_triangulation=true;
             }
         } else {
             throw BadInputException("No grading specified and cannot find one. Cannot compute some requested properties!");

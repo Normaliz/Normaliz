@@ -1533,8 +1533,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    if(ToCompute.test(ConeProperty:: Symmetrize))
-        symmetrize(ToCompute);
+    /*if(ToCompute.test(ConeProperty:: Symmetrize))
+        symmetrize(ToCompute);*/
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -1585,6 +1585,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if (!isComputed(ConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
+    }
+    
+    if(ToCompute.test(ConeProperty::Approximate))
+        try_approximation();
+    
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ToCompute;
     }
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
@@ -2652,7 +2660,7 @@ void Cone<Integer>::set_nmz_call(const string& path){
 }
     
 //---------------------------------------------------------------------------
-template<typename Integer>
+/* template<typename Integer>
 void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     if(!ToCompute.test(ConeProperty::Symmetrize))
@@ -2848,6 +2856,120 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     exit(0);
     
     
+} */
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+bool Cone<Integer>::try_approximation () {
+    
+    if(!inhomogeneous && (!isComputed(ConeProperty::Grading) || Grading.size()==0)){
+        errorOutput() << "WARNING: Approximation not applicable without explicit grading for homogeneous computations" << endl;
+        return false;;
+    }
+    
+    // cout << "Grading " << Grading << " Denom " << GradingDenom << endl;
+    
+    if(GradingDenom!=1)
+        return false;
+    
+    ConeProperties NeededHere;
+    NeededHere.set(ConeProperty::SupportHyperplanes);
+    NeededHere.set(ConeProperty::Sublattice);
+    NeededHere.set(ConeProperty::MaximalSubspace);     
+    recursive_compute(NeededHere);
+    
+    if(!pointed || BasisChangePointed.getRank()==0)
+        return false;    
+    
+    if(BasisChangePointed.getRank()!=0){
+            vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
+            GradingDenom=v_make_prime(test_grading);
+        }
+    
+    
+    if(inhomogeneous){
+        for(size_t i=0;i<Generators.nr_of_rows();++i){
+            if(v_scalar_product(Generators[i],Dehomogenization)==0){
+                errorOutput() << "WARNING: Approximation not applicable to unbounded polyhedra" << endl;
+                return false;
+            }                    
+        }        
+    }
+    
+    vector<Integer> GradForApprox;
+    if(!inhomogeneous)
+        GradForApprox=Grading;
+    else
+        GradForApprox=Dehomogenization;
+    
+    Matrix<Integer> GradGen(0,dim+1);
+    for(size_t i=0;i<Generators.nr_of_rows();++i){
+        vector<Integer> gg(dim+1);
+        for(size_t j=0;j<dim;++j)
+            gg[j+1]=Generators[i][j];
+        gg[0]=v_scalar_product(Generators[i],GradForApprox);
+        // cout << gg;
+        list<vector<Integer> > approx;
+        approx_simplex(gg,approx,1);
+        GradGen.append(Matrix<Integer>(approx));        
+    }
+    
+    /* cout << "=================================" << endl;
+    GradGen.pretty_print(cout);
+    cout << "=================================" << endl;    */
+    
+    Cone<Integer> ApproxCone(InputType::cone,GradGen);
+    ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode);
+    
+    HilbertBasis=Matrix<Integer>(0,dim);
+    Deg1Elements=Matrix<Integer>(0,dim);
+    
+    Matrix<Integer> Raw=ApproxCone.getDeg1ElementsMatrix();
+    Matrix<Integer> Result(0,dim);
+    Matrix<Integer> Eq=BasisChange.getEquations();
+    Matrix<Integer> Cong=BasisChange.getCongruences();
+    for(size_t i=0;i<Raw.nr_of_rows();++i){
+        vector<Integer> rr(dim);
+        for(size_t j=0;j<dim;++j)
+            rr[j]=Raw[i][j+1];
+        if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
+            continue;
+        }
+        bool not_in=false;
+        for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
+            if(v_scalar_product(rr,SupportHyperplanes[k])<0){  // not in original cone
+                not_in=true;
+                break;
+            }
+        for(size_t k=0;k<Eq.nr_of_rows();++k) 
+            if(v_scalar_product(rr,Eq[k])!=0){// not in original cone (or lattice)
+                not_in=true;
+                break;
+            }
+        for(size_t k=0;k<Cong.nr_of_rows();++k) {
+            if(v_scalar_product_unequal_vectors_begin(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
+                not_in=true;
+                break;
+            }
+        if(not_in)
+            continue;
+        if(inhomogeneous)
+            HilbertBasis.append(rr);
+        else
+            Deg1Elements.append(rr);        
+    }
+
+    if(inhomogeneous)
+        is_Computed.set(ConeProperty::HilbertBasis);
+    else
+        is_Computed.set(ConeProperty::Deg1Elements);
+    is_Computed.set(ConeProperty::Approximate);
+    
+    return true;
+    
+    
 }
+
+
 
 } // end namespace libnormaliz
