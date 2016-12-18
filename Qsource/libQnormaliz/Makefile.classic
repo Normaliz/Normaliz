@@ -1,5 +1,5 @@
 ##
-## Makefile for libnormaliz
+## Makefile for libQnormaliz
 ##
 include ../Makefile.configuration
 
@@ -29,8 +29,8 @@ libQnormaliz.a: Qcone_property.o Qcone_helper.o libQnormaliz-templated.o
 install: libnormaliz.a
 	mkdir -p $(INSTALLDIR)/lib
 	install -m 0644 libQnormaliz.a  $(INSTALLDIR)/lib
-	mkdir -p $(INSTALLDIR)/include/normaliz
-	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/normaliz
+	mkdir -p $(INSTALLDIR)/include/libQnormaliz
+	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/libQnormaliz
 
 clean:
 	-rm -f *.o

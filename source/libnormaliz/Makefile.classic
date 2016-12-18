@@ -38,8 +38,8 @@ libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o libnormaliz-templa
 install: libnormaliz.a
 	mkdir -p $(INSTALLDIR)/lib
 	install -m 0644 libnormaliz.a  $(INSTALLDIR)/lib
-	mkdir -p $(INSTALLDIR)/include/normaliz
-	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/normaliz
+	mkdir -p $(INSTALLDIR)/include/libnormaliz
+	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/libnormaliz
 
 clean:
 	-rm -f *.o
