@@ -238,6 +238,7 @@ public:
     
     void set_project(string name);
     void set_nmz_call(const string& path);
+    void set_output_dir(string name);
     
 
 //---------------------------------------------------------------------------
@@ -247,6 +248,7 @@ public:
 private:
     
     string project;
+    string output_dir;
     string nmz_call;
     size_t dim;
 

@@ -95,8 +95,12 @@ public:
         return use_long_long;
     }
 
-    const string& getOutputName() const {
+    const string& getProjectName() const {
         return project_name;
+    }
+    
+    const string& getOutputDir() const {
+        return output_dir;
     }
 
     void setProjectName(const string& s);

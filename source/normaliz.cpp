@@ -197,7 +197,7 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
 
     options.applyOutputOptions(Out);
 
-    string name_in=options.getOutputName()+".in";
+    string name_in=options.getProjectName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
@@ -230,7 +230,8 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
-    MyCone.set_project(options.getOutputName());
+    MyCone.set_project(options.getProjectName());
+    MyCone.set_output_dir(options.getOutputDir());
     MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
@@ -245,7 +246,7 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     if(MyCone.isComputed(ConeProperty::IntegerHull)){
         Output<Integer> IntHullOut;
         options.applyOutputOptions(IntHullOut);
-        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.write_files();        
     }
