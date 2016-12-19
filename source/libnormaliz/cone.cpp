@@ -2860,16 +2860,18 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-bool Cone<Integer>::try_approximation () {
+bool Cone<Integer>::try_approximation (){
     
-    if(!inhomogeneous && (!isComputed(ConeProperty::Grading) || Grading.size()==0)){
-        errorOutput() << "WARNING: Approximation not applicable without explicit grading for homogeneous computations" << endl;
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading)){
+        // errorOutput() << "WARNING: Approximation not applicable without explicit grading for homogeneous computations" << endl;
+        // can be left to full_cone --- grading can be found there only if we have a lattice polytope
         return false;;
     }
     
     // cout << "Grading " << Grading << " Denom " << GradingDenom << endl;
     
-    if(GradingDenom!=1)
+    // TODO this method shoulbe usable if the GradingDenom is > 1
+    if(!inhomogeneous && isComputed(ConeProperty::Grading) && GradingDenom!=1)
         return false;
     
     ConeProperties NeededHere;
@@ -2879,13 +2881,7 @@ bool Cone<Integer>::try_approximation () {
     recursive_compute(NeededHere);
     
     if(!pointed || BasisChangePointed.getRank()==0)
-        return false;    
-    
-    if(BasisChangePointed.getRank()!=0){
-            vector<Integer> test_grading = BasisChangePointed.to_sublattice_dual_no_div(Grading);
-            GradingDenom=v_make_prime(test_grading);
-        }
-    
+        return false;
     
     if(inhomogeneous){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
@@ -2894,6 +2890,12 @@ bool Cone<Integer>::try_approximation () {
                 return false;
             }                    
         }        
+    }
+    
+    if(inhomogeneous){ // exclude that dehoogenization has a gcd > 1
+        vector<Integer> test_dehom=BasisChange.to_sublattice_dual_no_div(Dehomogenization);
+        if(v_make_prime(test_dehom)!=1)
+            return false;        
     }
     
     vector<Integer> GradForApprox;
@@ -2917,7 +2919,8 @@ bool Cone<Integer>::try_approximation () {
     /* cout << "=================================" << endl;
     GradGen.pretty_print(cout);
     cout << "=================================" << endl;    */
-    
+    if(verbose)
+        verboseOutput() << "Computing approximating polytope" << endl;
     Cone<Integer> ApproxCone(InputType::cone,GradGen);
     ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode);
     

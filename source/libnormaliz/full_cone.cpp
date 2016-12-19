@@ -2972,6 +2972,11 @@ void Full_Cone<Integer>::compute() {
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
+    
+    if(inhomogeneous){
+        if(do_default_mode && !do_Hilbert_basis && !isComputed(ConeProperty::Grading) &&isComputed(ConeProperty::ExtremeRays))
+            return;        
+    }
 
     start_message();
     
