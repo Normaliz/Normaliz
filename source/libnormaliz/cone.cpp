@@ -1537,8 +1537,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    if(ToCompute.test(ConeProperty:: Symmetrize))
-        symmetrize(ToCompute);
+    /* if(ToCompute.test(ConeProperty:: Symmetrize))
+        symmetrize(ToCompute); */
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -2662,7 +2662,7 @@ void Cone<Integer>::set_nmz_call(const string& path){
 }
     
 //---------------------------------------------------------------------------
-template<typename Integer>
+/* template<typename Integer>
 void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     if(!ToCompute.test(ConeProperty::Symmetrize))
@@ -2858,6 +2858,6 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     exit(0);
     
     
-}
+} */
 
 } // end namespace libnormaliz
