@@ -1449,10 +1449,14 @@ Integer Cone<Integer>::getReesPrimaryMultiplicity() {
 // if no triangulation was computed so far they return false
 template<typename Integer>
 bool Cone<Integer>::isTriangulationNested() {
+    if(!isComputed(ConeProperty::IsTriangulationNested))
+        throw NotComputableException("isTriangulationNested");
     return triangulation_is_nested;
 }
 template<typename Integer>
 bool Cone<Integer>::isTriangulationPartial() {
+    if(!isComputed(ConeProperty::IsTriangulationPartial))
+        throw NotComputableException("isTriangulationPartial");
     return triangulation_is_partial;
 }
 
@@ -1687,8 +1691,11 @@ void Cone<Integer>::compute_integer_hull() {
         }
     }
     
+    if(!isComputed(ConeProperty::MaximalSubspace))
+        recursive_compute(ConeProperty::MaximalSubspace);
+    
     // IntHullGen.pretty_print(cout);
-    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
+    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements(), Type::subspace,BasisMaxSubspace);
     if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);
 
@@ -1753,7 +1760,10 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
 
     FC.inhomogeneous=inhomogeneous;
     FC.explicit_h_vector=explicit_HilbertSeries;
-
+    
+    if (ToCompute.test(ConeProperty::NoNestedTri)) {
+        FC.use_bottom_points = false;
+    }
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
     }
