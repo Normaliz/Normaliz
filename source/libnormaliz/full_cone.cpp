@@ -2108,7 +2108,8 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     long long RecBoundSuppHyp = dim*dim;
     RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
     
-    vector<key_t> start_simplex(dim);
+    //vector<key_t> start_simplex(dim);
+    
     size_t i;
     
     Matrix<Integer> current_hyps= original_cone.getSupportHyperplanes();
@@ -2138,36 +2139,42 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
             HypCounter.resize(1);
             HypCounter[0]=1;    
         }
+        find_and_evaluate_start_simplex();
     }
+    
+    assert(!Facets.empty());
             
     //cout << "Start Simplex: " << start_simplex << endl;
     
-    for (i= 0; i < nr_original_gen; i++) {
-        in_triang[i]=true;
-        GensInCone.push_back(i);
-    }
+    //for (i= 0; i < nr_original_gen; i++) {
+        //in_triang[i]=true;
+        //GensInCone.push_back(i);
+    //}
     
-    nrGensInCone=nr_original_gen;
+    //nrGensInCone=nr_original_gen;
     
     //nrTotalComparisons=dim*dim/2;
     //Comparisons.push_back(nrTotalComparisons);
     
+    
     // TODO: APPROX: use existing facet data or do a new computation
-    for (i = 0; i <current_nr_hyps; i++) {
-        FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
-        NewFacet.Hyp=current_hyps[i];
-        for (size_t j=0;j<nr_original_gen;++j){
-            if (v_scalar_product<Integer>(current_hyps[i],Generators[j])==0) NewFacet.GenInHyp.set(j);
-        }
-        //for(size_t j=0;j < dim;j++)
-            //if(j!=i)
-                //NewFacet.GenInHyp.set(start_simplex[j]);
-        NewFacet.ValNewGen=0;         // must be taken negative since opposite facet
-        number_hyperplane(NewFacet,0,0); // created with gen 0
-        Facets.push_back(NewFacet);    // was visible before adding this vertex
-    }
+    //for (i = 0; i <current_nr_hyps; i++) {
+        //FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
+        //NewFacet.Hyp=current_hyps[i];
+        //for (size_t j=0;j<nr_original_gen;++j){
+            //if (v_scalar_product<Integer>(current_hyps[i],Generators[j])==0) NewFacet.GenInHyp.set(j);
+        //}
+        ////for(size_t j=0;j < dim;j++)
+            ////if(j!=i)
+                ////NewFacet.GenInHyp.set(start_simplex[j]);
+        //NewFacet.ValNewGen=0;         // must be taken negative since opposite facet
+        //number_hyperplane(NewFacet,0,0); // created with gen 0
+        //Facets.push_back(NewFacet);    // was visible before adding this vertex
+    //}
+    
+    start_from = 0; //nr_original_gen;
+    bool is_new_generator;
     typename list< FACETDATA >::iterator l;
-    start_from =nr_original_gen;
     
     vector<key_t> gen_in_hyperplanes;
     size_t max_hyp=0; // counts the number of negative halfspaces
@@ -2180,9 +2187,12 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     
         start_from=i;
         //cout << "Current original generator: " << current_original_gen << endl;
+        if (in_triang[i]) continue;
         
+        // after we dealt with the original generators and their facets
         // check whether the original points are no longer extreme rays
-        
+        if (i>=nr_original_gen){ 
+                
         Matrix<Integer> M(current_nr_hyps,dim);
         size_t k=0;
         size_t gen_counter;
@@ -2264,10 +2274,12 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         // add the hyp minimizing point to the generators
         Generators[i]=min_hyp_point;
         
+        }  // end check for extreme rays
         //cout << "Generators in step " << i << endl;
         //Generators.pretty_print(cout);
            
-        Integer scalar_product;                                              
+        Integer scalar_product;      
+        is_new_generator=false;                                        
         l=Facets.begin();
         old_nr_supp_hyps=Facets.size(); // Facets will be xtended in the loop 
 
@@ -2292,6 +2304,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
                 l->ValNewGen=scalar_product;
                 if (scalar_product<0) {
                     nr_neg++;
+                    is_new_generator=true;
                 }
                 if (scalar_product>0) {
                     nr_pos++;
@@ -2305,7 +2318,10 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
 #ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
-        if(max_hyp==0) // is only in positive halfspaces
+         if(!is_new_generator)
+            continue;
+            
+        if(i>=nr_original_gen && max_hyp==0) // is only in positive halfspaces
             continue;
         
 
@@ -2361,7 +2377,8 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         }
         
         in_triang[i]=true;
-        current_original_gen = (current_original_gen+1) % nr_original_gen;
+        if (i>=nr_original_gen)
+            current_original_gen = (current_original_gen+1) % nr_original_gen;
         
     } 
     // --------------------------------------------------------- loop over i
