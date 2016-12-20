@@ -42,54 +42,52 @@ OptionsHandler::OptionsHandler() {
     project_name_set = false;
     output_dir_set=false;
     write_extra_files = false, write_all_files = false;
-    // use_Big_Integer = false;
-    use_long_long = false;
-    ignoreInFileOpt = false;
-    nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
+        // use_Big_Integer = false;
+        use_long_long = false;
+        ignoreInFileOpt = false;
+        nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
     nr_threads = 0;
-    nr_threads_explicitly_set=false;
 }
 
 
 bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
-vector<string> LongOptions;
-string ShortOptions; //all options concatenated (including -)
-// read command line options
-    for (int i = 1; i < argc; i++) {
-        if (argv[i][0] == '-') {
-            if (argv[i][1] != '\0') {
-                if (argv[i][1] != 'x') {
-                        if (argv[i][1] == '-') {
-                                string LO = argv[i];
-                                LO.erase(0, 2);
-                                LongOptions.push_back(LO);
-                        } else
-                                ShortOptions = ShortOptions + argv[i];
-                } else if (argv[i][2] == '=') {
-#ifdef _OPENMP
-                    string Threads = argv[i];
-                    Threads.erase(0,3);
-                    if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                        omp_set_num_threads(nr_threads);
-                        nr_threads_explicitly_set=true;
-                    } else {
-                        cerr<<"Error: Invalid option string "<<argv[i]<<endl;
+        vector<string> LongOptions;
+        string ShortOptions; //all options concatenated (including -)
+        // read command line options
+        for (int i = 1; i < argc; i++) {
+                if (argv[i][0] == '-') {
+                        if (argv[i][1] != '\0') {
+                                if (argv[i][1] != 'x') {
+                                        if (argv[i][1] == '-') {
+                                                string LO = argv[i];
+                                                LO.erase(0, 2);
+                                                LongOptions.push_back(LO);
+                                        } else
+                                                ShortOptions = ShortOptions + argv[i];
+                                } else if (argv[i][2] == '=') {
+                        #ifdef _OPENMP
+                        string Threads = argv[i];
+                        Threads.erase(0,3);
+                        if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
+                            omp_set_num_threads(nr_threads);
+                        } else {
+                            cerr<<"Error: Invalid option string "<<argv[i]<<endl;
                         exit(1);
-                    }
-#else
-                            cerr << "Warning: Compiled without OpenMP support, option "
-                                            << argv[i] << " ignored." << endl;
-#endif
+                        }
+                    #else
+                                        cerr << "Warning: Compiled without OpenMP support, option "
+                                                        << argv[i] << " ignored." << endl;
+                                        #endif
+                                } else {
+                                        cerr << "Error: Invalid option string " << argv[i] << endl;
+                                        exit(1);
+                                }
+                        }
                 } else {
-                        cerr << "Error: Invalid option string " << argv[i] << endl;
-                        exit(1);
+                    setProjectName(argv[i]);
                 }
-            }
-        } else {
-            setProjectName(argv[i]);
         }
-    }
-    return handle_options(LongOptions, ShortOptions);
+        return handle_options(LongOptions, ShortOptions);
 }
 
 void OptionsHandler::setProjectName(const string& s) {

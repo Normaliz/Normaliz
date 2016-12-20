@@ -15,9 +15,7 @@ AC_CONFIG_FILES([Makefile
 	test/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX(11, , optional)
-AS_IF([test x$HAVE_CXX11 = x0],
-  [ AX_CXX_COMPILE_STDCXX(0x, , mandatory) ])
+AX_CXX_COMPILE_STDCXX(0x, , mandatory)
 
 AC_PROG_LIBTOOL
 AC_LANG(C++)

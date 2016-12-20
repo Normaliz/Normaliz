@@ -106,7 +106,6 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoSymmetrization, false);
     CPs.set(ConeProperty::PrimalMode, false);
     CPs.set(ConeProperty::BigInt, false);
-    CPs.set(ConeProperty::NoNestedTri, false);
     return *this;
 }
 
@@ -122,7 +121,7 @@ ConeProperties ConeProperties::options() {
     ConeProperties ret;
     ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
     ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::BottomDecomposition));
-    ret.set(ConeProperty::NoBottomDec, CPs.test(ConeProperty::NoBottomDec));
+    ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::NoBottomDec));
     ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
     ret.set(ConeProperty::DualMode, CPs.test(ConeProperty::DualMode));
     ret.set(ConeProperty::KeepOrder, CPs.test(ConeProperty::KeepOrder));
@@ -130,8 +129,6 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::Symmetrize, CPs.test(ConeProperty::Symmetrize));
     ret.set(ConeProperty::NoSymmetrization, CPs.test(ConeProperty::NoSymmetrization));
     ret.set(ConeProperty::PrimalMode, CPs.test(ConeProperty::PrimalMode));
-    ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
-    ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
     return ret;
 }
 
@@ -371,10 +368,9 @@ namespace {
         CPN.at(ConeProperty::IsTriangulationNested) = "IsTriangulationNested";
         CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
         CPN.at(ConeProperty::BigInt) = "BigInt";
-        CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 58,
+        static_assert (ConeProperty::EnumSize == 57,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

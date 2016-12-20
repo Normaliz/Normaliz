@@ -739,8 +739,4 @@ template void v_add_result<long     >(vector<long     >&, size_t, const vector<l
 template void v_add_result<long long>(vector<long long>&, size_t, const vector<long long>&, const vector<long long>&);
 template void v_add_result<mpz_class>(vector<mpz_class>&, size_t, const vector<mpz_class>&, const vector<mpz_class>&);
 
-template long v_scalar_product(const vector<long>& a,const vector<long>& b);
-template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
-template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
-
 } // end namespace libnormaliz

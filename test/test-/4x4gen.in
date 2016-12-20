@@ -1,5 +1,4 @@
-amb_space 16
-integral_closure 20
+20 16
  0 0 0 1 1 0 0 0 0 0 1 0 0 1 0 0
  0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 1
  0 0 0 1 0 1 0 0 1 0 0 0 0 0 1 0
@@ -20,8 +19,8 @@ integral_closure 20
  1 0 0 1 1 1 0 0 0 1 0 1 0 0 2 0
  1 1 0 0 1 0 1 0 0 1 0 1 0 0 1 1
  1 1 0 0 0 1 1 0 0 0 0 2 1 0 1 0
+integral_closure
 
-grading
+1 16
  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
- LongLong
-
+grading

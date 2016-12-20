@@ -29,7 +29,6 @@
 #include <algorithm>
 using namespace std;
 
-#include "libnormaliz/my_omp.h"
 #include "normaliz.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/libnormaliz.h"
@@ -198,7 +197,7 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
 
     options.applyOutputOptions(Out);
 
-    string name_in=options.getOutputName()+".in";
+    string name_in=options.getProjectName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
@@ -228,18 +227,11 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
- #ifdef _OPENMP
-    long dim= (long) MyCone.getEmbeddingDim();
-    long max_threads=omp_get_max_threads();
-    if(!options.nr_threads_explicitly_set && std::getenv("OMP_NUM_THREADS")==NULL){
-        max_threads=min(max_threads,4*dim); // we limit the implicit number of threads
-        omp_set_num_threads(max_threads);
-    }
-#endif
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
-    MyCone.set_project(options.getOutputName());
+    MyCone.set_project(options.getProjectName());
+    MyCone.set_output_dir(options.getOutputDir());
     MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
@@ -254,7 +246,7 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     if(MyCone.isComputed(ConeProperty::IntegerHull)){
         Output<Integer> IntHullOut;
         options.applyOutputOptions(IntHullOut);
-        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.write_files();        
     }

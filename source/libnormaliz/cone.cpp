@@ -28,6 +28,7 @@
 #include "libnormaliz/convert.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/full_cone.h"
+#include "libnormaliz/my_omp.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -1449,14 +1450,10 @@ Integer Cone<Integer>::getReesPrimaryMultiplicity() {
 // if no triangulation was computed so far they return false
 template<typename Integer>
 bool Cone<Integer>::isTriangulationNested() {
-    if(!isComputed(ConeProperty::IsTriangulationNested))
-        throw NotComputableException("isTriangulationNested");
     return triangulation_is_nested;
 }
 template<typename Integer>
 bool Cone<Integer>::isTriangulationPartial() {
-    if(!isComputed(ConeProperty::IsTriangulationPartial))
-        throw NotComputableException("isTriangulationPartial");
     return triangulation_is_partial;
 }
 
@@ -1537,8 +1534,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    /* if(ToCompute.test(ConeProperty:: Symmetrize))
-        symmetrize(ToCompute); */
+    if(ToCompute.test(ConeProperty:: Symmetrize))
+        symmetrize(ToCompute);
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -1691,11 +1688,8 @@ void Cone<Integer>::compute_integer_hull() {
         }
     }
     
-    if(!isComputed(ConeProperty::MaximalSubspace))
-        recursive_compute(ConeProperty::MaximalSubspace);
-    
     // IntHullGen.pretty_print(cout);
-    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements(), Type::subspace,BasisMaxSubspace);
+    IntHullCone=new Cone<Integer>(InputType::cone_and_lattice,IntHullGen.get_elements());
     if(nr_extr!=0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);
 
@@ -1760,10 +1754,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
 
     FC.inhomogeneous=inhomogeneous;
     FC.explicit_h_vector=explicit_HilbertSeries;
-    
-    if (ToCompute.test(ConeProperty::NoNestedTri)) {
-        FC.use_bottom_points = false;
-    }
+
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
     }
@@ -2657,12 +2648,17 @@ void Cone<Integer>::set_project(string name){
 }
 
 template<typename Integer>
+void Cone<Integer>::set_output_dir(string name){
+    output_dir=name;
+}
+
+template<typename Integer>
 void Cone<Integer>::set_nmz_call(const string& path){
     nmz_call=path;
 }
     
 //---------------------------------------------------------------------------
-/* template<typename Integer>
+template<typename Integer>
 void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     if(!ToCompute.test(ConeProperty::Symmetrize))
@@ -2788,10 +2784,21 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     cout << polynomial << endl;
     
-    string in_file=project+".symm.in";
-    string pnm_file=project+".symm.pnm";
+    string slash="/";
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        slash="\\";
+    #endif
+    size_t found = project.rfind(slash);
+    if(!(found==std::string::npos)){
+        found++;
+        size_t length=project.size()-found;
+        project=project.substr(found,length);
+    }
     
-    cout << in_file << endl;
+    string in_file=output_dir+project+".symm.in";
+    string pnm_file=output_dir+project+".symm.pnm";
+    
+    cout << in_file << " " << output_dir << endl;
     
     const char* file = in_file.c_str();
     ofstream out(file);
@@ -2816,48 +2823,95 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     pnm_out << polynomial << endl;
     pnm_out.close();
     
-        //cout << "argv[0] = "<< argv[0] << endl;
-        string nmz_int_exec("\"");
-        // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
-        #ifdef _WIN32 //for 32 and 64 bit windows
-            nmz_int_exec.append("\"");
-        #endif
-        nmz_int_exec.append(nmz_call);
-        size_t found = nmz_int_exec.rfind("normaliz");
-        if (found!=std::string::npos) {
-            nmz_int_exec.replace (found,8,"nmzIntegrate");
-        } else {
-            throw FatalException("Error: Could not start nmzIntegrate");
-        }
+    //cout << "argv[0] = "<< argv[0] << endl;
+    string nmz_int_exec("\"");
+    // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
+    #ifdef _WIN32 //for 32 and 64 bit windows
         nmz_int_exec.append("\"");
-        
-        if(verbose)
-            nmz_int_exec+=" -c ";
-        if(ToCompute.test(ConeProperty::HilbertSeries))
-            nmz_int_exec+=" -E ";
-        else{
-            if(ToCompute.test(ConeProperty::Multiplicity))
-                nmz_int_exec+=" -L ";
+    #endif
+    nmz_int_exec.append(nmz_call);
+    found = nmz_int_exec.rfind("normaliz");
+    if (found!=std::string::npos) {
+        nmz_int_exec.replace (found,8,"nmzIntegrate");
+    } else {
+        throw FatalException("Error: Could not start nmzIntegrate");
+    }
+    nmz_int_exec.append("\"");
+    
+    if(verbose)
+        nmz_int_exec+=" -c ";
+    if(ToCompute.test(ConeProperty::HilbertSeries))
+        nmz_int_exec+=" -E ";
+    else{
+        if(ToCompute.test(ConeProperty::Multiplicity))
+            nmz_int_exec+=" -L ";
+    }
+    
+    nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
+    
+    nmz_int_exec+=output_dir+project+".symm";
+    
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        nmz_int_exec.append("\"");
+    #endif
+
+    cout << "executing: "<< nmz_int_exec << endl;
+    int success=system(nmz_int_exec.c_str());
+    if(success>0)
+        throw NotComputableException("NmzIntegrate failed");
+    
+    string result_file=output_dir+project+".symm.intOut";
+    const char* result = result_file.c_str();
+    ifstream in(result);
+    
+    string read;
+    vector<num_t> num;
+    vector<denom_t> denom;
+    if(ToCompute.test(ConeProperty::HilbertSeries)){
+        while(read!="series:")
+            in >> read;
+        int c;
+        num_t coeff;
+        while(true){
+            in >> std::ws;
+            c= in.peek();
+            if(c=='C')
+                break;
+            in >> coeff;
+            num.push_back(coeff);            
         }
-        
-        nmz_int_exec+=project+".symm";
-        
-        #ifdef _WIN32 //for 32 and 64 bit windows
-            nmz_int_exec.append("\"");
-        #endif
-
-        cout << "executing: "<< nmz_int_exec << endl;
-        system(nmz_int_exec.c_str());
-
-        
-        
+        while(read!="factors:")
+            in >> read;
+        while(true){
+            in >> std::ws;
+            c= in.peek();
+            if(c=='G')
+                break;
+            denom_t deg;
+            long mult;
+            in >> deg;
+            in >> read; // skip :
+            in >> mult;
+            for(long i=0;i<mult;++i)
+                denom.push_back(deg);
+        }
+        HSeries=HilbertSeries(num,denom);
+        HSeries.simplify();
+        is_Computed.set(ConeProperty::HilbertSeries);
+    }
+    cout << num;
+    cout << "----------" << endl;
+    cout << denom;
+    
+    while(read!="multiplicity:")
+        in >> read;
+    in >> multiplicity;
+    is_Computed.set(ConeProperty::Multiplicity);
+    
+    cout << "----------" << endl;
+    cout << multiplicity << endl;   
     
     
-    
-    
-    exit(0);
-    
-    
-} */
+}
 
 } // end namespace libnormaliz

@@ -2,18 +2,18 @@
 # For portability it would be better to integrate Makefile.classic here and only use automake features.
 
 check-local:
-	-rm -rf run_tests
+	rm -rf run_tests
 	mkdir run_tests
 	(cd $(srcdir) && tar cf - $(NMZTESTS)) | (cd run_tests && tar xf -)
 	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic NORMALIZ=$(abs_top_builddir)/source/normaliz)
 
 clean-local:
 	$(MAKE) -f $(srcdir)/Makefile.classic clean
-	-rm -rf run_tests
+	rm -rf run_tests
 
 distclean-local:
 	$(MAKE) -f $(srcdir)/Makefile.classic distclean
-	-rm -rf run_tests
+	rm -rf run_tests
 
 EXTRA_DIST = Makefile.classic sortdiff		\
 	tools/my-out-ref.sh			\
