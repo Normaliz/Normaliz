@@ -376,7 +376,10 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
     // check for excluded faces
+    
     ExcludedFaces = find_input_matrix(multi_input_data,Type::excluded_faces);
+    if(ExcludedFaces.nr_of_rows()==0)
+        ExcludedFaces=Matrix<Integer>(0,dim); // we may need the correct number of columns
     PreComputedSupportHyperplanes = find_input_matrix(multi_input_data,Type::support_hyperplanes);
     
     // check for a grading
@@ -2667,8 +2670,10 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim)
         throw BadInputException("Symmetrization not posible with the given input");   
     
-    Matrix<Integer> AllConst=Equations;
-    size_t nr_equ=AllConst.nr_of_rows();
+    Matrix<Integer> AllConst=ExcludedFaces;
+    size_t nr_excl = AllConst.nr_of_rows();    
+    AllConst. append(Equations);
+    size_t nr_equ=AllConst.nr_of_rows()-nr_excl;
     vector<bool> unit_vector(dim,false);
     for(size_t i=0;i<Inequalities.nr_of_rows();++i){
         size_t nr_nonzero=0;
@@ -2690,7 +2695,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
             unit_vector[nonzero_coord]=true;    
     }
     
-    size_t nr_inequ=AllConst.nr_of_rows()-nr_equ;
+    size_t nr_inequ=AllConst.nr_of_rows()-nr_equ-nr_excl;
     
     for(size_t i=0;i<dim;++i)
         if(!unit_vector[i])
@@ -2705,8 +2710,9 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     AllConst.append(Grading);
     
-    AllConst.pretty_print(cout);
+    /* AllConst.pretty_print(cout);
     cout << "----------------------" << endl;
+    cout << nr_excl << " " << nr_equ << " " << nr_inequ << endl; */
     
     AllConst=AllConst.transpose();
     
@@ -2722,7 +2728,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     }
     
 
-    for(C=classes.begin();C!=classes.end();++C)
+    /* for(C=classes.begin();C!=classes.end();++C)
             cout << C->first;
 
     cout << "--------------" << endl;
@@ -2730,7 +2736,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     for(C=classes.begin();C!=classes.end();++C)
             cout << C->second << " ";
         
-    cout << endl << endl;
+    cout << endl << endl; */
     
     vector<size_t> multiplicities;
     Matrix<Integer> SymmConst(0,AllConst.nr_of_columns());
@@ -2740,32 +2746,37 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
             SymmConst.append(C->first);
     }
     SymmConst=SymmConst.transpose();
-    cout << "--------------" << endl;
+    /* cout << "--------------" << endl;
     SymmConst.pretty_print(cout);
-    cout << "--------------" << endl;
+    cout << "--------------" << endl; */
     
     Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmEqu(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmCong(0,SymmConst.nr_of_columns());
-    
-    for(size_t i=0;i<nr_inequ;++i)
-        SymmInequ.append(SymmConst[i]);    
-    for(size_t i=nr_inequ;i<nr_inequ+nr_equ;++i)
+    Matrix<Integer> SymmExcl(0,SymmConst.nr_of_columns());
+ 
+    for(size_t i=0;i<nr_excl;++i)
+        SymmExcl.append(SymmConst[i]);        
+    for(size_t i=nr_excl;i<nr_excl+nr_equ;++i)
         SymmEqu.append(SymmConst[i]);    
-    for(size_t i=nr_inequ+nr_equ;i<SymmConst.nr_of_rows()-1;++i){
+    for(size_t i=nr_excl+nr_equ;i<nr_excl+nr_equ+nr_inequ;++i)
+        SymmInequ.append(SymmConst[i]);    
+    for(size_t i=nr_excl+nr_equ+nr_inequ;i<SymmConst.nr_of_rows()-1;++i){
         SymmCong.append(SymmConst[i]);
         SymmCong[SymmCong.nr_of_rows()-1].push_back(Congruences[i-(nr_inequ+nr_equ)][dim]); // restore modulus
     }
     
     vector<Integer> SymmGrad=SymmConst[SymmConst.nr_of_rows()-1];
     
-    SymmInequ.pretty_print(cout);
+    /* SymmInequ.pretty_print(cout);
+    cout << "===============" << endl;
+    SymmExcl.pretty_print(cout);
     cout << "===============" << endl;
     SymmEqu.pretty_print(cout);
     cout << "===============" << endl;
     SymmCong.pretty_print(cout);
     cout << "===============" << endl;
-    cout << SymmGrad;
+    cout << SymmGrad;*/
     
     string polynomial;
     
@@ -2782,38 +2793,54 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     }
     polynomial+="/"+fact.get_str()+";";   
     
-    cout << polynomial << endl;
+    /* cout << polynomial << endl; */
     
     string slash="/";
     #ifdef _WIN32 //for 32 and 64 bit windows
         slash="\\";
     #endif
     size_t found = project.rfind(slash);
+    string pure_project;
     if(!(found==std::string::npos)){
         found++;
         size_t length=project.size()-found;
-        project=project.substr(found,length);
+        pure_project=project.substr(found,length);
     }
     
-    string in_file=output_dir+project+".symm.in";
-    string pnm_file=output_dir+project+".symm.pnm";
+    string in_file, pnm_file,result_file,pre_name;
+
+    // cout << "Result file " << result_file << endl;
+    if(output_dir.size()>0)
+        pre_name=output_dir+pure_project;
+    else
+        pre_name=project;
+    pre_name+=".symm";    
+    in_file=pre_name+".in";
+    pnm_file=pre_name+".pnm";
+    result_file=pre_name+".intOut";
     
-    cout << in_file << " " << output_dir << endl;
+    // cout << in_file << " " << output_dir << endl;
     
     const char* file = in_file.c_str();
     ofstream out(file);
     out << "amb_space " << SymmInequ.nr_of_columns() << endl;
-    out << "inequalities " << SymmInequ.nr_of_rows() << endl;
-    SymmInequ.pretty_print(out);
+    if(SymmInequ.nr_of_rows()>0){
+        out << "inequalities " << SymmInequ.nr_of_rows() << endl;
+        SymmInequ.pretty_print(out);
+    }
+    out << "nonnegative" << endl;
     if(SymmEqu.nr_of_rows()>0){
         out << "equations " << SymmEqu.nr_of_rows() << endl;;
         SymmEqu.pretty_print(out);
     }
     if(SymmCong.nr_of_rows()>0){
-        out << "equations " << SymmCong.nr_of_rows() << endl;;
+        out << "congruences " << SymmCong.nr_of_rows() << endl;;
         SymmCong.pretty_print(out);
     }
-    out << "nonnegative" << endl;
+    if(SymmExcl.nr_of_rows()>0){
+        out << "excluded_faces " << SymmExcl.nr_of_rows() << endl;;
+        SymmCong.pretty_print(out);
+    }
     out << "grading" << endl;
     out << SymmGrad;
     out.close();
@@ -2822,6 +2849,9 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     ofstream pnm_out(file);
     pnm_out << polynomial << endl;
     pnm_out.close();
+    
+    if(SymmGrad.size() > 16|| SymmGrad.size() > 2*dim/3)
+        throw NotComputableException("Dimension of symmetrized cone too large. Only iles for NmzIntegrate written.");        
     
     //cout << "argv[0] = "<< argv[0] << endl;
     string nmz_int_exec("\"");
@@ -2849,18 +2879,18 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
     
-    nmz_int_exec+=output_dir+project+".symm";
+    nmz_int_exec+=pre_name;
     
     #ifdef _WIN32 //for 32 and 64 bit windows
         nmz_int_exec.append("\"");
     #endif
 
-    cout << "executing: "<< nmz_int_exec << endl;
+    if(verbose)
+        verboseOutput() << "executing: "<< nmz_int_exec << endl;
     int success=system(nmz_int_exec.c_str());
     if(success>0)
         throw NotComputableException("NmzIntegrate failed");
-    
-    string result_file=output_dir+project+".symm.intOut";
+
     const char* result = result_file.c_str();
     ifstream in(result);
     
@@ -2899,17 +2929,17 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         HSeries.simplify();
         is_Computed.set(ConeProperty::HilbertSeries);
     }
-    cout << num;
+    /* cout << num;
     cout << "----------" << endl;
-    cout << denom;
+    cout << denom; */
     
     while(read!="multiplicity:")
         in >> read;
     in >> multiplicity;
     is_Computed.set(ConeProperty::Multiplicity);
     
-    cout << "----------" << endl;
-    cout << multiplicity << endl;   
+    /* cout << "----------" << endl;
+    cout << multiplicity << endl;  */
     
     
 }
