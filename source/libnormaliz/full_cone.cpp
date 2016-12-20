@@ -2105,8 +2105,9 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     Matrix<Integer> zero_matrix(nr_gen-nr_original_gen,dim);
     Generators.append(zero_matrix);
     
+    long long RecBoundSuppHyp = dim*dim;
+    RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
     
-
     vector<key_t> start_simplex(dim);
     size_t i;
     
@@ -2151,6 +2152,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     //nrTotalComparisons=dim*dim/2;
     //Comparisons.push_back(nrTotalComparisons);
     
+    // TODO: APPROX: use existing facet data or do a new computation
     for (i = 0; i <current_nr_hyps; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=current_hyps[i];
@@ -2160,7 +2162,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         //for(size_t j=0;j < dim;j++)
             //if(j!=i)
                 //NewFacet.GenInHyp.set(start_simplex[j]);
-        //NewFacet.ValNewGen=-1;         // must be taken negative since opposite facet
+        NewFacet.ValNewGen=0;         // must be taken negative since opposite facet
         number_hyperplane(NewFacet,0,0); // created with gen 0
         Facets.push_back(NewFacet);    // was visible before adding this vertex
     }
@@ -2309,10 +2311,19 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
 
         if (!omp_in_parallel())
             try_offload(0);
-        
-        cout << "Find new facets..." << flush;
-        find_new_facets(i); // Fourier Motzkin
-        cout << " done." << endl;    
+            
+        if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
+            cout << "Pyramid decomposition..." << flush;
+            process_pyramids(i,true); //recursive
+            lastGen=i;
+            nextGen=i+1; 
+            cout << " done." << endl;  
+        } else {
+            cout << "Find new facets..." << flush;
+            find_new_facets(i); // Fourier Motzkin
+            cout << " done." << endl;     
+        }
+
         // removing the negative hyperplanes if necessary
         l=Facets.begin();
         for (size_t j=0; j<old_nr_supp_hyps;j++){
@@ -2335,7 +2346,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         GensInCone.push_back(i);
         nrGensInCone++;
         
-        //Comparisons.push_back(nrTotalComparisons);
+        Comparisons.push_back(nrTotalComparisons);
         
         if(verbose) {
             verboseOutput() << "gen="<< i+1 <<", ";
@@ -2344,6 +2355,8 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
             } else {
                 verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp";
             }
+            if(nrPyramids[0]>0)
+                verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
             verboseOutput()<< endl;
         }
         
@@ -2401,16 +2414,8 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
         is_Computed.set(ConeProperty::SupportHyperplanes);
     }    
    
-    
     if(do_extreme_rays && do_all_hyperplanes)
         compute_extreme_rays();
-    
-    transfer_triangulation_to_top(); // transfer remaining simplices to top
-    if(check_evaluation_buffer()){
-        Top_Cone->evaluate_triangulation();
-    }  
-
-    // } // end if (dim>0)
     
     Facets.clear();     
 }
@@ -4315,6 +4320,7 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
     
     Matrix<Integer> M;
     vector<list<vector<Integer>>> approx_points;
+    size_t nr_approx=0;
     for(size_t i=0;i<nr_gen;++i){
         if(Extreme_Rays_Ind[i]){
             list<vector<Integer> > approx;
@@ -4323,7 +4329,7 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
             // TODO: NECESSARY?
             //approx.unique()
             //cout << "Approximation points for generator " << i << ": " << Generators[i] << endl;
-            size_t nr_approx;
+            nr_approx = 0;
             for(auto jt=approx.begin();jt!=approx.end();++jt){  // reverse transformation
                 *jt=U.MxV(*jt);
                 ++nr_approx;
