@@ -96,9 +96,9 @@
 
 \def\version{3.1.3}
 \def\NmzDir{Normaliz-\version}
-\def\NmzMin{3.1.2}
+\def\NmzMin{3.2.0}
 
-\def\Intversion{1.3.2}
+\def\Intversion{1.3.3}
 
 
 \begin{document}
@@ -362,12 +362,14 @@ NmzIntegrate is now using the CoCoALib input function for polynomials. In the pr
 
 \section{Running NmzIntegrate}
 
-There are three ways to run NmzIntegrate:
+There are five ways to run NmzIntegrate:
 \begin{enumerate}
 \item direct call from the command line,
-\item call from Normaliz (see Normaliz manual),
-\item from jNormaliz via Normaliz.
+\item call from Normaliz, (i) via one of the options \verb|-E,-I,-L|or (ii) implicitly via the option \verb|--Symmetriz, -Ye| (see Normaliz manual),
+\item from jNormaliz via Normaliz (with the same two variants as in 2.).
 \end{enumerate}
+
+Noteb that the implicit call from Normaliz via \verb|--Symmetrize| deletes the output file of NmzIntegrate, after the results have been transferred to Normaliz. The other three ways preserve the output file (and also the files used for the transfer of data from Normaliz to NmzIntegrate).
 
 The shortest possible command to start NmzIntegrate is
 \begin{Verbatim}
@@ -465,17 +467,18 @@ for NmzIntegrate --- look out for files with the suffix
 \subsection{A generalized Ehrhart series}
 
 We choose an example from combinatorial voting theory which is discussed in
-more detail in \cite{BS}. The file \ttt{CondorcetSymm.in} from the directory
+more detail in \cite{BS}. The file \ttt{Condorcet.samm.in} from the directory
 \ttt{examples} contains the following:
 
 \begin{Verbatim}
 amb_space 8
 inequalities 3
-1 -1 1 1 1 -1 -1 -1
-1 1 -1 1 -1 1 -1 -1
-1 1 1 -1 -1 -1 1 -1
+-1 -1 -1 -1  1  1  1 1
+-1 -1  1  1 -1 -1  1 1
+-1  1 -1  1 -1  1 -1 1
 nonnegative
-total_degree
+grading
+1 1 1 1 1 1 1 1 
 \end{Verbatim}
 
 
@@ -487,9 +490,9 @@ $$
 It is given in \ttt{CondorcetSymm.pnm} by
 
 \begin{Verbatim}
-1/120*(x[1]+5)*(x[1]+4)*(x[1]+3)*(x[1]+2)*(x[1]+1)*
+(x[1]+1)*(x[1]+2)*(x[1]+3)*(x[1]+4)*(x[1]+5)*
 (x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
-1/120*(x[8]+5)*(x[8]+4)*(x[8]+3)*(x[8]+2)*(x[8]+1)
+(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400;
 \end{Verbatim}
 
 
@@ -501,7 +504,7 @@ nmzIntegrate -c example/CondorcetSymm
 
  (replace the slash by a backslash in MS Windows, and similarly
  below).
-The file \ttt{CondorcetSymm.} \ttt{intOut} starts with the factorization:
+The file \ttt{Condorcet.symm.} \ttt{intOut} starts with the factorization:
 
 \begin{Verbatim}
 Factorization of polynomial:
@@ -574,7 +577,7 @@ customary in voting theory (in order to exclude draws). Then we replace
 is called by
 
 \begin{Verbatim}
-nmzIntegrate -c -F=CondorcetSymm example/CondorcetSymmSemi
+nmzIntegrate -c -F=Condorcet.symm example/CondorcetSemi.symm
 \end{Verbatim}
 
 The output file is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
@@ -749,10 +752,15 @@ project.
 
 \end{enumerate}
 
-\subsection{1.3.1 $\to$ \Intversion}
+\subsection{1.3.1 $\to$ 1.3.2\Intversion}
 
 \begin{enumerate}
 	\item OutputDir added.
+\end{enumerate}
+
+\subsection{1.3.2 $\to$ \Intversion}
+\begin{enumerate}
+	\item Manual adapted to the introduction of option \verb|--Symmetrize| in Normaliz.
 \end{enumerate}
 
 \begin{thebibliography}{15.}
