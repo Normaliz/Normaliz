@@ -464,9 +464,6 @@ NMZTESTS = test-/23.in					\
 	test-hh/rational.in				\
 	test-hh/rational.IntHull.ref			\
 	test-hh/rational.ref				\
-	test-hh/small.in				\
-	test-hh/small.IntHull.ref			\
-	test-hh/small.ref				\
 	test-hh/strip2.in				\
 	test-hh/strip2.IntHull.ref			\
 	test-hh/strip2.ref				\
@@ -532,10 +529,6 @@ NMZTESTS = test-/23.in					\
 	test-mm/simple_grading.ref			\
 	test-mm/simple_grading2.in			\
 	test-mm/simple_grading2.ref			\
-	test-mm/small.in				\
-	test-mm/small.ref				\
-	test-mm/small_inhom.in				\
-	test-mm/small_inhom.ref				\
 	test-mm/squaref0.in				\
 	test-mm/squaref0.ref				\
 	test-mm/squaref1.in				\

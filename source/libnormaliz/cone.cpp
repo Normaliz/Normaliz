@@ -2839,7 +2839,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     }
     if(SymmExcl.nr_of_rows()>0){
         out << "excluded_faces " << SymmExcl.nr_of_rows() << endl;;
-        SymmCong.pretty_print(out);
+        SymmExcl.pretty_print(out);
     }
     out << "grading" << endl;
     out << SymmGrad;
@@ -2873,7 +2873,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::HilbertSeries))
         nmz_int_exec+=" -E ";
     else{
-        if(ToCompute.test(ConeProperty::Multiplicity))
+        if(ToCompute.test(ConeProperty::Multiplicity) && !ToCompute.test(ConeProperty::HilbertSeries))
             nmz_int_exec+=" -L ";
     }
     
@@ -2941,7 +2941,27 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     /* cout << "----------" << endl;
     cout << multiplicity << endl;  */
     
-    
+    int k=0;
+    string del_pre="rm "+pre_name, del_file;
+    del_file=del_pre+".out";
+    k=system(del_file.c_str());
+    del_file=del_pre+".intOut";
+    k=system(del_file.c_str());
+    del_file=del_pre+".inv";
+    k+=system(del_file.c_str());
+    del_file=del_pre+".tgn";
+    k+=system(del_file.c_str());
+    if(ToCompute.test(ConeProperty::HilbertSeries)){
+        del_file=del_pre+".dec";
+        k+=system(del_file.c_str());    
+    }
+    if(ToCompute.test(ConeProperty::Multiplicity) && !ToCompute.test(ConeProperty::HilbertSeries)){
+        del_file=del_pre+".tri";
+        k+=system(del_file.c_str());            
+    }
+    if(k>0){
+        throw FatalException("Some file for exchange of data could not be deleted");        
+    }
 }
 
 } // end namespace libnormaliz
