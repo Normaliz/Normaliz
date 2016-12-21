@@ -1,0 +1,12 @@
+amb_space 8
+inequalities 3
+ -1 -1 -1 -1  1  1  1 1
+ -1 -1  1  1 -1 -1  1 1
+ -1  1 -1  1 -1  1 -1 1
+nonnegative
+excluded_faces 3
+ -1 -1 -1 -1  1  1  1 1
+ -1 -1  1  1 -1 -1  1 1
+ -1  1 -1  1 -1  1 -1 1
+grading
+1 1 1 1 1 1 1 1 
