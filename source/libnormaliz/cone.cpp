@@ -1537,8 +1537,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    /*if(ToCompute.test(ConeProperty:: Symmetrize))
-        symmetrize(ToCompute);*/
+    if(ToCompute.test(ConeProperty:: Symmetrize))
+        symmetrize(ToCompute);
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
