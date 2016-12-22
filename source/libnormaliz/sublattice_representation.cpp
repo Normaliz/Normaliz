@@ -96,7 +96,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     dim=M.nr_of_columns();
     Matrix<Integer> N=M;    
 
-    rank=N.row_echelon_reduce(success);
+    rank=N.row_echelon_reduce(success);  // reduce is importnat here, will be used
     if(!success)
         return;
 
@@ -107,10 +107,10 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         return;   
     }
 
-    mpz_class row_index=1;
+    mpz_class row_index=1;  // product of the corner elements in the row echelon form
     vector<key_t> col(rank);
-    vector<bool> col_is_corner(dim,false);
-    for(size_t k=0;k<rank;++k){
+    vector<bool> col_is_corner(dim,false); // indicates whether the column is a corner in the 
+    for(size_t k=0;k<rank;++k){            // row echelin form
         size_t j=0;
         for(;j<dim;++j)
             if(N[k][j]!=0)
@@ -118,11 +118,11 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         col_is_corner[j]=true;
         col[k]=j;
         if(N[k][j]<0)
-            v_scalar_multiplication<Integer>(N[k],-1);
+            v_scalar_multiplication<Integer>(N[k],-1);  // make corner positive
         row_index*=convertTo<mpz_class>(N[k][j]);
     }
     
-    if(row_index==1 && rank==dim){
+    if(row_index==1 && rank==dim){  // the sublattice is the full lattice and no saturation needed
         A = B = Matrix<Integer>(dim);
         c=1;
         is_identity=true;
@@ -132,14 +132,14 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     A=Matrix<Integer>(rank, dim);
     B=Matrix<Integer>(dim,rank);
     
-    if(row_index==1){
+    if(row_index==1){  // no saturation needed since sublattice is direct summand
     
         for(size_t k=0;k<rank;++k)
-            A[k]=N[k];
+            A[k]=N[k];    // A is just the basis of our sublattice
         size_t j=0;
         for(size_t k=0;k<dim;++k){
             if(col_is_corner[k]){
-                B[k][j]=1;
+                B[k][j]=1;  // projection to the corner columns, allowed because of reduction!
                 j++;
             }
         };
@@ -162,13 +162,15 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         if(!success)
             return;
         
-        for(k=0;k<dim;++k)
+        for(k=0;k<dim;++k) // we take the partial inverse belonging to the first rankk rows of A
             for(size_t j=0;j<rank;++j)
                 B[k][j]=Q[k][j];
         return;               
     }
     
-    // now we must take the saturation
+    // now we must take the saturation.
+    // We do it by computing a complement of the smallest direct summand containing 
+    // of the sublattice and then taking its complement.
     
     Matrix<Integer> R_inv(dim);
     success=N.column_trigonalize(rank,R_inv);

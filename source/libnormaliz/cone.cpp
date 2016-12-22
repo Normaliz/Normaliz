@@ -2277,7 +2277,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::IsTriangulationPartial);
         is_Computed.set(ConeProperty::IsTriangulationNested);
         is_Computed.reset(ConeProperty::Triangulation);
-        Triangulation.clear();
+        Triangulation.clear(); // to get rid of a previously computed triangulation
     }
     if (FC.isComputed(ConeProperty::TriangulationDetSum)) {
         convert(TriangulationDetSum, FC.detSum);

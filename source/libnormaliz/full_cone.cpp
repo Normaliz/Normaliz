@@ -44,8 +44,9 @@
 
 //---------------------------------------------------------------------------
 
-const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
+// const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
                                        // we pass to (non-recirsive) pyramids
+                                       // now in build_cone
 
 const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
@@ -61,9 +62,11 @@ const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored lev
                                               
 const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
 
-const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
+const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg > ...
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
+
+const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
 
 //---------------------------------------------------------------------------
 
@@ -660,11 +663,12 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            NrCSF++;*/
            
            if(using_GMP<Integer>())           
-                ranktest = (nr_NonSimp > 10*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+                ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
            else
                ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
+           // ranktest=true;
 
-           if(ranktest) {
+           if(ranktest) { // cout << "Rang" << endl;
            
            /* #pragma omp atomic
             NrRank++; */
@@ -1315,6 +1319,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     nrGensInCone=dim;
     
     nrTotalComparisons=dim*dim/2;
+    if(using_GMP<Integer>())
+        nrTotalComparisons*=GMP_time_factor; // because of the linear algebra involved in this routine
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
@@ -1481,8 +1487,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
     for (;hp_j_iterator!=PosHyps.end();++hp_j_iterator){ //match hyp with the given Pos
         hp_j=*hp_j_iterator;
-
-
+        
        if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
                                             // their intersection is a subfacet
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
@@ -1499,7 +1504,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        nr_common_zero=0;
        common_key.clear();
        size_t second_loop_bound=nr_zero_hyp;
-       common_subfacet=true;  
+       common_subfacet=true;
+       boost::dynamic_bitset<> common_zero(nr_gen);
        
        if(extension_test){
            bool extended=false;
@@ -1515,6 +1521,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
                else {
                    extended=true;
                    common_key.push_back(key[k]);
+                   common_zero.set(key[k]);
                    nr_common_zero++;
                }
            }
@@ -1533,6 +1540,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
            }
            else {
                common_key.push_back(key[k]);
+               common_zero.set(key[k]);
                nr_common_zero++;
            }
         }
@@ -1542,12 +1550,36 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        
        assert(nr_common_zero >=subfacet_dim);
             
-        // only rank test since we have many supphyps anyway
+
         if (!hp_j->simplicial){
-            Matrix<Integer>& Test = Top_Cone->RankTest[tn];
-            if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
-                common_subfacet=false;     // don't make a hyperplane
-        }
+            
+            bool ranktest;
+            /* if(using_GMP<Integer>())           
+                ranktest = (old_nr_supp_hyps > 10*GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+           else
+               ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
+           
+           ranktest=true;
+            
+            if(ranktest){
+                // cout << "Rank" << endl;
+                Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+                if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
+                    common_subfacet=false;     // don't make a hyperplane
+            }
+            else{                 // now the comparison test
+                // cout << "Compare" << endl;
+                auto hp_t=Facets.begin();
+                for (;hp_t!=Facets.end();++hp_t){
+                    if(hp_t->simplicial)
+                        continue;
+                    if ((hp_t->Ident!=hyp.Ident) && (hp_t->Ident!=hp_j->Ident) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+                        common_subfacet=false;
+                        break;
+                    }
+                }                       
+            } // else
+        } // !simplicial
         
         if(common_subfacet)
             add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
@@ -1827,8 +1859,14 @@ void Full_Cone<Integer>::build_cone() {
     
     // cout << "Pyr " << pyr_level << endl;
 
-    long long RecBoundSuppHyp = dim*dim;
-    RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
+    long long RecBoundSuppHyp;
+    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 50
+    if(using_GMP<Integer>())
+        RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
+        
+    size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
+    if(using_GMP<Integer>())
+        RecBoundTriang*=GMP_time_factor;
     
     tri_recursion=false; 
     
@@ -1861,6 +1899,9 @@ void Full_Cone<Integer>::build_cone() {
 
 
     for (size_t i=start_from;i<nr_gen;++i) { 
+        
+        time_t start,end;
+        time (&start);
     
         start_from=i;
     
@@ -1964,6 +2005,13 @@ void Full_Cone<Integer>::build_cone() {
             if(do_all_hyperplanes || i!=last_to_be_inserted) 
                 find_new_facets(i);
         }
+        
+        time (&end);        
+        /* double dif = difftime (end,start);
+
+        if (verbose) {
+            verboseOutput() << "Generator took " << dif << " sec " <<endl;
+        }*/
         
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){

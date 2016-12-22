@@ -309,17 +309,6 @@ vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scala
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void v_scalar_division(vector<Integer>& v, const Integer& scalar){
-    size_t i,size=v.size();
-    for (i = 0; i <size; i++) {
-        assert(v[i]%scalar == 0);
-        v[i] /= scalar;
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
     size_t i,size=v.size();
     for (i = 0; i <size; i++) {
