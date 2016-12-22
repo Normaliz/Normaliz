@@ -19,17 +19,19 @@ EXTRA_DIST =					\
 	A643.in					\
 	ChineseRemainder.in			\
 	CondEffPlur.in				\
-	CondEffPlurHilbBas.in			\
+	CondEffPlur.symm.in			\
+	CondEffPlur.symm.pnm			\
 	CondEffPlurSemi.in			\
-	CondEffPlurSymm.in			\
-	CondEffPlurSymm.pnm			\
-	CondEffPlurSymmSemi.in			\
+	CondEffPlurSemi.symm.in			\
+	CondEffPlurSemi.symm.pnm			\
+	CondEffPlurHilbBas.in			\
 	Condorcet.in				\
 	CondorcetInt.in				\
 	CondorcetSemi.in			\
-	CondorcetSymm.in			\
-	CondorcetSymm.pnm			\
-	CondorcetSymmSemi.in			\
+	Condorcet.symm.in			\
+	Condorcet.symm.pnm			\
+	CondorcetSemi.symm.in			\
+	CondorcetSemi.symm.pnm			\
 	Condorcet_one.in			\
 	FortuneCookie.in			\
 	InhomCong.in				\
@@ -46,9 +48,11 @@ EXTRA_DIST =					\
 	NonCMDiv.in				\
 	NumSemi.in				\
 	PluralityVsCutoff.in			\
+	PluralityVsCutoff.symm.in		\
+	PluralityVsCutoff.symm.pnm		\
 	PluralityVsCutoffSemi.in		\
-	PluralityVsCutoffSymm.pnm		\
-	PluralityVsCutoffSymmSemi.in		\
+	PluralityVsCutoffSemi.symm.in		\
+	PluralityVsCutoffSemi.symm.pnm		\
 	SquareMinusVertex.in			\
 	SquareMinusVertexInhom.in		\
 	SquareMinusVertexPolyh.in		\
@@ -69,6 +73,7 @@ EXTRA_DIST =					\
 	max_polytope_cand.in			\
 	medium.in				\
 	normface.in				\
+	pedro2.in				\
 	poly_hom_const.in			\
 	poly_ineq.in				\
 	polytope.in				\
