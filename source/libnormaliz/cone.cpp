@@ -2972,6 +2972,121 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     }
 }
 
+//---------------------------------------------------------------------------
+template<typename Integer>
+bool Cone<Integer>::try_approximation (){
+    
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading)){
+        // errorOutput() << "WARNING: Approximation not applicable without explicit grading for homogeneous computations" << endl;
+        // can be left to full_cone --- grading can be found there only if we have a lattice polytope
+        return false;;
+    }
+    
+    // cout << "Grading " << Grading << " Denom " << GradingDenom << endl;
+    
+    // TODO this method shoulbe usable if the GradingDenom is > 1
+    if(!inhomogeneous && isComputed(ConeProperty::Grading) && GradingDenom!=1)
+        return false;
+    
+    ConeProperties NeededHere;
+    NeededHere.set(ConeProperty::SupportHyperplanes);
+    NeededHere.set(ConeProperty::Sublattice);
+    NeededHere.set(ConeProperty::MaximalSubspace);     
+    recursive_compute(NeededHere);
+    
+    if(!pointed || BasisChangePointed.getRank()==0)
+        return false;
+    
+    if(inhomogeneous){
+        for(size_t i=0;i<Generators.nr_of_rows();++i){
+            if(v_scalar_product(Generators[i],Dehomogenization)==0){
+                errorOutput() << "WARNING: Approximation not applicable to unbounded polyhedra" << endl;
+                return false;
+            }                    
+        }        
+    }
+    
+    if(inhomogeneous){ // exclude that dehoogenization has a gcd > 1
+        vector<Integer> test_dehom=BasisChange.to_sublattice_dual_no_div(Dehomogenization);
+        if(v_make_prime(test_dehom)!=1)
+            return false;        
+    }
+    
+    vector<Integer> GradForApprox;
+    if(!inhomogeneous)
+        GradForApprox=Grading;
+    else
+        GradForApprox=Dehomogenization;
+    
+    Matrix<Integer> GradGen(0,dim+1);
+    for(size_t i=0;i<Generators.nr_of_rows();++i){
+        vector<Integer> gg(dim+1);
+        for(size_t j=0;j<dim;++j)
+            gg[j+1]=Generators[i][j];
+        gg[0]=v_scalar_product(Generators[i],GradForApprox);
+        // cout << gg;
+        list<vector<Integer> > approx;
+        approx_simplex(gg,approx,1);
+        GradGen.append(Matrix<Integer>(approx));        
+    }
+    
+    /* cout << "=================================" << endl;
+    GradGen.pretty_print(cout);
+    cout << "=================================" << endl;    */
+    if(verbose)
+        verboseOutput() << "Computing approximating polytope" << endl;
+    Cone<Integer> ApproxCone(InputType::cone,GradGen);
+    ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode);
+    
+    HilbertBasis=Matrix<Integer>(0,dim);
+    Deg1Elements=Matrix<Integer>(0,dim);
+    
+    Matrix<Integer> Raw=ApproxCone.getDeg1ElementsMatrix();
+    Matrix<Integer> Result(0,dim);
+    Matrix<Integer> Eq=BasisChange.getEquations();
+    Matrix<Integer> Cong=BasisChange.getCongruences();
+    for(size_t i=0;i<Raw.nr_of_rows();++i){
+        vector<Integer> rr(dim);
+        for(size_t j=0;j<dim;++j)
+            rr[j]=Raw[i][j+1];
+        if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
+            continue;
+        }
+        bool not_in=false;
+        for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
+            if(v_scalar_product(rr,SupportHyperplanes[k])<0){  // not in original cone
+                not_in=true;
+                break;
+            }
+        for(size_t k=0;k<Eq.nr_of_rows();++k) 
+            if(v_scalar_product(rr,Eq[k])!=0){// not in original cone (or lattice)
+                not_in=true;
+                break;
+            }
+        for(size_t k=0;k<Cong.nr_of_rows();++k) {
+            if(v_scalar_product_unequal_vectors_begin(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
+                not_in=true;
+                break;
+            }
+        if(not_in)
+            continue;
+        if(inhomogeneous)
+            HilbertBasis.append(rr);
+        else
+            Deg1Elements.append(rr);        
+    }
+
+    if(inhomogeneous)
+        is_Computed.set(ConeProperty::HilbertBasis);
+    else
+        is_Computed.set(ConeProperty::Deg1Elements);
+    is_Computed.set(ConeProperty::Approximate);
+    
+    return true;
+    
+    
+}
+
 
 
 } // end namespace libnormaliz
