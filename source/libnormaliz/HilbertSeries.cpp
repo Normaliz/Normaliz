@@ -294,7 +294,7 @@ void HilbertSeries::simplify() const {
         dim = 0;
     period = lcm_of_keys(cdenom);
     i = period;
-    if (period > 10000) {
+    if (period > 200000) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         }
@@ -317,7 +317,7 @@ void HilbertSeries::simplify() const {
             }
         }
         i = lcm_of_keys(cdenom);
-        if (i > 10000) {
+        if (i > 200000) {
             i = cdenom.rbegin()->first;
         }
     }

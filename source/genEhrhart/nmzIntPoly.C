@@ -169,12 +169,23 @@ void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& 
 
     vector<long> denom=degrees2denom(localDeg); // first we must find the blocks of equal degree
     St.push_back(1);
+    if(denom.size()==1){
+        End.push_back(1);
+        return;
+    }
     for(size_t i=0;i<denom.size();++i)
         if(denom[i]!=0){
             End.push_back(St[St.size()-1]+denom[i]-1);
             if(i<denom.size()-1)
                 St.push_back(End[End.size()-1]+1);
         }
+    /* if(St.size()!=End.size()){
+        for (size_t i=0;i<denom.size(); ++i){
+            cout << denom.size() << endl;
+                    cout << denom[i] << " ";
+            cout << endl;
+        }
+    }*/
 }
 
 vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<long>& End){
@@ -182,6 +193,15 @@ vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<l
     vector<long> v=vin;
     long p,s,pend,pst;
     bool ordered;
+    if(St.size()!=End.size()){
+            cout << St.size() << " " << End.size() << " " << vin.size() << endl;
+            cout << St[0] << endl;
+            for (size_t i=0;i<vin.size(); ++i){
+                    cout << vin[i] << " ";
+            }
+            cout << endl;
+            assert(false);
+    }
     for(size_t j=0;j<St.size();++j){  // now we go over the blocks
         pst=St[j];
         pend=End[j];
