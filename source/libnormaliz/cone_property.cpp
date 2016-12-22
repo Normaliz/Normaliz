@@ -213,8 +213,8 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) // can't be computed in dual mode
         CPs.reset(ConeProperty::DualMode);
 
-    // dual mode has priority, approximation makes no sense if HB is computed
-    if(CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::HilbertBasis))
+    // dual mode has priority, approximation makes no sense if HB is computed, except possibly with inhomogeneous data
+    if(CPs.test(ConeProperty::DualMode) || (CPs.test(ConeProperty::HilbertBasis) && !inhomogeneous))
         CPs.reset(ConeProperty::Approximate);
 
     if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::Approximate))
@@ -224,8 +224,8 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
         CPs.reset(ConeProperty::Approximate); // or by approximation if the
     }                                            // Stanley decomposition must be computed anyway
     if (CPs.test(ConeProperty::Approximate)
-            && !CPs.test(ConeProperty::Deg1Elements)) {
-        errorOutput() << "WARNING: Approximate is ignored since Deg1Elements is not set."<< std::endl;
+            && !(CPs.test(ConeProperty::Deg1Elements)|| inhomogeneous) ){
+        errorOutput() << "WARNING: Approximate is ignored since homogeneous and Deg1Elements is not set."<< std::endl;
     }
     if (CPs.test(ConeProperty::ConeDecomposition))
         CPs.set(ConeProperty::Triangulation); 
@@ -280,7 +280,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::ConeDecomposition
                   || prop == ConeProperty::IsIntegrallyClosed
                   || prop == ConeProperty::WitnessNotIntegrallyClosed
-                  || prop == ConeProperty::Approximate
+                  // || prop == ConeProperty::Approximate
                   || prop == ConeProperty::ClassGroup
                   || prop == ConeProperty::Symmetrize
                   || prop == ConeProperty::NoSymmetrization

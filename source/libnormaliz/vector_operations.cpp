@@ -139,6 +139,18 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Integer v_scalar_product_unequal_vectors_begin(const vector<Integer>& a,const vector<Integer>& b){
+    Integer ans = 0;
+    size_t i,n=min(a.size(),b.size());
+    for (i = 0; i < n; i++) {
+        ans+=a[i]*b[i];
+    }
+    return ans;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
     Integer ans = 0;
     size_t i,n=a.size(),m=b.size();
@@ -147,7 +159,6 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
     }
     return ans;
 }
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>

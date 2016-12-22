@@ -3020,6 +3020,11 @@ void Full_Cone<Integer>::compute() {
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
+    
+    if(inhomogeneous){
+        if(do_default_mode && !do_Hilbert_basis && !isComputed(ConeProperty::Grading) &&isComputed(ConeProperty::ExtremeRays))
+            return;        
+    }
 
     start_message();
     
@@ -3091,8 +3096,12 @@ void Full_Cone<Integer>::compute() {
             if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector || do_multiplicity)){ // inthis situation we must find the 
                 convert_polyhedron_to_polytope();                  // lattice points in a polytope
             }
-            else
-                primal_algorithm();            
+            else{
+                if(do_partial_triangulation || do_triangulation)
+                    primal_algorithm();
+                else
+                    return;
+            }
         }
             
         if(inhomogeneous){
@@ -4241,7 +4250,8 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
             do_h_vector = false;
             if(!explicit_full_triang){
                 do_triangulation=false;
-                do_partial_triangulation=true;
+                if(do_Hilbert_basis)
+                    do_partial_triangulation=true;
             }
         } else {
             throw BadInputException("No grading specified and cannot find one. Cannot compute some requested properties!");

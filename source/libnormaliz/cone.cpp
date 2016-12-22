@@ -1537,8 +1537,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    if(ToCompute.test(ConeProperty:: Symmetrize))
-        symmetrize(ToCompute);
+    /*if(ToCompute.test(ConeProperty:: Symmetrize))
+        symmetrize(ToCompute);*/
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -1589,6 +1589,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if (!isComputed(ConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
+    }
+    
+    if(ToCompute.test(ConeProperty::Approximate))
+        try_approximation();
+    
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ToCompute;
     }
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
@@ -2880,7 +2888,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
     
     nmz_int_exec+=pre_name;
-    
+
     #ifdef _WIN32 //for 32 and 64 bit windows
         nmz_int_exec.append("\"");
     #endif
@@ -2963,5 +2971,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         throw FatalException("Some file for exchange of data could not be deleted");        
     }
 }
+
+
 
 } // end namespace libnormaliz

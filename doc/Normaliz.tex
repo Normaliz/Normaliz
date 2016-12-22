@@ -282,10 +282,15 @@ For version 3.1.4 we have added
 	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retieval of results.
 \end{arab}
 
-For version 3.1.4 we have added
+For version 3.2.0 we have add
 
 \begin{arab}
-	\item  A variant QNormaliz that computes convex hulls and extreme rays over subfields of $\RR$; see Appendix \ref{QNorm}.
+	
+	\item a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
+	\item Option \verb|--Symmetzrize| that produces symmetrized input for and runs nmzIntegrate and runs on it,
+	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation),
+	\item further automatic choices of algorithmic variants.
+	
 \end{arab}
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -1404,6 +1409,8 @@ Normaliz is smart enough to recognize that it must compute the lattice points in
 \begin{Verbatim}
 Converting polyhedron to polytope
 \end{Verbatim}
+
+The equation in this example (together with nonnegativity) defines a rational polytope, and we want to find its lattice points. In such cases you should think about using \verb|Approximate|, especially if the coefficients in the constraints are large. See Section \ref{approx} for more information or have a look at \verb|pedro2.in|.
 
 \subsection{A job for the dual algorithm}\label{job_dual}
 
@@ -3228,7 +3235,14 @@ Despite of the large number of lattice points, the computation is extremely fast
 
 The third choice using the dual algorithm is still o.k. though it takes the most time in this case. In other cases it may very well be the fastest.
 
-You can also use inhomogeneous input with the default computation mode or dual mode. This is equivalent to homogeneous input with \verb|Deg1Elements| and \verb|DualMode|, respectively, in addition.
+In the inhomogeneous case, \verb|Approximate| can be used if the polyhedron is actually a polytope and \verb|HilbertBasis| (or just the default mode) is set. An example(\verb|pedro2.in|, suggested by Paedro Garcia-Sanchez)
+\begin{Verbatim}
+amb_space 5
+constraints 1
+1001 1211 1421 1631  2841 = 39249
+Approximate
+\end{Verbatim}
+This example seems to be unreachable without \verb|Approximate|, neither in primal nor in dual mode. With \verb|Approximate| it takes $< 1$ sec.
 
 \subsection{The bottom decomposition}\label{bottom_dec}
 
