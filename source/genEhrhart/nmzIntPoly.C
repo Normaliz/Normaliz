@@ -168,11 +168,9 @@ void  makeLocalDegreesAndKey(const boost::dynamic_bitset<>& indicator,const vect
 void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& End){
 
     vector<long> denom=degrees2denom(localDeg); // first we must find the blocks of equal degree
-    St.push_back(1);
-    if(denom.size()==1){
-        End.push_back(1);
+    if(denom.size()==0)
         return;
-    }
+    St.push_back(1);
     for(size_t i=0;i<denom.size();++i)
         if(denom[i]!=0){
             End.push_back(St[St.size()-1]+denom[i]-1);
