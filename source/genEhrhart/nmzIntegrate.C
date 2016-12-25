@@ -53,10 +53,10 @@ bool verbose_INT=false;
 
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                   nmzIntegrate 1.3.1                \\....|"<<endl;
+    cout << "                   nmzIntegrate 1.3.3                \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "                (C) W. Bruns  C. Soeger                \\..|"<<endl;
-    cout << "                       March 2016                       \\.|"<<endl;
+    cout << "                      January 2017                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
@@ -70,6 +70,7 @@ void printHelp(char* command) {
     cout << "  -c\tverbose (prints control data)"<<endl;
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
     cout << "  -F=<pnm>\tspecifies file name <pnm> of polynomial" << endl;
+    cout << "  --OutputDir=<path>\tnames the path to the output directory" << endl;
 }
 
 

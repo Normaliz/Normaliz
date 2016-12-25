@@ -2672,6 +2672,11 @@ void Cone<Integer>::set_nmz_call(const string& path){
 template<typename Integer>
 void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
+    #ifdef _WIN32 //for 32 and 64 bit windows
+    errorOutput() << "WARNING: Approximation not applicable in MS Windows" << endl;
+        return false; // at present we cannot compile nmzIntegrate for Windows
+    #endif
+    
     if(!ToCompute.test(ConeProperty::Symmetrize))
         return;
     
@@ -2903,13 +2908,13 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     ifstream in(result);
     
     string read;
-    vector<num_t> num;
+    vector<mpz_class> num;
     vector<denom_t> denom;
     if(ToCompute.test(ConeProperty::HilbertSeries)){
         while(read!="series:")
             in >> read;
         int c;
-        num_t coeff;
+        mpz_class coeff;
         while(true){
             in >> std::ws;
             c= in.peek();
@@ -2933,7 +2938,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
             for(long i=0;i<mult;++i)
                 denom.push_back(deg);
         }
-        HSeries=HilbertSeries(num,denom);
+        HSeries=HilbertSeries(num,count_in_map<long, long>(denom));
         HSeries.simplify();
         is_Computed.set(ConeProperty::HilbertSeries);
     }
