@@ -17,7 +17,7 @@ LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS)
 
 default: $(MY_PROG) 
 
-%: %.cpp
+%: %.cpp ../libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LINKFLAGS)
 
 clean:

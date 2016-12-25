@@ -30,13 +30,13 @@ normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 ## normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 ## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
-nmzIntegrate: linknormaliz
+nmzIntegrate: lib libnormaliz/libnormaliz.a
 	@$(MAKE) --directory=genEhrhart -f Makefile.classic nmzIntegrate
 	rm -f nmzIntegrate
 	cp genEhrhart/nmzIntegrate .
 
 .PHONY : maxsimplex
-maxsimplex: linknormaliz
+maxsimplex: libnormaliz/libnormaliz.a
 	@$(MAKE) --directory=maxsimplex -f Makefile.classic.ori
 
 #always go down the directory and let the make there check what has to be done

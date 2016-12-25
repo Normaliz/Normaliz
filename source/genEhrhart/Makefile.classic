@@ -14,7 +14,7 @@ ALL_EXECS=$(ALL_C:.C=)
 
 # Rule for compiling and linking C++ code in *.C files
 # LDLIBS contains COCOA_LIB and everything it needs
-nmzIntegrate: nmzIntegrate.C nmzIntInput.C nmzIntPoly.C cyclRatFunct.C genEhrhart.C nmzIntegral.C 
+nmzIntegrate: nmzIntegrate.C nmzIntInput.C nmzIntPoly.C cyclRatFunct.C genEhrhart.C nmzIntegral.C ../libnormaliz/libnormaliz.a
 	@echo "Compiling `basename $@`"
 	$(COMPILE) -o $@ $< ../libnormaliz/libnormaliz.a $(SCIPFLAGS) $(LDLIBS) #-pthread
 
