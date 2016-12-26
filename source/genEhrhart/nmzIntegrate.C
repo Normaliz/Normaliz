@@ -226,8 +226,8 @@ int main(int argc, char* argv[])
     string nmz_output=project;
     if(output_dir!="")
         nmz_output=output_dir+pureName(project);
-    if(verbose_INT)
-        cout << "NMZ_OUT " << nmz_output << endl;
+    /* if(verbose_INT)
+        cout << "NMZ_OUT " << nmz_output << endl;*/
     bool invExists=existsFile(nmz_output,"inv",false,invDate);
     bool decExists=existsFile(nmz_output,"dec",false,decDate);
     bool triExists=existsFile(nmz_output,"tri",false,triDate); 

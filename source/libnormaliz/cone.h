@@ -307,8 +307,11 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
-    bool explicit_HilbertSeries;
-    bool naked_dual;
+    
+    // some properties of the current computation taken from ToCompute
+    bool explicit_HilbertSeries; // true = Hilbert series set explicitly and not only via default mode
+    bool naked_dual; // true = dual mode set, but neither Hilbert basis nor deg 1 points
+    bool default_mode; // true default mode set
 
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
@@ -343,7 +346,7 @@ private:
     
     ConeProperties recursive_compute(ConeProperties ToCompute);
     
-    void symmetrize (ConeProperties& ToCompute);
+    void try_symmetrization(ConeProperties& ToCompute);
     bool try_approximation ();
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
@@ -397,6 +400,8 @@ private:
     void compute_integer_hull();
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
+    
+    void NotComputable (string message); // throws NotComputableException if default_mode = false
 
 };
 

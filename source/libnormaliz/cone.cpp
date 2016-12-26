@@ -22,6 +22,8 @@
  */
 
 #include <list>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/map_operations.h"
@@ -1520,9 +1522,11 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
     
     bool save_explicit_HilbertSeries=explicit_HilbertSeries;
     bool save_naked_dual= naked_dual;
+    bool save_default_mode= default_mode;
     ToCompute=compute(ToCompute);
     explicit_HilbertSeries=save_explicit_HilbertSeries;
     naked_dual=save_naked_dual;
+    default_mode= save_default_mode;
     return ToCompute;
 }
 
@@ -1531,14 +1535,15 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    default_mode=ToCompute.test(ConeProperty::DefaultMode);
+    
     if(ToCompute.test(ConeProperty::BigInt)){
         if(!using_GMP<Integer>())
             throw BadInputException("BigInt can only be set for cones of Integer type GMP");
         change_integer_type=false;
     }
     
-    if(ToCompute.test(ConeProperty:: Symmetrize))
-        symmetrize(ToCompute);
+    try_symmetrization(ToCompute);
     
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
@@ -2667,21 +2672,70 @@ template<typename Integer>
 void Cone<Integer>::set_nmz_call(const string& path){
     nmz_call=path;
 }
+
+bool existsNmzIntegrate(string name_in){
+//n check whether file project.suffix exists and retrieve last access time
+
+    //b string name_in="nmzIntegrate";
+    const char* file_in=name_in.c_str();
+    
+    struct stat fileStat;
+    if(stat(file_in,&fileStat) < 0){
+         return(false); 
+    }
+    return(true);
+}
     
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
+void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
-    #ifdef _WIN32 //for 32 and 64 bit windows
-    errorOutput() << "WARNING: Approximation not applicable in MS Windows" << endl;
-        return false; // at present we cannot compile nmzIntegrate for Windows
-    #endif
-    
-    if(!ToCompute.test(ConeProperty::Symmetrize))
+    if(ToCompute.test(ConeProperty::NoSymmetrization) 
+            || (!ToCompute.test(ConeProperty::HilbertSeries)
+                    && !ToCompute.test(ConeProperty::Multiplicity)))
         return;
     
-    if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim)
-        throw BadInputException("Symmetrization not posible with the given input");   
+    #ifdef _WIN32 //for 32 and 64 bit windows
+    // at present we cannot compile nmzIntegrate for Windows
+    bool nmzInt3_1compatible=(ExcludedFaces.nr_of_rows()==0 && output_dir.size()==0 && 
+                !ToCompute.test(ConeProperty::ConeDecomposition));
+    if(!nmzInt3_1compatible){
+        if(ToCompute.test(ConeProperty::Symmetrize))
+            throw NotComputableException("Symmetrization applicable in MS Windows only with restrictions");
+        else
+            return;
+    #endif
+    
+    if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){
+        if(ToCompute.test(ConeProperty::Symmetrize))
+            throw BadInputException("Symmetrization not posible with the given input"); 
+        else
+            return;
+    }
+        
+    bool nmzIntegrate_not_available=false;
+    
+    size_t found;        
+
+    // check whether nmzIntegrate can be accessed
+    string nmz_int_path=nmz_call;
+    found = nmz_int_path.rfind("normaliz");
+    if (found!=std::string::npos) {
+        found = nmz_int_path.rfind("normaliz");
+        nmz_int_path.replace (found,8,"nmzIntegrate");
+        if(!existsNmzIntegrate(nmz_int_path))
+            nmzIntegrate_not_available=true;
+
+    } else {
+        nmzIntegrate_not_available=true;
+    } 
+    
+    if(nmzIntegrate_not_available){
+        if(ToCompute.test(ConeProperty::Symmetrize))
+            throw FatalException("Fatal error: nmzIntegrate not found");
+        else
+            return;
+    }
     
     Matrix<Integer> AllConst=ExcludedFaces;
     size_t nr_excl = AllConst.nr_of_rows();    
@@ -2711,8 +2765,12 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     size_t nr_inequ=AllConst.nr_of_rows()-nr_equ-nr_excl;
     
     for(size_t i=0;i<dim;++i)
-        if(!unit_vector[i])
-            throw BadInputException("Symmetrization not possible: Not all sign inequalities in input");
+        if(!unit_vector[i]){
+            if(ToCompute.test(ConeProperty::Symmetrize))
+                throw BadInputException("Symmetrization not possible: Not all sign inequalities in input");
+            else
+                return;
+        }
     
     for(size_t i=0;i<Congruences.nr_of_rows();++i){
         vector<Integer> help=Congruences[i];
@@ -2763,6 +2821,13 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     SymmConst.pretty_print(cout);
     cout << "--------------" << endl; */
     
+    vector<Integer> SymmGrad=SymmConst[SymmConst.nr_of_rows()-1];
+    
+    if(SymmGrad.size() > 16|| SymmGrad.size() > 2*dim/3){
+        if(!ToCompute.test(ConeProperty::Symmetrize))
+            return;
+    }
+    
     Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmEqu(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmCong(0,SymmConst.nr_of_columns());
@@ -2778,8 +2843,6 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         SymmCong.append(SymmConst[i]);
         SymmCong[SymmCong.nr_of_rows()-1].push_back(Congruences[i-(nr_inequ+nr_equ)][dim]); // restore modulus
     }
-    
-    vector<Integer> SymmGrad=SymmConst[SymmConst.nr_of_rows()-1];
     
     /* SymmInequ.pretty_print(cout);
     cout << "===============" << endl;
@@ -2804,7 +2867,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         for(size_t j=1;j<multiplicities[i];++j)
             fact*=j;        
     }
-    polynomial+="/"+fact.get_str()+";";   
+    polynomial+="/"+fact.get_str()+";"; 
     
     /* cout << polynomial << endl; */
     
@@ -2812,7 +2875,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     #ifdef _WIN32 //for 32 and 64 bit windows
         slash="\\";
     #endif
-    size_t found = project.rfind(slash);
+    found = project.rfind(slash);
     string pure_project;
     if(!(found==std::string::npos)){
         found++;
@@ -2865,7 +2928,7 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
     
     if(SymmGrad.size() > 16|| SymmGrad.size() > 2*dim/3)
         throw NotComputableException("Dimension of symmetrized cone too large. Only iles for NmzIntegrate written.");        
-    
+
     //cout << "argv[0] = "<< argv[0] << endl;
     string nmz_int_exec("\"");
     // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
@@ -2873,22 +2936,16 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         nmz_int_exec.append("\"");
     #endif
     nmz_int_exec.append(nmz_call);
-    found = nmz_int_exec.rfind("normaliz");
-    if (found!=std::string::npos) {
-        nmz_int_exec.replace (found,8,"nmzIntegrate");
-    } else {
-        throw FatalException("Error: Could not start nmzIntegrate");
-    }
-    nmz_int_exec.append("\"");
-    
+    nmz_int_exec.append("\"");    
     if(verbose)
         nmz_int_exec+=" -c ";
     if(ToCompute.test(ConeProperty::HilbertSeries))
         nmz_int_exec+=" -E ";
-    else{
-        if(ToCompute.test(ConeProperty::Multiplicity) && !ToCompute.test(ConeProperty::HilbertSeries))
+    else
+        if(ToCompute.test(ConeProperty::Multiplicity))
             nmz_int_exec+=" -L ";
-    }
+    if(ToCompute.test(ConeProperty::BottomDecomposition))
+        nmz_int_exec+=" -b ";
     
     nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
     
@@ -2921,7 +2978,9 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
             if(c=='C')
                 break;
             in >> coeff;
-            num.push_back(coeff);            
+            num.push_back(coeff);
+            if(in.fail())
+                throw FatalException("Corrupted output file of nmzIntegrate");
         }
         while(read!="factors:")
             in >> read;
@@ -2935,6 +2994,8 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
             in >> deg;
             in >> read; // skip :
             in >> mult;
+            if(in.fail())
+                throw FatalException("Corrupted output file of nmzIntegrate");
             for(long i=0;i<mult;++i)
                 denom.push_back(deg);
         }
@@ -2950,27 +3011,32 @@ void Cone<Integer>::symmetrize (ConeProperties& ToCompute) {
         in >> read;
     in >> multiplicity;
     is_Computed.set(ConeProperty::Multiplicity);
+    is_Computed.set(ConeProperty::Symmetrize);
     
     /* cout << "----------" << endl;
     cout << multiplicity << endl;  */
     
     int k=0;
-    string del_pre="rm "+pre_name, del_file;
+    string del_pre=pre_name, del_file;
     del_file=del_pre+".out";
-    k=system(del_file.c_str());
+    k=remove(del_file.c_str());
     del_file=del_pre+".intOut";
-    k=system(del_file.c_str());
+    k=remove(del_file.c_str());
     del_file=del_pre+".inv";
-    k+=system(del_file.c_str());
+    k+=remove(del_file.c_str());
     del_file=del_pre+".tgn";
-    k+=system(del_file.c_str());
+    k+=remove(del_file.c_str());
+    del_file=del_pre+".in";
+    k+=remove(del_file.c_str());
+    del_file=del_pre+".pnm";
+    k+=remove(del_file.c_str());
     if(ToCompute.test(ConeProperty::HilbertSeries)){
         del_file=del_pre+".dec";
-        k+=system(del_file.c_str());    
+        k+=remove(del_file.c_str());    
     }
     if(ToCompute.test(ConeProperty::Multiplicity) && !ToCompute.test(ConeProperty::HilbertSeries)){
         del_file=del_pre+".tri";
-        k+=system(del_file.c_str());            
+        k+=remove(del_file.c_str());            
     }
     if(k>0){
         throw FatalException("Some file for exchange of data could not be deleted");        
@@ -3087,11 +3153,14 @@ bool Cone<Integer>::try_approximation (){
         is_Computed.set(ConeProperty::Deg1Elements);
     is_Computed.set(ConeProperty::Approximate);
     
-    return true;
-    
-    
+    return true;    
 }
 
-
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::NotComputable (string message){
+    if(!default_mode)
+        throw NotComputableException(message);
+}
 
 } // end namespace libnormaliz
