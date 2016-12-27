@@ -347,7 +347,7 @@ private:
     ConeProperties recursive_compute(ConeProperties ToCompute);
     
     void try_symmetrization(ConeProperties& ToCompute);
-    bool try_approximation ();
+    void try_approximation (ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);

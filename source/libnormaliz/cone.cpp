@@ -1543,15 +1543,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
-    try_symmetrization(ToCompute);
-    
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         recursive_compute(ConeProperty::MaximalSubspace);      
     }
     
     explicit_HilbertSeries=ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::HSOP);
-    // must distiguish it frombeing set through DefaultMode;
+    // must distiguish it from being set through DefaultMode;
     naked_dual=ToCompute.test(ConeProperty::DualMode) 
                 && !(ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::Deg1Elements));
     // to control the computation of rational solutions in the inhomogeneous case
@@ -1574,6 +1572,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     
+    try_symmetrization(ToCompute);
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ToCompute;
+    }
+
+    
     set_implicit_dual_mode(ToCompute);
 
     if (ToCompute.test(ConeProperty::DualMode)) {
@@ -1595,9 +1600,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (!isComputed(ConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
     }
-    
-    if(ToCompute.test(ConeProperty::Approximate))
-        try_approximation();
+        
+    try_approximation(ToCompute);
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        return ToCompute;
+    }
+
     
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -1834,6 +1843,23 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
         FC.is_Computed.set(ConeProperty::ExtremeRays);
     }
+    
+    /* if(isComputed(ConeProperty::Deg1Elements)){
+        Matrix<IntegerFC> Deg1Converted;
+        BasisChangePointed.convert_to_sublattice(Deg1Converted, Deg1Elements);
+        for(size_t i=0;i<Deg1Elements.nr_of_rows();++i)
+            FC.Deg1_Elements.push_back(Deg1Converted[i]);
+        FC.is_Computed.set(ConeProperty::Deg1Elements); 
+    }
+    
+    if(isComputed(ConeProperty::HilbertBasis)){
+        Matrix<IntegerFC> HBConverted;
+        BasisChangePointed.convert_to_sublattice(HBConverted, HilbertBasis);
+        for(size_t i=0;i<HilbertBasis.nr_of_rows();++i)
+            FC.Deg1_Elements.push_back(HBConverted[i]);
+        FC.is_Computed.set(ConeProperty::HilbertBasis); 
+    }*/
+    
     if (ExcludedFaces.nr_of_rows()!=0) {
         BasisChangePointed.convert_to_sublattice_dual(FC.ExcludedFaces, ExcludedFaces);
     }
@@ -2690,7 +2716,7 @@ bool existsNmzIntegrate(string name_in){
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
-    if(ToCompute.test(ConeProperty::NoSymmetrization) 
+    if(ToCompute.test(ConeProperty::NoSymmetrization) || inhomogeneous
             || (!ToCompute.test(ConeProperty::HilbertSeries)
                     && !ToCompute.test(ConeProperty::Multiplicity)))
         return;
@@ -3045,19 +3071,31 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-bool Cone<Integer>::try_approximation (){
+void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     
-    if(!inhomogeneous && !isComputed(ConeProperty::Grading)){
-        // errorOutput() << "WARNING: Approximation not applicable without explicit grading for homogeneous computations" << endl;
-        // can be left to full_cone --- grading can be found there only if we have a lattice polytope
-        return false;;
+    if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
+        return;
+    
+    if(!inhomogeneous && (  !ToCompute.test(ConeProperty::Deg1Elements) 
+                         || !isComputed(ConeProperty::Grading)
+                         || ToCompute.test(ConeProperty::HilbertBasis)
+                         || ToCompute.test(ConeProperty::HilbertSeries)
+                         || GradingDenom!=1
+                         )                        
+      )
+        return;
+    
+    if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
+        return;
+    
+    if(!inhomogeneous){ // we do not use this routine for lattice polytopes
+        size_t i=0;
+        for(;i<Generators.nr_of_rows();++i)
+            if(v_scalar_product(Generators[i],Grading)!=1)
+                break;
+            if(i==Generators.nr_of_rows())
+                return;
     }
-    
-    // cout << "Grading " << Grading << " Denom " << GradingDenom << endl;
-    
-    // TODO this method shoulbe usable if the GradingDenom is > 1
-    if(!inhomogeneous && isComputed(ConeProperty::Grading) && GradingDenom!=1)
-        return false;
     
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
@@ -3066,13 +3104,15 @@ bool Cone<Integer>::try_approximation (){
     recursive_compute(NeededHere);
     
     if(!pointed || BasisChangePointed.getRank()==0)
-        return false;
+        return;
     
     if(inhomogeneous){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
             if(v_scalar_product(Generators[i],Dehomogenization)==0){
-                errorOutput() << "WARNING: Approximation not applicable to unbounded polyhedra" << endl;
-                return false;
+                if(ToCompute.test(ConeProperty::Approximate))
+                    throw NotComputableException("Approximation not applicable to unbounded polyhedra");
+                else
+                    return;
             }                    
         }        
     }
@@ -3080,8 +3120,11 @@ bool Cone<Integer>::try_approximation (){
     if(inhomogeneous){ // exclude that dehoogenization has a gcd > 1
         vector<Integer> test_dehom=BasisChange.to_sublattice_dual_no_div(Dehomogenization);
         if(v_make_prime(test_dehom)!=1)
-            return false;        
+            return;        
     }
+    
+    if(Generators.nr_of_rows()>5*dim && !ToCompute.test(ConeProperty::Approximate))
+        return;
     
     vector<Integer> GradForApprox;
     if(!inhomogeneous)
@@ -3107,10 +3150,11 @@ bool Cone<Integer>::try_approximation (){
     if(verbose)
         verboseOutput() << "Computing approximating polytope" << endl;
     Cone<Integer> ApproxCone(InputType::cone,GradGen);
-    ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode);
+    ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
     
     HilbertBasis=Matrix<Integer>(0,dim);
     Deg1Elements=Matrix<Integer>(0,dim);
+    ModuleGenerators=Matrix<Integer>(0,dim);
     
     Matrix<Integer> Raw=ApproxCone.getDeg1ElementsMatrix();
     Matrix<Integer> Result(0,dim);
@@ -3141,19 +3185,51 @@ bool Cone<Integer>::try_approximation (){
             }
         if(not_in)
             continue;
-        if(inhomogeneous)
-            HilbertBasis.append(rr);
+        if(inhomogeneous){
+            ModuleGenerators.append(rr);
+        }
         else
             Deg1Elements.append(rr);        
     }
 
-    if(inhomogeneous)
+    if(inhomogeneous){
         is_Computed.set(ConeProperty::HilbertBasis);
+        is_Computed.set(ConeProperty::ModuleGenerators);
+        module_rank= ModuleGenerators.nr_of_rows();
+        is_Computed.set(ConeProperty::ModuleRank);
+        recession_rank=0;
+        is_Computed.set(ConeProperty::RecessionRank);
+        if(isComputed(ConeProperty::Grading) && module_rank>0){
+            multiplicity=module_rank; // of the recession cone;
+            is_Computed.set(ConeProperty::Multiplicity);
+            if(ToCompute.test(ConeProperty::HilbertSeries)){
+                vector<num_t> hv(1);
+                long raw_shift=convertTo<long>(v_scalar_product(Grading,ModuleGenerators[0]));
+                for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
+                    long deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]));
+                    raw_shift=min(raw_shift,deg);                        
+                }
+                for(size_t i=0;i<ModuleGenerators.nr_of_rows();++i){
+                    size_t deg = convertTo<long>(v_scalar_product(Grading,ModuleGenerators[i]))-raw_shift;
+                    if(deg+1>hv.size())
+                        hv.resize(deg+1);
+                    hv[deg]++;                        
+                }    
+                HSeries.add(hv,vector<denom_t>());
+                HSeries.setShift(raw_shift);
+                HSeries.adjustShift();
+                HSeries.simplify();
+                is_Computed.set(ConeProperty::HilbertSeries);
+            }
+        }  
+
+    }
     else
         is_Computed.set(ConeProperty::Deg1Elements);
+    
     is_Computed.set(ConeProperty::Approximate);
     
-    return true;    
+    return;    
 }
 
 //---------------------------------------------------------------------------
