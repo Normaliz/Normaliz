@@ -6,6 +6,9 @@ embedding dimension = 5
 rank = 5 (maximal)
 external index = 1
 
+size of partial triangulation   = 571
+resulting sum of |det|s = 64095
+
 grading:
 0 0 0 0 1 
 

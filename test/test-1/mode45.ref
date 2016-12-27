@@ -6,9 +6,6 @@ embedding dimension = 3
 rank = 2
 external index = 1
 
-size of triangulation   = 1
-resulting sum of |det|s = 8
-
 grading:
 -1 -2 0 
 
