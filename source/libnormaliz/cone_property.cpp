@@ -209,6 +209,9 @@ void ConeProperties::set_preconditions() {
     
     if(CPs.test(ConeProperty::HilbertQuasiPolynomial))
         CPs.set(ConeProperty::HilbertSeries);
+    
+    if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
+        CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrizeb is used
 }
 
 /* removes ignored compute options and sets implications */
