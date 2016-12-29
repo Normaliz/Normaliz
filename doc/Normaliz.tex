@@ -229,36 +229,7 @@ Furthermore,  Normaliz is used by the  B. Burton's system
 
 Normaliz does not have its own interactive shell. We recommend the access via GAP for interactive use.
 
-\subsection{Major changes relative to version 3.0}
-
-\begin{arab}
-	
-	\item Normaliz computes nonpointed cones and polyhedra without vertices.
-	
-	\item Rational and integral solutions of inhomogeneous systems can be separated.
-	
-	\item Integer hull computation.
-	
-	\item Normality test without computation of full Hilbert basis (in the negative case).
-	
-	\item Normaliz can be run from the beginning with integers of type \verb|long long|.	
-	
-	\item Computation of disjoint decomposition of the cone.
-
-\end{arab}
-
-For version 3.1.1 we have added
-
-\begin{arab}
-		
-	\item input of generic constraints,
-	
-	\item input of formatted vectors and matrices,
-	
-	\item input of transposed matrices.
-\end{arab}
-
-For version 3.1.2 we have added
+\subsection{Major changes relative to version 3.1.1}
 
 \begin{arab}
 	
@@ -269,27 +240,16 @@ For version 3.1.2 we have added
 	\item Hilbert series with denominator corresponding to a homogeneous system of generators,
 	
 	\item choice of an output directory.
-\end{arab}
-
-Version 3.1.3 is a bugfix.
-
-For version 3.1.4 we have added
-
-\begin{arab}
 		
-	\item automatic choice of dual or primal algorithm (unless fixed by the user),
+	\item automatic choice of algorithmic variants,
 	
 	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retieval of results.
-\end{arab}
-
-For version 3.2.0 we have add
-
-\begin{arab}
 	
 	\item a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
+	
 	\item Option \verb|--Symmetzrize| that produces symmetrized input for and runs nmzIntegrate and runs on it,
-	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation),
-	\item further automatic choices of algorithmic variants.
+	
+	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation).
 	
 \end{arab}
 
@@ -323,7 +283,7 @@ following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
 
-\section{Normaliz by examples}
+\section{Normaliz by examples}\label{Examples}
 
 \subsection{Terminology}\label{Term}
 
@@ -1405,16 +1365,16 @@ The set of solutions is a module over the monoid $M$ of solutions of the homogen
 The last line is as expected, and the $6$ module generators are the goal of the computation.
 
 Normaliz is smart enough to recognize that it must compute the lattice points in a polygon, and does exactly this. You can recognize it in the console output: it contains the line
-
 \begin{Verbatim}
-Converting polyhedron to polytope
+Computing approximating polytopee
 \end{Verbatim}
+Moreover, the line indicates that Normaliz uses its approximation algorithm to find the lattice points in this polytope. See Section \ref{approx}. Further inspection shows that the approximating lattice polytopehas $6$ vertices, namely for each original vertex thre rwo neighboring lattice points on its coordinate axis.
 
-The equation in this example (together with nonnegativity) defines a rational polytope, and we want to find its lattice points. In such cases you should think about using \verb|Approximate|, especially if the coefficients in the constraints are large. See Section \ref{approx} for more information or have a look at \verb|pedro2.in|.
+For those who like to play: add the option \verb|--NoSymmetrization| to the command line. Then the terminal output will change, and the polytope is computed exactly as it comes.
 
 \subsection{A job for the dual algorithm}\label{job_dual}
 
-We increase the size of the magic squares to $5\times 5$. Normaliz can do the same computation as for $3\times 3$ squares, but this will take some minutes. If we are only interested in the Hilbert basis, we should use the dual algorithm for this example. The input file is \ttt{5x5dual.in}:
+We increase the size of the magic squares to $5\times 5$. Normaliz can do the same computation as for $3\times 3$ squares, but this will take some minutes. Suppose we are only interested in the Hilbert basis, we should use the dual algorithm for this example. The input file is \ttt{5x5dual.in}:
 
 \begin{Verbatim}
 amb_space 25
@@ -1422,11 +1382,11 @@ equations 11
 1 1 1 1 1 -1 -1 -1 -1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 ...
 1 1 1 1 0  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0 -1  0  0  0  0
-DualMode
 grading
 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+HilbertBasis
 \end{Verbatim}
-The choice of the dual algorithm implies the computation goal \verb|HilbertBasis|. By adding \verb|Deg1Elements| we could restrict the computation to the degree $1$ elements.
+The input file does not say anything about the dual algorithm mentioned in the section title. With this inputit is chosen automatically. See Section \ref{div_labor} for a discussion of when this happens. But you can insist on the dual algorithm by adding \verb|DualMode| to the input (or \verb|-d| to the command line). Or, if you want to compare it to the primal algorithm add \verb|PrimalMode| (or \verb|-P| to the command line).
 
 
 The Hilbert basis contains $4828$ elements, too many to be listed here.
@@ -1444,7 +1404,7 @@ The numerator of the Hilbert Series is symmetric.
 \end{Verbatim}
 In view of the length of the numerator of the Hilbert series it may be difficult to observe the symmetry. So Normaliz does it for you.  
 
-The size $6\times 6$ is out of reach for the Hilbert series, but the Hilbert basis can be computed in dual mode. It takes some hours.
+The size $6\times 6$ is out of reach for the Hilbert series, but the Hilbert basis can be computed (in the automatically chosen dual mode). It takes some hours.
 
 \subsection{A dull polyhedron}\label{inhom_ineq_ex}
 
@@ -1558,7 +1518,7 @@ The dual algorithm that was used in Section \ref{job_dual} can also be applied t
 
 \subsubsection{Defining it by generators}\label{polyh_ex}
 
-If the polyhedron is given by its vertices and the recession cone, we can define it by these data (\verb|_gen.in|):
+If the polyhedron is given by its vertices and the recession cone, we can define it by these data (\verb|InhomIneq_gen.in|):
 \begin{Verbatim}
 amb_space 2
 vertices 2
@@ -1573,7 +1533,7 @@ The output is identical to the version starting from the inequalities.
 
 \subsection{The Condorcet paradoxon}\label{Condorcet}
 
-In social choice elections each of the $k$ voters picks a preference order of the $n$ candidates. There are $n!$ such orders.
+In social choice elections each of the $k$ voters picks a linear preference order of the $n$ candidates. There are $n!$ such orders.
 \medskip 
 
 We say that candidate $A$ \emph{beats} candidate $B$ if the majority of the voters prefers $A$ to $B$. As the Marquis de \emph{Condorcet} (and others) observed, ``beats'' is not transitive, and an election may exhibit the \emph{Condorcet paradoxon}: there is no Condorcet winner. (See \cite{BS} and the references given there for more information.)
@@ -1609,6 +1569,10 @@ denominator with 24 factors:
 
 degree of Hilbert Series as rational function = -25
 \end{Verbatim}
+
+Depending on your Normaliz installation, the compuatation above can have taken two different routes since Normaliz tries to use symmetrization (see Section \ref{symmetrize}): (i) if it can't find nmzIntegrate, symmetrizatuin is unavailable, and Normaliz will just use the primal algorithm for the computation; (ii) if it finds nmzIntegrate, symmetrization will indeed be used. Have a look at the terminal output, and you will recognize what Normaliz has done. Don't be frightened by the somewhat complicated structure of program calls in the case of symmetrization.
+
+For this computation there is no significant time differebce between the two ways of computation. For others, symmetrization can convert days into seconds.
 
 \subsubsection{Excluding ties}\label{excluded_ex}
 
@@ -1933,10 +1897,10 @@ SupportHyperplanes
 Already the entries of the vertices show that the computation cannot be done in 64 bit arithmetic. But you need not be worried. Just start Normaliz as usual. It will simply switch to infinite precision by itself, as shown by the terminal output (use the option \verb|-c| or \verb|--Verbose|).
 \begin{Verbatim}
                                                     \.....|
-                    Normaliz 3.1.2                   \....|
+                    Normaliz 3.2.0                   \....|
                                                       \...|
      (C) The Normaliz Team, University of Osnabrueck   \..|
-                      July  2016                        \.|
+                    January  2017                       \.|
                                                          \|
 ************************************************************
 Compute: SupportHyperplanes 
@@ -1967,6 +1931,13 @@ Select extreme rays via comparison ... done.
 transforming data... done.
 \end{Verbatim}
 Have a look at the output file if you are not afraid of $341088$ linear forms.
+
+If you have liiked closely at the terminal output above, you should have stumbled on the lines
+\begin{Verbatim}
+Could not convert 15181127029874798299.
+Arithmetic Overflow detected, try a bigger integer type!
+\end{Verbatim}
+They show that Normaliz has tried the computation in 64 bit integers, but encountered a number that is too large for this precision. It has automatically switched to infinite precision. (See Section \ref{Integer} for more information on integer types.)
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -2775,9 +2746,68 @@ If set explicitly in the input file or on the command line the following adds th
 
 It is possible to set \verb|DefaultMode| explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
 
-Normaliz collects all computation goals and algorithmic variants set in the input file and on the command line. Note that some options may block others during the computation. For example, \verb|KeepOrder| blocks \verb|BottomDecomposition|. It is clear that contradictory options line \verb|BottomDecomposition| and \verb|NoBottomDec| cannot be used simultaneously. 
-Moreover, Normaliz tries to omit superfluous computations. For example, if the dual mode is called for the degree $1$ elements, but also the Hilbert series is to be computed, then the dual mode will be skipped since the degree $1$ elements can be got as a cheap byproduct of the Hilbert series.
- 
+Normaliz collects all computation goals and algorithmic variants set in the input file and on the command line. 
+
+\subsection{The choice of algorithmic variants}
+
+For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that is best for the given input data. This automatic choice may however a bad one. Therefore teh user can completely control which algorithmic variant is used.
+
+\subsubsection{Primal vs.\ dual}
+
+For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulatioons, and the dual algorithm that is pof type `pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraint input. The choice also applies to the computation of degree $1$ elements. However, for them there exists a third variant. See Section \ref{approximate}. The conditions under which the dual algorithm is chosen are specified there.
+
+The choice of the algoritm can be fixed or blocked:
+\begin{itemize}
+	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
+	
+	\itemtt[PrimalMode, -P] blocks the use of the dual algorithm.
+\end{itemize}
+
+The automatic choice can of course fail. See Section \ref{div_labor} for an example for which it is bad. 
+
+\subsubsection{Lattice points by approximation}\label{approximate}
+
+Thisd is often the best choice for the computation of lattice ppoints in a polytope. The polytope can be defined as the cross-section of a pointed cone with the hyperplane of degree $1$ points (homogeneous input) or as a polyhedron (inhomogeneous input). The basic idea to escape the arithmetical complexity of rational vertices with large denominators by approximating a rational polytope by one with integral vertices.  See Section \ref{approx} for further discussion and examples, and also for the conditions under which \verb|Approximate| is chosen automatically by Normaliz.
+
+You cab force approximation or block it:
+\begin{itemize}	
+	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. It implies \verb|Deg1Elements|,
+	
+	\itemtt[NoApproximation] blocks approximation.
+\end{itemize}
+Approximation is also blocked by \verb|DualMode|, but not by \verb|PrimalMode|. 
+
+\subsubsection{Bottom decomposition}
+
+Bottom decomposition is a way to produce an optimal triangulation for a given set of genetrators. It is discueed in Section \ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
+\begin{itemize}	
+	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
+	
+	\itemtt[NoBottomDec, -o] forbids Normaliz to use bottom decomposition in the primal algorithm, even if it would otherwise be chosen because of large roughness (see Section \ref{bottom_dec}).
+\end{itemize}
+
+An option to be mentioned in this context is
+\begin{itemize}	
+	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
+\end{itemize}
+It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
+
+\subsubsection{Symmetrization}
+
+In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate, provided the latter is available. If applicable, this is a very strong tool. we discuss it in Section \ref{Symm}. It can be forced or blocked:
+\begin{itemize}
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate if this is possible.
+	
+	\itemtt[NoSymmetrization] blocks symmetrization.
+\end{itemize}
+
+\subsubsection{Subdivivison of simplicial cones}
+
+Under certain conditions Normaliz tries to speed up computations by subdividing large simplicial cones. This requires enlarging the set of generators and can lead to a nested triangulation (see Sections \ref{subdiv} and \ref{nested}). The subdivision can be blocked by 
+ \begin{itemize}
+ 	\itemtt[NoNestedTri]
+ \end{itemize}
+
 
 \subsection{Computation goals}\label{goals}
 
@@ -2886,6 +2916,8 @@ The computation goals that require calling NmzIntegrate can only be set on the c
 
 These computation goals require a homogeneous computation.
 
+Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and calls NmzIntegrate on the symmetrized object. The options above trigger a call of NmzIntregrate on the given data which must include a polynomial. See the NmzIntegrate manual.
+
 \subsubsection{Boolean valued computation goals}\label{bool}
 
 They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may infuence the course of the computations:
@@ -2911,29 +2943,7 @@ The remaining ones:
 
 The last three computation goals are not really useful for Normaliz since they will be answered automatically. Note that they may trigger extensive computations.
 
-
-\subsection{Algorithmic variants}
-
-Normaliz tries to make a smart choice of the algorithmic approach based on the combinatorics of the example and the computation goals set by the user. See Section \ref{smart}. But the algorithmic variants can be fixed by an explicit choice.
-
-\begin{itemize}
-	\itemtt[DualMode, -d] activates the dual algorithm for the computation of the Hilbert basis and degree $1$ elements. Includes \verb|HilbertBasis|, unless \verb|Deg1Elements| is set. It overrules \verb|IsIntegrallyClosed|.
-	
-	\itemtt[PrimalMode] blocks the use of the dual algorithm.
-	
-	\itemtt[Symmetrize] lest Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (\textbf{not yet implemented}).
-	\itemtt[NoSymmetrization] blocks symmetrization.
-	
-	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. Nevertheless it does \emph{not} imply \verb|Deg1Elements| (we don't want to block potential other applications of \verb|Approximate|.)
-	
-	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
-	
-	\itemtt[NoBottomDec, -o] forbids Normaliz to use bottom decomposition in the primal algorithm, even if it would otherwise be chosen because of large roughness (see Section \ref{bottom_dec}).
-	
-	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
-\end{itemize}
-
-\subsection{Integer type}
+\subsection{Integer type}\label{Integer}
 
 There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use infinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with infinite precision.
 
@@ -3096,18 +3106,6 @@ The options for computation goals and algorithms variants have been explained in
 	
 \end{enumerate}
 
-\subsection{Normaliz tries to be smart}\label{smart}
-
-\dots but sometimes it needs your help.
-
-Normaliz has two main algorithms for the computation of Hilbert bases and degree $1$ points, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz ties to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can day that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large.
-
-While this combinatorial condition is the only criterion for Nrmaliz, it depends also on the arithmetics of the example what algorithm is better. At present Normaliz makes no attempt to measure it in some way. See Section \ref{div_labor} where Normaliz would only use the primal algorithm although the dual algorithm is much better for the Hilbert basis calculation.
-
-Within the primal algorithm one must decide whether to use bottom decomposition or not. Also in this case Normaliz decides this itself, unless \verb|BottomDecomposition| \verb|-b| or \verb|NoBottomDec| is set. See Section \ref{bottom_dec}.
-
-The approximation of rational polytopes by lattice polytopes is not switched on automatically. It must be set explicitly by \verb|Approximate|, \verb|-r|. See Section \ref{approx}.
-
 \subsection{Info about Normaliz}
 
 \begin{itemize}
@@ -3181,13 +3179,11 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{More examples}\label{Examples}
 
-In this section we discuss some advanced features of Normaliz.
-
 \subsection{Lattice points by approximation}\label{approx}
 
-In order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vectors that are needed for the Hilbert basis computations, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
+In order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vectors that are needed for the Hilbert basis computation, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
 
-Normaliz 3 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept. This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by the option \verb|Approximate|, and this is often a very good choice. It is not the default choice of Normaliz since the number of vertices of $P$ should not be too large.
+Normaliz 3.2.0 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept. This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by the option \verb|Approximate|, and this is often a very good choice.
 \begin{center}
 	\begin{tikzpicture}[scale=0.6]
 	\filldraw[fill=orange] (0,0) -- (0,1) -- (1,3) -- (2,4) -- (3,4) -- (4,1) -- (3,0) --cycle;
@@ -3199,17 +3195,14 @@ Normaliz 3 takes the following approach: simplicial subcones $S$ with rational v
 	} 
 	% \draw (1,0) -- (0,1) -- (2,2) --cycle;
 	\end{tikzpicture}
-\end{center}
-
-Another option that is often favorable is \verb|DualMode| in connection with \verb|Deg1Elements|. So there are three choices for the computation of lattice points in polytopes:
-\begin{itemize}
-	\itemtt[Deg1Elements, -1] with local approximation of rational polytopes,
-	\itemtt [Approximate Deg1Elements, -r1] combined with global approximation,
-	\itemtt[DualMode Deg1Elements, -d1] dual mode optimized for the computation of degree $1$ elements.
-\end{itemize}
+\end{center} 
+Now pproximation is chosen automatically by Normaliz if the polytope is not integral and has at most
+$$
+100.
+$$ 
+The reason for this limitation is that each rational vertex must be replaced dby several integral ones, and this increase can make the computation of the approximating polytope quite difficult. As mentioned in Section \ref{approx}, \verb|Approximate, -r| forces approximation (regardless of the bound $5e$) and \verb|NoApproximation| blocks it.
 
 Our demonstration example is \verb|max_polytope_cand| with the input file
-
 \begin{Verbatim}
 amb_space 5
 inequalities 11
@@ -3226,23 +3219,20 @@ inequalities 11
 -8  27  12 -35 321  
 grading
 unit_vector 5
-Approximate
 Deg1Elements
 \end{Verbatim}
-set up for global approximation. (This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036.)
+This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215.
 
-Despite of the large number of lattice points, the computation is extremely fast. Now remove \verb|Approximate|. This will take considerably longer, but will not overstretch your patience. Note that Normaliz will pass to GMP integers, which becomes necessary because of the huge determinants of the simplicial cones (without approximation).
+Despite of the large number of lattice points, the computation is extremely fast. If you insist in \verb|NoApproximation|,  it  will take considerably longer, but will not overstretch your patience. Note that Normaliz passes to GMP integers for some computations, which becomes necessary because of the huge determinants of the simplicial cones (without approximation). Actually, approximation is used despite \verb|NoApproximation|, namely `locally'' for each simplicuial cone in the triangulation. (This cannot be swiched off.)
 
 The third choice using the dual algorithm is still o.k. though it takes the most time in this case. In other cases it may very well be the fastest.
 
-In the inhomogeneous case, \verb|Approximate| can be used if the polyhedron is actually a polytope and \verb|HilbertBasis| (or just the default mode) is set. An example(\verb|pedro2.in|, suggested by Paedro Garcia-Sanchez)
+In the inhomogeneous case, approximation can be used if the polyhedron is actually a polytope and \verb|HilbertBasis| (or just the default mode) is set. An example (\verb|pedro2.in|, suggested by Paedro Garcia-Sanchez):
 \begin{Verbatim}
 amb_space 5
 constraints 1
 1001 1211 1421 1631  2841 = 39249
-Approximate
 \end{Verbatim}
-This example seems to be unreachable without \verb|Approximate|, neither in primal nor in dual mode. With \verb|Approximate| it takes $< 1$ sec.
 
 \subsection{The bottom decomposition}\label{bottom_dec}
 
@@ -3300,7 +3290,7 @@ The bottom decomposition is part of the subdivision of large simplicial cones di
 
 Also see Section \ref{ele3}.
 
-\subsection{Subdivision of large simplicial cones}
+\subsection{Subdivision of large simplicial cones}\label{subdiv}
 
 Especially in computations with rational polytopes one encounters very large determinants that can keep the Normaliz primal algorithm from terminating in reasonable time. As an example we take \verb|hickerson-18.in| from the LattE distribution \cite{LatInt}. It is simplicial and the complexity is totally determined by the large determinant $\approx 4.17\times 10^{14}$ (computed with \verb|-v|). 
 
@@ -3310,9 +3300,11 @@ If we are just interested in the degree $1$ points, Normaliz uses the approximat
 \item computation of candidate subdivision points by approximation of the given simplicial cone by an overcone that is generated by vectors  of ``low denominator''.
 \end{arab}
 
-Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. Furthermore, if some big simplices are still remaining, method (2) is applied again in both cases with a higher approximation level. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
+Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. Furthermore, if some big simplices are still remaining, method (2) is applied again in both cases with a higher approximation level. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
 
-The use of SCIP requires a Normaliz executable that is compiled with the option \verb|SCIP=yes| after the installation of SCIP. Without SCIP only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this vase the approximation method will be tried as well. 
+The use of SCIP requires a Normaliz executable that is built with SCIP see Section \ref{ChinRem}{compile}). Without SCIP only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this vase the approximation method will be tried as well. 
+
+Recommendation: \emph{If you are applying Normaliz to arithmetically complicated examples, use Normaliz with SCIP.}
 
 The following table contains some performance data for subdivisions based on SCIP (parallelization with 20 threads).
 \begin{center}
@@ -3346,12 +3338,18 @@ runtime with subdivision    & 0.7 s & 58 s& 2 m 36 s\\ \hline
 
 A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in|.
 
-Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}.
+Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nestd triangulation must be blocked, one uses the option \verb|NoNestedTri|. Inevitably it blocks the subdivision of large simplicial cones.
 
 \subsection{Primal vs. dual -- division of labor}\label{div_labor}
 
-The choice between the primal and the dual algorithm for Hilbert basis computations is presently left to the user. Normaliz does not make a guess which algorithm might be faster. If the number of support hyperplanes is small relative to the dimension, then the dual algorithm can be much faster. This is in particular true for (in)homogeneous linear systems of equations where the number of support hyperplanes is bounded above by the number of indeterminates ($+1$ in the inhomogeneous case).
-The paper \cite{BIS} contains computation times for many examples that can help the user to choose the right algorithm. Note that the dual algorithm is arithmetically less critical than the primal algorithm since it basically only requires addition of vectors.
+%\subsection{Normaliz tries to be smart}\label{smart}
+
+As already mentioned several times, Normaliz has two main algorithms for the computation of Hilbert bases and degree $1$ points, the primal algorithm and the dual algorithm. It is in general very hard to decide beforehand which of the two is better for a specific example. Nevertheless Normaliz ties to guess, unless \verb|PrimalMode|, \verb|-P| or \verb|DualMode|, \verb|-d| is explicitly chosen by the user. In first approximation one can day that the dual algorithm is chosen if the computation is based on constraints and the number of inequalities is neither too small nor too large. Normaliz chooses the dual algorithm if at the start of the Hilbert basis computation the cone is defined by $s$ inequalities such that
+$$
+r+\frac{50}{r} \le s \le 2e
+$$
+where $r$ is the rank of the monoid to be computed and $e$ is the dimension of the space in which the data are embedded. These conditions ate typically fulfilled for diophantine systems of equations whoe nonnegative solutions are asked for. 
+In the case of very few or many hyperplanes Normaliz prefers the primal algorithm. While this combinatorial condition is the only criterion for Nrmaliz, it depends also on the arithmetic of the example what algorithm is better. At present Normaliz makes no attempt to measure it in some way.
 
 When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| and the computation goal \verb|HilbertSeries|:
 \begin{Verbatim}
@@ -3363,9 +3361,9 @@ total_degree
 DualMode
 HilbertSeries
 \end{Verbatim}
-The computation time (20 parallel threads) is 2 m 54 s whereas the default mode needs 4 h 4 m 20 s. 
+As you will see, the subdivision of large simplicial cones is very useful for such computations.
 
-In addition to showing that the combination of the primal and dual algorithm can be very useful, it also shows the power of the the subdivision of large simplicial cones and bottom decomposition: while the ``raw'' determinant sum is $\approx 7.7\times 10^{11}$ (you can compute it with the options \verb|-iv|), the determinant sum of the Hilbert series computation is only $\approx 8.4\times 10^9$.
+Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate. The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
@@ -3732,6 +3730,8 @@ The following figure shows a nested triangulation:
 For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T|, Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz.
 
 The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
+
+The subdivision cann be blocked by \verb|NoNestedTri|, independently of the computation goals.
 
 \subsubsection{Disjoint decomposition}\label{Disjoint}
 
@@ -4888,19 +4888,20 @@ A normal affine monoid $M$ has a well-defined divisor class group. It is natural
 
 With
 \begin{Verbatim}
-./normaliz -c example/A443
+./normaliz -ch example/A443
 \end{Verbatim}
-we get the following terminal output (not yet updated to Normaliz 3.1.2---there are only changes of secondary importance).
+we get the following terminal output.
 
 \begin{Verbatim}
                                                     \.....|
-                     Normaliz 3.0                    \....|
+                    Normaliz 3.2.0                   \....|
                                                       \...|
      (C) The Normaliz Team, University of Osnabrueck   \..|
-                    September 2015                      \.|
+                     January  2017                      \.|
                                                          \|
 ************************************************************
-Compute: DefaultMode 
+Command line: -ch example/A443 
+Compute: HilbertBasis HilbertSeries 
 ************************************************************
 starting primal algorithm with full triangulation ...
 Roughness 1
@@ -4926,12 +4927,18 @@ In view of the number of simplices in the triangulation and the number of suppor
 gen=36, 723 hyp, 234 pyr, 14025 simpl
 ...
 gen=48, 4948 hyp, 3541 pyr, 14856 simpl
+\end{Verbatim}
+All generetors have been processed now. Fortunately our cone is pointed:
+\begin{Verbatim}
+Pointed since graded
+Select extreme rays via comparison ... done.
+\end{Verbatim}
+Normaliz knows two methods for finding the extreme rays. Instead of ``comparison'' you may see ``rank''.
+Now the stored pyramids must be triangulated. They may produce not only simplices, but also pyramids of higher level, and indeed they do so:
+\begin{Verbatim}
 **************************************************
 level 0 pyramids remaining: 3541
 **************************************************
-\end{Verbatim}
-Now these pyramids must be triangulated. They may produce not only simplices, but also pyramids of higher level, and indeed they do so:
-\begin{Verbatim}
 **************************************************
 all pyramids on level 0 done!
 **************************************************
@@ -4956,12 +4963,7 @@ level 3 pyramids remaining: 100
 **************************************************
 all pyramids on level 3 done!
 \end{Verbatim}
-This is a small computation, and the computation of pyramids goes level by level without the necessity to return to a lower level. But in larger examples the buffer for level $n+1$ may be filled before level $n$ is finished. Then it becomes necessary to go back.
-\begin{Verbatim}
-**************************************************
-Pointed since graded
-\end{Verbatim}
-Fortunately our cone is pointed. Some simplices remaining in the buffer are now evaluated:
+This is a small computation, and the computation of pyramids goes level by level without the necessity to return to a lower level. But in larger examples the buffer for level $n+1$ may be filled before level $n$ is finished. Then it becomes necessary to go back. Some simplices remaining in the buffer are now evaluated:
 \begin{Verbatim}
 evaluating 150978 simplices
 ||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -4973,10 +4975,6 @@ Since our generators form the Hilbert basis, we do not collect any further candi
 Total number of pyramids = 14137, among them simplicial 2994
 \end{Verbatim}
 Some statistics of the pyramid decomposition.
-\begin{Verbatim}
-Select extreme rays via comparison ... done.
-\end{Verbatim}
-Normaliz knows two methods for finding the extreme rays. Instead of ``comparison'' you may see ``rank''.
 \begin{Verbatim}
 ------------------------------------------------------------
 transforming data... done.
@@ -4994,21 +4992,22 @@ It tells you that Normaliz has found a list of $539511$ new candidates for the H
 
 Now we give an example of a computation in dual mode. It is started by the command
 \begin{Verbatim}
-./normaliz -cd example/5x5
+./normaliz -cid example/5x5
 \end{Verbatim}
-The console output:
+The option \verb|i| is used to suppress the \verb|HSOP| in the input file. The console output:
 
 \begin{Verbatim}
                                                     \.....|
-                     Normaliz 3.0                    \....|
+                    Normaliz 3.2.0                   \....|
                                                       \...|
      (C) The Normaliz Team, University of Osnabrueck   \..|
-                    September 2015                      \.|
+                     January  2017                      \.|
                                                          \|
-
 ************************************************************
+Command line: -cid example/5x5 
 Compute: DualMode 
 No inequalities specified in constraint mode, using non-negative orthant.
+************************************************************
 \end{Verbatim}
 Indeed, we have used only equations as the input.
 \begin{Verbatim}
@@ -5216,7 +5215,7 @@ Cone<Integer>::Cone(const map< InputType,
                     vector< vector<Integer> > >& multi_input_data)
 \end{Verbatim}
 
-The four constructors also exist in a variant that uses the \verb|libnormaliz| type \verb|Matrix<Integer>| instead of \verb|vector< vector<Integer> >|.
+The four constructors also exist in a variant that uses the \verb|libnormaliz| type \verb|Matrix<Integer>| instead of \verb|vector< vector<Integer> >| (see \verb|cone.h|).
 
 For convenience we provide the function
 \begin{Verbatim}
@@ -5303,12 +5302,14 @@ namespace ConeProperty {
         //
         DefaultMode,
         Approximate,
+        NoApproximation, // new
         BottomDecomposition,
         NoBottomDec,       
         DualMode,
         PrimalMode, //new
         Symmetrize, / new
         NoSymmetrization, // new
+        NoNestedTri, // new
         KeepOrder,
         HSOP,
         //

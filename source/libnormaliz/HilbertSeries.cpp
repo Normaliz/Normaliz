@@ -226,6 +226,7 @@ void HilbertSeries::simplify() const {
     // where denom | cdenom are exponent vectors of (1-t^i) | i-th cyclotminc poly.
     map<long, denom_t> cdenom;
 
+    map<long, denom_t> save_denom=denom;
     map<long, denom_t>::reverse_iterator rit;
     long i;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
@@ -300,27 +301,31 @@ void HilbertSeries::simplify() const {
         }
         i = cdenom.rbegin()->first;
     }
-    while (!cdenom.empty()) {
-        //create a (1-t^i) factor out of all cyclotomic poly.
-        denom[i]++;
-        v_scalar_multiplication(num,mpz_class(-1));
-        for (long d = 1; d <= i; ++d) {
-            if (i % d == 0) {
-                it = cdenom.find(d);
-                if (it != cdenom.end() && it->second>0) {
-                    it->second--;
-                    if (it->second == 0)
-                        cdenom.erase(it);
-                } else {
-                    num = poly_mult(num, cyclotomicPoly<mpz_class>(d));
+    if(period <= PERIOD_BOUND){
+        while (!cdenom.empty()) {
+            //create a (1-t^i) factor out of all cyclotomic poly.
+            denom[i]++;
+            v_scalar_multiplication(num,mpz_class(-1));
+            for (long d = 1; d <= i; ++d) {
+                if (i % d == 0) {
+                    it = cdenom.find(d);
+                    if (it != cdenom.end() && it->second>0) {
+                        it->second--;
+                        if (it->second == 0)
+                            cdenom.erase(it);
+                    } else {
+                        num = poly_mult(num, cyclotomicPoly<mpz_class>(d));
+                    }
                 }
             }
-        }
-        i = lcm_of_keys(cdenom);
-        if (i > PERIOD_BOUND) {
-            i = cdenom.rbegin()->first;
+            i = lcm_of_keys(cdenom);
+            if (i > PERIOD_BOUND) {
+                i = cdenom.rbegin()->first;
+            }
         }
     }
+    else
+        denom=save_denom;
 
 /*    if (verbose) {
         verboseOutput() << "Simplified Hilbert series: " << endl << *this;

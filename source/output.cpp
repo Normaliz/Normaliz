@@ -798,6 +798,8 @@ void Output<Integer>::write_files() const {
                     Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
                     HQP.pretty_print(out,true);
                     out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
+                }else{
+                    out<<"Hilbert quasi-polynomial has period " << period << endl;    
                 }
                 out << endl << endl;
             }

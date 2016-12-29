@@ -146,7 +146,7 @@ private:
     mutable map< vector<denom_t>, vector<num_t> > denom_classes;
     // add the classes if they get too many
     static const size_t DENOM_CLASSES_BOUND = 50000;
-    static const long PERIOD_BOUND = 2000000;
+    static const long PERIOD_BOUND = 1000000;
 
     // the numerator, repr. as vector of coefficients, the h-vector
     mutable vector<mpz_class> num;

@@ -50,7 +50,7 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                    November  2016                      \\.|"<<endl;
+    cout << "                     January  2017                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {

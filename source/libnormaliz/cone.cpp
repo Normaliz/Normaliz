@@ -1602,16 +1602,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
         
     try_approximation(ToCompute);
-    ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
-        return ToCompute;
-    }
-
-    
-    ToCompute.reset(is_Computed);
-    if (ToCompute.none()) {
-        return ToCompute;
-    }
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
             || ToCompute.test(ConeProperty::Multiplicity)
@@ -1803,6 +1793,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     }
     if (ToCompute.test(ConeProperty::TriangulationSize)) {
         FC.do_triangulation = true;
+    }
+    if (ToCompute.test(ConeProperty::NoNestedTri)) {
+        FC.use_bottom_points = false;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements)) {
         FC.do_deg1_elements = true;
@@ -2721,6 +2714,15 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
                     && !ToCompute.test(ConeProperty::Multiplicity)))
         return;
     
+    if(project==""){
+        if(ToCompute.test(ConeProperty::Symmetrize)){
+            throw FatalException("Symmetrization only not possible via libnormaliz");
+        }
+        else
+            return;
+    }
+                
+    
     #ifdef _WIN32 //for 32 and 64 bit windows
     // at present we cannot compile nmzIntegrate for Windows
     bool nmzInt3_1compatible=(ExcludedFaces.nr_of_rows()==0 && output_dir.size()==0 && 
@@ -3073,6 +3075,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 template<typename Integer>
 void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     
+    if(ToCompute.test(ConeProperty::NoApproximation))
+        return;
+    
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         return;
     
@@ -3123,7 +3128,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
             return;        
     }
     
-    if(Generators.nr_of_rows()>5*dim && !ToCompute.test(ConeProperty::Approximate))
+    if(Generators.nr_of_rows()>100 && !ToCompute.test(ConeProperty::Approximate))
         return;
     
     vector<Integer> GradForApprox;

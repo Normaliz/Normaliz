@@ -704,7 +704,10 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const long SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
+const long SimplexParallelEvaluationBound=100000000; // simplices larger than this bound/10 
+                 //are evaluated by parallel threads
+                 // simplices larger than this bound  || (this bound/10 && Hilbert basis)
+                 // are tried for subdivision
 
 //---------------------------------------------------------------------------
 
@@ -721,8 +724,8 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(C_ptr->do_cone_dec)
         s.Excluded=Excluded;
     // large simplicies to be postponed for parallel evaluation
-    if ( (volume > SimplexParallelEvaluationBound ||
-           (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
+    if ( volume > SimplexParallelEvaluationBound/10
+           // || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
        && !C_ptr->do_Stanley_dec){ //&& omp_get_max_threads()>1)
         return false;        
     }
@@ -942,7 +945,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
-    if (C_ptr->use_bottom_points && volume >= SimplexParallelEvaluationBound
+    if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
         && C_ptr->approx_level == 1
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
     {
