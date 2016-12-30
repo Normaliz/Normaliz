@@ -1534,7 +1534,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
-    
+
     default_mode=ToCompute.test(ConeProperty::DefaultMode);
     
     if(ToCompute.test(ConeProperty::BigInt)){
@@ -1794,7 +1794,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if (ToCompute.test(ConeProperty::TriangulationSize)) {
         FC.do_triangulation = true;
     }
-    if (ToCompute.test(ConeProperty::NoNestedTri)) {
+    if (ToCompute.test(ConeProperty::NoSubdivision)) {
         FC.use_bottom_points = false;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements)) {

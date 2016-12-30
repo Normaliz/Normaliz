@@ -441,7 +441,8 @@ string OptionsHandler::getNmzIntegrateOptions() const {
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode)) {
+    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) 
+                                  && !to_compute.test(ConeProperty::Approximate)) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }

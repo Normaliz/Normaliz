@@ -2794,7 +2794,7 @@ It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used 
 
 \subsubsection{Symmetrization}
 
-In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate, provided the latter is available. If applicable, this is a very strong tool. we discuss it in Section \ref{Symm}. It can be forced or blocked:
+In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate, provided the latter is available. If applicable, this is a very strong tool. we discuss it in Section \ref{Symmetrize}. It can be forced or blocked:
 \begin{itemize}
 	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate if this is possible.
 	
@@ -2805,7 +2805,7 @@ In rare cases Normaliz can delegate the computation of multiplicities or Hilbert
 
 Under certain conditions Normaliz tries to speed up computations by subdividing large simplicial cones. This requires enlarging the set of generators and can lead to a nested triangulation (see Sections \ref{subdiv} and \ref{nested}). The subdivision can be blocked by 
  \begin{itemize}
- 	\itemtt[NoNestedTri]
+ 	\itemtt[NoSubdivision]
  \end{itemize}
 
 
@@ -3338,7 +3338,9 @@ runtime with subdivision    & 0.7 s & 58 s& 2 m 36 s\\ \hline
 
 A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in|.
 
-Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nestd triangulation must be blocked, one uses the option \verb|NoNestedTri|. Inevitably it blocks the subdivision of large simplicial cones.
+Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nestd triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
+
+\emph{Remark}\enspace The boinds mentioned above wrk well up to dimension $\approx 10$. In larger diemnsion they are too low because the probability of finding a subdivision point becomes too small.
 
 \subsection{Primal vs. dual -- division of labor}\label{div_labor}
 
@@ -3364,6 +3366,76 @@ HilbertSeries
 As you will see, the subdivision of large simplicial cones is very useful for such computations.
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
+
+\subsection{Symmetrization}\label{symmetrize}
+
+Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a polytope $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number ofpreimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $P$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
+
+The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{smmetrization}. Normaliz tries symmeztrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the inequalities $x_i\ge 0$ for all coordnates  $x_i$ of $C$. Then Normaliz groups coordinates that appear in all constraints and the gradimg (!) with the same coefficients and, raoughlxy speaking, replaces them by their sum. The number of preimages that one must count for the vector of sums is then a product of binomial coefficients -- a plynomial as desired.
+
+As an example we look again at the input for the Condircet paradoxon:
+\begin{Verbatim}
+amb_space 24
+inequalities 3
+1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
+1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
+1 1 1 1 1 1  1  1  1 -1 -1 -1   1  1  1 -1 -1 -1  -1 -1 -1 -1 -1 -1
+nonnegative
+total_degree
+Multiplicity
+\end{Verbatim}
+The graing is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also then column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each. With the suitable labeling, the number of preimages is given by
+$$
+f(x)=\binom{x_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
+$$
+Normalit finds the groups of variables that appear with the same sign pattern, creates the input files for NmzIntegate, runs it, and imports the results.
+
+However, there is a restriction. Since NmzIntegrate must do the polynomial arithmetic in GMP integers, it makes no sense to apply it if the dimension does not drop by a reasonable amount. There fore we require that
+$$
+\dim C' \le \min((2(\dim C)/3,16).
+$$
+If called with the otions \verb|-q| or \verb|-v| it will try symmetrization. If the inequality is not satisfied, it will simly compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+
+If you use the option \verb|Symmetrize|, Normaliz will stop the computation if the inequality for $\dim C'$ is not satisfied. But it writes the input fils for NmzIntegrate into the same directory where it writes the output files of Normaliz. Thefile names  are
+\begin{center}
+\ttt{<project>.symm.in}	\quad and\quad \ttt{<project>.symm.pnm}
+\end{center}
+The user can then run Mormaliz or NmzIntegrate on them with the options \verb|-E| (for the Hilbert series or \verb|-L| for the multiplicity.
+
+The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
+\begin{Verbatim}
+winfried@ubuntu:~/Dropbox/git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
+
+                                                    \.....|
+                    Normaliz 3.2.0                   \....|
+                                                      \...|
+     (C) The Normaliz Team, University of Osnabrueck   \..|
+                     January  2017                      \.|
+                                                         \|
+************************************************************
+Command line: -c ../example/PluralityVsCutoff 
+Compute: DefaultMode 
+executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
+...
+------------------------------------------------------------
+transforming data... done.
+
+real	0m2.697s
+user	0m5.936s
+sys	0m0.108s	
+\end{Verbatim}
+The Hilbert series is computable without symmetrization, but you better make sure that there is no power failure for the enxt week if you try that. (The time above includes the hilbert basis computed automatically in dual mode).
+
+Another example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$. 
+
+In order to suppress symmetrization, use the otion \verb|NoSymmetrization|.
+
+\emph{Remarks} \enspace (1) Large NmizIntegrate computations with many parallel threads require much memory due to the fact that very long polynnomilas must be stored.
+
+(2) At present Normaliz and NmzIntegrate communicate via files written to the directory where Normaliz writes its output files. . These files are deleted after the return to Normaliz from NmzIntegrate.
+
+(3) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input.
+
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate. The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
@@ -3731,7 +3803,7 @@ For the Normaliz computations, nested triangulations are as good as ordinary tri
 
 The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
 
-The subdivision cann be blocked by \verb|NoNestedTri|, independently of the computation goals.
+The subdivision cann be blocked by \verb|NoSubdivision|, independently of the computation goals.
 
 \subsubsection{Disjoint decomposition}\label{Disjoint}
 
@@ -4094,24 +4166,6 @@ for the original grading.
 
 Like the quasipolynomial, \emph{the multiplicity is computed for the divided grading}. 
 
-\subsection{A very large computation}\label{ele3}
-
-The example \verb|CondEffPlur.in| is one of the largest that Normaliz has mastered. The goal is to compute the Condorcet efficiency of plurality voting for $4$ candidates  (see \cite{BS} and the references therein), even in the refined form of the Hilbert series. The Hilbert basis computation is extremely fast in \verb|DualMode| so that it can be used as input. We tried three different setups (each with $30$ parallel threads): 
-
-\begin{center}
-	\begin{tabular}{|r|r|r|r|}\hline
-		input	& triangulation size& determinant sum& computation time\\ \hline
-		inequalities & 347,225,775,338 &4,111,428,313,448  & 112:43:17 h\\ \hline
-		inequalities, \ttt{-b} & 288,509,390,884 & 1,509,605,641,358 & 84:26:19 h\\ \hline
-		Hilbert basis, \ttt{-b}& 335,331,680,623&1,433,431,230,802& 97:50:05 h \\ \hline
-	\end{tabular}
-\end{center}
-
-The results show that the determinant sum of the bottom decomposition based on the extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
-
-As long as the determinants are rather small (as in this computation), the two cases $\det=1$ and $\det>1$ make the difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
-
-Note: though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}. It converts the computation time from days to hours.
 
 
 \section{Optional output files}\label{optionaloutput}
@@ -5309,7 +5363,7 @@ namespace ConeProperty {
         PrimalMode, //new
         Symmetrize, / new
         NoSymmetrization, // new
-        NoNestedTri, // new
+        NoSubdivision, // new
         KeepOrder,
         HSOP,
         //
@@ -6067,3 +6121,21 @@ $n$}. Research report, ISSAC 96, ACM Press 1996.
 \end{document}
 
 
+\subsection{A very large computation}\label{ele3}
+
+The example \verb|CondEffPlur.in| is one of the largest that Normaliz has mastered. The goal is to compute the Condorcet efficiency of plurality voting for $4$ candidates  (see \cite{BS} and the references therein), even in the refined form of the Hilbert series. The Hilbert basis computation is extremely fast in \verb|DualMode| so that it can be used as input. We tried three different setups (each with $30$ parallel threads): 
+
+\begin{center}
+	\begin{tabular}{|r|r|r|r|}\hline
+		input	& triangulation size& determinant sum& computation time\\ \hline
+		inequalities & 347,225,775,338 &4,111,428,313,448  & 112:43:17 h\\ \hline
+		inequalities, \ttt{-b} & 288,509,390,884 & 1,509,605,641,358 & 84:26:19 h\\ \hline
+		Hilbert basis, \ttt{-b}& 335,331,680,623&1,433,431,230,802& 97:50:05 h \\ \hline
+	\end{tabular}
+\end{center}
+
+The results show that the determinant sum of the bottom decomposition based on the extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
+
+As long as the determinants are rather small (as in this computation), the two cases $\det=1$ and $\det>1$ make the difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
+
+Note: though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}. It converts the computation time from days to hours.

@@ -107,7 +107,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::Symmetrize, false);
     CPs.set(ConeProperty::NoSymmetrization, false);
     CPs.set(ConeProperty::BigInt, false);
-    CPs.set(ConeProperty::NoNestedTri, false);
+    CPs.set(ConeProperty::NoSubdivision, false);
     return *this;
 }
 
@@ -132,7 +132,7 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::Symmetrize, CPs.test(ConeProperty::Symmetrize));
     ret.set(ConeProperty::NoSymmetrization, CPs.test(ConeProperty::NoSymmetrization));
     ret.set(ConeProperty::PrimalMode, CPs.test(ConeProperty::PrimalMode));
-    ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
+    ret.set(ConeProperty::NoSubdivision, CPs.test(ConeProperty::NoSubdivision));
     ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
     return ret;
 }
@@ -236,8 +236,9 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     if(CPs.test(ConeProperty::DualMode) || (CPs.test(ConeProperty::HilbertBasis) && !inhomogeneous))
         CPs.reset(ConeProperty::Approximate);
     
-    if(CPs.test(ConeProperty::Approximate) && !inhomogeneous)
+    if(CPs.test(ConeProperty::Approximate) && !inhomogeneous){
         CPs.set(ConeProperty::Deg1Elements);
+    }
 
     if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::Approximate))
         && (CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::StanleyDec))
@@ -370,7 +371,7 @@ namespace {
         CPN.at(ConeProperty::IsTriangulationNested) = "IsTriangulationNested";
         CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
         CPN.at(ConeProperty::BigInt) = "BigInt";
-        CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
+        CPN.at(ConeProperty::NoSubdivision) = "NoSubdivision";
         CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
         
         // detect changes in size of Enum, to remember to update CPN!
