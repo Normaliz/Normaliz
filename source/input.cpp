@@ -227,18 +227,23 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, I
             side=-1;
             continue;
         }
+        bool sign_read=false;
         sign=1;
         if(c=='-'){
             sign=-1;
+            sign_read=true;
             in >> c;            
         }
         if(c=='+'){
+            sign_read=true;
             in >> c;            
         }
         Integer entry=1;
         in >> std::ws;
         c = in.peek();
-        if(c!='x'){        
+        if(c!='x'){
+            if(c=='+' || c=='-')
+                throw BadInputException("Double sign in constraint");
             in >> entry;
             if(in.fail())
                 throw BadInputException("Error while reading coefficient in constraint");
@@ -260,7 +265,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, I
         if(in.fail() || index <1 || index+hom_correction> (long) left.size())
             throw BadInputException("Error while reading index in constraint");
         index-=1;
-        left[index]=side*sign*entry;
+        left[index]+=side*sign*entry;
         in >> std::ws;
         c = in.peek();
         if(c!=']')
