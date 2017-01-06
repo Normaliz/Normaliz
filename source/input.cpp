@@ -172,6 +172,109 @@ bool read_modulus(istream& in, Integer& modulus) {
 }
 
 template <typename Integer>
+void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, Integer& right, Integer& modulus, bool forced_hom) {
+    
+    bool congruence=false;
+    bool modulus_read=false;
+    Integer side=1,sign;
+    right=0;
+    long hom_correction=0;
+    if(forced_hom)
+        hom_correction=1;
+    
+    in >> std::ws;
+    char c = in.peek();
+    
+    while(true){
+        if(c=='('){   
+            if(modulus_read || !congruence || !read_modulus(in,modulus))
+                    throw BadInputException("Error while reading modulus of congruence!");
+            modulus_read=true;
+            in >> std::ws;
+            c = in.peek();
+        }
+        if(modulus_read && c!=';')
+            throw BadInputException("Error while reading modulus of congruence!");
+        if(c==';'){
+            if(rel=="")
+                throw BadInputException("Missing relation in constraint");
+            in >> c;
+            if(congruence && !modulus_read)
+                throw BadInputException("Modulus missing in congrruence");
+            cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
+            return;
+        }
+        
+        bool rel_read=false;
+        
+        if(c=='~' || c=='<' || c=='>' || c=='='){
+            rel_read=true;
+            if(rel!="")
+                throw BadInputException("Error while reading relation in constraint!");                
+            if(c=='~')
+                congruence=true;
+            in >> c;
+            rel+=c;
+        }
+        c = in.peek();
+        if(rel!="" && (rel=="<" || rel==">") && c=='='){
+            in >> c;
+            rel+=c;
+        }
+        in >> std::ws;
+        c = in.peek();     
+        if(rel_read){
+            side=-1;
+            continue;
+        }
+        sign=1;
+        if(c=='-'){
+            sign=-1;
+            in >> c;            
+        }
+        if(c=='+'){
+            in >> c;            
+        }
+        Integer entry=1;
+        in >> std::ws;
+        c = in.peek();
+        if(c!='x'){        
+            in >> entry;
+            if(in.fail())
+                throw BadInputException("Error while reading coefficient in constraint");
+            in >> std::ws;
+            c = in.peek();
+        }
+        if(c!='x'){
+            right-=side*sign*entry;
+            continue;            
+        }
+        in >> c;
+        in >> std::ws;
+        c = in.peek();
+        if(c!='[')
+            throw BadInputException("Error while reading index in constraint");
+        in >> c;
+        long index;
+        in >> index;
+        if(in.fail() || index <1 || index+hom_correction> (long) left.size())
+            throw BadInputException("Error while reading index in constraint");
+        index-=1;
+        left[index]=side*sign*entry;
+        in >> std::ws;
+        c = in.peek();
+        if(c!=']')
+            throw BadInputException("Error while reading index in constraint");
+        in >> c;
+        in >> std::ws;
+        c = in.peek();
+        continue;
+    }
+    
+}
+
+
+template <typename Integer>
 void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
@@ -181,24 +284,47 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         throw BadInputException("Cannot read "
         + toString(nr_constraints) + " constraints!");
     }
+    if(nr_constraints==0)
+        return;
+    
+    bool symbolic=false;
+    
+    in >> std::ws;
+    int c = in.peek();
+    if(c=='s'){
+        string dummy;
+        in >> dummy;
+        if(dummy!="symbolic")
+            throw BadInputException("Illegal keyword " + dummy
+                                + " in input!");
+        symbolic=true;
+    }  
+    
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
     for(long i=0;i< nr_constraints; ++i) {
+        
         vector<Integer> left(dim-hom_correction);
-        for(long j=0;j<dim-hom_correction;++j){
-            in >> left[j];
-        }
         string rel, modulus_str;
         Integer right, modulus=0;
-        in >> rel;
-        in >> right;
-        if(rel=="~") {
-            if(!read_modulus(in,modulus))
-                throw BadInputException("Error while reading modulus of congruence!");
+        
+        if(symbolic){
+            read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);            
         }
-        if (in.fail()) {
-            throw BadInputException("Error while reading constraint!");
+        else{ // ordinary constraint read here
+            for(long j=0;j<dim-hom_correction;++j){
+                in >> left[j];
+            }
+            in >> rel;
+            in >> right;
+            if(rel=="~") {
+                if(!read_modulus(in,modulus))
+                    throw BadInputException("Error while reading modulus of congruence!");
+            }
+            if (in.fail()) {
+                throw BadInputException("Error while reading constraint!");
+            }
         }
         process_constraint(rel,left,right,modulus,input_map,forced_hom);        
     }
