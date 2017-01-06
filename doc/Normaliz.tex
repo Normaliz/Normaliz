@@ -239,6 +239,8 @@ Normaliz does not have its own interactive shell. We recommend the access via GA
 		
 	\item sparse format for vectors and matrices,
 	
+	\item constraints in symbolic form,
+	
 	\item Hilbert series with denominator corresponding to a homogeneous system of generators,
 	
 	\item choice of an output directory,
@@ -533,7 +535,7 @@ constraints 2
 -1  2 >= 1
 3 -1 >= 1
 \end{Verbatim}
-
+There is an even more intuitive way to type the input file using symbolic constraints that we will introduce in Section \ref{cong_ex}.
 
 Normaliz homogenizes inhomogeneous computations by introducing an auxiliary homogenizing coordinate $x_{d+1}$. The polyhedron is obtained by intersecting the homogenized cone with the hyperplane $x_{d+1}=1$. The recession cone is the intersection with the hyperplane $x_{d+1}=0$. The recession monoid is the monoid of lattice points in the recession cone, and the set of lattice points in the polyhedron is represented by its system of module generators over the recession monoid.
 
@@ -1190,13 +1192,13 @@ x_1\equiv 0\mod 2
 $$
 is the first congruence etc.
 
-We could also define these congruences in a better readable form:
+We could also define these congruences as symbolic constraints:
 \begin{Verbatim}
-constraints 4
-1 0 0 0 0 0 0 0 0 ~ 0(2)
-0 0 1 0 0 0 0 0 0 ~ 0(2)
-0 0 0 0 0 0 1 0 0 ~ 0(2)
-0 0 0 0 0 0 0 0 1 ~ 0(2)
+constraints 4 symbolic
+x[1] ~ 0(2);
+x[3] ~ 0(2);
+x[7] ~ 0(2);
+x[9] ~ 0(2);
 \end{Verbatim}
 
 The output changes accordingly:
@@ -1317,8 +1319,8 @@ $$
 Input (\verb|NumSemi.in|):
 \begin{Verbatim}
 amb_space 3
-constraints 1
-6 10 15 = 97
+constraints 1 symbolic
+6x[1] + 10x[2} + 15x[3] = 97;
 \end{Verbatim}
 \end{minipage}
 \hspace{1cm}
@@ -1723,11 +1725,11 @@ We want to compute the nonnegative solutions of the simultaneous inhomogeneous c
 in two variables. The input file \verb|InhomCong.in| is
 \begin{Verbatim}
 amb_space 2
-constraints 2
-1 2 ~ 3 (7)
-2 2 ~ 4 (13)
+constraints 2 symbolic
+x[1] + 2x[2] ~ 3 (7);
+2x[1] +  2x[2] ~ 4 (13);
 \end{Verbatim}
-This is an example of input of generic constraints. We use \verb|~| as the best ASCII character for representing the congruence sign $\equiv$.	
+This is an example of input of symbolic constraints. We use \verb|~| as the best ASCII character for representing the congruence sign $\equiv$.	
 
 Alternatively one can use a matrix in the input As for which we must move the right hand side over to the left.
 \begin{Verbatim}
@@ -2135,7 +2137,7 @@ several items. There are several types of items:
 	\item definition of the ambient space,
 	\item matrices with integer entries,
 	\item vectors with integer entries,
-	\item constraints in generic format,
+	\item constraints in  or symbolic format,
 	\item computation goals and algorithmic variants,
 	\item comments.
 \end{arab}
@@ -2300,17 +2302,17 @@ cone [
 \end{Verbatim} 
 Similarly as plain matrices, formatted matrices can be given in transposed form, and they can be empty.
 
-\subsubsection{Constraints in generic format}\label{const_syntax}
+\subsubsection{Constraints in tabular format}\label{const_syntax}
 
 This input type is closer to standard notation than the encoding of constraints in matrices. The general type of equations and inequalities is
 \begin{Verbatim}
-<x> <rel> <rhs>
+<x> <rel> <rhs>;
 \end{Verbatim}
 where \verb|<x>| denotes a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<rhs>| is an integer.
 
 Congruences have the form
 \begin{Verbatim}
-<x> ~ <rhs> (<mod>)
+<x> ~ <rhs> (<mod>);
 \end{Verbatim}
 where \verb|<mod>| is a nonzero integer.
 
@@ -2322,6 +2324,32 @@ Examples:
 \end{Verbatim}
 
 Note: all numbers and relation signs must be separated by white space.
+
+\subsubsection{Constraints in symbolic format}\label{symb_syntax}
+
+This input type is even closer to standard notation than the encoding of constraints in matrices or constraints in tabular format. It is especially useful if the constraints are sparse. Instead of assigning a value to a coordinate via its position in a vector, it uses coordinates named \verb|x[<n>]| where now \verb|<n>| is the index of the coordinate. The index is counted from $1$.
+
+ The general type of equations and inequalities is
+\begin{Verbatim}
+<lhs> <rel> <rhs>
+\end{Verbatim}
+where \verb|<lhs>| and \verb|<rhs>| denote affine-linear compbinations of the \verb|x<n>| with intweger coefficients. 
+As above, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >|.
+
+Congruences have the form
+\begin{Verbatim}
+<lhs> ~ <rhs> (<mod>)
+\end{Verbatim}
+where \verb|<mod>| is a nonzero integer.
+
+Examples:
+\begin{Verbatim}
+x[1] >= 2x[2] + 5;
+x[1]=x[2] ;
+-x[1] + x[2] ~ 7 (9);
+\end{Verbatim}
+
+There is no need to insert white space for separation, but it may be inserted anywhere where it does not disrupt numbers or relation signs.
 
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
@@ -2572,10 +2600,10 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. Section \ref{ChinRem}, \verb|InhomCongSigns.in|.
 \end{itemize}
 
-\subsection{Generic constraints}
+\subsection{Tabular constraints}
 
 \begin{itemize}
-	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of generic constraints has been described in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
+	\itemtt[constraints] allows the input of equations, inequalities and congruences in a format that is close to standard notation. As for matrix types the keyword \verb|constraints| is followed by the number of constraints. The syntax of tabular constraints has been described in Section \ref{cone_synt}. If $(\xi_1,\dots,\xi_d)$ is the vector on the left hand side and $\eta$ the integer on the right hand side, then the constraint defines the set of vectors $(x_1,\dots,x_d)$ such that the relation
 	$$
 		\xi_1x_1+\dots \xi_dx_d \texttt{ rel } \eta
 	$$
@@ -2585,17 +2613,18 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 	$$
 	\xi_1x_1+\dots \xi_dx_d \equiv \eta \pmod c. 
 	$$
-	Sections \ref{strict_ex}, \verb|2cone_int.in|, \ref{strict_ex}, \ref{cong_ex}, \ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{inhom_ineq_ex}, \verb|InhomIneq.in|. \ref{ChinRem}, \verb|InhomCong.in|.
+	Sections \ref{strict_ex}, \verb|2cone_int.in|,  \ref{cong_ex}, \ttt{3x3magiceven.in}, \ref{inhom_ineq_ex}, \verb|InhomIneq.in|.
 \end{itemize}
 
 A right hand side $\neq 0$ makes the input inhomogeneous, as well as the relations $<$ and $>$. Strict inequalities are always understood as conditions for integers. So
 $$
-\xi_1x_1+\dots \xi_dx_d < \eta
+\xi_1x_1+\dots +\xi_dx_d < \eta
 $$
 is interpreted as
 $$
 \xi_1x_1+\dots \xi_dx_d \le \eta-1,
 $$
+
 
 \subsubsection{Forced homogeneity}
 
@@ -2603,6 +2632,22 @@ It is often more natural to write constraints in inhomogeneous form, even when o
 \begin{itemize}
 	\itemtt[hom\_constraints] for the input of equations, non-strict inequalities and congruences in the same format as \verb|constraints|, except that these constraints are meant to be for a homogeneous computation. It is clear that the left hand side has only $d-1$ entries now. See Section \ref{rat_ineq}, \verb|poly_hom_const.in|.
 \end{itemize}
+
+\subsection{Symbolic constraints}
+
+The input syntax is
+
+\begin{itemize}
+	\itemtt[constraints <n> symbolic] where \verb|<n>| is the number of constaints.
+\end{itemize}
+
+The constraints have the form already discussed, but are written in a self explanatory symbolic notation as equations, inrqualities or congruences.
+
+Note that every symbolic constraint (including the last) must be concluded by a semicolon.
+
+Swew \ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCong.in|.
+
+The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
 
 
 \subsection{Relations}\label{relations}

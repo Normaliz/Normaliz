@@ -2,6 +2,7 @@
 
 ## [3.2.0] 2017-01-01
 
+-- constriants in symbolic format
 -- a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
 -- option Symmetzrize that produces symmetrized input for and runs nmzIntegrate and runs on it,
 -- QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation),
