@@ -2754,7 +2754,7 @@ For its main computation goals Normaliz has algorithmic variants. It tries to ch
 
 \subsubsection{Primal vs.\ dual}
 
-For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulatioons, and the dual algorithm that is of type `pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraint input. The choice also applies to the computation of degree $1$ elements. However, for them there exists a third variant. See Section \ref{approximate}. The conditions under which the dual algorithm is chosen are specified there.
+For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulatioons, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraint input. The choice also applies to the computation of degree $1$ elements. However, for them there exists a third variant. See Section \ref{approximate}. The conditions under which the dual algorithm is chosen are specified there.
 
 The choice of the algorithm can be fixed or blocked:
 \begin{itemize}
@@ -2767,9 +2767,9 @@ The automatic choice can of course fail. See Section \ref{div_labor} for an exam
 
 \subsubsection{Lattice points by approximation}\label{approximate}
 
-Thisd is often the best choice for the computation of lattice points in a polytope. The polytope can be defined as the cross-section of a pointed cone with the hyperplane of degree $1$ points (homogeneous input) or as a polyhedron (inhomogeneous input). The basic idea to escape the arithmetical complexity of rational vertices with large denominators by approximating a rational polytope by one with integral vertices.  See Section \ref{approx} for further discussion and examples, and also for the conditions under which \verb|Approximate| is chosen automatically by Normaliz.
+This is often the best choice for the computation of lattice points in a polytope. The polytope can be defined as the cross-section of a pointed cone with the hyperplane of degree $1$ points (homogeneous input) or as a polyhedron (inhomogeneous input). The basic idea to escape the arithmetical complexity of rational vertices with large denominators by approximating a rational polytope by one with integral vertices.  See Section \ref{approx} for further discussion and examples, and also for the conditions under which \verb|Approximate| is chosen automatically by Normaliz.
 
-You cab force approximation or block it:
+You can force approximation or block it:
 \begin{itemize}	
 	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. It implies \verb|Deg1Elements|,
 	
@@ -2794,9 +2794,9 @@ It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used 
 
 \subsubsection{Symmetrization}
 
-In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate, provided the latter can be found. If applicable, this is a very strong tool. We discuss it in Section \ref{Symmetrize}. It will be chosen automatically, but can also be forced or blocked:
+In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate, provided the latter can be found. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}. It will be chosen automatically, but can also be forced or blocked:
 \begin{itemize}
-	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate if this is possible.
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate if this is possible. (It does not imply a computation goal!)
 	
 	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
@@ -2825,7 +2825,7 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 	\itemtt[SupportHyperplanes, -s] triggers the computation of support hyperplanes and extreme rays.
 \end{itemize}
 
-Normaliz tries to find a grading. In the inhomogeneous case the module rank is computed.
+Normaliz tries to find a grading.
 
 
 
@@ -2879,13 +2879,13 @@ Can only be set by single letter command line options:
 	\itemtt [IntegerHull, -H] computes the integer hull of a polyhedron. Implies the computation of the lattice points in it.
 \end{itemize}
 
-More precisely: n homogeneous computations it implies \verb|Deg1Elements|, in inhomogeneous computations it implies \verb|HilbertBasis|. See Section \ref{IntHull}.
+More precisely: in homogeneous computations it implies \verb|Deg1Elements|, in inhomogeneous computations it implies \verb|HilbertBasis|. See Section \ref{IntHull}.
 
 \subsubsection{Triangulation and Stanley decomposition}
 
 \begin{itemize}
 	
-	\itemtt[Triangulation, -T] makes Normaliz to compute, store and export the full triangulation.
+	\itemtt[Triangulation, -T] makes Normaliz compute, store and export the full triangulation.
 	
 	\itemtt[ConeDecomposition, -D] Normaliz computes a disjoint decomposition of the cone by semiopen simplicial cones. Implies \verb|Triangulation|.
 	
@@ -2916,7 +2916,7 @@ The computation goals that require calling NmzIntegrate can only be set on the c
 
 These computation goals require a homogeneous computation.
 
-Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and calls NmzIntegrate on the symmetrized object. The options above trigger a call of NmzIntregrate on the given data which must include a polynomial. See the NmzIntegrate manual.
+Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and calls NmzIntegrate on the symmetrized object. The options above ask for a call of NmzIntregrate on the given data which must include a polynomial. See the NmzIntegrate manual.
 
 \subsubsection{Boolean valued computation goals}\label{bool}
 
@@ -3177,7 +3177,7 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{More examples}\label{Examples}
+\section{More examples}\label{MoreExamples}
 
 \subsection{Lattice points by approximation}\label{approx}
 
@@ -3369,9 +3369,9 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Symmetrization}\label{symmetrize}
 
-Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a polytope $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $P$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
+Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $P$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
 
-The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the inequalities $x_i\ge 0$ for all coordinates  $x_i$ of $C$. Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector of sums is then a product of binomial coefficients -- a polynomial as desired.
+The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the sign conditions $x_i\ge 0$ for all coordinates  $x_i$ of $C$. Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector $y$  of sums is then a product of binomial coefficients -- a polynomial as desired.
 
 As an example we look again at the input for the Condorcet paradoxon:
 \begin{Verbatim}
@@ -3384,7 +3384,7 @@ nonnegative
 total_degree
 Multiplicity
 \end{Verbatim}
-The graing is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also then column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each. With the suitable labeling, the number of preimages is given by
+The graing is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also the column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each (one group for each $\pm1$ pattern). With the suitable labeling, the number of preimages of$(y_1,\dots,y_8$) is given by
 $$
 f(x)=\binom{x_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
 $$
@@ -3394,13 +3394,13 @@ However, there is a restriction. Since NmzIntegrate must do the polynomial arith
 $$
 \dim C' \le \min((2(\dim C)/3,16).
 $$
-If called with the options \verb|-q| or \verb|-v| it will try symmetrization. If the inequality is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+If called with the options \verb|-q| or \verb|-v| Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
 
-If you use the option \verb|Symmetrize|, Normaliz will stop the computation if the inequality for $\dim C'$ is not satisfied. But it writes the input fils for NmzIntegrate into the same directory where it writes the output files of Normaliz. Thefile names  are
+If you use the option \verb|Symmetrize|, Normaliz will stop the computation if the inequality for $\dim C'$ is not satisfied. But it writes the input fils for NmzIntegrate into the same directory where it writes the output files of Normaliz. The file names  are
 \begin{center}
 \ttt{<project>.symm.in}	\quad and\quad \ttt{<project>.symm.pnm}
 \end{center}
-The user can then run Normaliz or NmzIntegrate on them with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
+The user can then run Normaliz or NmzIntegrate on these input files with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
 
 The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
 \begin{Verbatim}
@@ -3428,7 +3428,7 @@ sys	0m0.108s
 \end{Verbatim}
 The Hilbert series is computable without symmetrization, but you better make sure that there is no power failure for the next week if you try that. (The time above includes the Hilbert basis computed automatically in dual mode).
 
-Another example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$. 
+Another good example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$. 
 
 In order to suppress symmetrization, use the option \verb|NoSymmetrization|.
 
