@@ -942,9 +942,9 @@ void SimplexEvaluator<Integer>::collect_vectors(){
 template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
-    //if(C_ptr->verbose){
+    if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
-    //}
+    }
     if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
         && C_ptr->approx_level == 1
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))

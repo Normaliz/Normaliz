@@ -209,6 +209,8 @@ The executables provided by us use the integer optimization program SCIP \cite{S
 
 Normaliz consists of two parts: the front end normaliz for input and output and the C++ library libnormaliz that does the computations.
 
+Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche.
+
 Normaliz can be accessed from the following systems:
 \begin{itemize}
 	\item \textsc{Singular} via the library \ttt{normaliz.lib},
@@ -217,8 +219,7 @@ Normaliz can be accessed from the following systems:
 	\item \textsc{GAP} via the GAP package \textsc{NormalizInterface} \cite{GAP-NmzInterface} which uses libnormaliz,
 	\item \textsc{polymake} (thanks to the \textsc{polymake}
 	team),
-	\item \textsc{Sage} via an optional package by A.
-	Novoseltsev.
+	\item \textsc{Sage} via PyNormaliz (thanks to Matthias Köppe)
 \end{itemize}
 
 The Singular and Macaulay 2 interfaces are contained in the
@@ -227,13 +228,15 @@ Normaliz distribution. At present, their functionality is limited to Normaliz 2.
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina}.
 
-Normaliz does not have its own interactive shell. We recommend the access via GAP for interactive use.
+Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for Sage for interactive use.
 
 \subsection{Major changes relative to version 3.1.1}
 
 \begin{arab}
 	
 	\item installation via \ttt{autotools} (written by Matthias Köppe),
+	
+	\item the Python interface PyNormaliz,
 	
 	\item automatic choice of algorithmic variants,
 		
@@ -284,6 +287,7 @@ directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
+\newpage
 
 \section{Normaliz by examples}\label{Examples}
 
@@ -2198,7 +2202,7 @@ grading
 1 0 0
 \end{Verbatim}
 
-Normaliz allows also the input ofsparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<pos>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is concluded by the character \verb|;| . 
+Normaliz allows also the input ofsparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<pos>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is terminated by the character \verb|;| . 
 
 Exaple:
 \begin{Verbatim}
@@ -2304,15 +2308,15 @@ Similarly as plain matrices, formatted matrices can be given in transposed form,
 
 \subsubsection{Constraints in tabular format}\label{const_syntax}
 
-This input type is closer to standard notation than the encoding of constraints in matrices. The general type of equations and inequalities is
+This input type is somewhat closer to standard notation than the encoding of constraints in matrices. The general type of equations and inequalities is
 \begin{Verbatim}
-<x> <rel> <rhs>;
+<x> <rel> <int>;
 \end{Verbatim}
-where \verb|<x>| denotes a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<rhs>| is an integer.
+where \verb|<x>| denotes a vector of length $d$, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >| and \verb|<int>| is an integer.
 
 Congruences have the form
 \begin{Verbatim}
-<x> ~ <rhs> (<mod>);
+<x> ~ <int> (<mod>);
 \end{Verbatim}
 where \verb|<mod>| is a nonzero integer.
 
@@ -2327,18 +2331,18 @@ Note: all numbers and relation signs must be separated by white space.
 
 \subsubsection{Constraints in symbolic format}\label{symb_syntax}
 
-This input type is even closer to standard notation than the encoding of constraints in matrices or constraints in tabular format. It is especially useful if the constraints are sparse. Instead of assigning a value to a coordinate via its position in a vector, it uses coordinates named \verb|x[<n>]| where now \verb|<n>| is the index of the coordinate. The index is counted from $1$.
+This input type is even closer to standard notation than the encoding of constraints in matrices or constraints in tabular format. It is especially useful if the constraints are sparse. Instead of assigning a value to a coordinate via its position in a vector, it uses coordinates named \verb|x[<n>]| where now \verb|<n>| is the index of the coordinate. The index is counted from $1$. 
 
  The general type of equations and inequalities is
 \begin{Verbatim}
-<lhs> <rel> <rhs>
+<lhs> <rel> <rhs>;
 \end{Verbatim}
-where \verb|<lhs>| and \verb|<rhs>| denote affine-linear compbinations of the \verb|x<n>| with intweger coefficients. 
-As above, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >|.
+where \verb|<lhs>| and \verb|<rhs>| denote linear compbinations of the \verb|x<n>| with intweger coefficients and constants. 
+As above, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >|. (An empty \verb|<lhs>| or \verb|<rhs>| has the value $0$.) Note the terminating semicolon.
 
 Congruences have the form
 \begin{Verbatim}
-<lhs> ~ <rhs> (<mod>)
+<lhs> ~ <rhs> (<mod>);
 \end{Verbatim}
 where \verb|<mod>| is a nonzero integer.
 
@@ -2638,16 +2642,14 @@ It is often more natural to write constraints in inhomogeneous form, even when o
 The input syntax is
 
 \begin{itemize}
-	\itemtt[constraints <n> symbolic] where \verb|<n>| is the number of constaints.
+	\itemtt[constraints <n> symbolic] where \verb|<n>| is the number of constraints in symbolic form that follow.
 \end{itemize}
 
-The constraints have the form already discussed, but are written in a self explanatory symbolic notation as equations, inequalities or congruences.
-
-Note that every symbolic constraint (including the last) must be concluded by a semicolon.
+The constraints have the form described in Section \ref{symb_syntax}. Note that every symbolic constraint (including the last) must be terminated by a semicolon.
 
 Swew \ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCong.in|.
 
-The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
+The interpretation of homogeneity follows the same rules as for tabular constraints. The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
 
 
 \subsection{Relations}\label{relations}
@@ -4438,37 +4440,41 @@ Normaliz directory) and several subdirectories in
 it. The names of the subdirectories created are
 self-explanatory. Nevertheless we give an overview:
 \begin{itemize}
-	\item In the Normaliz directory you should
-	find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
-	subdirectories.
-	
-	\item The subdirectory \ttt{source} contains the source
-	files.
-	The subdirectory \ttt{genEhrhart} contains the
-	NmzIntegrate source.
-	
-	\item The subdirectory \ttt{doc} contains the file you are
-	reading and further documentation.
-	
-	\item In the subdirectory \ttt{example} are the input
-	and output files for some examples. It contains all
-	input files of examples of this documentation, except the toy
-	examples of Section \ref{input}.
+\item In the Normaliz directory you should
+find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
+subdirectories.
 
-	\item Automated tests which run Normaliz on different inputs
-	and options are contained in the subdirectory \ttt{test}.
-	
-	\item The subdirectory \ttt{singular} contains the
-	\textsc{Singular} library \ttt{normaliz.lib} and a PDF file with
-	documentation.
-	
-	\item The subdirectory \ttt{macaulay2} contains the
-	\textsc{Macaulay2} package \ttt{Normaliz.m2}.
-	\item The subdirectory \ttt{lib} contains libraries for
-	jNormaliz.
-	
-	\item Moreover, there are subdirectories whose name starts with \verb|Q|. They contain
-	the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
+\item The subdirectory \ttt{source} contains the source
+files.
+The subdirectory \ttt{genEhrhart} contains the
+NmzIntegrate source.
+
+\item The subdirectory \ttt{doc} contains the file you are
+reading and further documentation.
+
+\item In the subdirectory \ttt{example} are the input
+and output files for some examples. It contains all
+input files of examples of this documentation, except the toy
+examples of Section \ref{input}.
+
+\item Automated tests which run Normaliz on different inputs
+and options are contained in the subdirectory \ttt{test}.
+
+\item The subdirectory \ttt{Singular} contains the
+\textsc{Singular} library \ttt{normaliz.lib} and a PDF file with
+documentation.
+
+\item The subdirectory \ttt{Macaulay2} contains the
+\textsc{Macaulay2} package \ttt{Normaliz.m2}.
+
+\item The subdirectory \ttt{PyNormaliz} contains the
+\textsc{Python} interface.
+
+\item The subdirectory \ttt{lib} contains libraries for
+jNormaliz.
+
+\item Moreover, there are subdirectories whose name starts with \verb|Q|. They contain
+the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
 We provide executables for Windows, Linux (each in a 32 bit and
@@ -6050,6 +6056,10 @@ Number of lattice points = 29 Multiplicity = 275
 
 \end{small}
 
+\section{PyNormaliz}
+
+For the time being please consult the file README in the directory PyNormaliz for the installation and use of the Python interface PyNormaliz (written by Sebastian Gutsche).
+
 \section{QNormaliz}\label{QNorm}
 
 The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, for example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to empphasize the difference.
@@ -6188,3 +6198,14 @@ The results show that the determinant sum of the bottom decomposition based on t
 As long as the determinants are rather small (as in this computation), the two cases $\det=1$ and $\det>1$ make the difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
 
 Note: though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}. It converts the computation time from days to hours.
+
+
+\subsection{Contributors}
+
+The following colleagues have contributed to Normaliz (in addition to the team members):
+\begin{itemize}
+	\item Anna Bigatti and John Abbot (CoCoA interface),
+	\item Sebastian Gutsche (PyNormaliz),
+	\item Max Horn and Sebastian Gutsche (GAP interface),
+	\item Gesa Kämpf (Macaulay2 package),
+\end{itemize}
