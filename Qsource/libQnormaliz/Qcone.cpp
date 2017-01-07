@@ -693,7 +693,7 @@ void Cone<Number>::process_lattice_data(const Matrix<Number>& LatticeGenerators,
         Equations.append(GenSublattice.getEquationsMatrix());
     }
 
-    if (Congruences.nr_of_rows() > 0) {
+    /* if (Congruences.nr_of_rows() > 0) {
         bool zero_modulus;
         Matrix<Number> Ker_Basis=Congruences.solve_congruences(zero_modulus);
         if(zero_modulus) {
@@ -701,7 +701,7 @@ void Cone<Number>::process_lattice_data(const Matrix<Number>& LatticeGenerators,
         }
         Sublattice_Representation<Number> Basis_Change(Ker_Basis,false);
         compose_basis_change(Basis_Change);
-    }
+    }*/
 
     if (Equations.nr_of_rows()>0) {
         Matrix<Number> Ker_Basis=BasisChange.to_sublattice_dual(Equations).kernel();

@@ -1841,7 +1841,7 @@ Matrix<Number> Matrix<Number>::kernel () const{
 
 //---------------------------------------------------------------------------
 // Converts "this" into (column almost) Hermite normal form, returns column transformation matrix
-template<typename Number>
+/*template<typename Number>
 Matrix<Number> Matrix<Number>::AlmostHermite(size_t& rk){
 
     Matrix<Number> Copy=*this;
@@ -1849,78 +1849,6 @@ Matrix<Number> Matrix<Number>::AlmostHermite(size_t& rk){
     bool success;
     Transf=row_column_trigonalize(rk,success);
 
-        return Transf;
-}
-
-//---------------------------------------------------------------------------
-/*
-template<typename Number>
-bool Matrix<Number>::SmithNormalForm_inner(size_t& rk, Matrix<Number>& Right){
-
-    bool success=true;
-    
-    // first we diagonalize
-
-    while(true){
-        rk=row_echelon_reduce(success);
-        if(!success)
-            return false;
-        if(rk==0)
-            break;
-        
-        if(is_diagonal())
-            break;
-        
-        success=column_trigonalize(rk,Right);
-        if(!success)
-            return false;
-        
-        if(is_diagonal())
-            break;                                
-    }
-    
-    // now we change the diagonal so that we have successive divisibilty
-    
-    if(rk<=1)
-        return true;
-           
-    while(true){
-        size_t i=0;
-        for(;i<rk-1;++i)
-            if(elem[i+1][i+1]%elem[i][i]!=0)
-                break;
-        if(i==rk-1)
-            break;
-        
-        Number u,v,w,z, d=ext_gcd(elem[i][i],elem[i+1][i+1],u,v);
-        elem[i][i+1]=elem[i+1][i+1];
-        w=-elem[i+1][i+1]/d;
-        z=elem[i][i]/d;
-        // Now we multiply the submatrix formed by columns "corner" and "j" 
-        // and rows corner,...,nr from the right by the 2x2 matrix
-        // | u w |
-        // | v z |              
-       if(!linear_comb_columns(i,i+1,u,w,v,z))
-           return false; 
-       if(!Right.linear_comb_columns(i,i+1,u,w,v,z))
-           return false;
-       elem[i+1][i]=0;        
-     }
-     
-    return true;
-} */
-
-// Converts "this" into Smith normal form, returns column transformation matrix
-/* template<typename Number>
-Matrix<Number> Matrix<Number>::SmithNormalForm(size_t& rk){
-
-    size_t dim=nc;
-    Matrix<Number> Transf(dim);
-    if(dim==0)
-        return Transf;
-        
-    Matrix<Number> Copy=*this;
-    bool success=SmithNormalForm_inner(rk,Transf);
         return Transf;
 } */
 
@@ -1937,105 +1865,6 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
         for(size_t j=0; j<ncols; ++j)
             convert(to_mat[i][j], from_mat[i][j]);
 }
-
-//---------------------------------------------------------------------------
-
-/*
-template<typename Number>
-void mat_to_mpz(const Matrix<Number>& mat, Matrix<mpz_class>& mpz_mat){
-    //convert(mpz_mat, mat);
-    // we allow the matrices to have different sizes
-    size_t nrows = min(mat.nr_of_rows(),   mpz_mat.nr_of_rows());
-    size_t ncols = min(mat.nr_of_columns(),mpz_mat.nr_of_columns());
-    for(size_t i=0; i<nrows; ++i)
-        for(size_t j=0; j<ncols; ++j)
-            convert(mpz_mat[i][j], mat[i][j]);
-	#pragma omp atomic
-	GMP_mat++;
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/*
-template<typename Number>
-void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Number>& mat){
-    //convert(mat, mpz_mat);
-    // we allow the matrices to have different sizes
-    size_t nrows = min(mpz_mat.nr_of_rows(),   mat.nr_of_rows());
-    size_t ncols = min(mpz_mat.nr_of_columns(),mat.nr_of_columns());
-    for(size_t i=0; i<nrows; ++i)
-        for(size_t j=0; j<ncols; ++j)
-            convert(mat[i][j], mpz_mat[i][j]);
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/*
-template<typename Number>
-void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Number>& mother, const vector<key_t>& selection){
-
-    assert(sub.nr_of_columns()>=mother.nr_of_columns());
-    assert(sub.nr_of_rows()>=selection.size());
-    for(size_t i=0;i<selection.size();++i)
-        for(size_t j=0;j<mother.nr_of_columns();++j)
-            convert(sub[i][j], mother[selection[i]][j]);
-}
-*/
-
-//---------------------------------------------------------------------------
-/*
-template<typename Number>
-void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Number>& mother, const vector<key_t>& selection){
-
-    assert(sub.nr_of_columns()>=selection.size());
-    assert(sub.nr_of_rows()>=mother.nr_of_columns());
-    for(size_t i=0;i<selection.size();++i)
-        for(size_t j=0;j<mother.nr_of_columns();++j)
-            convert(sub[j][i], mother[selection[i]][j]);
-}
-*/
-
-//---------------------------------------------------------------------------
-
-/* sorts rows of a matrix by a degree function and returns the permuation
-* does not change matrix (yet)
- */
-/*
-template<typename Number>
-vector<key_t> Matrix<Number>::perm_sort_by_degree(const vector<key_t>& key, const vector<Number>& grading, bool computed) const{
-
-	list<vector<Number>> rowList;
-	vector<Number> v;
-
-	v.resize(nc+2);
-	unsigned long i,j;
-	
-	for (i=0;i<key.size();i++){
-		if (computed){
-		v[0]=v_scalar_product((*this).elem[key[i]],grading);
-		} else{
-			v[0]=0;
-			for (j=0;j<nc;j++) v[0]+=Iabs((*this).elem[key[i]][j]);
-		}
-		for (j=0;j<nc;j++){
-			v[j+1] = (*this).elem[key[i]][j];
-		}
-		v[nc+1] = key[i]; // position of row
-		rowList.push_back(v);
-	}
-	rowList.sort();
-	vector<key_t> perm;
-	perm.resize(key.size());
-	i=0;
-	for (typename list< vector<Number> >::const_iterator it = rowList.begin();it!=rowList.end();++it){
-		perm[i]=convertTo<long>((*it)[nc+1]);
-		i++;
-	}
-	return perm;
-}
-*/
 
 //---------------------------------------------------------------------------
 
@@ -2109,7 +1938,7 @@ vector<key_t> Matrix<Number>::perm_by_weights(const Matrix<Number>& Weights, vec
 
 //---------------------------------------------------
 
-template<typename Number>
+/* template<typename Number>
 Matrix<Number> Matrix<Number>::solve_congruences(bool& zero_modulus) const{
  
     
@@ -2141,14 +1970,15 @@ Matrix<Number> Matrix<Number>::solve_congruences(bool& zero_modulus) const{
             Ker_Basis[i][j]=Help[i][j];
     return Ker_Basis;
         
-}
+} */
 
 //---------------------------------------------------
 
 template<typename Number>
 void Matrix<Number>::saturate(){
     
-    *this=kernel().kernel();    
+    // *this=kernel().kernel();
+    return;    // no saturation necessary over a field
 }
 
 //---------------------------------------------------
