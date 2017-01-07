@@ -1320,7 +1320,7 @@ Input (\verb|NumSemi.in|):
 \begin{Verbatim}
 amb_space 3
 constraints 1 symbolic
-6x[1] + 10x[2} + 15x[3] = 97;
+6x[1] + 10x[2] + 15x[3] = 97;
 \end{Verbatim}
 \end{minipage}
 \hspace{1cm}
@@ -2345,7 +2345,7 @@ where \verb|<mod>| is a nonzero integer.
 Examples:
 \begin{Verbatim}
 x[1] >= 2x[2] + 5;
-x[1]=x[2] ;
+x[1]+1=x[2] ;
 -x[1] + x[2] ~ 7 (9);
 \end{Verbatim}
 
@@ -2540,9 +2540,9 @@ The Normaliz 2 input type \verb|polyhedron| can still be used.
 \begin{itemize}
 	\itemtt[offset] is a vector with $d$ entries. It defines the origin of the affine lattice.
 	Section \ref{offset_ex}, \verb|InhomCongLat.in|.
-	
-	\textbf{Note:}\enspace \verb|offset| and \verb|lattice| (or \verb|saturation|) together define an affine lattice. If \verb|offset| is present in the input, then the default choice for \verb|lattice| is the empty matrix.
 \end{itemize}
+
+\textbf{Note:}\enspace \verb|offset| and \verb|lattice| (or \verb|saturation|) together define an affine lattice. If \verb|offset| is present in the input, then the default choice for \verb|lattice| is the empty matrix.
 
 \subsection{Inhomogeneous constraints}
 
@@ -2641,7 +2641,7 @@ The input syntax is
 	\itemtt[constraints <n> symbolic] where \verb|<n>| is the number of constaints.
 \end{itemize}
 
-The constraints have the form already discussed, but are written in a self explanatory symbolic notation as equations, inrqualities or congruences.
+The constraints have the form already discussed, but are written in a self explanatory symbolic notation as equations, inequalities or congruences.
 
 Note that every symbolic constraint (including the last) must be concluded by a semicolon.
 
@@ -2795,7 +2795,7 @@ Normaliz collects all computation goals and algorithmic variants set in the inpu
 
 \subsection{The choice of algorithmic variants}
 
-For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that is best for the given input data. This automatic choice may however a bad one. Therefore teh user can completely control which algorithmic variant is used.
+For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data. This automatic choice may however a bad one. Therefore the user can completely control which algorithmic variant is used.
 
 \subsubsection{Primal vs.\ dual}
 

@@ -2599,10 +2599,12 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
         compute_deg1_elements_via_approx_simplicial(LargeSimplices.front().get_key());
     }
     else {
-        LargeSimplices.front().Simplex_parallel_evaluation();
-        if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
-            Results[0].transfer_candidates();
-            update_reducers();
+        if(!(is_approximation && do_Hilbert_basis && LargeSimplices.front().get_volume() > VolumeBound)){
+            LargeSimplices.front().Simplex_parallel_evaluation();
+            if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
+                Results[0].transfer_candidates();
+                update_reducers();
+            }
         }
     }
     LargeSimplices.pop_front();
@@ -2611,7 +2613,7 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements){
+void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound){
 
     if (is_approximation) return; // do not approximate again!
 
@@ -2637,6 +2639,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
     SimplCone.do_approximation=true;  // as indicted by do_approximation
     SimplCone.approx_level = approx_level;
+    SimplCone.VolumeBound=VolumeBound;
 
     SimplCone.Truncation= N;
     SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);

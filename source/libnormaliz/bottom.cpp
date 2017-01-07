@@ -79,7 +79,7 @@ double convert_to_double(long long a) {
 long long stellar_det_sum;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,const vector<Integer>& grading_, long app_level, long recursion_depth) {
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,const vector<Integer>& grading_, long app_level, long recursion_depth, Integer VolumeBound) {
 	
 	Integer volume;
 	int dim = gens[0].size();
@@ -269,13 +269,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
             if(verbose){
 				verboseOutput() << "Re-approximating simplex " << it-big_simplices.begin()+1 << " / "<< big_simplices.size() << " (recursion depth " << (recursion_depth+1) << ") | Approximation level: " << ApproxCone.approx_level << endl;
 			}
- 			ApproxCone.compute_sub_div_elements(gens,new_points_again);
+ 			ApproxCone.compute_sub_div_elements(gens,new_points_again,VolumeBound);
 			if(verbose){
 				verboseOutput() << "Start bottom points again." << endl;
 			}
             //Matrix<Integer>(new_points_again).pretty_print(cout);
             
-		    bottom_points(new_points_again,gens,ApproxCone.Grading,ApproxCone.approx_level, recursion_depth+1);
+		    bottom_points(new_points_again,gens,ApproxCone.Grading,ApproxCone.approx_level, recursion_depth+1,VolumeBound);
 			//vector<Integer> new_point = best_point(hb, gens, Support_Hyperplanes, grading);
 			if (!new_points_again.empty()){
 				counter++;
@@ -680,10 +680,10 @@ vector<Integer> opt_sol(SCIP* scip,
 #endif // NMZ_SCIP
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level,long recursion_depth);
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level,long recursion_depth,long VolumeBound);
 #endif // NMZ_MIC_OFFLOAD
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,const vector<long long>& grading,long app_level,long recursion_depth);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,const vector<mpz_class>& grading,long app_level,long recursion_depth);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,const vector<long long>& grading,long app_level,long recursion_depth,long long VolumeBound);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,const vector<mpz_class>& grading,long app_level,long recursion_depth,mpz_class VolumeBound);
 
 } // namespace
 

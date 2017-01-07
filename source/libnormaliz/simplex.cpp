@@ -942,9 +942,9 @@ void SimplexEvaluator<Integer>::collect_vectors(){
 template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
-    if(C_ptr->verbose){
+    //if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
-    }
+    //}
     if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
         && C_ptr->approx_level == 1
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
@@ -964,11 +964,11 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         time_t start,end;
 		time (&start);
 #ifndef NMZ_SCIP
-        C.compute_sub_div_elements(Generators, new_points);
+        C.compute_sub_div_elements(Generators, new_points,volume);
         //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
        
 #endif
-		bottom_points(new_points, Generators,C.Grading,C.approx_level,0);
+		bottom_points(new_points, Generators,C.Grading,C.approx_level,0,volume);
         time (&end);
 		double dif = difftime (end,start);
 
@@ -1290,6 +1290,11 @@ void SimplexEvaluator<Integer>::print_all() {
 template<typename Integer>
 vector<key_t> SimplexEvaluator<Integer>::get_key(){
     return key;
+}
+
+template<typename Integer>
+Integer SimplexEvaluator<Integer>::get_volume(){
+    return volume;
 }
 
 // Collector
