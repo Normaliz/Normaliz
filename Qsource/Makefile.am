@@ -25,7 +25,7 @@ libQnormaliz_la_SOURCES = libQnormaliz/Qcone_property.cpp libQnormaliz/libQnorma
 # Other headers (not installed)
 noinst_HEADERS = libQnormaliz/Qfull_cone.h libQnormaliz/Qlist_operations.h libQnormaliz/Qcone_helper.h
 # Sources included via libQnormaliz-templated.cpp:
-noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp
+noinst_HEADERS += libQnormaliz/Qinteger.cpp libQnormaliz/Qvector_operations.cpp libQnormaliz/Qmatrix.cpp libQnormaliz/Qlist_operations.cpp libQnormaliz/Qsublattice_representation.cpp libQnormaliz/Qfull_cone.cpp libQnormaliz/Qcone.cpp libQnormaliz/Qlibnormaliz.cpp
 
 libQnormaliz_la_LDFLAGS = -version-info 5:0:2
 ## yields version number 3.2.0 for libQnormaliz.so on Linux
