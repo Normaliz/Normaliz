@@ -6,13 +6,70 @@ compiler:
 
 env:
   - BUILDSYSTEM=cmake
+  - BUILDSYSTEM=cmake-scip
+  - BUILDSYSTEM=cmake-scip SCIPOPTSUITE_VERSION=3.2.0
   - BUILDSYSTEM=autotools
+  - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck
   - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
   - BUILDSYSTEM=autotools-scip
   - BUILDSYSTEM=autotools-scip SCIPOPTSUITE_VERSION=3.2.0
   - BUILDSYSTEM=classic
   - BUILDSYSTEM=classic-scip
+
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-scip
+      
 
 branches:
   except:
@@ -25,5 +82,6 @@ addons:
       - autoconf
       - automake
       - libtool
+      - time
 
 script: ./.travis-build.sh
