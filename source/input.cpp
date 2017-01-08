@@ -227,15 +227,12 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, I
             side=-1;
             continue;
         }
-        bool sign_read=false;
         sign=1;
         if(c=='-'){
             sign=-1;
-            sign_read=true;
             in >> c;            
         }
         if(c=='+'){
-            sign_read=true;
             in >> c;            
         }
         Integer entry=1;

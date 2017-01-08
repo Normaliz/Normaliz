@@ -201,7 +201,7 @@ Performance data of Normaliz can be found in \cite{BIS}.
 
 \subsection{Platforms, implementation and access from other systems}
 
-Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}).
+Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided on our homepage can be run in the Linux subsystem that is available in certain versions of MS Windows 10.
 
 Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP.
 
@@ -219,16 +219,16 @@ Normaliz can be accessed from the following systems:
 	\item \textsc{GAP} via the GAP package \textsc{NormalizInterface} \cite{GAP-NmzInterface} which uses libnormaliz,
 	\item \textsc{polymake} (thanks to the \textsc{polymake}
 	team),
-	\item \textsc{Sage} via PyNormaliz (thanks to Matthias Köppe)
+	\item \textsc{SageMath} via PyNormaliz (on preparation, thanks to Matthias Köppe).
 \end{itemize}
 
 The Singular and Macaulay 2 interfaces are contained in the
-Normaliz distribution. At present, their functionality is limited to Normaliz 2.10.
+Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they can profit from the newer versions.
 
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina}.
 
-Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for Sage for interactive use.
+Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for SageMath for interactive use.
 
 \subsection{Major changes relative to version 3.1.1}
 
@@ -236,9 +236,9 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 	
 	\item installation via \ttt{autotools} (written by Matthias Köppe),
 	
-	\item the Python interface PyNormaliz,
+	% \item the Python interface PyNormaliz,
 	
-	\item automatic choice of algorithmic variants,
+	\item automatic choice of algorithmic variants (can be switched off),
 		
 	\item sparse format for vectors and matrices,
 	
@@ -248,11 +248,11 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 	
 	\item choice of an output directory,
 	
-	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retieval of results,
+	\item improvements of \verb|libnormaliz|: extension of enumeration \verb|ConeProperty|, constructors based on \verb|Matrix<Integer>|, additional functions for retrieval of results,
 	
 	\item a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
 	
-	\item Option \verb|Symmetzrize| that produces symmetrized input for and runs nmzIntegrate and runs on it,
+	\item option \verb|Symmetzrize| that produces symmetrized input for and runs nmzIntegrate on it,
 	
 	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation).
 	
@@ -264,8 +264,9 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \subsection{Future extensions}
 
 \begin{arab}
-	\item Exploitation of symmetries.
-	\item Access from further systems.
+	\item Exploitation of symmetries,
+	\item integration of NmzIntegrate into libnormaliz,
+	\item access from further systems,
 	\item Gröbner and Graver bases.
 \end{arab}
 
@@ -550,7 +551,7 @@ Note that the homogenizing coordinate serves as the denominator for rational vec
 4 Hilbert basis elements of recession monoid
 1 vertices of polyhedron
 2 extreme rays of recession cone
-2 support hyperplanes of polyhedron
+3 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
@@ -587,11 +588,12 @@ The module generators are $(1,1)$ and $(1,2)$.
 \end{Verbatim}
 Indeed, the polyhedron has a single vertex, namely $(3/5,4/5)$.
 \begin{Verbatim}
-2 extreme rays of recession cone:     2 support hyperplanes of polyhedron:
+2 extreme rays of recession cone:     3 support hyperplanes of polyhedron (homogenized):
 1 3 0                                 -1  2 -1
-2 1 0                                  3 -1 -1
+2 1 0                                  0  0  1                                
+                                       3 -1 -1
 \end{Verbatim}
-The support hyperplanes are exactly those that we have used to define the polyhedron. This is obvious in our example, but need not always be true since one or more of the defining input hyperplanes may be superfluous.
+Two support hyperplanes are exactly those that we have used to define the polyhedron -- and it has only $2$. But Normaliz always outputs the support hyperplanes that are needed for the cone that one obtains by homogenizing the polyhedron, as indicated by `homolgenized''. The homogenizing variable is always $\ge 0$. In this case the support hyperplane $(0,0,1)$ is essential for the description of the cone. Note that it need not always appear.
 
 
 \subsection{A lattice polytope}\label{lattice_polytope}\label{polytope_ex}
@@ -1453,7 +1455,7 @@ It yields the output
 1 Hilbert basis elements of recession monoid
 2 vertices of polyhedron
 1 extreme rays of recession cone
-3 support hyperplanes of polyhedron
+3 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
@@ -1514,7 +1516,7 @@ with common denominator = 1
 1 extreme rays of recession cone:
 1 0 0
 
-3 support hyperplanes of polyhedron:
+3 support hyperplanes of polyhedron (homogenized):
 0 -2 3
 0  2 1
 2 -2 3
@@ -1770,9 +1772,10 @@ Well the vertex shown represents an extreme ray in the lattice $\EE$, and $(0,0,
  0 91 0
 91  0 0
 
-2 support hyperplanes of polyhedron:
-0 1 0
-1 0 0
+3 support hyperplanes of polyhedron (homogenized)
+ 0 0 1
+ 0 1 0
+ 1 0 0
 
 1 congruences:
 58 32 1 91
@@ -1970,7 +1973,7 @@ It is our rational polytope from Section \ref{rational}. We know already that th
 \begin{Verbatim}
 1 vertices of polyhedron
 0 extreme rays of recession cone
-0 support hyperplanes of polyhedron
+1 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
 affine dimension of the polyhedron = 0
@@ -1985,7 +1988,8 @@ internal index = 1
 
 0 extreme rays of recession cone:
 
-0 support hyperplanes of polyhedron:
+1 support hyperplanes of polyhedron (homogenized):
+0 0 1
 
 2 equations:
  1 0 0
@@ -2025,7 +2029,7 @@ The input is \verb|InhomIneqIH.in| ( \verb|InhomIneq.in| augmented by \verb|Inte
 1 extreme rays of recession cone:
 1 0 0
 
-3 support hyperplanes of polyhedron:
+3 support hyperplanes of polyhedron (homogenized):
 0 -1 1
 0  1 0
 1 -1 1
@@ -3487,6 +3491,17 @@ The communication via files does not allow the use of symmetrization via \verb|l
 
 (3) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under the suitbale conditions it is of course applird automatically.)
 
+\subsubsection{Restrictions in MS Windows}
+
+Unfortunately the last version of NmzIntegrate that we could compile under MS Windows is 1.3. This causes some restrictions in the use of NmzIntegrate and therefore of symmetrization in this operating system:
+
+\begin{arab}
+	\item Due to a bug it is possible that a segmentation fault occurs if excluded faces are used. 
+	\item The option \verb|OutputDir| is not available.
+\end{arab}
+
+An excellent way out is to run Normaliz and NmzIntegrate in the Linux subsystem of Windows 10.
+
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$th coordinate. The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
@@ -3504,7 +3519,7 @@ indicates that in this case the first variable is the homogenizing one. The outp
 2 Hilbert basis elements of recession monoid
 1 vertices of polyhedron
 2 extreme rays of recession cone
-2 support hyperplanes of polyhedron
+3 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
 affine dimension of the polyhedron = 2 (maximal)
@@ -3528,10 +3543,10 @@ module rank = 1
 0 0 1
 0 1 0
 
-1 vertices of polyhedron:                   2 support hyperplanes of polyhedron:
-1 1 1                                       -1 0 1
-                                            -1 1 0
-2 extreme rays of recession cone:
+1 vertices of polyhedron:               3 support hyperplanes of polyhedron (homogenized)
+1 1 1                                   -1 0 1
+                                        -1 1 0
+2 extreme rays of recession cone:        1 0 0
 0 0 1
 0 1 0
 \end{Verbatim}
