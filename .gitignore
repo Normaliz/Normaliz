@@ -89,3 +89,6 @@ autom4te.cache
 /source/maxsimplex/maxsimplex
 test/run_tests
 CoCoA
+/Qexample/Makefile.in
+/Qsource/Makefile.in
+/Qtest/Makefile.in

@@ -9,10 +9,10 @@ AC_SUBST(LIBNORMALIZ_VERSION_PATCH, 0)
 AC_SUBST(LIBNORMALIZ_VERSION_STRING, "$PACKAGE_VERSION")
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_FILES([Makefile
-	source/Makefile
-	source/libnormaliz/version.h
-	example/Makefile
-	test/Makefile])
+	source/Makefile Qsource/Makefile
+	source/libnormaliz/version.h Qsource/libQnormaliz/Qversion.h
+	example/Makefile Qexample/Makefile
+	test/Makefile Qtest/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX(0x, , mandatory)
