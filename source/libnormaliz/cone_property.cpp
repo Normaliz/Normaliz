@@ -108,6 +108,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoSymmetrization, false);
     CPs.set(ConeProperty::BigInt, false);
     CPs.set(ConeProperty::NoSubdivision, false);
+    CPs.set(ConeProperty::NoNestedTri, false);
     return *this;
 }
 
@@ -133,6 +134,7 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoSymmetrization, CPs.test(ConeProperty::NoSymmetrization));
     ret.set(ConeProperty::PrimalMode, CPs.test(ConeProperty::PrimalMode));
     ret.set(ConeProperty::NoSubdivision, CPs.test(ConeProperty::NoSubdivision));
+    ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
     ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
     return ret;
 }
@@ -154,6 +156,9 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions() {
+    
+    if(CPs.test(ConeProperty::NoNestedTri))
+        CPs.set(ConeProperty::NoSubdivision);
     
     if (CPs.test(ConeProperty::WitnessNotIntegrallyClosed))
         CPs.set(ConeProperty::IsIntegrallyClosed);
@@ -372,10 +377,11 @@ namespace {
         CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
         CPN.at(ConeProperty::BigInt) = "BigInt";
         CPN.at(ConeProperty::NoSubdivision) = "NoSubdivision";
+        CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
         CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 59,
+        static_assert (ConeProperty::EnumSize == 60,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

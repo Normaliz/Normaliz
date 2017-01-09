@@ -107,6 +107,7 @@ namespace ConeProperty {
         Symmetrize, // new
         NoSymmetrization, // new
         NoSubdivision, // new
+        NoNestedTri, // new -- synonym for NoSubdivision
         KeepOrder,
         HSOP,
         //

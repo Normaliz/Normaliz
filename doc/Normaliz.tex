@@ -228,7 +228,7 @@ Normaliz distribution. At present, their functionality is limited to Normaliz 2.
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina}.
 
-Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for SageMath for interactive use.
+Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for SageMath (in preparation) for interactive use.
 
 \subsection{Major changes relative to version 3.1.1}
 
@@ -288,7 +288,7 @@ directory \ttt{\NmzDir} (called Normaliz directory in the
 following) is created with several subdirectories.
 
 See Section \ref{Distr} for more details on the distribution and consult Section \ref{Compile} if you want to compile Normaliz yourself. 
-\newpage
+%\newpage
 
 \section{Normaliz by examples}\label{Examples}
 
@@ -337,6 +337,8 @@ at work. Finally inspect the output window for the results.
 
 The menus and dialogues of jNormaliz are self explanatory, but you
 can also consult the documentation \cite{AI} via the help menu.
+
+\emph{Remark}\enspace The jNormaliz drop down menus do presently not cover all options of Normaliz. But since all computation goals and algorithmic variants can be set in the input file, there is no real restriction in using jNormaliz. The only option not reachable by jNormaliz is the output directory (see Section \ref{outcontrol}).
 
 Moreover, one can, and often will, run Normaliz from the
 command line. This is fully explained in Section \ref{options}. At this point it is enough to call Normaliz by typing
@@ -406,7 +408,7 @@ cone transpose 2
 1 2
 3 1
 \end{Verbatim}
-Note that the \verb|2| following \verb|transpose| is now the number of \emph{columns}. Later on we will also show the use of formatted matrices.
+Note that the number \verb|2| following \verb|transpose| is now the number of \emph{columns}. Later on we will also show the use of formatted matrices.
 
 \subsubsection{The Hilbert basis}
 In order to compute the Hilbert basis, we run Normaliz from jNormaliz or by
@@ -2841,6 +2843,7 @@ An option to be mentioned in this context is
 \begin{itemize}	
 	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
 \end{itemize}
+\verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are drined.
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
 \subsubsection{Symmetrization}
@@ -5434,6 +5437,7 @@ namespace ConeProperty {
         Symmetrize, / new
         NoSymmetrization, // new
         NoSubdivision, // new
+        NoNestedTri, // new -- synonym for NoSubdivision
         KeepOrder,
         HSOP,
         //

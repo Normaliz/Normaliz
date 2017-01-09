@@ -1543,6 +1543,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         change_integer_type=false;
     }
     
+    if(ToCompute.test(ConeProperty::KeepOrder) && !isComputed(ConeProperty::OriginalMonoidGenerators))
+        throw BadInputException("KeepOrder can only be set if OriginalMonoidGenerators are defined");
+    
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         recursive_compute(ConeProperty::MaximalSubspace);      
@@ -2696,6 +2699,7 @@ bool existsNmzIntegrate(string name_in){
 //n check whether file project.suffix exists and retrieve last access time
 
     //b string name_in="nmzIntegrate";
+    cout << "NMZ_INT " << name_in << endl;
     const char* file_in=name_in.c_str();
     
     struct stat fileStat;
