@@ -117,14 +117,14 @@ EOF
     autotools-scip*)
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-	make -j2 || exit 1
-	make -j2 check || exit 1
+	make -j2 -k || exit 1
+	make -j2 -k check || exit 1
 	;;
     *)
 	# autotools, no SCIP
 	./bootstrap.sh || exit 1
 	./configure $CONFIGURE_FLAGS --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
-	make -j2 || exit 1
-	make -j2 check || exit 1
+	make -j2 -k || exit 1
+	make -j2 -k check || exit 1
 	;;
 esac
