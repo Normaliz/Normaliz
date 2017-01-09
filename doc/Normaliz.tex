@@ -6003,7 +6003,7 @@ Number of lattice points = 29 Multiplicity = 275
 
 \section{QNormaliz}\label{QNorm}
 
-The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, foor example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to empphasize the difference.
+The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, for example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to emphasize the difference.
 
 The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the pratical viewpoint it is superfluous since Normaliz can process rational data (made integral). Nevertheless have a look at the examples in \verb|Qexample|.
 
@@ -6014,12 +6014,12 @@ In order to specialize \verb|Number| to your field of coefficients you must of c
 In the code of \verb|QNormaliz| the following adaptations are necessary:
 \begin{enumerate}
 	\item In \verb|Qnormaliz.cpp| replace \verb|mpq_class| in the definition of \verb|Cone|.
-	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
-	\item If your number type has a comvenient conversion to \verb|string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|. Otherwise semove the specialization for \verb|mpq_class|.
+	\item In \verb|libQnormaliz-templated.cpp| you must do the same replacement.
+	\item If your number type has a comvenient conversion to \verb|string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|. Otherwise remove the specialization for \verb|mpq_class|.
 	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
 \end{enumerate}
 
-The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. For \verb|mpq_class| this means that we multiply vectors by the least cimmon denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
+The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
 
 \subsection{Restrictions}
 
@@ -6044,7 +6044,7 @@ KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode
 \end{tabular}
 \end{center}
 
-It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, The \verb|SublattoiceRepresentation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose compoisition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
+It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, The \verb|SublatticeRepresentation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose compoisition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
 Moreover, the original monoid and any data referring to it are not defined.
 
@@ -6052,19 +6052,22 @@ Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplan
 
 \subsection{Results}
 
-In the output file we use the same terminology as in that of Normaliz, or example, `basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
+In the output file we use the same terminology as in that of Normaliz, or example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
 
 As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.)
 
 As for Normaliz, for dehomogenization one must divide a vector by its value under the linear form that we call dehomogenization. Since fractions can be formed now, Normaliz could divide by the dehomogenization, but it does not do it in favor of the output in simplified form. 
 
-Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as `basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
+Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as ``basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
 
 \subsection{Installation}
 
-As for Normaliz and QNormaliz one can use the ``classical''Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+The standard autotools build system automatically builds and installs
+QNormaliz as well.  
 
-Moreover, QNormaliz cabn be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmale ../Qsource|, followed by \verb|make| and \verb|make install|. With the defualt settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
+As for Normaliz and QNormaliz one can use the ``classical'' Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+
+Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmake ../Qsource|, followed by \verb|make| and \verb|make install|. With the defualt settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
 
 
 
