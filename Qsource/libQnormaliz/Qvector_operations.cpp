@@ -184,12 +184,14 @@ mpq_class v_simplify(vector<mpq_class>& v){
     size_t size=v.size();
     mpz_class d=1;
     for (size_t i = 0; i < size; i++)
-        d=lcm(d,v[i].get_den());  // we use the GMP function
+        //d=lcm(d,v[i].get_den());  // GMP C++ function only available in GMP >= 6.1
+        mpz_lcm(d.get_mpz_t(), d.get_mpz_t(), v[i].get_den().get_mpz_t());
     for (size_t i = 0; i < size; i++)
         v[i]*=d;
     mpz_class g=0;
     for (size_t i = 0; i < size; i++)
-        g=gcd(g,v[i].get_num());  //  we use the GMP function
+        //g=gcd(g,v[i].get_num());  //  GMP C++ function only available in GMP >= 6.1
+        mpz_gcd(g.get_mpz_t(), g.get_mpz_t(), v[i].get_num().get_mpz_t());
     if (g==0)
         return 0;
     for (size_t i = 0; i < size; i++)
