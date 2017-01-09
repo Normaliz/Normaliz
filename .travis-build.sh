@@ -75,7 +75,10 @@ GMPFLAGS = -lgmpxx -lgmp
 LINKFLAGS += \$(GMPFLAGS)
 EOF
 	make -j2 -C source -f Makefile.classic
-	make -C test -f Makefile.classic
+	make -C test -k -f Makefile.classic
+        cp source/Makefile.configuration Qsource/
+	make -j2 -C Qsource -f Makefile.classic
+	make -C Qtest -k -f Makefile.classic
 	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
