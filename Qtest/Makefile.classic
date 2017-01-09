@@ -1,6 +1,6 @@
 ## default normaliz bin
 ifndef (QNORMALIZ)
-  NORMALIZ = ../Qsource/Qnormaliz
+  QNORMALIZ = ../Qsource/Qnormaliz
 endif
 
 
@@ -20,8 +20,8 @@ tests: $(TEST_FILES_S)
 	$(DIFF) $*.ref $*.out > $*.diff
 
 #rules to generate the test files
-test-s/%.out: $(NORMALIZ) test-s/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -s test-s/$*
+test-s/%.out: $(QNORMALIZ) test-s/%.in
+	$(NICE) $(QNORMALIZ) $(NORMPARA) -s test-s/$*
 
 clean:
 	-rm -f test-*/*.diff

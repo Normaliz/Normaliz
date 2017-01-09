@@ -543,7 +543,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     nr_columns = dim + type_nr_columns_correction(input_type);
 
                 if (type_is_vector(input_type)) {
-                    nr_rows = 1;
+                    nr_rows_or_columns = nr_rows = 1;
                     in >> std::ws;  // eat up any leading white spaces
                     c = in.peek();
                     if (c=='u') { // must be unit vector

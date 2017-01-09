@@ -6093,7 +6093,7 @@ In the code of \verb|QNormaliz| the following adaptations are necessary:
 	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
 \end{enumerate}
 
-The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. For \verb|mpq_class| this means that we multiply vectors by the least cimmon denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
+The last point is extremely important since the coefficients of the linear forms representing the support hyperplanes or the vectors representing the extreme rays tend to explode rapidly in size if not kept under control. For \verb|mpq_class| this means that we multiply vectors by the least common denominator of the components and then extract the gcd of the numerators. (If you really need a demonstration of what happens otherwise, switch off the function by an immediate \verb|return|, and run QNormaliz on the example \verb|small| in \verb|example|.)
 
 \subsection{Restrictions}
 
@@ -6126,19 +6126,22 @@ Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplan
 
 \subsection{Results}
 
-In the output file we use the same terminology as in that of Normaliz, or example, `basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
+In the output file we use the same terminology as in that of Normaliz, or example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
 
 As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.)
 
 As for Normaliz, for dehomogenization one must divide a vector by its value under the linear form that we call dehomogenization. Since fractions can be formed now, Normaliz could divide by the dehomogenization, but it does not do it in favor of the output in simplified form. 
 
-Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as `basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
+Note that there is no way for QNormaliz to define an invariant volume function on subspaces. (In Normaliz the situation is different since determinants of invertible matrices over $\ZZ$ are equal to $\pm 1$.) Therefore QNormaliz does not define multiplicities. Together with triangulations, it computes determinants of the vectors spanning the simplicial cones. They are defined relative to the choice of basis shown as ``basis of sublattice'' if the cone is not fulldimensional. In the fulldimensional case QNormaliz uses the basis of unit vectors.
 
 \subsection{Installation}
 
-As for Normaliz and QNormaliz one can use the ``classical''Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+The standard autotools build system automatically builds and installs
+QNormaliz as well.  
 
-Moreover, QNormaliz cabn be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmale ../Qsource|, followed by \verb|make| and \verb|make install|. With the defualt settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
+As for Normaliz and QNormaliz one can use the ``classical'' Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+
+Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmake ../Qsource|, followed by \verb|make| and \verb|make install|. With the defualt settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
 
 
 

@@ -3,6 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = dist-zip
 
 SUBDIRS = source test example
+SUBDIRS += Qsource Qtest Qexample
 
 EXTRA_DIST = bootstrap.sh CHANGELOG .travis.yml .travis-build.sh
 

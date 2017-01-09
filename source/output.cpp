@@ -778,7 +778,8 @@ void Output<Integer>::write_files() const {
                 out << "The numerator of the Hilbert Series is symmetric." << endl << endl;
             }
             long period = HS.getPeriod();
-            if (period == 1  && (HS_Denom.begin()->first== (long) HS_Denom.size())) {
+            if (period == 1 && (HS_Denom.size() == 0
+                                || HS_Denom.begin()->first== (long) HS_Denom.size())) {
                 out << "Hilbert polynomial:" << endl;
                 out << HS.getHilbertQuasiPolynomial()[0];
                 out << "with common denominator = ";
