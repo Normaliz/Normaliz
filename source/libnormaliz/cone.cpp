@@ -2725,8 +2725,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
     #ifdef _WIN32 //for 32 and 64 bit windows
     // at present we cannot compile nmzIntegrate for Windows
-    bool nmzInt3_1compatible=(ExcludedFaces.nr_of_rows()==0 && output_dir.size()==0 && 
-                !ToCompute.test(ConeProperty::ConeDecomposition));
+    bool nmzInt3_1compatible=(ExcludedFaces.nr_of_rows()==0 && output_dir.size()==0);
     if(!nmzInt3_1compatible){
         if(ToCompute.test(ConeProperty::Symmetrize))
             throw NotComputableException("Symmetrization applicable in MS Windows only with restrictions");
