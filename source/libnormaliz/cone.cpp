@@ -2695,11 +2695,10 @@ void Cone<Integer>::set_nmz_call(const string& path){
     nmz_call=path;
 }
 
-bool existsNmzIntegrate(string name_in){
-//n check whether file project.suffix exists and retrieve last access time
+bool exists_file(string name_in){
+//n check whether file name_in exists
 
     //b string name_in="nmzIntegrate";
-    cout << "NMZ_INT " << name_in << endl;
     const char* file_in=name_in.c_str();
     
     struct stat fileStat;
@@ -2708,7 +2707,37 @@ bool existsNmzIntegrate(string name_in){
     }
     return(true);
 }
-    
+
+string command(const string& original_call, const string& to_replace, const string& by_this){
+// in the original call we replace the program name to_replace by by_this
+// wWe try variants with and without "lt-" preceding the names of executables 
+// since libtools may have inserted "lt-" before the original name
+
+    string copy=original_call;
+    string search_lt="lt-"+to_replace;
+    long length=to_replace.size();
+    size_t found;
+    found = copy.rfind(search_lt);
+    if (found==std::string::npos) {
+        found = copy.rfind(to_replace);
+        if (found==std::string::npos){
+            throw FatalException("Call "+ copy +" of "  +to_replace+" does not contain " +to_replace); 
+        }
+    }
+    else{
+            length+=3; //name includes lt-
+    }
+    string test_path=copy.replace (found,length,by_this);
+    if(exists_file(test_path))
+        return test_path;
+    copy=original_call;
+    string by_this_with_lt="lt-"+by_this;
+    test_path=copy.replace (found,length,by_this_with_lt);
+    if(exists_file(test_path))
+        return test_path;
+    return ""; // no executable found
+}
+
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
@@ -2744,24 +2773,13 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             return;
     }
         
-    bool nmzIntegrate_not_available=false;
     
     size_t found;        
 
     // check whether nmzIntegrate can be accessed
-    string nmz_int_path=nmz_call;
-    found = nmz_int_path.rfind("normaliz");
-    if (found!=std::string::npos) {
-        found = nmz_int_path.rfind("normaliz");
-        nmz_int_path.replace (found,8,"nmzIntegrate");
-        if(!existsNmzIntegrate(nmz_int_path))
-            nmzIntegrate_not_available=true;
-
-    } else {
-        nmzIntegrate_not_available=true;
-    } 
     
-    if(nmzIntegrate_not_available){
+    string nmz_int_path=command(nmz_call,"normaliz","nmzIntegrate");
+    if(nmz_int_path==""){
         if(ToCompute.test(ConeProperty::Symmetrize))
             throw FatalException("Fatal error: nmzIntegrate not found");
         else

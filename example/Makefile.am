@@ -22,6 +22,8 @@ EXTRA_DIST =					\
 	CondEffPlurSemi.in			\
 	CondEffPlurHilbBas.in			\
 	Condorcet.in				\
+	CondorcetSymm.in			\
+	CondorcetSymm.pnm			\
 	CondorcetInt.in				\
 	CondorcetSemi.in			\
 	Condorcet_one.in			\
@@ -69,6 +71,9 @@ EXTRA_DIST =					\
 	rafa2416.in				\
 	rational.in				\
 	rational.pnm				\
+	rationalES.intOut			\
+	rationalLC.intOut			\
+	rationalInt.intOut			\
 	rationalIH.in				\
 	rees.in					\
 	semigraphoid5.in			\

@@ -1,11 +1,11 @@
 ##
-## Makefile configuration for normaliz
+## Makefile configuration for maxsimplex
 ##
 
 #######  customize  ######
 
 LIBNORMALIZ_DIR = ../libnormaliz
-INCLUDE_DIR = ..
+CXXFLAGS += -I ..
 MY_PROG = maxsimplex
 
 ##### end customize ######

@@ -36,8 +36,8 @@ nmzIntegrate: lib libnormaliz/libnormaliz.a
 	cp genEhrhart/nmzIntegrate .
 
 .PHONY : maxsimplex
-maxsimplex: libnormaliz/libnormaliz.a
-	@$(MAKE) --directory=maxsimplex -f Makefile.classic.ori
+maxsimplex: lib libnormaliz/libnormaliz.a
+	@$(MAKE) --directory=maxsimplex -f Makefile.classic
 
 #always go down the directory and let the make there check what has to be done
 .PHONY : lib
@@ -56,10 +56,11 @@ install: linknormaliz
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
 	$(MAKE) --directory=genEhrhart -f Makefile.classic clean
+	$(MAKE) --directory=maxsimplex -f Makefile.classic clean
 	-rm -f normaliz.o
 	-rm -f normaliz
+	-rm -f nmzIntegrate
 	-rm -f normaliz?
 	-rm -f normaliz-pg
-
 
 
