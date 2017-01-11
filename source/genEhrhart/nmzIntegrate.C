@@ -73,6 +73,51 @@ void printHelp(char* command) {
     cout << "  --OutputDir=<path>\tnames the path to the output directory" << endl;
 }
 
+// the following two functions are copied from cone.cpp. The first has a sibbling in nmzIntInput.C
+bool exists_file(string name_in){
+//n check whether file name_in exists
+
+    //b string name_in="nmzIntegrate";
+    const char* file_in=name_in.c_str();
+    
+    struct stat fileStat;
+    if(stat(file_in,&fileStat) < 0){
+         return(false); 
+    }
+    return(true);
+}
+
+string command(const string& original_call, const string& to_replace, const string& by_this){
+// in the original call we replace the program name to_replace by by_this
+// wWe try variants with and without "lt-" preceding the names of executables 
+// since libtools may have inserted "lt-" before the original name
+
+    string copy=original_call;
+    string search_lt="lt-"+to_replace;
+    long length=to_replace.size();
+    size_t found;
+    found = copy.rfind(search_lt);
+    if (found==std::string::npos) {
+        found = copy.rfind(to_replace);
+        if (found==std::string::npos){
+            throw FatalException("Call "+ copy +" of "  +to_replace+" does not contain " +to_replace); 
+        }
+    }
+    else{
+            length+=3; //name includes lt-
+    }
+    string test_path=copy.replace (found,length,by_this);
+    if(exists_file(test_path))
+        return test_path;
+    copy=original_call;
+    string by_this_with_lt="lt-"+by_this;
+    test_path=copy.replace (found,length,by_this_with_lt);
+    cout << "TEST " << test_path << endl;
+    if(exists_file(test_path))
+        return test_path;
+    return ""; // no executable found
+}
+
 
 //----------------------------------------------------------------------
 // Use main() to analyze options, start computations and 
@@ -221,7 +266,7 @@ int main(int argc, char* argv[])
     existsFile(fullPnmName(project,pnm),"pnm",true,pnmDate); // true means: will exit if polynomial does not exist
                                                              // pnmDate irreleveant, only for completeness
 
-    bool nmz_inExists=existsFile(project,"in",false,mnz_inDate); // checks if input file to Normaliz exusts
+    bool nmz_inExists=existsFile(project,"in",false,mnz_inDate); // checks if input file to Normaliz exists
     
     string nmz_output=project;
     if(output_dir!="")
@@ -262,15 +307,9 @@ int main(int argc, char* argv[])
         // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
         #ifdef _WIN32 //for 32 and 64 bit windows
             normalizExec.append("\"");
-        #endif	
-        normalizExec.append(argv[0]);
-        size_t found = normalizExec.rfind("nmzIntegrate");
-        if (found!=std::string::npos) {
-            normalizExec.replace (found,12,"normaliz");
-        } else {
-            cout << "ERROR: Could not start nmzIntegrate" << endl;
-            return 2;
-        }
+        #endif
+        string normaliz_path=command(argv[0],"nmzIntegrate","normaliz");
+        normalizExec.append(normaliz_path);
         normalizExec.append("\"");
         
         if(do_genEhrhart)

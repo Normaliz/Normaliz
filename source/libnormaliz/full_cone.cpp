@@ -2599,7 +2599,7 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
         compute_deg1_elements_via_approx_simplicial(LargeSimplices.front().get_key());
     }
     else {
-        if(!(is_approximation && do_Hilbert_basis && LargeSimplices.front().get_volume() > VolumeBound)){
+        if(true){ // !(is_approximation && do_Hilbert_basis  && LargeSimplices.front().get_volume() > VolumeBound)){
             LargeSimplices.front().Simplex_parallel_evaluation();
             if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
                 Results[0].transfer_candidates();

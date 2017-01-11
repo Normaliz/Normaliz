@@ -2733,6 +2733,7 @@ string command(const string& original_call, const string& to_replace, const stri
     copy=original_call;
     string by_this_with_lt="lt-"+by_this;
     test_path=copy.replace (found,length,by_this_with_lt);
+    // cout << "TEST " << test_path << endl;
     if(exists_file(test_path))
         return test_path;
     return ""; // no executable found
@@ -2781,7 +2782,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     string nmz_int_path=command(nmz_call,"normaliz","nmzIntegrate");
     if(nmz_int_path==""){
         if(ToCompute.test(ConeProperty::Symmetrize))
-            throw FatalException("Fatal error: nmzIntegrate not found");
+            throw FatalException("nmzIntegrate not found");
         else
             return;
     }
@@ -2984,7 +2985,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     #ifdef _WIN32 //for 32 and 64 bit windows
         nmz_int_exec.append("\"");
     #endif
-    nmz_int_exec.append(nmz_call);
+    nmz_int_exec.append(nmz_int_path);
     nmz_int_exec.append("\"");    
     if(verbose)
         nmz_int_exec+=" -c ";

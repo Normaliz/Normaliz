@@ -941,6 +941,9 @@ void SimplexEvaluator<Integer>::collect_vectors(){
 /* evaluates a simplex in parallel threads */
 template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
+    
+    /* Generators.pretty_print(cout);
+    cout << "==========================" << endl; */
 
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
