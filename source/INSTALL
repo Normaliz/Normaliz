@@ -312,6 +312,8 @@ Not yet possible. After haveing built Normaliz, navigate to source/genEhrhart an
 
 You can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
 
+The plain Makefile is mainly used for deveopment and debuggung.
+
 1) Go to the source directory
 
 2) Check the configuration in Makefile.configuration, especially the locations of
@@ -336,14 +338,16 @@ Similarly
 
 	make -f Makefile.classic maxsimplex
 	
-for the compilation of maxsimplex (example for the use of libnormaliz
+for the compilation of maxsimplex (in iots directory, example for the use of libnormaliz
 in the manial).
 
 5) If you want to install Normaliz, Say 
 
 	make -f Makefile.classic install
 
-This make accepts two optional arguments (also simultaneously):
+---------
+
+Makefile.classic accepts two optional arguments (also simultaneously):
 
 	make -f Makefile.classic OPENMP=no  # deactivates OpenMP
 	make -f Makefile.classic SCIP=yes   # compile with SCIP

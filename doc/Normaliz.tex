@@ -1892,9 +1892,9 @@ The generators of the integral closure appear as module generators in the output
 
 \subsection{Convex hull computation/vertex enumeration}
 
-Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaiz can be restricted to this by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
+Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaiz can be restricted to this task by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
 
-As an example we take the input file \verb|cyclicpolytope30-15.in|, the cyclic polytope of dimension 15 with 30 vertices:
+As an example we take the input file \verb|cyclicpolytope30-15.in|, the cyclic polytope of dimension 15 with 30 vertices (suggested by D. Avis and Ch. Jordan):
 \begin{Verbatim}
 /* cyclic polytope of dimension 15 with 30 vertices */
 amb_space 16
@@ -2337,13 +2337,13 @@ Note: all numbers and relation signs must be separated by white space.
 
 \subsubsection{Constraints in symbolic format}\label{symb_syntax}
 
-This input type is even closer to standard notation than the encoding of constraints in matrices or constraints in tabular format. It is especially useful if the constraints are sparse. Instead of assigning a value to a coordinate via its position in a vector, it uses coordinates named \verb|x[<n>]| where now \verb|<n>| is the index of the coordinate. The index is counted from $1$. 
+This input type is even closer to standard notation than the encoding of constraints in matrices or in tabular format. It is especially useful if the constraints are sparse. Instead of assigning a value to a coordinate via its position in a vector, it uses coordinates named \verb|x[<n>]| where \verb|<n>| is the index of the coordinate. The index is counted from $1$. 
 
  The general type of equations and inequalities is
 \begin{Verbatim}
 <lhs> <rel> <rhs>;
 \end{Verbatim}
-where \verb|<lhs>| and \verb|<rhs>| denote linear compbinations of the \verb|x<n>| with intweger coefficients and constants. 
+where \verb|<lhs>| and \verb|<rhs>| denote linear function of the \verb|x<n>| with intweger coefficients. 
 As above, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >|. (An empty \verb|<lhs>| or \verb|<rhs>| has the value $0$.) Note the terminating semicolon.
 
 Congruences have the form
@@ -4665,6 +4665,7 @@ One can compile Windows executables with the Cygwin port of GCC. Unfortunately i
 
 Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
+Note that the statically linked Linux binaries run in the Linux susystem of Windows 10.
 
 \section{Copyright and how to cite}
 
