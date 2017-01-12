@@ -18,8 +18,6 @@ COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540
 
 INSTALLDIR= /usr/local
 
-INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h
-
 ## use OpenMP?
 ifeq ($(OPENMP),no)
   CXXFLAGS += -Wno-unknown-pragmas

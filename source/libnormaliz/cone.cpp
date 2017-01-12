@@ -2714,6 +2714,7 @@ string command(const string& original_call, const string& to_replace, const stri
 // since libtools may have inserted "lt-" before the original name
 
     string copy=original_call;
+    // cout << "CALL " << original_call << endl;
     string search_lt="lt-"+to_replace;
     long length=to_replace.size();
     size_t found;
@@ -2727,7 +2728,10 @@ string command(const string& original_call, const string& to_replace, const stri
     else{
             length+=3; //name includes lt-
     }
+    if(found==0) // no path preceding to_replace. Good luck!
+        return by_this;
     string test_path=copy.replace (found,length,by_this);
+    // cout << "TEST " << test_path << endl;
     if(exists_file(test_path))
         return test_path;
     copy=original_call;

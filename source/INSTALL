@@ -312,7 +312,8 @@ Not yet possible. After haveing built Normaliz, navigate to source/genEhrhart an
 
 You can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
 
-The plain Makefile is mainly used for deveopment and debuggung.
+The plain Makefile is mainly used for deveopment and debuggung. It builds statically linked binaries
+with -g (can be changed in Makefile.configutaion).
 
 1) Go to the source directory
 

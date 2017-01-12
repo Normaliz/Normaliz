@@ -51,9 +51,9 @@ bool verbose_INT=false;
 #include "genEhrhart.C"
 #include "nmzIntegral.C"                 
 
-void printHeader() {
+void printHeader(string version) {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                   nmzIntegrate 1.3.3                \\....|"<<endl;
+    cout << "                   nmzIntegrate " << version<<"                \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "                (C) W. Bruns  C. Soeger                \\..|"<<endl;
     cout << "                      January 2017                      \\.|"<<endl;
@@ -63,7 +63,8 @@ void printHelp(char* command) {
     cout << "usage: "<<command<<" [-cEIL?] [-x=<T>] [PROJECT]"<<endl;
     cout << "  runs nmzIntegrate on PROJECT.in"<<endl;
     cout << "options:"<<endl;
-    cout << "  -?\tprint this help text and exit"<<endl;
+    cout << "  -?\tprint this help text and exits"<<endl;
+    cout << "  --help\tthe same"<<endl;
     cout << "  -E\tcompute generalized Ehrhart series"<<endl;
     cout << "  -I\tcompute integral"<<endl;
     cout << "  -L\tcompute lead coefficient of quasipolynomial"<<endl;
@@ -71,6 +72,7 @@ void printHelp(char* command) {
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
     cout << "  -F=<pnm>\tspecifies file name <pnm> of polynomial" << endl;
     cout << "  --OutputDir=<path>\tnames the path to the output directory" << endl;
+    cout << "  --version\tprints the version and exits" << endl;
 }
 
 // the following two functions are copied from cone.cpp. The first has a sibbling in nmzIntInput.C
@@ -93,6 +95,7 @@ string command(const string& original_call, const string& to_replace, const stri
 // since libtools may have inserted "lt-" before the original name
 
     string copy=original_call;
+    // cout << "CALL " << original_call << endl;
     string search_lt="lt-"+to_replace;
     long length=to_replace.size();
     size_t found;
@@ -106,13 +109,16 @@ string command(const string& original_call, const string& to_replace, const stri
     else{
             length+=3; //name includes lt-
     }
+    if(found==0) // no path preceding to_replace. Good luck!
+        return by_this;
     string test_path=copy.replace (found,length,by_this);
+    // cout << "TEST " << test_path << endl;
     if(exists_file(test_path))
         return test_path;
     copy=original_call;
     string by_this_with_lt="lt-"+by_this;
     test_path=copy.replace (found,length,by_this_with_lt);
-    cout << "TEST " << test_path << endl;
+    // cout << "TEST " << test_path << endl;
     if(exists_file(test_path))
         return test_path;
     return ""; // no executable found
@@ -124,6 +130,8 @@ string command(const string& original_call, const string& to_replace, const stri
 // handle any uncaught exceptions.
 int main(int argc, char* argv[])  
 {
+    
+  const string version="1.3.3";
   try
   {
     size_t i;   
@@ -156,7 +164,16 @@ int main(int argc, char* argv[])
                 if(output_dir.back()!='/')
                     output_dir+="/";
                 continue;
-            }            
+            }
+            if(argument.substr(2,4)=="help"){
+                printHeader(version);
+                printHelp(argv[0]);
+                exit(0);                
+            }
+            if(argument.substr(2,7)=="version"){
+                cout << version << endl;
+                exit(0);                
+            }
         }
         
         if(argument[1]=='x'){
@@ -226,7 +243,7 @@ int main(int argc, char* argv[])
                 do_leadCoeff=true;  
                 break;
             case '?':  //print help text and exit
-                printHeader();
+                printHeader(version);
                 printHelp(argv[0]);
                 exit(1);
                 break;
@@ -243,7 +260,7 @@ int main(int argc, char* argv[])
     }
 
     if (verbose_INT) {
-        printHeader();
+        printHeader(version);
     }
     
     if(project==""){
