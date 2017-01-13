@@ -43,51 +43,9 @@ case $BUILDSYSTEM in
 	fi
 	;;
 esac
-# Build Normaliz.
-cd $NMZDIR
+# Set up CoCoA if necessary for this build.
 case $BUILDSYSTEM in
-    cmake*)
-	mkdir -p BUILD || exit 1
-	cd BUILD || exit 1
-	pwd
-	cmake ../source || exit 1
-	make -j2 || exit 1
-	make check || exit 1
-	;;
-    classic-scip*)
-	cat > source/Makefile.configuration <<EOF
-CXX = ${CXX-g++}
-CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
-SCIPPATH = $NMZDIR/$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION
-GMPFLAGS = -lgmpxx -lgmp
-CXXFLAGS += -DNMZ_SCIP -I \$(SCIPPATH)/scip-$SCIPOPTSUITE_VERSION/src
-SCIPFLAGS = -L \$(SCIPPATH)/lib -lscipopt-$SCIPOPTSUITE_VERSION.`uname | tr [A-Z] [a-z]`.`uname -m`.gnu.opt -lreadline -lz
-LINKFLAGS += \$(SCIPFLAGS) \$(GMPFLAGS)
-EOF
-	make -j2 -C source -f Makefile.classic
-	make -C test -f Makefile.classic
-	;;
-    classic*)
-	cat > source/Makefile.configuration <<EOF
-CXX = ${CXX-g++}
-CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
-GMPFLAGS = -lgmpxx -lgmp
-LINKFLAGS += \$(GMPFLAGS)
-EOF
-	make -j2 -C source -f Makefile.classic
-	make -C test -k -f Makefile.classic
-        cp source/Makefile.configuration Qsource/
-	make -j2 -C Qsource -f Makefile.classic
-	make -C Qtest -k -f Makefile.classic
-	;;
-    autotools-makedistcheck)
-	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS || exit 1
-	make -j2 distcheck || exit 1
-	;;
-    autotools-makedistcheck-nmzintegrate)
-	# This makes sure that the distribution contains the nmzIntegrate sources
-	# and that the distribution correctly builds it when CoCoALib is installed.
+    *-nmzintegrate*)
 	COCOALIB_VERSION=0.99543
 	#rm -Rf CoCoA
 	COCOADIR=CoCoA
@@ -105,7 +63,78 @@ EOF
             # As a result, our detection of libcocoa fails.
             sed -i.orig 's/HAVE_BOOST=yes/HAVE_BOOST=no/;s/BOOST_LDLIBS=.*/BOOST_LDLIBS=/;s/-DCoCoA_WITH_BOOST//;' configuration/autoconf.mk
 	    make -j2 library || exit 1
+            COCOA_DIR="$COCOALIB_DIR"
+            export COCOA_DIR   # for cmake build
 	fi
+        ;;
+esac
+# Return to directory
+cd $NMZDIR
+# Installation directory.
+INSTALLDIR="`pwd`/local"
+# Build Normaliz.
+case $BUILDSYSTEM in
+    cmake*)
+	mkdir -p BUILD || exit 1
+	cd BUILD || exit 1
+	pwd
+	cmake -DCMAKE_INSTALL_PREFIX:PATH="$INSTALLDIR" ../source || exit 1
+	make -j2 || exit 1
+	make check || exit 1
+        make install
+        # Test that installation works (like autotools "make installcheck")
+        "$INSTALLDIR"/bin/normaliz --version
+        case $BUILDSYSTEM in
+            *-nmzintegrate*)
+                "$INSTALLDIR"/bin/nmzIntegrate --version
+                ;;
+        esac
+	;;
+    classic-scip*)
+	cat > source/Makefile.configuration <<EOF
+CXX = ${CXX-g++}
+CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
+SCIPPATH = $NMZDIR/$SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION
+GMPFLAGS = -lgmpxx -lgmp
+CXXFLAGS += -DNMZ_SCIP -I \$(SCIPPATH)/scip-$SCIPOPTSUITE_VERSION/src
+SCIPFLAGS = -L \$(SCIPPATH)/lib -lscipopt-$SCIPOPTSUITE_VERSION.`uname | tr [A-Z] [a-z]`.`uname -m`.gnu.opt -lreadline -lz
+LINKFLAGS += \$(SCIPFLAGS) \$(GMPFLAGS)
+INSTALLDIR = $INSTALLDIR
+EOF
+	make -j2 -C source -f Makefile.classic
+	make -C test -f Makefile.classic
+        make -f Makefile.classic install
+        # Test that installation works (like autotools "make installcheck")
+        "$INSTALLDIR"/bin/normaliz --version
+	;;
+    classic*)
+	cat > source/Makefile.configuration <<EOF
+CXX = ${CXX-g++}
+CXXFLAGS += -std=c++0x -Wall -pedantic -O3 -funroll-loops -g -fopenmp
+GMPFLAGS = -lgmpxx -lgmp
+LINKFLAGS += \$(GMPFLAGS)
+INSTALLDIR = $INSTALLDIR
+EOF
+	make -j2 -C source -f Makefile.classic
+	make -C test -k -f Makefile.classic
+        # Test that installation works (like autotools "make installcheck")
+        make -C source -f Makefile.classic install
+        "$INSTALLDIR"/bin/normaliz --version
+        cp source/Makefile.configuration Qsource/
+	make -j2 -C Qsource -f Makefile.classic
+	make -C Qtest -k -f Makefile.classic
+        # Test that installation works (like autotools "make installcheck")
+        make -C Qsource -f Makefile.classic install
+        "$INSTALLDIR"/bin/qnormaliz --version
+	;;
+    autotools-makedistcheck)
+	./bootstrap.sh || exit 1
+	./configure $CONFIGURE_FLAGS || exit 1
+	make -j2 distcheck || exit 1
+	;;
+    autotools-makedistcheck-nmzintegrate)
+	# This makes sure that the distribution contains the nmzIntegrate sources
+	# and that the distribution correctly builds it when CoCoALib is installed.
 	cd $NMZDIR || exit 1
 	./bootstrap.sh || exit 1
 	# Don't pass CoCoA flags here. We want to make sure that the distribution
@@ -116,15 +145,19 @@ EOF
 	;;
     autotools-scip*)
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --enable-scip --with-scipoptsuite-src=$SCIP_DIR || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
+        make install
+        make installcheck
 	;;
     *)
 	# autotools, no SCIP
 	./bootstrap.sh || exit 1
-	./configure $CONFIGURE_FLAGS --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --disable-scip || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
 	make -j2 -k || exit 1
 	make -j2 -k check || exit 1
+        make install
+        make installcheck
 	;;
 esac

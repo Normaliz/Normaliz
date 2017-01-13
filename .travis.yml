@@ -8,6 +8,7 @@ env:
   - BUILDSYSTEM=cmake
   - BUILDSYSTEM=cmake-scip
   - BUILDSYSTEM=cmake-scip SCIPOPTSUITE_VERSION=3.2.0
+  - BUILDSYSTEM=cmake-nmzintegrate
   - BUILDSYSTEM=autotools
   - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
   - BUILDSYSTEM=autotools-makedistcheck

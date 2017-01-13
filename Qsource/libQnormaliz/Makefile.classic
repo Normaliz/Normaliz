@@ -3,6 +3,9 @@
 ##
 include ../Makefile.configuration
 
+
+INSTALLHDRS = Qcone.h Qcone_helper.h Qcone_property.h Qconvert.h Qfull_cone.h Qgeneral.h Qinteger.h Qlist_operations.h Qmap_operations.h Qmatrix.h Qmy_omp.h Qnormaliz_exception.h Qsublattice_representation.h Qvector_operations.h Qversion.h libQnormaliz.h
+
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
 
@@ -26,7 +29,7 @@ libQnormaliz.a: Qcone_property.o Qcone_helper.o libQnormaliz-templated.o
 	ar -cr $@ $^
 
 .PHONY : install
-install: libnormaliz.a
+install: libQnormaliz.a
 	mkdir -p $(INSTALLDIR)/lib
 	install -m 0644 libQnormaliz.a  $(INSTALLDIR)/lib
 	mkdir -p $(INSTALLDIR)/include/libQnormaliz
