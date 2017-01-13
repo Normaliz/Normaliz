@@ -3,6 +3,9 @@
 ##
 include ../Makefile.configuration
 
+
+INSTALLHDRS = Qcone.h Qcone_helper.h Qcone_property.h Qconvert.h Qfull_cone.h Qgeneral.h Qinteger.h Qlist_operations.h Qmap_operations.h Qmatrix.h Qmy_omp.h Qnormaliz_exception.h Qsublattice_representation.h Qvector_operations.h Qversion.h libQnormaliz.h
+
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
 
