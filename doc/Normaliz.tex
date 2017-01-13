@@ -119,7 +119,7 @@
 \def\ttt{\texttt}
 
 \def\version{3.2.0}
-\def\NmzDir{Normaliz-\version}
+\def\NmzDir{normaliz-\version}
 
 
 \begin{document}
@@ -191,7 +191,7 @@ offspring NmzIntegrate \cite{NmzInt}, Normaliz computes generalized
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
-Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This ext4ends the applicability of Normaliz to certain nonrational polyhredra, but limits its applicability to convex hull computations and triangulation since finiote genaration of the lattice points in such polyhedar is no longer given.
+Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This extends the applicability of Normaliz to certain nonrational polyhredra, but limits its applicability to convex hull computations and triangulations since finite generation of the lattice points in such polyhedra is no longer given.
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
@@ -252,9 +252,9 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 	
 	\item a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
 	
-	\item option \verb|Symmetzrize| that produces symmetrized input for and runs nmzIntegrate on it,
+	\item option \verb|Symmetrize| that produces symmetrized input for nmzIntegrate and runs nmzIntegrate on this input,
 	
-	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation).
+	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ r(estricted to convex hull computations and triangulation).
 	
 \end{arab}
 
@@ -1580,9 +1580,7 @@ denominator with 24 factors:
 degree of Hilbert Series as rational function = -25
 \end{Verbatim}
 
-Depending on your Normaliz installation, the compuatation above can have taken two different routes since Normaliz tries to use symmetrization (see Section \ref{symmetrize}): (i) if it can't find nmzIntegrate, symmetrizatuin is unavailable, and Normaliz will just use the primal algorithm for the computation; (ii) if it finds nmzIntegrate, symmetrization will indeed be used. Have a look at the terminal output, and you will recognize what Normaliz has done. Don't be frightened by the somewhat complicated structure of program calls in the case of symmetrization.
-
-For this computation there is no significant time differebce between the two ways of computation. For others, symmetrization can convert days into seconds.
+For this example the option \verb|Symmetrize, -Y| makes sense (see Section \ref{symmetrize}), but it is too small to demonstrate the power of symmetrization. For others, symmetrization can convert days into seconds.
 
 \subsubsection{Excluding ties}\label{excluded_ex}
 
@@ -2803,7 +2801,7 @@ Normaliz collects all computation goals and algorithmic variants set in the inpu
 
 \subsection{The choice of algorithmic variants}
 
-For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data. This automatic choice may however a bad one. Therefore the user can completely control which algorithmic variant is used.
+For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data (except symmetrization). This automatic choice may however a bad one. Therefore the user can completely control which algorithmic variant is used.
 
 \subsubsection{Primal vs.\ dual}
 
@@ -2848,11 +2846,11 @@ It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used 
 
 \subsubsection{Symmetrization}
 
-In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate, provided the latter can be found. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}. It will be chosen automatically, but can also be forced or blocked:
+In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}. At present it will not be chosen automatically, but can be forced:
 \begin{itemize}
-	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate if this is possible. (It does not imply a computation goal!)
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate. (It does not imply a computation goal!)
 	
-	\itemtt[NoSymmetrization] blocks symmetrization.
+	\itemtt[NoSymmetrization] blocks symmetrization. Allowed, but superfluous at present.
 \end{itemize}
 
 \subsubsection{Subdivision of simplicial cones}
@@ -3338,11 +3336,18 @@ With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz computes a t
 
 Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition. 
 
-If you have the impression that the bottom decomposition slows down your computation, you can suppress it by \texttt{NoBottomDec}, \texttt{-o}. (\verb|KeepOrder|, \verb|-k| not only suppresses the bottom decomposition, but also any reordering or the generators.)
+If you have the impression that the bottom decomposition slows down your computation, you can suppress it by \texttt{NoBottomDec}, \texttt{-o}. (\verb|KeepOrder|, \verb|-k| not only suppresses the bottom decomposition, but also any reordering of the generators.)
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
-Also see Section \ref{ele3}.
+The example \verb|StrictBorda.in| belongs to social choice theory loke \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Srction \ref{symmetrize}), but \verb|StrictBorda.in| does not. Therefore we must compute the Hilbert series (or at least the multi0licity) for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstartes the substantial gain that can be treached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
+\begin{center}
+	\begin{tabular}{|c|r|r|}\hline
+		algorithm	& triangulation size& determinant sum \\ \hline
+		bottom decomposition& 30,399,162,846 &75,933,588,203 \\ \hline
+		standard order of extreme rays,  \ttt{-o} & 119,787,935,829 & 401,249,361,966\\ \hline
+	\end{tabular}
+\end{center}
 
 \subsection{Subdivision of large simplicial cones}\label{subdiv}
 
@@ -3438,27 +3443,25 @@ nonnegative
 total_degree
 Multiplicity
 \end{Verbatim}
-The graing is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also the column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each (one group for each $\pm1$ pattern). With the suitable labeling, the number of preimages of$(y_1,\dots,y_8$) is given by
+The grading is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also the column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each (one group for each $\pm1$ pattern). With the suitable labeling, the number of preimages of$(y_1,\dots,y_8$) is given by
 $$
 f(x)=\binom{x_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
 $$
 Normaliz finds the groups of variables that appear with the same sign pattern, creates the input files for NmzIntegate, runs it, and imports the results.
 
-However, there is a restriction. Since NmzIntegrate must do the polynomial arithmetic in GMP integers, it makes no sense to apply it if the dimension does not drop by a reasonable amount. There fore we require that
+However, there is a restriction. Since NmzIntegrate must do the polynomial arithmetic in GMP integers, it makes no sense to apply it if the dimension does not drop by a reasonable amount. Therefore we require that
 $$
 \dim C' \le \min((2(\dim C)/3,16).
 $$
-If called with the options \verb|-q| or \verb|-v| Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
-
-If you use the option \verb|Symmetrize|, Normaliz will stop the computation if the inequality for $\dim C'$ is not satisfied. But it writes the input fils for NmzIntegrate into the same directory where it writes the output files of Normaliz. The file names  are
+If called with the options \verb|HilbertSeries, -q| or \verb|Multiplicity, -v| and \verb|Symmetrize, -Y|, Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will l stop the computation. But it writes the input files for NmzIntegrate into the same directory where it writes the output files of Normaliz. The file names  are
 \begin{center}
 \ttt{<project>.symm.in}	\quad and\quad \ttt{<project>.symm.pnm}
 \end{center}
-The user can then run Normaliz or NmzIntegrate on these input files with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
+You can then run Normaliz or NmzIntegrate on these input files with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
 
 The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
 \begin{Verbatim}
-winfried@ubuntu:~/Dropbox/git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
+winfried.../git_normaliz/source$ time ./normaliz -cY ../example/PluralityVsCutoff
 
                                                     \.....|
                     Normaliz 3.2.0                   \....|
@@ -3468,7 +3471,7 @@ winfried@ubuntu:~/Dropbox/git_normaliz/source$ time ./normaliz -c ../example/Plu
                                                          \|
 ************************************************************
 Command line: -c ../example/PluralityVsCutoff 
-Compute: DefaultMode 
+Compute: DefaultMode Symmetrize
 executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
 ...
 ...
@@ -3484,7 +3487,7 @@ The Hilbert series is computable without symmetrization, but you better make sur
 
 Another good example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$. 
 
-In order to suppress symmetrization, use the option \verb|NoSymmetrization|.
+% In order to suppress symmetrization, use the option \verb|NoSymmetrization|.
 
 \emph{Remarks} \enspace (1) Large NmzIntegrate computations with many parallel threads require much memory due to the fact that very long polynomials must be stored.
 
@@ -3492,7 +3495,7 @@ In order to suppress symmetrization, use the option \verb|NoSymmetrization|.
 
 The communication via files does not allow the use of symmetrization via \verb|libnormaliz|. 
 
-(3) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under the suitbale conditions it is of course applird automatically.)
+(3) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under the suitablee conditions it is applied automatically.)
 
 \subsubsection{Restrictions in MS Windows}
 
@@ -6094,7 +6097,7 @@ In the code of \verb|QNormaliz| the following adaptations are necessary:
 \begin{enumerate}
 	\item In \verb|Qnormaliz.cpp| replace \verb|mpq_class| in the definition of \verb|Cone|.
 	\item In \verb|libQnoraliz-templated.cpp| you must do the same replacement.
-	\item If your number type has a convenient conversion to \verb|string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|. Otherwise semove the specialization for \verb|mpq_class|.
+	\item If your number type has a convenient conversion to \verb|string|, modify the specialization of the templated function \verb|toString| in \verb|Qinteger.h|. Otherwise remove the specialization for \verb|mpq_class|.
 	\item In \verb|Qvector_operations.cpp| you must replace the definition of \verb|v_simplify| by a version for your numbers.
 \end{enumerate}
 
@@ -6123,7 +6126,7 @@ KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode
 \end{tabular}
 \end{center}
 
-It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|SublattoiceRepresentation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose compoisition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
+It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|SublattoiceRepresentation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
 Moreover, the original monoid and any data referring to it are not defined.
 
@@ -6131,7 +6134,7 @@ Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplan
 
 \subsection{Results}
 
-In the output file we use the same terminology as in that of Normaliz, or example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
+In the output file we use the same terminology as in that of Normaliz, for example, ``basis elements of sublattice''. In QNormaliz these vectors form a basis of the vector subspace spanned by the cone that is computed. No reference to a sublattice is implied.
 
 As far as possible, we apply \verb|v_simplify| to the computation results. Note that it is not necessarily applied to all results. For example the generators of the cone (contained in the file with suffix \verb|tgn| or returned by \verb|getGenerators|) are not necessarily simplified. (In particular, they need not be identical to those computed by Normaliz (if applicable to the input), but can differ from them by order and rational factors.)
 
@@ -6146,7 +6149,7 @@ QNormaliz as well.
 
 As for Normaliz and QNormaliz one can use the ``classical'' Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
 
-Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmake ../Qsource|, followed by \verb|make| and \verb|make install|. With the defualt settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
+Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmake ../Qsource|, followed by \verb|make| and \verb|make install|. With the default settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
 
 
 
@@ -6232,3 +6235,6 @@ The following colleagues have contributed to Normaliz (in addition to the team m
 	\item Max Horn and Sebastian Gutsche (GAP interface),
 	\item Gesa Kämpf (Macaulay2 package),
 \end{itemize}
+
+
+Depending on your Normaliz installation, the compuatation above can have taken two different routes since Normaliz tries to use symmetrization (see Section \ref{symmetrize}): (i) if it can't find nmzIntegrate, symmetrizatuin is unavailable, and Normaliz will just use the primal algorithm for the computation; (ii) if it finds nmzIntegrate, symmetrization will indeed be used. Have a look at the terminal output, and you will recognize what Normaliz has done. Don't be frightened by the somewhat complicated structure of program calls in the case of symmetrization.

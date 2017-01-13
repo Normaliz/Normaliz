@@ -365,8 +365,8 @@ NmzIntegrate is now using the CoCoALib input function for polynomials. In the pr
 There are five ways to run NmzIntegrate:
 \begin{enumerate}
 \item direct call from the command line,
-\item call from Normaliz, (i) via one of the options \verb|-E,-I,-L|or (ii) implicitly via the option \verb|--Symmetriz, -Ye| (see Normaliz manual),
-\item from jNormaliz via Normaliz (with the same two variants as in 2.).
+\item call from Normaliz, (i) via one of the options \verb|-E,-I,-L| or (ii) implicitly via the option \verb|--Symmetrize, -Y| (see Normaliz manual),
+\item from jNormaliz via Normaliz (with the same two variants as in 2.
 \end{enumerate}
 
 Noteb that the implicit call from Normaliz via \verb|--Symmetrize| deletes the output file of NmzIntegrate, after the results have been transferred to Normaliz. The other three ways preserve the output file (and also the files used for the transfer of data from Normaliz to NmzIntegrate).
@@ -378,7 +378,8 @@ nmzIntegrate <project>
 This will run the default computation (ES) on the
 \verb+<project>+. The full input syntax is
 \begin{Verbatim}
-nmzIntegrate [-cEIL] [-x=<T>] [-F=<polynomial>] [--OutputDir=<outdir>] <project>
+nmzIntegrate [-cEIL] [-x=<T>] [--help] [--version]
+                         [-F=<polynomial>] [--OutputDir=<outdir>] <project>
 \end{Verbatim}
 where \ttt{-c} and \ttt{-x=<T>} have the same meaning as for
 Normaliz:
@@ -436,6 +437,8 @@ One can explicitly set the output directory. This information is passed from Nmz
 \end{itemize}
 Note that all output files, also those of Normaliz, will be written to the chosen directory. It must be created before Normaliz or NmzIntegrate is started.
 
+As usual, \verb|--help| displays a short help screen and \verb|--version| prints the version number to the standard poutput.
+
 \section{The output file}\label{output}
 
 If the option \verb+-F=<polynomial>+ is not set, the output is written to
@@ -473,13 +476,12 @@ inequalities 3
 -1 -1  1  1 -1 -1  1 1
 -1  1 -1  1 -1  1 -1 1
 nonnegative
-grading
-1 1 1 1 1 1 1 1 
+total_degree
 \end{Verbatim}
 
 
-The \ttt{signs} describe the nonnegative orthant in $\RR^8$ and the linear
-forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{grading} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
+By \verb|nonnegative| we choose the nonnegative orthant in $\RR^8$ and the linear
+forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{total\_degree} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
 $$
 f(x)=\binom{x_1+5}{5}(x_2+1)(x_3+1)(x_4+1)(x_5+1)(x_6+1)(x_7+1)\binom{x_8+5}{5}.
 $$
@@ -500,7 +502,7 @@ nmzIntegrate -c example/CondorcetSymm
 
  (replace the slash by a backslash in MS Windows, and similarly
  below).
-The file \ttt{Condorcet.symm.} \ttt{intOut} starts with the factorization:
+The file \ttt{CondorcetSymm.} \ttt{intOut} starts with the factorization:
 
 \begin{Verbatim}
 Factorization of polynomial:
@@ -523,7 +525,7 @@ Series denominator with 24 factors:
 
 It is to be read as follows:
 $$
-H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
+H_{M,f}(t)=\frac{1+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
 $$
 Next we find the presentation of $H_{M,f}(t)$ as a rational function with
 coprime numerator and denominator (which in this case is the same as the
@@ -539,7 +541,7 @@ Series cyclotomic denominator:
 
 This means
 $$
-H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1\zeta_2^{23}\zeta_4^{9}}
+H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1^{24}\zeta_2^{23}\zeta_4^{9}}
 $$
 where $\zeta_i$ is the $i$-th cyclotomic polynomial. Now the quasipolynomial:
 
@@ -569,14 +571,14 @@ Virtual multiplicity: 1717/8192
 Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
 customary in voting theory (in order to exclude draws). Then we replace
 \ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
-\ttt{CondorcetSmmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
+\ttt{CondorcetSymmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
 is called by
 
 \begin{Verbatim}
-nmzIntegrate -c -F=Condorcet.symm example/CondorcetSemi.symm
+nmzIntegrate -c -F=CondorcetSymm example/CondorcetSymmSemi
 \end{Verbatim}
 
-The output file is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
+The output is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
 
 \subsection{An integral}
 The paper \cite{JMV} asks for the computation of the integral
@@ -661,7 +663,7 @@ Unfortunately we have not been able to recompile NmzIntegrate under MS Windows. 
 \begin{arab}
 	\item Due to a bug it is possible that a segmentation fault occurs if excluded faces are used.
 	\item The option \verb|OutputDir| is not available.
-	\item One cannot use \verb|ConeDecomposition| of Normaliz cannot be used. (Not a real problem in this context, of course.)
+	\item One cannot use \verb|ConeDecomposition| of Normaliz used. (Not a real problem in this context, of course.)
 \end{arab}
 
 \section{Compilation}\label{Comp}
@@ -757,7 +759,7 @@ project.
 
 \end{enumerate}
 
-\subsection{1.3.1 $\to$ 1.3.2\Intversion}
+\subsection{1.3.1 $\to$ 1.3.2}
 
 \begin{enumerate}
 	\item OutputDir added.

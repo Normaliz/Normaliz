@@ -2747,6 +2747,9 @@ string command(const string& original_call, const string& to_replace, const stri
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
+    if(!ToCompute.test(ConeProperty::Symmetrize)) // for the time being
+        return;
+    
     if(ToCompute.test(ConeProperty::NoSymmetrization) || inhomogeneous
             || (!ToCompute.test(ConeProperty::HilbertSeries)
                     && !ToCompute.test(ConeProperty::Multiplicity)))
