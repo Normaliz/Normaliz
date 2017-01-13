@@ -29,7 +29,7 @@ Qnormaliz: $(Q_SOURCES) $(Q_HEADERS) Qnormaliz.o libQnormaliz/libQnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Qnormaliz.o libQnormaliz/libQnormaliz.a $(LINKFLAGS) -o Qnormaliz
 	
 .PHONY : install
-install: linknormaliz
+install: linkQnormaliz
 	mkdir -p $(INSTALLDIR)/bin
 	test ! -e Qnormaliz || install -m 0755 Qnormaliz $(INSTALLDIR)/bin
 	$(MAKE) --directory=libQnormaliz -f Makefile.classic install
