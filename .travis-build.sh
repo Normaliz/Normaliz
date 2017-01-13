@@ -151,6 +151,14 @@ EOF
         make install
         make installcheck
 	;;
+    autotools-nmzintegrate)
+	./bootstrap.sh || exit 1
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	make -j2 -k || exit 1
+	make -j2 -k check || exit 1
+        make install
+        make installcheck
+	;;
     *)
 	# autotools, no SCIP
 	./bootstrap.sh || exit 1
