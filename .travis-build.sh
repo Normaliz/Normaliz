@@ -125,7 +125,7 @@ EOF
 	make -C Qtest -k -f Makefile.classic
         # Test that installation works (like autotools "make installcheck")
         make -C Qsource -f Makefile.classic install
-        "$INSTALLDIR"/bin/qnormaliz --version
+        "$INSTALLDIR"/bin/Qnormaliz --version
 	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
