@@ -2772,6 +2772,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             throw NotComputableException("Symmetrization applicable in MS Windows only with restrictions");
         else
             return;
+	}
     #endif
     
     if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){

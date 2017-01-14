@@ -350,7 +350,7 @@ bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
         if(in.fail())
             return false;
         pos--;
-        if(pos<0 or pos>=length)
+        if(pos<0 || pos>=length)
             return false;
         in >> std::ws;
         c=in.peek();

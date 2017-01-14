@@ -80,4 +80,5 @@ EXTRA_DIST =					\
 	semigraphoid5.in			\
 	small.in				\
 	strict_sign.in				\
+	strictBorda.in				\
 	subspace4.in
