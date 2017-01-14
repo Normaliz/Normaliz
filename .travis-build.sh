@@ -107,7 +107,7 @@ INSTALLDIR = $INSTALLDIR
 EOF
 	make -j2 -C source -f Makefile.classic
 	make -C test -f Makefile.classic
-        make -f Makefile.classic install
+        make -C source -f Makefile.classic install
         # Test that installation works (like autotools "make installcheck")
         "$INSTALLDIR"/bin/normaliz --version
 	;;
@@ -173,3 +173,4 @@ EOF
         make installcheck
 	;;
 esac
+set +e # no exit on errors
