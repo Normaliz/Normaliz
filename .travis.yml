@@ -41,6 +41,14 @@ matrix:
       compiler: clang
       env: BUILDSYSTEM=autotools-scip
     - os: osx
+      compiler: clang
+      before_install:
+       - brew update
+       - brew install llvm || brew outdated llvm || brew upgrade llvm
+       - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+       - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp
+    - os: osx
       osx_image: xcode8.1
       compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
