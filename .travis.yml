@@ -23,6 +23,18 @@ matrix:
     - os: osx
       osx_image: xcode8.2
       compiler: clang
+      env: BUILDSYSTEM=cmake-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
       env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
     - os: osx
       osx_image: xcode8.2

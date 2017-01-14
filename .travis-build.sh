@@ -57,7 +57,11 @@ case $BUILDSYSTEM in
 	    rm -Rf CoCoALib-$COCOALIB_VERSION
 	    tar xf CoCoALib-$COCOALIB_VERSION.tgz || exit 1
 	    cd $COCOALIB_DIR || exit 1
-	    ./configure --threadsafe-hack || exit 1
+            # We use --ignore-gmp-cflags, because otherwise on Mac OS Travis builds,
+            # CoCoA's configuration will pick up "-mtune=sandybridge -march=sandybridge" from
+            # GMP's configuration, and this will lead to Illegal Instruction faults when
+            # running nmzIntegrate.
+	    ./configure --threadsafe-hack --ignore-gmp-cflags || exit 1
             # Patch out use of Boost.  Otherwise, on Mac OS Travis builds
             # CoCoA finds Boost and libcocoa.a has dependencies on boost libraries.
             # As a result, our detection of libcocoa fails.
@@ -103,7 +107,7 @@ INSTALLDIR = $INSTALLDIR
 EOF
 	make -j2 -C source -f Makefile.classic
 	make -C test -f Makefile.classic
-        make -f Makefile.classic install
+        make -C source -f Makefile.classic install
         # Test that installation works (like autotools "make installcheck")
         "$INSTALLDIR"/bin/normaliz --version
 	;;
@@ -125,7 +129,7 @@ EOF
 	make -C Qtest -k -f Makefile.classic
         # Test that installation works (like autotools "make installcheck")
         make -C Qsource -f Makefile.classic install
-        "$INSTALLDIR"/bin/qnormaliz --version
+        "$INSTALLDIR"/bin/Qnormaliz --version
 	;;
     autotools-makedistcheck)
 	./bootstrap.sh || exit 1
@@ -151,6 +155,14 @@ EOF
         make install
         make installcheck
 	;;
+    autotools-nmzintegrate)
+	./bootstrap.sh || exit 1
+	./configure $CONFIGURE_FLAGS --prefix="$INSTALLDIR" --with-cocoalib=$COCOALIB_DIR --enable-nmzintegrate || ( echo '#### Contents of config.log: ####'; cat config.log; exit 1)
+	make -j2 -k || exit 1
+	make -j2 -k check || exit 1
+        make install
+        make installcheck
+	;;
     *)
 	# autotools, no SCIP
 	./bootstrap.sh || exit 1
@@ -161,3 +173,4 @@ EOF
         make installcheck
 	;;
 esac
+set +e # no exit on errors
