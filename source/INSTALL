@@ -20,9 +20,19 @@ On Ubuntu the following packages should be installed:
 
 The last two are only needed if cmake is to be used for building Normaliz.
 
+On Homebrew (Mac OS X):
+
+        brew install gmp boost
+
+For the openmp enabled compiler (LLVM 3.9 or newer), add:
+
+        brew install llvm
+        export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+        export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+
 On Fink (Mac OS X):
 
-	fink install boost1.58-nopython
+	fink install gmp5 boost1.58-nopython
 
 We offer three ways of compilation, either use:
 
@@ -99,11 +109,15 @@ The first step is to configure the compilation. The simplest choice is
    ./configure
    
 This is sufficient if you don't want SCIP and NmzIntegrate, provided libraries such
-as GMP and Boost are in standard locations. If not, you must infrom configure where to 
+as GMP and Boost are in standard locations. If not, you must inform configure where to 
 find them:
 
-  ./configure CPPFLAGS="-I /path/to/includedir" LDFLAGS="-L/path/to/libdir"
-  
+  ./configure CPPFLAGS="-I /path/to/includedir $CPPFLAGS" LDFLAGS="-L/path/to/libdir $LDFLAGS"
+
+For example, on Fink (Mac OS X):
+
+  ./configure CPPFLAGS="-I/sw/include -I/sw/opt/boost-1_58/include $CPPFLAGS" LDFLAGS="-L/sw/lib -L/sw/opt/boost-1_58/lib $LDFLAGS" 
+
 To configure normaliz to use the scipoptsuite compiled as above use:
 
    ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
