@@ -1,4 +1,4 @@
-# libnormaliz source files
+# libQnormaliz source files
 SET(sources Qcone_property.cpp libQnormaliz-templated.cpp Qcone_helper.cpp)
 # libnormaliz header files
 SET(headers Qcone.h Qcone_property.h Qconvert.h Qgeneral.h Qinteger.h libQnormaliz.h Qmap_operations.h Qmatrix.h Qmy_omp.h Qnormaliz_exception.h Qsublattice_representation.h Qvector_operations.h Qversion.h)
@@ -11,7 +11,7 @@ FIND_PACKAGE(Boost REQUIRED)
 #ENDIF()
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
-SET (QNMZ_BUILD_BOTH "NO" CACHE BOOL "build shared AND static libnormaliz")
+SET (QNMZ_BUILD_BOTH "NO" CACHE BOOL "build shared AND static libQnormaliz")
 
 IF (QNMZ_BUILD_BOTH OR NOT QNMZ_BUILD_STATIC)
   # create the shared library
@@ -44,8 +44,8 @@ SET(LIBQNORMALIZ_VERSION_MAJOR ${VERSION_MAJOR})
 SET(LIBQNORMALIZ_VERSION_MINOR ${VERSION_MINOR})
 SET(LIBQNORMALIZ_VERSION_PATCH ${VERSION_PATCH})
 CONFIGURE_FILE(Qversion.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Qversion.h @ONLY)
-SET(LIBQNORMALIZ_USE_FILE ${CMAKE_INSTALL_PREFIX}/${LIBQNORMALIZ_CMAKE_CONFIG_DIR}/UseLibnormaliz.cmake)
-CONFIGURE_FILE(../LibQnormalizConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/LibnormalizConfig.cmake @ONLY)
+SET(LIBQNORMALIZ_USE_FILE ${CMAKE_INSTALL_PREFIX}/${LIBQNORMALIZ_CMAKE_CONFIG_DIR}/UseLibQnormaliz.cmake)
+CONFIGURE_FILE(../LibQnormalizConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/LibQnormalizConfig.cmake @ONLY)
 #INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/LibQnormalizConfig.cmake ../UseLibnormaliz.cmake DESTINATION ${LIBQNORMALIZ_CMAKE_CONFIG_DIR})
 
 #ADD_SUBDIRECTORY(examples)

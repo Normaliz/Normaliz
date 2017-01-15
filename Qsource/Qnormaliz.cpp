@@ -60,45 +60,20 @@ void printHelp(char* command) {
     cout << "Options:"<<endl;
     cout << "  -S\tcompute sublattice"<<endl;
     cout << "  -s\tcompute support hyperplanes"<<endl;
-    cout << "  -t\tcompute triangulation"<<endl;
-    cout << "  -v\tcompute volume"<<endl;
-    cout << "  -n\tcompute Hilbert basis and volume (needs full triangulation)"<<endl;
-    cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
-    cout << "  -w\tcheck for integrally closed and compute witness if not"<<endl;
-    cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
-    cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements"<<endl;
-    cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
-    cout << "  -1\tcompute degree 1 elements"<<endl;
-    cout << "  -y\tcompute Stanley decomposition (output in file .dec)"<<endl;
-    cout << "  -C\tcompute class group (default)"<<endl;
     cout << "  -T\tcompute triangulation  (output in file .tri)"<<endl;
     cout << "  -D\tcompute cone decomposition (includes -T)"<<endl;
-    cout << "  -H\tcompute integer hull"<<endl;
-    cout << "  -M\tcompute module generators over original monoid"<<endl;
-
     cout << endl;
-    cout << "  -d\tcomputation mode: dual"<<endl;
-    cout << "  -P\tcomputation mode: primal"<<endl;
-    cout << "  -r\tcomputation mode: approximate"<<endl;
-    cout << "  -b\tcomputation mode: bottom decomposition"<<endl;
-    cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
     cout << "  -k\tcomputation mode: keep order"<<endl;
-    cout << "  -Y\tcomputation mode: symmetrization"<<endl;
-    cout << "  -X\tcomputation mode: no symmetrization"<<endl;
-
-
     cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
 
     cout << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
-    cout << "  -a, --all-files  write all output files (except .tri)"<<endl;
+    cout << "  -a, --all-files  write all output files (except .tri .typ)"<<endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of"<<endl;
-    cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, typ"<<endl;
+    cout << "                   cst, esp, ext, inv, lat"<<endl;
 
     cout << endl;
-    cout << "  -B, --BigInt     directly use indefinite precision arithmetic"<<endl;
-    cout << "      --LongLong   only use long long arithmetic, no conversion possible"<<endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file"<<endl;
     cout << "  -x=<T>           limit the number of threads to <T>"<<endl;
     cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)"<< endl;
@@ -111,7 +86,7 @@ void printHelp(char* command) {
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2015  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;
