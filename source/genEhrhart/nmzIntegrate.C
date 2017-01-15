@@ -75,6 +75,13 @@ void printHelp(char* command) {
     cout << "  --version\tprints the version and exits" << endl;
 }
 
+void printCopying() {
+    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
+        <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
+        <<"and you are welcome to redistribute it under certain conditions;"<<endl
+        <<"See COPYING for details."<<endl;
+}
+
 // the following two functions are copied from cone.cpp. The first has a sibbling in nmzIntInput.C
 bool exists_file(string name_in){
 //n check whether file name_in exists
@@ -171,7 +178,8 @@ int main(int argc, char* argv[])
                 exit(0);                
             }
             if(argument.substr(2,7)=="version"){
-                cout << version << endl;
+                cout << "NmzIntegrate " << version << endl;
+                printCopying();
                 exit(0);                
             }
         }

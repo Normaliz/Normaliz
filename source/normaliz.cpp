@@ -91,7 +91,7 @@ void printHelp(char* command) {
 
     cout << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
-    cout << "  -a, --all-files  write all output files (except .tri)"<<endl;
+    cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)"<<endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of"<<endl;
     cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, typ"<<endl;
 
@@ -110,7 +110,7 @@ void printHelp(char* command) {
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2015  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;
