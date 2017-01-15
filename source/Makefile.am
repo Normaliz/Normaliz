@@ -59,10 +59,10 @@ maxsimplex_maxsimplex_LDADD = libnormaliz.la
 ## Other things that go into the distribution:
 
 # Cmake build system
-EXTRA_DIST += CMakeLists.txt LibnormalizConfig.cmake.in UseLibnormaliz.cmake cmake/Modules cmake/detect_features.cmake cmake/Modules/FindGMP.cmake cmake/Modules/FindGMPXX.cmake cmake/Modules/FindMIC_GMP.cmake cmake/Modules/FindMIC_GMPXX.cmake cmake/Modules/FindSCIP.cmake libnormaliz/CMakeLists.txt libnormaliz/LibnormalizConfig.cmake
+EXTRA_DIST += CMakeLists.txt LibnormalizConfig.cmake.in UseLibnormaliz.cmake cmake/Modules cmake/detect_features.cmake cmake/Modules/FindGMP.cmake cmake/Modules/FindGMPXX.cmake cmake/Modules/FindMIC_GMP.cmake cmake/Modules/FindMIC_GMPXX.cmake cmake/Modules/FindSCIP.cmake libnormaliz/CMakeLists.txt libnormaliz/LibnormalizConfig.cmake genEhrhart/CMakeLists.txt maxsimplex/CMakeLists.txt
 
 # Plain old build system
-EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic
+EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic genEhrhart/Makefile.classic maxsimplex/Makefile.classic
 
 # The classic makefile creates this file, which can confuse automake builds
 CLEANFILES = normaliz.o
