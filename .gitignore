@@ -55,6 +55,11 @@ BUILD*
 .*.swp
 *.diff
 
+# ignore bindist files
+/.travis_ci_bindist_deploy_key
+/.travis_ci_bindist_deploy_key.pub
+/.bindist-vars*
+
 # ignore Word files
 homepage/*-Dateien/*
 nmz_opt_lib/*
@@ -103,4 +108,3 @@ CoCoA
 /source/libnormaliz/Makefile
 /source/libnormaliz/libnormaliz.so*
 /source/genEhrhart/*
-
