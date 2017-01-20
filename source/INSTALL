@@ -85,13 +85,13 @@ is otional. If you want to compile NmzIntegrate, CoCoALib must be installed rfir
 
 	mkdir ~/CoCoA/
 	cd ~/CoCoA/
-	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99540.tgz
-	tar xvf CoCoALib-0.99540.tgz
-	cd CoCoALib-0.99540
-	./configure --threadsafe-hack
+	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99543.tgz
+	tar xvf CoCoALib-0.99543.tgz
+	cd CoCoALib-0.99543
+	./configure --threadsafe-hack --no-boost
 	make library -j2
 
-If CoCoALib-0.99540 is no longer available, replace it by a newer version.
+If CoCoALib-0.99543 should be no longer available, replace it by a newer version.
 
 *******************
 **** AUTOTOOLS ****
@@ -125,7 +125,7 @@ To configure normaliz to use the scipoptsuite compiled as above use:
 Similarly, it may be necessary to show configure the path to CoCoALib if you want
 to compile NmzIntegrate:
 
-   ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99540
+   ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
 
 Some more configure options:
 
@@ -263,7 +263,7 @@ on Linux 32 and 64 bit and MacOs X.
 
 An example for finding CoCoALib:
 
-  COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 cmake ../source/
+  COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99543 cmake ../source/
   
 **** CMAKE: Build for Intel Xeon Phi Mic ****
 

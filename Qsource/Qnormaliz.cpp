@@ -68,10 +68,10 @@ void printHelp(char* command) {
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
 
     cout << endl;
-    cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
-    cout << "  -a, --all-files  write all output files (except .tri .typ)"<<endl;
+    cout << "  -f, --files      write the files .out .gen .inv .cst .msp"<<endl;
+    cout << "  -a, --all-files  write all output files (except .tri)"<<endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of"<<endl;
-    cout << "                   cst, esp, ext, inv, lat"<<endl;
+    cout << "                   cst, esp, ext, inv, lat, msp"<<endl;
 
     cout << endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file"<<endl;

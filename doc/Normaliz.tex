@@ -4245,7 +4245,7 @@ Like the quasipolynomial, \emph{the multiplicity is computed for the divided gra
 
 When one of the options \ttt{Files,-f} or \ttt{AllFiles, -a} is activated, Normaliz
 writes additional output files whose names are of type
-\ttt{<project>.<type>}. (Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec| as well as the options calling NmzIntegrate also write files in addition to \verb|<project>.out|.) Moreover one can select the optional output files individually via command line options. Most of these files contain matrices in a simple format:
+\ttt{<project>.<type>}. (Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec| as well as the options \verb|-E, -L, -I| calling NmzIntegrate also write files in addition to \verb|<project>.out|. \verb|Symmetrize| does not produce extra output files.) Moreover one can select the optional output files individually via command line options. Most of these files contain matrices in a simple format:
 \begin{Verbatim}
 <m>
 <n>
@@ -4254,6 +4254,8 @@ writes additional output files whose names are of type
 <x_m>
 \end{Verbatim}
 where each row has \verb|<n>| entries. Exceptions are the files with suffixes \verb|cst|, \verb|inv|, \verb|esp|.
+
+Note that the files are only written if they would contain at laest one row.
 
 As pointed out in Section \ref{outcontrol}, the optional output files for the integer hull are the same as for the original computation, as far as their content has been computed.
 
@@ -4308,10 +4310,10 @@ If \ttt{-a} is activated, then the following files are written
 
 In order to select one or more of these files individually, add an option of type \verb|--<suffix>| to the command line where \verb|<suffix>| can take the values
 \begin{Verbatim}
-gen, cst, inv, ext, ht1, egn, esp, lat, mod, typ, msp
+gen, cst, inv, ext, ht1, egn, esp, lat, mod, msp, typ
 \end{Verbatim}
 
-The type \verb|typ| is not contained in \verb|Files| or \verb|AllFiles| since it can be extremely large. It is the matrix format described above. It is the product of the matrices
+The type \verb|typ| is not contained in \verb|Files| or \verb|AllFiles| since it can be extremely large. It is of the matrix format described above. It is the product of the matrices
 corresponding to \ttt{egn} and the transpose of \ttt{esp}. In other
 words, the linear forms representing the support
 hyperplanes of the cone $C$ are evaluated on the
@@ -4576,14 +4578,14 @@ The following sequence of commands will install it in the subdirectory \verb|CoC
 \begin{Verbatim}
 mkdir ~/CoCoA/
 cd ~/CoCoA/
-wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99540.tgz
-tar xvf CoCoALib-0.99540.tgz
-cd CoCoALib-0.99540
-./configure --threadsafe-hack
+wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99543.tgz
+tar xvf CoCoALib-0.99543.tgz
+cd CoCoALib-0.99543
+./configure --threadsafe-hack --no-boost
 make library -j2
 \end{Verbatim}
 
-If CoCoALib-0.99540 is no longer available, replace it by a newer version.
+If CoCoALib-0.99543 should be no longer available, replace it by a newer version.
 
 \subsection{autotools}
 
@@ -4594,11 +4596,11 @@ make
 \end{Verbatim}
 This will compile Normaliz, but most likely without SCIP and NmzIntegrate since they need the optional libraries mentioned above and these must be found. If they are not located at standard places, you must specify their paths. Examples (on the machine of a Normaliz team member):
 \begin{Verbatim}
-./configure --with-scipoptsuite-src=$HOME/SCIP/cipoptsuite-3.2.0/
+./configure --with-scipoptsuite-src=$HOME/SCIP/scipoptsuite-3.2.0/
 \end{Verbatim}
 or
 \begin{Verbatim}
-./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99540
+./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
 \end{Verbatim}
 or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and NmzIntegrate will be made, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success.
 
@@ -4639,7 +4641,7 @@ SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
 \end{Verbatim}
 replacing \verb|$HOME/SCIP/scipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
 \begin{Verbatim}
-COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 cmake ../source/
+COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99543 cmake ../source/
 \end{Verbatim}
 Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectories \verb|genEhrhart| and \verb|maxsimplex|.
 
@@ -4651,12 +4653,8 @@ Note: Unfortunately, the paths for SCIP are version dependent. The configuration
 \subsection{Mac OS X}\label{mac}
 
 Currently Apple does not supply a compiler which supports OpenMP.
-We recommend the use of a current gcc.
-
-To install this, and other prerequisites, we recommend using a package
-manager such as Fink \url{http://www.finkproject.org/},
-Homebrew \url{http://brew.sh/},
-or MacPort \url{https://www.macports.org/}.
+We recommend the use of LLVM 3.9 or newer from Homebrew. See
+Homebrew \url{http://brew.sh/} from where you can also download GMP and Boost. For details see \ttt{INSTALL} in the directory \ttt{source} of the distribution.
 
 You can then follow the instructions for Linux.
 
@@ -6081,7 +6079,15 @@ Number of lattice points = 29 Multiplicity = 275
 
 \section{PyNormaliz}
 
-For the time being please consult the file README in the directory PyNormaliz for the installation and use of the Python interface PyNormaliz (written by Sebastian Gutsche).
+Before you can install PyNormaliz (written by Sebastian Gutsche), you must install Normaliz with shared libraries via \verb|make install| (using cmake or autotools). PyNormaliz expects the installed files in a standard location.
+
+For PyNormaliz itself type
+\begin{Verbatim}
+pip pip install PyNormaliz==1.1
+\end{Verbatim}
+at a commad prompt.
+
+For a brief introduction  (and the time being) please consult the file \verb|README| in the directory \verb|PyNormaliz| of the distribution.
 
 \section{QNormaliz}\label{QNorm}
 

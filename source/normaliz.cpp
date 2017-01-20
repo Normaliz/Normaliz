@@ -93,7 +93,7 @@ void printHelp(char* command) {
     cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
     cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)"<<endl;
     cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of"<<endl;
-    cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, typ"<<endl;
+    cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, msp, typ"<<endl;
 
     cout << endl;
     cout << "  -B, --BigInt     directly use indefinite precision arithmetic"<<endl;
