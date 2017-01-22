@@ -41,6 +41,8 @@ We offer three ways of compilation, either use:
        for other systems, like MS VS projects, etc.
 * plain old makefile (Makefile.classic)
 
+For building Normaliz under Mac OS we recommend auttotools if you want to use Scip.
+
 The basic steps are the same for all three systems:
 
 * configuration

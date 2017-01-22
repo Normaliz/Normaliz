@@ -134,7 +134,8 @@
 \begin{center}Winfried Bruns, Tim Römer, Richard Sieg and Christof
 	Söger\\[14pt]
 	Normaliz 2 team member: Bogdan Ichim\\[14pt]
-	\url{http://normaliz.uos.de}\\[14pt]
+	\url{http://normaliz.uos.de}\qquad\qquad\qquad
+	\url{https://github.com/Normaliz}\\[14pt]
 	\url{mailto:normaliz@uos.de}
 \end{center}
 
@@ -151,7 +152,7 @@
 
 The program Normaliz  is a tool for computing
 the Hilbert bases and enumerative data of rational cones and, more generally, sets of lattice points in rational polyhedra. The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
-\cite{BG} and \cite{BH}. The terminology follows \cite{BG}. For
+\cite{BG}. The terminology follows \cite{BG}. For
 algorithms of Normaliz see \cite{BHIKS}, \cite{BI},
 \cite{BIS} and \cite{BK02}. Some new developments are briefly explained in this manual.
 
@@ -160,11 +161,11 @@ Both polyhedra and lattices  can be given by
 	\item systems of generators and/or
 	\item constraints.
 \end{arab}
-Since version 3.1, cones need not be pointed and polyhedra need not have vertices, but are allowed tom contain a positive-dimensional affine subspace.
+Since version 3.1, cones need not be pointed and polyhedra need not have vertices, but are allowed to contain a positive-dimensional affine subspace.
 
 In addition to generators and constraints, affine monoids can be defined by lattice ideals, in other words, by binomial equations.
 
-In order to define a rational polyhedron by generators, one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generating a rational cone $C$. The polyhedron defined by these generators is 
+In order to describe a rational polyhedron by generators, one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generating a rational cone $C$. The polyhedron defined by these generators is 
 $$
 P=\conv(x_1,\dots,x_n)+C,\qquad C=\RR_+y_1+\dots+\RR_+y_m.
 $$
@@ -191,7 +192,7 @@ offspring NmzIntegrate \cite{NmzInt}, Normaliz computes generalized
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
-Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This extends the applicability of Normaliz to certain nonrational polyhredra, but limits its applicability to convex hull computations and triangulations since finite generation of the lattice points in such polyhedra is no longer given.
+Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This extends the scope of Normaliz to certain nonrational polyhredra, but limits its applicability to convex hull computations and triangulations since finite generation of the lattice points in such polyhedra is no longer given.
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
@@ -226,7 +227,7 @@ The Singular and Macaulay 2 interfaces are contained in the
 Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they can profit from the newer versions.
 
 Furthermore,  Normaliz is used by the  B. Burton's system
-\textsc{Regina}.
+\textsc{Regina} and in \textsc{SecDec} by S. Borowka et al.
 
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP for SageMath (in preparation) for interactive use.
 
@@ -244,7 +245,7 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 	
 	\item constraints in symbolic form,
 	
-	\item Hilbert series with denominator corresponding to a homogeneous system of generators,
+	\item Hilbert series with denominator corresponding to a homogeneous system of parameters,
 	
 	\item choice of an output directory,
 	
@@ -254,7 +255,7 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 	
 	\item option \verb|Symmetrize| that produces symmetrized input for nmzIntegrate and runs nmzIntegrate on this input,
 	
-	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ r(estricted to convex hull computations and triangulation).
+	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (restricted to convex hull computations and triangulation).
 	
 \end{arab}
 
@@ -266,6 +267,7 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \begin{arab}
 	\item Exploitation of symmetries,
 	\item integration of NmzIntegrate into libnormaliz,
+	\item multigraded Hilbert series,
 	\item access from further systems,
 	\item Gröbner and Graver bases.
 \end{arab}
@@ -3399,7 +3401,7 @@ A good nonsimplicial example showing the subdivision at work is \verb|hickerson_
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nestd triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
 
-\emph{Remark}\enspace The boinds mentioned above wrk well up to dimension $\approx 10$. In larger diemnsion they are too low because the probability of finding a subdivision point becomes too small.
+\emph{Remark}\enspace The boinds mentioned above wrk well up to dimension $\approx 10$. In larger dimension they are too low because the probability of finding a subdivision point becomes too small.
 
 \subsection{Primal vs. dual -- division of labor}\label{div_labor}
 
@@ -4451,8 +4453,12 @@ or degree $1$ elements.
 \section{Distribution and installation}\label{Distr}
 
 In order to install Normaliz you should first download the
-basic package containing the documentation, examples, source
-code, jNormaliz, NmzIntegrate and the packages for Singular
+basic package from
+
+\url{http://normaliz.uos.de}.
+
+It contains the documentation, examples, source
+code, jNormaliz, NmzIntegrate and the packages for PyNormaliz, Singular
 and Macaulay2. Then unzip the downloaded file
 \ttt{\NmzDir.zip} in a directory of your choice. (Any other
 downloaded zip file for Normaliz should be unzipped in this
@@ -4476,9 +4482,8 @@ NmzIntegrate source.
 reading and further documentation.
 
 \item In the subdirectory \ttt{example} are the input
-and output files for some examples. It contains all
-input files of examples of this documentation, except the toy
-examples of Section \ref{input}.
+files for some examples. It contains all named
+input files of examples of this manual.
 
 \item Automated tests which run Normaliz on different inputs
 and options are contained in the subdirectory \ttt{test}.
@@ -4490,7 +4495,7 @@ documentation.
 \item The subdirectory \ttt{Macaulay2} contains the
 \textsc{Macaulay2} package \ttt{Normaliz.m2}.
 
-\item The subdirectory \ttt{PyNormaliz} contains the
+\item The subdirectory \ttt{PyNormaliz} contains the source
 \textsc{Python} interface.
 
 \item The subdirectory \ttt{lib} contains libraries for
@@ -4500,8 +4505,7 @@ jNormaliz.
 the source code, examples and tests for QNormaliz (see Appendix \ref{QNorm})
 \end{itemize}
 
-We provide executables for Windows, Linux (each in a 32 bit and
-a 64 bit version) and Mac. Download the archive file
+We provide executables for Windows, Linux and Mac. Download the archive file
 corresponding to your system \ttt{\NmzDir<systemname>.zip}
 and unzip it. This process will store the executables of
 Normaliz and NmzIntegrate in the Normaliz directory. In case you want to run Normaliz from the
@@ -4509,9 +4513,7 @@ command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.
 
-Please remove old versions of \ttt{normaliz}, \ttt{norm64} and \ttt{normbig}
-from your search path.
-
+Please read the release notes on the download page. Especially on Mac you may want to build Normaliz yourself since it is impossible to provide a statically linked executable with  parallelilzation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
@@ -4614,11 +4616,11 @@ The last, optional step is
 \begin{Verbatim}
 sudo make install
 \end{Verbatim}
-It copies the header files, the library \verb|libnormaliz| and the executables (excrept \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
+It copies the header files, the library \verb|libnormaliz| and the executables (except \verb|maxsimplex|) into subdirectories of \verb|/usr/local|. It is of course possible to specify another installation path in the call of \verb|./configure|.
 
 Note: In case you have checked out Normaliz from GitHub, the very first step is \verb|./bootstrap.sh|.
 
-Note: Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
+Unfortunately, the paths for SCIP are version dependent. We have tested versions 3.2.0 and 3.2.1.
 
 \subsection{cmake}\label{cmake}
 
@@ -4654,7 +4656,9 @@ Note: Unfortunately, the paths for SCIP are version dependent. The configuration
 
 Currently Apple does not supply a compiler which supports OpenMP.
 We recommend the use of LLVM 3.9 or newer from Homebrew. See
-Homebrew \url{http://brew.sh/} from where you can also download GMP and Boost. For details see \ttt{INSTALL} in the directory \ttt{source} of the distribution.
+\url{http://brew.sh/} from where you can also download GMP and Boost. For details see \ttt{INSTALL} in the directory \ttt{source} of the distribution.
+
+For building Normaliz under Mac OS we recommend auttotools if you want to use SCIP.
 
 You can then follow the instructions for Linux.
 
@@ -4666,7 +4670,7 @@ One can compile Windows executables with the Cygwin port of GCC. Unfortunately i
 
 Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
-Note that the statically linked Linux binaries run in the Linux susystem of Windows 10.
+Note that the statically linked Linux binaries run in the Linux susystem of Windows 10. We have not yet tried to build Normaliz in it.
 
 \section{Copyright and how to cite}
 
@@ -6083,7 +6087,7 @@ Before you can install PyNormaliz (written by Sebastian Gutsche), you must insta
 
 For PyNormaliz itself type
 \begin{Verbatim}
-pip pip install PyNormaliz==1.1
+pip install PyNormaliz==1.1
 \end{Verbatim}
 at a commad prompt.
 
@@ -6132,7 +6136,7 @@ KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode
 \end{tabular}
 \end{center}
 
-It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|SublattoiceRepresentation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
+It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
 
 Moreover, the original monoid and any data referring to it are not defined.
 
@@ -6153,7 +6157,7 @@ Note that there is no way for QNormaliz to define an invariant volume function o
 The standard autotools build system automatically builds and installs
 QNormaliz as well.  
 
-As for Normaliz and QNormaliz one can use the ``classical'' Makefile. See \verb|INSTALL| in the directory \verb|source| (witout Q!).
+As for Normaliz and QNormaliz one can use the ``classical'' Makefile. See \verb|INSTALL| in the directory \verb|source| (without Q!).
 
 Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Section \ref{cmake} after having made a directory \verb|BUILD_QNMZ| (for example) in the Normaliz directory. Then go to it and say \verb|cmake ../Qsource|, followed by \verb|make| and \verb|make install|. With the default settings, libQnormaliz will be installed in \verb|/usr/local|, subdirectories \verb|bin|, \verb|lib| and \verb|include/libQnormaliz|.
 

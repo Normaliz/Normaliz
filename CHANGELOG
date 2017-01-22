@@ -3,15 +3,14 @@
 ## [3.2.0] 2017-01-01
 
 -- constriants in symbolic format
--- a better implementation of \verb|Approximate| and its use in the inhomogeneous case,
+-- a better implementation of Approximate and its use in the inhomogeneous case,
 -- option Symmetzrize that produces symmetrized input for and runs nmzIntegrate and runs on it,
--- QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (estricted to convex hull computations and triangulation),
+-- QNormaliz, a version of Normaliz using coordinates in an extension of the rational numbers (estricted to convex hull computations and triangulation),
 -- further automatic choices of algorithmic variants.
 
 ## [3.1.4] 2016-11-26
 - automatic choice of dual or primal algorithm (unless fixed by the user)
 --extension of ConeProperty, constructors based on Matrix<Integer>, additional functions for retrieval of results
-
 
 ## [3.1.3] 2016-09-28
 - bug fixes
