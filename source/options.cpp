@@ -33,8 +33,8 @@ using namespace std;
 #include "libnormaliz/cone.h"
 using namespace libnormaliz;
 
-#include "Normaliz.h"
-#include "Options.h"
+#include "normaliz.h"
+#include "options.h"
 #include "output.h"
 
 

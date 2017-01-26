@@ -29,14 +29,14 @@
 #include <algorithm>
 using namespace std;
 
-#include "Normaliz.h"
+#include "normaliz.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/cone.h"
 //#include "libnormaliz/libnormaliz.cpp"
 using namespace libnormaliz;
-#include "Input.cpp"
-#include "Options.cpp"
+#include "input.cpp"
+#include "options.cpp"
 #include "output.cpp"
 
 #ifndef STRINGIFY
