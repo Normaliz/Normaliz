@@ -27,7 +27,7 @@ noinst_HEADERS = libnormaliz/simplex.h libnormaliz/reduction.h libnormaliz/full_
 # Sources included via libnormaliz-templated.cpp:
 noinst_HEADERS += libnormaliz/libnormaliz.cpp libnormaliz/integer.cpp libnormaliz/vector_operations.cpp libnormaliz/matrix.cpp libnormaliz/simplex.cpp libnormaliz/list_operations.cpp libnormaliz/sublattice_representation.cpp libnormaliz/reduction.cpp libnormaliz/full_cone.cpp libnormaliz/cone_dual_mode.cpp libnormaliz/cone.cpp
 
-libnormaliz_la_LDFLAGS = -version-info 5:0:2
+libnormaliz_la_LDFLAGS = -version-info 5:1:2
 ## yields version number 3.2.0 for libnormaliz.so on Linux
 ## Conjecture: x.y.z yields x-z.z.y
 libnormaliz_la_LIBADD = $(GMP_LDFLAGS) -lgmpxx -lgmp
