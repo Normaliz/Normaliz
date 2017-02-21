@@ -1568,7 +1568,7 @@ void Full_Cone<long long>::try_offload(size_t max_level) {
         for (size_t level = 0; level <= max_level; ++level) {           
             
             if (nrPyramids[level] >= 100) {
-                // cout << "Try offload of level " << level << " pyramids ..." << endl;
+                cout << "XXX: Try offload of level " << level << " pyramids ..." << endl;
                 mic_offloader.offload_pyramids(*this, level);
                 break;
             }

@@ -25,7 +25,7 @@
 #include <cctype>       // std::isdigit
 #include <limits>       // numeric_limits
 
-#include "Options.h"
+#include "options.h"
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/cone_property.h"
