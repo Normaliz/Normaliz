@@ -134,6 +134,8 @@ public:
     bool isComputed(ConeProperty::Enum prop) const;
     //returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
+    
+    void resetComputed(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
 //   get the results, these methods will start a computation if necessary

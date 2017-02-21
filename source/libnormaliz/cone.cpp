@@ -1102,6 +1102,11 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
     return CheckComputed.reset(is_Computed).any();
 }
 
+template<typename Integer>
+void Cone<Integer>::resetComputed(ConeProperty::Enum prop){
+    is_Computed.reset(prop);
+}
+
 
 /* getter */
 
@@ -2676,6 +2681,23 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         HSeries.computeHilbertQuasiPolynomial();
     if(HSeries.isHilbertQuasiPolynomialComputed())
         is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
+        
+    // in the case that HS was computed but not HSOP, we need to compute hsop
+    if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
+        // we need generators and support hyperplanes to compute hsop
+        Matrix<Integer> FC_gens;
+        Matrix<Integer> FC_hyps;
+        BasisChangePointed.convert_to_sublattice(FC_gens,Generators);
+        Full_Cone<Integer> FC(FC_gens);
+        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
+        FC.Grading = Grading;
+        FC.inhomogeneous = inhomogeneous;
+        // TRUNCATION?
+        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes,SupportHyperplanes);
+        FC.compute_hsop();
+        HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+        HSeries.compute_hsop_num();
+    }
     
 }
 

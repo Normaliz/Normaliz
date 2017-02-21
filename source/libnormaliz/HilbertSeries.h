@@ -107,6 +107,7 @@ public:
     const map<long, denom_t>& getCyclotomicDenom() const;
     
     void setHSOPDenom(vector<denom_t> new_denom);
+    void setHSOPDenom(map<long,denom_t> new_denom);
     
     // returns the numerator, repr. as vector of coefficients
     const vector<mpz_class>& getHSOPNum() const;
