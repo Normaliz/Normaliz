@@ -21,16 +21,13 @@
  * terms of service.
  */
 
-#include "CoCoA/library.H"
-using namespace CoCoA;
-
-bool verbose_INT;
-
 #include <fstream>
 #include <sstream>
 #include<string>
-#include <sys/stat.h>
-#include <sys/types.h>
+
+#include "nmz_int_types.h"
+
+using namespace CoCoA;
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -38,35 +35,8 @@ bool verbose_INT;
 
 using namespace std;
 
-class CyclRatFunct {
-// class for rational functions whose denominator is a product
-// of cyclotomic polynomials
-// We work with denominators that are products of factors 1-t^i
-// which is of course equivalent
-// the numerator is a polynomial in its ring
-// the denominator is an integer vector that at index i
-// gives the multiplicity of 1-t^i in the denominator
-// (the entry at index 0 is not used and must always be equal to 0)
-public:
-
-    RingElem num;
-    vector<long> denom;
-
-    void extendDenom(const vector<long>& target);
-    void addCRF(const CyclRatFunct& r);
-    void multCRF(const CyclRatFunct& r);
-    void simplifyCRF();
-    void set2(const RingElem& f, const vector<long>& d);
-    void set2(const RingElem& f);
-    void showCRF();
-    void showCoprimeCRF();
-    CyclRatFunct(const RingElem& c);
-    CyclRatFunct(const RingElem& c,const vector<long>& d);
-
-};
-//class end *****************************************************************
-
-
+namespace libnormaliz {
+    
 void CyclRatFunct::extendDenom(const vector<long>& target)
 // extends the denominator to target
 // by multiplying the numrerator with the remaining factor
@@ -248,3 +218,5 @@ CyclRatFunct::CyclRatFunct(const RingElem& c):num(c)
 
 CyclRatFunct::CyclRatFunct(const RingElem& c,const vector<long>& d):num(c),denom(d){
 }
+
+} // namespace libnormaliz
