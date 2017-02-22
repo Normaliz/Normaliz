@@ -5664,6 +5664,9 @@ const map<long, denom_t>& HilbertSeries::getDenom() const;
 const vector<mpz_class>& HilbertSeries::getCyclotomicNum() const;
 const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const;
 
+const vector<mpz_class>& HilbertSeries::getHSOPNum() const;
+const map<long, denom_t>& HilbertSeries::getHSOPDenom() const;
+
 long HilbertSeries::getDegreeAsRationalFunction() const;
 long HilbertSeries::getShift() const;
 
@@ -5673,9 +5676,11 @@ long HilbertSeries::getPeriod() const;
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
 \end{Verbatim}
 
-The first four functions refer to two representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In both cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
+The first six functions refer to three representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In the third case the denominator is determined by the degrees of a homogeneous system of parameters (see Section \ref{rational}). In all cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
 
-The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. >since the denominator has a nonzero constant term in both cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
+If you have already computed the Hilbert series without HSOP and you want it with HSOP afterwards, the Hilbert series will simply be transformed, but Normaliz must compute the degrees for the denominator, and this may be a nontrivial computation.
+
+The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. Since the denominator has a nonzero constant term in all cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
 
 The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
 
@@ -6090,11 +6095,15 @@ Before you can install PyNormaliz (written by Sebastian Gutsche), you must insta
 
 For PyNormaliz itself type
 \begin{Verbatim}
-pip install PyNormaliz==1.1
+python setup.py install
 \end{Verbatim}
-at a commad prompt.
+or
+\begin{Verbatim}
+pip install PyNormaliz
+\end{Verbatim}
+at a command prompt. Depending on your python version you might want to write \verb|python3| instead.
 
-For a brief introduction  (and the time being) please consult the file \verb|README| in the directory \verb|PyNormaliz| of the distribution.
+For a brief introduction please consult the PyNormaliz tutorial on the Normaliz web site.
 
 \section{QNormaliz}\label{QNorm}
 
