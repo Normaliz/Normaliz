@@ -14,7 +14,7 @@ CXXFLAGS += -g       ## debugging
 
 SCIPPATH = $(HOME)/SCIP/scipoptsuite-3.2.0
 
-COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540
+COCOA_ROOT=$(HOME)/CoCoA/CoCoALib-0.99540/include
 
 INSTALLDIR= /usr/local
 
@@ -45,5 +45,7 @@ ifeq ($(SCIP),yes)
     -lreadline \
     -lz
 endif
+
+CXXFLAGS += -I $(COCOA_ROOT)
 
 LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS)
