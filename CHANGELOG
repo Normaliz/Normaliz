@@ -1,5 +1,12 @@
 # ChangeLog
 
+
+## [3.2.0] 2017-01-01
+
+-- automatic choice of symmetzrization
+-- change to HSOP form of Hilbert series possible after computation
+-- fits PyNormaliz 1.4
+
 ## [3.2.0] 2017-01-01
 
 -- constraints in symbolic format
