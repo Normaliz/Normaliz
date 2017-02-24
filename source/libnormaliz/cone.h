@@ -211,6 +211,8 @@ public:
 
     mpq_class getMultiplicity();
     
+    string getPolynomial() const;
+    
     bool inequalities_present;
 
     bool isPointed();
@@ -240,6 +242,12 @@ public:
     void set_nmz_call(const string& path);
     void set_output_dir(string name);
     
+    void set_polynomial(string poly);
+    void setVirtualMultiplicity(const mpq_class& VM);
+    void setIntegral(const mpq_class& I);
+    
+    bool get_verbose ();
+    
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -251,6 +259,8 @@ private:
     string output_dir;
     string nmz_call;
     size_t dim;
+    
+    string polynomial;
 
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
@@ -283,6 +293,8 @@ private:
     vector< pair<vector<key_t>, long> > InExData;
     list< STANLEYDATA<Integer> > StanleyDec;
     mpq_class multiplicity;
+    mpq_class Integral;
+    mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> BasisMaxSubspace;
@@ -400,6 +412,8 @@ private:
     void compute_integer_hull();
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
+    
+    void compute_integral (ConeProperties& ToCompute);
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false
 

@@ -217,6 +217,11 @@ void ConeProperties::set_preconditions() {
     
     if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrizeb is used
+        
+    if (CPs.test(ConeProperty::Integral)){
+        CPs.set(ConeProperty::Multiplicity);
+        CPs.set(ConeProperty::Triangulation);
+    }
 }
 
 /* removes ignored compute options and sets implications */
@@ -297,6 +302,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::IsReesPrimary
                   || prop == ConeProperty::IsDeg1HilbertBasis
                   || prop == ConeProperty::IsDeg1ExtremeRays
+                  || prop == ConeProperty::Integral
                 ) {
                     throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
                 }
@@ -348,7 +354,6 @@ namespace {
         CPN.at(ConeProperty::Sublattice) = "Sublattice";
         CPN.at(ConeProperty::ClassGroup) = "ClassGroup";
         CPN.at(ConeProperty::ModuleGeneratorsOverOriginalMonoid) = "ModuleGeneratorsOverOriginalMonoid";
-        // the following are more compute options than real properties of the cone
         CPN.at(ConeProperty::Approximate) = "Approximate";
         CPN.at(ConeProperty::BottomDecomposition) = "BottomDecomposition";
         CPN.at(ConeProperty::DefaultMode) = "DefaultMode";
@@ -379,9 +384,14 @@ namespace {
         CPN.at(ConeProperty::NoSubdivision) = "NoSubdivision";
         CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
         CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
+        CPN.at(ConeProperty::Integral) = "Integral";
+        CPN.at(ConeProperty::LeadCoef) = "LeadCoef";
+        CPN.at(ConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
+        CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
+        CPN.at(ConeProperty::WeightedEhrhartQuasiPol) = "WeightedEhrhartQuasiPol";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 60,
+        static_assert (ConeProperty::EnumSize == 65,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

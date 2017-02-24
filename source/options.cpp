@@ -42,10 +42,9 @@ OptionsHandler::OptionsHandler() {
     project_name_set = false;
     output_dir_set=false;
     write_extra_files = false, write_all_files = false;
-        // use_Big_Integer = false;
-        use_long_long = false;
-        ignoreInFileOpt = false;
-        nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
+    // use_Big_Integer = false;
+    use_long_long = false;
+    ignoreInFileOpt = false;
     nr_threads = 0;
 }
 
@@ -219,19 +218,14 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 cerr<<"Error: Option -x=<T> has to be separated from other options"<<endl;
                 exit(1);
                 break;
-            case 'I':  //nmzIntegrate -I (integrate)
-                nmzInt_I = true;
-                to_compute.set(ConeProperty::Triangulation);
-                to_compute.set(ConeProperty::Multiplicity);
+            case 'I': 
+                to_compute.set(ConeProperty::Integral);
                 break;
-            case 'L':  //nmzIntegrate -L (leading term)
-                nmzInt_L = true;
-                to_compute.set(ConeProperty::Triangulation);
-                to_compute.set(ConeProperty::Multiplicity);
+            case 'L': 
+                to_compute.set(ConeProperty::LeadCoef);
                 break;
-            case 'E':  //nmzIntegrate -E (Ehrhart series)
-                nmzInt_E = true;
-                to_compute.set(ConeProperty::StanleyDec);
+            case 'E': 
+                to_compute.set(ConeProperty::WeightedEhrhartSeries);
                 break;
             case 'i':
                 ignoreInFileOpt=true;
@@ -403,41 +397,6 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         exit(1);
     }
     Out.set_name(output_file);
-}
-
-bool OptionsHandler::anyNmzIntegrateOption() const {
-    return nmzInt_E || nmzInt_I || nmzInt_L;
-}
-
-string OptionsHandler::getNmzIntegrateOptions() const {
-    string nmz_options;
-    if (verbose) {
-        nmz_options.append(" -c");
-    }
-    if (nr_threads > 0) {
-        nmz_options.append(" -x=");
-        ostringstream convert;
-        convert << nr_threads;
-        nmz_options.append(convert.str());
-    }
-    if (nmzInt_E) {
-        nmz_options.append(" -E");
-    }
-    if (nmzInt_L) {
-        nmz_options.append(" -L");
-    }
-    if (nmzInt_I) {
-        nmz_options.append(" -I");
-    }
-    nmz_options.append(" \"");
-    nmz_options.append(project_name);
-    nmz_options.append("\"");
-    if(output_dir_set){
-        nmz_options.append(" \"");
-        nmz_options.append("--OutputDir="+output_dir);
-        nmz_options.append("\"");
-    }
-    return nmz_options;
 }
 
 bool OptionsHandler::activateDefaultMode() {

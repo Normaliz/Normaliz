@@ -332,6 +332,17 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
     }
 }
 
+void read_polynomial(istream& in, string& polynomial) {
+
+    char c;
+    while(true){
+        in >> c;
+        if(c==';')
+            return;
+        polynomial+=c;
+    }
+}
+
 template <typename Integer>
 bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
     
@@ -431,7 +442,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat, boo
     
 
 template <typename Integer>
-map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in, OptionsHandler& options) {
+map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial) {
 
     string type_string;
     long i,j;
@@ -534,6 +545,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
                     read_constraints(in,dim,input_map,true);
+                    continue;
+                }
+                
+                if(type_string == "polynomial") {
+                    read_polynomial(in,polynomial);
                     continue;
                 }
 

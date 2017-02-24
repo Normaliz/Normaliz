@@ -25,15 +25,13 @@
 #include <sstream>
 #include<string>
 
-#include "nmz_int_types.h"
+#include "nmz_integrate.h"
 
 using namespace CoCoA;
 
 #include <boost/dynamic_bitset.hpp>
 
 #include "../libnormaliz/my_omp.h"
-
-using namespace std;
 
 using namespace std;
 
@@ -570,6 +568,85 @@ RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing R){
         PushBack(G,RingElem(RingQQ(),coeff(mon)),PP(mon));  
     }
     return(G);
+}
+
+RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRing& R, const SparsePolyRing& RZZ,
+                vector<RingElem>& resPrimeFactors, vector<RingElem>& resPrimeFactorsNonhom, vector<long>& resMultiplicities,
+                RingElem& remainingFactor, bool& homogeneous,const bool& do_leadCoeff){
+// "res" stands for "result"
+// resPrimeFactors are homogenized, the "nonhom" come from the original polynomial
+   
+  long i,j;
+
+  RingElem the_only_dactor= ReadExpr(R, poly_as_string); // there is only one 
+  vector<RingElem> factorsRead; // this is from the very first version of NmzIntegrate
+  factorsRead.push_back(the_only_dactor); 
+  vector<long> multiplicities;                            
+
+  vector<RingElem> primeFactors; // for use in this routine
+  vector<RingElem> primeFactorsNonhom; // return results will go into the "res" parameters for output 
+  
+  if(verbose_INT)
+    cout << "Polynomial read" << endl;
+    
+  homogeneous=true;                                     // we factor the polynomials read
+  for(i=0;i< (long) factorsRead.size();++i){ // and make them integral this way
+                                             // they must further be homogenized
+                                             // and converted to polynomials with ZZ 
+                                             // coefficients (instead of inegral QQ)
+                                             // The homogenization is necessary to allow
+                                             // substitutions over ZZ
+      RingElem G(factorsRead[i]);
+      if(deg(G)==0){         
+        remainingFactor*=G;  // constants go into remainingFactor
+        continue;            // this extra treatment would not be necessary      
+      }
+      
+    vector<RingElem> compsG= homogComps(G);
+                             // we test for homogeneity. In case do_leadCoeff==true, polynomial
+                             // is replaced by highest homogeneous component
+    if(G!=compsG[compsG.size()-1]){            
+       if(verbose_INT && homogeneous && do_leadCoeff) 
+           cout << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
+       homogeneous=false;
+       if(do_leadCoeff){
+           G=compsG[compsG.size()-1];
+           factorsRead[i]=G;  // though it may no longer be the factor read from input
+       }    
+    }
+     
+    factorization<RingElem> FF=factor(G);              // now the factorization and transfer to integer coefficients
+    for(j=0;j< (long) FF.myFactors().size();++j){
+        primeFactorsNonhom.push_back(FF.myFactors()[j]); // these are the factors of the polynomial to be integrated
+        primeFactors.push_back(makeZZCoeff(homogenize(FF.myFactors()[j]),RZZ)); // the homogenized factors with ZZ coeff
+        multiplicities.push_back(FF.myMultiplicities()[j]);                          // homogenized for substitution !
+      }
+      remainingFactor*=FF.myRemainingFactor();
+  }
+
+  
+ // it remains to collect multiple factors that come from different input factors
+  
+  for(i=0;i< (long) primeFactors.size();++i)
+    if(primeFactors[i]!=0)
+        for(j=i+1;j< (long) primeFactors.size();++j)
+            if(primeFactors[j]!=0 && primeFactors[i]==primeFactors[j]){
+                primeFactors[j]=0;
+                multiplicities[i]++;
+            }
+            
+  for(i=0;i< (long) primeFactors.size();++i)  // now everything is transferred to the return parameters
+    if(primeFactors[i]!=0){
+        resPrimeFactorsNonhom.push_back(primeFactorsNonhom[i]);
+        resPrimeFactors.push_back(primeFactors[i]);
+        resMultiplicities.push_back(multiplicities[i]);
+  }
+  
+  RingElem F(one(R));                        //th polynomial to be integrated
+  for(i=0;i< (long) factorsRead.size();++i)  // with QQ coefficients
+        F*=factorsRead[i]; 
+    
+  return(F);
 }
  
 

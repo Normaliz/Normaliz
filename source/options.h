@@ -53,11 +53,6 @@ public:
     template<typename Integer>
     void applyOutputOptions(Output<Integer>& Out);
 
-    // returns whether any nmzIntegrate option is set
-    bool anyNmzIntegrateOption() const;
-
-    string getNmzIntegrateOptions() const;
-
     bool isFilenameSet() const {
         return project_name_set;
     }
@@ -118,7 +113,6 @@ private:
 	// bool use_Big_Integer; now in ConeProperty
 	bool use_long_long;
     bool ignoreInFileOpt;
-    bool nmzInt_E, nmzInt_I, nmzInt_L;
 
     int nr_threads;
 

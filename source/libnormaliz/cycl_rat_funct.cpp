@@ -25,13 +25,9 @@
 #include <sstream>
 #include<string>
 
-#include "nmz_int_types.h"
+#include "nmz_integrate.h"
 
 using namespace CoCoA;
-
-#include <boost/dynamic_bitset.hpp>
-
-#include "../libnormaliz/my_omp.h"
 
 using namespace std;
 

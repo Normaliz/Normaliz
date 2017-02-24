@@ -156,33 +156,6 @@ int main(int argc, char* argv[])
     if (options.isUseLongLong()) {
         process_data<long long>(options, command_line,arg0);
     }
-
-    if (options.anyNmzIntegrateOption()) {
-        //cout << "argv[0] = "<< argv[0] << endl;
-        string nmz_int_exec("\"");
-        // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
-        #ifdef _WIN32 //for 32 and 64 bit windows
-            nmz_int_exec.append("\"");
-        #endif
-        nmz_int_exec.append(argv[0]);
-        size_t found = nmz_int_exec.rfind("normaliz");
-        if (found!=std::string::npos) {
-            nmz_int_exec.replace (found,8,"nmzIntegrate");
-        } else {
-            cerr << "Error: Could not start nmzIntegrate" << endl;
-            return 10;
-        }
-        nmz_int_exec.append("\"");
-
-        nmz_int_exec.append(options.getNmzIntegrateOptions());
-
-        #ifdef _WIN32 //for 32 and 64 bit windows
-            nmz_int_exec.append("\"");
-        #endif
-
-        cout << "executing: "<< nmz_int_exec << endl;
-        return system(nmz_int_exec.c_str());
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -207,7 +180,9 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     }
 
     //read the file
-    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in, options);
+    string polynomial="";
+    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in, options,polynomial);
+    cout << "POLY " << polynomial << endl;
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
@@ -230,6 +205,7 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
+    MyCone.set_polynomial(polynomial);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
     MyCone.set_nmz_call(arg0);

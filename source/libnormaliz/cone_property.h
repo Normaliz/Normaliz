@@ -68,6 +68,9 @@ namespace ConeProperty {
         ExternalIndex, // new
         // rational valued
         Multiplicity,
+        Integral,
+        LeadCoef,
+        VirtualMultiplicity,
         // dimensions
         RecessionRank,
         AffineDim,
@@ -83,14 +86,16 @@ namespace ConeProperty {
         IsInhomogeneous, // new        
         // complex structures
         Triangulation,
-        HilbertSeries,
-        InclusionExclusionData,
-        StanleyDec,        
+        StanleyDec,
+        InclusionExclusionData,        
         ClassGroup,        
         IntegerHull,
         ConeDecomposition,
+        HilbertSeries,
         HilbertQuasiPolynomial,
-                //
+        WeightedEhrhartSeries,
+        WeightedEhrhartQuasiPol,        
+        //
         // integer type for computations
         //
         BigInt,

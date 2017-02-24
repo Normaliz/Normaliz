@@ -1620,7 +1620,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         return ToCompute;
     }
 
-    // the actual computation
+    // the computation of the full cone
     if (change_integer_type) {
         try {
             compute_inner<MachineInteger>(ToCompute);
@@ -1643,6 +1643,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     
     complete_sublattice_comp(ToCompute);
+    
+    if(ToCompute.test(ConeProperty::Integral))
+        compute_integral(ToCompute);
+    ToCompute.reset(is_Computed);
 
     /* check if everything is computed */
     ToCompute.reset(is_Computed); //remove what is now computed
@@ -2695,6 +2699,11 @@ void Cone<Integer>::set_nmz_call(const string& path){
     nmz_call=path;
 }
 
+template<typename Integer>
+void Cone<Integer>::set_polynomial(string poly){
+    polynomial=poly;
+}
+
 bool exists_file(string name_in){
 //n check whether file name_in exists
 
@@ -3265,6 +3274,39 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     is_Computed.set(ConeProperty::Approximate);
     
     return;    
+}
+
+template<typename Integer>
+void Cone<Integer>::setIntegral (const mpq_class& I){
+    Integral=I;
+}
+
+template<typename Integer>
+void Cone<Integer>::setVirtualMultiplicity (const mpq_class& VM){
+//     VirtualMultoplicity=VM;
+}
+
+template<typename Integer>
+void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous);
+
+template<typename Integer>
+string Cone<Integer>::getPolynomial () const{
+    return polynomial;
+}
+
+template<typename Integer>
+void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
+        return;
+    bool poly_homogeneous;
+    integrate<Integer>(*this,false,poly_homogeneous);
+    is_Computed.set(ConeProperty::Integral);
+}
+    
+//---------------------------------------------------------------------------
+template<typename Integer>
+bool Cone<Integer>::get_verbose (){
+    return verbose;
 }
 
 //---------------------------------------------------------------------------
