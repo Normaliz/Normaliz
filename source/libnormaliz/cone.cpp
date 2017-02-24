@@ -901,6 +901,7 @@ void Cone<Integer>::initialize() {
     unit_group_index = 1;
     inhomogeneous=false;
     rees_primary = false;
+    homogeneous_polynomial=false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
     verbose = libnormaliz::verbose; //take the global default
@@ -1411,6 +1412,27 @@ mpq_class Cone<Integer>::getMultiplicity() {
 }
 
 template<typename Integer>
+mpq_class Cone<Integer>::getVirtualMultiplicity() {
+    if(!isComputed(ConeProperty::VirtualMultiplicity)) // in order not to compute the triangulation
+        compute(ConeProperty::VirtualMultiplicity);    // which is deleted if not asked for explicitly
+    return VirtualMultiplicity;
+}
+
+template<typename Integer>
+mpq_class Cone<Integer>::getLeadCoef() {
+    if(!isComputed(ConeProperty::LeadCoef))  // see above
+        compute(ConeProperty::LeadCoef);
+    return LeadCoef;
+}
+
+template<typename Integer>
+mpq_class Cone<Integer>::getIntegral() {
+    if(!isComputed(ConeProperty::Integral)) // see above
+        compute(ConeProperty::Integral);
+    return Integral;
+}
+
+template<typename Integer>
 bool Cone<Integer>::isPointed() {
     compute(ConeProperty::IsPointed);
     return pointed;
@@ -1646,6 +1668,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
     if(ToCompute.test(ConeProperty::Integral))
         compute_integral(ToCompute);
+    ToCompute.reset(is_Computed);
+    
+    if(ToCompute.test(ConeProperty::LeadCoef))
+        compute_leadcoef(ToCompute);
     ToCompute.reset(is_Computed);
 
     /* check if everything is computed */
@@ -3282,12 +3308,14 @@ void Cone<Integer>::setIntegral (const mpq_class& I){
 }
 
 template<typename Integer>
-void Cone<Integer>::setVirtualMultiplicity (const mpq_class& VM){
-//     VirtualMultoplicity=VM;
+void Cone<Integer>::setLeadCoef (const mpq_class& L){
+    LeadCoef=L;
 }
 
 template<typename Integer>
-void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous);
+void Cone<Integer>::setVirtualMultiplicity (const mpq_class& VM){
+    VirtualMultiplicity=VM;
+}
 
 template<typename Integer>
 string Cone<Integer>::getPolynomial () const{
@@ -3295,14 +3323,24 @@ string Cone<Integer>::getPolynomial () const{
 }
 
 template<typename Integer>
+void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous);
+
+template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
-    bool poly_homogeneous;
-    integrate<Integer>(*this,false,poly_homogeneous);
+    integrate<Integer>(*this,false,homogeneous_polynomial);
     is_Computed.set(ConeProperty::Integral);
 }
     
+template<typename Integer>
+void Cone<Integer>::compute_leadcoef(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::LeadCoef) || !ToCompute.test(ConeProperty::LeadCoef))
+        return;
+    integrate<Integer>(*this,true,homogeneous_polynomial);
+    is_Computed.set(ConeProperty::LeadCoef);
+    is_Computed.set(ConeProperty::VirtualMultiplicity);
+}
 //---------------------------------------------------------------------------
 template<typename Integer>
 bool Cone<Integer>::get_verbose (){

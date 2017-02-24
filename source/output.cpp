@@ -511,6 +511,21 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
+            if (Result->isComputed(ConeProperty::LeadCoef)){
+                mpq_class mult = Result->getLeadCoef();
+                inv <<"integer lead_coef = "      << mult.get_num() << endl;
+                inv <<"integer lead_coef_denom = "<< mult.get_den() << endl;
+            }
+            if (Result->isComputed(ConeProperty::VirtualMultiplicity)){
+                mpq_class mult = Result->getVirtualMultiplicity();
+                inv <<"integer virtual_multiplicity = "      << mult.get_num() << endl;
+                inv <<"integer virtual_multiplicity_denom = "<< mult.get_den() << endl;
+            }
+            if (Result->isComputed(ConeProperty::Integral)){
+                mpq_class mult = Result->getIntegral();
+                inv <<"integer integral = "      << mult.get_num() << endl;
+                inv <<"integer integral_denom = "<< mult.get_den() << endl;
+            }
             if (Result->isComputed(ConeProperty::HilbertSeries)) {
                 const HilbertSeries& HS = Result->getHilbertSeries();
                 vector<mpz_class> HSnum;
@@ -805,6 +820,21 @@ void Output<Integer>::write_files() const {
                 out << endl << endl;
             }
 
+        }
+        
+        if ( Result->isComputed(ConeProperty::LeadCoef) ) {
+            out << "leading coefficient of weighted Ehrhart series = "<< Result->getLeadCoef() << endl;
+            out << endl;
+        }
+        
+        if ( Result->isComputed(ConeProperty::VirtualMultiplicity)) {
+            out << "virtual multiplicity of weighted Ehrhart series = "<< Result->getVirtualMultiplicity() << endl;
+            out << endl;
+        }
+        
+        if ( Result->isComputed(ConeProperty::Integral)) {
+            out << "integral  = "<< Result->getIntegral() << endl;
+            out << endl;
         }
 
         if (Result->isComputed(ConeProperty::IsReesPrimary)) {

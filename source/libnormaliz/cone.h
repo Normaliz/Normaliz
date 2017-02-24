@@ -210,6 +210,9 @@ public:
     vector<Integer> getClassGroup();
 
     mpq_class getMultiplicity();
+    mpq_class getVirtualMultiplicity();
+    mpq_class getLeadCoef();
+    mpq_class getIntegral();
     
     string getPolynomial() const;
     
@@ -244,6 +247,7 @@ public:
     
     void set_polynomial(string poly);
     void setVirtualMultiplicity(const mpq_class& VM);
+    void setLeadCoef(const mpq_class& L);
     void setIntegral(const mpq_class& I);
     
     bool get_verbose ();
@@ -261,6 +265,7 @@ private:
     size_t dim;
     
     string polynomial;
+    bool homogeneous_polynomial;
 
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
@@ -295,6 +300,7 @@ private:
     mpq_class multiplicity;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
+    mpq_class LeadCoef;
     vector<Integer> WitnessNotIntegrallyClosed;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> BasisMaxSubspace;
@@ -414,6 +420,7 @@ private:
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
     void compute_integral (ConeProperties& ToCompute);
+    void compute_leadcoef (ConeProperties& ToCompute);
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false
 

@@ -587,7 +587,7 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
   vector<RingElem> primeFactorsNonhom; // return results will go into the "res" parameters for output 
   
   if(verbose_INT)
-    cout << "Polynomial read" << endl;
+    verboseOutput() << "Polynomial read" << endl;
     
   homogeneous=true;                                     // we factor the polynomials read
   for(i=0;i< (long) factorsRead.size();++i){ // and make them integral this way
@@ -607,7 +607,7 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
                              // is replaced by highest homogeneous component
     if(G!=compsG[compsG.size()-1]){            
        if(verbose_INT && homogeneous && do_leadCoeff) 
-           cout << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
+           verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
        homogeneous=false;
        if(do_leadCoeff){
            G=compsG[compsG.size()-1];

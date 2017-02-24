@@ -222,6 +222,12 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::Triangulation);
     }
+    
+    if (CPs.test(ConeProperty::LeadCoef) || CPs.test(ConeProperty::VirtualMultiplicity)){
+        CPs.set(ConeProperty::Multiplicity);
+        CPs.set(ConeProperty::Triangulation);
+        CPs.set(ConeProperty::LeadCoef);
+    }
 }
 
 /* removes ignored compute options and sets implications */
