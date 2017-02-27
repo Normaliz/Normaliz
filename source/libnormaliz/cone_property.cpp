@@ -228,6 +228,11 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::Triangulation);
         CPs.set(ConeProperty::LeadCoef);
     }
+    
+    if (CPs.test(ConeProperty::WeightedEhrhartSeries)){
+        CPs.set(ConeProperty::Multiplicity);
+        CPs.set(ConeProperty::StanleyDec);
+    }
 }
 
 /* removes ignored compute options and sets implications */

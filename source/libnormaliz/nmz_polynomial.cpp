@@ -649,6 +649,83 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
   return(F);
 }
  
+CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& F, const vector<long>& degrees)
+// writes \sum_{x\in\ZZ_+^n} f(x,t) T^x
+// under the specialization T_i --> t^g_i
+// as a rational function in t
+{
+    SparsePolyRing P=owner(F);
+    RingElem t=indets(P)[0];
+    
+    CyclRatFunct s(F); // F/1
+    
+    CyclRatFunct g(zero(P)),h(zero(P));
+    
+    long nd=degrees.size();  
+    long i,k,mg;
+    vector<RingElem> c;   
+
+    for(k=1; k<=nd;k++)
+    {
+        c=ourCoeffs(s.num,k); // we split the numerator according 
+                               // to powers of var k
+        mg=c.size(); // max degree+1 in  var k
+
+        h.set2(zero(P));
+        for(i=0;i<mg;i++)     // now we replace the powers of var k
+        {                      // by the corrseponding rational function,
+                               // multiply, and sum the products
+
+            h.num=(1-power(t,degrees[k-1]))*h.num+GFP[degrees[k-1]][i].num*c[i];
+            h.denom=GFP[degrees[k-1]][i].denom;
+        }
+        s.num=h.num;
+        s.denom=prodDenom(s.denom,h.denom);
+    }
+    return(s);   
+}
+
+vector<RingElem> power2ascFact(const SparsePolyRing& P, const long& k)
+// computes the representation of the power x^n as the linear combination
+// of (x+1)_n,...,(x+1)_0
+// return value is the vector of coefficients (they belong to ZZ)
+{
+    RingElem t=indets(P)[0];
+    const vector<long> ONE(NumIndets(P));
+    RingElem f(P),g(P), h(P);
+    f=power(t,k);
+    long m;
+    vector<RingElem> c(k+1,zero(P));
+    while(f!=0)
+    {
+            m=deg(f);
+            h=monomial(P,LC(f),ONE);
+            c[m]=h;
+            f-=h*ascFact(t,m);
+    }
+    return(c);
+}
+
+
+CyclRatFunct genFunctPower1(const SparsePolyRing& P, long k,long n)
+// computes the generating function for
+//  \sum_j j^n (t^k)^j
+{
+    vector<RingElem> a=power2ascFact(P,n);
+    RingElem b(P);
+    vector<long> u;
+    CyclRatFunct g(zero(P)), h(zero(P));
+    long i,s=a.size();
+    for(i=0;i<s;++i)
+    {
+        u=makeDenom(k,i+1);
+        b=a[i]*factorial(i);
+        g.set2(b,u); 
+        h.addCRF(g);
+    }
+    return(h);
+}
+
 
 
 } //  namespace

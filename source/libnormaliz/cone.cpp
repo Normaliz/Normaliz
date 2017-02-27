@@ -901,7 +901,6 @@ void Cone<Integer>::initialize() {
     unit_group_index = 1;
     inhomogeneous=false;
     rees_primary = false;
-    homogeneous_polynomial=false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
     verbose = libnormaliz::verbose; //take the global default
@@ -1415,21 +1414,26 @@ template<typename Integer>
 mpq_class Cone<Integer>::getVirtualMultiplicity() {
     if(!isComputed(ConeProperty::VirtualMultiplicity)) // in order not to compute the triangulation
         compute(ConeProperty::VirtualMultiplicity);    // which is deleted if not asked for explicitly
-    return VirtualMultiplicity;
+    return IntData.getVirtualMultiplicity();
 }
 
 template<typename Integer>
 mpq_class Cone<Integer>::getLeadCoef() {
     if(!isComputed(ConeProperty::LeadCoef))  // see above
         compute(ConeProperty::LeadCoef);
-    return LeadCoef;
+    return IntData.getLeadCoef();
+}
+
+template<typename Integer>
+IntegrationData& Cone<Integer>::getIntData(){
+    return IntData;
 }
 
 template<typename Integer>
 mpq_class Cone<Integer>::getIntegral() {
     if(!isComputed(ConeProperty::Integral)) // see above
         compute(ConeProperty::Integral);
-    return Integral;
+    return IntData.getIntegral();
 }
 
 template<typename Integer>
@@ -1665,6 +1669,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     
     complete_sublattice_comp(ToCompute);
+    
+    if(ToCompute.test(ConeProperty::WeightedEhrhartSeries))
+        compute_weighted_Ehrhart(ToCompute);
+    ToCompute.reset(is_Computed);
     
     if(ToCompute.test(ConeProperty::Integral))
         compute_integral(ToCompute);
@@ -2727,7 +2735,7 @@ void Cone<Integer>::set_nmz_call(const string& path){
 
 template<typename Integer>
 void Cone<Integer>::set_polynomial(string poly){
-    polynomial=poly;
+    IntData=IntegrationData(poly);
 }
 
 bool exists_file(string name_in){
@@ -3303,33 +3311,15 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
 }
 
 template<typename Integer>
-void Cone<Integer>::setIntegral (const mpq_class& I){
-    Integral=I;
-}
-
+void integrate(Cone<Integer>& C, const bool do_leadCoeff);
 template<typename Integer>
-void Cone<Integer>::setLeadCoef (const mpq_class& L){
-    LeadCoef=L;
-}
-
-template<typename Integer>
-void Cone<Integer>::setVirtualMultiplicity (const mpq_class& VM){
-    VirtualMultiplicity=VM;
-}
-
-template<typename Integer>
-string Cone<Integer>::getPolynomial () const{
-    return polynomial;
-}
-
-template<typename Integer>
-void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous);
+void generalizedEhrhartSeries(Cone<Integer>& C);
 
 template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
-    integrate<Integer>(*this,false,homogeneous_polynomial);
+    integrate<Integer>(*this,false);
     is_Computed.set(ConeProperty::Integral);
 }
     
@@ -3337,9 +3327,17 @@ template<typename Integer>
 void Cone<Integer>::compute_leadcoef(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::LeadCoef) || !ToCompute.test(ConeProperty::LeadCoef))
         return;
-    integrate<Integer>(*this,true,homogeneous_polynomial);
+    integrate<Integer>(*this,true);
     is_Computed.set(ConeProperty::LeadCoef);
     is_Computed.set(ConeProperty::VirtualMultiplicity);
+}
+
+template<typename Integer>
+void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
+        return;
+    generalizedEhrhartSeries(*this);
+    is_Computed.set(ConeProperty::WeightedEhrhartSeries);
 }
 //---------------------------------------------------------------------------
 template<typename Integer>

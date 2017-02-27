@@ -242,6 +242,51 @@ vector<Integer> compute_e_vector(vector<Integer> h_vector, int dim);
 template<typename Integer>
 vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim);
 
+//---------------------------------------------------------------------------
+// A class collecting integrals and weighted Ehrhart series
+//---------------------------------------------------------------------------
+
+class IntegrationData{
+
+    string polynomial;
+    bool polynomial_is_homogeneous;
+    mpq_class integral, lead_coef, virtual_multiplicity;
+    HilbertSeries weighted_Ehrhart_series;
+    mpz_class common_denom;
+    
+public:
+    
+    void setIntegral(const mpq_class I);
+    void setLeadCoef(const mpq_class L);
+    void setVirtualMultiplicity(const mpq_class I);
+    void setWeighteEhrhartSeries(const HilbertSeries& H);
+    void setHomogeneity(const bool hom);
+    void setCommonDenom(const mpq_class D);
+    
+    mpq_class getIntegral() const;
+    mpq_class getLeadCoef() const;
+    mpq_class getVirtualMultiplicity() const;
+    const HilbertSeries& getWeightedEhrhartSeries() const;
+    bool getHomogenity() const;
+    mpq_class getCommonDenom() const;
+    
+    const vector<mpz_class>& getNum() const;
+    // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
+    const map<long, denom_t>& getDenom() const;
+
+    const vector<mpz_class>& getCyclotomicNum() const;
+    // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
+    const map<long, denom_t>& getCyclotomicDenom() const;
+    
+    void computeWeightedEhrhatQuasiPolynomial() const;
+    bool isWeightedEhrhartQuasiPolynomialComputed() const;
+    vector< vector<mpz_class> > getWeightedEhrhatQuasiPolynomial() const;
+    mpz_class getWeightedEhrhatQuasiPolynomialDenom() const;
+    
+    IntegrationData(const string& poly);
+    IntegrationData();
+}; // class end
+
 } //end namespace libnormaliz
 
 //---------------------------------------------------------------------------

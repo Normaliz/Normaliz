@@ -32,6 +32,7 @@ using namespace CoCoA;
 #include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz/libnormaliz.h"
+#include "libnormaliz/HilbertSeries.h"
 
 #include "libnormaliz/my_omp.h"
 
@@ -41,7 +42,7 @@ using namespace CoCoA;
 using namespace std;
 
 namespace libnormaliz {
-
+    
 typedef int key_type;
 
 bool verbose_INT;
@@ -130,6 +131,13 @@ mpz_class mpz(const BigInt& B) {
 
 mpq_class mpq(const BigRat& B) {
     return(mpq_class(mpqref(B)));  
+}
+
+mpz_class ourFactorial(const long& n){
+    mpz_class fact=1;
+    for(long i=1;i<=n;++i)
+        fact*=i;
+    return(fact);
 }
 
 }  //end namespace libnormaliz

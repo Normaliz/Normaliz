@@ -814,6 +814,97 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
     }
 }
 
+//---------------------------------------------------------------------------
+IntegrationData::IntegrationData(){
+}
+
+IntegrationData::IntegrationData(const string& poly){
+    polynomial=poly;
+    polynomial_is_homogeneous=false; // to be on the safe side
+}
+
+void IntegrationData::computeWeightedEhrhatQuasiPolynomial() const{
+    weighted_Ehrhart_series.computeHilbertQuasiPolynomial();
+}
+
+bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
+    return weighted_Ehrhart_series.isHilbertQuasiPolynomialComputed();
+}
+
+vector< vector<mpz_class> > IntegrationData::getWeightedEhrhatQuasiPolynomial() const{
+    return weighted_Ehrhart_series.getHilbertQuasiPolynomial();
+}
+
+mpz_class IntegrationData::getWeightedEhrhatQuasiPolynomialDenom() const{
+    return weighted_Ehrhart_series.getHilbertQuasiPolynomialDenom();         
+}
+
+
+const vector<mpz_class>& IntegrationData::getNum() const{
+    return weighted_Ehrhart_series.getNum();
+}
+
+const map<long, denom_t>& IntegrationData::getDenom() const{
+    return weighted_Ehrhart_series.getDenom();
+}
+
+const vector<mpz_class>& IntegrationData::getCyclotomicNum() const{
+    return weighted_Ehrhart_series.getCyclotomicNum();   
+}
+
+const map<long, denom_t>& IntegrationData::getCyclotomicDenom() const{
+    return weighted_Ehrhart_series.getCyclotomicDenom();  
+}
+
+const HilbertSeries& IntegrationData::getWeightedEhrhartSeries() const{
+    return weighted_Ehrhart_series;
+}
+
+mpq_class IntegrationData::getIntegral() const{
+    return integral;
+}
+
+mpq_class IntegrationData::getCommonDenom() const{
+    return common_denom;
+}
+
+mpq_class IntegrationData::getLeadCoef() const{
+    return lead_coef;
+}
+
+mpq_class IntegrationData::getVirtualMultiplicity() const{
+        return virtual_multiplicity;
+}
+
+void IntegrationData::setIntegral(const mpq_class I){
+    integral=I;
+}
+
+void IntegrationData::setLeadCoef(const mpq_class L){
+    lead_coef=L;
+}
+
+void IntegrationData::setVirtualMultiplicity(const mpq_class I){
+        virtual_multiplicity=I;
+}
+
+void IntegrationData::setCommonDenom(const mpq_class D){
+        common_denom=D;
+}
+
+void IntegrationData::setWeighteEhrhartSeries(const HilbertSeries& H){
+    weighted_Ehrhart_series=H;
+}
+
+void IntegrationData::setHomogeneity(const bool hom){
+    polynomial_is_homogeneous=hom;
+}
+
+
+bool IntegrationData::getHomogenity() const{
+    return polynomial_is_homogeneous;
+}
+
 } //end namespace libnormaliz
 
 #ifdef NMZ_MIC_OFFLOAD

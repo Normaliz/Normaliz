@@ -246,11 +246,10 @@ public:
     void set_output_dir(string name);
     
     void set_polynomial(string poly);
-    void setVirtualMultiplicity(const mpq_class& VM);
-    void setLeadCoef(const mpq_class& L);
-    void setIntegral(const mpq_class& I);
     
     bool get_verbose ();
+    
+    IntegrationData& getIntData();
     
 
 //---------------------------------------------------------------------------
@@ -264,9 +263,6 @@ private:
     string nmz_call;
     size_t dim;
     
-    string polynomial;
-    bool homogeneous_polynomial;
-
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
     Matrix<Integer> Equations;
@@ -307,6 +303,7 @@ private:
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
+    IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
     Integer GradingDenom;
@@ -421,6 +418,7 @@ private:
     
     void compute_integral (ConeProperties& ToCompute);
     void compute_leadcoef (ConeProperties& ToCompute);
+    void compute_weighted_Ehrhart(ConeProperties& ToCompute);
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false
 

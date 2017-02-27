@@ -28,6 +28,7 @@
 #include "libnormaliz/nmz_integrate.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/map_operations.h"
 
 using namespace CoCoA;
 
@@ -132,35 +133,6 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
     return(IntegralUnitSimpl(G,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
-void writeIntegral(const string& project, const ourFactorization& FF,
-                   const BigRat& I, const bool& do_leadCoeff,
-                   const long& virtDeg, const bool& appendOutput) {
-
-    string name_open=project+".intOut";                              
-    const char* file=name_open.c_str();
-    ofstream out;
-    if(appendOutput){
-        out.open(file,ios_base::app);
-        out << endl
-            << "============================================================"
-            << endl << endl;
-    }
-    else {
-        out.open(file);
-    }
-    out <<"Factorization of polynomial:" << endl;  // we show the factorization so that the user can check
-    for(size_t i=0;i<FF.myFactors.size();++i)
-        out << FF.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-    out << "Remaining factor " << FF.myRemainingFactor << endl << endl;
-    
-    if(do_leadCoeff){
-        out << "Virtual leading coefficient: " << I << endl;
-        out << endl << "Virtual multiplicity: " << I*factorial(virtDeg) << endl;
-    }
-    else
-       out << "Integral: " << I << endl;
-}
-
 template<typename Integer>
 void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>& grading, bool check_ascending){
 // get  from C for nmz_integrate functions
@@ -205,7 +177,7 @@ void readTri(Cone<Integer>& C, list<TRIDATA>& triang){
 
 
 template<typename Integer>
-void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous) {
+void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
   GlobalManager CoCoAFoundations;
  
   bool verbose_INTsave=verbose_INT;
@@ -228,7 +200,7 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous) {
   readGens(C,gens,grading,false);
   if(verbose_INT) 
     verboseOutput() << "Generators read" << endl;
-  long dim=gens[0].size();
+  long dim=C.getEmbeddingDim();
 
   list<TRIDATA> triang;
   readTri(C,triang);
@@ -256,6 +228,7 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous) {
   vector<long> multiplicities;
   RingElem remainingFactor(one(R));
 
+  bool homogeneous;
   RingElem F=processInputPolynomial(C.getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,do_leadCoeff);
                 
@@ -347,16 +320,16 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous) {
   string result="Integral";
   if(do_leadCoeff)
     result="(Virtual) leading coefficient of quasipol";
-
-  C.setIntegral(mpq(I));
   
   BigRat VM;
 
   if(do_leadCoeff){
     VM=I*factorial(deg(F)+rank-1);
-    C.setVirtualMultiplicity(mpq(VM));
-    C.setLeadCoef(mpq(I));
+    C.getIntData().setVirtualMultiplicity(mpq(VM));
+    C.getIntData().setLeadCoef(mpq(I));
   }
+  else
+    C.getIntData().setIntegral(mpq(I));
 
    if(verbose_INT){
     verboseOutput() << "********************************************" << endl;
@@ -367,15 +340,587 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff, bool& homogeneous) {
    if(do_leadCoeff && verbose_INT){
     verboseOutput() << "Virtual multiplicity  is " << endl << VM << endl;
     verboseOutput() << "********************************************" << endl;
-   }
+   }  
    
-   verbose_INT=verbose_INTsave;   
+    verbose_INT=verbose_INTsave; 
 }
 
+CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
+                                    map<vector<long>,RingElem>& faceClasses){
+// computes the generating rational functions
+// for the denominator classes collected from proper faces and returns the sum
+
+    SparsePolyRing R=owner(faceClasses.begin()->second);
+    CyclRatFunct H(zero(R));
+    // vector<CyclRatFunct> h(omp_get_max_threads(),CyclRatFunct(zero(R)));
+    // vector<CyclRatFunct> h(1,CyclRatFunct(zero(R)));
+    
+    long mapsize=faceClasses.size();
+    if(verbose_INT){    
+        cout << "--------------------------------------------" << endl;
+        cout << "Evaluating " << mapsize <<" face classes" << endl;
+        cout << "--------------------------------------------" << endl;
+    }
+    #pragma omp parallel
+    {
+    
+    map<vector<long>,RingElem>::iterator den=faceClasses.begin();
+    long mpos=0;
+    CyclRatFunct h(zero(R));
+   
+    #pragma omp for schedule(dynamic)
+    for(long dc=0;dc<mapsize;++dc){
+        for(;mpos<dc;++mpos,++den);
+        for(;mpos>dc;--mpos,--den);
+        // cout << "mpos " << mpos << endl;
+        
+        h = genFunct(GFP,den->second,den->first);
+        h.simplifyCRF();
+        if(verbose_INT){
+            #pragma omp critical(VERBOSE)
+            {
+            cout << "Class ";
+            for(size_t i=0;i<den->first.size();++i)
+                cout << den->first[i] << " ";
+            cout  << "NumTerms " << NumTerms(den->second) << endl;
+        
+            // cout << "input " << den->second << endl;
+            }
+        }
+        
+        // h.showCoprimeCRF();
+        #pragma omp critical(ADDCLASSES)
+        H.addCRF(h);
+    }
+    
+    } // parallel 
+    faceClasses.clear();
+    H.simplifyCRF();
+    return(H);        
+}
+
+struct denomClassData{
+    vector<long> degrees;
+    size_t simplDue;
+    size_t simplDone;
+  };
+
+CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
+                                    pair<denomClassData,vector<RingElem> >& denomClass){
+// computes the generating rational function
+// for a denominator class and returns it
+
+    SparsePolyRing R=owner(denomClass.second[0]);
+    
+    if(verbose_INT){
+    #pragma omp critical(PROGRESS)
+    {
+        cout << "--------------------------------------------" << endl;
+        cout << "Evaluating denom class ";
+        for(size_t i=0;i<denomClass.first.degrees.size();++i)
+            cout << denomClass.first.degrees[i] << " ";
+        cout  << "NumTerms " << NumTerms(denomClass.second[0]) << endl;
+        // cout << denomClass.second << endl;
+        cout << "--------------------------------------------" << endl;
+    }
+    }
+
+    CyclRatFunct h(zero(R));
+    h = genFunct(GFP,denomClass.second[0],denomClass.first.degrees);
+
+    denomClass.second[0]=0;  // to save memory
+    h.simplifyCRF();
+    return(h);
+}
+
+void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread, 
+                            map<vector<long>,RingElem>& faceClasses){
+
+
+    // cout << "In Transfer " << facePolysThread.size() << endl;
+    map<vector<long>,RingElem>::iterator den_found;                            
+    for(size_t i=0;i<facePolysThread.size();++i){
+        den_found=faceClasses.find(facePolysThread[i].first);
+        if(den_found!=faceClasses.end()){
+                den_found->second+=facePolysThread[i].second;    
+        }
+        else{
+            faceClasses.insert(facePolysThread[i]);
+            if(verbose_INT){
+                #pragma omp critical(VERBOSE)
+                {
+                    cout << "New face class " << faceClasses.size() <<    " degrees ";
+                    for(size_t j=0;j<facePolysThread[i].first.size();++j)
+                        cout << facePolysThread[i].first[j] << " ";
+                    cout << endl << flush;
+                    }
+            }
+        } // else
+    }
+    facePolysThread.clear();
+} 
+
+libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& commonDen)
+{ 
+
+  size_t i;
+  vector<RingElem> HCoeff0=ourCoeffs(H.num,0); // we must convert the coefficients
+  BigInt commonDenBI(1);                         // and find the common denominator 
+  vector<BigRat> HCoeff1(HCoeff0.size());
+  for(i=0;i<HCoeff0.size();++i){
+    IsRational(HCoeff1[i],HCoeff0[i]);          // to BigRat
+    commonDenBI=lcm(den(HCoeff1[i]),commonDenBI);
+  }
+  
+  commonDen=mpz(commonDenBI);   // convert it to mpz_class
+  
+  BigInt HC2;
+  vector<mpz_class> HCoeff3(HCoeff0.size());
+  for(i=0;i<HCoeff1.size();++i){
+    HC2=num(HCoeff1[i]*commonDenBI);        // to BigInt
+    HCoeff3[i]=mpz(HC2);      // to mpz_class 
+  }
+
+  vector<long> denomDeg=denom2degrees(H.denom);
+  libnormaliz::HilbertSeries HS(HCoeff3,count_in_map<long, long>(denomDeg)); 
+  HS.simplify();
+  return(HS);
+}
+
+bool compareDegrees(const STANLEYDATA_INT& A, const STANLEYDATA_INT& B){
+
+    return(A.degrees < B.degrees);
+}
+
+bool compareFaces(const SIMPLINEXDATA_INT& A, const SIMPLINEXDATA_INT& B){
+
+    return(A.card > B.card);
+}
+
+void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
+      const vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, 
+      vector<SIMPLINEXDATA_INT>& inExSimplData) {
+
+    size_t dim=S.key.size();
+    vector<key_type> key=S.key;
+    for(size_t i=0;i<dim;++i)  // BECAUSE OF INPUT
+        key[i]--;
+    
+    boost::dynamic_bitset<> intersection(dim), Excluded(dim);
+    
+    Excluded.set();
+    for(size_t j=0;j<dim;++j)  // enough to test the first offset (coming from the zero vector)
+        if(S.offsets[0][j]==0)
+            Excluded.reset(j); 
+
+    vector<pair<boost::dynamic_bitset<>, long> >::const_iterator F;    
+    map<boost::dynamic_bitset<>, long> inExSimpl;      // local version of nExCollect   
+    map<boost::dynamic_bitset<>, long>::iterator G;
+
+    for(F=inExCollect.begin();F!=inExCollect.end();++F){
+        // cout << "F " << F->first << endl;
+       bool still_active=true;
+       for(size_t i=0;i<dim;++i)
+           if(Excluded[i] && !F->first.test(key[i])){
+               still_active=false;
+               break;
+           }
+       if(!still_active)
+           continue;
+       intersection.reset();
+       for(size_t i=0;i<dim;++i){
+           if(F->first.test(key[i]))
+               intersection.set(i);
+       }    
+       G=inExSimpl.find(intersection);
+       if(G!=inExSimpl.end())
+           G->second+=F->second;
+       else
+           inExSimpl.insert(pair<boost::dynamic_bitset<> , long>(intersection,F->second)); 
+    } 
+    
+    SIMPLINEXDATA_INT HilbData;
+    inExSimplData.clear();
+    vector<long> degrees;
+    
+    for(G=inExSimpl.begin();G!=inExSimpl.end();++G){
+       if(G->second!=0){
+           HilbData.GenInFace=G->first;
+           HilbData.mult=G->second;
+           HilbData.card=G->first.count();
+           degrees.clear();
+           for(size_t j=0;j<dim;++j)
+             if(G->first.test(j))
+                degrees.push_back(S.degrees[j]);
+           HilbData.degrees=degrees;
+           HilbData.denom=degrees2denom(degrees);
+           inExSimplData.push_back(HilbData);
+       }
+    }
+    
+    sort(inExSimplData.begin(),inExSimplData.end(),compareFaces);
+    
+    /* for(size_t i=0;i<inExSimplData.size();++i)
+        cout << inExSimplData[i].GenInFace << " ** " << inExSimplData[i].card << " || " << inExSimplData[i].mult << " ++ "<< inExSimplData[i].denom <<  endl;
+    cout << "InEx prepared" << endl; */
+        
+}
+
+template<typename Integer>
+void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
+
+    size_t inExSize=C.getInclusionExclusionData().size(), keySize;   
+    long mult;
+    boost::dynamic_bitset<> indicator(nrGen);
+    for(size_t i=0;i<inExSize;++i){
+        keySize=C.getInclusionExclusionData()[i].first.size();
+        indicator.reset();
+        for(size_t j=0;j<keySize;++j){
+            indicator.set(C.getInclusionExclusionData()[i].first[j]);
+        }
+        mult=C.getInclusionExclusionData()[i].second;
+        inExCollect.push_back(pair<boost::dynamic_bitset<>, long>(indicator,mult));       
+    }
+}
+
+template<typename Integer>
+void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& StanleyDec,
+                vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
+// rads Stanley decomposition and InExSata from C
+    
+    if(C.isComputed(ConeProperty::InclusionExclusionData)){
+        readInEx(C, inExCollect,nrGen);
+    }
+
+    STANLEYDATA_INT newSimpl;
+    long i=0,j,det;
+    newSimpl.key.resize(dim);
+    
+    long test;
+    
+    auto SD=C.getStanleyDec().begin();
+
+    for(;SD!=C.getStanleyDec().end();++SD){
+ 
+        test=0;
+        for(i=0;i<dim;++i){
+            newSimpl.key[i]=SD->key[i]+1;
+            if(newSimpl.key[i]<=test){
+                throw FatalException("Key of simplicial cone not ascending or out of range");
+            }
+            test=newSimpl.key[i];
+        }
+        
+        det=SD->offsets.nr_of_rows();
+        newSimpl.offsets.resize(det);
+        for(i=0;i<det;++i)
+            newSimpl.offsets[i].resize(dim);
+        for(i=0;i<det;++i)
+            for(j=0;j<dim;++j)
+                convert(newSimpl.offsets[i][j],SD->offsets[i][j]);
+        StanleyDec.push_back(newSimpl);
+    }    
+}
+
+template<typename Integer>
+void generalizedEhrhartSeries(Cone<Integer>& C){
+  GlobalManager CoCoAFoundations;
+
+  bool verbose_INTsave=verbose_INT;
+  verbose_INT=C.get_verbose();
+  
+  if(verbose_INT){
+    cout << "==========================================================" << endl;
+    cout << "Generalized Ehrhart series " << endl;
+    cout << "==========================================================" << endl << endl;
+  }
+  
+  long i,j;
+  
+  vector<long> grading;
+  convert(grading,C.getGrading());
+  long gradingDenom;
+  convert(gradingDenom,C.getGradingDenom());
+  long rank=C.getRank();
+  
+  vector<vector<long> > gens;
+  readGens(C,gens,grading,true);
+  if(verbose_INT)
+    cout << "Generators read" << endl;
+  long dim=C.getEmbeddingDim();
+  long maxDegGen=v_scalar_product(gens[gens.size()-1],grading)/gradingDenom; 
+  
+  list<STANLEYDATA_INT> StanleyDec;
+  vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
+  readDecInEx(C,rank,StanleyDec,inExCollect,gens.size());
+  if(verbose_INT)
+    cout << "Stanley decomposition (and in/ex data) read" << endl;
+    
+  size_t dec_size=StanleyDec.size();
+    
+  // Now we sort the Stanley decomposition by denominator class (= degree class)
+
+  list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
+
+  vector<long> degrees(rank);
+  vector<vector<long> > A(rank);
+  
+  // prepare sorting by computing degrees of generators
+
+  BigInt lcmDets(1); // to become the lcm of all dets of simplicial cones
+  
+  for(;S!=StanleyDec.end();++S){
+      for(i=0;i<rank;++i)    // select submatrix defined by key
+        A[i]=gens[S->key[i]-1];
+          degrees=MxV(A,grading);
+      for(i=0;i<rank;++i)
+        degrees[i]/=gradingDenom; // must be divisible
+      S->degrees=degrees;
+      lcmDets=lcm(lcmDets,S->offsets.size());
+  }
+  
+  if(verbose_INT)
+    cout << "lcm(dets)=" << lcmDets << endl;
+  
+  StanleyDec.sort(compareDegrees);
+  
+  SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
+  SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
+  const RingElem& t=indets(RZZ)[0];
+
+  if(verbose_INT)
+    cout << "Stanley decomposition sorted" << endl; 
+
+  vector<pair<denomClassData, vector<RingElem> > > denomClasses;
+  denomClassData denomClass;
+  vector<RingElem> ZeroVectRingElem;
+  for(int j=0;j<omp_get_max_threads();++j)
+    ZeroVectRingElem.push_back(zero(RZZ));
+  
+  map<vector<long>,RingElem> faceClasses; // denominator classes for the faces
+                 // contrary to denomClasses these cannot be sorted beforehand
+                 
+  vector<deque<pair<vector<long>,RingElem> > > facePolys(omp_get_max_threads()); // intermediate storage
+  bool evaluationActive=false;
+
+  // we now make class 0 to get started
+  S=StanleyDec.begin();
+  denomClass.degrees=S->degrees;  // put degrees in class
+  denomClass.simplDone=0;
+  denomClass.simplDue=1;           // already one simplex to be done 
+  denomClasses.push_back(pair<denomClassData,vector<RingElem> >(denomClass,ZeroVectRingElem));
+  size_t dc=0;
+  S->classNr=dc; // assignment of class 0 to first simpl in sorted order
+
+  list<STANLEYDATA_INT>::iterator prevS = StanleyDec.begin();
+
+  for(++S;S!=StanleyDec.end();++S,++prevS){
+    if(S->degrees==prevS->degrees){                     // compare to predecessor
+        S->classNr=dc;              // assign class to simplex
+        denomClasses[dc].first.simplDue++;         // number of simplices in class ++
+    }
+    else{
+        denomClass.degrees=S->degrees;  // make new class
+        denomClass.simplDone=0;
+        denomClass.simplDue=1;
+        denomClasses.push_back(pair<denomClassData,vector<RingElem> >(denomClass,ZeroVectRingElem));
+        dc++;
+        S->classNr=dc;
+    }
+  }
+
+  if(verbose_INT)
+    cout << denomClasses.size() << " denominator classes built" << endl;
+
+  vector<RingElem> primeFactors;
+  vector<RingElem> primeFactorsNonhom;
+  vector<long> multiplicities;
+  RingElem remainingFactor(one(R));
+
+  bool homogeneous;
+  RingElem F=processInputPolynomial(C.getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
+                multiplicities,remainingFactor,homogeneous,false);
+                
+  vector<BigInt> Factorial(deg(F)+dim); // precomputed values
+  for(i=0;i<deg(F)+dim;++i)
+      Factorial[i]=factorial(i);
+  
+  ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembeles the data
+  ourFactorization FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
+
+  long nf=FF.myFactors.size();
+  if(verbose_INT){
+    cout <<"Factorization" << endl;  // we show the factorization so that the user can check
+    for(i=0;i<nf;++i)
+        cout << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+    cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  }
+
+  vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
+  vector<CyclRatFunct> DummyCRFVect; // for\sum i^n t^ki vor various values of k and n
+  CyclRatFunct DummyCRF(zero(RZZ));
+  for(j=0;j<=deg(F);++j)
+    DummyCRFVect.push_back(DummyCRF);
+  for(i=0;i<=maxDegGen;++i){
+    GFP.push_back(DummyCRFVect);
+    for(j=0;j<=deg(F);++j)
+        GFP[i][j]=genFunctPower1(RZZ,i,j);
+  }
+
+  CyclRatFunct H(zero(RZZ)); // accumulates the series
+  
+  if(verbose_INT){
+    cout << "********************************************" << endl;
+    cout << dec_size <<" simplicial cones to be evaluated" << endl;
+    cout << "********************************************" <<  endl;
+  }
+ 
+  size_t nrSimplDone=0;
+
+  #pragma omp parallel private(i)
+  {
+
+  long degree_b;
+  long det;
+  bool evaluateClass;
+  vector<long> degrees;
+  vector<vector<long> > A(rank);
+  list<STANLEYDATA_INT>::iterator S=StanleyDec.begin();
+
+  RingElem h(zero(RZZ));     // for use in a simplex
+  CyclRatFunct HClass(zero(RZZ)); // for single class
+  
+
+  size_t s,spos=0;  
+  #pragma omp for schedule(dynamic) 
+  for(s=0;s<dec_size;++s){
+    for(;spos<s;++spos,++S);
+    for(;spos>s;--spos,--S);
+
+    det=S->offsets.size();
+    degrees=S->degrees;
+    
+    for(i=0;i<rank;++i)    // select submatrix defined by key
+        A[i]=gens[S->key[i]-1];
+        
+    vector<SIMPLINEXDATA_INT> inExSimplData;
+    if(inExCollect.size()!=0)    
+        prepare_inclusion_exclusion_simpl(*S,inExCollect,inExSimplData);
+
+    h=0;
+    long iS=S->offsets.size();    // compute numerator for simplex being processed   
+    for(i=0;i<iS;++i){
+        degree_b=v_scalar_product(degrees,S->offsets[i]);
+        degree_b/=det;
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,inExSimplData, facePolys);
+    }
+    
+    evaluateClass=false; // necessary to evaluate class only once
+    
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+        
+    // #pragma omp critical (ADDTOCLASS) 
+    { 
+        denomClasses[S->classNr].second[tn]+=h;
+        #pragma omp critical (ADDTOCLASS)
+        {
+        denomClasses[S->classNr].first.simplDone++;
+        
+        if(denomClasses[S->classNr].first.simplDone==denomClasses[S->classNr].first.simplDue)
+            evaluateClass=true;
+        }
+    }
+    if(evaluateClass)
+    {
+    
+        for(int j=1;j<omp_get_max_threads();++j){
+            denomClasses[S->classNr].second[0]+=denomClasses[S->classNr].second[j];
+            denomClasses[S->classNr].second[j]=0;
+        }        
+            
+        // denomClasses[S->classNr].second=0;  // <------------------------------------- 
+        HClass=evaluateDenomClass(GFP,denomClasses[S->classNr]);
+        #pragma omp critical(ACCUMULATE)
+        {
+            H.addCRF(HClass);
+        }
+        
+    }
+    
+    if(!evaluationActive && facePolys[tn].size() >= 20){
+        #pragma omp critical(FACEPOLYS)
+        {
+            evaluationActive=true;
+            transferFacePolys(facePolys[tn],faceClasses);
+            evaluationActive=false;
+        }
+     }
+    
+    #pragma omp critical(PROGRESS) // a little bit of progress report
+    {
+    if((++nrSimplDone)%10==0 && verbose_INT)
+        cout << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
+        // nrActiveFacesOld=nrActiveFaces;
+    }
+ 
+  }  // Stanley dec
+    
+  } // parallel
+  
+  // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
+  
+    for(int i=0;i<omp_get_max_threads();++i)
+        transferFacePolys(facePolys[i],faceClasses);
+  
+  if(!faceClasses.empty())
+    H.addCRF(evaluateFaceClasses(GFP,faceClasses));
+    
+    // now we must return to rational coefficients 
+ 
+  CyclRatFunct HRat(zero(R));
+  HRat.denom=H.denom;
+  HRat.num=makeQQCoeff(H.num,R); 
+   
+  HRat.num*=FF.myRemainingFactor;
+  HRat.num/=power(lcmDets,deg(F));
+  
+  HRat.showCoprimeCRF();
+  
+  mpz_class commonDen; // common denominator of coefficients of numerator of H  
+  libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
+  
+  /* string outputName;
+  if(pnm==pureName(project))
+    outputName=project;
+  else
+    outputName=project+"."+pnm;
+  
+  if(output_dir!="")
+      outputName=output_dir+pureName(outputName);
+    
+  writeGenEhrhartSeries(outputName, FFNonhom,HS,deg(F)+rank-1,commonDen); */
+  
+     
+   verbose_INT=verbose_INTsave; 
+}
+
+
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template void integrate(Cone<long>& C, const bool do_leadCoeff, bool& homogeneous);
+template void integrate(Cone<long>& C, const bool do_leadCoeff);
 #endif // NMZ_MIC_OFFLOAD
-template void integrate(Cone<long long>& C, const bool do_leadCoeff, bool& homogeneous);
-template void integrate(Cone<mpz_class>& C, const bool do_leadCoeff, bool& homogeneous);
+template void integrate(Cone<long long>& C, const bool do_leadCoeff);
+template void integrate(Cone<mpz_class>& C, const bool do_leadCoeff);
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template void generalizedEhrhartSeries<long>(Cone<long>& C);
+#endif // NMZ_MIC_OFFLOAD
+template void generalizedEhrhartSeries<long long>(Cone<long long>& C);
+template void generalizedEhrhartSeries<mpz_class>(Cone<mpz_class>& C);
+
+
 
 } // namespace libnormaliz
