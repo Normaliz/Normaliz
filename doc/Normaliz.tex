@@ -3363,7 +3363,7 @@ If we are just interested in the degree $1$ points, Normaliz uses the approximat
 
 Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. Furthermore, if some big simplices are still remaining, method (2) is applied again in both cases with a higher approximation level. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
 
-The use of SCIP requires a Normaliz executable that is built with SCIP see Section \ref{ChinRem}{compile}). Without SCIP only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this vase the approximation method will be tried as well. 
+The use of SCIP requires a Normaliz executable that is built with SCIP see Section \ref{ChinRem}{compile}). Without SCIP only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this case the approximation method will be tried as well. 
 
 Recommendation: \emph{If you are applying Normaliz to arithmetically complicated examples, use Normaliz with SCIP.}
 
@@ -3399,9 +3399,9 @@ runtime with subdivision    & 0.7 s & 58 s& 2 m 36 s\\ \hline
 
 A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in|.
 
-Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nestd triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
+Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nested triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
 
-\emph{Remark}\enspace The boinds mentioned above wrk well up to dimension $\approx 10$. In larger dimension they are too low because the probability of finding a subdivision point becomes too small.
+\emph{Remark}\enspace The bounds mentioned above work well up to dimension $\approx 10$. In larger dimension they are too low because the probability of finding a subdivision point becomes too small.
 
 \subsection{Primal vs. dual -- division of labor}\label{div_labor}
 
@@ -3411,8 +3411,8 @@ As already mentioned several times, Normaliz has two main algorithms for the com
 $$
 r+\frac{50}{r} \le s \le 2e
 $$
-where $r$ is the rank of the monoid to be computed and $e$ is the dimension of the space in which the data are embedded. These conditions ate typically fulfilled for diophantine systems of equations whoe nonnegative solutions are asked for. 
-In the case of very few or many hyperplanes Normaliz prefers the primal algorithm. While this combinatorial condition is the only criterion for Nrmaliz, it depends also on the arithmetic of the example what algorithm is better. At present Normaliz makes no attempt to measure it in some way.
+where $r$ is the rank of the monoid to be computed and $e$ is the dimension of the space in which the data are embedded. These conditions ate typically fulfilled for diophantine systems of equations whose nonnegative solutions are asked for. 
+In the case of very few or many hyperplanes Normaliz prefers the primal algorithm. While this combinatorial condition is the only criterion for Normaliz, it depends also on the arithmetic of the example what algorithm is better. At present Normaliz makes no attempt to measure it in some way.
 
 When both Hilbert basis and Hilbert series are to be computed, the best solution can be the combination of both algorithms. We recommend \verb|2equations.in| as a demonstration example which combines the algorithmic variant \verb|DualMode| and the computation goal \verb|HilbertSeries|:
 \begin{Verbatim}
@@ -3430,7 +3430,7 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Symmetrization}\label{symmetrize}
 
-Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $P$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
+Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpler than that of $P$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
 
 The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the sign conditions $x_i\ge 0$ for all coordinates  $x_i$ of $C$. Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector $y$  of sums is then a product of binomial coefficients -- a polynomial as desired.
 

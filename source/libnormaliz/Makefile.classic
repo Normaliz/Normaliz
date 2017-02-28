@@ -7,7 +7,7 @@ INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
-NMZINTSOURCES = nmz_integrate.h cycl_rat_funct.cpp nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
+NMZINTSOURCES = nmz_integrate.h nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
 
 ## -I .. necessary since we include files libnormaliz/*.h and *.cpp
 CXXFLAGS += -I .. 
@@ -37,7 +37,7 @@ libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 nmz_integrate.o:  $(NMZINTSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integrate.cpp -o $@
 
-libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o libnormaliz-templated.o bottom.o offload_handler.o cycl_rat_funct.o nmz_integrate.o
+libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o libnormaliz-templated.o bottom.o offload_handler.o  nmz_integrate.o
 	ar -cr $@ $^
 
 .PHONY : install

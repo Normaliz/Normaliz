@@ -1,3 +1,4 @@
+#ifdef NMZ_COCOA
 /*
  * nmzIntegrate
  * Copyright (C) 2012-2014  Winfried Bruns, Christof Soeger
@@ -175,10 +176,25 @@ void readTri(Cone<Integer>& C, list<TRIDATA>& triang){
     }
 }
 
+void testPolynomial(const string& poly_as_string,long dim){
+
+  GlobalManager CoCoAFoundations;
+  
+  string dummy=poly_as_string;
+  SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
+  RingElem the_only_factor= ReadExpr(R, dummy); // there is only one
+  // cout << "PPPPPPPPPPPPP " << the_only_factor << endl;
+  vector<RingElem> V=homogComps(the_only_factor);  
+    
+}
+
 
 template<typename Integer>
 void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
   GlobalManager CoCoAFoundations;
+  
+   long dim=C.getEmbeddingDim();
+   // testPolynomial(C.getIntData().getPolynomial(),dim);
  
   bool verbose_INTsave=verbose_INT;
   verbose_INT=C.get_verbose();
@@ -190,6 +206,7 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
     verboseOutput() << "Integration" << endl;
     verboseOutput() << "==========================================================" << endl << endl;
   }
+  
   vector<long> grading;
   convert(grading,C.getGrading());
   long gradingDenom;
@@ -200,7 +217,6 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
   readGens(C,gens,grading,false);
   if(verbose_INT) 
     verboseOutput() << "Generators read" << endl;
-  long dim=C.getEmbeddingDim();
 
   list<TRIDATA> triang;
   readTri(C,triang);
@@ -220,7 +236,7 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
         lcmDegs=lcm(lcmDegs,degrees[i]);
     }
   }
-
+  
   SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
   SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
   vector<RingElem> primeFactors;
@@ -229,8 +245,10 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
   RingElem remainingFactor(one(R));
 
   bool homogeneous;
-  RingElem F=processInputPolynomial(C.getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
-                multiplicities,remainingFactor,homogeneous,do_leadCoeff);
+  RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
+                multiplicities,remainingFactor,homogeneous,do_leadCoeff); 
+  
+  C.getIntData().setDegreeOfPolynomial(deg(F));
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
   for(i=0;i<deg(F)+dim;++i)
@@ -738,8 +756,10 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   RingElem remainingFactor(one(R));
 
   bool homogeneous;
-  RingElem F=processInputPolynomial(C.getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
+  RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,false);
+  
+  C.getIntData().setDegreeOfPolynomial(deg(F));
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
   for(i=0;i<deg(F)+dim;++i)
@@ -893,6 +913,8 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   mpz_class commonDen; // common denominator of coefficients of numerator of H  
   libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
   
+  C.getIntData().setWeightedEhrhartSeries(make_pair(HS,commonDen));
+  
   /* string outputName;
   if(pnm==pureName(project))
     outputName=project;
@@ -924,3 +946,5 @@ template void generalizedEhrhartSeries<mpz_class>(Cone<mpz_class>& C);
 
 
 } // namespace libnormaliz
+
+#endif //NMZ_COCOA

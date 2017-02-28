@@ -44,6 +44,7 @@
 namespace libnormaliz {
 using std::cout; using std::endl; using std::flush;
 using std::istringstream; using std::ostringstream;
+using std::pair;
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
@@ -818,45 +819,56 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
 IntegrationData::IntegrationData(){
 }
 
+string IntegrationData::getPolynomial() const{
+    return polynomial;
+}
+
+long IntegrationData::getDegreeOfPolynomial() const{
+    return degree_of_polynomial; 
+}
+
+void IntegrationData::setDegreeOfPolynomial(const long d){
+    degree_of_polynomial=d; 
+}
+
 IntegrationData::IntegrationData(const string& poly){
     polynomial=poly;
     polynomial_is_homogeneous=false; // to be on the safe side
 }
 
-void IntegrationData::computeWeightedEhrhatQuasiPolynomial() const{
-    weighted_Ehrhart_series.computeHilbertQuasiPolynomial();
+void IntegrationData::computeWeightedEhrhartQuasiPolynomial() const{
+    weighted_Ehrhart_series.first.computeHilbertQuasiPolynomial();
 }
 
 bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
-    return weighted_Ehrhart_series.isHilbertQuasiPolynomialComputed();
+    return weighted_Ehrhart_series.first.isHilbertQuasiPolynomialComputed();
 }
 
-vector< vector<mpz_class> > IntegrationData::getWeightedEhrhatQuasiPolynomial() const{
-    return weighted_Ehrhart_series.getHilbertQuasiPolynomial();
+vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
+    return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
 }
 
-mpz_class IntegrationData::getWeightedEhrhatQuasiPolynomialDenom() const{
-    return weighted_Ehrhart_series.getHilbertQuasiPolynomialDenom();         
+mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const{
+    return weighted_Ehrhart_series.first.getHilbertQuasiPolynomialDenom()*weighted_Ehrhart_series.second;         
 }
 
-
-const vector<mpz_class>& IntegrationData::getNum() const{
-    return weighted_Ehrhart_series.getNum();
+const vector<mpz_class>& IntegrationData::getNum_ZZ() const{
+    return weighted_Ehrhart_series.first.getNum();
 }
 
 const map<long, denom_t>& IntegrationData::getDenom() const{
-    return weighted_Ehrhart_series.getDenom();
+    return weighted_Ehrhart_series.first.getDenom();
 }
 
-const vector<mpz_class>& IntegrationData::getCyclotomicNum() const{
-    return weighted_Ehrhart_series.getCyclotomicNum();   
+const vector<mpz_class>& IntegrationData::getCyclotomicNum_ZZ() const{
+    return weighted_Ehrhart_series.first.getCyclotomicNum();   
 }
 
 const map<long, denom_t>& IntegrationData::getCyclotomicDenom() const{
-    return weighted_Ehrhart_series.getCyclotomicDenom();  
+    return weighted_Ehrhart_series.first.getCyclotomicDenom();  
 }
 
-const HilbertSeries& IntegrationData::getWeightedEhrhartSeries() const{
+const pair<HilbertSeries, mpz_class>& IntegrationData::getWeightedEhrhartSeries() const{
     return weighted_Ehrhart_series;
 }
 
@@ -864,8 +876,8 @@ mpq_class IntegrationData::getIntegral() const{
     return integral;
 }
 
-mpq_class IntegrationData::getCommonDenom() const{
-    return common_denom;
+mpq_class IntegrationData::getNumeratorCommonDenom() const{
+    return weighted_Ehrhart_series.second;
 }
 
 mpq_class IntegrationData::getLeadCoef() const{
@@ -888,12 +900,8 @@ void IntegrationData::setVirtualMultiplicity(const mpq_class I){
         virtual_multiplicity=I;
 }
 
-void IntegrationData::setCommonDenom(const mpq_class D){
-        common_denom=D;
-}
-
-void IntegrationData::setWeighteEhrhartSeries(const HilbertSeries& H){
-    weighted_Ehrhart_series=H;
+void IntegrationData::setWeightedEhrhartSeries(const pair<HilbertSeries, mpz_class>& E){
+    weighted_Ehrhart_series=E;
 }
 
 void IntegrationData::setHomogeneity(const bool hom){

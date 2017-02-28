@@ -1556,10 +1556,18 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
     return ToCompute;
 }
 
+
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    
+#ifndef NMZ_COCOA
+   if(ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) 
+       || ToCompute.test(ConeProperty::WeightedEhrhartSeries))
+       throw FatalException("Integral, VirtualMultiplicity, WeightedEhrhartSeries only computable with CoCoALib");
+#endif
 
     default_mode=ToCompute.test(ConeProperty::DefaultMode);
     
@@ -3319,25 +3327,31 @@ template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
+#ifdef NMZ_COCOA
     integrate<Integer>(*this,false);
     is_Computed.set(ConeProperty::Integral);
+#endif
 }
     
 template<typename Integer>
 void Cone<Integer>::compute_leadcoef(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::LeadCoef) || !ToCompute.test(ConeProperty::LeadCoef))
         return;
+#ifdef NMZ_COCOA
     integrate<Integer>(*this,true);
     is_Computed.set(ConeProperty::LeadCoef);
     is_Computed.set(ConeProperty::VirtualMultiplicity);
+#endif
 }
 
 template<typename Integer>
 void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         return;
+#ifdef NMZ_COCOA
     generalizedEhrhartSeries(*this);
     is_Computed.set(ConeProperty::WeightedEhrhartSeries);
+#endif
 }
 //---------------------------------------------------------------------------
 template<typename Integer>

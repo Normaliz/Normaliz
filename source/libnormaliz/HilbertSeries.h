@@ -59,6 +59,7 @@ using std::vector;
 using std::map;
 using std::ostream;
 using std::string;
+using std::pair;
 
 class HilbertSeries;
 
@@ -249,39 +250,42 @@ vector<Integer> compute_polynomial(vector<Integer> h_vector, int dim);
 class IntegrationData{
 
     string polynomial;
+    long degree_of_polynomial;
     bool polynomial_is_homogeneous;
     mpq_class integral, lead_coef, virtual_multiplicity;
-    HilbertSeries weighted_Ehrhart_series;
-    mpz_class common_denom;
-    
+    pair<HilbertSeries, mpz_class> weighted_Ehrhart_series; // the second component holds the common
+                                                            // denominator of the coefficients in the numerator    
 public:
     
     void setIntegral(const mpq_class I);
     void setLeadCoef(const mpq_class L);
     void setVirtualMultiplicity(const mpq_class I);
-    void setWeighteEhrhartSeries(const HilbertSeries& H);
+    void setWeightedEhrhartSeries(const pair<HilbertSeries, mpz_class>& E);
     void setHomogeneity(const bool hom);
-    void setCommonDenom(const mpq_class D);
+    // void setCommonDenom(const mpq_class D);
+    void setDegreeOfPolynomial(const long d);
     
+    string getPolynomial() const;
+    long getDegreeOfPolynomial() const;
     mpq_class getIntegral() const;
     mpq_class getLeadCoef() const;
     mpq_class getVirtualMultiplicity() const;
-    const HilbertSeries& getWeightedEhrhartSeries() const;
+    const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries() const;
     bool getHomogenity() const;
-    mpq_class getCommonDenom() const;
+    mpq_class getNumeratorCommonDenom() const;
     
-    const vector<mpz_class>& getNum() const;
+    const vector<mpz_class>& getNum_ZZ() const;
     // returns the denominator, repr. as a map of the exponents of (1-t^i)^e
     const map<long, denom_t>& getDenom() const;
 
-    const vector<mpz_class>& getCyclotomicNum() const;
+    const vector<mpz_class>& getCyclotomicNum_ZZ() const;
     // returns the denominator, repr. as a map of the exponents of the cyclotomic polynomials
     const map<long, denom_t>& getCyclotomicDenom() const;
     
-    void computeWeightedEhrhatQuasiPolynomial() const;
+    void computeWeightedEhrhartQuasiPolynomial() const;
     bool isWeightedEhrhartQuasiPolynomialComputed() const;
-    vector< vector<mpz_class> > getWeightedEhrhatQuasiPolynomial() const;
-    mpz_class getWeightedEhrhatQuasiPolynomialDenom() const;
+    vector< vector<mpz_class> > getWeightedEhrhartQuasiPolynomial() const;
+    mpz_class getWeightedEhrhartQuasiPolynomialDenom() const;
     
     IntegrationData(const string& poly);
     IntegrationData();

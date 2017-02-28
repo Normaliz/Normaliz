@@ -337,6 +337,8 @@ void read_polynomial(istream& in, string& polynomial) {
     char c;
     while(true){
         in >> c;
+        if(in.fail())
+                throw BadInputException("Error while reading polynomial!");
         if(c==';')
             return;
         polynomial+=c;

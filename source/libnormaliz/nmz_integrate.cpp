@@ -1,3 +1,4 @@
+#ifdef NMZ_COCOA
 /*
  * nmzIntegrate
  * Copyright (C) 2012-2014  Winfried Bruns, Christof Soeger
@@ -23,7 +24,8 @@
 
 
 #include "libnormaliz/nmz_integrate.h"
-#include "libnormaliz/cycl_rat_funct.cpp"
+// #include "libnormaliz/cycl_rat_funct.cpp"
 #include "libnormaliz/nmz_polynomial.cpp"
 #include "libnormaliz/nmz_integral.cpp"
 
+#endif //NMZ_COCOA

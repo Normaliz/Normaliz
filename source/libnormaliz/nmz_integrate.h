@@ -21,6 +21,11 @@
  * terms of service.
  */
 
+#ifndef NMZ_INTEGRATE_H
+#define NMZ_INTEGRATE_H
+
+#ifdef NMZ_COCOA
+
 #include "CoCoA/library.H"
 using namespace CoCoA;
 
@@ -35,9 +40,6 @@ using namespace CoCoA;
 #include "libnormaliz/HilbertSeries.h"
 
 #include "libnormaliz/my_omp.h"
-
-#ifndef NMZINTTYPE_H_
-#define NMZINTTYPE_H_
 
 using namespace std;
 
@@ -141,4 +143,8 @@ mpz_class ourFactorial(const long& n){
 }
 
 }  //end namespace libnormaliz
-#endif /* CYCRATFUNCT_H_ */
+
+#endif //NMZ_COCOA
+
+#endif // NMZ_INTEGRATE_H
+

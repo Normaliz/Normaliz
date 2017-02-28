@@ -511,6 +511,24 @@ void Output<Integer>::write_inv_file() const{
                 inv <<"integer multiplicity = "      << mult.get_num() << endl;
                 inv <<"integer multiplicity_denom = "<< mult.get_den() << endl;
             }
+            if (Result->isComputed(ConeProperty::WeightedEhrhartSeries)){
+                const HilbertSeries& HS=Result->getIntData().getWeightedEhrhartSeries().first;
+                
+                inv <<"vector "<< HS.getNum().size() <<" weighted_ehrhart_series_num = " << HS.getNum();
+                inv <<"integer num_common_denom = " << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+                inv <<"vector "<< to_vector(HS.getDenom()).size() <<" weighted_ehrhart_series_num = " 
+                        << to_vector(HS.getDenom());
+                Result->getIntData().computeWeightedEhrhartQuasiPolynomial();
+                if (Result->getIntData().isWeightedEhrhartQuasiPolynomialComputed()) {
+                    vector< vector <mpz_class> > hqp = Result->getIntData().getWeightedEhrhartQuasiPolynomial();
+                    inv << "matrix " << hqp.size() << " " << hqp[0].size()
+                        << " weighted_ehrhart_quasipolynomial = ";
+                    inv << endl << hqp;
+                    inv << "integer weighted_ehrhart_quasipolynomial_denom = " 
+                        << Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
+                }
+            }
+            
             if (Result->isComputed(ConeProperty::LeadCoef)){
                 mpq_class mult = Result->getLeadCoef();
                 inv <<"integer lead_coef = "      << mult.get_num() << endl;
@@ -572,6 +590,76 @@ void Output<Integer>::write_inv_file() const{
     }
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
+
+    HilbertSeries HS=Result->getIntData().getWeightedEhrhartSeries().first;
+    out << "Generalized Ehrhart series:" << endl;
+    vector<mpz_class> num( HS.getNum());
+    for(size_t i=0;i<num.size();++i)
+        out << num[i] << " ";
+    out << endl << "Common denominator of coefficients: ";
+    out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+    map<long, long> HS_Denom = HS.getDenom();
+    long nr_factors = 0;
+    for (map<long, long>::iterator it = HS_Denom.begin(); it!=HS_Denom.end(); ++it) {
+        nr_factors += it->second;
+    }
+    out << "Series denominator with " << nr_factors << " factors:" << endl;
+    out << HS.getDenom();
+    out << endl;
+    long period = HS.getPeriod();
+    if (period == 1) {
+        out << "Generalized Ehrhart polynomial:" << endl;
+        for(size_t i=0; i<HS.getHilbertQuasiPolynomial()[0].size();++i)
+            out << HS.getHilbertQuasiPolynomial()[0][i] << " ";
+        out << endl;
+        out << "with common denominator: ";
+        out << HS.getHilbertQuasiPolynomialDenom()*Result->getIntData().getNumeratorCommonDenom();
+        // out << endl<< endl; 
+    } else {
+        // output cyclonomic representation
+        out << "Generalized Ehrhart series with cyclotomic denominator:" << endl;
+        num=HS.getCyclotomicNum();
+        for(size_t i=0;i<num.size();++i)
+            out << num[i] << " ";
+        out << endl << "Common denominator of coefficients: ";
+        out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+        out << "Series cyclotomic denominator:" << endl;
+        out << HS.getCyclotomicDenom();
+        out << endl;
+        // Generalized Ehrhart quasi-polynomial
+        vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
+        if (hilbert_quasi_poly.size() > 0) { // == 0 means not computed
+            out<<"Generalized Ehrhart quasi-polynomial of period " << period << ":" << endl;
+            Matrix<mpz_class> HQP(hilbert_quasi_poly);
+            HQP.pretty_print(out,true);
+            out<<"with common denominator: "
+               <<Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
+        }
+    }
+    
+   long deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
+   out  << endl << endl << "Degree of (quasi)polynomial: " << deg << endl;
+   
+   long virtDeg=Result->getRank()+Result->getIntData().getDegreeOfPolynomial()-1;
+
+   out << endl << "Expected degree: " <<  virtDeg << endl;
+        
+   out << endl << "Virtual multiplicity: ";
+
+   mpq_class genMultQ;
+   mpz_class fact=1;
+   for(long i=1;i<=virtDeg;++i)
+       fact*=i;
+   if(deg==virtDeg)   
+       genMultQ=HS.getHilbertQuasiPolynomial()[0][virtDeg];
+   genMultQ=genMultQ/(HS.getHilbertQuasiPolynomialDenom()*Result->getIntData().getNumeratorCommonDenom())
+                         *fact;
+   out << genMultQ << endl;
+}
 
 //---------------------------------------------------------------------------
 
@@ -821,13 +909,18 @@ void Output<Integer>::write_files() const {
             }
 
         }
+ 
+        if ( Result->isComputed(ConeProperty::WeightedEhrhartSeries) )
+            writeWeightedEhrhartSeries(out);
+            
         
-        if ( Result->isComputed(ConeProperty::LeadCoef) ) {
-            out << "leading coefficient of weighted Ehrhart series = "<< Result->getLeadCoef() << endl;
+        if ( Result->isComputed(ConeProperty::LeadCoef) && !Result->isComputed(ConeProperty::WeightedEhrhartSeries) ) {
+            out << "leading coefficient of weighted Ehrhart quasipolynomial = "<< Result->getLeadCoef() << endl;
             out << endl;
         }
         
-        if ( Result->isComputed(ConeProperty::VirtualMultiplicity)) {
+        if ( Result->isComputed(ConeProperty::VirtualMultiplicity) &&
+                        !Result->isComputed(ConeProperty::WeightedEhrhartSeries)) {
             out << "virtual multiplicity of weighted Ehrhart series = "<< Result->getVirtualMultiplicity() << endl;
             out << endl;
         }

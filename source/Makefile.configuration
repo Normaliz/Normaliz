@@ -2,7 +2,7 @@
 ## Makefile configuration for normaliz
 ## (for the classic build system)
 ##
-CXX = g++ 
+CXX = g++
 #CXX = linux32 g++ -m32 -march=i686  #compile it for linux32
 CXXFLAGS += -std=c++11
 CXXFLAGS += -Wall -pedantic
@@ -46,8 +46,13 @@ ifeq ($(SCIP),yes)
     -lz
 endif
 
-CXXFLAGS += -I $(COCOA_ROOT)/include
+##use COCOA?
+ifeq ($(COCOA),no)
 
-COCOAFLAGS = $(COCOA_ROOT)/lib/libcocoa.a
+else
+  CXXFLAGS += -DNMZ_COCOA
+  CXXFLAGS += -I $(COCOA_ROOT)/include
+  COCOAFLAGS = $(COCOA_ROOT)/lib/libcocoa.a
+endif
 
 LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(GMPFLAGS)
