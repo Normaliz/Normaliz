@@ -30,11 +30,6 @@ normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 ## normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
 ## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
 
-nmzIntegrate: lib libnormaliz/libnormaliz.a
-	@$(MAKE) --directory=genEhrhart -f Makefile.classic nmzIntegrate
-	rm -f nmzIntegrate
-	cp genEhrhart/nmzIntegrate .
-
 .PHONY : maxsimplex
 maxsimplex: lib libnormaliz/libnormaliz.a
 	@$(MAKE) --directory=maxsimplex -f Makefile.classic
@@ -48,19 +43,15 @@ lib:
 install: linknormaliz
 	mkdir -p $(INSTALLDIR)/bin
 	test ! -e normaliz || install -m 0755 normaliz $(INSTALLDIR)/bin
-	test ! -e nmzIntegrate || install -m 0755 nmzIntegrate $(INSTALLDIR)/bin
 	$(MAKE) --directory=libnormaliz -f Makefile.classic install
 	
 
 .PHONY : clean
 clean:
 	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
-	$(MAKE) --directory=genEhrhart -f Makefile.classic clean
 	$(MAKE) --directory=maxsimplex -f Makefile.classic clean
 	-rm -f normaliz.o
 	-rm -f normaliz
-	-rm -f nmzIntegrate
 	-rm -f normaliz?
 	-rm -f normaliz-pg
-
 

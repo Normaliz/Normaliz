@@ -183,7 +183,6 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     //read the file
     string polynomial="";
     map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in, options,polynomial);
-    cout << "POLY " << polynomial << endl;
 
     options.activateDefaultMode(); // only if no real cone property is given!
 
@@ -206,7 +205,7 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
-    MyCone.set_polynomial(polynomial);
+    MyCone.setPolynomial(polynomial);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
     MyCone.set_nmz_call(arg0);

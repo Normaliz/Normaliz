@@ -836,10 +836,6 @@ IntegrationData::IntegrationData(const string& poly){
     polynomial_is_homogeneous=false; // to be on the safe side
 }
 
-void IntegrationData::computeWeightedEhrhartQuasiPolynomial() const{
-    weighted_Ehrhart_series.first.computeHilbertQuasiPolynomial();
-}
-
 bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
     return weighted_Ehrhart_series.first.isHilbertQuasiPolynomialComputed();
 }
@@ -847,6 +843,11 @@ bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
 vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
     return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
 }
+
+void IntegrationData::computeWeightedEhrhartQuasiPolynomial(){
+    weighted_Ehrhart_series.first.computeHilbertQuasiPolynomial();
+}
+
 
 mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const{
     return weighted_Ehrhart_series.first.getHilbertQuasiPolynomialDenom()*weighted_Ehrhart_series.second;         
@@ -880,20 +881,12 @@ mpq_class IntegrationData::getNumeratorCommonDenom() const{
     return weighted_Ehrhart_series.second;
 }
 
-mpq_class IntegrationData::getLeadCoef() const{
-    return lead_coef;
-}
-
 mpq_class IntegrationData::getVirtualMultiplicity() const{
         return virtual_multiplicity;
 }
 
 void IntegrationData::setIntegral(const mpq_class I){
     integral=I;
-}
-
-void IntegrationData::setLeadCoef(const mpq_class L){
-    lead_coef=L;
 }
 
 void IntegrationData::setVirtualMultiplicity(const mpq_class I){

@@ -222,7 +222,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 to_compute.set(ConeProperty::Integral);
                 break;
             case 'L': 
-                to_compute.set(ConeProperty::LeadCoef);
+                to_compute.set(ConeProperty::VirtualMultiplicity);
                 break;
             case 'E': 
                 to_compute.set(ConeProperty::WeightedEhrhartSeries);

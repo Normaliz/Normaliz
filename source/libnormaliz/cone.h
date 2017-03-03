@@ -152,6 +152,7 @@ public:
     size_t getModuleRank();
     
     Cone<Integer>& getIntegerHullCone() const;
+    Cone<Integer>& getSymmetrizedCone() const;
 
     const Matrix<Integer>& getGeneratorsMatrix();
     const vector< vector<Integer> >& getGenerators();
@@ -211,8 +212,8 @@ public:
 
     mpq_class getMultiplicity();
     mpq_class getVirtualMultiplicity();
-    mpq_class getLeadCoef();
     mpq_class getIntegral();
+    const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
     
     string getPolynomial() const;
     
@@ -245,7 +246,7 @@ public:
     void set_nmz_call(const string& path);
     void set_output_dir(string name);
     
-    void set_polynomial(string poly);
+    void setPolynomial(string poly);
     
     bool get_verbose ();
     
@@ -257,6 +258,9 @@ public:
 //---------------------------------------------------------------------------
 
 private:
+    
+    bool already_in_compute; // protection against call of compute within compute
+                             // such calls must go via recursive_compute.
     
     string project;
     string output_dir;
@@ -296,7 +300,6 @@ private:
     mpq_class multiplicity;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
-    mpq_class LeadCoef;
     vector<Integer> WitnessNotIntegrallyClosed;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> BasisMaxSubspace;
@@ -338,6 +341,7 @@ private:
     bool change_integer_type;
     
     Cone<Integer>* IntHullCone;
+    Cone<Integer>* SymmCone;
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
@@ -417,7 +421,7 @@ private:
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
     
     void compute_integral (ConeProperties& ToCompute);
-    void compute_leadcoef (ConeProperties& ToCompute);
+    void compute_virt_mult (ConeProperties& ToCompute);
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false

@@ -50,7 +50,7 @@ endif
 ifeq ($(COCOA),no)
 
 else
-  CXXFLAGS += -DNMZ_COCOA
+  CXXFLAGS += -DNMZ_COCOA -DCoCoA_THREADSAFE_HACK
   CXXFLAGS += -I $(COCOA_ROOT)/include
   COCOAFLAGS = $(COCOA_ROOT)/lib/libcocoa.a
 endif

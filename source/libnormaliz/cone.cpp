@@ -243,6 +243,8 @@ template<typename Integer>
 Cone<Integer>::~Cone() {
     if(IntHullCone!=NULL)
         delete IntHullCone;
+    if(IntHullCone!=NULL)
+        delete SymmCone;
 }
 
 //---------------------------------------------------------------------------
@@ -910,6 +912,9 @@ void Cone<Integer>::initialize() {
         change_integer_type = false;
     }
     IntHullCone=NULL;
+    SymmCone=NULL;
+    
+    already_in_compute=false;
 }
 
 //---------------------------------------------------------------------------
@@ -1109,6 +1114,12 @@ template<typename Integer>
 Cone<Integer>& Cone<Integer>::getIntegerHullCone() const {
     return *IntHullCone;
 }
+
+template<typename Integer>
+Cone<Integer>& Cone<Integer>::getSymmetrizedCone() const {
+    return *SymmCone;
+}
+
 template<typename Integer>
 size_t Cone<Integer>::getRank() {
     compute(ConeProperty::Sublattice);
@@ -1418,10 +1429,10 @@ mpq_class Cone<Integer>::getVirtualMultiplicity() {
 }
 
 template<typename Integer>
-mpq_class Cone<Integer>::getLeadCoef() {
-    if(!isComputed(ConeProperty::LeadCoef))  // see above
-        compute(ConeProperty::LeadCoef);
-    return IntData.getLeadCoef();
+const pair<HilbertSeries, mpz_class>& Cone<Integer>::getWeightedEhrhartSeries(){
+    if(!isComputed(ConeProperty::WeightedEhrhartSeries))  // see above
+        compute(ConeProperty::WeightedEhrhartSeries);
+    return getIntData().getWeightedEhrhartSeries();
 }
 
 template<typename Integer>
@@ -1549,6 +1560,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
     bool save_explicit_HilbertSeries=explicit_HilbertSeries;
     bool save_naked_dual= naked_dual;
     bool save_default_mode= default_mode;
+    already_in_compute=false;
     ToCompute=compute(ToCompute);
     explicit_HilbertSeries=save_explicit_HilbertSeries;
     naked_dual=save_naked_dual;
@@ -1556,17 +1568,18 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
     return ToCompute;
 }
 
-
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     
+    assert(!already_in_compute);
+    already_in_compute=true;
+    
 #ifndef NMZ_COCOA
    if(ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) 
        || ToCompute.test(ConeProperty::WeightedEhrhartSeries))
-       throw FatalException("Integral, VirtualMultiplicity, WeightedEhrhartSeries only computable with CoCoALib");
+       throw BadInputException("Integral, VirtualMultiplicity, WeightedEhrhartSeries only computable with CoCoALib");
 #endif
 
     default_mode=ToCompute.test(ConeProperty::DefaultMode);
@@ -1612,7 +1625,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     try_symmetrization(ToCompute);
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ToCompute;
+        already_in_compute=false; return ToCompute;
     }
 
     
@@ -1628,7 +1641,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
-        return ToCompute;
+        already_in_compute=false; return ToCompute;
     }
 
     /* preparation: get generators if necessary */
@@ -1651,7 +1664,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
-        return ToCompute;
+        already_in_compute=false; return ToCompute;
     }
 
     // the computation of the full cone
@@ -1686,8 +1699,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute_integral(ToCompute);
     ToCompute.reset(is_Computed);
     
-    if(ToCompute.test(ConeProperty::LeadCoef))
-        compute_leadcoef(ToCompute);
+    if(ToCompute.test(ConeProperty::VirtualMultiplicity))
+        compute_virt_mult(ToCompute);
     ToCompute.reset(is_Computed);
 
     /* check if everything is computed */
@@ -1700,7 +1713,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         throw NotComputableException(ToCompute.goals());
     }
     ToCompute.reset_compute_options();
-    return ToCompute;
+    already_in_compute=false; return ToCompute;
 }
 
 template<typename Integer>
@@ -2742,7 +2755,7 @@ void Cone<Integer>::set_nmz_call(const string& path){
 }
 
 template<typename Integer>
-void Cone<Integer>::set_polynomial(string poly){
+void Cone<Integer>::setPolynomial(string poly){
     IntData=IntegrationData(poly);
 }
 
@@ -2797,18 +2810,30 @@ string command(const string& original_call, const string& to_replace, const stri
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
-    
-    if(!ToCompute.test(ConeProperty::Symmetrize)) // for the time being
-        return;
-    
-    if(ToCompute.test(ConeProperty::NoSymmetrization) || inhomogeneous
+
+    if(ToCompute.test(ConeProperty::NoSymmetrization)
             || (!ToCompute.test(ConeProperty::HilbertSeries)
                     && !ToCompute.test(ConeProperty::Multiplicity)))
         return;
     
+    if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){
+        if(ToCompute.test(ConeProperty::Symmetrize))
+            throw BadInputException("Symmetrization not posible with the given input"); 
+        else
+            return;
+    }
+    
+    compute_generators();
+    if(getRank()==0)
+        return;
+    
+    size_t found;
+    string nmz_int_path;
+
+#ifndef NMZ_COCOA    
     if(project==""){
         if(ToCompute.test(ConeProperty::Symmetrize)){
-            throw FatalException("Symmetrization only not possible via libnormaliz");
+            throw BadInputException("Symmetrization via libnormaliz not possible without CoCoALib");
         }
         else
             return;
@@ -2825,26 +2850,17 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             return;
 	}
     #endif
-    
-    if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){
-        if(ToCompute.test(ConeProperty::Symmetrize))
-            throw BadInputException("Symmetrization not posible with the given input"); 
-        else
-            return;
-    }
-        
-    
-    size_t found;        
 
     // check whether nmzIntegrate can be accessed
     
-    string nmz_int_path=command(nmz_call,"normaliz","nmzIntegrate");
+    nmz_int_path=command(nmz_call,"normaliz","nmzIntegrate");
     if(nmz_int_path==""){
         if(ToCompute.test(ConeProperty::Symmetrize))
-            throw FatalException("nmzIntegrate not found");
+            throw BadInputException("nmzIntegrate not found");
         else
             return;
     }
+#endif
     
     Matrix<Integer> AllConst=ExcludedFaces;
     size_t nr_excl = AllConst.nr_of_rows();    
@@ -2888,6 +2904,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     }
     // now we have collected all constraints and cehcked the existence of the sign inequalities
     
+    
     AllConst.append(Grading);
     
     /* AllConst.pretty_print(cout);
@@ -2907,17 +2924,6 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             classes.insert(pair<vector<Integer>, size_t>(AllConst[j],1));
     }
     
-
-    /* for(C=classes.begin();C!=classes.end();++C)
-            cout << C->first;
-
-    cout << "--------------" << endl;
-    
-    for(C=classes.begin();C!=classes.end();++C)
-            cout << C->second << " ";
-        
-    cout << endl << endl; */
-    
     vector<size_t> multiplicities;
     Matrix<Integer> SymmConst(0,AllConst.nr_of_columns());
     
@@ -2926,15 +2932,17 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             SymmConst.append(C->first);
     }
     SymmConst=SymmConst.transpose();
-    /* cout << "--------------" << endl;
-    SymmConst.pretty_print(cout);
-    cout << "--------------" << endl; */
     
     vector<Integer> SymmGrad=SymmConst[SymmConst.nr_of_rows()-1];
     
+    if(verbose){
+        verboseOutput() << "Embedding dimension of symmetrized cone = " << SymmGrad.size() << endl;
+    }
+    
     if(SymmGrad.size() > 16|| SymmGrad.size() > 2*dim/3){
-        if(!ToCompute.test(ConeProperty::Symmetrize))
+        if(!ToCompute.test(ConeProperty::Symmetrize)){
             return;
+        }
     }
     
     Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
@@ -2953,16 +2961,6 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         SymmCong[SymmCong.nr_of_rows()-1].push_back(Congruences[i-(nr_inequ+nr_equ)][dim]); // restore modulus
     }
     
-    /* SymmInequ.pretty_print(cout);
-    cout << "===============" << endl;
-    SymmExcl.pretty_print(cout);
-    cout << "===============" << endl;
-    SymmEqu.pretty_print(cout);
-    cout << "===============" << endl;
-    SymmCong.pretty_print(cout);
-    cout << "===============" << endl;
-    cout << SymmGrad;*/
-    
     string polynomial;
     
     for(size_t i=0;i<multiplicities.size();++i){
@@ -2976,9 +2974,50 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         for(size_t j=1;j<multiplicities[i];++j)
             fact*=j;        
     }
-    polynomial+="/"+fact.get_str()+";"; 
+    polynomial+="/"+fact.get_str()+";";        
+
+#ifdef NMZ_COCOA
     
-    /* cout << polynomial << endl; */
+    map< InputType, Matrix<Integer> > SymmInput;
+    SymmInput[InputType::inequalities]=SymmInequ;
+    SymmInput[InputType::equations]=SymmEqu;
+    SymmInput[InputType::congruences]=SymmCong;
+    SymmInput[InputType::excluded_faces]=SymmExcl;
+    Matrix<Integer> GradMat(0,SymmGrad.size());
+    GradMat.append(SymmGrad);
+    SymmInput[InputType::grading]=GradMat;
+    Matrix<Integer> SymmNonNeg(0,SymmGrad.size());
+    vector<Integer>  NonNeg(SymmGrad.size(),1);
+    SymmNonNeg.append(NonNeg);
+    SymmInput[InputType::signs]=SymmNonNeg;
+    SymmCone=new Cone<Integer>(SymmInput);
+    SymmCone->setPolynomial(polynomial);
+    SymmCone->setVerbose(verbose);
+    ConeProperties SymmToCompute;
+    SymmToCompute.set(ConeProperty::WeightedEhrhartSeries,ToCompute.test(ConeProperty::HilbertSeries));
+    SymmToCompute.set(ConeProperty::VirtualMultiplicity,ToCompute.test(ConeProperty::Multiplicity));
+    SymmCone->compute(SymmToCompute);
+    if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
+        HSeries=SymmCone->getWeightedEhrhartSeries().first;
+        multiplicity=SymmCone->getVirtualMultiplicity();
+        is_Computed.set(ConeProperty::HilbertSeries);
+        is_Computed.set(ConeProperty::Multiplicity);
+    }
+    if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
+        HSeries=SymmCone->getWeightedEhrhartSeries().first;
+        multiplicity=SymmCone->getVirtualMultiplicity();
+        is_Computed.set(ConeProperty::HilbertSeries);
+        is_Computed.set(ConeProperty::Multiplicity);
+        return;
+    }
+    if(SymmCone->isComputed(ConeProperty::VirtualMultiplicity)){
+        multiplicity=SymmCone->getVirtualMultiplicity();
+        is_Computed.set(ConeProperty::Multiplicity);
+    }
+    is_Computed.set(ConeProperty::Symmetrize);
+    return;
+    
+#endif
     
     string slash="/";
     #ifdef _WIN32 //for 32 and 64 bit windows
@@ -3034,9 +3073,6 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     ofstream pnm_out(file);
     pnm_out << polynomial << endl;
     pnm_out.close();
-    
-    if(SymmGrad.size() > 16|| SymmGrad.size() > 2*dim/3)
-        throw NotComputableException("Dimension of symmetrized cone too large. Only iles for NmzIntegrate written.");        
 
     //cout << "argv[0] = "<< argv[0] << endl;
     string nmz_int_exec("\"");
@@ -3319,7 +3355,8 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
 }
 
 template<typename Integer>
-void integrate(Cone<Integer>& C, const bool do_leadCoeff);
+void integrate(Cone<Integer>& C, const bool do_virt_mult);
+
 template<typename Integer>
 void generalizedEhrhartSeries(Cone<Integer>& C);
 
@@ -3327,6 +3364,8 @@ template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
+    if(getRank()==0)
+        throw NotComputableException("Integral not computed in dimenison 0");
 #ifdef NMZ_COCOA
     integrate<Integer>(*this,false);
     is_Computed.set(ConeProperty::Integral);
@@ -3334,12 +3373,13 @@ void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
 }
     
 template<typename Integer>
-void Cone<Integer>::compute_leadcoef(ConeProperties& ToCompute){
-    if(isComputed(ConeProperty::LeadCoef) || !ToCompute.test(ConeProperty::LeadCoef))
+void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::VirtualMultiplicity) || !ToCompute.test(ConeProperty::VirtualMultiplicity))
         return;
+    if(getRank()==0)
+        throw NotComputableException("Virtual multiplicity not computed in dimenison 0");
 #ifdef NMZ_COCOA
     integrate<Integer>(*this,true);
-    is_Computed.set(ConeProperty::LeadCoef);
     is_Computed.set(ConeProperty::VirtualMultiplicity);
 #endif
 }
@@ -3348,9 +3388,15 @@ template<typename Integer>
 void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         return;
+    if(getRank()==0)
+        throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");
 #ifdef NMZ_COCOA
     generalizedEhrhartSeries(*this);
     is_Computed.set(ConeProperty::WeightedEhrhartSeries);
+    if(getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
+        is_Computed.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
+        is_Computed.set(ConeProperty::VirtualMultiplicity);
+    }
 #endif
 }
 //---------------------------------------------------------------------------

@@ -69,7 +69,6 @@ namespace ConeProperty {
         // rational valued
         Multiplicity,
         Integral,
-        LeadCoef,
         VirtualMultiplicity,
         // dimensions
         RecessionRank,
@@ -94,7 +93,7 @@ namespace ConeProperty {
         HilbertSeries,
         HilbertQuasiPolynomial,
         WeightedEhrhartSeries,
-        WeightedEhrhartQuasiPol,        
+        WeightedEhrhartQuasiPolynomial,        
         //
         // integer type for computations
         //

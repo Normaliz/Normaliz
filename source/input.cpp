@@ -339,8 +339,11 @@ void read_polynomial(istream& in, string& polynomial) {
         in >> c;
         if(in.fail())
                 throw BadInputException("Error while reading polynomial!");
-        if(c==';')
+        if(c==';'){
+            if(polynomial.size()==0)
+                throw BadInputException("Error while reading polynomial!");
             return;
+        }
         polynomial+=c;
     }
 }

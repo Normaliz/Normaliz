@@ -210,9 +210,9 @@ void makeStartEnd(const vector<long>& localDeg, vector<long>& St, vector<long>& 
         }
     /* if(St.size()!=End.size()){
         for (size_t i=0;i<denom.size(); ++i){
-            cout << denom.size() << endl;
-                    cout << denom[i] << " ";
-            cout << endl;
+            verboseOutput() << denom.size() << endl;
+                    verboseOutput() << denom[i] << " ";
+            verboseOutput() << endl;
         }
     }*/
 }
@@ -223,12 +223,12 @@ vector<long> orderExposInner(vector<long>& vin, const vector<long>& St, vector<l
     long p,s,pend,pst;
     bool ordered;
     if(St.size()!=End.size()){
-            cout << St.size() << " " << End.size() << " " << vin.size() << endl;
-            cout << St[0] << endl;
+            verboseOutput() << St.size() << " " << End.size() << " " << vin.size() << endl;
+            verboseOutput() << St[0] << endl;
             for (size_t i=0;i<vin.size(); ++i){
-                    cout << vin[i] << " ";
+                    verboseOutput() << vin[i] << " ";
             }
-            cout << endl;
+            verboseOutput() << endl;
             assert(false);
     }
     for(size_t j=0;j<St.size();++j){  // now we go over the blocks
@@ -305,16 +305,16 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
     // to lex. Therefore push_front
 
     RingElem r(zero(P));
- //JAA   cout << "Loop start " << orderedMons.size() <<  endl;
+ //JAA   verboseOutput() << "Loop start " << orderedMons.size() <<  endl;
  //JAA   size_t counter=0;
     for(ord_mon=orderedMons.begin();ord_mon!=orderedMons.end();++ord_mon){
- //JAA       cout << counter++ << ord_mon->first << endl;
+ //JAA       verboseOutput() << counter++ << ord_mon->first << endl;
  //JAA       try {
         PushFront(r,ord_mon->second,ord_mon->first);
 //JAA        }
- //JAA       catch(const std::exception& exc){cout << "Caught exception: " << exc.what() << endl;}
+ //JAA       catch(const std::exception& exc){verboseOutput() << "Caught exception: " << exc.what() << endl;}
     }
-//JAA    cout << "Loop end" << endl;
+//JAA    verboseOutput() << "Loop end" << endl;
     return(r);
 }
 
@@ -403,7 +403,7 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
         for(ord_mon=orderedMons[j].begin();ord_mon!=orderedMons[j].end();++ord_mon){
             PushFront(GRest[j],ord_mon->second,ord_mon->first);
         }
-        // cout << "GRest[j] " << j << " " << NumTerms(GRest[j]) << endl;
+        // verboseOutput() << "GRest[j] " << j << " " << NumTerms(GRest[j]) << endl;
     }
             
     for(ord_mon=orderedMonsSimpl.begin();ord_mon!=orderedMonsSimpl.end();++ord_mon){
@@ -440,10 +440,10 @@ void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>&
             continue;
         #pragma omp atomic
         nrActiveFaces++;
-        // cout << "Push back " << NumTerms(GRest[j]);
+        // verboseOutput() << "Push back " << NumTerms(GRest[j]);
         GRest[j]=power(indets(R)[0],Deg)*inExSimplData[j].mult*GRest[j];  // shift by degree of offset amd multiply by mult of face
         facePolys[tn].push_back(pair<vector<long>,RingElem>(inExSimplData[j].degrees,GRest[j]));
-        // cout << " Now " << facePolys[tn].size() << endl;
+        // verboseOutput() << " Now " << facePolys[tn].size() << endl;
     }
 }
         
@@ -580,8 +580,6 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
   long i,j;
   string dummy=poly_as_string;
   RingElem the_only_dactor= ReadExpr(R, dummy); // there is only one
-  cout << "PPPPPPPPPPPPP " << the_only_dactor << endl;
-  // cout << "GGGGG " << homogComps(the_only_dactor) << endl;  
   vector<RingElem> factorsRead; // this is from the very first version of NmzIntegrate
   factorsRead.push_back(the_only_dactor); 
   vector<long> multiplicities;                            
@@ -603,16 +601,19 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
       if(deg(G)==0){         
         remainingFactor*=G;  // constants go into remainingFactor
         continue;            // this extra treatment would not be necessary      
-      }  
+      } 
+      // homogeneous=(G==LF(G));
     vector<RingElem> compsG= homogComps(G);
                              // we test for homogeneity. In case do_leadCoeff==true, polynomial
                              // is replaced by highest homogeneous component
-    if(G!=compsG[compsG.size()-1]){            
-       if(verbose_INT && homogeneous && do_leadCoeff) 
+    if(G!=compsG[compsG.size()-1]){
+        homogeneous=false;
+    // if(!homogeneous){
+       if(verbose_INT && do_leadCoeff) 
            verboseOutput() << "Polynomial is inhomogeneous. Replacing it by highest hom. comp." << endl;
-       homogeneous=false;
        if(do_leadCoeff){
            G=compsG[compsG.size()-1];
+           // G=LF(G);
            factorsRead[i]=G;  // though it may no longer be the factor read from input
        }    
     }
@@ -832,10 +833,10 @@ void CyclRatFunct::showCRF(){
     if(!verbose_INT)
         return;
 
-    cout << num << endl;
+    verboseOutput() << num << endl;
     for(size_t i=1;i<denom.size();++i)
-        cout << denom[i] << " ";
-    cout << endl;
+        verboseOutput() << denom[i] << " ";
+    verboseOutput() << endl;
 }
 
 void CyclRatFunct::showCoprimeCRF(){
@@ -845,10 +846,10 @@ void CyclRatFunct::showCoprimeCRF(){
     if(!verbose_INT)
         return;
 
-    cout << "--------------------------------------------" << endl << endl;
-    cout << "Given form" << endl << endl;
+    verboseOutput() << "--------------------------------------------" << endl << endl;
+    verboseOutput() << "Given form" << endl << endl;
     showCRF();
-    cout << endl;
+    verboseOutput() << endl;
     SparsePolyRing R=owner(num);
     SparsePolyRing P=NewPolyRing_DMPI(RingQQ(),symbols("t"));
     vector<RingElem> Im(NumIndets(R),zero(P));
@@ -859,13 +860,13 @@ void CyclRatFunct::showCoprimeCRF(){
     RingElem h=CoCoA::gcd(f,g);
     f/=h;
     g/=h;
-    cout << "Coprime numerator (for denom with remaining factor 1)" << endl <<endl;
+    verboseOutput() << "Coprime numerator (for denom with remaining factor 1)" << endl <<endl;
     factorization<RingElem> gf=factor(g);
-    cout << f/gf.myRemainingFactor() << endl << endl << "Factorization of denominator" << endl << endl;
+    verboseOutput() << f/gf.myRemainingFactor() << endl << endl << "Factorization of denominator" << endl << endl;
     size_t nf=gf.myFactors().size();
     for(size_t i=0;i<nf;++i)
-        cout << gf.myFactors()[i] << "  mult " << gf.myMultiplicities()[i] << endl;
-    cout << "--------------------------------------------" << endl;
+        verboseOutput() << gf.myFactors()[i] << "  mult " << gf.myMultiplicities()[i] << endl;
+    verboseOutput() << "--------------------------------------------" << endl;
 
 }
 

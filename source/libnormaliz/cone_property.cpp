@@ -223,11 +223,13 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::Triangulation);
     }
     
-    if (CPs.test(ConeProperty::LeadCoef) || CPs.test(ConeProperty::VirtualMultiplicity)){
+    if (CPs.test(ConeProperty::VirtualMultiplicity)){
         CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::Triangulation);
-        CPs.set(ConeProperty::LeadCoef);
     }
+    
+    if (CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial))
+        CPs.set(ConeProperty::WeightedEhrhartSeries);
     
     if (CPs.test(ConeProperty::WeightedEhrhartSeries)){
         CPs.set(ConeProperty::Multiplicity);
@@ -396,13 +398,12 @@ namespace {
         CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
         CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
         CPN.at(ConeProperty::Integral) = "Integral";
-        CPN.at(ConeProperty::LeadCoef) = "LeadCoef";
         CPN.at(ConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
-        CPN.at(ConeProperty::WeightedEhrhartQuasiPol) = "WeightedEhrhartQuasiPol";
+        CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 65,
+        static_assert (ConeProperty::EnumSize == 64,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

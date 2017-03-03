@@ -128,7 +128,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
     for(sf=sortedFactors.begin();sf!=sortedFactors.end();++sf)
         G*=*sf;
 
-    // cout << "Evaluating integral over unit simplex" << endl;
+    // verboseOutput() << "Evaluating integral over unit simplex" << endl;
     // boost::dynamic_bitset<> dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
     return(IntegralUnitSimpl(G,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
@@ -183,14 +183,14 @@ void testPolynomial(const string& poly_as_string,long dim){
   string dummy=poly_as_string;
   SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
   RingElem the_only_factor= ReadExpr(R, dummy); // there is only one
-  // cout << "PPPPPPPPPPPPP " << the_only_factor << endl;
+  // verboseOutput() << "PPPPPPPPPPPPP " << the_only_factor << endl;
   vector<RingElem> V=homogComps(the_only_factor);  
     
 }
 
 
 template<typename Integer>
-void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
+void integrate(Cone<Integer>& C, const bool do_virt_mult) {
   GlobalManager CoCoAFoundations;
   
    long dim=C.getEmbeddingDim();
@@ -246,7 +246,7 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
 
   bool homogeneous;
   RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
-                multiplicities,remainingFactor,homogeneous,do_leadCoeff); 
+                multiplicities,remainingFactor,homogeneous,do_virt_mult); 
   
   C.getIntData().setDegreeOfPolynomial(deg(F));
                 
@@ -336,29 +336,23 @@ void integrate(Cone<Integer>& C, const bool do_leadCoeff) {
   I*=RFrat;
   
   string result="Integral";
-  if(do_leadCoeff)
-    result="(Virtual) leading coefficient of quasipol";
+  if(do_virt_mult)
+    result="Virtual multiplicity";
   
-  BigRat VM;
+  BigRat VM=I;
 
-  if(do_leadCoeff){
-    VM=I*factorial(deg(F)+rank-1);
+  if(do_virt_mult){
+    VM*=factorial(deg(F)+rank-1);
     C.getIntData().setVirtualMultiplicity(mpq(VM));
-    C.getIntData().setLeadCoef(mpq(I));
   }
   else
     C.getIntData().setIntegral(mpq(I));
 
    if(verbose_INT){
     verboseOutput() << "********************************************" << endl;
-    verboseOutput() << result << " is " << endl << I << endl;
+    verboseOutput() << result << " is " << endl << VM << endl;
     verboseOutput() << "********************************************" << endl;
    }
-   
-   if(do_leadCoeff && verbose_INT){
-    verboseOutput() << "Virtual multiplicity  is " << endl << VM << endl;
-    verboseOutput() << "********************************************" << endl;
-   }  
    
     verbose_INT=verbose_INTsave; 
 }
@@ -375,9 +369,9 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     
     long mapsize=faceClasses.size();
     if(verbose_INT){    
-        cout << "--------------------------------------------" << endl;
-        cout << "Evaluating " << mapsize <<" face classes" << endl;
-        cout << "--------------------------------------------" << endl;
+        verboseOutput() << "--------------------------------------------" << endl;
+        verboseOutput() << "Evaluating " << mapsize <<" face classes" << endl;
+        verboseOutput() << "--------------------------------------------" << endl;
     }
     #pragma omp parallel
     {
@@ -390,19 +384,19 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     for(long dc=0;dc<mapsize;++dc){
         for(;mpos<dc;++mpos,++den);
         for(;mpos>dc;--mpos,--den);
-        // cout << "mpos " << mpos << endl;
+        // verboseOutput() << "mpos " << mpos << endl;
         
         h = genFunct(GFP,den->second,den->first);
         h.simplifyCRF();
         if(verbose_INT){
             #pragma omp critical(VERBOSE)
             {
-            cout << "Class ";
+            verboseOutput() << "Class ";
             for(size_t i=0;i<den->first.size();++i)
-                cout << den->first[i] << " ";
-            cout  << "NumTerms " << NumTerms(den->second) << endl;
+                verboseOutput() << den->first[i] << " ";
+            verboseOutput()  << "NumTerms " << NumTerms(den->second) << endl;
         
-            // cout << "input " << den->second << endl;
+            // verboseOutput() << "input " << den->second << endl;
             }
         }
         
@@ -433,13 +427,13 @@ CyclRatFunct evaluateDenomClass(const vector<vector<CyclRatFunct> >& GFP,
     if(verbose_INT){
     #pragma omp critical(PROGRESS)
     {
-        cout << "--------------------------------------------" << endl;
-        cout << "Evaluating denom class ";
+        verboseOutput() << "--------------------------------------------" << endl;
+        verboseOutput() << "Evaluating denom class ";
         for(size_t i=0;i<denomClass.first.degrees.size();++i)
-            cout << denomClass.first.degrees[i] << " ";
-        cout  << "NumTerms " << NumTerms(denomClass.second[0]) << endl;
-        // cout << denomClass.second << endl;
-        cout << "--------------------------------------------" << endl;
+            verboseOutput() << denomClass.first.degrees[i] << " ";
+        verboseOutput()  << "NumTerms " << NumTerms(denomClass.second[0]) << endl;
+        // verboseOutput() << denomClass.second << endl;
+        verboseOutput() << "--------------------------------------------" << endl;
     }
     }
 
@@ -455,7 +449,7 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
                             map<vector<long>,RingElem>& faceClasses){
 
 
-    // cout << "In Transfer " << facePolysThread.size() << endl;
+    // verboseOutput() << "In Transfer " << facePolysThread.size() << endl;
     map<vector<long>,RingElem>::iterator den_found;                            
     for(size_t i=0;i<facePolysThread.size();++i){
         den_found=faceClasses.find(facePolysThread[i].first);
@@ -467,10 +461,10 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
             if(verbose_INT){
                 #pragma omp critical(VERBOSE)
                 {
-                    cout << "New face class " << faceClasses.size() <<    " degrees ";
+                    verboseOutput() << "New face class " << faceClasses.size() <<    " degrees ";
                     for(size_t j=0;j<facePolysThread[i].first.size();++j)
-                        cout << facePolysThread[i].first[j] << " ";
-                    cout << endl << flush;
+                        verboseOutput() << facePolysThread[i].first[j] << " ";
+                    verboseOutput() << endl << flush;
                     }
             }
         } // else
@@ -536,7 +530,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
     map<boost::dynamic_bitset<>, long>::iterator G;
 
     for(F=inExCollect.begin();F!=inExCollect.end();++F){
-        // cout << "F " << F->first << endl;
+        // verboseOutput() << "F " << F->first << endl;
        bool still_active=true;
        for(size_t i=0;i<dim;++i)
            if(Excluded[i] && !F->first.test(key[i])){
@@ -579,8 +573,8 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
     sort(inExSimplData.begin(),inExSimplData.end(),compareFaces);
     
     /* for(size_t i=0;i<inExSimplData.size();++i)
-        cout << inExSimplData[i].GenInFace << " ** " << inExSimplData[i].card << " || " << inExSimplData[i].mult << " ++ "<< inExSimplData[i].denom <<  endl;
-    cout << "InEx prepared" << endl; */
+        verboseOutput() << inExSimplData[i].GenInFace << " ** " << inExSimplData[i].card << " || " << inExSimplData[i].mult << " ++ "<< inExSimplData[i].denom <<  endl;
+    verboseOutput() << "InEx prepared" << endl; */
         
 }
 
@@ -648,9 +642,9 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   verbose_INT=C.get_verbose();
   
   if(verbose_INT){
-    cout << "==========================================================" << endl;
-    cout << "Generalized Ehrhart series " << endl;
-    cout << "==========================================================" << endl << endl;
+    verboseOutput() << "==========================================================" << endl;
+    verboseOutput() << "Generalized Ehrhart series " << endl;
+    verboseOutput() << "==========================================================" << endl << endl;
   }
   
   long i,j;
@@ -664,7 +658,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   vector<vector<long> > gens;
   readGens(C,gens,grading,true);
   if(verbose_INT)
-    cout << "Generators read" << endl;
+    verboseOutput() << "Generators read" << endl;
   long dim=C.getEmbeddingDim();
   long maxDegGen=v_scalar_product(gens[gens.size()-1],grading)/gradingDenom; 
   
@@ -672,7 +666,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
   readDecInEx(C,rank,StanleyDec,inExCollect,gens.size());
   if(verbose_INT)
-    cout << "Stanley decomposition (and in/ex data) read" << endl;
+    verboseOutput() << "Stanley decomposition (and in/ex data) read" << endl;
     
   size_t dec_size=StanleyDec.size();
     
@@ -698,7 +692,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   }
   
   if(verbose_INT)
-    cout << "lcm(dets)=" << lcmDets << endl;
+    verboseOutput() << "lcm(dets)=" << lcmDets << endl;
   
   StanleyDec.sort(compareDegrees);
   
@@ -707,7 +701,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   const RingElem& t=indets(RZZ)[0];
 
   if(verbose_INT)
-    cout << "Stanley decomposition sorted" << endl; 
+    verboseOutput() << "Stanley decomposition sorted" << endl; 
 
   vector<pair<denomClassData, vector<RingElem> > > denomClasses;
   denomClassData denomClass;
@@ -748,7 +742,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   }
 
   if(verbose_INT)
-    cout << denomClasses.size() << " denominator classes built" << endl;
+    verboseOutput() << denomClasses.size() << " denominator classes built" << endl;
 
   vector<RingElem> primeFactors;
   vector<RingElem> primeFactorsNonhom;
@@ -770,10 +764,10 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
 
   long nf=FF.myFactors.size();
   if(verbose_INT){
-    cout <<"Factorization" << endl;  // we show the factorization so that the user can check
+    verboseOutput() <<"Factorization" << endl;  // we show the factorization so that the user can check
     for(i=0;i<nf;++i)
-        cout << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-    cout << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+    verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
 
   vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
@@ -790,9 +784,9 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   CyclRatFunct H(zero(RZZ)); // accumulates the series
   
   if(verbose_INT){
-    cout << "********************************************" << endl;
-    cout << dec_size <<" simplicial cones to be evaluated" << endl;
-    cout << "********************************************" <<  endl;
+    verboseOutput() << "********************************************" << endl;
+    verboseOutput() << dec_size <<" simplicial cones to be evaluated" << endl;
+    verboseOutput() << "********************************************" <<  endl;
   }
  
   size_t nrSimplDone=0;
@@ -883,7 +877,7 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
     if((++nrSimplDone)%10==0 && verbose_INT)
-        cout << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
+        verboseOutput() << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
         // nrActiveFacesOld=nrActiveFaces;
     }
  
@@ -915,27 +909,28 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   
   C.getIntData().setWeightedEhrhartSeries(make_pair(HS,commonDen));
   
-  /* string outputName;
-  if(pnm==pureName(project))
-    outputName=project;
-  else
-    outputName=project+"."+pnm;
+  C.getIntData().computeWeightedEhrhartQuasiPolynomial();
   
-  if(output_dir!="")
-      outputName=output_dir+pureName(outputName);
-    
-  writeGenEhrhartSeries(outputName, FFNonhom,HS,deg(F)+rank-1,commonDen); */
-  
+      if(C.getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
+        mpq_class genMultQ;
+        long deg=C.getIntData().getWeightedEhrhartQuasiPolynomial()[0].size()-1;
+        long virtDeg=C.getRank()+C.getIntData().getDegreeOfPolynomial();
+        if(deg==virtDeg)   
+            genMultQ=C.getIntData().getWeightedEhrhartQuasiPolynomial()[0][virtDeg];
+        genMultQ*=ourFactorial(virtDeg);
+        genMultQ/=C.getIntData().getWeightedEhrhartQuasiPolynomialDenom();
+        C.getIntData().setVirtualMultiplicity(genMultQ);
+    }
      
    verbose_INT=verbose_INTsave; 
 }
 
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template void integrate(Cone<long>& C, const bool do_leadCoeff);
+template void integrate(Cone<long>& C, const bool do_virt_mult);
 #endif // NMZ_MIC_OFFLOAD
-template void integrate(Cone<long long>& C, const bool do_leadCoeff);
-template void integrate(Cone<mpz_class>& C, const bool do_leadCoeff);
+template void integrate(Cone<long long>& C, const bool do_virt_mult);
+template void integrate(Cone<mpz_class>& C, const bool do_virt_mult);
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template void generalizedEhrhartSeries<long>(Cone<long>& C);
