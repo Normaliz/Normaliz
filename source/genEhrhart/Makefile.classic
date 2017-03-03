@@ -7,7 +7,7 @@ include $(COCOA_ROOT)/configuration/autoconf.mk
 ## We want the compile options of Normaliz !!
 include ../Makefile.configuration
 
-CXXFLAGS += -I ..
+CXXFLAGS += -I .. -DCoCoA_THREADSAFE_HACK
 
 ALL_C=$(wildcard *.C)
 ALL_EXECS=$(ALL_C:.C=)
