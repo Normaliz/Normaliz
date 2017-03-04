@@ -92,3 +92,6 @@ CoCoA
 /Qexample/Makefile.in
 /Qsource/Makefile.in
 /Qtest/Makefile.in
+/source/genEhrhart/Makefile
+/source/libnormaliz/Makefile
+/source/libnormaliz/libnormaliz.so*
