@@ -45,7 +45,7 @@ noinst_HEADERS += input.cpp options.cpp output.cpp
 if NMZ_INTEGRATE
 bin_PROGRAMS += nmzIntegrate
 nmzIntegrate_SOURCES = genEhrhart/nmzIntegrate.C
-nmzIntegrate_CPPFLAGS = -IgenEhrhart $(AM_CPPFLAGS)
+nmzIntegrate_CPPFLAGS = -IgenEhrhart -DCoCoA_THREADSAFE_HACK $(AM_CPPFLAGS)
 # included in nmzIntegrate.C
 noinst_HEADERS += genEhrhart/nmzIntInput.C genEhrhart/nmzIntPoly.C genEhrhart/cyclRatFunct.C genEhrhart/genEhrhart.C genEhrhart/nmzIntegral.C
 nmzIntegrate_LDADD = $(COCOA_LIBS) libnormaliz.la
