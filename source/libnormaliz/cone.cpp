@@ -2939,7 +2939,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         verboseOutput() << "Embedding dimension of symmetrized cone = " << SymmGrad.size() << endl;
     }
     
-    if(SymmGrad.size() > 16|| SymmGrad.size() > 2*dim/3){
+    if(SymmGrad.size() > 2*dim/3){
         if(!ToCompute.test(ConeProperty::Symmetrize)){
             return;
         }
@@ -3163,8 +3163,8 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
     int k=0;
     string del_pre=pre_name, del_file;
-    del_file=del_pre+".out";
-    k=remove(del_file.c_str());
+    // del_file=del_pre+".out";
+    // k=remove(del_file.c_str());
     del_file=del_pre+".intOut";
     k=remove(del_file.c_str());
     del_file=del_pre+".inv";

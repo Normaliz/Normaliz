@@ -227,6 +227,16 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
         IntHullOut.write_files();        
     }
 
+#ifdef NMZ_COCOA
+    if(MyCone.isComputed(ConeProperty::Symmetrize)){
+        Output<Integer> SymmOut;
+        options.applyOutputOptions(SymmOut);
+        SymmOut.set_name(options.getProjectName()+".symm");
+        SymmOut.setCone(MyCone.getSymmetrizedCone());
+        SymmOut.write_files();        
+    }
+#endif
+
 #ifndef NCATCH
     } catch(const BadInputException& e) {
         cerr << e.what() << endl;

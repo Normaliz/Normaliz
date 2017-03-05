@@ -602,7 +602,7 @@ RingElem processInputPolynomial(const string& poly_as_string, const SparsePolyRi
         remainingFactor*=G;  // constants go into remainingFactor
         continue;            // this extra treatment would not be necessary      
       } 
-      // homogeneous=(G==LF(G));
+    // homogeneous=(G==LF(G));
     vector<RingElem> compsG= homogComps(G);
                              // we test for homogeneity. In case do_leadCoeff==true, polynomial
                              // is replaced by highest homogeneous component
