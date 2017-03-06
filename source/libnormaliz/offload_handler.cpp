@@ -121,7 +121,7 @@ void OffloadHandler<Integer>::create_full_cone()
   Integer *data = new Integer[size];
   fill_plain(data, nr, nc, M);
 
-//  cout << "mic " << mic_nr<< ": Offload Full_Cone..." << endl;
+  //  cout << "mic " << mic_nr<< ": Offload Full_Cone..." << endl;
   // offload to mic, copy data and free it afterwards, but keep a pointer to the created Full_Cone
   #pragma offload target(mic:mic_nr) in(nr,nc) in(data: length(size) ONCE)
   {
@@ -409,7 +409,7 @@ void OffloadHandler<Integer>::evaluate_pyramids()
     offload_fc_ptr->evaluate_stored_pyramids(0);
     offload_fc_ptr->evaluate_triangulation();
   }
-cout << "Nach Start evaluate mic" << mic_nr << endl;
+    // cout << "Nach Start evaluate mic" << mic_nr << endl;
   running = true;
 }
 
@@ -668,7 +668,7 @@ MicOffloader<Integer>::MicOffloader()
   nr_handlers(nr_mics)
 {
   handlers.resize(nr_handlers);
-cout << "Constructor " << nr_handlers << endl;
+  // cout << "Constructor " << nr_handlers << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -711,7 +711,7 @@ template<typename Integer>
 void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_t level)
 {
     if (!is_init) init(fc);
-cout << "nr_handlers " << nr_handlers << endl;
+// cout << "nr_handlers " << nr_handlers << endl;
 
     size_t fraction = 6;
     if (fc.start_from == fc.nr_gen) { //all gens are done
@@ -725,14 +725,14 @@ cout << "nr_handlers " << nr_handlers << endl;
     vector<bool> started(nr_handlers, false);
 
     size_t nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
-cout << "transfer " << nr_transfer << endl;
+    cout << "transfer " << nr_transfer << endl;
     if (nr_transfer == 0) return;
 
     for (int i=0; i<nr_handlers; ++i)
     {
       if (!handlers[i]->is_running())
       {
-cout << "Testing mic" << i << endl;
+// cout << "Testing mic" << i << endl;
         started[i] = true;
         typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[level].begin());
         for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
