@@ -1595,6 +1595,8 @@ void Full_Cone<Integer>::try_offload_loc(long place,size_t max_level){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
+    
+    random_order(Pyramids[level]);
 
 
 #ifdef NMZ_MIC_OFFLOAD    
@@ -1609,7 +1611,7 @@ verboseOutput() << "In parallel " << omp_in_parallel() << endl;
 
 
     assert(!omp_in_parallel());
-assert(!is_pyramid);
+    assert(!is_pyramid);
 
 #ifdef NMZ_MIC_OFFLOAD    
     if(level==0 && _Offload_get_device_number() >=  0){

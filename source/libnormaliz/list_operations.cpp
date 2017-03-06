@@ -91,4 +91,25 @@ void  l_cut_front(list<  vector<Integer> >& l, int size){
 
 //---------------------------------------------------------------------------
 
+template<typename T>
+void random_order(list<T>& LL){
+    vector<typename list<T>::iterator > list_order;
+    size_t nrLL=LL.size();
+    list_order.reserve(nrLL);
+    typename  list<T>::iterator p=LL.begin();
+    for(size_t k=0;k<nrLL;++k,++p){
+        list_order.push_back(p);
+    }
+    for(size_t k=0;k<5*nrLL;++k){
+        swap(list_order[rand()%nrLL],list_order[rand()%nrLL]);
+    }
+    list<T> new_order;
+    for(size_t k=0;k<nrLL;++k){
+        new_order.push_back(*list_order[k]);
+    }
+    LL.clear();
+    LL.splice(LL.begin(),new_order);
+
+}
+
 }
