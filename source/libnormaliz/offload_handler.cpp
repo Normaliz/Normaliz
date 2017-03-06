@@ -668,6 +668,7 @@ MicOffloader<Integer>::MicOffloader()
   nr_handlers(nr_mics)
 {
   handlers.resize(nr_handlers);
+cout << "Constructor " << nr_handlers << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -710,6 +711,7 @@ template<typename Integer>
 void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_t level)
 {
     if (!is_init) init(fc);
+cout << "nr_handlers " << nr_handlers << endl;
 
     size_t fraction = 6;
     if (fc.start_from == fc.nr_gen) { //all gens are done
@@ -723,12 +725,14 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
     vector<bool> started(nr_handlers, false);
 
     size_t nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
+cout << "transfer " << nr_transfer << endl;
     if (nr_transfer == 0) return;
 
     for (int i=0; i<nr_handlers; ++i)
     {
       if (!handlers[i]->is_running())
       {
+cout << "Testing mic" << i << endl;
         started[i] = true;
         typename list< vector<key_t> >::iterator transfer_end(fc.Pyramids[level].begin());
         for (size_t j = 0; j < nr_transfer; ++j, ++transfer_end) ;
