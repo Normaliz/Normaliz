@@ -182,5 +182,8 @@ AS_IF([test x$have_cocoa = xyes],
 AC_SUBST(COCOA_LIBS)
 AC_SUBST(COCOA_CPPFLAGS)
 AM_CONDITIONAL(NMZ_INTEGRATE, test x$enable_nmzintegrate = xyes)
+AS_IF([test enable_nmzintegrate = xyes],
+  [AC_DEFINE(NMZ_COCOA)])
+
 
 AC_OUTPUT
