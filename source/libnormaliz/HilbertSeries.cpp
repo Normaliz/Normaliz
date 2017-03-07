@@ -509,6 +509,10 @@ void HilbertSeries::setHSOPDenom(vector<denom_t> new_denom){
     hsop_denom=count_in_map<long,denom_t>(new_denom);
 }
 
+void HilbertSeries::setHSOPDenom(map<long,denom_t> new_denom){
+    hsop_denom=new_denom;
+}
+
 long HilbertSeries::getShift() const {
     return shift;
 }

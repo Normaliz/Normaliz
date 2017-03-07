@@ -2848,11 +2848,11 @@ It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used 
 
 \subsubsection{Symmetrization}
 
-In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}. At present it will not be chosen automatically, but can be forced:
+In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}.  It will be chosen automatically, but can also be forced or blocked:
 \begin{itemize}
 	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate. (It does not imply a computation goal!)
 	
-	\itemtt[NoSymmetrization] blocks symmetrization. Allowed, but superfluous at present.
+	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
 
 \subsubsection{Subdivision of simplicial cones}
@@ -3430,7 +3430,7 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Symmetrization}\label{symmetrize}
 
-Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpler than that of $P$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
+Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $C$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
 
 The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the sign conditions $x_i\ge 0$ for all coordinates  $x_i$ of $C$. Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector $y$  of sums is then a product of binomial coefficients -- a polynomial as desired.
 
@@ -3447,7 +3447,7 @@ Multiplicity
 \end{Verbatim}
 The grading is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also the column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each (one group for each $\pm1$ pattern). With the suitable labeling, the number of preimages of$(y_1,\dots,y_8$) is given by
 $$
-f(x)=\binom{x_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
+f(y)=\binom{y_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
 $$
 Normaliz finds the groups of variables that appear with the same sign pattern, creates the input files for NmzIntegate, runs it, and imports the results.
 
@@ -3455,25 +3455,27 @@ However, there is a restriction. Since NmzIntegrate must do the polynomial arith
 $$
 \dim C' \le \min((2(\dim C)/3,16).
 $$
-If called with the options \verb|HilbertSeries, -q| or \verb|Multiplicity, -v| and \verb|Symmetrize, -Y|, Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will l stop the computation. But it writes the input files for NmzIntegrate into the same directory where it writes the output files of Normaliz. The file names  are
+If called with the options \verb|-q| or \verb|-v| Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+
+If you use the option \verb|Symmetrize|, Normaliz will stop the computation if the inequality for $\dim C'$ is not satisfied. But it writes the input fils for NmzIntegrate into the same directory where it writes the output files of Normaliz. The file names  are
 \begin{center}
-\ttt{<project>.symm.in}	\quad and\quad \ttt{<project>.symm.pnm}
+	\ttt{<project>.symm.in}	\quad and\quad \ttt{<project>.symm.pnm}
 \end{center}
-You can then run Normaliz or NmzIntegrate on these input files with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
+The user can then run Normaliz or NmzIntegrate on these input files with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
 
 The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
 \begin{Verbatim}
-winfried.../git_normaliz/source$ time ./normaliz -cY ../example/PluralityVsCutoff
+winfried.../git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
 
                                                     \.....|
-                    Normaliz 3.2.0                   \....|
+                    Normaliz 3.2.1                   \....|
                                                       \...|
      (C) The Normaliz Team, University of Osnabrueck   \..|
-                     January  2017                      \.|
+                    February  2017                      \.|
                                                          \|
 ************************************************************
 Command line: -c ../example/PluralityVsCutoff 
-Compute: DefaultMode Symmetrize
+Compute: DefaultMode
 executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
 ...
 ...
@@ -3481,9 +3483,10 @@ executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
 ------------------------------------------------------------
 transforming data... done.
 
-real	0m2.697s
-user	0m5.936s
-sys	0m0.108s	
+real	0m2.459s
+user	0m4.948s
+sys	0m0.040s
+
 \end{Verbatim}
 The Hilbert series is computable without symmetrization, but you better make sure that there is no power failure for the next week if you try that. (The time above includes the Hilbert basis computed automatically in dual mode).
 
@@ -5661,6 +5664,9 @@ const map<long, denom_t>& HilbertSeries::getDenom() const;
 const vector<mpz_class>& HilbertSeries::getCyclotomicNum() const;
 const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const;
 
+const vector<mpz_class>& HilbertSeries::getHSOPNum() const;
+const map<long, denom_t>& HilbertSeries::getHSOPDenom() const;
+
 long HilbertSeries::getDegreeAsRationalFunction() const;
 long HilbertSeries::getShift() const;
 
@@ -5670,9 +5676,11 @@ long HilbertSeries::getPeriod() const;
 mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
 \end{Verbatim}
 
-The first four functions refer to two representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In both cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
+The first six functions refer to three representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cylotomic polynomials. In the third case the denominator is determined by the degrees of a homogeneous system of parameters (see Section \ref{rational}). In all cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
 
-The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. >since the denominator has a nonzero constant term in both cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
+If you have already computed the Hilbert series without HSOP and you want it with HSOP afterwards, the Hilbert series will simply be transformed, but Normaliz must compute the degrees for the denominator, and this may be a nontrivial computation.
+
+The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. Since the denominator has a nonzero constant term in all cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
 
 The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
 
@@ -6087,11 +6095,15 @@ Before you can install PyNormaliz (written by Sebastian Gutsche), you must insta
 
 For PyNormaliz itself type
 \begin{Verbatim}
-pip install PyNormaliz==1.1
+python setup.py install
 \end{Verbatim}
-at a commad prompt.
+or
+\begin{Verbatim}
+pip install PyNormaliz
+\end{Verbatim}
+at a command prompt. Depending on your python version you might want to write \verb|python3| instead.
 
-For a brief introduction  (and the time being) please consult the file \verb|README| in the directory \verb|PyNormaliz| of the distribution.
+For a brief introduction please consult the PyNormaliz tutorial on the Normaliz web site.
 
 \section{QNormaliz}\label{QNorm}
 

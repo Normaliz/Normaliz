@@ -1107,6 +1107,11 @@ bool Cone<Integer>::isComputed(ConeProperties CheckComputed) const {
     return CheckComputed.reset(is_Computed).any();
 }
 
+template<typename Integer>
+void Cone<Integer>::resetComputed(ConeProperty::Enum prop){
+    is_Computed.reset(prop);
+}
+
 
 /* getter */
 
@@ -2735,6 +2740,23 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         HSeries.computeHilbertQuasiPolynomial();
     if(HSeries.isHilbertQuasiPolynomialComputed())
         is_Computed.set(ConeProperty::HilbertQuasiPolynomial);
+        
+    // in the case that HS was computed but not HSOP, we need to compute hsop
+    if(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP)){
+        // we need generators and support hyperplanes to compute hsop
+        Matrix<Integer> FC_gens;
+        Matrix<Integer> FC_hyps;
+        BasisChangePointed.convert_to_sublattice(FC_gens,Generators);
+        Full_Cone<Integer> FC(FC_gens);
+        FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
+        FC.Grading = Grading;
+        FC.inhomogeneous = inhomogeneous;
+        // TRUNCATION?
+        BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes,SupportHyperplanes);
+        FC.compute_hsop();
+        HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
+        HSeries.compute_hsop_num();
+    }
     
 }
 
@@ -2772,6 +2794,21 @@ bool exists_file(string name_in){
     return(true);
 }
 
+bool executable(string command){
+//n check whether "command --version" cam be executed
+
+    command +=" --version";
+    string dev0= " > /dev/null";
+#ifdef _WIN32 //for 32 and 64 bit windows
+    dev0=" > NUL:";
+#endif
+    command+=dev0;
+    if(system(command.c_str())==0)
+        return true;
+    else
+        return false;
+}
+
 string command(const string& original_call, const string& to_replace, const string& by_this){
 // in the original call we replace the program name to_replace by by_this
 // wWe try variants with and without "lt-" preceding the names of executables 
@@ -2792,17 +2829,15 @@ string command(const string& original_call, const string& to_replace, const stri
     else{
             length+=3; //name includes lt-
     }
-    if(found==0) // no path preceding to_replace. Good luck!
-        return by_this;
     string test_path=copy.replace (found,length,by_this);
     // cout << "TEST " << test_path << endl;
-    if(exists_file(test_path))
+    if(executable(test_path)) // first without lt-
         return test_path;
     copy=original_call;
-    string by_this_with_lt="lt-"+by_this;
+    string by_this_with_lt="lt-"+by_this; /// now with lt-
     test_path=copy.replace (found,length,by_this_with_lt);
     // cout << "TEST " << test_path << endl;
-    if(exists_file(test_path))
+    if(executable(test_path))
         return test_path;
     return ""; // no executable found
 }
