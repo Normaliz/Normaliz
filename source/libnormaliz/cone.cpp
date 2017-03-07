@@ -2994,8 +2994,10 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmCone->setPolynomial(polynomial);
     SymmCone->setVerbose(verbose);
     ConeProperties SymmToCompute;
+    SymmToCompute.set(ConeProperty::SupportHyperplanes);
     SymmToCompute.set(ConeProperty::WeightedEhrhartSeries,ToCompute.test(ConeProperty::HilbertSeries));
     SymmToCompute.set(ConeProperty::VirtualMultiplicity,ToCompute.test(ConeProperty::Multiplicity));
+    SymmToCompute.set(ConeProperty::BottomDecomposition,ToCompute.test(ConeProperty::BottomDecomposition));
     SymmCone->compute(SymmToCompute);
     if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
         HSeries=SymmCone->getWeightedEhrhartSeries().first;
@@ -3081,7 +3083,8 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         nmz_int_exec.append("\"");
     #endif
     nmz_int_exec.append(nmz_int_path);
-    nmz_int_exec.append("\"");    
+    nmz_int_exec.append("\"");
+    nmz_int_exec+=" -s ";    
     if(verbose)
         nmz_int_exec+=" -c ";
     if(ToCompute.test(ConeProperty::HilbertSeries))

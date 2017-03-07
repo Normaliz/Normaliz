@@ -87,6 +87,21 @@ class BadInputException: public NormalizException {
     std::string msg;
 };
 
+class NmzCoCoAException: public NormalizException {
+    public:
+    NmzCoCoAException(const std::string& message) :
+            msg(message)
+    {}
+    ~NmzCoCoAException() throw() {}
+
+	virtual const char* what() const throw() {
+		return msg.c_str();
+	}
+
+    private:
+    std::string msg;
+};
+
 class NotComputableException: public NormalizException {
     public:
     NotComputableException(const std::string& message) : msg("Could not compute: " + message) {}

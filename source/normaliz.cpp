@@ -246,13 +246,17 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
         cerr << e.what() << endl;
         cerr << "FatalException caught... exiting." << endl;
         exit(2);
+    } catch(const NmzCoCoAException& e) {
+        cerr << e.what() << endl;
+        cerr << "NmzCoCoAException caught... exiting." << endl;
+        exit(3);
     } catch(const NormalizException& e) {
         cerr << e.what() << endl;
         cerr << "NormalizException caught... exiting." << endl;
-        exit(3);
+        exit(4);
     } catch(const std::exception& e) {
         cerr << "std::exception caught... \""<< e.what()<<"\" ...  exiting." << endl;
-        exit(4);
+        exit(5);
     }
 #endif
 

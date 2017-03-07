@@ -193,6 +193,12 @@ template<typename Integer>
 void integrate(Cone<Integer>& C, const bool do_virt_mult) {
   GlobalManager CoCoAFoundations;
   
+try{
+    
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+  
    long dim=C.getEmbeddingDim();
    // testPolynomial(C.getIntData().getPolynomial(),dim);
  
@@ -302,6 +308,10 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
   for(s=0;s<tri_size;++s){         
       for(;spos<s;++spos,++S);
       for(;spos>s;--spos,--S);
+      
+#ifndef NCATCH
+        try {
+#endif
 
     det=S->vol;
     for(i=0;i<rank;++i)    // select submatrix defined by key
@@ -325,10 +335,19 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
     if ((++nrSimplDone)%10==0 && verbose_INT)
         verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
     }
+    
+#ifndef NCATCH
+        } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+        }
+#endif
 
   }  // triang
 
   } // parallel
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
   
   I/=power(lcmDegs,deg(F));
   BigRat RFrat;
@@ -355,6 +374,14 @@ void integrate(Cone<Integer>& C, const bool do_virt_mult) {
    }
    
     verbose_INT=verbose_INTsave; 
+} // try
+  catch (const CoCoA::ErrorInfo& err)
+  {
+    cerr << "***ERROR***  UNCAUGHT CoCoA error";
+    ANNOUNCE(cerr, err);
+    
+    throw NmzCoCoAException("");
+  }
 }
 
 CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
@@ -637,6 +664,8 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
 template<typename Integer>
 void generalizedEhrhartSeries(Cone<Integer>& C){
   GlobalManager CoCoAFoundations;
+  
+try{
 
   bool verbose_INTsave=verbose_INT;
   verbose_INT=C.get_verbose();
@@ -790,6 +819,10 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   }
  
   size_t nrSimplDone=0;
+  
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
 
   #pragma omp parallel private(i)
   {
@@ -810,6 +843,10 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
   for(s=0;s<dec_size;++s){
     for(;spos<s;++spos,++S);
     for(;spos>s;--spos,--S);
+    
+#ifndef NCATCH
+        try {
+#endif
 
     det=S->offsets.size();
     degrees=S->degrees;
@@ -880,10 +917,20 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
         verboseOutput() << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
         // nrActiveFacesOld=nrActiveFaces;
     }
+    
+#ifndef NCATCH
+        } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+        }
+#endif
  
   }  // Stanley dec
     
   } // parallel
+  
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
   
   // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
   
@@ -923,8 +970,17 @@ void generalizedEhrhartSeries(Cone<Integer>& C){
     }
      
    verbose_INT=verbose_INTsave; 
+   
+   return;
+} // try
+  catch (const CoCoA::ErrorInfo& err)
+  {
+    cerr << "***ERROR***  UNCAUGHT CoCoA error";
+    ANNOUNCE(cerr, err);
+    
+    throw NmzCoCoAException("");
+  }
 }
-
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template void integrate(Cone<long>& C, const bool do_virt_mult);
