@@ -2811,9 +2811,7 @@ string command(const string& original_call, const string& to_replace, const stri
 template<typename Integer>
 void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 
-    if(ToCompute.test(ConeProperty::NoSymmetrization)
-            || (!ToCompute.test(ConeProperty::HilbertSeries)
-                    && !ToCompute.test(ConeProperty::Multiplicity)))
+    if(ToCompute.test(ConeProperty::NoSymmetrization))
         return;
     
     if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){
@@ -3001,16 +2999,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmCone->compute(SymmToCompute);
     if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
         HSeries=SymmCone->getWeightedEhrhartSeries().first;
-        multiplicity=SymmCone->getVirtualMultiplicity();
         is_Computed.set(ConeProperty::HilbertSeries);
-        is_Computed.set(ConeProperty::Multiplicity);
-    }
-    if(SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)){
-        HSeries=SymmCone->getWeightedEhrhartSeries().first;
-        multiplicity=SymmCone->getVirtualMultiplicity();
-        is_Computed.set(ConeProperty::HilbertSeries);
-        is_Computed.set(ConeProperty::Multiplicity);
-        return;
     }
     if(SymmCone->isComputed(ConeProperty::VirtualMultiplicity)){
         multiplicity=SymmCone->getVirtualMultiplicity();
