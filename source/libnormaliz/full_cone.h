@@ -275,7 +275,7 @@ public:
     
     void build_top_cone(); 
     void build_cone();
-    void build_cone_approx(const Full_Cone<Integer>& original_cone, vector<list<vector<Integer>>>& approx_points);
+    void build_cone_approx(const Full_Cone<Integer>& original_cone, vector<vector<key_t>>& approx_points);
     void get_supphyps_from_copy(bool from_scratch);   // if evealuation starts before support hyperplanes are fully computed
     void update_reducers(bool forced=false);   // update list of reducers after evaluation of simplices
     

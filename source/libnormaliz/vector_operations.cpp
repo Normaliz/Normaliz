@@ -583,16 +583,15 @@ void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
 // q is a rational vector with the denominator in the FIRST component q[0]
 
 template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long k){
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
 	
 	//cout << "approximate the point " << q;
     long dim=q.size();
-    long l=k;
-    //if (k>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
+    //if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
     // TODO in this case, skip the rest and just approximate on q[0]
-    Matrix<Integer> quot =  Matrix<Integer>(l,dim);
-    Matrix<Integer> remain=Matrix<Integer>(l,dim);
-    for(long j=0;j<l;j++){
+    Matrix<Integer> quot =  Matrix<Integer>(approx_level,dim);
+    Matrix<Integer> remain=Matrix<Integer>(approx_level,dim);
+    for(long j=0;j<approx_level;j++){
 	    for(long i=0;i<dim;++i){
 	        quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
 	        //quot[j][0] = 1;
@@ -611,9 +610,9 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 	//quot.pretty_print(cout);
 	//cout << "this is the remain matrix" << endl;
 	//remain.pretty_print(cout);
-	long best_level=l-1;
-	vector<long> nr_zeros(l);
-	for(long j=l-1;j>=0;j--){
+	long best_level=approx_level-1;
+	vector<long> nr_zeros(approx_level);
+	for(long j=approx_level-1;j>=0;j--){
 		for(long i=0;i<dim;++i){
 			if(remain[j][i]==0) nr_zeros[j]++;
 		}
