@@ -1,0 +1,10 @@
+>>> def random_ineq(n,d,ineq,grad):
+...     x=[[0 for x in range(d)] for y in range(n)]
+...     for i in range(n):
+...             for j in range(d-1):
+...                     x[i][j] = random.randint(-ineq,ineq)
+...             x[i][d-1] = random.randint(1,grad)
+...             print(x[i])
+...     return x
+
+
