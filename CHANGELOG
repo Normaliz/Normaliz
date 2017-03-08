@@ -1,7 +1,10 @@
 # ChangeLog
 
+## [3.3.0] 2017-04-01
 
-## [3.2.0] 2017-01-01
+-- inclusion of NmzIntegrate in libnormaliz
+
+## [3.2.1] 2017-02-22
 
 -- automatic choice of symmetzrization
 -- change to HSOP form of Hilbert series possible after computation

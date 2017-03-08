@@ -79,8 +79,7 @@ To build SCIP:
 * IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
       because their build system is broken **
    
-Another optional package is CoCoALib, but only to the extent to that NmzIntegrate
-is otional. If you want to compile NmzIntegrate, CoCoALib must be installed rfirst:
+Another optional package is CoCoALib, but It is necessary if you want to compute integrals or weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first:
 
 * download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
 * configure it with the threadsafe-hack, and compile:
@@ -110,7 +109,7 @@ The first step is to configure the compilation. The simplest choice is
 
    ./configure
    
-This is sufficient if you don't want SCIP and NmzIntegrate, provided libraries such
+This is sufficient if you don't want SCIP or CoCoALib, provided libraries such
 as GMP and Boost are in standard locations. If not, you must inform configure where to 
 find them:
 
@@ -125,7 +124,7 @@ To configure normaliz to use the scipoptsuite compiled as above use:
    ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
    
 Similarly, it may be necessary to show configure the path to CoCoALib if you want
-to compile NmzIntegrate:
+to compile with it:
 
    ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
 
@@ -147,14 +146,14 @@ After configuration we compile. Simply say
 
     make
     
-This will compile normaliz, libnormaliz, nmzIntegrate and maxsimplex, 
+This will compile normaliz, libnormaliz and maxsimplex, 
 the example program in the manual.
 
 and then (if you want)
 
     make install
     
-This will install normaliz, nmzIntegrate, the libraries and header files in their chosen
+This will install normaliz, the libraries and header files in their chosen
 location (usr/local by default).
 
 ***************
@@ -197,9 +196,6 @@ If you want to see what happens behind the scenes use
 	make install
 
 This will install the produced libnormaliz, the header files for it  and the normaliz executable. The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
-
-NOTE: nmzIntegrate is not (yet) included in the cmake build system for Normaliz. 
-See the NmzIntegrate manual for the use of the plain make file of NmzIntegrate.
 
 
 **** ADDITIONAL CMAKE CONFIGURATION ****
@@ -254,7 +250,7 @@ Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
 See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
-**** CMAKE: Using SCIP and CoCoALib (for NmzIntegrate) ****
+**** CMAKE: Using SCIP and CoCoALib ****
 
 Then configure Normaliz with, for example,
 
@@ -317,11 +313,6 @@ If you want to compile Normaliz for running it NATIVELY on the Phi, give
  
 	CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
 
-
-**** CMAKE: Build NmzIntegrate ****
-
-Not yet possible. After haveing built Normaliz, navigate to source/genEhrhart and run make.
-
 ********************
 **** plain MAKE ****
 ********************
@@ -341,15 +332,12 @@ the optional packages and their versions.
 	make -f Makefile.classic
 	
 It should work without change of Makefile.classic or Makefile.configuration on many systems
-that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.)
+that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.) 
 
-4) For NmzIntegrate now say 
+Without further arguments, Makefile.classic will build Normaliz with OpenMP and CoCoALib, but without SCIP (see below how to change this behavior)
 
-	make -f Makefile.classic nmzIntegrate 
-
-If everything is successful, then the executable files normaliz and nmzIntegrate are both 
-in the source directory. You may of course want to move them somewhere else. Don't forget 
-that the cooperation of normaliz and nmzIntegrate requires that both are in the same directory.
+If everything is successful, then the executable file normaliz is
+in the source directory. You may of course want to move them somewhere else.
 
 Similarly
 
@@ -364,16 +352,15 @@ in the manial).
 
 ---------
 
-Makefile.classic accepts two optional arguments (also simultaneously):
+Makefile.classic accepts three optional arguments (also simultaneously):
 
 	make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+	make -f Makefile.classic COCOA=no   # deactivates CoCoALib
 	make -f Makefile.classic SCIP=yes   # compile with SCIP
 
 You must make sure that everything is compiled with the same set of options!
 In doubt use make clean before.
 
-NOTE: If Normaliz was built with SCIP=yes, you must add this option also if you make nmzIntegrate
-and maxsimplex.
 
 6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
 

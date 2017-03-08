@@ -233,6 +233,8 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 
 \subsection{Major changes relative to version 3.1.1}
 
+In 3.2.0;
+
 \begin{arab}
 	
 	\item installation via \ttt{autotools} (written by Matthias Köppe),
@@ -258,6 +260,13 @@ Normaliz does not have its own interactive shell. We recommend the access via Py
 	\item QNormaliz, a version of Normaliz using coordinates in an extension of $\QQ$ (restricted to convex hull computations and triangulation).
 	
 \end{arab}
+
+In 3.3.0:
+
+\begin{arab}
+	\item inclusion of NmzIntegrate in Normaliz as a part of libnormaliz.	
+\end{arab}
+
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
 
@@ -2848,9 +2857,9 @@ It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used 
 
 \subsubsection{Symmetrization}
 
-In rare cases Normaliz can delegate the computation of multiplicities or Hilbert series to NmzIntegrate. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}.  It will be chosen automatically, but can also be forced or blocked:
+In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series to NmzIntegrate. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}.  It will be chosen automatically, but can also be forced or blocked:
 \begin{itemize}
-	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via NmzIntegrate. (It does not imply a computation goal!)
+	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
 	
 	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
@@ -4577,8 +4586,7 @@ Unpack it and then compile it with
 make ZLIB=false GMP=false READLINE=false scipoptlib
 \end{Verbatim}
 
-Another optional package is CoCoALib, but only to the extent to that NmzIntegrate
-is optional. If you want to compile NmzIntegrate, CoCoALib must be installed first.
+Another optional package is CoCoALib. It is necessary if you want to compute integrals or weighted Ehrhart series and, hence,  for symmetrization. If you want to compile Normaliz with CoCoALib, install  CoCoALib first.
 The following sequence of commands will install it in the subdirectory \verb|CoCoA| of your home directory.
 \begin{Verbatim}
 mkdir ~/CoCoA/
@@ -4599,7 +4607,7 @@ To build Normaliz with the \verb|autotools| system, navigate to the Normaliz dir
 ./configure
 make
 \end{Verbatim}
-This will compile Normaliz, but most likely without SCIP and NmzIntegrate since they need the optional libraries mentioned above and these must be found. If they are not located at standard places, you must specify their paths. Examples (on the machine of a Normaliz team member):
+This will compile Normaliz, but most likely without SCIP and CoCoALib since they are optional libraries mentioned above and must be found. If they are not located at standard places, you must specify their paths. Examples (on the machine of a Normaliz team member):
 \begin{Verbatim}
 ./configure --with-scipoptsuite-src=$HOME/SCIP/scipoptsuite-3.2.0/
 \end{Verbatim}
@@ -4607,13 +4615,13 @@ or
 \begin{Verbatim}
 ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
 \end{Verbatim}
-or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and NmzIntegrate will be made, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success.
+or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and CoCoALib, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success.
 
 The next step is
 \begin{Verbatim}
 make
 \end{Verbatim}
-After this step you will find \verb|normaliz| (and \verb|nmzIntegrate|) in the directory \verb|source| (and \verb|maxsimplex| in its directory).
+After this step you will find \verb|normaliz| in the directory \verb|source| (and \verb|maxsimplex| in its directory).
 
 The last, optional step is
 \begin{Verbatim}
@@ -5284,34 +5292,34 @@ vector<vector<Integer> >
 The available input types (from \verb|libnormaliz.h|) are defined as follows:
 \begin{Verbatim}
 namespace Type {
-enum InputType {
-integral_closure,
-polyhedron,
-normalization,
-polytope,
-rees_algebra,
-inequalities,
-strict_inequalities,
-signs,
-strict_signs,
-equations,
-congruences,
-inhom_inequalities,
-dehomogenization,
-inhom_equations,
-inhom_congruences,
-lattice_ideal,
-grading,
-excluded_faces,
-lattice,
-saturation,
-cone,
-offset,
-vertices,
-support_hyperplanes,
-cone_and_lattice,
-subspace
-};
+	enum InputType {
+		integral_closure,
+		polyhedron,
+		normalization,
+		polytope,
+		rees_algebra,
+		inequalities,
+		strict_inequalities,
+		signs,
+		strict_signs,
+		equations,
+		congruences,
+		inhom_inequalities,
+		dehomogenization,
+		inhom_equations,
+		inhom_congruences,
+		lattice_ideal,
+		grading,
+		excluded_faces,
+		lattice,
+		saturation,
+		cone,
+		offset,
+		vertices,
+		support_hyperplanes,
+		cone_and_lattice,
+		subspace
+	};
 } //end namespace Type
 \end{Verbatim}
 The input types are explained in Section \ref{input}. In certain environments it is not possible to use the enumeration. Therefore we provide a function that converts a string into the corresponding input type:
@@ -5367,97 +5375,109 @@ Type::InputType grad = grading;
 Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matix(total_degree));
 \end{Verbatim}
 
+\subsubsection{Setting the polynomial}
+
+The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
+
+\begin{Verbatim}
+void Cone<Integer>::setPolynomial(string poly)
+\end{Verbatim}
+
 
 \subsection{Computations in a cone}
 
 Before starting a computation in a (previously constructed) cone, one must decide what should be computed and in which way it should be computed. The computation goals and algorithmic variants (see Section \ref{Goals}) are defined as follows (\verb|cone_property.h|):
 \begin{Verbatim}
 namespace ConeProperty {
-    enum Enum {
-        //
-        // goals that can be computed (or are defined by input data)
-        //
-        // matrix valued
-        Generators,
-        ExtremeRays,
-        VerticesOfPolyhedron,
-        SupportHyperplanes,
-        HilbertBasis,
-        ModuleGenerators,
-        Deg1Elements,
-        ModuleGeneratorsOverOriginalMonoid,
-        Sublattice, 
-        ExcludedFaces,
-        OriginalMonoidGenerators,
-        MaximalSubspace,
-        Equations, 
-        Congruences, 
-        //vector valued
-        Grading,
-        Dehomogenization,
-        WitnessNotIntegrallyClosed,
-        // Cardinalities
-        TriangulationSize,
-        // Integer valued,        
-        TriangulationDetSum,
-        ReesPrimaryMultiplicity,
-        GradingDenom, 
-        UnitGroupIndex, 
-        InternalIndex, 
-        ExternalIndex, 
-        // rational valued
-        Multiplicity,
-        // dimensions
-        RecessionRank,
-        AffineDim,
-        ModuleRank,
-        Rank, 
-        EmbeddingDim,       
-        // boolean valued 
-        IsPointed,
-        IsDeg1ExtremeRays,
-        IsDeg1HilbertBasis,
-        IsIntegrallyClosed,
-        IsReesPrimary,
-        IsInhomogeneous,         
-        // complex structures
-        Triangulation,
-        HilbertSeries,
-        InclusionExclusionData,
-        StanleyDec,        
-        ClassGroup,        
-        IntegerHull,
-        ConeDecomposition,
-        HilbertQuasiPolynomial,
-        //
-        // integer type for computations
-        //
-        BigInt,
-        //
-        // algorithmic variants
-        //
-        DefaultMode,
-        Approximate,
-        NoApproximation, // new
-        BottomDecomposition,
-        NoBottomDec,       
-        DualMode,
-        PrimalMode, //new
-        Symmetrize, / new
-        NoSymmetrization, // new
-        NoSubdivision, // new
-        NoNestedTri, // new -- synonym for NoSubdivision
-        KeepOrder,
-        HSOP,
-        //
-        // checking properties of already computed data
-        // (cannot be used as a computation goal)
-        //
-        IsTriangulationNested, // new
-        IsTriangulationPartial, // new
-        
-        EnumSize // this has to be the last entry, to get the number of entries in the enum
-    }; // remember to change also the string conversion function if you change this enum
+	enum Enum {
+		//
+		// goals that can be computed (or are defined by input data)
+		//
+		// matrix valued
+		Generators,
+		ExtremeRays,
+		VerticesOfPolyhedron,
+		SupportHyperplanes,
+		HilbertBasis,
+		ModuleGenerators,
+		Deg1Elements,
+		ModuleGeneratorsOverOriginalMonoid,
+		Sublattice, 
+		ExcludedFaces,
+		OriginalMonoidGenerators,
+		MaximalSubspace,
+		Equations, 
+		Congruences, 
+		//vector valued
+		Grading,
+		Dehomogenization,
+		WitnessNotIntegrallyClosed,
+		// Cardinalities
+		TriangulationSize,
+		// Integer valued,        
+		TriangulationDetSum,
+		ReesPrimaryMultiplicity,
+		GradingDenom, 
+		UnitGroupIndex, 
+		InternalIndex, 
+		ExternalIndex, 
+		// rational valued
+		Multiplicity,
+		Integral,  // new
+		VirtualMultiplicity, // new
+		// dimensions
+		RecessionRank,
+		AffineDim,
+		ModuleRank,
+		Rank, 
+		EmbeddingDim,       
+		// boolean valued 
+		IsPointed,
+		IsDeg1ExtremeRays,
+		IsDeg1HilbertBasis,
+		IsIntegrallyClosed,
+		IsReesPrimary,
+		IsInhomogeneous,         
+		// complex structures
+		Triangulation,
+		StanleyDec,
+		InclusionExclusionData,        
+		ClassGroup,        
+		IntegerHull,
+		ConeDecomposition,
+		HilbertSeries,
+		HilbertQuasiPolynomial,
+		WeightedEhrhartSeries, // new
+		WeightedEhrhartQuasiPolynomial, // new       
+		//
+		// integer type for computations
+		//
+		BigInt,
+		//
+		// algorithmic variants
+		//
+		DefaultMode,
+		Approximate,
+		NoApproximation,
+		BottomDecomposition,
+		NoBottomDec,       
+		DualMode,
+		PrimalMode,
+		Symmetrize, 
+		NoSymmetrization, 
+		NoSubdivision, 
+		NoNestedTri,  // synonym for NoSubdivision
+		KeepOrder,
+		HSOP,
+		//
+		// checking properties of already computed data
+		// (cannot be used as a computation goal)
+		//
+		IsTriangulationNested, 
+		IsTriangulationPartial,
+		
+		EnumSize // this has to be the last entry, to get the number of entries in the enum
+	}; 
 }
 \end{Verbatim}
 
@@ -5689,6 +5709,50 @@ For the input type \verb|rees_algebra| we provide
 Integer Cone<Integer>::getReesPrimaryMultiplicity()
 \end{Verbatim}
 
+\subsubsection{Weighted Ehrhart series and integrals}
+
+The wighted Ehrhart series can be accessed by
+\begin{Verbatim}
+const pair<HilbertSeries, mpz_class>& Cone<Integer>::getWeightedEhrhartSeries()
+\end{Verbatim}
+The second component of the pair is the denominator of the coefficients in the series numerator. Its introduction was necessary since we wanted to keep integral coefficients for the numerator of a Hilbert series. The numerator and the denominator of the first component of type \verb|HilbertSeries| can be accessed as usual, but one must not forget the denominator of the numerator coefficients. There is a second way to access these data; see below.
+
+The virtual multiplicity and the integral, respectively, are got by
+\begin{Verbatim}
+mpq_class Cone<Integer>::getVirtualMultiplicity()
+mpq_class Cone<Integer>::getIntegral()
+\end{Verbatim}
+
+Actually the cone saves these data in a special container of class \verb|IntegrationData| (defined in \verb|Hilbert_sries.h|). It is accessed by
+\begin{Verbatim}
+IntegrationData& Cone<Integer>::getIntData()
+\end{Verbatim}
+The three \verb|get| functions above are only shortcuts for the access via \verb|getIntData()|:
+\begin{Verbatim}
+string IntegrationData::getPolynomial() const
+long IntegrationData::getDegreeOfPolynomial() const
+bool IntegrationData::isPolynomialHomogeneous() const
+
+const vector<mpz_class>& IntegrationData::getNum_ZZ() const
+mpz_class IntegrationData::getNumeratorCommonDenom() const
+const map<long, denom_t>& IntegrationData::getDenom() const
+
+const vector<mpz_class>& IntegrationData::getCyclotomicNum_ZZ() const
+const map<long, denom_t>& IntegrationData::getCyclotomicDenom() const
+
+bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const
+void IntegrationData::computeWeightedEhrhartQuasiPolynomial()
+vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial()
+mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const
+
+mpq_class IntegrationData::getVirtualMultiplicity() const
+mpq_class IntegrationData::getIntegral() const
+\end{Verbatim}
+
+The first three functions refer to the polynomial defining the integral or weighted Ehrhart series.
+
+The computation of these data is controlled by the corresponding \verb|ConeProperty|.
+
 \subsubsection{Triangulation and disjoint decomposition}
 
 The triangulation, the size and the sum of the determinants are returned by
@@ -5852,6 +5916,7 @@ class ArithmeticException: public NormalizException
 class BadInputException: public NormalizException
 class NotComputableException: public NormalizException
 class FatalException: public NormalizException
+class NmzCoCoAException: public NormalizException
 \end{Verbatim}
 The \verb|ArithmeticException| is leaves \verb|libnormaliz| if a nonrecoverable overflow occurs (it is also used internally for the change of integer type). This should not happen for cones of integer type \verb|mpz_class|, unless it is caused by a bug in the program. The \verb|BadInputException| is thrown whenever the input is inconsistent; the reasons for this are manifold. The \verb|NotComputableException| is thrown if a computation goal cannot be reached. The \verb|FatalException| should never appear. It covers error situations that can only be caused by a bug in the program. At many places \verb|libnormaliz| has \verb|assert| verifications built in that serve the same purpose. 
 
@@ -5861,7 +5926,7 @@ class NonpointedException: public NormalizException
 class NotIntegrallyClosedException: public NormalizException
 \end{Verbatim}
 
-\subsection{Control of output}
+\subsection{Control of terminal output}
 By using
 \begin{Verbatim}
 bool setVerboseDefault(bool v)

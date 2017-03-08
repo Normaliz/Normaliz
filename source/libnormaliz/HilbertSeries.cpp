@@ -881,7 +881,7 @@ mpq_class IntegrationData::getIntegral() const{
     return integral;
 }
 
-mpq_class IntegrationData::getNumeratorCommonDenom() const{
+mpz_class IntegrationData::getNumeratorCommonDenom() const{
     return weighted_Ehrhart_series.second;
 }
 
@@ -906,7 +906,7 @@ void IntegrationData::setHomogeneity(const bool hom){
 }
 
 
-bool IntegrationData::getHomogenity() const{
+bool IntegrationData::isPolynomialHomogeneous() const{
     return polynomial_is_homogeneous;
 }
 
