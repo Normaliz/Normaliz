@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <vector>
 #include <fstream>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 using namespace std;
 
 #include "libnormaliz/libnormaliz.h"
@@ -79,7 +81,9 @@ int main(int argc, char* argv[]){
     size_t nr_simplex=0; // for the progress report
     
     while(true){
+#ifdef _OPENMP
         omp_set_num_threads(1);
+#endif
         Cone<Integer> Candidate=rand_simplex(polytope_dim,bound);
         nr_simplex++;
         if(nr_simplex%1000 ==0)
@@ -106,7 +110,9 @@ int main(int argc, char* argv[]){
         vector<vector<mpz_class> > mpz_supp_hyps;
         convert(mpz_supp_hyps,supp_hyps_moved);
         vector<mpz_class> mpz_grading=convertTo<vector<mpz_class> >(grading);
+#ifdef _OPENMP
         omp_set_num_threads(4);
+#endif
         Cone<mpz_class> Candidate3(Type::inequalities,mpz_supp_hyps,Type::grading,to_matrix(mpz_grading));
         Candidate3.compute(ConeProperty::Deg1Elements,ConeProperty::Approximate);
         vector<vector<Integer> > jumps_cand;  // for conversion from mpz_class

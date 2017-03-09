@@ -44,8 +44,9 @@
 
 //---------------------------------------------------------------------------
 
-const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
+// const size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang
                                        // we pass to (non-recirsive) pyramids
+                                       // now in build_cone
 
 const size_t EvalBoundTriang=2500000; // if more than EvalBoundTriang simplices have been stored
                                // evaluation is started (whenever possible)
@@ -61,9 +62,11 @@ const size_t EvalBoundLevel0Pyr=200000; // 1000000;   // the same for stored lev
                                               
 const int largePyramidFactor=20;  // pyramid is large if largePyramidFactor*Comparisons[Pyramid_key.size()-dim] > old_nr_supp_hyps
 
-const int SuppHypRecursionFactor=100; // pyramids for supphyps formed if Pos*Neg > this factor*dim^4
+const int SuppHypRecursionFactor=200; // pyramids for supphyps formed if Pos*Neg > ...
 
 const size_t RAM_Size=1000000000; // we assume that there is at least 1 GB of RAM
+
+const long GMP_time_factor=10; // factor by which GMP arithmetic differs from long long
 
 //---------------------------------------------------------------------------
 
@@ -73,6 +76,28 @@ using namespace std;
 //---------------------------------------------------------------------------
 //private
 //---------------------------------------------------------------------------
+
+template<typename Integer>
+void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) const{
+    size_t nr_gen_in_hyp=0;
+    for(size_t i=0; i<nr_gen;++i)
+        if(in_triang[i]&& hyp.GenInHyp.test(i))
+            nr_gen_in_hyp++;
+    if((hyp.simplicial &&  nr_gen_in_hyp!=dim-2) || (!hyp.simplicial &&  nr_gen_in_hyp==dim-2)){
+        // NOTE: in_triang set at END of main loop in build_cone
+        cout << "Simplicial " << hyp.simplicial << " dim " << dim << " gen_in_hyp " << nr_gen_in_hyp << endl;
+        assert(false);
+    }
+}
+
+template<typename Integer>
+void Full_Cone<Integer>::set_simplicial(FACETDATA& hyp){
+    size_t nr_gen_in_hyp=0;
+    for(size_t i=0; i<nr_gen;++i)
+        if(in_triang[i]&& hyp.GenInHyp.test(i))
+            nr_gen_in_hyp++;
+    hyp.simplicial=(nr_gen_in_hyp==dim-2);
+}
 
 template<typename Integer>
 void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother){
@@ -123,7 +148,7 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA& hyp) {
 
 template<typename Integer>
 void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                            list<FACETDATA>& NewHyps){
+                            list<FACETDATA>& NewHyps, bool known_to_be_simplicial){
 // adds a new hyperplane found in find_new_facets to this cone (restricted to generators processed)
 
     size_t k;
@@ -150,9 +175,14 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
         convert(NewFacet.Hyp, mpz_sum);
     }
     
-    NewFacet.ValNewGen=0; 
-    
+    NewFacet.ValNewGen=0;    
     NewFacet.GenInHyp=positive.GenInHyp & negative.GenInHyp; // new hyperplane contains old gen iff both pos and neg do
+    if(known_to_be_simplicial){
+        NewFacet.simplicial=true;
+        check_simpliciality_hyperplane(NewFacet);
+    }
+    else
+        set_simplicial(NewFacet);
     NewFacet.GenInHyp.set(new_generator);  // new hyperplane contains new generator
     number_hyperplane(NewFacet,nrGensInCone,positive.Ident);
     
@@ -190,7 +220,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     deque <FACETDATA*> Neg_Simp,Neg_Non_Simp;
     deque <FACETDATA*> Neutral_Simp, Neutral_Non_Simp;
     
-    boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen);
+    boost::dynamic_bitset<> Zero_Positive(nr_gen),Zero_Negative(nr_gen); // here we collect the vertices that lie in a
+                                        // postive resp. negative hyperplane
 
     bool simplex;
     
@@ -199,23 +230,25 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     typename list<FACETDATA>::iterator ii = Facets.begin();
     
     for (; ii != Facets.end(); ++ii) {
-        simplex=true;
-        nr_zero_i=0;
-        for (size_t j=0; j<nr_gen; j++){
+        // simplex=true;
+        // nr_zero_i=0;
+        simplex=ii->simplicial; // at present simplicial, will become nonsimplicial if neutral
+        /* for (size_t j=0; j<nr_gen; j++){
             if (ii->GenInHyp.test(j)) {
                 if (++nr_zero_i > facet_dim) {
                     simplex=false;
                     break;
                 }
             }
-        }
+        }*/
         
         if (ii->ValNewGen==0) {
             ii->GenInHyp.set(new_generator);  // Must be set explicitly !!
+            ii->simplicial=false;  // simpliciality definitly gone with the new generator
             if (simplex) {
-                Neutral_Simp.push_back(&(*ii));
+                Neutral_Simp.push_back(&(*ii)); // simplicial without the new generator
             }   else {
-                Neutral_Non_Simp.push_back(&(*ii));
+                Neutral_Non_Simp.push_back(&(*ii)); // nonsimüplicial already without the new generator
             }
         }
         else if (ii->ValNewGen>0) {
@@ -409,7 +442,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     bool common_subfacet;
     // we cannot use nowait here because of the way we handle exceptions in this loop
     #pragma omp for schedule(dynamic) //nowait
-    for (size_t i =0; i<nr_PosSimp; i++){ //Positive Simp vs.Negative Non Simp
+    for (size_t i =0; i<nr_PosSimp; i++){
 
         if (skip_remaining) continue;
 #ifndef NCATCH
@@ -431,7 +464,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (nr_zero_i==subfacet_dim) {                 // NEW slight change in logic. Positive simpl facet shared at most
             jj_map=Neg_Subfacet.find(zero_i);           // one subfacet with negative simpl facet
             if (jj_map!=Neg_Subfacet.end()) {
-                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i]);
+                add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i],true);
                 (*jj_map).second = -1;  // block subfacet in further searches
             }
         }
@@ -442,7 +475,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                     subfacet.reset(k);  // remove k-th element from facet to obtain subfacet
                     jj_map=Neg_Subfacet.find(subfacet);
                     if (jj_map!=Neg_Subfacet.end()) {
-                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i]);
+                        add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsSimp[i],true);
                         (*jj_map).second = -1;
                         // Indi[j]=true;
                     }
@@ -466,7 +499,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
             }
                
             if(common_subfacet){                 
-               add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j],NewHypsSimp[i]);
+               add_hyperplane(new_generator,*Pos_Simp[i],*Neg_Non_Simp[j],NewHypsSimp[i],true);
                if(nr_zero_i==subfacet_dim) // only one subfacet can lie in negative hyperplane
                    break;
             }
@@ -519,7 +552,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         for (j=0; j<nr_NegSubf; ++j,++jj_map) {
             if ( (*jj_map).second != -1 ) {  // skip used subfacets
                 if(jj_map->first.is_subset_of(Pos_Non_Simp[i]->GenInHyp)){
-                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i]);
+                    add_hyperplane(new_generator,*Pos_Non_Simp[i],*Neg_Simp[(*jj_map).second],NewHypsNonSimp[i],true);
                     (*jj_map).second = -1; // has now been used
                 }
             }
@@ -528,16 +561,16 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         // Now the NonSimp
 
         hp_i=Pos_Non_Simp[i];
-        zero_i=Zero_PN & hp_i->GenInHyp;
+        zero_i=Zero_PN & hp_i->GenInHyp; // these are the potential vertices in an intersection
         nr_zero_i=0;
         int last_existing=-1;
-        for(size_t jj=0;jj<nrGensInCone;jj++)
+        for(size_t jj=0;jj<nrGensInCone;jj++) // we make a "key" of the potential vertices in the intersection
         {
             j=GensInCone[jj];
             if(zero_i.test(j)){
                 key[nr_zero_i]=j;
-                for(size_t kk= last_existing+1;kk<=jj;kk++)
-                    key_start[kk]=nr_zero_i;
+                for(size_t kk= last_existing+1;kk<=jj;kk++)  // used in the extension test
+                    key_start[kk]=nr_zero_i;                 // to find out from which generator on both have existed
                 nr_zero_i++;
                 last_existing= jj;
             }
@@ -549,6 +582,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (nr_zero_i<subfacet_dim) 
             continue;
         
+        // now nr_zero_i is the number of vertices in hp_i that have a chance to lie in a negative facet
+        // and key contains the indices
+        
        missing_bound=nr_zero_i-subfacet_dim; // at most this number of generators can be missing
                                              // to have a chance for common subfacet                                            
        
@@ -558,8 +594,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            hp_j=Neg_Non_Simp[j];
            
            if(hp_i->Ident==hp_j->Mother || hp_j->Ident==hp_i->Mother){   // mother and daughter coming together
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i]);  // their intersection is a subfacet
-               continue;           
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false);  // their intersection is a subfacet
+               continue;                                                           // simplicial set in add_hyperplane
            } 
            
            
@@ -574,11 +610,19 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            nr_common_zero=0;
            common_key.clear();
            size_t second_loop_bound=nr_zero_i;
-           common_subfacet=true;  
+           common_subfacet=true;
+           
+           // We use the following criterion:
+           // if the two facets are not mother and daughter (taken care of already), then
+           // they cannot have intersected in a subfacet at the time when the second was born.
+           // In other words: they can only intersect in a subfacet now, if at least one common vertex
+           // has been added after the birth of the younger one.
+           // this is indicated by "extended".
            
            if(extension_test){
                bool extended=false;
-               second_loop_bound=both_existing_from;
+               second_loop_bound=both_existing_from;  // fisrt we find the common vertices inserted from the step
+                                                      // where both facets existed the first time
                for(k=both_existing_from;k<nr_zero_i;k++){
                    if(!hp_j->GenInHyp.test(key[k])) {
                        nr_missing++;
@@ -588,7 +632,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                        }
                    }
                    else {
-                       extended=true;
+                       extended=true;  // in this case they have a common vertex added after their common existence
                        common_key.push_back(key[k]);
                        nr_common_zero++;
                    }
@@ -599,7 +643,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            }
                     
            
-           for(k=0;k<second_loop_bound;k++) {
+           for(k=0;k<second_loop_bound;k++) {  // now the remaining 
                if(!hp_j->GenInHyp.test(key[k])) {
                    nr_missing++;
                    if(nr_missing>missing_bound) {
@@ -618,9 +662,13 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
            /* #pragma omp atomic
            NrCSF++;*/
            
-           ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
+           if(using_GMP<Integer>())           
+                ranktest = (nr_NonSimp > GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+           else
+               ranktest = (nr_NonSimp > dim*dim*nr_common_zero/3);
+           // ranktest=true;
 
-           if(ranktest) {
+           if(ranktest) { // cout << "Rang" << endl;
            
            /* #pragma omp atomic
             NrRank++; */
@@ -640,13 +688,13 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
                    hp_t=*a;
                    if ((hp_t!=hp_i) && (hp_t!=hp_j) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
                        common_subfacet=false;
-                       AllNonSimpHyp.splice(AllNonSimpHyp.begin(),AllNonSimpHyp,a);
+                       AllNonSimpHyp.splice(AllNonSimpHyp.begin(),AllNonSimpHyp,a); // for the "darwinistic" mewthod
                        break;
                    }
                }                       
            } // else
            if (common_subfacet) {  //intersection of i and j is a subfacet
-               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i]);
+               add_hyperplane(new_generator,*hp_i,*hp_j,NewHypsNonSimp[i],false); //simplicial set in add_hyperplane
                /* #pragma omp atomic
                 NrNewF++; */
                 // Indi[j]=true;
@@ -718,8 +766,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
     size_t k,l;
     bool one_not_in_i, not_in_facet;
     size_t not_in_i=0;
-    size_t facet_dim=dim-1;
-    size_t nr_in_i=0;
+    // size_t facet_dim=dim-1;
+    // size_t nr_in_i=0;
 
     list< SHORTSIMPLEX<Integer> > Triangulation_kk;
     typename list< SHORTSIMPLEX<Integer> >::iterator j;
@@ -738,18 +786,19 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 #endif
         i=visible[kk];
         
-        nr_in_i=0;
+        /* nr_in_i=0;
         for(size_t m=0;m<nr_gen;m++){
             if(i->GenInHyp.test(m))
                 nr_in_i++;
             if(nr_in_i>facet_dim){
                 break;
             }
-        }
+        }*/
+        
         skip_eval = Top_Cone->do_partial_triangulation && i->ValNewGen == -1
                     && is_hyperplane_included(*i);
 
-        if (nr_in_i==facet_dim){  // simplicial
+        if (i->simplicial){  // simplicial
             l=0;
             for (k = 0; k <nr_gen; k++) {
                 if (i->GenInHyp[k]==1) {
@@ -998,11 +1047,24 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     hyp=Facets.begin();
     size_t hyppos=0;
     skip_remaining = false;
+    
+    const long VERBOSE_STEPS = 50;
+    long step_x_size = old_nr_supp_hyps-VERBOSE_STEPS;
+    const size_t RepBound=10000;
 
     #pragma omp parallel for private(skip_triang) firstprivate(hyppos,hyp,Pyramid_key) schedule(dynamic) reduction(+: nr_done)
     for (size_t kk=0; kk<old_nr_supp_hyps; ++kk) {
 
         if (skip_remaining) continue;
+        
+        if(verbose && old_nr_supp_hyps>=RepBound){
+            #pragma omp critical(VERBOSE)
+            while ((long)(kk*VERBOSE_STEPS) >= step_x_size) {
+                step_x_size += old_nr_supp_hyps;
+                verboseOutput() << "." <<flush;
+            }
+        }
+        
 #ifndef NCATCH
         try {
 #endif
@@ -1016,8 +1078,10 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 
             nr_done++;
 
-            if (hyp->ValNewGen == 0)                     // MUST BE SET HERE
+            if (hyp->ValNewGen == 0){                   // MUST BE SET HERE
                 hyp->GenInHyp.set(new_generator);
+                if(recursive) hyp->simplicial=false;                  // in the recursive case
+            }
 
             if (hyp->ValNewGen >= 0) // facet not visible
                 continue;
@@ -1078,8 +1142,12 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
     if (start_level==0 && Top_Cone->check_pyr_buffer(store_level)) {
         Top_Cone->evaluate_stored_pyramids(store_level);
     }
+    
+    if (verbose && old_nr_supp_hyps>=RepBound)
+        verboseOutput() << endl;
 
     } while (nr_done < old_nr_supp_hyps);
+    
     
     evaluate_large_rec_pyramids(new_generator);
 
@@ -1110,6 +1178,7 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.Hyp = H[i];
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
+                NewFacet.simplicial=true;
                 NewFacets.push_back(NewFacet);
             }
             select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of multithreaded_pyramid
@@ -1226,6 +1295,7 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     vector<key_t> key=S.read_key();   // generators indexed from 0 */
     
     vector<key_t> key=find_start_simplex();
+    assert(key.size()==dim); // safety heck
     if(verbose){
         verboseOutput() << "Start simplex ";
         for(size_t i=0;i<key.size();++i)
@@ -1249,11 +1319,14 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
     nrGensInCone=dim;
     
     nrTotalComparisons=dim*dim/2;
+    if(using_GMP<Integer>())
+        nrTotalComparisons*=GMP_time_factor; // because of the linear algebra involved in this routine
     Comparisons.push_back(nrTotalComparisons);
        
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
         NewFacet.Hyp=H[i];
+        NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
             if(j!=i)
                 NewFacet.GenInHyp.set(key[j]);
@@ -1336,12 +1409,22 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
         if(new_global_hyp){
             NewFacet.Hyp=pyr_hyp->Hyp;
             NewFacet.GenInHyp.reset();
+            // size_t gens_in_facet=0;
             for (i=0; i<Pyramid_key.size(); ++i) {
                 if (pyr_hyp->GenInHyp.test(i) && in_triang[Pyramid_key[i]]) {
                     NewFacet.GenInHyp.set(Pyramid_key[i]);
+                    // gens_in_facet++;
                 }
             }
+            /* for (i=0; i<nr_gen; ++i) {
+                if (NewFacet.GenInHyp.test(i) && in_triang[i]) {
+                    gens_in_facet++;
+                }
+            }*/
+            // gens_in_facet++; // Note: new generator not yet in in_triang
             NewFacet.GenInHyp.set(new_generator);
+            NewFacet.simplicial=pyr_hyp->simplicial; // (gens_in_facet==dim-1); 
+            check_simpliciality_hyperplane(NewFacet);
             number_hyperplane(NewFacet,nrGensInCone,0); //mother unknown
             if(multithreaded_pyramid){
                 #pragma omp critical(GIVEBACKHYPS) 
@@ -1404,11 +1487,11 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
 
     for (;hp_j_iterator!=PosHyps.end();++hp_j_iterator){ //match hyp with the given Pos
         hp_j=*hp_j_iterator;
-
-
-      if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
-           add_hyperplane(new_generator,*hp_j,hyp,NewHyps);  // their intersection is a subfacet
-           continue;           
+        
+       if(hyp.Ident==hp_j->Mother || hp_j->Ident==hyp.Mother){   // mother and daughter coming together
+                                            // their intersection is a subfacet
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);    // simplicial set in add_hyperplane
+            continue;           
        }
        
        
@@ -1421,7 +1504,8 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
        nr_common_zero=0;
        common_key.clear();
        size_t second_loop_bound=nr_zero_hyp;
-       common_subfacet=true;  
+       common_subfacet=true;
+       boost::dynamic_bitset<> common_zero(nr_gen);
        
        if(extension_test){
            bool extended=false;
@@ -1437,6 +1521,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
                else {
                    extended=true;
                    common_key.push_back(key[k]);
+                   common_zero.set(key[k]);
                    nr_common_zero++;
                }
            }
@@ -1455,22 +1540,50 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
            }
            else {
                common_key.push_back(key[k]);
+               common_zero.set(key[k]);
                nr_common_zero++;
            }
         }
         
        if(!common_subfacet)
             continue;
+       
+       assert(nr_common_zero >=subfacet_dim);
             
-        // only rank test since we have many supphyps anyway
-        Matrix<Integer>& Test = Top_Cone->RankTest[tn];
-        if (Test.rank_submatrix(Generators,common_key)<subfacet_dim) 
-            common_subfacet=false;     // don't make a hyperplane
 
+        if (!hp_j->simplicial){
+            
+            bool ranktest;
+            /* if(using_GMP<Integer>())           
+                ranktest = (old_nr_supp_hyps > 10*GMP_time_factor*dim*dim*nr_common_zero/3); // in this case the rank computation takes longer
+           else
+               ranktest = (old_nr_supp_hyps > 10*dim*dim*nr_common_zero/3); */
+           
+           ranktest=true;
+            
+            if(ranktest){
+                // cout << "Rank" << endl;
+                Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+                if(Test.rank_submatrix(Generators,common_key)<subfacet_dim)
+                    common_subfacet=false;     // don't make a hyperplane
+            }
+            else{                 // now the comparison test
+                // cout << "Compare" << endl;
+                auto hp_t=Facets.begin();
+                for (;hp_t!=Facets.end();++hp_t){
+                    if(hp_t->simplicial)
+                        continue;
+                    if ((hp_t->Ident!=hyp.Ident) && (hp_t->Ident!=hp_j->Ident) && common_zero.is_subset_of(hp_t->GenInHyp)) {                                
+                        common_subfacet=false;
+                        break;
+                    }
+                }                       
+            } // else
+        } // !simplicial
         
         if(common_subfacet)
-            add_hyperplane(new_generator,*hp_j,hyp,NewHyps); // if !common_subfacet this is skipped by continue
-    } // for
+            add_hyperplane(new_generator,*hp_j,hyp,NewHyps,false);  // simplicial set in add_hyperplane
+    } // for           
 
     if(multithreaded_pyramid)
         #pragma omp critical(GIVEBACKHYPS)
@@ -1518,6 +1631,10 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     std::exception_ptr tmp_exception;
 #endif
     
+    const long VERBOSE_STEPS = 50;
+    long step_x_size = nrLargeRecPyrs-VERBOSE_STEPS;
+    const size_t RepBound=100;
+    
     #pragma omp parallel
     {
     size_t ppos=0;
@@ -1527,6 +1644,15 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     for(size_t i=0; i<nrLargeRecPyrs; i++){
         for(; i > ppos; ++ppos, ++p) ;
         for(; i < ppos; --ppos, --p) {};
+
+        if(verbose && nrLargeRecPyrs>=RepBound){
+            #pragma omp critical(VERBOSE)
+            while ((long)(i*VERBOSE_STEPS) >= step_x_size) {
+                step_x_size += nrLargeRecPyrs;
+                verboseOutput() << "." <<flush;
+            }
+        }
+        
 #ifndef NCATCH
         try {
 #endif
@@ -1541,6 +1667,9 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
+    
+    if(verbose && nrLargeRecPyrs>=RepBound)
+        verboseOutput() << endl;
 
     LargeRecPyrs.clear();
 }
@@ -1753,8 +1882,14 @@ void Full_Cone<Integer>::build_cone() {
     
     // cout << "Pyr " << pyr_level << endl;
 
-    long long RecBoundSuppHyp = dim*dim;
-    RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
+    long long RecBoundSuppHyp;
+    RecBoundSuppHyp = dim*dim*dim*SuppHypRecursionFactor; //dim^3 * 50
+    if(using_GMP<Integer>())
+        RecBoundSuppHyp*=GMP_time_factor; // pyramid building is more difficult for complicated arithmetic
+        
+    size_t RecBoundTriang=1000000;   //  if number(supphyps)*size(triang) > RecBoundTriang pass to pyramids
+    if(using_GMP<Integer>())
+        RecBoundTriang*=GMP_time_factor;
     
     tri_recursion=false; 
     
@@ -1787,6 +1922,9 @@ void Full_Cone<Integer>::build_cone() {
 
 
     for (size_t i=start_from;i<nr_gen;++i) { 
+        
+        time_t start,end;
+        time (&start);
     
         start_from=i;
     
@@ -1801,7 +1939,8 @@ void Full_Cone<Integer>::build_cone() {
         l=Facets.begin();
         old_nr_supp_hyps=Facets.size(); // Facets will be xtended in the loop 
 
-        long long nr_pos=0; long long nr_neg=0;
+        long long nr_pos=0, nr_neg=0;
+        long long nr_neg_simp=0, nr_pos_simp=0;
         vector<Integer> L;           
 #ifndef NCATCH
         std::exception_ptr tmp_exception;
@@ -1822,9 +1961,15 @@ void Full_Cone<Integer>::build_cone() {
                 if (scalar_product<0) {
                     is_new_generator=true;
                     nr_neg++;
+                    if(l->simplicial)
+                        #pragma omp atomic
+                        nr_neg_simp++;
                 }
                 if (scalar_product>0) {
                     nr_pos++;
+                    if(l->simplicial)
+                        #pragma omp atomic
+                        nr_pos_simp++;
                 }
 #ifndef NCATCH
             } catch(const std::exception& ) {
@@ -1846,9 +1991,12 @@ void Full_Cone<Integer>::build_cone() {
         
         if (!omp_in_parallel())
             try_offload(0);
-            
+        /* if(!is_pyramid && verbose ) 
+            verboseOutput() << "Neg " << nr_neg << " Pos " << nr_pos << " NegSimp " <<nr_neg_simp << " PosSimp " <<nr_pos_simp << endl; */
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
+        if (recursion_allowed && nr_neg*nr_pos-(nr_neg_simp*nr_pos_simp) > RecBoundSuppHyp) {  // use pyramids because of supphyps
+            if(!is_pyramid && verbose )
+                verboseOutput() << "Building pyramids" << endl;
             if (do_triangulation)
                 tri_recursion = true; // We can not go back to classical triangulation
             if(check_evaluation_buffer()){
@@ -1880,6 +2028,13 @@ void Full_Cone<Integer>::build_cone() {
             if(do_all_hyperplanes || i!=last_to_be_inserted) 
                 find_new_facets(i);
         }
+        
+        time (&end);        
+        /* double dif = difftime (end,start);
+
+        if (verbose) {
+            verboseOutput() << "Generator took " << dif << " sec " <<endl;
+        }*/
         
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){
@@ -1924,17 +2079,18 @@ void Full_Cone<Integer>::build_cone() {
     // transfer Facets --> SupportHyperplanes
     if (do_all_hyperplanes) {
         nrSupport_Hyperplanes = Facets.size();
-        Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,dim);
-        typename list<FACETDATA>::const_iterator IHV=Facets.begin();
+        Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,0);
+        typename list<FACETDATA>::iterator IHV=Facets.begin();
         for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
-            Support_Hyperplanes[i] = IHV->Hyp;
+            swap(Support_Hyperplanes[i],IHV->Hyp);
         }
         is_Computed.set(ConeProperty::SupportHyperplanes);
-    }    
+    } 
+    Support_Hyperplanes.set_nr_of_columns(dim);
    
     
     if(do_extreme_rays && do_all_hyperplanes)
-        compute_extreme_rays();
+        compute_extreme_rays(true);
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
     if(check_evaluation_buffer()){
@@ -2484,10 +2640,12 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
         compute_deg1_elements_via_approx_simplicial(LargeSimplices.front().get_key());
     }
     else {
-        LargeSimplices.front().Simplex_parallel_evaluation();
-        if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
-            Results[0].transfer_candidates();
-            update_reducers();
+        if(true){ // !(is_approximation && do_Hilbert_basis  && LargeSimplices.front().get_volume() > VolumeBound)){
+            LargeSimplices.front().Simplex_parallel_evaluation();
+            if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
+                Results[0].transfer_candidates();
+                update_reducers();
+            }
         }
     }
     LargeSimplices.pop_front();
@@ -2496,7 +2654,7 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements){
+void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound){
 
     if (is_approximation) return; // do not approximate again!
 
@@ -2522,6 +2680,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
     SimplCone.do_approximation=true;  // as indicted by do_approximation
     SimplCone.approx_level = approx_level;
+    SimplCone.VolumeBound=VolumeBound;
 
     SimplCone.Truncation= N;
     SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
@@ -2815,6 +2974,11 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         Hilbert_Series.adjustShift();
         // now the shift in the HilbertSeries may change and we would have to adjust
         // the shift, the grading and more in the Full_Cone to continue to add data!
+            // COMPUTE HSOP here
+        if (do_hsop){
+            compute_hsop();
+            is_Computed.set(ConeProperty::HSOP);
+        }
         Hilbert_Series.simplify();
         is_Computed.set(ConeProperty::HilbertSeries);
     }
@@ -2836,22 +3000,33 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 
     do_extreme_rays=true; // we always want to do this if compute() is called
 
-    if (do_default_mode && with_default) {
+    /* if (do_default_mode && with_default) {
         do_Hilbert_basis = true;
         do_h_vector = true;
         if(!inhomogeneous)
             do_class_group=true;
     }
+    */
+    
+    if (do_integrally_closed) {
+        if (do_Hilbert_basis) {
+            do_integrally_closed = false; // don't interrupt the computation
+        } else {
+            do_Hilbert_basis = true;
+        }
+    }
 
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
+    if (do_module_gens_intcl) use_bottom_points= false;
+    //if (do_hsop)            do_Hilbert_basis = true;
     if (do_Stanley_dec)     keep_triangulation = true;
     if (do_cone_dec)        keep_triangulation = true;
     if (keep_triangulation) do_determinants = true;
     if (do_multiplicity)    do_determinants = true;
     if ((do_multiplicity || do_h_vector) && inhomogeneous)    do_module_rank = true;
     if (do_determinants)    do_triangulation = true;
-    if (do_h_vector)        do_triangulation = true;
+    if (do_h_vector && (with_default || explicit_h_vector))        do_triangulation = true;
     if (do_deg1_elements)   do_partial_triangulation = true;
     if (do_Hilbert_basis)   do_partial_triangulation = true;
     // activate 
@@ -2883,21 +3058,23 @@ void Full_Cone<Integer>::compute() {
         set_zero_cone();
         return;
     }
+    
 
     do_vars_check(false);
     explicit_full_triang=do_triangulation; // to distinguish it from do_triangulation via default mode
     if(do_default_mode)
         do_vars_check(true);
-    if (do_integrally_closed) {
-        if (do_Hilbert_basis) {
-            do_integrally_closed = false; // don't interrupt the computation
-        } else {
-            do_Hilbert_basis = true;
-            do_vars_check(false);
-        }
+    
+    if(inhomogeneous){
+        if(do_default_mode && !do_Hilbert_basis && !isComputed(ConeProperty::Grading) &&isComputed(ConeProperty::ExtremeRays))
+            return;        
     }
 
     start_message();
+    
+    if(Support_Hyperplanes.nr_of_rows()==0 && !do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements
+        && !do_Stanley_dec && !do_triangulation && !do_determinants)
+        assert(Generators.max_rank_submatrix_lex().size() == dim);
 
     minimize_support_hyperplanes(); // if they are given
     if (inhomogeneous)
@@ -2960,11 +3137,15 @@ void Full_Cone<Integer>::compute() {
             
         }
         else{
-            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
+            if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector || do_multiplicity)){ // inthis situation we must find the 
                 convert_polyhedron_to_polytope();                  // lattice points in a polytope
             }
-            else
-                primal_algorithm();            
+            else{
+                if(do_partial_triangulation || do_triangulation)
+                    primal_algorithm();
+                else
+                    return;
+            }
         }
             
         if(inhomogeneous){
@@ -2973,8 +3154,275 @@ void Full_Cone<Integer>::compute() {
         }
         
     }  
+    
     end_message();
 }
+
+template<typename Integer>
+void Full_Cone<Integer>::compute_hsop(){
+        vector<long> hsop_deg(dim,1);
+        // if all extreme rays are in degree one, there is nothing to compute
+        if (!isDeg1ExtremeRays()){
+            if(verbose){
+            verboseOutput() << "Computing heights ... " << flush;
+            }
+            
+            vector<bool> choice = Extreme_Rays_Ind;
+            if (inhomogeneous){
+                for (size_t i=0; i<Generators.nr_of_rows(); i++) {
+                    if (Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Truncation) != 0) {
+                        choice[i]=false;
+                    }
+                }
+            }
+            Matrix<Integer> ER = Generators.submatrix(choice);
+            Matrix<Integer> SH = getSupportHyperplanes();
+            if (inhomogeneous){
+                    Sublattice_Representation<Integer> recession_lattice(ER,true);
+                    Matrix<Integer> SH_raw = recession_lattice.to_sublattice_dual(SH);
+                    Matrix<Integer> ER_embedded = recession_lattice.to_sublattice(ER);
+                    Full_Cone<Integer> recession_cone(ER_embedded);
+                    recession_cone.Support_Hyperplanes = SH_raw;
+                    recession_cone.dualize_cone();
+                    SH = recession_lattice.from_sublattice_dual(recession_cone.getSupportHyperplanes());
+            }
+            vector<size_t> ideal_heights(ER.nr_of_rows(),1);
+            // the heights vector is clear in the simplicial case
+            if (is_simplicial){
+                    for (size_t j=0;j<ideal_heights.size();j++) ideal_heights[j]=j+1;
+            } else {
+                list<pair<boost::dynamic_bitset<> , size_t>> facet_list;
+                list<vector<key_t>> facet_keys;
+                vector<key_t> key;
+                size_t d = dim;
+                if (inhomogeneous) d = level0_dim;
+                for (size_t i=SH.nr_of_rows();i-->0;){
+                    boost::dynamic_bitset<> new_facet(ER.nr_of_rows());
+                    key.clear();
+                    for (size_t j=0;j<ER.nr_of_rows();j++){
+                        if (v_scalar_product(SH[i],ER[j])==0){
+                            new_facet[new_facet.size()-1-j]=1;
+                        } else {
+                            key.push_back(j);
+                        }
+                    }
+                    facet_list.push_back(make_pair(new_facet,d-1));
+                    facet_keys.push_back(key);
+                }
+                facet_list.sort(); // should be sorted lex
+                //~ cout << "FACETS:" << endl;
+                //~ //cout << "size: " << facet_list.size() << " | " << facet_list << endl;
+                //~ for (auto jt=facet_list.begin();jt!=facet_list.end();++jt){
+                        //~ cout << jt->first << " | " << jt->second << endl;
+                //~ }
+                //cout << "facet non_keys: " << facet_keys << endl;
+                heights(facet_keys,facet_list,ER.nr_of_rows()-1,ideal_heights,d-1);
+            }
+        if(verbose){
+            verboseOutput() << "done." << endl;
+            assert(ideal_heights[ER.nr_of_rows()-1]==dim);
+            verboseOutput() << "Heights vector: " << ideal_heights << endl;   
+        }
+        vector<Integer> er_deg = ER.MxV(Grading);
+        hsop_deg = convertTo<vector<long> >(degrees_hsop(er_deg,ideal_heights));
+        } 
+        if(verbose){
+            verboseOutput() << "Degrees of HSOP: " << hsop_deg << endl;   
+        }
+        Hilbert_Series.setHSOPDenom(hsop_deg);
+}
+
+
+
+// recursive method to compute the heights
+// TODO: at the moment: facets are a parameter. global would be better
+template<typename Integer>
+void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights,size_t max_dim){
+    // since we count the index backwards, this is the actual nr of the extreme ray
+    size_t ER_nr = ideal_heights.size()-index-1;
+    //~ cout << "starting calculation for extreme ray nr " << ER_nr << endl;
+    list<pair<boost::dynamic_bitset<>,size_t>> not_faces;
+    auto face_it=faces.begin();
+    for (;face_it!=faces.end();++face_it){
+        if (face_it->first.test(index)){ // check whether index is set
+            break;
+        }
+        // resize not_faces
+        face_it->first.resize(index);
+    }
+    not_faces.splice(not_faces.begin(),faces,faces.begin(),face_it);
+    //~ cout << "faces not containing it:" << endl;
+    //~ for (auto jt=not_faces.begin();jt!=not_faces.end();++jt){
+                    //~ cout << jt->first << " | " << jt->second << endl;
+    //~ }
+    //~ cout << "faces containing it:" << endl;
+    //~ for (auto jt=faces.begin();jt!=faces.end();++jt){
+                    //~ cout << jt->first << " | " << jt->second << endl;
+    //~ }
+    auto not_faces_it=not_faces.begin();
+    // update the heights
+    if (ER_nr>0){
+        if (!not_faces.empty()){
+            ideal_heights[ER_nr] = ideal_heights[ER_nr-1];
+            // compute the dimensions of not_faces
+            vector<bool> choice = Extreme_Rays_Ind;
+            if (inhomogeneous){
+                for (size_t i=0; i<Generators.nr_of_rows(); i++) {
+                    if (Extreme_Rays_Ind[i] && v_scalar_product(Generators[i],Truncation) != 0) {
+                        choice[i]=false;
+                    }
+                }
+            }
+            Matrix<Integer> ER = Generators.submatrix(choice);
+            int tn;
+            if(omp_get_level()==0)
+                tn=0;
+            else  tn = omp_get_ancestor_thread_num(1);
+            Matrix<Integer>& Test = Top_Cone->RankTest[tn];
+            vector<key_t> face_key;
+            for (;not_faces_it!=not_faces.end();++not_faces_it){
+                if (not_faces_it->second==0){ // dimension has not yet been computed
+                    // generate the key vector
+                    face_key.resize(0);
+                    for (size_t i=0;i<not_faces_it->first.size();++i){
+                        if (not_faces_it->first.test(i)){
+                            face_key.push_back(ER.nr_of_rows()-1-i);
+                        }
+                    }
+                    not_faces_it->second = Test.rank_submatrix(ER,face_key);
+                }
+                if (not_faces_it->second==max_dim) break;
+            }
+            if (not_faces_it==not_faces.end()) {
+                --max_dim;
+                ideal_heights[ER_nr] = ideal_heights[ER_nr-1]+1;
+            }
+        } else {
+            ideal_heights[ER_nr] = ideal_heights[ER_nr-1]+1;
+            --max_dim;
+        }
+    }
+    // we computed all the heights
+    if (index==0) return;
+    // if inner point, we can skip now
+    
+    // take the union of all faces not containing the current extreme ray
+    boost::dynamic_bitset<> union_faces(index);
+    not_faces_it = not_faces.begin();
+    for (;not_faces_it!=not_faces.end();++not_faces_it){
+        union_faces |= not_faces_it->first; // take the union
+    }
+    //cout << "Their union: " << union_faces << endl;
+    // the not_faces now already have a size one smaller
+    union_faces.resize(index+1);
+    list<pair<boost::dynamic_bitset<>,size_t>> new_faces;
+    // delete all facets which only consist of the previous extreme rays
+    auto facet_it=facet_keys.begin();
+    size_t counter=0;
+    while(facet_it!=facet_keys.end()){
+        counter=0;
+        for (size_t i=0;i<facet_it->size();i++){
+            if (facet_it->at(i)<=ER_nr) continue;
+            // now we only have new extreme rays
+            counter = i;
+            break;
+        }
+        size_t j=ER_nr+1;
+        for (;j<ideal_heights.size();j++){
+            if (facet_it->at(counter)!=j){ // facet contains the element j
+                    break;
+            } else if (counter < facet_it->size()-1) counter++;
+        }
+        if (j==ideal_heights.size()){
+            facet_it = facet_keys.erase(facet_it);
+        } else ++facet_it;
+    }
+    facet_it=facet_keys.begin();
+    
+    // main loop
+    for (;facet_it!=facet_keys.end();++facet_it){
+        // check whether the facet is contained in the faces not containing the generator
+        // and the previous generators
+        // and check whether the generator is in the facet    
+        // check whether intersection with facet contributes
+        bool not_containing_el =false;
+        // bool whether the facet contains an element which is NOT in the faces not containing the current extreme ray
+        bool containing_critical_el=false; 
+        counter=0;
+        //cout << "check critical for facet " << *it << endl;
+        for (size_t i=0;i<facet_it->size();i++){
+            if (facet_it->at(i)==ER_nr){
+                not_containing_el = true;
+            }
+            if (facet_it->at(i)<=ER_nr && i<facet_it->size()-1) continue;
+            counter=i; // now we have elements which are bigger than the current extreme ray
+            if (not_containing_el){
+                for (size_t j=ER_nr+1;j<ideal_heights.size();j++){
+                    if (facet_it->at(counter)!=j){ // i.e. j is in the facet
+                        if (!union_faces.test(ideal_heights.size()-1-j)){
+                            containing_critical_el = true;
+                            break;
+                        }
+                    } else if (counter<facet_it->size()-1) counter++;
+                }
+            }
+            break;
+        }
+        if(not_containing_el && containing_critical_el){ //facet contributes
+            //cout << "Taking intersections with the facet " << *facet_it << endl;
+            face_it =faces.begin();
+            for (;face_it!=faces.end();++face_it){
+                boost::dynamic_bitset<> intersection(face_it->first);
+                for (size_t i=0;i<facet_it->size();i++){
+                    if (facet_it->at(i)>ER_nr) intersection.set(ideal_heights.size()-1-facet_it->at(i),false);
+                }
+                intersection.resize(index);
+                if (intersection.any()){
+                    // check whether the intersection lies in any of the not_faces
+                    not_faces_it = not_faces.begin();
+                    for (;not_faces_it!=not_faces.end();++not_faces_it){
+                            if (intersection.is_subset_of(not_faces_it->first)) break;
+                    }
+                    if (not_faces_it== not_faces.end()) new_faces.push_back(make_pair(intersection,0)); 
+                }
+            }
+       }
+    }
+    // the new faces need to be sort in lex order anyway. this can be used to reduce operations
+    // for subset checking
+    new_faces.sort();
+    auto outer_it = new_faces.begin();
+    auto inner_it = new_faces.begin();
+    for (;outer_it!=new_faces.end();++outer_it){
+        // work with a not-key vector
+        vector<key_t> face_not_key;
+        for (size_t i=0;i<outer_it->first.size();i++){
+            if (!outer_it->first.test(i)){
+                face_not_key.push_back(i);
+            }
+        }
+        inner_it=new_faces.begin();
+        size_t i=0;
+        while (inner_it!=outer_it){
+            i=0;
+            for (;i<face_not_key.size();++i){
+                if (inner_it->first.test(face_not_key[i])) break; //inner_it has an element which is not in outer_it
+            }
+            if (i==face_not_key.size()){
+                inner_it = new_faces.erase(inner_it); //inner_it is a subface of outer_it
+            } else ++inner_it;
+        }
+    }
+    new_faces.merge(not_faces);
+    /*cout << "The new faces: " << endl;
+    for (auto jt=new_faces.begin();jt!=new_faces.end();++jt){
+                    cout << jt->first << " | " << jt->second << endl;
+    }*/
+    
+    heights(facet_keys,new_faces,index-1,ideal_heights,max_dim);
+}
+
+
 
 template<typename Integer>
 void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
@@ -3015,26 +3463,30 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
         is_Computed.set(ConeProperty::ExtremeRays);     
     }
     if(Polytope.isComputed(ConeProperty::Deg1Elements)){
-        Hilbert_Basis=Polytope.Deg1_Elements;
-        is_Computed.set(ConeProperty::HilbertBasis);
-        module_rank=Hilbert_Basis.size();
+        module_rank=Polytope.Deg1_Elements.size();
+        if(do_Hilbert_basis){
+            Hilbert_Basis=Polytope.Deg1_Elements;
+            is_Computed.set(ConeProperty::HilbertBasis);
+        }
         is_Computed.set(ConeProperty::ModuleRank);
         if(isComputed(ConeProperty::Grading) && module_rank>0){
             multiplicity=1; // of the recession cone;
             is_Computed.set(ConeProperty::Multiplicity);
-            vector<num_t> hv(1);
-            typename list<vector<Integer> >::const_iterator hb=Hilbert_Basis.begin();
-            for(;hb!=Hilbert_Basis.end();++hb){
-                size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
-                if(deg+1>hv.size())
-                    hv.resize(deg+1);
-                hv[deg]++;                        
-            }    
-            Hilbert_Series.add(hv,vector<denom_t>());
-            Hilbert_Series.setShift(convertTo<long>(shift));
-            Hilbert_Series.adjustShift();
-            Hilbert_Series.simplify();
-            is_Computed.set(ConeProperty::HilbertSeries);
+            if(do_h_vector){
+                vector<num_t> hv(1);
+                typename list<vector<Integer> >::const_iterator hb=Polytope.Deg1_Elements.begin();
+                for(;hb!=Polytope.Deg1_Elements.end();++hb){
+                    size_t deg = convertTo<long>(v_scalar_product(Grading,*hb));
+                    if(deg+1>hv.size())
+                        hv.resize(deg+1);
+                    hv[deg]++;                        
+                }    
+                Hilbert_Series.add(hv,vector<denom_t>());
+                Hilbert_Series.setShift(convertTo<long>(shift));
+                Hilbert_Series.adjustShift();
+                Hilbert_Series.simplify();
+                is_Computed.set(ConeProperty::HilbertSeries);
+            }
         }  
     }   
 }
@@ -3123,7 +3575,8 @@ void Full_Cone<Integer>::support_hyperplanes() {
     extreme_rays_and_deg1_check();
     if(inhomogeneous){
         find_level0_dim();
-        find_module_rank();
+        if(do_module_rank) 
+            find_module_rank();
     }
     compute_class_group();
 }
@@ -3468,7 +3921,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             verboseOutput() << "Roughness " << roughness <<  endl;
         }
         
-        if(roughness >= 10){
+        if(roughness >= 10 && !suppress_bottom_dec){
             do_bottom_dec=true;
             if(verbose){
                     verboseOutput() << "Bottom decomposition activated" << endl;
@@ -3526,7 +3979,10 @@ void Full_Cone<Integer>::dualize_cone(bool print_message){
         build_top_cone();
     
     if(do_pointed)
-        check_pointed(); 
+        check_pointed();
+
+    if(do_extreme_rays) // in case we have known the support hyperplanes
+        compute_extreme_rays();
 
     do_triangulation         = save_tri;
     do_partial_triangulation = save_part_tri;
@@ -3592,7 +4048,7 @@ void Full_Cone<Integer>::minimize_support_hyperplanes(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_extreme_rays(){
+void Full_Cone<Integer>::compute_extreme_rays(bool use_facets){
 
     if (isComputed(ConeProperty::ExtremeRays))
         return;
@@ -3608,23 +4064,18 @@ void Full_Cone<Integer>::compute_extreme_rays(){
     }
 
     if(dim*Support_Hyperplanes.nr_of_rows() < nr_gen) {
-         compute_extreme_rays_rank();
+         compute_extreme_rays_rank(use_facets);
     } else {
-         compute_extreme_rays_compare();
+         compute_extreme_rays_compare(use_facets);
     }
 }
 
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_extreme_rays_rank(){
+void Full_Cone<Integer>::compute_extreme_rays_rank(bool use_facets){
 
     if (verbose) verboseOutput() << "Select extreme rays via rank ... " << flush;
-    
-    bool use_Facets=false;    
-    if(do_all_hyperplanes && !Facets.empty() && 
-            Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
-        use_Facets=true;
 
     size_t i;
     vector<key_t> gen_in_hyperplanes;
@@ -3637,7 +4088,7 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
 //        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
         gen_in_hyperplanes.clear();
-        if(use_Facets){
+        if(use_facets){
             typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
             for (size_t j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i))
@@ -3665,14 +4116,9 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_extreme_rays_compare(){
+void Full_Cone<Integer>::compute_extreme_rays_compare(bool use_facets){
 
     if (verbose) verboseOutput() << "Select extreme rays via comparison ... " << flush;
-
-    bool use_Facets=false;
-    if(do_all_hyperplanes && !Facets.empty() && 
-            Facets.back().Hyp==Support_Hyperplanes[Support_Hyperplanes.nr_of_rows()-1])
-        use_Facets=true;
 
     size_t i,j,k;
     // Matrix<Integer> SH=getSupportHyperplanes().transpose();
@@ -3692,7 +4138,7 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(){
     for (i = 0; i <nr_gen; i++) {
         k=0;
         Extreme_Rays_Ind[i]=true;
-        if(use_Facets){
+        if(use_facets){
             typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
             for (j=0; j<Support_Hyperplanes.nr_of_rows(); ++j, ++IHV){
                 if(IHV->GenInHyp.test(i)){
@@ -3824,7 +4270,7 @@ void Full_Cone<Integer>::check_pointed() {
         is_Computed.set(ConeProperty::IsPointed);
         return;
     }
-    if (verbose) verboseOutput() << "Checking for pointed ... " << flush;
+    if (verbose) verboseOutput() << "Checking pointedness ... " << flush;
 
     pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
@@ -3848,7 +4294,8 @@ void Full_Cone<Integer>::disable_grading_dep_comp() {
             do_h_vector = false;
             if(!explicit_full_triang){
                 do_triangulation=false;
-                do_partial_triangulation=true;
+                if(do_Hilbert_basis)
+                    do_partial_triangulation=true;
             }
         } else {
             throw BadInputException("No grading specified and cannot find one. Cannot compute some requested properties!");
@@ -4245,6 +4692,7 @@ void Full_Cone<Integer>::reset_tasks(){
     keep_triangulation = false;
     do_Stanley_dec=false;
     do_h_vector=false;
+    do_hsop = false;
     do_excluded_faces=false;
     do_approximation=false;
     do_default_mode=false;
@@ -4273,24 +4721,17 @@ void Full_Cone<Integer>::reset_tasks(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constructor of the top cone
+Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // constructor of the top cone
     dim=M.nr_of_columns();
     if(dim>0)
         Generators=M;
     // M.pretty_print(cout);
-    assert(M.row_echelon()== dim);
+    // assert(M.row_echelon()== dim); rank check now done later 
     
-    if (M.row_echelon() < dim) {
-        throw BadInputException(string("Matrix with rank = number of columns needed")
-                + "in the constructor of the object Full_Cone<Integer>.\n"
-                + "Probable reason: Cone not full dimensional "
-                + "(<=> dual cone not pointed)!");
-    }
-    
-    index=1;                      // not used at present
+    /*index=1;                      // not used at present
     for(size_t i=0;i<dim;++i)
         index*=M[i][i];
-    index=Iabs(index);
+    index=Iabs(index); */
 
     //make the generators coprime, remove 0 rows and duplicates
     has_generator_with_common_divisor = false;
@@ -4378,6 +4819,7 @@ Full_Cone<Integer>::Full_Cone(Matrix<Integer> M, bool do_make_prime){ // constru
     RankTest = vector< Matrix<Integer> >(omp_get_max_threads(), Matrix<Integer>(0,dim));
     
     do_bottom_dec=false;
+    suppress_bottom_dec=false;
     keep_order=false;
 
     approx_level = 1;
@@ -4662,9 +5104,10 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     
     approx_level = C.approx_level;
     is_approximation = C.is_approximation;
-	
-	do_bottom_dec=false;
-	keep_order=true;
+    
+    do_bottom_dec=false;
+    suppress_bottom_dec=false;
+    keep_order=true;
 }
 
 //---------------------------------------------------------------------------
@@ -4705,6 +5148,7 @@ void Full_Cone<Integer>::set_zero_cone() {
     }
     
     pointed = true;
+    is_Computed.set(ConeProperty::IsPointed);
     
     deg1_extreme_rays = true;
     is_Computed.set(ConeProperty::IsDeg1ExtremeRays);

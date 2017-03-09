@@ -171,7 +171,7 @@ void writeIntegral(const string& project, const ourFactorization& FF,
        out << "Integral: " << I << endl;
 }
 
-void integrate(const string& project, const string& pnm, const bool& do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
+void integrate(const string& project, const string& output_dir, const string& pnm, const bool& do_leadCoeff, bool& homogeneous, const bool& appendOutput) {
   GlobalManager CoCoAFoundations;
   
   long i;
@@ -184,16 +184,21 @@ void integrate(const string& project, const string& pnm, const bool& do_leadCoef
   vector<long> grading;
   long gradingDenom;
   long rank;
-  getRankAndGrading(project,rank,grading,gradingDenom);
+  
+  string nmz_output=project;
+    if(output_dir!="")
+        nmz_output=output_dir+pureName(project);
+    
+  getRankAndGrading(nmz_output,rank,grading,gradingDenom);
 
   vector<vector<long> > gens;
-  readGens(project,gens,grading);
+  readGens(nmz_output,gens,grading);
   if(verbose_INT) 
     cout << "Generators read" << endl;
   long dim=gens[0].size();
 
   list<TRIDATA> triang;
-  readTri(project,rank,triang);
+  readTri(nmz_output,rank,triang);
   if(verbose_INT)
      cout << "Triangulation read" << endl;
      
@@ -327,6 +332,9 @@ void integrate(const string& project, const string& pnm, const bool& do_leadCoef
     outputName=project;
   else
     outputName=project+"."+pnm;
+  
+  if(output_dir!="")
+      outputName=output_dir+pureName(outputName);
 
    writeIntegral(outputName,FFNonhom,I,do_leadCoeff,deg(F)+rank-1,appendOutput);
 }

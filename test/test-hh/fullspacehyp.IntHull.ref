@@ -5,7 +5,10 @@
 0 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 2
+affine dimension of the polyhedron = -1
+rank of recession monoid = 2
 internal index = 1
+dimension of maximal subspace = 2
 
 size of triangulation   = 0
 resulting sum of |det|s = 0
@@ -24,6 +27,8 @@ denominator with 0 factors:
 
 degree of Hilbert Series as rational function = 0
 
+The numerator of the Hilbert Series is symmetric.
+
 Hilbert polynomial:
 
 with common denominator = 1
@@ -40,11 +45,9 @@ with common denominator = 1
 
 0 extreme rays of recession cone:
 
-0 support hyperplanes of polyhedron (homogenized):
-
-2 equations:
+2 basis elements of maximal subspace:
  1 0
  0 1
 
-0 basis elements of lattice:
+0 support hyperplanes of polyhedron (homogenized):
 

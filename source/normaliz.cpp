@@ -50,7 +50,7 @@ void printHeader() {
                                                  << "             \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
-    cout << "                      April 2016                        \\.|"<<endl;
+    cout << "                    February  2017                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
@@ -61,40 +61,46 @@ void printHelp(char* command) {
     cout << "  -s\tcompute support hyperplanes"<<endl;
     cout << "  -t\tcompute triangulation"<<endl;
     cout << "  -v\tcompute volume"<<endl;
-    cout << "  -n\tcompute Hilbert basis (with full triangulation)"<<endl;
+    cout << "  -n\tcompute Hilbert basis and volume (needs full triangulation)"<<endl;
     cout << "  -N\tcompute Hilbert basis (with partial triangulation)"<<endl;
     cout << "  -w\tcheck for integrally closed and compute witness if not"<<endl;
     cout << "  -q\tcompute Hilbert (quasi-)polynomial"<<endl;
     cout << "  -p\tcompute Hilbert (quasi-)polynomial and degree 1 elements"<<endl;
     cout << "  -h\tcompute Hilbert basis and Hilbert polynomial (default)"<<endl;
     cout << "  -1\tcompute degree 1 elements"<<endl;
-    cout << "  -y\tcompute Stanley decomposition"<<endl;
-    cout << "  -C\tcompute class group"<<endl;
-    cout << "  -D\tcompute cone decomposition"<<endl;
+    cout << "  -y\tcompute Stanley decomposition (output in file .dec)"<<endl;
+    cout << "  -C\tcompute class group (default)"<<endl;
+    cout << "  -T\tcompute triangulation  (output in file .tri)"<<endl;
+    cout << "  -D\tcompute cone decomposition (includes -T)"<<endl;
     cout << "  -H\tcompute integer hull"<<endl;
     cout << "  -M\tcompute module generators over original monoid"<<endl;
 
     cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
+    cout << "  -P\tcomputation mode: primal"<<endl;
     cout << "  -r\tcomputation mode: approximate"<<endl;
     cout << "  -b\tcomputation mode: bottom decomposition"<<endl;
+    cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
     cout << "  -k\tcomputation mode: keep order"<<endl;
+    cout << "  -Y\tcomputation mode: symmetrization"<<endl;
+    cout << "  -X\tcomputation mode: no symmetrization"<<endl;
+
 
     cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
 
     cout << endl;
     cout << "  -f, --files      write the files .out .gen .inv .cst"<<endl;
-    cout << "  -a, --all-files  write all output files (except .tri)"<<endl;
-    cout << "  -T               write the file .tri (triangulation)"<<endl;
-    cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be on of"<<endl;
-    cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, typ"<<endl;
+    cout << "  -a, --all-files  write all output files (except  .dec .tri .typ)"<<endl;
+    cout << "      --<SUFFIX>   write the file .<SUFFIX> where <SUFFIX> can be one of"<<endl;
+    cout << "                   cst, egn, esp, ext, gen, ht1, inv, lat, mod, msp, typ"<<endl;
 
     cout << endl;
     cout << "  -B, --BigInt     directly use indefinite precision arithmetic"<<endl;
     cout << "      --LongLong   only use long long arithmetic, no conversion possible"<<endl;
     cout << "  -i, --ignore     ignore the compute options set in the input file"<<endl;
     cout << "  -x=<T>           limit the number of threads to <T>"<<endl;
+    cout << "  --OutputDir=<path> set a path for the output files (relative to current directory)"<< endl;
     cout << "  -?, --help       print this help text and exit"<<endl;
     cout << "  -c, --verbose    verbose (prints control data)"<<endl;
     cout << "      --version    print version info and exit"<<endl;
@@ -104,7 +110,7 @@ void printHelp(char* command) {
 }
 
 void printCopying() {
-    cout<<"Copyright (C) 2007-2015  The Normaliz Team, University of Osnabrueck."<<endl
+    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
         <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
         <<"and you are welcome to redistribute it under certain conditions;"<<endl
         <<"See COPYING for details."<<endl;
@@ -115,7 +121,7 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Integer> int process_data(OptionsHandler& options);
+template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
 
 //---------------------------------------------------------------------------
 
@@ -125,25 +131,30 @@ int main(int argc, char* argv[])
     // read command line options
 
     OptionsHandler options;
+    
+    string command_line;
+    for(int i=1; i< argc;++i)
+        command_line=command_line+string(argv[i])+" ";
 
     bool print_help = options.handle_commandline(argc, argv);
 
-	if (print_help) {
+    if (print_help) {
         //printHeader();
         printHelp(argv[0]);
         exit(0);
-	}
-
-	if (verbose) {
-        printHeader();
     }
 
+    if (verbose) {
+        printHeader();
+    }
+    string arg0(argv[0]);
+    
     if (!options.isUseLongLong()) {
-        process_data<mpz_class>(options);
+        process_data<mpz_class>(options, command_line,arg0);
     }
     // the previous process_data might return unsuccessfully if the input file specifies to use long long
     if (options.isUseLongLong()) {
-        process_data<long long>(options);
+        process_data<long long>(options, command_line,arg0);
     }
 
     if (options.anyNmzIntegrateOption()) {
@@ -176,7 +187,7 @@ int main(int argc, char* argv[])
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(OptionsHandler& options) {
+template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
 
 #ifndef NCATCH
     try {
@@ -186,7 +197,7 @@ template<typename Integer> int process_data(OptionsHandler& options) {
 
     options.applyOutputOptions(Out);
 
-    string name_in=options.getOutputName()+".in";
+    string name_in=options.getProjectName()+".in";
     const char* file_in=name_in.c_str();
     ifstream in;
     in.open(file_in,ifstream::in);
@@ -211,14 +222,17 @@ template<typename Integer> int process_data(OptionsHandler& options) {
 
     if (verbose) {
         cout << "************************************************************" << endl;
+        cout << "Command line: " << command_line << endl;
         cout << "Compute: " << options.getToCompute() << endl;
     }
 
     Cone<Integer> MyCone = Cone<Integer>(input);
-    if (options.isUseBigInteger()) {
-        MyCone.deactivateChangeOfPrecision();
-    }
-//    MyCone.compute(ConeProperty::HilbertBasis,ConeProperty::HilbertSeries));
+    /* if (options.isUseBigInteger()) {
+        MyCone.deactivateChangeOfPrecision(); 
+    } */
+    MyCone.set_project(options.getProjectName());
+    MyCone.set_output_dir(options.getOutputDir());
+    MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
     } catch(const NotComputableException& e) {
@@ -232,7 +246,7 @@ template<typename Integer> int process_data(OptionsHandler& options) {
     if(MyCone.isComputed(ConeProperty::IntegerHull)){
         Output<Integer> IntHullOut;
         options.applyOutputOptions(IntHullOut);
-        IntHullOut.set_name(options.getOutputName()+".IntHull");
+        IntHullOut.set_name(options.getProjectName()+".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
         IntHullOut.write_files();        
     }

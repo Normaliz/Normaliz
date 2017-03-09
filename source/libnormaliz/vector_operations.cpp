@@ -139,6 +139,18 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Integer v_scalar_product_unequal_vectors_begin(const vector<Integer>& a,const vector<Integer>& b){
+    Integer ans = 0;
+    size_t i,n=min(a.size(),b.size());
+    for (i = 0; i < n; i++) {
+        ans+=a[i]*b[i];
+    }
+    return ans;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
     Integer ans = 0;
     size_t i,n=a.size(),m=b.size();
@@ -147,7 +159,6 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
     }
     return ans;
 }
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -242,6 +253,20 @@ Integer v_lcm(const vector<Integer>& v){
     return g;
 }
 
+template<typename Integer>
+Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j){
+    assert(k <= j);
+    size_t i;
+    Integer g=1;
+    for (i = k; i <= j; i++) {
+        g = libnormaliz::lcm(g,v[i]);
+        if (g==0) {
+            return 0;
+        }
+    }
+    return g;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -290,17 +315,6 @@ vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scala
     convert(x,v);
     v_scalar_mult_mod_inner(y,x,convertTo<mpz_class>(scalar),convertTo<mpz_class>(modulus));
     return convertTo<vector<Integer>>(y);       
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void v_scalar_division(vector<Integer>& v, const Integer& scalar){
-    size_t i,size=v.size();
-    for (i = 0; i <size; i++) {
-        assert(v[i]%scalar == 0);
-        v[i] /= scalar;
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -471,13 +485,23 @@ bool v_is_zero(const vector<Integer>& v) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-size_t v_nr_positive(const vector<Integer>& v) {
-    size_t tmp=0;
-    for (size_t i = 0; i < v.size(); ++i) {
-        if (v[i] >0) tmp++;
+bool v_is_symmetric(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size()/2; ++i) {
+        if (v[i] != v[v.size()-1-i]) return false;
     }
-    return tmp;
+    return true;
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_is_nonnegative(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] <0) return false;
+    }
+    return true;
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -680,8 +704,32 @@ vector<Integer> v_random(size_t n, long m){
         result[i]=rand()%(2*m+1)-m;
     return result;    
 }
+template<typename Integer>
+vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights){
+    vector<Integer> hsop(heights.back());
+    hsop[0]=gen_degrees[0];
+    size_t k=1;
+    while (k<heights.size() && heights[k]>heights[k-1]){
+        hsop[k]=gen_degrees[k];
+        k++;
+    }
+    size_t j=k;
+    for (size_t i=k;i<heights.size();i++){
+            if (heights[i]>heights[i-1]){
+                hsop[j]=v_lcm_to(gen_degrees,k,i);
+                j++;
+            }
+    }
+    return hsop;
+}
 
+template bool v_is_nonnegative<long>(const vector<long>&);
+template bool v_is_nonnegative<long long>(const vector<long long>&);
+template bool v_is_nonnegative<mpz_class>(const vector<mpz_class>&);
 
+template bool v_is_symmetric<long>(const vector<long>&);
+template bool v_is_symmetric<long long>(const vector<long long>&);
+template bool v_is_symmetric<mpz_class>(const vector<mpz_class>&);
 
 template long      v_make_prime(vector<long     >&);
 template long long v_make_prime(vector<long long>&);
@@ -690,5 +738,9 @@ template mpz_class v_make_prime(vector<mpz_class>&);
 template void v_add_result<long     >(vector<long     >&, size_t, const vector<long     >&, const vector<long     >&);
 template void v_add_result<long long>(vector<long long>&, size_t, const vector<long long>&, const vector<long long>&);
 template void v_add_result<mpz_class>(vector<mpz_class>&, size_t, const vector<mpz_class>&, const vector<mpz_class>&);
+
+template long v_scalar_product(const vector<long>& a,const vector<long>& b);
+template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
+template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
 
 } // end namespace libnormaliz

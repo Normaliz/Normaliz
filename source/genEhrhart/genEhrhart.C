@@ -403,7 +403,7 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
         
 }
 
-void generalizedEhrhartSeries(const string& project, const string& pnm, bool& homogeneous){
+void generalizedEhrhartSeries(const string& project, const string& output_dir, const string& pnm, bool& homogeneous){
   GlobalManager CoCoAFoundations;
   
   long i,j;
@@ -417,10 +417,15 @@ void generalizedEhrhartSeries(const string& project, const string& pnm, bool& ho
   vector<long> grading;
   long gradingDenom;
   long rank;
-  getRankAndGrading(project,rank,grading,gradingDenom);
+  
+    string nmz_output=project;
+    if(output_dir!="")
+        nmz_output=output_dir+pureName(project);
+    
+  getRankAndGrading(nmz_output,rank,grading,gradingDenom);
   
   vector<vector<long> > gens;
-  readGens(project,gens,grading);
+  readGens(nmz_output,gens,grading);
   if(verbose_INT)
     cout << "Generators read" << endl;
   long dim=gens[0].size();
@@ -428,7 +433,7 @@ void generalizedEhrhartSeries(const string& project, const string& pnm, bool& ho
   
   list<STANLEYDATA_INT> StanleyDec;
   vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
-  readDecInEx(project,rank,StanleyDec,inExCollect,gens.size());
+  readDecInEx(nmz_output,rank,StanleyDec,inExCollect,gens.size());
   if(verbose_INT)
     cout << "Stanley decomposition (and in/ex data) read" << endl;
     
@@ -673,6 +678,9 @@ void generalizedEhrhartSeries(const string& project, const string& pnm, bool& ho
     outputName=project;
   else
     outputName=project+"."+pnm;
+  
+  if(output_dir!="")
+      outputName=output_dir+pureName(outputName);
     
   writeGenEhrhartSeries(outputName, FFNonhom,HS,deg(F)+rank-1,commonDen);
 }

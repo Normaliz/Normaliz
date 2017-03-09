@@ -1,82 +1,248 @@
+*********************
 **** PREPARATION ****
+*********************
+
+The compilation of Normaliz requires some c++11 features, supported by:
+
+	gcc 4.4, clang 2.9, icc 12.0
+
+See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
 
 For compiling Normaliz the following libraries are needed:
+
 * gmp with gmpxx
 * boost (headers only)
 * openmp enabled compiler (to use parallelization)
 
 On Ubuntu the following packages should be installed:
-sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 
-We offer two ways of compilation, either use the supplied makefile or use cmake to create a more powerfull makefile. cmake is also capable of generating compile instructions for other systems, like MS VS projects, etc.
+	sudo apt-get install g++ libgmp-dev libboost-dev cmake cmake-curses-gui
 
-REQUIRES some c++11 features, supported by:
-gcc 4.4, clang 2.9, icc 12.0
-See https://github.com/Normaliz/Normaliz/issues/26 for a more detailed discussion.
+The last two are only needed if cmake is to be used for building Normaliz.
 
+On Homebrew (Mac OS X):
 
+        brew install gmp boost
+
+For the openmp enabled compiler (LLVM 3.9 or newer), add:
+
+        brew install llvm
+        export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+        export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+
+On Fink (Mac OS X):
+
+	fink install gmp5 boost1.58-nopython
+
+We offer three ways of compilation, either use:
+
+* standard autotools (./configure && make && make install)
+* cmake -- cmake is also capable of generating compile instructions 
+       for other systems, like MS VS projects, etc.
+* plain old makefile (Makefile.classic)
+
+For building Normaliz under Mac OS we recommend auttotools if you want to use Scip.
+
+The basic steps are the same for all three systems:
+
+* configuration
+* compilation
+* installation
+
+The main difference is the way how the build system is configured.
+ 
+ 
+*************************
+*** Optional packages ***
+*************************
+
+As discussed in the manual, Normaliz can profit from the use of SCIP. If you want
+to use it, SCIP must be installed before the compilation of Normaliz, independently of
+the method used for building Normaliz.
+ 
+To build SCIP:
+
+* download the scipoptsuite at http://scip.zib.de/ . 
+
+   Notice that SCIP
+   is not distributed under GPL, but the ZIB Academic License
+   (http://scip.zib.de/academic.txt).
+   
+* Unpack it and then compile it with
+ 
+   make ZLIB=false GMP=false READLINE=false scipoptlib
+   
+   (To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
+   If your C++ compiler is too old, you may need to add
+   CXXFLAGS="-std=c++0x -fPIC"
+   
+* IMPORTANT: ** Don't try to build scipopt as a shared library!  It does not work
+      because their build system is broken **
+   
+Another optional package is CoCoALib, but only to the extent to that NmzIntegrate
+is otional. If you want to compile NmzIntegrate, CoCoALib must be installed rfirst:
+
+* download CoCoAlib from http://cocoa.dima.unige.it/cocoalib/,
+* configure it with the threadsafe-hack, and compile:
+
+	mkdir ~/CoCoA/
+	cd ~/CoCoA/
+	wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99543.tgz
+	tar xvf CoCoALib-0.99543.tgz
+	cd CoCoALib-0.99543
+	./configure --threadsafe-hack --no-boost
+	make library -j2
+
+If CoCoALib-0.99543 should be no longer available, replace it by a newer version.
+
+*******************
+**** AUTOTOOLS ****
+*******************
+
+If you checked out normaliz from GitHub, first set up the autotools
+system (./bootstrap.sh) -- in this case, the system needs to have
+autoconf, automake, libtool installed.  This step is not necessary if
+you started from a normaliz distribution.
+
+We assume that you are in the directory in which source, doc etc. are subdirectories.
+
+The first step is to configure the compilation. The simplest choice is
+
+   ./configure
+   
+This is sufficient if you don't want SCIP and NmzIntegrate, provided libraries such
+as GMP and Boost are in standard locations. If not, you must inform configure where to 
+find them:
+
+  ./configure CPPFLAGS="-I /path/to/includedir $CPPFLAGS" LDFLAGS="-L/path/to/libdir $LDFLAGS"
+
+For example, on Fink (Mac OS X):
+
+  ./configure CPPFLAGS="-I/sw/include -I/sw/opt/boost-1_58/include $CPPFLAGS" LDFLAGS="-L/sw/lib -L/sw/opt/boost-1_58/lib $LDFLAGS" 
+
+To configure normaliz to use the scipoptsuite compiled as above use:
+
+   ./configure --with-scipoptsuite-src=/path/to/scipoptsuite-source-dir
+   
+Similarly, it may be necessary to show configure the path to CoCoALib if you want
+to compile NmzIntegrate:
+
+   ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
+
+Some more configure options:
+
+* Static build (easier for debugging):
+
+   ./configure --disable-shared
+   
+* Prefix (directory) for installation (default is /usr/local):
+
+   ./configure --prefix=$HOME/normaliz
+   
+For more, see
+
+   ./configure --help
+   
+After configuration we compile. Simply say
+
+    make
+    
+This will compile normaliz, libnormaliz, nmzIntegrate and maxsimplex, 
+the example program in the manual.
+
+and then (if you want)
+
+    make install
+    
+This will install normaliz, nmzIntegrate, the libraries and header files in their chosen
+location (usr/local by default).
+
+***************
 **** CMAKE ****
+***************
 
-This has better capabilities to find libraries and allow to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
-
+This has better capabilities to find libraries and allowa to change settings with a nice interface. Furthermore it supports the compilation of the library as static and dynamic version, installation of the library.
 
 We assume you start in the normaliz root dir (with subdirs source, examples, ...).
 
 [1] Create a build directory where normaliz will be build and cd into it, e.g.
-  mkdir BUILD; cd BUILD
+
+	mkdir BUILD; cd BUILD
 
 [2] Initial configuration, have a look at the next sections for further config infos.
 (can be skipped if step [3] is done, but it shows some information about what compiler, libraries, etc. it uses)
-  cmake ../source
 
-[3] (Optional) Check configuration and maybe edit something
-  ccmake ../source
+	cmake ../source
+
+[3] (Optional) Check configuration and perhaps change some settings:
+
+	ccmake ../source
+	
 In the ccmake interface you can use this workflow:
 * c  (for configure)
 * change entries if you like, then press c again
 * g  (generate and exit)
 
 [4] compile
-  make
-This make has dependency checking included and other nice features.
+
+	make
+	
+This make includes dependency checks and other nice features.
 If you want to see what happens behind the scenes use
-  make VERBOSE=1
+
+	make VERBOSE=1
 
 [5] install it
-  make install
-This will install the produced libnormaliz and the normaliz executable.
-The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
+
+	make install
+
+This will install the produced libnormaliz, the header files for it  and the normaliz executable. The path can be changed with ccmake (CMAKE_INSTALL_PREFIX).
+
+NOTE: nmzIntegrate is not (yet) included in the cmake build system for Normaliz. 
+See the NmzIntegrate manual for the use of the plain make file of NmzIntegrate.
 
 
 **** ADDITIONAL CMAKE CONFIGURATION ****
 
 If you want to override system defaults you can change values with ccmake or set enviroment variables.
+
 IMPORTANT NOTE: Be aware that some of these only work with the first call of cmake. If you want to change it later clean your build directory first, or use another fresh build directory.
+
 Some examples:
-Specifiy installation location:
-  cmake -DCMAKE_INSTALL_PREFIX:PATH=$HOME/local ../source   (default is /usr/local)
 
-Different compiler:
-  CC=gcc-4 CXX=g++-4  cmake  ../source/
+* Specifiy installation location:
 
-Specify gmp dirs:
-To specify search paths for gmp you can add before the cmake
-GMP_DIR=/path/to/gmp     (it will look inside for subfolders with the headers and lib)
+	cmake -DCMAKE_INSTALL_PREFIX:PATH=$HOME/local ../source   (default is /usr/local)
+
+* Different compiler:
+
+	CC=gcc-4 CXX=g++-4  cmake  ../source/
+
+* To specify search paths for GMP you can add before the cpmmand cmake
+
+	GMP_DIR=/path/to/gmp     
+	
+It will look inside for subfolders with the headers and lib.
 If this is not successfull you can specify the paths seperatly:
-GMP_INC_DIR=/path/to/include  (for headers)
-GMP_LIB_DIR=/path/to/lib     (for libs)
 
-e.g. to use your own gmp version installed to the 'local' folder in the home directory use
-GMP_DIR=$HOME/local/   cmake   ../source/
+	GMP_INC_DIR=/path/to/include  (for headers)
+	GMP_LIB_DIR=/path/to/lib     (for libs)
 
-Change architecture:
+To use your own GMP version installed to the 'local' folder in the home directory use
+
+	GMP_DIR=$HOME/local/   cmake   ../source/
+
 For MacOS you can set CMAKE_OSX_ARCHITECTURES eigther with the cmake command-line option
--DCMAKE_OSX_ARCHITECTURES=x86_64
+
+	-DCMAKE_OSX_ARCHITECTURES=x86_64
+	
 or by setting it in ccmake to x86_64.
+
 See also: http://stackoverflow.com/questions/5334095/cmake-multiarchitecture-compilation
 
 
-Specify Boost dirs:
+Also the  Boost directories can be specified:
+
 BOOST_ROOT                 - Preferred installation prefix
 BOOST_INCLUDEDIR           - Preferred include directory e.g. <prefix>/include
 BOOST_LIBRARYDIR           - Preferred library directory e.g. <prefix>/lib
@@ -84,29 +250,24 @@ Boost_NO_SYSTEM_PATHS      - Set to ON to disable searching in locations not
                              specified by these hint variables. Default is OFF.
 Boost_ADDITIONAL_VERSIONS  - List of Boost versions not known to this module
                              (Boost install locations may contain the version)
+							 
 See http://www.cmake.org/cmake/help/git-master/module/FindBoost.html
 
 
+**** CMAKE: Using SCIP and CoCoALib (for NmzIntegrate) ****
 
-**** Using SCIP ****
+Then configure Normaliz with, for example,
 
-Download scip at http://scip.zib.de/ . Notice that SCIP is not distributed under GPL, but the ZIB Academic License (http://scip.zib.de/academic.txt).
-Unpack it and compile it with
+  SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
 
-  make ZLIB=false GMP=false READLINE=false scipoptlib
-
-(To compiling scip for 32bit systems, add also ARCH=x86 to the make.)
-
-Then configure Normaliz with e.g.
-
-  SCIP_DIR=$HOME/scipoptsuite-3.2.0/ cmake ../source/ -DNMZ_SCIP=ON
-
-Currently our cmake module to find scip only supports versions 3.1.1 and 3.2.0
+Currently our cmake module for SCIP only supports versions 3.2.1 and 3.2.0
 on Linux 32 and 64 bit and MacOs X.
 
+An example for finding CoCoALib:
 
-
-**** Build for Intel Xeon Phi Mic ****
+  COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99543 cmake ../source/
+  
+**** CMAKE: Build for Intel Xeon Phi Mic ****
 
 This section describes how to compile Normaliz with support for offloading to Intel Xeon Phi. Only the Intel compiler supports this offload.
 
@@ -114,60 +275,110 @@ First you need (as usual) the libraries boost and gmp. The libgmp and libgmpxx m
 
 The following description is based on gmp 6.0.0 and icc 15.0.2
 
-Compile gmp with icc:
-cd gmp-6.0.0
-mkdir BUILD_native
-cd BUILD_native
-CC=icc CXX=icpc ../configure --enable-cxx --prefix=$HOME/local/
-make
-make install
+Compile GMP with icc:
+
+	cd gmp-6.0.0
+	mkdir BUILD_native
+	cd BUILD_native
+	CC=icc CXX=icpc ../configure --enable-cxx --prefix=$HOME/local/
+	make
+	make install
 
 Compile gmp with icc for the mic:
-cd gmp-6.0.0
-mkdir BUILD_mic
-cd BUILD_mic
-CC=icc CXX=icpc CFLAGS="-mmic" CXXFLAGS="-mmic" LDFLAGS="-mmic" ../configure --host=x86_64-k1om-linux  --enable-cxx --disable-assembly --prefix=$HOME/mic_local/
-make
-make install
 
-The intel compiler had problems with User-defined literals from c++11, so I had to comment some lines (1925-1944) in $HOME/local/include/gmpxx.h and the same for the mic dir.
+	cd gmp-6.0.0
+	mkdir BUILD_mic
+	cd BUILD_mic
+	CC=icc CXX=icpc CFLAGS="-mmic" CXXFLAGS="-mmic" LDFLAGS="-mmic" ../configure --host=x86_64-k1om-linux  --enable-cxx --disable-assembly --prefix=$HOME/mic_local/
+	make
+	make install
+
+The intel compiler had problems with User-defined literals from c++11, so we had to comment out some lines (1925-1944) in $HOME/local/include/gmpxx.h and the same for the mic dir.
 
 Now we are ready to compile Normaliz:
 
-cd normaliz
-mkdir BUILD_OFFLOAD
-cd BUILD_OFFLOAD
-CC=icc CXX=icpc GMP_DIR=$HOME/local MIC_GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DNMZ_MIC_OFFLOAD=ON ../source/
-make
+	cd normaliz
+	mkdir BUILD_OFFLOAD
+	cd BUILD_OFFLOAD
+	CC=icc CXX=icpc GMP_DIR=$HOME/local MIC_GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DNMZ_MIC_OFFLOAD=ON ../source/
+	make
 
 If you get an error saying it cannot find boost/dynamic_bitset.hpp or similar, try to set BOOST_INCLUDE_DIR directly to a path which is not a system default path (e.g. by using "ccmake ." after the first configuration.)
 
 For running the executable you also have to set the MIC_LD_LIBRARY_PATH, e.g. by an entry in the .profile
 
-if [ $HOSTNAME == 'phi' ] ; then	#only on the system with mics
-   export     LD_LIBRARY_PATH=$HOME/local/lib/:$LD_LIBRARY_PATH
-   export MIC_LD_LIBRARY_PATH=$HOME/mic_local/lib/:$MIC_LD_LIBRARY_PATH
-fi
+    if [ $HOSTNAME == 'phi' ] ; then	#only on the system with mics
+        export     LD_LIBRARY_PATH=$HOME/local/lib/:$LD_LIBRARY_PATH
+        export MIC_LD_LIBRARY_PATH=$HOME/mic_local/lib/:$MIC_LD_LIBRARY_PATH
+    fi
 
 
-If you want to compile Normaliz for running it NATIVELY on the Phi, give 
-CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
+If you want to compile Normaliz for running it NATIVELY on the Phi, give
+ 
+	CC=icc CXX=icpc GMP_DIR=$HOME/mic_local BOOST_ROOT=$HOME/boost_1_57_0 cmake -DCMAKE_CXX_FLAGS=-mmic ../source/
 
 
+**** CMAKE: Build NmzIntegrate ****
 
+Not yet possible. After haveing built Normaliz, navigate to source/genEhrhart and run make.
 
-
+********************
 **** plain MAKE ****
+********************
 
-You can still use our old simple plain Makefile. But the CMAKE configuration is much more powerfull.
+Under Linux can still use our old simple plain Makefile. But the autotools and CMAKE configurations are much more powerful.
+
+This Makefile is mainly used for deveopment and debuggung. It builds statically linked binaries
+with -g (can be changed in Makefile.configutaion).
 
 1) Go to the source directory
-2) Check the configurations in Makefile.configuration
-3) Say "make"
-It should work without changing the Makefile on many systems that have a system installation of the needed librarys.
 
-This make accepts two optional arguments
-make OPENMP=no  # deactivates OpenMP
-make SCIP=yes   # compile with SCIP
+2) Check the configuration in Makefile.configuration, especially the locations of
+the optional packages and their versions.
+
+3) Say 
+
+	make -f Makefile.classic
+	
+It should work without change of Makefile.classic or Makefile.configuration on many systems
+that have a system installation of the needed libraries. (We must use the name Makefile.claasic since Makefile is occupied by autotools.)
+
+4) For NmzIntegrate now say 
+
+	make -f Makefile.classic nmzIntegrate 
+
+If everything is successful, then the executable files normaliz and nmzIntegrate are both 
+in the source directory. You may of course want to move them somewhere else. Don't forget 
+that the cooperation of normaliz and nmzIntegrate requires that both are in the same directory.
+
+Similarly
+
+	make -f Makefile.classic maxsimplex
+	
+for the compilation of maxsimplex (in iots directory, example for the use of libnormaliz
+in the manial).
+
+5) If you want to install Normaliz, Say 
+
+	make -f Makefile.classic install
+
+---------
+
+Makefile.classic accepts two optional arguments (also simultaneously):
+
+	make -f Makefile.classic OPENMP=no  # deactivates OpenMP
+	make -f Makefile.classic SCIP=yes   # compile with SCIP
+
 You must make sure that everything is compiled with the same set of options!
 In doubt use make clean before.
+
+NOTE: If Normaliz was built with SCIP=yes, you must add this option also if you make nmzIntegrate
+and maxsimplex.
+
+6) Makefile.classic includes a target "clean". It will remove the compiled files (but not uninstall them) by 
+
+	make -f Makefile.classic clean
+
+6) QNormaliz has its own Makefile.classic in Qsource. Apply the setps 2), 5) and 6) accordingly. QNormaliz will be installed in the same directories as Normaliz. This is possible since it has its own file names.
+
+The whole point of QNormaliz is the use of a class library for field extensions of the rational numbers. Its use may require the adaptation of the Makefile.classic.

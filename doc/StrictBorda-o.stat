@@ -1,0 +1,39 @@
+6363 extreme rays
+33 support hyperplanes
+
+embedding dimension = 24
+rank = 24 (maximal)
+external index = 1
+
+size of triangulation   = 119787935829
+resulting sum of |det|s = 401249361966
+
+grading:
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+
+degrees of extreme rays:
+2: 3  3: 1  4: 278  6: 428  8: 1941  10: 2049  12: 568  14: 803  16: 28  18: 216  20: 12  22: 30  30: 6  
+
+multiplicity = 1281727528386311499990911876166511/25940255058441281524973174784000000000
+
+||||||||||||||||||||||||||||||||||||||||||||||||||
+119786470147 simplices accumulated.
+**************************************************
+all pyramids on level 3 done!
+**************************************************
+level 4 pyramids remaining: 1788
+**************************************************
+**************************************************
+all pyramids on level 4 done!
+**************************************************
+Pointed since graded
+evaluating 1465682 simplices
+||||||||||||||||||||||||||||||||||||||||||||||||||
+119787935829 simplices accumulated.
+Adding 44069 denominator classes... done.
+Total number of pyramids = 126238930, among them simplicial 1882476
+------------------------------------------------------------
+transforming data... done.
+Computing Hilbert quasipolynomial of period 55440 ... done.
+4647636.12user 5896.59system 44:18:16elapsed 2917%CPU (0avgtext+0avgdata 6346236maxresident)k
+0inputs+430488outputs (0major+58637661minor)pagefaults 0swaps

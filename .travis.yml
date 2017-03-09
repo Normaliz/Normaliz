@@ -1,7 +1,114 @@
 language: cpp
+
 compiler:
   - gcc
   - clang
+
+env:
+  - BUILDSYSTEM=cmake
+  - BUILDSYSTEM=cmake-scip
+  - BUILDSYSTEM=cmake-scip SCIPOPTSUITE_VERSION=3.2.0
+  - BUILDSYSTEM=cmake-nmzintegrate
+  - BUILDSYSTEM=autotools
+  - BUILDSSYTEM=autotools CONFIGURE_FLAGS="--disable-openmp"
+  - BUILDSYSTEM=autotools-makedistcheck
+  - BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+  - BUILDSYSTEM=autotools-scip
+  - BUILDSYSTEM=autotools-scip SCIPOPTSUITE_VERSION=3.2.0
+  - BUILDSYSTEM=classic
+  - BUILDSYSTEM=classic-scip
+
+matrix:
+  include:
+    ## Test that the distribution created by 'make distcheck'
+    ## contains everything for the cmake and classic builds.
+    - env: BUILDSYSTEM=cmake-scip-nmzintegrate
+      compiler: gcc
+      before_install:
+       - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
+       - tar xf normaliz-*.tar.gz
+       - cd normaliz-*
+    - env: BUILDSYSTEM=classic-scip
+      compiler: gcc
+      before_install:
+       - BUILDSYSTEM=autotools-makedistcheck ./.travis-build.sh
+       - tar xf normaliz-*.tar.gz
+       - cd normaliz-*
+    ## Test on Mac OS X, current XCode version
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=cmake-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8.2
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    ## Test on Mac OS X with LLVM from Homebrew for OpenMP support
+    - os: osx
+      compiler: clang
+      before_install:
+       - brew update
+       - brew install llvm || brew outdated llvm || brew upgrade llvm
+       - export PATH="`brew --prefix`/opt/llvm/bin/:$PATH"
+       - export LDFLAGS="-L`brew --prefix`/opt/llvm/lib"
+      env: COMPILER_OVERRIDE=homebrew-llvm BUILDSYSTEM=autotools-nmzintegrate CONFIGURE_FLAGS=--enable-openmp
+    ## Test on Mac OS X with older XCode versions
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8.1
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: osx
+      osx_image: xcode6.4
+      compiler: clang
+      env: BUILDSYSTEM=autotools-scip
+    ## Test on a newer Linux distribution (trusty)
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-makedistcheck-nmzintegrate
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: BUILDSYSTEM=autotools-scip
+      
 
 branches:
   except:
@@ -11,11 +118,9 @@ addons:
   apt_packages:
       - libgmp-dev
       - libboost-dev
+      - autoconf
+      - automake
+      - libtool
+      - time
 
-script:
-  - mkdir -p BUILD
-  - cd BUILD
-  - pwd
-  - cmake ../source
-  - make -j2
-  - OMP_NUM_THREADS=4 make check
+script: ./.travis-build.sh

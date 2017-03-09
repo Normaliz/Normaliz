@@ -1,0 +1,46 @@
+##
+## Makefile for Qnormaliz
+##
+include Makefile.configuration
+
+CXXFLAGS += -I .
+	
+Q_LIBSOURCES = $(wildcard libQnormaliz/*.cpp)
+Q_LIBHEADERS = $(wildcard libQnormaliz/*.h)
+
+Q_SOURCES = $(wildcard Q*.cpp)
+Q_HEADERS = $(wildcard Q*.h)
+
+.PHONY : default all linkQnormaliz
+default: linkQnormaliz
+all: Qlib Qnormaliz ##normaliz1
+	
+.PHONY : Qlib
+Qlib:
+	$(MAKE) --directory=libQnormaliz -f Makefile.classic libQnormaliz.a
+
+linkQnormaliz: Qlib
+	@$(MAKE) -f Makefile.classic Qnormaliz
+	
+Qnormaliz.o: $(Q_SOURCES) $(Q_HEADERS) $(Q_LIBHEADERS)
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c Qnormaliz.cpp -o Qnormaliz.o
+	
+Qnormaliz: $(Q_SOURCES) $(Q_HEADERS) Qnormaliz.o libQnormaliz/libQnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) Qnormaliz.o libQnormaliz/libQnormaliz.a $(LINKFLAGS) -o Qnormaliz
+	
+.PHONY : install
+install: linkQnormaliz
+	mkdir -p $(INSTALLDIR)/bin
+	test ! -e Qnormaliz || install -m 0755 Qnormaliz $(INSTALLDIR)/bin
+	$(MAKE) --directory=libQnormaliz -f Makefile.classic install
+	
+	
+.PHONY : clean
+clean:
+	$(MAKE) --directory=libQnormaliz -f Makefile.classic clean
+	-rm -f Qnormaliz.o
+	-rm -f Qnormaliz
+	-rm -f Qnormaliz?
+	-rm -f Qnormaliz-pg
+
+

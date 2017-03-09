@@ -1,0 +1,66 @@
+##
+## Makefile for normaliz
+##
+include Makefile.configuration
+
+LIBSOURCES = $(wildcard libnormaliz/*.cpp)
+LIBHEADERS = $(wildcard libnormaliz/*.h)
+
+SOURCES = $(wildcard *.cpp)
+HEADERS = $(wildcard *.h)
+
+CXXFLAGS += -I .
+
+.PHONY : default all linknormaliz
+default: linknormaliz
+all: lib normaliz ##normaliz1
+
+linknormaliz: lib
+	@$(MAKE) -f Makefile.classic normaliz
+
+normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
+
+normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
+
+##normaliz1: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
+##	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz-impl.cpp $(LINKFLAGS) -o normaliz1
+
+## normaliz-pg: $(SOURCES) $(HEADERS) $(LIBHEADERS) $(LIBSOURCES)
+## 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -pg normaliz-impl.cpp $(LINKFLAGS) -o normaliz-pg
+
+nmzIntegrate: lib libnormaliz/libnormaliz.a
+	@$(MAKE) --directory=genEhrhart -f Makefile.classic nmzIntegrate
+	rm -f nmzIntegrate
+	cp genEhrhart/nmzIntegrate .
+
+.PHONY : maxsimplex
+maxsimplex: lib libnormaliz/libnormaliz.a
+	@$(MAKE) --directory=maxsimplex -f Makefile.classic
+
+#always go down the directory and let the make there check what has to be done
+.PHONY : lib
+lib:
+	$(MAKE) --directory=libnormaliz -f Makefile.classic libnormaliz.a
+
+.PHONY : install
+install: linknormaliz
+	mkdir -p $(INSTALLDIR)/bin
+	test ! -e normaliz || install -m 0755 normaliz $(INSTALLDIR)/bin
+	test ! -e nmzIntegrate || install -m 0755 nmzIntegrate $(INSTALLDIR)/bin
+	$(MAKE) --directory=libnormaliz -f Makefile.classic install
+	
+
+.PHONY : clean
+clean:
+	$(MAKE) --directory=libnormaliz -f Makefile.classic clean
+	$(MAKE) --directory=genEhrhart -f Makefile.classic clean
+	$(MAKE) --directory=maxsimplex -f Makefile.classic clean
+	-rm -f normaliz.o
+	-rm -f normaliz
+	-rm -f nmzIntegrate
+	-rm -f normaliz?
+	-rm -f normaliz-pg
+
+

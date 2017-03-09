@@ -1,0 +1,42 @@
+##
+## Makefile for libQnormaliz
+##
+include ../Makefile.configuration
+
+
+INSTALLHDRS = Qcone.h Qcone_helper.h Qcone_property.h Qconvert.h Qfull_cone.h Qgeneral.h Qinteger.h Qlist_operations.h Qmap_operations.h Qmatrix.h Qmy_omp.h Qnormaliz_exception.h Qsublattice_representation.h Qvector_operations.h Qversion.h libQnormaliz.h
+
+LIBSOURCES = $(wildcard *.cpp)
+LIBHEADERS = $(wildcard *.h)
+
+## -I .. necessary since we include files libQnormaliz/*.h and *.cpp
+CXXFLAGS += -I .. 
+
+default: libQnormaliz.a
+
+all: default
+
+cone_property.o: Qcone_property.h Qcone_property.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c Qcone_property.cpp -o $@
+
+cone_helper.o: $(LIBHEADERS) Qcone_helper.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c Qcone_helper.cpp -o $@
+
+libQnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libQnormaliz-templated.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libQnormaliz-templated.cpp -o $@
+
+libQnormaliz.a: Qcone_property.o Qcone_helper.o libQnormaliz-templated.o
+	ar -cr $@ $^
+
+.PHONY : install
+install: libQnormaliz.a
+	mkdir -p $(INSTALLDIR)/lib
+	install -m 0644 libQnormaliz.a  $(INSTALLDIR)/lib
+	mkdir -p $(INSTALLDIR)/include/libQnormaliz
+	install -m 0644 $(INSTALLHDRS) $(INSTALLDIR)/include/libQnormaliz
+
+clean:
+	-rm -f *.o
+	-rm -f libQnormaliz.a
+
+.PHONY : default clean all
