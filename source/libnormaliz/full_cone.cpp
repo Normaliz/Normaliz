@@ -1568,7 +1568,7 @@ void Full_Cone<long long>::try_offload(size_t max_level) {
         for (size_t level = 0; level <= max_level; ++level) {           
             
             if (nrPyramids[level] >= 100) {
-                cout << "XXX: Try offload of level " << level << " pyramids ..." << endl;
+                // cout << "XXX: Try offload of level " << level << " pyramids ..." << endl;
                 mic_offloader.offload_pyramids(*this, level);
                 break;
             }
@@ -1595,16 +1595,13 @@ void Full_Cone<Integer>::try_offload_loc(long place,size_t max_level){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
-    
-    random_order(Pyramids[level]);
 
-
-#ifdef NMZ_MIC_OFFLOAD    
+#ifdef NMZ_MIC_OFFLOAD
+    random_order(Pyramids[level]);    
     if(level==0 && _Offload_get_device_number() >=  0){
-verboseOutput() << "Start 00000 evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
-verboseOutput() << "In parallel " << omp_in_parallel() << endl;
+        verboseOutput() << "Start evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
+        // verboseOutput() << "In parallel " << omp_in_parallel() << endl;
 }
-
 #endif // NMZ_MIC_OFFLOAD
 
 
@@ -1613,34 +1610,9 @@ verboseOutput() << "In parallel " << omp_in_parallel() << endl;
     assert(!omp_in_parallel());
     assert(!is_pyramid);
 
-#ifdef NMZ_MIC_OFFLOAD    
-    if(level==0 && _Offload_get_device_number() >=  0){
-verboseOutput() << "Start 1111 evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
-}
-
-#endif // NMZ_MIC_OFFLOAD
-
-
     if(Pyramids[level].empty())
         return;
-
-#ifdef NMZ_MIC_OFFLOAD    
-    if(level==0 && _Offload_get_device_number() >=  0){
-verboseOutput() << "Start 2222 evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
-if(nrPyramids[level] < 100){
-auto p=Pyramids[level].begin();
-for(;p!=Pyramids[level].end();++p){
-verboseOutput() << *p;
-verboseOutput() << "-------------------" << endl;
-}
-
-}
-        
-        
-        
-    }
-#endif // NMZ_MIC_OFFLOAD
-    
+   
     if (Pyramids.size() < level+2) {
         Pyramids.resize(level+2);      // provide space for a new generation
         nrPyramids.resize(level+2, 0);
@@ -3497,7 +3469,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
         }
         
         if(roughness >= 10){
-            do_bottom_dec=false; // true;
+            do_bottom_dec=true;
             if(verbose){
                     verboseOutput() << "Bottom decomposition activated" << endl;
             }

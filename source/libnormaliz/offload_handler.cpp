@@ -725,7 +725,7 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
     vector<bool> started(nr_handlers, false);
 
     size_t nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
-    cout << "transfer " << nr_transfer << endl;
+    // cout << "transfer " << nr_transfer << endl;
     if (nr_transfer == 0) return;
 
     for (int i=0; i<nr_handlers; ++i)
