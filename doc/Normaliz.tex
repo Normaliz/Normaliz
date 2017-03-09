@@ -82,6 +82,8 @@
 \DeclareMathOperator{\vol}{vol}
 \DeclareMathOperator{\Cl}{Cl}
 
+\DeclareMathOperator{\totdeg}{totdeg}
+
 
 \def\cG{{\mathcal G}}
 \def\cR{{\mathcal R}}
@@ -3437,6 +3439,196 @@ As you will see, the subdivision of large simplicial cones is very useful for su
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
+\subsection{Computations with a polynmial weight}
+
+Normaliz computes Hilbert series that are defined by
+$$
+H_M(t)=\sum{x\in M} t^{\deg x}
+$$
+where $M=C\cap L$ is the intersection of a rational cone and a lattice and $\deg$ is a grading. The summation counts every point with weight $1$. The theory of these Hilbert series can be generalized by allowing a polynomial weight function $f$ on the surrounding space  the. We call
+$$
+E(M,f)= \sum{x\in M} f(x)t^{\deg x}
+$$
+a \emph{weighted Ehrhart series}. Weighted Ehrhart series represent rational functions, and the weighted counting function $E(M,f,k)=\sum_{x\in M, \deg x=k} f(x)$ is again given by a quasipolynomial, the \emph{weighted Ehrhart quasipolynomial}. The maximal degree of this polynomial is the \emph{virtual degree} $\virtdeg(M,f)=\rank M+\deg f-1$. In general the true may be smaller. As in the ordinary case, the coefficient of $k^v$, $v=\virtdeg (M.f)$ is constant. After multiplication by $v!$ it becomes the \emph{virtual multiplicity}.  
+
+\subsubsection{A generalized Ehrhart series}
+
+We choose an example from combinatorial voting theory which is discussed in
+more detail in \cite{BS}. The file \ttt{CondorcetSymm.in} from the directory
+\ttt{examples} contains the following:
+
+\begin{Verbatim}
+amb_space 8
+inequalities 3
+-1 -1 -1 -1  1  1  1 1
+-1 -1  1  1 -1 -1  1 1
+-1  1 -1  1 -1  1 -1 1
+nonnegative
+total_degree
+\end{Verbatim}
+
+
+By \verb|nonnegative| we choose the nonnegative orthant in $\RR^8$ and the linear
+forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{total\_degree} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
+$$
+f(x)=\binom{x_1+5}{5}(x_2+1)(x_3+1)(x_4+1)(x_5+1)(x_6+1)(x_7+1)\binom{x_8+5}{5}.
+$$
+It is given in \ttt{CondorcetSymm.pnm} by
+
+\begin{Verbatim}
+(x[1]+1)*(x[1]+2)*(x[1]+3)*(x[1]+4)*(x[1]+5)*
+(x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
+(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400;
+\end{Verbatim}
+
+
+From the Normaliz directory we invoke NmzIntegrate by
+
+\begin{Verbatim}
+nmzIntegrate -c example/CondorcetSymm
+\end{Verbatim}
+
+ (replace the slash by a backslash in MS Windows, and similarly
+ below).
+The file \ttt{CondorcetSymm.} \ttt{intOut} starts with the factorization:
+
+\begin{Verbatim}
+Factorization of polynomial:
+x[8] +5  mult 1
+x[8] +4  mult 1
+...
+x[1] +1  mult 1
+Remaining factor 1/14400
+\end{Verbatim}
+
+Next we find the information on the Hilbert series:
+
+\begin{Verbatim}
+Generalized Ehrhart series:
+1 5 133 363 ... 481 15 6
+Common denominator of coefficients: 1
+Series denominator with 24 factors:
+1: 1  2: 14  4: 9
+\end{Verbatim}
+
+It is to be read as follows:
+$$
+H_{M,f}(t)=\frac{1+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
+$$
+Next we find the presentation of $H_{M,f}(t)$ as a rational function with
+coprime numerator and denominator (which in this case is the same as the
+previous one, except that the denominator is factored differently):
+
+\begin{Verbatim}
+Generalized Ehrhart series with cyclotomic denominator:
+1 5 133 363 ... 481 15 6
+Common denominator of coefficients: 1
+Series cyclotomic denominator:
+1: 24  2: 23  4: 9
+\end{Verbatim}
+
+This means
+$$
+H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1^{24}\zeta_2^{23}\zeta_4^{9}}
+$$
+where $\zeta_i$ is the $i$-th cyclotomic polynomial. Now the quasipolynomial:
+
+
+\begin{Verbatim}
+Generalized Ehrhart quasi-polynomial of period 4:
+ 0:   6939597901822221635907747840000 20899225...000000 ... 56262656
+ 1:   2034750310223351797008092160000  7092764...648000 ... 56262656
+ 2:   6933081849299152199775682560000 20892455...168000 ... 56262656
+ 3:   2034750310223351797008092160000  7092764...648000 ... 56262656
+with common denominator: 6939597901822221635907747840000
+\end{Verbatim}
+
+The left most column indicates the residue class modulo the period, and the
+numbers in line $k$ are the coefficients of the $k$-th polynomial after
+division by the common denominator. The list starts with $q_0^{(k)}$ and ends
+with (the constant) $q_{23}^{(k)}$.
+The interpretation of the remaining data is obvious:
+
+\begin{Verbatim}
+Degree of (quasi)polynomial: 23
+Expected degree: 23
+Virtual multiplicity: 1717/8192
+\end{Verbatim}
+
+
+Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
+customary in voting theory (in order to exclude draws). Then we replace
+\ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
+\ttt{CondorcetSymmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
+is called by
+
+\begin{Verbatim}
+nmzIntegrate -c -F=CondorcetSymm example/CondorcetSymmSemi
+\end{Verbatim}
+
+The output is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
+
+\subsubsection{A virtual multipliczy}
+
+\subsubsection{An integral}
+The paper \cite{JMV} asks for the computation of the integral
+$$
+\int\limits_{\substack{[0,1]^m \\ \sum{x}= t}}(x_1\cdots x_{m})^{n-m}\prod_{1\le i<j \le m}(x_j-x_i)^2 \mathrm d{\mu}\
+$$
+taken over the intersection of the unit cube in $\RR^m$ and the hyperplane of constant coordinate sum $t$. It is supposed that $t\le m \le n$. We compute the integral for $t=2$, $m=4$ and $n=6$.
+
+The polytope is specified in the input file \ttt{j462.in} (typeset in 2
+columns):
+
+\begin{Verbatim}
+amb_space 5          -1 0 0 0 1   
+inequalities 8       0 -1 0 0 1   
+1 0 0 0 0            0 0 -1 0 1   
+0 1 0 0 0            0 0 0 -1 1   
+0 0 1 0 0            equations 1  
+0 0 0 1 0            -1 -1 -1 -1 2
+\end{Verbatim}
+
+The $8$ inequalities describe the unit cube in $\RR^4$ by the inequalities  $0\le z_i\le 1$
+and the equation gives the hyperplane $z_1+\dots+z_4=2$ (we must use homogenized coordinates!). There is no need to
+specify the grading since Normaliz finds it because the polytope is a lattice
+polytope. If one doesn't know this in advance, it is better to give the grading
+explicitly by
+
+\begin{Verbatim}
+grading
+unit_vector 5
+\end{Verbatim}
+
+See the Normaliz documentation, Section 3.2.5 how to define rational polytopes
+by inequalities and equations.
+
+The polynomial does not depend on $t$ so that we can use the same polynomial
+for various $t$. It is contained in \ttt{j46.pnm}:
+
+\begin{Verbatim}
+(x[1]*x[2]*x[3]*x[4])^2*(x[1]-x[2])^2*(x[1]-x[3])^2*
+(x[1]-x[4])^2*(x[2]-x[3])^2*(x[2]-x[4])^2*(x[3]-x[4])^2
+\end{Verbatim}
+
+NmzIntegrate is called by
+
+\begin{Verbatim}
+nmzIntegrate -cI -F=j46 example/j462
+\end{Verbatim}
+
+It produces the output in \ttt{j462.j46.intOut}:
+
+\begin{Verbatim}
+Factorization of polynomial:          x[1]  mult 2
+x[4]  mult 2                          x[1] -x[2]  mult 2
+x[3]  mult 2                          x[1] -x[3]  mult 2
+x[3] -x[4]  mult 2                    x[1] -x[4]  mult 2
+x[2]  mult 2                          Remaining factor 1
+x[2] -x[3]  mult 2
+x[2] -x[4]  mult 2                    Integral: 27773/29515186701000
+\end{Verbatim}
+
 \subsection{Symmetrization}\label{symmetrize}
 
 Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $C$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
@@ -5025,6 +5217,119 @@ Since $N$ may have generators in negative degrees, Normaliz shifts the degrees i
 \subsection{The class group}
 
 A normal affine monoid $M$ has a well-defined divisor class group. It is naturally isomorphic to the divisor class group of $K[M]$ where $K$ is a field (or any unique factorization domain); see \cite[4.F]{BG}, and especially \cite[4.56]{BG}. The class group classifies the divisorial ideals up to isomorphism. It can be computed from the standard embedding that sends an element $x$ of $\gp(M)$ to the vector $\sigma(x)$ where $\sigma$ is the collection of support forms $\sigma_1,\dots,\sigma_s$ of $M$: $\Cl(M)=\ZZ^s/\sigma(\gp(M))$. Finding this quotient amounts to an application of the Smith normal form to the matrix of $\sigma$.
+
+\subsection{Weighted Ehrhart functions and integrals}
+
+For such graded monoids Normaliz computes the volume of
+the rational polytope
+$$
+P=\{x\in \RR_+ M: \deg x=1\},
+$$
+the Ehrhart series of $P$, and the quasipolynomial representing
+the Ehrhart function. (Here $\RR_+M$ is the cone generated by
+the elements of $M$; it may be smaller than $C$ if $L$ has rank
+$<n$.)
+
+These computations can be understood as integrals of the
+constant polynomial $f=1$, namely with respect to the counting
+measure defined by $L$ for the Ehrhart function, and with
+respect to the (suitably normed) Lebesgue measure for the
+volume. NmzIntegrate generalizes these computations to
+arbitrary polynomials $f$ in $n$ variables with rational
+coefficients. (Mathematically, there is no need to restrict
+oneself to rational coefficients for $f$.)
+
+More precisely, set
+$$
+E(f,k)=\sum_{x\in M, \deg x=k} f(x),
+$$
+and call $E(f,\_)$ the \emph{generalized Ehrhart function} for
+$f$. (With $f=1$ we simply count lattice points.) The
+\emph{generalized Ehrhart series} is the ordinary generating
+function
+$$
+E_f(t)=\sum_{k=0}^\infty E(f,k)t^k.
+$$
+It turns out that $E_f(t)$ is the power series expansion of a
+rational function at the origin, and can always be written in
+the form
+$$
+E_f(t)=\frac{Q(t)}{(1-t^\ell)^{\totdeg f+\rank M}},\qquad Q(t)\in\QQ[t],\
+\deg Q< \totdeg f+\rank M.
+$$
+Here $\totdeg f$ is the total degree of the polynomial $f$, and
+$\ell$ is the least common  multiple of the degrees of the
+extreme integral generators of $M$. See \cite{BS} for an
+elementary account and the algorithm used by NmzIntegrate.
+
+Normaliz ?????  can compute Ehrhart series for
+\emph{semiopen} cones. For them the monoid $M$ is replaced by the set
+$$
+M'=C'\cap L
+$$
+where $C'=C\setminus \mathcal F$ and $\mathcal F$ is the union of a set of
+faces
+(not necessarily facets) of $C$. What has been said above about the structure
+of the generalized Ehrhart series remains true. We discuss an example in
+Section \ref{output}.
+
+It follows from the general theory of rational generating
+functions that there exists a quasipolynomial $q(k)$ with
+rational coefficients and of degree $\le \totdeg f+\rank M-1$ that
+evaluates to $E(f,k)$ for all $k\ge 0$. A quasipolynomial is a
+``polynomial'' with periodic coefficients: there exist a
+\emph{period} $\pi\in\NN$ and true polynomials $q^{j}\in\QQ[X]$,
+$j=0,\dots,\pi-1$, such that
+$$
+q(k)=q^{(j)}(k)\qquad \text{if}\quad k\equiv j\pod \pi.
+$$
+Each of the polynomials $q^{(j)}$ is given as
+$$
+q^{(j)}(k)=q^{(j)}_0+q^{(j)}_1X+\dots+q^{(j)}_{\totdeg f+\rank M-1}X^{\totdeg f+\rank M-1}
+$$
+with constant coefficients in $\QQ$. The period $\pi$ divides $\ell$.
+
+Let $m=\totdeg f$ and $f_m$ be the degree $m$ homogeneous
+component of $f$. By letting $k$ go to infinity and
+approximating $f_m$ by a step function that is constant on the
+meshes of $\frac 1kL$ (with respect to a fixed basis), one sees
+$$
+q^{(j)}_{\totdeg f+\rank M-1}=\int_P f_m\, d\lambda
+$$
+where $d\lambda$ is the Lebesgue measure that takes value $1$
+on a basic mesh of $L\cap \RR M$ in the hyperplane of degree
+$1$ elements in $\RR M$. In particular, the \emph{virtual
+leading coefficient} $q^{(j)}_{\totdeg f+\rank M-1}$ is
+constant and depends only on $f_m$. If the integral vanishes,
+the quasipolynomial $q$ has smaller degree, and the true
+leading coefficient need not be constant. Following the
+terminology of commutative algebra and algebraic geometry, we
+call
+$$
+(\totdeg f+\rank M-1)!\cdot q_{\totdeg f+\rank M-1}
+$$
+the \emph{virtual multiplicity} of $M$ and $f$. It is an
+integer if $f_m$ has integral coefficients and $P$ is a lattice
+polytope.
+
+Since a semiopen cone $C'$ differs from its closure in a set of measure $0$,
+the passage to $C'$ does not change the Lebesgue integrals just mentioned, and
+is therefore irrelevant for their computation.
+
+NmzIntegrate computes
+\begin{itemize}
+\item[(ES)] the generalized Ehrhart series and its
+    quasipolynomial,
+\item[(Int)] the Lebesgue integral of $f$ over $P$, or
+\item[(LC)] the virtual leading coefficient and the virtual
+    multiplicity.
+\end{itemize}
+The user controls the type of computation by a command line
+option. (ES) contains (LC), and (LC) is just the evaluation of
+(Int) on the highest homogeneous component of $f$. It is
+presently not possible to compute the Ehrhart series and the
+integral together if $f$ is not homogeneous, but the two
+computations can be combined in one run of NmzIntegrate.
 
 \section{Annotated console output}\label{Console}
 
