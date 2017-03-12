@@ -1,12 +1,36 @@
 0 Hilbert basis elements of degree 1
+2 extreme rays
+2 support hyperplanes
 
 embedding dimension = 3
+rank = 2
+external index = 5
 
 grading:
 -1 -2 0 
 
+degrees of extreme rays:
+20: 2  
 
 ***********************************************************************
 
 0 Hilbert basis elements of degree 1:
+
+2 extreme rays:
+ -10  -5 0
+  10 -15 0
+
+2 support hyperplanes:
+ -3 -2 0
+  1 -2 0
+
+1 equations:
+ 0 0 1
+
+1 congruences:
+ 4 0 0 5
+
+2 basis elements of lattice:
+ 5 0 0
+ 0 1 0
 

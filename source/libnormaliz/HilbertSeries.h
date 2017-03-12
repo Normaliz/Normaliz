@@ -270,8 +270,8 @@ public:
     mpq_class getIntegral() const;
     mpq_class getVirtualMultiplicity() const;
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries() const;
-    bool getHomogenity() const;
-    mpq_class getNumeratorCommonDenom() const;
+    bool isPolynomialHomogeneous() const;
+    mpz_class getNumeratorCommonDenom() const;
     
     const vector<mpz_class>& getNum_ZZ() const;
     // returns the denominator, repr. as a map of the exponents of (1-t^i)^e

@@ -3391,7 +3391,7 @@ template<typename Integer>
 void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
         return;
-    if(polynomial=="")
+    if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
     if(getRank()==0)
         throw NotComputableException("Integral not computed in dimenison 0");
@@ -3405,7 +3405,7 @@ template<typename Integer>
 void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::VirtualMultiplicity) || !ToCompute.test(ConeProperty::VirtualMultiplicity))
         return;
-    if(polynomial=="")
+    if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
     if(getRank()==0)
         throw NotComputableException("Virtual multiplicity not computed in dimenison 0");
@@ -3419,7 +3419,7 @@ template<typename Integer>
 void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
     if(isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         return;
-    if(polynomial=="")
+    if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");    
     if(getRank()==0)
         throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");

@@ -6,6 +6,7 @@
 embedding dimension = 3
 rank = 0
 external index = 1
+original monoid is integrally closed
 
 size of triangulation   = 0
 resulting sum of |det|s = 0
@@ -26,8 +27,6 @@ denominator with 0 factors:
 
 
 degree of Hilbert Series as rational function = 0
-
-The numerator of the Hilbert Series is symmetric.
 
 Hilbert polynomial:
 
