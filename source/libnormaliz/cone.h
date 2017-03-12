@@ -275,7 +275,7 @@ private:
     Matrix<Integer> Congruences;
     // we must register some information about thew input
     bool lattice_ideal_input;
-    size_t nr_latt_gen, nr_cone_gen;
+    size_t nr_latt_gen, nr_cone_gen; // they count matrices in the input 
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     Sublattice_Representation<Integer> BasisChangePointed; // to the pointed cone

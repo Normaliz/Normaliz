@@ -19,14 +19,10 @@ EXTRA_DIST =					\
 	A643.in					\
 	ChineseRemainder.in			\
 	CondEffPlur.in				\
-	CondEffPlurSemi.in			\
-	CondEffPlurHilbBas.in			\
 	Condorcet.in				\
-	CondorcetSymm.in			\
-	CondorcetSymm.pnm			\
+	Condorcet.symm.in			\
 	CondorcetInt.in				\
 	CondorcetSemi.in			\
-	CondorcetSymmSemi.in			\
 	Condorcet_one.in			\
 	FortuneCookie.in			\
 	InhomCong.in				\
@@ -43,7 +39,6 @@ EXTRA_DIST =					\
 	NonCMDiv.in				\
 	NumSemi.in				\
 	PluralityVsCutoff.in			\
-	PluralityVsCutoffSemi.in		\
 	SquareMinusVertex.in			\
 	SquareMinusVertexInhom.in		\
 	SquareMinusVertexPolyh.in		\
@@ -57,7 +52,6 @@ EXTRA_DIST =					\
 	halfspace2.in				\
 	hickerson-18.in				\
 	huge.in					\
-	j46.pnm					\
 	j462.in					\
 	lattice_ideal.in			\
 	lo6.in					\
@@ -71,10 +65,6 @@ EXTRA_DIST =					\
 	polytope_deg1.in			\
 	rafa2416.in				\
 	rational.in				\
-	rational.pnm				\
-	rationalES.intOut			\
-	rationalLC.intOut			\
-	rationalInt.intOut			\
 	rationalIH.in				\
 	rees.in					\
 	semigraphoid5.in			\

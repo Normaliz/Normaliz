@@ -1543,7 +1543,7 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     
     if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
                     || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)
-                    || Generators.nr_of_rows()>0 || SupportHyperplanes.nr_of_rows() > 2*dim
+                    || nr_cone_gen>0 || nr_latt_gen>0 || SupportHyperplanes.nr_of_rows() > 2*dim
                     || SupportHyperplanes.nr_of_rows() 
                             <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
         return;
@@ -2849,6 +2849,10 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::NoSymmetrization))
         return;
     
+    if(!(ToCompute.test(ConeProperty::Symmetrize) || ToCompute.test(ConeProperty::HilbertSeries) ||
+               ToCompute.test(ConeProperty::Multiplicity)))
+        return;
+    
     if(inhomogeneous || nr_latt_gen>0|| nr_cone_gen>0 || lattice_ideal_input || Grading.size() < dim){
         if(ToCompute.test(ConeProperty::Symmetrize))
             throw BadInputException("Symmetrization not posible with the given input"); 
@@ -2856,40 +2860,11 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
             return;
     }
     
-    compute_generators();
-    if(getRank()==0)
-        return;
-    
-    size_t found;
-    string nmz_int_path;
-
 #ifndef NMZ_COCOA    
     if(project==""){
         if(ToCompute.test(ConeProperty::Symmetrize)){
             throw BadInputException("Symmetrization via libnormaliz not possible without CoCoALib");
         }
-        else
-            return;
-    }
-                
-    
-    #ifdef _WIN32 //for 32 and 64 bit windows
-    // at present we cannot compile nmzIntegrate for Windows
-    bool nmzInt3_1compatible=(ExcludedFaces.nr_of_rows()==0 && output_dir.size()==0);
-    if(!nmzInt3_1compatible){
-        if(ToCompute.test(ConeProperty::Symmetrize))
-            throw NotComputableException("Symmetrization applicable in MS Windows only with restrictions");
-        else
-            return;
-	}
-    #endif
-
-    // check whether nmzIntegrate can be accessed
-    
-    nmz_int_path=command(nmz_call,"normaliz","nmzIntegrate");
-    if(nmz_int_path==""){
-        if(ToCompute.test(ConeProperty::Symmetrize))
-            throw BadInputException("nmzIntegrate not found");
         else
             return;
     }
@@ -2978,6 +2953,10 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         }
     }
     
+    compute_generators(); // we must protect against the zero cone
+    if(getRank()==0)
+        return;
+    
     Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmEqu(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmCong(0,SymmConst.nr_of_columns());
@@ -3044,175 +3023,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     return;
     
 #endif
-    
-    string slash="/";
-    #ifdef _WIN32 //for 32 and 64 bit windows
-        slash="\\";
-    #endif
-    found = project.rfind(slash);
-    string pure_project;
-    if(!(found==std::string::npos)){
-        found++;
-        size_t length=project.size()-found;
-        pure_project=project.substr(found,length);
-    }
-    
-    string in_file, pnm_file,result_file,pre_name;
 
-    // cout << "Result file " << result_file << endl;
-    if(output_dir.size()>0)
-        pre_name=output_dir+pure_project;
-    else
-        pre_name=project;
-    pre_name+=".symm";    
-    in_file=pre_name+".in";
-    pnm_file=pre_name+".pnm";
-    result_file=pre_name+".intOut";
-    
-    // cout << in_file << " " << output_dir << endl;
-    
-    const char* file = in_file.c_str();
-    ofstream out(file);
-    out << "amb_space " << SymmInequ.nr_of_columns() << endl;
-    if(SymmInequ.nr_of_rows()>0){
-        out << "inequalities " << SymmInequ.nr_of_rows() << endl;
-        SymmInequ.pretty_print(out);
-    }
-    out << "nonnegative" << endl;
-    if(SymmEqu.nr_of_rows()>0){
-        out << "equations " << SymmEqu.nr_of_rows() << endl;;
-        SymmEqu.pretty_print(out);
-    }
-    if(SymmCong.nr_of_rows()>0){
-        out << "congruences " << SymmCong.nr_of_rows() << endl;;
-        SymmCong.pretty_print(out);
-    }
-    if(SymmExcl.nr_of_rows()>0){
-        out << "excluded_faces " << SymmExcl.nr_of_rows() << endl;;
-        SymmExcl.pretty_print(out);
-    }
-    out << "grading" << endl;
-    out << SymmGrad;
-    out.close();
-    
-    file = pnm_file.c_str();
-    ofstream pnm_out(file);
-    pnm_out << polynomial << endl;
-    pnm_out.close();
-
-    //cout << "argv[0] = "<< argv[0] << endl;
-    string nmz_int_exec("\"");
-    // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
-    #ifdef _WIN32 //for 32 and 64 bit windows
-        nmz_int_exec.append("\"");
-    #endif
-    nmz_int_exec.append(nmz_int_path);
-    nmz_int_exec.append("\"");
-    nmz_int_exec+=" -s ";    
-    if(verbose)
-        nmz_int_exec+=" -c ";
-    if(ToCompute.test(ConeProperty::HilbertSeries))
-        nmz_int_exec+=" -E ";
-    else
-        if(ToCompute.test(ConeProperty::Multiplicity))
-            nmz_int_exec+=" -L ";
-    if(ToCompute.test(ConeProperty::BottomDecomposition))
-        nmz_int_exec+=" -b ";
-    
-    nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
-    
-    nmz_int_exec+=pre_name;
-
-    #ifdef _WIN32 //for 32 and 64 bit windows
-        nmz_int_exec.append("\"");
-    #endif
-
-    if(verbose)
-        verboseOutput() << "executing: "<< nmz_int_exec << endl;
-    int success=system(nmz_int_exec.c_str());
-    if(success>0)
-        throw NotComputableException("NmzIntegrate failed");
-
-    const char* result = result_file.c_str();
-    ifstream in(result);
-    
-    string read;
-    vector<mpz_class> num;
-    vector<denom_t> denom;
-    if(ToCompute.test(ConeProperty::HilbertSeries)){
-        while(read!="series:")
-            in >> read;
-        int c;
-        mpz_class coeff;
-        while(true){
-            in >> std::ws;
-            c= in.peek();
-            if(c=='C')
-                break;
-            in >> coeff;
-            num.push_back(coeff);
-            if(in.fail())
-                throw FatalException("Corrupted output file of nmzIntegrate");
-        }
-        while(read!="factors:")
-            in >> read;
-        while(true){
-            in >> std::ws;
-            c= in.peek();
-            if(c=='G')
-                break;
-            denom_t deg;
-            long mult;
-            in >> deg;
-            in >> read; // skip :
-            in >> mult;
-            if(in.fail())
-                throw FatalException("Corrupted output file of nmzIntegrate");
-            for(long i=0;i<mult;++i)
-                denom.push_back(deg);
-        }
-        HSeries=HilbertSeries(num,count_in_map<long, long>(denom));
-        HSeries.simplify();
-        is_Computed.set(ConeProperty::HilbertSeries);
-    }
-    /* cout << num;
-    cout << "----------" << endl;
-    cout << denom; */
-    
-    while(read!="multiplicity:")
-        in >> read;
-    in >> multiplicity;
-    is_Computed.set(ConeProperty::Multiplicity);
-    is_Computed.set(ConeProperty::Symmetrize);
-    
-    /* cout << "----------" << endl;
-    cout << multiplicity << endl;  */
-    
-    int k=0;
-    string del_pre=pre_name, del_file;
-    // del_file=del_pre+".out";
-    // k=remove(del_file.c_str());
-    del_file=del_pre+".intOut";
-    k=remove(del_file.c_str());
-    del_file=del_pre+".inv";
-    k+=remove(del_file.c_str());
-    del_file=del_pre+".tgn";
-    k+=remove(del_file.c_str());
-    del_file=del_pre+".in";
-    k+=remove(del_file.c_str());
-    del_file=del_pre+".pnm";
-    k+=remove(del_file.c_str());
-    if(ToCompute.test(ConeProperty::HilbertSeries)){
-        del_file=del_pre+".dec";
-        k+=remove(del_file.c_str());    
-    }
-    if(ToCompute.test(ConeProperty::Multiplicity) && !ToCompute.test(ConeProperty::HilbertSeries)){
-        del_file=del_pre+".tri";
-        k+=remove(del_file.c_str());            
-    }
-    if(k>0){
-        throw FatalException("Some file for exchange of data could not be deleted");        
-    }
 }
 
 //---------------------------------------------------------------------------

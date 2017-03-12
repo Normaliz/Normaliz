@@ -3503,28 +3503,24 @@ By doing step (1) first, the user gets useful information of what to expect by s
 
 The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
 \begin{Verbatim}
-winfried.../git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
-
-\.....|
-Normaliz 3.2.1                   \....|
-\...|
-(C) The Normaliz Team, University of Osnabrueck   \..|
-February  2017                      \.|
-\|
+winfried@ubuntu:~/Dropbox/git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
+                                                    \.....|
+                    Normaliz 3.3.0                   \....|
+                                                      \...|
+     (C) The Normaliz Team, University of Osnabrueck   \..|
+                     March  2017                        \.|
+                                                         \|
 ************************************************************
 Command line: -c ../example/PluralityVsCutoff 
-Compute: DefaultMode
-executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
-...
-...
+Compute: DefaultMode 
+Embedding dimension of symmetrized cone = 6
 ...
 ------------------------------------------------------------
 transforming data... done.
 
-real	0m2.459s
-user	0m4.948s
-sys	0m0.040s
-
+real	0m2.655s
+user	0m5.328s
+sys	0m0.080s
 \end{Verbatim}
 The Hilbert series is computable without symmetrization, but you better make sure that there is no power failure for the next week if you try that. (The time above includes the Hilbert basis computed automatically in dual mode).
 
@@ -3627,15 +3623,15 @@ We discuss the Condorcet paradox again (and the last time), now starting from th
 \begin{Verbatim}
 amb_space 8
 inequalities 3
--1 -1 -1 -1  1  1  1 1
--1 -1  1  1 -1 -1  1 1
--1  1 -1  1 -1  1 -1 1
+1 -1 1 1 1 -1 -1 -1
+1 1 -1 1 -1 1 -1 -1
+1 1 1 -1 -1 -1 1 -1
 nonnegative
 total_degree
-polynomial
-(x[1]+1)*(x[1]+2)*(x[1]+3)*(x[1]+4)*(x[1]+5)*
-(x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
-(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400; 
+polynpmial
+1/120*1/120*(x[1]+5)*(x[1]+4)*(x[1]+3)*(x[1]+2)*(x[1]+1)*(x[2]+1)*
+(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*(x[8]+5)*(x[8]+4)*
+(x[8]+3)*(x[8]+2)*(x[8]+1);
 \end{Verbatim}
 We have seen this polynomial in Section \ref{symmetrize} above.
 
@@ -3649,18 +3645,23 @@ We could have used \verb|--WeightedEhrhartSeries| instead of \verb|-E| or put \v
 The file \ttt{Condorcet.symm.out} we find the information on the weighted Ehrhart series:
 
 \begin{Verbatim}
-Generalized Ehrhart series:
+Weighted Ehrhart series:
 1 5 133 363 ... 481 15 6
 Common denominator of coefficients: 1
 Series denominator with 24 factors:
 1: 1  2: 14  4: 9
+
+degree of weighted Ehrhart series as rational function = -25
+
+Weighted Ehrhart series with cyclotomic denominator:
+...
 \end{Verbatim}
-The only piece of data that we haven't seen already is the common denominator of coefficients. But since the polynomial has rational coefficients, we cannot any longer expect that the polynomial in the numerator of the series has integral coefficients. We list them as integers, but must then divide them by the denominator (which is$1$ in thus case since the weighted Ehrhart series is a Hilbert series in disguise). As usual, the representation with a denominator of cyclotomic polynomials follows:
+The only piece of data that we haven't seen already is the common denominator of coefficients. But since the polynomial has rational coefficients, we cannot any longer expect that the polynomial in the numerator of the series has integral coefficients. We list them as integers, but must then divide them by the denominator (which is$1$ in thus case since the weighted Ehrhart series is a Hilbert series in disguise). As usual, the representation with a denominator of cyclotomic polynomials follows.
 
 And we have the quasipolynomial as usual:
 
 \begin{Verbatim}
-Generalized Ehrhart quasi-polynomial of period 4:
+Weighted Ehrhart quasi-polynomial of period 4:
  0:   6939597901822221635907747840000 20899225...000000 ... 56262656
  1:   2034750310223351797008092160000  7092764...648000 ... 56262656
  2:   6933081849299152199775682560000 20892455...168000 ... 56262656
@@ -3676,22 +3677,12 @@ The interpretation of the remaining data is obvious:
 
 \begin{Verbatim}
 Degree of (quasi)polynomial: 23
+
 Expected degree: 23
+
 Virtual multiplicity: 1717/8192
 \end{Verbatim}
 
-Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
-customary in voting theory (in order to exclude ties). Then we replace
-\ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
-\ttt{CondorcetSymmSemi.in}:
-
-\begin{Verbatim}
-./normaliz -cE example/CondorcetSymmSemi
-\end{Verbatim}
-
-The output is now in \ttt{CondorcetSymmSemi.out}.
-
-starts with the factorization:
 
 \subsubsection{Virtual multiplicty}
 

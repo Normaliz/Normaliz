@@ -219,12 +219,12 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrizeb is used
         
     if (CPs.test(ConeProperty::Integral)){
-        CPs.set(ConeProperty::Multiplicity);
+        // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::Triangulation);
     }
     
     if (CPs.test(ConeProperty::VirtualMultiplicity)){
-        CPs.set(ConeProperty::Multiplicity);
+        // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::Triangulation);
     }
     
@@ -232,7 +232,7 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::WeightedEhrhartSeries);
     
     if (CPs.test(ConeProperty::WeightedEhrhartSeries)){
-        CPs.set(ConeProperty::Multiplicity);
+        // CPs.set(ConeProperty::Multiplicity);
         CPs.set(ConeProperty::StanleyDec);
     }
 }
