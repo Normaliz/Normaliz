@@ -57,11 +57,6 @@ case $BUILDSYSTEM in
 	    rm -Rf CoCoALib-$COCOALIB_VERSION
 	    tar xf CoCoALib-$COCOALIB_VERSION.tgz || exit 1
 	    cd $COCOALIB_DIR || exit 1
-	    # the following comment is obsolete
-            # We use --ignore-gmp-cflags, because otherwise on Mac OS Travis builds,
-            # CoCoA's configuration will pick up "-mtune=sandybridge -march=sandybridge" from
-            # GMP's configuration, and this will lead to Illegal Instruction faults when
-            # running nmzIntegrate.
 	    ./configure --threadsafe-hack || exit 1
             # Patch out use of Boost.  Otherwise, on Mac OS Travis builds
             # CoCoA finds Boost and libcocoa.a has dependencies on boost libraries.
@@ -89,11 +84,6 @@ case $BUILDSYSTEM in
         make install
         # Test that installation works (like autotools "make installcheck")
         "$INSTALLDIR"/bin/normaliz --version
-        case $BUILDSYSTEM in
-            *-nmzintegrate*)
-                "$INSTALLDIR"/bin/nmzIntegrate --version
-                ;;
-        esac
 	;;
     classic-scip*)
 	cat > source/Makefile.configuration <<EOF
