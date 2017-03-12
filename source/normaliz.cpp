@@ -75,6 +75,9 @@ void printHelp(char* command) {
     cout << "  -D\tcompute cone decomposition (includes -T)"<<endl;
     cout << "  -H\tcompute integer hull"<<endl;
     cout << "  -M\tcompute module generators over original monoid"<<endl;
+    cout << "  -E\tcompute weighted Ehrhart series"<<endl;
+    cout << "  -L\tcompute virtual multiplicity of weighted Ehrhart series"<<endl;
+    cout << "  -I\tcompute integral"<<endl;
 
     cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
@@ -84,8 +87,6 @@ void printHelp(char* command) {
     cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
     cout << "  -k\tcomputation mode: keep order"<<endl;
     cout << "  -Y\tcomputation mode: symmetrization"<<endl;
-    cout << "  -X\tcomputation mode: no symmetrization"<<endl;
-
 
     cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;

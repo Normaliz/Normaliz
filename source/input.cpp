@@ -455,6 +455,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
     InputType input_type;
     Integer number;
     ConeProperty::Enum cp;
+    bool we_have_a_polynomial=false;
 
     map<Type::InputType, vector< vector<Integer> > > input_map;
     typename map<Type::InputType, vector< vector<Integer> > >::iterator it;
@@ -554,7 +555,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                 }
                 
                 if(type_string == "polynomial") {
+                    if(we_have_a_polynomial)
+                        throw BadInputException("Only one polynomial allowed");
                     read_polynomial(in,polynomial);
+                    we_have_a_polynomial=true;
                     continue;
                 }
 

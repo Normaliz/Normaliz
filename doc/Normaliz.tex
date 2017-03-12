@@ -16,6 +16,8 @@
 
 \usepackage{booktabs}
 
+\usepackage[ignoreunlbld,nomsgs]{refcheck}
+
 \usepackage{pgf, tikz}
 \usepackage{color}
 
@@ -189,8 +191,7 @@ $$
 
 The second main goal are enumerative data that depend on a grading
 of the ambient lattice. Normaliz computes the Hilbert series and
-the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedron. In combinatorial terminology: Normaliz computes Ehrhart series and quasipolynomials of rational polyhedra. Via its
-offspring NmzIntegrate \cite{NmzInt}, Normaliz computes generalized
+the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedron. In combinatorial terminology: Normaliz computes Ehrhart series and quasipolynomials of rational polyhedra. Normaliz also computes weighted
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
@@ -276,8 +277,7 @@ See the file \verb|CHANGELOG| in the basic package for more information on the h
 \subsection{Future extensions}
 
 \begin{arab}
-	\item Exploitation of symmetries,
-	\item integration of NmzIntegrate into libnormaliz,
+	\item Computation and exploitation od automorphism groups,
 	\item multigraded Hilbert series,
 	\item access from further systems,
 	\item Gröbner and Graver bases.
@@ -290,7 +290,7 @@ Download
 	\item the zip file with the Normaliz source, documentation,
 	examples and further platform independent components, and
 	
-	\item the zip file containing the executable(s) for your system
+	\item the zip file containing the executable for your system
 \end{itemize}
 from the Normaliz website\medskip
 
@@ -1554,12 +1554,14 @@ unit_vector 1
 \end{Verbatim}
 The output is identical to the version starting from the inequalities.
 
-\subsection{The Condorcet paradoxon}\label{Condorcet}
+\subsection{The Condorcet paradox}\label{Condorcet}
 
-In social choice elections each of the $k$ voters picks a linear preference order of the $n$ candidates. There are $n!$ such orders.
+In this section we assume that you use an executable of Normaliz that was built with CoCoALib (ee Section \ref{Compile}), for example an executable for Linux or Mac OS from the Normaliz web site. If not, then simply disregard any remark on symmetrization. Everything runs very quickly also without it.
+
+In social choice elections each of the $k$ voters picks a linear preference order of the $n$ candidates. There are $n!$ such orders. The election result is the vector $(x_1,\dots,x_N), $N=n!, in which $x_i$ is the number of voters that have chosen the $i$-th preference order in, say, lexicographic enumeration of these orders. In the following we assume the \emph{impartial anonymous culture} according to which every preference order has the same basic weight of $1/n!$. 
 \medskip 
 
-We say that candidate $A$ \emph{beats} candidate $B$ if the majority of the voters prefers $A$ to $B$. As the Marquis de \emph{Condorcet} (and others) observed, ``beats'' is not transitive, and an election may exhibit the \emph{Condorcet paradoxon}: there is no Condorcet winner. (See \cite{BS} and the references given there for more information.)
+We say that candidate $A$ \emph{beats} candidate $B$ if the majority of the voters prefers $A$ to $B$. As the Marquis de \emph{Condorcet} (and others) observed, ``beats'' is not transitive, and an election may exhibit the \emph{Condorcet paradox}: there is no Condorcet winner. (See \cite{BS} and the references given there for more information.)
 
 We want to find the probability for $k\to\infty$ that there is a Condorcet winner for $n=4$ candidates. The event that $A$ is the Condorcet winner can be expressed by linear inequalities on the election outcome (a point in $24$-space). The wanted probability is the lattice normalized volume of the polytope cut out by the inequalities at $k=1$. The file \verb|Condorcet.in|:
 
@@ -1583,7 +1585,7 @@ multiplicity = 1717/8192
 \end{Verbatim}
 Since there are $4$ candidates, the probability for the existence of a Condorcet winner is $1717/2048$.
 
-We can refine the information on the Condorcet paradoxon by computing the Hilbert series. Either we delete \verb|Multiplicity| from the input file or, better, we add \verb|--HilbertSeries| (or simply \verb|-q|) on the command line. The result:
+We can refine the information on the Condorcet paradox by computing the Hilbert series. Either we delete \verb|Multiplicity| from the input file or, better, we add \verb|--HilbertSeries| (or simply \verb|-q|) on the command line. The result:
 \begin{Verbatim}
 Hilbert series:
 1 5 133 363 4581 8655 69821 100915 ... 12346 890 481 15 6 
@@ -1593,11 +1595,13 @@ denominator with 24 factors:
 degree of Hilbert Series as rational function = -25
 \end{Verbatim}
 
-For this example the option \verb|Symmetrize, -Y| makes sense (see Section \ref{symmetrize}), but it is too small to demonstrate the power of symmetrization. For others, symmetrization can convert days into seconds.
+Normaliz automatically uses symmetrization for this example , but it is too small to demonstrate the power of symmetrization. For others, symmetrization can convert days into seconds. 
+
+Since symmetrization is used, you will also find a file \verb|Condorcet.symm.out| in your directory. It contains the data computed for the symmetrization. You need not care at this point. We take continue the discussion of symmetrization in the Sections \ref{???} and \ref{???}.
 
 \subsubsection{Excluding ties}\label{excluded_ex}
 
-Now we are more ambitious and want to compute the Hilbert series for the Condorcet paradoxon, or more precisely, the number of election outcomes having $A$ as the Condorcet winner depending on the number $k$ of voters. Moreover, as it is customary in social choice theory, we want to exclude ties. The input file changes to \verb|CondorcetSemi.in|:
+Now we are more ambitious and want to compute the Hilbert series for the Condorcet paradox, or more precisely, the number of election outcomes having $A$ as the Condorcet winner depending on the number $k$ of voters. Moreover, as it is customary in social choice theory, we want to exclude ties. The input file changes to \verb|CondorcetSemi.in|:
 \begin{Verbatim}
 amb_space 24
 excluded_faces 3
@@ -1623,7 +1627,7 @@ degree of Hilbert Series as rational function = -24
 \end{Verbatim}
 Surprisingly, this looks like the Hilbert series in the previous section read backwards, roughly speaking. This is true, and one can explain it as we will see below. 
 
-It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. If there are many excluded faces, then it is better to use \verb|strict_inequalities|. However, at present NmzIntegrate can only work with \verb|excluded_faces|.
+It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. However, Normaliz canot (yet) apply symmetrization in inhomogeneous computations. Moreover, the algorithmic approach is different, and according to our experience \verb|excluded_faces| is more efficient, independently of symmetrization. 
 
 \subsubsection{At least one vote for every preference order}\label{strict_signs_ex}
 
@@ -1651,13 +1655,23 @@ shift = 24
 
 degree of Hilbert Series as rational function = -1
 \end{Verbatim}
-Again we encounter (almost) the Hilbert series of the Condorcet paradoxon (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ the ideal of lattice points in the interior of $C$. Moreover, let $\mathds{1}\in\ZZ^{24}$ be the vector with all entries $1$. 
+Again we encounter (almost) the Hilbert series of the Condorcet paradox (without side conditions). It is time to explain this coincidence. Let $C$ be the Condorcet cone defined by the nonstrict inequalities, $M$ the monoid of lattice points in it, $I_1\subset M$ the ideal of lattice points avoiding the $3$ facets defined by ties, $I_2$ the ideal of lattice points with strictly positive coordinates, and finally $I_3$ the ideal of lattice points in the interior of $C$. Moreover, let $\mathds{1}\in\ZZ^{24}$ be the vector with all entries $1$. 
 
 Since $\mathds{1}$ lies in the three facets defining the ties, it follows that $I_2=M+\mathds{1}$. This explains why we obtain the Hilbert series of $I_2$ by multiplying the Hilbert series of $M$ by $t^{24}$, as just observed. Generalized Ehrhart reciprocity (see \cite[Theorem 6.70]{BG}) then explains the Hilbert series of $I_1$ that we observed in the previous section. Finally, the Hilbert series of $I_3$ that we don't have displayed is obtained from that of $M$ by  ``ordinary'' Ehrhart reciprocity. But we can also obtain $I_1$ from $I_3$: $I_1=I_3-\mathds{1}$, and generalized reciprocity follows from ordinary reciprocity in this very special case.
 
 The essential point in these arguments (apart from reciprocity) is that $\mathds{1}$ lies in all support hyperplanes of $C$ except the coordinate hyperplanes.
 
 You can easily compute the Hilbert series of $I_3$ by making all inequalities strict.
+
+As the terminal output shows, symmetrization has not been applied for the reason mentioned above: \verb|strict_signs| is an inhomogeneous input type. It would of course be possible to encode the strict signs as \verb|excluded_faces|. Then the sparse format of matrices is very handy:
+\begin{Verbatim}
+excludred_faces 24
+1:1;
+1:2;
+...
+1:24;
+\end{Verbatim}
+This is a shorthand for the unit matrix.
 
 \subsection{Testing normality}\label{normalization_ex}
 
@@ -2159,6 +2173,7 @@ several items. There are several types of items:
 	\item matrices with integer entries,
 	\item vectors with integer entries,
 	\item constraints in  or symbolic format,
+	\item a polynomial,
 	\item computation goals and algorithmic variants,
 	\item comments.
 \end{arab}
@@ -2371,6 +2386,20 @@ x[1]+1=x[2] ;
 \end{Verbatim}
 
 There is no need to insert white space for separation, but it may be inserted anywhere where it does not disrupt numbers or relation signs.
+
+\subsubsection{Polynomials}\label{poly_input}
+
+For the computation of weighted Ehrhart series and integrals Normaliz needs the input of a polynomial with rational coefficients. The polynomial is first read as a string. For the computation the string is converted by the input function of CoCoALib \cite{CoCoA}. Therefore any string representing a valid CoCoA expression is allowed. However the names of the indeterminates are fixed: \verb|x[1]|,\dots,\verb|x[<N>| where \verb|<N>]| is the value of \verb|amb_space|. The polynomial must be concluded by a semicolon.
+
+Example:
+\begin{Verbatim}
+(x[1]+1)*(x[1]+2)*(x[1]+3)*(x[1]+4)*(x[1]+5)*
+(x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
+(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400;
+
+(x[1]*x[2]*x[3]*x[4])^2*(x[1]-x[2])^2*(x[1]-x[3])^2*
+(x[1]-x[4])^2*(x[2]-x[3])^2*(x[2]-x[4])^2*(x[3]-x[4])^2;
+\end{Verbatim}
 
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
@@ -2767,13 +2796,6 @@ The zero cone with an empty Hilbert basis is a legitimate
 object for Normaliz. Nevertheless a warning message is issued
 if the zero cone is encountered.
 
-\subsection{Additional input file for NmzIntegrate}
-
-NmzIntegrate, whether called by Normaliz or from the command
-line, needs an input file \ttt{<project>.pnm} that contains
-the polynomial for which the generalized Ehrhart series or the
-integral is to be computed. See \cite{NmzInt}.
-
 \section{Computation goals and algorithmic variants}\label{Goals}
 
 The library \verb|libnormaliz| contains a class \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The latter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz|. See Appendix \ref{libnorm} for a description of \verb|libnormaliz|.
@@ -2788,8 +2810,6 @@ For the most important choices there are single letter command line options, for
 Some computation goals apply only to homogeneous computations, and some others make sense only for inhomogeneous computations.
 
 Some single letter command line options combine two or more computation goals, and some algorithmic variants imply computation goals.
-
-Normaliz can call NmzIntegrate. The three computation goals that require NmzIntegrate do not belong to the class \verb|ConeProperties|.
 
 \subsection{Default choices and basic rules}
 
@@ -2859,7 +2879,7 @@ It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used 
 
 \subsubsection{Symmetrization}
 
-In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series to NmzIntegrate. If applicable, this is a very strong tool. We discuss it in Section \ref{symmetrize}.  It will be chosen automatically, but can also be forced or blocked:
+In rare cases Normaliz can use symmetrization in the computation of multiplicities or Hilbert series. If applicable, this is a very strong tool. We have mentioned it in Section \ref{Condorcet} and will discuss it in Section \ref{symmetrize}.  It will be chosen automatically, but can also be forced or blocked:
 \begin{itemize}
 	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
 	
@@ -2966,22 +2986,20 @@ The triangulation and the Stanley decomposition are treated
 separately since they can become very large and may exhaust
 memory if they must be stored for output.
 
-\subsubsection{NmzIntegrate}
-
-The computation goals that require calling NmzIntegrate can only be set on the command line.
+\subsubsection{Weighted Ehrhart series and integrals}
 
 \begin{itemize}
 	
-	\itemtt[-E] makes Normaliz compute a generalized Ehrhart series.
+	\itemtt[-E, WeightedEhrhartSeries] makes Normaliz compute a generalized Ehrhart series.
 	
-	\itemtt[-L] makes Normaliz compute the leading coefficient of a generalized Ehrhart series.
+	\itemtt[-L, VirtualMultiplicity] makes Normaliz compute the virtual multiplicity of a weighted Ehrhart series.
 	
-	\itemtt[-I] makes Normaliz compute an integral.	
+	\itemtt[-I, Integral] makes Normaliz compute an integral.	
 \end{itemize}
 
 These computation goals require a homogeneous computation.
 
-Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and calls NmzIntegrate on the symmetrized object. The options above ask for a call of NmzIntregrate on the given data which must include a polynomial. See the NmzIntegrate manual.
+Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and uses \verb|-E|  or \verb|-L| internally on the symmetrized object. The options above ask for the input of  a polynomial. See Section \ref{poly_input}.
 
 \subsubsection{Boolean valued computation goals}\label{bool}
 
@@ -3079,6 +3097,8 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	\itemtt[IsInhomogeneous] controls the inhomogeneous case..
 	
 	\itemtt[HilbertQuasiPolynomial] controls the Hilbert quasipolynomial.
+	
+	\itemtt[WeightedEhrhartQuasiPolynomial] controls the weighted Ehrhart quasipolynomial.
 	
 	\itemtt[IsTriangulationNested]  controls the indicator of this property.
 	\itemtt[IsTriangulationPartial]  similar.
@@ -3439,23 +3459,170 @@ As you will see, the subdivision of large simplicial cones is very useful for su
 
 Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression on the relation between the algorithms.
 
-\subsection{Computations with a polynmial weight}
+\subsection{Symmetrization}\label{symmetrize}
 
-Normaliz computes Hilbert series that are defined by
-$$
-H_M(t)=\sum{x\in M} t^{\deg x}
-$$
-where $M=C\cap L$ is the intersection of a rational cone and a lattice and $\deg$ is a grading. The summation counts every point with weight $1$. The theory of these Hilbert series can be generalized by allowing a polynomial weight function $f$ on the surrounding space  the. We call
-$$
-E(M,f)= \sum{x\in M} f(x)t^{\deg x}
-$$
-a \emph{weighted Ehrhart series}. Weighted Ehrhart series represent rational functions, and the weighted counting function $E(M,f,k)=\sum_{x\in M, \deg x=k} f(x)$ is again given by a quasipolynomial, the \emph{weighted Ehrhart quasipolynomial}. The maximal degree of this polynomial is the \emph{virtual degree} $\virtdeg(M,f)=\rank M+\deg f-1$. In general the true may be smaller. As in the ordinary case, the coefficient of $k^v$, $v=\virtdeg (M.f)$ is constant. After multiplication by $v!$ it becomes the \emph{virtual multiplicity}.  
+Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $C$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. This amounts to a computation of a weighted Ehrhart series that we will discuss in Section \ref{Poly_comp}. Similarly multiplicity can be computed as the virtual multiplicity of a polynomial after projection.
 
-\subsubsection{A generalized Ehrhart series}
+The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the sign conditions $x_i\ge 0$ for all coordinates  $x_i$ of $C$. (Coordinate hyperplanes may be among the excluded faces.) Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients, and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector $y$  of sums is then a product of binomial coefficients -- a polynomial as desired. More precisely, if $y_j$, $j=1,\dots,m$, is the sum of  $u_j$ variables $x_i$ then
+$$
+f(y)=\binom{u_1+y_1-1}{u_1-1}\cdots \binom{u_m+y_m-1}{u_m-1}.
+$$
+is the number of preimages of $(y_1,\dots,y_m)$. This approach to Hilbert series has been suggested by A. Schürmann \cite{Sch}.
 
-We choose an example from combinatorial voting theory which is discussed in
-more detail in \cite{BS}. The file \ttt{CondorcetSymm.in} from the directory
-\ttt{examples} contains the following:
+As an example we look again at the input for the Condorcet paradox:
+\begin{Verbatim}
+amb_space 24
+inequalities 3
+1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
+1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
+1 1 1 1 1 1  1  1  1 -1 -1 -1   1  1  1 -1 -1 -1  -1 -1 -1 -1 -1 -1
+nonnegative
+total_degree
+Multiplicity
+\end{Verbatim}
+The grading is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also the column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each (one group for each $\pm1$ pattern). With the suitable labeling, the number of preimages of$(y_1,\dots,y_8$) is given by
+$$
+f(y)=\binom{y_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
+$$
+Normaliz finds the groups of variables that appear with the same sign pattern, creates the data for the weighted Ehrhart series, and interprets it as the Hilbert series of the monoid defined by the input data. 
+
+However, there is a restriction. Since the polynomial arithmetic has its own complexity and  Normaliz must do  it in GMP integers, it makes no sense to apply symmetrization if the dimension does not drop by a reasonable amount. Therefore we require that
+$$
+\dim C' \le \frac{2}{3}\dim C).
+$$
+If called with the options \verb|-q| or \verb|-v| Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
+
+Whenever Normaliz has used symmetrization, it writes the file \verb|<project>.symm.out| that contains the data of the symmetrized object. In it you find the multiplicity of \verb|<project>.out| as virtual multiplicity and the Hilbert series as weighted Ehrhart series.
+
+If you use the option \verb|Symmetrize|, then the behavior depends on the other options:
+\begin{arab}
+\item If neither the \verb|HilbertSeries| or \verb|Multiplicity| is to be computed, Normaliz writes only the output file \verb|<project>.symm.out| computed with \verb|SupportHyperplanes|.
+\item If one of these goals is to be computed, Normaliz will do the symmetrization, regardless of the dimension inequality above.
+\end{arab}
+By doing step (1) first, the user gets useful information of what to expect by symmetrization. In a second run, one can add \verb|HilbertSeries| or \verb|Multiplicity| if (1) was satisfactory.
+
+The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
+\begin{Verbatim}
+winfried.../git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
+
+\.....|
+Normaliz 3.2.1                   \....|
+\...|
+(C) The Normaliz Team, University of Osnabrueck   \..|
+February  2017                      \.|
+\|
+************************************************************
+Command line: -c ../example/PluralityVsCutoff 
+Compute: DefaultMode
+executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
+...
+...
+...
+------------------------------------------------------------
+transforming data... done.
+
+real	0m2.459s
+user	0m4.948s
+sys	0m0.040s
+
+\end{Verbatim}
+The Hilbert series is computable without symmetrization, but you better make sure that there is no power failure for the next week if you try that. (The time above includes the Hilbert basis computed automatically in dual mode).
+
+Another good example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$.
+
+Symmetrization is a special type of computations with a polynomial weight, and therefore requires Normaliz to be built with CoCoALib. 
+
+\subsection{Computations with a polynmial weight}\label{Poly_comp}
+
+For such graded monoids $M$, which arises as the intersection $M=C\cap L$ of a rational cone$C$  and a lattice $L$,  Normaliz computes the volume of
+the rational polytope
+$$
+P=\{x\in \RR_+ M: \deg x=1\},
+$$
+called the multiplicity of $M$ (for the given grading), the  Hilbert series of $M$, and the quasipolynomial representing the Hilbert function. This Hilbert series of $M$ is also called the Ehrhart series of $P$ (with respect to $L$), and for the generalization introduced in this section we speak of Ehrhart series and functions.
+
+The computations of these data can be understood as integrals of the
+constant polynomial $f=1$, namely with respect to the counting
+measure defined by $L$ for the Ehrhart function, and with
+respect to the (suitably normed) Lebesgue measure for the
+volume. Normaliz generalizes these computations to
+arbitrary polynomials $f$ in $n$ variables with rational
+coefficients. (Mathematically, there is no need to restrict
+oneself to rational coefficients for $f$.)
+
+More precisely, set
+$$
+E(f,k)=\sum_{x\in M, \deg x=k} f(x),
+$$
+and call $E(f,\_)$ the \emph{weighted Ehrhart function} for
+$f$. (With $f=1$ we simply count lattice points.) The
+\emph{weighted Ehrhart series} is the ordinary generating
+function
+$$
+E_f(t)=\sum_{k=0}^\infty E(f,k)t^k.
+$$
+It turns out that $E_f(t)$ is the power series expansion of a
+rational function at the origin, and can always be written in
+the form
+$$
+E_f(t)=\frac{Q(t)}{(1-t^\ell)^{\totdeg f+\rank M}},\qquad Q(t)\in\QQ[t],\
+\deg Q< \totdeg f+\rank M.
+$$
+Here $\totdeg f$ is the total degree of the polynomial $f$, and
+$\ell$ is the least common  multiple of the degrees of the
+extreme integral generators of $M$. See \cite{BS} for an
+elementary account, references and the algorithm used by Normaliz.
+
+At present, weighted Ehrhart series can only be computed  with homogeneous data. Note that \verb|excluded_faces| is a homogeneous input type. For them the monoid $M$ is replaced by the set
+$$
+M'=C'\cap L
+$$
+where $C'=C\setminus \mathcal F$ and $\mathcal F$ is the union of a set of
+faces
+(not necessarily facets) of $C$. What has been said above about the structure
+of the weighted Ehrhart series remains true. We discuss an example below.
+
+It follows from the general theory of rational generating
+functions that there exists a quasipolynomial $q(k)$ with
+rational coefficients and of degree $\le \totdeg f+\rank M-1$ that
+evaluates to $E(f,k)$ for all $k\ge 0$.
+
+Let $m=\totdeg f$ (we use this notation to distinguish the degree of the polynomial from teh degree of lattice points) and $f_m$ be the degree $m$ homogeneous
+component of $f$. By letting $k$ go to infinity and
+approximating $f_m$ by a step function that is constant on the
+meshes of $\frac 1kL$ (with respect to a fixed basis), one sees
+$$
+q^{(j)}_{\totdeg f+\rank M-1}=\int_P f_m\, d\lambda
+$$
+where $d\lambda$ is the Lebesgue measure that takes value $1$
+on a basic mesh of $L\cap \RR M$ in the hyperplane of degree
+$1$ elements in $\RR M$. In particular, the \emph{virtual
+	leading coefficient} $q^{(j)}_{\totdeg f+\rank M-1}$ is
+constant and depends only on $f_m$. If the integral vanishes,
+the quasipolynomial $q$ has smaller degree, and the true
+leading coefficient need not be constant. Following the
+terminology of commutative algebra and algebraic geometry, we
+call
+$$
+(\totdeg f+\rank M-1)!\cdot q_{\totdeg f+\rank M-1}
+$$
+the \emph{virtual multiplicity} of $M$ and $f$. It is an
+integer if $f_m$ has integral coefficients and $P$ is a lattice
+polytope.
+
+The input format of polynomials has been discussed in Section \ref{poly_input}.
+
+The terminal output contains a factorization of the polynomial as well as some computation results. From the terminal output you may also recognize that Normaliz first computes the triangulation and the Stanley decomposition and then applies the algorithms for integrals and  weighted Ehrhart series.
+
+\emph{Remarks} \enspace (1) Large computations with many parallel threads require much memory due to the fact that very long polynomials must be stored.
+
+(2) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under the suitable conditions it is applied automatically.)
+ 
+
+\subsubsection{A weighted Ehrhart series}
+
+We discuss the Condorcet paradox again (and the last time), now starting from the symmetrized form. The file \ttt{Condorcet.symm.in} from the directory
+\ttt{example} contains the following:
 
 \begin{Verbatim}
 amb_space 8
@@ -3465,43 +3632,21 @@ inequalities 3
 -1  1 -1  1 -1  1 -1 1
 nonnegative
 total_degree
-\end{Verbatim}
-
-
-By \verb|nonnegative| we choose the nonnegative orthant in $\RR^8$ and the linear
-forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{total\_degree} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
-$$
-f(x)=\binom{x_1+5}{5}(x_2+1)(x_3+1)(x_4+1)(x_5+1)(x_6+1)(x_7+1)\binom{x_8+5}{5}.
-$$
-It is given in \ttt{CondorcetSymm.pnm} by
-
-\begin{Verbatim}
+polynomial
 (x[1]+1)*(x[1]+2)*(x[1]+3)*(x[1]+4)*(x[1]+5)*
 (x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
-(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400;
+(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400; 
 \end{Verbatim}
+We have seen this polynomial in Section \ref{symmetrize} above.
 
 
-From the Normaliz directory we invoke NmzIntegrate by
-
+From the Normaliz directory we start the computation by
 \begin{Verbatim}
-nmzIntegrate -c example/CondorcetSymm
+./normaliz -cE example/Condorcet.symm
 \end{Verbatim}
+We could have used \verb|--WeightedEhrhartSeries| instead of \verb|-E| or put \verb|WeightedEhrhartSeries| into the input file.
 
- (replace the slash by a backslash in MS Windows, and similarly
- below).
-The file \ttt{CondorcetSymm.} \ttt{intOut} starts with the factorization:
-
-\begin{Verbatim}
-Factorization of polynomial:
-x[8] +5  mult 1
-x[8] +4  mult 1
-...
-x[1] +1  mult 1
-Remaining factor 1/14400
-\end{Verbatim}
-
-Next we find the information on the Hilbert series:
+The file \ttt{Condorcet.symm.out} we find the information on the weighted Ehrhart series:
 
 \begin{Verbatim}
 Generalized Ehrhart series:
@@ -3510,29 +3655,9 @@ Common denominator of coefficients: 1
 Series denominator with 24 factors:
 1: 1  2: 14  4: 9
 \end{Verbatim}
+The only piece of data that we haven't seen already is the common denominator of coefficients. But since the polynomial has rational coefficients, we cannot any longer expect that the polynomial in the numerator of the series has integral coefficients. We list them as integers, but must then divide them by the denominator (which is$1$ in thus case since the weighted Ehrhart series is a Hilbert series in disguise). As usual, the representation with a denominator of cyclotomic polynomials follows:
 
-It is to be read as follows:
-$$
-H_{M,f}(t)=\frac{1+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
-$$
-Next we find the presentation of $H_{M,f}(t)$ as a rational function with
-coprime numerator and denominator (which in this case is the same as the
-previous one, except that the denominator is factored differently):
-
-\begin{Verbatim}
-Generalized Ehrhart series with cyclotomic denominator:
-1 5 133 363 ... 481 15 6
-Common denominator of coefficients: 1
-Series cyclotomic denominator:
-1: 24  2: 23  4: 9
-\end{Verbatim}
-
-This means
-$$
-H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1^{24}\zeta_2^{23}\zeta_4^{9}}
-$$
-where $\zeta_i$ is the $i$-th cyclotomic polynomial. Now the quasipolynomial:
-
+And we have the quasipolynomial as usual:
 
 \begin{Verbatim}
 Generalized Ehrhart quasi-polynomial of period 4:
@@ -3555,29 +3680,32 @@ Expected degree: 23
 Virtual multiplicity: 1717/8192
 \end{Verbatim}
 
-
 Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
-customary in voting theory (in order to exclude draws). Then we replace
+customary in voting theory (in order to exclude ties). Then we replace
 \ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
-\ttt{CondorcetSymmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
-is called by
+\ttt{CondorcetSymmSemi.in}:
 
 \begin{Verbatim}
-nmzIntegrate -c -F=CondorcetSymm example/CondorcetSymmSemi
+./normaliz -cE example/CondorcetSymmSemi
 \end{Verbatim}
 
-The output is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
+The output is now in \ttt{CondorcetSymmSemi.out}.
 
-\subsubsection{A virtual multipliczy}
+starts with the factorization:
+
+\subsubsection{Virtual multiplicty}
+
+Instead of the option \verb|-E| (or (\verb|--WeightedEhrhartSeries|) we use \verb|-L| or (\verb|--VirtualMultiplicity|). Then we can extract the virtual multiicity from the output file.
 
 \subsubsection{An integral}
-The paper \cite{JMV} asks for the computation of the integral
+In their papeir paper \emph{Multiplicities of lassical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Montaño and M. Varbaro ask
+for the computation of the integral
 $$
 \int\limits_{\substack{[0,1]^m \\ \sum{x}= t}}(x_1\cdots x_{m})^{n-m}\prod_{1\le i<j \le m}(x_j-x_i)^2 \mathrm d{\mu}\
 $$
 taken over the intersection of the unit cube in $\RR^m$ and the hyperplane of constant coordinate sum $t$. It is supposed that $t\le m \le n$. We compute the integral for $t=2$, $m=4$ and $n=6$.
 
-The polytope is specified in the input file \ttt{j462.in} (typeset in 2
+The polytope is specified in the input file \ttt{j462.in} (partially typeset in 2
 columns):
 
 \begin{Verbatim}
@@ -3587,132 +3715,41 @@ inequalities 8       0 -1 0 0 1
 0 1 0 0 0            0 0 0 -1 1   
 0 0 1 0 0            equations 1  
 0 0 0 1 0            -1 -1 -1 -1 2
+grading
+unit_vector 5
+polynomial
+(x[1]*x[2]*x[3]*x[4])^2*(x[1]-x[2])^2*(x[1]-x[3])^2*
+(x[1]-x[4])^2*(x[2]-x[3])^2*(x[2]-x[4])^2*(x[3]-x[4])^2;
 \end{Verbatim}
 
 The $8$ inequalities describe the unit cube in $\RR^4$ by the inequalities  $0\le z_i\le 1$
-and the equation gives the hyperplane $z_1+\dots+z_4=2$ (we must use homogenized coordinates!). There is no need to
-specify the grading since Normaliz finds it because the polytope is a lattice
-polytope. If one doesn't know this in advance, it is better to give the grading
-explicitly by
+and the equation gives the hyperplane $z_1+\dots+z_4=2$ (we must use homogenized coordinates!). (Normaliz would find the grading itself.)
+
+From the Normaliz directory the computation is called by
 
 \begin{Verbatim}
-grading
-unit_vector 5
+./normaliz -cI example/j462
 \end{Verbatim}
+where \verb|-I| could be replaced by \verb|--Integral|.
 
-See the Normaliz documentation, Section 3.2.5 how to define rational polytopes
-by inequalities and equations.
-
-The polynomial does not depend on $t$ so that we can use the same polynomial
-for various $t$. It is contained in \ttt{j46.pnm}:
+It produces the output in \ttt{j462.out} containing
 
 \begin{Verbatim}
-(x[1]*x[2]*x[3]*x[4])^2*(x[1]-x[2])^2*(x[1]-x[3])^2*
-(x[1]-x[4])^2*(x[2]-x[3])^2*(x[2]-x[4])^2*(x[3]-x[4])^2
+Integral: 27773/29515186701000
 \end{Verbatim}
-
-NmzIntegrate is called by
-
-\begin{Verbatim}
-nmzIntegrate -cI -F=j46 example/j462
-\end{Verbatim}
-
-It produces the output in \ttt{j462.j46.intOut}:
-
-\begin{Verbatim}
-Factorization of polynomial:          x[1]  mult 2
-x[4]  mult 2                          x[1] -x[2]  mult 2
-x[3]  mult 2                          x[1] -x[3]  mult 2
-x[3] -x[4]  mult 2                    x[1] -x[4]  mult 2
-x[2]  mult 2                          Remaining factor 1
-x[2] -x[3]  mult 2
-x[2] -x[4]  mult 2                    Integral: 27773/29515186701000
-\end{Verbatim}
-
-\subsection{Symmetrization}\label{symmetrize}
-
-Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $C$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. The offspring NmzIntegrate of Normaliz has been created for this task. It can as well be applied to the computation of multiplicities; see \cite{BS} for the mathematical details and the algorithmic approach of NmzIntegrate.
-
-The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the sign conditions $x_i\ge 0$ for all coordinates  $x_i$ of $C$. Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector $y$  of sums is then a product of binomial coefficients -- a polynomial as desired.
-
-As an example we look again at the input for the Condorcet paradoxon:
-\begin{Verbatim}
-amb_space 24
-inequalities 3
-1 1 1 1 1 1 -1 -1 -1 -1 -1 -1   1  1 -1 -1  1 -1   1  1 -1 -1  1 -1
-1 1 1 1 1 1  1  1 -1 -1  1 -1  -1 -1 -1 -1 -1 -1   1  1  1 -1 -1 -1
-1 1 1 1 1 1  1  1  1 -1 -1 -1   1  1  1 -1 -1 -1  -1 -1 -1 -1 -1 -1
-nonnegative
-total_degree
-Multiplicity
-\end{Verbatim}
-The grading is completely symmetric, and it is immediately clear that the input is symmetric in the first $6$ coordinates. But also the column of three entries $-1$ appears $6$ times, and there are $6$ more groups of $2$ coordinates each (one group for each $\pm1$ pattern). With the suitable labeling, the number of preimages of$(y_1,\dots,y_8$) is given by
-$$
-f(y)=\binom{y_1+5}{5}(y_2+1)(y_3+1)(y_4+1)(y_5+1)(y_6+1)(y_7+1)\binom{y_8+5}{5}.
-$$
-Normaliz finds the groups of variables that appear with the same sign pattern, creates the input files for NmzIntegate, runs it, and imports the results.
-
-However, there is a restriction. Since NmzIntegrate must do the polynomial arithmetic in GMP integers, it makes no sense to apply it if the dimension does not drop by a reasonable amount. Therefore we require that
-$$
-\dim C' \le \min((2(\dim C)/3,16).
-$$
-If called with the options \verb|-q| or \verb|-v| Normaliz will try symmetrization. If the inequality for $\dim C'$ is not satisfied, it will simply compute the Hilbert series or the multiplicity without symmetrization. (In default mode it of course tries symmetrization for the Hilbert series.)
-
-If you use the option \verb|Symmetrize|, Normaliz will stop the computation if the inequality for $\dim C'$ is not satisfied. But it writes the input fils for NmzIntegrate into the same directory where it writes the output files of Normaliz. The file names  are
-\begin{center}
-	\ttt{<project>.symm.in}	\quad and\quad \ttt{<project>.symm.pnm}
-\end{center}
-The user can then run Normaliz or NmzIntegrate on these input files with the options \verb|-E| (for the Hilbert series or \verb|-L| (for the multiplicity).
-
-The Condorcet example is too small in order to demonstrate the power of symmetrization. A suitable example is \verb|PluralityVsCutoff.in|:
-\begin{Verbatim}
-winfried.../git_normaliz/source$ time ./normaliz -c ../example/PluralityVsCutoff
-
-                                                    \.....|
-                    Normaliz 3.2.1                   \....|
-                                                      \...|
-     (C) The Normaliz Team, University of Osnabrueck   \..|
-                    February  2017                      \.|
-                                                         \|
-************************************************************
-Command line: -c ../example/PluralityVsCutoff 
-Compute: DefaultMode
-executing: "./normaliz" -c  -E -x=8 ../example/PluralityVsCutoff.symm
-...
-...
-...
-------------------------------------------------------------
-transforming data... done.
-
-real	0m2.459s
-user	0m4.948s
-sys	0m0.040s
-
-\end{Verbatim}
-The Hilbert series is computable without symmetrization, but you better make sure that there is no power failure for the next week if you try that. (The time above includes the Hilbert basis computed automatically in dual mode).
-
-Another good example included in the distribution is \verb|CondEffPlur.in|, but it takes some hours with symmetrization (instead of days without). For it, the dimension drops only from $24$ to $13$. 
-
-% In order to suppress symmetrization, use the option \verb|NoSymmetrization|.
-
-\emph{Remarks} \enspace (1) Large NmzIntegrate computations with many parallel threads require much memory due to the fact that very long polynomials must be stored.
-
-(2) At present Normaliz and NmzIntegrate communicate via files written to the directory where Normaliz writes its output files. These files are removed after the return to Normaliz from NmzIntegrate.
-
-The communication via files does not allow the use of symmetrization via \verb|libnormaliz|. 
-
-(3) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under the suitablee conditions it is applied automatically.)
 
 \subsubsection{Restrictions in MS Windows}
 
-Unfortunately the last version of NmzIntegrate that we could compile under MS Windows is 1.3. This causes some restrictions in the use of NmzIntegrate and therefore of symmetrization in this operating system:
+We have not succeeded in compiling Normaliz with CoCoALib under MS Windows. in previous versions of Normaliz, the computations with polynomial weights were done by the separate program NmzIntegrate, and NmzIntegrate can still be used (in all operating systems). One must start the computation from NmzIntegrate (and not from Normaliz, as was also possible in previous versions).
+
+Unfortunately 1.3 the last version of NmzIntegrate that we could compile under MS Windows. This causes some restrictions in the use of NmzIntegrate:
 
 \begin{arab}
 	\item Due to a bug it is possible that a segmentation fault occurs if excluded faces are used. 
 	\item The option \verb|OutputDir| is not available.
 \end{arab}
 
-An excellent way out is to run Normaliz and NmzIntegrate in the Linux subsystem of Windows 10.
+An excellent way out is to run Normaliz (and NmzIntegrate) in the Linux subsystem of Windows 10.
 
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
@@ -5218,118 +5255,7 @@ Since $N$ may have generators in negative degrees, Normaliz shifts the degrees i
 
 A normal affine monoid $M$ has a well-defined divisor class group. It is naturally isomorphic to the divisor class group of $K[M]$ where $K$ is a field (or any unique factorization domain); see \cite[4.F]{BG}, and especially \cite[4.56]{BG}. The class group classifies the divisorial ideals up to isomorphism. It can be computed from the standard embedding that sends an element $x$ of $\gp(M)$ to the vector $\sigma(x)$ where $\sigma$ is the collection of support forms $\sigma_1,\dots,\sigma_s$ of $M$: $\Cl(M)=\ZZ^s/\sigma(\gp(M))$. Finding this quotient amounts to an application of the Smith normal form to the matrix of $\sigma$.
 
-\subsection{Weighted Ehrhart functions and integrals}
 
-For such graded monoids Normaliz computes the volume of
-the rational polytope
-$$
-P=\{x\in \RR_+ M: \deg x=1\},
-$$
-the Ehrhart series of $P$, and the quasipolynomial representing
-the Ehrhart function. (Here $\RR_+M$ is the cone generated by
-the elements of $M$; it may be smaller than $C$ if $L$ has rank
-$<n$.)
-
-These computations can be understood as integrals of the
-constant polynomial $f=1$, namely with respect to the counting
-measure defined by $L$ for the Ehrhart function, and with
-respect to the (suitably normed) Lebesgue measure for the
-volume. NmzIntegrate generalizes these computations to
-arbitrary polynomials $f$ in $n$ variables with rational
-coefficients. (Mathematically, there is no need to restrict
-oneself to rational coefficients for $f$.)
-
-More precisely, set
-$$
-E(f,k)=\sum_{x\in M, \deg x=k} f(x),
-$$
-and call $E(f,\_)$ the \emph{generalized Ehrhart function} for
-$f$. (With $f=1$ we simply count lattice points.) The
-\emph{generalized Ehrhart series} is the ordinary generating
-function
-$$
-E_f(t)=\sum_{k=0}^\infty E(f,k)t^k.
-$$
-It turns out that $E_f(t)$ is the power series expansion of a
-rational function at the origin, and can always be written in
-the form
-$$
-E_f(t)=\frac{Q(t)}{(1-t^\ell)^{\totdeg f+\rank M}},\qquad Q(t)\in\QQ[t],\
-\deg Q< \totdeg f+\rank M.
-$$
-Here $\totdeg f$ is the total degree of the polynomial $f$, and
-$\ell$ is the least common  multiple of the degrees of the
-extreme integral generators of $M$. See \cite{BS} for an
-elementary account and the algorithm used by NmzIntegrate.
-
-Normaliz ?????  can compute Ehrhart series for
-\emph{semiopen} cones. For them the monoid $M$ is replaced by the set
-$$
-M'=C'\cap L
-$$
-where $C'=C\setminus \mathcal F$ and $\mathcal F$ is the union of a set of
-faces
-(not necessarily facets) of $C$. What has been said above about the structure
-of the generalized Ehrhart series remains true. We discuss an example in
-Section \ref{output}.
-
-It follows from the general theory of rational generating
-functions that there exists a quasipolynomial $q(k)$ with
-rational coefficients and of degree $\le \totdeg f+\rank M-1$ that
-evaluates to $E(f,k)$ for all $k\ge 0$. A quasipolynomial is a
-``polynomial'' with periodic coefficients: there exist a
-\emph{period} $\pi\in\NN$ and true polynomials $q^{j}\in\QQ[X]$,
-$j=0,\dots,\pi-1$, such that
-$$
-q(k)=q^{(j)}(k)\qquad \text{if}\quad k\equiv j\pod \pi.
-$$
-Each of the polynomials $q^{(j)}$ is given as
-$$
-q^{(j)}(k)=q^{(j)}_0+q^{(j)}_1X+\dots+q^{(j)}_{\totdeg f+\rank M-1}X^{\totdeg f+\rank M-1}
-$$
-with constant coefficients in $\QQ$. The period $\pi$ divides $\ell$.
-
-Let $m=\totdeg f$ and $f_m$ be the degree $m$ homogeneous
-component of $f$. By letting $k$ go to infinity and
-approximating $f_m$ by a step function that is constant on the
-meshes of $\frac 1kL$ (with respect to a fixed basis), one sees
-$$
-q^{(j)}_{\totdeg f+\rank M-1}=\int_P f_m\, d\lambda
-$$
-where $d\lambda$ is the Lebesgue measure that takes value $1$
-on a basic mesh of $L\cap \RR M$ in the hyperplane of degree
-$1$ elements in $\RR M$. In particular, the \emph{virtual
-leading coefficient} $q^{(j)}_{\totdeg f+\rank M-1}$ is
-constant and depends only on $f_m$. If the integral vanishes,
-the quasipolynomial $q$ has smaller degree, and the true
-leading coefficient need not be constant. Following the
-terminology of commutative algebra and algebraic geometry, we
-call
-$$
-(\totdeg f+\rank M-1)!\cdot q_{\totdeg f+\rank M-1}
-$$
-the \emph{virtual multiplicity} of $M$ and $f$. It is an
-integer if $f_m$ has integral coefficients and $P$ is a lattice
-polytope.
-
-Since a semiopen cone $C'$ differs from its closure in a set of measure $0$,
-the passage to $C'$ does not change the Lebesgue integrals just mentioned, and
-is therefore irrelevant for their computation.
-
-NmzIntegrate computes
-\begin{itemize}
-\item[(ES)] the generalized Ehrhart series and its
-    quasipolynomial,
-\item[(Int)] the Lebesgue integral of $f$ over $P$, or
-\item[(LC)] the virtual leading coefficient and the virtual
-    multiplicity.
-\end{itemize}
-The user controls the type of computation by a command line
-option. (ES) contains (LC), and (LC) is just the evaluation of
-(Int) on the highest homogeneous component of $f$. It is
-presently not possible to compute the Ehrhart series and the
-integral together if $f$ is not homogeneous, but the two
-computations can be combined in one run of NmzIntegrate.
 
 \section{Annotated console output}\label{Console}
 
@@ -6548,6 +6474,11 @@ Moreover, QNormaliz can also be built by cmake. Simply follow the steps in Secti
 \begin{thebibliography}{15.}
 \small
 
+\bibitem{CoCoA}	
+J. Abbott, A.M. Bigatti and G. Lagorio,
+\emph{CoCoA-5: a system for doing {C}omputations in {C}ommutative {A}lgebra.}
+Available at \url{http://cocoa.dima.unige.it}.
+
 \bibitem{Scip} T. Achterberg. {\em SCIP: Solving constraint integer programs}. Mathematical Programming Computation 1 (2009), 1--41. Available from \url{http://mpc.zib.de/index.php/MPC/article/view/4}
 
 \bibitem{AI} V. Almendra  and B. Ichim. {\em  jNormaliz 1.7}.
@@ -6578,7 +6509,7 @@ pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
 closure of an affine semigroup}. Univ. Iagell. Acta Math.
 39 (2001), 59--70.
 
-\bibitem{BS} W. Bruns and C. Söger. {\em The computation of generalized Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
+\bibitem{BS} W. Bruns and C. Söger. {\em The computation of weighted Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
 
 \bibitem{NmzInt} W. Bruns and C. Söger. {\em NmzIntegrate 1.3.}
 Available at \url{http://normaliz.uos.de}
@@ -6594,6 +6525,10 @@ Barvinok algorithm.} Electron. J. Comb.
 
 \bibitem{Po} L. Pottier. {\em The Euclide algorithm in dimension
 $n$}. Research report, ISSAC 96, ACM Press 1996.
+
+\bibitem{Sch} A. Sch\"{u}rmann, {\em Exploiting
+	polyhedral symmetries in social choice.}
+Social Choice and Welfare \textbf{40} (2013), 1097--1110.
 \end{thebibliography}
 \end{document}
 
