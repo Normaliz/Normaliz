@@ -587,10 +587,11 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 	
 	//cout << "approximate the point " << q;
     long dim=q.size();
+    long l = approx_level;
     //if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
     // TODO in this case, skip the rest and just approximate on q[0]
-    Matrix<Integer> quot =  Matrix<Integer>(approx_level,dim);
-    Matrix<Integer> remain=Matrix<Integer>(approx_level,dim);
+    Matrix<Integer> quot =  Matrix<Integer>(l,dim);
+    Matrix<Integer> remain=Matrix<Integer>(l,dim);
     for(long j=0;j<approx_level;j++){
 	    for(long i=0;i<dim;++i){
 	        quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
@@ -610,9 +611,9 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 	//quot.pretty_print(cout);
 	//cout << "this is the remain matrix" << endl;
 	//remain.pretty_print(cout);
-	long best_level=approx_level-1;
-	vector<long> nr_zeros(approx_level);
-	for(long j=approx_level-1;j>=0;j--){
+	long best_level=l-1;
+	vector<long> nr_zeros(l);
+	for(long j=l-1;j>=0;j--){
 		for(long i=0;i<dim;++i){
 			if(remain[j][i]==0) nr_zeros[j]++;
 		}
