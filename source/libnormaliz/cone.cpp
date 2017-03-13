@@ -2953,9 +2953,9 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         }
     }
     
-    compute_generators(); // we must protect against the zero cone
+    /* compute_generators(); // we must protect against the zero cone
     if(getRank()==0)
-        return;
+        return; */
     
     Matrix<Integer> SymmInequ(0,SymmConst.nr_of_columns());
     Matrix<Integer> SymmEqu(0,SymmConst.nr_of_columns());
@@ -3204,8 +3204,6 @@ void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
         return;
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
-    if(getRank()==0)
-        throw NotComputableException("Integral not computed in dimenison 0");
 #ifdef NMZ_COCOA
     integrate<Integer>(*this,false);
     is_Computed.set(ConeProperty::Integral);
@@ -3218,10 +3216,11 @@ void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute){
         return;
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
-    if(getRank()==0)
-        throw NotComputableException("Virtual multiplicity not computed in dimenison 0");
 #ifdef NMZ_COCOA
-    integrate<Integer>(*this,true);
+    if(getRank()==0)
+        getIntData().setVirtualMultiplicity(0);
+    else
+        integrate<Integer>(*this,true);
     is_Computed.set(ConeProperty::VirtualMultiplicity);
 #endif
 }
@@ -3232,8 +3231,8 @@ void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
         return;
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");    
-    if(getRank()==0)
-        throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");
+    /* if(getRank()==0)
+        throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");*/
 #ifdef NMZ_COCOA
     generalizedEhrhartSeries(*this);
     is_Computed.set(ConeProperty::WeightedEhrhartSeries);

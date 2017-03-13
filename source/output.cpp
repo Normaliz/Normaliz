@@ -631,7 +631,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         out << endl;
         // Weighted Ehrhart quasi-polynomial
         vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
-        if (hilbert_quasi_poly.size() > 0) { // == 0 means not computed
+        if (HS.isHilbertQuasiPolynomialComputed()) { 
             out<<"Weighted Ehrhart quasi-polynomial of period " << period << ":" << endl;
             Matrix<mpz_class> HQP(hilbert_quasi_poly);
             HQP.pretty_print(out,true);
@@ -640,24 +640,21 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         }
     }
     
-   long deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
-   out  << endl << endl << "Degree of (quasi)polynomial: " << deg << endl;
-   
-   long virtDeg=Result->getRank()+Result->getIntData().getDegreeOfPolynomial()-1;
+   out  << endl << endl;
+    
+   if (HS.isHilbertQuasiPolynomialComputed()){    
+    long deg=HS.getHilbertQuasiPolynomial()[0].size()-1;
+        out << "Degree of (quasi)polynomial: " << deg << endl;
+    
+    long virtDeg=Result->getRank()+Result->getIntData().getDegreeOfPolynomial()-1;
 
-   out << endl << "Expected degree: " <<  virtDeg << endl;
+    out << endl << "Expected degree: " <<  virtDeg << endl;
+    }
         
-   out << endl << "Virtual multiplicity: ";
-
-   mpq_class genMultQ;
-   mpz_class fact=1;
-   for(long i=1;i<=virtDeg;++i)
-       fact*=i;
-   if(deg==virtDeg)   
-       genMultQ=HS.getHilbertQuasiPolynomial()[0][virtDeg];
-   genMultQ=genMultQ/(HS.getHilbertQuasiPolynomialDenom()*Result->getIntData().getNumeratorCommonDenom())
-                         *fact;
-   out << genMultQ << endl;
+    if(Result->isComputed(ConeProperty::VirtualMultiplicity)){
+        out << endl << "Virtual multiplicity: ";
+        out << Result->getIntData().getVirtualMultiplicity() << endl << endl;
+    }
 }
 
 //---------------------------------------------------------------------------

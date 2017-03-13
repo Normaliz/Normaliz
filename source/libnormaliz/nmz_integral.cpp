@@ -254,6 +254,17 @@ try{
   RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,do_virt_mult); 
   
+  if(rank==0){
+      vector<RingElem> compsF= homogComps(F);
+      RingElem F0(compsF[0]);
+      vector<RingElem> HCoeff0=ourCoeffs(F0,0);
+      BigRat IntBR;
+      IsRational(IntBR,HCoeff0[0]);//
+      mpq_class Int=mpq(IntBR);
+      C.getIntData().setIntegral(Int);
+      return;
+  }
+  
   C.getIntData().setDegreeOfPolynomial(deg(F));
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
@@ -683,12 +694,56 @@ try{
   long gradingDenom;
   convert(gradingDenom,C.getGradingDenom());
   long rank=C.getRank();
+  long dim=C.getEmbeddingDim();
+  
+  // processing the input polynomial
+  
+  SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
+  SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
+  const RingElem& t=indets(RZZ)[0];
+  vector<RingElem> primeFactors;
+  vector<RingElem> primeFactorsNonhom;
+  vector<long> multiplicities;
+  RingElem remainingFactor(one(R));
+
+  bool homogeneous;
+  RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
+                multiplicities,remainingFactor,homogeneous,false);
+  
+  C.getIntData().setDegreeOfPolynomial(deg(F));
+                
+  vector<BigInt> Factorial(deg(F)+dim); // precomputed values
+  for(i=0;i<deg(F)+dim;++i)
+      Factorial[i]=factorial(i);
+  
+  ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembeles the data
+  ourFactorization FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
+
+  long nf=FF.myFactors.size();
+  if(verbose_INT){
+    verboseOutput() <<"Factorization" << endl;  // we show the factorization so that the user can check
+    for(i=0;i<nf;++i)
+        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
+    verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
+  }
+  // inputpolynomial processed
+  
+  if(rank==0){
+      vector<RingElem> compsF= homogComps(F);
+      CyclRatFunct HRat(compsF[0]);
+      mpz_class commonDen; // common denominator of coefficients of numerator of H 
+      libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));  
+      C.getIntData().setWeightedEhrhartSeries(make_pair(HS,commonDen));  
+      C.getIntData().computeWeightedEhrhartQuasiPolynomial();
+      C.getIntData().setVirtualMultiplicity(0);
+      return;
+  }
+
   
   vector<vector<long> > gens;
   readGens(C,gens,grading,true);
   if(verbose_INT)
     verboseOutput() << "Generators read" << endl;
-  long dim=C.getEmbeddingDim();
   long maxDegGen=v_scalar_product(gens[gens.size()-1],grading)/gradingDenom; 
   
   list<STANLEYDATA_INT> StanleyDec;
@@ -724,10 +779,6 @@ try{
     verboseOutput() << "lcm(dets)=" << lcmDets << endl;
   
   StanleyDec.sort(compareDegrees);
-  
-  SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
-  SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
-  const RingElem& t=indets(RZZ)[0];
 
   if(verbose_INT)
     verboseOutput() << "Stanley decomposition sorted" << endl; 
@@ -773,31 +824,6 @@ try{
   if(verbose_INT)
     verboseOutput() << denomClasses.size() << " denominator classes built" << endl;
 
-  vector<RingElem> primeFactors;
-  vector<RingElem> primeFactorsNonhom;
-  vector<long> multiplicities;
-  RingElem remainingFactor(one(R));
-
-  bool homogeneous;
-  RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
-                multiplicities,remainingFactor,homogeneous,false);
-  
-  C.getIntData().setDegreeOfPolynomial(deg(F));
-                
-  vector<BigInt> Factorial(deg(F)+dim); // precomputed values
-  for(i=0;i<deg(F)+dim;++i)
-      Factorial[i]=factorial(i);
-  
-  ourFactorization FF(primeFactors,multiplicities,remainingFactor); // assembeles the data
-  ourFactorization FFNonhom(primeFactorsNonhom,multiplicities,remainingFactor); // for output
-
-  long nf=FF.myFactors.size();
-  if(verbose_INT){
-    verboseOutput() <<"Factorization" << endl;  // we show the factorization so that the user can check
-    for(i=0;i<nf;++i)
-        verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
-    verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
-  }
 
   vector<vector<CyclRatFunct> > GFP; // we calculate the table of generating functions
   vector<CyclRatFunct> DummyCRFVect; // for\sum i^n t^ki vor various values of k and n
