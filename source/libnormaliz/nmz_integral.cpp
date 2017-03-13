@@ -619,14 +619,14 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
 template<typename Integer>
 void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
 
-    size_t inExSize=C.getInclusionExclusionData().size(), keySize;   
+    size_t inExSize=C.getInclusionExclusionData().size(), keySize;
     long mult;
     boost::dynamic_bitset<> indicator(nrGen);
     for(size_t i=0;i<inExSize;++i){
         keySize=C.getInclusionExclusionData()[i].first.size();
         indicator.reset();
         for(size_t j=0;j<keySize;++j){
-            indicator.set(C.getInclusionExclusionData()[i].first[j]);
+            indicator.set(C.getInclusionExclusionData()[i].first[j]-1);
         }
         mult=C.getInclusionExclusionData()[i].second;
         inExCollect.push_back(pair<boost::dynamic_bitset<>, long>(indicator,mult));       

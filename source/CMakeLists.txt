@@ -301,6 +301,14 @@ IF (UNIX)
     TARGET  check
     DEPENDS normaliz
   )
+  IF(NMZ_COCOA AND COCOA_FOUND)
+      ADD_CUSTOM_COMMAND(
+      COMMENT "run Int tests"
+      COMMAND make --directory=../test/ -f Makefile.classic testInt NORMALIZ=${CMAKE_CURRENT_BINARY_DIR}/normaliz
+      TARGET  check
+      DEPENDS normaliz
+  )
+  ENDIF(NMZ_COCOA AND COCOA_FOUND)
 ELSE(UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "check only implemented in unix"

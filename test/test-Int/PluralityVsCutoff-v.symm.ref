@@ -1,0 +1,41 @@
+8 extreme rays
+7 support hyperplanes
+
+embedding dimension = 6
+rank = 6 (maximal)
+external index = 1
+
+size of triangulation   = 3
+resulting sum of |det|s = 4
+
+grading:
+1 1 1 1 1 1 
+
+degrees of extreme rays:
+2: 1  3: 1  4: 4  6: 2  
+
+multiplicity = 1/576
+
+virtual multiplicity of weighted Ehrhart series = 2988379676768359/292162779488452608
+
+***********************************************************************
+
+8 extreme rays:
+ 1 0 0 0 0 1
+ 1 0 1 0 0 1
+ 1 0 1 0 0 2
+ 1 0 1 0 1 1
+ 1 0 1 1 0 1
+ 1 1 0 0 1 1
+ 1 0 1 0 1 3
+ 2 1 1 0 0 2
+
+7 support hyperplanes:
+ -1  0  0  0  0  1
+  0  0  0  0  1  0
+  0  0  0  1  0  0
+  0  1  0  0  0  0
+  0  1  1 -1 -1  0
+  1 -1 -1  0  0  0
+  1 -1  1 -1  1 -1
+

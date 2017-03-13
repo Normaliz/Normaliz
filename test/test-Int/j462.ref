@@ -1,0 +1,77 @@
+6 Hilbert basis elements
+6 Hilbert basis elements of degree 1
+6 extreme rays
+8 support hyperplanes
+
+embedding dimension = 5
+rank = 4
+external index = 1
+
+size of triangulation   = 4
+resulting sum of |det|s = 4
+
+grading:
+0 0 0 0 1 
+
+degrees of extreme rays:
+1: 6  
+
+Hilbert basis elements are of degree 1
+
+multiplicity = 4
+
+Hilbert series:
+1 2 1 
+denominator with 4 factors:
+1: 4  
+
+degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert Series is symmetric.
+
+Hilbert polynomial:
+3 7 6 2 
+with common denominator = 3
+
+rank of class group = 4
+class group is free
+
+***********************************************************************
+
+6 Hilbert basis elements of degree 1:
+ 0 0 1 1 1
+ 0 1 0 1 1
+ 0 1 1 0 1
+ 1 0 0 1 1
+ 1 0 1 0 1
+ 1 1 0 0 1
+
+0 further Hilbert basis elements of higher degree:
+
+6 extreme rays:
+ 0 0 1 1 1
+ 0 1 0 1 1
+ 0 1 1 0 1
+ 1 0 0 1 1
+ 1 0 1 0 1
+ 1 1 0 0 1
+
+8 support hyperplanes:
+ -1 -1 -1 0  2
+ -1  0  0 0  1
+  0 -1  0 0  1
+  0  0 -1 0  1
+  0  0  1 0  0
+  0  1  0 0  0
+  1  0  0 0  0
+  1  1  1 0 -1
+
+1 equations:
+ 1 1 1 1 -2
+
+4 basis elements of lattice:
+ 1 0 0 -1 0
+ 0 1 0 -1 0
+ 0 0 1 -1 0
+ 0 0 0  2 1
+
