@@ -2068,14 +2068,17 @@ void Full_Cone<Integer>::build_top_cone() {
     if(dim==0)
         return;
  
-    if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
-        build_cone();
+    if (is_approximation){
+        build_cone_approx();
+    } else {
+        if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
+            build_cone();
+        }
+        else{
+            find_bottom_facets();
+            deg1_triangulation=false;
+        }   
     }
-    else{
-        find_bottom_facets();
-        deg1_triangulation=false;
-    }   
-
     try_offload(0);
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
@@ -2093,16 +2096,16 @@ void Full_Cone<Integer>::build_top_cone() {
 
 // chooses some generators such that the cone includes a given set of points
 template<typename Integer>
-void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_cone, vector<vector<key_t>>& approx_points){
+void Full_Cone<Integer>::build_cone_approx(){
     
-    Matrix<Integer> original_gens = original_cone.getGenerators();
+    Matrix<Integer> original_gens = Top_Cone->getGenerators();
     size_t nr_original_gen = original_gens.nr_of_rows();
-    Matrix<Integer> original_hyps= original_cone.getSupportHyperplanes();
+    Matrix<Integer> original_hyps= Top_Cone->getSupportHyperplanes();
     //size_t nr_original_hyps=original_hyps.nr_of_rows();
     
     vector<size_t> nr_approx_points; // how many points are in the approximation
     for (size_t j=0;j<nr_original_gen;++j) {
-        nr_approx_points.push_back(approx_points[j].size());
+        nr_approx_points.push_back(approx_points_keys[j].size());
     }
     
 
@@ -2120,12 +2123,12 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     
     for (size_t current_gen = 0 ; current_gen<nr_original_gen;++current_gen){
         
-        auto jt=approx_points[current_gen].begin();
+        auto jt=approx_points_keys[current_gen].begin();
         list<pair<size_t,key_t>> max_halfspace_index_list;
         vector<key_t> local_perm;
         size_t tmp_hyp=0;
         // TODO: collect only those which belong to the current generator?
-        for (;jt!=approx_points[current_gen].end();++jt){
+        for (;jt!=approx_points_keys[current_gen].end();++jt){
             tmp_hyp = v_nr_negative(original_hyps.MxV(Generators[*jt])); // nr of negative halfspaces
             max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
         }
@@ -2357,23 +2360,7 @@ void Full_Cone<Integer>::build_cone_approx(const Full_Cone<Integer>& original_co
     //}
 
     start_from=nr_gen;
-    
-   if (is_pyramid && do_all_hyperplanes)  // must give supphyps back to mother
-        Mother->select_supphyps_from(Facets, apex, Mother_Key);
-    
-    // transfer Facets --> SupportHyperplanes
-    //if (do_all_hyperplanes) {
-        //nrSupport_Hyperplanes = Facets.size();
-        //Support_Hyperplanes = Matrix<Integer>(nrSupport_Hyperplanes,dim);
-        //typename list<FACETDATA>::const_iterator IHV=Facets.begin();
-        //for (size_t i=0; i<nrSupport_Hyperplanes; ++i, ++IHV) {
-            //Support_Hyperplanes[i] = IHV->Hyp;
-        //}
-        //is_Computed.set(ConeProperty::SupportHyperplanes);
-    //}    
-   
-    
-    if(do_extreme_rays && do_all_hyperplanes)
+    if(do_extreme_rays)
         compute_extreme_rays();
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
@@ -3345,23 +3332,17 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     }
     verboseOutput() << "Nr Generators: " << nr_gen << endl;
     verboseOutput() << "Nr approx points: " << all_approx_points.nr_of_rows() << endl;
-    Full_Cone C_temp(all_approx_points);
-    C_temp.do_triangulation=false;
-    C_temp.do_extreme_rays=false;
-    C_temp.verbose = verbose;
-    C_temp.do_all_hyperplanes=true;
-    C_temp.build_cone_approx(*this,approx_points_indices);
+    Full_Cone C_approx(all_approx_points);
+    C_approx.Top_Cone = this;
+    C_approx.approx_points_keys = approx_points_indices;
+    C_approx.verbose = verbose;
+    C_approx.do_triangulation =true;
+    //C_temp.build_cone_approx(*this,approx_points_indices);
     
-    if(verbose){
-       verboseOutput() << "Using "<< C_temp.getNrGenerators() << " / " << (all_approx_points.nr_of_rows()) << " approximating points." << endl;
-    }
-    Full_Cone C_approx(C_temp.getGenerators()); 
+
+    //Full_Cone C_approx(C_temp.getGenerators()); 
     //Full_Cone C_approx(all_approx_points); // latt_approx computes a matrix of generators
-    //cout << "Approximating generators:" << endl;
-    //cout << "====================" << endl;
-    //C_approx.Generators.pretty_print(cout);
-    //cout << "====================" << endl; 
-    C_approx.verbose=false; //verbose;
+   
     C_approx.is_approximation=true;
     C_approx.approx_level = approx_level;
     // C_approx.Generators.pretty_print(cout);
@@ -3376,16 +3357,19 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     C_approx.Truncation=Truncation;
     C_approx.TruncLevel=TruncLevel;
 
-    if(verbose)
-        verboseOutput() << "Computing elements in approximating cone with "
-                        << C_approx.Generators.nr_of_rows() << " generators." << endl;
-    
+    //if(verbose)
+        //verboseOutput() << "Computing elements in approximating cone with "
+                        //<< C_approx.Generators.nr_of_rows() << " generators." << endl;
+    //if(verbose){
+       //verboseOutput() << "Computing elements in approximating cone with "<< C_temp.getNrGenerators() << " / " << (all_approx_points.nr_of_rows()) << " generators." << endl;
+    //}
 	
-	// TODO different verbosity option!
 	bool verbose_tmp = verbose;
 	verbose =false;
     C_approx.compute();
     verbose = verbose_tmp;
+    
+    // TODO: with the current implementation, this is always the case!
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){
         throw FatalException("Wrong approximating cone.");
     }
