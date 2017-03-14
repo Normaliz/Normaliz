@@ -1737,6 +1737,57 @@ void Full_Cone<Integer>::build_cone() {
     
     multithreaded_pyramid=(omp_get_level()==0);
     
+    size_t nr_original_gen=0;
+    if (!is_pyramid && is_approximation)
+    {
+        nr_original_gen = OriginalGenerators.nr_of_rows();    
+        vector<size_t> nr_approx_points; // how many points are in the approximation
+        for (size_t j=0;j<nr_original_gen;++j) {
+            nr_approx_points.push_back(approx_points_keys[j].size());
+        }
+        // for every vertex sort the approximation points via: number of positive halfspaces / index
+        vector<key_t> overall_perm;
+        // stores the perm of every list 
+        vector<vector<key_t>> local_perms(nr_original_gen);
+        
+        for (size_t current_gen = 0 ; current_gen<nr_original_gen;++current_gen){
+            
+            auto jt=approx_points_keys[current_gen].begin();
+            list<pair<size_t,key_t>> max_halfspace_index_list;
+            vector<key_t> local_perm;
+            size_t tmp_hyp=0;
+            // TODO: collect only those which belong to the current generator?
+            for (;jt!=approx_points_keys[current_gen].end();++jt){
+                tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
+                max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
+            }
+            max_halfspace_index_list.sort([](const pair<size_t,key_t> &left, const pair<size_t,key_t> &right) {
+                return right.first < left.first;
+            });
+            auto list_it = max_halfspace_index_list.begin();
+            for(;list_it!=max_halfspace_index_list.end();++list_it){
+                local_perm.push_back(list_it->second);
+            }
+            local_perms[current_gen]=local_perm;
+        }
+        // concatenate the permutations
+        size_t local_perm_counter=0;
+        bool not_done = true;
+        while (not_done){
+            not_done=false;
+            for (size_t current_gen=0;current_gen<nr_original_gen;++current_gen){
+                if (local_perm_counter<nr_approx_points[current_gen]){
+                    not_done=true;
+                    overall_perm.push_back(local_perms[current_gen][local_perm_counter]);
+                }
+            }    
+            ++local_perm_counter;
+        }
+        assert(overall_perm.size()==nr_gen);
+        // sort the generators according to the permutations
+        Generators.order_rows_by_perm(overall_perm);
+    }
+    
     if(!use_existing_facets){
         if(multithreaded_pyramid){
             HypCounter.resize(omp_get_max_threads());
@@ -1761,7 +1812,8 @@ void Full_Cone<Integer>::build_cone() {
     
     bool is_new_generator;
     typename list< FACETDATA >::iterator l;
-
+    
+    bool check_original_gens=true;
 
     for (size_t i=start_from;i<nr_gen;++i) { 
     
@@ -1769,6 +1821,37 @@ void Full_Cone<Integer>::build_cone() {
     
         if (in_triang[i])
             continue;
+            
+        // we check whether all original generators are contained in the current cone
+        if (!is_pyramid && is_approximation && check_original_gens){
+            if (verbose)
+                verboseOutput() << "Check...";
+            size_t current_gen=0;
+            l=Facets.begin();
+            for (;l!=Facets.end();++l){
+                if (l->is_positive_on_all_original_gens) continue;
+                for (current_gen=0;current_gen<nr_original_gen;++current_gen){
+                    if (v_scalar_product(l->Hyp,OriginalGenerators[current_gen])<0) {
+                        l->is_negative_on_some_original_gen=true;
+                        check_original_gens=false;
+                        break;
+                    }
+                }
+                if (current_gen==nr_original_gen){
+                    l->is_positive_on_all_original_gens=true;    
+                } else {
+                    break;
+                }
+            } 
+            if(verbose)   
+                verboseOutput() << " done." << endl;
+            // now we need to stop
+            if (l==Facets.end()){
+                if(verbose)
+                    verboseOutput() << "The original cone is now contained." << endl;
+                break;
+            }
+        }
             
         if(do_triangulation && TriangulationBufferSize > 2*RecBoundTriang) // emermergency brake
             tri_recursion=true;               // to switch off production of simplices in favor
@@ -1857,12 +1940,15 @@ void Full_Cone<Integer>::build_cone() {
             if(do_all_hyperplanes || i!=last_to_be_inserted) 
                 find_new_facets(i);
         }
-        
+        size_t nr_new_facets = Facets.size() - old_nr_supp_hyps;
         // removing the negative hyperplanes if necessary
         if(do_all_hyperplanes || i!=last_to_be_inserted){
             l=Facets.begin();
             for (size_t j=0; j<old_nr_supp_hyps;j++){
                 if (l->ValNewGen<0) {
+                    if (is_approximation && l->is_negative_on_some_original_gen){
+                        check_original_gens = true;
+                    }
                     l=Facets.erase(l);
                 }
                 else
@@ -1880,7 +1966,7 @@ void Full_Cone<Integer>::build_cone() {
             if (do_all_hyperplanes || i!=last_to_be_inserted) {
                 verboseOutput() << Facets.size()<<" hyp";
             } else {
-                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp";
+                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp"<< nr_new_facets << " new";
             }
             if(nrPyramids[0]>0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
@@ -2067,18 +2153,14 @@ void Full_Cone<Integer>::build_top_cone() {
     
     if(dim==0)
         return;
- 
-    if (is_approximation){
-        build_cone_approx();
-    } else {
-        if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
-            build_cone();
-        }
-        else{
-            find_bottom_facets();
-            deg1_triangulation=false;
-        }   
+
+    if( ( !do_bottom_dec || deg1_generated || dim==1 || (!do_triangulation && !do_partial_triangulation))) {        
+        build_cone();
     }
+    else{
+        find_bottom_facets();
+        deg1_triangulation=false;
+    }   
     try_offload(0);
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
@@ -2092,264 +2174,6 @@ void Full_Cone<Integer>::build_top_cone() {
 
 }
 
-//---------------------------------------------------------------------------
-
-// chooses some generators such that the cone includes a given set of points
-template<typename Integer>
-void Full_Cone<Integer>::build_cone_approx(){
-    
-    size_t nr_original_gen = OriginalGenerators.nr_of_rows();
-    //size_t nr_original_hyps=original_hyps.nr_of_rows();
-    
-    vector<size_t> nr_approx_points; // how many points are in the approximation
-    for (size_t j=0;j<nr_original_gen;++j) {
-        nr_approx_points.push_back(approx_points_keys[j].size());
-    }
-    
-
-    long long RecBoundSuppHyp = dim*dim;
-    RecBoundSuppHyp *= RecBoundSuppHyp*SuppHypRecursionFactor; //dim^4 * 3000
-    
-    tri_recursion=false;
-    
-    multithreaded_pyramid=(omp_get_level()==0);
-    
-    // for every vertex sort the approximation points via: number of positive halfspaces / index
-    vector<key_t> overall_perm;
-    // stores the perm of every list 
-    vector<vector<key_t>> local_perms(nr_original_gen);
-    
-    for (size_t current_gen = 0 ; current_gen<nr_original_gen;++current_gen){
-        
-        auto jt=approx_points_keys[current_gen].begin();
-        list<pair<size_t,key_t>> max_halfspace_index_list;
-        vector<key_t> local_perm;
-        size_t tmp_hyp=0;
-        // TODO: collect only those which belong to the current generator?
-        for (;jt!=approx_points_keys[current_gen].end();++jt){
-            tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
-            max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
-        }
-        max_halfspace_index_list.sort([](const pair<size_t,key_t> &left, const pair<size_t,key_t> &right) {
-            return right.first < left.first;
-        });
-        auto list_it = max_halfspace_index_list.begin();
-        for(;list_it!=max_halfspace_index_list.end();++list_it){
-            local_perm.push_back(list_it->second);
-        }
-        local_perms[current_gen]=local_perm;
-    }
-    // concatenate the permutations
-    size_t local_perm_counter=0;
-    bool not_done = true;
-    while (not_done){
-        not_done=false;
-        for (size_t current_gen=0;current_gen<nr_original_gen;++current_gen){
-            if (local_perm_counter<nr_approx_points[current_gen]){
-                not_done=true;
-                overall_perm.push_back(local_perms[current_gen][local_perm_counter]);
-            }
-        }    
-        ++local_perm_counter;
-    }
-    assert(overall_perm.size()==nr_gen);
-    // sort the generators according to the permutations
-    Generators.order_rows_by_perm(overall_perm);
-    
-    if(!use_existing_facets){
-        if(multithreaded_pyramid){
-            HypCounter.resize(omp_get_max_threads());
-            for(size_t i=0;i<HypCounter.size();++i)
-                HypCounter[i]=i+1;
-        } else{
-            HypCounter.resize(1);
-            HypCounter[0]=1;    
-        }
-        find_and_evaluate_start_simplex();
-    }
- 
-    start_from = 0; //nr_original_gen;
-    bool is_new_generator;
-    typename list< FACETDATA >::iterator l;
-    typename list< FACETDATA >::iterator IHV;
-    
-    old_nr_supp_hyps=dim;
-    // do we need to check the current hyperplanes?
-    bool check_original_gens=true;
-    // -------- MAIN LOOP ------------
-    for (size_t i=start_from;i<nr_gen;++i) { 
-        
-        start_from=i;
-        
-        if (in_triang[i]) continue;
-        
-        // we check whether all original generators are contained in the current cone
-        if (check_original_gens){
-            
-            verboseOutput() << "Check...";
-            size_t current_gen=0;
-            IHV=Facets.begin();
-            for (;IHV!=Facets.end();++IHV){
-                if (IHV->is_positive_on_all_original_gens) continue;
-                for (current_gen=0;current_gen<nr_original_gen;++current_gen){
-                    if (v_scalar_product(IHV->Hyp,OriginalGenerators[current_gen])<0) {
-                        IHV->is_negative_on_some_original_gen=true;
-                        check_original_gens=false;
-                        break;
-                    }
-                }
-                if (current_gen==nr_original_gen){
-                    IHV->is_positive_on_all_original_gens=true;    
-                } else {
-                    break;
-                }
-            }    
-            verboseOutput() << " done." << endl;
-            // now we need to stop
-            if (IHV==Facets.end()){
-                cout << "The original cone is now contained." << endl;
-                break;
-            }
-        }
-           
-        Integer scalar_product;      
-        is_new_generator=false;                                        
-        l=Facets.begin();
-        old_nr_supp_hyps=Facets.size(); // Facets will be xtended in the loop 
-
-        long long nr_pos=0; long long nr_neg=0;
-        vector<Integer> L;           
-#ifndef NCATCH
-        std::exception_ptr tmp_exception;
-#endif
-        
-        
-        size_t lpos=0;
-        #pragma omp parallel for private(L,scalar_product) firstprivate(lpos,l) reduction(+: nr_pos, nr_neg)
-        for (size_t k=0; k<old_nr_supp_hyps; k++) {
-#ifndef NCATCH
-            try {
-#endif
-                for(;k > lpos; lpos++, l++) ;
-                for(;k < lpos; lpos--, l--) ;
-
-                L=Generators[i];
-                scalar_product=v_scalar_product(L,(*l).Hyp);
-                l->ValNewGen=scalar_product;
-                if (scalar_product<0) {
-                    nr_neg++;
-                    is_new_generator=true;
-                }
-                if (scalar_product>0) {
-                    nr_pos++;
-                }
-#ifndef NCATCH
-            } catch(const std::exception& ) {
-                tmp_exception = std::current_exception();
-            }
-#endif
-        }  //end parallel for
-#ifndef NCATCH
-        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
-        if(!is_new_generator)
-            continue;
-            
-        if (deg1_triangulation && isComputed(ConeProperty::Grading))
-            deg1_triangulation = (gen_degrees[i] == 1);
-            
-        if (!omp_in_parallel())
-            try_offload(0);
-        
-        if (recursion_allowed && nr_neg*nr_pos > RecBoundSuppHyp) {  // use pyramids because of supphyps
-            if (do_triangulation)
-                tri_recursion = true; // We can not go back to classical triangulation
-            if(check_evaluation_buffer()){
-                Top_Cone->evaluate_triangulation();
-            }
-
-            process_pyramids(i,true); //recursive
-            lastGen=i;
-            nextGen=i+1; 
-        }
-        else{ // now we check whether to go to pyramids because of the size of triangulation
-              // once we have done so, we must stay with it
-            if( tri_recursion || (do_triangulation 
-                && (nr_neg*TriangulationBufferSize > RecBoundTriang
-                    || 3*omp_get_max_threads()*TriangulationBufferSize>EvalBoundTriang ))){ // go to pyramids because of triangulation
-                if(check_evaluation_buffer()){
-                    Top_Cone->evaluate_triangulation();
-                }
-                tri_recursion=true;
-                process_pyramids(i,false); //non-recursive
-            }
-            else{  // no pyramids necesary
-                if(do_partial_triangulation)
-                    process_pyramids(i,false); // non-recursive
-                if(do_triangulation)
-                    extend_triangulation(i);
-            }
-            find_new_facets(i);
-        }
-        
-        size_t nr_new_facets = Facets.size() - old_nr_supp_hyps;
-        // removing the negative hyperplanes if necessary
-        l=Facets.begin();
-        for (size_t jj=0; jj<old_nr_supp_hyps;jj++){
-            if (l->ValNewGen<0) {
-                if (l->is_negative_on_some_original_gen){
-                    check_original_gens = true;
-                }
-                l=Facets.erase(l);
-            }
-            else {
-                ++l;
-            }
-        }
-        
-        GensInCone.push_back(i);
-        nrGensInCone++;
-        
-        Comparisons.push_back(nrTotalComparisons);
-        
-        if(verbose) {
-            verboseOutput() << "gen="<< i+1 <<", ";
-            verboseOutput() << Facets.size()<<" hyp, " << nr_new_facets << " new";
-            if(nrPyramids[0]>0)
-                verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
-            verboseOutput()<< endl;
-        }
-        
-        in_triang[i]=true;        
-    } 
-    // --------------------------------------------------------- loop over i
-    
-    //for (size_t k=0;k<nr_original_gen;k++){
-        //IHV = Facets.begin();
-        //for (;IHV!=Facets.end();++IHV){
-            //if (v_scalar_product(original_gens[k],IHV->Hyp)<0){
-                //throw FatalException("One original generator is not contained.");
-                //cout << "The generator: Nr: " << k << " El: " << Generators[k] << endl;
-                //cout << "original generators: " << endl;
-                //original_gens.pretty_print(cout);
-                //break;    
-            //}    
-        //}
-       
-    //}
-
-    start_from=nr_gen;
-    
-    if(do_extreme_rays)
-        compute_extreme_rays();
-    
-    transfer_triangulation_to_top(); // transfer remaining simplices to top
-    if(check_evaluation_buffer()){
-        Top_Cone->evaluate_triangulation();
-    }  
-    
-    Facets.clear();     
-}
 
 //---------------------------------------------------------------------------
 

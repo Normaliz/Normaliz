@@ -279,7 +279,6 @@ public:
     
     void build_top_cone(); 
     void build_cone();
-    void build_cone_approx();
     void get_supphyps_from_copy(bool from_scratch);   // if evealuation starts before support hyperplanes are fully computed
     void update_reducers(bool forced=false);   // update list of reducers after evaluation of simplices
     
