@@ -2098,9 +2098,7 @@ void Full_Cone<Integer>::build_top_cone() {
 template<typename Integer>
 void Full_Cone<Integer>::build_cone_approx(){
     
-    Matrix<Integer> original_gens = Top_Cone->getGenerators();
-    size_t nr_original_gen = original_gens.nr_of_rows();
-    Matrix<Integer> original_hyps= Top_Cone->getSupportHyperplanes();
+    size_t nr_original_gen = OriginalGenerators.nr_of_rows();
     //size_t nr_original_hyps=original_hyps.nr_of_rows();
     
     vector<size_t> nr_approx_points; // how many points are in the approximation
@@ -2129,7 +2127,7 @@ void Full_Cone<Integer>::build_cone_approx(){
         size_t tmp_hyp=0;
         // TODO: collect only those which belong to the current generator?
         for (;jt!=approx_points_keys[current_gen].end();++jt){
-            tmp_hyp = v_nr_negative(original_hyps.MxV(Generators[*jt])); // nr of negative halfspaces
+            tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
             max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
         }
         max_halfspace_index_list.sort([](const pair<size_t,key_t> &left, const pair<size_t,key_t> &right) {
@@ -2194,7 +2192,7 @@ void Full_Cone<Integer>::build_cone_approx(){
             for (;IHV!=Facets.end();++IHV){
                 if (IHV->is_positive_on_all_original_gens) continue;
                 for (current_gen=0;current_gen<nr_original_gen;++current_gen){
-                    if (v_scalar_product(IHV->Hyp,original_gens[current_gen])<0) {
+                    if (v_scalar_product(IHV->Hyp,OriginalGenerators[current_gen])<0) {
                         IHV->is_negative_on_some_original_gen=true;
                         check_original_gens=false;
                         break;
@@ -2209,22 +2207,7 @@ void Full_Cone<Integer>::build_cone_approx(){
             verboseOutput() << " done." << endl;
             // now we need to stop
             if (IHV==Facets.end()){
-                cout << "The original cone is now contained!" << endl;
-                cout << "Step: " << i << endl;
-                cout << "nr facets: " << Facets.size() << endl;
-                vector<key_t> used_gens;
-                //for (size_t j=0;j<nr_original_gen;j++){
-                    //IHV = Facets.begin();
-                    //for (;IHV!=Facets.end();++IHV){
-                        //assert(v_scalar_product(original_gens[j],IHV->Hyp)>=0);
-                    //}
-                //}
-                for (size_t j=0;j<nr_gen;++j){
-                    if (in_triang[j]) used_gens.push_back(j);
-                }
-                Generators = Generators.submatrix(used_gens);
-                nr_gen=Generators.nr_of_rows();
-                //assert(Generators.rank()==dim);
+                cout << "The original cone is now contained." << endl;
                 break;
             }
         }
@@ -2331,11 +2314,7 @@ void Full_Cone<Integer>::build_cone_approx(){
         
         if(verbose) {
             verboseOutput() << "gen="<< i+1 <<", ";
-            if (do_all_hyperplanes) {
-                verboseOutput() << Facets.size()<<" hyp, " << nr_new_facets << " new";
-            } else {
-                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp";
-            }
+            verboseOutput() << Facets.size()<<" hyp, " << nr_new_facets << " new";
             if(nrPyramids[0]>0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
             verboseOutput()<< endl;
@@ -2360,6 +2339,7 @@ void Full_Cone<Integer>::build_cone_approx(){
     //}
 
     start_from=nr_gen;
+    
     if(do_extreme_rays)
         compute_extreme_rays();
     
@@ -3333,10 +3313,9 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     verboseOutput() << "Nr Generators: " << nr_gen << endl;
     verboseOutput() << "Nr approx points: " << all_approx_points.nr_of_rows() << endl;
     Full_Cone C_approx(all_approx_points);
-    C_approx.Top_Cone = this;
+    C_approx.OriginalGenerators = Generators;
     C_approx.approx_points_keys = approx_points_indices;
     C_approx.verbose = verbose;
-    C_approx.do_triangulation =true;
     //C_temp.build_cone_approx(*this,approx_points_indices);
     
 
@@ -3360,14 +3339,25 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     //if(verbose)
         //verboseOutput() << "Computing elements in approximating cone with "
                         //<< C_approx.Generators.nr_of_rows() << " generators." << endl;
-    //if(verbose){
-       //verboseOutput() << "Computing elements in approximating cone with "<< C_temp.getNrGenerators() << " / " << (all_approx_points.nr_of_rows()) << " generators." << endl;
-    //}
+    if(verbose){
+        verboseOutput() << "Computing elements in approximating cone." << endl;
+    }
 	
 	bool verbose_tmp = verbose;
 	verbose =false;
     C_approx.compute();
     verbose = verbose_tmp;
+    
+    vector<key_t> used_gens;
+    for (size_t j=0;j<nr_gen;++j){
+        if (C_approx.in_triang[j]) used_gens.push_back(j);
+    }
+    C_approx.Generators = C_approx.Generators.submatrix(used_gens);
+    if (verbose){
+        verboseOutput() << "Used "<< C_approx.Generators.nr_of_rows() << " / " << C_approx.nr_gen << " generators." << endl;
+    }
+    C_approx.nr_gen=C_approx.Generators.nr_of_rows();
+    
     
     // TODO: with the current implementation, this is always the case!
     if(!C_approx.contains(*this) || Grading!=C_approx.Grading){

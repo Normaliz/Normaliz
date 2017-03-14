@@ -237,6 +237,7 @@ public:
     long approx_level;
     bool is_approximation;
     vector<vector<key_t>> approx_points_keys;
+    Matrix<Integer> OriginalGenerators;
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
