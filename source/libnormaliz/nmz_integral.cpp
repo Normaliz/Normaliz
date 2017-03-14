@@ -254,17 +254,6 @@ try{
   RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
                 multiplicities,remainingFactor,homogeneous,do_virt_mult); 
   
-  if(rank==0){
-      vector<RingElem> compsF= homogComps(F);
-      RingElem F0(compsF[0]);
-      vector<RingElem> HCoeff0=ourCoeffs(F0,0);
-      BigRat IntBR;
-      IsRational(IntBR,HCoeff0[0]);//
-      mpq_class Int=mpq(IntBR);
-      C.getIntData().setIntegral(Int);
-      return;
-  }
-  
   C.getIntData().setDegreeOfPolynomial(deg(F));
                 
   vector<BigInt> Factorial(deg(F)+dim); // precomputed values
@@ -626,7 +615,7 @@ void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& in
         keySize=C.getInclusionExclusionData()[i].first.size();
         indicator.reset();
         for(size_t j=0;j<keySize;++j){
-            indicator.set(C.getInclusionExclusionData()[i].first[j]-1);
+            indicator.set(C.getInclusionExclusionData()[i].first[j]);
         }
         mult=C.getInclusionExclusionData()[i].second;
         inExCollect.push_back(pair<boost::dynamic_bitset<>, long>(indicator,mult));       

@@ -374,7 +374,7 @@ void Output<Integer>::write_Stanley_dec() const {
             for (size_t i=0; i<InExData.size(); ++i) {
                 out << InExData[i].first.size() << " ";
                 for (size_t j=0; j<InExData[i].first.size(); ++j) {
-                    out << InExData[i].first[j] << " ";
+                    out << InExData[i].first[j]+1 << " ";
                 }
                 out << InExData[i].second << endl;  
             }

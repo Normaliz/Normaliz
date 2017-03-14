@@ -2427,7 +2427,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             key.clear();
             for (size_t i=0;i<FC.nr_gen;++i) {
                 if (F->first.test(i)) {
-                    key.push_back(i+1);
+                    key.push_back(i);
                 }
             }
             InExData.push_back(make_pair(key,F->second));
@@ -3205,6 +3205,9 @@ void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
     if(IntData.getPolynomial()=="")
         throw BadInputException("Polynomial weight missing");
 #ifdef NMZ_COCOA
+    if(getRank()==0)
+        getIntData().setIntegral(0);
+    else
     integrate<Integer>(*this,false);
     is_Computed.set(ConeProperty::Integral);
 #endif
