@@ -19,7 +19,7 @@ linknormaliz: lib
 	@$(MAKE) normaliz
 
 normaliz.o: $(SOURCES) $(HEADERS) $(LIBHEADERS)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c Normaliz.cpp -o normaliz.o
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c normaliz.cpp -o normaliz.o
 
 normaliz: $(SOURCES) $(HEADERS) normaliz.o libnormaliz/libnormaliz.a
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) normaliz.o libnormaliz/libnormaliz.a $(LINKFLAGS) -o normaliz
