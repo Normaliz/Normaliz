@@ -1694,8 +1694,7 @@ void Full_Cone<long long>::try_offload(size_t max_level) {
     {
         
         if (max_level >= nrPyramids.size()) max_level = nrPyramids.size()-1;
-        for (size_t level = 0; level <= max_level; ++level) {           
-            
+        for (size_t level = 0; level <= max_level; ++level) {                  
             if (nrPyramids[level] >= 100) {
                 // cout << "XXX: Try offload of level " << level << " pyramids ..." << endl;
                 mic_offloader.offload_pyramids(*this, level);
@@ -1725,11 +1724,11 @@ template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
 
-    random_order(Pyramids[level]); 
+    /* random_order(Pyramids[level]); 
     auto py=Pyramids[level].begin();
     for(;py!=Pyramids[level].end();++py)
         cout << py->size() << " ";
-    cout << endl;
+    cout << endl;*/
 #ifdef NMZ_MIC_OFFLOAD
     if(level==0 && _Offload_get_device_number() >=  0){
         verboseOutput() << "Start evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;

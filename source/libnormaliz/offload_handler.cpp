@@ -727,6 +727,18 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
     size_t nr_transfer = min(fc.nrPyramids[level]/fraction, 25000ul);
     // cout << "transfer " << nr_transfer << endl;
     if (nr_transfer == 0) return;
+    
+    for (int i=0; i<nr_handlers; ++i){
+      if (!handlers[i]->is_running()){
+        cout << "Mixing ======================" << endl;
+        random_order(Pyramids[level]);
+        auto py=Pyramids[level].begin();
+        for(;py!=Pyramids[level].end();++py)
+            cout << py->size() << " ";
+        cout << "======================" << endl;
+        break;
+      }
+    }
 
     for (int i=0; i<nr_handlers; ++i)
     {
