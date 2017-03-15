@@ -9,6 +9,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/list_operations.h"
 #include <cstring> // for strcpy
 #include <iostream>
 #include <fstream>
@@ -731,9 +732,9 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
     for (int i=0; i<nr_handlers; ++i){
       if (!handlers[i]->is_running()){
         cout << "Mixing ======================" << endl;
-        random_order(Pyramids[level]);
-        auto py=Pyramids[level].begin();
-        for(;py!=Pyramids[level].end();++py)
+        random_order(fc.Pyramids[level]);
+        auto py=fc.Pyramids[level].begin();
+        for(;py!=fc.Pyramids[level].end();++py)
             cout << py->size() << " ";
         cout << "======================" << endl;
         break;
