@@ -55,6 +55,12 @@ std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
 template<typename Integer>
 Integer v_scalar_product(const vector<Integer>& a,const vector<Integer>& b);
 
+template<typename Integer>
+bool v_scalar_product_nonnegative(const vector<Integer>& a,const vector<Integer>& b);
+
+template<typename Integer>
+bool v_scalar_product_positive(const vector<Integer>& a,const vector<Integer>& b);
+
 //returns the scalar product of the vector a with the end of the vector b
 template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b);

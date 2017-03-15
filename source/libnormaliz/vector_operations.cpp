@@ -139,6 +139,204 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool v_scalar_product_nonnegative(const vector<Integer>& av,const vector<Integer>& bv){
+    //loop stretching ; brings some small speed improvement
+
+    Integer ans = 0;
+    size_t i,n=av.size();
+
+
+#if 0 // #ifdef __MIC__   // not for newer compiler versions
+    // this version seems to be better vectorizable on the mic
+    for (i=0; i<n; ++i)
+        ans += av[i]*bv[i];
+
+#else // __MIC__
+    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+#endif // __MIC__
+        
+    if(!check_range(ans)){
+		#pragma omp atomic
+		GMP_scal_prod++;
+    
+        // cout << "av " << av;
+        // cout << "bv " << bv;   
+        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
+        convert(mpz_a, av);
+        convert(mpz_b, bv);
+        v_scalar_product(mpz_a,mpz_b);
+    }
+        
+    return (ans>=0);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_scalar_product_positive(const vector<Integer>& av,const vector<Integer>& bv){
+    //loop stretching ; brings some small speed improvement
+
+    Integer ans = 0;
+    size_t i,n=av.size();
+
+
+#if 0 // #ifdef __MIC__   // not for newer compiler versions
+    // this version seems to be better vectorizable on the mic
+    for (i=0; i<n; ++i)
+        ans += av[i]*bv[i];
+
+#else // __MIC__
+    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+#endif // __MIC__
+        
+    if(!check_range(ans)){
+		#pragma omp atomic
+		GMP_scal_prod++;
+    
+        // cout << "av " << av;
+        // cout << "bv " << bv;   
+        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
+        convert(mpz_a, av);
+        convert(mpz_b, bv);
+        v_scalar_product(mpz_a,mpz_b);
+    }
+        
+    return (ans>0);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
     Integer ans = 0;
     size_t i,n=a.size(),m=b.size();

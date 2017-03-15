@@ -1738,6 +1738,7 @@ void Full_Cone<Integer>::build_cone() {
     multithreaded_pyramid=(omp_get_level()==0);
     
     size_t nr_original_gen=0;
+    size_t steps_in_approximation = 0;
     if (!is_pyramid && is_approximation)
     {
         nr_original_gen = OriginalGenerators.nr_of_rows();    
@@ -1821,7 +1822,8 @@ void Full_Cone<Integer>::build_cone() {
     
         if (in_triang[i])
             continue;
-            
+        
+        if (!is_pyramid && is_approximation) steps_in_approximation++;    
         // we check whether all original generators are contained in the current cone
         if (!is_pyramid && is_approximation && check_original_gens){
             if (verbose)
@@ -1831,7 +1833,7 @@ void Full_Cone<Integer>::build_cone() {
             for (;l!=Facets.end();++l){
                 if (l->is_positive_on_all_original_gens) continue;
                 for (current_gen=0;current_gen<nr_original_gen;++current_gen){
-                    if (v_scalar_product(l->Hyp,OriginalGenerators[current_gen])<0) {
+                    if (!v_scalar_product_nonnegative(l->Hyp,OriginalGenerators[current_gen])) {
                         l->is_negative_on_some_original_gen=true;
                         check_original_gens=false;
                         break;
@@ -1964,9 +1966,9 @@ void Full_Cone<Integer>::build_cone() {
         if(verbose) {
             verboseOutput() << "gen="<< i+1 <<", ";
             if (do_all_hyperplanes || i!=last_to_be_inserted) {
-                verboseOutput() << Facets.size()<<" hyp";
+                verboseOutput() << Facets.size()<<" hyp, " << nr_new_facets << " new";
             } else {
-                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp"<< nr_new_facets << " new";
+                verboseOutput() << Support_Hyperplanes.nr_of_rows()<<" hyp";
             }
             if(nrPyramids[0]>0)
                 verboseOutput() << ", " << nrPyramids[0] << " pyr"; 
@@ -2003,7 +2005,10 @@ void Full_Cone<Integer>::build_cone() {
     if(check_evaluation_buffer()){
         Top_Cone->evaluate_triangulation();
     }  
-
+    
+    if (!is_pyramid && is_approximation && verbose){
+        verboseOutput() << "Performed " << steps_in_approximation << "/" << nr_gen << " steps." << endl;
+    }
     // } // end if (dim>0)
     
     Facets.clear(); 
@@ -3134,8 +3139,10 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
          }
          approx_points_indices.push_back(indices);
     }
-    verboseOutput() << "Nr Generators: " << nr_gen << endl;
-    verboseOutput() << "Nr approx points: " << all_approx_points.nr_of_rows() << endl;
+    if(verbose){
+        verboseOutput() << "Nr original generators: " << nr_gen << endl;
+        verboseOutput() << "Nr approximation points: " << all_approx_points.nr_of_rows() << endl;
+    }
     Full_Cone C_approx(all_approx_points);
     C_approx.OriginalGenerators = Generators;
     C_approx.approx_points_keys = approx_points_indices;
@@ -3172,15 +3179,15 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     C_approx.compute();
     verbose = verbose_tmp;
     
-    vector<key_t> used_gens;
-    for (size_t j=0;j<nr_gen;++j){
-        if (C_approx.in_triang[j]) used_gens.push_back(j);
-    }
-    C_approx.Generators = C_approx.Generators.submatrix(used_gens);
-    if (verbose){
-        verboseOutput() << "Used "<< C_approx.Generators.nr_of_rows() << " / " << C_approx.nr_gen << " generators." << endl;
-    }
-    C_approx.nr_gen=C_approx.Generators.nr_of_rows();
+    //vector<key_t> used_gens;
+    //for (size_t j=0;j<nr_gen;++j){
+        //if (C_approx.in_triang[j]) used_gens.push_back(j);
+    //}
+    //C_approx.Generators = C_approx.Generators.submatrix(used_gens);
+    //if (verbose){
+        //verboseOutput() << "Used "<< C_approx.Generators.nr_of_rows() << " / " << C_approx.nr_gen << " generators." << endl;
+    //}
+    //C_approx.nr_gen=C_approx.Generators.nr_of_rows();
     
     
     // TODO: with the current implementation, this is always the case!
