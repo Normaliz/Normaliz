@@ -2946,11 +2946,11 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
     string polynomial;
     
-    for(size_t i=0;i<multiplicities.size();++i){
+    /* for(size_t i=0;i<multiplicities.size();++i){
         for(size_t j=1;j<multiplicities[i];++j)
             polynomial+="(x["+to_string(i+1)+"]+"+to_string(j)+")*";
         
-    }
+    }*/
     polynomial+="1";
     mpz_class fact=1;
     for(size_t i=0;i<multiplicities.size();++i){
@@ -3037,7 +3037,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::BottomDecomposition))
         nmz_int_exec+=" -b ";
     
-    nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
+    // nmz_int_exec+= "-x="+ to_string(omp_get_max_threads()) + " ";
     
     nmz_int_exec+=pre_name;
 

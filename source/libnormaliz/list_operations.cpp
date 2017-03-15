@@ -100,7 +100,7 @@ void random_order(list<T>& LL){
     for(size_t k=0;k<nrLL;++k,++p){
         list_order.push_back(p);
     }
-    for(size_t k=0;k<5*nrLL;++k){
+    for(size_t k=0;k<100*nrLL;++k){
         swap(list_order[rand()%nrLL],list_order[rand()%nrLL]);
     }
     list<T> new_order;
