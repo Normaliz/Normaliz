@@ -170,7 +170,7 @@ void readTri(Cone<Integer>& C, list<TRIDATA>& triang){
     new_entry.key.resize(rank);
     for(size_t i=0;i<C.getTriangulation().size();++i){
         for(size_t j=0;j<rank;++j)
-            new_entry.key[j]=C.getTriangulation()[i].first[j]+1;
+            new_entry.key[j]=C.getTriangulation()[i].first[j];
         convert(new_entry.vol,C.getTriangulation()[i].second);
         triang.push_back(new_entry);
     }
@@ -235,7 +235,7 @@ try{
   vector<vector<long> > A(rank);
   for(;S!=triang.end();++S){          
     for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]-1];
+        A[i]=gens[S->key[i]];
     degrees=MxV(A,grading);
     for(i=0;i<rank;++i){
         degrees[i]/=gradingDenom;
@@ -315,7 +315,7 @@ try{
 
     det=S->vol;
     for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]-1]; // will not be changed
+        A[i]=gens[S->key[i]]; // will not be changed
 
     degrees=MxV(A,grading);
     prodDeg=1;
@@ -542,8 +542,8 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
 
     size_t dim=S.key.size();
     vector<key_type> key=S.key;
-    for(size_t i=0;i<dim;++i)  // BECAUSE OF INPUT
-        key[i]--;
+    for(size_t i=0;i<dim;++i)
+        key[i];
     
     boost::dynamic_bitset<> intersection(dim), Excluded(dim);
     
@@ -641,9 +641,9 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
 
     for(;SD!=C.getStanleyDec().end();++SD){
  
-        test=0;
+        test=-1;
         for(i=0;i<dim;++i){
-            newSimpl.key[i]=SD->key[i]+1;
+            newSimpl.key[i]=SD->key[i];
             if(newSimpl.key[i]<=test){
                 throw FatalException("Key of simplicial cone not ascending or out of range");
             }
@@ -756,7 +756,7 @@ try{
   
   for(;S!=StanleyDec.end();++S){
       for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]-1];
+        A[i]=gens[S->key[i]];
           degrees=MxV(A,grading);
       for(i=0;i<rank;++i)
         degrees[i]/=gradingDenom; // must be divisible
@@ -867,7 +867,7 @@ try{
     degrees=S->degrees;
     
     for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]-1];
+        A[i]=gens[S->key[i]];
         
     vector<SIMPLINEXDATA_INT> inExSimplData;
     if(inExCollect.size()!=0)    
