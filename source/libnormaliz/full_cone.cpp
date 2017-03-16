@@ -1887,22 +1887,23 @@ void Full_Cone<Integer>::build_cone() {
         vector<vector<key_t>> local_perms(nr_original_gen);
         
         for (size_t current_gen = 0 ; current_gen<nr_original_gen;++current_gen){
-            
-            auto jt=approx_points_keys[current_gen].begin();
-            list<pair<size_t,key_t>> max_halfspace_index_list;
             vector<key_t> local_perm;
-            size_t tmp_hyp=0;
-            // TODO: collect only those which belong to the current generator?
-            for (;jt!=approx_points_keys[current_gen].end();++jt){
-                tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
-                max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
-            }
-            max_halfspace_index_list.sort([](const pair<size_t,key_t> &left, const pair<size_t,key_t> &right) {
-                return right.first < left.first;
-            });
-            auto list_it = max_halfspace_index_list.begin();
-            for(;list_it!=max_halfspace_index_list.end();++list_it){
-                local_perm.push_back(list_it->second);
+            if (approx_points_keys[current_gen].size()>0){
+                auto jt=approx_points_keys[current_gen].begin();
+                list<pair<size_t,key_t>> max_halfspace_index_list;
+                size_t tmp_hyp=0;
+                // TODO: collect only those which belong to the current generator?
+                for (;jt!=approx_points_keys[current_gen].end();++jt){
+                    tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
+                    max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
+                }
+                max_halfspace_index_list.sort([](const pair<size_t,key_t> &left, const pair<size_t,key_t> &right) {
+                    return right.first < left.first;
+                });
+                auto list_it = max_halfspace_index_list.begin();
+                for(;list_it!=max_halfspace_index_list.end();++list_it){
+                    local_perm.push_back(list_it->second);
+                }
             }
             local_perms[current_gen]=local_perm;
         }
@@ -3583,9 +3584,10 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     //cout << "Nr of ER: " << getExtremeRays().size() << endl;
     //Matrix<Integer> all_approx_points(Generators);
     Matrix<Integer> all_approx_points(0,dim);
-    for (size_t i=0;i<approx_points.size();i++){
+    for (size_t i=0;i<nr_gen;i++){
         vector<key_t> indices(approx_points[i].size());
         if (!approx_points[i].empty()){
+
              all_approx_points.append(approx_points[i]);
              for (size_t j=0;j<approx_points[i].size();++j){
                  indices[j]=current_key;
@@ -4558,8 +4560,8 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
     vector<list<vector<Integer>>> approx_points;
     size_t nr_approx=0;
     for(size_t i=0;i<nr_gen;++i){
+        list<vector<Integer> > approx;
         if(Extreme_Rays_Ind[i]){
-            list<vector<Integer> > approx;
             //cout << "point before transformation: " << Generators[i];
             approx_simplex(T.MxV(Generators[i]),approx,approx_level);
             // TODO: NECESSARY?
@@ -4585,8 +4587,8 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
                     }
                 }
             }
-            approx_points.push_back(approx);
         }
+        approx_points.push_back(approx);
     }
     
     

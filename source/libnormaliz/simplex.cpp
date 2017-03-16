@@ -971,7 +971,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 		time (&start);
 #ifndef NMZ_SCIP
         C.compute_sub_div_elements(Generators, new_points,volume);
-        cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+        if(C_ptr->verbose){
+            verboseOutput() << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+        }
 #endif
 		bottom_points(new_points, Generators,C.Grading,C.approx_level,0,volume);
         time (&end);
