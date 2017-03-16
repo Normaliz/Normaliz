@@ -77,9 +77,9 @@ public:
     void activateInputFileConeProperty(ConeProperty::Enum cp) {
         if (!ignoreInFileOpt) to_compute.set(cp, true);
     }
-    void activateInputFileBigInt() {
+    /* void activateInputFileBigInt() {
         if (!ignoreInFileOpt) use_Big_Integer = true;
-    }
+    }*/
     void activateInputFileLongLong() {
         if (!ignoreInFileOpt) use_long_long = true;
     }
@@ -88,26 +88,34 @@ public:
         return to_compute;
     }
 
-    bool isUseBigInteger() const {
+    /* bool isUseBigInteger() const {
         return use_Big_Integer;
-    }
+    }*/
     bool isUseLongLong() const {
         return use_long_long;
     }
 
-    const string& getOutputName() const {
+    const string& getProjectName() const {
         return project_name;
+    }
+    
+    const string& getOutputDir() const {
+        return output_dir;
     }
 
     void setProjectName(const string& s);
+    void setOutputDirName(const string& s);
 
 //---------------------------------------------------------------------------
 
 private:
 	bool project_name_set;
+        bool output_dir_set;
 	string project_name;
+        string output_dir;
+        string output_file;
 
-	bool use_Big_Integer;
+	// bool use_Big_Integer; now in ConeProperty
 	bool use_long_long;
     bool ignoreInFileOpt;
     bool nmzInt_E, nmzInt_I, nmzInt_L;
@@ -125,5 +133,7 @@ private:
 };
 
 //---------------------------------------------------------------------------
+
+string pureName(const string& fullName); // extracts the pure filename from a path
 
 #endif //NMZ_OPTIONS_H

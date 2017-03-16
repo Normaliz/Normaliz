@@ -27,6 +27,7 @@ using namespace CoCoA;
 
 #include <fstream>
 #include <sstream>
+#include<string>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -50,25 +51,84 @@ bool verbose_INT=false;
 #include "genEhrhart.C"
 #include "nmzIntegral.C"                 
 
-void printHeader() {
+void printHeader(string version) {
     cout << "                                                    \\.....|"<<endl;
-    cout << "                   nmzIntegrate 1.3.1                \\....|"<<endl;
+    cout << "                   nmzIntegrate " << version<<"                \\....|"<<endl;
     cout << "                                                      \\...|"<<endl;
     cout << "                (C) W. Bruns  C. Soeger                \\..|"<<endl;
-    cout << "                       March 2016                       \\.|"<<endl;
+    cout << "                      January 2017                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
 }
 void printHelp(char* command) {
     cout << "usage: "<<command<<" [-cEIL?] [-x=<T>] [PROJECT]"<<endl;
     cout << "  runs nmzIntegrate on PROJECT.in"<<endl;
     cout << "options:"<<endl;
-    cout << "  -?\tprint this help text and exit"<<endl;
+    cout << "  -?\tprint this help text and exits"<<endl;
+    cout << "  --help\tthe same"<<endl;
     cout << "  -E\tcompute generalized Ehrhart series"<<endl;
     cout << "  -I\tcompute integral"<<endl;
     cout << "  -L\tcompute lead coefficient of quasipolynomial"<<endl;
     cout << "  -c\tverbose (prints control data)"<<endl;
     cout << "  -x=<T>\tlimit the number of threads to <T>"<<endl;
     cout << "  -F=<pnm>\tspecifies file name <pnm> of polynomial" << endl;
+    cout << "  --OutputDir=<path>\tnames the path to the output directory" << endl;
+    cout << "  --version\tprints the version and exits" << endl;
+}
+
+void printCopying() {
+    cout<<"Copyright (C) 2007-2017  The Normaliz Team, University of Osnabrueck."<<endl
+        <<"This program comes with ABSOLUTELY NO WARRANTY; This is free software,"<<endl
+        <<"and you are welcome to redistribute it under certain conditions;"<<endl
+        <<"See COPYING for details."<<endl;
+}
+
+// the following two functions are copied from cone.cpp. The first has a sibbling in nmzIntInput.C
+bool exists_file(string name_in){
+//n check whether file name_in exists
+
+    //b string name_in="nmzIntegrate";
+    const char* file_in=name_in.c_str();
+    
+    struct stat fileStat;
+    if(stat(file_in,&fileStat) < 0){
+         return(false); 
+    }
+    return(true);
+}
+
+string command(const string& original_call, const string& to_replace, const string& by_this){
+// in the original call we replace the program name to_replace by by_this
+// wWe try variants with and without "lt-" preceding the names of executables 
+// since libtools may have inserted "lt-" before the original name
+
+    string copy=original_call;
+    // cout << "CALL " << original_call << endl;
+    string search_lt="lt-"+to_replace;
+    long length=to_replace.size();
+    size_t found;
+    found = copy.rfind(search_lt);
+    if (found==std::string::npos) {
+        found = copy.rfind(to_replace);
+        if (found==std::string::npos){
+            throw FatalException("Call "+ copy +" of "  +to_replace+" does not contain " +to_replace); 
+        }
+    }
+    else{
+            length+=3; //name includes lt-
+    }
+    if(found==0) // no path preceding to_replace. Good luck!
+        return by_this;
+    string test_path=copy.replace (found,length,by_this);
+    // cout << "TEST " << test_path << endl;
+    if(exists_file(test_path))
+        return test_path;
+    copy=original_call;
+    string by_this_with_lt="lt-"+by_this;
+    test_path=copy.replace (found,length,by_this_with_lt);
+    // cout << "TEST " << test_path << endl;
+    if(exists_file(test_path))
+        return test_path;
+    return ""; // no executable found
 }
 
 
@@ -77,10 +137,12 @@ void printHelp(char* command) {
 // handle any uncaught exceptions.
 int main(int argc, char* argv[])  
 {
+    
+  const string version="1.3.3";
   try
   {
     size_t i;   
-    string project="",pnm="";
+    string project="",pnm="", output_dir="";
     
     string Threads;            
 
@@ -101,6 +163,25 @@ int main(int argc, char* argv[])
             }
             project=argument;
             continue;
+        }
+        
+        if(argument[1]=='-'){
+            if(argument.substr(2,9)=="OutputDir" && argument[11]=='='){
+                output_dir=argument.substr(12,argument.size()-1);
+                if(output_dir.back()!='/')
+                    output_dir+="/";
+                continue;
+            }
+            if(argument.substr(2,4)=="help"){
+                printHeader(version);
+                printHelp(argv[0]);
+                exit(0);                
+            }
+            if(argument.substr(2,7)=="version"){
+                cout << "NmzIntegrate " << version << endl;
+                printCopying();
+                exit(0);                
+            }
         }
         
         if(argument[1]=='x'){
@@ -170,7 +251,7 @@ int main(int argc, char* argv[])
                 do_leadCoeff=true;  
                 break;
             case '?':  //print help text and exit
-                printHeader();
+                printHeader(version);
                 printHelp(argv[0]);
                 exit(1);
                 break;
@@ -187,7 +268,7 @@ int main(int argc, char* argv[])
     }
 
     if (verbose_INT) {
-        printHeader();
+        printHeader(version);
     }
     
     if(project==""){
@@ -210,11 +291,17 @@ int main(int argc, char* argv[])
     existsFile(fullPnmName(project,pnm),"pnm",true,pnmDate); // true means: will exit if polynomial does not exist
                                                              // pnmDate irreleveant, only for completeness
 
-    bool nmz_inExists=existsFile(project,"in",false,mnz_inDate); // checks if input file to Normaliz exusts
-    bool invExists=existsFile(project,"inv",false,invDate);
-    bool decExists=existsFile(project,"dec",false,decDate);
-    bool triExists=existsFile(project,"tri",false,triDate); 
-    bool tgnExists=existsFile(project,"tgn",false,tgnDate);
+    bool nmz_inExists=existsFile(project,"in",false,mnz_inDate); // checks if input file to Normaliz exists
+    
+    string nmz_output=project;
+    if(output_dir!="")
+        nmz_output=output_dir+pureName(project);
+    /* if(verbose_INT)
+        cout << "NMZ_OUT " << nmz_output << endl;*/
+    bool invExists=existsFile(nmz_output,"inv",false,invDate);
+    bool decExists=existsFile(nmz_output,"dec",false,decDate);
+    bool triExists=existsFile(nmz_output,"tri",false,triDate); 
+    bool tgnExists=existsFile(nmz_output,"tgn",false,tgnDate);
     
     bool makeInputFiles=!invExists || !tgnExists || (do_genEhrhart && !decExists)
                               || (do_int_or_lead && !triExists && ! decExists);
@@ -245,15 +332,9 @@ int main(int argc, char* argv[])
         // the quoting requirements for windows are insane, one pair of "" around the whole command and one around each file
         #ifdef _WIN32 //for 32 and 64 bit windows
             normalizExec.append("\"");
-        #endif	
-        normalizExec.append(argv[0]);
-        size_t found = normalizExec.rfind("nmzIntegrate");
-        if (found!=std::string::npos) {
-            normalizExec.replace (found,12,"normaliz");
-        } else {
-            cout << "ERROR: Could not start nmzIntegrate" << endl;
-            return 2;
-        }
+        #endif
+        string normaliz_path=command(argv[0],"nmzIntegrate","normaliz");
+        normalizExec.append(normaliz_path);
         normalizExec.append("\"");
         
         if(do_genEhrhart)
@@ -268,6 +349,9 @@ int main(int argc, char* argv[])
             normalizExec+="c";
         if(Threads!="")
             normalizExec+=(" -x="+Threads);
+        if(output_dir!="")
+            normalizExec+=(" --OutputDir="+output_dir);
+            
             
         normalizExec+=(" \""); // enclose filename in by ""
         normalizExec+=project;
@@ -292,7 +376,7 @@ int main(int argc, char* argv[])
     bool homogeneous=false;
     bool appendOutput=false;
     if (do_genEhrhart) {
-        generalizedEhrhartSeries(project,pnm,homogeneous);
+        generalizedEhrhartSeries(project,output_dir,pnm,homogeneous);
         appendOutput=true;
         if(do_leadCoeff && verbose_INT){
             cout << "Suppressing computation LC since result contained in ES."  << endl;
@@ -300,14 +384,14 @@ int main(int argc, char* argv[])
     }
     // cout << "hom " << homogeneous << endl;
     if (do_leadCoeff && !do_genEhrhart) {
-        integrate(project,pnm,true,homogeneous,appendOutput);
+        integrate(project,output_dir,pnm,true,homogeneous,appendOutput);
         appendOutput=true;
     }
     if(do_integral && homogeneous && verbose_INT){
             cout << "Suppressing computation Int since result contained in ES or LC."  << endl;
     }
     if (do_integral && !homogeneous) {
-        integrate(project,pnm,false,homogeneous,appendOutput);
+        integrate(project,output_dir,pnm,false,homogeneous,appendOutput);
     }
     return 0;
   }

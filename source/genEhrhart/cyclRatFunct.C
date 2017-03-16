@@ -97,11 +97,13 @@ vector<long> degrees2denom(const vector<long>& d){
 // listing at position i the multiplicity of i in d
     long m=0;
     size_t i;
+    if(d.size()==0)
+        return vector<long> (0);
     for(i=0;i<d.size();++i)
         m=max(m,d[i]);
     vector<long> e(m+1);
     for(i=0;i<d.size();++i)
-        e[d[i]]++;
+        e[d[i]]++;   
     return(e);
 }
 

@@ -58,6 +58,14 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
     input_map[input_type] = M;
 }
 
+template<typename Integer>
+void save_empty_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
+        InputType input_type){
+    
+    vector<vector<Integer> > M;
+    save_matrix(input_map, input_type, M);   
+}
+
 template <typename Integer>
 vector<vector<Integer> > transpose_mat(const vector<vector<Integer> >& mat){
 
@@ -164,6 +172,111 @@ bool read_modulus(istream& in, Integer& modulus) {
 }
 
 template <typename Integer>
+void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, Integer& right, Integer& modulus, bool forced_hom) {
+    
+    bool congruence=false;
+    bool modulus_read=false;
+    Integer side=1,sign;
+    right=0;
+    long hom_correction=0;
+    if(forced_hom)
+        hom_correction=1;
+    
+    in >> std::ws;
+    char c = in.peek();
+    
+    while(true){
+        if(c=='('){   
+            if(modulus_read || !congruence || !read_modulus(in,modulus))
+                    throw BadInputException("Error while reading modulus of congruence!");
+            modulus_read=true;
+            in >> std::ws;
+            c = in.peek();
+        }
+        if(modulus_read && c!=';')
+            throw BadInputException("Error while reading modulus of congruence!");
+        if(c==';'){
+            if(rel=="")
+                throw BadInputException("Missing relation in constraint");
+            in >> c;
+            if(congruence && !modulus_read)
+                throw BadInputException("Modulus missing in congrruence");
+            cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
+            return;
+        }
+        
+        bool rel_read=false;
+        
+        if(c=='~' || c=='<' || c=='>' || c=='='){
+            rel_read=true;
+            if(rel!="")
+                throw BadInputException("Error while reading relation in constraint!");                
+            if(c=='~')
+                congruence=true;
+            in >> c;
+            rel+=c;
+        }
+        c = in.peek();
+        if(rel!="" && (rel=="<" || rel==">") && c=='='){
+            in >> c;
+            rel+=c;
+        }
+        in >> std::ws;
+        c = in.peek();     
+        if(rel_read){
+            side=-1;
+            continue;
+        }
+        sign=1;
+        if(c=='-'){
+            sign=-1;
+            in >> c;            
+        }
+        if(c=='+'){
+            in >> c;            
+        }
+        Integer entry=1;
+        in >> std::ws;
+        c = in.peek();
+        if(c!='x'){
+            if(c=='+' || c=='-')
+                throw BadInputException("Double sign in constraint");
+            in >> entry;
+            if(in.fail())
+                throw BadInputException("Error while reading coefficient in constraint");
+            in >> std::ws;
+            c = in.peek();
+        }
+        if(c!='x'){
+            right-=side*sign*entry;
+            continue;            
+        }
+        in >> c;
+        in >> std::ws;
+        c = in.peek();
+        if(c!='[')
+            throw BadInputException("Error while reading index in constraint");
+        in >> c;
+        long index;
+        in >> index;
+        if(in.fail() || index <1 || index+hom_correction> (long) left.size())
+            throw BadInputException("Error while reading index in constraint");
+        index-=1;
+        left[index]+=side*sign*entry;
+        in >> std::ws;
+        c = in.peek();
+        if(c!=']')
+            throw BadInputException("Error while reading index in constraint");
+        in >> c;
+        in >> std::ws;
+        c = in.peek();
+        continue;
+    }
+    
+}
+
+
+template <typename Integer>
 void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
@@ -171,28 +284,84 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
     
     if(in.fail() || nr_constraints < 0) {
         throw BadInputException("Cannot read "
-        + to_string(nr_constraints) + " constraints!");
+        + toString(nr_constraints) + " constraints!");
     }
+    if(nr_constraints==0)
+        return;
+    
+    bool symbolic=false;
+    
+    in >> std::ws;
+    int c = in.peek();
+    if(c=='s'){
+        string dummy;
+        in >> dummy;
+        if(dummy!="symbolic")
+            throw BadInputException("Illegal keyword " + dummy
+                                + " in input!");
+        symbolic=true;
+    }  
+    
     long hom_correction=0;
     if(forced_hom)
         hom_correction=1;
     for(long i=0;i< nr_constraints; ++i) {
+        
         vector<Integer> left(dim-hom_correction);
-        for(long j=0;j<dim-hom_correction;++j){
-            in >> left[j];
-        }
         string rel, modulus_str;
         Integer right, modulus=0;
-        in >> rel;
-        in >> right;
-        if(rel=="~") {
-            if(!read_modulus(in,modulus))
-                throw BadInputException("Error while reading modulus of congruence!");
+        
+        if(symbolic){
+            read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);            
         }
-        if (in.fail()) {
-            throw BadInputException("Error while reading constraint!");
+        else{ // ordinary constraint read here
+            for(long j=0;j<dim-hom_correction;++j){
+                in >> left[j];
+            }
+            in >> rel;
+            in >> right;
+            if(rel=="~") {
+                if(!read_modulus(in,modulus))
+                    throw BadInputException("Error while reading modulus of congruence!");
+            }
+            if (in.fail()) {
+                throw BadInputException("Error while reading constraint!");
+            }
         }
         process_constraint(rel,left,right,modulus,input_map,forced_hom);        
+    }
+}
+
+template <typename Integer>
+bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
+    
+    input_vec=vector<Integer> (length,0);
+    char dummy;
+    
+    while(true){
+        in >> std::ws;
+        int c = in.peek();
+        if(c==';'){
+            in >> dummy; // swallow ;
+            return true;
+        }
+        long pos;
+        in >> pos;
+        if(in.fail())
+            return false;
+        pos--;
+        if(pos<0 || pos>=length)
+            return false;
+        in >> std::ws;
+        c=in.peek();
+        if(c!=':')
+            return false;
+        in >> dummy; // skip :
+        Integer value;
+        in >> value;
+        if(in.fail())
+            return false;
+        input_vec[pos]=value;        
     }
 }
 
@@ -308,7 +477,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
             }
             dim_known=true;
         }
-        while (in.good()) {
+        while (in.good()) {    //main loop
             
             bool transpose=false;
             in >> std::ws;  // eat up any leading white spaces
@@ -329,10 +498,10 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     options.activateInputFileConeProperty(cp);
                     continue;
                 }
-                if (type_string == "BigInt") {
+                /* if (type_string == "BigInt") {
                     options.activateInputFileBigInt();
                     continue;
-                }
+                } */
                 if (type_string == "LongLong") {
                     options.activateInputFileLongLong();
                     continue;
@@ -374,7 +543,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     nr_columns = dim + type_nr_columns_correction(input_type);
 
                 if (type_is_vector(input_type)) {
-                    nr_rows = 1;
+                    nr_rows_or_columns = nr_rows = 1;
                     in >> std::ws;  // eat up any leading white spaces
                     c = in.peek();
                     if (c=='u') { // must be unit vector
@@ -395,7 +564,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         }
                         
                         if(!dim_known){
-                            throw BadInputException("Ambient space must be known for "+type_string+"!");
+                            throw BadInputException("Ambient space must be known for unit vector "+type_string+"!");
                         }
 
                         vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(nr_columns,0));
@@ -409,6 +578,32 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         save_matrix(input_map, input_type, e_i);
                         continue;
                     } // end unit vector
+                    
+                    if(c=='s'){   // must be "sparse"
+                        string vec_kind;
+                        in >> vec_kind;
+                        if (vec_kind != "sparse") {
+                            throw BadInputException("Error while reading "
+                            + type_string 
+                            + ": sparse vector expected!");                            
+                        }
+                        
+                        if(!dim_known){
+                            throw BadInputException("Ambient space must be known for sparse vector "+type_string+"!");
+                        }
+
+                        vector<Integer> sparse_vec;
+                        nr_columns = dim + type_nr_columns_correction(input_type);
+                        bool success = read_sparse_vector(in,sparse_vec,nr_columns);
+                        if(!success){
+                            throw BadInputException("Error while reading "
+                            + type_string 
+                            + " as a sparse vector!");
+                        }
+                        save_matrix(input_map, input_type, vector<vector<Integer> > (1,sparse_vec)); 
+                        continue;                        
+                    }
+                    
                     if (c == '[') { // must be formatted vector
                         vector<Integer> formatted_vec;
                         bool success = read_formatted_vector(in,formatted_vec);
@@ -447,8 +642,11 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             throw BadInputException("Error while reading formatted matrix "
                             + type_string + "!");    
                         }
-                        if(formatted_mat.size() ==0) // empty matrix
+                        if(formatted_mat.size() ==0){ // empty matrix
+                            input_type = to_type(type_string);
+                            save_empty_matrix(input_map, input_type);
                             continue;
+                        }
                         if(!dim_known){
                             dim=formatted_mat[0].size()- type_nr_columns_correction(input_type);
                             dim_known=true;
@@ -481,10 +679,38 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             + "x" + toString(nr_columns)
                             + " matrix) !");
                 }
-                vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
-                for(i=0; i<nr_rows; i++){
-                    for(j=0; j<nr_columns; j++) {
-                        in >> M[i][j];
+                if(nr_rows==0){
+                    input_type = to_type(type_string);
+                    save_empty_matrix(input_map, input_type);
+                    continue;
+                }
+                
+                vector< vector<Integer> > M(nr_rows);
+                in >> std::ws;
+                c=in.peek();
+                if(c=='s'){ // must be sparse
+                    string sparse_test;
+                    in >> sparse_test;
+                    if (sparse_test!= "sparse") {
+                        throw BadInputException("Error while reading "
+                        + type_string 
+                        + ": sparse matrix expected!");                            
+                    }
+                    for(long i=0;i<nr_rows;++i){
+                        bool success=read_sparse_vector(in,M[i],nr_columns);
+                        if(!success){
+                            throw BadInputException("Error while reading "
+                            + type_string 
+                            + ": corrupted sparse matrix");                        
+                        }
+                        
+                    }
+                } else{ // dense matrix
+                    for(i=0; i<nr_rows; i++){
+                        M[i].resize(nr_columns);
+                        for(j=0; j<nr_columns; j++) {
+                            in >> M[i][j];
+                        }
                     }
                 }
                 if(transpose)

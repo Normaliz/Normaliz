@@ -40,53 +40,54 @@ using namespace libnormaliz;
 
 OptionsHandler::OptionsHandler() {
     project_name_set = false;
+    output_dir_set=false;
     write_extra_files = false, write_all_files = false;
-	use_Big_Integer = false;
-	use_long_long = false;
-	ignoreInFileOpt = false;
-	nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
+        // use_Big_Integer = false;
+        use_long_long = false;
+        ignoreInFileOpt = false;
+        nmzInt_E = false, nmzInt_I = false, nmzInt_L = false;
     nr_threads = 0;
 }
 
 
 bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
-	vector<string> LongOptions;
-	string ShortOptions; //all options concatenated (including -)
-	// read command line options
-	for (int i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			if (argv[i][1] != '\0') {
-				if (argv[i][1] != 'x') {
-					if (argv[i][1] == '-') {
-						string LO = argv[i];
-						LO.erase(0, 2);
-						LongOptions.push_back(LO);
-					} else
-						ShortOptions = ShortOptions + argv[i];
-				} else if (argv[i][2] == '=') {
-                     #ifdef _OPENMP
-                     string Threads = argv[i];
-                     Threads.erase(0,3);
-                     if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                         omp_set_num_threads(nr_threads);
-                     } else {
-                         cerr<<"Error: Invalid option string "<<argv[i]<<endl;
+        vector<string> LongOptions;
+        string ShortOptions; //all options concatenated (including -)
+        // read command line options
+        for (int i = 1; i < argc; i++) {
+                if (argv[i][0] == '-') {
+                        if (argv[i][1] != '\0') {
+                                if (argv[i][1] != 'x') {
+                                        if (argv[i][1] == '-') {
+                                                string LO = argv[i];
+                                                LO.erase(0, 2);
+                                                LongOptions.push_back(LO);
+                                        } else
+                                                ShortOptions = ShortOptions + argv[i];
+                                } else if (argv[i][2] == '=') {
+                        #ifdef _OPENMP
+                        string Threads = argv[i];
+                        Threads.erase(0,3);
+                        if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
+                            omp_set_num_threads(nr_threads);
+                        } else {
+                            cerr<<"Error: Invalid option string "<<argv[i]<<endl;
                         exit(1);
-                     }
+                        }
                     #else
-					cerr << "Warning: Compiled without OpenMP support, option "
-							<< argv[i] << " ignored." << endl;
-					#endif
-				} else {
-					cerr << "Error: Invalid option string " << argv[i] << endl;
-					exit(1);
-				}
-			}
-		} else {
-		    setProjectName(argv[i]);
-		}
-	}
-	return handle_options(LongOptions, ShortOptions);
+                                        cerr << "Warning: Compiled without OpenMP support, option "
+                                                        << argv[i] << " ignored." << endl;
+                                        #endif
+                                } else {
+                                        cerr << "Error: Invalid option string " << argv[i] << endl;
+                                        exit(1);
+                                }
+                        }
+                } else {
+                    setProjectName(argv[i]);
+                }
+        }
+        return handle_options(LongOptions, ShortOptions);
 }
 
 void OptionsHandler::setProjectName(const string& s) {
@@ -111,6 +112,17 @@ void OptionsHandler::setProjectName(const string& s) {
         in2.close();
     }
     project_name_set = true;
+}
+
+void OptionsHandler::setOutputDirName(const string& s) {
+    output_dir=s;
+    char slash='/';
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        slash='\\';
+    #endif
+    if(output_dir[output_dir.size()-1]!=slash)
+        output_dir+=slash;
+    output_dir_set=true;
 }
 
 bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOptions) {
@@ -182,17 +194,20 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 cerr << "WARNING: deprecated option -e is ignored." << endl;
                 break;
             case 'B':  //use Big Integer
-                use_Big_Integer=true;
+                to_compute.set(ConeProperty::BigInt); // use_Big_Integer=true;
                 break;
-			case 'b':  //use the bottom decomposition for the triangulation
-			    to_compute.set(ConeProperty::BottomDecomposition);
-			    break;
-			case 'C':  //compute the class group
-				to_compute.set(ConeProperty::ClassGroup);
-				break;
-			case 'k':  //keep the order of the generators in Full_Cone
-		        to_compute.set(ConeProperty::KeepOrder);
-				break;
+            case 'b':  //use the bottom decomposition for the triangulation
+                to_compute.set(ConeProperty::BottomDecomposition);
+                break;
+            case 'C':  //compute the class group
+                to_compute.set(ConeProperty::ClassGroup);
+                break;
+            case 'k':  //keep the order of the generators in Full_Cone
+                to_compute.set(ConeProperty::KeepOrder);
+                break;
+            case 'o':  //suppress bottom decomposition in Full_Cone
+                to_compute.set(ConeProperty::NoBottomDec);
+                break;
             case 'M':  // compute minimal system of generators of integral closure
                        // as a module over original monoid
                 to_compute.set(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
@@ -227,6 +242,15 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'D':
                 to_compute.set(ConeProperty::ConeDecomposition);
                 break;
+            case 'P':
+                to_compute.set(ConeProperty::PrimalMode);
+                break;
+            case 'Y':
+                to_compute.set(ConeProperty::Symmetrize);
+                break;
+            case 'X':
+                to_compute.set(ConeProperty::NoSymmetrization);
+                break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
                 exit(1);
@@ -242,7 +266,20 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
     assert(AdmissibleOut.back()=="mod");
 
     // analyzing long options
-    for(size_t i=0; i<LongOptions.size();++i){
+    for(size_t i=0; i<LongOptions.size();++i){ 
+        size_t j;
+        for(j=0;j<LongOptions[i].size();++j){
+            if(LongOptions[i][j]=='=')
+                break;            
+        }
+        if(j<LongOptions[i].size()){
+            string OptName=LongOptions[i].substr(0,j);
+            string OptValue=LongOptions[i].substr(j+1,LongOptions[i].size()-1);
+            if(OptName=="OutputDir"){
+                setOutputDirName(OptValue);
+                continue;
+            }
+        }
         if(LongOptions[i]=="help"){
             return true; // indicate printing of help text
         }
@@ -254,10 +291,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             printVersion();
             exit(0);
         }
-        if(LongOptions[i]=="BigInt"){
+        /* if(LongOptions[i]=="BigInt"){
             use_Big_Integer=true;
             continue;
-        }
+        }*/
         if(LongOptions[i]=="LongLong"){
             use_long_long=true;
             continue;
@@ -285,8 +322,16 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         cerr << "Error: Unknown option --" << LongOptions[i] << endl;
         exit(1);
     }
+    
+    if(output_dir_set){
+        output_file=output_dir+pureName(project_name);
+    }
+    else
+        output_file=project_name;
+    
+    
 
-	return false; //no need to print help text
+    return false; //no need to print help text
 }
 
 template<typename Integer>
@@ -357,7 +402,7 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
         cerr << "ERROR: No project name set!" << endl;
         exit(1);
     }
-    Out.set_name(project_name);
+    Out.set_name(output_file);
 }
 
 bool OptionsHandler::anyNmzIntegrateOption() const {
@@ -387,13 +432,38 @@ string OptionsHandler::getNmzIntegrateOptions() const {
     nmz_options.append(" \"");
     nmz_options.append(project_name);
     nmz_options.append("\"");
+    if(output_dir_set){
+        nmz_options.append(" \"");
+        nmz_options.append("--OutputDir="+output_dir);
+        nmz_options.append("\"");
+    }
     return nmz_options;
 }
 
 bool OptionsHandler::activateDefaultMode() {
-    if (to_compute.goals().none()) {
+    if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) 
+                                  && !to_compute.test(ConeProperty::Approximate)) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }
     return false;
+}
+
+string pureName(const string& fullName){
+// extracts the pure filename
+
+    string slash="/";
+    #ifdef _WIN32 //for 32 and 64 bit windows
+        slash="\\";
+    #endif
+    size_t found = fullName.rfind(slash);
+    if(found==std::string::npos)
+        return(fullName);
+    found++;
+    size_t length=fullName.size()-found;
+    
+    // cout << "**************************** " << fullName.substr(found,length) << endl;
+    // exit(1);
+    return(fullName.substr(found,length));  	
+
 }

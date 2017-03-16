@@ -3,6 +3,8 @@
 2 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
+affine dimension of the polyhedron = 2 (maximal)
+rank of recession monoid = 1
 dimension of maximal subspace = 1
 
 dehomogenization:

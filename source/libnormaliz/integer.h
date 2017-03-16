@@ -149,7 +149,21 @@ template<typename Integer> Integer permutations_modulo(const size_t& a, const si
 //                     String conversion functions
 //---------------------------------------------------------------------------
 
-template<typename Integer> string toString(Integer a);
+// forward declaration to silence clang error:
+// 'operator<<' should be declared prior to the call site or in the global namespace
+template <typename T> std::ostream& operator<< (std::ostream& out, const vector<T>& vec);
+
+template<typename Integer> string toString(Integer a) {
+    ostringstream ostream;
+    ostream << a;
+    return ostream.str();
+}
+template<> inline string toString(mpz_class a) {
+    return a.get_str();
+}
+template<> inline string toString(mpq_class a) {
+    return a.get_str();
+}
 
 } // end libnormaliz
 

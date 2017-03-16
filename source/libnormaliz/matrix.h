@@ -178,6 +178,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void pretty_print(std::ostream& out, bool with_row_nr=false) const;  // writes matrix in a nice format to the stream                   // read a row
     size_t nr_of_rows() const;                       // returns nr
     size_t nr_of_columns() const;                   // returns nc
+    void set_nr_of_columns(size_t c);
     /* generates a pseudo random matrix for tests, entries form 0 to mod-1 */
     void random(int mod=3);
 

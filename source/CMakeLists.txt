@@ -15,8 +15,8 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 # The project name and the type of project
 PROJECT(libnormaliz)
 SET(VERSION_MAJOR 3)
-SET(VERSION_MINOR 1)
-SET(VERSION_PATCH 1)
+SET(VERSION_MINOR 2)
+SET(VERSION_PATCH 0)
 SET(VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 SET(VERSION ${VERSION_STRING})
 
@@ -147,15 +147,29 @@ ENDIF (NMZ_BUILD_STATIC)
 
 
 # handle usage of SCIP
-SET (NMZ_SCIP "NO" CACHE BOOL "Use SCIP")
-IF (NMZ_SCIP)
-  FIND_PACKAGE(SCIP REQUIRED)
-  SET (NMZ_SCIP_FLAGS "-DNMZ_SCIP")
-  INCLUDE_DIRECTORIES(${SCIP_INCLUDE_DIR})
-  MESSAGE(STATUS "Adding to compiler flags NMZ_SCIP_FLAGS=${NMZ_SCIP_FLAGS}")
-  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NMZ_SCIP_FLAGS}")
-ENDIF (NMZ_SCIP)
+SET (NMZ_SCIP "YES" CACHE BOOL "Use SCIP")
+FIND_PACKAGE(SCIP) # should always be defined
+IF(SCIP_FOUND)
+  IF(NMZ_SCIP)
+    SET (NMZ_SCIP_FLAGS "-DNMZ_SCIP")
+    INCLUDE_DIRECTORIES(${SCIP_INCLUDE_DIR})
+    MESSAGE(STATUS "Adding to compiler flags NMZ_SCIP_FLAGS=${NMZ_SCIP_FLAGS}")
+    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NMZ_SCIP_FLAGS}")
+  ENDIF(NMZ_SCIP)
+ELSE(SCIP_FOUND)
+    SET (SCIP_LIBRARY "")
+ENDIF(SCIP_FOUND)
 
+
+# handle compilation of nmzIntegrate
+SET (NMZ_INTEGRATE "YES" CACHE BOOL "Compile nmzIntegrate")
+IF (NMZ_INTEGRATE)
+  FIND_PACKAGE(COCOA)
+  IF(COCOA_FOUND)
+    INCLUDE_DIRECTORIES(${COCOA_INCLUDE_DIR})
+    ADD_SUBDIRECTORY(genEhrhart)
+  ENDIF(COCOA_FOUND)
+ENDIF (NMZ_INTEGRATE)
 
 # find gmp
 FIND_PACKAGE(GMP REQUIRED)
@@ -182,7 +196,7 @@ IF (NMZ_MIC_OFFLOAD)
   IF ( NOT UNIX OR APPLE )
     MESSAGE (FATAL_ERROR "Offload to mic only supported on Linux")
   ENDIF()
-  IF ( NMZ_SCIP )
+  IF ( NMZ_SCIP AND SCIP_FOUND ) 
     MESSAGE (FATAL_ERROR "Simultaneous use of offload and scip not supported")
   ENDIF()
 
@@ -212,7 +226,7 @@ ENDIF (NMZ_MIC_OFFLOAD)
 ADD_SUBDIRECTORY(libnormaliz)
 
 # add the normaliz executable
-ADD_EXECUTABLE (normaliz Normaliz.cpp)
+ADD_EXECUTABLE (normaliz normaliz.cpp)
 
 IF (NMZ_BUILD_STATIC)
   TARGET_LINK_LIBRARIES (normaliz normaliz-static)
@@ -228,14 +242,19 @@ ELSE (NMZ_BUILD_STATIC)
 ENDIF (NMZ_BUILD_STATIC)
 
 #link optional libs
-IF (NMZ_SCIP)
+IF (NMZ_SCIP AND SCIP_FOUND)
   MESSAGE(STATUS "Adding scip libraries to link ${SCIP_LIBRARY}")
   TARGET_LINK_LIBRARIES (normaliz ${SCIP_LIBRARY})
-ENDIF (NMZ_SCIP)
+ENDIF (NMZ_SCIP AND SCIP_FOUND)
 
 
 INSTALL(TARGETS normaliz DESTINATION bin)
 
+SET (NMZ_MAX "YES" CACHE BOOL "Compile with maxsimplex")
+IF (NMZ_MAX)
+    ADD_SUBDIRECTORY(maxsimplex)
+    #TARGET_LINK_LIBRARIES (normaliz maxsimplex) 
+ENDIF (NMZ_MAX)
 
 #custom make targets
 ADD_CUSTOM_TARGET (uninstall @echo uninstall package)
@@ -270,7 +289,7 @@ ADD_CUSTOM_TARGET (check)
 IF (UNIX)
   ADD_CUSTOM_COMMAND(
     COMMENT "run tests"
-    COMMAND make --directory=../test/ NORMALIZ=${CMAKE_CURRENT_BINARY_DIR}/normaliz
+    COMMAND make --directory=../test/ -f Makefile.classic NORMALIZ=${CMAKE_CURRENT_BINARY_DIR}/normaliz
     TARGET  check
     DEPENDS normaliz
   )

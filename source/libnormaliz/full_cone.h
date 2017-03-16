@@ -85,6 +85,7 @@ public:
     // control of what to compute
     bool do_triangulation;
     bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
+    bool explicit_h_vector; // to distinguish it from being set via default mode
     bool do_partial_triangulation;
     bool do_determinants;
     bool do_multiplicity;
@@ -97,13 +98,15 @@ public:
     bool do_excluded_faces;
     bool do_approximation;
     bool do_default_mode;
-	bool do_bottom_dec;
-	bool keep_order;
+    bool do_bottom_dec;
+    bool suppress_bottom_dec;
+    bool keep_order;
     bool do_class_group;
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
     bool stop_after_cone_dec;
+    bool do_hsop;
     
     bool do_extreme_rays;
     bool do_pointed;
@@ -169,6 +172,7 @@ public:
         size_t Mother;                     // Ident of positive mother if known, 0 if unknown
         bool is_positive_on_all_original_gens=false;
         bool is_negative_on_some_original_gen=false;
+        bool simplicial;                   // indicates whether facet is simplicial
     };
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
@@ -238,6 +242,7 @@ public:
     bool is_approximation;
     vector<vector<key_t>> approx_points_keys;
     Matrix<Integer> OriginalGenerators;
+    Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
@@ -246,7 +251,7 @@ public:
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA& hyp);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                     list<FACETDATA>& NewHyps);
+                     list<FACETDATA>& NewHyps, bool known_to_be_simplicial);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
@@ -273,7 +278,7 @@ public:
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
     void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
-    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements); //computes subdividing elements via approximation
+    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
 //    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
     
@@ -324,9 +329,9 @@ public:
     void check_grading_after_dual_mode();
 
     void minimize_support_hyperplanes();   
-    void compute_extreme_rays();
-    void compute_extreme_rays_compare();
-    void compute_extreme_rays_rank();
+    void compute_extreme_rays(bool use_facets=false);
+    void compute_extreme_rays_compare(bool use_facets);
+    void compute_extreme_rays_rank(bool use_facets);
     void select_deg1_elements();
 
     void check_pointed();
@@ -342,6 +347,13 @@ public:
     void do_vars_check(bool with_default);
     void reset_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
+    
+    void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
+    void set_simplicial(FACETDATA& hyp);
+    
+
+    void compute_hsop();
+    void heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
     
     void start_message();
     void end_message();
@@ -360,7 +372,7 @@ public:
  *                      Constructors
  *---------------------------------------------------------------------------
  */
-    Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constructor
+    Full_Cone(const Matrix<Integer>& M, bool do_make_prime=true);            //main constructor
     Full_Cone(Cone_Dual_Mode<Integer> &C);            // removes data from the argument!
     Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
 

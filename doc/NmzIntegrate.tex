@@ -94,11 +94,17 @@
 
 \def\ttt{\texttt}
 
+\def\version{3.1.3}
+\def\NmzDir{Normaliz-\version}
+\def\NmzMin{3.2.0}
+
+\def\Intversion{1.3.3}
+
 
 \begin{document}
 \vspace*{2cm}
 
- \centerline{\Large\bf NmzIntegrate 1.3.1} \vspace*{0.5cm}
+ \centerline{\Large\bf NmzIntegrate \Intversion} \vspace*{0.5cm}
  
  \centerline{\today}
  
@@ -126,7 +132,7 @@ Söger\\[14pt] \tt
 
 We assume in the following that the reader is familiar with
 Normaliz, in particular with its treatment of Ehrhart series
-and quasipolynomials. NmzIntegrate 1.3.1 requires Normaliz 3.1.1.
+and quasipolynomials. NmzIntegrate \Intversion requires Normaliz \NmzMin.
 
 Normaliz computes certain data for a monoid $$ M=C\cap L $$
 where $C\subset\RR^n$ is a rational, polyhedral and pointed
@@ -177,7 +183,7 @@ $\ell$ is the least common  multiple of the degrees of the
 extreme integral generators of $M$. See \cite{BS} for an
 elementary account and the algorithm used by NmzIntegrate.
 
-NmzIntegrate 1.3.1, like Normaliz 3.1.1 can compute Ehrhart series for
+NmzIntegrate \Intversion, like Normaliz \NmzMin can compute Ehrhart series for
 \emph{semiopen} cones. For them the monoid $M$ is replaced by the set
 $$
 M'=C'\cap L
@@ -283,7 +289,7 @@ Note: NmzIntegrate can only use the \emph{homogeneous} input types of Normaliz (
 \subsection{Basic input files}
 
 The files \verb+<project>.in+ and \verb+<polynomial>.pnm+ must be
-provided by the user. Normaliz needs \verb+<project>.in+ in
+provided by the user ()or are made by Normaliz if it calls NmzIntegtate on after symmetrization). Normaliz needs \verb+<project>.in+ in
 order to produce the files read by NmzIntegrate. The file
 \verb+<polynomial>.pnm+ contains the polynomial to be integrated.
 
@@ -356,12 +362,14 @@ NmzIntegrate is now using the CoCoALib input function for polynomials. In the pr
 
 \section{Running NmzIntegrate}
 
-There are three ways to run NmzIntegrate:
+There are five ways to run NmzIntegrate:
 \begin{enumerate}
 \item direct call from the command line,
-\item call from Normaliz (see Normaliz manual),
-\item from jNormaliz via Normaliz.
+\item call from Normaliz, (i) via one of the options \verb|-E,-I,-L| or (ii) implicitly via the option \verb|--Symmetrize, -Y| (see Normaliz manual),
+\item from jNormaliz via Normaliz (with the same two variants as in 2).
 \end{enumerate}
+
+Note that the implicit call from Normaliz via \verb|--Symmetrize| deletes the output file of NmzIntegrate, after the results have been transferred to Normaliz. The other three ways preserve the output file (and also the files used for the transfer of data from Normaliz to NmzIntegrate).
 
 The shortest possible command to start NmzIntegrate is
 \begin{Verbatim}
@@ -370,7 +378,8 @@ nmzIntegrate <project>
 This will run the default computation (ES) on the
 \verb+<project>+. The full input syntax is
 \begin{Verbatim}
-nmzIntegrate [-cEIL] [-x=<T>] [-F=<polynomial>] <project>
+nmzIntegrate [-cEIL] [-x=<T>] [--help] [--version]
+                         [-F=<polynomial>] [--OutputDir=<outdir>] <project>
 \end{Verbatim}
 where \ttt{-c} and \ttt{-x=<T>} have the same meaning as for
 Normaliz:
@@ -422,6 +431,14 @@ Normaliz, especially with a high number of parallel threads,
 due to the fact that it may have to cope with very long
 polynomials.
 
+One can explicitly set the output directory. This information is passed from NmzIntegrate to Normaliz and vice versa. The syntax is
+\begin{itemize}
+	\itemtt[{-}{-OutputDir=<outdir>}]. The path \ttt{<outdir<} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)	
+\end{itemize}
+Note that all output files, also those of Normaliz, will be written to the chosen directory. It must be created before Normaliz or NmzIntegrate is started.
+
+As usual, \verb|--help| displays a short help screen and \verb|--version| prints the version number to the standard poutput.
+
 \section{The output file}\label{output}
 
 If the option \verb+-F=<polynomial>+ is not set, the output is written to
@@ -439,16 +456,12 @@ form.
 The output file is essentially self explanatory. Nevertheless we have added two
 examples below. In addition you can have a look at the files
 \begin{center}
-\ttt{rationalES.intOut},\quad \ttt{rationalInt.intOut}\quad and\quad
-\ttt{rationalLC.intOut}.
+	\ttt{rationalES.intOut},\quad \ttt{rationalInt.intOut}\quad and\quad
+	\ttt{rationalLC.intOut}.
 \end{center}
 They were all produced from the example file \ttt{rational.in}
 in the Normaliz distribution and the file \ttt{rational.pnm},
 and \ttt{rational.intOut} was suitably renamed.
-
-The directory \ttt{example} contains further input files suited
-for NmzIntegrate --- look out for files with the suffix
-\ttt{pnm}.
 
 \subsection{A generalized Ehrhart series}
 
@@ -459,25 +472,25 @@ more detail in \cite{BS}. The file \ttt{CondorcetSymm.in} from the directory
 \begin{Verbatim}
 amb_space 8
 inequalities 3
-1 -1 1 1 1 -1 -1 -1
-1 1 -1 1 -1 1 -1 -1
-1 1 1 -1 -1 -1 1 -1
+-1 -1 -1 -1  1  1  1 1
+-1 -1  1  1 -1 -1  1 1
+-1  1 -1  1 -1  1 -1 1
 nonnegative
 total_degree
 \end{Verbatim}
 
 
-The \ttt{signs} describe the nonnegative orthant in $\RR^8$ and the linear
-forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{grading} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
+By \verb|nonnegative| we choose the nonnegative orthant in $\RR^8$ and the linear
+forms $\lambda_1,\lambda_2,\lambda_3$ specified by the \ttt{inequalities} cut out a cone from it by the conditions $\lambda_i(x)\ge 0$, $i=1,\dots,3$. The \ttt{total\_degree} gives degree $1$ to every coordinate. The polynomial (counting the preimages of $x$ under a projection $\RR_+^{24}\to\RR_+^8$) is
 $$
 f(x)=\binom{x_1+5}{5}(x_2+1)(x_3+1)(x_4+1)(x_5+1)(x_6+1)(x_7+1)\binom{x_8+5}{5}.
 $$
 It is given in \ttt{CondorcetSymm.pnm} by
 
 \begin{Verbatim}
-1/120*(x[1]+5)*(x[1]+4)*(x[1]+3)*(x[1]+2)*(x[1]+1)*
+(x[1]+1)*(x[1]+2)*(x[1]+3)*(x[1]+4)*(x[1]+5)*
 (x[2]+1)*(x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*
-1/120*(x[8]+5)*(x[8]+4)*(x[8]+3)*(x[8]+2)*(x[8]+1)
+(x[8]+1)*(x[8]+2)*(x[8]+3)*(x[8]+4)*(x[8]+5)*1/14400;
 \end{Verbatim}
 
 
@@ -512,7 +525,7 @@ Series denominator with 24 factors:
 
 It is to be read as follows:
 $$
-H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
+H_{M,f}(t)=\frac{1+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{(1-t^1)(1-t^2)^{14}(1-t^4)^{9}}
 $$
 Next we find the presentation of $H_{M,f}(t)$ as a rational function with
 coprime numerator and denominator (which in this case is the same as the
@@ -528,7 +541,7 @@ Series cyclotomic denominator:
 
 This means
 $$
-H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1\zeta_2^{23}\zeta_4^{9}}
+H_{M,f}(t)=\frac{1+t^{}+5t^{1}+133t^{2}+363t^{3}+\dots+481t^{38}+15t^{39}+6t^{40}}{\zeta_1^{24}\zeta_2^{23}\zeta_4^{9}}
 $$
 where $\zeta_i$ is the $i$-th cyclotomic polynomial. Now the quasipolynomial:
 
@@ -558,14 +571,14 @@ Virtual multiplicity: 1717/8192
 Now suppose we want to work with the strict inequalities $\lambda_i(x)>0$, as
 customary in voting theory (in order to exclude draws). Then we replace
 \ttt{inequalities} by \ttt{excluded\_faces} to obtain the file
-\ttt{CondorcetSmmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
+\ttt{CondorcetSymmSemi.in}. the polynomial hasn't changed, and so NmzIntegrate
 is called by
 
 \begin{Verbatim}
 nmzIntegrate -c -F=CondorcetSymm example/CondorcetSymmSemi
 \end{Verbatim}
 
-The output file is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
+The output is now in \ttt{CondorcetSymmSemi.CondorcetSymm.intOut}.
 
 \subsection{An integral}
 The paper \cite{JMV} asks for the computation of the integral
@@ -628,6 +641,7 @@ x[2] -x[4]  mult 2                    Integral: 27773/29515186701000
 
 
 
+
 \section{Distribution and installation}
 
 The basic package (source, documentation, examples) for
@@ -643,46 +657,25 @@ Likewise the executable of NmzIntegrate is contained in the
 Normaliz executable package for your system.
 Therefore NmzIntegrate does not need a separate installation.
 
+\section{Restrictions under MS Windows}\label{Comp}
+
+Unfortunately we have not been able to recompile NmzIntegrate under MS Windows. The newest available binary file is of version 1.3. It has the following restrictions:
+\begin{arab}
+	\item Due to a bug it is possible that a segmentation fault occurs if excluded faces are used.
+	\item The option \verb|OutputDir| is not available.
+	\item One cannot use the option \verb|ConeDecomposition| of Normaliz. (Not a real problem in this context, of course.)
+\end{arab}
+
 \section{Compilation}\label{Comp}
 
-Before the compilation of NmzIntegrate you must compile
-Normaliz 3.1.1 and CoCoALib 0.99540 \cite{CoC} (not
-contained in the Normaliz distribution).
-
-First compile Normaliz including libnormaliz by running \ttt{make} in the source directory.
-For the compilation of CoCoALib run
-
-\centerline{\ttt{./configure -{}-threadsafe-hack}}
-
-in the CoCoA root directory. The option \ttt{threadsafe-hack} is necessary to ensure correct parallel execution of nmzIntegrate.
-If you want to use Normaliz inside CoCoA or CoCoALib also add
-
-\centerline{\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.0/source/libnormaliz/libnormaliz.a}}
-
-to the configuration call, where the path to Normaliz has to be adjusted to your system. If the configuration was successful,
-
-\centerline{\ttt{make library}}
-
-will compile CoCoALib.
-
-At last compile nmzIntegrate.
-Navigate to the directory
-\ttt{genEhrhart} and run \ttt{make}. You should move the
-executable \ttt{nmzIntegrate} to the directory that contains
-\ttt{normaliz}.
-
-Depending on the location of CoCoALib, you may have to adjust
-the path leading to it in the \ttt{Makefile} in
-\ttt{genEhrhart}.
-
-These instructions apply for Linux and Mac OS. If you should want to compile NmzIntegrate under MS Windows,
-please contact the authors.
-
+Before the compilation of NmzIntegrate you must install
+CoCoALib 0.99540 \cite{CoC} (not
+contained in the Normaliz distribution). See the Normaliz manual for the details.
 
 
 \section{Copyright and how to cite}
 
-NmzIntegrate 1.1 is free software licensed under the GNU
+NmzIntegrate is free software licensed under the GNU
 General Public License, version 3. You can redistribute it
 and/or modify it under the terms of the GNU General Public
 License as published by the Free Software Foundation, either
@@ -766,6 +759,18 @@ project.
 
 \end{enumerate}
 
+\subsection{1.3.1 $\to$ 1.3.2}
+
+\begin{enumerate}
+	\item OutputDir added.
+\end{enumerate}
+
+\subsection{1.3.2 $\to$ \Intversion}
+\begin{enumerate}
+	\item Manual adapted to the introduction of option \verb|--Symmetrize| in Normaliz.
+	\item Bugfix
+\end{enumerate}
+
 \begin{thebibliography}{15.}
 
 \bibitem{CoC} J. Abbott and A. Bigatti, \emph{CoCoALib}. A GPL
@@ -783,3 +788,15 @@ classical varieties}.  Proc. Lond. Math. Soc. (3) 110 (2015), 1033--1055.
 
 
 \end{document}
+
+\begin{footnotesize}
+Remark.\enspace 
+If you want to use Normaliz inside CoCoA or CoCoALib, go back to the CoCoA root directory and run
+
+\centerline{	
+\ttt{./configure -{}-threadsafe-hack\ }\ttt{-{}-with-libnormaliz=/path/to/Normaliz3.1/source/libnormaliz/libnormaliz.a}}
+
+and
+
+\centerline{\ttt{make library}}
+\end{footnotesize}

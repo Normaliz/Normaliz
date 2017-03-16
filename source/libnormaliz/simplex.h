@@ -167,7 +167,8 @@ public:
     // evaluation in parallel threads
     void Simplex_parallel_evaluation();  
 
-        vector<key_t> get_key();
+    vector<key_t> get_key();
+    Integer get_volume();
 
     
     void print_all();
