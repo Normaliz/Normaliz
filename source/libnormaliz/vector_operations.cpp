@@ -723,6 +723,13 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
     return hsop;
 }
 
+// compare sizes of v_scalar_product_unequal_vectors_begin
+
+template<typename T>
+bool compare_sizes(const vector<T>& v, const vector<T>& w){
+    return v.size() < w.size();
+}
+
 template bool v_is_nonnegative<long>(const vector<long>&);
 template bool v_is_nonnegative<long long>(const vector<long long>&);
 template bool v_is_nonnegative<mpz_class>(const vector<mpz_class>&);

@@ -225,6 +225,13 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix);
 
+// compare sizes of v_scalar_product_unequal_vectors_begin
+
+template<typename T>
+bool compare_sizes(const vector<T>& v, const vector<T>& w){
+    return v.size() < w.size();
+}
+
 } // namespace
 
 //---------------------------------------------------------------------------

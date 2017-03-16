@@ -2276,7 +2276,7 @@ void Full_Cone<Integer>::build_top_cone() {
 
     }   
 
-    try_offload(0);
+    // try_offload(0); // superfluous since tried immediately in evaluate_stored_pyramids(0)
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
 #ifdef NMZ_MIC_OFFLOAD

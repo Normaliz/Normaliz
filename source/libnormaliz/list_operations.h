@@ -95,6 +95,18 @@ void random_order(list<T>& LL){
 
 }
 
+//---------------------------------------------------------------------------
+
+template<typename T>
+void random_order(list<T>& LL,typename list<T>::iterator from, typename  list<T>::iterator to ){
+
+    list<T> MM;
+    MM.splice(MM.begin(),LL,from,to);
+    random_order(MM);
+    LL.splice(LL.begin(),MM);
+}
+
+
 }
 
 //---------------------------------------------------------------------------
