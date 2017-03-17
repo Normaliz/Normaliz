@@ -227,10 +227,6 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix);
 
 // compare sizes of v_scalar_product_unequal_vectors_begin
 
-// template<typename T>
-bool compare_sizes(const vector<key_t>& v, const vector<key_t>& w){
-    return v.size() < w.size();
-}
 
 } // namespace
 

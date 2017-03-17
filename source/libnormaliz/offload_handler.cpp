@@ -707,6 +707,11 @@ void MicOffloader<Integer>::init(Full_Cone<Integer>& fc)
 
 //---------------------------------------------------------------------------
 
+// template<typename T>
+bool compare_sizes(const vector<key_t>& v, const vector<key_t>& w){
+    return v.size() < w.size();
+}
+
 template<typename Integer>
 void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_t level)
 {
