@@ -976,7 +976,7 @@ try{
       if(C.getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
         mpq_class genMultQ;
         long deg=C.getIntData().getWeightedEhrhartQuasiPolynomial()[0].size()-1;
-        long virtDeg=C.getRank()+C.getIntData().getDegreeOfPolynomial();
+        long virtDeg=C.getRank()+C.getIntData().getDegreeOfPolynomial()-1;
         if(deg==virtDeg)   
             genMultQ=C.getIntData().getWeightedEhrhartQuasiPolynomial()[0][virtDeg];
         genMultQ*=ourFactorial(virtDeg);
