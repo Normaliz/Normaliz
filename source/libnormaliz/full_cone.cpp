@@ -1723,21 +1723,13 @@ void Full_Cone<Integer>::try_offload_loc(long place,size_t max_level){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
-
-    /* random_order(Pyramids[level]); 
-    auto py=Pyramids[level].begin();
-    for(;py!=Pyramids[level].end();++py)
-        cout << py->size() << " ";
-    cout << endl;*/
+    
 #ifdef NMZ_MIC_OFFLOAD
     if(level==0 && _Offload_get_device_number() >=  0){
         verboseOutput() << "Start evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
         // verboseOutput() << "In parallel " << omp_in_parallel() << endl;
 }
 #endif // NMZ_MIC_OFFLOAD
-
-
-
 
     assert(!omp_in_parallel());
     assert(!is_pyramid);
