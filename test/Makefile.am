@@ -1,11 +1,16 @@
 # TODO: Makefile.classic uses GNU make features.
 # For portability it would be better to integrate Makefile.classic here and only use automake features.
 
+NMZ_TEST_TARGETS = all
+if NMZ_INTEGRATE
+NMZ_TEST_TARGETS += testInt
+endif
+
 check-local:
 	-rm -rf run_tests
 	mkdir run_tests
 	(cd $(srcdir) && tar cf - $(NMZTESTS)) | (cd run_tests && tar xf -)
-	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic NORMALIZ=$(abs_top_builddir)/source/normaliz)
+	(cd run_tests && $(MAKE) -f $(abs_srcdir)/Makefile.classic $(NMZ_TEST_TARGETS) NORMALIZ=$(abs_top_builddir)/source/normaliz)
 
 clean-local:
 	$(MAKE) -f $(srcdir)/Makefile.classic clean
@@ -1047,5 +1052,33 @@ NMZTESTS = test-/23.in					\
 	test-w/squaref0.ref				\
 	test-w/squaref1.in				\
 	test-w/squaref1.ref
+
+NMZTESTS +=						\
+	test-Int/Condorcet-q.in				\
+	test-Int/Condorcet-q.ref			\
+	test-Int/Condorcet-q.symm.ref			\
+	test-Int/Condorcet-v.in				\
+	test-Int/Condorcet-v.ref			\
+	test-Int/Condorcet-v.symm.ref			\
+	test-Int/CondorcetSemi-q.in			\
+	test-Int/CondorcetSemi-q.ref			\
+	test-Int/CondorcetSemi-q.symm.ref		\
+	test-Int/j462.in				\
+	test-Int/j462.ref				\
+	test-Int/PluralityVsCutoff-q.in			\
+	test-Int/PluralityVsCutoff-q.ref		\
+	test-Int/PluralityVsCutoff-q.symm.ref		\
+	test-Int/PluralityVsCutoff-v.in			\
+	test-Int/PluralityVsCutoff-v.ref		\
+	test-Int/PluralityVsCutoff-v.symm.ref		\
+	test-Int/PluralityVsCutoffSemi-q.in		\
+	test-Int/PluralityVsCutoffSemi-q.ref		\
+	test-Int/PluralityVsCutoffSemi-q.symm.ref	\
+	test-Int/zero-E.in				\
+	test-Int/zero-E.ref				\
+	test-Int/zero-I.in				\
+	test-Int/zero-I.ref				\
+	test-Int/zero-L.in				\
+	test-Int/zero-L.ref
 
 EXTRA_DIST += $(NMZTESTS)
