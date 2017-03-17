@@ -741,29 +741,31 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
     if(!at_least_one_idle)
         return;
     
-    sort(fc.Pyramids[level],compare_sizes);
-    
-    typename list< vector<key_t> >::iterator p;
-    size_t size_sum=0;
-    for(p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p)
-        size_sum+=p->size();
-    size_t size_bound=2*size:sum/fc.nrPyramids[level]; // 2*average size
-
-    size_t nr_low_size_pyrs=0;
-    
-    for(p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p){
-            if(p->size() > size_bound)
-                break;
-            else
-                nr_low_size_pyrs++;
+    if(Pyramids_scramled[level]){
+        fc.Pyramids[level]).reverse(); // bring the big pyramids to the rear
+    } else{
+        Pyramids_scramled[level]=true; // will not be scrambeld again
+        sort(fc.Pyramids[level],compare_sizes);
+        
+        typename list< vector<key_t> >::iterator p;
+        size_t size_sum=0;
+        for(p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p)
+            size_sum+=p->size();
+        size_t size_bound=2*size:sum/fc.nrPyramids[level]; // 2*average size
+        
+        for(p=fc.Pyramids[level].begin(); p!=fc.Pyramids[level].end();++p){
+                if(p->size() > size_bound)
+                    break;
+        }
+        
+        random_order(fc.Pyramids[level],fc.Pyramids[level].begin(),p);
     }
-    
-    size_t nr_transfer = min(nr_low_size_pyrs/fraction, 25000ul);
-    random_order(fc.Pyramids[level],fc.Pyramids[level].begin(),p);
     
     // offload some pyramids
     list< vector<key_t> > pyrs;
     vector<bool> started(nr_handlers, false);
+    
+    size_t nr_transfer = min(nrPyramids[level]/fraction, 25000ul);
 
     for (int i=0; i<nr_handlers; ++i)
     {

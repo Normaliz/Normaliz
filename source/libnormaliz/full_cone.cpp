@@ -1748,6 +1748,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     if (Pyramids.size() < level+2) {
         Pyramids.resize(level+2);      // provide space for a new generation
         nrPyramids.resize(level+2, 0);
+        Pyramids_scrambled.resize(level+2, false);
     }
 
     size_t eval_down_to = 0;
@@ -4792,6 +4793,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     
     Pyramids.resize(20);  // prepare storage for pyramids
     nrPyramids.resize(20,0);
+    Pyramids_scrambled.resize(20,false);
       
     recursion_allowed=true;
     
