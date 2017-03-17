@@ -741,10 +741,10 @@ void MicOffloader<Integer>::offload_pyramids(Full_Cone<Integer>& fc, const size_
     if(!at_least_one_idle)
         return;
     
-    if(fc.Pyramids_scramled[level]){
+    if(fc.Pyramids_scrambled[level]){
         fc.Pyramids[level].reverse(); // bring the big pyramids to the rear
     } else{
-        Pyramids_scramled[level]=true; // will not be scrambeld again
+        fc.Pyramids_scrambled[level]=true; // will not be scrambeld again
         fc.Pyramids[level].sort(compare_sizes);
         
         typename list< vector<key_t> >::iterator p;
