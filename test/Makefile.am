@@ -1056,24 +1056,24 @@ NMZTESTS = test-/23.in					\
 NMZTESTS +=						\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
-	test-Int/Condorcet-q.symm.ref			\
 	test-Int/Condorcet-v.in				\
 	test-Int/Condorcet-v.ref			\
-	test-Int/Condorcet-v.symm.ref			\
 	test-Int/CondorcetSemi-q.in			\
 	test-Int/CondorcetSemi-q.ref			\
-	test-Int/CondorcetSemi-q.symm.ref		\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
 	test-Int/PluralityVsCutoff-q.in			\
 	test-Int/PluralityVsCutoff-q.ref		\
-	test-Int/PluralityVsCutoff-q.symm.ref		\
 	test-Int/PluralityVsCutoff-v.in			\
 	test-Int/PluralityVsCutoff-v.ref		\
-	test-Int/PluralityVsCutoff-v.symm.ref		\
 	test-Int/PluralityVsCutoffSemi-q.in		\
 	test-Int/PluralityVsCutoffSemi-q.ref		\
-	test-Int/PluralityVsCutoffSemi-q.symm.ref	\
+	test-Int/rational-E.in				\
+	test-Int/rational-E.ref				\
+	test-Int/rational-I.in				\
+	test-Int/rational-I.ref				\
+	test-Int/rational-L.in				\
+	test-Int/rational-L.ref				\
 	test-Int/zero-E.in				\
 	test-Int/zero-E.ref				\
 	test-Int/zero-I.in				\
