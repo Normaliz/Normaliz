@@ -899,6 +899,7 @@ void IntegrationData::setVirtualMultiplicity(const mpq_class I){
 
 void IntegrationData::setWeightedEhrhartSeries(const pair<HilbertSeries, mpz_class>& E){
     weighted_Ehrhart_series=E;
+    weighted_Ehrhart_series.first.adjustShift();
 }
 
 void IntegrationData::setHomogeneity(const bool hom){
