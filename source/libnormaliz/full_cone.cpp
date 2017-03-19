@@ -1725,6 +1725,8 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
     
 #ifdef NMZ_MIC_OFFLOAD
+    Pyramids_scrambled[level]=false;
+    
     if(level==0 && _Offload_get_device_number() >=  0){
         verboseOutput() << "Start evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
         // verboseOutput() << "In parallel " << omp_in_parallel() << endl;
