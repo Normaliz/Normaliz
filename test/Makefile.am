@@ -1062,12 +1062,6 @@ NMZTESTS +=						\
 	test-Int/CondorcetSemi-q.ref			\
 	test-Int/j462.in				\
 	test-Int/j462.ref				\
-	test-Int/PluralityVsCutoff-q.in			\
-	test-Int/PluralityVsCutoff-q.ref		\
-	test-Int/PluralityVsCutoff-v.in			\
-	test-Int/PluralityVsCutoff-v.ref		\
-	test-Int/PluralityVsCutoffSemi-q.in		\
-	test-Int/PluralityVsCutoffSemi-q.ref		\
 	test-Int/rational-E.in				\
 	test-Int/rational-E.ref				\
 	test-Int/rational-I.in				\
