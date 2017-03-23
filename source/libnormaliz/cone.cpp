@@ -147,6 +147,30 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
     }
 }
 
+bool denominator_allowed(InputType input_type){
+    
+    switch(input_type){
+        
+        case Type::congruences:
+        case Type::inhom_congruences:
+        case Type::grading:
+        case Type::dehomogenization:
+        case Type::lattice:
+        case Type::normalization:
+        case Type::cone_and_lattice:
+        case Type::offset:
+        case Type::rees_algebra:
+        case Type::lattice_ideal:
+        case Type::signs:
+        case Type::strict_signs:
+            return false;
+            break;
+        default:
+            return true;
+        break;
+    }
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -190,6 +214,51 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
     process_multi_input(multi_input_data);
 }
 
+// now with mpq_class input
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const vector< vector<mpq_class> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<mpq_class> >& Input1,
+                    InputType type2, const vector< vector<mpq_class> >& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<mpq_class> >& Input1,
+                    InputType type2, const vector< vector<mpq_class> >& Input2,
+                    InputType type3, const vector< vector<mpq_class> >& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    multi_input_data[type3] = Input3;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, vector< vector<mpq_class> > >& multi_input_data) {
+    process_multi_input(multi_input_data);
+}
+
+//---------------------------------------------------------------------------
+// now with Matrix
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -237,6 +306,7 @@ Cone<Integer>::Cone(const map< InputType, Matrix<Integer> >& multi_input_data_Ma
     }
     process_multi_input(multi_input_data);
 }
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -249,6 +319,71 @@ Cone<Integer>::~Cone() {
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
+
+    map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);    
+    // since polytope will be comverted to cone, we must do some checks here
+    if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
+           throw BadInputException("No explicit grading allowed with polytope!");
+    }
+    if(exists_element(multi_input_data,Type::cone) && exists_element(multi_input_data,Type::polytope)){
+        throw BadInputException("Illegal combination of cone generator types!");
+    }
+    
+    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
+    
+    // special treatment of polytope and strict_inequalities
+    if(exists_element(multi_input_data,Type::polytope)){
+        size_t dim;
+        if(multi_input_data[Type::polytope].size()>0){
+            dim=multi_input_data[Type::polytope][0].size()+1;
+            vector<vector<Integer> > grading;
+            grading.push_back(vector<Integer>(dim));
+            grading[0][dim-1]=1;
+            multi_input_data_ZZ[Type::grading]=grading;
+        }
+        multi_input_data[Type::cone]=multi_input_data[Type::polytope];
+        multi_input_data.erase(Type::cone);
+        for(size_t i=0;i<multi_input_data[Type::cone].size();++i){
+            multi_input_data[Type::cone][i].resize(dim);
+            multi_input_data[Type::cone][i][dim-1]=1;
+        }
+    }
+    
+    if(exists_element(multi_input_data,Type::strict_inequalities)){
+        size_t dim;
+        if(multi_input_data[Type::strict_inequalities].size()>0)
+            dim=multi_input_data[Type::strict_inequalities][0].size()+1;
+        for(size_t i=0;i<multi_input_data[Type::strict_inequalities].size();++i){
+            vector<mpq_class> transfer=multi_input_data[Type::strict_inequalities][i];
+            transfer.resize(dim);
+            transfer[dim-1]=-1;
+            multi_input_data[Type::inhom_inequalities].push_back(transfer);
+        }
+        multi_input_data.erase(Type::strict_inequalities);
+    }
+    
+    // now we clear denominators
+    auto it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it) {
+        for(size_t i=0;i < it->second.size();++i){ 
+            mpz_class common_denom=1;
+            for(size_t j=0;j<it->second[i].size();++j)
+                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den()); 
+            if(common_denom>1 && !denominator_allowed(it->first))
+                throw BadInputException("Proper fraction not allowed in all input types");
+            vector<Integer> transfer(it->second[i].size());
+            for(size_t j=0;j<it->second[i].size();++j){
+                it->second[i][j]*=common_denom;
+                convert(transfer[j],it->second[i][j].get_num());
+            }
+            multi_input_data_ZZ[it->first].push_back(transfer);
+        }
+    }
+    
+    process_multi_input(multi_input_data_ZZ);
+}
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
@@ -3257,5 +3392,6 @@ void Cone<Integer>::NotComputable (string message){
     if(!default_mode)
         throw NotComputableException(message);
 }
+
 
 } // end namespace libnormaliz

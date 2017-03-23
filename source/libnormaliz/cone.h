@@ -85,7 +85,24 @@ public:
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
     
-    // Now with Matrix
+//-----------------------------------------------------------------------------
+// the same for mpq_class
+    
+    Cone(InputType type, const vector< vector<mpq_class> >& input_data);
+
+    Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
+         InputType type2, const vector< vector<mpq_class> >& input_data2);
+
+    Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
+         InputType type2, const vector< vector<mpq_class> >& input_data2,
+         InputType type3, const vector< vector<mpq_class> >& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , vector< vector<mpq_class> > >& multi_input_data);
+
+//-----------------------------------------------------------------------------
+// Now with Matrix
+    
     Cone(InputType type, const Matrix<Integer>& input_data);
 
     Cone(InputType type1, const Matrix<Integer>& input_data1,
@@ -97,6 +114,7 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , Matrix<Integer> >& multi_input_data);
+    
 //---------------------------------------------------------------------------
 //                                Destructor
 //---------------------------------------------------------------------------
@@ -349,6 +367,8 @@ private:
 
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data);
+    
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
