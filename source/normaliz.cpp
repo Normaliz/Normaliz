@@ -138,7 +138,8 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
+
+int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
 
 //---------------------------------------------------------------------------
 
@@ -166,65 +167,31 @@ int main(int argc, char* argv[])
     }
     string arg0(argv[0]);
     
-    if (!options.isUseLongLong()) {
-        process_data<mpz_class>(options, command_line,arg0);
-    }
-    // the previous process_data might return unsuccessfully if the input file specifies to use long long
-    if (options.isUseLongLong()) {
-        process_data<long long>(options, command_line,arg0);
-    }
+    process_data(options, command_line,arg0);
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
-
-#ifndef NCATCH
-    try {
-#endif
-
+template<typename Integer>
+void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
+                                  vector< vector<mpq_class> > >& input, const string& polynomial){
+    
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
-
-    string name_in=options.getProjectName()+".in";
-    const char* file_in=name_in.c_str();
-    ifstream in;
-    in.open(file_in,ifstream::in);
-    if ( !in.is_open() ) {
-        cerr << "error: Failed to open file "<<name_in<<"."<<endl;
-        exit(1);
-    }
-
-    //read the file
-    string polynomial="";
-    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in, options,polynomial);
-
+    
     options.activateDefaultMode(); // only if no real cone property is given!
 
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
-    in.close();
-
-    // if the input file specifies to use long long, we stop here and do it again in long long
-    if (using_GMP<Integer>() && options.isUseLongLong()) {
-        return 1;
-    }
-
-    if (verbose) {
-        cout << "------------------------------------------------------------" << endl;
-        cout << "Command line: " << command_line << endl;
-        cout << "Compute: " << options.getToCompute() << endl;
-    }
-
-    Cone<Integer> MyCone = Cone<Integer>(input);
+   Cone<Integer> MyCone = Cone<Integer>(input);
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
     MyCone.setPolynomial(polynomial);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
-    MyCone.set_nmz_call(arg0);
+    // MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
     } catch(const NotComputableException& e) {
@@ -251,7 +218,44 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
         SymmOut.setCone(MyCone.getSymmetrizedCone());
         SymmOut.write_files();        
     }
+#endif    
+}
+
+
+//---------------------------------------------------------------------------
+
+int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
+
+#ifndef NCATCH
+    try {
 #endif
+
+
+    string name_in=options.getProjectName()+".in";
+    const char* file_in=name_in.c_str();
+    ifstream in;
+    in.open(file_in,ifstream::in);
+    if ( !in.is_open() ) {
+        cerr << "error: Failed to open file "<<name_in<<"."<<endl;
+        exit(1);
+    }
+
+    //read the file
+    string polynomial="";
+    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial);
+
+    in.close();
+
+    if (verbose) {
+        cout << "------------------------------------------------------------" << endl;
+        cout << "Command line: " << command_line << endl;
+        cout << "Compute: " << options.getToCompute() << endl;
+    }
+
+    if(options.isUseLongLong())
+        compute_and_output<long long>(options, input, polynomial);
+    else
+        compute_and_output<mpz_class>(options, input, polynomial);  
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {

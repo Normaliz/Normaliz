@@ -344,7 +344,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
             multi_input_data_ZZ[Type::grading]=grading;
         }
         multi_input_data[Type::cone]=multi_input_data[Type::polytope];
-        multi_input_data.erase(Type::cone);
+        multi_input_data.erase(Type::polytope);
         for(size_t i=0;i<multi_input_data[Type::cone].size();++i){
             multi_input_data[Type::cone][i].resize(dim);
             multi_input_data[Type::cone][i][dim-1]=1;

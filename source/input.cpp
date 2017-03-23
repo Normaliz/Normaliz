@@ -45,9 +45,8 @@ void skip_comment(istream& in) {
     throw BadInputException("Incomplete comment!");
 }
 
-template<typename Integer>
-void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
-        InputType input_type, const vector<vector<Integer> >& M) {
+void save_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
+        InputType input_type, const vector<vector<mpq_class> >& M) {
     //check if this type already exists
     if (exists_element(input_map, input_type)) {
         /*throw BadInputException("Multiple inputs of type \"" + type_string
@@ -58,41 +57,40 @@ void save_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
     input_map[input_type] = M;
 }
 
-template<typename Integer>
-void save_empty_matrix(map<Type::InputType, vector<vector<Integer> > >& input_map,
+void save_empty_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
         InputType input_type){
     
-    vector<vector<Integer> > M;
+    vector<vector<mpq_class> > M;
     save_matrix(input_map, input_type, M);   
 }
 
-template <typename Integer>
-vector<vector<Integer> > transpose_mat(const vector<vector<Integer> >& mat){
+
+vector<vector<mpq_class> > transpose_mat(const vector<vector<mpq_class> >& mat){
 
     if(mat.size()==0 || mat[0].size()==0)
-        return vector<vector<Integer> >(0);
+        return vector<vector<mpq_class> >(0);
     size_t m=mat[0].size();
     size_t n=mat.size();
-    vector<vector<Integer> > transpose(m,vector<Integer> (n,0));
+    vector<vector<mpq_class> > transpose(m,vector<mpq_class> (n,0));
     for(size_t i=0;i<m;++i)
         for(size_t j=0;j<n;++j)
             transpose[i][j]=mat[j][i];
     return transpose;
 }
 
-template <typename Integer>
-void append_row(const vector<Integer> row, map <Type::InputType, vector< vector<Integer> > >& input_map,
+
+void append_row(const vector<mpq_class> row, map <Type::InputType, vector< vector<mpq_class> > >& input_map,
                     Type::InputType input_type) {
     
-    vector<vector<Integer> > one_row(1,row);
+    vector<vector<mpq_class> > one_row(1,row);
     save_matrix(input_map,input_type,one_row); 
 }
 
-template <typename Integer>
-void process_constraint(const string& rel, const vector<Integer>& left, Integer right, const Integer modulus, 
-                        map <Type::InputType, vector< vector<Integer> > >& input_map, bool forced_hom) {
+
+void process_constraint(const string& rel, const vector<mpq_class>& left, mpq_class right, const mpq_class modulus, 
+                        map <Type::InputType, vector< vector<mpq_class> > >& input_map, bool forced_hom) {
     
-    vector<Integer> row=left;
+    vector<mpq_class> row=left;
     bool inhomogeneous=false;
     if(right!=0 || rel=="<" || rel==">")
         inhomogeneous=true;
@@ -153,8 +151,8 @@ void process_constraint(const string& rel, const vector<Integer>& left, Integer 
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
-template <typename Integer>
-bool read_modulus(istream& in, Integer& modulus) {
+
+bool read_modulus(istream& in, mpq_class& modulus) {
 
     in >> std::ws;  // gobble any leading white space
     char dummy;
@@ -171,12 +169,12 @@ bool read_modulus(istream& in, Integer& modulus) {
     return true;
 }
 
-template <typename Integer>
-void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, Integer& right, Integer& modulus, bool forced_hom) {
+
+void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left, mpq_class& right, mpq_class& modulus, bool forced_hom) {
     
     bool congruence=false;
     bool modulus_read=false;
-    Integer side=1,sign;
+    mpq_class side=1,sign;
     right=0;
     long hom_correction=0;
     if(forced_hom)
@@ -235,7 +233,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, I
         if(c=='+'){
             in >> c;            
         }
-        Integer entry=1;
+        mpq_class entry=1;
         in >> std::ws;
         c = in.peek();
         if(c!='x'){
@@ -276,8 +274,8 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Integer>& left, I
 }
 
 
-template <typename Integer>
-void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<Integer> > >& input_map, bool forced_hom) {
+
+void read_constraints(istream& in, long dim, map <Type::InputType, vector< vector<mpq_class> > >& input_map, bool forced_hom) {
 
     long nr_constraints;
     in >> nr_constraints;
@@ -307,9 +305,9 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         hom_correction=1;
     for(long i=0;i< nr_constraints; ++i) {
         
-        vector<Integer> left(dim-hom_correction);
+        vector<mpq_class> left(dim-hom_correction);
         string rel, modulus_str;
-        Integer right, modulus=0;
+        mpq_class right, modulus=0;
         
         if(symbolic){
             read_symbolic_constraint(in,rel,left,right,modulus,forced_hom);            
@@ -348,10 +346,10 @@ void read_polynomial(istream& in, string& polynomial) {
     }
 }
 
-template <typename Integer>
-bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
+
+bool read_sparse_vector(istream& in, vector<mpq_class>& input_vec, long length){
     
-    input_vec=vector<Integer> (length,0);
+    input_vec=vector<mpq_class> (length,0);
     char dummy;
     
     while(true){
@@ -373,7 +371,7 @@ bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
         if(c!=':')
             return false;
         in >> dummy; // skip :
-        Integer value;
+        mpq_class value;
         in >> value;
         if(in.fail())
             return false;
@@ -381,8 +379,8 @@ bool read_sparse_vector(istream& in, vector<Integer>& input_vec, long length){
     }
 }
 
-template <typename Integer>
-bool read_formatted_vector(istream& in, vector<Integer>& input_vec) {
+
+bool read_formatted_vector(istream& in, vector<mpq_class>& input_vec) {
 
     input_vec.clear();
     in >> std::ws;
@@ -397,7 +395,7 @@ bool read_formatted_vector(istream& in, vector<Integer>& input_vec) {
             in >> dummy;
             return true;
         }
-        Integer number;
+        mpq_class number;
         in >> number;
         if(in.fail())
             return false;
@@ -411,8 +409,8 @@ bool read_formatted_vector(istream& in, vector<Integer>& input_vec) {
     }
 }
 
-template <typename Integer>
-bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat, bool transpose) {
+
+bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, bool transpose) {
     input_mat.clear();
     in >> std::ws;
     char dummy;
@@ -428,7 +426,7 @@ bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat, boo
                 input_mat=transpose_mat(input_mat);
             return true;
         }
-        vector<Integer> input_vec;
+        vector<mpq_class> input_vec;
         if(!read_formatted_vector(in,input_vec)){
             throw BadInputException("Error in reading input vector!");
         }
@@ -446,19 +444,19 @@ bool read_formatted_matrix(istream& in, vector<vector<Integer> >& input_mat, boo
 }
     
 
-template <typename Integer>
-map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial) {
+
+map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial) {
 
     string type_string;
     long i,j;
     long nr_rows,nr_columns,nr_rows_or_columns;
     InputType input_type;
-    Integer number;
+    mpq_class number;
     ConeProperty::Enum cp;
     bool we_have_a_polynomial=false;
 
-    map<Type::InputType, vector< vector<Integer> > > input_map;
-    typename map<Type::InputType, vector< vector<Integer> > >::iterator it;
+    map<Type::InputType, vector< vector<mpq_class> > > input_map;
+    typename map<Type::InputType, vector< vector<mpq_class> > >::iterator it;
 
     in >> std::ws;  // eat up any leading white spaces
     int c = in.peek();
@@ -528,7 +526,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
                     input_type = Type::grading;
-                    save_matrix(input_map, input_type, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    save_matrix(input_map, input_type, vector< vector<mpq_class> >(1,vector<mpq_class>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
                 if (type_string == "nonnegative") {
@@ -536,7 +534,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         throw BadInputException("Ambient space must be known for "+type_string+"!");
                     }
                     input_type = Type::signs;
-                    save_matrix(input_map, input_type, vector< vector<Integer> >(1,vector<Integer>(dim+type_nr_columns_correction(input_type),1)));
+                    save_matrix(input_map, input_type, vector< vector<mpq_class> >(1,vector<mpq_class>(dim+type_nr_columns_correction(input_type),1)));
                     continue;
                 }
                 if(type_string == "constraints") {
@@ -592,7 +590,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             throw BadInputException("Ambient space must be known for unit vector "+type_string+"!");
                         }
 
-                        vector< vector<Integer> > e_i = vector< vector<Integer> >(1,vector<Integer>(nr_columns,0));
+                        vector< vector<mpq_class> > e_i = vector< vector<mpq_class> >(1,vector<mpq_class>(nr_columns,0));
                         if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
                             throw BadInputException("Error while reading "
                                     + type_string + " as a unit_vector "
@@ -617,7 +615,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             throw BadInputException("Ambient space must be known for sparse vector "+type_string+"!");
                         }
 
-                        vector<Integer> sparse_vec;
+                        vector<mpq_class> sparse_vec;
                         nr_columns = dim + type_nr_columns_correction(input_type);
                         bool success = read_sparse_vector(in,sparse_vec,nr_columns);
                         if(!success){
@@ -625,12 +623,12 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             + type_string 
                             + " as a sparse vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<Integer> > (1,sparse_vec)); 
+                        save_matrix(input_map, input_type, vector<vector<mpq_class> > (1,sparse_vec)); 
                         continue;                        
                     }
                     
                     if (c == '[') { // must be formatted vector
-                        vector<Integer> formatted_vec;
+                        vector<mpq_class> formatted_vec;
                         bool success = read_formatted_vector(in,formatted_vec);
                         if(!dim_known){
                             dim=formatted_vec.size()- type_nr_columns_correction(input_type);
@@ -642,7 +640,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                             + type_string 
                             + " as a formatted vector!");
                         }
-                        save_matrix(input_map, input_type, vector<vector<Integer> > (1,formatted_vec)); 
+                        save_matrix(input_map, input_type, vector<vector<mpq_class> > (1,formatted_vec)); 
                         continue;
                     } // end formatted vector
 
@@ -661,7 +659,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         c = in.peek();                                               
                     }
                     if(c=='['){ // it is a formatted matrix
-                        vector<vector<Integer> > formatted_mat;
+                        vector<vector<mpq_class> > formatted_mat;
                         bool success=read_formatted_matrix(in,formatted_mat, transpose);
                         if(!success){
                             throw BadInputException("Error while reading formatted matrix "
@@ -710,7 +708,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                     continue;
                 }
                 
-                vector< vector<Integer> > M(nr_rows);
+                vector< vector<mpq_class> > M(nr_rows);
                 in >> std::ws;
                 c=in.peek();
                 if(c=='s'){ // must be sparse
@@ -760,7 +758,7 @@ map <Type::InputType, vector< vector<Integer> > > readNormalizInput (istream& in
                         + toString(nr_rows) + "x" + toString(nr_columns)
                         + " matrix !");
             }
-            vector< vector<Integer> > M(nr_rows,vector<Integer>(nr_columns));
+            vector< vector<mpq_class> > M(nr_rows,vector<mpq_class>(nr_columns));
             for(i=0; i<nr_rows; i++){
                 for(j=0; j<nr_columns; j++) {
                     in >> number;
