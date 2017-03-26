@@ -46,6 +46,8 @@ BUILD*
 *.log
 *.backup
 *.gz
+*.blg
+*.bbl
 
 # ignore WinEdt etc. backup files
 *.bak
