@@ -369,10 +369,12 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     for(; it != multi_input_data.end(); ++it) {
         for(size_t i=0;i < it->second.size();++i){ 
             mpz_class common_denom=1;
-            for(size_t j=0;j<it->second[i].size();++j)
-                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den()); 
+            for(size_t j=0;j<it->second[i].size();++j){
+                it->second[i][j].canonicalize();
+                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den());
+            }
             if(common_denom>1 && !denominator_allowed(it->first))
-                throw BadInputException("Proper fraction not allowed in all input types");
+                throw BadInputException("Proper fraction not allowed in certain input types");
             vector<Integer> transfer(it->second[i].size());
             for(size_t j=0;j<it->second[i].size();++j){
                 it->second[i][j]*=common_denom;
@@ -382,13 +384,19 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
         }
     }
     
-    process_multi_input(multi_input_data_ZZ);
+    process_multi_input_inner(multi_input_data_ZZ);
 }
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
+    process_multi_input_inner(multi_input_data);
+}
+
+template<typename Integer>
+void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data) {
+    initialize();
     // find basic input type
     lattice_ideal_input=false;
     nr_latt_gen=0, nr_cone_gen=0;

@@ -199,7 +199,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
             in >> c;
             if(congruence && !modulus_read)
                 throw BadInputException("Modulus missing in congrruence");
-            cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
+            // cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
             return;
         }
         

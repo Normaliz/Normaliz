@@ -367,6 +367,7 @@ private:
 
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data);
     
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);

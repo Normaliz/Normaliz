@@ -787,12 +787,7 @@ We lose all information on the Hilbert series, and from the Hilbert basis we onl
 
 \subsection{A rational polytope}\label{rational}
 
-Normaliz has no special input type for rational polytopes.
-In order to process them one uses the type \verb|cone| together with a
-grading. Suppose the polytope is given by vertices
-$$
-v_i=(r_{i1},\dots,r_{id}),\qquad i=1,\dots,m,\ r_{ij}\in\QQ.
-$$
+The type \verb|polytope| can (now) be used for rational polytopes as well.
 \begin{center}
 \begin{tikzpicture}[scale=3.0]
 \filldraw[yellow] (0.5,0.5) -- (-0.333,-0.333) -- (0.25,-0.5) -- cycle;	
@@ -804,18 +799,6 @@ $$
 \filldraw[fill=white] (0.25,-0.5) circle (0.5pt);
 \end{tikzpicture}
 \end{center}
-Then we write $v_i$ with a common denominator:
-$$
-v_i=\biggl(\frac{p_{i1}}{q_i},\dots,\frac{p_{id}}{q_i}\biggr),
-\quad p_{ij},q_i\in\ZZ,\ q_i>0.
-$$
-The generator matrix is given by the rows
-$$
-\widetilde v_i=(p_{i1},\dots,p_{id},q_i),\quad i=1,\dots,m.
-$$
-We must add a grading since Normaliz cannot recognize it
-without help (unless all the $q_i$ are equal to $1$). The grading
-linear form has coordinates $(0,\dots,0,1)$.
 
 We want to investigate the Ehrhart series of the triangle $P$
 with vertices
@@ -826,12 +809,10 @@ For this example the procedure above yields the input file \ttt{rational.in}:
 
 \begin{Verbatim}
 amb_space 3
-cone 3
-1 1 2
--1 -1 3
-1 -2 4
-grading
-unit_vector 3
+polytope 3
+1/2 1/2
+-1/3 -1/3
+1/4 -1/2
 HilbertSeries
 \end{Verbatim}
 This is the first time that we used the shortcut \verb|unit_vector <n>| which represents the $n$th unit vector $e_n\in\RR^d$ and is only allowed for input types which require a single vector.
@@ -954,6 +935,7 @@ grading
 unit_vector 3
 HilbertSeries
 \end{Verbatim}
+At this point we have to help Normaliz because it has no way to guess that we want to investigate the polytope defined by the inequalities and the choice $x_3=1$. This is achieved by the specification of the grading that maps every vector to its tthird coordinate.
 
 These data tell us that the polytope, as a subset of $\RR^2$, is defined by the inequalities
 \begin{align*}
@@ -961,7 +943,7 @@ These data tell us that the polytope, as a subset of $\RR^2$, is defined by the 
 	x_1-x_2+0&\ge0,\\
 	2x_1+7x_2+3&\ge 0.
 \end{align*}
-These inequalities are inhomogeneous, but we are using the homogeneous input type \verb|inequalities| which amounts to introducing the grading variable $x_3$, as we have done it for the generators.
+These inequalities are inhomogeneous, but we are using the homogeneous input type \verb|inequalities| which amounts to introducing the grading variable $x_3$ as explained above..
 
 Why don't we define it by the ``natural'' inhomogeneous inequalities using \verb|inhom_inequalities|? We could do it, but then only the polytope itself would be the object of computation, and we would have no access to the Ehrhart series. We could just compute the lattice points in the polytope. (Try it.)
 
@@ -1441,9 +1423,9 @@ They are contained in the input file \verb|InhomIneq.in|:
 \begin{Verbatim}
 amb_space 2
 constraints 3
- 0 2 >= -1
- 0 2 <=  3
--2 2 <=  3
+ 0 1 >= -1/2
+ 0 1 <=  3/2
+-1 1 <=  3/2
 grading
 unit_vector 1
 \end{Verbatim}
@@ -2170,7 +2152,7 @@ several items. There are several types of items:
 
 \begin{arab}
 	\item definition of the ambient space,
-	\item matrices with integer entries,
+	\item matrices with integer or rational entries (depending on the type),
 	\item vectors with integer entries,
 	\item constraints in  or symbolic format,
 	\item a polynomial,
@@ -2272,12 +2254,14 @@ A plain matrix is built as follows:
 ...
 <x_m>
 \end{Verbatim}
-Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},...,\ttt{<x\_m>} are the rows. The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example (with \verb|amb_space 3|):
+Here \ttt{<T>} denotes the type of the matrix, \ttt{<m>} the number of rows, and \ttt{<x\_1>},...,\ttt{<x\_m>} are the rows. Some types allow rational matrix entries, others are restricted to integers; see Section \ref{Crational_input}.
+
+The number of columns is implicitly defined by the dimension of the ambient space and the type of the matrix. Example (with \verb|amb_space 3|):
 \begin{Verbatim}
 cone 3
-1 2 3
+1/3 2 3
 4 5 6
-11 12 13
+11 12/7 13/21
 \end{Verbatim}
 
 Normaliz allows the input of matrices in transposed form:
@@ -2290,15 +2274,15 @@ Normaliz allows the input of matrices in transposed form:
 Note that \verb|<n>| is now the number of \emph{columns} of the matrix that follows it (assumed to be the number of input vectors). The number of rows is determined by the dimension of the ambient space and the type of the matrix.  Example:
 \begin{Verbatim}
 cone transpose 3
-1 0 3
-0 1 4
+1  0   3/2
+0 1/9   4
 \end{Verbatim}
 is equivalent to
 \begin{Verbatim}
 cone 3
-1 0
-0 1
-3 4
+ 1  0
+ 0 1/9
+3/2 4
 \end{Verbatim}
 
 Like evctors, matrices have a sparse input variant, again signalized by the key word \verb|sparse|. The rows are sparse vectors with entries \verb|<col>:<val>|, and each row is concluded by the character \verb|;|.
@@ -2331,9 +2315,9 @@ A formatted matrix is built as follows:
 Here \ttt{<T>} denotes the type of the matrix and \verb|<x_1>|,\dots,\verb|<x_m>| are vectors. Legal separators are white space, commas and semicolons. An example showing all possibilities (not really recommended):
 \begin{Verbatim}
 cone [
-[ 2 1][3 4];
+[ 2 1][3/7 4];
 [0 1],
-[9 10] [11 12]
+[9 10] [11 12/13]
 ]
 \end{Verbatim} 
 Similarly as plain matrices, formatted matrices can be given in transposed form, and they can be empty.
@@ -2354,8 +2338,8 @@ where \verb|<mod>| is a nonzero integer.
 
 Examples:
 \begin{Verbatim}
-1 -2 >= 5
-1 -1 = 0
+1/2 -2 >= 5
+1 -1/7 = 0
 -1 1 ~ 7 (9)
 \end{Verbatim}
 
@@ -2380,8 +2364,8 @@ where \verb|<mod>| is a nonzero integer.
 
 Examples:
 \begin{Verbatim}
-x[1] >= 2x[2] + 5;
-x[1]+1=x[2] ;
+1/3x[1] >= 2x[2] + 5;
+x[1]+1=1/4x[2] ;
 -x[1] + x[2] ~ 7 (9);
 \end{Verbatim}
 
@@ -2400,6 +2384,20 @@ Example:
 (x[1]*x[2]*x[3]*x[4])^2*(x[1]-x[2])^2*(x[1]-x[3])^2*
 (x[1]-x[4])^2*(x[2]-x[3])^2*(x[2]-x[4])^2*(x[3]-x[4])^2;
 \end{Verbatim}
+
+\subsubsection{Rational numbers}\label{rational_input}
+
+Rational numbers are allowed in onput matrices, but not in all. They are \emph{not} allowed in vectors and in matrices containing lattice generators and in congruences, namely in
+\begin{Verbatim}
+lattice     cone_and_lattice   normalization  offset
+congruences inhom_congruences  rees_algebra   lattice_ideal
+grading     dehomogenization   signs          strict_signs
+\end{Verbatim}
+They are allowed in \verb|saturation| since it defines the intersection of the vector space generated by the rows of the matrix with the integral lattice.
+
+Note: Only positive numbers are allowed as denominators. Negative denominators may result in a segmentation fault. 
+
+Normaliz first reduces the input numbers to lowest terms. Then each row of a matrix is multiplied by the least common multiple of the demoninators of its entries. In all applications in which the original monoid generators olay a role, one should use only integers in input matrices to avoid any ambiguity.
 
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
@@ -6396,7 +6394,7 @@ For a brief introduction please consult the PyNormaliz tutorial on the Normaliz 
 
 The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, for example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to empphasize the difference.
 
-The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the pratical viewpoint it is superfluous since Normaliz can process rational data (made integral). Nevertheless have a look at the examples in \verb|Qexample|.
+The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the pratical viewpoint it is superfluous since Normaliz can (now) process rational input data. Nevertheless have a look at the examples in \verb|Qexample|.
 
 \subsection{Prerequisites}
 
