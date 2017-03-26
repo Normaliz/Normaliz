@@ -45,6 +45,7 @@ void skip_comment(istream& in) {
     throw BadInputException("Incomplete comment!");
 }
 
+template<typename mpq_class>
 void save_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
         InputType input_type, const vector<vector<mpq_class> >& M) {
     //check if this type already exists
@@ -57,6 +58,7 @@ void save_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
     input_map[input_type] = M;
 }
 
+template<typename mpq_class>
 void save_empty_matrix(map<Type::InputType, vector<vector<mpq_class> > >& input_map,
         InputType input_type){
     
@@ -199,7 +201,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
             in >> c;
             if(congruence && !modulus_read)
                 throw BadInputException("Modulus missing in congrruence");
-            // cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
+            cout << "LLLLL " << left << " " << rel << " RRR " << right << endl;
             return;
         }
         

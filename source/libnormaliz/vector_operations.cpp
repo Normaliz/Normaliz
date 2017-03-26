@@ -723,6 +723,7 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
     return hsop;
 }
 
+
 template bool v_is_nonnegative<long>(const vector<long>&);
 template bool v_is_nonnegative<long long>(const vector<long long>&);
 template bool v_is_nonnegative<mpz_class>(const vector<mpz_class>&);

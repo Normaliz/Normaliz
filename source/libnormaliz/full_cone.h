@@ -199,6 +199,7 @@ public:
     size_t store_level; // the level on which daughters will be stored  
     deque< list<vector<key_t> > > Pyramids;  //storage for pyramids
     deque<size_t> nrPyramids; // number of pyramids on the various levels
+    deque<bool> Pyramids_scrambled; // only used for mic
 
     // data that can be used to go out of build_cone and return later (not done at present)
     // but also useful at other places
@@ -221,6 +222,8 @@ public:
 #ifdef NMZ_MIC_OFFLOAD
     MicOffloader<long long> mic_offloader;
 #endif
+void try_offload_loc(long place,size_t max_level);
+
 
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;

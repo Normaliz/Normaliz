@@ -1692,10 +1692,11 @@ void Full_Cone<long long>::try_offload(size_t max_level) {
 
     if (!is_pyramid && _Offload_get_device_number() < 0) // dynamic check for being on CPU (-1)
     {
+        
         if (max_level >= nrPyramids.size()) max_level = nrPyramids.size()-1;
-        for (size_t level = 0; level <= max_level; ++level) {
+        for (size_t level = 0; level <= max_level; ++level) {                  
             if (nrPyramids[level] >= 100) {
-                cout << "Try offload of level " << level << " pyramids ..." << endl;
+                // cout << "XXX: Try offload of level " << level << " pyramids ..." << endl;
                 mic_offloader.offload_pyramids(*this, level);
                 break;
             }
@@ -1707,6 +1708,14 @@ template<typename Integer>
 void Full_Cone<Integer>::try_offload(size_t max_level) {
 }
 //else it is implemented in the header
+
+
+template<typename Integer>
+void Full_Cone<Integer>::try_offload_loc(long place,size_t max_level){
+	verboseOutput() << "From place " << place << " " << "level " << max_level << endl;
+	try_offload(max_level);
+}
+
 #endif // NMZ_MIC_OFFLOAD
 
 //---------------------------------------------------------------------------
@@ -1714,14 +1723,26 @@ void Full_Cone<Integer>::try_offload(size_t max_level) {
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 // evaluates the stored non-recursive pyramids
+    
+#ifdef NMZ_MIC_OFFLOAD
+    Pyramids_scrambled[level]=false;
+    
+    if(level==0 && _Offload_get_device_number() >=  0){
+        verboseOutput() << "Start evaluation of " << nrPyramids[level] << " pyrs on level " << level << endl;
+        // verboseOutput() << "In parallel " << omp_in_parallel() << endl;
+}
+#endif // NMZ_MIC_OFFLOAD
 
     assert(!omp_in_parallel());
+    assert(!is_pyramid);
 
     if(Pyramids[level].empty())
         return;
+   
     if (Pyramids.size() < level+2) {
         Pyramids.resize(level+2);      // provide space for a new generation
         nrPyramids.resize(level+2, 0);
+        Pyramids_scrambled.resize(level+2, false);
     }
 
     size_t eval_down_to = 0;
@@ -2229,10 +2250,28 @@ void Full_Cone<Integer>::build_top_cone() {
     }
     else{
         find_bottom_facets();
+        start_from=nr_gen;
         deg1_triangulation=false;
+
+                vector<list<vector<key_t> >::iterator > level0_order;
+                level0_order.reserve(nrPyramids[0]);
+                auto p=Pyramids[0].begin();
+                for(size_t k=0;k<nrPyramids[0];++k,++p){
+                    level0_order.push_back(p);
+                }
+                for(size_t k=0;k<5*nrPyramids[0];++k){
+                    swap(level0_order[rand()%nrPyramids[0]],level0_order[rand()%nrPyramids[0]]);
+                }
+                list<vector<key_t> > new_order;
+                for(size_t k=0;k<nrPyramids[0];++k){
+                    new_order.push_back(*level0_order[k]);
+                }
+                Pyramids[0].clear();
+                Pyramids[0].splice(Pyramids[0].begin(),new_order);
+
     }   
 
-    try_offload(0);
+    // try_offload(0); // superfluous since tried immediately in evaluate_stored_pyramids(0)
     evaluate_stored_pyramids(0);  // force evaluation of remaining pyramids
 
 #ifdef NMZ_MIC_OFFLOAD
@@ -4748,6 +4787,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     
     Pyramids.resize(20);  // prepare storage for pyramids
     nrPyramids.resize(20,0);
+    Pyramids_scrambled.resize(20,false);
       
     recursion_allowed=true;
     
