@@ -308,6 +308,55 @@ Cone<Integer>::Cone(const map< InputType, Matrix<Integer> >& multi_input_data_Ma
 }
 
 //---------------------------------------------------------------------------
+// now with Matrix and mpq_class
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const Matrix<mpq_class>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > >multi_input_data;
+    multi_input_data[input_type] = Input.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<mpq_class>& Input1,
+                    InputType type2, const Matrix<mpq_class>& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<mpq_class>& Input1,
+                    InputType type2, const Matrix<mpq_class>& Input2,
+                    InputType type3, const Matrix<mpq_class>& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    multi_input_data[type3] = Input3.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, Matrix<mpq_class> >& multi_input_data_Matrix){
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    auto it = multi_input_data_Matrix.begin();
+    for(; it != multi_input_data_Matrix.end(); ++it){
+        multi_input_data[it->first]=it->second.get_elements();
+    }
+    process_multi_input(multi_input_data);
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 Cone<Integer>::~Cone() {

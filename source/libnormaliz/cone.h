@@ -115,6 +115,22 @@ public:
     /* give multiple input */
     Cone(const map< InputType , Matrix<Integer> >& multi_input_data);
     
+//-----------------------------------------------------------------------------
+// Now with Matrix and mpq_class
+    
+    Cone(InputType type, const Matrix<mpq_class>& input_data);
+
+    Cone(InputType type1, const Matrix<mpq_class>& input_data1,
+         InputType type2, const Matrix<mpq_class>& input_data2);
+
+    Cone(InputType type1, const Matrix<mpq_class>& input_data1,
+         InputType type2, const Matrix<mpq_class>& input_data2,
+         InputType type3, const Matrix<mpq_class>& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , Matrix<mpq_class> >& multi_input_data);
+    
+    
 //---------------------------------------------------------------------------
 //                                Destructor
 //---------------------------------------------------------------------------

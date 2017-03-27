@@ -447,10 +447,10 @@ public:
     vector<Integer>* v;
 };
 
-template<typename Integer>
-vector<vector<Integer> > to_matrix(const vector<Integer>& v){
+template<typename T>
+vector<vector<T> > to_matrix(const vector<T>& v){
     
-    vector<vector<Integer> > mat(1);
+    vector<vector<T> > mat(1);
     mat[0]=v;
     return mat;    
 }
