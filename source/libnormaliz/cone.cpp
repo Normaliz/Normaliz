@@ -382,7 +382,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     
     map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
     
-    // special treatment of polytope and strict_inequalities
+    // special treatment of polytope. We convert it o cone
     if(exists_element(multi_input_data,Type::polytope)){
         size_t dim;
         if(multi_input_data[Type::polytope].size()>0){
@@ -398,19 +398,6 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
             multi_input_data[Type::cone][i].resize(dim);
             multi_input_data[Type::cone][i][dim-1]=1;
         }
-    }
-    
-    if(exists_element(multi_input_data,Type::strict_inequalities)){
-        size_t dim;
-        if(multi_input_data[Type::strict_inequalities].size()>0)
-            dim=multi_input_data[Type::strict_inequalities][0].size()+1;
-        for(size_t i=0;i<multi_input_data[Type::strict_inequalities].size();++i){
-            vector<mpq_class> transfer=multi_input_data[Type::strict_inequalities][i];
-            transfer.resize(dim);
-            transfer[dim-1]=-1;
-            multi_input_data[Type::inhom_inequalities].push_back(transfer);
-        }
-        multi_input_data.erase(Type::strict_inequalities);
     }
     
     // now we clear denominators

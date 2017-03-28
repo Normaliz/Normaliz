@@ -5581,11 +5581,17 @@ Cone<Integer>::Cone(const map< InputType,
 
 The four constructors also exist in a variant that uses the \verb|libnormaliz| type \verb|Matrix<Integer>| instead of \verb|vector< vector<Integer> >| (see \verb|cone.h|).
 
+For the input of rational numbers we have all constructors also in variants that use \verb|mpq_class| for the input matrix, for example
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType input_type, const vector< vector<mpq_class> >& Input)|
+\end{Verbatim}
+etc.
+
 For convenience we provide the function
 \begin{Verbatim}
-vector<vector<Integer> > to_matrix<Integer>(vector<Integer> v)
+vector<vector<T> > to_matrix<Integer>(vector<T> v)
 \end{Verbatim}
-It returns a matrix whose first row is \verb|v|. A typical example:
+in \verb|matrix.h|. It returns a matrix whose first row is \verb|v|. A typical example:
 \begin{Verbatim}
 size_t dim = ...
 vector<vector <Integer> > Data = ...

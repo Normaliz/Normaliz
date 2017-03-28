@@ -78,6 +78,9 @@ autom4te.cache
 *.lo
 /source/Makefile
 /source/Makefile.in
+/Qsource/Makefile
+/Qexample/Makefile
+/Qtest/Makefile
 /m4/libtool.m4
 /m4/ltoptions.m4
 /m4/ltsugar.m4
