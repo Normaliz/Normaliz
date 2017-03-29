@@ -349,7 +349,7 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Int
     }
     if(inhom_input || exists_element(multi_input_data,Type::dehomogenization)){
         if(exists_element(multi_input_data,Type::rees_algebra) || exists_element(multi_input_data,Type::polytope)){
-            throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or hehomogenizaion!");
+            throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
         }
         if(exists_element(multi_input_data,Type::excluded_faces)){
             throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
