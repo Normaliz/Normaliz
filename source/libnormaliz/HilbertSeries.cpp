@@ -629,6 +629,21 @@ void poly_add_to (vector<Integer>& a, const vector<Integer>& b) {
     }
     remove_zeros(a);
 }
+
+// a += b*t^m
+template<typename Integer>
+void poly_add_to_tm (vector<Integer>& a, const vector<Integer>& b,long m) {
+    size_t b_size=b.size();
+    size_t b_m = b_size+m;
+    if (a.size() < b_m) {
+        a.resize(b_m);
+    }
+    for (size_t i=0; i<b_size; ++i) {
+        a[i+m]+=b[i];
+    }
+    remove_zeros(a);
+}
+
 // a -= b  (also possible to define the -= op for vector)
 template<typename Integer>
 void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
@@ -642,11 +657,116 @@ void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
     remove_zeros(a);
 }
 
+// a *= t^m
+template<typename Integer>
+void poly_mult_by_tm(vector<Integer>& a, long m){
+        long a_ori_size=a.size();
+        a.resize(a_ori_size+m);
+        for(long i=a_ori_size-1; i>=0;--i)
+            a[i+m]=a[i];
+        for(long i=0;i<m;++i)
+            a[i]=0; 
+}
+
 // a * b
+
+/* template<typename Integer>
+vector<Integer> old_poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+
+    
+    vector<Integer> p( a_size + b_size - 1 );
+    size_t i,j;
+    for (i=0; i<a_size; ++i) {
+        if (a[i] == 0) continue;
+        for (j=0; j<b_size; ++j) {
+            if (b[j] == 0) continue;
+            p[i+j] += a[i]*b[j];
+        }
+    }
+    return p;
+}*/
+
+
+template<typename Integer>
+vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b) {
+
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+    if(a_size*b_size<=1000 || a_size <=10 || b_size<=10)
+        return poly_mult(a,b);
+
+    size_t m=(a_size+1)/2;
+    if(2*m<(b_size+1)){
+        m=(b_size+1)/2;
+    }
+    
+    vector<Integer> f0(m),f1(m),g0(m),g1(m);
+    for(size_t i=0;i<m && i<a_size;++i)
+        f0[i]=a[i];
+    for(size_t i=m;i<a_size;++i)
+        f1[i-m]=a[i];
+    for(size_t i=0;i<m && i<b_size;++i)
+        g0[i]=b[i];
+    for(size_t i=m;i< b_size;++i)
+        g1[i-m]=b[i];
+    remove_zeros(f0);
+    remove_zeros(f1);
+    remove_zeros(g0);
+    remove_zeros(g1);
+    
+    vector<Integer> sf=f0;
+    vector<Integer> sg=g0;
+    
+    vector<Integer> mix;
+    vector<Integer> h00;
+    vector<Integer> h11;
+    
+    #pragma omp parallel // num_threads(3)
+    {
+    
+    #pragma omp single nowait
+    {
+    h00=karatsubamult(f0,g0); // h00 = f0 * g0
+    }
+    
+   #pragma omp single nowait
+    {    
+    h11=karatsubamult(f1,g1); // h11 = f1 * g1
+    }
+
+    #pragma omp single nowait
+    {   
+    poly_add_to(sf,f1); // f0+f1
+    poly_add_to(sg,g1); // g0 + g1
+    mix=karatsubamult(sf,sg); // (f0 + f1)*(g0 + g1)
+    }
+    
+    } // parallel
+    
+    f0.clear();
+    g0.clear();
+    f1.clear();
+    g1.clear();
+    
+    poly_sub_to(mix,h00);  // mix = mix - f0*g0
+    poly_sub_to(mix,h11);  // mix = mix - f1*g1
+    
+    poly_add_to_tm(h00,mix,m);
+    poly_add_to_tm(h00,h11,2*m);
+
+    return h00;
+}
+
 template<typename Integer>
 vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
+    
+    if(a_size*b_size>1000 && a_size >10 && b_size>10)
+        return karatsubamult(a,b);
+    
     vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
     for (i=0; i<a_size; ++i) {
