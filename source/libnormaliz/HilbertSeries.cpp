@@ -295,14 +295,39 @@ void HilbertSeries::simplify() const {
     else
         dim = 0;
     period = lcm_of_keys(cdenom);
-    i = period;
     if (period > PERIOD_BOUND) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         }
-        i = cdenom.rbegin()->first;
     }
-    if(period <= PERIOD_BOUND){
+    
+        /* if(period <= PERIOD_BOUND){
+        while(true){
+            //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
+            long k=1;
+            bool empty=true;
+            vector<mpz_class> existing_factor(1,1); //collects the existing cyclotomic gactors in the denom
+            for(it=cdenom.begin();it!=cdenom.end();++it){          // with multiplicvity 1
+                if(it-> second>0){
+                    empty=false;
+                    k=libnormaliz::lcm(k,it->first);
+                    existing_factor=poly_mult(existing_factor,cyclotomicPoly<mpz_class>(it->first));
+                    it->second--;
+                }     
+            }
+            if(empty)
+                break;
+            denom[k]++;
+            vector<mpz_class> new_factor=coeff_vector<mpz_class>(k);
+            vector<mpz_class> quotient, dummy;
+            poly_div(quotient,dummy,new_factor,existing_factor);
+            num=poly_mult(num,quotient);
+        }
+    }
+    else
+        denom=save_denom; */
+
+        if(period <= PERIOD_BOUND){
         while (!cdenom.empty()) {
             //create a (1-t^i) factor out of all cyclotomic poly.
             denom[i]++;
@@ -688,14 +713,14 @@ vector<Integer> old_poly_mult(const vector<Integer>& a, const vector<Integer>& b
     return p;
 }*/
 
-
 template<typename Integer>
 vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b) {
 
     size_t a_size = a.size();
     size_t b_size = b.size();
-    if(a_size*b_size<=1000 || a_size <=10 || b_size<=10)
+    if(a_size*b_size<=1000 || a_size <=10 || b_size<=10){
         return poly_mult(a,b);
+    }
 
     size_t m=(a_size+1)/2;
     if(2*m<(b_size+1)){
@@ -732,12 +757,12 @@ vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b
     }
     
    #pragma omp single nowait
-    {    
+    {  
     h11=karatsubamult(f1,g1); // h11 = f1 * g1
     }
 
     #pragma omp single nowait
-    {   
+    {
     poly_add_to(sf,f1); // f0+f1
     poly_add_to(sg,g1); // g0 + g1
     mix=karatsubamult(sf,sg); // (f0 + f1)*(g0 + g1)
@@ -764,8 +789,8 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
     
-    if(a_size*b_size>1000 && a_size >10 && b_size>10)
-        return karatsubamult(a,b);
+    /* if(a_size*b_size>1000 && a_size >10 && b_size>10)
+        return karatsubamult(a,b);*/
     
     vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
@@ -829,6 +854,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
+    
     // the static variable is initialized only once and then stored
     static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
     if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
