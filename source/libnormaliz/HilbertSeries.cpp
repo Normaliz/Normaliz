@@ -300,8 +300,7 @@ void HilbertSeries::simplify() const {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         }
     }
-    
-        /* if(period <= PERIOD_BOUND){
+    if(period <= PERIOD_BOUND){
         while(true){
             //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
             long k=1;
@@ -322,32 +321,6 @@ void HilbertSeries::simplify() const {
             vector<mpz_class> quotient, dummy;
             poly_div(quotient,dummy,new_factor,existing_factor);
             num=poly_mult(num,quotient);
-        }
-    }
-    else
-        denom=save_denom; */
-
-        if(period <= PERIOD_BOUND){
-        while (!cdenom.empty()) {
-            //create a (1-t^i) factor out of all cyclotomic poly.
-            denom[i]++;
-            v_scalar_multiplication(num,mpz_class(-1));
-            for (long d = 1; d <= i; ++d) {
-                if (i % d == 0) {
-                    it = cdenom.find(d);
-                    if (it != cdenom.end() && it->second>0) {
-                        it->second--;
-                        if (it->second == 0)
-                            cdenom.erase(it);
-                    } else {
-                        num = poly_mult(num, cyclotomicPoly<mpz_class>(d));
-                    }
-                }
-            }
-            i = lcm_of_keys(cdenom);
-            if (i > PERIOD_BOUND) {
-                i = cdenom.rbegin()->first;
-            }
         }
     }
     else
@@ -789,8 +762,8 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
     
-    /* if(a_size*b_size>1000 && a_size >10 && b_size>10)
-        return karatsubamult(a,b);*/
+    if(a_size*b_size>1000 && a_size >10 && b_size>10)
+        return karatsubamult(a,b);
     
     vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
