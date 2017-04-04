@@ -3151,21 +3151,21 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         SymmCong.append(SymmConst[i]);
         SymmCong[SymmCong.nr_of_rows()-1].push_back(Congruences[i-(nr_inequ+nr_equ)][dim]); // restore modulus
     }
-    
+
     string polynomial;
     
-    /* for(size_t i=0;i<multiplicities.size();++i){
+    for(size_t i=0;i<multiplicities.size();++i){
         for(size_t j=1;j<multiplicities[i];++j)
             polynomial+="(x["+to_string(i+1)+"]+"+to_string(j)+")*";
         
-    }*/
+    }
     polynomial+="1";
     mpz_class fact=1;
     for(size_t i=0;i<multiplicities.size();++i){
         for(size_t j=1;j<multiplicities[i];++j)
             fact*=j;        
     }
-    polynomial+="/"+fact.get_str()+";";        
+    polynomial+="/"+fact.get_str()+";";         
 
 #ifdef NMZ_COCOA
     
