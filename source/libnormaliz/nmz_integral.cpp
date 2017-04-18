@@ -40,10 +40,10 @@ using namespace CoCoA;
 namespace libnormaliz {
 
 
-BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
+BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vector<BigInt>& Factorial,
                 const vector<BigInt>& factQuot, const long& rank){
                 
-    SparsePolyRing P=owner(F);
+    // SparsePolyRing P=owner(F);
     long dim=NumIndets(P);
     vector<long> v(dim);
     
@@ -131,7 +131,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
     // boost::dynamic_bitset<> dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
-    return(IntegralUnitSimpl(G,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
+    return(IntegralUnitSimpl(G,R,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
 template<typename Integer>
@@ -228,20 +228,13 @@ try{
   readTri(C,triang);
   if(verbose_INT)
      verboseOutput() << "Triangulation read" << endl;
-     
-  list<TRIDATA>::iterator S = triang.begin(); // first we compute the lcm of all generator degrees
-  vector<long> degrees(rank); 
+ 
   BigInt lcmDegs(1);
-  vector<vector<long> > A(rank);
-  for(;S!=triang.end();++S){          
-    for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]];
-    degrees=MxV(A,grading);
-    for(i=0;i<rank;++i){
-        degrees[i]/=gradingDenom;
-        lcmDegs=lcm(lcmDegs,degrees[i]);
-    }
+  for(size_t i=0;i<gens.size();++i){          
+    long deg=v_scalar_product(gens[i],grading);
+    lcmDegs=lcm(lcmDegs,deg);
   }
+  
   
   SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
   SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
@@ -278,10 +271,7 @@ try{
 
   if(verbose_INT)
     verboseOutput() << "Polynomial read" << endl;
-
-  BigRat I; // accumulates the integral
-  I=0;
-
+  
   size_t tri_size=triang.size();
 
   if(verbose_INT){
@@ -291,6 +281,10 @@ try{
   }
 
   size_t nrSimplDone=0;
+  
+  vector<BigRat> I_thread(omp_get_max_threads());
+  for(size_t i=0; i< I_thread.size();++i)
+      I_thread[i]=0;
 
 #pragma omp parallel private(i)
   {
@@ -326,15 +320,12 @@ try{
 
     // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
     ISimpl=(det*substituteAndIntegrate(FF,A,degrees,RZZ,Factorial,factQuot,lcmDegs))/prodDeg;
+    I_thread[omp_get_thread_num()]+=ISimpl;
 
-#pragma omp critical(INTEGRAL)
-    I+=ISimpl;
-
-#pragma omp critical(PROGRESS) // a little bit of progress report
-    {
+ // a little bit of progress report
     if ((++nrSimplDone)%10==0 && verbose_INT)
+        #pragma omp critical(PROGRESS)
         verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
-    }
     
 #ifndef NCATCH
         } catch(const std::exception& ) {
@@ -348,6 +339,12 @@ try{
 #ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
+    
+  BigRat I; // accumulates the integral
+  I=0;
+  for(size_t i=0; i< I_thread.size();++i)
+      I+=I_thread[i];
+
   
   I/=power(lcmDegs,deg(F));
   BigRat RFrat;
