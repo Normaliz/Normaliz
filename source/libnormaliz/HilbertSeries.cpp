@@ -36,6 +36,7 @@
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/convert.h"
+#include "libnormaliz/my_omp.h"
 
 #include "libnormaliz/matrix.h"
 
@@ -295,12 +296,12 @@ void HilbertSeries::simplify() const {
     else
         dim = 0;
     period = lcm_of_keys(cdenom);
-    if (period > PERIOD_BOUND) {
+    if (period > 10*PERIOD_BOUND) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         }
     }
-    if(period <= PERIOD_BOUND){
+    if(period <= 10*PERIOD_BOUND){
         while(true){
             //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
             long k=1;
@@ -320,6 +321,7 @@ void HilbertSeries::simplify() const {
             vector<mpz_class> new_factor=coeff_vector<mpz_class>(k);
             vector<mpz_class> quotient, dummy;
             poly_div(quotient,dummy,new_factor,existing_factor);
+            assert(dummy.empty()); //assert remainder r is 0
             num=poly_mult(num,quotient);
         }
     }
@@ -422,6 +424,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         quasi_poly[i%period].push_back(norm_num[i]);
     }
 
+    #pragma omp parallel for
     for (j=0; j<period; ++j) {
         quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
     }
@@ -720,7 +723,7 @@ vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b
     vector<Integer> mix;
     vector<Integer> h00;
     vector<Integer> h11;
-    
+
     #pragma omp parallel // num_threads(3)
     {
     
@@ -762,8 +765,11 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
     
-    if(a_size*b_size>1000 && a_size >10 && b_size>10)
+    if(a_size*b_size>1000 && a_size >10 && b_size>10){
+        omp_set_nested(1);
         return karatsubamult(a,b);
+        omp_set_nested(0);
+    }
     
     vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
