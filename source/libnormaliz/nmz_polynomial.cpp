@@ -490,12 +490,13 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vect
     for(i=1;i<w1.size();++i) 
         w1[i]=w[i-1]; 
     
-    RingHom phi=PolyAlgebraHom(R,R,w1);
+    // RingHom phi=PolyAlgebraHom(R,R,w1);
     
     RingElem G1(zero(R));    
     list<RingElem> sortedFactors;
     for(i=0;i<FF.myFactors.size();++i){
-        G1=phi(FF.myFactors[i]);
+        // G1=phi(FF.myFactors[i]);
+        G1=mySubstitution(FF.myFactors[i],w1);
         for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
                 sortedFactors.push_back(G1);
     }
