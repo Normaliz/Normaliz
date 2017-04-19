@@ -162,21 +162,6 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
     }
 }
 
-template<typename Integer>
-void readTri(Cone<Integer>& C, list<TRIDATA>& triang){
-// get triangulation from C for nmz_integrate functions
-
-    size_t rank=C.getRank();
-    TRIDATA new_entry;
-    new_entry.key.resize(rank);
-    for(size_t i=0;i<C.getTriangulation().size();++i){
-        for(size_t j=0;j<rank;++j)
-            new_entry.key[j]=C.getTriangulation()[i].first[j];
-        convert(new_entry.vol,C.getTriangulation()[i].second);
-        triang.push_back(new_entry);
-    }
-}
-
 void testPolynomial(const string& poly_as_string,long dim){
 
   GlobalManager CoCoAFoundations;
@@ -224,11 +209,6 @@ try{
   readGens(C,gens,grading,false);
   if(verbose_INT) 
     verboseOutput() << "Generators read" << endl;
-
-  list<TRIDATA> triang;
-  readTri(C,triang);
-  if(verbose_INT)
-     verboseOutput() << "Triangulation read" << endl;
  
   BigInt lcmDegs(1);
   for(size_t i=0;i<gens.size();++i){          
@@ -273,7 +253,7 @@ try{
   if(verbose_INT)
     verboseOutput() << "Polynomial read" << endl;
   
-  size_t tri_size=triang.size();
+  size_t tri_size=C.getTriangulation().size();
 
   if(verbose_INT){
     verboseOutput() << "********************************************" << endl;
@@ -290,27 +270,23 @@ try{
 #pragma omp parallel private(i)
   {
 
-  list<TRIDATA>::iterator S = triang.begin();
-  long det, rank=S->key.size();
+  long det, rank=C.getTriangulation()[0].first.size();
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
   BigRat ISimpl; // integral over a simplex
   BigInt prodDeg; // product of the degrees of the generators
   RingElem h(zero(R));
 
-  size_t spos=0,s;
  #pragma omp for schedule(dynamic) 
-  for(s=0;s<tri_size;++s){         
-      for(;spos<s;++spos,++S);
-      for(;spos>s;--spos,--S);
+  for(size_t k=0;k<C.getTriangulation().size();++k){
       
 #ifndef NCATCH
         try {
 #endif
 
-    det=S->vol;
+    convert(det,C.getTriangulation()[k].second);
     for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]]; // will not be changed
+        A[i]=gens[C.getTriangulation()[k].first[i]]; 
 
     degrees=MxV(A,grading);
     prodDeg=1;
@@ -670,7 +646,7 @@ try{
   
   if(verbose_INT){
     verboseOutput() << "==========================================================" << endl;
-    verboseOutput() << "Generalized Ehrhart series " << endl;
+    verboseOutput() << "Weighted Ehrhart series " << endl;
     verboseOutput() << "==========================================================" << endl << endl;
   }
   
