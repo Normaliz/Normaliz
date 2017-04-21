@@ -606,7 +606,7 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
     }
 
     STANLEYDATA_INT newSimpl;
-    long i=0,j,det;
+    long i=0;
     newSimpl.key.resize(dim);
     
     long test;
@@ -614,23 +614,17 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
     auto SD=C.getStanleyDec_mutable().begin();
 
     for(;SD!=C.getStanleyDec_mutable().end();){
- 
+
+        swap(newSimpl.key,SD->key);
         test=-1;
         for(i=0;i<dim;++i){
-            newSimpl.key[i]=SD->key[i];
             if(newSimpl.key[i]<=test){
                 throw FatalException("Key of simplicial cone not ascending or out of range");
             }
             test=newSimpl.key[i];
         }
         
-        det=SD->offsets.nr_of_rows();
-        newSimpl.offsets.resize(det);
-        for(i=0;i<det;++i)
-            newSimpl.offsets[i].resize(dim);
-        for(i=0;i<det;++i)
-            for(j=0;j<dim;++j)
-                convert(newSimpl.offsets[i][j],SD->offsets[i][j]);
+        swap(newSimpl.offsets,SD->offsets);
         StanleyDec.push_back(newSimpl);
         SD=C.getStanleyDec_mutable().erase(SD);
     }
@@ -737,7 +731,7 @@ try{
       for(i=0;i<rank;++i)
         degrees[i]/=gradingDenom; // must be divisible
       S->degrees=degrees;
-      lcmDets=lcm(lcmDets,S->offsets.size());
+      lcmDets=lcm(lcmDets,S->offsets.nr_of_rows());
   }
   
   if(verbose_INT)
@@ -839,7 +833,7 @@ try{
         try {
 #endif
 
-    det=S->offsets.size();
+    det=S->offsets.nr_of_rows();
     degrees=S->degrees;
     
     for(i=0;i<rank;++i)    // select submatrix defined by key
@@ -850,7 +844,7 @@ try{
         prepare_inclusion_exclusion_simpl(*S,inExCollect,inExSimplData);
 
     h=0;
-    long iS=S->offsets.size();    // compute numerator for simplex being processed   
+    long iS=S->offsets.nr_of_rows();    // compute numerator for simplex being processed   
     for(i=0;i<iS;++i){
         degree_b=v_scalar_product(degrees,S->offsets[i]);
         degree_b/=det;
