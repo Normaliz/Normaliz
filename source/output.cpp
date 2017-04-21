@@ -381,8 +381,8 @@ void Output<Integer>::write_Stanley_dec() const {
         }
 
         out << "Stanley_dec" << endl;
-        const list<STANLEYDATA<Integer> >& StanleyDec = Result->getStanleyDec();
-        typename list<STANLEYDATA<Integer> >::const_iterator S = StanleyDec.begin();
+        const list<STANLEYDATA>& StanleyDec = Result->getStanleyDec();
+        typename list<STANLEYDATA>::const_iterator S = StanleyDec.begin();
         size_t i;
 
         out << StanleyDec.size() << endl; 

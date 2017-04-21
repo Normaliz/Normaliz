@@ -150,7 +150,7 @@ public:
     list< SHORTSIMPLEX<Integer> > TriangulationBuffer; // simplices to evaluate
     list< SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
     Integer detSum;                  // sum of the determinants of the simplices
-    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition
+    list< STANLEYDATA> StanleyDec; // Stanley decomposition
     vector<Integer> ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
     
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    

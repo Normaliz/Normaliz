@@ -53,9 +53,9 @@ template<typename Integer> struct SHORTSIMPLEX {
                                       // opposite of generator i must be excluded
 };
 
-template<typename Integer> struct STANLEYDATA {
+struct STANLEYDATA {
     vector<key_t> key;
-    Matrix<Integer> offsets;
+    Matrix<long> offsets;
 };
 
 template<typename Integer>
@@ -276,7 +276,9 @@ public:
     const vector< pair<vector<key_t>, Integer> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
-    const list< STANLEYDATA<Integer> >& getStanleyDec();
+    const list< STANLEYDATA>& getStanleyDec();
+    list< STANLEYDATA >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
+                             // in order to save memeory for weighted Ehrhart
     
     void set_project(string name);
     void set_nmz_call(const string& path);
@@ -332,7 +334,7 @@ private:
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
-    list< STANLEYDATA<Integer> > StanleyDec;
+    list< STANLEYDATA > StanleyDec;
     mpq_class multiplicity;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;

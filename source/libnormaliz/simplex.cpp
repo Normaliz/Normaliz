@@ -434,10 +434,10 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         prepare_inclusion_exclusion_simpl(Deg0_offset, Coll);
 
     if(C_ptr->do_Stanley_dec){                          // prepare space for Stanley dec
-        STANLEYDATA<Integer> SimplStanley;         // key + matrix of offsets
+        STANLEYDATA SimplStanley;         // key + matrix of offsets
         SimplStanley.key=key;
         Matrix<Integer> offsets(convertTo<long>(volume),dim);  // volume rows, dim columns
-        SimplStanley.offsets=offsets;
+        convert(SimplStanley.offsets,offsets);
         #pragma omp critical(STANLEY)
         {
         C_ptr->StanleyDec.push_back(SimplStanley);      // extend the Stanley dec by a new matrix
@@ -445,7 +445,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         }
         for(i=0;i<dim;++i)                   // the first vector is 0+offset
             if(Excluded[i])
-                (*StanleyMat)[0][i]=volume;
+                (*StanleyMat)[0][i]=convertTo<long>(volume);
     }
 
     StanIndex=1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
@@ -573,10 +573,10 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     }
 
     if(C.do_Stanley_dec){
-        (*StanleyMat)[StanIndex]=element;
+        convert((*StanleyMat)[StanIndex],element);
         for(i=0;i<dim;i++)
             if(Excluded[i]&&element[i]==0)
-                (*StanleyMat)[StanIndex][i]+=volume;
+                (*StanleyMat)[StanIndex][i]+=convertTo<long>(volume);
         StanIndex++;
     }
 

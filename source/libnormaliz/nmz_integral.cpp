@@ -611,9 +611,9 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
     
     long test;
     
-    auto SD=C.getStanleyDec().begin();
+    auto SD=C.getStanleyDec_mutable().begin();
 
-    for(;SD!=C.getStanleyDec().end();++SD){
+    for(;SD!=C.getStanleyDec_mutable().end();){
  
         test=-1;
         for(i=0;i<dim;++i){
@@ -632,7 +632,9 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
             for(j=0;j<dim;++j)
                 convert(newSimpl.offsets[i][j],SD->offsets[i][j]);
         StanleyDec.push_back(newSimpl);
-    }    
+        SD=C.getStanleyDec_mutable().erase(SD);
+    }
+    // C.resetStanleyDec();
 }
 
 template<typename Integer>
