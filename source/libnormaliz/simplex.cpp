@@ -434,7 +434,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         prepare_inclusion_exclusion_simpl(Deg0_offset, Coll);
 
     if(C_ptr->do_Stanley_dec){                          // prepare space for Stanley dec
-        STANLEYDATA SimplStanley;         // key + matrix of offsets
+        STANLEYDATA_int SimplStanley;         // key + matrix of offsets
         SimplStanley.key=key;
         Matrix<Integer> offsets(convertTo<long>(volume),dim);  // volume rows, dim columns
         convert(SimplStanley.offsets,offsets);
