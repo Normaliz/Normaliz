@@ -1488,14 +1488,29 @@ const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionDa
 }
 
 template<typename Integer>
-const list< STANLEYDATA >& Cone<Integer>::getStanleyDec() {
-    compute(ConeProperty::StanleyDec);
-    return StanleyDec;
+void Cone<Integer>::make_StanleyDec_export() {
+    if(!StanleyDec_export.empty())
+        return;
+    assert(isComputed(ConeProperty::StanleyDec));
+    auto SD=StanleyDec.begin();
+    for(;SD!=StanleyDec.end();++SD){
+        STANLEYDATA<Integer> NewSt;
+        NewSt.key=SD->key;
+        convert(NewSt.offsets,SD->offsets);
+        StanleyDec_export.push_back(NewSt);        
+    }    
 }
 
 template<typename Integer>
-list< STANLEYDATA >& Cone<Integer>::getStanleyDec_mutable() {
+const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() {
     compute(ConeProperty::StanleyDec);
+    make_StanleyDec_export();
+    return StanleyDec_export;
+}
+
+template<typename Integer>
+list< STANLEYDATA_int >& Cone<Integer>::getStanleyDec_mutable() {
+    assert(isComputed(ConeProperty::StanleyDec));
     return StanleyDec;
 }
 
@@ -1880,15 +1895,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     
     complete_sublattice_comp(ToCompute);
-    
-    bool weightedEhrhart_already_computed=is_Computed.test(ConeProperty::WeightedEhrhartSeries);    
+       
     if(ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         compute_weighted_Ehrhart(ToCompute);
     ToCompute.reset(is_Computed);
-    if(!weightedEhrhart_already_computed && is_Computed.test(ConeProperty::WeightedEhrhartSeries)){
-            ToCompute.reset(ConeProperty::StanleyDec);   // Because weighted Ehrhart erases the StanleyDec
-            is_Computed.reset(ConeProperty::StanleyDec); // But it can be computed afresh in the next run 
-    }                                                    // if desired
     
     if(ToCompute.test(ConeProperty::Integral))
         compute_integral(ToCompute);
@@ -2600,7 +2610,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         StanleyDec.clear();
         //StanleyDec.splice(StanleyDec.end(),FC.StanleyDec);
         while (!FC.StanleyDec.empty()) {
-            STANLEYDATA ele;
+            STANLEYDATA_int ele;
             ele.key.swap(FC.StanleyDec.front().key);
             convert(ele.offsets, FC.StanleyDec.front().offsets);
             StanleyDec.push_back(ele);

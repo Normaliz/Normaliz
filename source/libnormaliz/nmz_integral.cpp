@@ -500,7 +500,7 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   return(HS);
 }
 
-bool compareDegrees(const STANLEYDATA_INT& A, const STANLEYDATA_INT& B){
+bool compareDegrees(const STANLEYDATA_int& A, const STANLEYDATA_int& B){
 
     return(A.degrees < B.degrees);
 }
@@ -510,7 +510,7 @@ bool compareFaces(const SIMPLINEXDATA_INT& A, const SIMPLINEXDATA_INT& B){
     return(A.card > B.card);
 }
 
-void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
+void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
       const vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, 
       vector<SIMPLINEXDATA_INT>& inExSimplData) {
 
@@ -597,7 +597,7 @@ void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& in
 }
 
 template<typename Integer>
-void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& StanleyDec,
+void readDecInEx(Cone<Integer>& C, const long& dim, /* list<STANLEYDATA_int_INT>& StanleyDec, */
                 vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
 // rads Stanley decomposition and InExSata from C
     
@@ -605,28 +605,29 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
         readInEx(C, inExCollect,nrGen);
     }
 
-    STANLEYDATA_INT newSimpl;
-    long i=0;
-    newSimpl.key.resize(dim);
+    // STANLEYDATA_int_INT newSimpl;
+    // ong i=0;
+    // newSimpl.key.resize(dim);
     
     long test;
     
     auto SD=C.getStanleyDec_mutable().begin();
+    auto SD_end=C.getStanleyDec_mutable().end();
 
-    for(;SD!=C.getStanleyDec_mutable().end();){
+    for(;SD!=SD_end;++SD){
 
-        swap(newSimpl.key,SD->key);
+        // swap(newSimpl.key,SD->key);
         test=-1;
-        for(i=0;i<dim;++i){
-            if(newSimpl.key[i]<=test){
+        for(long i=0;i<dim;++i){
+            if(SD->key[i]<=test){
                 throw FatalException("Key of simplicial cone not ascending or out of range");
             }
-            test=newSimpl.key[i];
+            test=SD->key[i];
         }
         
-        swap(newSimpl.offsets,SD->offsets);
+        /* swap(newSimpl.offsets,SD->offsets);
         StanleyDec.push_back(newSimpl);
-        SD=C.getStanleyDec_mutable().erase(SD);
+        SD=C.getStanleyDec_mutable().erase(SD);*/
     }
     // C.resetStanleyDec();
 }
@@ -705,17 +706,19 @@ try{
     verboseOutput() << "Generators read" << endl;
   long maxDegGen=v_scalar_product(gens[gens.size()-1],grading)/gradingDenom; 
   
-  list<STANLEYDATA_INT> StanleyDec;
+  // list<STANLEYDATA_int_INT> StanleyDec;
   vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
-  readDecInEx(C,rank,StanleyDec,inExCollect,gens.size());
+  readDecInEx(C,rank,inExCollect,gens.size());
   if(verbose_INT)
     verboseOutput() << "Stanley decomposition (and in/ex data) read" << endl;
+  
+  list<STANLEYDATA_int>& StanleyDec=C.getStanleyDec_mutable();
     
   size_t dec_size=StanleyDec.size();
     
   // Now we sort the Stanley decomposition by denominator class (= degree class)
 
-  list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
+  auto S = StanleyDec.begin();
 
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
@@ -763,7 +766,7 @@ try{
   size_t dc=0;
   S->classNr=dc; // assignment of class 0 to first simpl in sorted order
 
-  list<STANLEYDATA_INT>::iterator prevS = StanleyDec.begin();
+  auto prevS = StanleyDec.begin();
 
   for(++S;S!=StanleyDec.end();++S,++prevS){
     if(S->degrees==prevS->degrees){                     // compare to predecessor
@@ -817,7 +820,7 @@ try{
   bool evaluateClass;
   vector<long> degrees;
   vector<vector<long> > A(rank);
-  list<STANLEYDATA_INT>::iterator S=StanleyDec.begin();
+  auto S=StanleyDec.begin();
 
   RingElem h(zero(RZZ));     // for use in a simplex
   CyclRatFunct HClass(zero(RZZ)); // for single class

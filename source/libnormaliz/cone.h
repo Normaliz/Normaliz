@@ -53,9 +53,16 @@ template<typename Integer> struct SHORTSIMPLEX {
                                       // opposite of generator i must be excluded
 };
 
-struct STANLEYDATA {
+struct STANLEYDATA_int { // for internal use
     vector<key_t> key;
     Matrix<long> offsets;
+    vector<long> degrees; // degrees and classNr are used in nmz_integral.cpp
+    size_t classNr;  // number of class of this simplicial cone
+};
+
+template<typename Integer> struct STANLEYDATA {
+    vector<key_t> key;
+    Matrix<Integer> offsets;
 };
 
 template<typename Integer>
@@ -276,8 +283,8 @@ public:
     const vector< pair<vector<key_t>, Integer> >& getTriangulation();
     const vector< vector<bool> >& getOpenFacets();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
-    const list< STANLEYDATA>& getStanleyDec();
-    list< STANLEYDATA >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
+    const list< STANLEYDATA<Integer> >& getStanleyDec();
+    list< STANLEYDATA_int >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
                              // in order to save memeory for weighted Ehrhart
     
     void set_project(string name);
@@ -334,7 +341,8 @@ private:
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
-    list< STANLEYDATA > StanleyDec;
+    list< STANLEYDATA_int > StanleyDec;
+    list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
@@ -464,6 +472,8 @@ private:
     void compute_integral (ConeProperties& ToCompute);
     void compute_virt_mult (ConeProperties& ToCompute);
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);
+    
+    void make_StanleyDec_export();
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false
 

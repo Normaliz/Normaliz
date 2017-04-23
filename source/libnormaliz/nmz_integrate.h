@@ -50,13 +50,6 @@ typedef unsigned int key_type;
 
 bool verbose_INT;
 
-struct STANLEYDATA_INT{
-        vector<key_type> key;  // read from dec file
-        vector<long> degrees;
-        Matrix<long> offsets;  // ditto
-        size_t classNr;  // number of class of this simplicial cone
-};
-
 struct SIMPLINEXDATA_INT{                        // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 
         long mult;                           // multiplicity of this face
