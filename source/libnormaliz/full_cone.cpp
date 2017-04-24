@@ -2704,7 +2704,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
     
     SimplCone.compute();
     
-    vector<bool> Excluded(dim,false);
+    vector<bool> Excluded(dim,false); // we want to discard duplicates
     for(size_t i=0;i<dim;++i){
         Integer test=v_scalar_product(SimplCone.Support_Hyperplanes[i],Order_Vector);
         if(test>0)
@@ -2961,7 +2961,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     
     if (do_deg1_elements) {
         for(size_t i=0;i<nr_gen;i++)
-            if(v_scalar_product(Grading,Generators[i])==1) //TODO in_triang[i] &&
+            if(v_scalar_product(Grading,Generators[i])==1 && (!is_approximation || contains(Generators[i])))
                 Deg1_Elements.push_front(Generators[i]);
         is_Computed.set(ConeProperty::Deg1Elements,true);
         Deg1_Elements.sort();
@@ -3496,13 +3496,13 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_global() {
     
     compute_elements_via_approx(Deg1_Elements);
     
-    typename list<vector<Integer> >::iterator e;
+    /* typename list<vector<Integer> >::iterator e; // now already done in simplex.cpp and directly for generators
     for(e=Deg1_Elements.begin(); e!=Deg1_Elements.end();)
         if(!contains(*e))
             e=Deg1_Elements.erase(e);
         else
-            ++e;
-        if(verbose)
+            ++e; */
+    if(verbose)
             verboseOutput() << Deg1_Elements.size() << " deg 1 elements found" << endl; 
 }
 

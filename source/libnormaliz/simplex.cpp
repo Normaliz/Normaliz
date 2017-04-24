@@ -490,8 +490,10 @@ void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& eleme
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
+    
+    // now the vector in par has been produced and is in element    
+    // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
 
-    // now we create and evaluate the points in par
     Integer norm;
     Integer normG;
     size_t i;
@@ -501,7 +503,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.is_approximation && C.do_Hilbert_basis){
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(!C.contains(help))
+        if(!C.contains(help)) // here we are abusing the support hyperplanes of the approximated cone !
             return;
         /* #pragma omp atomic
         NrCand++;*/
@@ -512,12 +514,6 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         NrSurvivors++; */
     
     }
-
-    typename list <vector <Integer> >::iterator c;
-    
-    // now the vector in par has been produced and is in element
-    
-    // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
 
     norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
             // it is used to sort the Hilbert basis candidates
@@ -594,6 +590,9 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
         vector<Integer> help(dim);
         transform_to_global(element,help);
+        if(C.is_approximation && !C.contains(help)){ // here we are abusing the support hyperplanes of the approximated cone !
+            return;
+        }
         Coll.Deg1_Elements.push_back(help);
         Coll.collected_elements_size++;
     }

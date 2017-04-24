@@ -7,6 +7,9 @@ rank = 9 (maximal)
 external index = 1
 internal index = 4
 
+size of partial triangulation   = 221
+resulting sum of |det|s = 1408
+
 grading:
 1 1 1 1 1 1 1 1 1 
 
