@@ -3066,6 +3066,9 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(!pointed || BasisChangePointed.getRank()==0)
         return;
     
+    if(BasisChangePointed.IsIdentity()) // in this case we leave it to the Full_Cone
+        return;
+    
     if(inhomogeneous){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
             if(v_scalar_product(Generators[i],Dehomogenization)==0){
@@ -3133,11 +3136,15 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
                 not_in=true;
                 break;
             }
+        if(not_in)
+            continue;
         for(size_t k=0;k<Eq.nr_of_rows();++k) 
             if(v_scalar_product(rr,Eq[k])!=0){// not in original cone (or lattice)
                 not_in=true;
                 break;
             }
+        if(not_in)
+            continue;
         for(size_t k=0;k<Cong.nr_of_rows();++k) {
             if(v_scalar_product_unequal_vectors_begin(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
                 not_in=true;
