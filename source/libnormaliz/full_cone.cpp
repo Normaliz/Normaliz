@@ -2961,7 +2961,7 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     
     if (do_deg1_elements) {
         for(size_t i=0;i<nr_gen;i++)
-            if(v_scalar_product(Grading,Generators[i])==1 && (!is_approximation || contains(Generators[i])))
+            if(v_scalar_product(Grading,Generators[i])==1 && (!is_approximation || subcone_contains(Generators[i])))
                 Deg1_Elements.push_front(Generators[i]);
         is_Computed.set(ConeProperty::Deg1Elements,true);
         Deg1_Elements.sort();
@@ -3528,8 +3528,9 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     // C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
     C_approx.do_Hilbert_basis=do_Hilbert_basis;
-    C_approx.do_all_hyperplanes=false;    // we use the support Hyperplanes of the approximated cone for the selection of elements
-    C_approx.Support_Hyperplanes=Support_Hyperplanes;
+    C_approx.do_all_hyperplanes=false;    // not needed
+    C_approx.Subcone_Support_Hyperplanes=Support_Hyperplanes; // *this is a subcone of C_approx, used to discard elements
+    C_approx.Support_Hyperplanes=Support_Hyperplanes; // UNFORTUNATELY NEEDED IN REDUCTION FOR SUBDIVIUSION BY APPROX
     C_approx.is_Computed.set(ConeProperty::SupportHyperplanes);
     C_approx.nrSupport_Hyperplanes = nrSupport_Hyperplanes;
     C_approx.Grading = Grading;
@@ -4202,6 +4203,22 @@ void Full_Cone<Integer>::select_deg1_elements() { // from the Hilbert basis
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool Full_Cone<Integer>::subcone_contains(const vector<Integer>& v) {
+    for (size_t i=0; i<Subcone_Support_Hyperplanes.nr_of_rows(); ++i)
+        if (v_scalar_product(Subcone_Support_Hyperplanes[i],v) < 0)
+            return false;
+        for (size_t i=0; i<Subcone_Equations.nr_of_rows(); ++i)
+        if (v_scalar_product(Subcone_Equations[i],v) != 0)
+            return false;
+        if(is_global_approximation)
+            if(v_scalar_product(Subcone_Grading,v)!=1)
+                return false;
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 bool Full_Cone<Integer>::contains(const vector<Integer>& v) {
     for (size_t i=0; i<Support_Hyperplanes.nr_of_rows(); ++i)
         if (v_scalar_product(Support_Hyperplanes[i],v) < 0)
@@ -4823,6 +4840,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
 
     approx_level = 1;
     is_approximation=false;
+    is_global_approximation=false;
     
     PermGens.resize(nr_gen);
     for(size_t i=0;i<nr_gen;++i)

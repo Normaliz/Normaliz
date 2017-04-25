@@ -1084,6 +1084,7 @@ void Cone<Integer>::initialize() {
     rees_primary = false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
+    is_approximation=false;
     verbose = libnormaliz::verbose; //take the global default
     if (using_GMP<Integer>()) {
         change_integer_type = true;
@@ -1875,7 +1876,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // the computation of the full cone
     if (change_integer_type) {
         try {
-            compute_inner<MachineInteger>(ToCompute);
+            compute_full_cone<MachineInteger>(ToCompute);
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
@@ -1885,7 +1886,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     if (!change_integer_type) {
-        compute_inner<Integer>(ToCompute);
+        compute_full_cone<Integer>(ToCompute);
     }
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
@@ -2012,7 +2013,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
 
 template<typename Integer>
 template<typename IntegerFC>
-void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
+void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     
     if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
         if (verbose) {
@@ -2151,6 +2152,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
         FC.do_module_gens_intcl=true;
     }
+    
+    if(is_approximation)
+        give_data_of_approximated_cone_to(FC);
 
     /* do the computation */
     
@@ -2184,7 +2188,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         // now we get the basis of the maximal subspace
         pointed = (BasisMaxSubspace.nr_of_rows() == 0);
         is_Computed.set(ConeProperty::IsPointed);
-        compute_inner<IntegerFC>(ToCompute);           
+        compute_full_cone<IntegerFC>(ToCompute);           
     }
 }
 
@@ -3266,8 +3270,8 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(!pointed || BasisChangePointed.getRank()==0)
         return;
     
-    if(BasisChangePointed.IsIdentity()) // in this case we leave it to the Full_Cone
-        return;
+    /*if(BasisChangePointed.IsIdentity()) // in this case we leave it to the Full_Cone
+        return; */
     
     if(inhomogeneous){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
@@ -3313,6 +3317,8 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "Computing approximating polytope" << endl;
     Cone<Integer> ApproxCone(InputType::cone,GradGen);
+    ApproxCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
+    ApproxCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
     ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
     
     HilbertBasis=Matrix<Integer>(0,dim);
@@ -3327,11 +3333,11 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
         vector<Integer> rr(dim);
         for(size_t j=0;j<dim;++j)
             rr[j]=Raw[i][j+1];
-        if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
+        /*if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
             continue;
-        }
+        }*/
         bool not_in=false;
-        for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
+        /* for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
             if(v_scalar_product(rr,SupportHyperplanes[k])<0){  // not in original cone
                 not_in=true;
                 break;
@@ -3344,7 +3350,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
                 break;
             }
         if(not_in)
-            continue;
+            continue;*/
         for(size_t k=0;k<Cong.nr_of_rows();++k) {
             if(v_scalar_product_unequal_vectors_begin(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
                 not_in=true;
@@ -3463,6 +3469,56 @@ template<typename Integer>
 void Cone<Integer>::NotComputable (string message){
     if(!default_mode)
         throw NotComputableException(message);
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
+    assert(is_approximation);
+    assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
+    
+    FC.is_global_approximation=true;
+    FC.is_approximation=true;
+    
+    // The first coordinate in *this is the degree given by the grading
+    // in ApproximatedCone. We disregard it by setting the first coordinate
+    // of the grading, inequalities and equations to 0, and then have 0 followed
+    // by the grading, equations and inequalities resp. of ApproximatedCone.
+    
+    vector<Integer> help_g;
+    if(ApproximatedCone->inhomogeneous)
+        help_g=ApproximatedCone->Dehomogenization;
+    else
+        help_g=ApproximatedCone->Grading;
+            
+    vector<Integer> help(help_g.size()+1);
+    help[0]=0;
+    for(size_t j=0;j<help_g.size();++j)
+        help[j+1]=help_g[j];
+    BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
+    
+    Matrix<Integer> Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
+    FC.Subcone_Equations=Matrix<IntegerFC>(Eq.nr_of_rows(),BasisChangePointed.getRank());
+
+    for(size_t i=0;i<Eq.nr_of_rows();++i){
+        vector<Integer> help(Eq.nr_of_columns()+1,0);
+        for(size_t j=0;j<Eq.nr_of_columns();++j)
+            help[j+1]=Eq[i][j];
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
+    }
+    
+    Matrix<Integer> Supp=ApproximatedCone->SupportHyperplanes;
+    FC.Subcone_Support_Hyperplanes=Matrix<IntegerFC>(Supp.nr_of_rows(),BasisChangePointed.getRank());
+
+    for(size_t i=0;i<Supp.nr_of_rows();++i){
+        vector<Integer> help(Supp.nr_of_columns()+1,0);
+        for(size_t j=0;j<Supp.nr_of_columns();++j)
+            help[j+1]=Supp[i][j];
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes[i], help);       
+    }
+    
+    
 }
 
 

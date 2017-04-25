@@ -503,7 +503,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.is_approximation && C.do_Hilbert_basis){
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(!C.contains(help)) // here we are abusing the support hyperplanes of the approximated cone !
+        if(!C.subcone_contains(help)) // here we are abusing the support hyperplanes of the approximated cone !
             return;
         /* #pragma omp atomic
         NrCand++;*/
@@ -590,7 +590,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(C.is_approximation && !C.contains(help)){ // here we are abusing the support hyperplanes of the approximated cone !
+        if(C.is_approximation && !C.subcone_contains(help)){ // here we are abusing the support hyperplanes of the approximated cone !
             return;
         }
         Coll.Deg1_Elements.push_back(help);

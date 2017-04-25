@@ -372,6 +372,9 @@ private:
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
     
+    bool is_approximation;
+    Cone* ApproximatedCone;
+    
     // some properties of the current computation taken from ToCompute
     bool explicit_HilbertSeries; // true = Hilbert series set explicitly and not only via default mode
     bool naked_dual; // true = dual mode set, but neither Hilbert basis nor deg 1 points
@@ -425,7 +428,7 @@ private:
     void initialize();
 
     template<typename IntegerFC>
-    void compute_inner(ConeProperties& ToCompute);
+    void compute_full_cone(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
     void compute_generators();
@@ -476,7 +479,9 @@ private:
     void make_StanleyDec_export();
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false
-
+    
+    template<typename IntegerFC>
+    void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
 };
 
 // helpers

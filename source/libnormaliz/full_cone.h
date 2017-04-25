@@ -133,6 +133,9 @@ public:
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
+    Matrix<Integer> Subcone_Support_Hyperplanes; // used if *this computes elements in a subcone, for example in approximation
+    Matrix<Integer> Subcone_Equations;
+    vector<Integer> Subcone_Grading;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
     vector<Integer> Witness;    // for not integrally closed
@@ -241,6 +244,7 @@ void try_offload_loc(long place,size_t max_level);
     
     long approx_level;
     bool is_approximation;
+    bool is_global_approximation; // true if approximation is defined in Cone
     
     Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
 
@@ -296,6 +300,7 @@ void try_offload_loc(long place,size_t max_level);
     Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
     bool contains(const vector<Integer>& v);
+    bool subcone_contains(const vector<Integer>& v);
     bool contains(const Full_Cone& C);
     void extreme_rays_and_deg1_check();
     void find_grading();
