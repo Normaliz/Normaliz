@@ -509,6 +509,15 @@ void Matrix<Integer>::remove_row(const vector<Integer>& row) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+void Matrix<Integer>::remove_row(const size_t index) {
+    assert(index<nr);
+    nr--;
+    elem.erase(elem.begin()+(index));
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::remove_duplicate_and_zero_rows() {
     bool remove_some = false;
     vector<bool> key(nr, true);
@@ -524,6 +533,29 @@ void Matrix<Integer>::remove_duplicate_and_zero_rows() {
         }
         else
             SortedRows.insert(found,elem[i]);
+    }
+
+    if (remove_some) {
+        *this = submatrix(key);
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Matrix<Integer>::remove_duplicate(const Matrix<Integer>& M) {
+    bool remove_some = false;
+    vector<bool> key(nr, true);
+
+    // TODO more efficient! sorted rows
+    for (size_t i = 0; i<nr; i++) {
+        for (size_t j=0;j<M.nr_of_rows();j++){
+            if (elem[i]==M[j]){
+                remove_some=true;
+                key[i]=false;
+                break;
+            }
+        }
     }
 
     if (remove_some) {

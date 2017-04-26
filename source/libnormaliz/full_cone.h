@@ -173,6 +173,8 @@ public:
         size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
         size_t Mother;                     // Ident of positive mother if known, 0 if unknown
+        bool is_positive_on_all_original_gens=false;
+        bool is_negative_on_some_original_gen=false;
         bool simplicial;                   // indicates whether facet is simplicial
     };
 
@@ -244,8 +246,12 @@ void try_offload_loc(long place,size_t max_level);
     
     long approx_level;
     bool is_approximation;
+
     bool is_global_approximation; // true if approximation is defined in Cone
-    
+
+    vector<vector<key_t>> approx_points_keys;
+    Matrix<Integer> OriginalGenerators;
+
     Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
 
 /* ---------------------------------------------------------------------------
@@ -277,7 +283,7 @@ void try_offload_loc(long place,size_t max_level);
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
 	void find_bottom_facets();                                  
-    Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation

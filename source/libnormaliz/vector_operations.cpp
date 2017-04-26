@@ -139,6 +139,202 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+bool v_scalar_product_nonnegative(const vector<Integer>& av,const vector<Integer>& bv){
+    //loop stretching ; brings some small speed improvement
+
+    Integer ans = 0;
+    size_t i,n=av.size();
+
+
+#if 0 // #ifdef __MIC__   // not for newer compiler versions
+    // this version seems to be better vectorizable on the mic
+    for (i=0; i<n; ++i)
+        ans += av[i]*bv[i];
+
+#else // __MIC__
+    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+#endif // __MIC__
+        
+    if(!check_range(ans)){
+		#pragma omp atomic
+		GMP_scal_prod++;
+    
+        // cout << "av " << av;
+        // cout << "bv " << bv;   
+        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
+        convert(mpz_a, av);
+        convert(mpz_b, bv);
+        v_scalar_product(mpz_a,mpz_b);
+    }
+        
+    return (ans>=0);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_scalar_product_positive(const vector<Integer>& av,const vector<Integer>& bv){
+    //loop stretching ; brings some small speed improvement
+
+    Integer ans = 0;
+    size_t i,n=av.size();
+
+
+#if 0 // #ifdef __MIC__   // not for newer compiler versions
+    // this version seems to be better vectorizable on the mic
+    for (i=0; i<n; ++i)
+        ans += av[i]*bv[i];
+
+#else // __MIC__
+    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+#endif // __MIC__
+        
+    if(!check_range(ans)){
+		#pragma omp atomic
+		GMP_scal_prod++;
+    
+        // cout << "av " << av;
+        // cout << "bv " << bv;   
+        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
+        convert(mpz_a, av);
+        convert(mpz_b, bv);
+        v_scalar_product(mpz_a,mpz_b);
+    }
+        
+    return (ans>0);
+}
+
+template<typename Integer>
 Integer v_scalar_product_unequal_vectors_begin(const vector<Integer>& a,const vector<Integer>& b){
     Integer ans = 0;
     size_t i,n=min(a.size(),b.size());
@@ -506,6 +702,27 @@ bool v_is_nonnegative(const vector<Integer>& v) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+size_t v_nr_negative(const vector<Integer>& v) {
+    size_t tmp=0;
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] <0) tmp++;
+    }
+    return tmp;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_non_negative(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] <0) return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t& start){
 
     size_t i,n=av.size();
@@ -585,50 +802,51 @@ void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
 // computes approximating lattice simplex using the A_n dissection of the unit cube
 // q is a rational vector with the denominator in the FIRST component q[0]
 
-        template<typename Integer>
-        void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long k){
 
-        //cout << "approximate the point " << q;
-        long dim=q.size();
-        long l=k;
-        //if (k>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
-        // TODO in this case, skip the rest and just approximate on q[0]
-        Matrix<Integer> quot =  Matrix<Integer>(l,dim);
-        Matrix<Integer> remain=Matrix<Integer>(l,dim);
-        for(long j=0;j<l;j++){
-            for(long i=0;i<dim;++i){
-                quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
-                //quot[j][0] = 1;
-                remain[j][i]=(q[i]*(j+1))%q[0];  // with 0 <= remain < q[0]
-                if(remain[j][i]<0){
-                    remain[j][i]+=q[0];
-                    quot[j][i]--;
-                }
-                    
-            }
-            v_make_prime(quot[j]);
-            remain[j][0]=q[0];  // helps to avoid special treatment of i=0
-        }
-        // choose best level
-        //cout << "this is the qout matrix" << endl;
-        //quot.pretty_print(cout);
-        //cout << "this is the remain matrix" << endl;
-        //remain.pretty_print(cout);
-        long best_level=l-1;
-        vector<long> nr_zeros(l);
-        for(long j=l-1;j>=0;j--){
-                for(long i=0;i<dim;++i){
-                        if(remain[j][i]==0) nr_zeros[j]++;
-                }
-                if (nr_zeros[j]>nr_zeros[best_level]) best_level=j;
-        }
-        //cout << "the best level is " << (best_level+1) << endl;
-        //now we proceed as before
-        vector<pair<Integer,size_t>> best_remain(dim);
-        for(long i=0;i<dim;i++){
-                best_remain[i].first = remain[best_level][i];
-                best_remain[i].second = i; // after sorting we must lnow where elements come from
-        }
+template<typename Integer>
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
+	
+	//cout << "approximate the point " << q;
+    long dim=q.size();
+    long l = approx_level;
+    //if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
+    // TODO in this case, skip the rest and just approximate on q[0]
+    Matrix<Integer> quot =  Matrix<Integer>(l,dim);
+    Matrix<Integer> remain=Matrix<Integer>(l,dim);
+    for(long j=0;j<approx_level;j++){
+	    for(long i=0;i<dim;++i){
+	        quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
+	        //quot[j][0] = 1;
+	        remain[j][i]=(q[i]*(j+1))%q[0];  // with 0 <= remain < q[0]
+	        if(remain[j][i]<0){
+	            remain[j][i]+=q[0];
+	            quot[j][i]--;
+	        }
+	          
+	    }
+	    v_make_prime(quot[j]);
+	    remain[j][0]=q[0];  // helps to avoid special treatment of i=0
+	}
+	// choose best level
+	//cout << "this is the qout matrix" << endl;
+	//quot.pretty_print(cout);
+	//cout << "this is the remain matrix" << endl;
+	//remain.pretty_print(cout);
+	long best_level=l-1;
+	vector<long> nr_zeros(l);
+	for(long j=l-1;j>=0;j--){
+		for(long i=0;i<dim;++i){
+			if(remain[j][i]==0) nr_zeros[j]++;
+		}
+		if (nr_zeros[j]>nr_zeros[best_level]) best_level=j;
+	}
+	//cout << "the best level is " << (best_level+1) << endl;
+	//now we proceed as before
+	vector<pair<Integer,size_t>> best_remain(dim);
+	for(long i=0;i<dim;i++){
+		best_remain[i].first = remain[best_level][i];
+		best_remain[i].second = i; // after sorting we must lnow where elements come from
+	}
 
     sort(best_remain.begin(),best_remain.end()); 
     reverse(best_remain.begin(),best_remain.end()); // we sort remain into descending order

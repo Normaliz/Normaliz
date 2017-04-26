@@ -3479,7 +3479,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
     assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
     
     FC.is_global_approximation=true;
-    FC.is_approximation=true;
+    // FC.is_approximation=true;
     
     // The first coordinate in *this is the degree given by the grading
     // in ApproximatedCone. We disregard it by setting the first coordinate

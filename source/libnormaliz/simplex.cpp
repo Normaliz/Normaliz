@@ -590,7 +590,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(C.is_approximation && !C.subcone_contains(help)){ // here we are abusing the support hyperplanes of the approximated cone !
+        if((C.is_approximation || C.is_global_approximation) && !C.subcone_contains(help)){
             return;
         }
         Coll.Deg1_Elements.push_back(help);
@@ -707,6 +707,7 @@ const long SimplexParallelEvaluationBound=100000000; // simplices larger than th
                  //are evaluated by parallel threads
                  // simplices larger than this bound  || (this bound/10 && Hilbert basis)
                  // are tried for subdivision
+
 
 //---------------------------------------------------------------------------
 
@@ -947,8 +948,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
+
     if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
         && C_ptr->approx_level == 1
+
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
     {
 
@@ -967,8 +970,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         time (&start);
 #ifndef NMZ_SCIP
         C.compute_sub_div_elements(Generators, new_points,volume);
-        //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
-       
+        cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
 #endif
         bottom_points(new_points, Generators,C.Grading,C.approx_level,0,volume);
         time (&end);
