@@ -146,7 +146,7 @@ NMZTESTS = test-/23.in					\
 	test-/SquareMinusVertexPolyh.in			\
 	test-/SquareMinusVertexPolyh.ref		\
 	test-/strict.in					\
-	test-/strict.ref					\
+	test-/strict.ref				\
 	test-/strip2.in					\
 	test-/strip2.ref				\
 	test-/subspace4.in				\
@@ -157,6 +157,8 @@ NMZTESTS = test-/23.in					\
 	test-/test22dual.ref				\
 	test-/Thierry.in				\
 	test-/Thierry.ref				\
+	test-/ThierryNoApprox.in			\
+	test-/ThierryNoApprox.ref			\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/zero4.in					\

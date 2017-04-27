@@ -65,7 +65,7 @@ void printHeader() {
 #endif
     if(with_optional_packages){    
         cout << "------------------------------------------------------------" << endl;
-        cout << "with optional paackage(s)" << optional_packages << endl; 
+        cout << "with paackage(s)" << optional_packages << endl; 
     }
 }
 
