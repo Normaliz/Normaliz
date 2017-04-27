@@ -153,7 +153,9 @@ void Full_Cone<Integer>::add_hyperplane(const size_t& new_generator, const FACET
 
     size_t k;
     
-    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);        
+    FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen); 
+    NewFacet.is_positive_on_all_original_gens=false;
+    NewFacet.is_negative_on_some_original_gen=false;
     
     for (k = 0; k <dim; k++) {
         NewFacet.Hyp[k]=positive.ValNewGen*negative.Hyp[k]-negative.ValNewGen*positive.Hyp[k];
@@ -1179,6 +1181,8 @@ void Full_Cone<Integer>::process_pyramid(const vector<key_t>& Pyramid_key,
                 NewFacet.GenInHyp.set();
                 NewFacet.GenInHyp.reset(i);
                 NewFacet.simplicial=true;
+                NewFacet.is_positive_on_all_original_gens=false;
+                NewFacet.is_negative_on_some_original_gen=false;
                 NewFacets.push_back(NewFacet);
             }
             select_supphyps_from(NewFacets,new_generator,Pyramid_key); // takes itself care of multithreaded_pyramid
@@ -1325,6 +1329,8 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex(){
        
     for (i = 0; i <dim; i++) {
         FACETDATA NewFacet; NewFacet.GenInHyp.resize(nr_gen);
+        NewFacet.is_positive_on_all_original_gens=false;
+        NewFacet.is_negative_on_some_original_gen=false;
         NewFacet.Hyp=H[i];
         NewFacet.simplicial=true; // indeed, the start simplex is simplicial
         for(j=0;j < dim;j++)
@@ -1390,6 +1396,8 @@ void Full_Cone<Integer>::select_supphyps_from(const list<FACETDATA>& NewFacets,
     typename list<FACETDATA>::const_iterator pyr_hyp = NewFacets.begin();
     bool new_global_hyp;
     FACETDATA NewFacet;
+    NewFacet.is_positive_on_all_original_gens=false;
+    NewFacet.is_negative_on_some_original_gen=false;
     NewFacet.GenInHyp.resize(nr_gen);
     Integer test;
     for (; pyr_hyp!=NewFacets.end(); ++pyr_hyp) {
