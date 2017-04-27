@@ -3325,7 +3325,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     Deg1Elements=Matrix<Integer>(0,dim);
     ModuleGenerators=Matrix<Integer>(0,dim);
     
-    Matrix<Integer> Raw=ApproxCone.getDeg1ElementsMatrix();
+    const Matrix<Integer>& Raw=ApproxCone.getDeg1ElementsMatrix();
     Matrix<Integer> Result(0,dim);
     Matrix<Integer> Eq=BasisChange.getEquations();
     Matrix<Integer> Cong=BasisChange.getCongruences();
@@ -3475,11 +3475,16 @@ void Cone<Integer>::NotComputable (string message){
 template<typename Integer>
 template<typename IntegerFC>
 void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
+    
+    // *this is the approximatING cone. The support hyperplanes and equations of the approximatED 
+    // cone are given to the Full_Cone produced from *this so that the superfluous points can
+    // bre sorted out as early as possible.
+    
     assert(is_approximation);
     assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
     
     FC.is_global_approximation=true;
-    // FC.is_approximation=true;
+    // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
     
     // The first coordinate in *this is the degree given by the grading
     // in ApproximatedCone. We disregard it by setting the first coordinate
@@ -3498,7 +3503,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
         help[j+1]=help_g[j];
     BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
     
-    Matrix<Integer> Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
+    const Matrix<Integer>& Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
     FC.Subcone_Equations=Matrix<IntegerFC>(Eq.nr_of_rows(),BasisChangePointed.getRank());
 
     for(size_t i=0;i<Eq.nr_of_rows();++i){
@@ -3508,7 +3513,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
         BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
     }
     
-    Matrix<Integer> Supp=ApproximatedCone->SupportHyperplanes;
+    const Matrix<Integer>& Supp=ApproximatedCone->SupportHyperplanes;
     FC.Subcone_Support_Hyperplanes=Matrix<IntegerFC>(Supp.nr_of_rows(),BasisChangePointed.getRank());
 
     for(size_t i=0;i<Supp.nr_of_rows();++i){
