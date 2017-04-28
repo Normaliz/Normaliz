@@ -260,6 +260,10 @@ try{
     verboseOutput() << tri_size <<" simplicial cones to be evaluated" << endl;
     verboseOutput() << "********************************************" << endl;
   }
+  
+  size_t progress_step=10;
+  if(tri_size >= 1000000)
+      progress_step=100;
 
   size_t nrSimplDone=0;
   
@@ -300,7 +304,7 @@ try{
     I_thread[omp_get_thread_num()]+=ISimpl;
 
  // a little bit of progress report
-    if ((++nrSimplDone)%10==0 && verbose_INT)
+    if ((++nrSimplDone)%progress_step==0 && verbose_INT)
         #pragma omp critical(PROGRESS)
         verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
     
@@ -805,6 +809,10 @@ try{
     verboseOutput() << dec_size <<" simplicial cones to be evaluated" << endl;
     verboseOutput() << "********************************************" <<  endl;
   }
+  
+  size_t progress_step=10;
+  if(dec_size >= 1000000)
+      progress_step=100;
  
   size_t nrSimplDone=0;
   
@@ -901,7 +909,7 @@ try{
     
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((++nrSimplDone)%10==0 && verbose_INT)
+    if((++nrSimplDone)%progress_step==0 && verbose_INT)
         verboseOutput() << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
         // nrActiveFacesOld=nrActiveFaces;
     }
