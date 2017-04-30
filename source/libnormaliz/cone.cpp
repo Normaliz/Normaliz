@@ -2983,19 +2983,6 @@ void Cone<Integer>::setPolynomial(string poly){
     IntData=IntegrationData(poly);
 }
 
-bool exists_file(string name_in){
-//n check whether file name_in exists
-
-    //b string name_in="nmzIntegrate";
-    const char* file_in=name_in.c_str();
-    
-    struct stat fileStat;
-    if(stat(file_in,&fileStat) < 0){
-         return(false); 
-    }
-    return(true);
-}
-
 bool executable(string command){
 //n check whether "command --version" cam be executed
 
