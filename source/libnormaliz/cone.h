@@ -53,6 +53,12 @@ template<typename Integer> struct SHORTSIMPLEX {
                                       // opposite of generator i must be excluded
 };
 
+template<typename Integer>
+bool compareKeys(const SHORTSIMPLEX<Integer>& A, const SHORTSIMPLEX<Integer>& B){
+
+    return(A.key < B.key);
+}
+
 struct STANLEYDATA_int { // for internal use
     vector<key_t> key;
     Matrix<long> offsets;

@@ -2482,6 +2482,8 @@ Integer Cone<Integer>::compute_primary_multiplicity() {
     return compute_primary_multiplicity_inner<Integer>();
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 template<typename IntegerFC>
 Integer Cone<Integer>::compute_primary_multiplicity_inner() {
@@ -2589,6 +2591,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     
     if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();
+        FC.Triangulation.sort(compareKeys<IntegerFC>); // necessary to make triangulation unique
         Triangulation = vector< pair<vector<key_t>, Integer> >(tri_size);
         if(FC.isComputed(ConeProperty::ConeDecomposition))
             OpenFacets.resize(tri_size);
@@ -2612,16 +2615,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
         StanleyDec.clear();
-        //StanleyDec.splice(StanleyDec.end(),FC.StanleyDec);
-        while (!FC.StanleyDec.empty()) {
-            STANLEYDATA_int ele;
-            ele.key.swap(FC.StanleyDec.front().key);
-            convert(ele.offsets, FC.StanleyDec.front().offsets);
-            StanleyDec.push_back(ele);
-            FC.StanleyDec.pop_front();
-        }
+        StanleyDec.splice(StanleyDec.begin(),FC.StanleyDec);
+        // At present, StanleyDec not sorted here
         is_Computed.set(ConeProperty::StanleyDec);
     }
+
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
         InExData.clear();
         InExData.reserve(FC.InExCollect.size());
