@@ -27,6 +27,7 @@
 namespace libnormaliz {
 
 bool verbose = false;
+bool nmz_interrupted = false;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
