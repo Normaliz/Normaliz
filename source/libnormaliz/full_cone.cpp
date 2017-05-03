@@ -2617,16 +2617,15 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 #ifndef NCATCH
             try {
 #endif
+                if(skip_remaining)
+                    continue;
                 
                 for(; i > spos; ++spos, ++s) ;
                 for(; i < spos; --spos, --s) ;
 
 #ifndef NCATCH
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
+           INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
-
-                if(skip_remaining)
-                    continue;
                 
                 if(done[spos])
                     continue;
