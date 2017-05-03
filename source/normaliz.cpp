@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
 using namespace std;
 
 #include "normaliz.h"
@@ -67,6 +68,10 @@ void printHeader() {
         cout << "------------------------------------------------------------" << endl;
         cout << "with paackage(s)" << optional_packages << endl; 
     }
+}
+
+void interrupt_signal_handler( int signal ){
+    nmz_interrupted = true;
 }
 
 void printHelp(char* command) {
@@ -145,7 +150,10 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
 
 int main(int argc, char* argv[])
 {
-
+    
+    // signal handler for interrupt
+    signal(SIGINT, &interrupt_signal_handler);
+    
     // read command line options
 
     OptionsHandler options;
