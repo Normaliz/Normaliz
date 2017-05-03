@@ -2625,7 +2625,6 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
 
-
                 if(skip_remaining)
                     continue;
                 
@@ -2658,11 +2657,13 @@ void Full_Cone<Integer>::evaluate_triangulation(){
             }
 #endif
         }
-        Results[tn].transfer_candidates();
+        
     } // end parallel
 #ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
+
+    for (int tn_j=0;tn_j<omp_get_max_threads();++tn_j) Results[tn_j].transfer_candidates();
 
     if (verbose)
         verboseOutput()  << endl;
