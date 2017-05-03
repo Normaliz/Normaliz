@@ -206,6 +206,10 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << e.what() << endl;
         std::cout << "Writing only available data." << endl;
+    } catch(const InterruptException& e) {
+        std::cout << endl;
+        std::cout << "Computation was interrupted." << endl;
+        std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
     Out.write_files();
