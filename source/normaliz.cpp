@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
 using namespace std;
 
 #include "normaliz.h"
@@ -67,6 +68,10 @@ void printHeader() {
         cout << "------------------------------------------------------------" << endl;
         cout << "with paackage(s)" << optional_packages << endl; 
     }
+}
+
+void interrupt_signal_handler( int signal ){
+    nmz_interrupted = true;
 }
 
 void printHelp(char* command) {
@@ -145,7 +150,10 @@ int process_data(OptionsHandler& options, const string& command_line,const strin
 
 int main(int argc, char* argv[])
 {
-
+    
+    // signal handler for interrupt
+    signal(SIGINT, &interrupt_signal_handler);
+    
     // read command line options
 
     OptionsHandler options;
@@ -197,6 +205,10 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
     } catch(const NotComputableException& e) {
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << e.what() << endl;
+        std::cout << "Writing only available data." << endl;
+    } catch(const InterruptException& e) {
+        std::cout << endl;
+        std::cout << "Computation was interrupted." << endl;
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
