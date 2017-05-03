@@ -2618,9 +2618,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
         for(size_t i=0; i<TriangulationBufferSize; i++){
 #ifndef NCATCH
             try {
-                
-                INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
                 for(; i > spos; ++spos, ++s) ;
                 for(; i < spos; --spos, --s) ;
 
