@@ -162,8 +162,9 @@ public:
 
     // return what was NOT computed
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
-    ConeProperties compute(ConeProperties ToCompute);
+    ConeProperties compute_inner(ConeProperties ToCompute);
     // special case for up to 3 CPs
+    ConeProperties compute(ConeProperties ToCompute);
     ConeProperties compute(ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);

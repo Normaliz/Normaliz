@@ -491,7 +491,7 @@ void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& eleme
 template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
     
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    //INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     // now the vector in par has been produced and is in element    
     // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
