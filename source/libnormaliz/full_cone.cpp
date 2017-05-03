@@ -450,6 +450,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 #ifndef NCATCH
         try {
 #endif
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         zero_i=Zero_PN & Pos_Simp[i]->GenInHyp;
         nr_zero_i=0;
         for(j=0;j<nr_gen && nr_zero_i<=facet_dim;j++)
@@ -550,6 +553,9 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 #ifndef NCATCH
         try {
 #endif
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         jj_map = Neg_Subfacet.begin();       // First the Simp
         for (j=0; j<nr_NegSubf; ++j,++jj_map) {
             if ( (*jj_map).second != -1 ) {  // skip used subfacets
@@ -786,6 +792,9 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 #ifndef NCATCH
     try {
 #endif
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         i=visible[kk];
         
         /* nr_in_i=0;
@@ -1803,6 +1812,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 #ifndef NCATCH
            try {
 #endif
+               INTERRUPT_COMPUTATION_BY_EXCEPTION
                Full_Cone<Integer> Pyramid(*this,*p);
                // Pyramid.recursion_allowed=false;
                Pyramid.do_all_hyperplanes=false;
@@ -1981,7 +1991,9 @@ void Full_Cone<Integer>::build_cone() {
     
     bool check_original_gens=true;
 
-    for (size_t i=start_from;i<nr_gen;++i) { 
+    for (size_t i=start_from;i<nr_gen;++i) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION 
         
         time_t start,end;
         time (&start);
