@@ -2607,8 +2607,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 #ifndef NCATCH
             try {
                 
-                if(nmz_interrupted)
-                    throw InterruptException( "external interrupt" );
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
                 for(; i > spos; ++spos, ++s) ;
                 for(; i < spos; --spos, --s) ;

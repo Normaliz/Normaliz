@@ -88,6 +88,10 @@ extern size_t TotDet;
  */
 extern bool nmz_interrupted;
 
+#define INTERRUPT_COMPUTATION_BY_EXCEPTION \
+if(nmz_interrupted) \
+    throw InterruptException( "external interrupt" );
+
 /* if test_arithmetic_overflow is true, many operations are also done
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
 // extern bool test_arithmetic_overflow;
