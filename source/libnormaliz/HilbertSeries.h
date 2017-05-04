@@ -196,6 +196,10 @@ private:
 template<typename Integer>
 void poly_add_to (vector<Integer>& a, const vector<Integer>& b);
 
+// a += b*t^m
+template<typename Integer>
+void poly_add_to_tm (vector<Integer>& a, const vector<Integer>& b,long m);
+
 // a -= b
 template<typename Integer>
 void poly_sub_to (vector<Integer>& a, const vector<Integer>& b);
@@ -205,9 +209,17 @@ void poly_sub_to (vector<Integer>& a, const vector<Integer>& b);
 template<typename Integer>
 vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b);
 
+// a*b via Karatsuba
+template<typename Integer>
+vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b);
+
 // a *= (1-t^d)^e
 template<typename Integer>
 void poly_mult_to(vector<Integer>& a, long d, long e = 1);
+
+// a *= t^m
+template<typename Integer>
+void poly_mult_by_tm(vector<Integer>& a, long m);
 
 
 // division with remainder, a = q * b + r

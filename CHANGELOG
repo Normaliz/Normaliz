@@ -1,8 +1,10 @@
 # ChangeLog
 
-## [3.3.0] 2017-04-01
+## [3.3.0] 2017-04-15
 
 -- inclusion of NmzIntegrate in libnormaliz
+-- rational numbers in input
+-- imrovement of polynomial arithmetic
 
 ## [3.2.1] 2017-02-22
 

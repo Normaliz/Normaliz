@@ -147,6 +147,30 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
     }
 }
 
+bool denominator_allowed(InputType input_type){
+    
+    switch(input_type){
+        
+        case Type::congruences:
+        case Type::inhom_congruences:
+        case Type::grading:
+        case Type::dehomogenization:
+        case Type::lattice:
+        case Type::normalization:
+        case Type::cone_and_lattice:
+        case Type::offset:
+        case Type::rees_algebra:
+        case Type::lattice_ideal:
+        case Type::signs:
+        case Type::strict_signs:
+            return false;
+            break;
+        default:
+            return true;
+        break;
+    }
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -190,6 +214,51 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<Integer> > >& multi_inp
     process_multi_input(multi_input_data);
 }
 
+// now with mpq_class input
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const vector< vector<mpq_class> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<mpq_class> >& Input1,
+                    InputType type2, const vector< vector<mpq_class> >& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<mpq_class> >& Input1,
+                    InputType type2, const vector< vector<mpq_class> >& Input2,
+                    InputType type3, const vector< vector<mpq_class> >& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    multi_input_data[type3] = Input3;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, vector< vector<mpq_class> > >& multi_input_data) {
+    process_multi_input(multi_input_data);
+}
+
+//---------------------------------------------------------------------------
+// now with Matrix
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -237,6 +306,56 @@ Cone<Integer>::Cone(const map< InputType, Matrix<Integer> >& multi_input_data_Ma
     }
     process_multi_input(multi_input_data);
 }
+
+//---------------------------------------------------------------------------
+// now with Matrix and mpq_class
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const Matrix<mpq_class>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > >multi_input_data;
+    multi_input_data[input_type] = Input.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<mpq_class>& Input1,
+                    InputType type2, const Matrix<mpq_class>& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<mpq_class>& Input1,
+                    InputType type2, const Matrix<mpq_class>& Input2,
+                    InputType type3, const Matrix<mpq_class>& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    multi_input_data[type3] = Input3.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, Matrix<mpq_class> >& multi_input_data_Matrix){
+    map< InputType, vector< vector<mpq_class> > > multi_input_data;
+    auto it = multi_input_data_Matrix.begin();
+    for(; it != multi_input_data_Matrix.end(); ++it){
+        multi_input_data[it->first]=it->second.get_elements();
+    }
+    process_multi_input(multi_input_data);
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -249,11 +368,71 @@ Cone<Integer>::~Cone() {
 
 //---------------------------------------------------------------------------
 
+template<typename Integer>
+void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data_const) {
+
+    map< InputType, vector< vector<mpq_class> > > multi_input_data(multi_input_data_const);    
+    // since polytope will be comverted to cone, we must do some checks here
+    if(exists_element(multi_input_data,Type::grading) && exists_element(multi_input_data,Type::polytope)){
+           throw BadInputException("No explicit grading allowed with polytope!");
+    }
+    if(exists_element(multi_input_data,Type::cone) && exists_element(multi_input_data,Type::polytope)){
+        throw BadInputException("Illegal combination of cone generator types!");
+    }
+    
+    map< InputType, vector< vector<Integer> > > multi_input_data_ZZ;
+    
+    // special treatment of polytope. We convert it o cone
+    if(exists_element(multi_input_data,Type::polytope)){
+        size_t dim;
+        if(multi_input_data[Type::polytope].size()>0){
+            dim=multi_input_data[Type::polytope][0].size()+1;
+            vector<vector<Integer> > grading;
+            grading.push_back(vector<Integer>(dim));
+            grading[0][dim-1]=1;
+            multi_input_data_ZZ[Type::grading]=grading;
+        }
+        multi_input_data[Type::cone]=multi_input_data[Type::polytope];
+        multi_input_data.erase(Type::polytope);
+        for(size_t i=0;i<multi_input_data[Type::cone].size();++i){
+            multi_input_data[Type::cone][i].resize(dim);
+            multi_input_data[Type::cone][i][dim-1]=1;
+        }
+    }
+    
+    // now we clear denominators
+    auto it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it) {
+        for(size_t i=0;i < it->second.size();++i){ 
+            mpz_class common_denom=1;
+            for(size_t j=0;j<it->second[i].size();++j){
+                it->second[i][j].canonicalize();
+                common_denom=libnormaliz::lcm(common_denom,it->second[i][j].get_den());
+            }
+            if(common_denom>1 && !denominator_allowed(it->first))
+                throw BadInputException("Proper fraction not allowed in certain input types");
+            vector<Integer> transfer(it->second[i].size());
+            for(size_t j=0;j<it->second[i].size();++j){
+                it->second[i][j]*=common_denom;
+                convert(transfer[j],it->second[i][j].get_num());
+            }
+            multi_input_data_ZZ[it->first].push_back(transfer);
+        }
+    }
+    
+    process_multi_input_inner(multi_input_data_ZZ);
+}
 
 template<typename Integer>
 void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data_const) {
     initialize();
     map< InputType, vector< vector<Integer> > > multi_input_data(multi_input_data_const);
+    process_multi_input_inner(multi_input_data);
+}
+
+template<typename Integer>
+void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data) {
+    initialize();
     // find basic input type
     lattice_ideal_input=false;
     nr_latt_gen=0, nr_cone_gen=0;
@@ -905,6 +1084,7 @@ void Cone<Integer>::initialize() {
     rees_primary = false;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
+    is_approximation=false;
     verbose = libnormaliz::verbose; //take the global default
     if (using_GMP<Integer>()) {
         change_integer_type = true;
@@ -1309,8 +1489,29 @@ const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionDa
 }
 
 template<typename Integer>
+void Cone<Integer>::make_StanleyDec_export() {
+    if(!StanleyDec_export.empty())
+        return;
+    assert(isComputed(ConeProperty::StanleyDec));
+    auto SD=StanleyDec.begin();
+    for(;SD!=StanleyDec.end();++SD){
+        STANLEYDATA<Integer> NewSt;
+        NewSt.key=SD->key;
+        convert(NewSt.offsets,SD->offsets);
+        StanleyDec_export.push_back(NewSt);        
+    }    
+}
+
+template<typename Integer>
 const list< STANLEYDATA<Integer> >& Cone<Integer>::getStanleyDec() {
     compute(ConeProperty::StanleyDec);
+    make_StanleyDec_export();
+    return StanleyDec_export;
+}
+
+template<typename Integer>
+list< STANLEYDATA_int >& Cone<Integer>::getStanleyDec_mutable() {
+    assert(isComputed(ConeProperty::StanleyDec));
     return StanleyDec;
 }
 
@@ -1566,7 +1767,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
     bool save_naked_dual= naked_dual;
     bool save_default_mode= default_mode;
     already_in_compute=false;
-    ToCompute=compute(ToCompute);
+    ToCompute=compute_inner(ToCompute);
     explicit_HilbertSeries=save_explicit_HilbertSeries;
     naked_dual=save_naked_dual;
     default_mode= save_default_mode;
@@ -1577,6 +1778,14 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    already_in_compute=false;
+    return compute_inner(ToCompute);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     
     assert(!already_in_compute);
     already_in_compute=true;
@@ -1675,7 +1884,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // the computation of the full cone
     if (change_integer_type) {
         try {
-            compute_inner<MachineInteger>(ToCompute);
+            compute_full_cone<MachineInteger>(ToCompute);
         } catch(const ArithmeticException& e) {
             if (verbose) {
                 verboseOutput() << e.what() << endl;
@@ -1685,7 +1894,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         }
     }
     if (!change_integer_type) {
-        compute_inner<Integer>(ToCompute);
+        compute_full_cone<Integer>(ToCompute);
     }
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
@@ -1695,7 +1904,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     
     complete_sublattice_comp(ToCompute);
-    
+       
     if(ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         compute_weighted_Ehrhart(ToCompute);
     ToCompute.reset(is_Computed);
@@ -1812,7 +2021,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom(){
 
 template<typename Integer>
 template<typename IntegerFC>
-void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
+void Cone<Integer>::compute_full_cone(ConeProperties& ToCompute) {
     
     if(ToCompute.test(ConeProperty::IsPointed) && Grading.size()==0){
         if (verbose) {
@@ -1951,6 +2160,9 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)){
         FC.do_module_gens_intcl=true;
     }
+    
+    if(is_approximation)
+        give_data_of_approximated_cone_to(FC);
 
     /* do the computation */
     
@@ -1984,7 +2196,7 @@ void Cone<Integer>::compute_inner(ConeProperties& ToCompute) {
         // now we get the basis of the maximal subspace
         pointed = (BasisMaxSubspace.nr_of_rows() == 0);
         is_Computed.set(ConeProperty::IsPointed);
-        compute_inner<IntegerFC>(ToCompute);           
+        compute_full_cone<IntegerFC>(ToCompute);           
     }
 }
 
@@ -2278,6 +2490,8 @@ Integer Cone<Integer>::compute_primary_multiplicity() {
     return compute_primary_multiplicity_inner<Integer>();
 }
 
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 template<typename IntegerFC>
 Integer Cone<Integer>::compute_primary_multiplicity_inner() {
@@ -2385,6 +2599,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
     
     if (FC.isComputed(ConeProperty::Triangulation)) {
         size_t tri_size = FC.Triangulation.size();
+        FC.Triangulation.sort(compareKeys<IntegerFC>); // necessary to make triangulation unique
         Triangulation = vector< pair<vector<key_t>, Integer> >(tri_size);
         if(FC.isComputed(ConeProperty::ConeDecomposition))
             OpenFacets.resize(tri_size);
@@ -2408,16 +2623,11 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
 
     if (FC.isComputed(ConeProperty::StanleyDec)) {
         StanleyDec.clear();
-        //StanleyDec.splice(StanleyDec.end(),FC.StanleyDec);
-        while (!FC.StanleyDec.empty()) {
-            STANLEYDATA<Integer> ele;
-            ele.key.swap(FC.StanleyDec.front().key);
-            convert(ele.offsets, FC.StanleyDec.front().offsets);
-            StanleyDec.push_back(ele);
-            FC.StanleyDec.pop_front();
-        }
+        StanleyDec.splice(StanleyDec.begin(),FC.StanleyDec);
+        // At present, StanleyDec not sorted here
         is_Computed.set(ConeProperty::StanleyDec);
     }
+
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
         InExData.clear();
         InExData.reserve(FC.InExCollect.size());
@@ -2972,7 +3182,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         SymmCong.append(SymmConst[i]);
         SymmCong[SymmCong.nr_of_rows()-1].push_back(Congruences[i-(nr_inequ+nr_equ)][dim]); // restore modulus
     }
-    
+
     string polynomial;
     
     for(size_t i=0;i<multiplicities.size();++i){
@@ -2986,7 +3196,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         for(size_t j=1;j<multiplicities[i];++j)
             fact*=j;        
     }
-    polynomial+="/"+fact.get_str()+";";        
+    polynomial+="/"+fact.get_str()+";";         
 
 #ifdef NMZ_COCOA
     
@@ -3066,8 +3276,8 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(!pointed || BasisChangePointed.getRank()==0)
         return;
     
-    if(BasisChangePointed.IsIdentity()) // in this case we leave it to the Full_Cone
-        return;
+    /*if(BasisChangePointed.IsIdentity()) // in this case we leave it to the Full_Cone
+        return; */
     
     if(inhomogeneous){
         for(size_t i=0;i<Generators.nr_of_rows();++i){
@@ -3113,13 +3323,15 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(verbose)
         verboseOutput() << "Computing approximating polytope" << endl;
     Cone<Integer> ApproxCone(InputType::cone,GradGen);
+    ApproxCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
+    ApproxCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
     ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
     
     HilbertBasis=Matrix<Integer>(0,dim);
     Deg1Elements=Matrix<Integer>(0,dim);
     ModuleGenerators=Matrix<Integer>(0,dim);
     
-    Matrix<Integer> Raw=ApproxCone.getDeg1ElementsMatrix();
+    const Matrix<Integer>& Raw=ApproxCone.getDeg1ElementsMatrix();
     Matrix<Integer> Result(0,dim);
     Matrix<Integer> Eq=BasisChange.getEquations();
     Matrix<Integer> Cong=BasisChange.getCongruences();
@@ -3127,11 +3339,11 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
         vector<Integer> rr(dim);
         for(size_t j=0;j<dim;++j)
             rr[j]=Raw[i][j+1];
-        if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
+        /*if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
             continue;
-        }
+        }*/
         bool not_in=false;
-        for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
+        /* for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
             if(v_scalar_product(rr,SupportHyperplanes[k])<0){  // not in original cone
                 not_in=true;
                 break;
@@ -3144,7 +3356,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
                 break;
             }
         if(not_in)
-            continue;
+            continue;*/
         for(size_t k=0;k<Cong.nr_of_rows();++k) {
             if(v_scalar_product_unequal_vectors_begin(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
                 not_in=true;
@@ -3264,5 +3476,61 @@ void Cone<Integer>::NotComputable (string message){
     if(!default_mode)
         throw NotComputableException(message);
 }
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
+    
+    // *this is the approximatING cone. The support hyperplanes and equations of the approximatED 
+    // cone are given to the Full_Cone produced from *this so that the superfluous points can
+    // bre sorted out as early as possible.
+    
+    assert(is_approximation);
+    assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
+    
+    FC.is_global_approximation=true;
+    // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
+    
+    // The first coordinate in *this is the degree given by the grading
+    // in ApproximatedCone. We disregard it by setting the first coordinate
+    // of the grading, inequalities and equations to 0, and then have 0 followed
+    // by the grading, equations and inequalities resp. of ApproximatedCone.
+    
+    vector<Integer> help_g;
+    if(ApproximatedCone->inhomogeneous)
+        help_g=ApproximatedCone->Dehomogenization;
+    else
+        help_g=ApproximatedCone->Grading;
+            
+    vector<Integer> help(help_g.size()+1);
+    help[0]=0;
+    for(size_t j=0;j<help_g.size();++j)
+        help[j+1]=help_g[j];
+    BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
+    
+    const Matrix<Integer>& Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
+    FC.Subcone_Equations=Matrix<IntegerFC>(Eq.nr_of_rows(),BasisChangePointed.getRank());
+
+    for(size_t i=0;i<Eq.nr_of_rows();++i){
+        vector<Integer> help(Eq.nr_of_columns()+1,0);
+        for(size_t j=0;j<Eq.nr_of_columns();++j)
+            help[j+1]=Eq[i][j];
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
+    }
+    
+    const Matrix<Integer>& Supp=ApproximatedCone->SupportHyperplanes;
+    FC.Subcone_Support_Hyperplanes=Matrix<IntegerFC>(Supp.nr_of_rows(),BasisChangePointed.getRank());
+
+    for(size_t i=0;i<Supp.nr_of_rows();++i){
+        vector<Integer> help(Supp.nr_of_columns()+1,0);
+        for(size_t j=0;j<Supp.nr_of_columns();++j)
+            help[j+1]=Supp[i][j];
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes[i], help);       
+    }
+    
+    
+}
+
 
 } // end namespace libnormaliz

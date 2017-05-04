@@ -27,7 +27,8 @@ case $BUILDSYSTEM in
 	SCIP_BUILD_DIR=build_scip_$SCIP_FLAVOR
 	if test ! -f $SCIP_BUILD_DIR/scipoptsuite-$SCIPOPTSUITE_VERSION/.completed_build ; then
 	    if test ! -f scipoptsuite-$SCIPOPTSUITE_VERSION.tgz ; then
-		wget --post-data 'tname=normaliz-travis-ci-build&license=academic' "http://scip.zib.de/download.php?fname=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz" --output-document=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
+	    wget --post-data 'tname=normaliz-travis-ci-build&license=academic&email=normaliz@uos.de&country=DE' "http://scip.zib.de/download.php?fname=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz" --output-document=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
+#		wget --post-data 'tname=normaliz-travis-ci-build&license=academic' "http://scip.zib.de/download.php?fname=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz" --output-document=scipoptsuite-$SCIPOPTSUITE_VERSION.tgz
 	    fi
 	    mkdir -p $SCIP_BUILD_DIR
 	    cd $SCIP_BUILD_DIR

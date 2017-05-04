@@ -53,6 +53,19 @@ template<typename Integer> struct SHORTSIMPLEX {
                                       // opposite of generator i must be excluded
 };
 
+template<typename Integer>
+bool compareKeys(const SHORTSIMPLEX<Integer>& A, const SHORTSIMPLEX<Integer>& B){
+
+    return(A.key < B.key);
+}
+
+struct STANLEYDATA_int { // for internal use
+    vector<key_t> key;
+    Matrix<long> offsets;
+    vector<long> degrees; // degrees and classNr are used in nmz_integral.cpp
+    size_t classNr;  // number of class of this simplicial cone
+};
+
 template<typename Integer> struct STANLEYDATA {
     vector<key_t> key;
     Matrix<Integer> offsets;
@@ -85,7 +98,24 @@ public:
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
     
-    // Now with Matrix
+//-----------------------------------------------------------------------------
+// the same for mpq_class
+    
+    Cone(InputType type, const vector< vector<mpq_class> >& input_data);
+
+    Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
+         InputType type2, const vector< vector<mpq_class> >& input_data2);
+
+    Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
+         InputType type2, const vector< vector<mpq_class> >& input_data2,
+         InputType type3, const vector< vector<mpq_class> >& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , vector< vector<mpq_class> > >& multi_input_data);
+
+//-----------------------------------------------------------------------------
+// Now with Matrix
+    
     Cone(InputType type, const Matrix<Integer>& input_data);
 
     Cone(InputType type1, const Matrix<Integer>& input_data1,
@@ -97,6 +127,23 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , Matrix<Integer> >& multi_input_data);
+    
+//-----------------------------------------------------------------------------
+// Now with Matrix and mpq_class
+    
+    Cone(InputType type, const Matrix<mpq_class>& input_data);
+
+    Cone(InputType type1, const Matrix<mpq_class>& input_data1,
+         InputType type2, const Matrix<mpq_class>& input_data2);
+
+    Cone(InputType type1, const Matrix<mpq_class>& input_data1,
+         InputType type2, const Matrix<mpq_class>& input_data2,
+         InputType type3, const Matrix<mpq_class>& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , Matrix<mpq_class> >& multi_input_data);
+    
+    
 //---------------------------------------------------------------------------
 //                                Destructor
 //---------------------------------------------------------------------------
@@ -121,8 +168,9 @@ public:
 
     // return what was NOT computed
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
-    ConeProperties compute(ConeProperties ToCompute);
+    ConeProperties compute_inner(ConeProperties ToCompute);
     // special case for up to 3 CPs
+    ConeProperties compute(ConeProperties ToCompute);
     ConeProperties compute(ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
@@ -243,6 +291,8 @@ public:
     const vector< vector<bool> >& getOpenFacets();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
+    list< STANLEYDATA_int >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
+                             // in order to save memeory for weighted Ehrhart
     
     void set_project(string name);
     void set_nmz_call(const string& path);
@@ -298,7 +348,8 @@ private:
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
-    list< STANLEYDATA<Integer> > StanleyDec;
+    list< STANLEYDATA_int > StanleyDec;
+    list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
@@ -328,6 +379,9 @@ private:
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
     
+    bool is_approximation;
+    Cone* ApproximatedCone;
+    
     // some properties of the current computation taken from ToCompute
     bool explicit_HilbertSeries; // true = Hilbert series set explicitly and not only via default mode
     bool naked_dual; // true = dual mode set, but neither Hilbert basis nor deg 1 points
@@ -349,6 +403,9 @@ private:
 
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data);
+    
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
@@ -378,7 +435,7 @@ private:
     void initialize();
 
     template<typename IntegerFC>
-    void compute_inner(ConeProperties& ToCompute);
+    void compute_full_cone(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
     void compute_generators();
@@ -426,8 +483,12 @@ private:
     void compute_virt_mult (ConeProperties& ToCompute);
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);
     
+    void make_StanleyDec_export();
+    
     void NotComputable (string message); // throws NotComputableException if default_mode = false
-
+    
+    template<typename IntegerFC>
+    void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
 };
 
 // helpers

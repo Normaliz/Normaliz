@@ -39,14 +39,14 @@ class NormalizException: public std::exception {
 
 class ArithmeticException: public NormalizException {
     public:
-    ArithmeticException() : msg("Arithmetic Overflow detected, try a bigger integer type!") {}
+    ArithmeticException() : msg("Overflow detected. A fatal size excess, or, if you are using LongLong a computation overflow.\n In the latter case rerun without LonLong.") {}
     ~ArithmeticException() throw() {}
 
     template<typename Integer>
     ArithmeticException(const Integer& convert_number){
         std::stringstream stream;
         stream << "Could not convert " << convert_number << ".\n";
-        stream << "Arithmetic Overflow detected, try a bigger integer type!";
+        stream << "Overflow detected. A fatal size excess, or, if you are using LongLong, a computation overflow.\n In the latter case rerun without LongLong.";
         msg = stream.str();
     }
 
@@ -133,6 +133,22 @@ class FatalException: public NormalizException {
 
     private:
     std::string msg;
+};
+
+class InterruptException: public NormalizException {
+    public:
+    InterruptException(const std::string& message ):
+        msg("Interrupted: " + message )
+    {}
+    ~InterruptException() throw() {}
+
+        virtual const char* what() const throw() {
+              return msg.c_str();
+        }
+
+    private:
+    std::string msg;
+
 };
 
 

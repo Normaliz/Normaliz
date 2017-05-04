@@ -55,6 +55,12 @@ std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
 template<typename Integer>
 Integer v_scalar_product(const vector<Integer>& a,const vector<Integer>& b);
 
+template<typename Integer>
+bool v_scalar_product_nonnegative(const vector<Integer>& a,const vector<Integer>& b);
+
+template<typename Integer>
+bool v_scalar_product_positive(const vector<Integer>& a,const vector<Integer>& b);
+
 //returns the scalar product of the vector a with the end of the vector b
 template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b);
@@ -176,6 +182,12 @@ vector<key_t> v_non_zero_pos(const vector<Integer>& v);
 template<typename Integer>
 size_t v_nr_positive(const vector<Integer>& v);
 
+template<typename Integer>
+size_t v_nr_negative(const vector<Integer>& v);
+
+template<typename Integer>
+bool v_non_negative(const vector<Integer>& v);
+
 // check whether the vector only contains 0
 template<typename Integer>
 bool v_is_zero(const vector<Integer>& v);
@@ -224,6 +236,9 @@ vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size
 
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix);
+
+// compare sizes of v_scalar_product_unequal_vectors_begin
+
 
 } // namespace
 

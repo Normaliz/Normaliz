@@ -55,7 +55,7 @@ ourFactorization::ourFactorization(const factorization<RingElem>& FF){
 RingElem binomial(const RingElem& f, long k)
 // computes binomial coefficient (f choose k)
 {
-    SparsePolyRing P=owner(f);
+    const SparsePolyRing& P=owner(f);
     RingElem g(P);
     g=1;
     for(int i=0;i<k;i++)
@@ -66,7 +66,7 @@ RingElem binomial(const RingElem& f, long k)
 RingElem ascFact(const RingElem& f, long k)
 // computes (f+1)*...*(f+k)
 {
-    SparsePolyRing P=owner(f);
+    const SparsePolyRing& P=owner(f);
     RingElem g(P);
     g=1;
     for(int i=0;i<k;i++)
@@ -77,7 +77,7 @@ RingElem ascFact(const RingElem& f, long k)
 RingElem descFact(const RingElem& f, long k)
 // computes f*(f-1)*...*(f-k+1)
 {
-    SparsePolyRing P=owner(f);
+    const SparsePolyRing& P=owner(f);
     RingElem g(P);
     g=1;
     for(int i=0;i<k;i++)
@@ -93,7 +93,7 @@ vector<RingElem> ourCoeffs(const RingElem& F, const long j){
 // our version of expanding a poly nomial wrt to indeterminate j
 // The return value is the vector of coefficients of x[j]^i
     vector<RingElem> c;
-    SparsePolyRing P=owner(F);
+    const SparsePolyRing& P=owner(F);
     RingElem x=indets(P)[j];
     if(F==0){
         c.push_back(zero(P));
@@ -117,6 +117,26 @@ vector<RingElem> ourCoeffs(const RingElem& F, const long j){
     return(c);
 }
 
+RingElem mySubstitution(const RingElem& F, const vector<RingElem>& w){
+    
+    const SparsePolyRing& R=owner(F);
+    RingElem G(zero(R));
+    RingElem H(one(R));
+    vector<long> v(NumIndets(R));
+    vector<long> Z(NumIndets(R));
+    
+    SparsePolyIter i=BeginIter(F);
+    for (; !IsEnded(i); ++i){
+        exponents(v,PP(i));
+        H=zero(R);
+        PushBack(H,coeff(i),Z);
+        for(size_t j=0;j<v.size();++j)
+            H*=power(w[j],v[j]);
+        G+=H;           
+    }
+    return G;
+}
+
 vector<long> MxV(const vector<vector<long> >& M, vector<long> V){
 // matrix*vector
     vector<long> P(M.size());
@@ -131,7 +151,7 @@ vector<long> MxV(const vector<vector<long> >& M, vector<long> V){
 
 vector<RingElem> VxM(const vector<RingElem>& V, const vector<vector<long> >& M){
 // vector*matrix
-    SparsePolyRing R=owner(V[0]);
+    const SparsePolyRing& R=owner(V[0]);
     RingElem s(zero(R));
     vector<RingElem> P(M[0].size(),zero(R));
     for(size_t j=0;j<M[0].size();++j){
@@ -149,7 +169,7 @@ RingElem affineLinearSubstitution(const RingElem& F,const vector<vector<long> >&
                      const vector<long>& b, const long& denom){
 // NOT IN USE
     size_t i;
-    SparsePolyRing R=owner(F);
+    const SparsePolyRing& R=owner(F);
     size_t m=A.size();
     // long n=A[0].size();
     vector<RingElem> v(m,zero(R));
@@ -264,7 +284,7 @@ RingElem orderExpos(const RingElem& F, const vector<long>& degrees, const boost:
  // of variables to degrees
  // compactification not used at present (occurs only in restrictToFaces) 
 
-    SparsePolyRing P=owner(F);
+    const SparsePolyRing& P=owner(F);
     vector<long> v(NumIndets(P));
     vector<long> key,localDeg;
     key.reserve(v.size()+1);
@@ -327,7 +347,7 @@ void restrictToFaces(const RingElem& G,RingElem& GOrder, vector<RingElem>& GRest
 // Note: degrees are given for the full simplex. Therefore "local" degreees must be made 
 // (depend only on face and not on offset, but generation here is cheap)
 
-    SparsePolyRing P=owner(G);
+    const SparsePolyRing& P=owner(G);
 
     vector<long> v(NumIndets(P));
     vector<long> w(NumIndets(P));
@@ -418,7 +438,7 @@ long nrActiveFacesOld=0;
 void all_contained_faces(const RingElem& G, RingElem& GOrder,const vector<long>& degrees, boost::dynamic_bitset<>& indicator, long Deg, 
                      vector<SIMPLINEXDATA_INT>& inExSimplData, vector<deque<pair<vector<long>,RingElem> > >& facePolys){
                      
-    const SparsePolyRing R=owner(G);
+    const SparsePolyRing& R=owner(G);
     vector<RingElem> GRest;
     // size_t dim=indicator.size();
     for(size_t i=0;i<inExSimplData.size();++i){
@@ -470,12 +490,13 @@ RingElem affineLinearSubstitutionFL(const ourFactorization& FF,const vector<vect
     for(i=1;i<w1.size();++i) 
         w1[i]=w[i-1]; 
     
-    RingHom phi=PolyAlgebraHom(R,R,w1);
+    // RingHom phi=PolyAlgebraHom(R,R,w1);
     
     RingElem G1(zero(R));    
     list<RingElem> sortedFactors;
     for(i=0;i<FF.myFactors.size();++i){
-        G1=phi(FF.myFactors[i]);
+        // G1=phi(FF.myFactors[i]);
+        G1=mySubstitution(FF.myFactors[i],w1);
         for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
                 sortedFactors.push_back(G1);
     }
@@ -514,7 +535,7 @@ vector<RingElem> homogComps(const RingElem& F){
 // returns the vector of homogeneous components of F
 // w.r.t. standard grading
 
-    SparsePolyRing P=owner(F);
+    const SparsePolyRing& P=owner(F);
     long dim=NumIndets(P);
     vector<long> v(dim);
     vector<RingElem> c(deg(F)+1,zero(P));
@@ -547,7 +568,7 @@ RingElem homogenize(const RingElem& F){
     return(h);
 }
 
-RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing RZZ){
+RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing& RZZ){
 // F is a polynomial over RingQQ with integral coefficients
 // This function converts it into a polynomial over RingZZ
 
@@ -560,7 +581,7 @@ RingElem makeZZCoeff(const RingElem& F, const SparsePolyRing RZZ){
 }
 
 
-RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing R){
+RingElem makeQQCoeff(const RingElem& F, const SparsePolyRing& R){
 // F is a polynomial over RingZZ
 // This function converts it into a polynomial over RingQQ
     SparsePolyIter mon=BeginIter(F); // go over the given polynomial
@@ -657,7 +678,7 @@ CyclRatFunct genFunct(const vector<vector<CyclRatFunct> >& GFP, const RingElem& 
 // under the specialization T_i --> t^g_i
 // as a rational function in t
 {
-    SparsePolyRing P=owner(F);
+    const SparsePolyRing& P=owner(F);
     RingElem t=indets(P)[0];
     
     CyclRatFunct s(F); // F/1
@@ -850,7 +871,7 @@ void CyclRatFunct::showCoprimeCRF(){
     verboseOutput() << "Given form" << endl << endl;
     showCRF();
     verboseOutput() << endl;
-    SparsePolyRing R=owner(num);
+    const SparsePolyRing& R=owner(num);
     SparsePolyRing P=NewPolyRing_DMPI(RingQQ(),symbols("t"));
     vector<RingElem> Im(NumIndets(R),zero(P));
     Im[0]=indets(P)[0];
@@ -874,7 +895,7 @@ void CyclRatFunct::simplifyCRF(){
 // cancels factors 1-t^i from the denominator that appear there explicitly
 // (and not just as factors of 1-t^j for some j)
 
-    SparsePolyRing R=owner(num);
+    const SparsePolyRing& R=owner(num);
     long nd=denom.size();
     for(long i=1;i<nd;i++)
     {

@@ -79,6 +79,8 @@ NMZTESTS = test-/23.in					\
 	test-/halfspace3inhom.ref			\
 	test-/hickerson-16.in				\
 	test-/hickerson-16.ref				\
+	test-/InhomIneqSymb.in				\
+	test-/InhomIneqSymb.ref				\
 	test-/inhom_eq.in				\
 	test-/inhom_eq.ref				\
 	test-/inhom_quasi.in				\
@@ -143,6 +145,8 @@ NMZTESTS = test-/23.in					\
 	test-/squaref1.ref				\
 	test-/SquareMinusVertexPolyh.in			\
 	test-/SquareMinusVertexPolyh.ref		\
+	test-/strict.in					\
+	test-/strict.ref				\
 	test-/strip2.in					\
 	test-/strip2.ref				\
 	test-/subspace4.in				\
@@ -151,6 +155,10 @@ NMZTESTS = test-/23.in					\
 	test-/subspace4_inhom.ref			\
 	test-/test22dual.in				\
 	test-/test22dual.ref				\
+	test-/Thierry.in				\
+	test-/Thierry.ref				\
+	test-/ThierryNoApprox.in			\
+	test-/ThierryNoApprox.ref			\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/zero4.in					\

@@ -1,25 +1,25 @@
 /*
- * Normaliz
- * Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * As an exception, when this program is distributed through (i) the App Store
- * by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
- * by Google Inc., then that store may impose any digital rights management,
- * device limits and/or redistribution restrictions that are required by its
- * terms of service.
- */
+* Normaliz
+* Copyright (C) 2007-2014  Winfried Bruns, Bogdan Ichim, Christof Soeger
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+* As an exception, when this program is distributed through (i) the App Store
+* by Apple Inc.; (ii) the Mac App Store by Apple Inc.; or (iii) Google Play
+* by Google Inc., then that store may impose any digital rights management,
+* device limits and/or redistribution restrictions that are required by its
+* terms of service.
+*/
 
 #include <stdlib.h>
 #include <vector>
@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
 using namespace std;
 
 #include "normaliz.h"
@@ -53,7 +54,26 @@ void printHeader() {
     cout << "     (C) The Normaliz Team, University of Osnabrueck   \\..|"<<endl;
     cout << "                    February  2017                      \\.|"<<endl;
     cout << "                                                         \\|"<<endl;
+    bool with_optional_packages=false;
+    string optional_packages;
+#ifdef NMZ_COCOA
+    with_optional_packages=true;
+    optional_packages+=" CoCoALib";
+#endif
+#ifdef NMZ_SCIP
+    with_optional_packages=true;
+    optional_packages+=" SCIP";
+#endif
+    if(with_optional_packages){    
+        cout << "------------------------------------------------------------" << endl;
+        cout << "with paackage(s)" << optional_packages << endl; 
+    }
 }
+
+void interrupt_signal_handler( int signal ){
+    nmz_interrupted = true;
+}
+
 void printHelp(char* command) {
     cout << "Usage: "<<command<<" [options] PROJECT"<<endl;
     cout << "  runs normaliz on PROJECT.in"<<endl;
@@ -123,13 +143,17 @@ void printVersion() {
     printCopying();
 }
 
-template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
+
+int process_data(OptionsHandler& options, const string& command_line,const string& arg0);
 
 //---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
-
+    
+    // signal handler for interrupt
+    signal(SIGINT, &interrupt_signal_handler);
+    
     // read command line options
 
     OptionsHandler options;
@@ -151,70 +175,40 @@ int main(int argc, char* argv[])
     }
     string arg0(argv[0]);
     
-    if (!options.isUseLongLong()) {
-        process_data<mpz_class>(options, command_line,arg0);
-    }
-    // the previous process_data might return unsuccessfully if the input file specifies to use long long
-    if (options.isUseLongLong()) {
-        process_data<long long>(options, command_line,arg0);
-    }
+    process_data(options, command_line,arg0);
 }
 
 //---------------------------------------------------------------------------
 
-template<typename Integer> int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
-
-#ifndef NCATCH
-    try {
-#endif
-
+template<typename Integer>
+void compute_and_output(OptionsHandler& options, const map <Type::InputType, 
+                                  vector< vector<mpq_class> > >& input, const string& polynomial){
+    
     Output<Integer> Out;    //all the information relevant for output is collected in this object
 
     options.applyOutputOptions(Out);
-
-    string name_in=options.getProjectName()+".in";
-    const char* file_in=name_in.c_str();
-    ifstream in;
-    in.open(file_in,ifstream::in);
-    if ( !in.is_open() ) {
-        cerr << "error: Failed to open file "<<name_in<<"."<<endl;
-        exit(1);
-    }
-
-    //read the file
-    string polynomial="";
-    map <Type::InputType, vector< vector<Integer> > > input = readNormalizInput<Integer>(in, options,polynomial);
-
+    
     options.activateDefaultMode(); // only if no real cone property is given!
 
     Out.set_lattice_ideal_input(input.count(Type::lattice_ideal)>0);
 
-    in.close();
-
-    // if the input file specifies to use long long, we stop here and do it again in long long
-    if (using_GMP<Integer>() && options.isUseLongLong()) {
-        return 1;
-    }
-
-    if (verbose) {
-        cout << "************************************************************" << endl;
-        cout << "Command line: " << command_line << endl;
-        cout << "Compute: " << options.getToCompute() << endl;
-    }
-
-    Cone<Integer> MyCone = Cone<Integer>(input);
+   Cone<Integer> MyCone = Cone<Integer>(input);
     /* if (options.isUseBigInteger()) {
         MyCone.deactivateChangeOfPrecision(); 
     } */
     MyCone.setPolynomial(polynomial);
     MyCone.set_project(options.getProjectName());
     MyCone.set_output_dir(options.getOutputDir());
-    MyCone.set_nmz_call(arg0);
+    // MyCone.set_nmz_call(arg0);
     try {
         MyCone.compute(options.getToCompute());
     } catch(const NotComputableException& e) {
         std::cout << "Not all desired properties could be computed." << endl;
         std::cout << e.what() << endl;
+        std::cout << "Writing only available data." << endl;
+    } catch(const InterruptException& e) {
+        std::cout << endl;
+        std::cout << "Computation was interrupted." << endl;
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
@@ -236,7 +230,44 @@ template<typename Integer> int process_data(OptionsHandler& options, const strin
         SymmOut.setCone(MyCone.getSymmetrizedCone());
         SymmOut.write_files();        
     }
+#endif    
+}
+
+
+//---------------------------------------------------------------------------
+
+int process_data(OptionsHandler& options, const string& command_line,const string& arg0) {
+
+#ifndef NCATCH
+    try {
 #endif
+
+
+    string name_in=options.getProjectName()+".in";
+    const char* file_in=name_in.c_str();
+    ifstream in;
+    in.open(file_in,ifstream::in);
+    if ( !in.is_open() ) {
+        cerr << "error: Failed to open file "<<name_in<<"."<<endl;
+        exit(1);
+    }
+
+    //read the file
+    string polynomial="";
+    map <Type::InputType, vector< vector<mpq_class> > > input = readNormalizInput(in, options,polynomial);
+
+    in.close();
+
+    if (verbose) {
+        cout << "------------------------------------------------------------" << endl;
+        cout << "Command line: " << command_line << endl;
+        cout << "Compute: " << options.getToCompute() << endl;
+    }
+
+    if(options.isUseLongLong())
+        compute_and_output<long long>(options, input, polynomial);
+    else
+        compute_and_output<mpz_class>(options, input, polynomial);  
 
 #ifndef NCATCH
     } catch(const BadInputException& e) {

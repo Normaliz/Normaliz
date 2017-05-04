@@ -247,6 +247,14 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
     bool inhom_input=false;
     size_t nr_latt_gen=0, nr_cone_gen=0;
     
+    auto it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it)
+        for(size_t i=0;i < it->second.size();++i){
+            for(size_t j=0;j<it->second[i].size();++j)
+                it->second[i][j].canonicalize();
+            v_simplify(it->second[i]);
+        }
+    
     inequalities_present=false; //control choice of positive orthant
     
     if(    exists_element(multi_input_data,Type::lattice)
@@ -259,7 +267,7 @@ void Cone<Number>::process_multi_input(const map< InputType, vector< vector<Numb
         throw BadInputException("Input types not allowed for field coefficients");    
 
     // NEW: Empty matrix have syntactical influence
-    auto it = multi_input_data.begin();
+    it = multi_input_data.begin();
     for(; it != multi_input_data.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:

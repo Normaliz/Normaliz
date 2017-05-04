@@ -40,10 +40,10 @@ using namespace CoCoA;
 namespace libnormaliz {
 
 
-BigRat IntegralUnitSimpl(const RingElem& F, const vector<BigInt>& Factorial,
+BigRat IntegralUnitSimpl(const RingElem& F,  const SparsePolyRing& P, const vector<BigInt>& Factorial,
                 const vector<BigInt>& factQuot, const long& rank){
                 
-    SparsePolyRing P=owner(F);
+    // SparsePolyRing P=owner(F);
     long dim=NumIndets(P);
     vector<long> v(dim);
     
@@ -110,12 +110,13 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
         w1[i]=w[i-1];        // corresponds to coordinate i (counted from 0)
         
     
-    RingHom phi=PolyAlgebraHom(R,R,w1);
+    // RingHom phi=PolyAlgebraHom(R,R,w1);
     
     RingElem G1(zero(R));    
     list<RingElem> sortedFactors;
     for(i=0;i<FF.myFactors.size();++i){
-        G1=phi(FF.myFactors[i]);
+        // G1=phi(FF.myFactors[i]);
+        G1=mySubstitution(FF.myFactors[i],w1);
         for(int nn=0;nn<FF.myMultiplicities[i];++nn)         
                 sortedFactors.push_back(G1);
     }
@@ -131,7 +132,7 @@ BigRat substituteAndIntegrate(const ourFactorization& FF,const vector<vector<lon
     // verboseOutput() << "Evaluating integral over unit simplex" << endl;
     // boost::dynamic_bitset<> dummyInd;
     // vector<long> dummyDeg(degrees.size(),1);
-    return(IntegralUnitSimpl(G,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
+    return(IntegralUnitSimpl(G,R,Factorial,factQuot,rank));  // orderExpos(G,dummyDeg,dummyInd,false)
 }
 
 template<typename Integer>
@@ -158,21 +159,6 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
             }
             prevDegree=degree;
         }
-    }
-}
-
-template<typename Integer>
-void readTri(Cone<Integer>& C, list<TRIDATA>& triang){
-// get triangulation from C for nmz_integrate functions
-
-    size_t rank=C.getRank();
-    TRIDATA new_entry;
-    new_entry.key.resize(rank);
-    for(size_t i=0;i<C.getTriangulation().size();++i){
-        for(size_t j=0;j<rank;++j)
-            new_entry.key[j]=C.getTriangulation()[i].first[j];
-        convert(new_entry.vol,C.getTriangulation()[i].second);
-        triang.push_back(new_entry);
     }
 }
 
@@ -223,25 +209,13 @@ try{
   readGens(C,gens,grading,false);
   if(verbose_INT) 
     verboseOutput() << "Generators read" << endl;
-
-  list<TRIDATA> triang;
-  readTri(C,triang);
-  if(verbose_INT)
-     verboseOutput() << "Triangulation read" << endl;
-     
-  list<TRIDATA>::iterator S = triang.begin(); // first we compute the lcm of all generator degrees
-  vector<long> degrees(rank); 
+ 
   BigInt lcmDegs(1);
-  vector<vector<long> > A(rank);
-  for(;S!=triang.end();++S){          
-    for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]];
-    degrees=MxV(A,grading);
-    for(i=0;i<rank;++i){
-        degrees[i]/=gradingDenom;
-        lcmDegs=lcm(lcmDegs,degrees[i]);
-    }
+  for(size_t i=0;i<gens.size();++i){          
+    long deg=v_scalar_product(gens[i],grading);
+    lcmDegs=lcm(lcmDegs,deg);
   }
+  
   
   SparsePolyRing R=NewPolyRing_DMPI(RingQQ(),dim+1,lex);
   SparsePolyRing RZZ=NewPolyRing_DMPI(RingZZ(),PPM(R)); // same indets and ordering as R
@@ -278,44 +252,45 @@ try{
 
   if(verbose_INT)
     verboseOutput() << "Polynomial read" << endl;
-
-  BigRat I; // accumulates the integral
-  I=0;
-
-  size_t tri_size=triang.size();
+  
+  size_t tri_size=C.getTriangulation().size();
 
   if(verbose_INT){
     verboseOutput() << "********************************************" << endl;
     verboseOutput() << tri_size <<" simplicial cones to be evaluated" << endl;
     verboseOutput() << "********************************************" << endl;
   }
+  
+  size_t progress_step=10;
+  if(tri_size >= 1000000)
+      progress_step=100;
 
   size_t nrSimplDone=0;
+  
+  vector<BigRat> I_thread(omp_get_max_threads());
+  for(size_t i=0; i< I_thread.size();++i)
+      I_thread[i]=0;
 
 #pragma omp parallel private(i)
   {
 
-  list<TRIDATA>::iterator S = triang.begin();
-  long det, rank=S->key.size();
+  long det, rank=C.getTriangulation()[0].first.size();
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
   BigRat ISimpl; // integral over a simplex
   BigInt prodDeg; // product of the degrees of the generators
   RingElem h(zero(R));
 
-  size_t spos=0,s;
  #pragma omp for schedule(dynamic) 
-  for(s=0;s<tri_size;++s){         
-      for(;spos<s;++spos,++S);
-      for(;spos>s;--spos,--S);
+  for(size_t k=0;k<C.getTriangulation().size();++k){
       
 #ifndef NCATCH
         try {
 #endif
 
-    det=S->vol;
+    convert(det,C.getTriangulation()[k].second);
     for(i=0;i<rank;++i)    // select submatrix defined by key
-        A[i]=gens[S->key[i]]; // will not be changed
+        A[i]=gens[C.getTriangulation()[k].first[i]]; 
 
     degrees=MxV(A,grading);
     prodDeg=1;
@@ -326,15 +301,12 @@ try{
 
     // h=homogeneousLinearSubstitutionFL(FF,A,degrees,F);
     ISimpl=(det*substituteAndIntegrate(FF,A,degrees,RZZ,Factorial,factQuot,lcmDegs))/prodDeg;
+    I_thread[omp_get_thread_num()]+=ISimpl;
 
-#pragma omp critical(INTEGRAL)
-    I+=ISimpl;
-
-#pragma omp critical(PROGRESS) // a little bit of progress report
-    {
-    if ((++nrSimplDone)%10==0 && verbose_INT)
+ // a little bit of progress report
+    if ((++nrSimplDone)%progress_step==0 && verbose_INT)
+        #pragma omp critical(PROGRESS)
         verboseOutput() << nrSimplDone << " simplicial cones done" << endl;
-    }
     
 #ifndef NCATCH
         } catch(const std::exception& ) {
@@ -348,6 +320,12 @@ try{
 #ifndef NCATCH
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
+    
+  BigRat I; // accumulates the integral
+  I=0;
+  for(size_t i=0; i< I_thread.size();++i)
+      I+=I_thread[i];
+
   
   I/=power(lcmDegs,deg(F));
   BigRat RFrat;
@@ -526,7 +504,7 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
   return(HS);
 }
 
-bool compareDegrees(const STANLEYDATA_INT& A, const STANLEYDATA_INT& B){
+bool compareDegrees(const STANLEYDATA_int& A, const STANLEYDATA_int& B){
 
     return(A.degrees < B.degrees);
 }
@@ -536,7 +514,7 @@ bool compareFaces(const SIMPLINEXDATA_INT& A, const SIMPLINEXDATA_INT& B){
     return(A.card > B.card);
 }
 
-void prepare_inclusion_exclusion_simpl(const STANLEYDATA_INT& S,
+void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
       const vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, 
       vector<SIMPLINEXDATA_INT>& inExSimplData) {
 
@@ -623,7 +601,7 @@ void readInEx(Cone<Integer>& C, vector<pair<boost::dynamic_bitset<>, long> >& in
 }
 
 template<typename Integer>
-void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& StanleyDec,
+void readDecInEx(Cone<Integer>& C, const long& dim, /* list<STANLEYDATA_int_INT>& StanleyDec, */
                 vector<pair<boost::dynamic_bitset<>, long> >& inExCollect, const size_t nrGen){
 // rads Stanley decomposition and InExSata from C
     
@@ -631,34 +609,31 @@ void readDecInEx(Cone<Integer>& C, const long& dim, list<STANLEYDATA_INT>& Stanl
         readInEx(C, inExCollect,nrGen);
     }
 
-    STANLEYDATA_INT newSimpl;
-    long i=0,j,det;
-    newSimpl.key.resize(dim);
+    // STANLEYDATA_int_INT newSimpl;
+    // ong i=0;
+    // newSimpl.key.resize(dim);
     
     long test;
     
-    auto SD=C.getStanleyDec().begin();
+    auto SD=C.getStanleyDec_mutable().begin();
+    auto SD_end=C.getStanleyDec_mutable().end();
 
-    for(;SD!=C.getStanleyDec().end();++SD){
- 
+    for(;SD!=SD_end;++SD){
+
+        // swap(newSimpl.key,SD->key);
         test=-1;
-        for(i=0;i<dim;++i){
-            newSimpl.key[i]=SD->key[i];
-            if(newSimpl.key[i]<=test){
+        for(long i=0;i<dim;++i){
+            if(SD->key[i]<=test){
                 throw FatalException("Key of simplicial cone not ascending or out of range");
             }
-            test=newSimpl.key[i];
+            test=SD->key[i];
         }
         
-        det=SD->offsets.nr_of_rows();
-        newSimpl.offsets.resize(det);
-        for(i=0;i<det;++i)
-            newSimpl.offsets[i].resize(dim);
-        for(i=0;i<det;++i)
-            for(j=0;j<dim;++j)
-                convert(newSimpl.offsets[i][j],SD->offsets[i][j]);
+        /* swap(newSimpl.offsets,SD->offsets);
         StanleyDec.push_back(newSimpl);
-    }    
+        SD=C.getStanleyDec_mutable().erase(SD);*/
+    }
+    // C.resetStanleyDec();
 }
 
 template<typename Integer>
@@ -672,7 +647,7 @@ try{
   
   if(verbose_INT){
     verboseOutput() << "==========================================================" << endl;
-    verboseOutput() << "Generalized Ehrhart series " << endl;
+    verboseOutput() << "Weighted Ehrhart series " << endl;
     verboseOutput() << "==========================================================" << endl << endl;
   }
   
@@ -735,17 +710,19 @@ try{
     verboseOutput() << "Generators read" << endl;
   long maxDegGen=v_scalar_product(gens[gens.size()-1],grading)/gradingDenom; 
   
-  list<STANLEYDATA_INT> StanleyDec;
+  // list<STANLEYDATA_int_INT> StanleyDec;
   vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
-  readDecInEx(C,rank,StanleyDec,inExCollect,gens.size());
+  readDecInEx(C,rank,inExCollect,gens.size());
   if(verbose_INT)
     verboseOutput() << "Stanley decomposition (and in/ex data) read" << endl;
+  
+  list<STANLEYDATA_int>& StanleyDec=C.getStanleyDec_mutable();
     
   size_t dec_size=StanleyDec.size();
     
   // Now we sort the Stanley decomposition by denominator class (= degree class)
 
-  list<STANLEYDATA_INT>::iterator S = StanleyDec.begin();
+  auto S = StanleyDec.begin();
 
   vector<long> degrees(rank);
   vector<vector<long> > A(rank);
@@ -761,7 +738,7 @@ try{
       for(i=0;i<rank;++i)
         degrees[i]/=gradingDenom; // must be divisible
       S->degrees=degrees;
-      lcmDets=lcm(lcmDets,S->offsets.size());
+      lcmDets=lcm(lcmDets,S->offsets.nr_of_rows());
   }
   
   if(verbose_INT)
@@ -793,7 +770,7 @@ try{
   size_t dc=0;
   S->classNr=dc; // assignment of class 0 to first simpl in sorted order
 
-  list<STANLEYDATA_INT>::iterator prevS = StanleyDec.begin();
+  auto prevS = StanleyDec.begin();
 
   for(++S;S!=StanleyDec.end();++S,++prevS){
     if(S->degrees==prevS->degrees){                     // compare to predecessor
@@ -832,6 +809,10 @@ try{
     verboseOutput() << dec_size <<" simplicial cones to be evaluated" << endl;
     verboseOutput() << "********************************************" <<  endl;
   }
+  
+  size_t progress_step=10;
+  if(dec_size >= 1000000)
+      progress_step=100;
  
   size_t nrSimplDone=0;
   
@@ -847,7 +828,7 @@ try{
   bool evaluateClass;
   vector<long> degrees;
   vector<vector<long> > A(rank);
-  list<STANLEYDATA_INT>::iterator S=StanleyDec.begin();
+  auto S=StanleyDec.begin();
 
   RingElem h(zero(RZZ));     // for use in a simplex
   CyclRatFunct HClass(zero(RZZ)); // for single class
@@ -863,7 +844,7 @@ try{
         try {
 #endif
 
-    det=S->offsets.size();
+    det=S->offsets.nr_of_rows();
     degrees=S->degrees;
     
     for(i=0;i<rank;++i)    // select submatrix defined by key
@@ -874,7 +855,7 @@ try{
         prepare_inclusion_exclusion_simpl(*S,inExCollect,inExSimplData);
 
     h=0;
-    long iS=S->offsets.size();    // compute numerator for simplex being processed   
+    long iS=S->offsets.nr_of_rows();    // compute numerator for simplex being processed   
     for(i=0;i<iS;++i){
         degree_b=v_scalar_product(degrees,S->offsets[i]);
         degree_b/=det;
@@ -928,7 +909,7 @@ try{
     
     #pragma omp critical(PROGRESS) // a little bit of progress report
     {
-    if((++nrSimplDone)%10==0 && verbose_INT)
+    if((++nrSimplDone)%progress_step==0 && verbose_INT)
         verboseOutput() << nrSimplDone << " simplicial cones done  " << endl; // nrActiveFaces-nrActiveFacesOld << " faces done" << endl;
         // nrActiveFacesOld=nrActiveFaces;
     }

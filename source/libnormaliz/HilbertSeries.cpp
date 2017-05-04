@@ -36,6 +36,7 @@
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/convert.h"
+#include "libnormaliz/my_omp.h"
 
 #include "libnormaliz/matrix.h"
 
@@ -295,34 +296,33 @@ void HilbertSeries::simplify() const {
     else
         dim = 0;
     period = lcm_of_keys(cdenom);
-    i = period;
-    if (period > PERIOD_BOUND) {
+    if (period > 10*PERIOD_BOUND) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         }
-        i = cdenom.rbegin()->first;
     }
-    if(period <= PERIOD_BOUND){
-        while (!cdenom.empty()) {
-            //create a (1-t^i) factor out of all cyclotomic poly.
-            denom[i]++;
-            v_scalar_multiplication(num,mpz_class(-1));
-            for (long d = 1; d <= i; ++d) {
-                if (i % d == 0) {
-                    it = cdenom.find(d);
-                    if (it != cdenom.end() && it->second>0) {
-                        it->second--;
-                        if (it->second == 0)
-                            cdenom.erase(it);
-                    } else {
-                        num = poly_mult(num, cyclotomicPoly<mpz_class>(d));
-                    }
-                }
+    if(period <= 10*PERIOD_BOUND){
+        while(true){
+            //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
+            long k=1;
+            bool empty=true;
+            vector<mpz_class> existing_factor(1,1); //collects the existing cyclotomic gactors in the denom
+            for(it=cdenom.begin();it!=cdenom.end();++it){          // with multiplicvity 1
+                if(it-> second>0){
+                    empty=false;
+                    k=libnormaliz::lcm(k,it->first);
+                    existing_factor=poly_mult(existing_factor,cyclotomicPoly<mpz_class>(it->first));
+                    it->second--;
+                }     
             }
-            i = lcm_of_keys(cdenom);
-            if (i > PERIOD_BOUND) {
-                i = cdenom.rbegin()->first;
-            }
+            if(empty)
+                break;
+            denom[k]++;
+            vector<mpz_class> new_factor=coeff_vector<mpz_class>(k);
+            vector<mpz_class> quotient, dummy;
+            poly_div(quotient,dummy,new_factor,existing_factor);
+            assert(dummy.empty()); //assert remainder r is 0
+            num=poly_mult(num,quotient);
         }
     }
     else
@@ -424,6 +424,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         quasi_poly[i%period].push_back(norm_num[i]);
     }
 
+    #pragma omp parallel for
     for (j=0; j<period; ++j) {
         quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
     }
@@ -629,6 +630,21 @@ void poly_add_to (vector<Integer>& a, const vector<Integer>& b) {
     }
     remove_zeros(a);
 }
+
+// a += b*t^m
+template<typename Integer>
+void poly_add_to_tm (vector<Integer>& a, const vector<Integer>& b,long m) {
+    size_t b_size=b.size();
+    size_t b_m = b_size+m;
+    if (a.size() < b_m) {
+        a.resize(b_m);
+    }
+    for (size_t i=0; i<b_size; ++i) {
+        a[i+m]+=b[i];
+    }
+    remove_zeros(a);
+}
+
 // a -= b  (also possible to define the -= op for vector)
 template<typename Integer>
 void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
@@ -642,11 +658,119 @@ void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
     remove_zeros(a);
 }
 
+// a *= t^m
+template<typename Integer>
+void poly_mult_by_tm(vector<Integer>& a, long m){
+        long a_ori_size=a.size();
+        a.resize(a_ori_size+m);
+        for(long i=a_ori_size-1; i>=0;--i)
+            a[i+m]=a[i];
+        for(long i=0;i<m;++i)
+            a[i]=0; 
+}
+
 // a * b
+
+/* template<typename Integer>
+vector<Integer> old_poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+
+    
+    vector<Integer> p( a_size + b_size - 1 );
+    size_t i,j;
+    for (i=0; i<a_size; ++i) {
+        if (a[i] == 0) continue;
+        for (j=0; j<b_size; ++j) {
+            if (b[j] == 0) continue;
+            p[i+j] += a[i]*b[j];
+        }
+    }
+    return p;
+}*/
+
+template<typename Integer>
+vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b) {
+
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+    if(a_size*b_size<=1000 || a_size <=10 || b_size<=10){
+        return poly_mult(a,b);
+    }
+
+    size_t m=(a_size+1)/2;
+    if(2*m<(b_size+1)){
+        m=(b_size+1)/2;
+    }
+    
+    vector<Integer> f0(m),f1(m),g0(m),g1(m);
+    for(size_t i=0;i<m && i<a_size;++i)
+        f0[i]=a[i];
+    for(size_t i=m;i<a_size;++i)
+        f1[i-m]=a[i];
+    for(size_t i=0;i<m && i<b_size;++i)
+        g0[i]=b[i];
+    for(size_t i=m;i< b_size;++i)
+        g1[i-m]=b[i];
+    remove_zeros(f0);
+    remove_zeros(f1);
+    remove_zeros(g0);
+    remove_zeros(g1);
+    
+    vector<Integer> sf=f0;
+    vector<Integer> sg=g0;
+    
+    vector<Integer> mix;
+    vector<Integer> h00;
+    vector<Integer> h11;
+
+    #pragma omp parallel // num_threads(3)
+    {
+    
+    #pragma omp single nowait
+    {
+    h00=karatsubamult(f0,g0); // h00 = f0 * g0
+    }
+    
+   #pragma omp single nowait
+    {  
+    h11=karatsubamult(f1,g1); // h11 = f1 * g1
+    }
+
+    #pragma omp single nowait
+    {
+    poly_add_to(sf,f1); // f0+f1
+    poly_add_to(sg,g1); // g0 + g1
+    mix=karatsubamult(sf,sg); // (f0 + f1)*(g0 + g1)
+    }
+    
+    } // parallel
+    
+    f0.clear();
+    g0.clear();
+    f1.clear();
+    g1.clear();
+    
+    poly_sub_to(mix,h00);  // mix = mix - f0*g0
+    poly_sub_to(mix,h11);  // mix = mix - f1*g1
+    
+    poly_add_to_tm(h00,mix,m);
+    poly_add_to_tm(h00,h11,2*m);
+
+    return h00;
+}
+
 template<typename Integer>
 vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
+    
+    if(a_size*b_size>1000 && a_size >10 && b_size>10){
+        omp_set_nested(1);
+        return karatsubamult(a,b);
+        omp_set_nested(0);
+    }
+    
     vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
     for (i=0; i<a_size; ++i) {
@@ -709,6 +833,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
+    
     // the static variable is initialized only once and then stored
     static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
     if (CyclotomicPoly.count(n) == 0) { //it was not computed so far

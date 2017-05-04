@@ -434,10 +434,10 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         prepare_inclusion_exclusion_simpl(Deg0_offset, Coll);
 
     if(C_ptr->do_Stanley_dec){                          // prepare space for Stanley dec
-        STANLEYDATA<Integer> SimplStanley;         // key + matrix of offsets
+        STANLEYDATA_int SimplStanley;         // key + matrix of offsets
         SimplStanley.key=key;
         Matrix<Integer> offsets(convertTo<long>(volume),dim);  // volume rows, dim columns
-        SimplStanley.offsets=offsets;
+        convert(SimplStanley.offsets,offsets);
         #pragma omp critical(STANLEY)
         {
         C_ptr->StanleyDec.push_back(SimplStanley);      // extend the Stanley dec by a new matrix
@@ -445,7 +445,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         }
         for(i=0;i<dim;++i)                   // the first vector is 0+offset
             if(Excluded[i])
-                (*StanleyMat)[0][i]=volume;
+                (*StanleyMat)[0][i]=convertTo<long>(volume);
     }
 
     StanIndex=1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
@@ -491,6 +491,8 @@ void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& eleme
 template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     // now the vector in par has been produced and is in element    
     // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
 
@@ -503,7 +505,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.is_approximation && C.do_Hilbert_basis){
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(!C.contains(help)) // here we are abusing the support hyperplanes of the approximated cone !
+        if(!C.subcone_contains(help)) // here we are abusing the support hyperplanes of the approximated cone !
             return;
         /* #pragma omp atomic
         NrCand++;*/
@@ -569,10 +571,10 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     }
 
     if(C.do_Stanley_dec){
-        (*StanleyMat)[StanIndex]=element;
+        convert((*StanleyMat)[StanIndex],element);
         for(i=0;i<dim;i++)
             if(Excluded[i]&&element[i]==0)
-                (*StanleyMat)[StanIndex][i]+=volume;
+                (*StanleyMat)[StanIndex][i]+=convertTo<long>(volume);
         StanIndex++;
     }
 
@@ -590,7 +592,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(C.is_approximation && !C.contains(help)){ // here we are abusing the support hyperplanes of the approximated cone !
+        if((C.is_approximation || C.is_global_approximation) && !C.subcone_contains(help)){
             return;
         }
         Coll.Deg1_Elements.push_back(help);
@@ -707,6 +709,7 @@ const long SimplexParallelEvaluationBound=100000000; // simplices larger than th
                  //are evaluated by parallel threads
                  // simplices larger than this bound  || (this bound/10 && Hilbert basis)
                  // are tried for subdivision
+
 
 //---------------------------------------------------------------------------
 
@@ -947,8 +950,10 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
+
     if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
         && C_ptr->approx_level == 1
+
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
     {
 
@@ -967,8 +972,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         time (&start);
 #ifndef NMZ_SCIP
         C.compute_sub_div_elements(Generators, new_points,volume);
-        //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
-       
+        if(C_ptr->verbose){
+            verboseOutput() << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+        }
 #endif
         bottom_points(new_points, Generators,C.Grading,C.approx_level,0,volume);
         time (&end);

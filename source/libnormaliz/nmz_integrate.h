@@ -38,6 +38,7 @@ using namespace CoCoA;
 
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/HilbertSeries.h"
+#include "libnormaliz/matrix.h"
 
 #include "libnormaliz/my_omp.h"
 
@@ -45,21 +46,9 @@ using namespace std;
 
 namespace libnormaliz {
     
-typedef int key_type;
+typedef unsigned int key_type;
 
 bool verbose_INT;
-
-struct STANLEYDATA_INT{
-        vector<key_type> key;  // read from dec file
-        vector<long> degrees;
-        vector<vector<long> > offsets;  // ditto
-        size_t classNr;  // number of class of this simplicial cone
-};
-    
-struct TRIDATA{
-        vector<key_type> key;
-        long vol;  
-};
 
 struct SIMPLINEXDATA_INT{                        // local data of excluded faces
         boost::dynamic_bitset<> GenInFace;   // indicator for generators of simplex in face 

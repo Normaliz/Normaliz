@@ -133,6 +133,9 @@ public:
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
+    Matrix<Integer> Subcone_Support_Hyperplanes; // used if *this computes elements in a subcone, for example in approximation
+    Matrix<Integer> Subcone_Equations;
+    vector<Integer> Subcone_Grading;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
     vector<Integer> Witness;    // for not integrally closed
@@ -150,7 +153,7 @@ public:
     list< SHORTSIMPLEX<Integer> > TriangulationBuffer; // simplices to evaluate
     list< SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
     Integer detSum;                  // sum of the determinants of the simplices
-    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition
+    list< STANLEYDATA_int> StanleyDec; // Stanley decomposition
     vector<Integer> ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
     
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    
@@ -170,6 +173,8 @@ public:
         size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
         size_t Mother;                     // Ident of positive mother if known, 0 if unknown
+        bool is_positive_on_all_original_gens;
+        bool is_negative_on_some_original_gen;
         bool simplicial;                   // indicates whether facet is simplicial
     };
 
@@ -199,6 +204,7 @@ public:
     size_t store_level; // the level on which daughters will be stored  
     deque< list<vector<key_t> > > Pyramids;  //storage for pyramids
     deque<size_t> nrPyramids; // number of pyramids on the various levels
+    deque<bool> Pyramids_scrambled; // only used for mic
 
     // data that can be used to go out of build_cone and return later (not done at present)
     // but also useful at other places
@@ -221,6 +227,8 @@ public:
 #ifdef NMZ_MIC_OFFLOAD
     MicOffloader<long long> mic_offloader;
 #endif
+void try_offload_loc(long place,size_t max_level);
+
 
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;
@@ -238,7 +246,12 @@ public:
     
     long approx_level;
     bool is_approximation;
-    
+
+    bool is_global_approximation; // true if approximation is defined in Cone
+
+    vector<vector<key_t>> approx_points_keys;
+    Matrix<Integer> OriginalGenerators;
+
     Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
 
 /* ---------------------------------------------------------------------------
@@ -270,7 +283,7 @@ public:
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
 	void find_bottom_facets();                                  
-    Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
@@ -293,6 +306,7 @@ public:
     Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
     bool contains(const vector<Integer>& v);
+    bool subcone_contains(const vector<Integer>& v);
     bool contains(const Full_Cone& C);
     void extreme_rays_and_deg1_check();
     void find_grading();
