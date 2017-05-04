@@ -6420,23 +6420,25 @@ The last point is extremely important since the coefficients of the linear forms
 
 The following input types are NOT allowed in QNormaliz:
 \begin{center}
-\tt
+\texttt{
 \begin{tabular}{lll}
 lattice& congruences&grading\\
 cone\_and\_lattice& inhom\_congruences& offset
 \end{tabular}
+}
 \end{center}
 Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be intepreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
 
 The only computation goals and algorithmic variants allowed are:
 \begin{center}
-\tt
+\texttt{
 \begin{tabular}{llll}
 Generators& ExtremeRays & VerticesOfPolyhedron & MaximalSubspace \\
 SupportHyperplanes& Equations & Triangulation & ConeDecomposition \\
 Dehomogenization&  Rank&    EmbeddingDim & Sublattice\\
 KeepOrder & IsPointed   &IsInhomogeneous &DefaultMode
 \end{tabular}
+}
 \end{center}
 
 It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is  the coordinate transformation used by QNormaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.
