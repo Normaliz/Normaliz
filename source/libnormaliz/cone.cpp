@@ -1767,7 +1767,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
     bool save_naked_dual= naked_dual;
     bool save_default_mode= default_mode;
     already_in_compute=false;
-    ToCompute=compute(ToCompute);
+    ToCompute=compute_inner(ToCompute);
     explicit_HilbertSeries=save_explicit_HilbertSeries;
     naked_dual=save_naked_dual;
     default_mode= save_default_mode;
@@ -1778,6 +1778,15 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+    already_in_compute=false;
+    compute_inner(ToCompute);
+    return ToCompute;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     
     assert(!already_in_compute);
     already_in_compute=true;
