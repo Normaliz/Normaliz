@@ -499,7 +499,9 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
             try {
 #endif
             
-        if(verbose && pos_size*neg_size>=ReportBound){
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                if(verbose && pos_size*neg_size>=ReportBound){
             #pragma omp critical(VERBOSE)
             while ((long)(bb*VERBOSE_STEPS) >= step_x_size) {
                 step_x_size += total;
@@ -757,6 +759,8 @@ void Cone_Dual_Mode<Integer>::cut_with_halfspace_hilbert_basis(const size_t& hyp
 
 template<typename Integer>
 Matrix<Integer> Cone_Dual_Mode<Integer>::cut_with_halfspace(const size_t& hyp_counter, const Matrix<Integer>& BasisMaxSubspace){
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+
     size_t i,rank_subspace=BasisMaxSubspace.nr_of_rows();
 
     vector <Integer> restriction,lin_form=SupportHyperplanes[hyp_counter],old_lin_subspace_half;
@@ -833,6 +837,9 @@ void Cone_Dual_Mode<Integer>::hilbert_basis_dual(){
         vector<key_t> relevant_sh;
         size_t realdim=Generators.rank();
         for(key_t h=0;h<SupportHyperplanes.nr_of_rows();++h){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             key.clear();
             vector<Integer> test=Generators.MxV(SupportHyperplanes[h]);
             for(key_t i=0;i<test.size();++i)
@@ -880,6 +887,9 @@ void Cone_Dual_Mode<Integer>::extreme_rays_rank(){
     vector <key_t> zero_list;
     size_t i,k;
     for (c=Intermediate_HB.Candidates.begin(); c!=Intermediate_HB.Candidates.end(); ++c){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         zero_list.clear();
         for (i = 0; i < nr_sh; i++) {
             if(c->values[i]==0) {
@@ -922,6 +932,9 @@ void Cone_Dual_Mode<Integer>::relevant_support_hyperplanes(){
     vector<bool> relevant(nr_sh,true);      
 
     for (i = 0; i < nr_sh; ++i) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         k = 0; k1=0;
         for (gen_it = ExtremeRayList.begin(); gen_it != ExtremeRayList.end(); ++gen_it, ++k) {
             if ((*gen_it)->values[i]==0) {

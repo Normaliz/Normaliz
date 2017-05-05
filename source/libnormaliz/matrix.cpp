@@ -2328,6 +2328,9 @@ size_t Matrix<Integer>::extreme_points_first(const vector<Integer> norm){
     size_t no_success=0;
     // size_t nr_attempt=0;
     while(true){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         // nr_attempt++; cout << nr_attempt << endl;
         vector<long long> L=v_random<long long>(nc,10);
         vector<key_t> max_min_ind;

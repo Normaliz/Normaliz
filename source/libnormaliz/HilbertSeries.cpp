@@ -264,6 +264,9 @@ void HilbertSeries::simplify() const {
     map<long, denom_t>::iterator it = cdenom.begin(); 
     while (it != cdenom.end()) {
         // check if we can divide the numerator by i-th cyclotomic polynomial
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
         i = it->first;
         denom_t& cyclo_i = it->second;
         poly = cyclotomicPoly<mpz_class>(i);
@@ -304,7 +307,10 @@ void HilbertSeries::simplify() const {
     if(period <= 10*PERIOD_BOUND){
         while(true){
             //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
-            long k=1;
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            long k=1;                
             bool empty=true;
             vector<mpz_class> existing_factor(1,1); //collects the existing cyclotomic gactors in the denom
             for(it=cdenom.begin();it!=cdenom.end();++it){          // with multiplicvity 1
@@ -400,6 +406,9 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     long d;
     vector<mpz_class> r;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
         d = rit->first;
         //nothing to do if it already has the correct t-power
         if (d != period) {
@@ -426,6 +435,9 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
 
     #pragma omp parallel for
     for (j=0; j<period; ++j) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
     }
     

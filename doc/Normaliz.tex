@@ -3220,7 +3220,9 @@ The number of threads can also be controlled by the environment
 variable \verb+OMP_NUM_THREADS+. See Section \ref{PerfPar} for
 further discussion.
 
+\subsection{Interruption}\label{interrupt}
 
+During a computation \verb|normaliz| can be interrupted by pressing Ctrl-C on the keyboard. If this happens, Normaliz will stop the current computation and write the already computed data to the output file(s). The output phase cannot be interrupted.
 
 \subsection{Control of output files}\label{outcontrol}
 
@@ -6129,7 +6131,9 @@ bool Cone<Integer>::isReesPrimary()
 \end{Verbatim}
 \verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
 
-\subsection{Exception handling}
+\subsection{Interruption and exception handling}
+
+\subsubsection{Exceptions}
 
 All exceptions that are thrown in \verb|libnormaliz| are derived from the abstract class \verb|NormalizException| that itself is derived from \verb|std::exception|:
 \begin{Verbatim}
@@ -6143,14 +6147,29 @@ class BadInputException: public NormalizException
 class NotComputableException: public NormalizException
 class FatalException: public NormalizException
 class NmzCoCoAException: public NormalizException
+class InterruptException: public NormalizException
 \end{Verbatim}
-The \verb|ArithmeticException| is leaves \verb|libnormaliz| if a nonrecoverable overflow occurs (it is also used internally for the change of integer type). This should not happen for cones of integer type \verb|mpz_class|, unless it is caused by a bug in the program. The \verb|BadInputException| is thrown whenever the input is inconsistent; the reasons for this are manifold. The \verb|NotComputableException| is thrown if a computation goal cannot be reached. The \verb|FatalException| should never appear. It covers error situations that can only be caused by a bug in the program. At many places \verb|libnormaliz| has \verb|assert| verifications built in that serve the same purpose. 
+
+The \verb|ArithmeticException| leaves \verb|libnormaliz| if a nonrecoverable overflow occurs (it is also used internally for the change of integer type). This should not happen for cones of integer type \verb|mpz_class|, unless it is caused by the attempt to create a data structure of illegal size or by a bug in the program. The \verb|BadInputException| is thrown whenever the input is inconsistent; the reasons for this are manifold. The \verb|NotComputableException| is thrown if a computation goal cannot be reached. The \verb|FatalException| should never appear. It covers error situations that can only be caused by a bug in the program. At many places \verb|libnormaliz| has \verb|assert| verifications built in that serve the same purpose. 
 
 There are two more exceptions for the communication within \verb|libnormaliz| that should not leave it:
 \begin{Verbatim}
 class NonpointedException: public NormalizException 
 class NotIntegrallyClosedException: public NormalizException
 \end{Verbatim}
+
+The \verb|InterruptException| is discussed in the next section.
+
+\subsubsection{Interruption}
+
+In order to find out if the user wants to interrupt the program, the functions in \verb|libnormaliz| test the value of the global variable
+\begin{Verbatim}
+bool nmz_interrupted
+\end{Verbatim}
+If it is found to be \verb|true|, an \verb|InterruptException| is thrown. Ihis interrupt lraves \verb|libnormaliz|, so that the calling program can process it. The \verb|Cone| still exists, and the data computed in it can still be accessed. Moreover, \verb|compute| can again be applied to it.
+
+The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=true|.
+
 
 \subsection{Control of terminal output}
 By using

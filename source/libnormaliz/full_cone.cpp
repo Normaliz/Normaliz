@@ -449,9 +449,10 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
         if (skip_remaining) continue;
 #ifndef NCATCH
         try {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
 
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         zero_i=Zero_PN & Pos_Simp[i]->GenInHyp;
         nr_zero_i=0;
         for(j=0;j<nr_gen && nr_zero_i<=facet_dim;j++)
@@ -551,8 +552,8 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
 
 #ifndef NCATCH
         try {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         jj_map = Neg_Subfacet.begin();       // First the Simp
         for (j=0; j<nr_NegSubf; ++j,++jj_map) {
@@ -789,8 +790,8 @@ void Full_Cone<Integer>::extend_triangulation(const size_t& new_generator){
 
 #ifndef NCATCH
     try {
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         i=visible[kk];
         
@@ -1078,6 +1079,8 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator,const bool 
 #endif
             for(;kk > hyppos; hyppos++, hyp++) ;
             for(;kk < hyppos; hyppos--, hyp--) ;
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
 
             if(done[hyppos])
                 continue;
@@ -1649,6 +1652,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     long step_x_size = nrLargeRecPyrs-VERBOSE_STEPS;
     const size_t RepBound=100;
     
+    bool skip_remaining=false;
+    
     #pragma omp parallel
     {
     size_t ppos=0;
@@ -1656,6 +1661,10 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
     
     #pragma omp for schedule(dynamic) 
     for(size_t i=0; i<nrLargeRecPyrs; i++){
+        
+        if(skip_remaining)
+            continue;
+        
         for(; i > ppos; ++ppos, ++p) ;
         for(; i < ppos; --ppos, --p) {};
 
@@ -1674,6 +1683,8 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
         }
 #endif
     }
@@ -1808,8 +1819,8 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 
 #ifndef NCATCH
            try {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
 #endif
+               INTERRUPT_COMPUTATION_BY_EXCEPTION
                
                Full_Cone<Integer> Pyramid(*this,*p);
                // Pyramid.recursion_allowed=false;
@@ -2181,6 +2192,8 @@ void Full_Cone<Integer>::build_cone() {
     if (is_pyramid && do_all_hyperplanes)  // must give supphyps back to mother
         Mother->select_supphyps_from(Facets, apex, Mother_Key);
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     // transfer Facets --> SupportHyperplanes
     if (do_all_hyperplanes) {
         nrSupport_Hyperplanes = Facets.size();
@@ -2196,6 +2209,8 @@ void Full_Cone<Integer>::build_cone() {
     
     if(do_extreme_rays && do_all_hyperplanes)
         compute_extreme_rays(true);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     transfer_triangulation_to_top(); // transfer remaining simplices to top
     if(check_evaluation_buffer()){
@@ -2281,6 +2296,8 @@ void Full_Cone<Integer>::find_bottom_facets() {
 
     if(verbose)
         verboseOutput() << "Bottom has " << BottomExtRays.size() << " extreme rays" << endl;
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
  
     Matrix<Integer> BottomFacets(0,dim);
     vector<Integer> BottomDegs(0,dim);
@@ -2306,6 +2323,8 @@ void Full_Cone<Integer>::find_bottom_facets() {
     
     if (!pointed)
         throw NonpointedException();
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     vector<key_t> facet;
     for(size_t i=0;i<BottomFacets.nr_of_rows();++i){
@@ -2510,6 +2529,8 @@ void Full_Cone<Integer>::update_reducers(bool forced){
 
     if(NewCandidates.Candidates.empty())
         return;
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if(nr_gen==dim)  // no global reduction in the simplicial case
         NewCandidates.sort_by_deg(); 
@@ -2623,9 +2644,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
                 for(; i > spos; ++spos, ++s) ;
                 for(; i < spos; --spos, --s) ;
 
-#ifndef NCATCH
            INTERRUPT_COMPUTATION_BY_EXCEPTION
-#endif
                 
                 if(done[spos])
                     continue;
@@ -2717,6 +2736,9 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     }
     size_t j;
     for (j = 0; j < lss; ++j) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         evaluate_large_simplex(j, lss);
     }
 
@@ -2725,6 +2747,9 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 
     // also new large simplices are possible
     if (!LargeSimplices.empty()) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         use_bottom_points = false;
         lss += LargeSimplices.size();
         if (verbose) {
@@ -3005,6 +3030,9 @@ void Full_Cone<Integer>::make_module_gens(){
     Candidate<Integer> new_cand(dim,Support_Hyperplanes.nr_of_rows());
     typename list<Candidate<Integer> >::const_iterator lnew,l1;
     for(lnew=NewCandidates.Candidates.begin();lnew!=NewCandidates.Candidates.end();++lnew){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         Integer level=v_scalar_product(lnew->cand,Truncation);
         if(level==1){
             new_cand=*lnew;
@@ -3063,6 +3091,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     }
     if (do_triangulation && do_evaluation && isComputed(ConeProperty::Grading))
         is_Computed.set(ConeProperty::Multiplicity,true);
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
                 
     if (do_Hilbert_basis) {
         if(do_module_gens_intcl){
@@ -3079,14 +3109,20 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         }
     }
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     if (do_deg1_elements) {
         for(size_t i=0;i<nr_gen;i++)
-            if(v_scalar_product(Grading,Generators[i])==1 && (!(is_approximation || is_global_approximation) || subcone_contains(Generators[i])))
+            if(v_scalar_product(Grading,Generators[i])==1 && (!(is_approximation || is_global_approximation) 
+                            || subcone_contains(Generators[i])))
                 Deg1_Elements.push_front(Generators[i]);
         is_Computed.set(ConeProperty::Deg1Elements,true);
         Deg1_Elements.sort();
         Deg1_Elements.unique();
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     if (do_h_vector) {
         Hilbert_Series.setShift(convertTo<long>(shift));
         Hilbert_Series.adjustShift();
@@ -3438,6 +3474,9 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
     auto facet_it=facet_keys.begin();
     size_t counter=0;
     while(facet_it!=facet_keys.end()){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         counter=0;
         for (size_t i=0;i<facet_it->size();i++){
             if (facet_it->at(i)<=ER_nr) continue;
@@ -3459,6 +3498,9 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
     
     // main loop
     for (;facet_it!=facet_keys.end();++facet_it){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         // check whether the facet is contained in the faces not containing the generator
         // and the previous generators
         // and check whether the generator is in the facet    
@@ -3512,6 +3554,9 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
     auto outer_it = new_faces.begin();
     auto inner_it = new_faces.begin();
     for (;outer_it!=new_faces.end();++outer_it){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         // work with a not-key vector
         vector<key_t> face_not_key;
         for (size_t i=0;i<outer_it->first.size();i++){
@@ -3930,6 +3975,9 @@ void Full_Cone<Integer>::find_module_rank_from_HB(){
     typename list<vector<Integer> >::iterator h;
     
     for(h=Hilbert_Basis.begin();h!=Hilbert_Basis.end();++h){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         v=ProjToLevel0Quot.MxV(*h);
         bool zero=true;
         for(size_t j=0;j<v.size();++j)
@@ -4251,6 +4299,9 @@ void Full_Cone<Integer>::compute_extreme_rays_rank(bool use_facets){
     for(i=0;i<nr_gen;++i){
 //        if (isComputed(ConeProperty::Triangulation) && !in_triang[i])
 //            continue;
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         gen_in_hyperplanes.clear();
         if(use_facets){
             typename list<FACETDATA>::const_iterator IHV=Facets.begin();            
@@ -4300,6 +4351,9 @@ void Full_Cone<Integer>::compute_extreme_rays_compare(bool use_facets){
     vector<key_t> nr_ones(nr_gen);
 
     for (i = 0; i <nr_gen; i++) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         k=0;
         Extreme_Rays_Ind[i]=true;
         if(use_facets){
@@ -5178,6 +5232,8 @@ void Full_Cone<Integer>::dual_mode() {
     use_existing_facets=false; // completely irrelevant here
     start_from=0;
     old_nr_supp_hyps=0;
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     compute_class_group();
     

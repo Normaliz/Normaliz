@@ -1807,6 +1807,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::KeepOrder) && !isComputed(ConeProperty::OriginalMonoidGenerators))
         throw BadInputException("KeepOrder can only be set if OriginalMonoidGenerators are defined");
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     if(BasisMaxSubspace.nr_of_rows()>0 && !isComputed(ConeProperty::MaximalSubspace)){
         BasisMaxSubspace=Matrix<Integer>(0,dim);
         recursive_compute(ConeProperty::MaximalSubspace);      
@@ -1841,6 +1843,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         already_in_compute=false; return ToCompute;
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     
     set_implicit_dual_mode(ToCompute);
@@ -1864,6 +1868,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (!isComputed(ConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
         
     try_approximation(ToCompute);
 
@@ -1900,6 +1906,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     complete_HilbertSeries_comp(ToCompute);
     
@@ -1961,6 +1969,9 @@ void Cone<Integer>::compute_integer_hull() {
     if(IntHullGen.nr_of_rows()==0){
         IntHullGen.append(vector<Integer>(dim,0)); // we need a non-empty input matrix
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     if(!inhomogeneous || HilbertBasis.nr_of_rows()==0){
         nr_extr=IntHullGen.extreme_points_first();
         if(verbose){

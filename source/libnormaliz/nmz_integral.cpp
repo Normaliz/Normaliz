@@ -223,6 +223,8 @@ try{
   vector<RingElem> primeFactorsNonhom;
   vector<long> multiplicities;
   RingElem remainingFactor(one(R));
+  
+  INTERRUPT_COMPUTATION_BY_EXCEPTION
 
   bool homogeneous;
   RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
@@ -270,6 +272,8 @@ try{
   vector<BigRat> I_thread(omp_get_max_threads());
   for(size_t i=0; i< I_thread.size();++i)
       I_thread[i]=0;
+  
+  bool skip_remaining=false;
 
 #pragma omp parallel private(i)
   {
@@ -284,9 +288,14 @@ try{
  #pragma omp for schedule(dynamic) 
   for(size_t k=0;k<C.getTriangulation().size();++k){
       
+      if(skip_remaining)
+          continue;
+      
 #ifndef NCATCH
         try {
 #endif
+            
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     convert(det,C.getTriangulation()[k].second);
     for(i=0;i<rank;++i)    // select submatrix defined by key
@@ -311,6 +320,8 @@ try{
 #ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
         }
 #endif
 
@@ -669,6 +680,8 @@ try{
   vector<RingElem> primeFactorsNonhom;
   vector<long> multiplicities;
   RingElem remainingFactor(one(R));
+  
+  INTERRUPT_COMPUTATION_BY_EXCEPTION
 
   bool homogeneous;
   RingElem F=processInputPolynomial(C.getIntData().getPolynomial(),R,RZZ,primeFactors, primeFactorsNonhom,
@@ -710,6 +723,8 @@ try{
     verboseOutput() << "Generators read" << endl;
   long maxDegGen=v_scalar_product(gens[gens.size()-1],grading)/gradingDenom; 
   
+  INTERRUPT_COMPUTATION_BY_EXCEPTION
+  
   // list<STANLEYDATA_int_INT> StanleyDec;
   vector<pair<boost::dynamic_bitset<>, long> > inExCollect;
   readDecInEx(C,rank,inExCollect,gens.size());
@@ -732,6 +747,9 @@ try{
   BigInt lcmDets(1); // to become the lcm of all dets of simplicial cones
   
   for(;S!=StanleyDec.end();++S){
+      
+      INTERRUPT_COMPUTATION_BY_EXCEPTION
+      
       for(i=0;i<rank;++i)    // select submatrix defined by key
         A[i]=gens[S->key[i]];
           degrees=MxV(A,grading);
@@ -819,6 +837,8 @@ try{
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
+    
+  bool skip_remaining=false;
 
   #pragma omp parallel private(i)
   {
@@ -837,6 +857,10 @@ try{
   size_t s,spos=0;  
   #pragma omp for schedule(dynamic) 
   for(s=0;s<dec_size;++s){
+      
+    if(skip_remaining)
+        continue;
+    
     for(;spos<s;++spos,++S);
     for(;spos>s;--spos,--S);
     
@@ -844,6 +868,8 @@ try{
         try {
 #endif
 
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
     det=S->offsets.nr_of_rows();
     degrees=S->degrees;
     
@@ -917,6 +943,8 @@ try{
 #ifndef NCATCH
         } catch(const std::exception& ) {
             tmp_exception = std::current_exception();
+            skip_remaining=true;
+            #pragma omp flush(skip_remaining)
         }
 #endif
  
