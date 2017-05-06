@@ -26,6 +26,25 @@ AS_IF([test x$HAVE_CXX11 = x0],
 AC_PROG_LIBTOOL
 AC_LANG(C++)
 
+## Test for GMP
+AC_ARG_WITH(gmp,
+   AS_HELP_STRING([--with-gmp=DIR],
+                  [Use the GMP library installed in installation prefix DIR.]),
+   [ LDFLAGS="-L$with_gmp/lib $LDFLAGS"
+     CPPFLAGS="-I $with_gmp/include $CPPFLAGS"
+   ])
+AC_MSG_CHECKING([whether GMP C++ library is available])
+LIBS_SAVED="$LIBS"
+LIBS="$LIBS -lgmpxx -lgmp"
+AC_LINK_IFELSE(
+   [AC_LANG_PROGRAM([[#include <gmpxx.h>
+                     ]],
+                    [[mpz_class a;
+                     ]])],
+   [AC_MSG_RESULT([yes])],
+   [AC_MSG_ERROR([GMP C++ library not found. Make sure it was compiled with --enable-cxx])])
+LIBS="$LIBS_SAVED"
+
 ## Test for OpenMP parallelization.
 AC_ARG_ENABLE([openmp],
     [AS_HELP_STRING([--enable-openmp@<:@=ARG@:>@],
