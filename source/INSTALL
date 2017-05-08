@@ -127,6 +127,11 @@ Similarly, it may be necessary to show configure the path to CoCoALib if you wan
 to compile with it:
 
    ./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
+   
+If you want to use a GMP installation that is not at a standard location you can set 
+the path to your GMP by
+
+    ./configure --with-gmp=path/to/GMP   
 
 Some more configure options:
 

@@ -1679,6 +1679,9 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
 #ifndef NCATCH
         try {
 #endif
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             match_neg_hyp_with_pos_hyps(*p,new_generator,PosHyps,Zero_P);
 #ifndef NCATCH
         } catch(const std::exception& ) {
@@ -2747,15 +2750,15 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
 
     // also new large simplices are possible
     if (!LargeSimplices.empty()) {
-        
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
         use_bottom_points = false;
         lss += LargeSimplices.size();
         if (verbose) {
             verboseOutput() << "Continue evaluation of " << lss << " large simplices without new decompositions of simplicial cones." << endl;
         }
         for (; j < lss; ++j) {
+        
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
             evaluate_large_simplex(j, lss);
         }
     }
