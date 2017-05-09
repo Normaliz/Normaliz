@@ -163,7 +163,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-
+    bool skip_remaining = false;
 	// list for the simplices that could not be decomposed
     vector< Matrix<Integer> > big_simplices;
     #pragma omp parallel reduction(+:stellar_det_sum)
@@ -179,24 +179,26 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     SCIPcreate(& scip);
     SCIPincludeDefaultPlugins(scip);
 //    SCIPsetMessagehdlr(scip,NULL);  // deactivate scip output
+
+    SCIPsetIntParam(scip, "display/verblevel", 0); 
     
-	SCIPsetIntParam(scip, "display/verblevel", 0); 
-	
-	// modify timing for better parallelization
+    // modify timing for better parallelization
 //	SCIPsetBoolParam(scip, "timing/enabled", FALSE);
-	SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
-	SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
+    SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
+    SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
 
 
-	SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
-	SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
+    SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
+    SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
 //	SCIPsetIntParam(scip, "nodeselection/uct/stdpriority", 1000000); 
 #endif // NMZ_SCIP
 
     vector< Matrix<Integer> > local_q_gens;
     list< vector<Integer> > local_new_points;
+    
 
     while (!q_gens.empty()) {
+	if(skip_remaining) break;
 		if(verbose){
 			#pragma omp single
 			verboseOutput() << q_gens.size() << " simplices on level " << level++ << endl;
@@ -204,6 +206,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 
         #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
+	
+	if(skip_remaining) continue;
 #ifndef NCATCH
             try {
 #endif
@@ -211,6 +215,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
+		skip_remaining = true;
+                #pragma omp flush(skip_remaining)
             }
 #endif
         }
@@ -239,6 +245,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifndef NCATCH
     } catch(const std::exception& ) {
         tmp_exception = std::current_exception();
+	skip_remaining = true;
+	#pragma omp flush(skip_remaining)
     }
 #endif
     } // end parallel
@@ -320,6 +328,7 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     vector<Integer> grading = gens.find_linear_form();
     Integer volume;
     int dim = gens[0].size();
