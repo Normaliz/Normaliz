@@ -389,7 +389,7 @@ namespace {
         CPN.at(ConeProperty::GradingDenom) = "GradingDenom";
         CPN.at(ConeProperty::Equations) = "Equations";
         CPN.at(ConeProperty::Congruences) = "Congruences";
-        CPN.at(ConeProperty::ExternalIndex) = "ExernalIndex";
+        CPN.at(ConeProperty::ExternalIndex) = "ExternalIndex";
         CPN.at(ConeProperty::HilbertQuasiPolynomial) = "HilbertQuasiPolynomial";
         CPN.at(ConeProperty::IsTriangulationNested) = "IsTriangulationNested";
         CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";

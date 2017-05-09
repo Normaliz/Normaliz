@@ -1779,8 +1779,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     already_in_compute=false;
-    compute_inner(ToCompute);
-    return ToCompute;
+    return compute_inner(ToCompute);
 }
 
 //---------------------------------------------------------------------------
