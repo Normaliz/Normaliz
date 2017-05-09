@@ -70,10 +70,6 @@ void printHeader() {
     }
 }
 
-void interrupt_signal_handler( int signal ){
-    nmz_interrupted = true;
-}
-
 void printHelp(char* command) {
     cout << "Usage: "<<command<<" [options] PROJECT"<<endl;
     cout << "  runs normaliz on PROJECT.in"<<endl;
@@ -212,6 +208,9 @@ void compute_and_output(OptionsHandler& options, const map <Type::InputType,
         std::cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
+    
+    signal(SIGINT, SIG_DFL);
+    
     Out.write_files();
     
     if(MyCone.isComputed(ConeProperty::IntegerHull)){

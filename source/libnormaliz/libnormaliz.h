@@ -108,6 +108,8 @@ void setErrorOutput(std::ostream&);
 std::ostream& verboseOutput();
 std::ostream& errorOutput();
 
+void interrupt_signal_handler( int signal );
+
 } /* end namespace libnormaliz */
 
 #endif /* LIBNORMALIZ_H_ */
