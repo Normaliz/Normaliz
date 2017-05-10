@@ -78,8 +78,6 @@ double convert_to_double(long long a) {
 // TODO do not use global variables
 long long stellar_det_sum;
 
-//---------------------------------------------------------------------------
-
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,const vector<Integer>& grading_, long app_level, long recursion_depth, Integer VolumeBound) {
 	
@@ -198,6 +196,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     
 
     while (!q_gens.empty()) {
+        
 	if(skip_remaining) break;
 		if(verbose){
 			#pragma omp single
@@ -208,6 +207,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
         for (size_t i = 0; i < q_gens.size(); ++i) {
 	
 	if(skip_remaining) continue;
+            
 #ifndef NCATCH
             try {
 #endif
@@ -316,19 +316,16 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 
 
 
-} // bottom_points
-
-//---------------------------------------------------------------------------
+}
 
 
 template<typename Integer>
 void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* scip,
                  Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
                  vector< Matrix<Integer> >& local_q_gens, vector< Matrix<Integer> >& big_simplices,long app_level) {
-    
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     vector<Integer> grading = gens.find_linear_form();
     Integer volume;
     int dim = gens[0].size();
@@ -386,15 +383,10 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
         stellar_det_sum += convertTo<long long>(volume);
     }
     return;
-} // bottom_points_inner
-
-//---------------------------------------------------------------------------
+}
 
 template<typename Integer>
 vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp, const vector<Integer>& grading) {
-    
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
     size_t dim = SuppHyp.nr_of_columns();
     size_t i;
     auto best = bottom_candidates.end();
@@ -443,7 +435,6 @@ vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, cons
     }
 }
 
-//---------------------------------------------------------------------------
 
 // returns -1 if maximum is negative
 template<typename Integer>
@@ -466,7 +457,6 @@ double min_in_col(const Matrix<Integer>& M, size_t j) {
     return convert_to_double(min);
 }
 
-//---------------------------------------------------------------------------
 
 #ifdef NMZ_SCIP
 template<typename Integer>
@@ -475,7 +465,7 @@ vector<Integer> opt_sol(SCIP* scip,
                         const vector<Integer>& grading) {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
+        
     double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]))-0.5;
     // TODO make the test more strict
     long dim = grading.size();
@@ -703,8 +693,6 @@ vector<Integer> opt_sol(SCIP* scip,
     return sol_vec; 
 }
 #endif // NMZ_SCIP
-
-//---------------------------------------------------------------------------
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level,long recursion_depth,long VolumeBound);
