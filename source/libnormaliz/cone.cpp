@@ -2693,6 +2693,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
             typename list< vector<IntegerFC> >::const_iterator FCHB(FC.Hilbert_Basis.begin());
             vector<Integer> tmp;
             for (; FCHB != FC.Hilbert_Basis.end(); ++FCHB) {
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
                 BasisChangePointed.convert_from_sublattice(tmp,*FCHB);
                 if (v_scalar_product(tmp,Dehomogenization) == 0) { // Hilbert basis element of the cone at level 0
                     HilbertBasis.append(tmp);
@@ -2719,6 +2722,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         typename list< vector<IntegerFC> >::const_iterator DFC(FC.Deg1_Elements.begin());
         vector<Integer> tmp;
         for (; DFC != FC.Deg1_Elements.end(); ++DFC) {
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             BasisChangePointed.convert_from_sublattice(tmp,*DFC);                
             Deg1Elements.append(tmp);
         }

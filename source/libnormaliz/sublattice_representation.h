@@ -150,6 +150,9 @@ public:
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
         vector<Integer> v;
         for(size_t i=0;i<val.nr_of_rows();++i){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             convert(v,val[i]);
             ret[i]=from_sublattice(v);
         }
@@ -180,6 +183,9 @@ public:
         ret=Matrix<Integer>(val.nr_of_rows(),dim);
         vector<Integer> v;
         for(size_t i=0;i<val.nr_of_rows();++i){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             convert(v,val[i]);
             ret[i]=from_sublattice_dual(v);
         }

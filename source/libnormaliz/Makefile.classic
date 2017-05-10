@@ -37,7 +37,7 @@ libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 nmz_integrate.o:  $(NMZINTSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integrate.cpp -o $@
 
-libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o libnormaliz-templated.o bottom.o offload_handler.o  nmz_integrate.o
+libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o bottom.o offload_handler.o  nmz_integrate.o libnormaliz-templated.o 
 	ar -cr $@ $^
 
 .PHONY : install
