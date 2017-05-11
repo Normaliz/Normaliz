@@ -2944,7 +2944,7 @@ return; //TODO reactivate!
 template<typename Integer>
 void Full_Cone<Integer>::primal_algorithm(){
     
-    if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants || do_triangulation) )
+    if( !(do_deg1_elements || do_Hilbert_basis || do_h_vector || do_multiplicity || do_determinants) )
         return;
 
     primal_algorithm_initialize();
@@ -2999,7 +2999,7 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables(){
     // deactivate
     if (do_triangulation)   do_partial_triangulation = false;
     
-    cout << "DOM " << do_only_multiplicity << endl;
+    // cout << "DOM " << do_only_multiplicity << " Tri " << do_triangulation << " Wit " << do_integrally_closed << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -3250,8 +3250,6 @@ void Full_Cone<Integer>::set_implications() {
     // activate implications
     if (do_module_gens_intcl) do_Hilbert_basis= true;
     if (do_module_gens_intcl) use_bottom_points= false; // extra bottom points change the originalmonoid
-    if(do_Hilbert_basis)      do_integrally_closed=false; // since full Hilbert basis asked for explicitely
-    if(do_integrally_closed)  do_Hilbert_basis=true;  // we must switch on the computation of the Hilbert basis
     if (do_Stanley_dec)       keep_triangulation = true;
     if (do_cone_dec)          keep_triangulation = true;
     if (keep_triangulation)   do_determinants = true;
@@ -3469,7 +3467,7 @@ void Full_Cone<Integer>::compute() {
             }                
     }
     if(polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)){ // inthis situation we must just find the 
-            convert_polyhedron_to_polytope();
+            convert_polyhedron_to_polytope();                        // degree 1 points
             deactivate__completed_tasks();
     }
 
@@ -4187,6 +4185,15 @@ void Full_Cone<Integer>::convert_polyhedron_to_polytope() {
     Polytope.do_deg1_elements=true;
     Polytope.verbose=verbose;
     Polytope.compute();
+    
+    if(Polytope.isComputed(ConeProperty::TriangulationDetSum)){
+        detSum=Polytope.detSum;
+        is_Computed.set(ConeProperty::TriangulationDetSum);
+    }
+    if(Polytope.isComputed(ConeProperty::TriangulationSize)){
+        totalNrSimplices=Polytope.totalNrSimplices;
+        is_Computed.set(ConeProperty::TriangulationSize);
+    }
     if(Polytope.isComputed(ConeProperty::SupportHyperplanes) && 
         !isComputed(ConeProperty::SupportHyperplanes)){
         Support_Hyperplanes=Polytope.Support_Hyperplanes;
