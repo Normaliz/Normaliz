@@ -1,0 +1,9 @@
+amb_space 2
+polytope 2
+0
+1
+
+polynomial
+x[1]+x[1]^2;
+
+Integral

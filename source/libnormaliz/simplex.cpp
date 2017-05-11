@@ -29,6 +29,7 @@
 #include <iostream>
 #include <set>
 #include <deque>
+#include <csignal>
 
 #include <time.h>
 
@@ -442,10 +443,10 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         prepare_inclusion_exclusion_simpl(Deg0_offset, Coll);
 
     if(C_ptr->do_Stanley_dec){                          // prepare space for Stanley dec
-        STANLEYDATA<Integer> SimplStanley;         // key + matrix of offsets
+        STANLEYDATA_int SimplStanley;         // key + matrix of offsets
         SimplStanley.key=key;
         Matrix<Integer> offsets(convertTo<long>(volume),dim);  // volume rows, dim columns
-        SimplStanley.offsets=offsets;
+        convert(SimplStanley.offsets,offsets);
         #pragma omp critical(STANLEY)
         {
         C_ptr->StanleyDec.push_back(SimplStanley);      // extend the Stanley dec by a new matrix
@@ -453,7 +454,7 @@ void SimplexEvaluator<Integer>::take_care_of_0vector(Collector<Integer>& Coll){
         }
         for(i=0;i<dim;++i)                   // the first vector is 0+offset
             if(Excluded[i])
-                (*StanleyMat)[0][i]=volume;
+                (*StanleyMat)[0][i]=convertTo<long>(volume);
     }
 
     StanIndex=1;  // counts the number of components in the Stanley dec. Vector at 0 already filled if necessary
@@ -498,8 +499,12 @@ void SimplexEvaluator<Integer>::transform_to_global(const vector<Integer>& eleme
 
 template<typename Integer>
 void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element, Collector<Integer>& Coll){
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    // now the vector in par has been produced and is in element    
+    // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
 
-    // now we create and evaluate the points in par
     Integer norm;
     Integer normG;
     size_t i;
@@ -509,7 +514,7 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.is_approximation && C.do_Hilbert_basis){
         vector<Integer> help(dim);
         transform_to_global(element,help);
-        if(!C.contains(help))
+        if(!C.subcone_contains(help)) // here we are abusing the support hyperplanes of the approximated cone !
             return;
         /* #pragma omp atomic
         NrCand++;*/
@@ -520,12 +525,6 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
         NrSurvivors++; */
     
     }
-
-    typename list <vector <Integer> >::iterator c;
-    
-    // now the vector in par has been produced and is in element
-    
-    // DON'T FORGET: THE VECTOR PRODUCED IS THE "REAL" VECTOR*VOLUME !!
 
     norm=0; // norm is just the sum of coefficients, = volume*degree if homogenous
             // it is used to sort the Hilbert basis candidates
@@ -581,10 +580,10 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     }
 
     if(C.do_Stanley_dec){
-        (*StanleyMat)[StanIndex]=element;
+        convert((*StanleyMat)[StanIndex],element);
         for(i=0;i<dim;i++)
             if(Excluded[i]&&element[i]==0)
-                (*StanleyMat)[StanIndex][i]+=volume;
+                (*StanleyMat)[StanIndex][i]+=convertTo<long>(volume);
         StanIndex++;
     }
 
@@ -607,6 +606,9 @@ void SimplexEvaluator<Integer>::evaluate_element(const vector<Integer>& element,
     if(C.do_deg1_elements && normG==volume && !isDuplicate(element)) {
         vector<Integer> help(dim);
         transform_to_global(element,help);
+        if((C.is_approximation || C.is_global_approximation) && !C.subcone_contains(help)){
+            return;
+        }
         Coll.Deg1_Elements.push_back(help);
         Coll.collected_elements_size++;
     }
@@ -733,7 +735,11 @@ void SimplexEvaluator<Integer>::conclude_evaluation(Collector<Integer>& Coll) {
 //---------------------------------------------------------------------------
 
 
-const long SimplexParallelEvaluationBound=10000000; // larger simplices are evaluated by parallel threads
+const long SimplexParallelEvaluationBound=100000000; // simplices larger than this bound/10 
+                 //are evaluated by parallel threads
+                 // simplices larger than this bound  || (this bound/10 && Hilbert basis)
+                 // are tried for subdivision
+
 
 //---------------------------------------------------------------------------
 
@@ -750,8 +756,8 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     if(C_ptr->do_cone_dec)
         s.Excluded=Excluded;
     // large simplicies to be postponed for parallel evaluation
-    if ( (volume > SimplexParallelEvaluationBound ||
-           (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
+    if ( volume > SimplexParallelEvaluationBound/10
+           // || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
        && !C_ptr->do_Stanley_dec){ //&& omp_get_max_threads()>1)
         return false;        
     }
@@ -967,40 +973,52 @@ void SimplexEvaluator<Integer>::collect_vectors(){
 /* evaluates a simplex in parallel threads */
 template<typename Integer>
 void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
+    
+    /* Generators.pretty_print(cout);
+    cout << "==========================" << endl; */
 
     if(C_ptr->verbose){
         verboseOutput() << "simplex volume " << volume << endl;
     }
-    if (C_ptr->use_bottom_points && volume >= SimplexParallelEvaluationBound
+
+    if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
         && C_ptr->approx_level == 1
+
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
     {
 
         Full_Cone<Integer>& C = *C_ptr;
         
         if (C_ptr->verbose) {
-				verboseOutput() << "**************************************************" << endl;
-				verboseOutput() << "Try to decompose the simplex into smaller simplices." << endl;
-		}
+            verboseOutput() << "**************************************************" << endl;
+            verboseOutput() << "Try to decompose the simplex into smaller simplices." << endl;
+        }
 
         for (size_t i=0; i<dim; ++i)
             Generators[i] = C.Generators[key[i]];
 
         list< vector<Integer> > new_points;
         time_t start,end;
-		time (&start);
+        time (&start);
 #ifndef NMZ_SCIP
-        C.compute_sub_div_elements(Generators, new_points);
-        //cout << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
-       
+        C.compute_sub_div_elements(Generators, new_points,volume);
+        if(C_ptr->verbose){
+            verboseOutput() << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
+        }
 #endif
-		bottom_points(new_points, Generators,C.Grading,C.approx_level,0);
+        void (*prev_handler)(int);
+        prev_handler = signal (SIGINT, SIG_IGN); // we don't want to set a new handler here
+        signal (SIGINT, prev_handler);
+    
+        bottom_points(new_points, Generators,C.Grading,C.approx_level,0,volume);
+        signal(SIGINT, prev_handler);
+        
         time (&end);
-		double dif = difftime (end,start);
+        double dif = difftime (end,start);
 
-		if (C_ptr->verbose) {
-				verboseOutput() << "Bottom points took " << dif << " sec " <<endl;
-		}
+        if (C_ptr->verbose) {
+            verboseOutput() << "Bottom points took " << dif << " sec " <<endl;
+        }
 
         // cout << new_points.size() << " new points " << endl << new_points << endl;
         if (!new_points.empty()) {
@@ -1044,19 +1062,19 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             bottom_polytope.keep_triangulation = true;
             //bottom_polytope.do_all_hyperplanes = false;
             if (C_ptr->verbose) {
-				verboseOutput() << "Computing triangulation of bottom polytope... " << flush;
-			}
+                verboseOutput() << "Computing triangulation of bottom polytope... " << flush;
+            }
             bool verbtmp = C_ptr->verbose;
             C_ptr->verbose = false;
-			time (&start);
+            time (&start);
             bottom_polytope.compute();
             time (&end);
-			dif = difftime (end,start);
+            dif = difftime (end,start);
             C_ptr->verbose = verbtmp;
             if (C_ptr->verbose) {
-				verboseOutput() << "done." << endl;
-				verboseOutput() << "Computing triangulation took " << dif << " sec" << endl;
-			}
+                verboseOutput() << "done." << endl;
+                verboseOutput() << "Computing triangulation took " << dif << " sec" << endl;
+            }
             assert(bottom_polytope.isComputed(ConeProperty::Triangulation));
 
             // extract bottom triangulation
@@ -1069,8 +1087,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             new_simplex.key = vector<key_t>(dim);
             key_t i;
             if (C_ptr->verbose) {
-				verboseOutput() << "Extracting and evaluating triangulation from bottom polytope..." << endl;
-			}
+                verboseOutput() << "Extracting and evaluating triangulation from bottom polytope..." << endl;
+            }
  
             for (; bottom_it != bottom_end; ++bottom_it) {
                 sort(bottom_it->key.begin(), bottom_it->key.end());
@@ -1092,8 +1110,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 C.evaluate_triangulation();
 
             if (C_ptr->verbose) {
-				verboseOutput() << "**************************************************" << endl;
-			}
+                verboseOutput() << "**************************************************" << endl;
+            }
 
             return;
         }
@@ -1316,6 +1334,11 @@ void SimplexEvaluator<Integer>::print_all() {
 template<typename Integer>
 vector<key_t> SimplexEvaluator<Integer>::get_key(){
     return key;
+}
+
+template<typename Integer>
+Integer SimplexEvaluator<Integer>::get_volume(){
+    return volume;
 }
 
 // Collector

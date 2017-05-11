@@ -85,6 +85,8 @@ public:
     bool inhomogeneous; 
     
     // control of what to compute (set from outside)
+    bool explicit_full_triang; // indicates whether full triangulation is asked for without default mode
+    bool explicit_h_vector; // to distinguish it from being set via default mode
     bool do_determinants;
     bool do_multiplicity;
     bool do_integrally_closed;
@@ -98,7 +100,10 @@ public:
     bool do_module_gens_intcl;
     bool do_module_rank;
     bool do_cone_dec;
+
     bool exploit_automorphisms;
+    
+    bool do_hsop;
     bool do_extreme_rays;
     bool do_pointed;
     bool do_triangulation_size;
@@ -106,6 +111,7 @@ public:
     // algorithmic variants
     bool do_approximation;
     bool do_bottom_dec;
+    bool suppress_bottom_dec;
     bool keep_order;
 
     // control of triangulation and evaluation
@@ -152,6 +158,9 @@ public:
     vector<key_t> PermGens;  // stores the permutation of the generators created by sorting
     vector<bool> Extreme_Rays_Ind;
     Matrix<Integer> Support_Hyperplanes;
+    Matrix<Integer> Subcone_Support_Hyperplanes; // used if *this computes elements in a subcone, for example in approximation
+    Matrix<Integer> Subcone_Equations;
+    vector<Integer> Subcone_Grading;
     size_t nrSupport_Hyperplanes;
     list<vector<Integer> > Hilbert_Basis;
     vector<Integer> Witness;    // for not integrally closed
@@ -169,7 +178,7 @@ public:
     list< SHORTSIMPLEX<Integer> > TriangulationBuffer; // simplices to evaluate
     list< SimplexEvaluator<Integer> > LargeSimplices; // Simplices for internal parallelization
     Integer detSum;                  // sum of the determinants of the simplices
-    list< STANLEYDATA<Integer> > StanleyDec; // Stanley decomposition
+    list< STANLEYDATA_int> StanleyDec; // Stanley decomposition
     vector<Integer> ClassGroup;  // the class group as a vector: ClassGroup[0]=its rank, then the orders of the finite cyclic summands
     
     Matrix<Integer> ProjToLevel0Quot;  // projection matrix onto quotient modulo level 0 sublattice    
@@ -189,6 +198,9 @@ public:
         size_t BornAt;                      // number of generator (in order of insertion) at which this hyperplane was added,, counting from 0
         size_t Ident;                      // unique number identifying the hyperplane (derived from HypCounter)
         size_t Mother;                     // Ident of positive mother if known, 0 if unknown
+        bool is_positive_on_all_original_gens;
+        bool is_negative_on_some_original_gen;
+        bool simplicial;                   // indicates whether facet is simplicial
     };
 
     list<FACETDATA> Facets;  // contains the data for Fourier-Motzkin and extension of triangulation
@@ -229,6 +241,7 @@ public:
     size_t store_level; // the level on which daughters will be stored  
     deque< list<vector<key_t> > > Pyramids;  //storage for pyramids
     deque<size_t> nrPyramids; // number of pyramids on the various levels
+    deque<bool> Pyramids_scrambled; // only used for mic
 
     // data that can be used to go out of build_cone and return later (not done at present)
     // but also useful at other places
@@ -251,6 +264,8 @@ public:
 #ifdef NMZ_MIC_OFFLOAD
     MicOffloader<long long> mic_offloader;
 #endif
+void try_offload_loc(long place,size_t max_level);
+
 
     // defining semiopen cones
     Matrix<Integer> ExcludedFaces;
@@ -270,6 +285,13 @@ public:
     
     Automorphism_Group<Integer> Automs;
 
+    bool is_global_approximation; // true if approximation is defined in Cone
+
+    vector<vector<key_t>> approx_points_keys;
+    Matrix<Integer> OriginalGenerators;
+
+    Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
+
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
  * ---------------------------------------------------------------------------
@@ -277,9 +299,9 @@ public:
     void number_hyperplane(FACETDATA& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA& hyp);
     vector<Integer> FM_comb(const vector<Integer>& Pos, const Integer& PosVal, 
-					    const vector<Integer>& Neg, const Integer& NegVal);
+                    const vector<Integer>& Neg, const Integer& NegVal);
     void add_hyperplane(const size_t& new_generator, const FACETDATA & positive,const FACETDATA & negative,
-                     list<FACETDATA>& NewHyps);
+                     list<FACETDATA>& NewHyps, bool known_to_be_simplicial);
     void extend_triangulation(const size_t& new_generator);
     void find_new_facets(const size_t& new_generator);
     void process_pyramids(const size_t new_generator,const bool recursive);
@@ -301,12 +323,12 @@ public:
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
 	void find_bottom_facets();                                  
-    Matrix<Integer> latt_approx(); // makes a cone over a lattice polytope approximating "this"
+    vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
     void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
-    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements); //computes subdividing elements via approximation
+    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
 //    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
     
@@ -324,6 +346,7 @@ public:
     Matrix<Integer> select_matrix_from_list(const list<vector<Integer> >& S,vector<size_t>& selection);
 
     bool contains(const vector<Integer>& v);
+    bool subcone_contains(const vector<Integer>& v);
     bool contains(const Full_Cone& C);
     void extreme_rays_and_deg1_check();
     void find_grading();
@@ -357,9 +380,9 @@ public:
     void check_grading_after_dual_mode();
 
     void minimize_support_hyperplanes();   
-    void compute_extreme_rays();
-    void compute_extreme_rays_compare();
-    void compute_extreme_rays_rank();
+    void compute_extreme_rays(bool use_facets=false);
+    void compute_extreme_rays_compare(bool use_facets);
+    void compute_extreme_rays_rank(bool use_facets);
     void select_deg1_elements();
 
     void check_pointed();
@@ -377,6 +400,13 @@ public:
     void reset_tasks();
     void deactivate__completed_tasks();
     void addMult(Integer& volume, const vector<key_t>& key, const int& tn); // multiplicity sum over thread tn
+    
+    void check_simpliciality_hyperplane(const FACETDATA& hyp) const;
+    void set_simplicial(FACETDATA& hyp);
+    
+
+    void compute_hsop();
+    void heights(list<vector<key_t>>& facet_keys,list<pair<boost::dynamic_bitset<>,size_t>> faces, size_t index,vector<size_t>& ideal_heights, size_t max_dim);
     
     void start_message();
     void end_message();
@@ -410,7 +440,7 @@ public:
  *                      Constructors
  *---------------------------------------------------------------------------
  */
-    Full_Cone(Matrix<Integer> M, bool do_make_prime=true);            //main constructor
+    Full_Cone(const Matrix<Integer>& M, bool do_make_prime=true);            //main constructor
     Full_Cone(Cone_Dual_Mode<Integer> &C);            // removes data from the argument!
     Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key); // for pyramids
 

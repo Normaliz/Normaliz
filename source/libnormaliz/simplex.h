@@ -91,7 +91,7 @@ class SimplexEvaluator {
     Matrix<Integer> RS; // right hand side to hold order vector
     // Matrix<Integer> RSmult; // for multiple right hand sides
     
-    Matrix<Integer>* StanleyMat;
+    Matrix<long>* StanleyMat;
     size_t StanIndex;
     size_t nr_level0_gens; // counts the number of level 0 vectors among the generators
     
@@ -169,7 +169,8 @@ public:
     // evaluation in parallel threads
     void Simplex_parallel_evaluation();  
 
-        vector<key_t> get_key();
+    vector<key_t> get_key();
+    Integer get_volume();
 
     
     void print_all();

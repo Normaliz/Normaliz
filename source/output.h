@@ -123,6 +123,7 @@ public:
 //---------------------------------------------------------------------------
 
     void write_files() const;
+    void writeWeightedEhrhartSeries(ofstream& out) const;
 
 };
 //class end *****************************************************************

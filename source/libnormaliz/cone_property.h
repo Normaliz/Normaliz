@@ -35,50 +35,97 @@ namespace libnormaliz {
  */
 namespace ConeProperty {
     enum Enum {
-        // goals that can be computed
+        //
+        // goals that can be computed (or are defined by input data)
+        //
+        // matrix valued
         Generators,
         ExtremeRays,
         VerticesOfPolyhedron,
         SupportHyperplanes,
-        TriangulationSize,
-        TriangulationDetSum,
-        Triangulation,
-        Multiplicity,
-        RecessionRank,
-        AffineDim,
-        ModuleRank,
         HilbertBasis,
         ModuleGenerators,
         Deg1Elements,
-        HilbertSeries,
+        ModuleGeneratorsOverOriginalMonoid,
+        Sublattice, 
+        ExcludedFaces,
+        OriginalMonoidGenerators,
+        MaximalSubspace,
+        Equations, // new
+        Congruences, // new
+        //vector valued
         Grading,
+        Dehomogenization,
+        WitnessNotIntegrallyClosed,
+        // Cardinalities
+        TriangulationSize,
+        // Integer valued,        
+        TriangulationDetSum,
+        ReesPrimaryMultiplicity,
+        GradingDenom, // new
+        UnitGroupIndex, // new
+        InternalIndex, // new
+        ExternalIndex, // new
+        // rational valued
+        Multiplicity,
+        Integral,
+        VirtualMultiplicity,
+        // dimensions
+        RecessionRank,
+        AffineDim,
+        ModuleRank,
+        Rank, // new
+        EmbeddingDim, // new      
+        // boolean valued 
         IsPointed,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
-        WitnessNotIntegrallyClosed,
-        OriginalMonoidGenerators,
         IsReesPrimary,
-        ReesPrimaryMultiplicity,
+        IsInhomogeneous, // new        
+        // complex structures
+        Triangulation,
         StanleyDec,
-        ExcludedFaces,
-        Dehomogenization,
-        InclusionExclusionData,
-        Sublattice,
-        ClassGroup,
-        ModuleGeneratorsOverOriginalMonoid,
-        // compute options
-        Approximate,
-        BottomDecomposition,
-        DefaultMode,
-        DualMode,
-        KeepOrder,
+        InclusionExclusionData,        
+        ClassGroup,        
         IntegerHull,
-        MaximalSubspace,
         ConeDecomposition,
+        HilbertSeries,
+        HilbertQuasiPolynomial,
+        WeightedEhrhartSeries,
+        WeightedEhrhartQuasiPolynomial,        
+        //
+        // integer type for computations
+        //
+        BigInt,
+        //
+        // algorithmic variants
+        //
+        DefaultMode,
+        Approximate,
+        NoApproximation,
+        BottomDecomposition,
+        NoBottomDec,       
+        DualMode,
+        PrimalMode, //new
+        Symmetrize, // new
+        NoSymmetrization, // new
+        NoSubdivision, // new
+        NoNestedTri, // new -- synonym for NoSubdivision
+        KeepOrder,
+
         FullAutomorphismGroup,
         AmbientAutomorphismGroup,
         AutomorphismGroup,
+
+        HSOP,
+        //
+        // checking properties of already computed data
+        // (cannot be used as a computation goal)
+        //
+        IsTriangulationNested,  //new
+        IsTriangulationPartial,  //new
+        
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum
 }

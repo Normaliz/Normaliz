@@ -3,9 +3,10 @@
 2 support hyperplanes of polyhedron (homogenized)
 
 embedding dimension = 3
-affine dimension of the polyhedron = 1
-rank of recession monoid = 0
+affine dimension of the polyhedron = 2 (maximal)
+rank of recession monoid = 1
 internal index = 1
+dimension of maximal subspace = 1
 
 
 ***********************************************************************
@@ -16,14 +17,10 @@ internal index = 1
 
 0 extreme rays of recession cone:
 
+1 basis elements of maximal subspace:
+ 0 1 0
+
 2 support hyperplanes of polyhedron (homogenized):
  -1 0 1
   1 0 0
-
-1 equations:
- 0 1 0
-
-2 basis elements of lattice:
- 1 0 0
- 0 0 1
 

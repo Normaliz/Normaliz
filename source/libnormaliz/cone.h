@@ -54,6 +54,19 @@ template<typename Integer> struct SHORTSIMPLEX {
                                       // opposite of generator i must be excluded
 };
 
+template<typename Integer>
+bool compareKeys(const SHORTSIMPLEX<Integer>& A, const SHORTSIMPLEX<Integer>& B){
+
+    return(A.key < B.key);
+}
+
+struct STANLEYDATA_int { // for internal use
+    vector<key_t> key;
+    Matrix<long> offsets;
+    vector<long> degrees; // degrees and classNr are used in nmz_integral.cpp
+    size_t classNr;  // number of class of this simplicial cone
+};
+
 template<typename Integer> struct STANLEYDATA {
     vector<key_t> key;
     Matrix<Integer> offsets;
@@ -86,6 +99,52 @@ public:
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
     
+//-----------------------------------------------------------------------------
+// the same for mpq_class
+    
+    Cone(InputType type, const vector< vector<mpq_class> >& input_data);
+
+    Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
+         InputType type2, const vector< vector<mpq_class> >& input_data2);
+
+    Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
+         InputType type2, const vector< vector<mpq_class> >& input_data2,
+         InputType type3, const vector< vector<mpq_class> >& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , vector< vector<mpq_class> > >& multi_input_data);
+
+//-----------------------------------------------------------------------------
+// Now with Matrix
+    
+    Cone(InputType type, const Matrix<Integer>& input_data);
+
+    Cone(InputType type1, const Matrix<Integer>& input_data1,
+         InputType type2, const Matrix<Integer>& input_data2);
+
+    Cone(InputType type1, const Matrix<Integer>& input_data1,
+         InputType type2, const Matrix<Integer>& input_data2,
+         InputType type3, const Matrix<Integer>& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , Matrix<Integer> >& multi_input_data);
+    
+//-----------------------------------------------------------------------------
+// Now with Matrix and mpq_class
+    
+    Cone(InputType type, const Matrix<mpq_class>& input_data);
+
+    Cone(InputType type1, const Matrix<mpq_class>& input_data1,
+         InputType type2, const Matrix<mpq_class>& input_data2);
+
+    Cone(InputType type1, const Matrix<mpq_class>& input_data1,
+         InputType type2, const Matrix<mpq_class>& input_data2,
+         InputType type3, const Matrix<mpq_class>& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , Matrix<mpq_class> >& multi_input_data);
+    
+    
 //---------------------------------------------------------------------------
 //                                Destructor
 //---------------------------------------------------------------------------
@@ -110,8 +169,9 @@ public:
 
     // return what was NOT computed
     // ConeProperties compute(ComputationMode mode = Mode::hilbertBasisSeries); //default: everything
-    ConeProperties compute(ConeProperties ToCompute);
+    ConeProperties compute_inner(ConeProperties ToCompute);
     // special case for up to 3 CPs
+    ConeProperties compute(ConeProperties ToCompute);
     ConeProperties compute(ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum);
     ConeProperties compute(ConeProperty::Enum, ConeProperty::Enum, ConeProperty::Enum);
@@ -123,6 +183,8 @@ public:
     bool isComputed(ConeProperty::Enum prop) const;
     //returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
+    
+    void resetComputed(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
 //   get the results, these methods will start a computation if necessary
@@ -133,6 +195,7 @@ public:
     size_t getEmbeddingDim() const { return dim; };   // is always known
     size_t getRank();                           // depends on ExtremeRays
     Integer getIndex(); // depends on OriginalMonoidGenerators
+    Integer getInternalIndex(); // = getIndex()
     Integer getUnitGroupIndex(); // ditto
     // only for inhomogeneous case:
     size_t getRecessionRank();
@@ -140,6 +203,7 @@ public:
     size_t getModuleRank();
     
     Cone<Integer>& getIntegerHullCone() const;
+    Cone<Integer>& getSymmetrizedCone() const;
 
     const Matrix<Integer>& getGeneratorsMatrix();
     const vector< vector<Integer> >& getGenerators();
@@ -198,6 +262,13 @@ public:
     vector<Integer> getClassGroup();
 
     mpq_class getMultiplicity();
+    mpq_class getVirtualMultiplicity();
+    mpq_class getIntegral();
+    const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
+    
+    string getPolynomial() const;
+    
+    bool inequalities_present;
 
     bool isPointed();
     bool isInhomogeneous();
@@ -221,6 +292,19 @@ public:
     const vector< vector<bool> >& getOpenFacets();
     const vector< pair<vector<key_t>, long> >& getInclusionExclusionData();
     const list< STANLEYDATA<Integer> >& getStanleyDec();
+    list< STANLEYDATA_int >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
+                             // in order to save memeory for weighted Ehrhart
+    
+    void set_project(string name);
+    void set_nmz_call(const string& path);
+    void set_output_dir(string name);
+    
+    void setPolynomial(string poly);
+    
+    bool get_verbose ();
+    
+    IntegrationData& getIntData();
+    
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -229,7 +313,22 @@ public:
     Automorphism_Group<Integer> Automs;
     
 private:
+    
+    bool already_in_compute; // protection against call of compute within compute
+                             // such calls must go via recursive_compute.
+    
+    string project;
+    string output_dir;
+    string nmz_call;
     size_t dim;
+    
+    // the following three matrices store the constraints of the input
+    Matrix<Integer> Inequalities;
+    Matrix<Integer> Equations;
+    Matrix<Integer> Congruences;
+    // we must register some information about thew input
+    bool lattice_ideal_input;
+    size_t nr_latt_gen, nr_cone_gen; // they count matrices in the input 
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     Sublattice_Representation<Integer> BasisChangePointed; // to the pointed cone
@@ -252,14 +351,18 @@ private:
     vector< pair<vector<key_t>, Integer> > Triangulation;
     vector<vector<bool> > OpenFacets;
     vector< pair<vector<key_t>, long> > InExData;
-    list< STANLEYDATA<Integer> > StanleyDec;
+    list< STANLEYDATA_int > StanleyDec;
+    list< STANLEYDATA<Integer> > StanleyDec_export;
     mpq_class multiplicity;
+    mpq_class Integral;
+    mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     HilbertSeries HSeries;
+    IntegrationData IntData;
     vector<Integer> Grading;
     vector<Integer> Dehomogenization;
     Integer GradingDenom;
@@ -280,6 +383,14 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
+    
+    bool is_approximation;
+    Cone* ApproximatedCone;
+    
+    // some properties of the current computation taken from ToCompute
+    bool explicit_HilbertSeries; // true = Hilbert series set explicitly and not only via default mode
+    bool naked_dual; // true = dual mode set, but neither Hilbert basis nor deg 1 points
+    bool default_mode; // true default mode set
 
     Matrix<Integer> WeightsGrad;
     vector<bool> GradAbs;
@@ -297,13 +408,17 @@ private:
     long autom_codim_mult;
     bool autom_codim_mult_set;
 
+    Cone<Integer>* SymmCone;
+
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 
     // main input processing
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data);
+    void process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data);
+    
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
-    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data,
-            Matrix<Integer>& equations, Matrix<Integer>& congruence, Matrix<Integer>& Inequalities);
+    void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
                      Matrix<Integer>& LatticeGenerators);
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
@@ -317,6 +432,11 @@ private:
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
+    
+    ConeProperties recursive_compute(ConeProperties ToCompute);
+    
+    void try_symmetrization(ConeProperties& ToCompute);
+    void try_approximation (ConeProperties& ToCompute);
 
     Matrix<Integer> prepare_input_type_2(const vector< vector<Integer> >& Input);
     Matrix<Integer> prepare_input_type_3(const vector< vector<Integer> >& Input);
@@ -326,7 +446,7 @@ private:
     void initialize();
 
     template<typename IntegerFC>
-    void compute_inner(ConeProperties& ToCompute);
+    void compute_full_cone(ConeProperties& ToCompute);
 
     /* compute the generators using the support hyperplanes */
     void compute_generators();
@@ -337,10 +457,17 @@ private:
     void compute_dual(ConeProperties& ToCompute);
     template<typename IntegerFC>
     void compute_dual_inner(ConeProperties& ToCompute);
+    
+    void set_implicit_dual_mode(ConeProperties& ToCompute);
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
     template<typename IntegerFC>
     void extract_data(Full_Cone<IntegerFC>& FC);
+    template<typename IntegerFC>
+    void extract_supphyps(Full_Cone<IntegerFC>& FC);
+    
+    void extract_supphyps(Full_Cone<Integer>& FC);
+
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
@@ -360,7 +487,19 @@ private:
     Integer compute_primary_multiplicity_inner();
     
     void compute_integer_hull();
-
+    void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
+    void complete_HilbertSeries_comp(ConeProperties& ToCompute);
+    
+    void compute_integral (ConeProperties& ToCompute);
+    void compute_virt_mult (ConeProperties& ToCompute);
+    void compute_weighted_Ehrhart(ConeProperties& ToCompute);
+    
+    void make_StanleyDec_export();
+    
+    void NotComputable (string message); // throws NotComputableException if default_mode = false
+    
+    template<typename IntegerFC>
+    void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
 };
 
 // helpers

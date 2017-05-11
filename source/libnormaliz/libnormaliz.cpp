@@ -27,6 +27,7 @@
 namespace libnormaliz {
 
 bool verbose = false;
+bool nmz_interrupted = false;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
@@ -36,6 +37,9 @@ size_t GMP_hyp=0;
 size_t GMP_scal_prod=0;
 size_t TotDet=0;
 
+void interrupt_signal_handler( int signal ){
+    nmz_interrupted = true;
+}
 
 namespace {
     std::ostream* verbose_ostream_ptr = &std::cout;

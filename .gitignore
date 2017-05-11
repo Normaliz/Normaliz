@@ -7,6 +7,7 @@ normbig*
 normaliz
 normaliz-*
 nmzIntegrate
+Qnormaliz
 
 # ignore executable tools
 collectcols
@@ -33,10 +34,10 @@ BUILD*
 *.inv
 *.lat
 *.mod
+*.aut
 
 
 # ignore latex output files
-*.pdf
 *.ps
 *.dvi
 *.aux
@@ -45,6 +46,8 @@ BUILD*
 *.log
 *.backup
 *.gz
+*.blg
+*.bbl
 
 # ignore WinEdt etc. backup files
 *.bak
@@ -54,3 +57,47 @@ BUILD*
 
 # ignore Word files
 homepage/*-Dateien/*
+/Makefile
+/Makefile.in
+/aclocal.m4
+autom4te.cache
+/compile
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/config.guess
+/config.status
+/config.sub
+/configure
+/missing
+.deps
+.libs
+.dirstamp
+*.la
+*.lo
+/source/Makefile
+/source/Makefile.in
+/Qsource/Makefile
+/Qexample/Makefile
+/Qtest/Makefile
+/m4/libtool.m4
+/m4/ltoptions.m4
+/m4/ltsugar.m4
+/m4/ltversion.m4
+/m4/lt~obsolete.m4
+/test/Makefile.in
+/example/Makefile.in
+/source/libnormaliz/version.h
+/example/Makefile
+/test/Makefile
+/source/maxsimplex/maxsimplex
+test/run_tests
+CoCoA
+/Qexample/Makefile.in
+/Qsource/Makefile.in
+/Qtest/Makefile.in
+/source/genEhrhart/Makefile
+/source/libnormaliz/Makefile
+/source/libnormaliz/libnormaliz.so*
+/source/genEhrhart/*

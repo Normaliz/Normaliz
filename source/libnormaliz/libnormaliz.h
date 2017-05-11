@@ -27,7 +27,7 @@
 #include <iostream>
 #include <string>
 
-#include <libnormaliz/version.h>
+#include "libnormaliz/version.h"
 
 namespace libnormaliz {
 
@@ -87,6 +87,18 @@ extern bool verbose;
 extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 extern size_t TotDet;
 
+/*
+ * If this variable is set to true, the current computation is interrupted and
+ * an InterruptException is raised.
+ */
+extern bool nmz_interrupted;
+
+#define INTERRUPT_COMPUTATION_BY_EXCEPTION \
+if(nmz_interrupted){ \
+    nmz_interrupted = false; \
+    throw InterruptException( "external interrupt" ); \
+}
+
 /* if test_arithmetic_overflow is true, many operations are also done
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
 // extern bool test_arithmetic_overflow;
@@ -100,6 +112,8 @@ void setErrorOutput(std::ostream&);
 
 std::ostream& verboseOutput();
 std::ostream& errorOutput();
+
+void interrupt_signal_handler( int signal );
 
 } /* end namespace libnormaliz */
 

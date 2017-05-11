@@ -180,6 +180,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void pretty_print(std::ostream& out, bool with_row_nr=false) const;  // writes matrix in a nice format to the stream                   // read a row
     size_t nr_of_rows() const;                       // returns nr
     size_t nr_of_columns() const;                   // returns nc
+    void set_nr_of_columns(size_t c);
     /* generates a pseudo random matrix for tests, entries form 0 to mod-1 */
     void random(int mod=3);
 
@@ -229,7 +230,10 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append(const vector<Integer>& v); // append the row v to this
     void append_column(const vector<Integer>& v); // append the column v to this
     void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
+    void remove_row(const size_t index);
     void remove_duplicate_and_zero_rows();
+    void remove_duplicate(const Matrix& M);
+
 
     inline const Integer& get_elem(size_t row, size_t col) const {
         return elem[row][col];
@@ -456,10 +460,10 @@ public:
     vector<Integer>* v;
 };
 
-template<typename Integer>
-vector<vector<Integer> > to_matrix(const vector<Integer>& v){
+template<typename T>
+vector<vector<T> > to_matrix(const vector<T>& v){
     
-    vector<vector<Integer> > mat(1);
+    vector<vector<T> > mat(1);
     mat[0]=v;
     return mat;    
 }

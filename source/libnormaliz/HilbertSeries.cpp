@@ -36,6 +36,7 @@
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/integer.h"
 #include "libnormaliz/convert.h"
+#include "libnormaliz/my_omp.h"
 
 #include "libnormaliz/matrix.h"
 
@@ -44,6 +45,7 @@
 namespace libnormaliz {
 using std::cout; using std::endl; using std::flush;
 using std::istringstream; using std::ostringstream;
+using std::pair;
 
 long lcm_of_keys(const map<long, denom_t>& m){
     long l = 1;
@@ -53,6 +55,36 @@ long lcm_of_keys(const map<long, denom_t>& m){
             l = lcm(l,it->first);
     }
     return l;
+}
+
+// compute the hsop numerator by multiplying the HS with a denominator
+// of the form product of (1-t^i)
+void HilbertSeries::compute_hsop_num() const{
+        // get the denominator as a polynomial by mutliplying the (1-t^i) terms
+        vector<mpz_class> hsop_denom_poly=vector<mpz_class>(1,1);
+        map<long,denom_t>::iterator it;
+        long factor;
+        for (it=hsop_denom.begin();it!=hsop_denom.end();++it){
+            factor = it->first;
+            denom_t& denom_i = it->second;
+            poly_mult_to(hsop_denom_poly,factor,denom_i);
+        }
+        //cout << "new denominator as polynomial: " << hsop_denom_poly << endl;
+        vector<mpz_class>  quot,remainder,cyclo_poly;
+        //first divide the new denom by the cyclo polynomials
+        for (auto it=cyclo_denom.begin();it!=cyclo_denom.end();++it){
+            for(long i=0;i<it->second;i++){
+                cyclo_poly = cyclotomicPoly<mpz_class>(it->first);
+                //cout << "the cyclotomic polynomial is " << cyclo_poly << endl;
+                // TODO: easier polynomial division possible?
+                poly_div(quot,remainder,hsop_denom_poly,cyclo_poly);
+                //cout << "the quotient is " << quot << endl;
+                hsop_denom_poly=quot;
+                assert(remainder.size()==0);
+            }
+        }
+        // multiply with the old numerator
+        hsop_num = poly_mult(hsop_denom_poly,cyclo_num);
 }
 
 //---------------------------------------------------------------------------
@@ -196,6 +228,7 @@ void HilbertSeries::simplify() const {
     // where denom | cdenom are exponent vectors of (1-t^i) | i-th cyclotminc poly.
     map<long, denom_t> cdenom;
 
+    map<long, denom_t> save_denom=denom;
     map<long, denom_t>::reverse_iterator rit;
     long i;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
@@ -231,6 +264,9 @@ void HilbertSeries::simplify() const {
     map<long, denom_t>::iterator it = cdenom.begin(); 
     while (it != cdenom.end()) {
         // check if we can divide the numerator by i-th cyclotomic polynomial
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
         i = it->first;
         denom_t& cyclo_i = it->second;
         poly = cyclotomicPoly<mpz_class>(i);
@@ -263,38 +299,47 @@ void HilbertSeries::simplify() const {
     else
         dim = 0;
     period = lcm_of_keys(cdenom);
-    i = period;
-    if (period > 10000) {
+    if (period > 10*PERIOD_BOUND) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
         }
-        i = cdenom.rbegin()->first;
     }
-    while (!cdenom.empty()) {
-        //create a (1-t^i) factor out of all cyclotomic poly.
-        denom[i]++;
-        v_scalar_multiplication(num,mpz_class(-1));
-        for (long d = 1; d <= i; ++d) {
-            if (i % d == 0) {
-                it = cdenom.find(d);
-                if (it != cdenom.end() && it->second>0) {
+    if(period <= 10*PERIOD_BOUND){
+        while(true){
+            //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            long k=1;                
+            bool empty=true;
+            vector<mpz_class> existing_factor(1,1); //collects the existing cyclotomic gactors in the denom
+            for(it=cdenom.begin();it!=cdenom.end();++it){          // with multiplicvity 1
+                if(it-> second>0){
+                    empty=false;
+                    k=libnormaliz::lcm(k,it->first);
+                    existing_factor=poly_mult(existing_factor,cyclotomicPoly<mpz_class>(it->first));
                     it->second--;
-                    if (it->second == 0)
-                        cdenom.erase(it);
-                } else {
-                    num = poly_mult(num, cyclotomicPoly<mpz_class>(d));
-                }
+                }     
             }
-        }
-        i = lcm_of_keys(cdenom);
-        if (i > 10000) {
-            i = cdenom.rbegin()->first;
+            if(empty)
+                break;
+            denom[k]++;
+            vector<mpz_class> new_factor=coeff_vector<mpz_class>(k);
+            vector<mpz_class> quotient, dummy;
+            poly_div(quotient,dummy,new_factor,existing_factor);
+            assert(dummy.empty()); //assert remainder r is 0
+            num=poly_mult(num,quotient);
         }
     }
+    else
+        denom=save_denom;
 
 /*    if (verbose) {
         verboseOutput() << "Simplified Hilbert series: " << endl << *this;
     }*/
+    if (!hsop_denom.empty()){
+        compute_hsop_num();
+    }
     is_simplified = true;
     computeDegreeAsRationalFunction();
     quasi_poly.clear();
@@ -339,7 +384,7 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
     if (isHilbertQuasiPolynomialComputed()) return;
     simplify();
-    if (period > 200000) {
+    if (period > PERIOD_BOUND) {
         if (verbose) {
             errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
         }
@@ -359,17 +404,22 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     }
     map<long, denom_t>::reverse_iterator rit;
     long d;
-    vector<mpz_class> factor, r;
+    vector<mpz_class> r;
     for (rit = denom.rbegin(); rit != denom.rend(); ++rit) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
         d = rit->first;
         //nothing to do if it already has the correct t-power
         if (d != period) {
             //norm_num *= (1-t^p / 1-t^d)^denom[d]
-            poly_div(factor, r, coeff_vector<mpz_class>(period), coeff_vector<mpz_class>(d));
-            assert(r.empty()); //assert remainder r is 0
-            //TODO more efficient method *=
+            //first by multiply: norm_num *= (1-t^p)^denom[d]
+            poly_mult_to(norm_num, period, rit->second);
+
+            //then divide: norm_num /= (1-t^d)^denom[d]
             for (i=0; i < rit->second; ++i) {
-                norm_num = poly_mult(norm_num, factor);
+                poly_div(norm_num, r, norm_num, coeff_vector<mpz_class>(d));
+                assert(r.empty()); //assert remainder r is 0
             }
         }
     }
@@ -383,7 +433,11 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         quasi_poly[i%period].push_back(norm_num[i]);
     }
 
+    #pragma omp parallel for
     for (j=0; j<period; ++j) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         quasi_poly[j] = compute_polynomial(quasi_poly[j], dim);
     }
     
@@ -442,6 +496,17 @@ const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const {
     return cyclo_denom;
 }
 
+const map<long, denom_t>& HilbertSeries::getHSOPDenom() const {
+    simplify();
+    return hsop_denom;
+}
+
+const vector<mpz_class>& HilbertSeries::getHSOPNum() const {
+    simplify();
+    assert(v_is_nonnegative(hsop_num));
+    return hsop_num;
+}
+
 // shift
 void HilbertSeries::setShift(long s) {
     if (shift != s) {
@@ -451,6 +516,14 @@ void HilbertSeries::setShift(long s) {
         quasi_denom = 1;
         shift = s;
     }
+}
+
+void HilbertSeries::setHSOPDenom(vector<denom_t> new_denom){
+    hsop_denom=count_in_map<long,denom_t>(new_denom);
+}
+
+void HilbertSeries::setHSOPDenom(map<long,denom_t> new_denom){
+    hsop_denom=new_denom;
 }
 
 long HilbertSeries::getShift() const {
@@ -532,6 +605,8 @@ ostream& operator<< (ostream& out, const HilbertSeries& HS) {
     return out;
 }
 
+
+
 //---------------------------------------------------------------------------
 // polynomial operations, for polynomials repr. as vector of coefficients
 //---------------------------------------------------------------------------
@@ -567,6 +642,21 @@ void poly_add_to (vector<Integer>& a, const vector<Integer>& b) {
     }
     remove_zeros(a);
 }
+
+// a += b*t^m
+template<typename Integer>
+void poly_add_to_tm (vector<Integer>& a, const vector<Integer>& b,long m) {
+    size_t b_size=b.size();
+    size_t b_m = b_size+m;
+    if (a.size() < b_m) {
+        a.resize(b_m);
+    }
+    for (size_t i=0; i<b_size; ++i) {
+        a[i+m]+=b[i];
+    }
+    remove_zeros(a);
+}
+
 // a -= b  (also possible to define the -= op for vector)
 template<typename Integer>
 void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
@@ -580,11 +670,119 @@ void poly_sub_to (vector<Integer>& a, const vector<Integer>& b) {
     remove_zeros(a);
 }
 
+// a *= t^m
+template<typename Integer>
+void poly_mult_by_tm(vector<Integer>& a, long m){
+        long a_ori_size=a.size();
+        a.resize(a_ori_size+m);
+        for(long i=a_ori_size-1; i>=0;--i)
+            a[i+m]=a[i];
+        for(long i=0;i<m;++i)
+            a[i]=0; 
+}
+
 // a * b
+
+/* template<typename Integer>
+vector<Integer> old_poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+
+    
+    vector<Integer> p( a_size + b_size - 1 );
+    size_t i,j;
+    for (i=0; i<a_size; ++i) {
+        if (a[i] == 0) continue;
+        for (j=0; j<b_size; ++j) {
+            if (b[j] == 0) continue;
+            p[i+j] += a[i]*b[j];
+        }
+    }
+    return p;
+}*/
+
+template<typename Integer>
+vector<Integer> karatsubamult(const vector<Integer>& a, const vector<Integer>& b) {
+
+    size_t a_size = a.size();
+    size_t b_size = b.size();
+    if(a_size*b_size<=1000 || a_size <=10 || b_size<=10){
+        return poly_mult(a,b);
+    }
+
+    size_t m=(a_size+1)/2;
+    if(2*m<(b_size+1)){
+        m=(b_size+1)/2;
+    }
+    
+    vector<Integer> f0(m),f1(m),g0(m),g1(m);
+    for(size_t i=0;i<m && i<a_size;++i)
+        f0[i]=a[i];
+    for(size_t i=m;i<a_size;++i)
+        f1[i-m]=a[i];
+    for(size_t i=0;i<m && i<b_size;++i)
+        g0[i]=b[i];
+    for(size_t i=m;i< b_size;++i)
+        g1[i-m]=b[i];
+    remove_zeros(f0);
+    remove_zeros(f1);
+    remove_zeros(g0);
+    remove_zeros(g1);
+    
+    vector<Integer> sf=f0;
+    vector<Integer> sg=g0;
+    
+    vector<Integer> mix;
+    vector<Integer> h00;
+    vector<Integer> h11;
+
+    #pragma omp parallel // num_threads(3)
+    {
+    
+    #pragma omp single nowait
+    {
+    h00=karatsubamult(f0,g0); // h00 = f0 * g0
+    }
+    
+   #pragma omp single nowait
+    {  
+    h11=karatsubamult(f1,g1); // h11 = f1 * g1
+    }
+
+    #pragma omp single nowait
+    {
+    poly_add_to(sf,f1); // f0+f1
+    poly_add_to(sg,g1); // g0 + g1
+    mix=karatsubamult(sf,sg); // (f0 + f1)*(g0 + g1)
+    }
+    
+    } // parallel
+    
+    f0.clear();
+    g0.clear();
+    f1.clear();
+    g1.clear();
+    
+    poly_sub_to(mix,h00);  // mix = mix - f0*g0
+    poly_sub_to(mix,h11);  // mix = mix - f1*g1
+    
+    poly_add_to_tm(h00,mix,m);
+    poly_add_to_tm(h00,h11,2*m);
+
+    return h00;
+}
+
 template<typename Integer>
 vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t a_size = a.size();
     size_t b_size = b.size();
+    
+    if(a_size*b_size>1000 && a_size >10 && b_size>10){
+        omp_set_nested(1);
+        return karatsubamult(a,b);
+        omp_set_nested(0);
+    }
+    
     vector<Integer> p( a_size + b_size - 1 );
     size_t i,j;
     for (i=0; i<a_size; ++i) {
@@ -647,6 +845,7 @@ void poly_div(vector<Integer>& q, vector<Integer>& r, const vector<Integer>& a, 
 
 template<typename Integer>
 vector<Integer> cyclotomicPoly(long n) {
+    
     // the static variable is initialized only once and then stored
     static map<long, vector<Integer> > CyclotomicPoly = map<long, vector<Integer> >();
     if (CyclotomicPoly.count(n) == 0) { //it was not computed so far
@@ -755,6 +954,98 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
         }
         //the remainders are the coefficients of the transformed polynomial
     }
+}
+
+//---------------------------------------------------------------------------
+IntegrationData::IntegrationData(){
+}
+
+string IntegrationData::getPolynomial() const{
+    return polynomial;
+}
+
+long IntegrationData::getDegreeOfPolynomial() const{
+    return degree_of_polynomial; 
+}
+
+void IntegrationData::setDegreeOfPolynomial(const long d){
+    degree_of_polynomial=d; 
+}
+
+IntegrationData::IntegrationData(const string& poly){
+    polynomial=poly;
+    polynomial_is_homogeneous=false; // to be on the safe side
+}
+
+bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const{
+    return weighted_Ehrhart_series.first.isHilbertQuasiPolynomialComputed();
+}
+
+vector< vector<mpz_class> > IntegrationData::getWeightedEhrhartQuasiPolynomial() const{
+    return weighted_Ehrhart_series.first.getHilbertQuasiPolynomial();
+}
+
+void IntegrationData::computeWeightedEhrhartQuasiPolynomial(){
+    weighted_Ehrhart_series.first.computeHilbertQuasiPolynomial();
+}
+
+
+mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const{
+    return weighted_Ehrhart_series.first.getHilbertQuasiPolynomialDenom()*weighted_Ehrhart_series.second;         
+}
+
+const vector<mpz_class>& IntegrationData::getNum_ZZ() const{
+    return weighted_Ehrhart_series.first.getNum();
+}
+
+const map<long, denom_t>& IntegrationData::getDenom() const{
+    return weighted_Ehrhart_series.first.getDenom();
+}
+
+const vector<mpz_class>& IntegrationData::getCyclotomicNum_ZZ() const{
+    return weighted_Ehrhart_series.first.getCyclotomicNum();   
+}
+
+const map<long, denom_t>& IntegrationData::getCyclotomicDenom() const{
+    return weighted_Ehrhart_series.first.getCyclotomicDenom();  
+}
+
+const pair<HilbertSeries, mpz_class>& IntegrationData::getWeightedEhrhartSeries() const{
+    return weighted_Ehrhart_series;
+}
+
+mpq_class IntegrationData::getIntegral() const{
+    return integral;
+}
+
+mpz_class IntegrationData::getNumeratorCommonDenom() const{
+    return weighted_Ehrhart_series.second;
+}
+
+mpq_class IntegrationData::getVirtualMultiplicity() const{
+        return virtual_multiplicity;
+}
+
+void IntegrationData::setIntegral(const mpq_class I){
+    integral=I;
+}
+
+void IntegrationData::setVirtualMultiplicity(const mpq_class I){
+        virtual_multiplicity=I;
+}
+
+void IntegrationData::setWeightedEhrhartSeries(const pair<HilbertSeries, mpz_class>& E){
+    weighted_Ehrhart_series=E;
+    weighted_Ehrhart_series.first.adjustShift();
+}
+
+void IntegrationData::setHomogeneity(const bool hom){
+    polynomial_is_homogeneous=hom;
+}
+
+
+bool IntegrationData::isPolynomialHomogeneous() const{
+    return polynomial_is_homogeneous;
 }
 
 } //end namespace libnormaliz

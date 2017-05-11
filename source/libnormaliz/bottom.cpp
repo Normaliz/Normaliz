@@ -79,7 +79,7 @@ double convert_to_double(long long a) {
 long long stellar_det_sum;
 
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,const vector<Integer>& grading_, long app_level, long recursion_depth) {
+void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,const vector<Integer>& grading_, long app_level, long recursion_depth, Integer VolumeBound) {
 	
 	Integer volume;
 	int dim = gens[0].size();
@@ -161,7 +161,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-
+    bool skip_remaining = false;
 	// list for the simplices that could not be decomposed
     vector< Matrix<Integer> > big_simplices;
     #pragma omp parallel reduction(+:stellar_det_sum)
@@ -177,24 +177,27 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
     SCIPcreate(& scip);
     SCIPincludeDefaultPlugins(scip);
 //    SCIPsetMessagehdlr(scip,NULL);  // deactivate scip output
+
+    SCIPsetIntParam(scip, "display/verblevel", 0); 
     
-	SCIPsetIntParam(scip, "display/verblevel", 0); 
-	
-	// modify timing for better parallelization
+    // modify timing for better parallelization
 //	SCIPsetBoolParam(scip, "timing/enabled", FALSE);
-	SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
-	SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
+    SCIPsetBoolParam(scip, "timing/statistictiming", FALSE);
+    SCIPsetBoolParam(scip, "timing/rareclockcheck", TRUE);
 
 
-	SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
-	SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
+    SCIPsetIntParam(scip, "heuristics/shiftandpropagate/freq", -1); 
+    SCIPsetIntParam(scip, "branching/pscost/priority", 1000000); 
 //	SCIPsetIntParam(scip, "nodeselection/uct/stdpriority", 1000000); 
 #endif // NMZ_SCIP
 
     vector< Matrix<Integer> > local_q_gens;
     list< vector<Integer> > local_new_points;
+    
 
     while (!q_gens.empty()) {
+        
+	if(skip_remaining) break;
 		if(verbose){
 			#pragma omp single
 			verboseOutput() << q_gens.size() << " simplices on level " << level++ << endl;
@@ -202,6 +205,9 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 
         #pragma omp for schedule(static)
         for (size_t i = 0; i < q_gens.size(); ++i) {
+	
+	if(skip_remaining) continue;
+            
 #ifndef NCATCH
             try {
 #endif
@@ -209,6 +215,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
+		skip_remaining = true;
+                #pragma omp flush(skip_remaining)
             }
 #endif
         }
@@ -237,6 +245,8 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
 #ifndef NCATCH
     } catch(const std::exception& ) {
         tmp_exception = std::current_exception();
+	skip_remaining = true;
+	#pragma omp flush(skip_remaining)
     }
 #endif
     } // end parallel
@@ -269,13 +279,13 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,con
             if(verbose){
 				verboseOutput() << "Re-approximating simplex " << it-big_simplices.begin()+1 << " / "<< big_simplices.size() << " (recursion depth " << (recursion_depth+1) << ") | Approximation level: " << ApproxCone.approx_level << endl;
 			}
- 			ApproxCone.compute_sub_div_elements(gens,new_points_again);
+ 			ApproxCone.compute_sub_div_elements(gens,new_points_again,VolumeBound);
 			if(verbose){
 				verboseOutput() << "Start bottom points again." << endl;
 			}
             //Matrix<Integer>(new_points_again).pretty_print(cout);
             
-		    bottom_points(new_points_again,gens,ApproxCone.Grading,ApproxCone.approx_level, recursion_depth+1);
+		    bottom_points(new_points_again,gens,ApproxCone.Grading,ApproxCone.approx_level, recursion_depth+1,VolumeBound);
 			//vector<Integer> new_point = best_point(hb, gens, Support_Hyperplanes, grading);
 			if (!new_points_again.empty()){
 				counter++;
@@ -314,6 +324,8 @@ void bottom_points_inner(const list<vector<Integer> >& bottom_candidates, SCIP* 
                  Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
                  vector< Matrix<Integer> >& local_q_gens, vector< Matrix<Integer> >& big_simplices,long app_level) {
 
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
     vector<Integer> grading = gens.find_linear_form();
     Integer volume;
     int dim = gens[0].size();
@@ -379,23 +391,42 @@ vector<Integer> best_point(const list<vector<Integer> >& bottom_candidates, cons
     size_t i;
     auto best = bottom_candidates.end();
     Integer best_value = v_scalar_product(grading,gens[dim-1]);
-
+    Integer sum=0;
+    vector<Integer> eval;
+    size_t in_hyp=0;
     for (auto it = bottom_candidates.begin(); it != bottom_candidates.end(); ++it) {
+        in_hyp=0;
         for (i=0; i<dim; ++i) {
             if (v_scalar_product(SuppHyp[i],*it) < 0) {
                 break;
             }
-
+            if (v_scalar_product(SuppHyp[i],*it) == 0){
+                in_hyp++;
+            }
         }
         if (i < dim) continue;
+        if (in_hyp==dim-1){
+            continue;
+        }
         Integer current_value = v_scalar_product(grading,*it);
         if (current_value<best_value){
             best_value = current_value;
             best = it;
         }
+        
+        if (current_value==best_value){
+            eval = SuppHyp.MxV(*it);
+            Integer tmp=0;
+            for (size_t j=0;j<eval.size();j++) tmp+=eval[j];
+            if (tmp>sum){
+                sum = tmp;
+                best=it;
+            }
+        }
     }
     if (best != bottom_candidates.end()) {
-       return *best;
+        //cout << "The best vector is " << *best << endl;
+        return *best;
     } else {
 		//cout << "Could not find a new point in the list! " << endl;
 		return vector<Integer>();
@@ -432,6 +463,9 @@ template<typename Integer>
 vector<Integer> opt_sol(SCIP* scip,
                         const Matrix<Integer>& gens, const Matrix<Integer>& SuppHyp,
                         const vector<Integer>& grading) {
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
     double upper_bound = convert_to_double(v_scalar_product(grading,gens[0]))-0.5;
     // TODO make the test more strict
     long dim = grading.size();
@@ -661,10 +695,10 @@ vector<Integer> opt_sol(SCIP* scip,
 #endif // NMZ_SCIP
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level,long recursion_depth);
+template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,const vector<long>& grading,long app_level,long recursion_depth,long VolumeBound);
 #endif // NMZ_MIC_OFFLOAD
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,const vector<long long>& grading,long app_level,long recursion_depth);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,const vector<mpz_class>& grading,long app_level,long recursion_depth);
+template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,const vector<long long>& grading,long app_level,long recursion_depth,long long VolumeBound);
+template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,const vector<mpz_class>& grading,long app_level,long recursion_depth,mpz_class VolumeBound);
 
 } // namespace
 

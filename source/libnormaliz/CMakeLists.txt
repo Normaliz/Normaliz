@@ -1,6 +1,6 @@
 # libnormaliz source files
-SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp cone_helper.cpp offload_handler.cpp bottom.cpp nmz_nauty.cpp)
-# libnormaliz header files to be installed
+SET(sources cone_property.cpp HilbertSeries.cpp libnormaliz-templated.cpp cone_helper.cpp offload_handler.cpp bottom.cpp nmz_integrate.cpp nmz_nauty.cpp)
+# libnormaliz header files
 SET(headers cone.h cone_property.h convert.h general.h HilbertSeries.h integer.h libnormaliz.h map_operations.h matrix.h my_omp.h normaliz_exception.h sublattice_representation.h vector_operations.h version.h)
 
 # add the necessary include directories
@@ -19,6 +19,16 @@ IF (NMZ_BUILD_BOTH OR NOT NMZ_BUILD_STATIC)
   SET_TARGET_PROPERTIES(normaliz-shared PROPERTIES OUTPUT_NAME normaliz VERSION ${VERSION} SOVERSION 0)
   # set the dependency on gmp
   TARGET_LINK_LIBRARIES (normaliz-shared ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
+  #set dependency on optional lib scip
+  IF (NMZ_SCIP AND SCIP_FOUND)
+    MESSAGE(STATUS "Adding scip libraries to link ${SCIP_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-shared ${SCIP_LIBRARY})
+  ENDIF (NMZ_SCIP AND SCIP_FOUND)
+  # set dependency on optional lib cocoa
+  IF (NMZ_COCOA AND COCOA_FOUND)
+    MESSAGE(STATUS "Adding CoCoA libraries to link ${COCOA_LIBRARY}")
+    TARGET_LINK_LIBRARIES (normaliz-shared ${COCOA_LIBRARY})
+  ENDIF (NMZ_COCOA AND COCOA_FOUND)
   INSTALL(TARGETS normaliz-shared
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib${LIB_SUFFIX}
