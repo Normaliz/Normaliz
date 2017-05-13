@@ -51,14 +51,14 @@ Another optional package is CoCoALib, but only to the extent to that NmzIntegrat
 
 ```mkdir ~/CoCoA/
 cd ~/CoCoA/
-wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99540.tgz
-tar xvf CoCoALib-0.99540.tgz
-cd CoCoALib-0.99540
+wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99543.tgz
+tar xvf CoCoALib-0.99543.tgz
+cd CoCoALib-0.99543
 ./configure --threadsafe-hack
 make library -j2
 ```
 
-If CoCoALib-0.99540 is no longer available, replace it by a newer version.
+If CoCoALib-0.99543 is no longer available, replace it by a newer version.
 
 ## Getting Started
 
@@ -81,7 +81,7 @@ This will compile Normaliz, but most likely without SCIP and NmzIntegrate since 
 
 or
 
-```./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99540```
+```./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543```
 
 or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and NmzIntegrate will be made, respectively, by the `make` command. Check the terminal output of `./configure` for success.
 
@@ -117,7 +117,7 @@ Then `make` and `make install` will complete the basic installation. For the inc
      
 replacing `$HOME/SCIP/scipoptsuite-3.2.0/` with your own path to SCIP if necessary. Similarly,
 
-```COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99540 cmake ../source/```
+```COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99543 cmake ../source/```
 
 Then `make` and `make install` will complete the work. After make the executables can be found in BUILD and its subdirectories `genEhrhart` and `maxsimplex`.
 
