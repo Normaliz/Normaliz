@@ -3213,7 +3213,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
         for(size_t j=1;j<multiplicities[i];++j)
             fact*=j;        
     }
-    polynomial+="/"+fact.get_str()+";";         
+    polynomial+="/"+fact.get_str()+";";
 
 #ifdef NMZ_COCOA
     

@@ -172,6 +172,11 @@ int main(int argc, char* argv[])
     string arg0(argv[0]);
     
     process_data(options, command_line,arg0);
+    
+    if(nmz_interrupted)
+        exit(10);
+
+    exit(0);
 }
 
 //---------------------------------------------------------------------------

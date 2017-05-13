@@ -39,14 +39,14 @@ class NormalizException: public std::exception {
 
 class ArithmeticException: public NormalizException {
     public:
-    ArithmeticException() : msg("Overflow detected. A fatal size excess, or, if you are using LongLong a computation overflow.\n In the latter case rerun without LonLong.") {}
+    ArithmeticException() : msg("Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are using LongLong, rerun without it.") {}
     ~ArithmeticException() throw() {}
 
     template<typename Integer>
     ArithmeticException(const Integer& convert_number){
         std::stringstream stream;
         stream << "Could not convert " << convert_number << ".\n";
-        stream << "Overflow detected. A fatal size excess, or, if you are using LongLong, a computation overflow.\n In the latter case rerun without LongLong.";
+        stream << "Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are using LongLong, rerun without it.";
         msg = stream.str();
     }
 
