@@ -2466,6 +2466,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
         } else {
             for (i=0; i<dim; i++)  // adjust key to topcone generators
                 pyr_simp->key[i]=Top_Key[pyr_simp->key[i]];
+            sort(pyr_simp->key.begin(),pyr_simp->key.end());
             ++pyr_simp;
         }
     }
