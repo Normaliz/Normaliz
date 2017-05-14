@@ -101,3 +101,4 @@ CoCoA
 /source/libnormaliz/Makefile
 /source/libnormaliz/libnormaliz.so*
 /source/genEhrhart/*
+/PyNormaliz/*

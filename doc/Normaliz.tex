@@ -213,9 +213,9 @@ The executables provided by us use the integer optimization program SCIP \cite{S
 
 Normaliz consists of two parts: the front end normaliz for input and output and the C++ library libnormaliz that does the computations.
 
-Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche.
+Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche and with contributions by Justin Shenk and Richard Sieg.
 
-Normaliz can be accessed from the following systems:
+Normaliz can also be accessed from the following systems:
 \begin{itemize}
 	\item \textsc{Singular} via the library \ttt{normaliz.lib},
 	\item \textsc{Macaulay 2} via the package \ttt{Normaliz.m2},
@@ -267,7 +267,9 @@ In 3.2.0;
 In 3.3.0:
 
 \begin{arab}
-	\item inclusion of NmzIntegrate in Normaliz as a part of libnormaliz.	
+	\item inclusion of NmzIntegrate in Normaliz as a part of libnormaliz,
+	\item fractions in input files,
+	\item controlled interruption of Normaliz.	
 \end{arab}
 
 
@@ -3223,6 +3225,8 @@ further discussion.
 \subsection{Interruption}\label{interrupt}
 
 During a computation \verb|normaliz| can be interrupted by pressing Ctrl-C on the keyboard. If this happens, Normaliz will stop the current computation and write the already computed data to the output file(s).
+
+At present, the Normaliz interrupt control has no effect during SCIP computations.
 
 If Crtl-C is pressed during the output phase, Normaliz is stopped immediately.
 
