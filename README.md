@@ -129,7 +129,7 @@ Note: Unfortunately, the paths for SCIP are version dependent. The configuration
 
 Currently Apple does not supply a compiler which supports OpenMP. We recommend the use of a current gcc.
 
-To install this, and other prerequisites, we recommend using a package manager such as [Fink](http://www.finkproject.org/), [Homebrew](http://brew.sh/), or [MacPorts](https:// www.macports.org/).
+To install this, and other prerequisites, we recommend using a package manager such as [Fink](http://www.finkproject.org/), [Homebrew](http://brew.sh/), or [MacPorts](https://www.macports.org/).
 
 You can then follow the instructions for Linux.
 
