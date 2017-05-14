@@ -284,7 +284,19 @@ try{
     in.close();
     k_start=(block_nr-1)*block_size;
     k_end=min(k_start+block_size,tri_size);
+    
+    for(size_t k=1;k<tri_size;++k)
+        if(!(C.getTriangulation()[k-1].first<C.getTriangulation()[k].first))
+            throw FatalException("Triangulation not ordered");
   }
+  
+  for(size_t k=0;k<tri_size;++k)
+      for(size_t j=1;j<C.getTriangulation()[k].first.size();++j)
+          if(!(C.getTriangulation()[k].first[j-1]<C.getTriangulation()[k].first[j]))
+              throw FatalException("Key in triangulation not ordered");
+  
+  if(verbose_INT)
+      verboseOutput() << "Triangulation is ordered" << endl;
   
   size_t eval_size;
   if(k_start>=k_end)
