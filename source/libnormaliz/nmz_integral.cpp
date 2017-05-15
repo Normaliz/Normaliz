@@ -261,10 +261,6 @@ try{
         verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
-
-
-  if(verbose_INT)
-    verboseOutput() << "Polynomial read" << endl;
   
   size_t tri_size=C.getTriangulation().size();  
   size_t k_start=0, k_end=tri_size;

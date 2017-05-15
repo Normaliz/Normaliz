@@ -2406,7 +2406,7 @@ bool Full_Cone<Integer>::check_evaluation_buffer_size(){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
+void Full_Cone<Integer>::transfer_triangulation_to_top(){
 
     size_t i;
 
@@ -2426,7 +2426,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
     if (omp_in_parallel())
         tn = omp_get_ancestor_thread_num(1);
   
-    typename list< SHORTSIMPLEX<Integer> >::iterator pyr_simp=TriangulationBuffer.begin();
+    auto pyr_simp=TriangulationBuffer.begin();
     while (pyr_simp!=TriangulationBuffer.end()) {
         if (pyr_simp->height == 0) { // it was marked to be skipped
             Top_Cone->FS[tn].splice(Top_Cone->FS[tn].end(), TriangulationBuffer, pyr_simp++);
@@ -2434,7 +2434,6 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){  // NEW EVA
         } else {
             for (i=0; i<dim; i++)  // adjust key to topcone generators
                 pyr_simp->key[i]=Top_Key[pyr_simp->key[i]];
-            sort(pyr_simp->key.begin(),pyr_simp->key.end());
             ++pyr_simp;
         }
     }
@@ -2584,6 +2583,12 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     }
     
     totalNrSimplices += TriangulationBufferSize;
+    
+    if(do_Stanley_dec || keep_triangulation){ // in these cases sorting is necessary
+        auto simp=TriangulationBuffer.begin();
+        for(;simp!=TriangulationBuffer.end();++simp)
+            sort(simp->key.begin(),simp->key.end());                
+    }    
 
     if(do_evaluation && !do_only_multiplicity) {
     
@@ -2619,8 +2624,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 
                 done[spos]=true;
 
-                if(keep_triangulation || do_Stanley_dec)
-                    sort(s->key.begin(),s->key.end());
+                /* if(keep_triangulation || do_Stanley_dec)  -- now done above
+                    sort(s->key.begin(),s->key.end()); */
                 if(!SimplexEval[tn].evaluate(*s)){
                     #pragma omp critical(LARGESIMPLEX)
                     LargeSimplices.push_back(SimplexEval[tn]);
