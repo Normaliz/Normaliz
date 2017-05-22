@@ -162,6 +162,19 @@ void readGens(Cone<Integer>& C, vector<vector<long> >& gens, const vector<long>&
     }
 }
 
+bool exists_file(string name_in){
+//n check whether file name_in exists
+
+    //b string name_in="nmzIntegrate";
+    const char* file_in=name_in.c_str();
+    
+    struct stat fileStat;
+    if(stat(file_in,&fileStat) < 0){
+         return(false); 
+    }
+    return(true);
+}
+
 void testPolynomial(const string& poly_as_string,long dim){
 
   GlobalManager CoCoAFoundations;
@@ -250,16 +263,52 @@ try{
         verboseOutput() << FFNonhom.myFactors[i] << "  mult " << FF.myMultiplicities[i] << endl;
     verboseOutput() << "Remaining factor " << FF.myRemainingFactor << endl << endl;
   }
-
-
-  if(verbose_INT)
-    verboseOutput() << "Polynomial read" << endl;
   
-  size_t tri_size=C.getTriangulation().size();
+  size_t tri_size=C.getTriangulation().size();  
+  size_t k_start=0, k_end=tri_size;
+
+  bool pseudo_par=false;
+  size_t block_nr;  
+  if(exists_file("block.nr")){
+      size_t block_size=2000000;
+    pseudo_par=true;
+    string name_in="block.nr";
+    const char* file_in=name_in.c_str();
+    ifstream in;
+    in.open(file_in,ifstream::in);
+    in >> block_nr;
+    if(in.fail())
+        throw FatalException("File block.nr corrupted");
+    in.close();
+    k_start=(block_nr-1)*block_size;
+    k_end=min(k_start+block_size,tri_size);
+    
+    for(size_t k=1;k<tri_size;++k)
+        if(!(C.getTriangulation()[k-1].first<C.getTriangulation()[k].first))
+            throw FatalException("Triangulation not ordered");
+  }
+  
+  for(size_t k=0;k<tri_size;++k)
+      for(size_t j=1;j<C.getTriangulation()[k].first.size();++j)
+          if(!(C.getTriangulation()[k].first[j-1]<C.getTriangulation()[k].first[j]))
+              throw FatalException("Key in triangulation not ordered");
+  
+  if(verbose_INT)
+      verboseOutput() << "Triangulation is ordered" << endl;
+  
+  size_t eval_size;
+  if(k_start>=k_end)
+      eval_size=0;
+  else
+      eval_size=k_end-k_start;
 
   if(verbose_INT){
+    if(pseudo_par){
+        verboseOutput() << "********************************************" << endl;
+        verboseOutput() << "Parallel block " << block_nr << endl;
+    }
     verboseOutput() << "********************************************" << endl;
-    verboseOutput() << tri_size <<" simplicial cones to be evaluated" << endl;
+    verboseOutput() << eval_size <<" simplicial cones to be evaluated" << endl;
     verboseOutput() << "********************************************" << endl;
   }
   
@@ -284,9 +333,9 @@ try{
   BigRat ISimpl; // integral over a simplex
   BigInt prodDeg; // product of the degrees of the generators
   RingElem h(zero(R));
-
+  
  #pragma omp for schedule(dynamic) 
-  for(size_t k=0;k<C.getTriangulation().size();++k){
+  for(size_t k=k_start;k<k_end;++k){
       
       if(skip_remaining)
           continue;
@@ -361,6 +410,32 @@ try{
     verboseOutput() << result << " is " << endl << VM << endl;
     verboseOutput() << "********************************************" << endl;
    }
+   
+    if(pseudo_par){
+        string name_out="block.nr";
+        const char* file=name_out.c_str();
+        ofstream out(file);
+        out << block_nr+1 << endl;
+        out.close();
+        
+        name_out="block_"+to_string(block_nr)+".mult";
+        file=name_out.c_str();       
+        ofstream out_1(file);
+        out_1 << block_nr << ", "<< VM << "," << endl;
+        out_1.close();
+        
+        string chmod="chmod a+w "+name_out;        
+        const char* exec=chmod.c_str();
+        system(exec);
+        
+        string mail_str="mail wbruns@uos.de < "+name_out;
+        exec=name_out.c_str();
+        system(exec);
+        
+        /*mail_str="mail bogdan_ichim@yahoo.com < "+name_out;
+        exec=name_out.c_str();
+        system(exec);*/
+  }
    
     verbose_INT=verbose_INTsave; 
 } // try

@@ -2618,7 +2618,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         for (size_t i = 0; i<tri_size; ++i) {
             simp = FC.Triangulation.front();
             Triangulation[i].first.swap(simp.key);
-            // sort(Triangulation[i].first.begin(), Triangulation[i].first.end());
+            /* sort(Triangulation[i].first.begin(), Triangulation[i].first.end()); -- no longer allowed here because of ConeDecomposition. Done in full_cone.cpp, transfer_triangulation_to top */
             if (FC.isComputed(ConeProperty::TriangulationDetSum))
                 convert(Triangulation[i].second, simp.vol);
             else
@@ -3006,19 +3006,6 @@ void Cone<Integer>::set_nmz_call(const string& path){
 template<typename Integer>
 void Cone<Integer>::setPolynomial(string poly){
     IntData=IntegrationData(poly);
-}
-
-bool exists_file(string name_in){
-//n check whether file name_in exists
-
-    //b string name_in="nmzIntegrate";
-    const char* file_in=name_in.c_str();
-    
-    struct stat fileStat;
-    if(stat(file_in,&fileStat) < 0){
-         return(false); 
-    }
-    return(true);
 }
 
 bool executable(string command){
