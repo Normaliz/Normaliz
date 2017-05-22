@@ -164,6 +164,10 @@ InputType to_type(const std::string& type_string) {
     if (type_string=="subspace") {
         return Type::subspace;
     }
+    
+    if (type_string=="open_facets") {
+        return Type::open_facets;
+    }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
@@ -183,7 +187,7 @@ long type_nr_columns_correction(InputType t) {
 /* returns true if the input of this type is a vector */
 bool type_is_vector(InputType type){
     if (type == Type::grading || type == Type::signs || type == Type::strict_signs
-            || type == Type::dehomogenization || type == Type::offset) {
+            || type == Type::dehomogenization || type == Type::offset || type==Type::open_facets) {
         return true;
     }
     return false;

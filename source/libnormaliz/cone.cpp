@@ -132,6 +132,7 @@ void Cone<Integer>::homogenize_input(map< InputType, vector< vector<Integer> > >
             case Type::polyhedron:
             case Type::vertices:
             case Type::support_hyperplanes:
+            case Type::open_facets:
             case Type::grading:  // already taken care of
                 break;
             case Type::strict_inequalities:
@@ -449,6 +450,7 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
             case Type::inhom_congruences:
             case Type::strict_inequalities:
             case Type::strict_signs:
+            case Type::open_facets:
                 inhom_input=true;
             case Type::signs:
             case Type::inequalities:
@@ -520,6 +522,29 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         if(multi_input_data.size() > 2 || (multi_input_data.size()==2 && !exists_element(multi_input_data,Type::grading))){
             throw BadInputException("Only grading allowed with lattice_ideal!");
         }
+    }
+    if(exists_element(multi_input_data,Type::open_facets)){
+        size_t allowed=0;
+        auto it = multi_input_data.begin();
+        for(; it != multi_input_data.end(); ++it) {
+            switch (it->first) {
+                case Type::open_facets:
+                case Type::cone:
+                case Type::grading:
+                case Type::vertices:
+                    allowed++;
+                    break;
+                default:
+                    break;                
+            }
+        }
+        if(allowed!=multi_input_data.size())
+            throw BadInputException("Illegal combination of input types with open_facets!");        
+        if(exists_element(multi_input_data,Type::vertices)){
+            if(multi_input_data[Type::vertices].size()>1)
+                throw BadInputException("At most one vertex allowed with open_facets!");            
+        }
+        
     }
     if(inhom_input){
         if(exists_element(multi_input_data,Type::dehomogenization) || exists_element(multi_input_data,Type::support_hyperplanes)){
@@ -695,6 +720,37 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         TmpCone.dualize_cone();
         Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
+    }
+    
+    if(exists_element(multi_input_data,Type::open_facets)){
+        if(!isComputed(ConeProperty::OriginalMonoidGenerators))
+            throw BadInputException("Error in connection with open_facets");
+        cout << "GG " << Generators.nr_of_rows() << endl;
+        cout << "RR " << BasisChange.getRank() << endl;
+        if(Generators.nr_of_rows()!=BasisChange.getRank())
+            throw BadInputException("Cone for open_facets not simplicial!");
+        Cone<Integer> Dualize(Type::cone,Generators);
+        Dualize.compute(ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder);
+        Matrix<Integer> OldSupps=Dualize.getSupportHyperplanesMatrix();
+        Matrix<Integer> OldEqus=Dualize.BasisChange.getEquationsMatrix();
+        Matrix<Integer> NewSupps=OldSupps;
+        for(size_t i=0;i<Generators.nr_of_rows()-1;++i){
+            if(multi_input_data[Type::open_facets][0][i]==1){
+                size_t j=0;
+                for(;j<OldSupps.nr_of_rows();++j)
+                    if(v_scalar_product(OldSupps[j],Generators[i])!=0)
+                        break;
+                assert(j<OldSupps.nr_of_rows());
+                NewSupps[j][dim-1]--;
+            }
+        }
+        for(size_t j=0;j<OldSupps.nr_of_rows();++j)
+             if(v_scalar_product(OldSupps[j],Generators[Generators.nr_of_rows()-1])==0)
+                 OldEqus.append(NewSupps[j]);
+        Matrix<Integer> Ker=OldEqus.kernel();
+        // Ker.pretty_print(cout);
+        assert(Ker.nr_of_rows()==1);
+        Generators[Generators.nr_of_rows()-1]=Ker[0];
     }
 
     assert(Inequalities.nr_of_rows()==0 || Generators.nr_of_rows()==0);    

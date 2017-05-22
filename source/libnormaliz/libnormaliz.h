@@ -58,7 +58,8 @@ enum InputType {
     vertices,
     support_hyperplanes,
     cone_and_lattice,
-    subspace
+    subspace,
+    open_facets
 };
 } //end namespace Type
 
