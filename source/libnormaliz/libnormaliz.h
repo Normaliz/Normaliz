@@ -81,6 +81,7 @@ typedef unsigned int key_t;
 extern bool verbose;
 extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 extern size_t TotDet;
+extern long thread_limit;
 
 /*
  * If this variable is set to true, the current computation is interrupted and
@@ -98,6 +99,8 @@ if(nmz_interrupted){ \
  * modulo overflow_test_modulus to ensure the correctness of the calculations */
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
+
+long set_thread_limit(long t);
 
 /* set the verbose default value */
 bool setVerboseDefault(bool v);

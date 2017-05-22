@@ -1095,6 +1095,11 @@ void Cone<Integer>::initialize() {
     SymmCone=NULL;
     
     already_in_compute=false;
+    
+    if(thread_limit<0)
+        throw BadInputException("Invalid thread limit");
+    if(thread_limit>0)    
+        omp_set_num_threads(thread_limit);
 }
 
 //---------------------------------------------------------------------------
@@ -3191,7 +3196,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     
     for(size_t i=0;i<multiplicities.size();++i){
         for(size_t j=1;j<multiplicities[i];++j)
-            polynomial+="(x["+to_string(i+1)+"]+"+to_string(j)+")*";
+            polynomial+="(x["+to_string((unsigned long long) i+1)+"]+"+to_string((unsigned long long)j)+")*";
         
     }
     polynomial+="1";

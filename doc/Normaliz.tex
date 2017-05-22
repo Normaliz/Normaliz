@@ -122,7 +122,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.3.0}
+\def\version{3.3.1}
 \def\NmzDir{normaliz-\version}
 
 
@@ -271,6 +271,13 @@ In 3.3.0:
 	\item fractions in input files,
 	\item controlled interruption of Normaliz.	
 \end{arab}
+
+In 3.3.1
+
+\begin{arab}
+	\item limit of parallelization.
+\end{arab}
+
 
 
 See the file \verb|CHANGELOG| in the basic package for more information on the history of Normaliz.
@@ -3213,7 +3220,11 @@ The options that control the execution are:
 	\itemtt[-x=<T>] Here \ttt{<T>} stands for a positive
 	integer limiting the number of threads that Normaliz
 	is allowed access on your system. The default value is
-	set by the operating system. If you want to run
+	$8$. (Your operating system may set a lower limit).
+	
+	\ttt{-x=0} raises the limit set by Normaliz to $\infty$.
+	
+	If you want to run
 	Normaliz in a strictly serial mode, choose
 	\ttt{-x=1}.
 \end{itemize}
@@ -6137,7 +6148,7 @@ bool Cone<Integer>::isReesPrimary()
 \end{Verbatim}
 \verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
 
-\subsection{Interruption and exception handling}
+\subsection{Control of execution}
 
 \subsubsection{Exceptions}
 
@@ -6176,8 +6187,18 @@ If it is found to be \verb|true|, an \verb|InterruptException| is thrown. Ihis i
 
 The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=true|.
 
+\subsubsection{Parallelization}
 
-\subsection{Control of terminal output}
+By default the cone constructor sets the maximal number of parallel threads to $8$. You can change this value by
+\begin{Verbatim}
+long set_thread_limit(long t)
+\end{Verbatim}
+The function returns the previous value.
+
+\verb|set_thread_limit(0)| raises the limit to $\infty$.
+
+
+\subsubsection{Control of terminal output}
 By using
 \begin{Verbatim}
 bool setVerboseDefault(bool v)

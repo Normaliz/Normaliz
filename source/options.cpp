@@ -67,8 +67,9 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
                         #ifdef _OPENMP
                         string Threads = argv[i];
                         Threads.erase(0,3);
-                        if ( (istringstream(Threads) >> nr_threads) && nr_threads > 0) {
-                            omp_set_num_threads(nr_threads);
+                        if ( (istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
+                            set_thread_limit(nr_threads);
+                            // omp_set_num_threads(nr_threads); -- now in cone.cpp
                         } else {
                             cerr<<"Error: Invalid option string "<<argv[i]<<endl;
                         exit(1);

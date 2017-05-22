@@ -28,6 +28,7 @@ namespace libnormaliz {
 
 bool verbose = false;
 bool nmz_interrupted = false;
+long thread_limit=8;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
@@ -51,6 +52,12 @@ bool setVerboseDefault(bool v) {
     bool old = verbose;
     verbose = v;
     return old;
+}
+
+long set_thread_limit(long t){
+    long old=thread_limit;
+    thread_limit=t;
+    return old;    
 }
 
 void setVerboseOutput(std::ostream& v_out) {

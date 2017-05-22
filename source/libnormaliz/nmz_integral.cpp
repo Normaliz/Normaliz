@@ -424,13 +424,13 @@ try{
         out_1 << block_nr << ", "<< VM << "," << endl;
         out_1.close();
         
-        string chmod="chmod a+w "+name_out;        
+        /* string chmod="chmod a+w "+name_out;        
         const char* exec=chmod.c_str();
         system(exec);
         
         string mail_str="mail wbruns@uos.de < "+name_out;
         exec=name_out.c_str();
-        system(exec);
+        system(exec);*/
         
         /*mail_str="mail bogdan_ichim@yahoo.com < "+name_out;
         exec=name_out.c_str();

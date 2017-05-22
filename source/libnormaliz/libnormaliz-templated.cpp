@@ -41,10 +41,11 @@ namespace libnormaliz {
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class Cone<long>;
-template class Matrix<long>;
+// template class Matrix<long>;
 template class Sublattice_Representation<long>;
 template class Full_Cone<long>;
 #endif
+template class Matrix<long>;
 
 template class Cone<long long>;
 template class Matrix<long long>;
