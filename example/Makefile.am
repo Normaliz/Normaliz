@@ -57,7 +57,9 @@ EXTRA_DIST =					\
 	lo6.in					\
 	max_polytope_cand.in			\
 	medium.in				\
+	no_open_facet.in			\
 	normface.in				\
+	open_facet.in				\
 	pedro2.in				\
 	poly_hom_const.in			\
 	poly_ineq.in				\

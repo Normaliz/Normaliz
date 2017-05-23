@@ -518,6 +518,10 @@ NMZTESTS = test-/23.in					\
 	test-mm/normface.ref				\
 	test-mm/notpointed.in				\
 	test-mm/notpointed.ref				\
+	test-mm/no_open_facet.ref			\
+	test-mm/no_open_facet.out			\
+	test-mm/open_facet.ref				\
+	test-mm/open_facet.out				\
 	test-mm/polytop.in				\
 	test-mm/polytop.ref				\
 	test-mm/rafa1409.in				\
