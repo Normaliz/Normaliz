@@ -2398,7 +2398,7 @@ Example:
 
 Rational numbers are allowed in onput matrices, but not in all. They are \emph{not} allowed in vectors and in matrices containing lattice generators and in congruences, namely in
 \begin{Verbatim}
-lattice     cone_and_lattice   normalization  offset
+lattice     cone_and_lattice   normalization  offset         open_facets
 congruences inhom_congruences  rees_algebra   lattice_ideal
 grading     dehomogenization   signs          strict_signs
 \end{Verbatim}
@@ -2458,6 +2458,8 @@ Input items can almost freely be combined, but there are some restrictions:
 	\begin{center}
 		\ttt{dehomogenization, support\_hyperplanes}
 	\end{center}
+	
+	\item Special restrictions apply for the input type \verb|open_facets|; see Section \ref{open_facets}.
 \end{arab}
 
 \subsubsection{Homogeneous and inhomogeneous input}\label{inhom_inp}
@@ -2792,6 +2794,27 @@ The input type \verb|dehomogenization| can only be combined with homogeneous inp
 A potential application is the adaptation of other input formats to Normaliz. The output must then be interpreted accordingly.
 
 Section \ref{dehom_ex}, \verb|dehomogenization.in|.
+
+\subsection{Open facets}\label{open_facets}
+
+The input type \verb|open_facets| is similar to \verb|strict_inequalities|. However, it allows to apply strict inequalities that are not yet known. This makes only sense for simplicial polyhedra where a facet can be identified by the generator that does \emph{not} lie in it.
+
+\verb|open_facets| is a vector with entries $\in \{0,1\}$.
+
+The restrictions for the use of open facets are the following:
+\begin{arab}
+\item Only the input types \verb|cone,| \verb|vertices| and \verb|grading| can appear together with \verb|open_facets|.
+\item The vectors in \verb|cone| are linearly independent.
+\item There is at most one vertex.
+\end{arab}
+The number of vectors in \verb|cone| may be smaller than $d$, but \verb|open_facets| must have $d$ entries.
+
+
+\verb|open_facets| make the computation inhomogeneous. They are interpreted as follows. Let $v$ be the vertex---if there are no \verb|vertices|, then $v$ is the origin. The polyhedron $P'=v+C$ is cit out by affine-linear inequalities $\lambda_i(x)\ge 0$ with coprime integer coefficients. We number these in siuch a way that $\lambda_i(v+c_i)\neq 0$ for the generators $c_i$ of $C$ (in the input order). Then all subsequent computations are applied to the polyhedron $P$ defined by the inequalities
+$$
+\lambda_i(x)\ge u_i
+$$
+where the vector $(u_1,\dots,u_d)$ is given by \verb|openfaceets|. (If $\dim C<d$, then the enties $u_j$ with $j> \dim C$ are ignored.)
 
 \subsection{Pointedness}
 

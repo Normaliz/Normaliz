@@ -721,33 +721,29 @@ void Cone<Integer>::process_multi_input_inner(map< InputType, vector< vector<Int
         Inequalities.append(ConeLatt.from_sublattice_dual(TmpCone.Support_Hyperplanes));
         Generators=Matrix<Integer>(0,dim); // Generators now converted into inequalities
     }
-    
+
     if(exists_element(multi_input_data,Type::open_facets)){
-        if(!isComputed(ConeProperty::OriginalMonoidGenerators))
+        // read manual for the computation that follows
+        if(!isComputed(ConeProperty::OriginalMonoidGenerators)) // practically impossible, but better to check
             throw BadInputException("Error in connection with open_facets");
-        cout << "GG " << Generators.nr_of_rows() << endl;
-        cout << "RR " << BasisChange.getRank() << endl;
         if(Generators.nr_of_rows()!=BasisChange.getRank())
             throw BadInputException("Cone for open_facets not simplicial!");
-        Cone<Integer> Dualize(Type::cone,Generators);
-        Dualize.compute(ConeProperty::SupportHyperplanes,ConeProperty::KeepOrder);
-        Matrix<Integer> OldSupps=Dualize.getSupportHyperplanesMatrix();
-        Matrix<Integer> OldEqus=Dualize.BasisChange.getEquationsMatrix();
-        Matrix<Integer> NewSupps=OldSupps;
-        for(size_t i=0;i<Generators.nr_of_rows()-1;++i){
-            if(multi_input_data[Type::open_facets][0][i]==1){
-                size_t j=0;
-                for(;j<OldSupps.nr_of_rows();++j)
-                    if(v_scalar_product(OldSupps[j],Generators[i])!=0)
-                        break;
-                assert(j<OldSupps.nr_of_rows());
-                NewSupps[j][dim-1]--;
-            }
+        Matrix<Integer> TransformedGen=BasisChange.to_sublattice(Generators);
+        vector<key_t> key(TransformedGen.nr_of_rows());
+        for(size_t j=0;j<TransformedGen.nr_of_rows();++j)
+            key[j]=j;
+        Matrix<Integer> TransformedSupps;
+        Integer dummy;
+        TransformedGen.simplex_data(key,TransformedSupps,dummy,false);
+        Matrix<Integer> NewSupps=BasisChange.from_sublattice_dual(TransformedSupps);
+        NewSupps.remove_row(NewSupps.nr_of_rows()-1); // must remove the inequality for the homogenizing variable
+        for(size_t j=0;j<NewSupps.nr_of_rows();++j){
+            if(!(multi_input_data[Type::open_facets][0][j]==0 || multi_input_data[Type::open_facets][0][j]==1))
+                throw BadInputException("Illegal entry in open_facets");
+            NewSupps[j][dim-1]-=multi_input_data[Type::open_facets][0][j];
         }
-        for(size_t j=0;j<OldSupps.nr_of_rows();++j)
-             if(v_scalar_product(OldSupps[j],Generators[Generators.nr_of_rows()-1])==0)
-                 OldEqus.append(NewSupps[j]);
-        Matrix<Integer> Ker=OldEqus.kernel();
+        NewSupps.append(BasisChange.getEquationsMatrix());
+        Matrix<Integer> Ker=NewSupps.kernel(); // gives the new verterx
         // Ker.pretty_print(cout);
         assert(Ker.nr_of_rows()==1);
         Generators[Generators.nr_of_rows()-1]=Ker[0];
