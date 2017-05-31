@@ -3379,6 +3379,134 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     deactivate__completed_tasks();
 }
 
+size_t nr_revlex_simpl=0;
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::recursive_revlex_triangulation(vector<key_t> simplex_so_far, 
+                const vector<key_t>& face_key, const vector<typename list<FACETDATA>::const_iterator>& mother_facets,
+                size_t dim ){
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    /* cout << "FACE KEY "<< face_key;
+    cout << "SIMPLex " << simplex_so_far; */
+    
+    // handle simplex case first since no further descent is necessary
+    
+    if(face_key.size()==dim){
+        simplex_so_far.insert(simplex_so_far.end(),face_key.begin(),face_key.end());
+        nr_revlex_simpl++;
+        if(nr_revlex_simpl % 10000==0){
+            cout << "NR REVLEX SIMPL " << nr_revlex_simpl << endl;
+        }
+        return;
+    }
+    
+    // We first find the support hyperplanes of our top cone that cut out the 
+    // facets of our face
+    
+    vector<vector<bool> > facet_candidates;
+    
+    vector<typename list<FACETDATA>::const_iterator> candidates_iterators;
+    
+        
+    for(size_t i=0;i<mother_facets.size();++i){
+        
+        auto F=mother_facets[i];
+        
+        vector<bool> intersection(nr_gen);
+        size_t nr_intersection=0;
+        for(size_t j=0;j<face_key.size();++j){
+            if(F->GenInHyp[face_key[j]]){
+                intersection[face_key[j]]=true;
+                nr_intersection++;
+            }
+        }
+        // cout << "NR " << nr_intersection << endl;
+        if(nr_intersection<dim-1 || nr_intersection==face_key.size()) // too small or everything
+            continue;        
+        facet_candidates.push_back(intersection);
+        candidates_iterators.push_back(F);
+    }    
+
+    vector<bool> the_facets(facet_candidates.size(),true);
+    maximal_subsets(facet_candidates,the_facets);
+    
+    vector<typename list<FACETDATA>::const_iterator> facets_of_this_face;
+    for(size_t i=0;i<the_facets.size();++i)
+        if(the_facets[i])
+            facets_of_this_face.push_back(candidates_iterators[i]);
+        
+    // now we have the facets of our face via support hyperplanes of the top cone
+        
+    // Next we go over those facets that are opposite to next_vert 
+    
+    key_t next_vert=face_key[0];
+    simplex_so_far.push_back(next_vert);
+
+    for(size_t i=0;i<facets_of_this_face.size();++i){
+        
+        auto F=facets_of_this_face[i];
+        
+        if(F->GenInHyp[next_vert]) // want only those opposite to next_vert
+            continue;
+        vector<key_t> intersection;
+        for(size_t j=0;j<face_key.size();++j){
+            if(F->GenInHyp[face_key[j]])
+                intersection.push_back(face_key[j]);                
+        }
+        
+        recursive_revlex_triangulation(simplex_so_far,intersection,facets_of_this_face,dim-1);
+    }
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::make_facets(){
+    
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        support_hyperplanes();
+    assert(Facets.empty());
+    for(size_t i=0;i<Support_Hyperplanes.nr_of_rows();++i){
+        FACETDATA NewFacet; NewFacet.Hyp.resize(dim); NewFacet.GenInHyp.resize(nr_gen);
+        for(size_t j=0;j<nr_gen;++j)
+            if(v_scalar_product(Support_Hyperplanes[i],Generators[j])==0)
+                NewFacet.GenInHyp[j]=true;
+        NewFacet.Hyp=Support_Hyperplanes[i];
+        Facets.push_back(NewFacet);     
+    }
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Full_Cone<Integer>::revlex_triangulation(){
+    
+    make_facets();
+    compute_extreme_rays(true);
+    vector<key_t> simplex_so_far;
+    simplex_so_far.reserve(dim);
+    boost::dynamic_bitset<> face_ind(nr_gen);
+    vector<key_t> Extreme_Rays_Key;
+    for(size_t i=0;i< nr_gen;++i)
+        if(Extreme_Rays_Ind[i])
+            Extreme_Rays_Key.push_back(i);
+        
+    vector<typename list<FACETDATA>::const_iterator> mother_facets;
+    
+    typename list<FACETDATA>::const_iterator F;
+    for(F=Facets.begin();F!=Facets.end();++F)
+        mother_facets.push_back(F);
+    
+    recursive_revlex_triangulation(simplex_so_far,Extreme_Rays_Key,mother_facets,dim); 
+    
+            cout << "FINAL NR REVLEX SIMPL " << nr_revlex_simpl << endl;
+            
+    exit(0);
+}
+
+
+//---------------------------------------------------------------------------
 // general purpose compute method
 // do_* bools must be set in advance, this method does sanity checks for it
 // if no bool is set it does support hyperplanes and extreme rays
@@ -3439,6 +3567,8 @@ void Full_Cone<Integer>::compute() {
     }
     if (!isComputed(ConeProperty::Grading))
         disable_grading_dep_comp();
+    
+    // revlex_triangulation(); was here for test 
     
     if (do_only_supp_hyps_and_aux || (Grading.size()>0 && !isComputed(ConeProperty::Grading))){
             // in the last case there are only two possibilities:

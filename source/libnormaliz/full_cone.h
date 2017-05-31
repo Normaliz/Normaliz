@@ -428,6 +428,11 @@ void try_offload_loc(long place,size_t max_level);
     bool check_extension_to_god_father();
     void compute_multiplicity_via_recession_cone();
     void copy_autom_params(const Full_Cone<Integer>& C);
+    
+    void recursive_revlex_triangulation(vector<key_t> simplex_so_far,const vector<key_t>& gens_in_face, 
+                                        const vector<typename list<FACETDATA>::const_iterator>& mother_facets,size_t dim );
+    void make_facets();
+    void revlex_triangulation();
 
 #ifdef NMZ_MIC_OFFLOAD
     void try_offload(size_t max_level);
