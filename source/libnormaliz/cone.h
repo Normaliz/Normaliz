@@ -235,6 +235,7 @@ public:
     Integer getTriangulationDetSum();
 
     vector<Integer> getWitnessNotIntegrallyClosed();
+    vector<Integer> getGeneratorOfInterior();
 
     const Matrix<Integer>& getHilbertBasisMatrix();
     const vector< vector<Integer> >& getHilbertBasis();
@@ -274,6 +275,7 @@ public:
     bool isDeg1ExtremeRays();
     bool isDeg1HilbertBasis();
     bool isIntegrallyClosed();
+    bool isGorenstein();
     bool isReesPrimary();
     Integer getReesPrimaryMultiplicity();
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();
@@ -354,6 +356,7 @@ private:
     mpq_class Integral;
     mpq_class VirtualMultiplicity;
     vector<Integer> WitnessNotIntegrallyClosed;
+    vector<Integer> GeneratorOfInterior;
     Matrix<Integer> HilbertBasis;
     Matrix<Integer> BasisMaxSubspace;
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
@@ -368,9 +371,11 @@ private:
 
     bool pointed;
     bool inhomogeneous;
+    bool gorensetin;
     bool deg1_extreme_rays;
     bool deg1_hilbert_basis;
     bool integrally_closed;
+    bool Gorenstein;
     bool rees_primary;
     Integer ReesPrimaryMultiplicity;
     int affine_dim; //dimension of polyhedron
@@ -470,6 +475,8 @@ private:
     void compute_unit_group_index();
     /* try to find a witness for not integrally closed in the Hilbert basis */
     void find_witness();
+    
+    void check_Gorenstein (ConeProperties&  ToCompute);
 
     Integer compute_primary_multiplicity();
     template<typename IntegerFC>

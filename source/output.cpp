@@ -581,6 +581,15 @@ void Output<Integer>::write_inv_file() const{
             inv <<"vector "<< Result->getClassGroup().size() <<" class_group = "<< Result->getClassGroup();
         }
         
+        if (Result->isComputed(ConeProperty::IsGorenstein)) {
+            if(Result->isGorenstein()){
+                inv << "boolean Gorenstein = true" << endl;
+                inv <<"vector "<< Result->getGeneratorOfInterior().size() <<" generator_of_interior = "<< Result->getGeneratorOfInterior();                
+            }
+            else
+                inv << "boolean Gorenstein = false" << endl;
+        }
+        
         inv.close();
     }
 }
@@ -944,6 +953,17 @@ void Output<Integer>::write_files() const {
                 out << count_in_map<Integer,size_t>(ClassGroup);
                 out << endl;
             }                   
+        }
+        
+        if(Result->isComputed(ConeProperty::IsGorenstein)) {
+            if(Result->isGorenstein()){
+                out << "Monoid is Gorenstein " << endl;
+                out << "Generator of interior" << endl;
+                out << Result->getGeneratorOfInterior();              
+            }
+            else
+                out << "Monoid is not Gorenstein " << endl;
+            out << endl;
         }
 
         out << "***********************************************************************"
