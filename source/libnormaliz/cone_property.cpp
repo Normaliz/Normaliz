@@ -157,6 +157,9 @@ size_t ConeProperties::count() const {
 /* add preconditions */
 void ConeProperties::set_preconditions() {
     
+    if(CPs.test(ConeProperty::IsGorenstein))
+        CPs.set(ConeProperty::SupportHyperplanes);
+    
     if(CPs.test(ConeProperty::NoNestedTri))
         CPs.set(ConeProperty::NoSubdivision);
     
@@ -216,7 +219,7 @@ void ConeProperties::set_preconditions() {
         CPs.set(ConeProperty::HilbertSeries);
     
     if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
-        CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrizeb is used
+        CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
         
     if (CPs.test(ConeProperty::Integral)){
         // CPs.set(ConeProperty::Multiplicity);
@@ -316,6 +319,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::IsDeg1HilbertBasis
                   || prop == ConeProperty::IsDeg1ExtremeRays
                   || prop == ConeProperty::Integral
+                  || prop == ConeProperty::IsGorenstein
                 ) {
                     throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
                 }
@@ -401,9 +405,10 @@ namespace {
         CPN.at(ConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
+        CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 64,
+        static_assert (ConeProperty::EnumSize == 65,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

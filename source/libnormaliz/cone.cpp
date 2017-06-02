@@ -1591,6 +1591,12 @@ vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed() {
 }
 
 template<typename Integer>
+vector<Integer> Cone<Integer>::getGeneratorOfInterior() {
+    compute(ConeProperty::IsGorenstein);
+    return GeneratorOfInterior;
+}
+
+template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getHilbertBasisMatrix() {
     compute(ConeProperty::HilbertBasis);
     return HilbertBasis;
@@ -1725,6 +1731,12 @@ template<typename Integer>
 bool Cone<Integer>::isDeg1ExtremeRays() {
     compute(ConeProperty::IsDeg1ExtremeRays);
     return deg1_extreme_rays;
+}
+
+template<typename Integer>
+bool Cone<Integer>::isGorenstein() {
+    compute(ConeProperty::IsGorenstein);
+    return Gorenstein;
 }
 
 template<typename Integer>
@@ -1895,7 +1907,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
         }
     }
     
-    try_symmetrization(ToCompute);
+    try_symmetrization(ToCompute);   
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
         already_in_compute=false; return ToCompute;
@@ -1956,9 +1968,12 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
             change_integer_type = false;
         }
     }
+    
     if (!change_integer_type) {
         compute_full_cone<Integer>(ToCompute);
     }
+    
+    check_Gorenstein(ToCompute);
     
     if(ToCompute.test(ConeProperty::IntegerHull)) {
         compute_integer_hull();
@@ -3593,5 +3608,31 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
     
 }
 
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::check_Gorenstein (ConeProperties&  ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::IsGorenstein) || isComputed(ConeProperty::IsGorenstein))
+        return;
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        recursive_compute(ConeProperty::SupportHyperplanes);
+    if(!isComputed(ConeProperty::MaximalSubspace))
+        recursive_compute(ConeProperty::MaximalSubspace);
+    
+    if(dim==0){
+        Gorenstein=true;
+        is_Computed.set(ConeProperty::IsGorenstein);
+        return;        
+    }
+    Matrix<Integer> TransfSupps=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    assert(TransfSupps.nr_of_rows()>0);
+    Gorenstein=false;
+    vector<Integer> TransfIntGen = TransfSupps.find_linear_form();
+    if(TransfIntGen.size()!=0 && v_scalar_product(TransfIntGen,TransfSupps[0])==1){
+        Gorenstein=true;
+        GeneratorOfInterior=BasisChangePointed.from_sublattice(TransfIntGen);
+    }
+    is_Computed.set(ConeProperty::IsGorenstein);
+}
 
 } // end namespace libnormaliz

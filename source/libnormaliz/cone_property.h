@@ -51,8 +51,8 @@ namespace ConeProperty {
         ExcludedFaces,
         OriginalMonoidGenerators,
         MaximalSubspace,
-        Equations, // new
-        Congruences, // new
+        Equations,
+        Congruences,
         //vector valued
         Grading,
         Dehomogenization,
@@ -62,10 +62,10 @@ namespace ConeProperty {
         // Integer valued,        
         TriangulationDetSum,
         ReesPrimaryMultiplicity,
-        GradingDenom, // new
-        UnitGroupIndex, // new
-        InternalIndex, // new
-        ExternalIndex, // new
+        GradingDenom,
+        UnitGroupIndex,
+        InternalIndex,
+        ExternalIndex,
         // rational valued
         Multiplicity,
         Integral,
@@ -74,15 +74,16 @@ namespace ConeProperty {
         RecessionRank,
         AffineDim,
         ModuleRank,
-        Rank, // new
-        EmbeddingDim, // new      
+        Rank,
+        EmbeddingDim,      
         // boolean valued 
         IsPointed,
         IsDeg1ExtremeRays,
         IsDeg1HilbertBasis,
         IsIntegrallyClosed,
         IsReesPrimary,
-        IsInhomogeneous, // new        
+        IsInhomogeneous,
+        IsGorenstein,        
         // complex structures
         Triangulation,
         StanleyDec,
@@ -107,19 +108,19 @@ namespace ConeProperty {
         BottomDecomposition,
         NoBottomDec,       
         DualMode,
-        PrimalMode, //new
-        Symmetrize, // new
-        NoSymmetrization, // new
-        NoSubdivision, // new
-        NoNestedTri, // new -- synonym for NoSubdivision
+        PrimalMode,
+        Symmetrize,
+        NoSymmetrization,
+        NoSubdivision,
+        NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
         HSOP,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)
         //
-        IsTriangulationNested,  //new
-        IsTriangulationPartial,  //new
+        IsTriangulationNested,
+        IsTriangulationPartial,
         
         EnumSize // this has to be the last entry, to get the number of entries in the enum
     }; // remember to change also the string conversion function if you change this enum

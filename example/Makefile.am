@@ -12,6 +12,7 @@ EXTRA_DIST =					\
 	4x4.in					\
 	5x5.in					\
 	5x5dual.in				\
+	5x5Gorenstein.in			\
 	6x6.in					\
 	A443.in					\
 	A543.in					\
