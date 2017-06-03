@@ -21,14 +21,19 @@
  * terms of service.
  */
 
+#include <cstdlib>
+
 #include "libnormaliz/libnormaliz.h"
 #include "libnormaliz/general.h"
+#include "libnormaliz/my_omp.h"
 
 namespace libnormaliz {
 
 bool verbose = false;
 bool nmz_interrupted = false;
-long thread_limit=8;
+long default_thread_limit=8;
+long thread_limit=default_thread_limit;
+bool parallelization_set=false;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
@@ -56,8 +61,9 @@ bool setVerboseDefault(bool v) {
 
 long set_thread_limit(long t){
     long old=thread_limit;
+    parallelization_set=true;
     thread_limit=t;
-    return old;    
+    return old;
 }
 
 void setVerboseOutput(std::ostream& v_out) {

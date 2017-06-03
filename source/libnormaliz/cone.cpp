@@ -1148,10 +1148,28 @@ void Cone<Integer>::initialize() {
     
     already_in_compute=false;
     
+    set_parallelization();
+    
+}
+
+template<typename Integer>
+void Cone<Integer>::set_parallelization() {
+    
     if(thread_limit<0)
         throw BadInputException("Invalid thread limit");
-    if(thread_limit>0)    
-        omp_set_num_threads(thread_limit);
+    
+    if(parallelization_set){
+        if(thread_limit!=0)
+            omp_set_num_threads(thread_limit);        
+    }
+    else{
+        if(std::getenv("OMP_NUM_THREADS") == NULL){
+            long old=omp_get_max_threads();
+            if(old>default_thread_limit)
+                set_thread_limit(default_thread_limit);        
+            omp_set_num_threads(thread_limit);
+        }       
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -1848,6 +1866,7 @@ ConeProperties Cone<Integer>::recursive_compute(ConeProperties ToCompute) {
 template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     already_in_compute=false;
+    set_parallelization();
     return compute_inner(ToCompute);
 }
 

@@ -94,6 +94,7 @@ void printHelp(char* command) {
     cout << "  -E\tcompute weighted Ehrhart series"<<endl;
     cout << "  -L\tcompute virtual multiplicity of weighted Ehrhart series"<<endl;
     cout << "  -I\tcompute integral"<<endl;
+    cout << "  -G\tcheck Gorenstein"<<endl;
 
     cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;

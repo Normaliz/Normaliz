@@ -82,8 +82,6 @@ typedef unsigned int key_t;
 extern bool verbose;
 extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 extern size_t TotDet;
-extern long thread_limit;
-
 /*
  * If this variable is set to true, the current computation is interrupted and
  * an InterruptException is raised.
@@ -101,6 +99,9 @@ if(nmz_interrupted){ \
 // extern bool test_arithmetic_overflow;
 // extern long overflow_test_modulus;
 
+extern long default_thread_limit;
+extern long thread_limit;
+extern bool parallelization_set;
 long set_thread_limit(long t);
 
 /* set the verbose default value */

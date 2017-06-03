@@ -495,6 +495,8 @@ private:
     
     void NotComputable (string message); // throws NotComputableException if default_mode = false
     
+    void set_parallelization();
+    
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
 };
