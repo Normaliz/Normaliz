@@ -6358,13 +6358,13 @@ The calling program must take care to catch the signal caused by Ctrl-C and to s
 
 \subsubsection{Parallelization}
 
-By default the cone constructor sets the maximal number of parallel threads to $8$. You can change this value by
+By default the cone constructor sets the maximal number of parallel threads to $8$, unless the system has set a lower limit. You can change this value by
 \begin{Verbatim}
 long set_thread_limit(long t)
 \end{Verbatim}
 The function returns the previous value.
 
-\verb|set_thread_limit(0)| raises the limit to $\infty$.
+\verb|set_thread_limit(0)| raises the limit set by libnormaliz to $\infty$.
 
 
 \subsubsection{Control of terminal output}
