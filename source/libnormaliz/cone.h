@@ -307,6 +307,8 @@ public:
     
     IntegrationData& getIntData();
     
+    void project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps);
+    
 
 //---------------------------------------------------------------------------
 //                          private part

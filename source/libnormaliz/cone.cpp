@@ -3331,6 +3331,156 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
 
 }
 
+
+
+template<typename Integer>
+void integrate(Cone<Integer>& C, const bool do_virt_mult);
+
+template<typename Integer>
+void generalizedEhrhartSeries(Cone<Integer>& C);
+
+template<typename Integer>
+void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
+        return;
+    if(IntData.getPolynomial()=="")
+        throw BadInputException("Polynomial weight missing");
+#ifdef NMZ_COCOA
+    if(getRank()==0)
+        getIntData().setIntegral(0);
+    else
+    integrate<Integer>(*this,false);
+    is_Computed.set(ConeProperty::Integral);
+#endif
+}
+    
+template<typename Integer>
+void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::VirtualMultiplicity) || !ToCompute.test(ConeProperty::VirtualMultiplicity))
+        return;
+    if(IntData.getPolynomial()=="")
+        throw BadInputException("Polynomial weight missing");
+#ifdef NMZ_COCOA
+    if(getRank()==0)
+        getIntData().setVirtualMultiplicity(0);
+    else
+        integrate<Integer>(*this,true);
+    is_Computed.set(ConeProperty::VirtualMultiplicity);
+#endif
+}
+
+template<typename Integer>
+void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
+    if(isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
+        return;
+    if(IntData.getPolynomial()=="")
+        throw BadInputException("Polynomial weight missing");    
+    /* if(getRank()==0)
+        throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");*/
+#ifdef NMZ_COCOA
+    generalizedEhrhartSeries(*this);
+    is_Computed.set(ConeProperty::WeightedEhrhartSeries);
+    if(getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
+        is_Computed.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
+        is_Computed.set(ConeProperty::VirtualMultiplicity);
+    }
+#endif
+}
+//---------------------------------------------------------------------------
+template<typename Integer>
+bool Cone<Integer>::get_verbose (){
+    return verbose;
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::NotComputable (string message){
+    if(!default_mode)
+        throw NotComputableException(message);
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::check_Gorenstein (ConeProperties&  ToCompute){
+    
+    if(!ToCompute.test(ConeProperty::IsGorenstein) || isComputed(ConeProperty::IsGorenstein))
+        return;
+    if(!isComputed(ConeProperty::SupportHyperplanes))
+        recursive_compute(ConeProperty::SupportHyperplanes);
+    if(!isComputed(ConeProperty::MaximalSubspace))
+        recursive_compute(ConeProperty::MaximalSubspace);
+    
+    if(dim==0){
+        Gorenstein=true;
+        is_Computed.set(ConeProperty::IsGorenstein);
+        return;        
+    }
+    Matrix<Integer> TransfSupps=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
+    assert(TransfSupps.nr_of_rows()>0);
+    Gorenstein=false;
+    vector<Integer> TransfIntGen = TransfSupps.find_linear_form();
+    if(TransfIntGen.size()!=0 && v_scalar_product(TransfIntGen,TransfSupps[0])==1){
+        Gorenstein=true;
+        GeneratorOfInterior=BasisChangePointed.from_sublattice(TransfIntGen);
+    }
+    is_Computed.set(ConeProperty::IsGorenstein);
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerFC>
+void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
+    
+    // *this is the approximatING cone. The support hyperplanes and equations of the approximatED 
+    // cone are given to the Full_Cone produced from *this so that the superfluous points can
+    // bre sorted out as early as possible.
+    
+    assert(is_approximation);
+    assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
+    
+    FC.is_global_approximation=true;
+    // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
+    
+    // The first coordinate in *this is the degree given by the grading
+    // in ApproximatedCone. We disregard it by setting the first coordinate
+    // of the grading, inequalities and equations to 0, and then have 0 followed
+    // by the grading, equations and inequalities resp. of ApproximatedCone.
+    
+    vector<Integer> help_g;
+    if(ApproximatedCone->inhomogeneous)
+        help_g=ApproximatedCone->Dehomogenization;
+    else
+        help_g=ApproximatedCone->Grading;
+            
+    vector<Integer> help(help_g.size()+1);
+    help[0]=0;
+    for(size_t j=0;j<help_g.size();++j)
+        help[j+1]=help_g[j];
+    BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
+    
+    const Matrix<Integer>& Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
+    FC.Subcone_Equations=Matrix<IntegerFC>(Eq.nr_of_rows(),BasisChangePointed.getRank());
+
+    for(size_t i=0;i<Eq.nr_of_rows();++i){
+        vector<Integer> help(Eq.nr_of_columns()+1,0);
+        for(size_t j=0;j<Eq.nr_of_columns();++j)
+            help[j+1]=Eq[i][j];
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
+    }
+    
+    const Matrix<Integer>& Supp=ApproximatedCone->SupportHyperplanes;
+    FC.Subcone_Support_Hyperplanes=Matrix<IntegerFC>(Supp.nr_of_rows(),BasisChangePointed.getRank());
+
+    for(size_t i=0;i<Supp.nr_of_rows();++i){
+        vector<Integer> help(Supp.nr_of_columns()+1,0);
+        for(size_t j=0;j<Supp.nr_of_columns();++j)
+            help[j+1]=Supp[i][j];
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes[i], help);       
+    }
+    
+    
+}
+
 //---------------------------------------------------------------------------
 template<typename Integer>
 void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
@@ -3353,14 +3503,14 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
         return;
     
-    if(!inhomogeneous){ // we do not use this routine for lattice polytopes
+    /* if(!inhomogeneous){ // we do not use this routine for lattice polytopes
         size_t i=0;
         for(;i<Generators.nr_of_rows();++i)
             if(v_scalar_product(Generators[i],Grading)!=1)
                 break;
             if(i==Generators.nr_of_rows())
                 return;
-    }
+    }*/
     
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
@@ -3412,21 +3562,40 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
         GradGen.append(Matrix<Integer>(approx));        
     }
     
+    Matrix<Integer> Raw(0,dim+1);
+    
+    bool do_approximation=true;
+
+
     /* cout << "=================================" << endl;
     GradGen.pretty_print(cout);
     cout << "=================================" << endl;    */
     if(verbose)
         verboseOutput() << "Computing approximating polytope" << endl;
     Cone<Integer> ApproxCone(InputType::cone,GradGen);
-    ApproxCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
-    ApproxCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
-    ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
+
+    ApproxCone.compute(ConeProperty::SupportHyperplanes);
+        
+    if(false){
+        ApproxCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
+        ApproxCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
+        ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
+        Raw=ApproxCone.getDeg1ElementsMatrix();        
+    }
+    else{
+        Matrix<Integer> Supps=ApproxCone.getSupportHyperplanesMatrix();
+        Matrix<Integer> Equs=ApproxCone.BasisChange.getEquations();    // we must add the equations as pairs of inequalities
+        Supps.append(Equs);
+        Equs.scalar_multiplication(-1);
+        Supps.append(Equs);
+        project_and_lift(Raw, GradGen,Supps);
+    }
     
     HilbertBasis=Matrix<Integer>(0,dim);
     Deg1Elements=Matrix<Integer>(0,dim);
     ModuleGenerators=Matrix<Integer>(0,dim);
     
-    const Matrix<Integer>& Raw=ApproxCone.getDeg1ElementsMatrix();
+
     Matrix<Integer> Result(0,dim);
     Matrix<Integer> Eq=BasisChange.getEquations();
     Matrix<Integer> Cong=BasisChange.getCongruences();
@@ -3506,152 +3675,220 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     return;    
 }
 
-template<typename Integer>
-void integrate(Cone<Integer>& C, const bool do_virt_mult);
-
-template<typename Integer>
-void generalizedEhrhartSeries(Cone<Integer>& C);
-
-template<typename Integer>
-void Cone<Integer>::compute_integral (ConeProperties& ToCompute){
-    if(isComputed(ConeProperty::Integral) || !ToCompute.test(ConeProperty::Integral))
-        return;
-    if(IntData.getPolynomial()=="")
-        throw BadInputException("Polynomial weight missing");
-#ifdef NMZ_COCOA
-    if(getRank()==0)
-        getIntData().setIntegral(0);
-    else
-    integrate<Integer>(*this,false);
-    is_Computed.set(ConeProperty::Integral);
-#endif
-}
-    
-template<typename Integer>
-void Cone<Integer>::compute_virt_mult(ConeProperties& ToCompute){
-    if(isComputed(ConeProperty::VirtualMultiplicity) || !ToCompute.test(ConeProperty::VirtualMultiplicity))
-        return;
-    if(IntData.getPolynomial()=="")
-        throw BadInputException("Polynomial weight missing");
-#ifdef NMZ_COCOA
-    if(getRank()==0)
-        getIntData().setVirtualMultiplicity(0);
-    else
-        integrate<Integer>(*this,true);
-    is_Computed.set(ConeProperty::VirtualMultiplicity);
-#endif
-}
-
-template<typename Integer>
-void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute){
-    if(isComputed(ConeProperty::WeightedEhrhartSeries) || !ToCompute.test(ConeProperty::WeightedEhrhartSeries))
-        return;
-    if(IntData.getPolynomial()=="")
-        throw BadInputException("Polynomial weight missing");    
-    /* if(getRank()==0)
-        throw NotComputableException("WeightedEhrhartSeries not computed in dimenison 0");*/
-#ifdef NMZ_COCOA
-    generalizedEhrhartSeries(*this);
-    is_Computed.set(ConeProperty::WeightedEhrhartSeries);
-    if(getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
-        is_Computed.set(ConeProperty::WeightedEhrhartQuasiPolynomial);
-        is_Computed.set(ConeProperty::VirtualMultiplicity);
-    }
-#endif
-}
 //---------------------------------------------------------------------------
 template<typename Integer>
-bool Cone<Integer>::get_verbose (){
-    return verbose;
-}
-
-//---------------------------------------------------------------------------
-template<typename Integer>
-void Cone<Integer>::NotComputable (string message){
-    if(!default_mode)
-        throw NotComputableException(message);
-}
-
-//---------------------------------------------------------------------------
-template<typename Integer>
-template<typename IntegerFC>
-void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
+void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps){
     
-    // *this is the approximatING cone. The support hyperplanes and equations of the approximatED 
-    // cone are given to the Full_Cone produced from *this so that the superfluous points can
-    // bre sorted out as early as possible.
+    cout << "Project and lift" << endl;
     
-    assert(is_approximation);
-    assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
+    Gens.pretty_print(cout);
+    cout << "--------------------------" << endl;
+    Supps.pretty_print(cout);
+    cout << "--------------------------" << endl;
     
-    FC.is_global_approximation=true;
-    // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
-    
-    // The first coordinate in *this is the degree given by the grading
-    // in ApproximatedCone. We disregard it by setting the first coordinate
-    // of the grading, inequalities and equations to 0, and then have 0 followed
-    // by the grading, equations and inequalities resp. of ApproximatedCone.
-    
-    vector<Integer> help_g;
-    if(ApproximatedCone->inhomogeneous)
-        help_g=ApproximatedCone->Dehomogenization;
-    else
-        help_g=ApproximatedCone->Grading;
-            
-    vector<Integer> help(help_g.size()+1);
-    help[0]=0;
-    for(size_t j=0;j<help_g.size();++j)
-        help[j+1]=help_g[j];
-    BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
-    
-    const Matrix<Integer>& Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
-    FC.Subcone_Equations=Matrix<IntegerFC>(Eq.nr_of_rows(),BasisChangePointed.getRank());
-
-    for(size_t i=0;i<Eq.nr_of_rows();++i){
-        vector<Integer> help(Eq.nr_of_columns()+1,0);
-        for(size_t j=0;j<Eq.nr_of_columns();++j)
-            help[j+1]=Eq[i][j];
-        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
-    }
-    
-    const Matrix<Integer>& Supp=ApproximatedCone->SupportHyperplanes;
-    FC.Subcone_Support_Hyperplanes=Matrix<IntegerFC>(Supp.nr_of_rows(),BasisChangePointed.getRank());
-
-    for(size_t i=0;i<Supp.nr_of_rows();++i){
-        vector<Integer> help(Supp.nr_of_columns()+1,0);
-        for(size_t j=0;j<Supp.nr_of_columns();++j)
-            help[j+1]=Supp[i][j];
-        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes[i], help);       
-    }
-    
-    
-}
-
-//---------------------------------------------------------------------------
-template<typename Integer>
-void Cone<Integer>::check_Gorenstein (ConeProperties&  ToCompute){
-    
-    if(!ToCompute.test(ConeProperty::IsGorenstein) || isComputed(ConeProperty::IsGorenstein))
+    if(Gens.nr_of_rows()==0)
         return;
-    if(!isComputed(ConeProperty::SupportHyperplanes))
-        recursive_compute(ConeProperty::SupportHyperplanes);
-    if(!isComputed(ConeProperty::MaximalSubspace))
-        recursive_compute(ConeProperty::MaximalSubspace);
+    size_t dim=Gens.nr_of_columns(); // our local embedding dimension
+    size_t dim1=dim-1;
     
-    if(dim==0){
-        Gorenstein=true;
-        is_Computed.set(ConeProperty::IsGorenstein);
+    if(dim<=2){
+        Cone<Integer> D(Type::cone,Gens);
+        D.compute(ConeProperty::Deg1Elements);
+        Matrix<Integer> Deg1Prel=D.getDeg1ElementsMatrix();
+        Deg1=Deg1Prel;
+            cout << "Deg 1" << endl;
+    Deg1.pretty_print(cout);
+    cout << "*******************" << endl;
         return;        
     }
-    Matrix<Integer> TransfSupps=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
-    assert(TransfSupps.nr_of_rows()>0);
-    Gorenstein=false;
-    vector<Integer> TransfIntGen = TransfSupps.find_linear_form();
-    if(TransfIntGen.size()!=0 && v_scalar_product(TransfIntGen,TransfSupps[0])==1){
-        Gorenstein=true;
-        GeneratorOfInterior=BasisChangePointed.from_sublattice(TransfIntGen);
+    
+    vector<key_t> Neg, Pos; // for the Fourier-Motzkin elimination of inequalities
+    Matrix<Integer> SuppsProj(0,dim1);
+    for(size_t i=0;i<Supps.nr_of_rows();++i){
+        if(Supps[i][dim1]==0){  // already independent of last coordinate
+            vector<Integer> Transfer=Supps[i];
+            Transfer.resize(dim1);
+            SuppsProj.append(Transfer);
+            continue;
+        }
+        if(Supps[i][dim1]>0){
+            Pos.push_back(i);
+            continue;
+        }
+        Neg.push_back(i);
     }
-    is_Computed.set(ConeProperty::IsGorenstein);
+    
+    cout << "After Pos/Neg neutral" << endl;
+    SuppsProj.pretty_print(cout);
+    cout << "===================" << endl;
+    cout << "Pos " << Pos;
+    cout << "Neg " << Neg;
+    
+    for(size_t i=0;i<Pos.size();++i){ // now the elimination
+        size_t p=Pos[i];
+        Integer PosVal=Supps[p][dim1];
+        for(size_t j=0;j<Neg.size();++j){
+            size_t n=Neg[j];
+            Integer NegVal=Supps[n][dim1];
+            vector<Integer> new_supp(dim1);
+            for(size_t k=0;k<dim1;++k)
+                new_supp[k]=PosVal*Supps[n][k]-NegVal*Supps[p][k];
+            Integer g=v_make_prime(new_supp);
+            if(g!=0)
+                SuppsProj.append(new_supp);
+        }
+    }
+    
+    cout << "After FM " << endl;
+    SuppsProj.pretty_print(cout);
+    cout << "===================" << endl;
+    
+    Matrix<Integer> GensProj(Gens); // project generators
+    cout << "GensProj " << endl;
+    GensProj.resize_columns(dim1);
+    GensProj.pretty_print(cout);
+    cout << "===================" << endl;
+    
+    GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
+    cout << "After dupl remove " << endl;
+    GensProj.pretty_print(cout);
+    cout << "===================" << endl;
+    
+    size_t rank=GensProj.rank(); // the dimension of the projection
+    
+    Matrix<Integer> EqusProj(0,dim1); // for the equations of the projection
+    vector<bool> Essential(SuppsProj.nr_of_rows()); // indicator of essential hyperplanes
+    vector<vector<bool> > Ind(SuppsProj.nr_of_rows(),vector<bool>(GensProj.nr_of_rows(),false));
+    for(size_t i=0;i<SuppsProj.nr_of_rows();++i){
+        size_t nr_match=0;
+        for(size_t j=0;j<GensProj.nr_of_rows();++j){
+            Integer val=v_scalar_product(SuppsProj[i],GensProj[j]);
+            if(val==0){
+                Ind[i][j]=true;
+                nr_match++;                
+            }
+            if(nr_match<GensProj.nr_of_rows() && nr_match >= rank-1)
+                Essential[i]=true; // will be made false later if not essential
+            if(nr_match==GensProj.nr_of_rows())
+                EqusProj.append(SuppsProj[i]);
+        }
+    }    
+    
+    maximal_subsets(Ind,Essential);  // select essentail hyperplanes 
+    Matrix<Integer> EssSuppsProj=SuppsProj.submatrix(Essential);
+    
+    cout << "After essential " << endl;
+    EssSuppsProj.pretty_print(cout);
+    cout << "===================" << endl;
+    
+    
+    EqusProj.row_echelon(); // reduce equations
+    EssSuppsProj.append(EqusProj); // append them as pairs of inequalities
+    EqusProj.scalar_multiplication(-1);
+    EssSuppsProj.append(EqusProj);
+
+    cout << "Rank " << rank << endl;
+    
+    vector<bool> ExtrInd(GensProj.nr_of_rows());
+    for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
+        cout << endl << "GensProj[i] " << GensProj[i];
+        Matrix<Integer> RankTest(0,dim1);
+        for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
+            cout << "SuppsProj[j] " << SuppsProj[j];
+            cout << "Ess " << Essential[j] << " Ind " << Ind[j][i] << endl;
+            if(!Essential[j] || Ind[j][i]==false)
+                continue;
+            cout << "To RT " << SuppsProj[j];
+            RankTest.append(SuppsProj[j]);            
+        }
+        if(RankTest.rank()==rank-1)
+            ExtrInd[i]=true;
+    }
+    Matrix<Integer> ExtrProj=GensProj.submatrix(ExtrInd);
+    
+    GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
+    cout << "Extr proj " << endl;
+    ExtrProj.pretty_print(cout);
+    cout << "===================" << endl;
+    
+    Matrix<Integer> Deg1Proj(0,dim1);
+    project_and_lift (Deg1Proj,ExtrProj,EssSuppsProj);
+    
+    // now the lifting
+    
+    cout << "Deg1_col " << Deg1.nr_of_columns() << " dim " << dim << endl;
+    
+    for(size_t i=0;i<Deg1Proj.nr_of_rows();++i){
+        
+        cout << "+++++++ " << endl << "Deg1Proj " << Deg1Proj[i];
+        
+        Integer MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
+        bool FirstMin=true, FirstMax=true;
+        for(size_t j=0;j<Supps.nr_of_rows();++j){
+            cout << endl << "Supp " << Supps[j];
+            Integer Den=Supps[j][dim1];
+            cout << "Den " << Den << endl;
+            Integer Bound=0;
+            if(Den==0)
+                continue;
+            Integer Num= -v_scalar_product_unequal_vectors_begin(Deg1Proj[i],Supps[j]);
+            cout << "Num " << Num << endl;
+            bool SignChange=false;
+            if(Den>0){ // we must produce a lower bound of the interval
+                if(Num<0){
+                    SignChange=true;
+                    Num=-Num;
+                }
+                Bound=Num/Den;
+                if(Num%Den !=0){
+                    if(!SignChange)
+                        Bound++;
+                    else
+                        Bound=-Bound;
+                }
+                if(FirstMin || Bound > MinInterval){
+                    MinInterval=Bound;
+                    FirstMin=false;
+                }
+            }
+            if(Den<0){ // we must produce an upper bound of the interval
+                Den=-Den;
+                if(Num<0){
+                    Integer Num1=-Num; // now both >= 0;
+                    Bound=Num1/Den;
+                    if(Num1%Den !=0)
+                        Bound++;
+                }
+                if(Num>=0){
+                    Bound=-Num/Den;
+                }
+                if(FirstMax || Bound < MaxInterval){
+                    MaxInterval=Bound;
+                    FirstMax=false;
+                }
+            }            
+        }
+        cout << "Min " << MinInterval <<" Max " << MaxInterval << endl << endl;
+        cout << "/////// " << endl;
+        
+        for(Integer k=MinInterval;k<=MaxInterval;++k){
+            vector<Integer> NewPoint(dim);
+            for(size_t j=0;j<dim1;++j)
+                NewPoint[j]=Deg1Proj[i][j];
+            NewPoint[dim1]=k;
+            Deg1.append(NewPoint);
+        }
+    } // lifting
+    
+    cout<<  "Deg 1" << endl;
+    Deg1.pretty_print(cout);
+    cout << "*******************" << endl;
 }
+
+//---------------------------------------------------------------------------
+/* template<typename Integer>
+void Cone<Integer>::deg1_by_projection (ConeProperties&  ToCompute){*/
+    
+    
 
 } // end namespace libnormaliz
