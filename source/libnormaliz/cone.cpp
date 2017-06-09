@@ -21,6 +21,7 @@
  * terms of service.
  */
 
+#include <stdlib.h>
 #include <list>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -3550,6 +3551,8 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     else
         GradForApprox=Dehomogenization;
     
+    bool do_approximation=false;
+    
     Matrix<Integer> GradGen(0,dim+1);
     for(size_t i=0;i<Generators.nr_of_rows();++i){
         vector<Integer> gg(dim+1);
@@ -3557,15 +3560,17 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
             gg[j+1]=Generators[i][j];
         gg[0]=v_scalar_product(Generators[i],GradForApprox);
         // cout << gg;
-        list<vector<Integer> > approx;
-        approx_simplex(gg,approx,1);
-        GradGen.append(Matrix<Integer>(approx));        
+        if(do_approximation){
+            list<vector<Integer> > approx;
+            approx_simplex(gg,approx,1);
+            GradGen.append(Matrix<Integer>(approx));
+        }
+        else
+            GradGen.append(gg);
+            
     }
     
     Matrix<Integer> Raw(0,dim+1);
-    
-    bool do_approximation=true;
-
 
     /* cout << "=================================" << endl;
     GradGen.pretty_print(cout);
@@ -3576,7 +3581,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
 
     ApproxCone.compute(ConeProperty::SupportHyperplanes);
         
-    if(false){
+    if(do_approximation){
         ApproxCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
         ApproxCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
         ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
@@ -3588,7 +3593,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
         Supps.append(Equs);
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(Raw, GradGen,Supps);
+        project_and_lift(Raw, GradGen,Supps);        
     }
     
     HilbertBasis=Matrix<Integer>(0,dim);
@@ -3634,6 +3639,13 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
         else
             Deg1Elements.append(rr);        
     }
+    
+    // if(!do_approximation)
+    setWeights();
+    if(inhomogeneous)
+         ModuleGenerators.sort_by_weights(WeightsGrad,GradAbs);
+    else
+        Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
 
     if(inhomogeneous){
         is_Computed.set(ConeProperty::HilbertBasis);
@@ -3679,34 +3691,70 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
 template<typename Integer>
 void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps){
     
-    cout << "Project and lift" << endl;
+    if(verbose)
+        verboseOutput() << "Starting projection ... ";
+
+    if (change_integer_type) {
+            Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
+            Matrix<MachineInteger> GensMI;
+            Matrix<MachineInteger> SuppsMI;
+            convert(GensMI,Gens);
+            convert(SuppsMI,Supps);
+            
+            try {
+                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI);
+            } catch(const ArithmeticException& e) {
+                if (verbose) {
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
+                }
+                change_integer_type = false;
+            }
+            if(change_integer_type){
+                convert(Deg1,Deg1MI);                
+            }
+        }
+        
+        if (!change_integer_type) {
+            project_and_lift_inner<Integer>(Deg1, Gens, Supps);
+        }
+        
+        if(verbose)
+            verboseOutput() << "done" << endl;
+}
+//---------------------------------------------------------------------------
+template<typename Integer>
+template<typename IntegerPL>
+void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
+                                            const Matrix<IntegerPL>& Supps){
     
-    Gens.pretty_print(cout);
-    cout << "--------------------------" << endl;
-    Supps.pretty_print(cout);
-    cout << "--------------------------" << endl;
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     if(Gens.nr_of_rows()==0)
         return;
     size_t dim=Gens.nr_of_columns(); // our local embedding dimension
     size_t dim1=dim-1;
     
-    if(dim<=2){
-        Cone<Integer> D(Type::cone,Gens);
-        D.compute(ConeProperty::Deg1Elements);
-        Matrix<Integer> Deg1Prel=D.getDeg1ElementsMatrix();
+    if(dim<=1){
+        if(verbose)
+            verboseOutput() << "done" << endl;
+        Matrix<IntegerPL> GradingForProj(1,dim);
+        GradingForProj[0][0]=1;
+        Cone<IntegerPL> D(Type::cone,Gens, Type::grading,GradingForProj);
+        D.setVerbose(false);
+        D.compute(ConeProperty::Deg1Elements, ConeProperty::NoApproximation);
+        Matrix<IntegerPL> Deg1Prel=D.getDeg1ElementsMatrix();
         Deg1=Deg1Prel;
-            cout << "Deg 1" << endl;
-    Deg1.pretty_print(cout);
-    cout << "*******************" << endl;
+        if(verbose)
+            verboseOutput() << "Lifting ... ";
         return;        
     }
     
     vector<key_t> Neg, Pos; // for the Fourier-Motzkin elimination of inequalities
-    Matrix<Integer> SuppsProj(0,dim1);
+    Matrix<IntegerPL> SuppsProj(0,dim1);
     for(size_t i=0;i<Supps.nr_of_rows();++i){
         if(Supps[i][dim1]==0){  // already independent of last coordinate
-            vector<Integer> Transfer=Supps[i];
+            vector<IntegerPL> Transfer=Supps[i];
             Transfer.resize(dim1);
             SuppsProj.append(Transfer);
             continue;
@@ -3718,171 +3766,189 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         Neg.push_back(i);
     }
     
-    cout << "After Pos/Neg neutral" << endl;
-    SuppsProj.pretty_print(cout);
-    cout << "===================" << endl;
-    cout << "Pos " << Pos;
-    cout << "Neg " << Neg;
-    
     for(size_t i=0;i<Pos.size();++i){ // now the elimination
         size_t p=Pos[i];
-        Integer PosVal=Supps[p][dim1];
+        IntegerPL PosVal=Supps[p][dim1];
         for(size_t j=0;j<Neg.size();++j){
             size_t n=Neg[j];
-            Integer NegVal=Supps[n][dim1];
-            vector<Integer> new_supp(dim1);
-            for(size_t k=0;k<dim1;++k)
+            IntegerPL NegVal=Supps[n][dim1];
+            vector<IntegerPL> new_supp(dim1);
+            size_t k=0;
+            for(;k<dim1;++k){
                 new_supp[k]=PosVal*Supps[n][k]-NegVal*Supps[p][k];
-            Integer g=v_make_prime(new_supp);
+                if(!check_range(new_supp[k]))
+                    break;    
+            }
+            IntegerPL g;
+            if(k==dim1)
+                g=v_make_prime(new_supp);
+            else{
+                #pragma omp atomic
+                GMP_hyp++;
+                vector<mpz_class> mpz_neg(dim1), mpz_pos(dim1), mpz_sum(dim1);
+                convert(mpz_neg, Supps[n]);
+                convert(mpz_pos, Supps[p]);
+                for (k = 0; k <dim1; k++)
+                    mpz_sum[k]=convertTo<mpz_class>(PosVal)*mpz_neg[k]-
+                            convertTo<mpz_class>(NegVal)*mpz_pos[k];
+                mpz_class GG=v_make_prime(mpz_sum);
+                convert(new_supp, mpz_sum);
+                convert(g,GG);
+            }
             if(g!=0)
                 SuppsProj.append(new_supp);
         }
     }
     
-    cout << "After FM " << endl;
-    SuppsProj.pretty_print(cout);
-    cout << "===================" << endl;
-    
-    Matrix<Integer> GensProj(Gens); // project generators
-    cout << "GensProj " << endl;
+    Matrix<IntegerPL> GensProj(Gens); // project generators
     GensProj.resize_columns(dim1);
-    GensProj.pretty_print(cout);
-    cout << "===================" << endl;
     
     GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
-    cout << "After dupl remove " << endl;
-    GensProj.pretty_print(cout);
-    cout << "===================" << endl;
     
     size_t rank=GensProj.rank(); // the dimension of the projection
     
-    Matrix<Integer> EqusProj(0,dim1); // for the equations of the projection
+    Matrix<IntegerPL> EqusProj(0,dim1); // for the equations of the projection
     vector<bool> Essential(SuppsProj.nr_of_rows()); // indicator of essential hyperplanes
     vector<vector<bool> > Ind(SuppsProj.nr_of_rows(),vector<bool>(GensProj.nr_of_rows(),false));
     for(size_t i=0;i<SuppsProj.nr_of_rows();++i){
         size_t nr_match=0;
         for(size_t j=0;j<GensProj.nr_of_rows();++j){
-            Integer val=v_scalar_product(SuppsProj[i],GensProj[j]);
+            IntegerPL val=v_scalar_product(SuppsProj[i],GensProj[j]);
             if(val==0){
                 Ind[i][j]=true;
                 nr_match++;                
             }
-            if(nr_match<GensProj.nr_of_rows() && nr_match >= rank-1)
-                Essential[i]=true; // will be made false later if not essential
-            if(nr_match==GensProj.nr_of_rows())
-                EqusProj.append(SuppsProj[i]);
         }
+        if(nr_match<GensProj.nr_of_rows() && nr_match >= rank-1)
+            Essential[i]=true; // will be made false later if not essential
+        if(nr_match==GensProj.nr_of_rows())
+            EqusProj.append(SuppsProj[i]);
+
     }    
     
     maximal_subsets(Ind,Essential);  // select essentail hyperplanes 
-    Matrix<Integer> EssSuppsProj=SuppsProj.submatrix(Essential);
-    
-    cout << "After essential " << endl;
-    EssSuppsProj.pretty_print(cout);
-    cout << "===================" << endl;
-    
+    Matrix<IntegerPL> EssSuppsProj=SuppsProj.submatrix(Essential);
     
     EqusProj.row_echelon(); // reduce equations
     EssSuppsProj.append(EqusProj); // append them as pairs of inequalities
     EqusProj.scalar_multiplication(-1);
     EssSuppsProj.append(EqusProj);
-
-    cout << "Rank " << rank << endl;
     
     vector<bool> ExtrInd(GensProj.nr_of_rows());
     for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
-        cout << endl << "GensProj[i] " << GensProj[i];
-        Matrix<Integer> RankTest(0,dim1);
+        Matrix<IntegerPL> RankTest(0,dim1);
         for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
-            cout << "SuppsProj[j] " << SuppsProj[j];
-            cout << "Ess " << Essential[j] << " Ind " << Ind[j][i] << endl;
             if(!Essential[j] || Ind[j][i]==false)
                 continue;
-            cout << "To RT " << SuppsProj[j];
             RankTest.append(SuppsProj[j]);            
         }
         if(RankTest.rank()==rank-1)
             ExtrInd[i]=true;
     }
-    Matrix<Integer> ExtrProj=GensProj.submatrix(ExtrInd);
+    Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrInd);
     
     GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
-    cout << "Extr proj " << endl;
-    ExtrProj.pretty_print(cout);
-    cout << "===================" << endl;
-    
-    Matrix<Integer> Deg1Proj(0,dim1);
-    project_and_lift (Deg1Proj,ExtrProj,EssSuppsProj);
+    Matrix<IntegerPL> Deg1Proj(0,dim1);
+    project_and_lift_inner(Deg1Proj,ExtrProj,EssSuppsProj);
     
     // now the lifting
     
-    cout << "Deg1_col " << Deg1.nr_of_columns() << " dim " << dim << endl;
+    vector<Matrix<IntegerPL> > Deg1Thread(omp_get_max_threads());
+    for(size_t i=0;i<Deg1Thread.size();++i)
+        Deg1Thread[i].resize(0,dim);
     
+    bool skip_remaining=false;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+    
+    #pragma omp parallel
+    {
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+ 
+    #pragma omp for schedule(dynamic)
     for(size_t i=0;i<Deg1Proj.nr_of_rows();++i){
         
-        cout << "+++++++ " << endl << "Deg1Proj " << Deg1Proj[i];
+        if (skip_remaining) continue;
         
-        Integer MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
+#ifndef NCATCH
+        try {
+#endif
+            
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        IntegerPL MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
         bool FirstMin=true, FirstMax=true;
         for(size_t j=0;j<Supps.nr_of_rows();++j){
-            cout << endl << "Supp " << Supps[j];
-            Integer Den=Supps[j][dim1];
-            cout << "Den " << Den << endl;
-            Integer Bound=0;
+            IntegerPL Den=Supps[j][dim1];
             if(Den==0)
                 continue;
-            Integer Num= -v_scalar_product_unequal_vectors_begin(Deg1Proj[i],Supps[j]);
-            cout << "Num " << Num << endl;
-            bool SignChange=false;
+            IntegerPL Bound=0;
+            IntegerPL Num= -v_scalar_product_unequal_vectors_begin(Deg1Proj[i],Supps[j]);
+            // cout << "Num " << Num << endl;
+            IntegerPL Quot=Iabs(Num)/Iabs(Den);
+            bool frac=(Num % Den !=0);
             if(Den>0){ // we must produce a lower bound of the interval
-                if(Num<0){
-                    SignChange=true;
-                    Num=-Num;
-                }
-                Bound=Num/Den;
-                if(Num%Den !=0){
-                    if(!SignChange)
+                if(Num>=0){  // true quot >= 0
+                    Bound=Quot;
+                    if(frac)
                         Bound++;
-                    else
-                        Bound=-Bound;
                 }
+                else // true quot < 0
+                    Bound=-Quot;
                 if(FirstMin || Bound > MinInterval){
                     MinInterval=Bound;
                     FirstMin=false;
                 }
             }
             if(Den<0){ // we must produce an upper bound of the interval
-                Den=-Den;
-                if(Num<0){
-                    Integer Num1=-Num; // now both >= 0;
-                    Bound=Num1/Den;
-                    if(Num1%Den !=0)
-                        Bound++;
+                if(Num >= 0){ // true quot <= 0
+                    Bound=-Quot;
+                    if(frac)
+                        Bound--;                    
                 }
-                if(Num>=0){
-                    Bound=-Num/Den;
-                }
+                else // true quot > 0
+                    Bound=Quot;
                 if(FirstMax || Bound < MaxInterval){
                     MaxInterval=Bound;
                     FirstMax=false;
                 }
-            }            
+            }
         }
-        cout << "Min " << MinInterval <<" Max " << MaxInterval << endl << endl;
-        cout << "/////// " << endl;
         
-        for(Integer k=MinInterval;k<=MaxInterval;++k){
-            vector<Integer> NewPoint(dim);
+        for(IntegerPL k=MinInterval;k<=MaxInterval;++k){
+            vector<IntegerPL> NewPoint(dim);
             for(size_t j=0;j<dim1;++j)
                 NewPoint[j]=Deg1Proj[i][j];
             NewPoint[dim1]=k;
-            Deg1.append(NewPoint);
+            Deg1Thread[tn].append(NewPoint);
         }
+        
+#ifndef NCATCH
+        } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+        }
+#endif
+
     } // lifting
+    } // pararllel
     
-    cout<<  "Deg 1" << endl;
-    Deg1.pretty_print(cout);
-    cout << "*******************" << endl;
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+    
+    for(size_t i=0;i<Deg1Thread.size();++i)
+        Deg1.append(Deg1Thread[i]);
+    
+    // cout<<  "Deg 1 " << Deg1.nr_of_rows() << endl;
+    /* Deg1.pretty_print(cout);
+    cout << "*******************" << endl; */
 }
 
 //---------------------------------------------------------------------------

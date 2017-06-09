@@ -306,9 +306,6 @@ public:
     bool get_verbose ();
     
     IntegrationData& getIntData();
-    
-    void project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps);
-    
 
 //---------------------------------------------------------------------------
 //                          private part
@@ -501,6 +498,11 @@ private:
     
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
+    
+    void project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps);
+    template<typename IntegerPL>
+    void project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
+                                            const Matrix<IntegerPL>& Supps);
 };
 
 // helpers
