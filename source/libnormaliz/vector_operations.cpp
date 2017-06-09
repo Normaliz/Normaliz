@@ -335,17 +335,17 @@ bool v_scalar_product_positive(const vector<Integer>& av,const vector<Integer>& 
 }
 
 template<typename Integer>
-Integer v_scalar_product_unequal_vectors_begin(const vector<Integer>& a,const vector<Integer>& b){
-    Integer ans = 0;
-    size_t i,n=min(a.size(),b.size());
-    for (i = 0; i < n; i++) {
-        ans+=a[i]*b[i];
-    }
-    return ans;
+Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
+    size_t n=min(a.size(),b.size());
+    vector<Integer> trunc_a=a;
+    vector<Integer> trunc_b=b;
+    trunc_a.resize(n);
+    trunc_b.resize(n);
+    return v_scalar_product(trunc_a,trunc_b); 
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
     Integer ans = 0;
@@ -355,6 +355,7 @@ Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vect
     }
     return ans;
 }
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>

@@ -60,13 +60,6 @@ template<typename Integer> class Matrix {
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-//                      Rows and columns exchange
-//---------------------------------------------------------------------------
-
-    void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
-    void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
-
-//---------------------------------------------------------------------------
 //              Row and column reduction
 //---------------------------------------------------------------------------
     // return value false undicates failure because of overflow
@@ -152,7 +145,14 @@ public:
 
 size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
-    vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);     
+    vector<vector<Integer>* > submatrix_pointers(const vector<key_t>& key);
+    
+//---------------------------------------------------------------------------
+//                      Rows and columns exchange
+//---------------------------------------------------------------------------
+
+    void exchange_rows(const size_t& row1, const size_t& row2);      //row1 is exchanged with row2
+    void exchange_columns(const size_t& col1, const size_t& col2); // col1 is exchanged with col2
   
 //---------------------------------------------------------------------------
 

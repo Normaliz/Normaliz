@@ -403,6 +403,10 @@ private:
     
     Cone<Integer>* IntHullCone;
     Cone<Integer>* SymmCone;
+    
+    // In cone based algorithms we use the following information
+    bool Grading_Is_Coordinate; // indicates that the grading or dehomogenization is a coordinate
+    key_t GradingCoordinate;  // namely this one
 
     void compose_basis_change(const Sublattice_Representation<Integer>& SR); // composes SR
 

@@ -3442,6 +3442,9 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
     FC.is_global_approximation=true;
     // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
     
+    // We must distinguish zwo cases: Approximated->Grading_Is_Coordinate or it is not
+
+    // If it is not:
     // The first coordinate in *this is the degree given by the grading
     // in ApproximatedCone. We disregard it by setting the first coordinate
     // of the grading, inequalities and equations to 0, and then have 0 followed
@@ -3452,34 +3455,49 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
         help_g=ApproximatedCone->Dehomogenization;
     else
         help_g=ApproximatedCone->Grading;
-            
-    vector<Integer> help(help_g.size()+1);
-    help[0]=0;
-    for(size_t j=0;j<help_g.size();++j)
-        help[j+1]=help_g[j];
-    BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
     
-    const Matrix<Integer>& Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
+    if(ApproximatedCone->Grading_Is_Coordinate){
+        swap(help_g[0],help_g[ApproximatedCone->GradingCoordinate]);
+        BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help_g); 
+    }        
+    else{            
+        vector<Integer> help(help_g.size()+1);
+        help[0]=0;
+        for(size_t j=0;j<help_g.size();++j)
+            help[j+1]=help_g[j];
+        BasisChangePointed.convert_to_sublattice_dual_no_div(FC.Subcone_Grading,help);
+    }
+    
+    Matrix<Integer> Eq=ApproximatedCone->BasisChangePointed.getEquationsMatrix();
     FC.Subcone_Equations=Matrix<IntegerFC>(Eq.nr_of_rows(),BasisChangePointed.getRank());
-
-    for(size_t i=0;i<Eq.nr_of_rows();++i){
-        vector<Integer> help(Eq.nr_of_columns()+1,0);
-        for(size_t j=0;j<Eq.nr_of_columns();++j)
-            help[j+1]=Eq[i][j];
-        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
+    if(ApproximatedCone->Grading_Is_Coordinate){
+        Eq.exchange_columns(0,ApproximatedCone->GradingCoordinate);
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations,Eq);
+    }
+    else{
+        for(size_t i=0;i<Eq.nr_of_rows();++i){
+            vector<Integer> help(Eq.nr_of_columns()+1,0);
+            for(size_t j=0;j<Eq.nr_of_columns();++j)
+                help[j+1]=Eq[i][j];
+            BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Equations[i], help);       
+        }
     }
     
-    const Matrix<Integer>& Supp=ApproximatedCone->SupportHyperplanes;
+    Matrix<Integer> Supp=ApproximatedCone->SupportHyperplanes;
     FC.Subcone_Support_Hyperplanes=Matrix<IntegerFC>(Supp.nr_of_rows(),BasisChangePointed.getRank());
-
-    for(size_t i=0;i<Supp.nr_of_rows();++i){
-        vector<Integer> help(Supp.nr_of_columns()+1,0);
-        for(size_t j=0;j<Supp.nr_of_columns();++j)
-            help[j+1]=Supp[i][j];
-        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes[i], help);       
+    
+    if(ApproximatedCone->Grading_Is_Coordinate){
+        Supp.exchange_columns(0,ApproximatedCone->GradingCoordinate);
+        BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes,Supp);
     }
-    
-    
+    else{
+        for(size_t i=0;i<Supp.nr_of_rows();++i){
+            vector<Integer> help(Supp.nr_of_columns()+1,0);
+            for(size_t j=0;j<Supp.nr_of_columns();++j)
+                help[j+1]=Supp[i][j];
+            BasisChangePointed.convert_to_sublattice_dual(FC.Subcone_Support_Hyperplanes[i], help);       
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -3504,14 +3522,14 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
         return;
     
-    /* if(!inhomogeneous){ // we do not use this routine for lattice polytopes
+    if(!inhomogeneous){ // we do not use this routine for lattice polytopes
         size_t i=0;
         for(;i<Generators.nr_of_rows();++i)
             if(v_scalar_product(Generators[i],Grading)!=1)
                 break;
             if(i==Generators.nr_of_rows())
                 return;
-    }*/
+    }
     
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
@@ -3551,30 +3569,58 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     else
         GradForApprox=Dehomogenization;
     
-    bool do_approximation=false;
+    bool do_approximation=true;
     
-    Matrix<Integer> GradGen(0,dim+1);
-    for(size_t i=0;i<Generators.nr_of_rows();++i){
-        vector<Integer> gg(dim+1);
-        for(size_t j=0;j<dim;++j)
-            gg[j+1]=Generators[i][j];
-        gg[0]=v_scalar_product(Generators[i],GradForApprox);
-        // cout << gg;
-        if(do_approximation){
-            list<vector<Integer> > approx;
-            approx_simplex(gg,approx,1);
-            GradGen.append(Matrix<Integer>(approx));
+    Grading_Is_Coordinate=false;
+    size_t nr_nonzero=0;
+    for(size_t i=0;i<dim;++i){
+        if(GradForApprox[i]!=0){
+            nr_nonzero++;
+            GradingCoordinate=i;
         }
-        else
-            GradGen.append(gg);
-            
+    }
+    if(nr_nonzero==1){
+        if(GradForApprox[GradingCoordinate]==1)
+            Grading_Is_Coordinate=true;        
     }
     
-    Matrix<Integer> Raw(0,dim+1);
+    Matrix<Integer> GradGen;
+    if(Grading_Is_Coordinate){ 
+        if(!do_approximation){
+            GradGen=Generators;
+            GradGen.exchange_columns(0,GradingCoordinate); // we swap it into the first coordinate
+        }
+        else{ // we swap the grading into the first coordinate and approximate
+            GradGen.resize(0,dim);
+            for(size_t i=0;i<Generators.nr_of_rows();++i){
+                vector<Integer> gg=Generators[i];
+                swap(gg[0],gg[GradingCoordinate]);
+                list<vector<Integer> > approx;
+                approx_simplex(gg,approx,1);
+                GradGen.append(Matrix<Integer>(approx));
+            }    
+        }           
+    }    
+    else{ // to avoid coordinate trabnsformations, we prepend the degree as the first coordinate
+        GradGen.resize(0,dim+1); 
+        for(size_t i=0;i<Generators.nr_of_rows();++i){
+            vector<Integer> gg(dim+1);
+            for(size_t j=0;j<dim;++j)
+                gg[j+1]=Generators[i][j];
+            gg[0]=v_scalar_product(Generators[i],GradForApprox);
+            // cout << gg;
+            if(do_approximation){
+                list<vector<Integer> > approx;
+                approx_simplex(gg,approx,1);
+                GradGen.append(Matrix<Integer>(approx));
+            }
+            else
+                GradGen.append(gg);            
+        }
+    }
+    
+    Matrix<Integer> Raw(0,GradGen.nr_of_columns()); // result is returned in this matrix
 
-    /* cout << "=================================" << endl;
-    GradGen.pretty_print(cout);
-    cout << "=================================" << endl;    */
     if(verbose)
         verboseOutput() << "Computing approximating polytope" << endl;
     Cone<Integer> ApproxCone(InputType::cone,GradGen);
@@ -3589,7 +3635,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     }
     else{
         Matrix<Integer> Supps=ApproxCone.getSupportHyperplanesMatrix();
-        Matrix<Integer> Equs=ApproxCone.BasisChange.getEquations();    // we must add the equations as pairs of inequalities
+        Matrix<Integer> Equs=ApproxCone.BasisChange.getEquationsMatrix();    // we must add the equations as pairs of inequalities
         Supps.append(Equs);
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
@@ -3600,44 +3646,42 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     Deg1Elements=Matrix<Integer>(0,dim);
     ModuleGenerators=Matrix<Integer>(0,dim);
     
-
-    Matrix<Integer> Result(0,dim);
-    Matrix<Integer> Eq=BasisChange.getEquations();
+    if(Grading_Is_Coordinate)
+        Raw.exchange_columns(0,GradingCoordinate);
+    
     Matrix<Integer> Cong=BasisChange.getCongruences();
-    for(size_t i=0;i<Raw.nr_of_rows();++i){
-        vector<Integer> rr(dim);
-        for(size_t j=0;j<dim;++j)
-            rr[j]=Raw[i][j+1];
-        /*if(v_scalar_product(rr,GradForApprox)!=1){ // not a degree 1 element in original cone
-            continue;
-        }*/
-        bool not_in=false;
-        /* for(size_t k=0;k<SupportHyperplanes.nr_of_rows();++k)
-            if(v_scalar_product(rr,SupportHyperplanes[k])<0){  // not in original cone
-                not_in=true;
-                break;
-            }
-        if(not_in)
-            continue;
-        for(size_t k=0;k<Eq.nr_of_rows();++k) 
-            if(v_scalar_product(rr,Eq[k])!=0){// not in original cone (or lattice)
-                not_in=true;
-                break;
-            }
-        if(not_in)
-            continue;*/
-        for(size_t k=0;k<Cong.nr_of_rows();++k) {
-            if(v_scalar_product_unequal_vectors_begin(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
-                not_in=true;
-                break;
-            }
-        if(not_in)
-            continue;
-        if(inhomogeneous){
-            ModuleGenerators.append(rr);
-        }
+    
+    if(Grading_Is_Coordinate && Cong.nr_of_rows()==0){
+        if(inhomogeneous)
+            ModuleGenerators.swap(Raw);
         else
-            Deg1Elements.append(rr);        
+            Deg1Elements.swap(Raw);
+    }
+    else{
+        for(size_t i=0;i<Raw.nr_of_rows();++i){
+            vector<Integer> rr;
+            if(Grading_Is_Coordinate){
+                swap(rr,Raw[i]);
+            }
+            else{
+                rr.resize(dim); // remove the prepended grading
+                for(size_t j=0;j<dim;++j)
+                    rr[j]=Raw[i][j+1];
+            }
+            bool not_in=false;
+            for(size_t k=0;k<Cong.nr_of_rows();++k) {
+                if(v_scalar_product_vectors_unequal_lungth(rr,Cong[k]) % Cong[k][dim] !=0) // not in original lattice
+                    not_in=true;
+                    break;
+                }
+            if(not_in)
+                continue;
+            if(inhomogeneous){
+                ModuleGenerators.append(rr);
+            }
+            else
+                Deg1Elements.append(rr);        
+        }
     }
     
     // if(!do_approximation)
@@ -3888,7 +3932,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             if(Den==0)
                 continue;
             IntegerPL Bound=0;
-            IntegerPL Num= -v_scalar_product_unequal_vectors_begin(Deg1Proj[i],Supps[j]);
+            IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(Deg1Proj[i],Supps[j]);
             // cout << "Num " << Num << endl;
             IntegerPL Quot=Iabs(Num)/Iabs(Den);
             bool frac=(Num % Den !=0);

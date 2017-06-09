@@ -61,9 +61,9 @@ bool v_scalar_product_nonnegative(const vector<Integer>& a,const vector<Integer>
 template<typename Integer>
 bool v_scalar_product_positive(const vector<Integer>& a,const vector<Integer>& b);
 
-//returns the scalar product of the vector a with the end of the vector b
+//returns the scalar product of the truncations of vectors a and b to minimum of lengths
 template<typename Integer>
-Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b);
+Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b);
 
 //returns the addition a + b, vectors must be of equal size
 template<typename Integer>
