@@ -1832,6 +1832,7 @@ void Cone<Integer>::set_implicit_dual_mode(ConeProperties& ToCompute) {
     
     if(ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
                     || ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)
+                    || ToCompute.test(ConeProperty::Approximate)
                     || nr_cone_gen>0 || nr_latt_gen>0 || SupportHyperplanes.nr_of_rows() > 2*dim
                     || SupportHyperplanes.nr_of_rows() 
                             <= BasisChangePointed.getRank()+ 50/(BasisChangePointed.getRank()+1))
@@ -3521,15 +3522,22 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     
     if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
         return;
-    
-    if(!inhomogeneous){ // we do not use this routine for lattice polytopes
-        size_t i=0;
-        for(;i<Generators.nr_of_rows();++i)
-            if(v_scalar_product(Generators[i],Grading)!=1)
-                break;
-            if(i==Generators.nr_of_rows())
-                return;
-    }
+
+    vector<Integer> TestIntegrality;
+    if(inhomogeneous)
+        TestIntegrality=Dehomogenization;
+    else
+        TestIntegrality=Grading;
+        
+    /*
+    size_t i=0; // we don't want to apply the routine to lattice polytopes
+    for(;i<Generators.nr_of_rows();++i)
+        if(v_scalar_product(Generators[i],TestIntegrality)!=1)
+            break;
+    if(i==Generators.nr_of_rows())
+        return;
+    */
+
     
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
@@ -3569,7 +3577,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
     else
         GradForApprox=Dehomogenization;
     
-    bool do_approximation=true;
+    bool do_approximation=false;
     
     Grading_Is_Coordinate=false;
     size_t nr_nonzero=0;
@@ -3623,19 +3631,18 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
 
     if(verbose)
         verboseOutput() << "Computing approximating polytope" << endl;
-    Cone<Integer> ApproxCone(InputType::cone,GradGen);
-
-    ApproxCone.compute(ConeProperty::SupportHyperplanes);
+    Cone<Integer> HelperCone(InputType::cone,GradGen);
         
     if(do_approximation){
-        ApproxCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
-        ApproxCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
-        ApproxCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
-        Raw=ApproxCone.getDeg1ElementsMatrix();        
+        HelperCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
+        HelperCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
+        HelperCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
+        Raw=HelperCone.getDeg1ElementsMatrix();        
     }
     else{
-        Matrix<Integer> Supps=ApproxCone.getSupportHyperplanesMatrix();
-        Matrix<Integer> Equs=ApproxCone.BasisChange.getEquationsMatrix();    // we must add the equations as pairs of inequalities
+        HelperCone.compute(ConeProperty::SupportHyperplanes);
+        Matrix<Integer> Supps=HelperCone.getSupportHyperplanesMatrix();
+        Matrix<Integer> Equs=HelperCone.BasisChange.getEquationsMatrix();    // we must add the equations as pairs of inequalities
         Supps.append(Equs);
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
@@ -3736,7 +3743,7 @@ template<typename Integer>
 void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps){
     
     if(verbose)
-        verboseOutput() << "Starting projection ... ";
+        verboseOutput() << "Starting projection ... " << flush;
 
     if (change_integer_type) {
             Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
@@ -3785,12 +3792,12 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         Matrix<IntegerPL> GradingForProj(1,dim);
         GradingForProj[0][0]=1;
         Cone<IntegerPL> D(Type::cone,Gens, Type::grading,GradingForProj);
-        D.setVerbose(false);
+        D.setVerbose(true);
         D.compute(ConeProperty::Deg1Elements, ConeProperty::NoApproximation);
         Matrix<IntegerPL> Deg1Prel=D.getDeg1ElementsMatrix();
         Deg1=Deg1Prel;
         if(verbose)
-            verboseOutput() << "Lifting ... ";
+            verboseOutput() << "Lifting ... " << flush;
         return;        
     }
     
@@ -3990,7 +3997,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     for(size_t i=0;i<Deg1Thread.size();++i)
         Deg1.append(Deg1Thread[i]);
     
-    // cout<<  "Deg 1 " << Deg1.nr_of_rows() << endl;
+    cout<<  "Deg 1 " << Deg1.nr_of_rows() << endl;
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
 }
