@@ -1287,8 +1287,7 @@ void Cone<Integer>::checkGrading () {
         }
         if(positively_graded){
             is_Computed.set(ConeProperty::Grading);
-            is_Computed.set(ConeProperty::GradingDenom);
-            
+            is_Computed.set(ConeProperty::GradingDenom);            
         }
     }
     
@@ -1961,7 +1960,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-    try_approximation(ToCompute);
+    try_approximation_or_projection(ToCompute);
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
             || ToCompute.test(ConeProperty::Multiplicity)
@@ -3503,7 +3502,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
+void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     if(ToCompute.test(ConeProperty::NoApproximation))
         return;
@@ -3518,7 +3517,7 @@ void Cone<Integer>::try_approximation (ConeProperties& ToCompute){
                          || GradingDenom!=1
                          )                        
       )
-        return;
+    return;
     
     if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
         return;
@@ -3771,7 +3770,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         }
         
         if(verbose)
-            verboseOutput() << "done" << endl;
+            verboseOutput() << endl << "done" << endl;
 }
 //---------------------------------------------------------------------------
 template<typename Integer>
@@ -3781,21 +3780,38 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
+    /*Gens.pretty_print(cout);
+    cout << "===============" << endl;
+    Supps.pretty_print(cout);
+    cout << "++++++++++++++" << endl;
+    Matrix<IntegerPL> HHH=Supps;
+    Cone<IntegerPL> TT(Type::inequalities,HHH);
+    TT.setVerbose(false);
+    TT.compute(ConeProperty::SupportHyperplanes);
+    assert(TT.getExtremeRaysMatrix().nr_of_rows()==Gens.nr_of_rows());*/
+    
+    
     if(Gens.nr_of_rows()==0)
         return;
     size_t dim=Gens.nr_of_columns(); // our local embedding dimension
     size_t dim1=dim-1;
     
+    if(verbose)
+        verboseOutput() << endl << "embdim " << dim << flush; 
+    
     if(dim<=1){
         if(verbose)
             verboseOutput() << "done" << endl;
+        /*
         Matrix<IntegerPL> GradingForProj(1,dim);
         GradingForProj[0][0]=1;
         Cone<IntegerPL> D(Type::cone,Gens, Type::grading,GradingForProj);
         D.setVerbose(true);
         D.compute(ConeProperty::Deg1Elements, ConeProperty::NoApproximation);
         Matrix<IntegerPL> Deg1Prel=D.getDeg1ElementsMatrix();
-        Deg1=Deg1Prel;
+        Deg1=Deg1Prel;*/
+        vector<IntegerPL> One(1,1);
+        Deg1.append(One);
         if(verbose)
             verboseOutput() << "Lifting ... " << flush;
         return;        
@@ -3851,12 +3867,31 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         }
     }
     
+    /* Cone<IntegerPL> TT1(Type::inequalities,SuppsProj);
+    TT1.setVerbose(false);
+    TT1.compute(ConeProperty::SupportHyperplanes);
+    size_t E1=TT1.getNrExtremeRays();*/
+    
     Matrix<IntegerPL> GensProj(Gens); // project generators
     GensProj.resize_columns(dim1);
     
-    GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
+    /* Cone<IntegerPL> TT2(Type::cone,GensProj);
+    TT2.setVerbose(false);
+    TT2.compute(ConeProperty::SupportHyperplanes);
+    size_t E2=TT2.getNrExtremeRays();
     
-    size_t rank=GensProj.rank(); // the dimension of the projection
+    cout << "E1 " << E1 << " E2 " << E2 << endl;
+    if(E1!=E2)
+        exit(1);*/
+    
+    for(size_t i=0;i<GensProj.nr_of_rows();++i)  // indeed necessary
+        v_make_prime(GensProj[i]);    
+    GensProj.remove_duplicate_and_zero_rows();
+    
+    // for the rank test we must restrict hyperplanes to the subspace of our cone
+    Sublattice_Representation<IntegerPL> SubSpace(GensProj,false);
+    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);    
+    size_t rank=SubSpace.getRank(); // the dimension of the projection
     
     Matrix<IntegerPL> EqusProj(0,dim1); // for the equations of the projection
     vector<bool> Essential(SuppsProj.nr_of_rows()); // indicator of essential hyperplanes
@@ -3887,16 +3922,20 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     
     vector<bool> ExtrInd(GensProj.nr_of_rows());
     for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
-        Matrix<IntegerPL> RankTest(0,dim1);
+        Matrix<IntegerPL> RankTest(0,SubSpace.getRank());
         for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
             if(!Essential[j] || Ind[j][i]==false)
                 continue;
-            RankTest.append(SuppsProj[j]);            
+            RankTest.append(SuppsSub[j]);            
         }
         if(RankTest.rank()==rank-1)
             ExtrInd[i]=true;
     }
     Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrInd);
+    /*cout << "E3 " << ExtrProj.nr_of_rows() << endl;    
+    assert(E1==ExtrProj.nr_of_rows());*/
+    
+    
     
     GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
     Matrix<IntegerPL> Deg1Proj(0,dim1);
@@ -3997,15 +4036,10 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     for(size_t i=0;i<Deg1Thread.size();++i)
         Deg1.append(Deg1Thread[i]);
     
-    cout<<  "Deg 1 " << Deg1.nr_of_rows() << endl;
+    if(verbose)    
+        verboseOutput() <<  endl<< "embdim " << dim << " Deg1Elements " << Deg1.nr_of_rows() << flush;
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
 }
-
-//---------------------------------------------------------------------------
-/* template<typename Integer>
-void Cone<Integer>::deg1_by_projection (ConeProperties&  ToCompute){*/
-    
-    
 
 } // end namespace libnormaliz

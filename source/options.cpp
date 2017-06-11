@@ -249,6 +249,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             case 'G':
                 to_compute.set(ConeProperty::IsGorenstein);
                 break;
+            case 'j':
+                to_compute.set(ConeProperty::Projection);
+                break;
             default:
                 cerr<<"Error: Unknown option -"<<ShortOptions[i]<<endl;
                 exit(1);

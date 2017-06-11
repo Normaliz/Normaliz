@@ -95,6 +95,8 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 }
 
 ConeProperties& ConeProperties::reset_compute_options() {
+    CPs.set(ConeProperty::Projection, false);
+    CPs.set(ConeProperty::NoProjection, false);
     CPs.set(ConeProperty::Approximate, false);
     CPs.set(ConeProperty::NoApproximation, false);
     CPs.set(ConeProperty::BottomDecomposition, false);
@@ -122,8 +124,10 @@ ConeProperties ConeProperties::goals() {
 }
 ConeProperties ConeProperties::options() {
     ConeProperties ret;
+    ret.set(ConeProperty::Projection, CPs.test(ConeProperty::Projection));
+    ret.set(ConeProperty::NoProjection, CPs.test(ConeProperty::NoProjection));
     ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
-    ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::NoApproximation));
+    ret.set(ConeProperty::NoApproximation, CPs.test(ConeProperty::NoApproximation));
     ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::BottomDecomposition));
     ret.set(ConeProperty::NoBottomDec, CPs.test(ConeProperty::NoBottomDec));
     ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
@@ -257,21 +261,35 @@ void ConeProperties::prepare_compute_options(bool inhomogeneous) {
     
     if(CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) // can't be computed in dual mode
         CPs.reset(ConeProperty::DualMode);
-
-    // dual mode has priority, approximation makes no sense if HB is computed, except possibly with inhomogeneous data
-    if(CPs.test(ConeProperty::DualMode) || (CPs.test(ConeProperty::HilbertBasis) && !inhomogeneous))
-        CPs.reset(ConeProperty::Approximate);
     
-    if(CPs.test(ConeProperty::Approximate) && !inhomogeneous){
+    // Projection beats approximation    
+    if(CPs.test(ConeProperty::Approximate)){
+        CPs.reset(ConeProperty::Projection);
+    }
+    
+    if((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::Projection))  && !inhomogeneous){
         CPs.set(ConeProperty::Deg1Elements);
     }
 
-    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::Approximate))
+    // dual mode has priority, approximation and projection make no sense if HB is computed, except possibly with inhomogeneous data
+    if(CPs.test(ConeProperty::DualMode) || (CPs.test(ConeProperty::HilbertBasis) && !inhomogeneous)){
+        CPs.reset(ConeProperty::Approximate);
+        CPs.reset(ConeProperty::Projection);
+    }
+    
+    // promal mode beats  approximation and projection
+    if(CPs.test(ConeProperty::PrimalMode)){
+        CPs.reset(ConeProperty::Approximate);
+        CPs.reset(ConeProperty::Projection);
+    }
+
+    if ((CPs.test(ConeProperty::DualMode) || CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::Projection))
         && (CPs.test(ConeProperty::HilbertSeries) || CPs.test(ConeProperty::StanleyDec))
          && !CPs.test(ConeProperty::HilbertBasis)){
         CPs.reset(ConeProperty::DualMode); //it makes no sense to compute only deg 1 elements in dual mode
         CPs.reset(ConeProperty::Approximate); // or by approximation if the
-    }                                            // Stanley decomposition must be computed anyway
+        CPs.reset(ConeProperty::Projection); // Stanley decomposition must be computed anyway             
+    }                                            
     
     if(inhomogeneous && CPs.test(ConeProperty::SupportHyperplanes))
         CPs.set(ConeProperty::AffineDim);
@@ -291,6 +309,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
            (CPs.test(ConeProperty::BottomDecomposition) && CPs.test(ConeProperty::NoBottomDec))
         || (CPs.test(ConeProperty::DualMode) && CPs.test(ConeProperty::PrimalMode))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::NoSymmetrization))
+        || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::NoProjection))
         || (CPs.test(ConeProperty::Approximate) && CPs.test(ConeProperty::NoApproximation))
     )
         throw BadInputException("Contradictory algorithmic variants in options.");
@@ -399,6 +418,8 @@ namespace {
         CPN.at(ConeProperty::IsTriangulationPartial) = "IsTriangulationPartial";
         CPN.at(ConeProperty::BigInt) = "BigInt";
         CPN.at(ConeProperty::NoSubdivision) = "NoSubdivision";
+        CPN.at(ConeProperty::Projection) = "Projection";
+        CPN.at(ConeProperty::NoProjection) = "NoProjection";
         CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
         CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
         CPN.at(ConeProperty::Integral) = "Integral";
@@ -408,7 +429,7 @@ namespace {
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 65,
+        static_assert (ConeProperty::EnumSize == 67,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

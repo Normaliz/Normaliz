@@ -104,6 +104,7 @@ void printHelp(char* command) {
     cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
     cout << "  -k\tcomputation mode: keep order"<<endl;
     cout << "  -Y\tcomputation mode: symmetrization"<<endl;
+    cout << "  -j\tcomputation mode: projection"<<endl;
 
     cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
