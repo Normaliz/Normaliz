@@ -778,9 +778,9 @@ vector<Integer> poly_mult(const vector<Integer>& a, const vector<Integer>& b) {
     size_t b_size = b.size();
     
     if(a_size*b_size>1000 && a_size >10 && b_size>10){
-        omp_set_nested(1);
+        // omp_set_nested(1);
         return karatsubamult(a,b);
-        omp_set_nested(0);
+        // omp_set_nested(0);
     }
     
     vector<Integer> p( a_size + b_size - 1 );
