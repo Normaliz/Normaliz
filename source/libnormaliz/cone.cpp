@@ -164,7 +164,6 @@ bool denominator_allowed(InputType input_type){
         case Type::signs:
         case Type::strict_signs:
             return false;
-            break;
         default:
             return true;
         break;
