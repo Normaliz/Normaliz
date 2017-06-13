@@ -3795,18 +3795,12 @@ template<typename IntegerPL>
 void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
                                             const Matrix<IntegerPL>& Supps, IntegerPL GD){
     
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
-    
-    /*Gens.pretty_print(cout);
-    cout << "===============" << endl;
+    /* Gens.pretty_print(cout);
+    cout << "===========" << endl;
     Supps.pretty_print(cout);
-    cout << "++++++++++++++" << endl;
-    Matrix<IntegerPL> HHH=Supps;
-    Cone<IntegerPL> TT(Type::inequalities,HHH);
-    TT.setVerbose(false);
-    TT.compute(ConeProperty::SupportHyperplanes);
-    assert(TT.getExtremeRaysMatrix().nr_of_rows()==Gens.nr_of_rows());*/
+    cout << "===========" << endl;*/
     
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
     
     if(Gens.nr_of_rows()==0)
         return;
@@ -3826,8 +3820,6 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         return;        
     }
     
-    cout << endl << "Generators" << endl;
-    
     // project generators    
     Matrix<IntegerPL> GensProj(Gens); // project generators
     GensProj.resize_columns(dim1);
@@ -3837,10 +3829,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     Sublattice_Representation<IntegerPL> SubSpace(GensProj,false);    
     size_t rank=SubSpace.getRank(); // the true dimension of the projection
     
-    cout << endl << "Pos/Neg/Neutr" << endl;
-    
     vector<key_t> Neutr, Neg, Pos; // for the Fourier-Motzkin elimination of inequalities
-    Matrix<IntegerPL> SuppsProj(0,dim1);
     for(size_t i=0;i<Supps.nr_of_rows();++i){
         if(Supps[i][dim1]==0){  // already independent of last coordinate
             Neutr.push_back(i);
@@ -3853,9 +3842,11 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         Neg.push_back(i);
     }
     
-    cout << endl << "eutral" << endl;
+    // cout << endl << "PNN " << Pos.size() << " " << Neg.size() << " " << Neutr.size() << endl;
     
     vector<vector<bool> > Ind; // for the incidence vectors
+    // set<vector<bool> > IndSet; // to filter out dupicates
+    Matrix<IntegerPL> SuppsProj(0,dim1);
     Matrix<IntegerPL> EqusProj(0,dim1); // for the equations of the projection
     
     // We compute the incidence of the neutral hyperplanes with the generators first
@@ -3878,13 +3869,16 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             EqusProj.append(new_supp);
             continue;
         }        
-        if(nr_match<GensProj.nr_of_rows() && nr_match < rank-1) // not an essential support hyperplane
-            continue;         
+        if(nr_match < rank-1) // not an essential support hyperplane
+            continue;
+        // if(IndSet.find(incidence)!=IndSet.end()) // is duplicate
+         //   continue;
         SuppsProj.append(new_supp);
-        Ind.push_back(incidence);        
+        Ind.push_back(incidence);
+        // IndSet.insert(incidence);
     }
-
-    cout << "FM " << endl;
+    
+    // cout <<  "Supps 1 " << SuppsProj.nr_of_rows() << endl;
     
     for(size_t i=0;i<Pos.size();++i){ // now the elimination, matching Pos and Neg
         size_t p=Pos[i];
@@ -3941,40 +3935,61 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         }
     }
     
-    /* Cone<IntegerPL> TT1(Type::inequalities,SuppsProj);
-    TT1.setVerbose(false);
-    TT1.compute(ConeProperty::SupportHyperplanes);
-    size_t E1=TT1.getNrExtremeRays();*/
-    
-
-    
-     /* Cone<IntegerPL> TT2(Type::cone,GensProj);
-    TT2.setVerbose(false);
-    TT2.compute(ConeProperty::SupportHyperplanes);
-    size_t E2=TT2.getNrExtremeRays();
-    
-    cout << "E1 " << E1 << " E2 " << E2 << endl;
-    if(E1!=E2)
-        exit(1);*/
-    
-    cout << "Essential " << SuppsProj.nr_of_rows() << endl;
-    
-    vector<bool> Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential    
-    maximal_subsets(Ind,Essential);  // select essentail hyperplanes 
-    
-    cout << "Extr" << endl;
-    
-    // for the rank test we must restrict hyperplanes to the subspace of our cone    
-    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);
-    
-    bool skip_remaining=false;
+    // cout << "Supps 2 " << SuppsProj.nr_of_rows() << endl;
+     
+    bool skip_remaining;
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
     
-    vector<bool> ExtrInd(GensProj.nr_of_rows());
+    vector<bool> Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential    
+    if(true){        
+        maximal_subsets(Ind,Essential);  // select essentail hyperplanes
+    }
+/*    else{ // rank test
+        skip_remaining=false;
+        
+        #pragma omp parallel for schedule(dynamic)
+        for(size_t i=0;i<SuppsProj.nr_of_rows();++i){
+            
+            if (skip_remaining) continue;
+        
+#ifndef NCATCH
+        try {
+#endif            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+            Matrix<IntegerPL> RankTest(0,dim1);
+            for(size_t j=0;j<GensProj.nr_of_rows();++j)
+                if(Ind[i][j])
+                    RankTest.append(GensProj[j]);
+                    
+            Essential[i]= (RankTest.rank()>= rank-1);
+            assert(RankTest.rank()<=rank-1);
+            
+#ifndef NCATCH
+        } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+        }
+#endif
+        }
+        
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
     
-    #pragma omp for schedule(dynamic)
+    } */
+    
+    // for the rank test we must restrict hyperplanes to the subspace of our cone    
+    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);
+    
+    deque<bool> ExtrInd(GensProj.nr_of_rows(),false);
+    
+    skip_remaining=false;
+    
+    #pragma omp parallel for schedule(dynamic)
     for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
         
         if (skip_remaining) continue;
@@ -4006,7 +4021,11 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
     
-    Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrInd); //select extreme rays
+    vector<key_t> ExtrIndKey;
+    for(size_t i=0;i<ExtrInd.size();++i)
+        if(ExtrInd[i])
+            ExtrIndKey.push_back(i);
+    Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrIndKey); //select extreme rays
     
     // extract the essentail hyperplanes
     Matrix<IntegerPL> EssSuppsProj=SuppsProj.submatrix(Essential);
@@ -4016,6 +4035,8 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     EssSuppsProj.append(EqusProj); // append them as pairs of inequalities
     EqusProj.scalar_multiplication(-1);
     EssSuppsProj.append(EqusProj);
+    
+    // cout << "Supps 3" << EssSuppsProj.nr_of_rows() << endl;
     
     Matrix<IntegerPL> Deg1Proj(0,dim1);
     project_and_lift_inner(Deg1Proj,ExtrProj,EssSuppsProj,GD);
