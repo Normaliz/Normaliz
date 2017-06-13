@@ -100,6 +100,8 @@ vector<vector<Integer> > find_input_matrix(const map< InputType, vector< vector<
 template<typename Integer>
 void insert_column(vector< vector<Integer> >& mat, size_t col, Integer entry){
 
+    if(mat.size()==0)
+        return;
     vector<Integer> help(mat[0].size()+1);
     for(size_t i=0;i<mat.size();++i){
         for(size_t j=0;j<col;++j)
@@ -2910,7 +2912,7 @@ void Cone<Integer>::compute_unit_group_index() {
     // we want to compute in the maximal linear subspace
     Sublattice_Representation<Integer> Sub(BasisMaxSubspace,true);
     Matrix<Integer> origens_in_subspace(0,dim);
-    // wqe must collect all original generetors that lie in the maximal subspace 
+    // we must collect all original generetors that lie in the maximal subspace 
     for(size_t i=0;i<OriginalMonoidGenerators.nr_of_rows();++i){
         size_t j;
         for(j=0;j<SupportHyperplanes.nr_of_rows();++j){
@@ -3438,7 +3440,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
     // bre sorted out as early as possible.
     
     assert(is_approximation);
-    assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case wqe generalize later
+    assert(ApproximatedCone->inhomogeneous ||  ApproximatedCone->getGradingDenom()==1); // in case we generalize later
     
     FC.is_global_approximation=true;
     // FC.is_approximation=true; At present not allowed. Only used for approximation within Full_Cone
@@ -3505,17 +3507,17 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
 template<typename Integer>
 void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
-    if(ToCompute.test(ConeProperty::NoApproximation) || ToCompute.test(ConeProperty::NoProjection))
+    if(ToCompute.test(ConeProperty::NoApproximation) || ToCompute.test(ConeProperty::NoProjection)
+           || ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
+    )
         return;
     
     if(ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         return;
     
     if(!inhomogeneous && (  !ToCompute.test(ConeProperty::Deg1Elements) 
-                         || !isComputed(ConeProperty::Grading)
                          || ToCompute.test(ConeProperty::HilbertBasis)
                          || ToCompute.test(ConeProperty::HilbertSeries)
-                         || GradingDenom!=1
                          )                        
       )
         return;
@@ -3526,8 +3528,16 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
     NeededHere.set(ConeProperty::Sublattice);
-    NeededHere.set(ConeProperty::MaximalSubspace);     
+    NeededHere.set(ConeProperty::MaximalSubspace);
+    if(!inhomogeneous)
+        NeededHere.set(ConeProperty::Grading);
     recursive_compute(NeededHere);
+    
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading))
+        return;
+    
+     if(!inhomogeneous && ToCompute.test(ConeProperty::Approximate) && GradingDenom!=1)
+        return;
     
     if(!pointed || BasisChangePointed.getRank()==0)
         return;
@@ -3549,11 +3559,19 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             return;        
     }
     
+    // ****************************************************************
+    //
+    // NOTE: THE FIRST COORDINATE IS (OR WILL BE MADE) THE GRADING !!!!
+    //
+    // ****************************************************************
+    
     vector<Integer> GradForApprox;
     if(!inhomogeneous)
         GradForApprox=Grading;
-    else
+    else{
         GradForApprox=Dehomogenization;
+        GradingDenom=1;
+    }
     
     Grading_Is_Coordinate=false;
     size_t nr_nonzero=0;
@@ -3615,11 +3633,33 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Raw=HelperCone.getDeg1ElementsMatrix();        
     }
     else{
-        Cone<Integer> HelperCone(InputType::cone,GradGen);
-        HelperCone.compute(ConeProperty::SupportHyperplanes);
-        Matrix<Integer> Supps=HelperCone.getSupportHyperplanesMatrix();
-        Matrix<Integer> Equs=HelperCone.BasisChange.getEquationsMatrix();    // we must add the equations as pairs of inequalities
-        Supps.append(Equs);
+        if(verbose)
+             verboseOutput() << "Computing projection" << endl;
+        Matrix<Integer> Supps, Equs;
+        if(Grading_Is_Coordinate){
+            Supps=getSupportHyperplanesMatrix();
+            Supps.exchange_columns(0,GradingCoordinate);
+            Equs=BasisChange.getEquationsMatrix();
+            Equs.exchange_columns(0,GradingCoordinate);
+        }
+        else{
+            vector<vector<Integer> > SuppHelp=getSupportHyperplanes();
+            insert_column<Integer>(SuppHelp,0,0);
+            Supps=Matrix<Integer>(SuppHelp);
+            vector<vector<Integer> > EqusHelp=BasisChange.getEquations();
+            if(EqusHelp.size()>0){
+                insert_column<Integer>(EqusHelp,0,0);
+                Equs=Matrix<Integer>(EqusHelp);
+            }
+            else
+                Equs.resize(0,dim+1);
+            vector<Integer> ExtraEqu(Equs.nr_of_columns());
+            ExtraEqu[0]=-1;
+            for(size_t i=0;i<Grading.size();++i)
+                ExtraEqu[i+1]=Grading[i];
+            Equs.append(ExtraEqu);
+        }
+        Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
         project_and_lift(Raw, GradGen,Supps);        
@@ -3726,9 +3766,10 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
             Matrix<MachineInteger> SuppsMI;
             convert(GensMI,Gens);
             convert(SuppsMI,Supps);
+            MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
             
             try {
-                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI);
+                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,GDMI);
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -3742,7 +3783,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         }
         
         if (!change_integer_type) {
-            project_and_lift_inner<Integer>(Deg1, Gens, Supps);
+            project_and_lift_inner<Integer>(Deg1, Gens, Supps,GradingDenom);
         }
         
         if(verbose)
@@ -3752,7 +3793,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
 template<typename Integer>
 template<typename IntegerPL>
 void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
-                                            const Matrix<IntegerPL>& Supps){
+                                            const Matrix<IntegerPL>& Supps, IntegerPL GD){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -3773,33 +3814,36 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     size_t dim1=dim-1;
     
     if(verbose)
-        verboseOutput() << endl << "embdim " << dim << flush; 
+        verboseOutput() << endl << " embdim " << dim << " extreme rays " << Gens.nr_of_rows() << " inequalities " << Supps.nr_of_rows() << flush; 
     
     if(dim<=1){
         if(verbose)
-            verboseOutput() << "done" << endl;
-        /*
-        Matrix<IntegerPL> GradingForProj(1,dim);
-        GradingForProj[0][0]=1;
-        Cone<IntegerPL> D(Type::cone,Gens, Type::grading,GradingForProj);
-        D.setVerbose(true);
-        D.compute(ConeProperty::Deg1Elements, ConeProperty::NoApproximation);
-        Matrix<IntegerPL> Deg1Prel=D.getDeg1ElementsMatrix();
-        Deg1=Deg1Prel;*/
-        vector<IntegerPL> One(1,1);
+            verboseOutput() << endl;
+        vector<IntegerPL> One(1,GD);
         Deg1.append(One);
         if(verbose)
             verboseOutput() << "Lifting ... " << flush;
         return;        
     }
     
-    vector<key_t> Neg, Pos; // for the Fourier-Motzkin elimination of inequalities
+    cout << endl << "Generators" << endl;
+    
+    // project generators    
+    Matrix<IntegerPL> GensProj(Gens); // project generators
+    GensProj.resize_columns(dim1);
+    for(size_t i=0;i<GensProj.nr_of_rows();++i)  // indeed necessary
+        v_make_prime(GensProj[i]);    
+    GensProj.remove_duplicate_and_zero_rows();
+    Sublattice_Representation<IntegerPL> SubSpace(GensProj,false);    
+    size_t rank=SubSpace.getRank(); // the true dimension of the projection
+    
+    cout << endl << "Pos/Neg/Neutr" << endl;
+    
+    vector<key_t> Neutr, Neg, Pos; // for the Fourier-Motzkin elimination of inequalities
     Matrix<IntegerPL> SuppsProj(0,dim1);
     for(size_t i=0;i<Supps.nr_of_rows();++i){
         if(Supps[i][dim1]==0){  // already independent of last coordinate
-            vector<IntegerPL> Transfer=Supps[i];
-            Transfer.resize(dim1);
-            SuppsProj.append(Transfer);
+            Neutr.push_back(i);
             continue;
         }
         if(Supps[i][dim1]>0){
@@ -3809,7 +3853,40 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         Neg.push_back(i);
     }
     
-    for(size_t i=0;i<Pos.size();++i){ // now the elimination
+    cout << endl << "eutral" << endl;
+    
+    vector<vector<bool> > Ind; // for the incidence vectors
+    Matrix<IntegerPL> EqusProj(0,dim1); // for the equations of the projection
+    
+    // We compute the incidence of the neutral hyperplanes with the generators first
+    
+    for(size_t i=0;i<Neutr.size();++i){
+        size_t nn=Neutr[i];
+        vector<IntegerPL> new_supp=Supps[nn];
+        new_supp.resize(dim1);
+        size_t nr_match=0; // compute incidence with generators
+        vector<bool> incidence(GensProj.nr_of_rows());
+        for(size_t j=0;j<GensProj.nr_of_rows();++j){
+            IntegerPL val=v_scalar_product(new_supp,GensProj[j]);
+            if(val==0){
+                incidence[j]=true;
+                nr_match++;                
+            }
+        }
+        // no need for v_make_prime -- vectors are already coprime
+        if(nr_match==GensProj.nr_of_rows()){ // gives an equation
+            EqusProj.append(new_supp);
+            continue;
+        }        
+        if(nr_match<GensProj.nr_of_rows() && nr_match < rank-1) // not an essential support hyperplane
+            continue;         
+        SuppsProj.append(new_supp);
+        Ind.push_back(incidence);        
+    }
+
+    cout << "FM " << endl;
+    
+    for(size_t i=0;i<Pos.size();++i){ // now the elimination, matching Pos and Neg
         size_t p=Pos[i];
         IntegerPL PosVal=Supps[p][dim1];
         for(size_t j=0;j<Neg.size();++j){
@@ -3825,7 +3902,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             IntegerPL g;
             if(k==dim1)
                 g=v_make_prime(new_supp);
-            else{
+            else{ // redo in GMP if necessary
                 #pragma omp atomic
                 GMP_hyp++;
                 vector<mpz_class> mpz_neg(dim1), mpz_pos(dim1), mpz_sum(dim1);
@@ -3838,8 +3915,29 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
                 convert(new_supp, mpz_sum);
                 convert(g,GG);
             }
-            if(g!=0)
-                SuppsProj.append(new_supp);
+            
+            if(g==0) // <==> new_supp==0
+                continue;
+            
+            size_t nr_match=0; // compute incidence with generators
+            vector<bool> incidence(GensProj.nr_of_rows());
+            for(size_t j=0;j<GensProj.nr_of_rows();++j){
+                IntegerPL val=v_scalar_product(new_supp,GensProj[j]);
+                if(val==0){
+                    incidence[j]=true;
+                    nr_match++;                
+                }
+            }
+            if(nr_match==GensProj.nr_of_rows()){ // gives an equation
+                EqusProj.append(new_supp);
+                continue;
+            }
+            
+            if(nr_match<GensProj.nr_of_rows() && nr_match < rank-1) // not an essential support hyperplane
+                continue;          
+
+            SuppsProj.append(new_supp);
+            Ind.push_back(incidence);
         }
     }
     
@@ -3848,10 +3946,9 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     TT1.compute(ConeProperty::SupportHyperplanes);
     size_t E1=TT1.getNrExtremeRays();*/
     
-    Matrix<IntegerPL> GensProj(Gens); // project generators
-    GensProj.resize_columns(dim1);
+
     
-    /* Cone<IntegerPL> TT2(Type::cone,GensProj);
+     /* Cone<IntegerPL> TT2(Type::cone,GensProj);
     TT2.setVerbose(false);
     TT2.compute(ConeProperty::SupportHyperplanes);
     size_t E2=TT2.getNrExtremeRays();
@@ -3860,44 +3957,34 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     if(E1!=E2)
         exit(1);*/
     
-    for(size_t i=0;i<GensProj.nr_of_rows();++i)  // indeed necessary
-        v_make_prime(GensProj[i]);    
-    GensProj.remove_duplicate_and_zero_rows();
+    cout << "Essential " << SuppsProj.nr_of_rows() << endl;
     
-    // for the rank test we must restrict hyperplanes to the subspace of our cone
-    Sublattice_Representation<IntegerPL> SubSpace(GensProj,false);
-    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);    
-    size_t rank=SubSpace.getRank(); // the dimension of the projection
-    
-    Matrix<IntegerPL> EqusProj(0,dim1); // for the equations of the projection
-    vector<bool> Essential(SuppsProj.nr_of_rows()); // indicator of essential hyperplanes
-    vector<vector<bool> > Ind(SuppsProj.nr_of_rows(),vector<bool>(GensProj.nr_of_rows(),false));
-    for(size_t i=0;i<SuppsProj.nr_of_rows();++i){
-        size_t nr_match=0;
-        for(size_t j=0;j<GensProj.nr_of_rows();++j){
-            IntegerPL val=v_scalar_product(SuppsProj[i],GensProj[j]);
-            if(val==0){
-                Ind[i][j]=true;
-                nr_match++;                
-            }
-        }
-        if(nr_match<GensProj.nr_of_rows() && nr_match >= rank-1)
-            Essential[i]=true; // will be made false later if not essential
-        if(nr_match==GensProj.nr_of_rows())
-            EqusProj.append(SuppsProj[i]);
-
-    }    
-    
+    vector<bool> Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential    
     maximal_subsets(Ind,Essential);  // select essentail hyperplanes 
-    Matrix<IntegerPL> EssSuppsProj=SuppsProj.submatrix(Essential);
     
-    EqusProj.row_echelon(); // reduce equations
-    EssSuppsProj.append(EqusProj); // append them as pairs of inequalities
-    EqusProj.scalar_multiplication(-1);
-    EssSuppsProj.append(EqusProj);
+    cout << "Extr" << endl;
+    
+    // for the rank test we must restrict hyperplanes to the subspace of our cone    
+    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);
+    
+    bool skip_remaining=false;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
     
     vector<bool> ExtrInd(GensProj.nr_of_rows());
+    
+    #pragma omp for schedule(dynamic)
     for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
+        
+        if (skip_remaining) continue;
+        
+#ifndef NCATCH
+        try {
+#endif
+            
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         Matrix<IntegerPL> RankTest(0,SubSpace.getRank());
         for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
             if(!Essential[j] || Ind[j][i]==false)
@@ -3906,16 +3993,32 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         }
         if(RankTest.rank()==rank-1)
             ExtrInd[i]=true;
+#ifndef NCATCH
+        } catch(const std::exception& ) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+            #pragma omp flush(skip_remaining)
+        }
+#endif
     }
-    Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrInd);
-    /*cout << "E3 " << ExtrProj.nr_of_rows() << endl;    
-    assert(E1==ExtrProj.nr_of_rows());*/
+
+#ifndef NCATCH
+    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
     
+    Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrInd); //select extreme rays
     
+    // extract the essentail hyperplanes
+    Matrix<IntegerPL> EssSuppsProj=SuppsProj.submatrix(Essential);
+ 
+    // Equations have not yet been appended to support hypwerplanes
+    EqusProj.row_echelon(); // reduce equations
+    EssSuppsProj.append(EqusProj); // append them as pairs of inequalities
+    EqusProj.scalar_multiplication(-1);
+    EssSuppsProj.append(EqusProj);
     
-    GensProj.remove_duplicate_and_zero_rows(); // indeed necessary
     Matrix<IntegerPL> Deg1Proj(0,dim1);
-    project_and_lift_inner(Deg1Proj,ExtrProj,EssSuppsProj);
+    project_and_lift_inner(Deg1Proj,ExtrProj,EssSuppsProj,GD);
     
     // now the lifting
     
@@ -3923,10 +4026,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     for(size_t i=0;i<Deg1Thread.size();++i)
         Deg1Thread[i].resize(0,dim);
     
-    bool skip_remaining=false;
-#ifndef NCATCH
-    std::exception_ptr tmp_exception;
-#endif
+    skip_remaining=false;
     
     #pragma omp parallel
     {

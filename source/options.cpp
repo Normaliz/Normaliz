@@ -408,7 +408,8 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
 
 bool OptionsHandler::activateDefaultMode() {
     if (to_compute.goals().none() && !to_compute.test(ConeProperty::DualMode) 
-                                  && !to_compute.test(ConeProperty::Approximate)) {
+                                  && !to_compute.test(ConeProperty::Approximate)
+                                  && !to_compute.test(ConeProperty::Projection)  ) {
         to_compute.set(ConeProperty::DefaultMode);
         return true;
     }

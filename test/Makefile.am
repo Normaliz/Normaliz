@@ -157,8 +157,10 @@ NMZTESTS = test-/23.in					\
 	test-/test22dual.ref				\
 	test-/Thierry.in				\
 	test-/Thierry.ref				\
-	test-/ThierryNoApprox.in			\
-	test-/ThierryNoApprox.ref			\
+	test-/ThierryApprox.in				\
+	test-/ThierryApprox.ref				\
+	test-/ThierryNoProjection.in			\
+	test-/ThierryNoProjection.ref			\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/zero4.in					\
