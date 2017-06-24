@@ -518,9 +518,10 @@ void Matrix<Integer>::remove_row(const size_t index) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::remove_duplicate_and_zero_rows() {
+vector<size_t> Matrix<Integer>::remove_duplicate_and_zero_rows() {
     bool remove_some = false;
     vector<bool> key(nr, true);
+    vector<size_t> original_row;
 
     set<vector<Integer> > SortedRows;
     SortedRows.insert( vector<Integer>(nc,0) );
@@ -531,13 +532,16 @@ void Matrix<Integer>::remove_duplicate_and_zero_rows() {
             key[i] = false;
             remove_some = true;
         }
-        else
+        else{
             SortedRows.insert(found,elem[i]);
+            original_row.push_back(i);
+        }
     }
 
     if (remove_some) {
         *this = submatrix(key);
     }
+    return original_row;
 }
 
 //---------------------------------------------------------------------------

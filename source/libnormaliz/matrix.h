@@ -223,7 +223,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void append_column(const vector<Integer>& v); // append the column v to this
     void remove_row(const vector<Integer>& row); // removes all appearances of this row, not very efficient!
     void remove_row(const size_t index);
-    void remove_duplicate_and_zero_rows();
+    vector<size_t> remove_duplicate_and_zero_rows();
     void remove_duplicate(const Matrix& M);
 
 

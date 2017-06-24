@@ -3758,7 +3758,7 @@ template<typename Integer>
 void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps){
     
     if(verbose)
-        verboseOutput() << "Starting projection ... " << flush;
+        verboseOutput() << "Starting projection" << endl;
 
     if (change_integer_type) {
             Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
@@ -3785,9 +3785,6 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         if (!change_integer_type) {
             project_and_lift_inner<Integer>(Deg1, Gens, Supps,GradingDenom);
         }
-        
-        if(verbose)
-            verboseOutput() << endl << "done" << endl;
 }
 //---------------------------------------------------------------------------
 template<typename Integer>
@@ -3798,7 +3795,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     /* Gens.pretty_print(cout);
     cout << "===========" << endl;
     Supps.pretty_print(cout);
-    cout << "===========" << endl;*/
+    cout << "===========" << endl; */
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -3808,15 +3805,13 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     size_t dim1=dim-1;
     
     if(verbose)
-        verboseOutput() << endl << " embdim " << dim << " extreme rays " << Gens.nr_of_rows() << " inequalities " << Supps.nr_of_rows() << flush; 
+        verboseOutput() << "embdim " << dim << " extreme rays " << Gens.nr_of_rows() << " inequalities " << Supps.nr_of_rows() << endl; 
     
     if(dim<=1){
-        if(verbose)
-            verboseOutput() << endl;
         vector<IntegerPL> One(1,GD);
         Deg1.append(One);
         if(verbose)
-            verboseOutput() << "Lifting ... " << flush;
+            verboseOutput() << "Lifting" << endl;
         return;        
     }
     
@@ -3824,15 +3819,40 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     Matrix<IntegerPL> GensProj(Gens); // project generators
     GensProj.resize_columns(dim1);
     for(size_t i=0;i<GensProj.nr_of_rows();++i)  // indeed necessary
-        v_make_prime(GensProj[i]);    
-    GensProj.remove_duplicate_and_zero_rows();
+        v_make_prime(GensProj[i]);
+    // In order to avoid the computation of scalar products later, we must know the origin of a projected gerator
+    vector<size_t> OriGen=GensProj.remove_duplicate_and_zero_rows();
     Sublattice_Representation<IntegerPL> SubSpace(GensProj,false);    
     size_t rank=SubSpace.getRank(); // the true dimension of the projection
+
+    // We now augment the given cone by the last basis vector and its negative
+    // Afterwards we project modulo the subspace spanned by them
     
-    vector<key_t> Neutr, Neg, Pos; // for the Fourier-Motzkin elimination of inequalities
+    vector<key_t> Neg, Pos; // for the Fourier-Motzkin elimination of inequalities    
+    Matrix<IntegerPL> SuppsProj(0,dim); // for the support hyperplanes of the projection
+    Matrix<IntegerPL> EqusProj(0,dim); // for the equations (both later minimized)
+    
+    // First we make incidence vectors with the given generators    
+    vector<vector<bool> > Ind; // for the incidence vectors of the old hyperplanes
+    vector<vector<bool> > NewInd; // for the incidence vectors of the new hyperplanes
+
     for(size_t i=0;i<Supps.nr_of_rows();++i){
+        size_t nr_match=0;
+        vector<bool> incidence(Gens.nr_of_rows());
+        for(size_t j=0;j<Gens.nr_of_rows();++j){
+            if(v_scalar_product(Supps[i],Gens[j])==0){
+                incidence[j]=true;
+                nr_match++;                
+            }
+        }
+        Ind.push_back(incidence);
         if(Supps[i][dim1]==0){  // already independent of last coordinate
-            Neutr.push_back(i);
+            if(nr_match==Gens.nr_of_rows())
+                EqusProj.append(Supps[i]); // is equation
+            else{
+                SuppsProj.append(Supps[i]); // neutral support hyperplane
+                NewInd.push_back(incidence);
+            }
             continue;
         }
         if(Supps[i][dim1]>0){
@@ -3842,67 +3862,57 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         Neg.push_back(i);
     }
     
-    // cout << endl << "PNN " << Pos.size() << " " << Neg.size() << " " << Neutr.size() << endl;
+    /* cout << Ind;
+    cout << "$$$$$$$$$$$$$$$$$$$" << endl;
     
-    vector<vector<bool> > Ind; // for the incidence vectors
-    // set<vector<bool> > IndSet; // to filter out dupicates
-    Matrix<IntegerPL> SuppsProj(0,dim1);
-    Matrix<IntegerPL> EqusProj(0,dim1); // for the equations of the projection
+    cout << endl << "PN " << Pos.size() << " " << Neg.size() << " " << endl;*/
     
-    // We compute the incidence of the neutral hyperplanes with the generators first
+    // now the elimination, matching Pos and Neg
     
-    for(size_t i=0;i<Neutr.size();++i){
-        size_t nn=Neutr[i];
-        vector<IntegerPL> new_supp=Supps[nn];
-        new_supp.resize(dim1);
-        size_t nr_match=0; // compute incidence with generators
-        vector<bool> incidence(GensProj.nr_of_rows());
-        for(size_t j=0;j<GensProj.nr_of_rows();++j){
-            IntegerPL val=v_scalar_product(new_supp,GensProj[j]);
-            if(val==0){
-                incidence[j]=true;
-                nr_match++;                
-            }
-        }
-        // no need for v_make_prime -- vectors are already coprime
-        if(nr_match==GensProj.nr_of_rows()){ // gives an equation
-            EqusProj.append(new_supp);
-            continue;
-        }        
-        if(nr_match < rank-1) // not an essential support hyperplane
-            continue;
-        // if(IndSet.find(incidence)!=IndSet.end()) // is duplicate
-         //   continue;
-        SuppsProj.append(new_supp);
-        Ind.push_back(incidence);
-        // IndSet.insert(incidence);
-    }
-    
-    // cout <<  "Supps 1 " << SuppsProj.nr_of_rows() << endl;
-    
-    for(size_t i=0;i<Pos.size();++i){ // now the elimination, matching Pos and Neg
+    for(size_t i=0;i<Pos.size();++i){
         size_t p=Pos[i];
         IntegerPL PosVal=Supps[p][dim1];
+        vector<key_t> PosKey;
+        for(size_t k=0;k<Ind[i].size();++k)
+            if(Ind[p][k])
+                PosKey.push_back(k);
+ 
+        /* cout << "Pos " << Supps[p];
+        cout << "PosKey " << PosKey;*/
+        
         for(size_t j=0;j<Neg.size();++j){
             size_t n=Neg[j];
+            // match incidence vectors
+            vector<bool> incidence(Gens.nr_of_rows());
+            size_t nr_match=0;
+            // cout << "NegInd " << Ind[n];
+            for(size_t k=0;k<PosKey.size();++k)
+                if(Ind[n][PosKey[k]]){
+                    incidence[PosKey[k]]=true;
+                    nr_match++;
+                }
+            // cout << "match " << nr_match << "inc " << incidence;
+            if(nr_match<rank-1) // cannot make subfacet of augmented cone
+                continue;            
+            
             IntegerPL NegVal=Supps[n][dim1];
-            vector<IntegerPL> new_supp(dim1);
+            vector<IntegerPL> new_supp(dim);
             size_t k=0;
-            for(;k<dim1;++k){
+            for(;k<dim;++k){
                 new_supp[k]=PosVal*Supps[n][k]-NegVal*Supps[p][k];
                 if(!check_range(new_supp[k]))
                     break;    
             }
             IntegerPL g;
-            if(k==dim1)
+            if(k==dim)
                 g=v_make_prime(new_supp);
             else{ // redo in GMP if necessary
                 #pragma omp atomic
                 GMP_hyp++;
-                vector<mpz_class> mpz_neg(dim1), mpz_pos(dim1), mpz_sum(dim1);
+                vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
                 convert(mpz_neg, Supps[n]);
                 convert(mpz_pos, Supps[p]);
-                for (k = 0; k <dim1; k++)
+                for (k = 0; k <dim; k++)
                     mpz_sum[k]=convertTo<mpz_class>(PosVal)*mpz_neg[k]-
                             convertTo<mpz_class>(NegVal)*mpz_pos[k];
                 mpz_class GG=v_make_prime(mpz_sum);
@@ -3913,79 +3923,44 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             if(g==0) // <==> new_supp==0
                 continue;
             
-            size_t nr_match=0; // compute incidence with generators
-            vector<bool> incidence(GensProj.nr_of_rows());
-            for(size_t j=0;j<GensProj.nr_of_rows();++j){
-                IntegerPL val=v_scalar_product(new_supp,GensProj[j]);
-                if(val==0){
-                    incidence[j]=true;
-                    nr_match++;                
-                }
-            }
             if(nr_match==GensProj.nr_of_rows()){ // gives an equation
                 EqusProj.append(new_supp);
                 continue;
             }
-            
-            if(nr_match<GensProj.nr_of_rows() && nr_match < rank-1) // not an essential support hyperplane
-                continue;          
 
             SuppsProj.append(new_supp);
-            Ind.push_back(incidence);
+            NewInd.push_back(incidence);
         }
     }
+        
+    /*SuppsProj.pretty_print(cout);
+    cout << "--------------------" << endl;*/
     
-    // cout << "Supps 2 " << SuppsProj.nr_of_rows() << endl;
-     
+    EqusProj.resize_columns(dim1); // cut off the trailing 0
+    SuppsProj.resize_columns(dim1);
+    
+    /* SuppsProj.pretty_print(cout);
+    cout << "++++++++++++++++++++" << endl;
+    GensProj.pretty_print(cout);
+    cout << "===================" << endl;
+    cout << "Ori " << OriGen;
+    cout << "===================" << endl;
+    cout << NewInd.size() << endl;
+    cout << NewInd;
+    cout << "+++++++++++++++++++" << endl;*/
+    
+    vector<bool> Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential           
+    maximal_subsets(NewInd,Essential);  // select essentail hyperplanes
+    
+    // for the rank test of extreme rays we must restrict hyperplanes to the subspace of our cone    
+    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);
+    
+    deque<bool> ExtrInd(GensProj.nr_of_rows(),false);
+    
     bool skip_remaining;
 #ifndef NCATCH
     std::exception_ptr tmp_exception;
 #endif
-    
-    vector<bool> Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential    
-    if(true){        
-        maximal_subsets(Ind,Essential);  // select essentail hyperplanes
-    }
-/*    else{ // rank test
-        skip_remaining=false;
-        
-        #pragma omp parallel for schedule(dynamic)
-        for(size_t i=0;i<SuppsProj.nr_of_rows();++i){
-            
-            if (skip_remaining) continue;
-        
-#ifndef NCATCH
-        try {
-#endif            
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-            Matrix<IntegerPL> RankTest(0,dim1);
-            for(size_t j=0;j<GensProj.nr_of_rows();++j)
-                if(Ind[i][j])
-                    RankTest.append(GensProj[j]);
-                    
-            Essential[i]= (RankTest.rank()>= rank-1);
-            assert(RankTest.rank()<=rank-1);
-            
-#ifndef NCATCH
-        } catch(const std::exception& ) {
-            tmp_exception = std::current_exception();
-            skip_remaining = true;
-            #pragma omp flush(skip_remaining)
-        }
-#endif
-        }
-        
-#ifndef NCATCH
-    if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
-#endif
-    
-    } */
-    
-    // for the rank test we must restrict hyperplanes to the subspace of our cone    
-    Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj);
-    
-    deque<bool> ExtrInd(GensProj.nr_of_rows(),false);
     
     skip_remaining=false;
     
@@ -4002,7 +3977,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         
         Matrix<IntegerPL> RankTest(0,SubSpace.getRank());
         for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
-            if(!Essential[j] || Ind[j][i]==false)
+            if(!Essential[j] || NewInd[j][OriGen[i]]==false)
                 continue;
             RankTest.append(SuppsSub[j]);            
         }
@@ -4134,7 +4109,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         Deg1.append(Deg1Thread[i]);
     
     if(verbose)    
-        verboseOutput() <<  endl<< "embdim " << dim << " Deg1Elements " << Deg1.nr_of_rows() << flush;
+        verboseOutput() <<  "embdim " << dim << " Deg1Elements " << Deg1.nr_of_rows() << endl;
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
 }
