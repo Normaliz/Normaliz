@@ -151,6 +151,80 @@ void process_constraint(const string& rel, const vector<mpq_class>& left, mpq_cl
     throw BadInputException("Illegal constrint type "+rel+" !");
 }
 
+mpq_class mpq_read(istream& in){
+    const string numeric="+-0123456789/.E";
+    in >> std::ws;
+    string s;
+    bool is_float=false;
+    while(true){
+        char c = in.peek();
+        size_t pos=numeric.find(c);
+        if(pos==string::npos)
+            break;
+        if(pos>12)
+            is_float=true;
+        in >> c;
+            s+=c;
+    }
+    
+    if(!is_float)
+        return mpq_class(s);
+    
+    cout << s <<endl;
+    
+    string int_string,frac_string,exp_string;
+    size_t frac_part_length=0;
+    size_t pos_point=s.find(".");
+    size_t pos_E=s.find("E");
+    if(pos_point!=string::npos){
+        int_string=s.substr(0,pos_point);
+        if(pos_E!=string::npos){
+            frac_part_length=pos_E-(pos_point+1);
+        }
+        else
+            frac_part_length=s.size()-(pos_point+1);
+        frac_string=s.substr(pos_point+1,frac_part_length);
+    }
+    else
+        int_string=s.substr(0,pos_E);
+    if(pos_E!=string::npos)
+        exp_string=s.substr(pos_E+1,s.size()-(pos_E+1));
+    
+    cout << "int  " << int_string << endl;
+    cout << "frac " << frac_string << endl;
+    cout << "exp  " << exp_string << endl;
+    
+    mpq_class int_part, frac_part, exp_part;
+    if(!int_string.empty())
+        int_part=mpz_class(int_string);
+    if(pos_E==0)
+        int_part=1;
+    
+    mpz_class den=1;
+    if(!frac_string.empty()){
+        frac_part=mpz_class(frac_string);
+        for(size_t i=0;i<frac_part_length;++i)
+            den*=10;        
+    }
+    mpq_class result=int_part;
+    if(frac_part!=0)
+        result+=frac_part/den;
+    if(!exp_string.empty()){
+        long expo=stol(exp_string);
+        long abs_expo=Iabs(expo);
+        mpz_class factor=1;
+        for(long i=0;i< abs_expo;++i)
+            factor*=10;
+        if(expo>=0)
+            result*=factor;
+        else
+            result/=factor;
+    }
+    cout <<" result " << result << endl;
+    cout << "==========" << endl;
+    return result;
+}
+
 
 bool read_modulus(istream& in, mpq_class& modulus) {
 
@@ -239,7 +313,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<mpq_class>& left,
         if(c!='x'){
             if(c=='+' || c=='-')
                 throw BadInputException("Double sign in constraint");
-            in >> entry;
+            entry=mpq_read(in);
             if(in.fail())
                 throw BadInputException("Error while reading coefficient in constraint");
             in >> std::ws;
@@ -314,10 +388,10 @@ void read_constraints(istream& in, long dim, map <Type::InputType, vector< vecto
         }
         else{ // ordinary constraint read here
             for(long j=0;j<dim-hom_correction;++j){
-                in >> left[j];
+                left[j]=mpq_read(in);
             }
             in >> rel;
-            in >> right;
+            right=mpq_read(in);
             if(rel=="~") {
                 if(!read_modulus(in,modulus))
                     throw BadInputException("Error while reading modulus of congruence!");
@@ -372,7 +446,8 @@ bool read_sparse_vector(istream& in, vector<mpq_class>& input_vec, long length){
             return false;
         in >> dummy; // skip :
         mpq_class value;
-        in >> value;
+        // in >> value;
+        value=mpq_read(in);
         if(in.fail())
             return false;
         input_vec[pos]=value;        
@@ -396,7 +471,7 @@ bool read_formatted_vector(istream& in, vector<mpq_class>& input_vec) {
             return true;
         }
         mpq_class number;
-        in >> number;
+        number=mpq_read(in);
         if(in.fail())
             return false;
         input_vec.push_back(number);
@@ -732,7 +807,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     for(i=0; i<nr_rows; i++){
                         M[i].resize(nr_columns);
                         for(j=0; j<nr_columns; j++) {
-                            in >> M[i][j];
+                            M[i][j]=mpq_read(in);
                         }
                     }
                 }
@@ -761,7 +836,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
             vector< vector<mpq_class> > M(nr_rows,vector<mpq_class>(nr_columns));
             for(i=0; i<nr_rows; i++){
                 for(j=0; j<nr_columns; j++) {
-                    in >> number;
+                    number=mpq_read(in);
                     M[i][j] = number;
                 }
             }
