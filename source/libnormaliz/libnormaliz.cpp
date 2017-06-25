@@ -27,7 +27,7 @@
 namespace libnormaliz {
 
 bool verbose = false;
-bool nmz_interrupted = false;
+volatile sig_atomic_t nmz_interrupted = 0;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
@@ -38,7 +38,7 @@ size_t GMP_scal_prod=0;
 size_t TotDet=0;
 
 void interrupt_signal_handler( int signal ){
-    nmz_interrupted = true;
+    nmz_interrupted = 1;
 }
 
 namespace {
