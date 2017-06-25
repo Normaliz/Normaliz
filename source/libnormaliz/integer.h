@@ -165,6 +165,9 @@ template<> inline string toString(mpq_class a) {
     return a.get_str();
 }
 
+// for the interpretation of a string as a decimal fraction or floating point number
+mpq_class dec_fraction_to_mpq(string s);
+
 } // end libnormaliz
 
 //---------------------------------------------------------------------------

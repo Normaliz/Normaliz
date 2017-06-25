@@ -170,59 +170,7 @@ mpq_class mpq_read(istream& in){
     if(!is_float)
         return mpq_class(s);
     
-    cout << s <<endl;
-    
-    string int_string,frac_string,exp_string;
-    size_t frac_part_length=0;
-    size_t pos_point=s.find(".");
-    size_t pos_E=s.find("E");
-    if(pos_point!=string::npos){
-        int_string=s.substr(0,pos_point);
-        if(pos_E!=string::npos){
-            frac_part_length=pos_E-(pos_point+1);
-        }
-        else
-            frac_part_length=s.size()-(pos_point+1);
-        frac_string=s.substr(pos_point+1,frac_part_length);
-    }
-    else
-        int_string=s.substr(0,pos_E);
-    if(pos_E!=string::npos)
-        exp_string=s.substr(pos_E+1,s.size()-(pos_E+1));
-    
-    cout << "int  " << int_string << endl;
-    cout << "frac " << frac_string << endl;
-    cout << "exp  " << exp_string << endl;
-    
-    mpq_class int_part, frac_part, exp_part;
-    if(!int_string.empty())
-        int_part=mpz_class(int_string);
-    if(pos_E==0)
-        int_part=1;
-    
-    mpz_class den=1;
-    if(!frac_string.empty()){
-        frac_part=mpz_class(frac_string);
-        for(size_t i=0;i<frac_part_length;++i)
-            den*=10;        
-    }
-    mpq_class result=int_part;
-    if(frac_part!=0)
-        result+=frac_part/den;
-    if(!exp_string.empty()){
-        long expo=stol(exp_string);
-        long abs_expo=Iabs(expo);
-        mpz_class factor=1;
-        for(long i=0;i< abs_expo;++i)
-            factor*=10;
-        if(expo>=0)
-            result*=factor;
-        else
-            result/=factor;
-    }
-    cout <<" result " << result << endl;
-    cout << "==========" << endl;
-    return result;
+    return dec_fraction_to_mpq(s);
 }
 
 
