@@ -3759,6 +3759,12 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
     
     if(verbose)
         verboseOutput() << "Starting projection" << endl;
+    
+    vector<vector<bool> > Ind(Supps.nr_of_rows(),vector<bool> (Gens.nr_of_rows()));
+    for(size_t i=0;i<Supps.nr_of_rows();++i)
+        for(size_t j=0;j<Gens.nr_of_rows();++j)
+            if(v_scalar_product(Supps[i],Gens[j])==0)
+                Ind[i][j]=true;
 
     if (change_integer_type) {
             Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
@@ -3769,7 +3775,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
             MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
             
             try {
-                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,GDMI);
+                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,Ind, GDMI);
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -3783,14 +3789,14 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         }
         
         if (!change_integer_type) {
-            project_and_lift_inner<Integer>(Deg1, Gens, Supps,GradingDenom);
+            project_and_lift_inner<Integer>(Deg1, Gens, Supps,Ind, GradingDenom);
         }
 }
 //---------------------------------------------------------------------------
 template<typename Integer>
 template<typename IntegerPL>
 void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
-                                            const Matrix<IntegerPL>& Supps, IntegerPL GD){
+                                            const Matrix<IntegerPL>& Supps, vector<vector<bool> >& Ind, IntegerPL GD){
     
     /* Gens.pretty_print(cout);
     cout << "===========" << endl;
@@ -3833,21 +3839,36 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     Matrix<IntegerPL> EqusProj(0,dim); // for the equations (both later minimized)
     
     // First we make incidence vectors with the given generators    
-    vector<vector<bool> > Ind; // for the incidence vectors of the old hyperplanes
+    // vector<vector<bool> > Ind; // for the incidence vectors of the old hyperplanes
     vector<vector<bool> > NewInd; // for the incidence vectors of the new hyperplanes
+    
+    /* cout << "Ind  " << Ind.size();
+    if(Ind.size()>0) cout << " " << Ind[0].size();
+    cout << endl;
+    cout << " " << Ind; */
+    
+    // Ind.clear();
+    
+    /* bool make_Ind=false;
+    if(Ind.size()==0)
+        make_Ind=true; */
 
     for(size_t i=0;i<Supps.nr_of_rows();++i){
-        size_t nr_match=0;
+        // size_t nr_match=0;
         vector<bool> incidence(Gens.nr_of_rows());
-        for(size_t j=0;j<Gens.nr_of_rows();++j){
-            if(v_scalar_product(Supps[i],Gens[j])==0){
-                incidence[j]=true;
-                nr_match++;                
+        /* if(make_Ind){
+            for(size_t j=0;j<Gens.nr_of_rows();++j){
+                if(v_scalar_product(Supps[i],Gens[j])==0){
+                    incidence[j]=true;
+                    // nr_match++;                
+                }
             }
+            Ind.push_back(incidence);
         }
-        Ind.push_back(incidence);
+        else */
+            incidence=Ind[i]; // (Gens.nr_of_rows());
         if(Supps[i][dim1]==0){  // already independent of last coordinate
-            if(nr_match==Gens.nr_of_rows())
+            if(incidence==vector<bool> (Gens.nr_of_rows(),true)) // (nr_match==Gens.nr_of_rows())
                 EqusProj.append(Supps[i]); // is equation
             else{
                 SuppsProj.append(Supps[i]); // neutral support hyperplane
@@ -3861,6 +3882,11 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
         }
         Neg.push_back(i);
     }
+    
+    /* cout << "Ind2 " << Ind.size();
+    if(Ind.size()>0) cout << " " << Ind[0].size();
+    cout << endl << " " << Ind;
+    cout << endl << "=============" << endl;*/
     
     /* cout << Ind;
     cout << "$$$$$$$$$$$$$$$$$$$" << endl;
@@ -3932,6 +3958,8 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             NewInd.push_back(incidence);
         }
     }
+    
+    Ind.clear(); // no longer needed
         
     /*SuppsProj.pretty_print(cout);
     cout << "--------------------" << endl;*/
@@ -4013,8 +4041,26 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     
     // cout << "Supps 3" << EssSuppsProj.nr_of_rows() << endl;
     
+    // Now we must make the new indicator matrix, selecting tows and columns from NewInd first
+    vector<key_t> RowSel,ColSel;
+    for(size_t i=0;i<SuppsProj.nr_of_rows();++i)
+        if(Essential[i])
+            RowSel.push_back(i);
+    for(size_t i=0;i<GensProj.nr_of_rows();++i)
+        if(ExtrInd[i])
+            ColSel.push_back(OriGen[i]); // columns ofNewInd correspond to Gens !
+    vector<vector<bool> > FinalInd(RowSel.size(),vector<bool> (ColSel.size()));
+    for(size_t i =0;i<RowSel.size();++i)
+        for(size_t j=0;j<ColSel.size();++j)
+            FinalInd[i][j]=NewInd[RowSel[i]][ColSel[j]]; 
+    // We must add indictor vectors for the equations
+    for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
+        FinalInd.push_back(vector<bool> (ColSel.size(),true));
+    
     Matrix<IntegerPL> Deg1Proj(0,dim1);
-    project_and_lift_inner(Deg1Proj,ExtrProj,EssSuppsProj,GD);
+    project_and_lift_inner(Deg1Proj,ExtrProj,EssSuppsProj,FinalInd,GD);
+    
+    //-----------
     
     // now the lifting
     
