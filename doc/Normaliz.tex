@@ -6170,11 +6170,11 @@ The \verb|InterruptException| is discussed in the next section.
 
 In order to find out if the user wants to interrupt the program, the functions in \verb|libnormaliz| test the value of the global variable
 \begin{Verbatim}
-bool nmz_interrupted
+volatile sig_atomic_t nmz_interrupted
 \end{Verbatim}
 If it is found to be \verb|true|, an \verb|InterruptException| is thrown. Ihis interrupt lraves \verb|libnormaliz|, so that the calling program can process it. The \verb|Cone| still exists, and the data computed in it can still be accessed. Moreover, \verb|compute| can again be applied to it.
 
-The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=true|.
+The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=1|.
 
 
 \subsection{Control of terminal output}
