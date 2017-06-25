@@ -167,6 +167,10 @@ mpq_class mpq_read(istream& in){
             s+=c;
     }
     
+    assert(s!="");
+    
+    // cout << "t " << s << " f " << is_float << endl;
+    
     if(!is_float)
         return mpq_class(s);
     

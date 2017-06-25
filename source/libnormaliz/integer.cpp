@@ -310,7 +310,7 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
 
 mpq_class dec_fraction_to_mpq(string s){
     
-    // cout << s <<endl;
+    // cout << "s " << s <<endl;
     
     mpz_class sign=1;
     if(s[0]=='+')
@@ -375,7 +375,7 @@ mpq_class dec_fraction_to_mpq(string s){
             result/=factor;
     }
     /* cout <<" result " << sign*result << endl;
-    cout << "==========" << endl; */
+    cout << "==========" << endl;*/
     return sign*result;
 }
 
