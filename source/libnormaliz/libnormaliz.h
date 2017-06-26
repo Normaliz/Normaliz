@@ -91,7 +91,7 @@ extern volatile sig_atomic_t nmz_interrupted;
 
 #define INTERRUPT_COMPUTATION_BY_EXCEPTION \
 if(nmz_interrupted){ \
-    nmz_interrupted = false; \
+    nmz_interrupted = 0; \
     throw InterruptException( "external interrupt" ); \
 }
 
