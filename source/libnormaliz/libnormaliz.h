@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <string>
+#include <signal.h>
 
 #include "libnormaliz/version.h"
 
@@ -86,7 +87,7 @@ extern size_t TotDet;
  * If this variable is set to true, the current computation is interrupted and
  * an InterruptException is raised.
  */
-extern bool nmz_interrupted;
+extern volatile sig_atomic_t nmz_interrupted;
 
 #define INTERRUPT_COMPUTATION_BY_EXCEPTION \
 if(nmz_interrupted){ \
