@@ -44,6 +44,12 @@ class ArithmeticException: public NormalizException {
 
     template<typename Integer>
     ArithmeticException(const Integer& convert_number){
+        
+        static int CCCCCCC=0;
+        
+        CCCCCCC++;
+        /* if(CCCCCCC>=3)
+         assert(false);*/
         std::stringstream stream;
         stream << "Could not convert " << convert_number << ".\n";
         stream << "Overflow detected. A fatal size excess or  a computation overflow.\n If Normaliz has terminated and you are using LongLong, rerun without it.";

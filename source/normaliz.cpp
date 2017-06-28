@@ -46,6 +46,8 @@ using namespace libnormaliz;
 #define STRINGIFY(Token) STRINGIFYx(Token)
 #endif
 
+long CCCCCCC=0;
+
 void printHeader() {
     cout << "                                                    \\.....|"<<endl;
     cout << "                    Normaliz " << string( STRINGIFY(NMZ_VERSION) "           " ,11)

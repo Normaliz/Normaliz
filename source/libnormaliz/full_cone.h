@@ -145,9 +145,9 @@ public:
     size_t CandidatesSize;
     list<vector<Integer> > Deg1_Elements;
     HilbertSeries Hilbert_Series;
-    vector<long> gen_degrees;  // will contain the degrees of the generators
+    vector<Integer> gen_degrees;  // will contain the degrees of the generators
     Integer shift; // needed in the inhomogeneous case to make degrees positive
-    vector<long> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
+    vector<Integer> gen_levels;  // will contain the levels of the generators (in the inhomogeneous case)
     size_t TriangulationBufferSize;          // number of elements in Triangulation, for efficiency
     list< SHORTSIMPLEX<Integer> > Triangulation;       // triangulation of cone
     list< SHORTSIMPLEX<Integer> > TriangulationBuffer; // simplices to evaluate

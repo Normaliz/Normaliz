@@ -204,14 +204,14 @@ Integer SimplexEvaluator<Integer>::start_evaluation(SHORTSIMPLEX<Integer>& s, Co
     //degrees of the generators according to the Grading of C
     if(C.isComputed(ConeProperty::Grading))
         for (i=0; i<dim; i++)
-            gen_degrees[i] = C.gen_degrees[key[i]];
+            gen_degrees[i] = convertTo<long>(C.gen_degrees[key[i]]);
             
     nr_level0_gens=0;
     level0_gen_degrees.clear();
     
     if(C.inhomogeneous){
         for (i=0; i<dim; i++){
-            gen_levels[i] = C.gen_levels[key[i]];
+            gen_levels[i] = convertTo<long>(C.gen_levels[key[i]]);
             if(gen_levels[i]==0){
                 nr_level0_gens++;
                 level0_gen_degrees.push_back(gen_degrees[i]);
@@ -1329,7 +1329,8 @@ Collector<Integer>::Collector(Full_Cone<Integer>& fc):
     size_t hv_max=0;
     if (C_ptr->do_h_vector) {
         // we need the generators to be sorted by degree
-        hv_max = C_ptr->gen_degrees[C_ptr->nr_gen-1] * C_ptr->dim;
+        long max_degree=convertTo<long>(C_ptr->gen_degrees[C_ptr->nr_gen-1]);
+        hv_max = max_degree * C_ptr->dim;
         if (hv_max > 1000000) {
             throw BadInputException("Generator degrees are too huge, h-vector would contain more than 10^6 entires.");
         }

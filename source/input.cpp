@@ -152,7 +152,7 @@ void process_constraint(const string& rel, const vector<mpq_class>& left, mpq_cl
 }
 
 mpq_class mpq_read(istream& in){
-    const string numeric="+-0123456789/.E";
+    const string numeric="+-0123456789/.e";
     in >> std::ws;
     string s;
     bool is_float=false;

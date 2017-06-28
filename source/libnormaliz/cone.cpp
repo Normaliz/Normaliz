@@ -3767,30 +3767,30 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 Ind[i][j]=true;
 
     if (change_integer_type) {
-            Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
-            Matrix<MachineInteger> GensMI;
-            Matrix<MachineInteger> SuppsMI;
+        Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
+        Matrix<MachineInteger> GensMI;
+        Matrix<MachineInteger> SuppsMI;
+        try {
             convert(GensMI,Gens);
             convert(SuppsMI,Supps);
             MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
             
-            try {
-                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,Ind, GDMI);
-            } catch(const ArithmeticException& e) {
-                if (verbose) {
-                    verboseOutput() << e.what() << endl;
-                    verboseOutput() << "Restarting with a bigger type." << endl;
-                }
-                change_integer_type = false;
+            project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,Ind, GDMI);
+        } catch(const ArithmeticException& e) {
+            if (verbose) {
+                verboseOutput() << e.what() << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
             }
-            if(change_integer_type){
-                convert(Deg1,Deg1MI);                
-            }
+            change_integer_type = false;
         }
-        
-        if (!change_integer_type) {
-            project_and_lift_inner<Integer>(Deg1, Gens, Supps,Ind, GradingDenom);
+        if(change_integer_type){
+            convert(Deg1,Deg1MI);                
         }
+    }
+    
+    if (!change_integer_type) {
+        project_and_lift_inner<Integer>(Deg1, Gens, Supps,Ind, GradingDenom);
+    }
 }
 //---------------------------------------------------------------------------
 template<typename Integer>

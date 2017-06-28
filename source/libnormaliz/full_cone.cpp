@@ -3209,6 +3209,7 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
     // deactivate
     if (do_triangulation)   do_partial_triangulation = false;
     if (do_Hilbert_basis)   do_deg1_elements = false; // they will be extracted later
+    
 }
 
 
@@ -4156,7 +4157,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
             if(isComputed(ConeProperty::Grading)){
                 verboseOutput() <<"Generators sorted by degree and lexicographically" << endl;
                 verboseOutput() << "Generators per degree:" << endl;
-                verboseOutput() << count_in_map<long,long>(gen_degrees);
+                verboseOutput() << count_in_map<Integer,long>(gen_degrees);
             }
             else
                 verboseOutput() << "Generators sorted by 1-norm and lexicographically" << endl;
@@ -4601,7 +4602,7 @@ void Full_Cone<Integer>::deg1_check() {
     
     set_degrees();
 
-    vector<long> divided_gen_degrees = gen_degrees;
+    vector<Integer> divided_gen_degrees = gen_degrees;
     if (has_generator_with_common_divisor) {
         Matrix<Integer> GenCopy = Generators;
         GenCopy.make_prime();

@@ -310,7 +310,7 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
 
 mpq_class dec_fraction_to_mpq(string s){
     
-    // cout << "s " << s <<endl;
+    cout << "s " << s <<endl;
     
     mpz_class sign=1;
     if(s[0]=='+')
@@ -327,7 +327,7 @@ mpq_class dec_fraction_to_mpq(string s){
     string int_string,frac_string,exp_string;
     size_t frac_part_length=0;
     size_t pos_point=s.find(".");
-    size_t pos_E=s.find("E");
+    size_t pos_E=s.find("e");
     if(pos_point!=string::npos){
         int_string=s.substr(0,pos_point);
         if(pos_E!=string::npos){
@@ -344,15 +344,24 @@ mpq_class dec_fraction_to_mpq(string s){
     if(pos_E!=string::npos)
         exp_string=s.substr(pos_E+1,s.size()-(pos_E+1));
     
-    /* cout << "int  " << int_string << endl;
+    cout << "int  " << int_string << endl;
     cout << "frac " << frac_string << endl;
-    cout << "exp  " << exp_string << endl; */
+    cout << "exp  " << exp_string << endl; 
+    
+    // remove leading 0
+    while(int_string[0]=='0')
+        int_string=int_string.substr(1);
+    while(frac_string[0]=='0')
+        frac_string=frac_string.substr(1);
     
     mpq_class int_part, frac_part, exp_part;
     if(!int_string.empty())
         int_part=mpz_class(int_string);
+
     if(pos_E==0)
         int_part=1;
+    
+    cout << "int_part " << int_part << endl;
     
     mpz_class den=1;
     if(!frac_string.empty()){
@@ -360,12 +369,14 @@ mpq_class dec_fraction_to_mpq(string s){
         for(size_t i=0;i<frac_part_length;++i)
             den*=10;        
     }
+    cout << "frac_part " << frac_part << endl;
     mpq_class result=int_part;
     if(frac_part!=0)
         result+=frac_part/den;
     if(!exp_string.empty()){
         long expo=stol(exp_string);
         long abs_expo=Iabs(expo);
+        cout << "expo " << expo << endl;
         mpz_class factor=1;
         for(long i=0;i< abs_expo;++i)
             factor*=10;
@@ -374,8 +385,8 @@ mpq_class dec_fraction_to_mpq(string s){
         else
             result/=factor;
     }
-    /* cout <<" result " << sign*result << endl;
-    cout << "==========" << endl;*/
+    cout <<" result " << sign*result << endl;
+    cout << "==========" << endl;
     return sign*result;
 }
 
