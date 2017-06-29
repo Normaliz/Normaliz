@@ -167,7 +167,8 @@ mpq_class mpq_read(istream& in){
             s+=c;
     }
     
-    assert(s!="");
+    if(s=="")
+        throw BadInputException("Error in input file. Most lekely mismatch of amb_space and matrix format.");
     
     // cout << "t " << s << " f " << is_float << endl;
     

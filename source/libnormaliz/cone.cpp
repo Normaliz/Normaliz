@@ -1913,6 +1913,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     // to control the computation of rational solutions in the inhomogeneous case
     
     ToCompute.reset(is_Computed);
+    ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions();
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
@@ -3896,6 +3897,7 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     // now the elimination, matching Pos and Neg
     
     for(size_t i=0;i<Pos.size();++i){
+        // cout << "Pos " << i << endl;
         size_t p=Pos[i];
         IntegerPL PosVal=Supps[p][dim1];
         vector<key_t> PosKey;
@@ -3992,8 +3994,12 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     
     skip_remaining=false;
     
+    vector< Matrix<IntegerPL> > RankTest = vector< Matrix<IntegerPL> >(omp_get_max_threads(), Matrix<IntegerPL>(0,dim));
+    
     #pragma omp parallel for schedule(dynamic)
     for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
+        
+        int tn = omp_get_ancestor_thread_num(1);
         
         if (skip_remaining) continue;
         
@@ -4003,13 +4009,14 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-        Matrix<IntegerPL> RankTest(0,SubSpace.getRank());
+        vector<key_t> supps_key;
         for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
             if(!Essential[j] || NewInd[j][OriGen[i]]==false)
                 continue;
-            RankTest.append(SuppsSub[j]);            
+            supps_key.push_back(j);            
         }
-        if(RankTest.rank()==rank-1)
+        Matrix<IntegerPL>& Test = RankTest[tn];
+        if (Test.rank_submatrix(SuppsSub,supps_key)==rank-1)
             ExtrInd[i]=true;
 #ifndef NCATCH
         } catch(const std::exception& ) {

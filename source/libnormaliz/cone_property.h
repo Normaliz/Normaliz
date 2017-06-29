@@ -163,6 +163,7 @@ public:
     void set_preconditions();    // activate properties which are needed implicitly
     void prepare_compute_options(bool inhomogeneous);
     void check_sanity(bool inhomogeneous);
+    void check_conflicting_variants();
 
     /* print it in a nice way */
     friend std::ostream& operator<<(std::ostream&, const ConeProperties&);
