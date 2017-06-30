@@ -506,7 +506,7 @@ private:
     void project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps);
     template<typename IntegerPL>
     void project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
-                        const Matrix<IntegerPL>& Supps, vector<vector<bool> >& Ind, IntegerPL GD);
+                        const Matrix<IntegerPL>& Supps, vector<vector<bool> >& Ind, IntegerPL GD, size_t rank);
 };
 
 // helpers
