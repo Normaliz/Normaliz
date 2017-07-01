@@ -3831,6 +3831,14 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const 
     return new_supp;
 }
 
+template<typename IntegerRet,typename Integer>
+IntegerRet int_quotient(Integer Num, Integer Den){
+    
+    Integer Quot=Iabs(Num)/Iabs(Den);
+    return convertTo<IntegerRet>(Quot);
+    
+}
+
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Gens,
@@ -4118,16 +4126,16 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
             
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
-        IntegerPL MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
+        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
         bool FirstMin=true, FirstMax=true;
         for(size_t j=0;j<Supps.nr_of_rows();++j){
             IntegerPL Den=Supps[j][dim1];
             if(Den==0)
                 continue;
-            IntegerPL Bound=0;
             IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(Deg1Proj[i],Supps[j]);
             // cout << "Num " << Num << endl;
-            IntegerPL Quot=Iabs(Num)/Iabs(Den);
+            IntegerRet Quot=int_quotient<IntegerRet,IntegerPL>(Num,Den);
+            IntegerRet Bound=0;
             bool frac=(Num % Den !=0);
             if(Den>0){ // we must produce a lower bound of the interval
                 if(Num>=0){  // true quot >= 0
@@ -4157,8 +4165,8 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
             }
         }
         
-        for(IntegerPL k=MinInterval;k<=MaxInterval;++k){
-            vector<IntegerPL> NewPoint(dim);
+        for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
+            vector<IntegerRet> NewPoint(dim);
             for(size_t j=0;j<dim1;++j)
                 NewPoint[j]=Deg1Proj[i][j];
             NewPoint[dim1]=k;
