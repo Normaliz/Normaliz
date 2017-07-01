@@ -3761,7 +3761,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
     if(verbose)
         verboseOutput() << "Starting projection" << endl;
     
-    vector<vector<bool> > Ind(Supps.nr_of_rows(),vector<bool> (Gens.nr_of_rows()));
+    vector< boost::dynamic_bitset<> > Ind(Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
     for(size_t i=0;i<Supps.nr_of_rows();++i)
         for(size_t j=0;j<Gens.nr_of_rows();++j)
             if(v_scalar_product(Supps[i],Gens[j])==0)
@@ -3797,10 +3797,45 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
 }
 
 //---------------------------------------------------------------------------
+// computes c1*v1-c2*v2
+template<typename Integer>
+vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const vector<Integer>& v2, bool& is_zero){
+ 
+    size_t dim=v1.size();
+    vector<Integer> new_supp(dim);
+    is_zero=false;
+    size_t k=0;
+    for(;k<dim;++k){
+        new_supp[k]=c1*v1[k]-c2*v2[k];
+        if(!check_range(new_supp[k]))
+            break;    
+    }
+    Integer g=0;
+    if(k==dim)
+        g=v_make_prime(new_supp);
+    else{ // redo in GMP if necessary
+        #pragma omp atomic
+        GMP_hyp++;
+        vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
+        convert(mpz_neg, v1);
+        convert(mpz_pos, v2);
+        for (k = 0; k <dim; k++)
+            mpz_sum[k]=convertTo<mpz_class>(c1)*mpz_neg[k]-
+                    convertTo<mpz_class>(c2)*mpz_pos[k];
+        mpz_class GG=v_make_prime(mpz_sum);
+        convert(new_supp, mpz_sum);
+        convert(g,GG);
+    }
+    if(g==0)
+        is_zero=true;
+    return new_supp;
+}
+
+//---------------------------------------------------------------------------
 template<typename Integer>
 template<typename IntegerPL>
 void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens,
-                                            const Matrix<IntegerPL>& Supps, vector<vector<bool> >& Ind, IntegerPL GD, size_t rank){
+                                            const Matrix<IntegerPL>& Supps, vector< boost::dynamic_bitset<> >& Ind, IntegerPL GD, size_t rank){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -3817,6 +3852,8 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             verboseOutput() << "Lifting" << endl;
         return;        
     }
+    
+    // cout << Ind;
 
     // We now augment the given cone by the last basis vector and its negative
     // Afterwards we project modulo the subspace spanned by them
@@ -3826,14 +3863,26 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
     Matrix<IntegerPL> EqusProj(0,dim); // for the equations (both later minimized)
     
     // First we make incidence vectors with the given generators    
-    // vector<vector<bool> > Ind; // for the incidence vectors of the old hyperplanes
-    vector<vector<bool> > NewInd; // for the incidence vectors of the new hyperplanes
+    // vector< boost::dynamic_bitset<> > Ind; // for the incidence vectors of the old hyperplanes
+    vector< boost::dynamic_bitset<> > NewInd; // for the incidence vectors of the new hyperplanes
     
-    vector<bool> TRUE(Ind[0].size(),true);
+     boost::dynamic_bitset<> TRUE(Ind[0].size());
+     TRUE.set();
+     /* for(size_t i=0;i<TRUE.size();++i)
+         TRUE[i]=true;*/
+     
+     vector<bool> IsEquation(Supps.nr_of_rows());
+     
+    bool rank_goes_up=false; // if we add the last unit vector
+    size_t PosEquAt=0; // we memorize the positions of pos/neg equations if rank goes up
+    size_t NegEquAt=0;
 
     for(size_t i=0;i<Supps.nr_of_rows();++i){
+        if(Ind[i]==TRUE)
+            IsEquation[i]=true;
+        
         if(Supps[i][dim1]==0){  // already independent of last coordinate
-            if(Ind[i]==TRUE)
+            if(IsEquation[i])
                 EqusProj.append(Supps[i]); // is equation
             else{
                 SuppsProj.append(Supps[i]); // neutral support hyperplane
@@ -3841,96 +3890,183 @@ void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matri
             }
             continue;
         }
+        if(IsEquation[i])
+            rank_goes_up=true;
         if(Supps[i][dim1]>0){
+            if(IsEquation[i])
+                PosEquAt=i;
             Pos.push_back(i);
             continue;
         }
         Neg.push_back(i);
+        if(IsEquation[i])
+            NegEquAt=i;
     }
     
     // cout << "Nach Pos/Neg " << EqusProj.nr_of_rows() << " " << Pos.size() << " " << Neg.size() << endl;
     
     // now the elimination, matching Pos and Neg
     
-    for(size_t i=0;i<Pos.size();++i){
-        size_t p=Pos[i];
-        IntegerPL PosVal=Supps[p][dim1];
-        vector<key_t> PosKey;
-        for(size_t k=0;k<Ind[i].size();++k)
-            if(Ind[p][k])
-                PosKey.push_back(k);
+    // cout << "rank_goes_up " << rank_goes_up << endl;
+    
+        bool skip_remaining;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+    
+    if(rank_goes_up){
+        for(size_t i=0;i<Pos.size();++i){ // match pos and neg equations
+            size_t p=Pos[i];
+            if(!IsEquation[p])
+                continue;
+            IntegerPL PosVal=Supps[p][dim1];
+            for(size_t j=0;j<Neg.size();++j){
+                size_t n=Neg[j];
+                if(!IsEquation[n])
+                    continue;
+                IntegerPL NegVal=Supps[n][dim1];
+                bool is_zero;
+                vector<IntegerPL> new_equ=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);
+                if(is_zero)
+                    continue;
+                EqusProj.append(new_equ);
+            }
+        }
         
-        for(size_t j=0;j<Neg.size();++j){
+        for(size_t i=0;i<Pos.size();++i){ // match pos inequalities with a negative equation
+            size_t p=Pos[i];
+            if(IsEquation[p])
+                continue;
+            IntegerPL PosVal=Supps[p][dim1];
+            IntegerPL NegVal=Supps[NegEquAt][dim1];
+            vector<IntegerPL> new_supp(dim);
+            bool is_zero;
+            new_supp=FM_comb(PosVal,Supps[NegEquAt],NegVal,Supps[p],is_zero);
+            if(is_zero) // cannot happen, but included for analogy
+                continue;
+            SuppsProj.append(new_supp);
+            NewInd.push_back(Ind[p]);            
+        }
+        
+        for(size_t j=0;j<Neg.size();++j){ // match neg inequalities with a posizive equation
             size_t n=Neg[j];
-            // match incidence vectors
-            vector<bool> incidence(TRUE.size());
-            size_t nr_match=0;
-            for(size_t k=0;k<PosKey.size();++k)
-                if(Ind[n][PosKey[k]]){
-                    incidence[PosKey[k]]=true;
-                    nr_match++;
-                }
-            if(rank>=2 && nr_match<rank-2) // cannot make subfacet of augmented cone
-                continue;            
-            
+            if(IsEquation[n])
+                continue;
+            IntegerPL PosVal=Supps[PosEquAt][dim1];
             IntegerPL NegVal=Supps[n][dim1];
             vector<IntegerPL> new_supp(dim);
-            size_t k=0;
-            for(;k<dim;++k){
-                new_supp[k]=PosVal*Supps[n][k]-NegVal*Supps[p][k];
-                if(!check_range(new_supp[k]))
-                    break;    
-            }
-            IntegerPL g;
-            if(k==dim)
-                g=v_make_prime(new_supp);
-            else{ // redo in GMP if necessary
-                #pragma omp atomic
-                GMP_hyp++;
-                vector<mpz_class> mpz_neg(dim), mpz_pos(dim), mpz_sum(dim);
-                convert(mpz_neg, Supps[n]);
-                convert(mpz_pos, Supps[p]);
-                for (k = 0; k <dim; k++)
-                    mpz_sum[k]=convertTo<mpz_class>(PosVal)*mpz_neg[k]-
-                            convertTo<mpz_class>(NegVal)*mpz_pos[k];
-                mpz_class GG=v_make_prime(mpz_sum);
-                convert(new_supp, mpz_sum);
-                convert(g,GG);
-            }
-            
-            if(g==0) // <==> new_supp==0
+            bool is_zero;
+            new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[PosEquAt],is_zero);
+            if(is_zero) // cannot happen, but included for analogy
                 continue;
-            
-            if(nr_match==TRUE.size()){ // gives an equation
-                EqusProj.append(new_supp);
-                continue;
-            }
-
             SuppsProj.append(new_supp);
-            NewInd.push_back(incidence);
+            NewInd.push_back(Ind[n]);            
         }
     }
+        
+    if(!rank_goes_up){
+        
+        skip_remaining=false;
+        
+        #pragma omp for schedule(dynamic)
+        for(size_t i=0;i<Pos.size();++i){
+            
+            if (skip_remaining) continue;
+        
+#ifndef NCATCH
+        try {
+#endif
+ 
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            size_t p=Pos[i];
+            IntegerPL PosVal=Supps[p][dim1];
+            vector<key_t> PosKey;
+            for(size_t k=0;k<Ind[i].size();++k)
+                if(Ind[p][k])
+                    PosKey.push_back(k);
+            
+            for(size_t j=0;j<Neg.size();++j){
+                size_t n=Neg[j];
+                // // to give a facet of the extended cone
+                // match incidence vectors
+                boost::dynamic_bitset<> incidence(TRUE.size());
+                size_t nr_match=0;
+                for(size_t k=0;k<PosKey.size();++k)
+                    if(Ind[n][PosKey[k]]){
+                        incidence[PosKey[k]]=true;
+                        nr_match++;
+                    }
+                if(rank>=2 && nr_match<rank-2) // cannot make subfacet of augmented cone
+                    continue; 
+
+                bool IsSubfacet=true;
+                for(size_t k=0;k<Supps.nr_of_rows();++k){
+                    if(k==p || k==n || IsEquation[k])
+                        continue;
+                    if(incidence.is_subset_of(Ind[k])){
+                        IsSubfacet=false;
+                        break;
+                    }
+                }
+                if(!IsSubfacet)
+                    continue;
+                //}
+                
+                IntegerPL NegVal=Supps[n][dim1];
+                vector<IntegerPL> new_supp(dim);
+                bool is_zero;
+                new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);                
+                if(is_zero) // linear combination is 0
+                    continue;
+                
+                if(nr_match==TRUE.size()){ // gives an equation
+                    EqusProj.append(new_supp);
+                    continue;
+                }
+
+                SuppsProj.append(new_supp);
+                NewInd.push_back(incidence);
+            }
+            
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+#endif
+        }
+        
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
+    } // rank_goes_up
     
     // cout << "Nach FM " << EqusProj.nr_of_rows() << " " << SuppsProj.nr_of_rows() << endl;
     
     Ind.clear(); // no longer needed
     
+    vector<bool>  Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential - actually superfluous now
+    
     EqusProj.resize_columns(dim1); // cut off the trailing 0
     SuppsProj.resize_columns(dim1);
     
-    vector<bool> Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential           
-    maximal_subsets(NewInd,Essential);  // select essentail hyperplanes
+       
+    // 
 
-size_t nr_ess=0;
+    /* size_t nr_ess=0;
     for(size_t i=0; i<Essential.size();++i)
         if(Essential[i]) nr_ess++;    
-    // cout << "Ess " << nr_ess << endl;
+    cout << "Ess " << nr_ess << endl;*/
     
     // extract the essentail hyperplanes
     Matrix<IntegerPL> EssSuppsProj=SuppsProj.submatrix(Essential);
  
     // Equations have not yet been appended to support hypwerplanes
     EqusProj.row_echelon(); // reduce equations
+    // cout << "Nach eche " << EqusProj.nr_of_rows() << endl;
     EssSuppsProj.append(EqusProj); // append them as pairs of inequalities
     EqusProj.scalar_multiplication(-1);
     EssSuppsProj.append(EqusProj);
@@ -3940,14 +4076,16 @@ size_t nr_ess=0;
     for(size_t i=0;i<SuppsProj.nr_of_rows();++i)
         if(Essential[i])
             RowSel.push_back(i);
-    vector<vector<bool> > FinalInd;
+    vector< boost::dynamic_bitset<> > FinalInd;
     for(size_t i =0;i<RowSel.size();++i)
             FinalInd.push_back(NewInd[RowSel[i]]); 
     // We must add indictor vectors for the equations
     for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
-        FinalInd.push_back(vector<bool> (NewInd[0].size(),true));
+        FinalInd.push_back(TRUE);
     
     size_t new_rank=dim1-EqusProj.nr_of_rows();
+    
+    // EssSuppsProj.pretty_print(cout);
     
     Matrix<IntegerPL> Deg1Proj(0,dim1);
     project_and_lift_inner(Deg1Proj,Gens, EssSuppsProj,FinalInd,GD,new_rank);
@@ -3959,11 +4097,6 @@ size_t nr_ess=0;
     vector<Matrix<IntegerPL> > Deg1Thread(omp_get_max_threads());
     for(size_t i=0;i<Deg1Thread.size();++i)
         Deg1Thread[i].resize(0,dim);
-    
-        bool skip_remaining;
-#ifndef NCATCH
-    std::exception_ptr tmp_exception;
-#endif
     
     skip_remaining=false;
     
