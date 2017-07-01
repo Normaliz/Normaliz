@@ -504,9 +504,7 @@ private:
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
     
     void project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps);
-    template<typename IntegerPL>
-    void project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens, 
-                        const Matrix<IntegerPL>& Supps, vector<boost::dynamic_bitset<> >& Ind, IntegerPL GD, size_t rank);
+
 };
 
 // helpers
@@ -520,6 +518,11 @@ void insert_zero_column(vector< vector<Integer> >& mat, size_t col);
 
 template<typename Integer>
 void insert_column(vector< vector<Integer> >& mat, size_t col, Integer entry);
+
+template<typename IntegerPL, typename IntegerRet>
+//template<typename IntegerRet>
+void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Gens, 
+                        const Matrix<IntegerPL>& Supps, vector<boost::dynamic_bitset<> >& Ind, IntegerPL GD, size_t rank);
 
 }  //end namespace libnormaliz
 

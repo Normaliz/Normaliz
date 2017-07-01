@@ -3832,9 +3832,8 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const 
 }
 
 //---------------------------------------------------------------------------
-template<typename Integer>
-template<typename IntegerPL>
-void Cone<Integer>:: project_and_lift_inner(Matrix<IntegerPL>& Deg1, const Matrix<IntegerPL>& Gens,
+template<typename IntegerPL,typename IntegerRet>
+void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Gens,
                                             const Matrix<IntegerPL>& Supps, vector< boost::dynamic_bitset<> >& Ind, IntegerPL GD, size_t rank){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
