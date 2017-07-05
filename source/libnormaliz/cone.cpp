@@ -3850,7 +3850,7 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     size_t dim1=dim-1;
     
     if(verbose)
-        verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl; 
+        verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << " generators " << Gens.nr_of_rows() << endl; 
     
     if(dim<=1){
         vector<IntegerPL> One(1,GD);
@@ -3861,6 +3861,13 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     }
     
     // cout << Ind;
+    
+    // First we project the generators and clean them up
+    Matrix<IntegerPL> GensProj(Gens);
+    GensProj.resize_columns(dim1);
+    vector<size_t> OriGen=GensProj.remove_duplicate_and_zero_rows(); // In thsi way we know where a projected generator comes from
+    Sublattice_Representation<IntegerPL> SubSpace(GensProj,false); // false is o.k. since only used for extreme rays
+    deque<bool> ExtrInd(GensProj.nr_of_rows(),false); // marks the extreme rays
 
     // We now augment the given cone by the last basis vector and its negative
     // Afterwards we project modulo the subspace spanned by them
@@ -3969,13 +3976,17 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
             SuppsProj.append(new_supp);
             NewInd.push_back(Ind[n]);            
         }
+        for(size_t i=0;i<GensProj.nr_of_rows();++i) // extreme rays remain extreme
+            ExtrInd[i]=true;
+        
+        SuppsProj.resize_columns(dim1); // project hyperplanes
     }
         
-    if(!rank_goes_up){
+    if(!rank_goes_up){ // must match pos and neg hyperplanes
         
         skip_remaining=false;
         
-        #pragma omp for schedule(dynamic)
+        #pragma omp parallel for schedule(dynamic)
         for(size_t i=0;i<Pos.size();++i){
             
             if (skip_remaining) continue;
@@ -4028,12 +4039,15 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
                     continue;
                 
                 if(nr_match==TRUE.size()){ // gives an equation
+                    #pragma omp critical(NEWEQ)
                     EqusProj.append(new_supp);
                     continue;
                 }
-
+                #pragma omp critical(NEWSUPP)
+                {
                 SuppsProj.append(new_supp);
                 NewInd.push_back(incidence);
+                }
             }
             
 #ifndef NCATCH
@@ -4049,24 +4063,63 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
         
-    } // rank_goes_up
+        SuppsProj.resize_columns(dim1);
+        
+        // now the new extreme rays. We use the rank criterion      
+   
+        vector< Matrix<IntegerPL> > RankTest = vector< Matrix<IntegerPL> >(omp_get_max_threads(), Matrix<IntegerPL>(0,dim));
+        Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj); // must restrict the support hyperplanes to the sublattice
+        
+        skip_remaining=false; 
+        #pragma omp parallel for schedule(dynamic)
+        for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
+            
+            int tn = omp_get_ancestor_thread_num(1);
+            
+            if (skip_remaining) continue;
+            
+    #ifndef NCATCH
+            try {
+    #endif
+                
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            vector<key_t> supps_key;
+            for(size_t j=0;j<SuppsProj.nr_of_rows();++j){
+                if(NewInd[j][OriGen[i]]==true)
+                    supps_key.push_back(j);            
+            }
+            Matrix<IntegerPL>& Test = RankTest[tn];
+            if (Test.rank_submatrix(SuppsSub,supps_key)==rank-2)
+                ExtrInd[i]=true;
+    #ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+    #endif
+        }
+
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+        
+    } // !rank_goes_up
     
     // cout << "Nach FM " << EqusProj.nr_of_rows() << " " << SuppsProj.nr_of_rows() << endl;
     
     Ind.clear(); // no longer needed
     
-    vector<bool>  Essential(SuppsProj.nr_of_rows(),true); // will be set false if inessential - actually superfluous now
+    vector<bool>  Essential(SuppsProj.nr_of_rows(),true); // superfluous at the moment
     
-    EqusProj.resize_columns(dim1); // cut off the trailing 0
-    SuppsProj.resize_columns(dim1);
+    EqusProj.resize_columns(dim1); // cut off the trailing 0    
+    vector<key_t> ExtrIndKey;
+    for(size_t i=0;i<ExtrInd.size();++i)
+        if(ExtrInd[i])
+            ExtrIndKey.push_back(i);
     
-       
-    // 
-
-    /* size_t nr_ess=0;
-    for(size_t i=0; i<Essential.size();++i)
-        if(Essential[i]) nr_ess++;    
-    cout << "Ess " << nr_ess << endl;*/
+    Matrix<IntegerPL> ExtrProj=GensProj.submatrix(ExtrIndKey); //select extreme rays
     
     // extract the essentail hyperplanes
     Matrix<IntegerPL> EssSuppsProj=SuppsProj.submatrix(Essential);
@@ -4079,14 +4132,24 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     EssSuppsProj.append(EqusProj);
     
     // Now we must make the new indicator matrix, selecting tows and columns from NewInd first
-    vector<key_t> RowSel;
+    vector<key_t> RowSel,ColSel;
     for(size_t i=0;i<SuppsProj.nr_of_rows();++i)
         if(Essential[i])
             RowSel.push_back(i);
-    vector< boost::dynamic_bitset<> > FinalInd;
-    for(size_t i =0;i<RowSel.size();++i)
-            FinalInd.push_back(NewInd[RowSel[i]]); 
+        
+    for(size_t i=0;i<GensProj.nr_of_rows();++i)
+        if(ExtrInd[i])
+            ColSel.push_back(OriGen[i]); // columns ofNewInd correspond to Gens !
+    
+    vector< boost::dynamic_bitset<> > FinalInd(RowSel.size());
+    for(size_t i =0;i<RowSel.size();++i){
+            FinalInd[i].resize(ExtrIndKey.size());
+            for(size_t j=0;j<ColSel.size();++j)
+                FinalInd[i][j]=NewInd[RowSel[i]][ColSel[j]];             
+    }
+    
     // We must add indictor vectors for the equations
+    TRUE.resize(ExtrIndKey.size());
     for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
         FinalInd.push_back(TRUE);
     
@@ -4095,9 +4158,10 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     // EssSuppsProj.pretty_print(cout);
     
     Matrix<IntegerPL> Deg1Proj(0,dim1);
-    project_and_lift_inner(Deg1Proj,Gens, EssSuppsProj,FinalInd,GD,new_rank);
+    project_and_lift_inner(Deg1Proj,ExtrProj, EssSuppsProj,FinalInd,GD,new_rank);
     
-    //------------------------------------
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
     
     // now the lifting
     
