@@ -4071,10 +4071,12 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
         Matrix<IntegerPL> SuppsSub=SubSpace.to_sublattice_dual(SuppsProj); // must restrict the support hyperplanes to the sublattice
         
         skip_remaining=false; 
-        #pragma omp parallel for schedule(dynamic)
+        // #pragma omp parallel for schedule(dynamic)
         for(size_t i=0;i<GensProj.nr_of_rows();++i){ // we must find the extreme points of the projection
             
-            int tn = omp_get_ancestor_thread_num(1);
+            ExtrInd[i]=true;
+            
+            /*int tn = omp_get_ancestor_thread_num(1);
             
             if (skip_remaining) continue;
             
@@ -4098,7 +4100,7 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
                 skip_remaining = true;
                 #pragma omp flush(skip_remaining)
             }
-    #endif
+    #endif*/
         }
 
 #ifndef NCATCH
