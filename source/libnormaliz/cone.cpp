@@ -2913,7 +2913,9 @@ void Cone<Integer>::compute_unit_group_index() {
     // we want to compute in the maximal linear subspace
     Sublattice_Representation<Integer> Sub(BasisMaxSubspace,true);
     Matrix<Integer> origens_in_subspace(0,dim);
+
     // we must collect all original generetors that lie in the maximal subspace 
+
     for(size_t i=0;i<OriginalMonoidGenerators.nr_of_rows();++i){
         size_t j;
         for(j=0;j<SupportHyperplanes.nr_of_rows();++j){
@@ -3121,7 +3123,7 @@ bool executable(string command){
 
 string command(const string& original_call, const string& to_replace, const string& by_this){
 // in the original call we replace the program name to_replace by by_this
-// wWe try variants with and without "lt-" preceding the names of executables 
+// we try variants with and without "lt-" preceding the names of executables
 // since libtools may have inserted "lt-" before the original name
 
     string copy=original_call;
