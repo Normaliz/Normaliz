@@ -310,7 +310,7 @@ void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer
 
 mpq_class dec_fraction_to_mpq(string s){
     
-    cout << "s " << s <<endl;
+    // cout << "s " << s <<endl;
     
     mpz_class sign=1;
     if(s[0]=='+')
@@ -344,9 +344,9 @@ mpq_class dec_fraction_to_mpq(string s){
     if(pos_E!=string::npos)
         exp_string=s.substr(pos_E+1,s.size()-(pos_E+1));
     
-    cout << "int  " << int_string << endl;
+    /* cout << "int  " << int_string << endl;
     cout << "frac " << frac_string << endl;
-    cout << "exp  " << exp_string << endl; 
+    cout << "exp  " << exp_string << endl; */
     
     // remove leading 0
     while(int_string[0]=='0')
@@ -361,7 +361,7 @@ mpq_class dec_fraction_to_mpq(string s){
     if(pos_E==0)
         int_part=1;
     
-    cout << "int_part " << int_part << endl;
+    // cout << "int_part " << int_part << endl;
     
     mpz_class den=1;
     if(!frac_string.empty()){
@@ -369,14 +369,14 @@ mpq_class dec_fraction_to_mpq(string s){
         for(size_t i=0;i<frac_part_length;++i)
             den*=10;        
     }
-    cout << "frac_part " << frac_part << endl;
+    // cout << "frac_part " << frac_part << endl;
     mpq_class result=int_part;
     if(frac_part!=0)
         result+=frac_part/den;
     if(!exp_string.empty()){
         long expo=stol(exp_string);
         long abs_expo=Iabs(expo);
-        cout << "expo " << expo << endl;
+        // cout << "expo " << expo << endl;
         mpz_class factor=1;
         for(long i=0;i< abs_expo;++i)
             factor*=10;
@@ -385,8 +385,8 @@ mpq_class dec_fraction_to_mpq(string s){
         else
             result/=factor;
     }
-    cout <<" result " << sign*result << endl;
-    cout << "==========" << endl;
+    /* cout <<" result " << sign*result << endl;
+    cout << "==========" << endl; */
     return sign*result;
 }
 
