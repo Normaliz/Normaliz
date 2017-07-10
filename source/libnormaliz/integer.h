@@ -83,6 +83,17 @@ bool try_convert(long long& ret, const mpz_class& val);
 inline bool try_convert(mpz_class& ret, const long& val) {ret = val; return true;}
 bool try_convert(mpz_class& ret, const long long& val);
 
+template<typename FromType>
+bool try_convert(nmz_float& ret, const FromType& val);
+//bool try_convert(nmz_float& ret, const long& val);
+bool try_convert(nmz_float& ret, const mpz_class& val);
+template<typename ToType>
+bool try_convert(ToType& ret, const nmz_float& val);
+// bool try_convert(long& ret, const nmz_float& val);
+bool try_convert(mpz_class& ret, const nmz_float& val);
+
+
+
 // template for same typ "conversion"
 template<typename Type>
 inline bool try_convert(Type& ret, const Type& val) {ret = val; return true;}

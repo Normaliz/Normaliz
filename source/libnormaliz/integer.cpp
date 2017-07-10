@@ -79,6 +79,32 @@ bool fits_long_range(long long a) {
     return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
 }
 
+template<typename FromType>
+bool try_convert(nmz_float& ret, const FromType& val){
+    mpz_class bridge;
+    if(!try_convert(bridge,val))
+        return false;
+    return try_convert(ret,bridge);
+}
+
+bool try_convert(nmz_float& ret, const mpz_class& val){    
+    ret=val.get_d();
+    return true;
+}
+
+template<typename ToType>
+bool try_convert(ToType& ret, const nmz_float& val){
+    mpz_class bridge;
+    if(!try_convert(bridge,val))
+        return false;
+    return try_convert(ret,bridge);
+}
+
+bool try_convert(mpz_class& ret, const nmz_float& val){    
+    ret=mpz_class(val);
+    return true;
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
