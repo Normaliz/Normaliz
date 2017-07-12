@@ -96,6 +96,7 @@ ConeProperties& ConeProperties::reset(const ConeProperties& ConeProps) {
 
 ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::Projection, false);
+    CPs.set(ConeProperty::ProjectionFloat, false);
     CPs.set(ConeProperty::NoProjection, false);
     CPs.set(ConeProperty::Approximate, false);
     CPs.set(ConeProperty::NoApproximation, false);
@@ -125,6 +126,7 @@ ConeProperties ConeProperties::goals() {
 ConeProperties ConeProperties::options() {
     ConeProperties ret;
     ret.set(ConeProperty::Projection, CPs.test(ConeProperty::Projection));
+    ret.set(ConeProperty::ProjectionFloat, CPs.test(ConeProperty::ProjectionFloat));
     ret.set(ConeProperty::NoProjection, CPs.test(ConeProperty::NoProjection));
     ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
     ret.set(ConeProperty::NoApproximation, CPs.test(ConeProperty::NoApproximation));
@@ -160,6 +162,9 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions() {
+    
+    if(CPs.test(ConeProperty::ProjectionFloat))
+        CPs.set(ConeProperty::Projection);
     
     if(CPs.test(ConeProperty::IsGorenstein))
         CPs.set(ConeProperty::SupportHyperplanes);
@@ -246,6 +251,7 @@ void ConeProperties::set_preconditions() {
 
 /* removes ignored compute options and sets implications */
 void ConeProperties::prepare_compute_options(bool inhomogeneous) {
+
     if (CPs.test(ConeProperty::IntegerHull)){
         if(inhomogeneous){
             CPs.set(ConeProperty::HilbertBasis);
@@ -303,6 +309,8 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::DualMode) && CPs.test(ConeProperty::PrimalMode))
         || (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::NoSymmetrization))
         || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::NoProjection))
+        || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::ProjectionFloat))
+        || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::Approximate) && CPs.test(ConeProperty::NoApproximation))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
@@ -428,6 +436,7 @@ namespace {
         CPN.at(ConeProperty::BigInt) = "BigInt";
         CPN.at(ConeProperty::NoSubdivision) = "NoSubdivision";
         CPN.at(ConeProperty::Projection) = "Projection";
+        CPN.at(ConeProperty::ProjectionFloat) = "ProjectionFloat";
         CPN.at(ConeProperty::NoProjection) = "NoProjection";
         CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
         CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
@@ -438,7 +447,7 @@ namespace {
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 67,
+        static_assert (ConeProperty::EnumSize == 68,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

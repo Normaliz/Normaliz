@@ -3665,7 +3665,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(Raw, GradGen,Supps);        
+        project_and_lift(Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
     }
     
     HilbertBasis=Matrix<Integer>(0,dim);
@@ -3758,7 +3758,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps){
+void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps, bool float_projection){
     
     if(verbose)
         verboseOutput() << "Starting projection" << endl;
@@ -3770,31 +3770,40 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 Ind[i][j]=true;
         
     size_t rank=BasisChangePointed.getRank();
-
-    if (change_integer_type) {
-        Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
-        Matrix<MachineInteger> GensMI;
-        Matrix<MachineInteger> SuppsMI;
-        try {
-            convert(GensMI,Gens);
-            convert(SuppsMI,Supps);
-            MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
-            
-            project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,Ind, GDMI,rank);
-        } catch(const ArithmeticException& e) {
-            if (verbose) {
-                verboseOutput() << e.what() << endl;
-                verboseOutput() << "Restarting with a bigger type." << endl;
-            }
-            change_integer_type = false;
-        }
-        if(change_integer_type){
-            convert(Deg1,Deg1MI);                
-        }
-    }
     
-    if (!change_integer_type) {
-        project_and_lift_inner<Integer>(Deg1, Gens, Supps,Ind, GradingDenom,rank);
+    if(float_projection){
+        Matrix<nmz_float> GensFloat;
+        convert(GensFloat,Gens);
+        Matrix<nmz_float> SuppsFloat;
+        convert(SuppsFloat,Supps);
+        project_and_lift_inner<nmz_float,Integer>(Deg1, GensFloat, SuppsFloat,Ind, GradingDenom,rank);        
+    }
+    else{
+        if (change_integer_type) {
+            Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
+            Matrix<MachineInteger> GensMI;
+            Matrix<MachineInteger> SuppsMI;
+            try {
+                convert(GensMI,Gens);
+                convert(SuppsMI,Supps);
+                MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
+                
+                project_and_lift_inner<MachineInteger>(Deg1MI, GensMI, SuppsMI,Ind, GDMI,rank);
+            } catch(const ArithmeticException& e) {
+                if (verbose) {
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
+                }
+                change_integer_type = false;
+            }
+            if(change_integer_type){
+                convert(Deg1,Deg1MI);                
+            }
+        }
+        
+        if (!change_integer_type) {
+            project_and_lift_inner<Integer>(Deg1, Gens, Supps,Ind, GradingDenom,rank);
+        }
     }
 }
 
@@ -3833,18 +3842,41 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const 
     return new_supp;
 }
 
-template<typename IntegerRet,typename Integer>
-IntegerRet int_quotient(Integer Num, Integer Den){
+
+bool int_quotient(long& Quot, const long long& Num, const long& Den){
     
-    Integer Quot=Iabs(Num)/Iabs(Den);
-    return convertTo<IntegerRet>(Quot);
-    
+    Quot=Iabs(Num)/Iabs(Den);
+    return Quot*Iabs(Den)!=Iabs(Num);    
 }
+
+bool int_quotient(long long& Quot, const long& Num, const long& Den){
+    
+    Quot=Iabs(Num)/Iabs(Den);
+    return Quot*Iabs(Den)!=Iabs(Num);    
+}
+
+
+bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den){
+    
+    Quot=Iabs(Num)/Iabs(Den);
+    return Quot*Iabs(Den)!=Iabs(Num);    
+}
+
+template<typename IntegerRet>
+bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
+   
+    nmz_float FloatQuot=Iabs(Num)/Iabs(Den); // cout << "FF " << FloatQuot << endl;
+    nmz_float IntQuot=trunc(FloatQuot+nmz_epsilon);      // cout << "II " << IntQuot << endl;
+    Quot=convertTo<IntegerRet>(IntQuot);     // cout << "QQ " <<  Quot << endl;
+    return FloatQuot-IntQuot > nmz_epsilon;    
+}
+
+
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Gens,
-                                            const Matrix<IntegerPL>& Supps, vector< boost::dynamic_bitset<> >& Ind, IntegerPL GD, size_t rank){
+                                            const Matrix<IntegerPL>& Supps, vector< boost::dynamic_bitset<> >& Ind, IntegerRet GD, size_t rank){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -3855,7 +3887,7 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
         verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl; 
     
     if(dim<=1){
-        vector<IntegerPL> One(1,GD);
+        vector<IntegerRet> One(1,GD);
         Deg1.append(One);
         if(verbose)
             verboseOutput() << "Lifting" << endl;
@@ -3932,7 +3964,11 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
                     continue;
                 IntegerPL NegVal=Supps[n][dim1];
                 bool is_zero;
+                // cout << Supps[p];
+                // cout << Supps[n];
                 vector<IntegerPL> new_equ=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);
+                // cout << "zero " << is_zero << endl;
+                // cout << "=====================" << endl;
                 if(is_zero)
                     continue;
                 EqusProj.append(new_equ);
@@ -3948,6 +3984,11 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
             vector<IntegerPL> new_supp(dim);
             bool is_zero;
             new_supp=FM_comb(PosVal,Supps[NegEquAt],NegVal,Supps[p],is_zero);
+            /* cout << Supps[NegEquAt];
+            cout << Supps[p];
+            cout << new_supp;
+            cout << "zero " << is_zero << endl;
+            cout << "+++++++++++++++++++++" << endl; */
             if(is_zero) // cannot happen, but included for analogy
                 continue;
             SuppsProj.append(new_supp);
@@ -3963,12 +4004,20 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
             vector<IntegerPL> new_supp(dim);
             bool is_zero;
             new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[PosEquAt],is_zero);
+            /* cout << Supps[PosEquAt];
+            cout << Supps[n];
+            cout << new_supp;
+            cout << "zero " << is_zero << endl;
+            cout << "=====================" << endl;*/
+            
             if(is_zero) // cannot happen, but included for analogy
                 continue;
             SuppsProj.append(new_supp);
             NewInd.push_back(Ind[n]);            
         }
     }
+    
+    // cout << "Nach RGU " << EqusProj.nr_of_rows() << " " << SuppsProj.nr_of_rows() << endl;
         
     if(!rank_goes_up){ // must match pos and neg hyperplanes
         
@@ -4080,6 +4129,8 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     // Equations have not yet been appended to support hypwerplanes
     EqusProj.row_echelon(); // reduce equations
     // cout << "Nach eche " << EqusProj.nr_of_rows() << endl;
+    /* for(size_t i=0;i<EqusProj.nr_of_rows(); ++i)
+        cout << EqusProj[i]; */
     SuppsProj.append(EqusProj); // append them as pairs of inequalities
     EqusProj.scalar_multiplication(-1);
     SuppsProj.append(EqusProj);
@@ -4091,9 +4142,7 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     
     size_t new_rank=dim1-EqusProj.nr_of_rows();
     
-    // EssSuppsProj.pretty_print(cout);
-    
-    Matrix<IntegerPL> Deg1Proj(0,dim1);
+    Matrix<IntegerRet> Deg1Proj(0,dim1);
     project_and_lift_inner(Deg1Proj,Gens,SuppsProj,NewInd,GD,new_rank);
     
     //---------------------------------------------------------------------
@@ -4101,7 +4150,7 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
     
     // now the lifting
     
-    vector<Matrix<IntegerPL> > Deg1Thread(omp_get_max_threads());
+    vector<Matrix<IntegerRet> > Deg1Thread(omp_get_max_threads());
     for(size_t i=0;i<Deg1Thread.size();++i)
         Deg1Thread[i].resize(0,dim);
     
@@ -4128,15 +4177,19 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
         
         IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
         bool FirstMin=true, FirstMax=true;
+        vector<IntegerPL> LiftedGen;
+        convert(LiftedGen,Deg1Proj[i]);
+        // cout << LiftedGen;
         for(size_t j=0;j<Supps.nr_of_rows();++j){
             IntegerPL Den=Supps[j][dim1];
             if(Den==0)
                 continue;
-            IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(Deg1Proj[i],Supps[j]);
+            IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(LiftedGen,Supps[j]);
             // cout << "Num " << Num << endl;
-            IntegerRet Quot=int_quotient<IntegerRet,IntegerPL>(Num,Den);
+            IntegerRet Quot;
+            bool frac=int_quotient(Quot,Num,Den);
             IntegerRet Bound=0;
-            bool frac=(Num % Den !=0);
+            //frac=(Num % Den !=0);
             if(Den>0){ // we must produce a lower bound of the interval
                 if(Num>=0){  // true quot >= 0
                     Bound=Quot;
@@ -4165,6 +4218,7 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& G
             }
         }
         
+        // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
         for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
             vector<IntegerRet> NewPoint(dim);
             for(size_t j=0;j<dim1;++j)

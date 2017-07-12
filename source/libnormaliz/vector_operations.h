@@ -105,6 +105,11 @@ Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j);
 template<typename Integer>
 Integer v_make_prime(vector<Integer>& v);
 
+nmz_float l1norm(vector<nmz_float>& v);
+
+template<>
+nmz_float v_make_prime<>(vector<nmz_float>& v);
+
 //---------------------------------------------------------------------------
 //							Scalar operations
 //---------------------------------------------------------------------------

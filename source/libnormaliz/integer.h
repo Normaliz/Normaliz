@@ -130,6 +130,11 @@ inline bool check_range<mpz_class>(const mpz_class& m) {
   return true;
 }
 
+template<>
+inline bool check_range<nmz_float>(const nmz_float& m) {
+  return true;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>

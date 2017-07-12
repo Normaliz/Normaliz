@@ -1913,6 +1913,66 @@ size_t Matrix<Integer>::row_echelon(){
     return rk;
 }
 
+//-----------------------------------------------------------
+//
+// variants for floating point
+//
+//-----------------------------------------------------------
+
+template<>
+long Matrix<nmz_float>::pivot_column(size_t row,size_t col){
+    
+    size_t i;
+    long j=-1;
+    nmz_float help=0;
+
+    for (i = row; i < nr; i++) {
+        if (Iabs(elem[i][col])>nmz_epsilon) {
+            if ((help==0)||(Iabs(elem[i][col])>help)) {
+                help=Iabs(elem[i][col]);
+                j=i;
+            }        }
+    }
+
+    return j;
+}
+
+template<>
+size_t Matrix<nmz_float>::row_echelon_inner_elem(bool& success){
+
+    size_t pc=0;
+    long piv=0, rk=0;
+
+    if(nr==0)
+        return 0;
+    
+    for (rk = 0; rk < (long) nr; rk++){
+        for(;pc<nc;pc++){
+            piv=pivot_column(rk,pc);
+            if(piv>=0)
+                break;
+        }
+        if(pc==nc)
+            break;
+            
+        exchange_rows (rk,piv);
+        reduce_row(rk,pc);
+    }
+    
+    success=true;                
+    return rk;
+}
+
+
+template<>
+size_t Matrix<nmz_float>::row_echelon(){
+
+    size_t rk;
+    bool dummy;
+    rk=row_echelon_inner_elem(dummy);
+    Shrink_nr_rows(rk);
+    return rk;
+}
 //---------------------------------------------------------------------------
 
 template<typename Integer>

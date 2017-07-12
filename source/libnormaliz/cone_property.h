@@ -113,6 +113,7 @@ namespace ConeProperty {
         NoSymmetrization,
         NoSubdivision,
         Projection,
+        ProjectionFloat,
         NoProjection,
         NoNestedTri, // synonym for NoSubdivision
         KeepOrder,

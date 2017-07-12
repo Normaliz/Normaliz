@@ -478,6 +478,30 @@ Integer v_make_prime(vector<Integer>& v){
     return g;
 }
 
+nmz_float l1norm(vector<nmz_float>& v){
+    size_t i, size=v.size();
+    nmz_float g=0;
+    for (i = 0; i < size; i++) {
+        if(Iabs(v[i])>nmz_epsilon)
+            g+=Iabs(v[i]);
+        else
+            v[i]=0;
+    }
+    return g;    
+}
+
+template<>
+nmz_float v_make_prime<>(vector<nmz_float>& v){
+    size_t i, size=v.size();
+    nmz_float g=l1norm(v);
+    if (g!=0) {
+        for (i = 0; i < size; i++) {
+            v[i] /= g;
+        }
+    }
+    return g;
+}
+
 
 //---------------------------------------------------------------------------
 

@@ -48,6 +48,7 @@ namespace libnormaliz {
 
 typedef long long MachineInteger;
 typedef double nmz_float;
+const nmz_float nmz_epsilon=1.0e-12;
 
 } /* end namespace libnormaliz */
 
