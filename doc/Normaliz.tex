@@ -2758,6 +2758,12 @@ This type is accessory. A $\ZZ$-valued grading can be specified in two ways:
 	(affine) hyperplane $A$ given by an equation $\lambda(x)=1$ with a $\ZZ$-linear form $\lambda$. If so, then  $\lambda$ is used as the grading.
 	
 	\emph{Implicit gradings are only possible for homogeneous computations.}
+	
+	If the attempt to find an implicit grading causes an arithmetic overflow and \texttt{verbose} has been set (say, by the option\texttt{-c}), then Normaliz issues the warning
+	\begin{Verbatim}
+	Giving up the check for a grading
+	\end{Verbatim}
+	If you really need this check, rerun Normaliz with a bigger integer type.
 \end{arab}
 
 Explicit definition of a grading:
@@ -3322,6 +3328,13 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{More examples}\label{MoreExamples}
+
+\subsection{Lattice points in polytopes}
+
+There are two ways to define polytopes for Normaliz:
+\begin{arab}
+\item a cone 
+\end{arab}
 
 \subsection{Lattice points by approximation}\label{approx}
 
@@ -5874,6 +5887,9 @@ namespace ConeProperty {
 		NoBottomDec,       
 		DualMode,
 		PrimalMode,
+	    Projection,
+	    ProjectionFloat,
+	    NoProjection,
 		Symmetrize, 
 		NoSymmetrization, 
 		NoSubdivision, 

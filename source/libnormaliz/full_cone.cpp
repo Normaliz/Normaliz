@@ -1945,6 +1945,7 @@ void Full_Cone<Integer>::build_cone() {
                 size_t tmp_hyp=0;
                 // TODO: collect only those which belong to the current generator?
                 for (;jt!=approx_points_keys[current_gen].end();++jt){
+                    cout << dim << " " << Support_Hyperplanes.nr_of_columns()<< " " << Generators[*jt].size() << endl;
                     tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
                     max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
                 }
@@ -4562,7 +4563,14 @@ void Full_Cone<Integer>::deg1_check() {
             Matrix<Integer> Extreme=Generators.submatrix(Extreme_Rays_Ind);
             if (has_generator_with_common_divisor) 
                 Extreme.make_prime();
-            Grading = Extreme.find_linear_form();
+            try{
+                Grading = Extreme.find_linear_form();
+            } catch(const ArithmeticException& e) { // if the exception has been thrown, the grading has 
+                Grading.resize(0);   // we consider the grafing as non existing -- though this may not be true
+                if(verbose)
+                    verboseOutput() << "Giving up the check for a grading" << endl;
+            }
+
             if (Grading.size() == dim && v_scalar_product(Grading,Extreme[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {
@@ -4575,7 +4583,13 @@ void Full_Cone<Integer>::deg1_check() {
             Matrix<Integer> GenCopy = Generators;
             if (has_generator_with_common_divisor)
                 GenCopy.make_prime();
+            try{
             Grading = GenCopy.find_linear_form();
+            } catch(const ArithmeticException& e) { // if the exception has been thrown,
+                Grading.resize(0);   // we consider the grafing as non existing-- though this may not be true
+                if(verbose)
+                    verboseOutput() << "Giving up the check for a grading" << endl;
+            }
             if (Grading.size() == dim && v_scalar_product(Grading,GenCopy[0])==1) {
                 is_Computed.set(ConeProperty::Grading);
             } else {

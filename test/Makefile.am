@@ -35,10 +35,14 @@ NMZTESTS = test-/23.in					\
 	test-/3x3magiceven.ref				\
 	test-/4x4.in					\
 	test-/4x4.ref					\
+	test-/5x5PF.in					\
+	test-/5x5PF.ref					\
 	test-/4x4gen.in					\
 	test-/4x4gen.ref				\
 	test-/binom.in					\
 	test-/binom.ref					\
+	test-/ChF_6_4PF.in				\
+	test-/ChF_6_4PF.ref				\
 	test-/ChineseRemainder.in			\
 	test-/ChineseRemainder.ref			\
 	test-/CondParSymmSemi.in			\
@@ -97,6 +101,8 @@ NMZTESTS = test-/23.in					\
 	test-/lattice_ideal.ref				\
 	test-/lowrank.in				\
 	test-/lowrank.ref				\
+	test-/lowrankPF.in				\
+	test-/lowrankPF.ref				\
 	test-/medium.in					\
 	test-/medium.ref				\
 	test-/mode456.in				\
@@ -139,6 +145,8 @@ NMZTESTS = test-/23.in					\
 	test-/small-sh.ref				\
 	test-/small.in					\
 	test-/small.ref					\
+	test-/smallPF.in				\
+	test-/smallPF.ref				\
 	test-/squaref0.in				\
 	test-/squaref0.ref				\
 	test-/squaref1.in				\
@@ -161,6 +169,8 @@ NMZTESTS = test-/23.in					\
 	test-/ThierryApproximate.ref			\
 	test-/ThierryNoProjection.in			\
 	test-/ThierryNoProjection.ref			\
+	test-/ThierryPF.in				\
+	test-/ThierryPF.ref				\
 	test-/zero3.in					\
 	test-/zero3.ref					\
 	test-/zero4.in					\
