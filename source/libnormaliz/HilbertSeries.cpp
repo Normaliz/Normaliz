@@ -89,39 +89,40 @@ void HilbertSeries::compute_hsop_num() const{
 
 //---------------------------------------------------------------------------
 
+void HilbertSeries::initialize(){
+    
+    is_simplified = false;
+    shift = 0;
+    verbose = false;
+    do_quasipolynomial=true;
+    
+}
+
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
     num = vector<mpz_class>(1,0);
     //denom just default constructed
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1,0);
     add(numerator, gen_degrees);
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long, denom_t>& denominator) {
     num = numerator;
     denom = denominator;
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 // Constructor, string as created by to_string_rep
 HilbertSeries::HilbertSeries(const string& str) {
     from_string_rep(str);
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 
@@ -301,7 +302,7 @@ void HilbertSeries::simplify() const {
     period = lcm_of_keys(cdenom);
     if (period > 10*PERIOD_BOUND) {
         if (verbose) {
-            errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
+            errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimension many factors in the denominator!" << endl;
         }
     }
     if(period <= 10*PERIOD_BOUND){
@@ -381,8 +382,12 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
     return quasi_denom;
 }
 
+void HilbertSeries::set_comp_quasipol(bool on_off){
+        do_quasipolynomial=on_off;
+}
+
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
-    if (isHilbertQuasiPolynomialComputed()) return;
+    if (isHilbertQuasiPolynomialComputed() || !do_quasipolynomial) return;
     simplify();
     if (period > PERIOD_BOUND) {
         if (verbose) {
