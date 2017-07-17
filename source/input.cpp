@@ -445,7 +445,7 @@ bool read_formatted_matrix(istream& in, vector<vector<mpq_class> >& input_mat, b
     
 
 
-map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial) {
+map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& in, OptionsHandler& options, string& polynomial, long& nr_coeff_quasipol) {
 
     string type_string;
     long i,j;
@@ -454,6 +454,7 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
     mpq_class number;
     ConeProperty::Enum cp;
     bool we_have_a_polynomial=false;
+    bool we_have_nr_coeff=false;
 
     map<Type::InputType, vector< vector<mpq_class> > > input_map;
     typename map<Type::InputType, vector< vector<mpq_class> > >::iterator it;
@@ -557,6 +558,15 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                         throw BadInputException("Only one polynomial allowed");
                     read_polynomial(in,polynomial);
                     we_have_a_polynomial=true;
+                    continue;
+                }
+                if(type_string=="nr_coeff_quasipol"){
+                    if(we_have_nr_coeff)
+                        throw BadInputException("Only one nr_coeff_quasipol allowed");
+                    in >> nr_coeff_quasipol;
+                    we_have_nr_coeff=true;
+                    if(in.fail())
+                        throw BadInputException("Error while reading nr_coeff_quasipol");
                     continue;
                 }
 

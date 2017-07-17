@@ -2824,7 +2824,9 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC) {
         is_Computed.set(ConeProperty::Deg1Elements);
     }
     if (FC.isComputed(ConeProperty::HilbertSeries)) {
+        long save_nr_coeff_quasipol=HSeries.get_nr_coeff_quasipol(); // Full_Cone does not compute the quasipolynomial
         HSeries = FC.Hilbert_Series;
+        HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
         is_Computed.set(ConeProperty::HilbertSeries);
     }
     if (FC.isComputed(ConeProperty::HSOP)) {
@@ -3100,6 +3102,12 @@ void Cone<Integer>::setPolynomial(string poly){
     IntData=IntegrationData(poly);
 }
 
+template<typename Integer>
+void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff){
+    IntData.set_nr_coeff_quasipol(nr_coeff);
+    HSeries.set_nr_coeff_quasipol(nr_coeff);
+}
+
 bool executable(string command){
 //n check whether "command --version" cam be executed
 
@@ -3310,6 +3318,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmInput[InputType::signs]=SymmNonNeg;
     SymmCone=new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
+    SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
     SymmCone->setVerbose(verbose);
     ConeProperties SymmToCompute;
     SymmToCompute.set(ConeProperty::SupportHyperplanes);

@@ -94,8 +94,7 @@ void HilbertSeries::initialize(){
     is_simplified = false;
     shift = 0;
     verbose = false;
-    do_quasipolynomial=true;
-    
+    nr_coeff_quasipol=-1; // all coefficients
 }
 
 // Constructor, creates 0/1
@@ -133,6 +132,14 @@ void HilbertSeries::reset() {
     denom_classes.clear();
     shift = 0;
     is_simplified = false;
+}
+
+void HilbertSeries::set_nr_coeff_quasipol(long nr_coeff){
+    nr_coeff_quasipol=nr_coeff;
+}
+
+long HilbertSeries::get_nr_coeff_quasipol() const{
+    return nr_coeff_quasipol;
 }
 
 // add another HilbertSeries to this
@@ -382,13 +389,18 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
     return quasi_denom;
 }
 
-void HilbertSeries::set_comp_quasipol(bool on_off){
-        do_quasipolynomial=on_off;
-}
-
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
-    if (isHilbertQuasiPolynomialComputed() || !do_quasipolynomial) return;
+
+    if (isHilbertQuasiPolynomialComputed() || nr_coeff_quasipol==0) return;
     simplify();
+    
+    vector<long> denom_vec=to_vector(denom);    
+    if(nr_coeff_quasipol > (long) denom_vec.size()){
+        if(verbose)
+            verboseOutput() << "Number of coeff of quasipol too large. Reset to deault value." << endl;
+        nr_coeff_quasipol=-1;
+    }
+        
     if (period > PERIOD_BOUND) {
         if (verbose) {
             errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
@@ -428,18 +440,31 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
             }
         }
     }
+    
+    // determine the common period of the coefficients that will be computed and printed
+    long reduced_period;
+    if(nr_coeff_quasipol>=0){
+        reduced_period=1;
+        for(long j=0;j< nr_coeff_quasipol;++j)
+            reduced_period=lcm(reduced_period,denom_vec[j]);
+    }
+    else
+        reduced_period=period;
+    
     //cut numerator into period many pieces and apply standard method
-    quasi_poly = vector< vector<mpz_class> >(period);
+    // we make only reduced_period many components
+    quasi_poly = vector< vector<mpz_class> >(reduced_period);
     long nn_size = norm_num.size();
-    for (j=0; j<period; ++j) {
+    for (j=0; j<reduced_period; ++j) {
         quasi_poly[j].reserve(dim);
     }
     for (i=0; i<nn_size; ++i) {
-        quasi_poly[i%period].push_back(norm_num[i]);
+        if(i%period<reduced_period)
+            quasi_poly[i%period].push_back(norm_num[i]);
     }
 
     #pragma omp parallel for
-    for (j=0; j<period; ++j) {
+    for (j=0; j<reduced_period; ++j) {
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
@@ -451,14 +476,14 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     mpz_class pp=1;
     for (i = dim-2; i >= 0; --i) {
         pp *= period; //p^i   ok, it is p^(dim-1-i)
-        for (j=0; j<period; ++j) {
+        for (j=0; j<reduced_period; ++j) {
             quasi_poly[j][i] *= pp;
         }
     } //at the end pp=p^dim-1
     //the common denominator for all coefficients, dim! * pp
     quasi_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
-    for (j=0; j<period; ++j) {
+    for (j=0; j<reduced_period; ++j) {
         // X |--> X - (j + shift)
         linear_substitution<mpz_class>(quasi_poly[j], j + shift); // replaces quasi_poly[j]
     }
@@ -470,10 +495,19 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     QP.scalar_division(g);
     //we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
     long normed_shift = -shift;
-    while (normed_shift < 0) normed_shift += period;
-    for (j=0; j<period; ++j) {
-        quasi_poly[j] = QP[(j+normed_shift)%period]; // QP[ (j - shift) % p ]
+    while (normed_shift < 0) normed_shift += reduced_period;
+    for (j=0; j<reduced_period; ++j) {
+        quasi_poly[j] = QP[(j+normed_shift)%reduced_period]; // QP[ (j - shift) % p ]
     }
+    
+    long delete_coeff=0;
+    if(nr_coeff_quasipol>=0)
+        delete_coeff=(long) quasi_poly[0].size()-nr_coeff_quasipol;
+    
+    for(size_t i=0;i<quasi_poly.size();++i) // delete coefficients that have not been computed completely
+        for(long j=0;j <delete_coeff;++j)
+            quasi_poly[i][j]=0;
+        
     if (verbose && period > 1) {
         verboseOutput() << " done." << endl;
     }
@@ -963,6 +997,10 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
 
 //---------------------------------------------------------------------------
 IntegrationData::IntegrationData(){
+}
+
+void IntegrationData::set_nr_coeff_quasipol(long nr_coeff){
+    weighted_Ehrhart_series.first.set_nr_coeff_quasipol(nr_coeff);
 }
 
 string IntegrationData::getPolynomial() const{
