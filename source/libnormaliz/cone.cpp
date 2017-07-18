@@ -1879,6 +1879,12 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     assert(!already_in_compute);
     already_in_compute=true;
     
+    if(ToCompute.test(ConeProperty::NoPeriodBound)){
+        HSeries.set_period_bounded(false);
+        IntData.getWeightedEhrhartSeries().first.set_period_bounded(false);        
+    }
+        
+    
 #ifndef NMZ_COCOA
    if(ToCompute.test(ConeProperty::VirtualMultiplicity) || ToCompute.test(ConeProperty::Integral) 
        || ToCompute.test(ConeProperty::WeightedEhrhartSeries))
@@ -3319,6 +3325,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmCone=new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
     SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
+    SymmCone->HSeries.set_period_bounded(HSeries.get_period_bounded());
     SymmCone->setVerbose(verbose);
     ConeProperties SymmToCompute;
     SymmToCompute.set(ConeProperty::SupportHyperplanes);

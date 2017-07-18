@@ -95,6 +95,7 @@ void HilbertSeries::initialize(){
     shift = 0;
     verbose = false;
     nr_coeff_quasipol=-1; // all coefficients
+    period_bounded=true;
 }
 
 // Constructor, creates 0/1
@@ -142,6 +143,13 @@ long HilbertSeries::get_nr_coeff_quasipol() const{
     return nr_coeff_quasipol;
 }
 
+void HilbertSeries::set_period_bounded(bool on_off) const{ //period_bounded is mutable
+    period_bounded=on_off;
+}
+
+bool HilbertSeries::get_period_bounded() const{
+    return period_bounded;
+}
 // add another HilbertSeries to this
 void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
     vector<denom_t> sorted_gd(gen_degrees);
@@ -307,12 +315,12 @@ void HilbertSeries::simplify() const {
     else
         dim = 0;
     period = lcm_of_keys(cdenom);
-    if (period > 10*PERIOD_BOUND) {
+    if (period_bounded && period > 10*PERIOD_BOUND) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimension many factors in the denominator!" << endl;
         }
     }
-    if(period <= 10*PERIOD_BOUND){
+    if(period_bounded &&  period <= 10*PERIOD_BOUND){
         while(true){
             //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
             
@@ -401,7 +409,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         nr_coeff_quasipol=-1;
     }
         
-    if (period > PERIOD_BOUND) {
+    if (period_bounded &&  period > PERIOD_BOUND) {
         if (verbose) {
             errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
         }

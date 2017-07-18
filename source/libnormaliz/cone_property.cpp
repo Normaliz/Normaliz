@@ -109,6 +109,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::BigInt, false);
     CPs.set(ConeProperty::NoSubdivision, false);
     CPs.set(ConeProperty::NoNestedTri, false);
+    CPs.set(ConeProperty::NoPeriodBound, false);
     return *this;
 }
 
@@ -136,6 +137,7 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoSubdivision, CPs.test(ConeProperty::NoSubdivision));
     ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
     ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
+    ret.set(ConeProperty::NoPeriodBound, CPs.test(ConeProperty::NoPeriodBound));
     return ret;
 }
 
@@ -406,9 +408,10 @@ namespace {
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
         CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
+        CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 65,
+        static_assert (ConeProperty::EnumSize == 66,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

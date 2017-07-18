@@ -115,6 +115,7 @@ namespace ConeProperty {
         NoNestedTri, // synonym for NoSubdivision
         KeepOrder,
         HSOP,
+        NoPeriodBound,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

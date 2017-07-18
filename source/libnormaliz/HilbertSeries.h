@@ -145,6 +145,9 @@ public:
     
     void set_nr_coeff_quasipol(long nr_coeff);
     long get_nr_coeff_quasipol() const;
+    
+    void set_period_bounded(bool on_off) const;
+    bool get_period_bounded() const;
 
 private:
     
@@ -155,6 +158,7 @@ private:
     // add the classes if they get too many
     static const size_t DENOM_CLASSES_BOUND = 50000;
     static const long PERIOD_BOUND = 1000000;
+    mutable bool period_bounded;
 
     // the numerator, repr. as vector of coefficients, the h-vector
     mutable vector<mpz_class> num;
