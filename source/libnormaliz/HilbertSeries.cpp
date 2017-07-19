@@ -319,8 +319,9 @@ void HilbertSeries::simplify() const {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimension many factors in the denominator!" << endl;
         }
+        denom=save_denom;
     }
-    if(period_bounded &&  period <= 10*PERIOD_BOUND){
+    else{
         while(true){
             //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
             
@@ -347,8 +348,6 @@ void HilbertSeries::simplify() const {
             num=poly_mult(num,quotient);
         }
     }
-    else
-        denom=save_denom;
 
 /*    if (verbose) {
         verboseOutput() << "Simplified Hilbert series: " << endl << *this;
