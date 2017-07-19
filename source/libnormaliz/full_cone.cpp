@@ -2809,38 +2809,45 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
 
     if (is_approximation) return; // do not approximate again!
 
-    Full_Cone<Integer> SimplCone(gens);
-
     vector<Integer> N;
-    N = SimplCone.Generators.find_linear_form();
-    assert(N.size()==SimplCone.dim);
-    // if no grading is computed, we use the normal vector on the simplex
-    if (isComputed(ConeProperty::Grading)){
-        SimplCone.Grading=Grading;
-    } else {
-
-        SimplCone.Grading = N;
+    N = gens.find_linear_form();
+    assert(N.size()==dim);
+    Integer G=v_scalar_product(N,gens[0]);
+    Matrix<Integer> Supp;
+    Integer V;
+    vector<key_t> dummy(dim);
+    for(size_t i=0;i<dim;++i)
+        dummy[i]=i;
+    gens.simplex_data(dummy, Supp,V,true);
+    Integer MinusOne=-1;
+    v_scalar_multiplication(N,MinusOne);
+    Supp.append(N);
+    Supp.resize_columns(dim+1);
+    
+    double VF=convertTo<double>(V);
+    double GF=convertTo<double>(G);
+    double DF=1;
+    for(size_t i=1;i<dim;++i)
+        DF*=i;
+    double TF=100.0*DF/VF;
+    TF=exp(1.0/(double(dim)*log(TF)));
+    TF=1.0/GF*TF;
+    Integer g=convertTo<Integer>(TF);
+    if(g==0)
+        g=1;
+    cout << "GGGGG " << G << endl;
+    while(sub_div_elements.size()<1000 && g<G){
+        cout << "ggggg " << g << endl;
+        Supp[dim][dim]=g;
+        Cone<Integer> SubDiv(Type::inhom_inequalities,Supp);
+        SubDiv.compute(ConeProperty::Projection);
+        Matrix<Integer> SubDivMat=SubDiv.getModuleGeneratorsMatrix();
+        SubDivMat.resize_columns(dim);
+        SubDivMat.remove_duplicate_and_zero_rows();
+        for(size_t i=0;i<SubDivMat.nr_of_rows();++i)
+            sub_div_elements.push_back(SubDivMat[i]);
+        g*=2;
     }
-    SimplCone.is_Computed.set(ConeProperty::Grading);
-    SimplCone.deg1_check();
-    if (SimplCone.isDeg1ExtremeRays()) return; // no approx possible
-
-    if (verbose) {
-        verboseOutput() << "Computing bottom candidates via approximation... " << flush;
-    }
-    SimplCone.do_Hilbert_basis=true;  // not srictly true. We only want subdividing points
-    SimplCone.do_approximation=true;  // as indicted by do_approximation
-    SimplCone.approx_level = approx_level;
-
-    //SimplCone.verbose=true;
-
-    SimplCone.VolumeBound=VolumeBound;
-
-    SimplCone.Truncation= N;
-    SimplCone.TruncLevel=v_scalar_product(SimplCone.Truncation,SimplCone.Generators[0]);
-
-    SimplCone.compute();
-    sub_div_elements.splice(sub_div_elements.begin(),SimplCone.Hilbert_Basis);
     if (verbose) {
         verboseOutput() << "done." << endl;
     }
