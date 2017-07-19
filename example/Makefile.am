@@ -21,6 +21,7 @@ EXTRA_DIST =					\
 	ChineseRemainder.in			\
 	CondEffPlur.in				\
 	Condorcet.in				\
+	CondorcetN.in				\
 	Condorcet.symm.in			\
 	CondorcetInt.in				\
 	CondorcetSemi.in			\

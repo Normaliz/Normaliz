@@ -1052,12 +1052,14 @@ try{
   
   mpz_class commonDen; // common denominator of coefficients of numerator of H  
   libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat,commonDen));
+  HS.set_nr_coeff_quasipol(C.getIntData().getWeightedEhrhartSeries().first.get_nr_coeff_quasipol());
+  HS.set_period_bounded(C.getIntData().getWeightedEhrhartSeries().first.get_period_bounded());
   
   C.getIntData().setWeightedEhrhartSeries(make_pair(HS,commonDen));
   
   C.getIntData().computeWeightedEhrhartQuasiPolynomial();
   
-      if(C.getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
+   if(C.getIntData().isWeightedEhrhartQuasiPolynomialComputed()){
         mpq_class genMultQ;
         long deg=C.getIntData().getWeightedEhrhartQuasiPolynomial()[0].size()-1;
         long virtDeg=C.getRank()+C.getIntData().getDegreeOfPolynomial()-1;

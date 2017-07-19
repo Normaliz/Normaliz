@@ -276,7 +276,12 @@ In 3.3.0:
 In 3.3.1
 
 \begin{arab}
-	\item limit of parallelization.
+	\item limit of parallelization via libnormaliz,
+	\item floating point numbers in input,
+	\item project-and-lift algorithm for lattice points in polytopes, also witha floating point variant,
+	\item fast Gorenstein test,
+	\item restriction of number of significant coefieicients of quasipolynomial,
+	\item definition of semi-open parallelepipeds in input and output of their lattice points.
 \end{arab}
 
 
@@ -1589,7 +1594,7 @@ degree of Hilbert Series as rational function = -25
 
 Normaliz automatically uses symmetrization for this example , but it is too small to demonstrate the power of symmetrization. For others, symmetrization can convert days into seconds. 
 
-Since symmetrization is used, you will also find a file \verb|Condorcet.symm.out| in your directory. It contains the data computed for the symmetrization. You need not care at this point. We take continue the discussion of symmetrization in the Sections \ref{???} and \ref{???}.
+Since symmetrization has been used, you will also find a file \verb|Condorcet.symm.out| in your directory. It contains the data computed for the symmetrization. You need not care at this point. We take continue the discussion of symmetrization in Section \ref{symmetrize}.
 
 \subsubsection{Excluding ties}\label{excluded_ex}
 
@@ -2167,6 +2172,7 @@ several items. There are several types of items:
 	\item constraints in  or symbolic format,
 	\item a polynomial,
 	\item computation goals and algorithmic variants,
+	\item numerical parameters,
 	\item comments.
 \end{arab}
 
@@ -2419,6 +2425,7 @@ Normaliz accepts decimal fractions and floating point numbers in its input files
 \begin{Verbatim}
 1.1 --> 11/10    0.5 --> 1/2    -.1e1 --> -1
 \end{Verbatim}
+It is not allowed to combine an ordinary fraction and a decimal fraction in the same number. In other words, expressions like \verb|1.0/2| are not allowed.
 
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
@@ -2836,6 +2843,18 @@ where the vector $(u_1,\dots,u_d)$ is given by \verb|openfaceets|. (If $\dim C<d
 
 That $1$ indicates `open'' is in accordance with its use for the disjoint decomposition; see Section \ref{Disjoint}. Section \ref{LattPointsFPE} discusses an example.
 
+\subsection{Numerical parameters}
+
+Certain numerical parameters used by Normaliz can be set in the input file. Presently only:
+
+\subsubsection{Number of significant coeffcients of the quasipolynomial}
+
+It can be set by
+\begin{Verbatim}
+no_coeff_quasipol <n>
+\end{Verbatim}
+where \verb|<n>| is the number of highest coefficients to be printed. See Section \ref{highest_coeff}.
+
 \subsection{Pointedness}
 
 Since version 3.1 Normaliz can also computed nonpointed cones and polyhedra without vertices.
@@ -2987,6 +3006,7 @@ The computation goals in this section require a grading. They include \verb|Supp
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
 	]
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
+	itemtt[NoPerodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
 \end{itemize}
 
 \subsubsection{Combined computation goals}
@@ -3839,6 +3859,39 @@ Unfortunately 1.3 the last version of NmzIntegrate that we could compile under M
 \end{arab}
 
 An excellent way out is to run Normaliz (and NmzIntegrate) in the Linux subsystem of Windows 10.
+
+\subsection{Significant coefficients of the quasipolynomial}\label{highest_coeff}
+
+If the degree and simultaneously the period of the Hilbert or weighted Ehrhart quasipolynomial are large, the space needed to store it (usually with large coefficients) may exceed the available memory. Depending on the application, only a certain number of the coefficients may be significant. Therefore one can limit the number of highest coefficients that are stored and printed. We look at the input file \texttt{CondorcetN.in}:
+\begin{Verbatim}
+amb_space 24
+inequalities 3
+1 1 1 1 1 1     -1 -1 -1 -1 -1 -1     1  1 -1 -1  1 -1     1  1 -1 -1  1 -1
+1 1 1 1 1 1      1  1 -1 -1  1 -1    -1 -1 -1 -1 -1 -1     1  1  1 -1 -1 -1
+1 1 1 1 1 1      1  1  1 -1 -1 -1     1  1  1 -1 -1 -1    -1 -1 -1 -1 -1 -1
+nonnegative
+total_degree
+nr_coeff_quasipol 2
+\end{Verbatim}
+
+The output file shows the following information on the quasipolynomial:
+\begin{Verbatim}
+Hilbert quasi-polynomial of period 4:
+Only 2 highest coefficients computed.
+Their common period is 2.
+0:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15982652919 56262656
+1:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15528493056 56262656
+with common denominator = 6939597901822221635907747840000
+\end{Verbatim}
+Normaliz computes and prints only as many components of the quasipolynomial as required by the common period of the printed coefficients. Coefficients outside the requested range are printed as $0$.
+
+The bound on the significant coefficients applies simultaneously to the Hilbert polynomial and the weighted Ehrhart quasipolynomial---usually one is interested in only one of them.
+
+By default Normaliz computes the quasipolynomial only if the period does not exceed a preset bound, presently $10^6$. If this bound is too small for your computation, you can remove it by the option
+\begin{Verbatim}
+NoPeriodBound
+\end{Verbatim}
+
 
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
@@ -5801,10 +5854,17 @@ Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matix(total_degree));
 \subsubsection{Setting the polynomial}
 
 The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
-
 \begin{Verbatim}
 void Cone<Integer>::setPolynomial(string poly)
 \end{Verbatim}
+
+\subsubsection{Setting the number of significant coefficients of the quasipolynomial}
+
+This is done by
+\begin{Verbatim}
+void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
+\end{Verbatim}
+The default value of \verb|nr_coeff| is $-1$, signalzing `all coefficients''.
 
 
 \subsection{Computations in a cone}
@@ -5896,6 +5956,7 @@ namespace ConeProperty {
 		NoNestedTri,  // synonym for NoSubdivision
 		KeepOrder,
 		HSOP,
+		NoPeriodBound,
 		//
 		// checking properties of already computed data
 		// (cannot be used as a computation goal)

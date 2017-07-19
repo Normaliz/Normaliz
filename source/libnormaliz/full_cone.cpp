@@ -85,7 +85,7 @@ void Full_Cone<Integer>::check_simpliciality_hyperplane(const FACETDATA& hyp) co
             nr_gen_in_hyp++;
     if((hyp.simplicial &&  nr_gen_in_hyp!=dim-2) || (!hyp.simplicial &&  nr_gen_in_hyp==dim-2)){
         // NOTE: in_triang set at END of main loop in build_cone
-        cout << "Simplicial " << hyp.simplicial << " dim " << dim << " gen_in_hyp " << nr_gen_in_hyp << endl;
+        errorOutput() << "Simplicial " << hyp.simplicial << " dim " << dim << " gen_in_hyp " << nr_gen_in_hyp << endl;
         assert(false);
     }
 }
@@ -1945,7 +1945,7 @@ void Full_Cone<Integer>::build_cone() {
                 size_t tmp_hyp=0;
                 // TODO: collect only those which belong to the current generator?
                 for (;jt!=approx_points_keys[current_gen].end();++jt){
-                    cout << dim << " " << Support_Hyperplanes.nr_of_columns()<< " " << Generators[*jt].size() << endl;
+                    // cout << dim << " " << Support_Hyperplanes.nr_of_columns()<< " " << Generators[*jt].size() << endl;
                     tmp_hyp = v_nr_negative(Support_Hyperplanes.MxV(Generators[*jt])); // nr of negative halfspaces
                     max_halfspace_index_list.insert(max_halfspace_index_list.end(),make_pair(tmp_hyp,*jt));
                 }

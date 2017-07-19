@@ -302,6 +302,7 @@ public:
     void set_output_dir(string name);
     
     void setPolynomial(string poly);
+    void setNrCoeffQuasiPol(long nr_coeff);
     
     bool get_verbose ();
     

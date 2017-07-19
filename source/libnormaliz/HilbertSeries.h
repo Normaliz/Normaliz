@@ -142,13 +142,23 @@ public:
     // compute the new numerator by multiplying the HS with a denominator
     // of the form (1-t^i)
     void compute_hsop_num() const;
+    
+    void set_nr_coeff_quasipol(long nr_coeff);
+    long get_nr_coeff_quasipol() const;
+    
+    void set_period_bounded(bool on_off) const;
+    bool get_period_bounded() const;
 
 private:
+    
+    void initialize();
+    
     // collected data in denominator classes
     mutable map< vector<denom_t>, vector<num_t> > denom_classes;
     // add the classes if they get too many
     static const size_t DENOM_CLASSES_BOUND = 50000;
     static const long PERIOD_BOUND = 1000000;
+    mutable bool period_bounded;
 
     // the numerator, repr. as vector of coefficients, the h-vector
     mutable vector<mpz_class> num;
@@ -170,10 +180,13 @@ private:
     mutable long period;
     mutable long degree; // as rational function
     long shift;
+    
     // the quasi polynomial, can have big coefficients
     mutable vector< vector<mpz_class> > quasi_poly;
     mutable mpz_class quasi_denom;
-
+    mutable long nr_coeff_quasipol; // limits the computation of coefficients of the computeHilbertQuasiPolynomial
+                            // <0: all coeff, =0: no coeff
+    
     bool verbose;
 
     // these are only const when used properly!!
@@ -181,6 +194,7 @@ private:
     void performAdd(vector<mpz_class>& num, const map<long, denom_t>& denom) const;
 
     void computeDegreeAsRationalFunction() const;
+
 
     friend ostream& operator<< (ostream& out, const HilbertSeries& HS);
 
@@ -276,6 +290,7 @@ public:
     void setHomogeneity(const bool hom);
     // void setCommonDenom(const mpq_class D);
     void setDegreeOfPolynomial(const long d);
+    void set_nr_coeff_quasipol(long nr_coeff);
     
     string getPolynomial() const;
     long getDegreeOfPolynomial() const;

@@ -89,39 +89,40 @@ void HilbertSeries::compute_hsop_num() const{
 
 //---------------------------------------------------------------------------
 
+void HilbertSeries::initialize(){
+    
+    is_simplified = false;
+    shift = 0;
+    verbose = false;
+    nr_coeff_quasipol=-1; // all coefficients
+    period_bounded=true;
+}
+
 // Constructor, creates 0/1
 HilbertSeries::HilbertSeries() {
     num = vector<mpz_class>(1,0);
     //denom just default constructed
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<num_t>& numerator, const vector<denom_t>& gen_degrees) {
     num = vector<mpz_class>(1,0);
     add(numerator, gen_degrees);
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 // Constructor, creates num/denom, see class description for format
 HilbertSeries::HilbertSeries(const vector<mpz_class>& numerator, const map<long, denom_t>& denominator) {
     num = numerator;
     denom = denominator;
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 // Constructor, string as created by to_string_rep
 HilbertSeries::HilbertSeries(const string& str) {
     from_string_rep(str);
-    is_simplified = false;
-    shift = 0;
-    verbose = false;
+    initialize();
 }
 
 
@@ -134,6 +135,21 @@ void HilbertSeries::reset() {
     is_simplified = false;
 }
 
+void HilbertSeries::set_nr_coeff_quasipol(long nr_coeff){
+    nr_coeff_quasipol=nr_coeff;
+}
+
+long HilbertSeries::get_nr_coeff_quasipol() const{
+    return nr_coeff_quasipol;
+}
+
+void HilbertSeries::set_period_bounded(bool on_off) const{ //period_bounded is mutable
+    period_bounded=on_off;
+}
+
+bool HilbertSeries::get_period_bounded() const{
+    return period_bounded;
+}
 // add another HilbertSeries to this
 void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
     vector<denom_t> sorted_gd(gen_degrees);
@@ -299,12 +315,13 @@ void HilbertSeries::simplify() const {
     else
         dim = 0;
     period = lcm_of_keys(cdenom);
-    if (period > 10*PERIOD_BOUND) {
+    if (period_bounded && period > 10*PERIOD_BOUND) {
         if (verbose) {
-            errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimensional many factors in the denominator!" << endl;
+            errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimension many factors in the denominator!" << endl;
         }
+        denom=save_denom;
     }
-    if(period <= 10*PERIOD_BOUND){
+    else{
         while(true){
             //create a (1-t^k) factor in the denominator out of all cyclotomic poly.
             
@@ -331,8 +348,6 @@ void HilbertSeries::simplify() const {
             num=poly_mult(num,quotient);
         }
     }
-    else
-        denom=save_denom;
 
 /*    if (verbose) {
         verboseOutput() << "Simplified Hilbert series: " << endl << *this;
@@ -382,9 +397,18 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
 }
 
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
-    if (isHilbertQuasiPolynomialComputed()) return;
+
+    if (isHilbertQuasiPolynomialComputed() || nr_coeff_quasipol==0) return;
     simplify();
-    if (period > PERIOD_BOUND) {
+    
+    vector<long> denom_vec=to_vector(denom);    
+    if(nr_coeff_quasipol > (long) denom_vec.size()){
+        if(verbose)
+            verboseOutput() << "Number of coeff of quasipol too large. Reset to deault value." << endl;
+        nr_coeff_quasipol=-1;
+    }
+        
+    if (period_bounded &&  period > PERIOD_BOUND) {
         if (verbose) {
             errorOutput()<<"WARNING: We skip the computation of the Hilbert-quasi-polynomial because the period "<< period <<" is too big!" <<endl;
         }
@@ -423,18 +447,31 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
             }
         }
     }
+    
+    // determine the common period of the coefficients that will be computed and printed
+    long reduced_period;
+    if(nr_coeff_quasipol>=0){
+        reduced_period=1;
+        for(long j=0;j< nr_coeff_quasipol;++j)
+            reduced_period=lcm(reduced_period,denom_vec[j]);
+    }
+    else
+        reduced_period=period;
+    
     //cut numerator into period many pieces and apply standard method
-    quasi_poly = vector< vector<mpz_class> >(period);
+    // we make only reduced_period many components
+    quasi_poly = vector< vector<mpz_class> >(reduced_period);
     long nn_size = norm_num.size();
-    for (j=0; j<period; ++j) {
+    for (j=0; j<reduced_period; ++j) {
         quasi_poly[j].reserve(dim);
     }
     for (i=0; i<nn_size; ++i) {
-        quasi_poly[i%period].push_back(norm_num[i]);
+        if(i%period<reduced_period)
+            quasi_poly[i%period].push_back(norm_num[i]);
     }
 
     #pragma omp parallel for
-    for (j=0; j<period; ++j) {
+    for (j=0; j<reduced_period; ++j) {
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
         
@@ -446,14 +483,14 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     mpz_class pp=1;
     for (i = dim-2; i >= 0; --i) {
         pp *= period; //p^i   ok, it is p^(dim-1-i)
-        for (j=0; j<period; ++j) {
+        for (j=0; j<reduced_period; ++j) {
             quasi_poly[j][i] *= pp;
         }
     } //at the end pp=p^dim-1
     //the common denominator for all coefficients, dim! * pp
     quasi_denom = permutations<mpz_class>(1,dim) * pp;
     //substitute t by t-j
-    for (j=0; j<period; ++j) {
+    for (j=0; j<reduced_period; ++j) {
         // X |--> X - (j + shift)
         linear_substitution<mpz_class>(quasi_poly[j], j + shift); // replaces quasi_poly[j]
     }
@@ -465,10 +502,19 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
     QP.scalar_division(g);
     //we use a normed shift, so that the cylcic shift % period always yields a non-negative integer
     long normed_shift = -shift;
-    while (normed_shift < 0) normed_shift += period;
-    for (j=0; j<period; ++j) {
-        quasi_poly[j] = QP[(j+normed_shift)%period]; // QP[ (j - shift) % p ]
+    while (normed_shift < 0) normed_shift += reduced_period;
+    for (j=0; j<reduced_period; ++j) {
+        quasi_poly[j] = QP[(j+normed_shift)%reduced_period]; // QP[ (j - shift) % p ]
     }
+    
+    long delete_coeff=0;
+    if(nr_coeff_quasipol>=0)
+        delete_coeff=(long) quasi_poly[0].size()-nr_coeff_quasipol;
+    
+    for(size_t i=0;i<quasi_poly.size();++i) // delete coefficients that have not been computed completely
+        for(long j=0;j <delete_coeff;++j)
+            quasi_poly[i][j]=0;
+        
     if (verbose && period > 1) {
         verboseOutput() << " done." << endl;
     }
@@ -958,6 +1004,10 @@ void linear_substitution(vector<Integer>& poly, const Integer& a) {
 
 //---------------------------------------------------------------------------
 IntegrationData::IntegrationData(){
+}
+
+void IntegrationData::set_nr_coeff_quasipol(long nr_coeff){
+    weighted_Ehrhart_series.first.set_nr_coeff_quasipol(nr_coeff);
 }
 
 string IntegrationData::getPolynomial() const{

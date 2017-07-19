@@ -639,13 +639,20 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         out << HS.getCyclotomicDenom();
         out << endl;
         // Weighted Ehrhart quasi-polynomial
-        vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
+        // vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
         if (HS.isHilbertQuasiPolynomialComputed()) { 
             out<<"Weighted Ehrhart quasi-polynomial of period " << period << ":" << endl;
-            Matrix<mpz_class> HQP(hilbert_quasi_poly);
+            if(HS.get_nr_coeff_quasipol()>=0){
+                out << "Only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed." << endl;
+                out << "Their common period is " << HS.getHilbertQuasiPolynomial().size() << "." << endl;                        
+            }
+            Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
             HQP.pretty_print(out,true);
             out<<"with common denominator: "
                <<Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
+        }
+        else{
+            out<<"Weighted Ehrhart quasi-polynomial has period " << period << endl;    
         }
     }
     
@@ -904,6 +911,10 @@ void Output<Integer>::write_files() const {
                 HS.computeHilbertQuasiPolynomial();
                 if (HS.isHilbertQuasiPolynomialComputed()) {
                     out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
+                    if(HS.get_nr_coeff_quasipol()>=0){
+                        out << "Only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed." << endl;
+                        out << "Their common period is " << HS.getHilbertQuasiPolynomial().size() << "." << endl;                        
+                    }
                     Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
                     HQP.pretty_print(out,true);
                     out<<"with common denominator = "<<HS.getHilbertQuasiPolynomialDenom();
