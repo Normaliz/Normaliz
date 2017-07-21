@@ -2824,7 +2824,9 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     Supp.append(N);
     Supp.resize_columns(dim+1);
     
-    double VF=convertTo<double>(V);
+    size_t desired_nr_points=10*dim*dim;
+    
+    /*double VF=convertTo<double>(V);
     double GF=convertTo<double>(G);
     double DF=1;
     for(size_t i=1;i<dim;++i)
@@ -2833,11 +2835,12 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     TF=exp(1.0/(double(dim)*log(TF)));
     TF=1.0/GF*TF;
     Integer g=convertTo<Integer>(TF);
-    if(g==0)
-        g=1;
-    cout << "GGGGG " << G << endl;
-    while(sub_div_elements.size()<1000 && g<G){
-        cout << "ggggg " << g << endl;
+    if(g==0)*/
+    Integer g=1;
+    //cout << "GGGGG " << G << endl;
+    while(true){
+        sub_div_elements.clear();
+        cout << "GGGGGGG " << G << " ggggg " << g << endl;
         Supp[dim][dim]=g;
         Cone<Integer> SubDiv(Type::inhom_inequalities,Supp);
         SubDiv.compute(ConeProperty::Projection);
@@ -2846,7 +2849,24 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
         SubDivMat.remove_duplicate_and_zero_rows();
         for(size_t i=0;i<SubDivMat.nr_of_rows();++i)
             sub_div_elements.push_back(SubDivMat[i]);
-        g*=2;
+        size_t nr_points=sub_div_elements.size();
+        if(nr_points>=desired_nr_points)
+            break;
+        if(g==G-1)
+            break;
+        //if(sub_div_elements.empty())
+            g*=2;
+        /*else{
+            Integer g_now=g;
+            double q=(double) desired_nr_points/(double) nr_points;
+            q=exp((1.0/(double) dim)*log(q));
+            g=round(convertTo<double>(g)*q);
+            if(g==g_now)
+                g+=dim;
+        }*/
+            
+        if(g>=G)
+            g=G-1;
     }
     if (verbose) {
         verboseOutput() << "done." << endl;
@@ -2858,18 +2878,25 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
 template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
 
-    Full_Cone<Integer> SimplCone(Generators.submatrix(key));
+    /* Full_Cone<Integer> SimplCone(Generators.submatrix(key));
     SimplCone.verbose=false; // verbose;
     SimplCone.Grading=Grading;
     SimplCone.is_Computed.set(ConeProperty::Grading);
     SimplCone.do_deg1_elements=true;
     SimplCone.do_approximation=true;
     
-    SimplCone.compute();
+    SimplCone.compute();*/
+    Matrix<Integer> Gens=Generators.submatrix(key);
+    Matrix<Integer> GradMat(0,dim);
+    GradMat.append(Grading);
+    Cone<Integer> ProjCone(Type::cone,Gens,Type::grading, GradMat);
+    ProjCone.compute(ConeProperty::Projection);
+    vector<vector<Integer> > Deg1=ProjCone.getDeg1Elements();
+    Matrix<Integer> Supp=ProjCone.getSupportHyperplanesMatrix();;
     
     vector<bool> Excluded(dim,false); // we want to discard duplicates
     for(size_t i=0;i<dim;++i){
-        Integer test=v_scalar_product(SimplCone.Support_Hyperplanes[i],Order_Vector);
+        Integer test=v_scalar_product(Supp[i],Order_Vector);
         if(test>0)
             continue;
         if(test<0){
@@ -2878,24 +2905,24 @@ void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vecto
         }
         size_t j;
         for(j=0;j<dim;++j){
-            if(SimplCone.Support_Hyperplanes[i][j]!=0)
+            if(Supp[i][j]!=0)
                 break;        
         }
-        if(SimplCone.Support_Hyperplanes[i][j]<0)
+        if(Supp[i][j]<0)
             Excluded[i]=true;        
     }
     
-    typename list<vector<Integer> >::const_iterator E;
-    for(E=SimplCone.Deg1_Elements.begin();E!=SimplCone.Deg1_Elements.end();++E){
+    typename vector<vector<Integer> >::const_iterator E;
+    for(E=Deg1.begin();E!=Deg1.end();++E){
         size_t i;
         for(i=0;i<dim;++i)
-            if(v_scalar_product(*E,SimplCone.Support_Hyperplanes[i])==0 && Excluded[i])
+            if(v_scalar_product(*E,Supp[i])==0 && Excluded[i])
                 break;
         if(i<dim)
             continue;
             
         for(i=0;i<dim;++i)  // exclude original generators
-            if(*E==SimplCone.Generators[i])
+            if(*E==Gens[i])
                  break;
         if(i==dim){    
             Results[0].Deg1_Elements.push_back(*E); // Results[0].Deg1_Elements.push_back(*E);
