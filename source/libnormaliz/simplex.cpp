@@ -953,7 +953,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
     }
 
     if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
-        && C_ptr->approx_level == 1
+        // && C_ptr->approx_level == 1
 
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
     {
@@ -972,7 +972,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         time_t start,end;
         time (&start);
 #ifndef NMZ_SCIP
-        C.compute_sub_div_elements(Generators, new_points,volume);
+        C.compute_sub_div_elements(Generators, new_points);
         if(C_ptr->verbose){
             verboseOutput() << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
         }
@@ -981,7 +981,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         prev_handler = signal (SIGINT, SIG_IGN); // we don't want to set a new handler here
         signal (SIGINT, prev_handler);
     
-        bottom_points(new_points, Generators,C.Grading,C.approx_level,0,volume);
+        bottom_points(new_points, Generators,C.Grading,0,volume);
         signal(SIGINT, prev_handler);
         
         time (&end);

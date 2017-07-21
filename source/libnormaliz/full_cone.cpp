@@ -2805,7 +2805,7 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound){
+void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements){
 
     if (is_approximation) return; // do not approximate again!
 
@@ -2824,7 +2824,7 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
     Supp.append(N);
     Supp.resize_columns(dim+1);
     
-    size_t desired_nr_points=10*dim*dim;
+    size_t desired_nr_points=10*dim;
     
     /*double VF=convertTo<double>(V);
     double GF=convertTo<double>(G);
@@ -2854,16 +2854,16 @@ void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,li
             break;
         if(g==G-1)
             break;
-        //if(sub_div_elements.empty())
+        if(sub_div_elements.empty())
             g*=2;
-        /*else{
+        else{
             Integer g_now=g;
             double q=(double) desired_nr_points/(double) nr_points;
             q=exp((1.0/(double) dim)*log(q));
             g=round(convertTo<double>(g)*q);
             if(g==g_now)
-                g+=dim;
-        }*/
+                g+=1;
+        }
             
         if(g>=G)
             g=G-1;
@@ -3766,7 +3766,6 @@ void Full_Cone<Integer>::compute_elements_via_approx(list<vector<Integer> >& ele
     //Full_Cone C_approx(all_approx_points); // latt_approx computes a matrix of generators
    
     C_approx.is_approximation=true;
-    C_approx.approx_level = approx_level;
     // C_approx.Generators.pretty_print(cout);
     C_approx.do_deg1_elements=do_deg1_elements;  // for supercone C_approx that is generated in degree 1
     C_approx.do_Hilbert_basis=do_Hilbert_basis;
@@ -4756,7 +4755,7 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
         list<vector<Integer> > approx;
         if(Extreme_Rays_Ind[i]){
             //cout << "point before transformation: " << Generators[i];
-            approx_simplex(T.MxV(Generators[i]),approx,approx_level);
+            approx_simplex(T.MxV(Generators[i]),approx,1);
             // TODO: NECESSARY?
             //approx.unique()
             //cout << "Approximation points for generator " << i << ": " << Generators[i] << endl;
@@ -5139,7 +5138,6 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     suppress_bottom_dec=false;
     keep_order=false;
 
-    approx_level = 1;
     is_approximation=false;
     is_global_approximation=false;
     
@@ -5228,9 +5226,7 @@ Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
     OldCandidates.verbose=verbose;
     NewCandidates.dual=false;
     NewCandidates.verbose=verbose;
-    
-    
-    approx_level = 1;
+
     is_approximation=false;
     
     verbose=C.verbose;
@@ -5421,8 +5417,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     OldCandidates.verbose=verbose;
     NewCandidates.dual=false;
     NewCandidates.verbose=verbose;
-    
-    approx_level = C.approx_level;
+
     is_approximation = C.is_approximation;
     is_global_approximation = C.is_global_approximation;
     

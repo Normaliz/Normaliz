@@ -244,9 +244,7 @@ void try_offload_loc(long place,size_t max_level);
     
     size_t AdjustedReductionBound;
     
-    long approx_level;
     bool is_approximation;
-
     bool is_global_approximation; // true if approximation is defined in Cone
 
     vector<vector<key_t>> approx_points_keys;
@@ -288,7 +286,7 @@ void try_offload_loc(long place,size_t max_level);
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
 	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
     void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
-    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements, Integer VolumeBound); //computes subdividing elements via approximation
+    void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
 //    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
     
