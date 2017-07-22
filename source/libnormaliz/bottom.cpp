@@ -243,13 +243,9 @@ bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     double time_limit = pow(log10(convert_to_double(volume)),2);
     SCIPsetRealParam(scip, "limits/time", time_limit);
     // call scip
-
-
     new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
-    } else { // we already have used SCIP and are now approximating again
-            new_point = best_point(bottom_candidates, gens, Support_Hyperplanes, grading);
-    }
 #endif // NMZ_SCIP
+    
     if(new_point.empty()){
         list<vector<Integer> > Dummy;
         new_point = gens.optimal_subdivision_point(); // projection method
