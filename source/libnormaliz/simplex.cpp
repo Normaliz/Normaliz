@@ -971,17 +971,12 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         list< vector<Integer> > new_points;
         time_t start,end;
         time (&start);
-#ifndef NMZ_SCIP
-        C.compute_sub_div_elements(Generators, new_points);
-        if(C_ptr->verbose){
-            verboseOutput() << "Found "<< new_points.size() << " bottom candidates via approximation" << endl;
-        }
-#endif
         void (*prev_handler)(int);
         prev_handler = signal (SIGINT, SIG_IGN); // we don't want to set a new handler here
         signal (SIGINT, prev_handler);
     
-        bottom_points(new_points, Generators,C.Grading,0,volume);
+        bottom_points(new_points, Generators,volume);
+        
         signal(SIGINT, prev_handler);
         
         time (&end);

@@ -25,7 +25,10 @@
 #define CONE_HELPER_H_
 
 #include <vector>
+#include <boost/dynamic_bitset.hpp>
+
 #include "libnormaliz/general.h"
+#include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -35,6 +38,15 @@ using std::vector;
 // only set to false in this routine
 // if a set occurs more than once, only the last instance is recognized as maximal
 void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
+
+// the project-and-lift algorithm for lattice points on a polytope
+template<typename IntegerPL, typename IntegerRet>
+void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 
+                            vector<boost::dynamic_bitset<> >& Ind, IntegerRet GD, size_t rank,bool verbose);
+
+// computes c1*v1-c2*v2
+template<typename Integer>
+vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const vector<Integer>& v2, bool& is_zero);
 
 } //end namespace libnormaliz
 

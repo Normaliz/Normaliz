@@ -25,8 +25,8 @@ offload_handler.o: $(LIBHEADERS) offload_handler.cpp
 bottom.o: $(LIBHEADERS) bottom.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c bottom.cpp -o $@
 
-cone_helper.o: $(LIBHEADERS) cone_helper.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_helper.cpp -o $@
+#cone_helper.o: $(LIBHEADERS) cone_helper.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_helper.cpp -o $@
 
 hilbert_series.o: $(LIBHEADERS) HilbertSeries.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c HilbertSeries.cpp -o $@
@@ -37,7 +37,7 @@ libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 nmz_integrate.o:  $(NMZINTSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integrate.cpp -o $@
 
-libnormaliz.a: cone_property.o cone_helper.o hilbert_series.o bottom.o offload_handler.o  nmz_integrate.o libnormaliz-templated.o 
+libnormaliz.a: cone_property.o hilbert_series.o bottom.o offload_handler.o  nmz_integrate.o libnormaliz-templated.o 
 	ar -cr $@ $^
 
 .PHONY : install

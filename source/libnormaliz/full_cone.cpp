@@ -1761,11 +1761,11 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
 }
 #endif // NMZ_MIC_OFFLOAD
 
-    assert(!omp_in_parallel());
-    assert(!is_pyramid);
-
     if(Pyramids[level].empty())
         return;
+
+    assert(!omp_in_parallel());
+    assert(!is_pyramid);
    
     if (Pyramids.size() < level+2) {
         Pyramids.resize(level+2);      // provide space for a new generation
@@ -2600,8 +2600,6 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes(){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation(){
 
-    assert(omp_get_level()==0);
-
     // prepare reduction 
     if (do_Hilbert_basis && OldCandidates.Candidates.empty()) {
         prepare_old_candidates_and_support_hyperplanes();
@@ -2609,6 +2607,8 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     
     if (TriangulationBufferSize == 0)
         return;
+    
+    assert(omp_get_level()==0);
 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationBufferSize-VERBOSE_STEPS;
@@ -2736,11 +2736,11 @@ void Full_Cone<Integer>::evaluate_triangulation(){
 template<typename Integer>
 void Full_Cone<Integer>::evaluate_large_simplices(){
 
-    assert(omp_get_level()==0);
-
     size_t lss = LargeSimplices.size();
     if (lss == 0)
         return;
+    
+    assert(omp_get_level()==0);
 
     if (verbose) {
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
@@ -2800,77 +2800,6 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
         }
     }
     LargeSimplices.pop_front();
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Full_Cone<Integer>::compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements){
-
-    if (is_approximation) return; // do not approximate again!
-
-    vector<Integer> N;
-    N = gens.find_linear_form();
-    assert(N.size()==dim);
-    Integer G=v_scalar_product(N,gens[0]);
-    Matrix<Integer> Supp;
-    Integer V;
-    vector<key_t> dummy(dim);
-    for(size_t i=0;i<dim;++i)
-        dummy[i]=i;
-    gens.simplex_data(dummy, Supp,V,true);
-    Integer MinusOne=-1;
-    v_scalar_multiplication(N,MinusOne);
-    Supp.append(N);
-    Supp.resize_columns(dim+1);
-    
-    size_t desired_nr_points=10*dim;
-    
-    /*double VF=convertTo<double>(V);
-    double GF=convertTo<double>(G);
-    double DF=1;
-    for(size_t i=1;i<dim;++i)
-        DF*=i;
-    double TF=100.0*DF/VF;
-    TF=exp(1.0/(double(dim)*log(TF)));
-    TF=1.0/GF*TF;
-    Integer g=convertTo<Integer>(TF);
-    if(g==0)*/
-    Integer g=1;
-    //cout << "GGGGG " << G << endl;
-    while(true){
-        sub_div_elements.clear();
-        cout << "GGGGGGG " << G << " ggggg " << g << endl;
-        Supp[dim][dim]=g;
-        Cone<Integer> SubDiv(Type::inhom_inequalities,Supp);
-        SubDiv.compute(ConeProperty::Projection);
-        Matrix<Integer> SubDivMat=SubDiv.getModuleGeneratorsMatrix();
-        SubDivMat.resize_columns(dim);
-        SubDivMat.remove_duplicate_and_zero_rows();
-        for(size_t i=0;i<SubDivMat.nr_of_rows();++i)
-            sub_div_elements.push_back(SubDivMat[i]);
-        size_t nr_points=sub_div_elements.size();
-        if(nr_points>=desired_nr_points)
-            break;
-        if(g==G-1)
-            break;
-        if(sub_div_elements.empty())
-            g*=2;
-        else{
-            Integer g_now=g;
-            double q=(double) desired_nr_points/(double) nr_points;
-            q=exp((1.0/(double) dim)*log(q));
-            g=round(convertTo<double>(g)*q);
-            if(g==g_now)
-                g+=1;
-        }
-            
-        if(g>=G)
-            g=G-1;
-    }
-    if (verbose) {
-        verboseOutput() << "done." << endl;
-    }
 }
 
 //---------------------------------------------------------------------------

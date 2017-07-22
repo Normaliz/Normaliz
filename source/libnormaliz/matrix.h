@@ -407,7 +407,9 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 //for simplicial subcones
 
     // computes support hyperplanes and volume
-    void simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const; 
+    void simplex_data(const vector<key_t>& key, Matrix<Integer>& Supp, Integer& vol, bool compute_vol) const;
+    // finds subdivision points
+    vector<Integer> compute_sub_div_elements(list<vector<Integer> >& sub_div_elements, bool best_pont) const;
     
 // Sorting of rows
     

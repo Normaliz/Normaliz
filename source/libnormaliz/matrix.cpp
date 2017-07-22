@@ -29,6 +29,7 @@
 #include <math.h>
 
 #include "libnormaliz/matrix.h"
+#include "libnormaliz/cone.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/sublattice_representation.h"
@@ -2485,6 +2486,107 @@ Matrix<Integer>  readMatrix(const string project){
         }
     return result;
 }
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> Matrix<Integer>::compute_sub_div_elements(list<vector<Integer> >& sub_div_elements, bool best_point) const{
+
+    assert(nr>0);
+    assert(nr==nc);
+    
+    vector<Integer> optimal_point;
+
+    vector<Integer> N;
+    N = find_linear_form();
+    assert(N.size()==nr);
+    Integer G=v_scalar_product(N,elem[0]);
+    if(G==1)
+        return optimal_point;
+    Matrix<Integer> Supp;
+    Integer V;
+    vector<key_t> dummy(nr);
+    for(size_t i=0;i<nr;++i)
+        dummy[i]=i;
+    simplex_data(dummy, Supp,V,true);
+    Integer MinusOne=-1;
+    vector<Integer> MinusN(N);
+    v_scalar_multiplication(MinusN,MinusOne);
+    Supp.append(MinusN);
+    Supp.resize_columns(nr+1);
+    
+    size_t desired_nr_points;
+    if(best_point)
+        desired_nr_points=1;
+    else    
+        desired_nr_points=10*nr;
+    
+    /*double VF=convertTo<double>(V);
+    double GF=convertTo<double>(G);
+    double DF=1;
+    for(size_t i=1;i<dim;++i)
+        DF*=i;
+    double TF=100.0*DF/VF;
+    TF=exp(1.0/(double(dim)*log(TF)));
+    TF=1.0/GF*TF;
+    Integer g=convertTo<Integer>(TF);
+    if(g==0)*/
+    Integer g=1;
+    //cout << "GGGGG " << G << endl;
+    while(true){
+        sub_div_elements.clear();
+        // cout << "GGGGGGG " << G << " ggggg " << g << endl;
+        Supp[nr][nr]=g;
+        Cone<Integer> SubDiv(Type::inhom_inequalities,Supp);
+        SubDiv.setVerbose(false);
+        SubDiv.compute(ConeProperty::Projection);
+        assert(nr+1==SubDiv.getRank());
+        Matrix<Integer> SubDivMat=SubDiv.getModuleGeneratorsMatrix();
+        SubDivMat.resize_columns(nr);
+        SubDivMat.remove_duplicate_and_zero_rows();
+        for(size_t i=0;i<SubDivMat.nr_of_rows();++i)
+            sub_div_elements.push_back(SubDivMat[i]);
+        size_t nr_points=sub_div_elements.size();
+        if(nr_points>=desired_nr_points)
+            break;
+        if(g==G-1)
+            break;
+        if(sub_div_elements.empty())
+            g*=2;
+        else{
+            Integer g_now=g;
+            double q=(double) desired_nr_points/(double) nr_points;
+            q=exp((1.0/(double) nr)*log(q));
+            g=round(convertTo<double>(g)*q);
+            if(g==g_now)
+                g+=1;
+        }
+            
+        if(g>=G)
+            g=G-1;
+    }
+    
+    // cout << "SSSS " << sub_div_elements.size() << endl;
+    
+    if(best_point){
+        bool first=true;
+        Integer opt_value=0;
+        for(auto v=sub_div_elements.begin();v!=sub_div_elements.end();++v){
+            Integer test=v_scalar_product(*v,N);
+            if(first || test < opt_value){
+                opt_value=test;
+                optimal_point=*v;
+            }
+            first=false;
+        }
+        // cout << "opt " << opt_value << endl;
+    }
+
+    return optimal_point;
+}
+
+
+
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template Matrix<long>  readMatrix(const string project);

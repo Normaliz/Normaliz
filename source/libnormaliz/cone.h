@@ -520,10 +520,6 @@ void insert_zero_column(vector< vector<Integer> >& mat, size_t col);
 template<typename Integer>
 void insert_column(vector< vector<Integer> >& mat, size_t col, Integer entry);
 
-template<typename IntegerPL, typename IntegerRet>
-//template<typename IntegerRet>
-void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Gens, 
-                        const Matrix<IntegerPL>& Supps, vector<boost::dynamic_bitset<> >& Ind, IntegerRet GD, size_t rank);
 
 }  //end namespace libnormaliz
 

@@ -416,5 +416,37 @@ mpq_class dec_fraction_to_mpq(string s){
     return sign*result;
 }
 
+//----------------------------------------------------------------------
+// the next function produce an integer quotient and determine whether
+// there is a remainder
+
+bool int_quotient(long& Quot, const long long& Num, const long& Den){
+    
+    Quot=Iabs(Num)/Iabs(Den);
+    return Quot*Iabs(Den)!=Iabs(Num);    
+}
+
+bool int_quotient(long long& Quot, const long& Num, const long& Den){
+    
+    Quot=Iabs(Num)/Iabs(Den);
+    return Quot*Iabs(Den)!=Iabs(Num);    
+}
+
+
+bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den){
+    
+    Quot=Iabs(Num)/Iabs(Den);
+    return Quot*Iabs(Den)!=Iabs(Num);    
+}
+
+template<typename IntegerRet>
+bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
+   
+    nmz_float FloatQuot=Iabs(Num)/Iabs(Den); // cout << "FF " << FloatQuot << endl;
+    nmz_float IntQuot=trunc(FloatQuot+nmz_epsilon);      // cout << "II " << IntQuot << endl;
+    Quot=convertTo<IntegerRet>(IntQuot);     // cout << "QQ " <<  Quot << endl;
+    return FloatQuot-IntQuot > nmz_epsilon;    
+}
+
 
 } //end namespace libnormaliz

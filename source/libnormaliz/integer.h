@@ -184,6 +184,16 @@ template<> inline string toString(mpq_class a) {
 // for the interpretation of a string as a decimal fraction or floating point number
 mpq_class dec_fraction_to_mpq(string s);
 
+//----------------------------------------------------------------------
+// the next function produce an integer quotient and determine whether
+// there is a remainder
+
+bool int_quotient(long& Quot, const long long& Num, const long& Den);
+bool int_quotient(long long& Quot, const long& Num, const long& Den);
+bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den);
+template<typename IntegerRet>
+bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den);
+
 } // end libnormaliz
 
 //---------------------------------------------------------------------------

@@ -28,6 +28,7 @@
 #include "libnormaliz/libnormaliz.cpp"
 #include "libnormaliz/integer.cpp"
 #include "libnormaliz/vector_operations.cpp"
+#include "libnormaliz/cone_helper.cpp"
 #include "libnormaliz/matrix.cpp"
 #include "libnormaliz/simplex.cpp"
 #include "libnormaliz/list_operations.cpp"
