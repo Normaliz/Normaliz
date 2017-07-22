@@ -60,7 +60,7 @@ vector<Integer> opt_sol(SCIP* scip, const Matrix<Integer>& gens, const Matrix<In
 
 template<typename Integer>
 bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
-                 vector< Matrix<Integer> >& local_q_gens);
+                 vector< Matrix<Integer> >& local_q_gens, size_t& stellar_det_sum);
 
 double convert_to_double(mpz_class a) {
     return a.get_d();
@@ -75,7 +75,6 @@ double convert_to_double(long long a) {
 }
 
 // TODO do not use global variables
-long long stellar_det_sum;
 
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Integer VolumeBound) {
@@ -106,7 +105,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
 
 //---------------------------- begin stellar subdivision -------------------
 
-    stellar_det_sum = 0;
+    size_t stellar_det_sum = 0;
     vector< Matrix<Integer> > q_gens; // for successive stellar subdivision
     q_gens.push_back(gens);
     int level = 0; // level of subdivision
@@ -162,7 +161,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
 #ifndef NCATCH
             try {
 #endif
-        bottom_points_inner(scip, q_gens[i], local_new_points,local_q_gens);
+        bottom_points_inner(scip, q_gens[i], local_new_points,local_q_gens,stellar_det_sum);
 #ifndef NCATCH
             } catch(const std::exception& ) {
                 tmp_exception = std::current_exception();
@@ -220,7 +219,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
 
 template<typename Integer>
 bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
-                 vector< Matrix<Integer> >& local_q_gens) {
+                 vector< Matrix<Integer> >& local_q_gens, size_t& stellar_det_sum) {
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -253,7 +252,7 @@ bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
 #endif // NMZ_SCIP
     if(new_point.empty()){
         list<vector<Integer> > Dummy;
-        new_point = gens.compute_sub_div_elements(Dummy, true); // projection method
+        new_point = gens.optimal_subdivision_point(); // projection method
     }
 
     if ( !new_point.empty() ){
