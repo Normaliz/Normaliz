@@ -91,7 +91,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
     //Matrix<Integer>(bottom_candidates).pretty_print(cout);
 #ifdef NMZ_SCIP
     if(verbose){
-        verboseOutput() << "Computing bottom points using SCIP" << endl;
+        verboseOutput() << "Computing bottom points using SCIP/projection" << endl;
     }
 #else
     if(verbose){
@@ -175,7 +175,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
         {
                 q_gens.clear();
         }
-        #pragma omp critical
+        #pragma omp critical (LOCALQGENS)
         {
             q_gens.insert(q_gens.end(),local_q_gens.begin(),local_q_gens.end());
         }
@@ -183,7 +183,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
         #pragma omp barrier
     }
     
-    #pragma omp critical
+    #pragma omp critical (LOCALNEWPOINTS)
     {
         new_points.splice(new_points.end(), local_new_points, local_new_points.begin(), local_new_points.end());
     }
@@ -229,6 +229,7 @@ bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);
 
     if (volume < ScipBound) {
+        #pragma omp atomic
         stellar_det_sum += convertTo<long long>(volume);
         return false; // not subdivided
     }
@@ -244,6 +245,8 @@ bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     SCIPsetRealParam(scip, "limits/time", time_limit);
     // call scip
     new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
+    if(new_point.empty() && verbose)
+        verboseOutput() << "No bottom point found by SCIP. Trying projection." << endl;
 #endif // NMZ_SCIP
     
     if(new_point.empty()){
@@ -271,7 +274,8 @@ bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
         //cout << new_point << " liegt in " << nr_hyps <<" hyperebenen" << endl;
         return true; // subdivided
     }
-    else{ // could not subdivided 
+    else{ // could not subdivided
+        #pragma omp atomic
         stellar_det_sum += convertTo<long long>(volume);
         return false;
     }
