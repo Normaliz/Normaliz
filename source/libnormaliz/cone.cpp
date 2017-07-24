@@ -3681,6 +3681,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
+        // ATTENTION: the next call destroys Supps. If you need them later, save them first.
         project_and_lift(Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
     }
     
@@ -3774,7 +3775,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, const Matrix<Integer>& Supps, bool float_projection){
+void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
     
     if(verbose)
         verboseOutput() << "Starting projection" << endl;
@@ -3792,7 +3793,8 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         convert(GensFloat,Gens);
         Matrix<nmz_float> SuppsFloat;
         convert(SuppsFloat,Supps);
-        project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose);        
+        vector<Integer> Dummy;
+        project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose,true,Dummy);        
     }
     else{
         if (change_integer_type) {
@@ -3803,8 +3805,8 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 convert(GensMI,Gens);
                 convert(SuppsMI,Supps);
                 MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
-                
-                project_and_lift_inner<MachineInteger>(Deg1MI,SuppsMI,Ind, GDMI,rank,verbose);
+                vector<MachineInteger> Dummy;
+                project_and_lift_inner<MachineInteger>(Deg1MI,SuppsMI,Ind, GDMI,rank,verbose,true,Dummy);
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -3818,7 +3820,8 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         }
         
         if (!change_integer_type) {
-            project_and_lift_inner<Integer>(Deg1,Supps,Ind,GradingDenom,rank,verbose);
+            vector<Integer> Dummy;
+            project_and_lift_inner<Integer>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
         }        
     }
 

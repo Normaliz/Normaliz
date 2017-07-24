@@ -111,34 +111,22 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const 
 }
 
 //---------------------------------------------------------------------------
-template<typename IntegerPL,typename IntegerRet>
-void project_and_lift_inner(Matrix<IntegerRet>& Deg1,const Matrix<IntegerPL>& Supps,
-                            vector< boost::dynamic_bitset<> >& Ind, IntegerRet GD, size_t rank, bool verbose){
-
-// Project-and-lift for lattice points in a polytope. 
-// The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
-// a grading denominator 1=1 can be accomodated.
-// We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
-// Its rows correspond to facets.
-    
+template<typename IntegerPL>
+void compute_projections(vector<Matrix<IntegerPL> >& AllSupps, size_t dim,
+                         vector< boost::dynamic_bitset<> >& Ind, size_t rank, bool verbose){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
-    size_t dim=Supps.nr_of_columns(); // our local embedding dimension
+    if(dim==1)
+        return;
+    
+    const Matrix<IntegerPL> & Supps=AllSupps[dim];
     size_t dim1=dim-1;
     
     if(verbose)
         verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl; 
     
-    if(dim<=1){
-        vector<IntegerRet> One(1,GD);
-        Deg1.append(One);
-        if(verbose)
-            verboseOutput() << "Lifting" << endl;
-        return;        
-    }
-    
-    // cout << Ind;
+    // cout << "SSS" << Ind.size() << " " << Ind;
 
     // We now augment the given cone by the last basis vector and its negative
     // Afterwards we project modulo the subspace spanned by them
@@ -384,48 +372,24 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1,const Matrix<IntegerPL>& Su
     for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
         NewInd.push_back(TRUE);
     
+    swap(AllSupps[dim1],SuppsProj);
+    
     size_t new_rank=dim1-EqusProj.nr_of_rows();
     
-    Matrix<IntegerRet> Deg1Proj(0,dim1);
-    project_and_lift_inner(Deg1Proj,SuppsProj,NewInd,GD,new_rank,verbose);
-    
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    
-    // now the lifting
-    
-    vector<Matrix<IntegerRet> > Deg1Thread(omp_get_max_threads());
-    for(size_t i=0;i<Deg1Thread.size();++i)
-        Deg1Thread[i].resize(0,dim);
-    
-    skip_remaining=false;
-    
-    #pragma omp parallel
-    {
-    int tn;
-    if(omp_get_level()==0)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(1);
- 
-    #pragma omp for schedule(dynamic)
-    for(size_t i=0;i<Deg1Proj.nr_of_rows();++i){
-        
-        if (skip_remaining) continue;
-        
-#ifndef NCATCH
-        try {
-#endif
-            
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy
+    compute_projections(AllSupps, dim-1,NewInd, new_rank,verbose);
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point, 
+                    const Matrix<IntegerPL>& Supps){
+
         bool FirstMin=true, FirstMax=true;
         vector<IntegerPL> LiftedGen;
-        convert(LiftedGen,Deg1Proj[i]);
+        convert(LiftedGen,base_point);
         // cout << LiftedGen;
         for(size_t j=0;j<Supps.nr_of_rows();++j){
-            IntegerPL Den=Supps[j][dim1];
+            IntegerPL Den=Supps[j].back();
             if(Den==0)
                 continue;
             IntegerPL Num= -v_scalar_product_vectors_unequal_lungth(LiftedGen,Supps[j]);
@@ -461,11 +425,53 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1,const Matrix<IntegerPL>& Su
                 }
             }
             if(!FirstMax && !FirstMin && MaxInterval<MinInterval)
-                break;
-        }
+                return false; // interval empty
+    }
+    return true; // interval nonempty
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1, const Matrix<IntegerRet>& Deg1Proj,
+                             const vector<Matrix<IntegerPL> >& AllSupps){
+
+    size_t dim=Deg1Proj.nr_of_columns()+1;
+    size_t dim1=dim-1;
+    vector<Matrix<IntegerRet> > Deg1Thread(omp_get_max_threads());
+    for(size_t i=0;i<Deg1Thread.size();++i)
+        Deg1Thread[i].resize(0,dim);
+    
+    bool skip_remaining;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+    
+    skip_remaining=false;
+    
+    #pragma omp parallel
+    {
+    int tn;
+    if(omp_get_level()==0)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(1);
+ 
+    #pragma omp for schedule(dynamic)
+    for(size_t i=0;i<Deg1Proj.nr_of_rows();++i){
         
+        if (skip_remaining) continue;
+        
+#ifndef NCATCH
+        try {
+#endif
+
+        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy        
+        fiber_interval(MinInterval, MaxInterval, Deg1Proj[i], AllSupps[dim]);
         // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
         for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             vector<IntegerRet> NewPoint(dim);
             for(size_t j=0;j<dim1;++j)
                 NewPoint[j]=Deg1Proj[i][j];
@@ -491,28 +497,107 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1,const Matrix<IntegerPL>& Su
     for(size_t i=0;i<Deg1Thread.size();++i)
         Deg1.append(Deg1Thread[i]);
     
-    if(verbose)    
-        verboseOutput() <<  "embdim " << dim << " Deg1Elements " << Deg1.nr_of_rows() << endl;
+
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
 }
-/*
-#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template void project_and_lift_inner(Matrix<long>& ,const Matrix<long>&, 
-                                     vector< boost::dynamic_bitset<> >&, long GD, size_t rank);
-template void project_and_lift_inner(Matrix<long>& ,const Matrix<double>&, 
-                                     vector< boost::dynamic_bitset<> >&, long GD, size_t rank);
-#endif // NMZ_MIC_OFFLOAD
-template void project_and_lift_inner(Matrix<long long>& ,const Matrix<long long>&, 
-                                     vector< boost::dynamic_bitset<> >&, long long GD, size_t rank);
-template void project_and_lift_inner(Matrix<long long>& ,const Matrix<double>&, 
-                                     vector< boost::dynamic_bitset<> >&, long long GD, size_t rank);
-template void project_and_lift_inner(Matrix<mpz_class>& ,const Matrix<mpz_class>&, 
-                                     vector< boost::dynamic_bitset<> >&, mpz_class GD, size_t rank);
-template void project_and_lift_inner(Matrix<mpz_class>& ,const Matrix<double>&, 
-                                     vector< boost::dynamic_bitset<> >&, mpz_class GD, size_t rank);
 
-*/
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void lift_points_by_generation(Matrix<IntegerRet>& Deg1, const vector<Matrix<IntegerPL> >& AllSupps,
+                               const IntegerRet GD, bool verbose){
+    if(verbose)
+        verboseOutput() << "Lifting" << endl;
+    
+    size_t dim=AllSupps.size()-1;
+    assert(dim>=2);
+    
+    Matrix<IntegerRet> Deg1Proj(0,1);
+    vector<IntegerRet> One(1,GD);
+        Deg1Proj.append(One);
+    
+    for(size_t i=2; i<=dim;++i){
+        Deg1=Matrix<IntegerRet>(0,i);
+        lift_points_to_this_dim(Deg1,Deg1Proj,AllSupps);
+        if(verbose)    
+            verboseOutput() <<  "embdim " << dim << " Deg1Elements " << Deg1.nr_of_rows() << endl;
+        if(i<dim){
+            swap(Deg1,Deg1Proj);
+        }               
+    }
+    if(verbose)
+        verboseOutput() << "Lifting done" << endl;
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void lift_point_recursively(vector<IntegerRet>& finaL_latt_point, const vector<IntegerRet>& latt_point_proj, 
+                            const vector<Matrix<IntegerPL> >& AllSupps, const vector<IntegerRet>& excluded_point){
+ 
+    size_t dim1=latt_point_proj.size();
+    size_t dim=dim1+1;
+    size_t final_dim=AllSupps.size()-1;
+    
+    IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy        
+    fiber_interval(MinInterval, MaxInterval, latt_point_proj, AllSupps[dim]);
+    for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+        vector<IntegerRet> NewPoint(dim);
+        for(size_t j=0;j<dim1;++j)
+            NewPoint[j]=latt_point_proj[j];
+        NewPoint[dim1]=k;
+        if(dim==final_dim && NewPoint!=excluded_point){
+            finaL_latt_point=NewPoint;
+            break;
+        }
+        if(dim<final_dim){
+            lift_point_recursively(finaL_latt_point, NewPoint,AllSupps,excluded_point);
+            if(finaL_latt_point.size()>0)
+                break;
+        }
+    }
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void find_single_point(Matrix<IntegerRet>& Deg1, const vector<Matrix<IntegerPL> >& AllSupps, 
+                        const IntegerRet& GD, const vector<IntegerRet>& excluded_point){
+    
+    size_t dim=AllSupps.size()-1;
+    assert(dim>=2);
+    
+    vector<IntegerRet> start(1,GD);
+    vector<IntegerRet> final_latt_point;
+    lift_point_recursively(final_latt_point,start,AllSupps,excluded_point);
+    if(final_latt_point.size()>0)
+        Deg1.append(final_latt_point);
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void project_and_lift_inner(Matrix<IntegerRet>& Deg1, Matrix<IntegerPL>& Supps,
+                            vector< boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank, 
+                            bool verbose, bool all_points, const vector<IntegerRet>& excluded_point){
+
+// Project-and-lift for lattice points in a polytope. 
+// The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
+// a grading denominator 1=1 can be accomodated.
+// We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
+// Its rows correspond to facets.
+
+    size_t dim=Supps.nr_of_columns(); // our local embedding dimension    
+    vector<Matrix<IntegerPL> > AllSupps(dim+1);
+
+    swap(Supps,AllSupps[dim]);
+    compute_projections(AllSupps, dim, Ind, rank, verbose);
+    if(all_points)
+        lift_points_by_generation(Deg1,AllSupps,GD,verbose);
+    else
+        find_single_point(Deg1,AllSupps,GD,excluded_point);
+}
+
 //---------------------------------------------------------------------------
 
 #ifdef NMZ_MIC_OFFLOAD

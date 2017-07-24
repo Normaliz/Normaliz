@@ -2565,15 +2565,19 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
 template<typename Integer>
 vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
 // returns empty vector if simplex cannot be subdivided with smaller detsum
-
+     
+    // cout << "==================" << endl;
+ 
     assert(nr>0);
     assert(nr==nc);
-
+     
+    vector<Integer> opt_point;
+ 
     vector<Integer> N = find_linear_form();
     assert(N.size()==nr);
     Integer G=v_scalar_product(N,elem[0]);
     if(G<=1)
-        return vector<Integer>(0);
+        return opt_point;
     Matrix<Integer> Supp;
     Integer V;
     vector<key_t> dummy(nr);
@@ -2585,19 +2589,21 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
     v_scalar_multiplication(MinusN,MinusOne);
     Supp.append(MinusN);
     Supp.resize_columns(nr+1);
-    
-    Integer g=1;
-    //cout << "GGGGG " << G << endl;
-
-    
-    size_t nr_points=0;
-    
-    Matrix<Integer> SubDivMat(0,nr+1);
+     
+    Integer opt_value=G;
+    Integer empty_value=0;
+    Integer g=G-1;
+     
+    Integer den=2;
+     
+    vector<Integer> Zero(nr+1); // the excluded vector
+    Zero[0]=1;
+     
+    Matrix<Integer> SubDivMat(0,nr+1); 
     while(true){
-        // cout << "GGGGGGG " << G << " ggggg " << g << endl;
+        // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << endl;
         Supp[nr][nr]=g;
         // prepare matrices for project and lift
-        Supp.exchange_columns(0,nc);
         SubDivMat=Matrix<Integer>(0,nr+1);
         // Incidence matrix for projectand lift
         vector<boost::dynamic_bitset<> > Ind(nr+1);
@@ -2608,42 +2614,28 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
             Ind[i][i]=false;
         }
         Integer One=1;
-        project_and_lift_inner(SubDivMat,Supp,Ind,One, nr+1, false);
-        Supp.exchange_columns(0,nc); // back to original coordinates
-        SubDivMat.exchange_columns(0,nc);
-        SubDivMat.resize_columns(nr);
-        SubDivMat.remove_duplicate_and_zero_rows();
-        nr_points=SubDivMat.nr;
-        if(nr_points>=1)
-            break;
-        if(g==G-1)
-            break;
-        g*=2; // no points
-            
-        if(g>=G)
-            g=G-1;
-    }
-    
-    // cout << "SSSS " << sub_div_elements.size() << endl;
-    
-    if(nr_points==0)
-        return vector<Integer>(0);
-    
-    bool first=true;
-    Integer opt_value=0;
-    size_t opt_index=0;
-    for(size_t i=0;i<SubDivMat.nr;++i){
-        Integer test=v_scalar_product(SubDivMat[i],N);
-        if(first || test < opt_value){
-            opt_value=test;
-            opt_index=i;
+        Matrix<Integer> SuppTemp(Supp); // will be destroyed
+        SuppTemp.exchange_columns(0,nc);
+        project_and_lift_inner(SubDivMat,SuppTemp,Ind,One, nr+1,false,false,Zero);
+        if(SubDivMat.nr_of_rows()==0){ // no point found
+            if(g==opt_value-1)
+                return opt_point; // optimal value found (or nothing found)
+            empty_value=g;
+            g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
+            den*=2;           
         }
-        first=false;
+        else{ // point found
+            // SubDivMat.pretty_print(cout);
+            den=2; // back to start value
+            opt_point=SubDivMat[0];
+            std::swap(opt_point[0],opt_point[nc]);
+            opt_point.resize(nc);
+            if(opt_value==empty_value+1)
+                return opt_point;
+            opt_value=v_scalar_product(opt_point,N);
+            g=empty_value+1+(opt_value-empty_value-2)/2;
+        }
     }
-    // cout << "opt " << opt_value << endl;
-
-    SubDivMat[opt_index];
-    return SubDivMat[opt_index];
 }
 
 

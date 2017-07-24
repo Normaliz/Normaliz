@@ -520,7 +520,10 @@ void Output<Integer>::write_inv_file() const{
                         << to_vector(HS.getDenom());
                 Result->getIntData().computeWeightedEhrhartQuasiPolynomial();
                 if (Result->getIntData().isWeightedEhrhartQuasiPolynomialComputed()) {
-                    vector< vector <mpz_class> > hqp = Result->getIntData().getWeightedEhrhartQuasiPolynomial();
+                    if(HS.get_nr_coeff_quasipol()>=0){
+                        inv << "integer nr_coeff_weightedEhrhart__quasipol = " << HS.get_nr_coeff_quasipol() << endl;                       
+                    }
+                    vector< vector <mpz_class> > hqp= Result->getIntData().getWeightedEhrhartQuasiPolynomial();
                     inv << "matrix " << hqp.size() << " " << hqp[0].size()
                         << " weighted_ehrhart_quasipolynomial = ";
                     inv << endl << hqp;
@@ -557,6 +560,9 @@ void Output<Integer>::write_inv_file() const{
                     inv << HSdenom;
                 HS.computeHilbertQuasiPolynomial();
                 if (HS.isHilbertQuasiPolynomialComputed()) {
+                    if(HS.get_nr_coeff_quasipol()>=0){
+                        inv << "integer nr_coeff_hilbert_quasipol = " << HS.get_nr_coeff_quasipol() << endl;                       
+                    }
                     vector< vector <mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
                     inv << "matrix " << hqp.size() << " " << hqp[0].size()
                         << " hilbert_quasipolynomial = ";
