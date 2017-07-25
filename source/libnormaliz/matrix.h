@@ -116,6 +116,8 @@ template<typename Integer> class Matrix {
     
     bool SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right);
     
+    vector<Integer> optimal_subdivision_point_inner() const;
+    
 
 //---------------------------------------------------------------------------
 //                      Pivots for rows/columns operations

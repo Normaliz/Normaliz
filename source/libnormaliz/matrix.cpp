@@ -2731,10 +2731,31 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
 }
 */
 
+template<typename Integer>
+vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
+
+        return optimal_subdivision_point_inner();
+}
+
+template<>
+vector<mpz_class> Matrix<mpz_class>::optimal_subdivision_point() const{
+
+    try {
+        Matrix<MachineInteger> GensMI;
+        convert(GensMI,*this);
+        vector<MachineInteger> PMI=GensMI.optimal_subdivision_point_inner();
+        vector<mpz_class>  P;
+        convert(P,PMI);
+        return P;
+    } catch(const ArithmeticException& e) {
+        return optimal_subdivision_point_inner();
+    }
+}
+
 // version with a single point, only top of the search polytope
 // After 2 attempts without improvement, g raised to opt_value-1
 template<typename Integer>
-vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
+vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
 // returns empty vector if simplex cannot be subdivided with smaller detsum
       
     // cout << "==================" << endl;
