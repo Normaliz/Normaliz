@@ -2488,7 +2488,8 @@ Matrix<Integer>  readMatrix(const string project){
 }
 
 //---------------------------------------------------------------------------
-
+// version with full number of points
+// and search for optimal point
 /* template<typename Integer>
 vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
 // returns empty vector if simplex cannot be subdivided with smaller detsum
@@ -2562,7 +2563,8 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
     return SubDivMat[opt_index];
 } */
 
-template<typename Integer>
+// version for single point with top and bottom
+/* template<typename Integer>
 vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
 // returns empty vector if simplex cannot be subdivided with smaller detsum
      
@@ -2588,6 +2590,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
     vector<Integer> MinusN(N);
     v_scalar_multiplication(MinusN,MinusOne);
     Supp.append(MinusN);
+    Supp.append(N);
     Supp.resize_columns(nr+1);
      
     Integer opt_value=G;
@@ -2601,7 +2604,96 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
      
     Matrix<Integer> SubDivMat(0,nr+1); 
     while(true){
-        // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << endl;
+        cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << endl;
+        Supp[nr][nc]=g;                  // the top
+        Supp[nr+1][nc]=-(empty_value+1); // the bottom
+        // prepare matrices for project and lift
+        SubDivMat=Matrix<Integer>(0,nr+1);
+        // Incidence matrix for projectand lift
+        vector<boost::dynamic_bitset<> > Ind(nc+2);
+        for(size_t i=0;i<nc;++i){  // we have 2*nr vertices
+            Ind[i].resize(2*nr);   // first the hyperplanes of the simplicial cone
+            for(size_t j=0;j<nc;++j){
+                Ind[i][j]=true;
+                Ind[i][j+nr]=true;
+            }
+            Ind[i][i]=false;
+            Ind[i][i+nr]=false;
+        }
+        Ind[nc].resize(2*nr);
+        Ind[nc+1].resize(2*nr);
+        for(size_t i=0;i<nr;++i){ 
+            Ind[nc][i]=true;      // the top
+            Ind[nc+1][i+nr]=true; // the bottom
+        }
+        Integer One=1;
+        Matrix<Integer> SuppTemp(Supp); // will be destroyed
+        SuppTemp.exchange_columns(0,nc);
+        project_and_lift_inner(SubDivMat,SuppTemp,Ind,One, nr+1,false,false,Zero);
+        if(SubDivMat.nr_of_rows()==0){ // no point found
+            if(g==opt_value-1)
+                return opt_point; // optimal value found (or nothing found)
+            empty_value=g;
+            g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
+            den*=2;           
+        }
+        else{ // point found
+            // SubDivMat.pretty_print(cout);
+            den=2; // back to start value
+            opt_point=SubDivMat[0];
+            std::swap(opt_point[0],opt_point[nc]);
+            opt_point.resize(nc);
+            if(opt_value==empty_value+1)
+                return opt_point;
+            opt_value=v_scalar_product(opt_point,N);
+            g=empty_value+1+(opt_value-empty_value-2)/2;
+        }
+    }
+}
+*/
+
+/*
+// version with a single point, only top of the search polytope
+template<typename Integer>
+vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
+// returns empty vector if simplex cannot be subdivided with smaller detsum
+      
+    cout << "==================" << endl;
+  
+    assert(nr>0);
+    assert(nr==nc);
+      
+    vector<Integer> opt_point;
+  
+    vector<Integer> N = find_linear_form();
+    assert(N.size()==nr);
+    Integer G=v_scalar_product(N,elem[0]);
+    if(G<=1)
+        return opt_point;
+    Matrix<Integer> Supp;
+    Integer V;
+    vector<key_t> dummy(nr);
+    for(size_t i=0;i<nr;++i)
+        dummy[i]=i;
+    simplex_data(dummy, Supp,V,true);
+    Integer MinusOne=-1;
+    vector<Integer> MinusN(N);
+    v_scalar_multiplication(MinusN,MinusOne);
+    Supp.append(MinusN);
+    Supp.resize_columns(nr+1);
+      
+    Integer opt_value=G;
+    Integer empty_value=0;
+    Integer g=G-1;
+      
+    Integer den=2;
+      
+    vector<Integer> Zero(nr+1); // the excluded vector
+    Zero[0]=1;
+      
+    Matrix<Integer> SubDivMat(0,nr+1); 
+    while(true){
+        cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << endl;
         Supp[nr][nr]=g;
         // prepare matrices for project and lift
         SubDivMat=Matrix<Integer>(0,nr+1);
@@ -2637,6 +2729,92 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
         }
     }
 }
+*/
+
+// version with a single point, only top of the search polytope
+// After 2 attempts without improvement, g raised to opt_value-1
+template<typename Integer>
+vector<Integer> Matrix<Integer>::optimal_subdivision_point() const{
+// returns empty vector if simplex cannot be subdivided with smaller detsum
+      
+    // cout << "==================" << endl;
+  
+    assert(nr>0);
+    assert(nr==nc);
+      
+    vector<Integer> opt_point;
+  
+    vector<Integer> N = find_linear_form();
+    assert(N.size()==nr);
+    Integer G=v_scalar_product(N,elem[0]);
+    if(G<=1)
+        return opt_point;
+    Matrix<Integer> Supp;
+    Integer V;
+    vector<key_t> dummy(nr);
+    for(size_t i=0;i<nr;++i)
+        dummy[i]=i;
+    simplex_data(dummy, Supp,V,true);
+    Integer MinusOne=-1;
+    vector<Integer> MinusN(N);
+    v_scalar_multiplication(MinusN,MinusOne);
+    Supp.append(MinusN);
+    Supp.resize_columns(nr+1);
+      
+    Integer opt_value=G;
+    Integer empty_value=0;
+    Integer g=G-1;
+      
+    Integer den=2;
+      
+    vector<Integer> Zero(nr+1); // the excluded vector
+    Zero[0]=1;
+      
+    Matrix<Integer> SubDivMat(0,nr+1);
+    size_t nothing_found=0;
+    while(true){
+        // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
+        Supp[nr][nr]=g;
+        // prepare matrices for project and lift
+        SubDivMat=Matrix<Integer>(0,nr+1);
+        // Incidence matrix for projectand lift
+        vector<boost::dynamic_bitset<> > Ind(nr+1);
+        for(size_t i=0;i<nr+1;++i){
+            Ind[i].resize(nc+1);
+            for(size_t j=0;j<nc+1;++j)
+                Ind[i][j]=true;
+            Ind[i][i]=false;
+        }
+        Integer One=1;
+        Matrix<Integer> SuppTemp(Supp); // will be destroyed
+        SuppTemp.exchange_columns(0,nc);
+        project_and_lift_inner(SubDivMat,SuppTemp,Ind,One, nr+1,false,false,Zero);
+        if(SubDivMat.nr_of_rows()==0){ // no point found
+            nothing_found++;
+            if(g==opt_value-1)
+                return opt_point; // optimal value found (or nothing found)
+            empty_value=g;
+            if(nothing_found<1)
+                g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
+            else
+                g=opt_value-1;
+            den*=2;           
+        }
+        else{ // point found
+            // SubDivMat.pretty_print(cout);
+            nothing_found=0;
+            den=2; // back to start value
+            opt_point=SubDivMat[0];
+            std::swap(opt_point[0],opt_point[nc]);
+            opt_point.resize(nc);
+            if(opt_value==empty_value+1)
+                return opt_point;
+            opt_value=v_scalar_product(opt_point,N);
+            g=empty_value+1+(opt_value-empty_value-2)/2;
+        }
+    }
+}
+ 
 
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
