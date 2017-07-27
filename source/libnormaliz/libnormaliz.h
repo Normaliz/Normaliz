@@ -89,9 +89,10 @@ extern size_t TotDet;
  */
 extern volatile sig_atomic_t nmz_interrupted;
 
+extern bool nmz_scip; // controls the use of Scip
+
 #define INTERRUPT_COMPUTATION_BY_EXCEPTION \
 if(nmz_interrupted){ \
-    nmz_interrupted = 0; \
     throw InterruptException( "external interrupt" ); \
 }
 

@@ -2781,6 +2781,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     v_scalar_multiplication(MinusN,MinusOne);
     Supp.append(MinusN);
     Supp.resize_columns(nr+1);
+    Supp.exchange_columns(0,nc); // grading to the front!
       
     Integer opt_value=G;
     Integer empty_value=0;
@@ -2795,7 +2796,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     size_t nothing_found=0;
     while(true){
         // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
-        Supp[nr][nr]=g;
+        Supp[nr][0]=g;
         // prepare matrices for project and lift
         SubDivMat=Matrix<Integer>(0,nr+1);
         // Incidence matrix for projectand lift
@@ -2807,9 +2808,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
             Ind[i][i]=false;
         }
         Integer One=1;
-        Matrix<Integer> SuppTemp(Supp); // will be destroyed
-        SuppTemp.exchange_columns(0,nc);
-        project_and_lift_inner(SubDivMat,SuppTemp,Ind,One, nr+1,false,false,Zero);
+        project_and_lift_inner(SubDivMat,Supp,Ind,One, nr+1,false,false,Zero);
         if(SubDivMat.nr_of_rows()==0){ // no point found
             nothing_found++;
             if(g==opt_value-1)

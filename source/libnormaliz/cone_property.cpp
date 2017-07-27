@@ -418,8 +418,7 @@ namespace {
         CPN.at(ConeProperty::MaximalSubspace) = "MaximalSubspace";
         CPN.at(ConeProperty::ConeDecomposition) = "ConeDecomposition";
         CPN.at(ConeProperty::HSOP) = "HSOP";
-        CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
-        
+        CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";        
         CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
         CPN.at(ConeProperty::Symmetrize) = "Symmetrize";
         CPN.at(ConeProperty::NoSymmetrization) = "NoSymmetrization";
@@ -448,9 +447,10 @@ namespace {
         CPN.at(ConeProperty::WeightedEhrhartQuasiPolynomial) = "WeightedEhrhartQuasiPolynomial";
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
+        CPN.at(ConeProperty::SCIP) = "SCIP";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 69,
+        static_assert (ConeProperty::EnumSize == 70,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

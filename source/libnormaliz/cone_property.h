@@ -119,6 +119,7 @@ namespace ConeProperty {
         KeepOrder,
         HSOP,
         NoPeriodBound,
+        SCIP,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

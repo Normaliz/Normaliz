@@ -1152,6 +1152,8 @@ void Cone<Integer>::initialize() {
     already_in_compute=false;
     
     set_parallelization();
+    nmz_interrupted=0;
+    nmz_scip=false;
     
 }
 
@@ -1871,6 +1873,15 @@ template<typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     already_in_compute=false;
     set_parallelization();
+    nmz_interrupted=0;
+    if(ToCompute.test(ConeProperty::SCIP)){
+#ifdef NMZ_SCIP
+        nmz_scip=true;
+        ToCompute.set(ConeProperty::SCIP);
+#else
+        throw BadInputException("Option SCIP only allowed if Normaliz was built with Scip");
+#endif // NMZ_SCIP
+    }
     return compute_inner(ToCompute);
 }
 
@@ -3644,7 +3655,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         
     if(ToCompute.test(ConeProperty::Approximate)){
         if(verbose)
-            verboseOutput() << "Computing approximating polytope" << endl;
+            verboseOutput() << "Computing lattice points by approximation" << endl;
         Cone<Integer> HelperCone(InputType::cone,GradGen);
         HelperCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
         HelperCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
@@ -3653,7 +3664,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     }
     else{
         if(verbose)
-             verboseOutput() << "Computing projection" << endl;
+             verboseOutput() << "Computing lattice points by project-and-lift" << endl;
         Matrix<Integer> Supps, Equs;
         if(Grading_Is_Coordinate){
             Supps=getSupportHyperplanesMatrix();
@@ -3681,7 +3692,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        // ATTENTION: the next call destroys Supps. If you need them later, save them first.
         project_and_lift(Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
     }
     

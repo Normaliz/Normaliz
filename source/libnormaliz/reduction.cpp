@@ -207,6 +207,11 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         
         CandidateTable<Integer> ReducerTable(Reducers);
         
+        bool skip_remaining=false;;
+#ifndef NCATCH
+    std::exception_ptr tmp_exception;
+#endif
+        
         // This parallel region cannot throw a NormalizException
         #pragma omp parallel private(c,cpos) firstprivate(ReducerTable)
         {
@@ -218,11 +223,31 @@ void CandidateList<Integer>::reduce_by(CandidateList<Integer>& Reducers){
         for (size_t k=0; k<csize; ++k) {
             for(;k > cpos; ++cpos, ++c) ;
             for(;k < cpos; --cpos, --c) ;
+            
+            if(skip_remaining)
+                continue;
+#ifndef NCATCH
+        try {
+#endif
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
         
             ReducerTable.is_reducible(*c);
+            
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+#endif
         }
         
         }// end parallel
+        
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
         
         // erase reducibles
         for(c=Candidates.begin();c!=Candidates.end();){

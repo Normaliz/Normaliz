@@ -4691,6 +4691,7 @@ vector<list<vector<Integer>>> Full_Cone<Integer>::latt_approx() {
             nr_approx = 0;
             for(auto jt=approx.begin();jt!=approx.end();++jt){  // reverse transformation
                 *jt=U.MxV(*jt);
+                v_make_prime(*jt);
                 ++nr_approx;
                 //cout << *jt << endl;
             }

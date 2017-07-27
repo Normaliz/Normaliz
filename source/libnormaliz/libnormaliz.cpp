@@ -32,6 +32,8 @@ namespace libnormaliz {
 
 bool verbose = false;
 
+bool nmz_scip=false;
+
 volatile sig_atomic_t nmz_interrupted = 0;
 long default_thread_limit=8;
 long thread_limit=default_thread_limit;

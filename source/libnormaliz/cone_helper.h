@@ -41,7 +41,7 @@ void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subs
 
 // the project-and-lift algorithm for lattice points on a polytope
 template<typename IntegerPL, typename IntegerRet>
-void project_and_lift_inner(Matrix<IntegerRet>& Deg1, Matrix<IntegerPL>& Supps, 
+void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 
                             vector<boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank,
                             bool verbose, bool all_points, const vector<IntegerRet>& excluded_point);
 

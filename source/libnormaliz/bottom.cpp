@@ -240,13 +240,15 @@ bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer
     vector<Integer> new_point;
     
 #ifdef NMZ_SCIP
-    // set time limit according to volume   
-    double time_limit = pow(log10(convert_to_double(volume)),2);
-    SCIPsetRealParam(scip, "limits/time", time_limit);
-    // call scip
-    new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
-    if(new_point.empty() && verbose)
-        verboseOutput() << "No bottom point found by SCIP. Trying projection." << endl;
+    // set time limit according to volume
+    if(nmz_scip){
+        double time_limit = pow(log10(convert_to_double(volume)),2);
+        SCIPsetRealParam(scip, "limits/time", time_limit);
+        // call scip
+        new_point = opt_sol(scip, gens, Support_Hyperplanes, grading);
+        if(new_point.empty() && verbose)
+            verboseOutput() << "No bottom point found by SCIP. Trying projection." << endl;
+    }
 #endif // NMZ_SCIP
     
     if(new_point.empty()){
