@@ -113,6 +113,21 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , vector< vector<mpq_class> > >& multi_input_data);
+    
+//-----------------------------------------------------------------------------
+// the same for nmz_float
+    
+    Cone(InputType type, const vector< vector<nmz_float> >& input_data);
+
+    Cone(InputType type1, const vector< vector<nmz_float> >& input_data1,
+         InputType type2, const vector< vector<nmz_float> >& input_data2);
+
+    Cone(InputType type1, const vector< vector<nmz_float> >& input_data1,
+         InputType type2, const vector< vector<nmz_float> >& input_data2,
+         InputType type3, const vector< vector<nmz_float> >& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , vector< vector<nmz_float> > >& multi_input_data);
 
 //-----------------------------------------------------------------------------
 // Now with Matrix
@@ -143,6 +158,21 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , Matrix<mpq_class> >& multi_input_data);
+    
+//-----------------------------------------------------------------------------
+// Now with Matrix and nmz_float
+    
+    Cone(InputType type, const Matrix<nmz_float>& input_data);
+
+    Cone(InputType type1, const Matrix<nmz_float>& input_data1,
+         InputType type2, const Matrix<nmz_float>& input_data2);
+
+    Cone(InputType type1, const Matrix<nmz_float>& input_data1,
+         InputType type2, const Matrix<nmz_float>& input_data2,
+         InputType type3, const Matrix<nmz_float>& input_data3);
+
+    /* give multiple input */
+    Cone(const map< InputType , Matrix<nmz_float> >& multi_input_data);
     
     
 //---------------------------------------------------------------------------
@@ -415,6 +445,7 @@ private:
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data);
+    void process_multi_input(const map< InputType, vector< vector<nmz_float> > >& multi_input_data);
     
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);

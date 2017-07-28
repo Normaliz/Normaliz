@@ -110,8 +110,8 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1,Integer c2, const 
     return new_supp;
 }
 
-template<typename IntegerPL>
-vector<size_t> order_supps(const Matrix<IntegerPL>& Supps){
+template<typename IntegerPL, typename IntegerRet>
+vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<IntegerPL>& Supps){
     
     assert(Supps.nr_of_rows()>0);
     size_t dim=Supps.nr_of_columns();
@@ -151,9 +151,9 @@ vector<size_t> order_supps(const Matrix<IntegerPL>& Supps){
 }
 
 //---------------------------------------------------------------------------
-template<typename IntegerPL>
-void compute_projections(vector<Matrix<IntegerPL> >& AllSupps, vector<vector<size_t> >& AllOrders, size_t dim,
-                         vector< boost::dynamic_bitset<> >& Ind, size_t rank, bool verbose){
+template<typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind,
+                                                               size_t rank){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -417,20 +417,23 @@ void compute_projections(vector<Matrix<IntegerPL> >& AllSupps, vector<vector<siz
     
     size_t new_rank=dim1-EqusProj.nr_of_rows();
     
-    compute_projections(AllSupps,AllOrders,dim-1,NewInd, new_rank,verbose);
+    compute_projections(dim-1,NewInd, new_rank);
 }
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point, 
-                    const Matrix<IntegerPL>& Supps, const vector<size_t> Order){
+bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
+                                                          const vector<IntegerRet>& base_point){
+        size_t dim=base_point.size()+1;
+        Matrix<IntegerPL>& Supps=AllSupps[dim];
+        vector<size_t>& Order=AllOrders[dim];
 
         bool FirstMin=true, FirstMax=true;
         vector<IntegerPL> LiftedGen;
         convert(LiftedGen,base_point);
         // cout << LiftedGen;
         size_t check_supps=Supps.nr_of_rows();
-        if(check_supps>1000)
+        if(check_supps>1000 && dim<EmbDim)
             check_supps=1000;
         for(size_t j=0;j<check_supps;++j){
             IntegerPL Den=Supps[Order[j]].back();
@@ -476,9 +479,9 @@ bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vect
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1, const Matrix<IntegerRet>& Deg1Proj,
-                             const vector<Matrix<IntegerPL> >& AllSupps, const vector<vector<size_t> >& AllOrders){
-
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<IntegerRet>& Deg1Lifted, 
+                                                                   const Matrix<IntegerRet>& Deg1Proj){
+    
     size_t dim=Deg1Proj.nr_of_columns()+1;
     size_t dim1=dim-1;
     vector<Matrix<IntegerRet> > Deg1Thread(omp_get_max_threads());
@@ -510,7 +513,7 @@ void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1, const Matrix<IntegerRet>&
 #endif
 
         IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy        
-        fiber_interval(MinInterval, MaxInterval, Deg1Proj[i], AllSupps[dim],AllOrders[dim]);
+        fiber_interval(MinInterval, MaxInterval, Deg1Proj[i]);
         // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
         for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
             
@@ -539,7 +542,7 @@ void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1, const Matrix<IntegerRet>&
 #endif
     
     for(size_t i=0;i<Deg1Thread.size();++i)
-        Deg1.append(Deg1Thread[i]);
+        Deg1Lifted.append(Deg1Thread[i]);
     
 
     /* Deg1.pretty_print(cout);
@@ -548,43 +551,43 @@ void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1, const Matrix<IntegerRet>&
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void lift_points_by_generation(Matrix<IntegerRet>& Deg1, const vector<Matrix<IntegerPL> >& AllSupps,
-                                const vector<vector<size_t> >& AllOrders, const IntegerRet GD, bool verbose){
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
     if(verbose)
         verboseOutput() << "Lifting" << endl;
-    
-    size_t dim=AllSupps.size()-1;
-    assert(dim>=2);
-    
+
+    assert(EmbDim>=2);
+
+    Matrix<IntegerRet> Deg1Lifted;
     Matrix<IntegerRet> Deg1Proj(0,1);
     vector<IntegerRet> One(1,GD);
-        Deg1Proj.append(One);
+    Deg1Proj.append(One);
     
-    for(size_t i=2; i<=dim;++i){
-        Deg1=Matrix<IntegerRet>(0,i);
-        lift_points_to_this_dim(Deg1,Deg1Proj,AllSupps,AllOrders);
+    for(size_t i=2; i<=EmbDim;++i){
+        Deg1Lifted=Matrix<IntegerRet>(0,i);
+        lift_points_to_this_dim(Deg1Lifted,Deg1Proj);
         if(verbose)    
-            verboseOutput() <<  "embdim " << i << " Deg1Elements " << Deg1.nr_of_rows() << endl;
-        if(i<dim){
-            swap(Deg1,Deg1Proj);
+            verboseOutput() <<  "embdim " << i << " Deg1Elements " << Deg1Lifted.nr_of_rows() << endl;
+        if(i<EmbDim){
+            swap(Deg1Lifted,Deg1Proj);
         }               
     }
+    
+    swap(Deg1Points,Deg1Lifted); // final resilt
     if(verbose)
         verboseOutput() << "Lifting done" << endl;
 }
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void lift_point_recursively(vector<IntegerRet>& finaL_latt_point, const vector<IntegerRet>& latt_point_proj, 
-                            const vector<Matrix<IntegerPL> >& AllSupps, const vector<vector<size_t> >& AllOrders, 
-                            const vector<IntegerRet>& excluded_point){
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_point_recursively(vector<IntegerRet>& final_latt_point,
+                                                                  const vector<IntegerRet>& latt_point_proj){
  
     size_t dim1=latt_point_proj.size();
     size_t dim=dim1+1;
     size_t final_dim=AllSupps.size()-1;
     
     IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy        
-    fiber_interval(MinInterval, MaxInterval, latt_point_proj, AllSupps[dim],AllOrders[dim]);
+    fiber_interval(MinInterval, MaxInterval, latt_point_proj);
     for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
         
         INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -594,12 +597,12 @@ void lift_point_recursively(vector<IntegerRet>& finaL_latt_point, const vector<I
             NewPoint[j]=latt_point_proj[j];
         NewPoint[dim1]=k;
         if(dim==final_dim && NewPoint!=excluded_point){
-            finaL_latt_point=NewPoint;
+            final_latt_point=NewPoint;
             break;
         }
         if(dim<final_dim){
-            lift_point_recursively(finaL_latt_point, NewPoint,AllSupps,AllOrders,excluded_point);
-            if(finaL_latt_point.size()>0)
+            lift_point_recursively(final_latt_point, NewPoint);
+            if(final_latt_point.size()>0)
                 break;
         }
     }
@@ -607,25 +610,69 @@ void lift_point_recursively(vector<IntegerRet>& finaL_latt_point, const vector<I
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void find_single_point(Matrix<IntegerRet>& Deg1, const vector<Matrix<IntegerPL> >& AllSupps,
-                        const vector<vector<size_t> >& AllOrders, 
-                        const IntegerRet& GD, const vector<IntegerRet>& excluded_point){
+void ProjectAndLift<IntegerPL,IntegerRet>::find_single_point(){
     
     size_t dim=AllSupps.size()-1;
     assert(dim>=2);
     
     vector<IntegerRet> start(1,GD);
     vector<IntegerRet> final_latt_point;
-    lift_point_recursively(final_latt_point,start,AllSupps,AllOrders,excluded_point);
-    if(final_latt_point.size()>0)
-        Deg1.append(final_latt_point);
+    lift_point_recursively(final_latt_point,start);
+    if(final_latt_point.size()>0){
+        Deg1Points.append(final_latt_point);
+        if(verbose)
+            verboseOutput() << "Found point" << endl;
+    }
+    else{
+        if(verbose)
+            verboseOutput() << "No point found" << endl;        
+    }
 }
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps,
-                            vector< boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank, 
-                            bool verbose, bool all_points, const vector<IntegerRet>& excluded_point){
+void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& Supps,size_t rank){
+
+    EmbDim=Supps.nr_of_columns(); // our embedding dimension    
+    AllSupps.resize(EmbDim+1);
+    AllOrders.resize(EmbDim+1);
+    AllSupps[EmbDim]=Supps;
+    AllOrders[EmbDim]=order_supps(Supps);
+    StartRank=rank;
+    GD=1; // the default choice
+    verbose=true;
+    Deg1Points.resize(0,EmbDim);
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank){
+    
+    initialize(Supps,rank);
+    StartInd=Ind;    
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_verbose(bool on_off){
+        verbose=on_off;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_grading_denom(const IntegerRet GradingDenom){
+        GD=GradingDenom;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_excluded_point(const vector<IntegerRet>& excl_point){
+        excluded_point=excl_point;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 
 // Project-and-lift for lattice points in a polytope. 
 // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
@@ -633,17 +680,18 @@ void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& S
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
 
-    size_t dim=Supps.nr_of_columns(); // our local embedding dimension    
-    vector<Matrix<IntegerPL> > AllSupps(dim+1);
-    vector<vector<size_t> > AllOrders(dim+1);
-
-    AllSupps[dim]=Supps;
-    AllOrders[dim]=order_supps(Supps);
-    compute_projections(AllSupps, AllOrders,dim, Ind, rank, verbose);
+    compute_projections(EmbDim, StartInd, StartRank);
     if(all_points)
-        lift_points_by_generation(Deg1,AllSupps,AllOrders,GD,verbose);
+        lift_points_by_generation();
     else
-        find_single_point(Deg1,AllSupps,AllOrders,GD,excluded_point);
+        find_single_point();
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints){
+    
+    swap(Deg1Points,LattPoints);
 }
 
 //---------------------------------------------------------------------------

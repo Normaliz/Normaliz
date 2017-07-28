@@ -3799,24 +3799,34 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
     size_t rank=BasisChangePointed.getRank();
     
     if(float_projection){
-        Matrix<nmz_float> GensFloat;
-        convert(GensFloat,Gens);
+        // Matrix<nmz_float> GensFloat;
+        // convert(GensFloat,Gens);
         Matrix<nmz_float> SuppsFloat;
         convert(SuppsFloat,Supps);
         vector<Integer> Dummy;
-        project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose,true,Dummy);        
+        // project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose,true,Dummy);
+        ProjectAndLift<nmz_float,Integer> PL(SuppsFloat,Ind,rank);
+        PL.set_grading_denom(GradingDenom);
+        PL.set_verbose(verbose);
+        PL.compute();
+        PL.put_eg1Points_into(Deg1);
     }
     else{
         if (change_integer_type) {
             Matrix<MachineInteger> Deg1MI(0,Deg1.nr_of_columns());
-            Matrix<MachineInteger> GensMI;
+            // Matrix<MachineInteger> GensMI;
             Matrix<MachineInteger> SuppsMI;
             try {
-                convert(GensMI,Gens);
+                // convert(GensMI,Gens);
                 convert(SuppsMI,Supps);
                 MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
                 vector<MachineInteger> Dummy;
-                project_and_lift_inner<MachineInteger>(Deg1MI,SuppsMI,Ind, GDMI,rank,verbose,true,Dummy);
+                // project_and_lift_inner<MachineInteger>(Deg1MI,SuppsMI,Ind, GDMI,rank,verbose,true,Dummy);
+                ProjectAndLift<MachineInteger,MachineInteger> PL(SuppsMI,Ind,rank);
+                PL.set_grading_denom(GDMI);
+                PL.set_verbose(verbose);
+                PL.compute();
+                PL.put_eg1Points_into(Deg1MI);
             } catch(const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -3831,7 +3841,12 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         
         if (!change_integer_type) {
             vector<Integer> Dummy;
-            project_and_lift_inner<Integer>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
+            // project_and_lift_inner<Integer>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
+            ProjectAndLift<Integer,Integer> PL(Supps,Ind,rank);
+            PL.set_grading_denom(GradingDenom);
+            PL.set_verbose(verbose);
+            PL.compute();
+            PL.put_eg1Points_into(Deg1);
         }        
     }
 

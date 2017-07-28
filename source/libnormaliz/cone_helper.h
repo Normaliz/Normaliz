@@ -40,6 +40,53 @@ using std::vector;
 void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
 
 // the project-and-lift algorithm for lattice points on a polytope
+
+template<typename IntegerPL, typename IntegerRet> 
+class ProjectAndLift {
+    
+    template<typename,typename> friend class ProjectAndLift;
+    
+    vector<Matrix<IntegerPL> > AllSupps;
+    vector<vector<size_t> > AllOrders;
+    
+    vector<boost::dynamic_bitset<> > StartInd;
+    size_t StartRank;
+    
+    Matrix<IntegerRet> Deg1Points;
+    vector<IntegerRet> excluded_point;
+    IntegerRet GD;
+    
+    size_t EmbDim;
+    bool verbose;
+    
+    vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
+    bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
+                        const vector<IntegerRet>& base_point);    
+    
+    void lift_point_recursively(vector<IntegerRet>& final_latt_point, 
+                                const vector<IntegerRet>& latt_point_proj);    
+    void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1Points, const Matrix<IntegerRet>& Deg1Proj); 
+    
+    void find_single_point();
+    void lift_points_by_generation();
+    
+    void compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind, size_t rank);
+    
+    void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
+        
+    public:
+        
+    ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank);
+    
+    void set_excluded_point(const vector<IntegerRet>& excl_point);
+    void set_grading_denom(const IntegerRet GradingDenom);
+    void set_verbose(bool on_off);
+    
+    void compute(bool do_all_points=true);    
+    void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);    
+};
+    
+    
 template<typename IntegerPL, typename IntegerRet>
 void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 
                             vector<boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank,

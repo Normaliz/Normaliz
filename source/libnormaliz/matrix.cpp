@@ -2791,24 +2791,30 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
       
     vector<Integer> Zero(nr+1); // the excluded vector
     Zero[0]=1;
-      
+
+    // Incidence matrix for projectand lift    
+    vector<boost::dynamic_bitset<> > Ind(nr+1);
+    for(size_t i=0;i<nr+1;++i){
+        Ind[i].resize(nc+1);
+        for(size_t j=0;j<nc+1;++j)
+            Ind[i][j]=true;
+        Ind[i][i]=false;
+    }
+    
+    // cout << "==============================" << endl;
+    
     Matrix<Integer> SubDivMat(0,nr+1);
     size_t nothing_found=0;
     while(true){
         // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
-        Supp[nr][0]=g;
-        // prepare matrices for project and lift
-        SubDivMat=Matrix<Integer>(0,nr+1);
-        // Incidence matrix for projectand lift
-        vector<boost::dynamic_bitset<> > Ind(nr+1);
-        for(size_t i=0;i<nr+1;++i){
-            Ind[i].resize(nc+1);
-            for(size_t j=0;j<nc+1;++j)
-                Ind[i][j]=true;
-            Ind[i][i]=false;
-        }
-        Integer One=1;
-        project_and_lift_inner(SubDivMat,Supp,Ind,One, nr+1,false,false,Zero);
+        Supp[nr][0]=g;  // the degree at which we cut the simplex
+        //Integer One=1;
+        // project_and_lift_inner(SubDivMat,Supp,Ind,One, nr+1,false,false,Zero);
+        ProjectAndLift<Integer,Integer> PL(Supp,Ind,nr+1);
+        PL.set_excluded_point(Zero);
+        PL.set_verbose(false);
+        PL.compute(false); // only a single point
+        PL.put_eg1Points_into(SubDivMat);
         if(SubDivMat.nr_of_rows()==0){ // no point found
             nothing_found++;
             if(g==opt_value-1)
