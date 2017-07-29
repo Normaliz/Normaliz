@@ -49,7 +49,7 @@ template<typename Integer> struct SHORTSIMPLEX {
     Integer height;                   // height of last vertex over opposite facet
     Integer vol;                      // volume if computed, 0 else
     vector<bool> Excluded;           // for disjoint decomposition of cone
-                                      // true in position i indictate sthat the facet 
+                                      // true in position i indicates that the facet
                                       // opposite of generator i must be excluded
 };
 
@@ -97,10 +97,10 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , vector< vector<Integer> > >& multi_input_data);
-    
+
 //-----------------------------------------------------------------------------
 // the same for mpq_class
-    
+
     Cone(InputType type, const vector< vector<mpq_class> >& input_data);
 
     Cone(InputType type1, const vector< vector<mpq_class> >& input_data1,
@@ -115,7 +115,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // Now with Matrix
-    
+
     Cone(InputType type, const Matrix<Integer>& input_data);
 
     Cone(InputType type1, const Matrix<Integer>& input_data1,
@@ -127,10 +127,10 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , Matrix<Integer> >& multi_input_data);
-    
+
 //-----------------------------------------------------------------------------
 // Now with Matrix and mpq_class
-    
+
     Cone(InputType type, const Matrix<mpq_class>& input_data);
 
     Cone(InputType type1, const Matrix<mpq_class>& input_data1,
@@ -142,8 +142,8 @@ public:
 
     /* give multiple input */
     Cone(const map< InputType , Matrix<mpq_class> >& multi_input_data);
-    
-    
+
+
 //---------------------------------------------------------------------------
 //                                Destructor
 //---------------------------------------------------------------------------
@@ -182,7 +182,7 @@ public:
     bool isComputed(ConeProperty::Enum prop) const;
     //returns true, when ALL properties in CheckComputed are computed
     bool isComputed(ConeProperties CheckComputed) const;
-    
+
     void resetComputed(ConeProperty::Enum prop);
 
 //---------------------------------------------------------------------------
@@ -200,7 +200,7 @@ public:
     size_t getRecessionRank();
     long getAffineDim();
     size_t getModuleRank();
-    
+
     Cone<Integer>& getIntegerHullCone() const;
     Cone<Integer>& getSymmetrizedCone() const;
 
@@ -219,7 +219,7 @@ public:
     const Matrix<Integer>& getSupportHyperplanesMatrix();
     const vector< vector<Integer> >& getSupportHyperplanes();
     size_t getNrSupportHyperplanes();
-    
+
     const Matrix<Integer>& getMaximalSubspaceMatrix();
     const vector< vector<Integer> >& getMaximalSubspace();
     size_t getDimMaximalSubspace();
@@ -252,6 +252,8 @@ public:
     const vector< vector<Integer> >& getDeg1Elements();
     size_t getNrDeg1Elements();
 
+    const Matrix<Integer>& getMatrix(string matrixType);
+
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
     Integer getGradingDenom();
@@ -264,9 +266,9 @@ public:
     mpq_class getVirtualMultiplicity();
     mpq_class getIntegral();
     const pair<HilbertSeries, mpz_class>& getWeightedEhrhartSeries();
-    
+
     string getPolynomial() const;
-    
+
     bool inequalities_present;
 
     bool isPointed();
@@ -293,39 +295,39 @@ public:
     const list< STANLEYDATA<Integer> >& getStanleyDec();
     list< STANLEYDATA_int >& getStanleyDec_mutable(); //allows us to erase the StanleyDec
                              // in order to save memeory for weighted Ehrhart
-    
+
     void set_project(string name);
     void set_nmz_call(const string& path);
     void set_output_dir(string name);
-    
+
     void setPolynomial(string poly);
-    
+
     bool get_verbose ();
-    
+
     IntegrationData& getIntData();
-    
+
 
 //---------------------------------------------------------------------------
 //                          private part
 //---------------------------------------------------------------------------
 
 private:
-    
+
     bool already_in_compute; // protection against call of compute within compute
                              // such calls must go via recursive_compute.
-    
+
     string project;
     string output_dir;
     string nmz_call;
     size_t dim;
-    
+
     // the following three matrices store the constraints of the input
     Matrix<Integer> Inequalities;
     Matrix<Integer> Equations;
     Matrix<Integer> Congruences;
     // we must register some information about thew input
     bool lattice_ideal_input;
-    size_t nr_latt_gen, nr_cone_gen; // they count matrices in the input 
+    size_t nr_latt_gen, nr_cone_gen; // they count matrices in the input
 
     Sublattice_Representation<Integer> BasisChange;  //always use compose_basis_change() !
     Sublattice_Representation<Integer> BasisChangePointed; // to the pointed cone
@@ -378,10 +380,10 @@ private:
     size_t module_rank; // for the inhomogeneous case
     Matrix<Integer> ModuleGenerators;
     vector<Integer> ClassGroup;
-    
+
     bool is_approximation;
     Cone* ApproximatedCone;
-    
+
     // some properties of the current computation taken from ToCompute
     bool explicit_HilbertSeries; // true = Hilbert series set explicitly and not only via default mode
     bool naked_dual; // true = dual mode set, but neither Hilbert basis nor deg 1 points
@@ -395,7 +397,7 @@ private:
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
-    
+
     Cone<Integer>* IntHullCone;
     Cone<Integer>* SymmCone;
 
@@ -405,7 +407,7 @@ private:
     void process_multi_input(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void process_multi_input_inner(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void process_multi_input(const map< InputType, vector< vector<mpq_class> > >& multi_input_data);
-    
+
     void prepare_input_lattice_ideal(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_constraints(const map< InputType, vector< vector<Integer> > >& multi_input_data);
     void prepare_input_generators(map< InputType, vector< vector<Integer> > >& multi_input_data,
@@ -413,7 +415,7 @@ private:
     void homogenize_input(map< InputType, vector< vector<Integer> > >& multi_input_data);
     void check_precomputed_support_hyperplanes();
     void check_excluded_faces();
-    
+
     void setGrading (const vector<Integer>& lf);
     void setWeights ();
     void setDehomogenization (const vector<Integer>& lf);
@@ -421,9 +423,9 @@ private:
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
     void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
-    
+
     ConeProperties recursive_compute(ConeProperties ToCompute);
-    
+
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation (ConeProperties& ToCompute);
 
@@ -446,7 +448,7 @@ private:
     void compute_dual(ConeProperties& ToCompute);
     template<typename IntegerFC>
     void compute_dual_inner(ConeProperties& ToCompute);
-    
+
     void set_implicit_dual_mode(ConeProperties& ToCompute);
 
     /* extract the data from Full_Cone, this may remove data from Full_Cone!*/
@@ -454,7 +456,7 @@ private:
     void extract_data(Full_Cone<IntegerFC>& FC);
     template<typename IntegerFC>
     void extract_supphyps(Full_Cone<IntegerFC>& FC);
-    
+
     void extract_supphyps(Full_Cone<Integer>& FC);
 
 
@@ -474,19 +476,19 @@ private:
     Integer compute_primary_multiplicity();
     template<typename IntegerFC>
     Integer compute_primary_multiplicity_inner();
-    
+
     void compute_integer_hull();
     void complete_sublattice_comp(ConeProperties& ToCompute); // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
-    
+
     void compute_integral (ConeProperties& ToCompute);
     void compute_virt_mult (ConeProperties& ToCompute);
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);
-    
+
     void make_StanleyDec_export();
-    
+
     void NotComputable (string message); // throws NotComputableException if default_mode = false
-    
+
     template<typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
 };
