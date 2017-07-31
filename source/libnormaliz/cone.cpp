@@ -1424,6 +1424,9 @@ const Matrix<Integer>& Cone<Integer>::getMatrix(string matrixType) {
   else if (matrixType == "ModuleGenerators"){
     return getModuleGeneratorsMatrix();
   }
+  else if (matrixType == "Generators"){
+    return getGeneratorsMatrix();
+  }
   else if (matrixType == "Deg1Elements"){
     return getDeg1ElementsMatrix();
   }
