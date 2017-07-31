@@ -261,6 +261,49 @@ Cone<Integer>::Cone(const map< InputType, vector< vector<mpq_class> > >& multi_i
     process_multi_input(multi_input_data);
 }
 
+// now with nmz_float input
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const vector< vector<nmz_float> >& Input) {
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > > multi_input_data;
+    multi_input_data[input_type] = Input;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<nmz_float> >& Input1,
+                    InputType type2, const vector< vector<nmz_float> >& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const vector< vector<nmz_float> >& Input1,
+                    InputType type2, const vector< vector<nmz_float> >& Input2,
+                    InputType type3, const vector< vector<nmz_float> >& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > > multi_input_data;
+    multi_input_data[type1] = Input1;
+    multi_input_data[type2] = Input2;
+    multi_input_data[type3] = Input3;
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, vector< vector<nmz_float> > >& multi_input_data) {
+    process_multi_input(multi_input_data);
+}
+
 //---------------------------------------------------------------------------
 // now with Matrix
 //---------------------------------------------------------------------------
@@ -361,6 +404,55 @@ Cone<Integer>::Cone(const map< InputType, Matrix<mpq_class> >& multi_input_data_
 }
 
 //---------------------------------------------------------------------------
+// now with Matrix and nmz_float
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType input_type, const Matrix<nmz_float>& Input) {
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > >multi_input_data;
+    multi_input_data[input_type] = Input.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<nmz_float>& Input1,
+                    InputType type2, const Matrix<nmz_float>& Input2) {
+    if (type1 == type2) {
+        throw BadInputException("Input types must  pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(InputType type1, const Matrix<nmz_float>& Input1,
+                    InputType type2, const Matrix<nmz_float>& Input2,
+                    InputType type3, const Matrix<nmz_float>& Input3) {
+    if (type1 == type2 || type1 == type3 || type2 == type3) {
+        throw BadInputException("Input types must be pairwise different!");
+    }
+    // convert to a map
+    map< InputType, vector< vector<nmz_float> > > multi_input_data;
+    multi_input_data[type1] = Input1.get_elements();
+    multi_input_data[type2] = Input2.get_elements();
+    multi_input_data[type3] = Input3.get_elements();
+    process_multi_input(multi_input_data);
+}
+
+template<typename Integer>
+Cone<Integer>::Cone(const map< InputType, Matrix<nmz_float> >& multi_input_data_Matrix){
+    map< InputType, vector< vector<nmz_float> > > multi_input_data;
+    auto it = multi_input_data_Matrix.begin();
+    for(; it != multi_input_data_Matrix.end(); ++it){
+        multi_input_data[it->first]=it->second.get_elements();
+    }
+    process_multi_input(multi_input_data);
+}
+
+//---------------------------------------------------------------------------
 
 template<typename Integer>
 Cone<Integer>::~Cone() {
@@ -425,6 +517,11 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
     }
     
     process_multi_input_inner(multi_input_data_ZZ);
+}
+
+template<typename Integer>
+void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<nmz_float> > >& multi_input_data_const) {
+ assert(false);
 }
 
 template<typename Integer>
@@ -3617,7 +3714,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     }
     
     Matrix<Integer> GradGen;
-    if(Grading_Is_Coordinate){ 
+    if(Grading_Is_Coordinate){
         if(!ToCompute.test(ConeProperty::Approximate)){
             GradGen=Generators;
             GradGen.exchange_columns(0,GradingCoordinate); // we swap it into the first coordinate
@@ -3790,11 +3887,20 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
     if(verbose)
         verboseOutput() << "Starting projection" << endl;
     
-    vector< boost::dynamic_bitset<> > Ind(Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
-    for(size_t i=0;i<Supps.nr_of_rows();++i)
-        for(size_t j=0;j<Gens.nr_of_rows();++j)
-            if(v_scalar_product(Supps[i],Gens[j])==0)
-                Ind[i][j]=true;
+    vector<boost::dynamic_bitset<> > Pair;
+    vector<boost::dynamic_bitset<> > ParaInPair;
+    bool is_parallelotope=check_parallelotope(Supps,Pair,ParaInPair);
+    // cout << "PPPPPPPPPPPPPPP " << is_parallelotope << endl;
+    
+    vector< boost::dynamic_bitset<> > Ind;
+
+    if(!is_parallelotope){
+        Ind=vector< boost::dynamic_bitset<> > (Supps.nr_of_rows(), boost::dynamic_bitset<> (Gens.nr_of_rows()));
+        for(size_t i=0;i<Supps.nr_of_rows();++i)
+            for(size_t j=0;j<Gens.nr_of_rows();++j)
+                if(v_scalar_product(Supps[i],Gens[j])==0)
+                    Ind[i][j]=true;
+    }
         
     size_t rank=BasisChangePointed.getRank();
     
@@ -3805,7 +3911,11 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         convert(SuppsFloat,Supps);
         vector<Integer> Dummy;
         // project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose,true,Dummy);
-        ProjectAndLift<nmz_float,Integer> PL(SuppsFloat,Ind,rank);
+        ProjectAndLift<nmz_float,Integer> PL;
+        if(!is_parallelotope)
+            PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Ind,rank);
+        else
+            PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
         PL.compute();
@@ -3822,7 +3932,11 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 MachineInteger GDMI=convertTo<MachineInteger>(GradingDenom);
                 vector<MachineInteger> Dummy;
                 // project_and_lift_inner<MachineInteger>(Deg1MI,SuppsMI,Ind, GDMI,rank,verbose,true,Dummy);
-                ProjectAndLift<MachineInteger,MachineInteger> PL(SuppsMI,Ind,rank);
+                ProjectAndLift<MachineInteger,MachineInteger> PL;
+                if(!is_parallelotope)
+                    PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Ind,rank);
+                else
+                    PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Pair,ParaInPair,rank);
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
                 PL.compute();
@@ -3842,7 +3956,11 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         if (!change_integer_type) {
             vector<Integer> Dummy;
             // project_and_lift_inner<Integer>(Deg1,Supps,Ind,GradingDenom,rank,verbose,true,Dummy);
-            ProjectAndLift<Integer,Integer> PL(Supps,Ind,rank);
+            ProjectAndLift<Integer,Integer> PL;
+            if(!is_parallelotope)
+                PL=ProjectAndLift<Integer,Integer>(Supps,Ind,rank);
+            else
+                PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
             PL.compute();

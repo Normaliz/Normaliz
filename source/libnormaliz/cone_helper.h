@@ -50,6 +50,9 @@ class ProjectAndLift {
     vector<vector<size_t> > AllOrders;
     
     vector<boost::dynamic_bitset<> > StartInd;
+    vector<boost::dynamic_bitset<> > StartPair;
+    vector<boost::dynamic_bitset<> > StartParaInPair;
+    
     size_t StartRank;
     
     Matrix<IntegerRet> Deg1Points;
@@ -58,6 +61,10 @@ class ProjectAndLift {
     
     size_t EmbDim;
     bool verbose;
+    
+    bool is_parallelotope;
+    bool no_crunch; // indicates that the projection vector is nevere parallel to a facet of
+                    // the parallelotope (in all dimensions)
     
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
@@ -70,13 +77,18 @@ class ProjectAndLift {
     void find_single_point();
     void lift_points_by_generation();
     
-    void compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind, size_t rank);
+    void compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind, 
+                             vector< boost::dynamic_bitset<> >& Pair,
+                             vector< boost::dynamic_bitset<> >& ParaInPair,size_t rank);
     
     void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
         
     public:
-        
+ 
+    ProjectAndLift();
     ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank);
+    ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Pair,
+                   const vector<boost::dynamic_bitset<> >& ParaInPair,size_t rank);
     
     void set_excluded_point(const vector<IntegerRet>& excl_point);
     void set_grading_denom(const IntegerRet GradingDenom);
@@ -85,12 +97,17 @@ class ProjectAndLift {
     void compute(bool do_all_points=true);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);    
 };
+
+template<typename Integer>
+bool check_parallelotope(const Matrix<Integer>& Supps,
+                         vector<boost::dynamic_bitset<> >& Pair, vector<boost::dynamic_bitset<> >& ParaInPair);
     
     
-template<typename IntegerPL, typename IntegerRet>
+/* template<typename IntegerPL, typename IntegerRet>
 void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 
                             vector<boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank,
                             bool verbose, bool all_points, const vector<IntegerRet>& excluded_point);
+*/
 
 // computes c1*v1-c2*v2
 template<typename Integer>

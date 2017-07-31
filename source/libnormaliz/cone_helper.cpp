@@ -151,9 +151,64 @@ vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<I
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+bool check_parallelotope(const Matrix<Integer>& Supps,
+                         vector<boost::dynamic_bitset<> >& Pair, vector<boost::dynamic_bitset<> >& ParaInPair){
+    // This funcion assumes that the grading is given by the FIRST coordinate
+
+    size_t dim=Supps.nr_of_columns()-1; //affine dimension
+    if(Supps.nr_of_rows()!=2*dim)
+        return false;
+    Pair.resize(2*dim);
+    ParaInPair.resize(2*dim);
+    for(size_t i=0;i<2*dim;++i){
+        Pair[i].resize(dim);
+        Pair[i].reset();
+        ParaInPair[i].resize(dim);
+        ParaInPair[i].reset();
+    }
+    vector<Integer> Grading(dim+1);
+    Grading[0]=1;
+    vector<bool> done(2*dim);
+    Matrix<Integer> M2(2,dim+1), M3(3,dim+1);
+    M3[2]=Grading;
+    size_t pair_counter=0;
+    for(size_t i=0;i<2*dim;++i){
+        if(done[i])
+            continue;
+        bool parallel_found=false;
+        M2[0]=Supps[i];
+        M3[0]=Supps[i];
+        size_t j=i+1;
+        for(;j<2*dim;++j){
+            if(done[j]) continue;
+            M2[1]=Supps[j];
+            if(M2.rank()<2)
+                continue;
+            M3[1]=Supps[j];
+            if(M3.rank()==3)
+                continue;
+            else{
+                parallel_found=true;
+                done[j]=true;
+                break;
+            }
+        }
+        if(!parallel_found)
+            return false;
+        Pair[i][pair_counter]=true;
+        Pair[j][pair_counter]=true;
+        ParaInPair[j][pair_counter]=true;
+        pair_counter++;
+    }
+    return true;    
+}
+
+//---------------------------------------------------------------------------
 template<typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind,
-                                                               size_t rank){
+                vector< boost::dynamic_bitset<> >& Pair, vector< boost::dynamic_bitset<> >& ParaInPair,
+                size_t rank){
     
     INTERRUPT_COMPUTATION_BY_EXCEPTION
     
@@ -177,9 +232,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     
     // First we make incidence vectors with the given generators    
     vector< boost::dynamic_bitset<> > NewInd; // for the incidence vectors of the new hyperplanes
-    
-     boost::dynamic_bitset<> TRUE(Ind[0].size());
-     TRUE.set();
+    vector< boost::dynamic_bitset<> > NewPair; // for the incidence vectors of the new hyperplanes
+    vector< boost::dynamic_bitset<> > NewParaInPair; // for the incidence vectors of the new hyperplanes
+
+    boost::dynamic_bitset<> TRUE;
+     if(!is_parallelotope){
+         TRUE.resize(Ind[0].size());
+         TRUE.set();
+     }
      
      vector<bool> IsEquation(Supps.nr_of_rows());
      
@@ -188,15 +248,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     size_t NegEquAt=0;
 
     for(size_t i=0;i<Supps.nr_of_rows();++i){
-        if(Ind[i]==TRUE)
+        if(!is_parallelotope && Ind[i]==TRUE)
             IsEquation[i]=true;
         
         if(Supps[i][dim1]==0){  // already independent of last coordinate
+            no_crunch=false;
             if(IsEquation[i])
                 EqusProj.append(Supps[i]); // is equation
             else{
                 SuppsProj.append(Supps[i]); // neutral support hyperplane
-                NewInd.push_back(Ind[i]);
+                if(!is_parallelotope)
+                    NewInd.push_back(Ind[i]);
+                else{
+                    NewPair.push_back(Pair[i]);
+                    NewParaInPair.push_back(ParaInPair[i]);
+                }
             }
             continue;
         }
@@ -225,6 +291,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
 #endif
     
     if(rank_goes_up){
+        
+        assert(!is_parallelotope);
+        
         for(size_t i=0;i<Pos.size();++i){ // match pos and neg equations
             size_t p=Pos[i];
             if(!IsEquation[p])
@@ -291,7 +360,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     
     // cout << "Nach RGU " << EqusProj.nr_of_rows() << " " << SuppsProj.nr_of_rows() << endl;
         
-    if(!rank_goes_up){ // must match pos and neg hyperplanes
+    if(!rank_goes_up && !is_parallelotope){ // must match pos and neg hyperplanes
         
         skip_remaining=false;
         
@@ -385,11 +454,121 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
 #endif
         }
         
+    } // !rank_goes_up && !is_parallelotope
+    
+   if(!rank_goes_up && is_parallelotope){ // must match pos and neg hyperplanes
+       
+       size_t codim=dim1-1; // the minimal codim a face of the original cone must have
+                          // in order to project to a subfacet of the current one
+       size_t original_dim=Pair[0].size()+1;
+       size_t max_number_containing_factes=original_dim-codim;
+        
+        skip_remaining=false;
+        
+        #pragma omp parallel for schedule(dynamic)
+        for(size_t i=0;i<Pos.size();++i){
+            
+            if (skip_remaining) continue;
+        
+#ifndef NCATCH
+        try {
+#endif
+ 
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
+            size_t p=Pos[i];
+            IntegerPL PosVal=Supps[p][dim1];
+            
+            for(size_t j=0;j<Neg.size();++j){
+                size_t n=Neg[j];
+                boost::dynamic_bitset<> IntersectionPair(Pair[p].size());
+                size_t nr_hyp_intersection=0;
+                bool in_parallel_hyperplanes=false;
+                bool codim_too_small=false;
+
+                for(size_t k=0;k<Pair[p].size();++k){ // run over all pairs
+                    if(Pair[p][k] || Pair[n][k]){
+                        nr_hyp_intersection++;
+                        IntersectionPair[k]=true;
+                        if(nr_hyp_intersection> max_number_containing_factes){
+                            codim_too_small=true;
+                            break;
+                        }
+                    }
+                    if(Pair[p][k] && Pair[n][k]){
+                        if(ParaInPair[p][k]!=ParaInPair[n][k]){
+                            in_parallel_hyperplanes=true;
+                            break;
+                        }
+                    }
+                }
+                if(in_parallel_hyperplanes || codim_too_small)
+                    continue;
+                
+                boost::dynamic_bitset<> IntersectionParaInPair(Pair[p].size());
+                for(size_t k=0;k<ParaInPair[p].size();++k){
+                    if(Pair[p][k])
+                        IntersectionParaInPair[k]=ParaInPair[p][k];
+                    else
+                        if(Pair[n][k])
+                            IntersectionParaInPair[k]=ParaInPair[n][k];
+                }
+                
+                // we must nevertheless use the comparison test
+                bool IsSubfacet=true;
+                if(!no_crunch){
+                for(size_t k=0;k<Supps.nr_of_rows();++k){
+                    if(k==p || k==n || IsEquation[k])
+                        continue;
+                    bool contained=true;
+                    
+                    for(size_t u=0;u<IntersectionPair.size();++u){
+                        if(Pair[k][u] && !IntersectionPair[u]){  // hyperplane k contains facet of Supp
+                            contained=false;                      // not our intersection
+                            continue;
+                        }
+                        if(Pair[k][u] && IntersectionPair[u]){
+                            if(ParaInPair[k][u]!=IntersectionParaInPair[u]){ // they are contained in parallel 
+                                contained=false;                             // original facets
+                                continue;
+                            }
+                        }
+                    }
+
+                    if(contained){
+                        IsSubfacet=false;
+                        break;
+                    }
+                }
+                }
+                if(!IsSubfacet)
+                    continue;
+                
+                IntegerPL NegVal=Supps[n][dim1];
+                bool dummy;
+                vector<IntegerPL> new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[p],dummy);
+                #pragma omp critical(NEWSUPP)
+                {
+                SuppsProj.append(new_supp);
+                NewPair.push_back(IntersectionPair);
+                NewParaInPair.push_back(IntersectionParaInPair);
+                }
+            }
+            
+#ifndef NCATCH
+            } catch(const std::exception& ) {
+                tmp_exception = std::current_exception();
+                skip_remaining = true;
+                #pragma omp flush(skip_remaining)
+            }
+#endif
+        }
+        
 #ifndef NCATCH
         if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
 #endif
         
-    } // !rank_goes_up
+    } // !rank_goes_up && is_parallelotope
     
     // cout << "Nach FM " << EqusProj.nr_of_rows() << " " << SuppsProj.nr_of_rows() << endl;
     
@@ -412,12 +591,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     for(size_t i=0;i<2*EqusProj.nr_of_rows();++i)
         NewInd.push_back(TRUE);    
 
-    AllOrders[dim1]=order_supps(SuppsProj);
+    if(dim1>1)
+        AllOrders[dim1]=order_supps(SuppsProj);
     swap(AllSupps[dim1],SuppsProj);
     
     size_t new_rank=dim1-EqusProj.nr_of_rows();
     
-    compute_projections(dim-1,NewInd, new_rank);
+    compute_projections(dim-1,NewInd, NewPair, NewParaInPair,new_rank);
 }
 
 //---------------------------------------------------------------------------
@@ -642,14 +822,36 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     GD=1; // the default choice
     verbose=true;
     Deg1Points.resize(0,EmbDim);
+    is_parallelotope=false;
+    no_crunch=true;
 }
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank){
+ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(){
+    
+}
+//---------------------------------------------------------------------------
+// General constructor
+template<typename IntegerPL,typename IntegerRet>
+ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Supps,
+                                                     const vector<boost::dynamic_bitset<> >& Ind,size_t rank){
     
     initialize(Supps,rank);
     StartInd=Ind;    
+}
+
+//---------------------------------------------------------------------------
+// Constructor for parallelotopes
+template<typename IntegerPL,typename IntegerRet>
+ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const Matrix<IntegerPL>& Supps,
+            const vector<boost::dynamic_bitset<> >& Pair,
+            const vector<boost::dynamic_bitset<> >& ParaInPair,size_t rank){
+    
+    initialize(Supps,rank);
+    is_parallelotope=true;
+    StartPair=Pair;
+    StartParaInPair=ParaInPair;
 }
 
 //---------------------------------------------------------------------------
@@ -680,7 +882,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
 
-    compute_projections(EmbDim, StartInd, StartRank);
+    compute_projections(EmbDim, StartInd,StartPair,StartParaInPair, StartRank);
     if(all_points)
         lift_points_by_generation();
     else

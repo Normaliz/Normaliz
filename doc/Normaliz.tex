@@ -5749,6 +5749,10 @@ Additionally, if your type uses infinite precision (for example, it is some wrap
 template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
 \end{Verbatim}
 
+\subsubsection{Cecimal fractions and floating point numbers}
+
+libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the input of decimal fractions and floating point numbers. Input data of type \verb|nmz_float| are first converted into \verb|mpq_class|. The conversion is done via a decimal representation of the \verb|nmz_float| type numbers to a string with the following format ?????? 
+
 \subsection{Construction of a cone}
 
 There is no default constructor for cones. The construction requires the specification of input data consissting of one or more matrices and the input types they represent.
@@ -5834,6 +5838,12 @@ The four constructors also exist in a variant that uses the \verb|libnormaliz| t
 For the input of rational numbers we have all constructors also in variants that use \verb|mpq_class| for the input matrix, for example
 \begin{Verbatim}
 Cone<Integer>::Cone(InputType input_type, const vector< vector<mpq_class> >& Input)
+\end{Verbatim}
+etc.
+
+Similarly, for the input of decimal fractions and floating point numbers we have all constructors also in variants that use \verb|nmz_float| for the input matrix, for example
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType input_type, const vector< vector<nmz_float> >& Input)
 \end{Verbatim}
 etc.
 
