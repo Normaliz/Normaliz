@@ -1402,7 +1402,15 @@ const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() {
 }
 
 template<typename Integer>
-const Matrix<Integer>& Cone<Integer>::getMatrix(string matrixType) {
+const vector< vector<Integer> >& Cone<Integer>::getPlainMatrix(string matrixType) {
+  const Matrix<Integer>& nmzMatrix = getNmzMatrix(matrixType);
+  const vector< vector<Integer> >& plainMatrix = nmzMatrix.get_elements();
+  return plainMatrix;
+}
+
+template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getNmzMatrix(string matrixType) {
+
   if (matrixType == "ExtremeRays"){
     return getExtremeRaysMatrix();
   }
