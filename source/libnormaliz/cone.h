@@ -252,8 +252,8 @@ public:
     const vector< vector<Integer> >& getDeg1Elements();
     size_t getNrDeg1Elements();
 
-    const Matrix<Integer>& getMatrix(string matrixType);
-
+    const Matrix<Integer>& getNmzMatrix(string matrixType);
+    const vector< vector<Integer> >& getPlainMatrix(string matrixType);
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
     Integer getGradingDenom();
