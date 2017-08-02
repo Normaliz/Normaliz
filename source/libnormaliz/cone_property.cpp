@@ -113,6 +113,8 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoSubdivision, false);
     CPs.set(ConeProperty::NoNestedTri, false);
     CPs.set(ConeProperty::NoPeriodBound, false);
+    CPs.set(ConeProperty::SCIP, false);
+    CPs.set(ConeProperty::Parallelotope, false);
     return *this;
 }
 
@@ -144,6 +146,8 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoNestedTri, CPs.test(ConeProperty::NoNestedTri));
     ret.set(ConeProperty::BigInt, CPs.test(ConeProperty::BigInt));
     ret.set(ConeProperty::NoPeriodBound, CPs.test(ConeProperty::NoPeriodBound));
+    ret.set(ConeProperty::SCIP, CPs.test(ConeProperty::SCIP));
+    ret.set(ConeProperty::Parallelotope, CPs.test(ConeProperty::Parallelotope));
     return ret;
 }
 
@@ -364,7 +368,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
             } else { // homgeneous
                 if ( prop == ConeProperty::VerticesOfPolyhedron
                   || prop == ConeProperty::ModuleRank
-                  || prop == ConeProperty::ModuleGenerators ) {
+                  || prop == ConeProperty::ModuleGenerators 
+                  || prop==  ConeProperty::Parallelotope 
+                ) {
                     throw BadInputException(toString(prop) + " only computable in the inhomogeneous case.");
                 }
             }
@@ -448,9 +454,10 @@ namespace {
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(ConeProperty::SCIP) = "SCIP";
+        CPN.at(ConeProperty::Parallelotope) = "Parallelotope";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 70,
+        static_assert (ConeProperty::EnumSize == 71,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

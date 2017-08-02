@@ -465,8 +465,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
         
         skip_remaining=false;
         
+        size_t nr_pos=Pos.size();
+        //if(nr_pos>10000)
+        //    nr_pos=10000;
+        size_t nr_neg=Neg.size();
+        // if(nr_neg>10000)
+        //    nr_neg=10000;
+        
         #pragma omp parallel for schedule(dynamic)
-        for(size_t i=0;i<Pos.size();++i){
+        for(size_t i=0;i<nr_pos;++i){
             
             if (skip_remaining) continue;
         
@@ -479,7 +486,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
             size_t p=Pos[i];
             IntegerPL PosVal=Supps[p][dim1];
             
-            for(size_t j=0;j<Neg.size();++j){
+            for(size_t j=0;j<nr_neg;++j){
                 size_t n=Neg[j];
                 boost::dynamic_bitset<> IntersectionPair(Pair[p].size());
                 size_t nr_hyp_intersection=0;
@@ -732,8 +739,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<Intege
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
-    if(verbose)
-        verboseOutput() << "Lifting" << endl;
 
     assert(EmbDim>=2);
 
@@ -753,8 +758,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
     }
     
     swap(Deg1Points,Deg1Lifted); // final resilt
-    if(verbose)
-        verboseOutput() << "Lifting done" << endl;
+    /* if(verbose)
+        verboseOutput() << "Lifting done" << endl;*/
 }
 
 ///---------------------------------------------------------------------------
@@ -882,11 +887,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
 
+    if(verbose)
+        verboseOutput() << "Projection" << endl;
     compute_projections(EmbDim, StartInd,StartPair,StartParaInPair, StartRank);
-    if(all_points)
+    if(all_points){
+        if(verbose)
+            verboseOutput() << "Lifting" << endl;
         lift_points_by_generation();
-    else
+    }
+    else{
+        if(verbose)
+            verboseOutput() << "Try finding a lattice point" << endl;
         find_single_point();
+    }
 }
 
 //---------------------------------------------------------------------------

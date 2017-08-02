@@ -1257,6 +1257,8 @@ void Cone<Integer>::initialize() {
 template<typename Integer>
 void Cone<Integer>::set_parallelization() {
     
+    omp_set_nested(0);
+    
     if(thread_limit<0)
         throw BadInputException("Invalid thread limit");
     
@@ -2045,6 +2047,20 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
         }
     }
     
+    if(ToCompute.test(ConeProperty::Parallelotope)){
+        vector<Integer> test(dim);
+        test[dim-1]=1;
+        if(Dehomogenization!=test ||Generators.nr_of_rows()>0)
+            throw BadInputException("Illegal input for option Parallelotope");
+        SupportHyperplanes.remove_row(test);
+        is_Computed.set(ConeProperty::SupportHyperplanes);
+        is_Computed.set(ConeProperty::MaximalSubspace);
+        is_Computed.set(ConeProperty::Sublattice);
+        pointed=true;
+        is_Computed.set(ConeProperty::IsPointed);
+        is_Computed.set(ConeProperty::Parallelotope);
+    }
+    
     try_symmetrization(ToCompute);   
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {
@@ -2068,6 +2084,15 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         already_in_compute=false; return ToCompute;
     }
+    
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
+    try_approximation_or_projection(ToCompute);
+    
+    ToCompute.reset(is_Computed); // already computed
+    if (ToCompute.none()) {
+        already_in_compute=false; return ToCompute;
+    }
 
     /* preparation: get generators if necessary */
     compute_generators();
@@ -2075,10 +2100,6 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     if (!isComputed(ConeProperty::Generators)) {
         throw FatalException("Could not get Generators.");
     }
-    
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
-        
-    try_approximation_or_projection(ToCompute);
 
     if (rees_primary && (ToCompute.test(ConeProperty::ReesPrimaryMultiplicity)
             || ToCompute.test(ConeProperty::Multiplicity)
@@ -2087,7 +2108,6 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
         ReesPrimaryMultiplicity = compute_primary_multiplicity();
         is_Computed.set(ConeProperty::ReesPrimaryMultiplicity);
     }
-
 
     ToCompute.reset(is_Computed); // already computed
     if (ToCompute.none()) {
@@ -3884,13 +3904,14 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 template<typename Integer>
 void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
     
-    if(verbose)
-        verboseOutput() << "Starting projection" << endl;
+    // if(verbose)
+    //    verboseOutput() << "Starting projection" << endl;
     
     vector<boost::dynamic_bitset<> > Pair;
     vector<boost::dynamic_bitset<> > ParaInPair;
     bool is_parallelotope=check_parallelotope(Supps,Pair,ParaInPair);
-    // cout << "PPPPPPPPPPPPPPP " << is_parallelotope << endl;
+    if(isComputed(ConeProperty::Parallelotope) && !is_parallelotope)
+        throw BadInputException("Polytope erroneously declared Parallelotope");
     
     vector< boost::dynamic_bitset<> > Ind;
 

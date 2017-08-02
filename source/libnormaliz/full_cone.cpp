@@ -4479,8 +4479,11 @@ void Full_Cone<Integer>::check_pointed() {
         return;
     }
     if (verbose) verboseOutput() << "Checking pointedness ... " << flush;
-
-    pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
+    if(Support_Hyperplanes.nr_of_rows() <= dim*dim/2){
+        pointed = (Support_Hyperplanes.rank() == dim);
+    }
+    else
+        pointed = (Support_Hyperplanes.max_rank_submatrix_lex().size() == dim);
     is_Computed.set(ConeProperty::IsPointed);
     if(pointed && Grading.size()>0){
         throw BadInputException("Grading not positive on pointed cone.");
@@ -4967,6 +4970,9 @@ void Full_Cone<Integer>::reset_tasks(){
 
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // constructor of the top cone
+    
+    omp_start_level=omp_get_level();
+        
     dim=M.nr_of_columns();
     if(dim>0)
         Generators=M;
@@ -5080,6 +5086,8 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
 
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Cone_Dual_Mode<Integer> &C) {
+    
+    omp_start_level=omp_get_level();
 
     is_Computed = bitset<ConeProperty::EnumSize>();  //initialized to false
 
@@ -5208,6 +5216,8 @@ void Full_Cone<Integer>::check_grading_after_dual_mode(){
 
 template<typename Integer>
 void Full_Cone<Integer>::dual_mode() {
+    
+    omp_start_level=omp_get_level();
     
     if(dim==0){
         set_zero_cone();

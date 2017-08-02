@@ -64,6 +64,10 @@ class Full_Cone {
     friend class Collector<Integer>;
     
 public:
+    
+    int omp_start_level; // records the omp_get_level() when the computation is started
+                         // recorded at the start of the top cone constructor and the compute functions
+                         // compute and dualize_cone
     size_t dim;
     size_t level0_dim; // dim of cone in level 0 of the inhomogeneous case
     size_t module_rank;  // rank of solution module over level 0 monoid in the inhomogeneous case
@@ -80,7 +84,7 @@ public:
     bool deg1_extreme_rays;
     bool deg1_triangulation;
     bool deg1_hilbert_basis;
-    bool inhomogeneous; 
+    bool inhomogeneous;
     
     // control of what to compute
     bool do_triangulation;
@@ -250,7 +254,7 @@ void try_offload_loc(long place,size_t max_level);
     vector<vector<key_t>> approx_points_keys;
     Matrix<Integer> OriginalGenerators;
 
-    Integer VolumeBound; //used to stop compuation of approximation if simplex of this has larger volume
+    Integer VolumeBound; //used to stop computation of approximation if simplex of this has larger volume
 
 /* ---------------------------------------------------------------------------
  *              Private routines, used in the public routines
