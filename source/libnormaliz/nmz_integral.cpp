@@ -914,6 +914,7 @@ try{
 #endif
     
   bool skip_remaining=false;
+  int omp_start_level=omp_get_level();
 
   #pragma omp parallel private(i)
   {
@@ -926,8 +927,7 @@ try{
   auto S=StanleyDec.begin();
 
   RingElem h(zero(RZZ));     // for use in a simplex
-  CyclRatFunct HClass(zero(RZZ)); // for single class
-  
+  CyclRatFunct HClass(zero(RZZ)); // for single class  
 
   size_t s,spos=0;  
   #pragma omp for schedule(dynamic) 
@@ -944,6 +944,12 @@ try{
 #endif
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
+    
+    int tn;
+    if(omp_get_level()==omp_start_level)
+        tn=0;
+    else    
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
             
     det=S->offsets.nr_of_rows();
     degrees=S->degrees;
@@ -960,16 +966,11 @@ try{
     for(i=0;i<iS;++i){
         degree_b=v_scalar_product(degrees,S->offsets[i]);
         degree_b/=det;
-        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,inExSimplData, facePolys);
+        h+=power(t,degree_b)*affineLinearSubstitutionFL(FF,A,S->offsets[i],det,RZZ,degrees,lcmDets,
+                                                        inExSimplData, facePolys[tn]);
     }
     
     evaluateClass=false; // necessary to evaluate class only once
-    
-    int tn;
-    if(omp_get_level()==0)
-        tn=0;
-    else    
-        tn = omp_get_ancestor_thread_num(1);
         
     // #pragma omp critical (ADDTOCLASS) 
     { 

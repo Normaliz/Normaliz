@@ -681,14 +681,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<Intege
 #endif
     
     skip_remaining=false;
+    int omp_start_level=omp_get_level();
     
     #pragma omp parallel
     {
     int tn;
-    if(omp_get_level()==0)
+    if(omp_get_level()==omp_start_level)
         tn=0;
     else    
-        tn = omp_get_ancestor_thread_num(1);
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
  
     #pragma omp for schedule(dynamic)
     for(size_t i=0;i<Deg1Proj.nr_of_rows();++i){

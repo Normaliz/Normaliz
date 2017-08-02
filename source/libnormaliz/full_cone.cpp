@@ -112,10 +112,10 @@ void Full_Cone<Integer>::number_hyperplane(FACETDATA& hyp, const size_t born_at,
     }
     
     int tn;
-    if(omp_get_level()==0)
+    if(omp_get_level()==omp_start_level)
         tn=0;
     else    
-        tn = omp_get_ancestor_thread_num(1);
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
     hyp.Ident=HypCounter[tn];
     HypCounter[tn]+=omp_get_max_threads();
     
@@ -379,7 +379,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator){
     boost::dynamic_bitset<> subfacet(dim-2);
     jj = Neg_Subfacet_Multi_United.begin();
     size_t jjpos=0;
-    int tn = omp_get_ancestor_thread_num(1);
+    int tn = omp_get_ancestor_thread_num(omp_start_level+1);
 
     bool found;
     // This for region cannot throw a NormalizException
@@ -913,10 +913,10 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key, const Integer& heig
         TriangulationBufferSize++;
     }
     int tn;
-    if(omp_get_level()==0)
+    if(omp_get_level()==omp_start_level)
         tn=0;
     else    
-        tn = omp_get_ancestor_thread_num(1);
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
     
     if (do_only_multiplicity) {
         // directly compute the volume
@@ -1494,7 +1494,7 @@ void Full_Cone<Integer>::match_neg_hyp_with_pos_hyps(const FACETDATA& hyp, size_
     if (nr_zero_hyp<dim-2) 
         return;
     
-    int tn = omp_get_ancestor_thread_num(1);
+    int tn = omp_get_ancestor_thread_num(omp_start_level+1);
     missing_bound=nr_zero_hyp-subfacet_dim; // at most this number of generators can be missing
                                           // to have a chance for common subfacet
                                           
@@ -1921,7 +1921,7 @@ void Full_Cone<Integer>::build_cone() {
     
     tri_recursion=false; 
     
-    multithreaded_pyramid=(omp_get_level()==0);
+    multithreaded_pyramid=(omp_get_level()==omp_start_level);
     
     size_t nr_original_gen=0;
     size_t steps_in_approximation = 0;
@@ -2424,7 +2424,7 @@ void Full_Cone<Integer>::build_top_cone() {
 template<typename Integer>
 bool Full_Cone<Integer>::check_evaluation_buffer(){
 
-    return(omp_get_level()==0 && check_evaluation_buffer_size());
+    return(omp_get_level()==omp_start_level && check_evaluation_buffer_size());
 }
 
 //---------------------------------------------------------------------------
@@ -2457,7 +2457,7 @@ void Full_Cone<Integer>::transfer_triangulation_to_top(){
     // cout << "In pyramid " << endl;
     int tn = 0;
     if (omp_in_parallel())
-        tn = omp_get_ancestor_thread_num(1);
+        tn = omp_get_ancestor_thread_num(omp_start_level+1);
   
     auto pyr_simp=TriangulationBuffer.begin();
     while (pyr_simp!=TriangulationBuffer.end()) {
@@ -2608,7 +2608,7 @@ void Full_Cone<Integer>::evaluate_triangulation(){
     if (TriangulationBufferSize == 0)
         return;
     
-    assert(omp_get_level()==0);
+    assert(omp_get_level()==omp_start_level);
 
     const long VERBOSE_STEPS = 50;
     long step_x_size = TriangulationBufferSize-VERBOSE_STEPS;
@@ -2740,7 +2740,7 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
     if (lss == 0)
         return;
     
-    assert(omp_get_level()==0);
+    assert(omp_get_level()==omp_start_level);
 
     if (verbose) {
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
@@ -3183,6 +3183,8 @@ void Full_Cone<Integer>::do_vars_check(bool with_default) {
 template<typename Integer>
 void Full_Cone<Integer>::compute() {
     
+    omp_start_level=omp_get_level();
+    
     if(dim==0){
         set_zero_cone();
         return;
@@ -3404,9 +3406,9 @@ void Full_Cone<Integer>::heights(list<vector<key_t>>& facet_keys,list<pair<boost
             }
             Matrix<Integer> ER = Generators.submatrix(choice);
             int tn;
-            if(omp_get_level()==0)
+            if(omp_get_level()==omp_start_level)
                 tn=0;
-            else  tn = omp_get_ancestor_thread_num(1);
+            else  tn = omp_get_ancestor_thread_num(omp_start_level+1);
             Matrix<Integer>& Test = Top_Cone->RankTest[tn];
             vector<key_t> face_key;
             for (;not_faces_it!=not_faces.end();++not_faces_it){
@@ -4144,6 +4146,8 @@ void Full_Cone<Integer>::compose_perm_gens(const vector<key_t>& perm) {
 // an alternative to compute() for the basic tasks that need no triangulation
 template<typename Integer>
 void Full_Cone<Integer>::dualize_cone(bool print_message){
+    
+    omp_start_level=omp_get_level();
     
     if(dim==0){
         set_zero_cone();
@@ -5270,6 +5274,8 @@ void Full_Cone<Integer>::dual_mode() {
 /* constructor for pyramids */
 template<typename Integer>
 Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
+    
+    omp_start_level=C.omp_start_level;
 
     Generators = C.Generators.submatrix(Key);
     dim = Generators.nr_of_columns();
