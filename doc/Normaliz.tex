@@ -123,7 +123,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.3.1}
+\def\version{3.4.0}
 \def\NmzDir{normaliz-\version}
 
 
@@ -273,12 +273,12 @@ In 3.3.0:
 	\item controlled interruption of Normaliz.	
 \end{arab}
 
-In 3.3.1
+In 3.4.0
 
 \begin{arab}
 	\item limit of parallelization via libnormaliz,
 	\item floating point numbers in input,
-	\item project-and-lift algorithm for lattice points in polytopes, also witha floating point variant,
+	\item project-and-lift algorithm for lattice points in polytopes, also with a floating point variant,
 	\item fast Gorenstein test,
 	\item restriction of number of significant coefieicients of quasipolynomial,
 	\item definition of semi-open parallelepipeds in input and output of their lattice points.
@@ -1370,7 +1370,7 @@ scale = 0.5]
 \medskip
 The equation cuts out a triangle from the positive orthant. 
 
-The set of solutions is a module over the monoid $M$ of solutions of the homogeneous equation $6x_1+10x_2+15x_3=0$. So $M=0$.
+The set of solutions is a module over the monoid $M$ of solutions of the homogeneous equation $6x_1+10x_2+15x_3=0$. So $M=0$ in this case.
 \begin{Verbatim}
 6 module generators:
 2 1 5 1
@@ -1384,13 +1384,9 @@ The set of solutions is a module over the monoid $M$ of solutions of the homogen
 \end{Verbatim}
 The last line is as expected, and the $6$ module generators are the goal of the computation.
 
-Normaliz is smart enough to recognize that it must compute the lattice points in a polygon, and does exactly this. You can recognize it in the console output: it contains the line
-\begin{Verbatim}
-Computing approximating polytopee
-\end{Verbatim}
-Moreover, the line indicates that Normaliz uses its approximation algorithm to find the lattice points in this polytope. See Section \ref{approx}. Further inspection shows that the approximating lattice polytopehas $6$ vertices, namely for each original vertex thre rwo neighboring lattice points on its coordinate axis.
+Normaliz is smart enough to recognize that it must compute the lattice points in a polygon, and does exactly this. You can recognize it in the console output:  Normaliz \version\ has used the project-and-lift algorithm. We will discuss it further in Section \ref{project_example} and Section \ref{project}.
 
-For those who like to play: add the option \verb|--NoSymmetrization| to the command line. Then the terminal output will change, and the polytope is computed exactly as it comes.
+ For those who like to play: add the option \verb|--NoProjection| to the command line. Then the terminal output will change; Normaliz computes the lattice points as a truncated Hilbert basis via a triangulation (only one simplicial cone in this case).
 
 \subsection{A job for the dual algorithm}\label{job_dual}
 
@@ -1971,6 +1967,132 @@ Could not convert 15181127029874798299.
 Arithmetic Overflow detected, try a bigger integer type!
 \end{Verbatim}
 They show that Normaliz has tried the computation in 64 bit integers, but encountered a number that is too large for this precision. It has automatically switched to infinite precision. (See Section \ref{Integer} for more information on integer types.)
+
+\subsection{Lattice points in a polytope}\label{project_example}
+
+The computation of lattice points in a polytope can be viewed as a truncated Hilbert basis computation, and we have seen in preceding examples. But Normaliz can be restricted to their computation, with homogeneous as well as with inhomogeneous input. Let us look at \verb|ChF_8_1024.in|:
+
+\begin{Verbatim}
+amb_space 8
+constraints 16
+0.10976576 0.2153132834 ... 0.04282847494 >= -1/2
+...
+0.10976576 -0.2153132834 ... -0.04282847494 >= -1/2
+0.10976576 0.2153132834 ... 0.04282847494 <= 1/2
+0.10976576 -0.2153132834 ...-0.04282847494 <= 1/2
+ProjectionFloat
+Parallelotope
+\end{Verbatim}
+
+This examplem comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). This explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
+
+The option \verb|ProjectionFloat| indicates that we want to compute the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-amd-lift algorithm; \verb|Projection| makes Normaliz use its ordinary arithmetic in this algorithm. For our example the dufference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+\begin{Verbatim}
+Computing lattice points by project-and-lift
+Projection
+embdim 9 inequalities 16
+embdim 8 inequalities 56
+embdim 7 inequalities 112
+embdim 6 inequalities 140
+embdim 5 inequalities 112
+embdim 4 inequalities 56
+embdim 3 inequalities 16
+embdim 2 inequalities 2
+Lifting
+embdim 2 Deg1Elements 5
+embdim 3 Deg1Elements 21
+embdim 4 Deg1Elements 73
+embdim 5 Deg1Elements 199
+embdim 6 Deg1Elements 397
+embdim 7 Deg1Elements 629
+embdim 8 Deg1Elements 907
+embdim 9 Deg1Elements 1067
+Project-and-lift complete
+\end{Verbatim}
+
+We start with embedding dimension $9$ since we need a homogenizing coordinate in inhomogeneous computations. Then the polytope is successively projected onto a coordinate hyperplane until we reach a line segment given by $2$ inequalities. In the second part Normaliz lifts the lattice points back through all projections. The following figure illustrates the procedure for a polygon that is projected to a line segment.
+\begin{center}
+	\begin{tikzpicture}[scale=0.7]
+	
+	\filldraw[yellow] (-1.5,-0.7) -- (1,2) -- (4.3,3) -- (3,0.3) -- cycle;
+	\draw (-1.5,-0.7) -- (1,2) -- (4.3,3) -- (3,0.3) -- cycle;
+	
+	\foreach \x in {-1,...,4}
+	{
+		\draw[green] (\x,-1.5) -- (\x,3.5);
+	}
+	\draw[->] (-2.5,0) -- (5.5,0);
+	\draw[->] (0,-1.5) -- (0,3.5);
+	%\draw (-1.5,-1.5) -- (-1.5,3.5);
+	\draw[color=red,thick] (-1.5,0) -- (4.3,0);
+	
+	\foreach \x in {-2,...,5}
+	\foreach \y in {-1,...,3}
+	{
+		\filldraw[fill=black] (\x,\y)  circle (1.5pt);
+	}
+	\draw (-1.5,-0.7) -- (1,2) -- (4.3,3) -- (3,0.3) -- cycle;
+	%\draw[thick] (5,0) -- (-1,-0) -- (0,1) -- (5,1);
+	\end{tikzpicture}
+\end{center}
+The green lines show the fibers over the latice points in the (red) line segment. Note that not every lattice point in the projection must be liftable to a lattice point in the next higher dimension.
+
+In \verb|ChF_8_1024.in| we see
+\begin{Verbatim}
+1067 module generators:
+-4  0  0  0  0  0  0  0 1
+-3  0  0  0 -1  0  0  0 1
+-3  0  0  0  0  0  0  0 1
+...
+3  0  0  0  0  0  0  0 1
+3  0  0  0  1  0  0  0 1
+4  0  0  0  0  0  0  0 1
+\end{Verbatim}
+These are the lattice points that we wanted to compute.
+
+The option \verb|Parallelotope| is very useful priori information given to Normaliz. It guarantees that the input defines a full-dimensional parallelotope. This aloows Normaliz to suppress the computation of its vertices. We are not interested in them, and they look frightening when written as ordinary fractions (computed without \verb|Parallelotope|). This is only the first vertex, the denominator is the number in the last row:
+\begin{Verbatim}
+256 vertices of polyhedron:
+-7831972155307708173239167258085974255845869779051329651906336771582421875
+-2560494334732147696394408175864650673712115229853232268085759500000000000
+2411932924117448250036041241683237083742860005142447171295674845000000000
+-2170682283899852950367663781367299946065844697990214478942400250000000000
+1846013540077621750562232333569651551559659207659438074760922800500000000
+-1450403531662801634587765586956338287943865886737024582718631750000000000
+999055328718773316303519268629091038893656784654239444024061220000000000
+-509313990522468215816366827427428831508901797188810249435062450000000000
+2292486335803169657316823615602461625422283571089603408672092012129842506
+...
+\end{Verbatim}
+
+Not all polytopes are parallelotopes, and in most cases Normaliz must compute the vertices or extreme rays as an auxiliary step, even if we are not interested in them. You can always add the option
+\begin{itemize}
+\itemtt [NoExtRaysOutput]
+\end{itemize}
+if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however been included in the output file if it i available.)
+
+Let us illustrate one more feature of Normaliz by this example. If we change \verb|ProjectionFloat| to \verb|Projection|, then we see
+\begin{Verbatim}
+Computing lattice points by project-and-lift
+Projection
+embdim 9 inequalities 16
+embdim 8 inequalities 56
+Could not convert 205992065800000000000.
+Overflow detected. A fatal size excess or  a computation overflow.
+If Normaliz has terminated and you are using LongLong, rerun without it.
+Restarting with a bigger type.
+Projection
+embdim 9 inequalities 16
+...
+embdim 3 inequalities 16
+embdim 2 inequalities 2
+Lifting
+embdim 2 Deg1Elements 5
+...
+embdim 9 Deg1Elements 1067
+Project-and-lift complete
+\end{Verbatim}
+The computation was first tried with $64$ bit integer precision and failed! Then it was restarted with infinite precision integers.
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -3353,10 +3475,82 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 
 There are two ways to define polytopes for Normaliz:
 \begin{arab}
-\item a cone 
+\item by homogeneous input: a cone $C$ and a grdaing $\deg$ define the polytopes $P=C\cap \{x:\deg x=1 \}$,
+\item by inhomogeneous input: a bounded polyhedron $P$ is a polytope.
+\end{arab}
+As far as the computation of lattice points uis concerned, there is essentially no difference in the algorithms that can be used.
+
+However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as `degree $1$ elements of the Hilbert basis'' wheras they are the `module generators'' in the inhomogeneous case.
+
+Normaliz has three main algorithms for the computation of lattice points of which two have two variants each:
+\begin{arab}
+\item the project-and-lift algorithm (\verb|Projection, -j|),
+\item its variant using floating point arithmetic (\verb|ProjectionFloat, -J|),
+\item the triangulation based Normaliz primal algorithm specialized to lattice ppints (\verb|PrimalMode, -P|),
+\item its variant using approximation of rational polytopes (\verb|Approximate, -r|),
+\item the dual algorithm  specialized to lattice ppints (\verb|DualMode, -d|).
 \end{arab}
 
-\subsection{Lattice points by approximation}\label{approx}
+The optuions \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can aso be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
+
+\subsubsection{Project-and-lift}
+
+This method projects $P$ on a coordinate hyperplane amd iterates this action until a $1$-dimensional polytope, an interval is reached. Then the lattice points in the interval are determined and lifted iteratively to the predecessor in the projection chain until the top polytope is reached.
+
+This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitely and only computes lattice points in $P$ and its successive projections. Therefore it is rather ??? against rational vertices with large denominators.
+
+There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|ChF_16_1024.in| (it uses floating point arithmetic in the lifting part):
+
+(ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal oitput of ???
+
+Despite of these potential problems, \verb|Prohection| is the default choice of Normaliz. If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
+
+Project-and-lift works especially well for parallelotopes, as the input file \verb|ChF_16_104???.in| shows
+
+We recommend the reader to experiment with thenfollowing input files:
+\begin{itemize}
+\item \verb|5x5.in|
+\item \verb|6x6.in|
+\item \verb|max_polytope_cand.in|
+\item \verb|hickerson18.in|
+\item \verb|knapsack_11_60.in|
+\item \verb|ChF_2_64.in|
+\item \verb|ChF_16_64.in|
+\item \verb|ChF_16_1048576.in| (may take some time)
+\item \verb|pedro2.in|
+\end{itemize}
+
+In certain cases you must use the option \verb|-i| on the command line to override those in the input file.
+
+\verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. The files \verb|ChF*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
+
+\subsubsection{Project-and-lift with floating point arithmetic}
+
+Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since the project-and-lift algorithm produces only lattice points in the projections of the polytope, it very likely creates only vectors with integer coordinates. Since GMP arithmetic is very slow with very large integers (the coordinates of the support hyperplanes in this case), Normaliz has a floating point variant of the project-and-lift algorithm. It behaves very weel, even in computations for lower dimensional polytopes. Wehave not found a single deviation from the results with GMP arithmetic in our examples.
+
+If you want aclear demonstration of the difference bewtween \verb|Projection| and \verb|ProjectionFloat|, try on \verb|ChF_16_1048576.in|.
+
+\subsubsection{Parallelotopes}
+
+Lattice points in parallelotopes, like those in the input files \verb|ChF_2_64.in| and \verb|ChF_16_????.in|, can be comuted without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$sbythe  list  of facets whose intersection $F$ is (and not by the list of vertices of $F$). Parallelotopes are not only simple polytopes. It is important that two faces do not intersectif and only if they are contained in parallel facets, and this is easy to control.
+
+Therefore if you don't want to compute the vertices of your polytope and you are sure that your polytope is a parallelotope of full dimension, and \verb|Parallelotope| to the input file. The input must be inhomogeneous and the polytope must be specified by inequalities. Moreover, the lattice is ssumed to be the full lattice.
+
+Normaliz will always check if the input polytope is a parallelotope and make use of this property in the projet-amd-lift algorithm, but \verb|Parallelotope| suppresses the computation of the vertices of which there may be many with unpleasant coordinates.
+
+Run \verb|ChF_16_1048576.in| with and without \verb|Parallelotope| to see the difference in the output files. (It has $2^16$ vertices.)
+
+\subsubsection{The triangulation based primal algorithm}
+
+With this algorithm, Normaliz compues a triangulation as it does for the computation of Hilbert bases (in primal mode). Then it computes the lattice ppoints in each of the polytopes deined by the simplicial subcones in the triangulation. The difference to the Gilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarsded right away and that no reduction is necessary. 
+
+the complications that can arise are (i) a large triangulation or (ii) a large determinants of the simpcial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinats. We can see this by looling at the terminal output of ???
+
+An inherent weakness of the triangulation based algorithms is that its efficiency drops with $d!$ where $d$ is the dimension vecause the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$.
+
+Large determinants come up easily for rational polytopes whose vertices have large denominators. In previous versions, Normaliz fought against large determinants caused by rational vertices ny finding an integral polytope $Q$ containuing $P$, compiting the lattice points in $Q$ and then sieving out those that are in $Q\setminus P$.
+
+\subsubsection{Lattice points by approximation}\label{approx}
 
 In order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vectors that are needed for the Hilbert basis computation, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
 
@@ -3410,6 +3604,14 @@ amb_space 5
 constraints 1
 1001 1211 1421 1631  2841 = 39249
 \end{Verbatim}
+
+\subsubsection{Lattice points by the dual algorithm}
+
+Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1, but \verb|1| with the default choice project-and-lift) is also quite good. (The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.) The primal algorithm or approximation will fail miserably.
+
+On the other hand, the dual degenerates terribly already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. 
+
+In certain cases Normaliz (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
 
 \subsection{The bottom decomposition}\label{bottom_dec}
 
@@ -6454,7 +6656,7 @@ If it is found to be \verb|true|, an \verb|InterruptException| is thrown. This i
 
 The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=1|.
 
-\subsubsection{Parallelization}
+\subsubsection{Innerparallelization}
 
 By default the cone constructor sets the maximal number of parallel threads to $8$, unless the system has set a lower limit. You can change this value by
 \begin{Verbatim}
@@ -6463,6 +6665,10 @@ long set_thread_limit(long t)
 The function returns the previous value.
 
 \verb|set_thread_limit(0)| raises the limit set by libnormaliz to $\infty$.
+
+\subsubsection{Outer parallelization}
+
+Thelibnormaliz functions can be called by programs that are parallelized via OpenMP themselvees. The functions in libnormaliz switch off nested parallelization.
 
 
 \subsubsection{Control of terminal output}

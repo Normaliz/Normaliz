@@ -115,6 +115,7 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::NoPeriodBound, false);
     CPs.set(ConeProperty::SCIP, false);
     CPs.set(ConeProperty::Parallelotope, false);
+    CPs.set(ConeProperty::OnlyLattPntOutput, false);
     return *this;
 }
 
@@ -148,6 +149,7 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::NoPeriodBound, CPs.test(ConeProperty::NoPeriodBound));
     ret.set(ConeProperty::SCIP, CPs.test(ConeProperty::SCIP));
     ret.set(ConeProperty::Parallelotope, CPs.test(ConeProperty::Parallelotope));
+    ret.set(ConeProperty::OnlyLattPntOutput, CPs.test(ConeProperty::OnlyLattPntOutput));
     return ret;
 }
 
@@ -455,9 +457,10 @@ namespace {
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(ConeProperty::SCIP) = "SCIP";
         CPN.at(ConeProperty::Parallelotope) = "Parallelotope";
+        CPN.at(ConeProperty::OnlyLattPntOutput) = "OnlyLattPntOutput";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 71,
+        static_assert (ConeProperty::EnumSize == 72,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

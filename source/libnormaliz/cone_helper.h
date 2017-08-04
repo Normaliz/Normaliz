@@ -96,12 +96,7 @@ class ProjectAndLift {
     
     void compute(bool do_all_points=true);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);    
-};
-
-template<typename Integer>
-bool check_parallelotope(const Matrix<Integer>& Supps,
-                         vector<boost::dynamic_bitset<> >& Pair, vector<boost::dynamic_bitset<> >& ParaInPair);
-    
+};    
     
 /* template<typename IntegerPL, typename IntegerRet>
 void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 

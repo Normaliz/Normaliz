@@ -399,6 +399,10 @@ private:
     Integer GradingDenom;
     Integer index;  // the internal index
     Integer unit_group_index;
+    
+    vector<boost::dynamic_bitset<> > Pair; // for indicator vectors in project-and_lift
+    vector<boost::dynamic_bitset<> > ParaInPair; // if polytope is a parallelotope
+    bool check_parallelotope();
 
     bool pointed;
     bool inhomogeneous;

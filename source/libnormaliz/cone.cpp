@@ -1907,7 +1907,6 @@ vector<Integer> Cone<Integer>::getClassGroup() {
     return ClassGroup;
 }
 
-
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -1973,6 +1972,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     already_in_compute=false;
     set_parallelization();
     nmz_interrupted=0;
+    if(ToCompute.test(ConeProperty::OnlyLattPntOutput)){
+        is_Computed.set(ConeProperty::OnlyLattPntOutput);
+    }
     if(ToCompute.test(ConeProperty::SCIP)){
 #ifdef NMZ_SCIP
         nmz_scip=true;
@@ -2045,20 +2047,6 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
                 << endl;
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
         }
-    }
-    
-    if(ToCompute.test(ConeProperty::Parallelotope)){
-        vector<Integer> test(dim);
-        test[dim-1]=1;
-        if(Dehomogenization!=test ||Generators.nr_of_rows()>0)
-            throw BadInputException("Illegal input for option Parallelotope");
-        SupportHyperplanes.remove_row(test);
-        is_Computed.set(ConeProperty::SupportHyperplanes);
-        is_Computed.set(ConeProperty::MaximalSubspace);
-        is_Computed.set(ConeProperty::Sublattice);
-        pointed=true;
-        is_Computed.set(ConeProperty::IsPointed);
-        is_Computed.set(ConeProperty::Parallelotope);
     }
     
     try_symmetrization(ToCompute);   
@@ -3217,8 +3205,7 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         FC.compute_hsop();
         HSeries.setHSOPDenom(FC.Hilbert_Series.getHSOPDenom());
         HSeries.compute_hsop_num();
-    }
-    
+    }    
 }
 
 //---------------------------------------------------------------------------
@@ -3671,6 +3658,21 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
     if(inhomogeneous && !ToCompute.test(ConeProperty::HilbertBasis) )
         return;
+    
+    bool is_parallelotope=false;
+    if(!ToCompute.test(ConeProperty::Approximate))
+        is_parallelotope=check_parallelotope();
+    // cout << "PPPPP " << is_parallelotope << endl;
+    
+    if(is_parallelotope){
+        SupportHyperplanes.remove_row(Dehomogenization);
+        is_Computed.set(ConeProperty::SupportHyperplanes);
+        is_Computed.set(ConeProperty::MaximalSubspace);
+        is_Computed.set(ConeProperty::Sublattice);
+        pointed=true;
+        is_Computed.set(ConeProperty::IsPointed);
+        is_Computed.set(ConeProperty::Parallelotope);
+    }
    
     ConeProperties NeededHere;
     NeededHere.set(ConeProperty::SupportHyperplanes);
@@ -3679,6 +3681,21 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     if(!inhomogeneous)
         NeededHere.set(ConeProperty::Grading);
     recursive_compute(NeededHere);
+    
+    if(!is_parallelotope && !ToCompute.test(ConeProperty::Approximate)){ // we try again
+        is_parallelotope=check_parallelotope();
+        if(is_parallelotope){
+            SupportHyperplanes.remove_row(Dehomogenization);
+            is_Computed.set(ConeProperty::SupportHyperplanes);
+            is_Computed.set(ConeProperty::MaximalSubspace);
+            is_Computed.set(ConeProperty::Sublattice);
+            pointed=true;
+            is_Computed.set(ConeProperty::IsPointed);
+            is_Computed.set(ConeProperty::Parallelotope);
+        }
+    }
+    
+    // cout << "PPPPP " << is_parallelotope << endl;
     
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
         return;
@@ -3907,11 +3924,9 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
     // if(verbose)
     //    verboseOutput() << "Starting projection" << endl;
     
-    vector<boost::dynamic_bitset<> > Pair;
-    vector<boost::dynamic_bitset<> > ParaInPair;
-    bool is_parallelotope=check_parallelotope(Supps,Pair,ParaInPair);
-    if(isComputed(ConeProperty::Parallelotope) && !is_parallelotope)
-        throw BadInputException("Polytope erroneously declared Parallelotope");
+    // vector<boost::dynamic_bitset<> > Pair;
+   //  vector<boost::dynamic_bitset<> > ParaInPair;
+    bool is_parallelotope=(Pair.size()>0);
     
     vector< boost::dynamic_bitset<> > Ind;
 
@@ -3997,6 +4012,128 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         verboseOutput() << "Project-and-lift complete" << endl <<
            "------------------------------------------------------------" << endl;
         
+}
+
+//---------------------------------------------------------------------------
+template<typename Integer>
+bool Cone<Integer>::check_parallelotope(){
+    
+    vector<Integer> Grad; // copy of Grading or Dehomogenization
+
+    if(inhomogeneous){
+        Grad=Dehomogenization;
+    }
+    else{
+        if(!isComputed(ConeProperty::Grading))
+            return false;
+        Grad=Grading;
+    }
+
+    Grading_Is_Coordinate=false;
+    size_t nr_nonzero=0;
+    for(size_t i=0;i<Grad.size();++i){
+        if(Grad[i]!=0){
+            nr_nonzero++;
+            GradingCoordinate=i;
+        }
+    }
+    if(nr_nonzero==1){
+        if(Grad[GradingCoordinate]==1)
+            Grading_Is_Coordinate=true;        
+    }
+    if(!Grading_Is_Coordinate)
+        return false;
+    
+    Matrix<Integer> Supps(SupportHyperplanes);
+    if(inhomogeneous)
+        Supps.remove_row(Grad);        
+
+    size_t dim=Supps.nr_of_columns()-1; //affine dimension
+    if(Supps.nr_of_rows()!=2*dim)
+        return false;
+    Pair.resize(2*dim);
+    ParaInPair.resize(2*dim);
+    for(size_t i=0;i<2*dim;++i){
+        Pair[i].resize(dim);
+        Pair[i].reset();
+        ParaInPair[i].resize(dim);
+        ParaInPair[i].reset();
+    }
+
+    vector<bool> done(2*dim);
+    Matrix<Integer> M2(2,dim+1), M3(3,dim+1);
+    M3[2]=Grad;
+    size_t pair_counter=0;
+    
+    vector<key_t> Supp_1; // to find antipodal vertices
+    vector<key_t> Supp_2;
+    
+    for(size_t i=0;i<2*dim;++i){
+        if(done[i])
+            continue;
+        bool parallel_found=false;
+        M2[0]=Supps[i];
+        M3[0]=Supps[i];
+        size_t j=i+1;
+        for(;j<2*dim;++j){
+            if(done[j]) continue;
+            M2[1]=Supps[j];
+            if(M2.rank()<2)
+                continue;
+            M3[1]=Supps[j];
+            if(M3.rank()==3)
+                continue;
+            else{
+                parallel_found=true;
+                done[j]=true;
+                break;
+            }
+        }
+        if(!parallel_found)
+            return false;
+        Supp_1.push_back(i);
+        Supp_2.push_back(j);
+        Pair[i][pair_counter]=true;
+        Pair[j][pair_counter]=true;
+        ParaInPair[j][pair_counter]=true;
+        pair_counter++;
+    }
+    
+    Matrix<Integer> v1=Supps.submatrix(Supp_1).kernel(); // opposite vertices
+    Matrix<Integer> v2=Supps.submatrix(Supp_2).kernel();
+    Integer MinusOne=-1;
+    if(v_scalar_product(v1[0],Grad)==0)
+        return false;
+    if(v_scalar_product(v2[0],Grad)==0)
+        return false;
+    if(v_scalar_product(v1[0],Grad)<0)
+        v_scalar_multiplication(v1[0],MinusOne);
+    if(v_scalar_product(v2[0],Grad)<0)
+        v_scalar_multiplication(v2[0],MinusOne);
+    
+    /* cout << Supp_1;
+    cout << Supp_2;
+    v1.pretty_print(cout);
+    v2.pretty_print(cout);
+    cout << "==============" << endl;
+    Supps.pretty_print(cout);
+    cout << "==============" << endl;*/
+    if(v1.nr_of_rows()!=1 || v2.nr_of_rows()!=1)
+        return false;
+    for(size_t i=0;i<Supp_1.size();++i){
+        // cout << "i " << i << " " << v_scalar_product(Supps[Supp_1[i]],v2[0]) << endl;
+        if(!v_scalar_product_positive(Supps[Supp_1[i]],v2[0]))
+            return false;
+    }
+    for(size_t i=0;i<Supp_2.size();++i){
+        // cout << "i " << i << " " << v_scalar_product(Supps[Supp_2[i]],v1[0]) << endl;
+        if(!v_scalar_product_positive(Supps[Supp_2[i]],v1[0]))
+            return false;
+    }
+    
+    // we have found opposite vertices
+    
+    return true;    
 }
 
 

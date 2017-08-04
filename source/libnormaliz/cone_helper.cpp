@@ -149,61 +149,6 @@ vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<I
     
     return Order;
 }
-
-//---------------------------------------------------------------------------
-template<typename Integer>
-bool check_parallelotope(const Matrix<Integer>& Supps,
-                         vector<boost::dynamic_bitset<> >& Pair, vector<boost::dynamic_bitset<> >& ParaInPair){
-    // This funcion assumes that the grading is given by the FIRST coordinate
-
-    size_t dim=Supps.nr_of_columns()-1; //affine dimension
-    if(Supps.nr_of_rows()!=2*dim)
-        return false;
-    Pair.resize(2*dim);
-    ParaInPair.resize(2*dim);
-    for(size_t i=0;i<2*dim;++i){
-        Pair[i].resize(dim);
-        Pair[i].reset();
-        ParaInPair[i].resize(dim);
-        ParaInPair[i].reset();
-    }
-    vector<Integer> Grading(dim+1);
-    Grading[0]=1;
-    vector<bool> done(2*dim);
-    Matrix<Integer> M2(2,dim+1), M3(3,dim+1);
-    M3[2]=Grading;
-    size_t pair_counter=0;
-    for(size_t i=0;i<2*dim;++i){
-        if(done[i])
-            continue;
-        bool parallel_found=false;
-        M2[0]=Supps[i];
-        M3[0]=Supps[i];
-        size_t j=i+1;
-        for(;j<2*dim;++j){
-            if(done[j]) continue;
-            M2[1]=Supps[j];
-            if(M2.rank()<2)
-                continue;
-            M3[1]=Supps[j];
-            if(M3.rank()==3)
-                continue;
-            else{
-                parallel_found=true;
-                done[j]=true;
-                break;
-            }
-        }
-        if(!parallel_found)
-            return false;
-        Pair[i][pair_counter]=true;
-        Pair[j][pair_counter]=true;
-        ParaInPair[j][pair_counter]=true;
-        pair_counter++;
-    }
-    return true;    
-}
-
 //---------------------------------------------------------------------------
 template<typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind,

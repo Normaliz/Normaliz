@@ -1065,12 +1065,12 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)) {
+        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !Result->isComputed(ConeProperty::OnlyLattPntOutput) ) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
             Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays)) {
+        if (Result->isComputed(ConeProperty::ExtremeRays) && !Result->isComputed(ConeProperty::OnlyLattPntOutput)) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
             Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
