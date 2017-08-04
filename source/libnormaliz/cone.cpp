@@ -1972,9 +1972,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     already_in_compute=false;
     set_parallelization();
     nmz_interrupted=0;
-    if(ToCompute.test(ConeProperty::OnlyLattPntOutput)){
-        is_Computed.set(ConeProperty::OnlyLattPntOutput);
-    }
     if(ToCompute.test(ConeProperty::SCIP)){
 #ifdef NMZ_SCIP
         nmz_scip=true;
@@ -3671,7 +3668,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         is_Computed.set(ConeProperty::Sublattice);
         pointed=true;
         is_Computed.set(ConeProperty::IsPointed);
-        is_Computed.set(ConeProperty::Parallelotope);
     }
    
     ConeProperties NeededHere;
@@ -3691,7 +3687,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
             is_Computed.set(ConeProperty::Sublattice);
             pointed=true;
             is_Computed.set(ConeProperty::IsPointed);
-            is_Computed.set(ConeProperty::Parallelotope);
         }
     }
     

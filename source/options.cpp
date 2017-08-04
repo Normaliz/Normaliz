@@ -303,6 +303,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_long_long=true;
             continue;
         }
+        if(LongOptions[i]=="NoExtRaysOutput"){
+            no_ext_rays_output=true;
+            continue;
+        }
         if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
             continue;
@@ -340,6 +344,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
 template<typename Integer>
 void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
+    if(no_ext_rays_output)
+        Out.set_no_ext_rays_output();
     if(write_all_files) {
         Out.set_write_all_files();
     } else if (write_extra_files) {

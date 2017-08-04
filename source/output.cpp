@@ -57,6 +57,7 @@ Output<Integer>::Output(){
     mod=false;
     msp=false;
     lattice_ideal_input = false;
+    no_ext_rays_output=false;
 }
 
 //---------------------------------------------------------------------------
@@ -64,6 +65,13 @@ Output<Integer>::Output(){
 template<typename Integer>
 void Output<Integer>::set_lattice_ideal_input(bool value){
     lattice_ideal_input=value;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Output<Integer>::set_no_ext_rays_output(){
+    no_ext_rays_output=true;
 }
 
 //---------------------------------------------------------------------------
@@ -1065,12 +1073,12 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !Result->isComputed(ConeProperty::OnlyLattPntOutput) ) {
+        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !no_ext_rays_output) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
             Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
         }
-        if (Result->isComputed(ConeProperty::ExtremeRays) && !Result->isComputed(ConeProperty::OnlyLattPntOutput)) {
+        if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
             Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;

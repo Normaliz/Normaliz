@@ -59,6 +59,7 @@ class Output {
     string of_polyhedron;
     
     bool lattice_ideal_input;
+    bool no_ext_rays_output;
 
 
 //---------------------------------------------------------------------------
@@ -113,6 +114,8 @@ public:
     void write_inv_file() const;
     
     void set_lattice_ideal_input(bool lattice_odeal_input);
+    
+    void set_no_ext_rays_output();
 
 
 //---------------------------------------------------------------------------

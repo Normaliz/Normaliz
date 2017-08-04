@@ -550,6 +550,10 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     options.activateInputFileLongLong();
                     continue;
                 }
+                if (type_string == "NoExtRaysOutput") {
+                    options.activateNoExtRaysOutput();
+                    continue;
+                }
                 if (type_string == "total_degree") {
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");

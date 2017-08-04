@@ -1981,12 +1981,19 @@ constraints 16
 0.10976576 0.2153132834 ... 0.04282847494 <= 1/2
 0.10976576 -0.2153132834 ...-0.04282847494 <= 1/2
 ProjectionFloat
-Parallelotope
 \end{Verbatim}
 
 This examplem comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). This explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
 
-The option \verb|ProjectionFloat| indicates that we want to compute the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-amd-lift algorithm; \verb|Projection| makes Normaliz use its ordinary arithmetic in this algorithm. For our example the dufference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+In the output file you can see to what integer vectors Normaliz has converted the inequalities of the input file:
+\begin{Verbatim}
+16 support hyperplanes of polyhedron (homogenized):
+  5488288000  10765664170  ...  2141423747 25000000000
+  ...
+ -5488288000  10765664170 ...   2141423747 25000000000
+\end{Verbatim}
+
+The option \verb|ProjectionFloat| indicates that we want to compute the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-amd-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the dufference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
 Computing lattice points by project-and-lift
 Projection
@@ -2050,7 +2057,7 @@ In \verb|ChF_8_1024.in| we see
 \end{Verbatim}
 These are the lattice points that we wanted to compute.
 
-The option \verb|Parallelotope| is very useful priori information given to Normaliz. It guarantees that the input defines a full-dimensional parallelotope. This aloows Normaliz to suppress the computation of its vertices. We are not interested in them, and they look frightening when written as ordinary fractions (computed without \verb|Parallelotope|). This is only the first vertex, the denominator is the number in the last row:
+Normaliz finds out that our polytope is in fact a parallelotope. This aloows Normaliz to suppress the computation of its vertices. We are not interested in them, and they look frightening when written as ordinary fractions (computed with the additioal option \verb|SupportHyperplanes|). This is only the first vertex, the denominator is the number in the last row:
 \begin{Verbatim}
 256 vertices of polyhedron:
 -7831972155307708173239167258085974255845869779051329651906336771582421875
@@ -2069,7 +2076,7 @@ Not all polytopes are parallelotopes, and in most cases Normaliz must compute th
 \begin{itemize}
 \itemtt [NoExtRaysOutput]
 \end{itemize}
-if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however been included in the output file if it i available.)
+if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however been included in the output file if it is available.)
 
 Let us illustrate one more feature of Normaliz by this example. If we change \verb|ProjectionFloat| to \verb|Projection|, then we see
 \begin{Verbatim}
@@ -3457,6 +3464,11 @@ Sometimes one wants the output to be written to another directory. The output di
 	\itemtt[{-}{-OutputDir=<outdir>}]. The path \ttt{<outdir<} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)	
 \end{itemize}
 Note that all output files will be written to the chosen directory. It must be created before Normaliz is started.
+
+Extreme rays and vertices may have very long integer coordinates. One can suppress their output by
+\begin{itemize}
+	\itemtt[NoExtRaysOutput] 
+\end{itemize}
 
 \subsection{Overriding the options in the input file}
 
@@ -6158,10 +6170,10 @@ namespace ConeProperty {
 		BottomDecomposition,
 		NoBottomDec,       
 		DualMode,
-		PrimalMode,
-	    Projection,
-	    ProjectionFloat,
-	    NoProjection,
+		PrimalMode	    
+		Projection,
+		ProjectionFloat,
+		NoProjection,
 		Symmetrize, 
 		NoSymmetrization, 
 		NoSubdivision, 

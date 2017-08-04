@@ -120,8 +120,6 @@ namespace ConeProperty {
         HSOP,
         NoPeriodBound,
         SCIP,
-        Parallelotope,
-        OnlyLattPntOutput,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)
