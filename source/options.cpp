@@ -46,6 +46,7 @@ OptionsHandler::OptionsHandler() {
     use_long_long = false;
     ignoreInFileOpt = false;
     nr_threads = 0;
+    no_ext_rays_output=false;
 }
 
 
