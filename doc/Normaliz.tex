@@ -16,7 +16,7 @@
 
 \usepackage{booktabs}
 
-%\usepackage[ignoreunlbld,nomsgs]{refcheck}
+\usepackage[ignoreunlbld,nomsgs]{refcheck}
 
 \usepackage{pgf, tikz}
 \usepackage{color}
@@ -1993,7 +1993,7 @@ In the output file you can see to what integer vectors Normaliz has converted th
  -5488288000  10765664170 ...   2141423747 25000000000
 \end{Verbatim}
 
-The option \verb|ProjectionFloat| indicates that we want to compute the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-amd-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the dufference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-amd-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
 Computing lattice points by project-and-lift
 Projection
@@ -3016,7 +3016,7 @@ If several computation goals are set, all of them are pursued. In particular, co
 	\itemtt[-{}-ignore, -i] on the command line switches off the computation goals and algorithmic variants set in the input file.
 \end{itemize}
 
-The default computation goal is set if neither the input file nor command line contains a computation goal or an algorithmic variant that implies a computation goal. It is
+The default computation goal is set if neither the input file nor the command line contains a computation goal or an algorithmic variant that implies a computation goal. It is
 \begin{center}
 	\verb|HilbertBasis| + \verb|HilbertSeries| + \verb|ClassGroup|.
 \end{center} 
@@ -3027,8 +3027,6 @@ If set explicitly in the input file or on the command line the following adds th
 \end{itemize}
 
 It is possible to set \verb|DefaultMode| explicitly in addition to other computation goals. If it is set, implicitly or explicitly, Normaliz will not complain about unreachable computation goals.
-
-Normaliz collects all computation goals and algorithmic variants set in the input file and on the command line. 
 
 \subsection{The choice of algorithmic variants}
 
@@ -3047,18 +3045,23 @@ The choice of the algorithm can be fixed or blocked:
 
 The automatic choice can of course fail. See Section \ref{div_labor} for an example for which it is bad. 
 
-\subsubsection{Lattice points by approximation}\label{approximate}
+\subsubsection{Lattice points in polytopes}\label{approximate}
 
-This is often the best choice for the computation of lattice points in a polytope. The polytope can be defined as the cross-section of a pointed cone with the hyperplane of degree $1$ points (homogeneous input) or as a polyhedron (inhomogeneous input). The basic idea to escape the arithmetical complexity of rational vertices with large denominators by approximating a rational polytope by one with integral vertices.  See Section \ref{approx} for further discussion and examples, and also for the conditions under which \verb|Approximate| is chosen automatically by Normaliz.
-
-You can force approximation or block it:
+For this task Normaliz has several methods. They are discussed in Section \ref{LattPoints}. The default choice is the project-and-lift algorithm. It is chosen explicitly
 \begin{itemize}	
-	\itemtt[Approximate, -r] activates the approximation algorithm for the computation of degree $1$ elements. It implies \verb|Deg1Elements|,
+	\itemtt[Projection, -j] ; It implies \verb|Deg1Elements|,
 	
-	\itemtt[NoApproximation] blocks approximation.
+	\itemtt[NoProjection] blocks it.
 \end{itemize}
-Approximation is also blocked by \verb|DualMode|, but not by \verb|PrimalMode|. 
 
+Alternative choices are
+\begin{itemize}
+\itemtt[ProjectionFloat, -J], project-and-lift with floating point arithmetic, 
+\itemtt []PrimalMode, -P], triangulation based method, 
+\itemtt [Approximate, -r], approximation of rational polytopes followed by triangulation and 
+\itemtt[DualMode, -d], dual algorithm.
+\end{itemize}
+\verb|PrimalMode| and \verb|DualMode| do not imply  \verb|Deg1Elements| since they can also be used for Hilbert bases.
 \subsubsection{Bottom decomposition}
 
 Bottom decomposition is a way to produce an optimal triangulation for a given set of generators. It is discussed in Section \ref{bottom_dec}. The criterion for its automatic choice is explained there. It can be forced or blocked:
@@ -3094,7 +3097,7 @@ Under certain conditions Normaliz tries to speed up computations by subdividing 
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, apart from certain computation goals based on the dual algorithm; see Section \ref{InhomDual}.
+The computation goal \verb|Sublattice| does not imply any other computation goal. All other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, apart from certain computation goals based on the dual algorithm or if \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes; see Section \ref{InhomDual}.
 
 \subsubsection{Lattice data}
 
@@ -3333,6 +3336,7 @@ do not imply the computation goal \verb|SupportHyperplanes| (and not even \verb|
 \end{itemize} 
 The last choice is only possible in the inhomogeneous case. Another possibility in the inhomogeneous case is is to use simply \verb|DualMode|.
 
+If \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes defined by inequalities, then Normaliz does not compute the vertices, unless asked for by one of the three computation goals just mentioned.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  RUNNING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Running Normaliz}\label{options}
 
@@ -3470,6 +3474,8 @@ Extreme rays and vertices may have very long integer coordinates. One can suppre
 	\itemtt[NoExtRaysOutput] 
 \end{itemize}
 
+\verb|NoExtRaysOutput| is  not a cone property.
+
 \subsection{Overriding the options in the input file}
 
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
@@ -3483,14 +3489,14 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{More examples}\label{MoreExamples}
 
-\subsection{Lattice points in polytopes}
+\subsection{Lattice points in polytopes}\label{LattPoints}
 
 There are two ways to define polytopes for Normaliz:
 \begin{arab}
 \item by homogeneous input: a cone $C$ and a grdaing $\deg$ define the polytopes $P=C\cap \{x:\deg x=1 \}$,
 \item by inhomogeneous input: a bounded polyhedron $P$ is a polytope.
 \end{arab}
-As far as the computation of lattice points uis concerned, there is essentially no difference in the algorithms that can be used.
+As far as the computation of lattice points is concerned, there is essentially no difference in the algorithms that can be used.
 
 However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as `degree $1$ elements of the Hilbert basis'' wheras they are the `module generators'' in the inhomogeneous case.
 
@@ -3505,68 +3511,122 @@ Normaliz has three main algorithms for the computation of lattice points of whic
 
 The optuions \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can aso be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
-\subsubsection{Project-and-lift}
-
-This method projects $P$ on a coordinate hyperplane amd iterates this action until a $1$-dimensional polytope, an interval is reached. Then the lattice points in the interval are determined and lifted iteratively to the predecessor in the projection chain until the top polytope is reached.
-
-This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitely and only computes lattice points in $P$ and its successive projections. Therefore it is rather ??? against rational vertices with large denominators.
-
-There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|ChF_16_1024.in| (it uses floating point arithmetic in the lifting part):
-
-(ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal oitput of ???
-
-Despite of these potential problems, \verb|Prohection| is the default choice of Normaliz. If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
-
-Project-and-lift works especially well for parallelotopes, as the input file \verb|ChF_16_104???.in| shows
-
 We recommend the reader to experiment with thenfollowing input files:
 \begin{itemize}
-\item \verb|5x5.in|
-\item \verb|6x6.in|
-\item \verb|max_polytope_cand.in|
-\item \verb|hickerson18.in|
-\item \verb|knapsack_11_60.in|
-\item \verb|ChF_2_64.in|
-\item \verb|ChF_16_64.in|
-\item \verb|ChF_16_1048576.in| (may take some time)
-\item \verb|pedro2.in|
+	\item \verb|5x5.in|
+	\item \verb|6x6.in|
+	\item \verb|max_polytope_cand.in|
+	\item \verb|hickerson18.in|
+	\item \verb|knapsack_11_60.in|
+	\item \verb|ChF_2_64.in|
+	\item \verb|ChF_16_64.in|
+	\item \verb|ChF_16_1048576.in| (may take some time)
+	\item \verb|pedro2.in|
 \end{itemize}
 
 In certain cases you must use the option \verb|-i| on the command line to override those in the input file.
 
-\verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. The files \verb|ChF*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
+\verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. The files \verb|ChF*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
+
+\subsubsection{Project-and-lift}\label{project}
+
+We have explained the project-and-lift algorithm in Section \ref{project_example}.
+This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitely and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example}.)
+
+The option for the floating point variant of project-and-lift is
+\begin{itemize}
+\itemtt [Projection, -j]
+\end{itemize}
+
+There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|ChF_16_1024.in| (it uses floating point arithmetic in the lifting part):
+\begin{Verbatim}
+embdim 17 inequalities 32
+embdim 16 inequalities 240
+embdim 15 inequalities 1120
+embdim 14 inequalities 3640
+embdim 13 inequalities 8736
+embdim 12 inequalities 16016
+embdim 11 inequalities 22880
+embdim 10 inequalities 25740
+embdim 9 inequalities 22880
+embdim 8 inequalities 16016
+embdim 7 inequalities 8736
+embdim 6 inequalities 3640
+embdim 5 inequalities 1120
+embdim 4 inequalities 240
+embdim 3 inequalities 32
+embdim 2 inequalities 2
+\end{Verbatim}
+
+(ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal oitput of \verb|pedro2.in|:
+\begin{Verbatim}
+embdim 2 Deg1Elements 33
+embdim 3 Deg1Elements 478
+embdim 4 Deg1Elements 4201
+embdim 5 Deg1Elements 17449
+embdim 6 Deg1Elements 2
+\end{Verbatim}
+
+Despite of these potential problems, \verb|Prohection| is the default choice of Normaliz for the computation of lattice points (if not combined with Hilbert series or Hilbert basis). If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
+
+\emph{Parallelotopes.}\enspace
+Lattice points in parallelotopes that are defined gy inequalities, like those in the input files \verb|ChF*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control.
+
+Normaliz recognizes parallelotiopes by itself, and suppresses the computation of the vertices unless asked to compute them.
 
 \subsubsection{Project-and-lift with floating point arithmetic}
 
-Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since the project-and-lift algorithm produces only lattice points in the projections of the polytope, it very likely creates only vectors with integer coordinates. Since GMP arithmetic is very slow with very large integers (the coordinates of the support hyperplanes in this case), Normaliz has a floating point variant of the project-and-lift algorithm. It behaves very weel, even in computations for lower dimensional polytopes. Wehave not found a single deviation from the results with GMP arithmetic in our examples.
+Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since GMP arithmetic is slow (compared to arithmetic with machine integers), Normaliz has a floating point variant of the project-and-lift algorithm. (Such an algorithm makes no sense for Hilbert bases or Hilbert series.) It behaves very well, even in computations for lower dimensional polytopes. We have not found a single deviation from the results with GMP arithmetic in our examples.
 
+The option for the floating point variant of project-and-lift is
+\begin{itemize}
+\itemtt [ProjectionFloat, -J]
+\end{itemize}
 If you want aclear demonstration of the difference bewtween \verb|Projection| and \verb|ProjectionFloat|, try on \verb|ChF_16_1048576.in|.
 
-\subsubsection{Parallelotopes}
-
-Lattice points in parallelotopes, like those in the input files \verb|ChF_2_64.in| and \verb|ChF_16_????.in|, can be comuted without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$sbythe  list  of facets whose intersection $F$ is (and not by the list of vertices of $F$). Parallelotopes are not only simple polytopes. It is important that two faces do not intersectif and only if they are contained in parallel facets, and this is easy to control.
-
-Therefore if you don't want to compute the vertices of your polytope and you are sure that your polytope is a parallelotope of full dimension, and \verb|Parallelotope| to the input file. The input must be inhomogeneous and the polytope must be specified by inequalities. Moreover, the lattice is ssumed to be the full lattice.
-
-Normaliz will always check if the input polytope is a parallelotope and make use of this property in the projet-amd-lift algorithm, but \verb|Parallelotope| suppresses the computation of the vertices of which there may be many with unpleasant coordinates.
-
-Run \verb|ChF_16_1048576.in| with and without \verb|Parallelotope| to see the difference in the output files. (It has $2^16$ vertices.)
-
+The use of \verb|ProjectionFloat| or any other algorithmic varaiant is independent of the input type.
 \subsubsection{The triangulation based primal algorithm}
 
-With this algorithm, Normaliz compues a triangulation as it does for the computation of Hilbert bases (in primal mode). Then it computes the lattice ppoints in each of the polytopes deined by the simplicial subcones in the triangulation. The difference to the Gilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarsded right away and that no reduction is necessary. 
+With this algorithm, Normaliz compues a triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes deined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarsded right away and that no reduction is necessary. 
 
-the complications that can arise are (i) a large triangulation or (ii) a large determinants of the simpcial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinats. We can see this by looling at the terminal output of ???
+The complications that can arise are (i) a large triangulation or (ii) a large determinants of the simpcial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinats. We can see this by looling at the terminal output of \verb|max_polytope_can.in|, computed with \verb|-cP|:
+\begin{Verbatim}
+...
+evaluating 49 simplices
+||||||||||||||||||||||||||||||||||||||||||||||||||
+49 simplices, 819 deg1 vectors accumulated.
+47 large simplices stored
+Evaluating 47 large simplices
+Large simplex 1 / 47
+************************************************************
+starting primal algorithm (only support hyperplanes) ...
+Generators sorted lexicographically
+Start simplex 1 2 3 4 5 
+Pointed since graded
+Select extreme rays via comparison ... done.
+------------------------------------------------------------
+transforming data... done.
+Computing lattice points by project-and-lift
+Projection
+embdim 5 inequalities 5
+embdim 4 inequalities 6
+embdim 3 inequalities 3
+embdim 2 inequalities 2
+Lifting
+embdim 2 Deg1Elements 64
+embdim 3 Deg1Elements 1756
+embdim 4 Deg1Elements 3504
+embdim 5 Deg1Elements 32268
+Project-and-lift complete
+...
+\end{Verbatim}
+After finishing the $49$ `small'' simplicial cones, Normaliz takes on the $49$ `large'' simplicial cones, and does it by project-and-lift. Therefore one can say that Normaliz takes a hybrid approach if you request primal mode.
 
-An inherent weakness of the triangulation based algorithms is that its efficiency drops with $d!$ where $d$ is the dimension vecause the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$.
-
-Large determinants come up easily for rational polytopes whose vertices have large denominators. In previous versions, Normaliz fought against large determinants caused by rational vertices ny finding an integral polytope $Q$ containuing $P$, compiting the lattice points in $Q$ and then sieving out those that are in $Q\setminus P$.
+An inherent weakness of the triangulation based algorithms is that its efficiency drops with $d!$ where $d$ is the dimension vecause the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$ (as long as small simplicuial cones are evaluated).
 
 \subsubsection{Lattice points by approximation}\label{approx}
 
-In order to find the lattice points in a polytope $P$, old versions of Normaliz created the same vectors that are needed for the Hilbert basis computation, but used that no reduction is necessary to find the degree $1$ points. They are automatically part of the Hilbert basis. While this observation speeded up the computations considerably, the number of vectors to be created could simply make the computation impossible. This was especially true for rational polytopes whose vertices have large denominators.
-
-Normaliz 3.2.0 takes the following approach: simplicial subcones $S$ with rational vertices are approximated by integral polytopes, and only the lattice points in $S$ are kept. This is done automatically. Since version 2.11 the user can also choose a global approximation of the input polytope $P$ by the option \verb|Approximate|, and this is often a very good choice.
+Large determinants come up easily for rational polytopes whose vertices have large denominators. In previous versions, Normaliz fought against large determinants caused by rational vertices ny finding an integral polytope $Q$ containuing $P$, computing the lattice points in $Q$ and then sieving out those that are in $Q\setminus P$:
 \begin{center}
 	\begin{tikzpicture}[scale=0.6]
 	\filldraw[fill=orange] (0,0) -- (0,1) -- (1,3) -- (2,4) -- (3,4) -- (4,1) -- (3,0) --cycle;
@@ -3579,47 +3639,19 @@ Normaliz 3.2.0 takes the following approach: simplicial subcones $S$ with ration
 	% \draw (1,0) -- (0,1) -- (2,2) --cycle;
 	\end{tikzpicture}
 \end{center} 
-Now pproximation is chosen automatically by Normaliz if the polytope is not integral and has at most
-$$
-100.
-$$ 
-The reason for this limitation is that each rational vertex must be replaced dby several integral ones, and this increase can make the computation of the approximating polytope quite difficult. As mentioned in Section \ref{approx}, \verb|Approximate, -r| forces approximation (regardless of the bound $5e$) and \verb|NoApproximation| blocks it.
 
-Our demonstration example is \verb|max_polytope_cand| with the input file
-\begin{Verbatim}
-amb_space 5
-inequalities 11
--3  -3 -10  14  88
-26  -3  19  14 361
--4  25   6 -49 133
-2  -3   1   5  17
--2  -3  -7  11  61
--6  23   9 -30 233
--2   7   3  -9  81
--8  17  12 -65 183
-8 -15   4  23  65
--8 -13 -28  45 241
--8  27  12 -35 321  
-grading
-unit_vector 5
-Deg1Elements
-\end{Verbatim}
-This is not a random input file; it has come up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215.
+This approach is still possible. It is requested by the option 
+\begin{itemize}
+\itemtt [Approximate, -r]
+\end{itemize}
 
-Despite of the large number of lattice points, the computation is extremely fast. If you insist in \verb|NoApproximation|,  it  will take considerably longer, but will not overstretch your patience. Note that Normaliz passes to GMP integers for some computations, which becomes necessary because of the huge determinants of the simplicial cones (without approximation). Actually, approximation is used despite \verb|NoApproximation|, namely `locally'' for each simplicuial cone in the triangulation. (This cannot be swiched off.)
+\verb|Approximate|, and this is often a good choice, especially in low dimension.
 
-The third choice using the dual algorithm is still o.k. though it takes the most time in this case. In other cases it may very well be the fastest.
-
-In the inhomogeneous case, approximation can be used if the polyhedron is actually a polytope and \verb|HilbertBasis| (or just the default mode) is set. An example (\verb|pedro2.in|, suggested by Paedro Garcia-Sanchez):
-\begin{Verbatim}
-amb_space 5
-constraints 1
-1001 1211 1421 1631  2841 = 39249
-\end{Verbatim}
+It is not advisable to use approximation for polytopes with a large number of vertices since it must be expected that the apprpoximation multiplies the number of vertices by $\dim P+1$ so that it may become difficult to compute then triangulation.
 
 \subsubsection{Lattice points by the dual algorithm}
 
-Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1, but \verb|1| with the default choice project-and-lift) is also quite good. (The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.) The primal algorithm or approximation will fail miserably.
+Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|, but \verb|-1| (the default choice project-and-lift) is also quite good. (The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.) The primal algorithm or approximation fail miserably.
 
 On the other hand, the dual degenerates terribly already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. 
 
@@ -3692,19 +3724,17 @@ The example \verb|StrictBorda.in| belongs to social choice theory loke \verb|Con
 
 Especially in computations with rational polytopes one encounters very large determinants that can keep the Normaliz primal algorithm from terminating in reasonable time. As an example we take \verb|hickerson-18.in| from the LattE distribution \cite{LatInt}. It is simplicial and the complexity is totally determined by the large determinant $\approx 4.17\times 10^{14}$ (computed with \verb|-v|). 
 
-If we are just interested in the degree $1$ points, Normaliz uses the approximation method of Section \ref{approx} and finds $44$ degree $1$ points very quickly. If we use these points together with the extreme rays of the simplex, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
+If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points very quickly. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
 \begin{arab}
 \item computation of subdivision points by the IP solver SCIP,
-\item computation of candidate subdivision points by approximation of the given simplicial cone by an overcone that is generated by vectors  of ``low denominator''.
+\item its own algorithm for finding optimal subdivision points, based on project-and-lift.
 \end{arab}
 
-Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. Furthermore, if some big simplices are still remaining, method (2) is applied again in both cases with a higher approximation level. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
+Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
 
-The use of SCIP requires a Normaliz executable that is built with SCIP see Section \ref{ChinRem}{compile}). Without SCIP only the approximation method is used. However, it can happen that SCIP fails because the required precision cannot be reached by floating point calculations. In this case the approximation method will be tried as well. 
+The use of SCIP requires a Normaliz executable that is built with SCIP see Section \ref{Compile}). Moreover, the option \verb|SCIP| must be set since in may cases the Normaliz method is faster and always finds a subdivision point if such exists. 
 
-Recommendation: \emph{If you are applying Normaliz to arithmetically complicated examples, use Normaliz with SCIP.}
-
-The following table contains some performance data for subdivisions based on SCIP (parallelization with 20 threads).
+The following table contains some performance data for subdivisions based on the Normaliz method (default mode, parallelization with 8 threads).
 \begin{center}
 \setlength{\tabcolsep}{3.2pt}
 \renewcommand{\arraystretch}{1.2}
@@ -3713,24 +3743,10 @@ The following table contains some performance data for subdivisions based on SCI
 & \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
 simplex volume & $9.83\times 10^7$ & $4.17\times 10^{14}$ & $2.8\times 10^{14}$ \\ \hline
 volume under bottom  & $8.10\times 10^5$ & $3.86\times 10^7$ & $2.02\times 10^7$ \\ \hline 
-volume used     & $3.93\times 10^6$ & $5.47\times 10^7$ & $2.39\times 10^7$ \\ \hline
+volume used     & $3.93\times 10^6$ & $6.56\times 10^7$ & $2.61\times 10^7$ \\ \hline
 %improvement factor & 25 &  $7.62\times10^6$ & $1.17\times 10^7$\\ \hline
-runtime without subdivision   &  2 s & >12 d &  >8 d \\ \hline
-runtime with subdivision    &  0.5 s & 46 s & 5.1 s \\ \hline
-\end{tabular}
-\end{center}
-
-Performance data for approximation:
-
-\begin{center}
-\setlength{\tabcolsep}{3.2pt}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|c|c|c|c|}
-\hline
-& \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
-volume used     & $3.9 \times 10^6$ & $9.1\times 10^7$ & $2.3\times 10^9$ \\ \hline
-%improvement factor & 25 &  $7.62\times10^6$ & $9.4\times 10^9$\\ \hline
-runtime with subdivision    & 0.7 s & 58 s& 2 m 36 s\\ \hline
+runtime without subdivision   &  2.8 s & >12 d &  >8 d \\ \hline
+runtime with subdivision    &  0.4 s & 24 s & 5.1 s \\ \hline
 \end{tabular}
 \end{center}
 
@@ -3738,7 +3754,7 @@ A good nonsimplicial example showing the subdivision at work is \verb|hickerson_
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nested triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
 
-\emph{Remark}\enspace The bounds mentioned above work well up to dimension $\approx 10$. In larger dimension they are too low because the probability of finding a subdivision point becomes too small.
+\emph{Remark}\enspace The bounds mentioned above work well up to dimension $\approx 10$. for a fixed determinant, the probability for finding a subdivision point devreases rapidly.
 
 \subsection{Checking  the Gorenstein property}\label{Gorenstein}
 
@@ -5965,7 +5981,7 @@ template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
 
 \subsubsection{Cecimal fractions and floating point numbers}
 
-libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the input of decimal fractions and floating point numbers. Input data of type \verb|nmz_float| are first converted into \verb|mpq_class|. The conversion is done via a decimal representation of the \verb|nmz_float| type numbers to a string with the following format ?????? 
+libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the input of decimal fractions and floating point numbers. Input data of type \verb|nmz_float| are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|.
 
 \subsection{Construction of a cone}
 
@@ -6015,7 +6031,7 @@ The input types are explained in Section \ref{input}. In certain environments it
 Type::InputType to_type(const string& type_string)
 \end{Verbatim}
 
-The types \verb|grading|, \verb|dehomoneization| and \verb|offset| must be encoded as matrices with a single row. We come back to this point below.
+The types \verb|grading|, \verb|dehomoneization|, \verb|offset|and \verb|open_facets| must be encoded as matrices with a single row. We come back to this point below.
 
 The simplest constructor has the syntax
 \begin{Verbatim}

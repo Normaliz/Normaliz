@@ -167,6 +167,7 @@ bool denominator_allowed(InputType input_type){
         case Type::lattice_ideal:
         case Type::signs:
         case Type::strict_signs:
+//         case Type::open_facets:
             return false;
             break;
         default:
@@ -520,8 +521,21 @@ void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<mpq
 }
 
 template<typename Integer>
-void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<nmz_float> > >& multi_input_data_const) {
- assert(false);
+void Cone<Integer>::process_multi_input(const map< InputType, vector< vector<nmz_float> > >& multi_input_data) {
+    
+    map< InputType, vector< vector<mpq_class> > > multi_input_data_QQ;
+    auto it = multi_input_data.begin();
+    for(; it != multi_input_data.end(); ++it) {
+        vector<vector<mpq_class> > Transfer;
+        vector<mpq_class> vt;
+        for(size_t j=0;j<it->second.size();++j){
+            for(size_t k=0;k<it->second[j].size();++k)
+                vt.push_back(mpq_class(it->second[j][k]));
+            Transfer.push_back(vt);
+        }
+        multi_input_data_QQ[it->first]=Transfer;
+    }
+    process_multi_input(multi_input_data_QQ);
 }
 
 template<typename Integer>
