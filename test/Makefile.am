@@ -42,7 +42,9 @@ NMZTESTS = test-/23.in					\
 	test-/binom.in					\
 	test-/binom.ref					\
 	test-/ChF_8_1024P.in				\
+	test-/ChF_8_1024P.ref				\
 	test-/ChF_8_1024.in				\
+	test-/ChF_8_1024.ref				\
 	test-/ChineseRemainder.in			\
 	test-/ChineseRemainder.ref			\
 	test-/CondParSymmSemi.in			\
