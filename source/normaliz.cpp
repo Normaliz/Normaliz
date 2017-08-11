@@ -101,12 +101,13 @@ void printHelp(char* command) {
     cout << endl;
     cout << "  -d\tcomputation mode: dual"<<endl;
     cout << "  -P\tcomputation mode: primal"<<endl;
+    cout << "  -j\tcomputation mode: project-and-lift"<<endl;
+    cout << "  -J\tcomputation mode: project-and-lift with floating point arithmetic"<<endl;
     cout << "  -r\tcomputation mode: approximate"<<endl;
     cout << "  -b\tcomputation mode: bottom decomposition"<<endl;
     cout << "  -o\tcomputation mode: no bottom decomposition"<<endl;
     cout << "  -k\tcomputation mode: keep order"<<endl;
     cout << "  -Y\tcomputation mode: symmetrization"<<endl;
-    cout << "  -j\tcomputation mode: projection"<<endl;
 
     cout << endl;
     cout << "      --<PROP>     compute the ConeProperty <PROP>"<<endl;
