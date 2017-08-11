@@ -43,7 +43,6 @@ NMZTESTS = test-/23.in					\
 	test-/binom.ref					\
 	test-/ChF_8_1024P.in				\
 	test-/ChF_8_1024.in				\
-	test-/ChF_6_4PF.ref				\
 	test-/ChineseRemainder.in			\
 	test-/ChineseRemainder.ref			\
 	test-/CondParSymmSemi.in			\
