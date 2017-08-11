@@ -99,7 +99,6 @@ ConeProperties& ConeProperties::reset_compute_options() {
     CPs.set(ConeProperty::ProjectionFloat, false);
     CPs.set(ConeProperty::NoProjection, false);
     CPs.set(ConeProperty::Approximate, false);
-    CPs.set(ConeProperty::NoApproximation, false);
     CPs.set(ConeProperty::BottomDecomposition, false);
     CPs.set(ConeProperty::NoBottomDec, false);
     CPs.set(ConeProperty::DefaultMode, false);
@@ -131,7 +130,6 @@ ConeProperties ConeProperties::options() {
     ret.set(ConeProperty::ProjectionFloat, CPs.test(ConeProperty::ProjectionFloat));
     ret.set(ConeProperty::NoProjection, CPs.test(ConeProperty::NoProjection));
     ret.set(ConeProperty::Approximate, CPs.test(ConeProperty::Approximate));
-    ret.set(ConeProperty::NoApproximation, CPs.test(ConeProperty::NoApproximation));
     ret.set(ConeProperty::BottomDecomposition, CPs.test(ConeProperty::BottomDecomposition));
     ret.set(ConeProperty::NoBottomDec, CPs.test(ConeProperty::NoBottomDec));
     ret.set(ConeProperty::DefaultMode, CPs.test(ConeProperty::DefaultMode));
@@ -315,7 +313,6 @@ void ConeProperties::check_conflicting_variants() {
         || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::NoProjection))
         || (CPs.test(ConeProperty::Projection) && CPs.test(ConeProperty::ProjectionFloat))
         || (CPs.test(ConeProperty::NoProjection) && CPs.test(ConeProperty::ProjectionFloat))
-        || (CPs.test(ConeProperty::Approximate) && CPs.test(ConeProperty::NoApproximation))
     )
     throw BadInputException("Contradictory algorithmic variants in options.");
 
@@ -443,7 +440,6 @@ namespace {
         CPN.at(ConeProperty::ProjectionFloat) = "ProjectionFloat";
         CPN.at(ConeProperty::NoProjection) = "NoProjection";
         CPN.at(ConeProperty::NoNestedTri) = "NoNestedTri";
-        CPN.at(ConeProperty::NoApproximation) = "NoApproximation";
         CPN.at(ConeProperty::Integral) = "Integral";
         CPN.at(ConeProperty::VirtualMultiplicity) = "VirtualMultiplicity";
         CPN.at(ConeProperty::WeightedEhrhartSeries) = "WeightedEhrhartSeries";
@@ -453,7 +449,7 @@ namespace {
         CPN.at(ConeProperty::SCIP) = "SCIP";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 70,
+        static_assert (ConeProperty::EnumSize == 69,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

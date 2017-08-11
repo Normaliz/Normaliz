@@ -3652,7 +3652,7 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC){
 template<typename Integer>
 void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     
-    if(ToCompute.test(ConeProperty::NoApproximation) || ToCompute.test(ConeProperty::NoProjection)
+    if((ToCompute.test(ConeProperty::NoProjection) && !ToCompute.test(ConeProperty::Approximate))
            || ToCompute.test(ConeProperty::DualMode) || ToCompute.test(ConeProperty::PrimalMode)
     )
         return;
@@ -3803,7 +3803,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Cone<Integer> HelperCone(InputType::cone,GradGen);
         HelperCone. ApproximatedCone=&(*this); // we will pass this infornation to the Full_Cone that computes the lattice points.
         HelperCone.is_approximation=true;  // It allows us to discard points outside *this as quickly as possible
-        HelperCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode,ConeProperty::NoApproximation);
+        HelperCone.compute(ConeProperty::Deg1Elements,ConeProperty::PrimalMode);
         Raw=HelperCone.getDeg1ElementsMatrix();        
     }
     else{

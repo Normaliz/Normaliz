@@ -104,7 +104,6 @@ namespace ConeProperty {
         //
         DefaultMode,
         Approximate,
-        NoApproximation,
         BottomDecomposition,
         NoBottomDec,       
         DualMode,
