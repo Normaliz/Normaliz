@@ -269,7 +269,7 @@ try{
 
   bool pseudo_par=false;
   size_t block_nr;  
-  if(exists_file("block.nr")){
+  if(false){   // exists_file("block.nr")
       size_t block_size=2000000;
     pseudo_par=true;
     string name_in="block.nr";

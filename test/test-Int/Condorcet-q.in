@@ -6,3 +6,4 @@ inequalities 3
 nonnegative
 total_degree
 HilbertSeries
+nr_coeff_quasipol 2

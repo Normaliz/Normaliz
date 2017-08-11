@@ -19,6 +19,9 @@ EXTRA_DIST =					\
 	A553.in					\
 	A643.in					\
 	ChineseRemainder.in			\
+	ChF_2_64.in				\
+	ChF_8_1024.in				\
+	ChF_16_1048576.in			\
 	CondEffPlur.in				\
 	Condorcet.in				\
 	CondorcetN.in				\
@@ -52,10 +55,13 @@ EXTRA_DIST =					\
 	dehomogenization.in			\
 	gen_inhom_nonpointed.in			\
 	halfspace2.in				\
+	hickerson-16.in				\
 	hickerson-18.in				\
+	hickerson-18plus1.in			\
 	huge.in					\
 	j462.in					\
 	lattice_ideal.in			\
+	knapsack_11_60.in			\
 	lo6.in					\
 	max_polytope_cand.in			\
 	medium.in				\

@@ -3057,7 +3057,7 @@ For this task Normaliz has several methods. They are discussed in Section \ref{L
 Alternative choices are
 \begin{itemize}
 \itemtt[ProjectionFloat, -J], project-and-lift with floating point arithmetic, 
-\itemtt []PrimalMode, -P], triangulation based method, 
+\itemtt[PrimalMode, -P], triangulation based method, 
 \itemtt [Approximate, -r], approximation of rational polytopes followed by triangulation and 
 \itemtt[DualMode, -d], dual algorithm.
 \end{itemize}
@@ -3088,6 +3088,12 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 \end{itemize}
 
 \subsubsection{Subdivision of simplicial cones}
+
+Normaliz tries to subdivide ''large'' simplicial cones; see Section \ref{subdiv}. If your executable is built with SCIP, you can set
+\begin{itemize}
+	\itemtt[SCIP]
+\end{itemize}
+However, in general, Normaliz' own method is faster and more reliable.
 
 Under certain conditions Normaliz tries to speed up computations by subdividing large simplicial cones. This requires enlarging the set of generators and can lead to a nested triangulation (see Sections \ref{subdiv} and \ref{nested}). The subdivision can be blocked by 
  \begin{itemize}
@@ -3519,12 +3525,12 @@ We recommend the reader to experiment with thenfollowing input files:
 	\item \verb|hickerson18.in|
 	\item \verb|knapsack_11_60.in|
 	\item \verb|ChF_2_64.in|
-	\item \verb|ChF_16_64.in|
+	\item \verb|ChF_8_1024.in|
 	\item \verb|ChF_16_1048576.in| (may take some time)
 	\item \verb|pedro2.in|
 \end{itemize}
 
-In certain cases you must use the option \verb|-i| on the command line to override those in the input file.
+In certain cases you must use \verb|-i| on the command line to override the options in the input file.
 
 \verb|max_polytope_cand.in| came up in connection with the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ {56 (2016), no. 1, 181--215. The files \verb|ChF*.in| are taken from the paper `On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). \verb|hickerson-18.in| is taken from the LattE distribution \cite{LatInt}. \verb|pedro2.in| was suggested by P. Garcia-Sanchez.
 
@@ -3538,7 +3544,7 @@ The option for the floating point variant of project-and-lift is
 \itemtt [Projection, -j]
 \end{itemize}
 
-There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|ChF_16_1024.in| (it uses floating point arithmetic in the lifting part):
+There are two complications that may slow it down unexpectedly: (i) the projections may have large numbers of support hyperplanes, as seen in the example \verb|ChF_16_1048576.in| (it uses floating point arithmetic in the lifting part):
 \begin{Verbatim}
 embdim 17 inequalities 32
 embdim 16 inequalities 240
@@ -3653,7 +3659,7 @@ It is not advisable to use approximation for polytopes with a large number of ve
 
 Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|, but \verb|-1| (the default choice project-and-lift) is also quite good. (The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.) The primal algorithm or approximation fail miserably.
 
-On the other hand, the dual degenerates terribly already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. 
+On the other hand, the dual degenerates terribly already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed already. Some may be much more difficult than the final polytope, as in this case.)
 
 In certain cases Normaliz (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
 
@@ -3724,7 +3730,7 @@ The example \verb|StrictBorda.in| belongs to social choice theory loke \verb|Con
 
 Especially in computations with rational polytopes one encounters very large determinants that can keep the Normaliz primal algorithm from terminating in reasonable time. As an example we take \verb|hickerson-18.in| from the LattE distribution \cite{LatInt}. It is simplicial and the complexity is totally determined by the large determinant $\approx 4.17\times 10^{14}$ (computed with \verb|-v|). 
 
-If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points very quickly. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
+If we are just interested in the degree $1$ points, Normaliz uses the project-and-lift method of Section \ref{project} and finds $44$ degree $1$ points in the blink of an eye. If we use these points together with the extreme rays of the simplicial cone, then the determinant sum decreases to $\approx 1.3\times 10^{12}$, and the computation of the Hilbert basis and the Hilbert series is in reach. But it is better to pursue the idea of subdividing large simplicial cones systematically. Normaliz employs two methods:
 \begin{arab}
 \item computation of subdivision points by the IP solver SCIP,
 \item its own algorithm for finding optimal subdivision points, based on project-and-lift.
@@ -3732,7 +3738,7 @@ If we are just interested in the degree $1$ points, Normaliz uses the project-an
 
 Normaliz tries to subdivide a simplicial cone if it has determinant $\ge 10^8$ or $10^7$ if the Hilbert basis is computed. Both methods are used recursively via stellar subdivision until simplicial cones with determinant $< 10^6$ have been reached or no further improvement is possible. All subdivision points are then collected, and the start simplicial cone is subdivided with bottom decomposition, which in general leads to substantial further improvement.
 
-The use of SCIP requires a Normaliz executable that is built with SCIP see Section \ref{Compile}). Moreover, the option \verb|SCIP| must be set since in may cases the Normaliz method is faster and always finds a subdivision point if such exists. 
+The use of SCIP requires a Normaliz executable built with SCIP see Section \ref{Compile}). Moreover, the option \verb|SCIP| must be set since in many cases the Normaliz method is faster and always finds a subdivision point if such exists. 
 
 The following table contains some performance data for subdivisions based on the Normaliz method (default mode, parallelization with 8 threads).
 \begin{center}
@@ -3742,6 +3748,7 @@ The following table contains some performance data for subdivisions based on the
 \hline
 & \ttt{hickerson-16} & \ttt{hickerson-18} & \ttt{knapsack\_11\_60}  \\ \hline
 simplex volume & $9.83\times 10^7$ & $4.17\times 10^{14}$ & $2.8\times 10^{14}$ \\ \hline
+stellar determinant sum & $3.93\times 10^6$  & $9.07\times 10^8$  & $1.15\times 10^8$\\ \hline
 volume under bottom  & $8.10\times 10^5$ & $3.86\times 10^7$ & $2.02\times 10^7$ \\ \hline 
 volume used     & $3.93\times 10^6$ & $6.56\times 10^7$ & $2.61\times 10^7$ \\ \hline
 %improvement factor & 25 &  $7.62\times10^6$ & $1.17\times 10^7$\\ \hline
@@ -3750,7 +3757,7 @@ runtime with subdivision    &  0.4 s & 24 s & 5.1 s \\ \hline
 \end{tabular}
 \end{center}
 
-A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in|.
+A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in| with option \verb|-q|.
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nested triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
 
@@ -4107,8 +4114,8 @@ nr_coeff_quasipol 2
 The output file shows the following information on the quasipolynomial:
 \begin{Verbatim}
 Hilbert quasi-polynomial of period 4:
-Only 2 highest coefficients computed.
-Their common period is 2.
+only 2 highest coefficients computed
+their common period is 2
 0:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15982652919 56262656
 1:  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15528493056 56262656
 with common denominator = 6939597901822221635907747840000

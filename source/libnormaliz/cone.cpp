@@ -3673,7 +3673,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     bool is_parallelotope=false;
     if(!ToCompute.test(ConeProperty::Approximate))
         is_parallelotope=check_parallelotope();
-    // cout << "PPPPP " << is_parallelotope << endl;
+    if(verbose && is_parallelotope)
+        verboseOutput() << "Polyhedron is parallelotope" << endl;
     
     if(is_parallelotope){
         SupportHyperplanes.remove_row(Dehomogenization);

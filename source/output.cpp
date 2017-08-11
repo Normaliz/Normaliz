@@ -657,8 +657,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
         if (HS.isHilbertQuasiPolynomialComputed()) { 
             out<<"Weighted Ehrhart quasi-polynomial of period " << period << ":" << endl;
             if(HS.get_nr_coeff_quasipol()>=0){
-                out << "Only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed." << endl;
-                out << "Their common period is " << HS.getHilbertQuasiPolynomial().size() << "." << endl;                        
+                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "." << endl;                        
             }
             Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
             HQP.pretty_print(out,true);
@@ -926,8 +926,8 @@ void Output<Integer>::write_files() const {
                 if (HS.isHilbertQuasiPolynomialComputed()) {
                     out<<"Hilbert quasi-polynomial of period " << period << ":" << endl;
                     if(HS.get_nr_coeff_quasipol()>=0){
-                        out << "Only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed." << endl;
-                        out << "Their common period is " << HS.getHilbertQuasiPolynomial().size() << "." << endl;                        
+                        out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                        out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;                        
                     }
                     Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
                     HQP.pretty_print(out,true);
@@ -983,7 +983,7 @@ void Output<Integer>::write_files() const {
         if(Result->isComputed(ConeProperty::IsGorenstein)) {
             if(Result->isGorenstein()){
                 out << "Monoid is Gorenstein " << endl;
-                out << "Generator of interior" << endl;
+                out << "Generator of interior:" << endl;
                 out << Result->getGeneratorOfInterior();              
             }
             else

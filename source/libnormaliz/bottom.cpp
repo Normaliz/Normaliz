@@ -90,7 +90,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
     bottom_candidates.splice(bottom_candidates.begin(), new_points);
     //Matrix<Integer>(bottom_candidates).pretty_print(cout);
 #ifdef NMZ_SCIP
-    if(verbose){
+    if(verbose && nmz_scip){
         verboseOutput() << "Computing bottom points using SCIP/projection" << endl;
     }
 #else

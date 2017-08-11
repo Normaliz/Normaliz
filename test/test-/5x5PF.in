@@ -14,4 +14,6 @@ equations 11
 grading
 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ProjectionFloat
+IsGorenstein
+NoExtRaysOutput
 
