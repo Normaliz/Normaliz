@@ -2,11 +2,12 @@
 
 ## [3.4.0] 2017-08-20
 
--- limit of parallelization via libnormaliz
+-- limit of parallelization via libnormaliz (and default limit of 8 threads)
 -- floating point numbers in input
--- project-and-lift algorithm for lattice points in polytopes, also with a floating point variant
--- improvement of subdivision of large simplices
--- use of Scip otional
+-- project-and-lift algorithm for lattice points in polytopes (default choice), also with a floating point variant
+-- subdivision of large simplices by project-and-lift (default choice)
+-- option to suppress output of extreme rays (can look rather ugly)
+-- use of Scip otional, even if Normaliz has been built with Scip
 -- fast Gorenstein test
 -- restriction of number of significant coefieicients of quasipolynomial
 -- definition of semi-open parallelepipeds in input and output of their lattice points
