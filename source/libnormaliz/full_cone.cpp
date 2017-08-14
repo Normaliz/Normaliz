@@ -2936,6 +2936,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     }
 
     evaluate_triangulation();
+    assert(nrPyramids[0]==0);
     evaluate_large_simplices(); // can produce level 0 pyramids
     use_bottom_points=false; // block new attempts for subdivision
     evaluate_stored_pyramids(0); // in case subdivision took place

@@ -960,7 +960,6 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         Full_Cone<Integer>& C = *C_ptr;
         
         assert(C.omp_start_level==omp_get_level()); // make sure that we are on the lowest parallelization level
-        assert(C.nrPyramids[0]==0);
         
         if (C_ptr->verbose) {
             verboseOutput() << "**************************************************" << endl;
