@@ -284,14 +284,14 @@ void try_offload_loc(long place,size_t max_level);
     vector<key_t>  find_start_simplex() const;
     void store_key(const vector<key_t>&, const Integer& height, const Integer& mother_vol,
                                   list< SHORTSIMPLEX<Integer> >& Triangulation);
-	void find_bottom_facets();                                  
+    void find_bottom_facets();                                  
     vector<list<vector<Integer>>> latt_approx(); // makes a cone over a lattice polytope approximating "this"
     void convert_polyhedron_to_polytope();
     void compute_elements_via_approx(list<vector<Integer> >& elements_from_approx); // uses the approximation
-	void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
-    void compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key); // the same for a simplicial subcone
+    void compute_deg1_elements_via_approx_global(); // deg 1 elements from the approximation
+    void compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key); // for a simplicial subcone by projecion
     void compute_sub_div_elements(const Matrix<Integer>& gens,list<vector<Integer> >& sub_div_elements,
-        bool best_point=false); //computes subdividing elements via approximation
+    bool best_point=false); //computes subdividing elements via approximation
     void select_deg1_elements(const Full_Cone& C);
 //    void select_Hilbert_Basis(const Full_Cone& C); //experimental, unused
     

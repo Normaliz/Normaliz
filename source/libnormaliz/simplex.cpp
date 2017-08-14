@@ -952,13 +952,15 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
         verboseOutput() << "simplex volume " << volume << endl;
     }
 
-    if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
-        // && C_ptr->approx_level == 1
-
+    if (C_ptr->use_bottom_points && (volume >= SimplexParallelEvaluationBound 
+        || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) ) 
         && (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading)))
-    {
+    {  // try subdivision
 
         Full_Cone<Integer>& C = *C_ptr;
+        
+        assert(C.omp_start_level==omp_get_level()); // make sure that we are on the lowest parallelization level
+        assert(C.nrPyramids[0]==0);
         
         if (C_ptr->verbose) {
             verboseOutput() << "**************************************************" << endl;
@@ -992,9 +994,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             // add new_points to the Top_Cone generators
             int nr_new_points = new_points.size();
             int nr_old_gen = C.nr_gen;
-            C.add_generators(Matrix<Integer>(new_points));
-            //cout << "generators: " << endl;
-            //C.Generators.pretty_print(cout);
+            Matrix<Integer> new_points_mat(new_points);
+            C.add_generators(new_points_mat);
             // remove this simplex from det_sum and multiplicity
             addMult(-volume,C.Results[0]);
             // delete this large simplex
@@ -1009,7 +1010,11 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
                 }
             }
 
-            // create subcone key
+            // create generators for bottom decomposition
+            // we start with the extreme rays of the recession cone
+            Matrix<Integer> BotGens=Generators;
+            BotGens.append_column( vector<Integer>(dim, 0) );
+            // now the polyhedron            
             vector<key_t> subcone_key(C.dim + nr_new_points);
             for (size_t i=0; i<C.dim; ++i) {
                 subcone_key[i] = key[i];
@@ -1017,63 +1022,42 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
             for (int i=0; i<nr_new_points; ++i) {
                 subcone_key[C.dim + i] = nr_old_gen + i;
             }
-
-            //compute optimal triangulation
             Matrix<Integer> polytope_gens(C.Generators.submatrix(subcone_key));
-            key_t zero_point = polytope_gens.nr_of_rows();
-            polytope_gens.append( vector<Integer>(dim, 0) );
-            polytope_gens.append_column( vector<Integer>(zero_point+1, 1) );
-            Full_Cone<Integer> bottom_polytope(polytope_gens);
+            polytope_gens.append_column( vector<Integer>(polytope_gens.nr_of_rows(), 1) );
+            BotGens.append(polytope_gens);
+
+            //compute bottom decomposition
+            Full_Cone<Integer> bottom_polytope(BotGens);
             bottom_polytope.keep_order = true;
-            bottom_polytope.keep_triangulation = true;
-            //bottom_polytope.do_all_hyperplanes = false;
+            // bottom_polytope.verbose=true;
             if (C_ptr->verbose) {
-                verboseOutput() << "Computing triangulation of bottom polytope... " << flush;
+                verboseOutput() << "Computing bottom decomposition ... " << flush;
             }
-            bool verbtmp = C_ptr->verbose;
-            C_ptr->verbose = false;
             time (&start);
-            bottom_polytope.compute();
+            bottom_polytope.dualize_cone(false);
             time (&end);
             dif = difftime (end,start);
-            C_ptr->verbose = verbtmp;
             if (C_ptr->verbose) {
                 verboseOutput() << "done." << endl;
-                verboseOutput() << "Computing triangulation took " << dif << " sec" << endl;
+                verboseOutput() << "Bottom decomposition took " << dif << " sec" << endl;
             }
-            assert(bottom_polytope.isComputed(ConeProperty::Triangulation));
+            assert(bottom_polytope.isComputed(ConeProperty::SupportHyperplanes));
 
-            // extract bottom triangulation
-            list< SHORTSIMPLEX<Integer> > bottom_triang;
-            typename list< SHORTSIMPLEX<Integer> >::iterator bottom_it;
-            bottom_it = bottom_polytope.Triangulation.begin();
-            typename list< SHORTSIMPLEX<Integer> >::const_iterator bottom_end;
-            bottom_end = bottom_polytope.Triangulation.end();
-            SHORTSIMPLEX<Integer> new_simplex;
-            new_simplex.key = vector<key_t>(dim);
-            key_t i;
-            if (C_ptr->verbose) {
-                verboseOutput() << "Extracting and evaluating triangulation from bottom polytope..." << endl;
-            }
- 
-            for (; bottom_it != bottom_end; ++bottom_it) {
-                sort(bottom_it->key.begin(), bottom_it->key.end());
-                //cout << "org " << bottom_it->key;
-                // we assume sorted keys
-                if (bottom_it->key.back() == zero_point) {
-                    for (i = 0; i < dim; ++i)
-                        new_simplex.key[i] = subcone_key[bottom_it->key[i]];
-                    new_simplex.height = bottom_it->vol; // best replacement for height
-                    new_simplex.vol    = bottom_it->vol;
-                    //cout << "new " << new_simplex.key;
-                    C.TriangulationBuffer.push_back(new_simplex);
-                    C.TriangulationBufferSize++;
+            // extract bottom decomposition
+            for(size_t i=0;i<bottom_polytope.Support_Hyperplanes.nr_of_rows();++i){
+                
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+                
+                if(bottom_polytope.Support_Hyperplanes[i][dim]>=0) // not a bottom facet
+                    continue;
+                vector<key_t>bottom_key;
+                for(size_t j=0;j<polytope_gens.nr_of_rows();++j){
+                    if(v_scalar_product(polytope_gens[j],bottom_polytope.Support_Hyperplanes[i])==0)
+                        bottom_key.push_back(subcone_key[j]);                    
                 }
+                C.Pyramids[0].push_back(bottom_key);
+                C.nrPyramids[0]++;
             }
-
-            // evaluate created triangulation
-            if (C.check_evaluation_buffer())
-                C.evaluate_triangulation();
 
             if (C_ptr->verbose) {
                 verboseOutput() << "**************************************************" << endl;
@@ -1081,7 +1065,7 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation(){
 
             return;
         }
-    }
+    } // end subdivision
 
     take_care_of_0vector(C_ptr->Results[0]);
 

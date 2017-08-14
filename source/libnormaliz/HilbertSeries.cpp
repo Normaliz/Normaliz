@@ -224,6 +224,9 @@ void HilbertSeries::collectData() const {
 	if (verbose) verboseOutput() << "Adding " << denom_classes.size() << " denominator classes..." << flush;
     map< vector<denom_t>, vector<num_t> >::iterator it;
     for (it = denom_classes.begin(); it != denom_classes.end(); ++it) {
+        
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        
         performAdd(it->second, it->first);
     }
     denom_classes.clear();

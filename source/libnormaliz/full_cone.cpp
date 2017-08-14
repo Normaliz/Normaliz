@@ -2753,11 +2753,11 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
         evaluate_large_simplex(j, lss);
     }
 
-    // decomposition might have created new simplices
-    evaluate_triangulation();
+    // decomposition might have created new simplices  -- NO LONGER, now in Pyramids[0]
+    // evaluate_triangulation();
 
     // also new large simplices are possible
-    if (!LargeSimplices.empty()) {
+    /* if (!LargeSimplices.empty()) {
         use_bottom_points = false;
         lss += LargeSimplices.size();
         if (verbose) {
@@ -2769,7 +2769,7 @@ void Full_Cone<Integer>::evaluate_large_simplices(){
         
             evaluate_large_simplex(j, lss);
         }
-    }
+    }*/ 
     assert(LargeSimplices.empty());
 
     for(size_t i=0;i<Results.size();++i)
@@ -2787,17 +2787,14 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
     }
 
     if (do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation) {
-        compute_deg1_elements_via_approx_simplicial(LargeSimplices.front().get_key());
+        compute_deg1_elements_via_projection_simplicial(LargeSimplices.front().get_key());
     }
     else {
-        // TODO
-        if(true){ // !(is_approximation && do_Hilbert_basis  && LargeSimplices.front().get_volume() > VolumeBound)){
-            LargeSimplices.front().Simplex_parallel_evaluation();
-            if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
-                Results[0].transfer_candidates();
-                update_reducers();
-            }
-        }
+        LargeSimplices.front().Simplex_parallel_evaluation();
+        if (do_Hilbert_basis && Results[0].get_collected_elements_size() > AdjustedReductionBound) {
+            Results[0].transfer_candidates();
+            update_reducers();
+    }
     }
     LargeSimplices.pop_front();
 }
@@ -2805,7 +2802,7 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Full_Cone<Integer>::compute_deg1_elements_via_approx_simplicial(const vector<key_t>& key){
+void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key){
 
     /* Full_Cone<Integer> SimplCone(Generators.submatrix(key));
     SimplCone.verbose=false; // verbose;
@@ -2939,7 +2936,10 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     }
 
     evaluate_triangulation();
-    evaluate_large_simplices();
+    evaluate_large_simplices(); // can produce level 0 pyramids
+    use_bottom_points=false; // block new attempts for subdivision
+    evaluate_stored_pyramids(0); // in case subdivision took place
+    evaluate_triangulation();
     FreeSimpl.clear();
     
     compute_class_group();
