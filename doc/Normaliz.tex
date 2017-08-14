@@ -784,7 +784,7 @@ x_2\ge0\,,\quad x_1\ge0\quad\text{ and }\quad
 15x_1+10x_2+6x_3\le30\,.
 $$
 
-\subsubsection{Only the lattice points}
+\subsubsection{Only the lattice points}\label{only_lattpoints}
 
 Suppose we want to compute only the lattice points in our polytope. In the language of graded monoids these are the degree $1$ elements, and so we add \verb|Deg1Elements| to our input file (\verb|polytope_deg1.in|):
 \begin{Verbatim}
@@ -1741,174 +1741,6 @@ degrees of extreme rays:
 
 If you repeat such a computation, you may very well get a different witness if several parallel threads find witnesses. Only one of them is delivered.
 
-
-\subsection{Inhomogeneous congruences}\label{ChinRem}
-
-We want to compute the nonnegative solutions of the simultaneous inhomogeneous congruences
-\begin{align*}
-	x_1 + 2x_2 &\equiv 3\pod 7,\\
-	2x_1 + 2x_2 &\equiv 4\pod{13}
-\end{align*}
-in two variables. The input file \verb|InhomCong.in| is
-\begin{Verbatim}
-amb_space 2
-constraints 2 symbolic
-x[1] + 2x[2] ~ 3 (7);
-2x[1] +  2x[2] ~ 4 (13);
-\end{Verbatim}
-This is an example of input of symbolic constraints. We use \verb|~| as the best ASCII character for representing the congruence sign $\equiv$.	
-
-Alternatively one can use a matrix in the input As for which we must move the right hand side over to the left.
-\begin{Verbatim}
-amb_space 2
-inhom_congruences 2
-1 2 -3 7
-2 2 -4 13
-\end{Verbatim}
-It is certainly harder to read.
-
-The first vector list in the output:
-
-\begin{Verbatim}
-3 module generators:
- 0 54 1
- 1  1 1
-80  0 1
-\end{Verbatim}
-Easy to check: if $(1,1)$ is a solution, then it must generate the module of solutions together with the generators of the intersections with the coordinate axes. Perhaps more difficult to find: 
-\begin{Verbatim}
-6 Hilbert basis elements of recession monoid:
- 0 91 0
- 1 38 0
- 3 23 0                                       1 vertices of polyhedron:
- 5  8 0                                       0 0 91
-12  1 0
-91  0 0
-\end{Verbatim}
-Strange, why is $(0,0,1)$, representing the origin in $\RR^2$, not listed as a vertex as well?
-Well the vertex shown represents an extreme ray in the lattice $\EE$, and $(0,0,1)$ does not belong to $\EE$.
-
-\begin{Verbatim}
-2 extreme rays of recession cone:
- 0 91 0
-91  0 0
-
-3 support hyperplanes of polyhedron (homogenized)
- 0 0 1
- 0 1 0
- 1 0 0
-
-1 congruences:
-58 32 1 91
-\end{Verbatim}
-Normaliz has simplified the system of congruences to a single one.
-\begin{Verbatim}
-3 basis elements of lattice:
-1 0  33
-0 1 -32
-0 0  91
-\end{Verbatim}
-Again, don't forget that Normaliz prints a basis of the efficient lattice $\EE$.
-
-\subsubsection{Lattice and offset}\label{offset_ex}
-
-The set of solutions to the inhomogeneous system is an affine lattice in $\RR^2$. The lattice basis of $\EE$ above does not immediately let us write down the set of solutions in the form $w+L_0$ with a subgroup $L_0$, but we can easily transform the basis of $\EE$: just add the first and the second vector to obtain $(1,1,1)$ -- we already know that it belongs to $\EE$ and any element in $\EE$ with last coordinate $1$ would do. Try the file \verb|InhomCongLat.in|:
-
-\begin{Verbatim}
-amb_space 2
-offset
-1 1
-lattice 2
-32 33
-91 91
-\end{Verbatim}
-
-
-\subsubsection{Variation of the signs}\label{sign_ex}
-
-Suppose we want to solve the system of congruences under the condition that both variables are negative (\verb|InhomCongSigns.in|): 
-
-\begin{Verbatim}
-amb_space 2
-inhom_congruences 2
-1 2 -3 7
-2 2 -4 13
-signs
--1 -1
-\end{Verbatim}
-The two entries of the sign vector impose the sign conditions $x_1\le 0$ and $x_2\le 0$.
-
-From the output we see that the module generators are more complicated now:
-\begin{Verbatim}
-4 module generators:
--11   0 1
- -4  -7 1
- -2 -22 1
-  0 -37 1
-\end{Verbatim}
-The Hilbert basis of the recession monoid is simply that of the nonnegative case multiplied by $-1$.
-
-\subsection{Integral closure and Rees algebra of a monomial ideal}\label{Rees}
-
-Next, let us discuss the example \ttt{MonIdeal.in} (typeset in two columns):
-
-\begin{Verbatim}
-amb_space 5
-rees_algebra 9
-1 2 1 2                 1 0 3 4
-3 1 1 3                 5 1 0 1
-2 5 1 0                 2 4 1 5
-0 2 4 3                 2 2 2 4
-0 2 3 4
-\end{Verbatim}
-The input vectors are the exponent vectors of a monomial ideal $I$  in the ring $K[X_1,X_2,X_3,X_4]$. We want to compute the normalization of the Rees algebra of the ideal. In particular we can extract from it the integral closure of the ideal. Since we must introduce an extra variable $T$, we have \verb|amb_space 5|.  
-
-In the Hilbert basis we see the exponent vectors of the $X_i$, namely the unit vectors with last component $0$. The vectors with last component $1$ represent the integral closure $\overline I$  of the ideal. There is a  vector with last component $2$, showing that the integral closure of $I^2$ is larger than~$\overline I^2$.
-\begin{Verbatim}
-16 Hilbert basis elements:
-0 0 0 1 0
-...
-5 1 0 1 1
-6 5 2 2 2
-
-11 generators of integral closure of the ideal:
-0 2 3 4
-...
-5 1 0 1
-\end{Verbatim}
-The output of the generators of $\overline I$ is the only place where we suppress the homogenizing variable for ``historic'' reasons. If we extract the vectors with last component $1$ from the extreme rays, then we obtain the smallest monomial ideal that has the same integral closure as $I$.
-\begin{Verbatim}
-10 extreme rays:
-0 0 0 1 0
-...
-5 1 0 1 1
-\end{Verbatim}
-The support hyperplanes which are not just sign conditions describe primary decompositions of all the ideals $\overline{I^k}$ by valuation ideals. It is not hard to see that none of them can be omitted for large $k$ (for example, see: W. Bruns and G. Restuccia,  Canonical modules of Rees algebras. J. Pure Appl. Algebra 201, 189--203 (2005)).
-\begin{Verbatim}
-23 support hyperplanes:
-0 0 0  0   1
-0 ...
-6 0 1  3 -13
-\end{Verbatim}
-
-\subsubsection{Only the integral closure}
-
-If only the integral closure of the ideal is to be computed, one can choose the input as follows (\verb|IntClMonId.in|):
-\begin{Verbatim}
-amb_space 4
-vertices 9
-1 2 1 2 1
-...
-2 2 2 4 1
-cone 4
-1 0 0 0
-0 1 0 0
-0 0 1 0
-0 0 0 1
-\end{Verbatim}
-
-The generators of the integral closure appear as module generators in the output and the generators of the smallest monomial ideal with this integral closure are the vertices of the polyhedron.
-
 \subsection{Convex hull computation/vertex enumeration}
 
 Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaiz can be restricted to this task by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
@@ -1984,7 +1816,7 @@ constraints 16
 ProjectionFloat
 \end{Verbatim}
 
-This examplem comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). This explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
+This example comes from numerical analysis; see Ch. Kacwin, J. Oettershagen and T. Ullrich (\url{arXiv:1606.00492}, Math. Monatshefte, to appear). This explains the decimal fractions in the input. Normaliz converts them immediately into ordinary fractions of type numerator/denominator, and then makes the input integral as usual.
 
 In the output file you can see to what integer vectors Normaliz has converted the inequalities of the input file:
 \begin{Verbatim}
@@ -2165,6 +1997,173 @@ The input is \verb|InhomIneqIH.in| ( \verb|InhomIneq.in| augmented by \verb|Inte
 0  1 0
 1 -1 1
 \end{Verbatim}
+
+\subsection{Inhomogeneous congruences}\label{ChinRem}
+
+We want to compute the nonnegative solutions of the simultaneous inhomogeneous congruences
+\begin{align*}
+	x_1 + 2x_2 &\equiv 3\pod 7,\\
+	2x_1 + 2x_2 &\equiv 4\pod{13}
+\end{align*}
+in two variables. The input file \verb|InhomCong.in| is
+\begin{Verbatim}
+amb_space 2
+constraints 2 symbolic
+x[1] + 2x[2] ~ 3 (7);
+2x[1] +  2x[2] ~ 4 (13);
+\end{Verbatim}
+This is an example of input of symbolic constraints. We use \verb|~| as the best ASCII character for representing the congruence sign $\equiv$.	
+
+Alternatively one can use a matrix in the input As for which we must move the right hand side over to the left.
+\begin{Verbatim}
+amb_space 2
+inhom_congruences 2
+1 2 -3 7
+2 2 -4 13
+\end{Verbatim}
+It is certainly harder to read.
+
+The first vector list in the output:
+
+\begin{Verbatim}
+3 module generators:
+0 54 1
+1  1 1
+80  0 1
+\end{Verbatim}
+Easy to check: if $(1,1)$ is a solution, then it must generate the module of solutions together with the generators of the intersections with the coordinate axes. Perhaps more difficult to find: 
+\begin{Verbatim}
+6 Hilbert basis elements of recession monoid:
+0 91 0
+1 38 0
+3 23 0                                       1 vertices of polyhedron:
+5  8 0                                       0 0 91
+12  1 0
+91  0 0
+\end{Verbatim}
+Strange, why is $(0,0,1)$, representing the origin in $\RR^2$, not listed as a vertex as well?
+Well the vertex shown represents an extreme ray in the lattice $\EE$, and $(0,0,1)$ does not belong to $\EE$.
+
+\begin{Verbatim}
+2 extreme rays of recession cone:
+0 91 0
+91  0 0
+
+3 support hyperplanes of polyhedron (homogenized)
+0 0 1
+0 1 0
+1 0 0
+
+1 congruences:
+58 32 1 91
+\end{Verbatim}
+Normaliz has simplified the system of congruences to a single one.
+\begin{Verbatim}
+3 basis elements of lattice:
+1 0  33
+0 1 -32
+0 0  91
+\end{Verbatim}
+Again, don't forget that Normaliz prints a basis of the efficient lattice $\EE$.
+
+\subsubsection{Lattice and offset}\label{offset_ex}
+
+The set of solutions to the inhomogeneous system is an affine lattice in $\RR^2$. The lattice basis of $\EE$ above does not immediately let us write down the set of solutions in the form $w+L_0$ with a subgroup $L_0$, but we can easily transform the basis of $\EE$: just add the first and the second vector to obtain $(1,1,1)$ -- we already know that it belongs to $\EE$ and any element in $\EE$ with last coordinate $1$ would do. Try the file \verb|InhomCongLat.in|:
+
+\begin{Verbatim}
+amb_space 2
+offset
+1 1
+lattice 2
+32 33
+91 91
+\end{Verbatim}
+
+
+\subsubsection{Variation of the signs}\label{sign_ex}
+
+Suppose we want to solve the system of congruences under the condition that both variables are negative (\verb|InhomCongSigns.in|): 
+
+\begin{Verbatim}
+amb_space 2
+inhom_congruences 2
+1 2 -3 7
+2 2 -4 13
+signs
+-1 -1
+\end{Verbatim}
+The two entries of the sign vector impose the sign conditions $x_1\le 0$ and $x_2\le 0$.
+
+From the output we see that the module generators are more complicated now:
+\begin{Verbatim}
+4 module generators:
+-11   0 1
+-4  -7 1
+-2 -22 1
+0 -37 1
+\end{Verbatim}
+The Hilbert basis of the recession monoid is simply that of the nonnegative case multiplied by $-1$.
+
+\subsection{Integral closure and Rees algebra of a monomial ideal}\label{Rees}
+
+Next, let us discuss the example \ttt{MonIdeal.in} (typeset in two columns):
+
+\begin{Verbatim}
+amb_space 5
+rees_algebra 9
+1 2 1 2                 1 0 3 4
+3 1 1 3                 5 1 0 1
+2 5 1 0                 2 4 1 5
+0 2 4 3                 2 2 2 4
+0 2 3 4
+\end{Verbatim}
+The input vectors are the exponent vectors of a monomial ideal $I$  in the ring $K[X_1,X_2,X_3,X_4]$. We want to compute the normalization of the Rees algebra of the ideal. In particular we can extract from it the integral closure of the ideal. Since we must introduce an extra variable $T$, we have \verb|amb_space 5|.  
+
+In the Hilbert basis we see the exponent vectors of the $X_i$, namely the unit vectors with last component $0$. The vectors with last component $1$ represent the integral closure $\overline I$  of the ideal. There is a  vector with last component $2$, showing that the integral closure of $I^2$ is larger than~$\overline I^2$.
+\begin{Verbatim}
+16 Hilbert basis elements:
+0 0 0 1 0
+...
+5 1 0 1 1
+6 5 2 2 2
+
+11 generators of integral closure of the ideal:
+0 2 3 4
+...
+5 1 0 1
+\end{Verbatim}
+The output of the generators of $\overline I$ is the only place where we suppress the homogenizing variable for ``historic'' reasons. If we extract the vectors with last component $1$ from the extreme rays, then we obtain the smallest monomial ideal that has the same integral closure as $I$.
+\begin{Verbatim}
+10 extreme rays:
+0 0 0 1 0
+...
+5 1 0 1 1
+\end{Verbatim}
+The support hyperplanes which are not just sign conditions describe primary decompositions of all the ideals $\overline{I^k}$ by valuation ideals. It is not hard to see that none of them can be omitted for large $k$ (for example, see: W. Bruns and G. Restuccia,  Canonical modules of Rees algebras. J. Pure Appl. Algebra 201, 189--203 (2005)).
+\begin{Verbatim}
+23 support hyperplanes:
+0 0 0  0   1
+0 ...
+6 0 1  3 -13
+\end{Verbatim}
+
+\subsubsection{Only the integral closure of the ideal}
+
+If only the integral closure of the ideal is to be computed, one can choose the input as follows (\verb|IntClMonId.in|):
+\begin{Verbatim}
+amb_space 4
+vertices 9
+1 2 1 2 1
+...
+2 2 2 4 1
+cone 4
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 1
+\end{Verbatim}
+
+The generators of the integral closure appear as module generators in the output and the generators of the smallest monomial ideal with this integral closure are the vertices of the polyhedron.
 
 \subsection{Starting from a binomial ideal}\label{binom_ex}
 
@@ -3407,7 +3406,7 @@ The options that control the execution are:
 	is allowed access on your system. The default value is
 	$8$. (Your operating system may set a lower limit).
 	
-	\ttt{-x=0} raises the limit set by Normaliz to $\infty$.
+	\ttt{-x=0} swiches off the limit set by Normaliz.
 	
 	If you want to run
 	Normaliz in a strictly serial mode, choose
@@ -3473,7 +3472,7 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{More examples}\label{MoreExamples}
 
-\subsection{Lattice points in polytopes}\label{LattPoints}
+\subsection{Lattice points in polytopes once more}\label{LattPoints}
 
 There are two ways to define polytopes for Normaliz:
 \begin{arab}
@@ -3482,7 +3481,7 @@ There are two ways to define polytopes for Normaliz:
 \end{arab}
 As far as the computation of lattice points is concerned, there is essentially no difference in the algorithms that can be used.
 
-However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as `degree $1$ elements of the Hilbert basis'' wheras they are the `module generators'' in the inhomogeneous case.
+However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as ``degree $1$ elements of the Hilbert basis'' wheras they are the ``module generators'' in the inhomogeneous case.
 
 Normaliz has three main algorithms for the computation of lattice points of which two have two variants each:
 \begin{arab}
@@ -3631,9 +3630,9 @@ It is not advisable to use approximation for polytopes with a large number of ve
 
 Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|, but \verb|-1| (the default choice project-and-lift) is also quite good. (The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.) The primal algorithm or approximation fail miserably.
 
-On the other hand, the dual algorithm degenerates terribly already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed already. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
+On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed already. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
 
-In certain cases Normaliz (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
+In certain cases (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
 
 \subsection{The bottom decomposition}\label{bottom_dec}
 
