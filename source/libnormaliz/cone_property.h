@@ -57,6 +57,7 @@ namespace ConeProperty {
         Grading,
         Dehomogenization,
         WitnessNotIntegrallyClosed,
+        GeneratorOfInterior,
         // Cardinalities
         TriangulationSize,
         // Integer valued,        

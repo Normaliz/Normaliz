@@ -168,6 +168,9 @@ void ConeProperties::set_preconditions() {
     if(CPs.test(ConeProperty::ProjectionFloat))
         CPs.set(ConeProperty::Projection);
     
+    if(CPs.test(ConeProperty::GeneratorOfInterior))
+        CPs.set(ConeProperty::IsGorenstein);
+    
     if(CPs.test(ConeProperty::IsGorenstein))
         CPs.set(ConeProperty::SupportHyperplanes);
     
@@ -357,6 +360,7 @@ void ConeProperties::check_sanity(bool inhomogeneous) {
                   || prop == ConeProperty::IsDeg1ExtremeRays
                   || prop == ConeProperty::Integral
                   || prop == ConeProperty::IsGorenstein
+                  || prop == ConeProperty::GeneratorOfInterior
                 ) {
                     throw BadInputException(toString(prop) + " not computable in the inhomogeneous case.");
                 }
@@ -447,9 +451,10 @@ namespace {
         CPN.at(ConeProperty::IsGorenstein) = "IsGorenstein";
         CPN.at(ConeProperty::NoPeriodBound) = "NoPeriodBound";
         CPN.at(ConeProperty::SCIP) = "SCIP";
+        CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 69,
+        static_assert (ConeProperty::EnumSize == 70,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

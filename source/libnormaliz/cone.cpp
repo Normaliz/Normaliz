@@ -1727,7 +1727,7 @@ vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed() {
 
 template<typename Integer>
 vector<Integer> Cone<Integer>::getGeneratorOfInterior() {
-    compute(ConeProperty::IsGorenstein);
+    compute(ConeProperty::GeneratorOfInterior);
     return GeneratorOfInterior;
 }
 
@@ -2052,8 +2052,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
                 << endl;
             throw NotComputableException(ConeProperty::ModuleGeneratorsOverOriginalMonoid);
         }
-        if (ToCompute.test(ConeProperty::IsIntegrallyClosed)
-                || ToCompute.test(ConeProperty::WitnessNotIntegrallyClosed)) {
+        if (ToCompute.test(ConeProperty::IsIntegrallyClosed)) {
             errorOutput() << "ERROR: Original monoid is not defined, cannot check it for being integrally closed."
                 << endl;
             throw NotComputableException(ConeProperty::IsIntegrallyClosed);
@@ -3550,7 +3549,7 @@ void Cone<Integer>::NotComputable (string message){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::check_Gorenstein (ConeProperties&  ToCompute){
+void Cone<Integer>::check_Gorenstein(ConeProperties&  ToCompute){
     
     if(!ToCompute.test(ConeProperty::IsGorenstein) || isComputed(ConeProperty::IsGorenstein))
         return;
@@ -3562,6 +3561,8 @@ void Cone<Integer>::check_Gorenstein (ConeProperties&  ToCompute){
     if(dim==0){
         Gorenstein=true;
         is_Computed.set(ConeProperty::IsGorenstein);
+        GeneratorOfInterior=vector<Integer> (dim,0);
+        is_Computed.set(ConeProperty::GeneratorOfInterior);
         return;        
     }
     Matrix<Integer> TransfSupps=BasisChangePointed.to_sublattice_dual(SupportHyperplanes);
@@ -3571,6 +3572,7 @@ void Cone<Integer>::check_Gorenstein (ConeProperties&  ToCompute){
     if(TransfIntGen.size()!=0 && v_scalar_product(TransfIntGen,TransfSupps[0])==1){
         Gorenstein=true;
         GeneratorOfInterior=BasisChangePointed.from_sublattice(TransfIntGen);
+        is_Computed.set(ConeProperty::GeneratorOfInterior);
     }
     is_Computed.set(ConeProperty::IsGorenstein);
 }
