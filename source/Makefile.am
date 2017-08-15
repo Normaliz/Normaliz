@@ -70,3 +70,7 @@ EXTRA_DIST += COPYING INSTALL
 
 EXTRA_DIST += libnormaliz/README
 
+EXTRA_DIST += outerpar/outerpar.cpp
+EXTRA_DIST += outerpar/Makefile.classic
+EXTRA_DIST += outerpar/small_gens.mat
+
