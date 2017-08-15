@@ -92,6 +92,7 @@ autom4te.cache
 /example/Makefile
 /test/Makefile
 /source/maxsimplex/maxsimplex
+/source/outerpar/outerpar
 test/run_tests
 CoCoA
 /Qexample/Makefile.in

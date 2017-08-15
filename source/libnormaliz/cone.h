@@ -83,6 +83,8 @@ public:
 //---------------------------------------------------------------------------
 //                    Constructors, they preprocess the input
 //---------------------------------------------------------------------------
+    
+    Cone(); //default constructor
 
     /* give up to 3 matrices as input
      * the types must be pairwise different

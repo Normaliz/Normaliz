@@ -179,6 +179,10 @@ bool denominator_allowed(InputType input_type){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Cone<Integer>::Cone(){
+}
+
+template<typename Integer>
 Cone<Integer>::Cone(InputType input_type, const vector< vector<Integer> >& Input) {
     // convert to a map
     map< InputType, vector< vector<Integer> > > multi_input_data;

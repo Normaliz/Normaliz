@@ -1764,7 +1764,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level){
     if(Pyramids[level].empty())
         return;
 
-    assert(!omp_in_parallel());
+    assert(omp_get_level()==omp_start_level); // assert(!omp_in_parallel());
     assert(!is_pyramid);
    
     if (Pyramids.size() < level+2) {
