@@ -206,13 +206,11 @@ Performance data of Normaliz can be found in \cite{BIS}.
 
 \subsection{Platforms, implementation and access from other systems}
 
-Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided on our homepage can be run in the Linux subsystem that is available in certain versions of MS Windows 10.
+Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem that is available in certain versions of MS Windows 10.
 
 Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP.
 
-The executables provided by us use the integer optimization program SCIP \cite{Scip} for certain subtasks, but the inclusion of SCIP must be activated at compile time.
-
-Normaliz consists of two parts: the front end normaliz for input and output and the C++ library libnormaliz that does the computations.
+Normaliz consists of two parts: the front end`` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
 Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche and with contributions by Justin Shenk and Richard Sieg.
 
@@ -273,7 +271,7 @@ In 3.3.0:
 	\item controlled interruption of Normaliz.	
 \end{arab}
 
-In 3.4.0
+In 3.4.0:
 
 \begin{arab}
 	\item limit of parallelization via libnormaliz,
@@ -281,7 +279,7 @@ In 3.4.0
 	\item project-and-lift algorithm for lattice points in polytopes, also with a floating point variant,
 	\item significantly improved subdivision, equivalent replacement for Scip
 	\item fast Gorenstein test,
-	\item restriction of number of significant coefieicients of quasipolynomial,
+	\item restriction of number of significant coefficients of quasipolynomial,
 	\item definition of semi-open parallelepipeds in input and output of their lattice points.
 \end{arab}
 
@@ -385,7 +383,7 @@ will run \ttt{small.in} from the directory \ttt{example}. On Windows we must cha
 .\normaliz -c example\small
 \end{Verbatim}
 
-The commands given above will run Normaliz with the full parallelization that your system can deliver. For the very small examples in this tutorial you may want to add \ttt{-x=1} to suppress parallelization.
+The commands given above will run Normaliz with the at most $8$ parallel threads. For the very small examples in this tutorial you may want to add \ttt{-x=1} to suppress parallelization. For large examples, you can increase the number of parallel threads by \verb|-x=<N>| where \verb|<N>| is the number of threads that you want to suggest. See Section \ref{exec}.
 
 As long as you don't specify a computation goal on the command line or in the input file, Normaliz will use the \emph{default computation goals}:
 \begin{verbatim}
@@ -797,7 +795,7 @@ polytope 4
 Deg1Elements
 /* This is our first explicit computation goal*/
 \end{Verbatim}
-We have used this opportunity to include a comment in the input file.
+We have used this opportunity to include a comment in the input file. The computation of lattice points in a polytope will be taken up again in Sections \ref{project_example} and \ref{LattPoints}.
 
 We lose all information on the Hilbert series, and from the Hilbert basis we only retain the degree $1$ elements.
 
@@ -1911,6 +1909,19 @@ Not all polytopes are parallelotopes, and in most cases Normaliz must compute th
 \end{itemize}
 if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however been included in the output file if it is available.)
 
+On the other hand, the information provided by the vertices may be important. Instead of the unreadable integer output shon above, you can ask for
+\begin{itemize}
+	\itemtt [ExtRaysFloat]
+\end{itemize}
+Then the vertices of polyhedra are printed in floating point format:
+\begin{Verbatim}
+256 vertices of polyhedron:
+-3.41637   -1.11691     1.0521  ... 0.435796  -0.222167          1 
+-3.41637  -0.946868   0.435796  ...  -1.0521   0.632677          1
+...
+\end{Verbatim}
+Notre that they can only be printed if they have been computed. In this example the option \verb|SupportHyperplanes| should be added.
+
 \subsection{The integer hull}\label{IntHull}
 
 The integer hull of a polyhedron $P$ is the convex hull of the set of lattice points in $P$ (despite of its name, it usually does not contain $P$). Normaliz computes by first finding the lattice points and then computing the convex hull. The computation of the integer hull is requested by the computation goal \verb|IntegerHull|.
@@ -2310,7 +2321,7 @@ Alternatively one can define the ambient space implicitly by
 \begin{Verbatim}
 amb_space auto
 \end{Verbatim}
-In this case the dimension of the ambient space is determined by Normaliz from the first formatted vector or matrix in the input file. It is clear that any input item that requites the knowledge of the dimension can only follow after the first formatted vector or matrix.
+In this case the dimension of the ambient space is determined by Normaliz from the first formatted vector or matrix in the input file. It is clear that any input item that requites the knowledge of the dimension can only follow the first formatted vector or matrix.
 
 \emph{In the following the letter $d$ will always denote the dimension set with} \verb|amb_space|.
 
@@ -2868,9 +2879,9 @@ This type is accessory. A $\ZZ$-valued grading can be specified in two ways:
 	\item \emph{explicitly} by including a grading in the input, or
 	\item \emph{implicitly}. In this case Normaliz checks whether
 	the extreme integral generators of the monoid lie in an
-	(affine) hyperplane $A$ given by an equation $\lambda(x)=1$ with a $\ZZ$-linear form $\lambda$. If so, then  $\lambda$ is used as the grading.
+	(affine) hyperplane $A$ given by an equation $\lambda(x)=1$ with a $\ZZ$-linear form $\lambda$. If so, then  $\lambda$ is used as the grading.\smallskip
 	
-	\emph{Implicit gradings are only possible for homogeneous computations.}
+	\emph{Implicit gradings are only possible for homogeneous computations.}\smallskip
 	
 	If the attempt to find an implicit grading causes an arithmetic overflow and \texttt{verbose} has been set (say, by the option\texttt{-c}), then Normaliz issues the warning
 	\begin{Verbatim}
@@ -3220,11 +3231,13 @@ The last three computation goals are not really useful for Normaliz since they w
 
 There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use infinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with infinite precision.
 
+Infinite precision does not mean that overflows are completely impossible. In fact, Normaliz requires numbers of type `degree'' fit the type \verb|long| (typically 64 bit on 64 bit systems). If an overflow occurs in the computation of such a number, it cannot be remedied.
+
 The amount of computations done with infinite precision is usually very small, but the transformation of the computation results from 64 bit integers to infinite precision may take some time. If you need the highest possible speed, you can suppress infinite precision completely by 
 \begin{itemize}
 	\itemtt[LongLong]	
 \end{itemize}
-However, in this case Normaliz cannot restart a failed computation.
+With this option, Normaliz cannot restart a failed computation.
 
 On the other hand, the $64$ bit attempt can be bypassed by
 \begin{itemize}
@@ -3457,7 +3470,12 @@ Extreme rays and vertices may have very long integer coordinates. One can suppre
 	\itemtt[NoExtRaysOutput] 
 \end{itemize}
 
-\verb|NoExtRaysOutput| is  not a cone property.
+If you want to see them in floating point format, use
+\begin{itemize}
+	\itemtt[ExtRaysFloat] 
+\end{itemize}
+
+\verb|NoExtRaysOutput| and \verb|ExtRaysFloat| are  not cone properties.
 
 \subsection{Overriding the options in the input file}
 
@@ -3566,7 +3584,7 @@ The use of \verb|ProjectionFloat| or any other algorithmic varaiant is independe
 
 With this algorithm, Normaliz compues a triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes deined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarsded right away and that no reduction is necessary. 
 
-The complications that can arise are (i) a large triangulation or (ii) large determinants of the simpcial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinats. We can see this by looking at the terminal output of \verb|max_polytope_can.in|, computed with \verb|-cP|:
+The complications that can arise are (i) a large triangulation or (ii) large determinants of the simpcial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinats. We can see this by looking at the terminal output of \verb|max_polytope_cand.in|, computed with \verb|-cP|:
 \begin{Verbatim}
 ...
 evaluating 49 simplices
@@ -3761,7 +3779,7 @@ Compare \verb|2equations.in| and \verb|2equations_default.in| for an impression 
 
 \subsection{Checking  the Gorenstein property}\label{Gorenstein}
 
-If the Hilbert series has been computed, one can immediately see whether the monoid is Gorenstein: this is the case if and oonly if the numerator is a symmetric polynomial, and Normaliz indicates that (see Section \ref{job_dual}). However, there is a much more efficient way to check the Gorenstein property, which does not even require the existence of a grading: we must test whether the \emph{dual} cone has degree $1$ extreme rays. This amounts to checking the existence of an implicit grading on the dual cone.
+If the Hilbert series has been computed, one can immediately see whether the monoid computed by Normaliz is Gorenstein: this is the case if and only if the numerator is a symmetric polynomial, and Normaliz indicates that (see Section \ref{job_dual}). However, there is a much more efficient way to check the Gorenstein property, which does not even require the existence of a grading: we must test whether the \emph{dual} cone has degree $1$ extreme rays. This amounts to checking the existence of an implicit grading on the dual cone.
 
 This very efficient Gorenstein test is activated by the option \ttt{IsGorenstein}, equivalently \ttt{-G} on the command line. We take \verb|5x5Gorenstein.in|:
 
@@ -3822,8 +3840,8 @@ Whenever Normaliz has used symmetrization, it writes the file \verb|<project>.sy
 
 If you use the option \verb|Symmetrize|, then the behavior depends on the other options:
 \begin{arab}
-\item If neither the \verb|HilbertSeries| or \verb|Multiplicity| is to be computed, Normaliz writes only the output file \verb|<project>.symm.out| computed with \verb|SupportHyperplanes|.
-\item If one of these goals is to be computed, Normaliz will do the symmetrization, regardless of the dimension inequality above.
+\item If neither the \verb|HilbertSeries| nor \verb|Multiplicity| is to be computed, Normaliz writes only the output file \verb|<project>.symm.out| computed with \verb|SupportHyperplanes|.
+\item If one of these goals is to be computed, Normaliz will do the symmetrization, regardless of the dimension inequality above (and often this makes sense).
 \end{arab}
 By doing step (1) first, the user gets useful information of what to expect by symmetrization. In a second run, one can add \verb|HilbertSeries| or \verb|Multiplicity| if (1) was satisfactory.
 
@@ -3856,7 +3874,7 @@ Symmetrization is a special type of computations with a polynomial weight, and t
 
 \subsection{Computations with a polynmial weight}\label{Poly_comp}
 
-For such graded monoids $M$, which arises as the intersection $M=C\cap L$ of a rational cone$C$  and a lattice $L$,  Normaliz computes the volume of
+For a graded monois $M$, which arises as the intersection $M=C\cap L$ of a rational cone$C$  and a lattice $L$,  Normaliz computes the volume of
 the rational polytope
 $$
 P=\{x\in \RR_+ M: \deg x=1\},
@@ -3936,9 +3954,9 @@ The input format of polynomials has been discussed in Section \ref{poly_input}.
 
 The terminal output contains a factorization of the polynomial as well as some computation results. From the terminal output you may also recognize that Normaliz first computes the triangulation and the Stanley decomposition and then applies the algorithms for integrals and  weighted Ehrhart series.
 
-\emph{Remarks} \enspace (1) Large computations with many parallel threads require much memory due to the fact that very long polynomials must be stored.
+\emph{Remarks} \enspace (1) Large computations with many parallel threads may require much memory due to the fact that very long polynomials must be stored. Another reason for large memory usage can be the precomputed triangulation or Stanley decomposition.
 
-(2) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under the suitable conditions it is applied automatically.)
+(2) You should think about the option \verb|BottomDecomposition|. It will be applied to the symmetrized input. (Under suitable conditions it is applied automatically.)
  
 
 \subsubsection{A weighted Ehrhart series}
@@ -4528,7 +4546,7 @@ The first $3$ entries in each line are the indices of the extreme rays with resp
 
 In our example all facets of the first simplicial cone are kept, and from the second simplicial cone the facet opposite to the third extreme ray (with index $4$ relative to \verb|tgn|) must be removed.
 
-The diskoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by Köppe and Verdoolaege \cite{KV}.
+The disjoint decomposition which is the basis of all Hilbert series computations uses the algorithm suggested by Köppe and Verdoolaege \cite{KV}.
 
 
 \subsection{Exporting the Stanley decomposition}\label{Stanley}
@@ -4716,7 +4734,7 @@ F=\para(u_1,\dots,u_d)=\{q_qu_1+\dots+q_du_d: 0\le q_i<1  \}.
 $$
 Set $F'=v+F$. Then the translates $u+F'$, $u\in U$, tile $\RR^d$; so $F'$ is a fundamental domain for the action of $U$ on $\RR^d$ by translation, and we call it $F'$ the \emph{fundamental} parallelepiped of $C'$  (with respect to $U$). Every point in $\RR^d$ differs from exactly one point in $F'$ by an element of $U$. This holds in particular for the lattice points.
 
-One of the main basic tasks if Normaliz is the computation of the lattice points in $F'$, especially in the case $v=0$ (but not only). Looking back at the examples in Section \ref{MinMod}, we see that we can in fact compute and export these lattice points via the computation goal \verb|ModuleGeneratorsOverOriginalMonoid |. 
+One of the main basic tasks if Normaliz is the computation of the lattice points in $F'$, especially in the case $v=0$ (but not only). Looking back at the examples in Section \ref{MinMod}, we see that we can in fact compute and export these lattice points via the computation goal \verb|ModuleGeneratorsOverOriginalMonoid|. 
 
 Often however, an additional complication comes up: we  must shift $F'$ by an infinitesimally small vector in order to exclude certain facets of $C'$. This would be difficult in Normaliz without the input type \verb|open_facets| (see Section \ref{open_facets}). Recall that this is a $0$-$1$-vector whose entries $1$ indicate which facets must be avoided: if its $i$-th entry is $1$, then the facet opposite to $v+u_i$ must be made `open''.
 
@@ -4946,7 +4964,7 @@ writes additional output files whose names are of type
 \end{Verbatim}
 where each row has \verb|<n>| entries. Exceptions are the files with suffixes \verb|cst|, \verb|inv|, \verb|esp|.
 
-Note that the files are only written if they would contain at laest one row.
+Note that the files are only written if they would contain at least one row.
 
 As pointed out in Section \ref{outcontrol}, the optional output files for the integer hull are the same as for the original computation, as far as their content has been computed.
 
@@ -5166,13 +5184,11 @@ self-explanatory. Nevertheless we give an overview:
 find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
 subdirectories.
 
-\item The subdirectory \ttt{source} contains the source
-files.
-The subdirectory \ttt{genEhrhart} contains the
-NmzIntegrate source.
+\item The subdirectory \ttt{source} contains the source files.
+The subdirectory \ttt{genEhrhart} contains the NmzIntegrate source.
 
-\item The subdirectory \ttt{doc} contains the file you are
-reading and further documentation.
+\item The subdirectory \ttt{doc} contains the file you are reading 
+and further documentation.
 
 \item In the subdirectory \ttt{example} are the input
 files for some examples. It contains all named
@@ -5256,7 +5272,7 @@ The installation will store the files in standard locations, and we assume in th
 
 \subsection{Optional packages}
 
-As discussed in the manual, Normaliz can profit from the use of SCIP. If you want
+As discussed in the manual, Normaliz can use SCIP. If you want
 to use it, SCIP must be installed before the compilation of Normaliz, independently of
 the method used for building Normaliz.
 
@@ -7065,37 +7081,3 @@ $n$}. Research report, ISSAC 96, ACM Press 1996.
 Social Choice and Welfare \textbf{40} (2013), 1097--1110.
 \end{thebibliography}
 \end{document}
-
-
-\subsection{A very large computation}\label{ele3}
-
-The example \verb|CondEffPlur.in| is one of the largest that Normaliz has mastered. The goal is to compute the Condorcet efficiency of plurality voting for $4$ candidates  (see \cite{BS} and the references therein), even in the refined form of the Hilbert series. The Hilbert basis computation is extremely fast in \verb|DualMode| so that it can be used as input. We tried three different setups (each with $30$ parallel threads): 
-
-\begin{center}
-	\begin{tabular}{|r|r|r|r|}\hline
-		input	& triangulation size& determinant sum& computation time\\ \hline
-		inequalities & 347,225,775,338 &4,111,428,313,448  & 112:43:17 h\\ \hline
-		inequalities, \ttt{-b} & 288,509,390,884 & 1,509,605,641,358 & 84:26:19 h\\ \hline
-		Hilbert basis, \ttt{-b}& 335,331,680,623&1,433,431,230,802& 97:50:05 h \\ \hline
-	\end{tabular}
-\end{center}
-
-The results show that the determinant sum of the bottom decomposition based on the extreme rays (resulting from dualizing the input cone) comes very close to the absolute minimum that is reached by the Hilbert basis as input. The latter leads to a finer triangulation, which, despite of the smaller determinant sum, increases the computation time.
-
-As long as the determinants are rather small (as in this computation), the two cases $\det=1$ and $\det>1$ make the difference in computation complexity. In the first case Normaliz must solve $1$ or $2$ linear systems for the simplicial cone, in the latter $2$ or $3$. 
-
-Note: though Normaliz can compute this example, it is really a case for NmzIntegrate; see \cite{BIS}. It converts the computation time from days to hours.
-
-
-\subsection{Contributors}
-
-The following colleagues have contributed to Normaliz (in addition to the team members):
-\begin{itemize}
-	\item Anna Bigatti and John Abbot (CoCoA interface),
-	\item Sebastian Gutsche (PyNormaliz),
-	\item Max Horn and Sebastian Gutsche (GAP interface),
-	\item Gesa Kämpf (Macaulay2 package),
-\end{itemize}
-
-
-Depending on your Normaliz installation, the compuatation above can have taken two different routes since Normaliz tries to use symmetrization (see Section \ref{symmetrize}): (i) if it can't find nmzIntegrate, symmetrizatuin is unavailable, and Normaliz will just use the primal algorithm for the computation; (ii) if it finds nmzIntegrate, symmetrization will indeed be used. Have a look at the terminal output, and you will recognize what Normaliz has done. Don't be frightened by the somewhat complicated structure of program calls in the case of symmetrization.

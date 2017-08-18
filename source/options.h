@@ -82,6 +82,9 @@ public:
     void activateNoExtRaysOutput() {
         if (!ignoreInFileOpt) no_ext_rays_output = true;
     }
+    void activateExtRaysFloar() {
+        if (!ignoreInFileOpt) ext_rays_float = true;
+    }
 
     const ConeProperties& getToCompute() const {
         return to_compute;
@@ -96,6 +99,9 @@ public:
     
     bool isNoExtRaysOutput() const {
         return no_ext_rays_output;
+    }
+    bool isExtRaysFloat() const {
+        return ext_rays_float;
     }
 
     const string& getProjectName() const {
@@ -121,6 +127,7 @@ private:
 	// bool use_Big_Integer; now in ConeProperty
 	bool use_long_long;
         bool no_ext_rays_output;
+        bool ext_rays_float;
         
     bool ignoreInFileOpt;
 

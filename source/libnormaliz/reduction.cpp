@@ -279,7 +279,7 @@ void CandidateList<Integer>::auto_reduce_sorted(){
         return;
 
     CandidateList<Integer> Irreducibles(dual), CurrentReducers(dual);
-    long irred_degree;
+    Integer irred_degree;
     size_t cs=Candidates.size();
     if(verbose && cs > 1000){
             verboseOutput() << "auto-reduce " << cs << " candidates, degrees <= "; 

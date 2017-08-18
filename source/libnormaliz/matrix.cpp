@@ -2601,8 +2601,6 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         }
     }
 }
- 
-
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template Matrix<long>  readMatrix(const string project);
