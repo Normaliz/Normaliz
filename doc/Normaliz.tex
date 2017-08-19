@@ -196,7 +196,7 @@ the Hilbert quasipolynomial of the monoid or set of lattice points in a polyhedr
 Ehrhart series and Lebesgue integrals of polynomials over
 rational polytopes.
 
-Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This extends the scope of Normaliz to certain nonrational polyhredra, but limits its applicability to convex hull computations and triangulations since finite generation of the lattice points in such polyhedra is no longer given.
+Normaliz now has a variant called QNormaliz. Its basic number class are elements of a subfield of $\RR$ instead of integers. This extends the scope of Normaliz to certain nonrational polyhedra, but limits its applicability to convex hull computations and triangulations since finite generation of the lattice points in such polyhedra is no longer given.
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
@@ -622,7 +622,7 @@ Indeed, the polyhedron has a single vertex, namely $(3/5,4/5)$.
 2 1 0                                  0  0  1                                
                                        3 -1 -1
 \end{Verbatim}
-Two support hyperplanes are exactly those that we have used to define the polyhedron -- and it has only $2$. But Normaliz always outputs the support hyperplanes that are needed for the cone that one obtains by homogenizing the polyhedron, as indicated by `homolgenized''. The homogenizing variable is always $\ge 0$. In this case the support hyperplane $(0,0,1)$ is essential for the description of the cone. Note that it need not always appear.
+Two support hyperplanes are exactly those that we have used to define the polyhedron -- and it has only $2$. But Normaliz always outputs the support hyperplanes that are needed for the cone that one obtains by homogenizing the polyhedron, as indicated by `homogenized''. The homogenizing variable is always $\ge 0$. In this case the support hyperplane $(0,0,1)$ is essential for the description of the cone. Note that it need not always appear.
 
 
 \subsection{A lattice polytope}\label{lattice_polytope}\label{polytope_ex}
@@ -949,7 +949,7 @@ grading
 unit_vector 3
 HilbertSeries
 \end{Verbatim}
-At this point we have to help Normaliz because it has no way to guess that we want to investigate the polytope defined by the inequalities and the choice $x_3=1$. This is achieved by the specification of the grading that maps every vector to its tthird coordinate.
+At this point we have to help Normaliz because it has no way to guess that we want to investigate the polytope defined by the inequalities and the choice $x_3=1$. This is achieved by the specification of the grading that maps every vector to its third coordinate.
 
 These data tell us that the polytope, as a subset of $\RR^2$, is defined by the inequalities
 \begin{align*}
@@ -1401,7 +1401,7 @@ grading
 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 HilbertBasis
 \end{Verbatim}
-The input file does not say anything about the dual algorithm mentioned in the section title. With this inputit is chosen automatically. See Section \ref{div_labor} for a discussion of when this happens. But you can insist on the dual algorithm by adding \verb|DualMode| to the input (or \verb|-d| to the command line). Or, if you want to compare it to the primal algorithm add \verb|PrimalMode| (or \verb|-P| to the command line).
+The input file does not say anything about the dual algorithm mentioned in the section title. With this input it is chosen automatically. See Section \ref{div_labor} for a discussion of when this happens. But you can insist on the dual algorithm by adding \verb|DualMode| to the input (or \verb|-d| to the command line). Or, if you want to compare it to the primal algorithm add \verb|PrimalMode| (or \verb|-P| to the command line).
 
 
 The Hilbert basis contains $4828$ elements, too many to be listed here.
@@ -1619,7 +1619,7 @@ degree of Hilbert Series as rational function = -24
 \end{Verbatim}
 Surprisingly, this looks like the Hilbert series in the previous section read backwards, roughly speaking. This is true, and one can explain it as we will see below. 
 
-It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. However, Normaliz canot (yet) apply symmetrization in inhomogeneous computations. Moreover, the algorithmic approach is different, and according to our experience \verb|excluded_faces| is more efficient, independently of symmetrization. 
+It is justified to ask why we don't use \verb|strict_inequalities| instead of \verb|excluded_faces|. It does of course give the same Hilbert series. However, Normaliz cannot (yet) apply symmetrization in inhomogeneous computations. Moreover, the algorithmic approach is different, and according to our experience \verb|excluded_faces| is more efficient, independently of symmetrization. 
 
 \subsubsection{At least one vote for every preference order}\label{strict_signs_ex}
 
@@ -1657,7 +1657,7 @@ You can easily compute the Hilbert series of $I_3$ by making all inequalities st
 
 As the terminal output shows, symmetrization has not been applied for the reason mentioned above: \verb|strict_signs| is an inhomogeneous input type. It would of course be possible to encode the strict signs as \verb|excluded_faces|. Then the sparse format of matrices is very handy:
 \begin{Verbatim}
-excludred_faces 24
+excluded_faces 24
 1:1;
 1:2;
 ...
@@ -1692,7 +1692,7 @@ size of partial triangulation   = 48
 \end{Verbatim}
 It shows that Normaliz uses only a partial triangulation in Hilbert basis computations; see \cite{BHIKS}.
 
-It is no problem to compute the Hilbert series as well if you are interested in it. Simply add \verb|-q| to the command line or remove \verb|HilberBasis| from the input file. Then a full triangulation is needed (size $2,654,272$).
+It is no problem to compute the Hilbert series as well if you are interested in it. Simply add \verb|-q| to the command line or remove \verb|HilbertBasis| from the input file. Then a full triangulation is needed (size $2,654,272$).
 
 Similar examples are \verb|A543|, \verb|A553| and \verb|A643|. The latter is not normal, as we will see below. Even on a standard PC or laptop, the Hilbert basis computation does not take very long because Normaliz uses only a partial triangulation. The Hilbert series can still be determined, but the computation time will grow considerably since the it requires a full triangulation. See \cite{BIS} for timings.
 
@@ -1709,7 +1709,7 @@ cone_and_lattice 72
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 ...
 IsIntegrallyClosed
 \end{Verbatim}
-Don't add \verb|HilbertBasis| because it will overrule \verb|IsIntegrallyCosed|!
+Don't add \verb|HilbertBasis| because it will overrule \verb|IsIntegrallyClosed|!
 
 The output:
 \begin{Verbatim}
@@ -1741,7 +1741,7 @@ If you repeat such a computation, you may very well get a different witness if s
 
 \subsection{Convex hull computation/vertex enumeration}
 
-Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaiz can be restricted to this task by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
+Normaliz computes convex hulls as should be very clear by now, and the only purpose of this section is to emphasize that Normaliz can be restricted to this task by setting an explicit computation goal. By convex hull computation we mean the determination of the support hyperplanes of a polyhedron is given by generators (or vertices). The converse operation is vertex enumeration. Both amount to the dualization of a cone, and can therefore be done by the same algorithm.
 
 As an example we take the input file \verb|cyclicpolytope30-15.in|, the cyclic polytope of dimension 15 with 30 vertices (suggested by D. Avis and Ch. Jordan):
 \begin{Verbatim}
@@ -1792,7 +1792,7 @@ transforming data... done.
 \end{Verbatim}
 Have a look at the output file if you are not afraid of $341088$ linear forms.
 
-If you have liiked closely at the terminal output above, you should have stumbled on the lines
+If you have looked closely at the terminal output above, you should have stumbled on the lines
 \begin{Verbatim}
 Could not convert 15181127029874798299.
 Arithmetic Overflow detected, try a bigger integer type!
@@ -1824,7 +1824,7 @@ In the output file you can see to what integer vectors Normaliz has converted th
  -5488288000  10765664170 ...   2141423747 25000000000
 \end{Verbatim}
 
-The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-amd-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
+The option \verb|ProjectionFloat| indicates that we want to compute only the lattice points in the polytope defined by the inequalities and that we want to use the floating point variant of the project-and-lift algorithm; \verb|Projection| would make Normaliz use its ordinary arithmetic in this algorithm. For our example the difference in time is not really significant, but when you try \verb|ChF_16_1048576.in|, it becomes very noticeable. Let us have a look at the relevant part of then terminal output:
 \begin{Verbatim}
 Computing lattice points by project-and-lift
 Projection
@@ -1873,7 +1873,7 @@ We start with embedding dimension $9$ since we need a homogenizing coordinate in
 	%\draw[thick] (5,0) -- (-1,-0) -- (0,1) -- (5,1);
 	\end{tikzpicture}
 \end{center}
-The green lines show the fibers over the latice points in the (red) line segment. Note that not every lattice point in the projection must be liftable to a lattice point in the next higher dimension.
+The green lines show the fibers over the lattice points in the (red) line segment. Note that not every lattice point in the projection must be liftable to a lattice point in the next higher dimension.
 
 In \verb|ChF_8_1024.in| we see
 \begin{Verbatim}
@@ -1888,7 +1888,7 @@ In \verb|ChF_8_1024.in| we see
 \end{Verbatim}
 These are the lattice points that we wanted to compute.
 
-Normaliz finds out that our polytope is in fact a parallelotope. This aloows Normaliz to suppress the computation of its vertices. We are not interested in them, and they look frightening when written as ordinary fractions (computed with the additioal option \verb|SupportHyperplanes|). This is only the first vertex, the denominator is the number in the last row:
+Normaliz finds out that our polytope is in fact a parallelotope. This allows Normaliz to suppress the computation of its vertices. We are not interested in them, and they look frightening when written as ordinary fractions (computed with the additional option \verb|SupportHyperplanes|). This is only the first vertex, the denominator is the number in the last row:
 \begin{Verbatim}
 256 vertices of polyhedron:
 -7831972155307708173239167258085974255845869779051329651906336771582421875
@@ -1909,7 +1909,7 @@ Not all polytopes are parallelotopes, and in most cases Normaliz must compute th
 \end{itemize}
 if you want to suppress their output. (The numerical information on the number of extreme rays etc. will however been included in the output file if it is available.)
 
-On the other hand, the information provided by the vertices may be important. Instead of the unreadable integer output shon above, you can ask for
+On the other hand, the information provided by the vertices may be important. Instead of the unreadable integer output shown above, you can ask for
 \begin{itemize}
 	\itemtt [ExtRaysFloat]
 \end{itemize}
@@ -1921,6 +1921,8 @@ Then the vertices of polyhedra are printed in floating point format:
 ...
 \end{Verbatim}
 Notre that they can only be printed if they have been computed. In this example the option \verb|SupportHyperplanes| should be added.
+
+\verb|ExtRaysFloat| has an effect in homohegeneous computations only if a grading is defined. In inhomogeneous computations it makes always sense.
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -2349,9 +2351,9 @@ grading
 1 0 0
 \end{Verbatim}
 
-Normaliz allows also the input ofsparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<pos>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is terminated by the character \verb|;| . 
+Normaliz allows also the input of sparse vectors. Sparse input is signalized by the key word \verb|sparse| as the first entry. It is followed by entries of type \verb|<col>:<val>| where \verb|<pos>| denotes the column and \verb|<val>| the value in that column. (The unspecified columns have entry $0$.) A sparse vector is terminated by the character \verb|;| . 
 
-Exaple:
+Example:
 \begin{Verbatim}
 grading
 sparse 1:1;
@@ -2418,7 +2420,7 @@ cone 3
 3/2 4
 \end{Verbatim}
 
-Like evctors, matrices have a sparse input variant, again signalized by the key word \verb|sparse|. The rows are sparse vectors with entries \verb|<col>:<val>|, and each row is concluded by the character \verb|;|.
+Like vectors, matrices have a sparse input variant, again signalized by the key word \verb|sparse|. The rows are sparse vectors with entries \verb|<col>:<val>|, and each row is concluded by the character \verb|;|.
 
 Example:
 \begin{Verbatim}
@@ -2434,7 +2436,7 @@ chooses the $3\times 3$ unit matrix as a matrix of type \verb|inequalities|. Not
 inhom_inequalities 0
 \end{Verbatim}
 
-can be used to make the input inhomogeneous (Section \ref{inhom_inp}) or to avoid the automatic choice of the positive orthant in certain cases (Section \ref{default}). (The empty \verb|inhom_inequalities| hve both effects simultaneously.) Apart from these effects, empty matrices have no influence on the computation.
+can be used to make the input inhomogeneous (Section \ref{inhom_inp}) or to avoid the automatic choice of the positive orthant in certain cases (Section \ref{default}). (The empty \verb|inhom_inequalities| have both effects simultaneously.) Apart from these effects, empty matrices have no influence on the computation.
 
 \subsubsection{Formatted matrices}
 
@@ -2486,7 +2488,7 @@ This input type is even closer to standard notation than the encoding of constra
 \begin{Verbatim}
 <lhs> <rel> <rhs>;
 \end{Verbatim}
-where \verb|<lhs>| and \verb|<rhs>| denote linear function of the \verb|x<n>| with intweger coefficients. 
+where \verb|<lhs>| and \verb|<rhs>| denote linear function of the \verb|x<n>| with integer coefficients. 
 As above, \verb|<rel>| is one of the relations \verb|=, <=, >=, <, >|. (An empty \verb|<lhs>| or \verb|<rhs>| has the value $0$.) Note the terminating semicolon.
 
 Congruences have the form
@@ -2520,7 +2522,7 @@ Example:
 
 \subsubsection{Rational numbers}\label{rational_input}
 
-Rational numbers are allowed in onput matrices, but not in all. They are \emph{not} allowed in vectors and in matrices containing lattice generators and in congruences, namely in
+Rational numbers are allowed in input matrices, but not in all. They are \emph{not} allowed in vectors and in matrices containing lattice generators and in congruences, namely in
 \begin{Verbatim}
 lattice     cone_and_lattice   normalization  offset         open_facets
 congruences inhom_congruences  rees_algebra   lattice_ideal
@@ -2534,11 +2536,11 @@ Note: Only positive numbers are allowed as denominators. Negative denominators m
 std::exception caught... "mpz_set_str" ...  exiting.
 \end{Verbatim}
 
-Normaliz first reduces the input numbers to lowest terms. Then each row of a matrix is multiplied by the least common multiple of the demoninators of its entries. In all applications in which the original monoid generators olay a role, one should use only integers in input matrices to avoid any ambiguity.
+Normaliz first reduces the input numbers to lowest terms. Then each row of a matrix is multiplied by the least common multiple of the denominators of its entries. In all applications in which the original monoid generators play a role, one should use only integers in input matrices to avoid any ambiguity.
 
 \subsubsection{Decimal fractions and floating point numbers}\label{decimal_input}
 
-Normaliz accepts decimal fractions and floating point numbers in its input files. These are precisely conveerted to ordinary fractions (or integers). Examples:
+Normaliz accepts decimal fractions and floating point numbers in its input files. These are precisely converted to ordinary fractions (or integers). Examples:
 \begin{Verbatim}
 1.1 --> 11/10    0.5 --> 1/2    -.1e1 --> -1
 \end{Verbatim}
@@ -2600,7 +2602,7 @@ Input items can almost freely be combined, but there are some restrictions:
 
 \subsubsection{Homogeneous and inhomogeneous input}\label{inhom_inp}
 
-Apart from therestrictions listed in the previos section, homogeneous and inhomogeneous types can be combined as well as generators and constraints. A single inhomogeneous type or \verb|dehomogenization| in the input triggers an inhomogeneous computation. The input item of inhomogeneous type may be an empty matrix.
+Apart from the restrictions listed in the previous section, homogeneous and inhomogeneous types can be combined as well as generators and constraints. A single inhomogeneous type or \verb|dehomogenization| in the input triggers an inhomogeneous computation. The input item of inhomogeneous type may be an empty matrix.
 
 \subsubsection{Default values}\label{default}
 
@@ -2695,7 +2697,7 @@ There are $3$ types:
 	for the vectors $(x_1,\dots,x_d)\in\RR^d$. It is considered as a homogeneous input type though it defines inhomogeneous inequalities. The faces of the cone excluded by the inequalities are excluded from the Hilbert series computation, but \verb|excluded_faces| behaves like \verb|inequalities| in every other respect . 
 	Section \ref{excluded_ex}, \verb|CondorcetSemi.in|.
 	
-	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| stiil exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
+	\itemtt[support\_hyperplanes] is a matrix with $d$ columns. It requires homogeneous input. It is the input type for precomputed support hyperplanes. Therefore Normaliz checks if all input generators satisfy the inequalities defined by them. Apart from this extra check, it behaves like \verb|inequalities|. Note that it overrides all other inequalities in the input, but \verb|excluded_faces| still exclude the faces defined by them. Section \ref{supphyp_ex}, \verb|2cone_supp.in|.
 \end{itemize}
 
 \subsubsection{Lattices}
@@ -2838,7 +2840,7 @@ The input syntax is
 
 The constraints have the form described in Section \ref{symb_syntax}. Note that every symbolic constraint (including the last) must be terminated by a semicolon.
 
-Swe \ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCong.in|.
+See \ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCong.in|.
 
 The interpretation of homogeneity follows the same rules as for tabular constraints. The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
 
@@ -2952,11 +2954,11 @@ The restrictions for the use of open facets are the following:
 The number of vectors in \verb|cone| may be smaller than $d$, but \verb|open_facets| must have $d$ entries.
 
 
-\verb|open_facets| make the computation inhomogeneous. They are interpreted as follows. Let $v$ be the vertex---if there are no \verb|vertices|, then $v$ is the origin. The shifted $C'=v+C$ is cut out by affine-linear inequalities $\lambda_i(x)\ge 0$ with coprime integer coefficients. We number these in siuch a way that $\lambda_i(v+c_i)\neq 0$ for the generators $c_i$ of $C$ (in the input order), $i=1,\dots,n$. Then all subsequent computations are applied to the shifted cone $C''=v'+C$ defined by the inequalities
+\verb|open_facets| make the computation inhomogeneous. They are interpreted as follows. Let $v$ be the vertex---if there are no \verb|vertices|, then $v$ is the origin. The shifted $C'=v+C$ is cut out by affine-linear inequalities $\lambda_i(x)\ge 0$ with coprime integer coefficients. We number these in such a way that $\lambda_i(v+c_i)\neq 0$ for the generators $c_i$ of $C$ (in the input order), $i=1,\dots,n$. Then all subsequent computations are applied to the shifted cone $C''=v'+C$ defined by the inequalities
 $$
 \lambda_i(x)\ge u_i
 $$
-where the vector $(u_1,\dots,u_d)$ is given by \verb|openfaceets|. (If $\dim C<d$, then the enties $u_j$ with $j> \dim C$ are ignored.) 
+where the vector $(u_1,\dots,u_d)$ is given by \verb|open_facets|. (If $\dim C<d$, then the entries $u_j$ with $j> \dim C$ are ignored.) 
 
 That $1$ indicates `open'' is in accordance with its use for the disjoint decomposition; see Section \ref{Disjoint}. Section \ref{LattPointsFPE} discusses an example.
 
@@ -2964,17 +2966,17 @@ That $1$ indicates `open'' is in accordance with its use for the disjoint decomp
 
 Certain numerical parameters used by Normaliz can be set in the input file. Presently only:
 
-\subsubsection{Number of significant coeffcients of the quasipolynomial}
+\subsubsection{Number of significant coefficients of the quasipolynomial}
 
 It can be set by
 \begin{Verbatim}
-no_coeff_quasipol <n>
+nr_coeff_quasipol <n>
 \end{Verbatim}
 where \verb|<n>| is the number of highest coefficients to be printed. See Section \ref{highest_coeff}.
 
 \subsection{Pointedness}
 
-Since version 3.1 Normaliz can also computed nonpointed cones and polyhedra without vertices.
+Since version 3.1 Normaliz can also compute nonpointed cones and polyhedra without vertices.
 
 \subsection{The zero cone}\label{zero}
 
@@ -3018,11 +3020,11 @@ It is possible to set \verb|DefaultMode| explicitly in addition to other computa
 
 \subsection{The choice of algorithmic variants}
 
-For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data (except symmetrization). This automatic choice may however a bad one. Therefore the user can completely control which algorithmic variant is used.
+For its main computation goals Normaliz has algorithmic variants. It tries to choose the variant that seems best for the given input data. This automatic choice may however be a bad one. Therefore the user can completely control which algorithmic variant is used.
 
 \subsubsection{Primal vs.\ dual}
 
-For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulatioons, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift. See Section \ref{project}. The conditions under which the dual algorithm is chosen are specified in Section \ref{div_labor}.
+For the computation of Hilbert bases Normaliz has two algorithms, the primal algorithm that is based on triangulations, and the dual algorithm that is of type ``pair completion''. We have seen both in Section \ref{Examples}. Roughly speaking, the primal algorithm is the first choice for generator input, and the dual algorithm is usually better for constraints input. The choice also applies to the computation of degree $1$ elements. However, for them the default choice is project-and-lift. See Section \ref{project}. The conditions under which the dual algorithm is chosen are specified in Section \ref{div_labor}.
 
 The choice of the algorithm can be fixed or blocked:
 \begin{itemize}
@@ -3063,7 +3065,7 @@ An option to be mentioned in this context is
 \begin{itemize}	
 	\itemtt[KeepOrder, -k] forbids Normaliz to reorder the generators of the efficient cone $\CC$. Only useful if original monoid generators are defined. Also blocks \verb|BottomDecomposition|.
 \end{itemize}
-\verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are drined.
+\verb|KeepOrder| is only allowed if \verb|OriginalMonoidGenerators| are defined.
 It is rarely a good idea to set \verb|KeepOrder| (try it). It is primarily used internally when data must be computed in an auxiliary cone.
 
 \subsubsection{Symmetrization}
@@ -3130,7 +3132,7 @@ The computation goals in this section require a grading. They include \verb|Supp
 	\itemtt [HilbertSeries,-q] triggers the computation of the Hilbert series.
 	
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
-	]
+
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
 	\itemtt[NoPerodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
 \end{itemize}
@@ -3168,7 +3170,7 @@ More precisely: in homogeneous computations it implies \verb|Deg1Elements|, in i
 	
 	\itemtt[Triangulation, -T] makes Normaliz compute, store and export the full triangulation.
 	
-	\itemtt[ConeDecomposition, -D] Normaliz computes a disjoint decomposition of the cone by semiopen simplicial cones. Implies \verb|Triangulation|.
+	\itemtt[ConeDecomposition, -D] Normaliz computes a disjoint decomposition of the cone into semiopen simplicial cones. Implies \verb|Triangulation|.
 	
 	\itemtt[TriangulationSize, -t] makes Normaliz count the simplicial cones in the full triangulation.
 	
@@ -3202,7 +3204,7 @@ Don't confuse these options with symmetrization. The latter symmetrizes (if poss
 They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may influence the course of the computations:
 
 \begin{itemize}
-	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}).
+	\itemtt[IsIntegrallyClosed, -w]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section \ref{IsIC}). If the answer is `no'', Normaliz computes a witness, an element of the integral closure that is not contained in the original monoid.
 	
 	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section \ref{IsPointed}.
 \end{itemize}
@@ -3330,7 +3332,7 @@ do not imply the computation goal \verb|SupportHyperplanes| (and not even \verb|
 
 \itemtt[VerticesOfPolyhedron]
 \end{itemize} 
-The last choice is only possible in the inhomogeneous case. Another possibility in the inhomogeneous case is is to use simply \verb|DualMode|.
+The last choice is only possible in the inhomogeneous case. Another possibility in the inhomogeneous case is is to use \verb|DualMode| without \verb|-N|.
 
 If \verb|Projection| or \verb|ProjectionFloat| is used for parallelotopes defined by inequalities, then Normaliz does not compute the vertices, unless asked for by one of the three computation goals just mentioned.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  RUNNING  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3342,7 +3344,7 @@ The standard form for  calling Normaliz is
 \end{quote}
 where \verb|<project>| is the name of the project, and the corresponding input file is \verb|<project>.in|. Note that \verb|normaliz| may require to be prefixed by a path name, and the same applies to \verb|<project>|. A typical example on a Linux or Mac system:
 \begin{quote}
-	\verb|./normaliz --verbose -x=5 ../example/big|
+	\verb|./normaliz --verbose -x=5 example/big|
 \end{quote}
 that for MS Windows must be converted to
 \begin{quote}
@@ -3356,7 +3358,7 @@ Normaliz uses the standard conventions for calls from the command line:
 	\item Verbatim options are prefixed by the characters \verb|--|.
 \end{arab}
 
-The options for computation goals and algorithmic variants have been described in Section \ref{Goals}. In this section the remaining options for the control of execution and output are discussed, together with some basic rules on the use of the options.
+The options for computation goals and algorithmic variants have been described in Section \ref{Goals}. In this section the remaining options for the control of execution and output are discussed, together with some basic rules for the use of the options.
 
 \subsection{Basic rules}
 The options for computation goals and algorithms variants have been explained in Section \ref{Goals}. The options that control the execution and the amount of output will be explained in the following. Basic rules for the use of options:
@@ -3419,7 +3421,7 @@ The options that control the execution are:
 	is allowed access on your system. The default value is
 	$8$. (Your operating system may set a lower limit).
 	
-	\ttt{-x=0} swiches off the limit set by Normaliz.
+	\ttt{-x=0} switches off the limit set by Normaliz.
 	
 	If you want to run
 	Normaliz in a strictly serial mode, choose
@@ -3459,6 +3461,8 @@ see Section \ref{optionaloutput}. There may be several options \verb|--<suffix>|
 
 If the computation goal \verb|IntegerHull| is set, Normaliz computes a second cone and lattice. The output is contained in \verb|<project>.IntHull.out|. The options for the output of \verb|<project>| are applied to \verb|<project>.IntHull| as well. There is no way to control the output of the two computations individually.
 
+Similarly, if symmetrization has been used, Normaliz writes the file \verb|<project>.symm.out|. It contains the data of the symmetrized cone.
+
 Sometimes one wants the output to be written to another directory. The output directory can be set by
 \begin{itemize}
 	\itemtt[{-}{-OutputDir=<outdir>}]. The path \ttt{<outdir<} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)	
@@ -3494,30 +3498,30 @@ Since Normaliz accumulates options, one cannot get rid of settings in the input 
 
 There are two ways to define polytopes for Normaliz:
 \begin{arab}
-\item by homogeneous input: a cone $C$ and a grdaing $\deg$ define the polytopes $P=C\cap \{x:\deg x=1 \}$,
+\item by homogeneous input: a cone $C$ and a grading $\deg$ define the polytopes $P=C\cap \{x:\deg x=1 \}$,
 \item by inhomogeneous input: a bounded polyhedron $P$ is a polytope.
 \end{arab}
 As far as the computation of lattice points is concerned, there is essentially no difference in the algorithms that can be used.
 
-However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as ``degree $1$ elements of the Hilbert basis'' wheras they are the ``module generators'' in the inhomogeneous case.
+However, there is a difference in the out file(s): for homogeneous input the lattice points in $P$ appear as ``degree $1$ elements of the Hilbert basis'' whereas they are the ``module generators'' in the inhomogeneous case.
 
 Normaliz has three main algorithms for the computation of lattice points of which two have two variants each:
 \begin{arab}
 \item the project-and-lift algorithm (\verb|Projection, -j|),
 \item its variant using floating point arithmetic (\verb|ProjectionFloat, -J|),
-\item the triangulation based Normaliz primal algorithm specialized to lattice ppints (\verb|PrimalMode, -P|),
+\item the triangulation based Normaliz primal algorithm specialized to lattice points (\verb|PrimalMode, -P|),
 \item its variant using approximation of rational polytopes (\verb|Approximate, -r|),
-\item the dual algorithm  specialized to lattice ppints (\verb|DualMode, -d|).
+\item the dual algorithm  specialized to lattice points (\verb|DualMode, -d|).
 \end{arab}
 
-The optuions \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can aso be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
+The options \verb|Projection|, \verb|ProjectionFloat| and \verb|Approximate| imply the computation goals \verb|Deg1Points| (in the homogeneous case) and \verb|ModuleGenerators| (in the inhomogeneous case). Since \verb|PrimalMode| can also be used for the computation of Hilbert series and Hilbert bases, one must add the computation goal to it. In the homogeneous case one must add the computation goal also to \verb|DualMode|.
 
-We recommend the reader to experiment with thenfollowing input files:
+We recommend the reader to experiment with the following input files:
 \begin{itemize}
 	\item \verb|5x5.in|
 	\item \verb|6x6.in|
 	\item \verb|max_polytope_cand.in|
-	\item \verb|hickerson18.in|
+	\item \verb|hickerson-18.in|
 	\item \verb|knapsack_11_60.in|
 	\item \verb|ChF_2_64.in|
 	\item \verb|ChF_8_1024.in|
@@ -3532,9 +3536,9 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 \subsubsection{Project-and-lift}\label{project}
 
 We have explained the project-and-lift algorithm in Section \ref{project_example}.
-This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitely and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example}.)
+This algorithm is very robust arithmetically since it needs not compute determinants or solve systems of linear equations. Moreover, the project-and-lift algorithm itself does not use the vertices of the polytope explicitly and only computes lattice points in $P$ and its successive projections. Therefore it is rather insensitive against rational vertices with large denominators. (To get started it must usually compute the vertices of the input polytope; an exception are parallelotopes, as mentioned in Section \ref{project_example}.)
 
-The option for the floating point variant of project-and-lift is
+The option for project-and-lift is
 \begin{itemize}
 \itemtt [Projection, -j]
 \end{itemize}
@@ -3553,7 +3557,7 @@ embdim 3 inequalities 32
 embdim 2 inequalities 2
 \end{Verbatim}
 
-(ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal oitput of \verb|pedro2.in|:
+(ii) The projections may have many lattice points that cannot be lifted to the top. As an example we look at the terminal output of \verb|pedro2.in|:
 \begin{Verbatim}
 embdim 2 Deg1Elements 33
 embdim 3 Deg1Elements 478
@@ -3562,12 +3566,12 @@ embdim 5 Deg1Elements 17449
 embdim 6 Deg1Elements 2
 \end{Verbatim}
 
-Despite of these potential problems, \verb|Prohection| is the default choice of Normaliz for the computation of lattice points (if not combined with Hilbert series or Hilbert basis). If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
+Despite of these potential problems, \verb|Projection| is the default choice of Normaliz for the computation of lattice points (if not combined with Hilbert series or Hilbert basis). If you do not want to use it, you must either choose another method explicitly or switch it off by \verb|NoProjection|.
 
 \emph{Parallelotopes.}\enspace
-Lattice points in parallelotopes that are defined gy inequalities, like those in the input files \verb|ChF*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control.
+Lattice points in parallelotopes that are defined by inequalities, like those in the input files \verb|ChF*.in|, can be computed without any knowledge of the vertices. In fact, for them it is favorable to present a face $F$ by the list  of facets whose intersection $F$ is (and not by the list of the $2^{\dim F}$ vertices of $F$!). Parallelotopes are not only simple polytopes. It is important that two faces do not intersect if and only if they are contained in parallel facets, and this is easy to control.
 
-Normaliz recognizes parallelotiopes by itself, and suppresses the computation of the vertices unless asked to compute them.
+Normaliz recognizes parallelotopes by itself, and suppresses the computation of the vertices unless asked to compute them.
 
 \subsubsection{Project-and-lift with floating point arithmetic}
 
@@ -3577,14 +3581,14 @@ The option for the floating point variant of project-and-lift is
 \begin{itemize}
 \itemtt [ProjectionFloat, -J]
 \end{itemize}
-If you want aclear demonstration of the difference bewtween \verb|Projection| and \verb|ProjectionFloat|, try \verb|ChF_16_1048576.in|.
+If you want a clear demonstration of the difference between \verb|Projection| and \verb|ProjectionFloat|, try \verb|ChF_16_1048576.in|.
 
-The use of \verb|ProjectionFloat| or any other algorithmic varaiant is independent of the input type.
+The use of \verb|ProjectionFloat| or any other algorithmic variant is independent of the input type.
 \subsubsection{The triangulation based primal algorithm}
 
-With this algorithm, Normaliz compues a triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes deined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarsded right away and that no reduction is necessary. 
+With this algorithm, Normaliz computes a triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes defined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarded right away and that no reduction is necessary. 
 
-The complications that can arise are (i) a large triangulation or (ii) large determinants of the simpcial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinats. We can see this by looking at the terminal output of \verb|max_polytope_cand.in|, computed with \verb|-cP|:
+The complications that can arise are (i) a large triangulation or (ii) large determinants of the simplicial cones. Normaliz tries to keep the triangulations small by restricting itself to a partial triangulation, but often there is nothing one can do. Normaliz deals with large determinants by applying project-and-lift to the simplicial subcones with large determinants. We can see this by looking at the terminal output of \verb|max_polytope_cand.in|, computed with \verb|-cP|:
 \begin{Verbatim}
 ...
 evaluating 49 simplices
@@ -3604,24 +3608,22 @@ transforming data... done.
 Computing lattice points by project-and-lift
 Projection
 embdim 5 inequalities 5
-embdim 4 inequalities 6
-embdim 3 inequalities 3
+...
 embdim 2 inequalities 2
 Lifting
 embdim 2 Deg1Elements 64
-embdim 3 Deg1Elements 1756
-embdim 4 Deg1Elements 3504
+...
 embdim 5 Deg1Elements 32268
 Project-and-lift complete
 ...
 \end{Verbatim}
-After finishing the $49$ ``small'' simplicial cones, Normaliz takes on the $49$ `large'' simplicial cones, and does them by project-and-lift. Therefore one can say that Normaliz takes a hybrid approach if you request primal mode.
+After finishing the $49$ ``small'' simplicial cones, Normaliz takes on the $49$ ``large'' simplicial cones, and does them by project-and-lift. Therefore one can say that Normaliz takes a hybrid approach if you request primal mode.
 
-An inherent weakness of the triangulation based algorithms is that its efficiency drops with $d!$ where $d$ is the dimension vecause the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$ (as long as small simplicuial cones are evaluated).
+An inherent weakness of the triangulation based algorithms is that its efficiency drops with $d!$ where $d$ is the dimension because the proportion of lattice points in $P$ of all points generated by the algorithm must be expected to be $1/d!$ (as long as small simplicial cones are evaluated).
 
 \subsubsection{Lattice points by approximation}\label{approx}
 
-Large determinants come up easily for rational polytopes whose vertices have large denominators. In previous versions, Normaliz fought against large determinants caused by rational vertices ny finding an integral polytope $Q$ containuing $P$, computing the lattice points in $Q$ and then sieving out those that are in $Q\setminus P$:
+Large determinants come up easily for rational polytopes whose vertices have large denominators. In previous versions, Normaliz fought against large determinants caused by rational vertices ny finding an integral polytope $Q$ containing $P$, computing the lattice points in $Q$ and then sieving out those that are in $Q\setminus P$:
 \begin{center}
 	\begin{tikzpicture}[scale=0.6]
 	\filldraw[fill=orange] (0,0) -- (0,1) -- (1,3) -- (2,4) -- (3,4) -- (4,1) -- (3,0) --cycle;
@@ -3642,13 +3644,13 @@ This approach is still possible. It is requested by the option
 
 This is often a good choice, especially in low dimension.
 
-It is not advisable to use approximation for polytopes with a large number of vertices since it must be expected that the apprpoximation multiplies the number of vertices by $\dim P+1$ so that it may become difficult to compute the triangulation.
+It is not advisable to use approximation for polytopes with a large number of vertices since it must be expected that the approximation multiplies the number of vertices by $\dim P+1$ so that it may become difficult to compute the triangulation.
 
 \subsubsection{Lattice points by the dual algorithm}
 
-Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|, but \verb|-1| (the default choice project-and-lift) is also quite good. (The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.) The primal algorithm or approximation fail miserably.
+Often the dual algorithm is extremely fast. But it can also degenerate terribly. It is very fast for \verb|6x6.in| run with \verb|-d1|. The primal algorithm or approximation fail miserably.  (\verb|-1|, the default choice project-and-lift, is also quite good. The difference is that \verb|-d1| does not compute the vertices that in this case are necessary for the preparation of project-and-lift.)
 
-On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed already. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
+On the other hand, the dual algorithm is hopeless already for the $2$-dimensional parallelotope \verb|ChF_2_64.in|. Try it. It is clear that the complicated arithmetic is is forbidding for the dual algorithm. (The dual algorithm successively computes the lattice points correctly for all intermediate polyhedra, defined as intersections of the half spaces that have been processed so far. The intermediate polyhedra can be much more difficult than the final polytope, as in this case.)
 
 In certain cases (see Section \ref{div_labor}) Normaliz will try the dual algorithm if you forbid project-and-lift by \verb|NoProjection|.
 
@@ -3702,11 +3704,11 @@ With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz computes a t
 
 Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition. 
 
-If you have the impression that the bottom decomposition slows down your computation, you can suppress it by \texttt{NoBottomDec}, \texttt{-o}. (\verb|KeepOrder|, \verb|-k| not only suppresses the bottom decomposition, but also any reordering of the generators.)
+If you have the impression that the bottom decomposition slows down your computation, you can suppress it by \texttt{NoBottomDec}, \texttt{-o}.
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
-The example \verb|StrictBorda.in| belongs to social choice theory loke \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Srction \ref{symmetrize}), but \verb|StrictBorda.in| does not. Therefore we must compute the Hilbert series (or at least the multiplicity) for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstartes the substantial gain that can be treached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
+The example \verb|StrictBorda.in| belongs to social choice theory like \verb|Condorcet.in| (see Section \ref{Condorcet}), \verb|PluralityVsCutoff.in| and \verb|CondEffPlur.in|. The last two profit enormously from symmetrization (see Section \ref{symmetrize}), but \verb|StrictBorda.in| does not. Therefore we must compute the Hilbert series (or at least the multiplicity) for a monoid in dimension $24$ whose cone has $6363$ extreme rays. It demonstrates the substantial gain that can be reached by bottom decomposition. Since the roughness is large enough, Normaliz chooses bottom decomposition automatically, unless we block it. 
 \begin{center}
 	\begin{tabular}{|c|r|r|}\hline
 		algorithm	& triangulation size& determinant sum \\ \hline
@@ -3746,11 +3748,11 @@ runtime with subdivision    &  0.4 s & 24 s & 5.1 s \\ \hline
 \end{tabular}
 \end{center}
 
-A good nonsimplicial example showing the subdivision at work is \verb|hickerson_18plus1.in| with option \verb|-q|.
+A good nonsimplicial example showing the subdivision at work is \verb|hickerson-18plus1.in| with option \verb|-q|.
 
 Note: After subdivision the decomposition of the cone may no longer be a triangulation in the strict sense, but a decomposition that we call a \emph{nested triangulation}; see \ref{nested}. If the creation of a nested triangulation must be blocked, one uses the option \verb|NoSubdivision|. Inevitably it blocks the subdivision of large simplicial cones.
 
-\emph{Remark}\enspace The bounds mentioned above work well up to dimension $\approx 10$. for a fixed determinant, the probability for finding a subdivision point devreases rapidly.
+\emph{Remark}\enspace The bounds mentioned above work well up to dimension $\approx 10$. For a fixed determinant, the probability for finding a subdivision point decreases rapidly.
 
 \subsection{Primal vs. dual -- division of labor}\label{div_labor}
 
@@ -3805,7 +3807,7 @@ If the monoid is not Gorenstein, Normaliz will print the corresponding message.
 
 \subsection{Symmetrization}\label{symmetrize}
 
-Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpoler that that of $C$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. This amounts to a computation of a weighted Ehrhart series that we will discuss in Section \ref{Poly_comp}. Similarly multiplicity can be computed as the virtual multiplicity of a polynomial after projection.
+Under certain conditions one can count lattice points in a cone $C$  by mapping $C$ to a cone $C'$ of lower dimension and then counting each lattice point $y$ in $C'$ with the number of its lattice preimages. This approach works well if the number of preimages is given by a polynomial in the coordinates of $y$. Since $C'$ has lower dimension, one can hope that its combinatorial structure is much simpler that that of $C$. One must of course pay a price: instead of counting each lattice point with the weight $1$, one must count it with a polynomial weight. This amounts to a computation of a weighted Ehrhart series that we will discuss in Section \ref{Poly_comp}. Similarly multiplicity can be computed as the virtual multiplicity of a polynomial after projection.
 
 The availability of this approach depends on symmetries in the coordinates of $C$, and therefore we call it \emph{symmetrization}. Normaliz tries symmetrization under the following condition: $C$ is given by constraints (inequalities, equations, congruences, excluded faces) and the inequalities contain the sign conditions $x_i\ge 0$ for all coordinates  $x_i$ of $C$. (Coordinate hyperplanes may be among the excluded faces.) Then Normaliz groups coordinates that appear in all constraints and the grading (!) with the same coefficients, and, roughly speaking, replaces them by their sum. The number of preimages that one must count for the vector $y$  of sums is then a product of binomial coefficients -- a polynomial as desired. More precisely, if $y_j$, $j=1,\dots,m$, is the sum of  $u_j$ variables $x_i$ then
 $$
@@ -3872,9 +3874,9 @@ Another good example included in the distribution is \verb|CondEffPlur.in|, but 
 
 Symmetrization is a special type of computations with a polynomial weight, and therefore requires Normaliz to be built with CoCoALib. 
 
-\subsection{Computations with a polynmial weight}\label{Poly_comp}
+\subsection{Computations with a polynomial weight}\label{Poly_comp}
 
-For a graded monois $M$, which arises as the intersection $M=C\cap L$ of a rational cone$C$  and a lattice $L$,  Normaliz computes the volume of
+For a graded monoid $M$, which arises as the intersection $M=C\cap L$ of a rational cone$C$  and a lattice $L$,  Normaliz computes the volume of
 the rational polytope
 $$
 P=\{x\in \RR_+ M: \deg x=1\},
@@ -3927,7 +3929,7 @@ functions that there exists a quasipolynomial $q(k)$ with
 rational coefficients and of degree $\le \totdeg f+\rank M-1$ that
 evaluates to $E(f,k)$ for all $k\ge 0$.
 
-Let $m=\totdeg f$ (we use this notation to distinguish the degree of the polynomial from teh degree of lattice points) and $f_m$ be the degree $m$ homogeneous
+Let $m=\totdeg f$ (we use this notation to distinguish the degree of the polynomial from the degree of lattice points) and $f_m$ be the degree $m$ homogeneous
 component of $f$. By letting $k$ go to infinity and
 approximating $f_m$ by a step function that is constant on the
 meshes of $\frac 1kL$ (with respect to a fixed basis), one sees
@@ -3972,7 +3974,7 @@ inequalities 3
 1 1 1 -1 -1 -1 1 -1
 nonnegative
 total_degree
-polynpmial
+polynomial
 1/120*1/120*(x[1]+5)*(x[1]+4)*(x[1]+3)*(x[1]+2)*(x[1]+1)*(x[2]+1)*
 (x[3]+1)*(x[4]+1)*(x[5]+1)*(x[6]+1)*(x[7]+1)*(x[8]+5)*(x[8]+4)*
 (x[8]+3)*(x[8]+2)*(x[8]+1);
@@ -4028,12 +4030,12 @@ Virtual multiplicity: 1717/8192
 \end{Verbatim}
 
 
-\subsubsection{Virtual multiplicty}
+\subsubsection{Virtual multiplicity}
 
-Instead of the option \verb|-E| (or (\verb|--WeightedEhrhartSeries|) we use \verb|-L| or (\verb|--VirtualMultiplicity|). Then we can extract the virtual multiicity from the output file.
+Instead of the option \verb|-E| (or (\verb|--WeightedEhrhartSeries|) we use \verb|-L| or (\verb|--VirtualMultiplicity|). Then we can extract the virtual multiplicity from the output file.
 
 \subsubsection{An integral}
-In their papeir paper \emph{Multiplicities of lassical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Montaño and M. Varbaro ask
+In their paper \emph{Multiplicities of classical varieties} (Proc. Lond. Math. Soc. (3) 110 (2015), 1033--105) J. Jeffries, J. Montaño and M. Varbaro ask
 for the computation of the integral
 $$
 \int\limits_{\substack{[0,1]^m \\ \sum{x}= t}}(x_1\cdots x_{m})^{n-m}\prod_{1\le i<j \le m}(x_j-x_i)^2 \mathrm d{\mu}\
@@ -4486,7 +4488,7 @@ For the Normaliz computations, nested triangulations are as good as ordinary tri
 
 The triangulation is always plain if \verb|-T| is the only computation goal or if it is just combined with \verb|-v|. Otherwise it can only fail to be plain if it contains determinants $\ge 10^8$.
 
-The subdivision cann be blocked by \verb|NoSubdivision|, independently of the computation goals.
+The subdivision can be blocked by \verb|NoSubdivision|, independently of the computation goals.
 
 \subsubsection{Disjoint decomposition}\label{Disjoint}
 
@@ -4809,7 +4811,7 @@ Now we add
 open_facets 
 1 0
 \end{Verbatim}
-to the input (to get \verb|open_facets.in|). We have tried to indictate the infinitesimal shift by the blue rectangle in the left figure. The computation yields
+to the input (to get \verb|open_facets.in|). We have tried to indicate the infinitesimal shift by the blue rectangle in the left figure. The computation yields
 \begin{Verbatim}
 6 module generators over original monoid:
 -1 3 1
@@ -4821,7 +4823,7 @@ to the input (to get \verb|open_facets.in|). We have tried to indictate the infi
 \end{Verbatim}
 which are the encircled lattice points in the right figure. It is explained in Section \ref{open_facets} how the new vector $v'$ is computed.
 
-Note that the lattice points are listed with the homogenizing coordinate $1$. In fact, both \verb|vertices| and \verb|open_facets| make the computation inhomogeneous. If both are missing, then the lattice points are lisetd without the homogenizing coordinate. If you want a uniform format for the output, you can use the zero vector for \verb|open_facets| or the origin as the vertex. Both options change the result only to the extent that the homogenizing coordinate is added.
+Note that the lattice points are listed with the homogenizing coordinate $1$. In fact, both \verb|vertices| and \verb|open_facets| make the computation inhomogeneous. If both are missing, then the lattice points are listed without the homogenizing coordinate. If you want a uniform format for the output, you can use the zero vector for \verb|open_facets| or the origin as the vertex. Both options change the result only to the extent that the homogenizing coordinate is added.
 
 \subsection{Precomputed support hyperplanes}\label{supphyp_ex}
 
@@ -5185,7 +5187,6 @@ find \ttt{jNormaliz.jar}, several files, for example \ttt{Copying}, and
 subdirectories.
 
 \item The subdirectory \ttt{source} contains the source files.
-The subdirectory \ttt{genEhrhart} contains the NmzIntegrate source.
 
 \item The subdirectory \ttt{doc} contains the file you are reading 
 and further documentation.
@@ -5222,7 +5223,7 @@ command line or use it from other systems, you may have to copy
 the executables to a directory in the search path for
 executables.
 
-Please read the release notes on the download page. Especially on Mac you may want to build Normaliz yourself since it is impossible to provide a statically linked executable with  parallelilzation.
+Please read the release notes on the download page. Especially on Mac you may want to build Normaliz yourself since it is impossible to provide a statically linked executable with  parallelization.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
@@ -5353,7 +5354,7 @@ replacing \verb|$HOME/SCIP/scipoptsuite-3.2.0/| with your own path to SCIP if ne
 \begin{Verbatim}
 COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99543 cmake ../source/
 \end{Verbatim}
-Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectories \verb|genEhrhart| and \verb|maxsimplex|.
+Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectory \verb|maxsimplex|.
 
 The main advantage of \verb|cmake| is the existence of a GUI in which you can change most settings originally chosen by \verb|cmake|. Call \verb|ccmake ../source| (2 times c) or, for a more sophisticated version, \verb|cmake-gui ../source|.
 
@@ -5366,7 +5367,7 @@ Currently Apple does not supply a compiler which supports OpenMP.
 We recommend the use of LLVM 3.9 or newer from Homebrew. See
 \url{http://brew.sh/} from where you can also download GMP and Boost. For details see \ttt{INSTALL} in the directory \ttt{source} of the distribution.
 
-For building Normaliz under Mac OS we recommend auttotools if you want to use SCIP.
+For building Normaliz under Mac OS we recommend autotools if you want to use SCIP.
 
 You can then follow the instructions for Linux.
 
@@ -5378,7 +5379,7 @@ One can compile Windows executables with the Cygwin port of GCC. Unfortunately i
 
 Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
-Note that the statically linked Linux binaries run in the Linux susystem of Windows 10. We have not yet tried to build Normaliz in it.
+Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it.
 
 \section{Copyright and how to cite}
 
@@ -5771,7 +5772,7 @@ gen=36, 723 hyp, 234 pyr, 14025 simpl
 ...
 gen=48, 4948 hyp, 3541 pyr, 14856 simpl
 \end{Verbatim}
-All generetors have been processed now. Fortunately our cone is pointed:
+All generators have been processed now. Fortunately our cone is pointed:
 \begin{Verbatim}
 Pointed since graded
 Select extreme rays via comparison ... done.
@@ -6031,7 +6032,7 @@ The input types are explained in Section \ref{input}. In certain environments it
 Type::InputType to_type(const string& type_string)
 \end{Verbatim}
 
-The types \verb|grading|, \verb|dehomoneization|, \verb|offset|and \verb|open_facets| must be encoded as matrices with a single row. We come back to this point below.
+The types \verb|grading|, \verb|dehomogenization|, \verb|offset|and \verb|open_facets| must be encoded as matrices with a single row. We come back to this point below.
 
 The simplest constructor has the syntax
 \begin{Verbatim}
@@ -6088,7 +6089,7 @@ vector<vector <Integer> > Data = ...
 Type::InputType type = cone;
 vector<Integer> total_degree(dim,1);
 Type::InputType grad = grading;
-Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matix(total_degree));
+Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matrix(total_degree));
 \end{Verbatim}
 
 There is a default constructor for cones,
@@ -6109,7 +6110,7 @@ This is done by
 \begin{Verbatim}
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 \end{Verbatim}
-The default value of \verb|nr_coeff| is $-1$, signalzing `all coefficients''.
+The default value of \verb|nr_coeff| is $-1$, signaling `all coefficients''.
 
 
 \subsection{Computations in a cone}
@@ -6214,7 +6215,7 @@ namespace ConeProperty {
 }
 \end{Verbatim}
 
-The class \verb|ConeProperties| is based on this enumeration. Its instantiation are essentially boolean vectors that can be accessed via the names in the enumeration. Instantiations of the class are used to set computation goals and algorithmic variants and to check whether the goals have been reached. The distinction between computation goals and algorithmic variants is not completely strict. See Section \ref{Goals} for implications betwen some \verb|ConeProperties|.
+The class \verb|ConeProperties| is based on this enumeration. Its instantiation are essentially boolean vectors that can be accessed via the names in the enumeration. Instantiations of the class are used to set computation goals and algorithmic variants and to check whether the goals have been reached. The distinction between computation goals and algorithmic variants is not completely strict. See Section \ref{Goals} for implications between some \verb|ConeProperties|.
 
 There exist versions of \verb|compute| for up to $3$ cone properties:
 \begin{Verbatim}
@@ -6229,10 +6230,10 @@ ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1,
 
 An example:
 \begin{Verbatim}
-MyCone.compute(ConeProperty::HilberBasis, ConeProperty::Multiplicity)
+MyCone.compute(ConeProperty::HilbertBasis, ConeProperty::Multiplicity)
 \end{Verbatim}
 
-If you want to specify more than $3$ cone properties, you can define an instance of \verb|ConeProoerties| yourself and call
+If you want to specify more than $3$ cone properties, you can define an instance of \verb|ConeProperties| yourself and call
 \begin{Verbatim}
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute)
 \end{Verbatim}
@@ -6378,7 +6379,7 @@ const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators()
 size_t Cone<Integer>::getNrModuleGenerators()
 \end{Verbatim}
 
-If the original monoid is not integrallyclosed, you can ask for a witness:
+If the original monoid is not integrally closed, you can ask for a witness:
 \begin{Verbatim}
 vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed()
 \end{Verbatim}
@@ -6580,7 +6581,7 @@ const vector<vector<Integer> >& getEquations() const
 const vector<vector<Integer> >& getCongruences() const
 \end{Verbatim}
 
-But see Section \ref{SHC} above for a dmore direct access.
+But see Section \ref{SHC} above for a more direct access.
 	
 
 \subsubsection{Class group}
@@ -6694,7 +6695,7 @@ If it is found to be \verb|true|, an \verb|InterruptException| is thrown. This i
 
 The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=1|.
 
-\subsubsection{Innerparallelization}
+\subsubsection{Inner parallelization}
 
 By default the cone constructor sets the maximal number of parallel threads to $8$, unless the system has set a lower limit. You can change this value by
 \begin{Verbatim}
@@ -6706,7 +6707,7 @@ The function returns the previous value.
 
 \subsubsection{Outer parallelization}
 
-Thelibnormaliz functions can be called by programs that are parallelized via OpenMP themselves. The functions in libnormaliz switch off nested parallelization.
+The libnormaliz functions can be called by programs that are parallelized via OpenMP themselves. The functions in libnormaliz switch off nested parallelization.
 
 As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. It needs \verb|libnormaliz| without CoCoA and Scip. Compile it by \verb|make -f Makefile.classic|.
 
@@ -6730,7 +6731,7 @@ void setErrorOutput(std::ostream&)
 
 \subsection{A simple program}\label{maxsimplex}
 
-The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, arXiv:1504.01036 are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
+The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by  W. Bruns, J. Gubeladze and M. Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no. 1, 181--215, are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. `Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone. 
 
 The program generates normal lattice simplices and checks them for maximality. The dimension is set in the program, as well as the bound for the random coordinates of the vertices.
 
@@ -6846,7 +6847,7 @@ Since the computations are rather small, we suppress parallelization (except for
 	omp_set_num_threads(1);
 #endi
     Cone<Integer> Candidate=rand_simplex(polytope_dim,bound);
-    nr_simplex++;jordan
+    nr_simplex++;
     if(nr_simplex%1000 ==0)
         cout << "simplex " << nr_simplex << endl;
 \end{Verbatim}
@@ -6957,9 +6958,9 @@ For a brief introduction please consult the PyNormaliz tutorial on the Normaliz 
 
 \section{QNormaliz}\label{QNorm}
 
-The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, for example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to empphasize the difference.
+The variant QNormaliz of Normaliz can use coefficients from subfields of $\RR$, for example from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on lattice data. At present QNormaliz is restricted to the computations of support hyperplanes/extreme rays and to triangulations. Instead of the template name \verb|Integer| (see Appendix \ref{libnorm}) it uses \verb|Number| to emphasize the difference.
 
-The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the pratical viewpoint it is superfluous since Normaliz can (now) process rational input data. Nevertheless have a look at the examples in \verb|Qexample|.
+The included implementation specializes \verb|Number| to \verb|mpq_class|. This only serves as a demonstration example. From the practical viewpoint it is superfluous since Normaliz can (now) process rational input data. Nevertheless have a look at the examples in \verb|Qexample|.
 
 \subsection{Prerequisites}
 
@@ -6986,7 +6987,7 @@ cone\_and\_lattice& inhom\_congruences& offset
 \end{tabular}
 }
 \end{center}
-Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be intepreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
+Inhomogeneous types are allowed. Also \verb|saturation| is allowed. It must be interpreted as a generating set for a subspace that is intersected with all the objects defined by other input items.
 
 The only computation goals and algorithmic variants allowed are:
 \begin{center}

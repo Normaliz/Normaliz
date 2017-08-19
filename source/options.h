@@ -82,7 +82,7 @@ public:
     void activateNoExtRaysOutput() {
         if (!ignoreInFileOpt) no_ext_rays_output = true;
     }
-    void activateExtRaysFloar() {
+    void activateExtRaysFloat() {
         if (!ignoreInFileOpt) ext_rays_float = true;
     }
 
