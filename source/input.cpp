@@ -554,10 +554,6 @@ map <Type::InputType, vector< vector<mpq_class> > > readNormalizInput (istream& 
                     options.activateNoExtRaysOutput();
                     continue;
                 }
-                if (type_string == "ExtRaysFloat") {
-                    options.activateExtRaysFloat();
-                    continue;
-                }
                 if (type_string == "total_degree") {
                     if(!dim_known){
                         throw BadInputException("Ambient space must be known for "+type_string+"!");

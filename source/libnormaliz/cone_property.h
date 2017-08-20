@@ -41,6 +41,7 @@ namespace ConeProperty {
         // matrix valued
         Generators,
         ExtremeRays,
+        VerticesFloat,
         VerticesOfPolyhedron,
         SupportHyperplanes,
         HilbertBasis,
@@ -163,7 +164,7 @@ public:
     ConeProperties options();
 
     /* the following methods are used internally */
-    void set_preconditions();    // activate properties which are needed implicitly
+    void set_preconditions(bool inhomogeneous);    // activate properties which are needed implicitly
     void prepare_compute_options(bool inhomogeneous);
     void check_sanity(bool inhomogeneous);
     void check_conflicting_variants();

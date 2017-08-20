@@ -47,7 +47,6 @@ OptionsHandler::OptionsHandler() {
     ignoreInFileOpt = false;
     nr_threads = 0;
     no_ext_rays_output=false;
-    ext_rays_float=false;
 }
 
 
@@ -309,10 +308,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             no_ext_rays_output=true;
             continue;
         }
-        if(LongOptions[i]=="ExtRaysFloat"){
-            ext_rays_float=true;
-            continue;
-        }
         if(LongOptions[i]=="ignore"){
             ignoreInFileOpt=true;
             continue;
@@ -350,12 +345,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
 
 template<typename Integer>
 void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
-    if(no_ext_rays_output && ext_rays_float)
-        throw BadInputException("Contradictory output options");
     if(no_ext_rays_output)
         Out.set_no_ext_rays_output();
-    if(ext_rays_float)
-        Out.set_ext_rays_float();
     if(write_all_files) {
         Out.set_write_all_files();
     } else if (write_extra_files) {

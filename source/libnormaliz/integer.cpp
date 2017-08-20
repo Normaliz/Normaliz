@@ -82,10 +82,8 @@ bool fits_long_range(long long a) {
 
 template<typename FromType>
 bool try_convert(nmz_float& ret, const FromType& val){
-    mpz_class bridge;
-    if(!try_convert(bridge,val))
-        return false;
-    return try_convert(ret,bridge);
+    ret= (nmz_float) val;
+    return true;
 }
 
 bool try_convert(nmz_float& ret, const mpz_class& val){    

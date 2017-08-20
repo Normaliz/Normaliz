@@ -244,6 +244,10 @@ public:
     const Matrix<Integer>& getExtremeRaysMatrix();
     const vector< vector<Integer> >& getExtremeRays();
     size_t getNrExtremeRays();
+    
+    const Matrix<nmz_float>& getVerticesFloatMatrix();
+    const vector< vector<nmz_float> >& getVerticesFloat();
+    size_t getNrVerticesFloat();
 
     const Matrix<Integer>& getVerticesOfPolyhedronMatrix();
     const vector< vector<Integer> >& getVerticesOfPolyhedron();
@@ -371,6 +375,7 @@ private:
     Matrix<Integer> OriginalMonoidGenerators;
     Matrix<Integer> Generators;
     Matrix<Integer> ExtremeRays;
+    Matrix<nmz_float> VerticesFloat;
     vector<bool> ExtremeRaysIndicator;
     Matrix<Integer> VerticesOfPolyhedron;
     Matrix<Integer> SupportHyperplanes;
@@ -531,6 +536,8 @@ private:
     void compute_integral (ConeProperties& ToCompute);
     void compute_virt_mult (ConeProperties& ToCompute);
     void compute_weighted_Ehrhart(ConeProperties& ToCompute);
+    
+    void compute_vertices_float(ConeProperties& ToCompute);
     
     void make_StanleyDec_export();
     

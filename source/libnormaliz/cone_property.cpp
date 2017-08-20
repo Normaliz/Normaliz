@@ -163,7 +163,13 @@ size_t ConeProperties::count() const {
 
 
 /* add preconditions */
-void ConeProperties::set_preconditions() {
+void ConeProperties::set_preconditions(bool inhomogeneous) {
+    
+    if(CPs.test(ConeProperty::VerticesFloat)){
+        CPs.set(ConeProperty::SupportHyperplanes);
+        if(!inhomogeneous)
+            CPs.set(ConeProperty::Grading);        
+    }
     
     if(CPs.test(ConeProperty::ProjectionFloat))
         CPs.set(ConeProperty::Projection);
@@ -332,7 +338,8 @@ void ConeProperties::check_conflicting_variants() {
         throw BadInputException("Only one of DualMode, PrimalMode, Approximate, Projection allowed.");
 }
 
-void ConeProperties::check_sanity(bool inhomogeneous) {
+void ConeProperties::check_sanity(bool inhomogeneous) {    
+    
     ConeProperty::Enum prop;
         
     if(CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
@@ -384,6 +391,7 @@ namespace {
         vector<string> CPN(ConeProperty::EnumSize);
         CPN.at(ConeProperty::Generators) = "Generators";
         CPN.at(ConeProperty::ExtremeRays) = "ExtremeRays";
+        CPN.at(ConeProperty::VerticesFloat) = "VerticesFloat";
         CPN.at(ConeProperty::VerticesOfPolyhedron) = "VerticesOfPolyhedron";
         CPN.at(ConeProperty::SupportHyperplanes) = "SupportHyperplanes";
         CPN.at(ConeProperty::TriangulationSize) = "TriangulationSize";
@@ -454,7 +462,7 @@ namespace {
         CPN.at(ConeProperty::GeneratorOfInterior) = "GeneratorOfInterior";
         
         // detect changes in size of Enum, to remember to update CPN!
-        static_assert (ConeProperty::EnumSize == 70,
+        static_assert (ConeProperty::EnumSize == 71,
             "ConeProperties Enum size does not fit! Update cone_property.cpp!");
         // assert all fields contain an non-empty string
         for (size_t i=0;  i<ConeProperty::EnumSize; i++) {

@@ -1609,6 +1609,22 @@ size_t Cone<Integer>::getNrExtremeRays() {
 }
 
 template<typename Integer>
+const Matrix<nmz_float>& Cone<Integer>::getVerticesFloatMatrix() {
+    compute(ConeProperty::VerticesFloat);
+    return VerticesFloat;
+}
+template<typename Integer>
+const vector< vector<nmz_float> >& Cone<Integer>::getVerticesFloat() {
+    compute(ConeProperty::VerticesFloat);
+    return VerticesFloat.get_elements();
+}
+template<typename Integer>
+size_t Cone<Integer>::getNrVerticesFloat() {
+    compute(ConeProperty::VerticesFloat);
+    return VerticesFloat.nr_of_rows();
+}
+
+template<typename Integer>
 const Matrix<Integer>& Cone<Integer>::getVerticesOfPolyhedronMatrix() {
     compute(ConeProperty::VerticesOfPolyhedron);
     return VerticesOfPolyhedron;
@@ -2047,7 +2063,7 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     
     ToCompute.reset(is_Computed);
     ToCompute.check_conflicting_variants();
-    ToCompute.set_preconditions();
+    ToCompute.set_preconditions(inhomogeneous);
     ToCompute.prepare_compute_options(inhomogeneous);
     ToCompute.check_sanity(inhomogeneous);
     if (!isComputed(ConeProperty::OriginalMonoidGenerators)) {
@@ -2144,6 +2160,8 @@ ConeProperties Cone<Integer>::compute_inner(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
     
     complete_sublattice_comp(ToCompute);
+    
+    compute_vertices_float(ToCompute);
        
     if(ToCompute.test(ConeProperty::WeightedEhrhartSeries))
         compute_weighted_Ehrhart(ToCompute);
@@ -3173,6 +3191,37 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     }
     ExtremeRays.sort_by_weights(WeightsGrad,GradAbs);
     is_Computed.set(ConeProperty::ExtremeRays);
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void Cone<Integer>::compute_vertices_float(ConeProperties& ToCompute) {
+    if(!ToCompute.test(ConeProperty::VerticesFloat) || isComputed(ConeProperty::VerticesFloat))
+        return;
+    if(!isComputed(ConeProperty::ExtremeRays))
+        throw NotComputableException("VerticesFloat not computable without extreme rays");
+    if(inhomogeneous && !isComputed(ConeProperty::VerticesOfPolyhedron))
+        throw NotComputableException("VerticesFloat not computable in the inhomogeneous case without vertices");
+    if(!inhomogeneous && !isComputed(ConeProperty::Grading))
+        throw NotComputableException("VerticesFloat not computable in the homogeneous case without a grading");
+    if(inhomogeneous)
+        convert(VerticesFloat, VerticesOfPolyhedron);
+    else
+        convert(VerticesFloat, ExtremeRays);
+    vector<nmz_float> norm;
+    if(inhomogeneous)
+        convert(norm,Dehomogenization);
+    else{
+       convert( norm,Grading);
+       nmz_float GD=1.0/convertTo<double>(GradingDenom);
+       v_scalar_multiplication(norm,GD);
+    }
+    for(size_t i=0;i<VerticesFloat.nr_of_rows();++i){
+        nmz_float den=1.0/v_scalar_product(VerticesFloat[i],norm);
+        v_scalar_multiplication(VerticesFloat[i],den);        
+    }
+    is_Computed.set(ConeProperty::VerticesFloat);
 }
 
 //---------------------------------------------------------------------------

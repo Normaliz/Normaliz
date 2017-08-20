@@ -59,7 +59,6 @@ Output<Integer>::Output(){
     msp=false;
     lattice_ideal_input = false;
     no_ext_rays_output=false;
-    ext_rays_float=false;
 }
 
 //---------------------------------------------------------------------------
@@ -74,13 +73,6 @@ void Output<Integer>::set_lattice_ideal_input(bool value){
 template<typename Integer>
 void Output<Integer>::set_no_ext_rays_output(){
     no_ext_rays_output=true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void Output<Integer>::set_ext_rays_float(){
-    ext_rays_float=true;
 }
 
 //---------------------------------------------------------------------------
@@ -698,17 +690,11 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Output<Integer>::write_float(ofstream& out, const Matrix<Integer>& mat, const vector<Integer>& norm) const{
-    
-    size_t nr=mat.nr_of_rows();
-    size_t nc=mat.nr_of_columns();
+void Output<Integer>::write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const{
 
     for(size_t i=0;i<nr;++i){
-        mpz_class bridge=convertTo<mpz_class>(v_scalar_product(norm,mat[i]));
-        nmz_float den=bridge.get_d();
         for(size_t j=0; j< nc;++j){
-            convert(bridge,mat[i][j]);
-            out << std::setw(10) << bridge.get_d()/den;
+            out << std::setw(10) << mat[i][j];
         }
         out << endl;
     }
@@ -1100,28 +1086,20 @@ void Output<Integer>::write_files() const {
                 out << endl;
             }
         }
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !no_ext_rays_output && !ext_rays_float) {
+        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !no_ext_rays_output) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
-            Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
-            out << endl;
-        }
-        if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && ext_rays_float) {
-            out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
-            write_float(out,Result->getVerticesOfPolyhedronMatrix(),Result->getDehomogenization());
-            out << endl;
-        }
-        if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output && !ext_rays_float) {
-            out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
-            Result->getExtremeRaysMatrix().pretty_print(out);
-            out << endl;
-        }
-        
-        if (Result->isComputed(ConeProperty::ExtremeRays) && ext_rays_float) {
-            out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
-            if(!Result->isComputed(ConeProperty::Grading))
-                Result->getExtremeRaysMatrix().pretty_print(out);
+            if(Result->isComputed(ConeProperty::VerticesFloat))
+                write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
             else
-               write_float(out,Result->getExtremeRaysMatrix(),Result->getGrading()); 
+                Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
+            out << endl;
+        }
+        if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output) {
+            out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
+            if(homogeneous && Result->isComputed(ConeProperty::VerticesFloat))
+                write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim); 
+            else
+                Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;
         }
         

@@ -1911,7 +1911,7 @@ if you want to suppress their output. (The numerical information on the number o
 
 On the other hand, the information provided by the vertices may be important. Instead of the unreadable integer output shown above, you can ask for
 \begin{itemize}
-	\itemtt [ExtRaysFloat]
+	\itemtt [VerticesFloat]
 \end{itemize}
 Then the vertices of polyhedra are printed in floating point format:
 \begin{Verbatim}
@@ -1920,9 +1920,7 @@ Then the vertices of polyhedra are printed in floating point format:
 -3.41637  -0.946868   0.435796  ...  -1.0521   0.632677          1
 ...
 \end{Verbatim}
-Notre that they can only be printed if they have been computed. In this example the option \verb|SupportHyperplanes| should be added.
-
-\verb|ExtRaysFloat| has an effect in homohegeneous computations only if a grading is defined. In inhomogeneous computations it makes always sense.
+Notre that they can only be printed if a polyhedron is defined. This is always the case in inhomogeneous computations, but in the homogeneous case a grading is necessary.
 
 \subsection{The integer hull}\label{IntHull}
 
@@ -3109,6 +3107,12 @@ The computation goal \verb|Sublattice| does not imply any other computation goal
 
 Normaliz tries to find a grading.
 
+\begin{itemize}
+	\itemtt[VerticesFloat] converts the format of vertices to floating point. It implies \texttt{SupportHyperplanes}.
+\end{itemize}
+
+Note that \texttt{VerticesFloat} is not a pure output option. It is a computation goal, and therefore breaks \texttt{DefaultMode}.
+
 
 
 \subsubsection{Hilbert basis and related data}
@@ -3473,13 +3477,7 @@ Extreme rays and vertices may have very long integer coordinates. One can suppre
 \begin{itemize}
 	\itemtt[NoExtRaysOutput] 
 \end{itemize}
-
-If you want to see them in floating point format, use
-\begin{itemize}
-	\itemtt[ExtRaysFloat] 
-\end{itemize}
-
-\verb|NoExtRaysOutput| and \verb|ExtRaysFloat| are  not cone properties.
+\verb|NoExtRaysOutput| is  not cone properties.
 
 \subsection{Overriding the options in the input file}
 
@@ -6125,6 +6123,7 @@ namespace ConeProperty {
 		// matrix valued
 		Generators,
 		ExtremeRays,
+		VerticesFloat,
 		VerticesOfPolyhedron,
 		SupportHyperplanes,
 		HilbertBasis,
@@ -6338,7 +6337,13 @@ const vector< vector<Integer> >& Cone<Integer>::getVerticesOfPolyhedron()
 size_t Cone<Integer>::getNrVerticesOfPolyhedron()
 \end{Verbatim}
 
-In the inhomogeneous case the first function returns the extreme rays of the recession cone, and the second the vertices of the polyhedron. (Together they form the extreme rays of the homogenized cone.) 
+In the inhomogeneous case the first function returns the extreme rays of the recession cone, and the second the vertices of the polyhedron. (Together they form the extreme rays of the homogenized cone.)
+
+Vertices can be returned in floating point formet:
+\begin{Verbatim}
+const vector< vector<nmz_float> >& Cone<Integer>::getVerticesFloat()
+size_t Cone<Integer>::getNrVerticesFloat()
+\end{Verbatim}
 
 \subsubsection{Generators}
 
