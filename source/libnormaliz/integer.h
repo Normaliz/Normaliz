@@ -94,7 +94,7 @@ bool try_convert(mpz_class& ret, const nmz_float& val);
 
 
 
-// template for same typ "conversion"
+// template for same type "conversion"
 template<typename Type>
 inline bool try_convert(Type& ret, const Type& val) {ret = val; return true;}
 
