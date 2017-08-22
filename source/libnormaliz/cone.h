@@ -254,6 +254,9 @@ public:
 
     const Matrix<Integer>& getNmzMatrix(string matrixType);
     const vector< vector<Integer> >& getPlainMatrix(string matrixType);
+    const vector< vector<Integer> >& getPlainMatrix(ConeProperty::Enum prop);
+    const Matrix<Integer>& getNmzMatrix(ConeProperty::Enum prop); 
+    
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
     Integer getGradingDenom();

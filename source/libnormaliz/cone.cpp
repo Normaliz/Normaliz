@@ -1402,10 +1402,21 @@ const Matrix<Integer>& Cone<Integer>::getExtremeRaysMatrix() {
 }
 
 template<typename Integer>
+const vector< vector<Integer> >& Cone<Integer>::getPlainMatrix(ConeProperty::Enum prop) {
+    return getPlainMatrix(toString(prop));    
+}
+
+template<typename Integer>
+const Matrix<Integer>& Cone<Integer>::getNmzMatrix(ConeProperty::Enum prop) {
+    return getNmzMatrix(toString(prop));    
+}
+
+template<typename Integer>
 const vector< vector<Integer> >& Cone<Integer>::getPlainMatrix(string matrixType) {
   const Matrix<Integer>& nmzMatrix = getNmzMatrix(matrixType);
   const vector< vector<Integer> >& plainMatrix = nmzMatrix.get_elements();
   return plainMatrix;
+  // OR SHORTER:  return getNmzMatrix(matrixType).get_elements();
 }
 
 template<typename Integer>
@@ -1414,39 +1425,39 @@ const Matrix<Integer>& Cone<Integer>::getNmzMatrix(string matrixType) {
   if (matrixType == "ExtremeRays"){
     return getExtremeRaysMatrix();
   }
-  else if (matrixType == "VerticesOfPolyhedron"){
+  if (matrixType == "VerticesOfPolyhedron"){
     return getVerticesOfPolyhedronMatrix();
   }
-  else if (matrixType == "SupportHyperplanes"){
+  if (matrixType == "SupportHyperplanes"){
     return getSupportHyperplanesMatrix();
   }
-  else if (matrixType == "ExcludedFaces"){
+  if (matrixType == "ExcludedFaces"){
     return getExcludedFacesMatrix();
   }
-  else if (matrixType == "HilbertBasis"){
+  if (matrixType == "HilbertBasis"){
     return getHilbertBasisMatrix();
   }
-  else if (matrixType == "ModuleGeneratorsOverOriginalMonoid"){
+  if (matrixType == "ModuleGeneratorsOverOriginalMonoid"){
     return getModuleGeneratorsOverOriginalMonoidMatrix();
   }
-  else if (matrixType == "ModuleGenerators"){
+  if (matrixType == "ModuleGenerators"){
     return getModuleGeneratorsMatrix();
   }
-  else if (matrixType == "Generators"){
+  if (matrixType == "Generators"){
     return getGeneratorsMatrix();
   }
-  else if (matrixType == "Deg1Elements"){
+  if (matrixType == "Deg1Elements"){
     return getDeg1ElementsMatrix();
   }
-  else if (matrixType == "MaximalSubspace"){
+  if (matrixType == "MaximalSubspace"){
     return getMaximalSubspaceMatrix();
   }
-  else if (matrixType == "OriginalMonoidGenerators"){
+  if (matrixType == "OriginalMonoidGenerators"){
     return getOriginalMonoidGeneratorsMatrix();
   }
-  else {
-    errorOutput() << "Matrix type " << matrixType << " not found" << endl;
-  }
+
+  //errorOutput() << "Matrix type " << matrixType << " not found" << endl;
+
   throw invalid_argument( "received unknown matrix type" );
 }
 
