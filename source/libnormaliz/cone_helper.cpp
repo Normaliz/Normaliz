@@ -611,14 +611,14 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<IntegerRet>& Deg1Lifted, 
-                                                                   const Matrix<IntegerRet>& Deg1Proj){
-    
-    size_t dim=Deg1Proj.nr_of_columns()+1;
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Lifted, 
+                                                                   const list<vector<IntegerRet> >& Deg1Proj){
+
+    if(Deg1Proj.empty())
+        return;
+    size_t dim=Deg1Proj.front().size()+1;
     size_t dim1=dim-1;
-    vector<Matrix<IntegerRet> > Deg1Thread(omp_get_max_threads());
-    for(size_t i=0;i<Deg1Thread.size();++i)
-        Deg1Thread[i].resize(0,dim);
+    vector<list<vector<IntegerRet> > > Deg1Thread(omp_get_max_threads());
     
     bool skip_remaining;
 #ifndef NCATCH
@@ -635,18 +635,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<Intege
         tn=0;
     else    
         tn = omp_get_ancestor_thread_num(omp_start_level+1);
- 
+    
+    size_t nr_to_lift=Deg1Proj.size(); 
+    size_t ppos=0;
+    auto  p=Deg1Proj.begin();
     #pragma omp for schedule(dynamic)
-    for(size_t i=0;i<Deg1Proj.nr_of_rows();++i){
+    for(size_t i=0;i<nr_to_lift;++i){
         
         if (skip_remaining) continue;
+        
+        for(; i > ppos; ++ppos, ++p) ;
+        for(; i < ppos; --ppos, --p) ;
+
         
 #ifndef NCATCH
         try {
 #endif
 
-        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over Deg1Proj[i] is an interval -- 0 to make gcc happy        
-        fiber_interval(MinInterval, MaxInterval, Deg1Proj[i]);
+        IntegerRet MinInterval=0, MaxInterval=0; // the fiber over *p is an interval -- 0 to make gcc happy        
+        fiber_interval(MinInterval, MaxInterval, *p);
         // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
         for(IntegerRet k=MinInterval;k<=MaxInterval;++k){
             
@@ -654,9 +661,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<Intege
             
             vector<IntegerRet> NewPoint(dim);
             for(size_t j=0;j<dim1;++j)
-                NewPoint[j]=Deg1Proj[i][j];
+                NewPoint[j]=(*p)[j];
             NewPoint[dim1]=k;
-            Deg1Thread[tn].append(NewPoint);
+            Deg1Thread[tn].push_back(NewPoint);
         }
         
 #ifndef NCATCH
@@ -675,8 +682,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_to_this_dim(Matrix<Intege
 #endif
     
     for(size_t i=0;i<Deg1Thread.size();++i)
-        Deg1Lifted.append(Deg1Thread[i]);
-    
+        Deg1Lifted.splice(Deg1Lifted.begin(),Deg1Thread[i]);   
 
     /* Deg1.pretty_print(cout);
     cout << "*******************" << endl; */
@@ -688,22 +694,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
 
     assert(EmbDim>=2);
 
-    Matrix<IntegerRet> Deg1Lifted;
-    Matrix<IntegerRet> Deg1Proj(0,1);
+    list<vector<IntegerRet> > Deg1Lifted;
+    list<vector<IntegerRet> > Deg1Proj;
     vector<IntegerRet> One(1,GD);
-    Deg1Proj.append(One);
+    Deg1Proj.push_back(One);
     
     for(size_t i=2; i<=EmbDim;++i){
-        Deg1Lifted=Matrix<IntegerRet>(0,i);
+        assert(Deg1Lifted.empty());
         lift_points_to_this_dim(Deg1Lifted,Deg1Proj);
         if(verbose)    
-            verboseOutput() <<  "embdim " << i << " Deg1Elements " << Deg1Lifted.nr_of_rows() << endl;
+            verboseOutput() <<  "embdim " << i << " Deg1Elements " << Deg1Lifted.size() << endl;
         if(i<EmbDim){
+            Deg1Proj.clear();
             swap(Deg1Lifted,Deg1Proj);
         }               
     }
     
-    swap(Deg1Points,Deg1Lifted); // final resilt
+    swap(Deg1Points,Deg1Lifted); // final result
     /* if(verbose)
         verboseOutput() << "Lifting done" << endl;*/
 }
@@ -750,7 +757,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_single_point(){
     vector<IntegerRet> final_latt_point;
     lift_point_recursively(final_latt_point,start);
     if(final_latt_point.size()>0){
-        Deg1Points.append(final_latt_point);
+        Deg1Points.push_back(final_latt_point);
         if(verbose)
             verboseOutput() << "Found point" << endl;
     }
@@ -772,7 +779,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     StartRank=rank;
     GD=1; // the default choice
     verbose=true;
-    Deg1Points.resize(0,EmbDim);
     is_parallelotope=false;
     no_crunch=true;
 }
@@ -851,10 +857,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints){
-    
-    swap(Deg1Points,LattPoints);
+
+    assert(LattPoints.nr_of_rows()==0);
+    if(Deg1Points.size()>0)
+        LattPoints.append(Deg1Points);
 }
 
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::put_vector_into(vector<IntegerRet>& LattPoint){
+
+    if(Deg1Points.size()>0)
+        LattPoint=Deg1Points.front();
+}
 //---------------------------------------------------------------------------
 
 #ifdef NMZ_MIC_OFFLOAD

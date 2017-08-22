@@ -79,9 +79,11 @@ double convert_to_double(long long a) {
 template<typename Integer>
 void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& gens,Integer VolumeBound) {
     
-    //gens.pretty_print(cout);
-    //cout << "=======================" << endl;
+    /* gens.pretty_print(cout);
+    cout << "=======================" << endl;
     
+    gens.transpose().pretty_print(cout);
+    cout << "=======================" << endl;*/
     Integer volume;
     // int dim = gens[0].size();
     Matrix<Integer> Support_Hyperplanes = gens.invert(volume);

@@ -1666,7 +1666,7 @@ void Full_Cone<Integer>::evaluate_large_rec_pyramids(size_t new_generator){
             continue;
         
         for(; i > ppos; ++ppos, ++p) ;
-        for(; i < ppos; --ppos, --p) {};
+        for(; i < ppos; --ppos, --p) ;
 
         if(verbose && nrLargeRecPyrs>=RepBound){
             #pragma omp critical(VERBOSE)
@@ -4981,7 +4981,11 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime){ // 
     dim=M.nr_of_columns();
     if(dim>0)
         Generators=M;
-    // M.pretty_print(cout);
+    /* M.pretty_print(cout);
+    cout << "------------------" << endl;
+    M.transpose().pretty_print(cout);
+    cout << "==================" << endl;*/
+    
     // assert(M.row_echelon()== dim); rank check now done later 
     
     /*index=1;                      // not used at present

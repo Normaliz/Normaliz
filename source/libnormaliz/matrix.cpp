@@ -454,9 +454,10 @@ template<typename Integer>
 void Matrix<Integer>::append(const Matrix<Integer>& M) {
     assert (nc == M.nc);
     elem.reserve(nr+M.nr);
-    for (size_t i=0; i<M.nr; i++) {
+    /* for (size_t i=0; i<M.nr; i++) {
         elem.push_back(M.elem[i]);
-    }
+    }*/
+    elem.insert(elem.end(),M.elem.begin(),M.elem.end());
     nr += M.nr;
 }
 
@@ -2565,9 +2566,9 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     
     // cout << "==============================" << endl;
     
-    Matrix<Integer> SubDivMat(0,nr+1);
     size_t nothing_found=0;
     while(true){
+        vector<Integer> SubDiv;
         // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
         Supp[nr][0]=g;  // the degree at which we cut the simplex
         //Integer One=1;
@@ -2576,8 +2577,8 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         PL.set_excluded_point(Zero);
         PL.set_verbose(false);
         PL.compute(false); // only a single point
-        PL.put_eg1Points_into(SubDivMat);
-        if(SubDivMat.nr_of_rows()==0){ // no point found
+        PL.put_vector_into(SubDiv);
+        if(SubDiv.size()==0){ // no point found
             nothing_found++;
             if(g==opt_value-1)
                 return opt_point; // optimal value found (or nothing found)
@@ -2592,7 +2593,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
             // SubDivMat.pretty_print(cout);
             nothing_found=0;
             den=2; // back to start value
-            opt_point=SubDivMat[0];
+            opt_point=SubDiv;
             std::swap(opt_point[0],opt_point[nc]);
             opt_point.resize(nc);
             if(opt_value==empty_value+1)

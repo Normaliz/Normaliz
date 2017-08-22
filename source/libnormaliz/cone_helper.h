@@ -25,6 +25,7 @@
 #define CONE_HELPER_H_
 
 #include <vector>
+#include <list>
 #include <boost/dynamic_bitset.hpp>
 
 #include "libnormaliz/general.h"
@@ -55,7 +56,7 @@ class ProjectAndLift {
     
     size_t StartRank;
     
-    Matrix<IntegerRet> Deg1Points;
+    list<vector<IntegerRet> > Deg1Points;
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
     
@@ -72,7 +73,7 @@ class ProjectAndLift {
     
     void lift_point_recursively(vector<IntegerRet>& final_latt_point, 
                                 const vector<IntegerRet>& latt_point_proj);    
-    void lift_points_to_this_dim(Matrix<IntegerRet>& Deg1Points, const Matrix<IntegerRet>& Deg1Proj); 
+    void lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Points, const list<vector<IntegerRet> >& Deg1Proj); 
     
     void find_single_point();
     void lift_points_by_generation();
@@ -95,7 +96,8 @@ class ProjectAndLift {
     void set_verbose(bool on_off);
     
     void compute(bool do_all_points=true);    
-    void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);    
+    void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
+    void put_vector_into(vector<IntegerRet>& LattPoint);   
 };    
     
 /* template<typename IntegerPL, typename IntegerRet>
