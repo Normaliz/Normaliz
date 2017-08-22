@@ -169,9 +169,10 @@ void Matrix<Integer>::print_append(const string& name,const string& suffix) cons
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void Matrix<Integer>::print(ostream& out) const{
+void Matrix<Integer>::print(ostream& out, bool with_format) const{
     size_t i,j;
-    out<<nr<<endl<<nc<<endl;
+    if(with_format)
+        out<<nr<<endl<<nc<<endl;
     for (i = 0; i < nr; i++) {
         for (j = 0; j < nc; j++) {
             out<<elem[i][j]<<" ";
@@ -185,7 +186,7 @@ void Matrix<Integer>::print(ostream& out) const{
 template<typename Integer>
 void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
     if(nr>1000000 && !with_row_nr){
-        print(out);
+        print(out,false);
         return;
     }
     size_t i,j,k;

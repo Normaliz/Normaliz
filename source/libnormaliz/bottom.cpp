@@ -62,6 +62,8 @@ template<typename Integer>
 bool bottom_points_inner(SCIP* scip, Matrix<Integer>& gens, list< vector<Integer> >& local_new_points,
                  vector< Matrix<Integer> >& local_q_gens, size_t& stellar_det_sum);
 
+// kept here for simplicity:
+
 double convert_to_double(mpz_class a) {
     return a.get_d();
 }
@@ -74,10 +76,11 @@ double convert_to_double(long long a) {
     return a;
 }
 
-// TODO do not use global variables
-
 template<typename Integer>
-void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Integer VolumeBound) {
+void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& gens,Integer VolumeBound) {
+    
+    //gens.pretty_print(cout);
+    //cout << "=======================" << endl;
     
     Integer volume;
     // int dim = gens[0].size();
@@ -85,6 +88,7 @@ void bottom_points(list< vector<Integer> >& new_points, Matrix<Integer> gens,Int
 
     vector<Integer> grading; // = grading_;
     if (grading.empty()) grading = gens.find_linear_form();
+    // cout << grading;
 
     list<vector<Integer> > bottom_candidates;
     bottom_candidates.splice(bottom_candidates.begin(), new_points);
@@ -542,12 +546,12 @@ vector<Integer> opt_sol(SCIP* scip,
 #endif // NMZ_SCIP
 
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template void bottom_points(list< vector<long> >& new_points, Matrix<long> gens,
+template void bottom_points(list< vector<long> >& new_points, const Matrix<long>& gens,
                             long VolumeBound);
 #endif // NMZ_MIC_OFFLOAD
-template void bottom_points(list< vector<long long> >& new_points, Matrix<long long> gens,
+template void bottom_points(list< vector<long long> >& new_points, const Matrix<long long>& gens,
                             long long VolumeBound);
-template void bottom_points(list< vector<mpz_class> >& new_points, Matrix<mpz_class> gens,
+template void bottom_points(list< vector<mpz_class> >& new_points, const Matrix<mpz_class>& gens,
                             mpz_class VolumeBound);
 
 } // namespace
