@@ -577,37 +577,18 @@ template<typename Integer>
 Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A) const{
     assert (nc == A.nr);
 
-    Matrix<Integer> B(nr,A.nc,0);  //initialized with 0
+    Matrix<Integer> Atrans=A.transpose();
+    Matrix<Integer> B(nr,A.nc);  //initialized with 0
     size_t i,j,k;
     for(i=0; i<B.nr;i++){
         for(j=0; j<B.nc; j++){
             for(k=0; k<nc; k++){
-                B.elem[i][j]=B.elem[i][j]+elem[i][k]*A.elem[k][j];
+                B[i][j]=v_scalar_product(elem[i],Atrans[j]);
             }
         }
     }
     return B;
 }
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Matrix<Integer> Matrix<Integer>::multiplication_cut(const Matrix<Integer>& A, const size_t& c) const{
-    assert (nc == A.nr);
-    assert(c<= A.nc);
-
-    Matrix<Integer> B(nr,c,0);  //initialized with 0
-    size_t i,j,k;
-    for(i=0; i<B.nr;i++){
-        for(j=0; j<c; j++){
-            for(k=0; k<nc; k++){
-                B.elem[i][j]=B.elem[i][j]+elem[i][k]*A.elem[k][j];
-            }
-        }
-    }
-    return B;
-}
-
 
 //---------------------------------------------------------------------------
 
