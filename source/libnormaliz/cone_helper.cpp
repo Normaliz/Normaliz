@@ -858,13 +858,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints){
 
-    size_t n=Deg1Points.size();
-    // LattPoints.resize(n,0);
-    auto it=Deg1Points.begin();
-    for(size_t i=0;i<n;++i, ++it){
-        // vector<IntgererRet> trans;        
-        // swap<vector<IntegerRet> >(*it,trans);
-        LattPoints.append(*it);
+    while(!Deg1Points.empty()){
+        LattPoints.append(Deg1Points.front());
+        Deg1Points.pop_front();
     }
 }
 
