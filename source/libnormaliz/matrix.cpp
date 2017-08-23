@@ -27,6 +27,7 @@
 #include <set>
 #include <algorithm>
 #include <math.h>
+#include <iomanip>
 
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/cone.h"
@@ -189,37 +190,20 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
         print(out,false);
         return;
     }
-    size_t i,j,k;
+    size_t i,j;
     vector<size_t> max_length = maximal_decimal_length_columnwise();
     size_t max_index_length = decimal_length(nr);
     for (i = 0; i < nr; i++) {
         if (with_row_nr) {
-            for (k= 0; k <= max_index_length - decimal_length(i); k++) {
-                out<<" ";
-            }
-            out << i << ": ";
+            out << std::setw(max_index_length+1) << i<< ": ";
         }
         for (j = 0; j < nc; j++) {
-            ostringstream to_print;
-            to_print << elem[i][j];
-            for (k= 0; k <= max_length[j] - to_print.str().size(); k++) {
-                out<<" ";
-            }
-            out<< to_print.str();
+            out << std::setw(max_length[j]+1) << elem[i][j];
         }
         out<<endl;
     }
 }
 
-/*
- * string to_print;
-            ostringstream(to_print) << elem[i][j];
-            cout << elem[i][j] << " S " << to_print << " L " << decimal_length(elem[i][j]) << endl;
-            for (k= 0; k <= max_length[j] - to_print.size(); k++) {
-                out<<" ";
-            }
-            out << to_print;
-*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2577,7 +2561,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         PL.set_excluded_point(Zero);
         PL.set_verbose(false);
         PL.compute(false); // only a single point
-        PL.put_vector_into(SubDiv);
+        PL.put_single_point_into(SubDiv);
         if(SubDiv.size()==0){ // no point found
             nothing_found++;
             if(g==opt_value-1)

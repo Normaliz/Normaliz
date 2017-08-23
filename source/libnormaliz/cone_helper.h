@@ -40,7 +40,7 @@ using std::vector;
 // if a set occurs more than once, only the last instance is recognized as maximal
 void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
 
-// the project-and-lift algorithm for lattice points on a polytope
+// the project-and-lift algorithm for lattice points in a polytope
 
 template<typename IntegerPL, typename IntegerRet> 
 class ProjectAndLift {
@@ -57,6 +57,7 @@ class ProjectAndLift {
     size_t StartRank;
     
     list<vector<IntegerRet> > Deg1Points;
+    vector<IntegerRet> SingleDeg1Point;
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
     
@@ -97,7 +98,7 @@ class ProjectAndLift {
     
     void compute(bool do_all_points=true);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
-    void put_vector_into(vector<IntegerRet>& LattPoint);   
+    void put_single_point_into(vector<IntegerRet>& LattPoint);   
 };    
     
 /* template<typename IntegerPL, typename IntegerRet>

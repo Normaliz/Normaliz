@@ -757,7 +757,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_single_point(){
     vector<IntegerRet> final_latt_point;
     lift_point_recursively(final_latt_point,start);
     if(final_latt_point.size()>0){
-        Deg1Points.push_back(final_latt_point);
+        SingleDeg1Point=final_latt_point;
         if(verbose)
             verboseOutput() << "Found point" << endl;
     }
@@ -865,10 +865,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::put_vector_into(vector<IntegerRet>& LattPoint){
+void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerRet>& LattPoint){
 
-    if(Deg1Points.size()>0)
-        LattPoint=Deg1Points.front();
+    LattPoint=SingleDeg1Point;
 }
 //---------------------------------------------------------------------------
 
