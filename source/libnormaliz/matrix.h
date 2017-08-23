@@ -255,8 +255,6 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix add(const Matrix& A) const;                       // returns this+A
     Matrix multiplication(const Matrix& A) const;          // returns this*A
     Matrix multiplication(const Matrix& A, long m) const;// returns this*A (mod m)
-    Matrix<Integer> multiplication_cut(const Matrix<Integer>& A, const size_t& c) const; // returns 
-    // this*(first c columns of A)
     bool equal(const Matrix& A) const;             // returns this==A
     bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this

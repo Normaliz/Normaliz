@@ -2812,12 +2812,44 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     SimplCone.do_approximation=true;
     
     SimplCone.compute();*/
+    
     Matrix<Integer> Gens=Generators.submatrix(key);
+    
+    Gens.pretty_print(cout);
+    cout << "============" << endl;
+    /* Gens.transpose().pretty_print(cout);
+    cout << "============" << endl;
+    cout << Grading << "***************" << endl; */
+    
+    Matrix<Integer> T=Gens.transpose();
+    Matrix<Integer> R=T;
+    R.row_echelon();
+    R.pretty_print(cout);
+    cout << "$$$$$$$$$$$$$$" << endl;
+    Integer dummy;
+    Matrix<Integer> I=T.invert(dummy);
+    T.multiplication(I).pretty_print(cout);
+    cout << "%%%%%%%%%%%%%%%%%%%" << endl;
+    Matrix<Integer> A=R.multiplication(I);
+    A.scalar_division(dummy);
+    Gens.multiplication(A.transpose()).transpose().pretty_print(cout);
+    cout << "$$$$$$$$$$$$$$" << endl;
+    Matrix<Integer> B=A.transpose().invert(dummy);
+    vector<Integer> GradT=Grading=B.MxV(Grading);
+
+    Gens=R.transpose();
+    
+    /* Gens.pretty_print(cout);
+    cout << "============" << endl;
+    cout << GradT << "***************" << endl;*/
+    
     Matrix<Integer> GradMat(0,dim);
-    GradMat.append(Grading);
+    GradMat.append(GradT);
     Cone<Integer> ProjCone(Type::cone,Gens,Type::grading, GradMat);
     ProjCone.compute(ConeProperty::Projection);
-    vector<vector<Integer> > Deg1=ProjCone.getDeg1Elements();
+    Matrix<Integer> Deg1=ProjCone.getDeg1ElementsMatrix();
+    Deg1=Deg1.multiplication(B);    
+    
     Matrix<Integer> Supp=ProjCone.getSupportHyperplanesMatrix();;
     
     vector<bool> Excluded(dim,false); // we want to discard duplicates
@@ -2839,7 +2871,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     }
     
     typename vector<vector<Integer> >::const_iterator E;
-    for(E=Deg1.begin();E!=Deg1.end();++E){
+    for(E=Deg1.get_elements().begin();E!=Deg1.get_elements().end();++E){
         size_t i;
         for(i=0;i<dim;++i)
             if(v_scalar_product(*E,Supp[i])==0 && Excluded[i])
