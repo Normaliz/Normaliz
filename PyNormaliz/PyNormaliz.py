@@ -78,6 +78,9 @@ class Cone:
     def Polynomial(self, **kwargs):
         return PyNormaliz_cpp.NmzGetPolynomial(self.cone)
 
+    def NrCoeffQuasiPol(self, bound=-1):
+        return PyNormaliz_cpp.NmzSetNrCoeffQuasiPol(self.cone, bound)
+
     def SymmetrizedCone(self, **kwargs):
         new_inner_cone = PyNormaliz_cpp.NmzSymmetrizedCone(self.cone)
         if new_inner_cone == None:
@@ -498,3 +501,21 @@ class Cone:
         input_list.append("VirtualMultiplicity")
         PyNormaliz_cpp.NmzCompute(self.cone, input_list)
         return PyNormaliz_cpp.NmzResult(self.cone, "VirtualMultiplicity")
+
+    def IsGorenstein(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("IsGorenstein")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzResult(self.cone, "IsGorenstein")
+
+    def GeneratorOfInterior(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("GeneratorOfInterior")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzResult(self.cone, "GeneratorOfInterior")
+
+    def VerticesFloat(self, **kwargs):
+        input_list = self.__process_keyword_args(kwargs)
+        input_list.append("VerticesFloat")
+        PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+        return PyNormaliz_cpp.NmzResult(self.cone, "VerticesFloat")

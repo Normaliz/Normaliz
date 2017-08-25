@@ -21,5 +21,5 @@ setup(
                               extra_link_args=['-lnormaliz', '-lgmp' ],
                               define_macros = macro_list ) ],
     
-    package_data = {'': [ "COPYING", "GPLv2" ] },
+    package_data = {'': [ "COPYING", "GPLv2", "Readme.md" ] },
 )
