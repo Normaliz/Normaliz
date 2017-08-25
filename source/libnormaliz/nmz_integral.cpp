@@ -418,7 +418,7 @@ try{
         out << block_nr+1 << endl;
         out.close();
         
-        name_out="block_"+to_string(block_nr)+".mult";
+        name_out="block_"+to_string((size_t) block_nr)+".mult";
         file=name_out.c_str();       
         ofstream out_1(file);
         out_1 << block_nr << ", "<< VM << "," << endl;

@@ -13,7 +13,7 @@ MY_PROG = outerpar
 include ../Makefile.configuration
 
 LINKFLAGS = -L$(LIBNORMALIZ_DIR) -lnormaliz
-LINKFLAGS += $(SCIPFLAGS) $(GMPFLAGS)
+LINKFLAGS += $(SCIPFLAGS) $(COCOAFLAGS) $(GMPFLAGS)
 
 default: $(MY_PROG) 
 
