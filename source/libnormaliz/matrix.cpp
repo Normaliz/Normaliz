@@ -2535,9 +2535,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     while(true){
         vector<Integer> SubDiv;
         // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
-        Supp[nr][0]=g;  // the degree at which we cut the simplex
-        //Integer One=1;
-        // project_and_lift_inner(SubDivMat,Supp,Ind,One, nr+1,false,false,Zero);
+        Supp[nr][0]=g;  // the degree at which we cut the simplex1;
         ProjectAndLift<Integer,Integer> PL(Supp,Ind,nr+1);
         PL.set_excluded_point(Zero);
         PL.set_verbose(false);
@@ -2546,16 +2544,15 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         if(SubDiv.size()==0){ // no point found
             nothing_found++;
             if(g==opt_value-1)
-                return opt_point; // optimal value found (or nothing found)
+                return opt_point; // optimal point found (or nothing found)
             empty_value=g;
-            if(nothing_found<1)
+            if(nothing_found<1) // can't be true if "1" is not raised to a higher value
                 g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
             else
                 g=opt_value-1;
-            den*=2;           
+            den*=2;    // not used in the present setting (see above)      
         }
         else{ // point found
-            // SubDivMat.pretty_print(cout);
             nothing_found=0;
             den=2; // back to start value
             opt_point=SubDiv;

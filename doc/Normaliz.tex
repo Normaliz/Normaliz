@@ -158,8 +158,8 @@
 The program Normaliz  is a tool for computing
 the Hilbert bases and enumerative data of rational cones and, more generally, sets of lattice points in rational polyhedra. The mathematical background and the terminology of this manual are explained in Appendix A. For a thorough treatment of the  mathematics involved we refer the reader to
 \cite{BG}. The terminology follows \cite{BG}. For
-algorithms of Normaliz see \cite{BHIKS}, \cite{BI},
-\cite{BIS} and \cite{BK02}. Some new developments are briefly explained in this manual.
+algorithms of Normaliz see  \cite{BI}, \cite{BHIKS},
+\cite{BIS}, \cite{BK02}, \cite{BSS}, and \cite{BS}. Some new developments are briefly explained in this manual.
 
 Both polyhedra and lattices  can be given by
 \begin{arab}
@@ -170,7 +170,7 @@ Since version 3.1, cones need not be pointed and polyhedra need not have vertice
 
 In addition to generators and constraints, affine monoids can be defined by lattice ideals, in other words, by binomial equations.
 
-In order to describe a rational polyhedron by generators, one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generating a rational cone $C$. The polyhedron defined by these generators is 
+In order to describe a rational polyhedron by \emph{generators}, one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generating a rational cone $C$. The polyhedron defined by these generators is 
 $$
 P=\conv(x_1,\dots,x_n)+C,\qquad C=\RR_+y_1+\dots+\RR_+y_m.
 $$
@@ -178,7 +178,7 @@ An affine lattice defined by generators is a subset of $\ZZ^d$ given as
 $$
 L=w+L_0,\qquad L_0=\ZZ z_1+\dots+\ZZ z_r, \qquad w,z_1,\dots,z_r\in \ZZ^d.
 $$
-Constraints defining a polyhedron are affine-linear inequalities with integral coefficients, and the constraints for an affine lattice are affine-linear diophantine equations and congruences. The conversion between generators and constraints is an important task of Normaliz.
+\emph{Constraints} defining a polyhedron are affine-linear inequalities with integral coefficients, and the constraints for an affine lattice are affine-linear diophantine equations and congruences. The conversion between generators and constraints is an important task of Normaliz.
 
 
 The first main goal of Normaliz is to compute a system of generators for
@@ -206,13 +206,13 @@ Performance data of Normaliz can be found in \cite{BIS}.
 
 \subsection{Platforms, implementation and access from other systems}
 
-Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem that is available in certain versions of MS Windows 10.
+Executables for Normaliz are provided for Mac OS, Linux and MS Windows. If the executables prepared cannot be run on your system, then you can  compile Normaliz yourself (see Section \ref{Compile}). The statically linked Linux binaries provided by us  can be run in the Linux subsystem that is available in MS Windows 10.
 
 Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard packages Boost and GMP (see Section \ref{Compile}). The parallelization is based on OpenMP.
 
-Normaliz consists of two parts: the front end`` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
+Normaliz consists of two parts: the front end ` normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
-Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche and with contributions by Justin Shenk and Richard Sieg.
+Normaliz can be accessed from the interactive general purpose system \textsc{Python} via the interface \textsc{PyNormaliz} written by Sebastian Gutsche with contributions by Justin Shenk and Richard Sieg.
 
 Normaliz can also be accessed from the following systems:
 \begin{itemize}
@@ -226,7 +226,7 @@ Normaliz can also be accessed from the following systems:
 \end{itemize}
 
 The Singular and Macaulay 2 interfaces are contained in the
-Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they can profit from the newer versions.
+Normaliz distribution. At present, their functionality is limited to Normaliz 2.10. Nevertheless they profit from the newer versions.
 
 Furthermore,  Normaliz is used by the  B. Burton's system
 \textsc{Regina} and in \textsc{SecDec} by S. Borowka et al.
@@ -277,7 +277,7 @@ In 3.4.0:
 	\item limit of parallelization via libnormaliz,
 	\item floating point numbers in input,
 	\item project-and-lift algorithm for lattice points in polytopes, also with a floating point variant,
-	\item significantly improved subdivision, equivalent replacement for Scip
+	\item significantly improved subdivision, equivalent replacement for Scip.
 	\item fast Gorenstein test,
 	\item restriction of number of significant coefficients of quasipolynomial,
 	\item definition of semi-open parallelepipeds in input and output of their lattice points.
@@ -664,7 +664,7 @@ scale = 0.8]
 \end{tikzpicture}
 \end{minipage}
 
-This is a good place to mention that Normaliz also accepts matrices (and vectors) in sparde format:
+This is a good place to mention that Normaliz also accepts matrices (and vectors) in sparse format:
 
 \begin{Verbatim}
 amb_space 4
@@ -3571,6 +3571,9 @@ Lattice points in parallelotopes that are defined by inequalities, like those in
 
 Normaliz recognizes parallelotopes by itself, and suppresses the computation of the vertices unless asked to compute them.
 
+\emph{Remark.}\enspace
+The triangulation based primal algorithm and the dual algorithm do not depend on the embedding of the computed objects into the ambient space since they use only data that are invariant under coordinate transformations. This is not true for project-and-lift and the approximation discussed below.
+
 \subsubsection{Project-and-lift with floating point arithmetic}
 
 Especially the input of floating point numbers often forces Normaliz into GMP arithmetic. Since GMP arithmetic is slow (compared to arithmetic with machine integers), Normaliz has a floating point variant of the project-and-lift algorithm. (Such an algorithm makes no sense for Hilbert bases or Hilbert series.) It behaves very well, even in computations for lower dimensional polytopes. We have not found a single deviation from the results with GMP arithmetic in our examples.
@@ -5287,14 +5290,14 @@ The following sequence of commands will install it in the subdirectory \verb|CoC
 \begin{Verbatim}
 mkdir ~/CoCoA/
 cd ~/CoCoA/
-wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99543.tgz
-tar xvf CoCoALib-0.99543.tgz
-cd CoCoALib-0.99543
+wget http://cocoa.dima.unige.it/cocoalib/tgz/CoCoALib-0.99550.tgz
+tar xvf CoCoALib-0.99550.tgz
+cd CoCoALib-0.99550
 ./configure --threadsafe-hack --no-boost
 make library -j2
 \end{Verbatim}
 
-If CoCoALib-0.99543 should be no longer available, replace it by a newer version.
+If CoCoALib-0.99550 should be no longer available, replace it by a newer version.
 
 \subsection{autotools}
 
@@ -5309,7 +5312,7 @@ This will compile Normaliz, but most likely without SCIP and CoCoALib since they
 \end{Verbatim}
 or
 \begin{Verbatim}
-./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99543
+./configure --with-cocoalib=$HOME/CoCoA/CoCoALib-0.99550
 \end{Verbatim}
 or with both paths. If the libraries are found, Normaliz will be compiled with SCIP and CoCoALib, respectively, by the \verb|make| command. Check the terminal output of \verb|./configure| for success.
 
@@ -5350,7 +5353,7 @@ SCIP_DIR=$HOME/SCIP/scipoptsuite-3.2.0/ cmake ../source
 \end{Verbatim}
 replacing \verb|$HOME/SCIP/scipoptsuite-3.2.0/| with your own path to SCIP if necessary. Similarly,
 \begin{Verbatim}
-COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99543 cmake ../source/
+COCOA_DIR=$HOME/CoCoA/CoCoALib-0.99550 cmake ../source/
 \end{Verbatim}
 Then \verb|make| and \verb|make install| will complete the work. After \verb|make| the executables can be found in \verb|BUILD| and its subdirectory \verb|maxsimplex|.
 
@@ -5375,7 +5378,7 @@ Note: Do not try to compile Normaliz with static libraries for Mac OS X.
 
 One can compile Windows executables with the Cygwin port of GCC. Unfortunately it is not compatible to OpenMP.
 
-Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
+Using Visual Studio is a bit tricky. Microsoft's C++ compiler does not support OpenMP 3.0. Creating a Normaliz Visual Studio project via cmake is currently not fully supported. The executables that are offered in the Normaliz distribution have been compiled with Intel icpc and a manually created project. Please contact us if you want to build Normaliz on Windows.
 
 Note that the statically linked Linux binaries run in the Linux subsystem of Windows 10. We have not yet tried to build Normaliz in it.
 
@@ -6364,6 +6367,7 @@ const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements()
 size_t Cone<Integer>::getNrDeg1Elements()
 \end{Verbatim}
 
+ This applies only to homogeneous computations. If a polytope is defined by inhomogeneous input, its lattice points appear as \verb|ModuleGenerators|; see below.
 
 \subsubsection{Hilbert basis}
 
@@ -6714,7 +6718,7 @@ The function returns the previous value.
 
 The libnormaliz functions can be called by programs that are parallelized via OpenMP themselves. The functions in libnormaliz switch off nested parallelization.
 
-As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. It needs \verb|libnormaliz| without CoCoA and Scip. Compile it by \verb|make -f Makefile.classic|.
+As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. Compile it by \texttt{make -f Makefile.classic}.
 
 
 \subsubsection{Control of terminal output}
@@ -7053,13 +7057,12 @@ LattE is available at \url{http://www.math.ucdavis.edu/~latte/}
 \bibitem{BG} W. Bruns and J. Gubeladze. {\em Polytopes, rings, and K-theory}.
 Springer 2009.
 
+\bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for rational cones and affine monoids.}
+J. Algebra 324 (2010) 1098--1113.
+
 \bibitem{BHIKS} W. Bruns, R. Hemmecke, B. Ichim, M. Köppe and C. Söger.
 {\em Challenging computations of Hilbert bases of cones associated with
 algebraic statistics }. Exp. Math.20 (2011), 25--33.
-
-\bibitem{BI} W. Bruns and B. Ichim. {\em Normaliz: algorithms for
-rational cones and affine monoids.}
-J. Algebra 324 (2010) 1098--1113.
 
 \bibitem{BIS} W. Bruns, B. Ichim and C. Söger. {\em The power of
 pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
@@ -7067,6 +7070,8 @@ pyramid decomposition in Normaliz}. J. Symb. Comp. 74 (2016), 513--536.
 \bibitem{BK02} W .Bruns and R. Koch. {\em Computing the integral
 closure of an affine semigroup}. Univ. Iagell. Acta Math.
 39 (2001), 59--70.
+
+\bibitem{BSS} W. Bruns, R. Sieg and C. Söger. {\em Normaliz 2013--2016.} To appear in the final report of the DFG SPP 1489. Preprint \url{ arXiv:1611.07965}.
 
 \bibitem{BS} W. Bruns and C. Söger. {\em The computation of weighted Ehrhart series in Normaliz.} J. Symb. Comp. 68 (2015), 75--86.
 
