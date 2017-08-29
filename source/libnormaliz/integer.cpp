@@ -34,6 +34,16 @@
 namespace libnormaliz {
 using namespace std;
 
+bool try_convert(mpz_class& ret, const mpq_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+
+bool try_convert(mpq_class& ret, const mpz_class& val) {
+    assert(false); // must never be used
+    return false;
+}
+
 bool try_convert(long& ret, const long long& val) {
     if (fits_long_range(val)) {
         ret = val;

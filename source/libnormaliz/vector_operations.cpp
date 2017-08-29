@@ -122,8 +122,8 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
 #endif // __MIC__
         
     if(!check_range(ans)){
-		#pragma omp atomic
-		GMP_scal_prod++;
+        #pragma omp atomic
+        GMP_scal_prod++;
     
         // cout << "av " << av;
         // cout << "bv " << bv;   
@@ -132,6 +132,94 @@ Integer v_scalar_product(const vector<Integer>& av,const vector<Integer>& bv){
         convert(mpz_b, bv);
         convert(ans, v_scalar_product(mpz_a,mpz_b));
     }
+        
+    return ans;
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+mpq_class v_scalar_product(const vector<mpq_class>& av,const vector<mpq_class>& bv){
+    //loop stretching ; brings some small speed improvement
+
+    mpq_class ans = 0;
+    size_t i,n=av.size();
+
+
+#if 0 // #ifdef __MIC__   // not for newer compiler versions
+    // this version seems to be better vectorizable on the mic
+    for (i=0; i<n; ++i)
+        ans += av[i]*bv[i];
+
+#else // __MIC__
+    typename vector<mpq_class>::const_iterator a=av.begin(), b=bv.begin();
+
+    if( n >= 16 )
+    {
+        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
+            ans += a[0] * b[0];
+            ans += a[1] * b[1];
+            ans += a[2] * b[2];
+            ans += a[3] * b[3];
+            ans += a[4] * b[4];
+            ans += a[5] * b[5];
+            ans += a[6] * b[6];
+            ans += a[7] * b[7];
+            ans += a[8] * b[8];
+            ans += a[9] * b[9];
+            ans += a[10] * b[10];
+            ans += a[11] * b[11];
+            ans += a[12] * b[12];
+            ans += a[13] * b[13];
+            ans += a[14] * b[14];
+            ans += a[15] * b[15];
+        }
+
+        n -= i<<4;
+    }
+
+    if( n >= 8)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+        ans += a[4] * b[4];
+        ans += a[5] * b[5];
+        ans += a[6] * b[6];
+        ans += a[7] * b[7];
+
+        n -= 8;
+        a += 8;
+        b += 8;
+    }
+
+    if( n >= 4)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+        ans += a[2] * b[2];
+        ans += a[3] * b[3];
+
+        n -= 4;
+        a += 4;
+        b += 4;
+    }
+
+    if( n >= 2)
+    {
+        ans += a[0] * b[0];
+        ans += a[1] * b[1];
+
+        n -= 2;
+        a += 2;
+        b += 2;
+    }
+
+    if(n>0)
+        ans += a[0]*b[0];
+#endif // __MIC__
+
         
     return ans;
 }
@@ -986,5 +1074,7 @@ template void v_add_result<mpz_class>(vector<mpz_class>&, size_t, const vector<m
 template long v_scalar_product(const vector<long>& a,const vector<long>& b);
 template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
 template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
+template mpq_class v_scalar_product(const vector<mpq_class>& a,const vector<mpq_class>& b);
+
 
 } // end namespace libnormaliz

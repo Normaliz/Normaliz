@@ -135,6 +135,11 @@ inline bool check_range<nmz_float>(const nmz_float& m) {
   return true;
 }
 
+template<>
+inline bool check_range<mpq_class>(const mpq_class& m) {
+  return true;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
