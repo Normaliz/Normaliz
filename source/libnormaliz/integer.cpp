@@ -439,5 +439,36 @@ bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
     return FloatQuot-IntQuot > nmz_epsilon;    
 }
 
+//----------------------------------------------------------------------
+
+mpz_class floor(const mpq_class& q){
+        mpz_class num=q.get_num();
+        mpz_class den=q.get_den();
+        mpz_class ent=num/den;
+        if(num<0 && den*ent!=num)
+            ent--;
+        return ent;
+}
+
+mpz_class ceil(const mpq_class& q){
+        mpz_class num=q.get_num();
+        mpz_class den=q.get_den();
+        mpz_class ent=num/den;
+        if(num>0 && den*ent!=num)
+            ent++;
+        return ent;
+}
+
+
+mpz_class round(const mpq_class& q){
+    mpq_class work;
+    if(q>=0){
+        work=q-mpq_class(1,2);
+        return ceil(work);
+    }
+    work=q+mpq_class(1,2);
+    return floor(work);
+}
+
 
 } //end namespace libnormaliz
