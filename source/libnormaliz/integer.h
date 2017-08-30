@@ -70,6 +70,11 @@ Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v);
 template <typename Integer>
 void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v);
 
+// the following functions behave like the C++ floating point functions with the same name
+mpz_class floor(const mpq_class& q);
+mpz_class ceil(const mpq_class& q);
+mpz_class round(const mpq_class& q);
+
 //---------------------------------------------------------------------------
 //                     Conversions and checks
 //---------------------------------------------------------------------------

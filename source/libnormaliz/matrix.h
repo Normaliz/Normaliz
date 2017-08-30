@@ -463,6 +463,9 @@ vector<vector<T> > to_matrix(const vector<T>& v){
 template<typename Integer>
 Matrix<Integer>  readMatrix(const string project);
 
+void GramSchmidt(const Matrix<mpz_class>& L, vector<vector<mpq_class> >& B, vector<vector<mpq_class> >& M, int from);
+void LLL(const Matrix<mpz_class>& L, Matrix<mpz_class>& Lred);
+
 //---------------------------------------------------------------------------
 //                  Conversion between integer types
 //---------------------------------------------------------------------------

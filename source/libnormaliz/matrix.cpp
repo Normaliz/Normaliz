@@ -2566,6 +2566,60 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     }
 }
 
+void GramSchmidt(const Matrix<mpz_class>& L, vector<vector<mpq_class> >& B, vector<vector<mpq_class> >& M, int from){
+
+    size_t dim=L.nr_of_columns();
+    size_t n=L.nr_of_rows();
+    for(size_t i=from;i<n;++i){
+        for(size_t k=0;k<dim;++k)
+            B[i][k]=L[i][k];
+        for(size_t j=0;j<i;++j){
+            mpq_class sp=0;
+            for(size_t k=0;k<dim;++k)
+                sp+=L[i][k]*B[j][k];
+            M[i][j]=sp/v_scalar_product(B[j],B[j]);
+            for(size_t k=0;k<dim;++k)
+                B[i][k]-=M[i][j]*B[j][k];        
+        }
+    }
+}
+
+void LLL(const Matrix<mpz_class>& L, Matrix<mpz_class>& Lred){
+    
+    Lred=L;
+    size_t dim=L.nr_of_columns();
+    int n=L.nr_of_rows();
+    assert((int) L.rank()==n);
+    
+    vector<vector<mpq_class> > G(n,vector<mpq_class>(dim));
+    vector<vector<mpq_class> > M(n,vector<mpq_class>(n));
+    
+    GramSchmidt(Lred,G,M,0);
+    
+    int i=1;
+    while(i<n){
+        for(int j=i-1;j>=0;--j){
+            mpz_class fact=round(M[i][j]);
+            for(size_t k=0;k<dim;++k)
+                Lred[i][k]-=fact*Lred[j][k];
+            GramSchmidt(Lred,G,M,0);                       
+        }
+        if(i==0){
+            i=1;
+            continue;
+        }
+        mpz_class t1=v_scalar_product(Lred[i-1],Lred[i-1]);
+        mpz_class t2=v_scalar_product(Lred[i],Lred[i]);
+        if(t1*t1> 2*t2*t2){
+            swap(Lred[i],Lred[i-1]);
+            GramSchmidt(Lred,G,M,0);
+            i--;
+        }
+        else
+            i++;
+    }
+}
+
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template Matrix<long>  readMatrix(const string project);
 #endif // NMZ_MIC_OFFLOAD
