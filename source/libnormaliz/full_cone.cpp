@@ -2815,18 +2815,18 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     
     Matrix<Integer> Gens=Generators.submatrix(key);
 
-    cout << "Original generators" << endl;
+    /* cout << "Original generators" << endl;
     Gens.pretty_print(cout);
-    cout << "-------------" << endl;
+    cout << "-------------" << endl;*/
     Matrix<Integer> Gred,T,Tinv;
     Gens.LLL_transform_transpose(Gred,T,Tinv);
-    Gens.multiplication(T).pretty_print(cout);
+    /*Gens.multiplication(T).pretty_print(cout);
     cout << "-------------" << endl;
-    Tinv.multiplication(T).pretty_print(cout);
+    Tinv.multiplication(T).pretty_print(cout);*/
     // %%%%%%%%%%%%%%%%%%%%%%%
-    cout << "Transformed generators" << endl;
+    /* cout << "Transformed generators" << endl;
     Gred.pretty_print(cout);
-    cout << "----------" << endl;
+    cout << "----------" << endl;*/
     vector<Integer> GradT=Tinv.MxV(Grading);
     
     Matrix<Integer> GradMat(0,dim);
