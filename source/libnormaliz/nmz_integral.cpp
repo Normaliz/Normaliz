@@ -1005,6 +1005,8 @@ try{
         {
             evaluationActive=true;
             transferFacePolys(facePolys[tn],faceClasses);
+            if(faceClasses.size()>500)
+                H.addCRF(evaluateFaceClasses(GFP,faceClasses));
             evaluationActive=false;
         }
      }
