@@ -417,7 +417,7 @@ bool int_quotient(long& Quot, const long long& Num, const long& Den){
     return Quot*Iabs(Den)!=Iabs(Num);    
 }
 
-bool int_quotient(long long& Quot, const long& Num, const long& Den){
+bool int_quotient(long long& Quot, const long long& Num, const long long& Den){
     
     Quot=Iabs(Num)/Iabs(Den);
     return Quot*Iabs(Den)!=Iabs(Num);    
