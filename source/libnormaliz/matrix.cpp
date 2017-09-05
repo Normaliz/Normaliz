@@ -2477,9 +2477,106 @@ vector<mpz_class> Matrix<mpz_class>::optimal_subdivision_point() const{
         convert(P,PMI);
         return P;
     } catch(const ArithmeticException& e) {
+        cout << "EXCEPTION" << endl;
         return optimal_subdivision_point_inner();
     }
 }
+
+/*
+ * Version with LL for every matrix -- seems to be too slow ---
+ * 
+// version with a single point, only top of the search polytope
+// After 2 attempts without improvement, g raised to opt_value-1
+template<typename Integer>
+vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
+// returns empty vector if simplex cannot be subdivided with smaller detsum
+      
+    // cout << "***************" << endl;
+  
+    assert(nr>0);
+    assert(nr==nc);
+    
+    Matrix<Integer> Gred, Trans, Trans_inv;
+    LLL_transform_transpose(Gred,Trans,Trans_inv);
+      
+    vector<Integer> opt_point;
+  
+    vector<Integer> N = Gred.find_linear_form();
+    assert(N.size()==nr);
+    Integer G=v_scalar_product(N,Gred[0]);
+    if(G<=1)
+        return opt_point;
+    Matrix<Integer> Supp;
+    Integer V;
+    vector<key_t> dummy(nr);
+    for(size_t i=0;i<nr;++i)
+        dummy[i]=i;
+    Gred.simplex_data(dummy, Supp,V,true);
+    Integer MinusOne=-1;
+    vector<Integer> MinusN(N);
+    v_scalar_multiplication(MinusN,MinusOne);
+    Supp.append(MinusN);
+    Supp.resize_columns(nr+1);
+    Supp.exchange_columns(0,nc); // grading to the front!
+      
+    Integer opt_value=G;
+    Integer empty_value=0;
+    Integer g=G-1;
+      
+    Integer den=2;
+      
+    vector<Integer> Zero(nr+1); // the excluded vector
+    Zero[0]=1;
+
+    // Incidence matrix for projectand lift    
+    vector<boost::dynamic_bitset<> > Ind(nr+1);
+    for(size_t i=0;i<nr+1;++i){
+        Ind[i].resize(nc+1);
+        for(size_t j=0;j<nc+1;++j)
+            Ind[i][j]=true;
+        Ind[i][i]=false;
+    }
+    
+    size_t nothing_found=0;
+    while(true){
+        vector<Integer> SubDiv;
+        // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
+        Supp[nr][0]=g;  // the degree at which we cut the simplex1;
+        ProjectAndLift<Integer,Integer> PL(Supp,Ind,nr+1);
+        PL.set_excluded_point(Zero);
+        PL.set_verbose(false);
+        PL.compute(false); // only a single point
+        PL.put_single_point_into(SubDiv);
+        if(SubDiv.size()==0){ // no point found
+            nothing_found++;
+            if(g==opt_value-1){
+                if(opt_point.size()==0)
+                    return opt_point;
+                return Trans_inv.VxM(opt_point); // optimal point found (or nothing found)
+            }
+            empty_value=g;
+            if(nothing_found<1) // can't be true if "1" is not raised to a higher value
+                g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
+            else
+                g=opt_value-1;
+            den*=2;    // not used in the present setting (see above)      
+        }
+        else{ // point found
+            nothing_found=0;
+            den=2; // back to start value
+            opt_point=SubDiv;
+            std::swap(opt_point[0],opt_point[nc]);
+            opt_point.resize(nc);
+            if(opt_value==empty_value+1){
+                if(opt_point.size()==0)
+                    return opt_point;
+                return Trans_inv.VxM(opt_point);
+            }
+            opt_value=v_scalar_product(opt_point,N);
+            g=empty_value+1+(opt_value-empty_value-2)/2;
+        }
+    }
+}*/
 
 // version with a single point, only top of the search polytope
 // After 2 attempts without improvement, g raised to opt_value-1
@@ -2491,13 +2588,9 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
   
     assert(nr>0);
     assert(nr==nc);
-    
-    /* Matrix<Integer> Gred, Trans, Trans_inv;
-    LLL_transform_transpose(Gred,Trans,Trans_inv);*/
       
     vector<Integer> opt_point;
   
-    // vector<Integer> N = Gred.find_linear_form();
     vector<Integer> N = find_linear_form();
     assert(N.size()==nr);
     Integer G=v_scalar_product(N,elem[0]);
@@ -2508,7 +2601,6 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     vector<key_t> dummy(nr);
     for(size_t i=0;i<nr;++i)
         dummy[i]=i;
-    // Gred.simplex_data(dummy, Supp,V,true);
     simplex_data(dummy, Supp,V,true);
     Integer MinusOne=-1;
     vector<Integer> MinusN(N);
@@ -2550,7 +2642,6 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
         if(SubDiv.size()==0){ // no point found
             nothing_found++;
             if(g==opt_value-1)
-                // return Trans_inv.VxM(opt_point); // optimal point found (or nothing found)
                 return opt_point; // optimal point found (or nothing found)
             empty_value=g;
             if(nothing_found<1) // can't be true if "1" is not raised to a higher value
@@ -2566,8 +2657,7 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
             std::swap(opt_point[0],opt_point[nc]);
             opt_point.resize(nc);
             if(opt_value==empty_value+1)
-                // return Trans_inv.VxM(opt_point);
-            return opt_point;
+                return opt_point;
             opt_value=v_scalar_product(opt_point,N);
             g=empty_value+1+(opt_value-empty_value-2)/2;
         }

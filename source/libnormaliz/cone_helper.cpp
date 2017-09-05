@@ -165,6 +165,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
     
     if(verbose)
         verboseOutput() << "embdim " << dim  << " inequalities " << Supps.nr_of_rows() << endl; 
+    // Supps.pretty_print(cout);
+    // cout << Ind;
     
     // cout << "SSS" << Ind.size() << " " << Ind;
 
@@ -307,6 +309,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
         
     if(!rank_goes_up && !is_parallelotope){ // must match pos and neg hyperplanes
         
+        // cout << "Pos " << Pos.size() << " Neg " << Neg.size() << " Supps " << SuppsProj.nr_of_rows() << endl;
+        
         skip_remaining=false;
         
         size_t min_nr_vertices=rank-2;
@@ -374,7 +378,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
                 IntegerPL NegVal=Supps[n][dim1];
                 vector<IntegerPL> new_supp(dim);
                 bool is_zero;
-                new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);                
+                new_supp=FM_comb(PosVal,Supps[n],NegVal,Supps[p],is_zero);
                 if(is_zero) // linear combination is 0
                     continue;
                 
@@ -400,6 +404,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
         }
         
     } // !rank_goes_up && !is_parallelotope
+    
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
     
    if(!rank_goes_up && is_parallelotope){ // must match pos and neg hyperplanes
        
@@ -568,6 +576,9 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
         if(check_supps>1000 && dim<EmbDim)
             check_supps=1000;
         for(size_t j=0;j<check_supps;++j){
+            
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+            
             IntegerPL Den=Supps[Order[j]].back();
             if(Den==0)
                 continue;
