@@ -86,8 +86,8 @@ void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& g
     cout << "=======================" << endl;*/
     
     Matrix<Integer> gens, Trans, Trans_inv;
-    given_gens.LLL_transform_transpose(gens,Trans,Trans_inv);
-    // gens=given_gens;
+    // given_gens.LLL_transform_transpose(gens,Trans,Trans_inv);  // now in optimal_subdivision_point()
+    gens=given_gens;
     
     Integer volume;
     // int dim = gens[0].size();
@@ -228,8 +228,8 @@ void bottom_points(list< vector<Integer> >& new_points, const Matrix<Integer>& g
         verboseOutput() << "The sum of determinants of the stellar subdivision is " << stellar_det_sum << endl;
     }
     
-    for(auto it=new_points.begin();it!=new_points.end();++it)
-        *it=Trans_inv.VxM(*it);
+    /* for(auto it=new_points.begin();it!=new_points.end();++it)
+        *it=Trans_inv.VxM(*it); */
 }
 
 //-----------------------------------------------------------------------------------------

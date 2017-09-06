@@ -2477,14 +2477,13 @@ vector<mpz_class> Matrix<mpz_class>::optimal_subdivision_point() const{
         convert(P,PMI);
         return P;
     } catch(const ArithmeticException& e) {
-        cout << "EXCEPTION" << endl;
         return optimal_subdivision_point_inner();
     }
 }
 
 /*
- * Version with LL for every matrix -- seems to be too slow ---
- * 
+ * Version with LL for every matrix --- seems to be the best choice
+ */
 // version with a single point, only top of the search polytope
 // After 2 attempts without improvement, g raised to opt_value-1
 template<typename Integer>
@@ -2576,7 +2575,9 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
             g=empty_value+1+(opt_value-empty_value-2)/2;
         }
     }
-}*/
+}
+
+/* No LLL
 
 // version with a single point, only top of the search polytope
 // After 2 attempts without improvement, g raised to opt_value-1
@@ -2662,9 +2663,10 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
             g=empty_value+1+(opt_value-empty_value-2)/2;
         }
     }
-}
+}*/
 
-void GramSchmidt(const Matrix<mpz_class>& L, vector<vector<mpq_class> >& B, vector<vector<mpq_class> >& M, int from){
+/*
+ * void GramSchmidt(const Matrix<mpz_class>& L, vector<vector<mpq_class> >& B, vector<vector<mpq_class> >& M, int from){
 
     size_t dim=L.nr_of_columns();
     size_t n=L.nr_of_rows();
@@ -2681,40 +2683,69 @@ void GramSchmidt(const Matrix<mpz_class>& L, vector<vector<mpq_class> >& B, vect
         }
     }
 }
+*/
 
-void LLL_red(const Matrix<mpz_class>& L, Matrix<mpz_class>& Lred){
+// incremental Gram-Schmidt on rows r, from <= r < to (ATTENTION <
+template<typename number>
+void GramSchmidt(const Matrix<number>& L, vector<vector<double> >& B, vector<vector<double> >& M, int from, int to){
+
+    assert(to <= (int) L.nr_of_rows());
+    size_t dim=L.nr_of_columns();
+    for(int i=from;i<to;++i){
+        for(size_t k=0;k<dim;++k)
+            convert(B[i][k],L[i][k]);
+        for(int j=0;j<i;++j){
+            double sp=0;
+            for(size_t k=0;k<dim;++k)
+                sp+=L[i][k].get_d()*B[j][k];
+            M[i][j]=sp/v_scalar_product(B[j],B[j]);
+            for(size_t k=0;k<dim;++k)
+                B[i][k]-=M[i][j]*B[j][k];        
+        }
+    }
+}
+
+template<typename number>
+void LLL_red(const Matrix<number>& L, Matrix<number>& Lred){
     
     Lred=L;
     size_t dim=L.nr_of_columns();
     int n=L.nr_of_rows();
     assert((int) L.rank()==n);
+    if(n<=1)
+        return;
     
-    vector<vector<mpq_class> > G(n,vector<mpq_class>(dim));
-    vector<vector<mpq_class> > M(n,vector<mpq_class>(n));
+    vector<vector<double> > G(n,vector<double>(dim));
+    vector<vector<double> > M(n,vector<double>(n));
     
-    GramSchmidt(Lred,G,M,0);
+    GramSchmidt(Lred,G,M,0,1);
     
     int i=1;
-    while(i<n){
+    while(true){
+        
         for(int j=i-1;j>=0;--j){
-            mpz_class fact=round(M[i][j]);
+            number fact=round(M[i][j]);
             for(size_t k=0;k<dim;++k)
                 Lred[i][k]-=fact*Lred[j][k];
-            GramSchmidt(Lred,G,M,0);                       
+            GramSchmidt(Lred,G,M,i,i+1);                       
         }
         if(i==0){
             i=1;
             continue;
         }
-        mpz_class t1=v_scalar_product(Lred[i-1],Lred[i-1]);
-        mpz_class t2=v_scalar_product(Lred[i],Lred[i]);
+        number t1=v_scalar_product(Lred[i-1],Lred[i-1]);
+        number t2=v_scalar_product(Lred[i],Lred[i]);
         if(t1*t1> 2*t2*t2){
             swap(Lred[i],Lred[i-1]);
-            GramSchmidt(Lred,G,M,0);
+            GramSchmidt(Lred,G,M,i-1,i);
             i--;
         }
-        else
+        else{
             i++;
+            if(i>=n)
+                break;
+            GramSchmidt(Lred,G,M,i,i+1);
+        }
     }
 }
 
