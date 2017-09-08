@@ -46,7 +46,7 @@ using std::string;
 template<typename Integer> class Matrix {
 
     template<typename> friend class Matrix;
-    template<typename> friend class Lineare_Transformation;
+    // template<typename> friend class Lineare_Transformation;
     template<typename> friend class Sublattice_Representation;
     
     // public:
@@ -452,6 +452,9 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
 };
 //class end *****************************************************************
+
+void LLL_float_trans(const vector<vector<nmz_float> >& L, vector<vector<nmz_float> >& Lred);
+void LLL_float(const vector<vector<nmz_float> >& L, vector<vector<nmz_float> >& Lred);
 
 //---------------------------------------------------------------------------
 //                  Utilities
