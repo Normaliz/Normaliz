@@ -2849,7 +2849,7 @@ void LLL_float(const vector<vector<nmz_float> >& L, vector<vector<nmz_float> >& 
 void LLL_float_trans(const vector<vector<nmz_float> >& L, vector<vector<nmz_float> >& Lred){
 
     Matrix<nmz_float>M(L), Mred;
-    M.transpose();
+    M=M.transpose();
     LLL_float(M,Mred);
     Lred=Mred.transpose().get_elements();
 }
