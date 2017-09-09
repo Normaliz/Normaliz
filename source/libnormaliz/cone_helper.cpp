@@ -401,6 +401,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_projections(size_t dim, vecto
         
     } // !rank_goes_up && !is_parallelotope
     
+#ifndef NCATCH
+        if (!(tmp_exception == 0)) std::rethrow_exception(tmp_exception);
+#endif
+    
    if(!rank_goes_up && is_parallelotope){ // must match pos and neg hyperplanes
        
        size_t codim=dim1-1; // the minimal codim a face of the original cone must have
