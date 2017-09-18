@@ -30,14 +30,26 @@ bottom.o: $(LIBHEADERS) bottom.cpp
 
 hilbert_series.o: $(LIBHEADERS) HilbertSeries.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c HilbertSeries.cpp -o $@
+	
+cone_dual_mode.o: $(LIBHEADERS) cone_dual_mode.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_dual_mode.cpp -o $@
+	
+reduction.o: $(LIBHEADERS) reduction.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c reduction.cpp -o $@
+	
+sublattice_representation.o: $(LIBHEADERS) sublattice_representation.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c sublattice_representation.cpp -o $@
 
 libnormaliz-templated.o: $(LIBHEADERS) $(LIBSOURCES) libnormaliz-templated.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c libnormaliz-templated.cpp -o $@
 		
 nmz_integrate.o:  $(NMZINTSOURCES)
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integrate.cpp -o $@
+	
+primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
 
-libnormaliz.a: cone_property.o hilbert_series.o bottom.o offload_handler.o  nmz_integrate.o libnormaliz-templated.o 
+libnormaliz.a: cone_property.o hilbert_series.o bottom.o offload_handler.o  nmz_integrate.o cone_dual_mode.o  reduction.o sublattice_representation.o primal.o libnormaliz-templated.o
 	ar -cr $@ $^
 
 .PHONY : install

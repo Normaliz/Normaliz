@@ -263,6 +263,24 @@ Integer int_max_value_primary(){
     return test;
 }
 
+template<>
+long int_max_value_primary(){
+    long k=sizeof(long)*8-12;  // number of bytes convetred to number of bits
+    long test=1;
+    test = test << k;  // (maximal positive number)/2^k
+    // test=0; // 10000;
+    return test;
+}
+
+template<>
+long long int_max_value_primary(){
+    long long k=sizeof(long long)*8-12;  // number of bytes convetred to number of bits
+    long long test=1;
+    test = test << k;  // (maximal positive number)/2^k
+    // test=0; // 10000;
+    return test;
+}
+
 //---------------------------------------------------------------------------
 
 template<>
@@ -286,6 +304,10 @@ template<typename Integer>
 void check_range_list(const CandidateList<Integer>& ll){
     check_range_list(ll.Candidates);
 }
+
+template void check_range_list(const CandidateList<long>&);
+template void check_range_list(const CandidateList<long long>&);
+template void check_range_list(const CandidateList<mpz_class>&);
 
 //---------------------------------------------------------------------------
 

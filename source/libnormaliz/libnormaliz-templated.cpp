@@ -30,12 +30,12 @@
 #include "libnormaliz/vector_operations.cpp"
 #include "libnormaliz/cone_helper.cpp"
 #include "libnormaliz/matrix.cpp"
-#include "libnormaliz/simplex.cpp"
+// #include "libnormaliz/simplex.cpp"
 #include "libnormaliz/list_operations.cpp"
-#include "libnormaliz/sublattice_representation.cpp"
-#include "libnormaliz/reduction.cpp"
-#include "libnormaliz/full_cone.cpp"
-#include "libnormaliz/cone_dual_mode.cpp"
+// #include "libnormaliz/sublattice_representation.cpp"
+// #include "libnormaliz/reduction.cpp"
+// #include "libnormaliz/full_cone.cpp"
+// #include "libnormaliz/cone_dual_mode.cpp"
 #include "libnormaliz/cone.cpp"
 
 namespace libnormaliz {
@@ -44,19 +44,19 @@ namespace libnormaliz {
 template class Cone<long>;
 // template class Matrix<long>;
 template class Sublattice_Representation<long>;
-template class Full_Cone<long>;
+// template class Full_Cone<long>;
 #endif
 template class Matrix<long>;
 
 template class Cone<long long>;
 template class Matrix<long long>;
 template class Sublattice_Representation<long long>;
-template class Full_Cone<long long>;
+// template class Full_Cone<long long>;
 
 template class Cone<mpz_class>;
 template class Matrix<mpz_class>;
 template class Sublattice_Representation<mpz_class>;
-template class Full_Cone<mpz_class>;
+// template class Full_Cone<mpz_class>;
 
 template size_t decimal_length<long>(long);
 template size_t decimal_length<long long int>(long long int);

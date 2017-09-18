@@ -472,100 +472,6 @@ void v_add_result(vector<Integer>& result, const size_t s, const vector<Integer>
 
 //---------------------------------------------------------------------------
 
-template<typename Integer>
-vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m) {
-//  assert(a.size() == b.size());
-    size_t i, s=a.size();
-    for (i = 0; i <s; i++) {
-//      a[i] = (a[i]+b[i])%m;
-        if ((a[i] += b[i]) >= m) {
-            a[i] -= m;
-        }
-    }
-    return a;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer>& v_abs(vector<Integer>& v){
-    size_t i, size=v.size();
-    for (i = 0; i < size; i++) {
-        if (v[i]<0) v[i] = Iabs(v[i]);
-    }
-    return v;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> v_abs_value(vector<Integer>& v){
-    size_t i, size=v.size();
-    vector<Integer> w=v;
-    for (i = 0; i < size; i++) {
-        if (v[i]<0) w[i] = Iabs(v[i]);
-    }
-    return w;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Integer v_gcd(const vector<Integer>& v){
-    size_t i, size=v.size();
-    Integer g=0;
-    for (i = 0; i < size; i++) {
-        g = libnormaliz::gcd(g,v[i]);
-        if (g==1) {
-            return 1;
-        }
-    }
-    return g;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Integer v_lcm(const vector<Integer>& v){
-    size_t i,size=v.size();
-    Integer g=1;
-    for (i = 0; i < size; i++) {
-        g = libnormaliz::lcm(g,v[i]);
-        if (g==0) {
-            return 0;
-        }
-    }
-    return g;
-}
-
-template<typename Integer>
-Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j){
-    assert(k <= j);
-    size_t i;
-    Integer g=1;
-    for (i = k; i <= j; i++) {
-        g = libnormaliz::lcm(g,v[i]);
-        if (g==0) {
-            return 0;
-        }
-    }
-    return g;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-Integer v_make_prime(vector<Integer>& v){
-    size_t i, size=v.size();
-    Integer g=v_gcd(v);
-    if (g!=0) {
-        for (i = 0; i < size; i++) {
-            v[i] /= g;
-        }
-    }
-    return g;
-}
-
 nmz_float l1norm(vector<nmz_float>& v){
     size_t i, size=v.size();
     nmz_float g=0;
@@ -591,53 +497,6 @@ nmz_float v_make_prime<>(vector<nmz_float>& v){
 }
 
 
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_scalar_mult_mod_inner(vector<Integer>& w, const vector<Integer>& v, const Integer& scalar, const Integer& modulus){
-    size_t i,size=v.size();
-    Integer test;
-    for (i = 0; i <size; i++) {
-        test=v[i]*scalar;
-        if(!check_range(test)){
-            return false;
-        }
-        w[i]=test % modulus;
-        if(w[i]<0)
-            w[i]+=modulus;
-    }
-    return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus){
-    
-    vector<Integer> w(v.size());
-    if(v_scalar_mult_mod_inner(w,v,scalar,modulus))
-        return w;
-    
-    #pragma omp atomic
-    GMP_scal_prod++;
-    vector<mpz_class> x,y(v.size());
-    convert(x,v);
-    v_scalar_mult_mod_inner(y,x,convertTo<mpz_class>(scalar),convertTo<mpz_class>(modulus));
-    return convertTo<vector<Integer>>(y);       
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void v_reduction_modulo(vector<Integer>& v, const Integer& modulo){
-    size_t i,size=v.size();
-    for (i = 0; i <size; i++) {
-        v[i]=v[i]%modulo;
-        if (v[i]<0) {
-            v[i]=v[i]+modulo;
-        }
-    }
-}
 
 //---------------------------------------------------------------------------
 
@@ -726,33 +585,7 @@ bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, 
     return true;
 }
 
-//---------------------------------------------------------------------------
 
-template<typename T>
-vector<T> v_merge(const vector<T>& a, const T& b) {
-    size_t s=a.size();
-    vector<T> c(s+1);
-    for (size_t i = 0; i < s; i++) {
-        c[i]=a[i];
-    }
-    c[s] = b;
-    return c;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename T>
-vector<T> v_merge(const vector<T>& a,const vector<T>& b){
-    size_t s1=a.size(), s2=b.size(), i;
-    vector<T> c(s1+s2);
-    for (i = 0; i < s1; i++) {
-        c[i]=a[i];
-    }
-    for (i = 0; i < s2; i++) {
-        c[s1+i]=b[i];
-    }
-    return c;
-}
 //---------------------------------------------------------------------------
 
 template<typename T>
@@ -764,21 +597,6 @@ vector<T> v_cut_front(const vector<T>& v, size_t size){
         tmp[k]=v[s+k];
     }
     return tmp;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<key_t> v_non_zero_pos(const vector<Integer>& v){
-    vector<key_t> key;
-    size_t size=v.size();
-    key.reserve(size);
-    for (key_t i = 0; i <size; i++) {
-        if (v[i]!=0) {
-            key.push_back(i);
-        }
-    }
-    return key;
 }
 
 //---------------------------------------------------------------------------
@@ -805,28 +623,6 @@ bool v_is_symmetric(const vector<Integer>& v) {
 
 template<typename Integer>
 bool v_is_nonnegative(const vector<Integer>& v) {
-    for (size_t i = 0; i < v.size(); ++i) {
-        if (v[i] <0) return false;
-    }
-    return true;
-}
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-size_t v_nr_negative(const vector<Integer>& v) {
-    size_t tmp=0;
-    for (size_t i = 0; i < v.size(); ++i) {
-        if (v[i] <0) tmp++;
-    }
-    return tmp;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_non_negative(const vector<Integer>& v) {
     for (size_t i = 0; i < v.size(); ++i) {
         if (v[i] <0) return false;
     }
@@ -992,27 +788,8 @@ vector<key_t> identity_key(size_t n){
     return key;
 }
 
-//---------------------------------------------------------------
-// Sorting
-
-template <typename T>
-void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
-    
-    vector<key_t> perm=permfix; // we may want to use permfix a second time
-    vector<key_t> inv(perm.size());
-    for(key_t i=0;i<perm.size();++i)
-        inv[perm[i]]=i;
-    for(key_t i=0;i<perm.size();++i){
-        key_t j=perm[i];
-        swap(v[i],v[perm[i]]);        
-        swap(perm[i],perm[inv[i]]);        
-        swap(inv[i],inv[j]);                
-    }
-}
-
 // vector<bool> is special
-template <>
-void order_by_perm(vector<bool>& v, const vector<key_t>& permfix){
+void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix){
     
     vector<key_t> perm=permfix; // we may want to use permfix a second time
     vector<key_t> inv(perm.size());
@@ -1027,33 +804,6 @@ void order_by_perm(vector<bool>& v, const vector<key_t>& permfix){
     }
 }
 
-// make random vector of length n with entries between -m and m
-template <typename Integer>
-vector<Integer> v_random(size_t n, long m){
-    vector<Integer> result(n);
-    for(size_t i=0;i<n;++i)
-        result[i]=rand()%(2*m+1)-m;
-    return result;    
-}
-template<typename Integer>
-vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights){
-    vector<Integer> hsop(heights.back());
-    hsop[0]=gen_degrees[0];
-    size_t k=1;
-    while (k<heights.size() && heights[k]>heights[k-1]){
-        hsop[k]=gen_degrees[k];
-        k++;
-    }
-    size_t j=k;
-    for (size_t i=k;i<heights.size();i++){
-            if (heights[i]>heights[i-1]){
-                hsop[j]=v_lcm_to(gen_degrees,k,i);
-                j++;
-            }
-    }
-    return hsop;
-}
-
 
 template bool v_is_nonnegative<long>(const vector<long>&);
 template bool v_is_nonnegative<long long>(const vector<long long>&);
@@ -1066,6 +816,10 @@ template bool v_is_symmetric<mpz_class>(const vector<mpz_class>&);
 template long      v_make_prime(vector<long     >&);
 template long long v_make_prime(vector<long long>&);
 template mpz_class v_make_prime(vector<mpz_class>&);
+
+template vector<long> v_add(const vector<long>&,const vector<long>&);
+template vector<long long> v_add(const vector<long long>&,const vector<long long>&);
+template vector<mpz_class> v_add(const vector<mpz_class>&,const vector<mpz_class>&);
 
 template void v_add_result<long     >(vector<long     >&, size_t, const vector<long     >&, const vector<long     >&);
 template void v_add_result<long long>(vector<long long>&, size_t, const vector<long long>&, const vector<long long>&);

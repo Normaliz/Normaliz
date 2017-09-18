@@ -187,28 +187,6 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     return; 
 }
 
-//---------------------------------------------------------------------------
-//                       Constructor by conversion
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-template<typename IntegerFC>
-Sublattice_Representation<Integer>::Sublattice_Representation(const 
-             Sublattice_Representation<IntegerFC>& Original) {
-                 
-    convert(A,Original.A);
-    convert(B,Original.B);
-    dim=Original.dim;
-    rank=Original.rank;
-    convert(c,Original.c);
-    is_identity=Original.is_identity;
-    Equations_computed=Original.Equations_computed;
-    Congruences_computed=Original.Congruences_computed;
-    convert(Equations,Original.Equations);
-    convert(Congruences,Original.Congruences);
-    external_index=Original.external_index;    
-}
-
 
 //---------------------------------------------------------------------------
 //                       Manipulation operations
@@ -521,5 +499,12 @@ void Sublattice_Representation<Integer>::make_congruences() const {
     for(size_t i=0;i<Transf2.nr;++i)
         external_index*=convertTo<mpz_class>(Transf2[i][dim]);
 }
+
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Sublattice_Representation<long>;
+#endif
+template class Sublattice_Representation<long long>;
+template class Sublattice_Representation<mpz_class>;
 
 }

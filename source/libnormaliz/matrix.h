@@ -499,6 +499,16 @@ void mpz_submatrix(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const 
 template<typename Integer>
 void mpz_submatrix_trans(Matrix<mpz_class>& sub, const Matrix<Integer>& mother, const vector<key_t>& selection);
 
+template<typename ToType, typename FromType>
+void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
+    size_t nrows = from_mat.nr_of_rows();
+    size_t ncols = from_mat.nr_of_columns();
+    to_mat.resize(nrows, ncols);
+    for(size_t i=0; i<nrows; ++i)
+        for(size_t j=0; j<ncols; ++j)
+            convert(to_mat[i][j], from_mat[i][j]);
+}
+
 } // namespace
 
 //---------------------------------------------------------------------------

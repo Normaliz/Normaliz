@@ -4187,12 +4187,12 @@ bool Cone<Integer>::check_parallelotope(){
         return false;
     for(size_t i=0;i<Supp_1.size();++i){
         // cout << "i " << i << " " << v_scalar_product(Supps[Supp_1[i]],v2[0]) << endl;
-        if(!v_scalar_product_positive(Supps[Supp_1[i]],v2[0]))
+        if(!(v_scalar_product(Supps[Supp_1[i]],v2[0])>0))
             return false;
     }
     for(size_t i=0;i<Supp_2.size();++i){
         // cout << "i " << i << " " << v_scalar_product(Supps[Supp_2[i]],v1[0]) << endl;
-        if(!v_scalar_product_positive(Supps[Supp_2[i]],v1[0]))
+        if(!(v_scalar_product(Supps[Supp_2[i]],v1[0])>0))
             return false;
     }
     

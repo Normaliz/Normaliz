@@ -34,6 +34,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/cone_helper.h"
 
 //---------------------------------------------------------------------------
 
@@ -2077,18 +2078,6 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
 // Classless conversion routines
 //---------------------------------------------------------------------------
 
-template<typename ToType, typename FromType>
-void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
-    size_t nrows = from_mat.nr_of_rows();
-    size_t ncols = from_mat.nr_of_columns();
-    to_mat.resize(nrows, ncols);
-    for(size_t i=0; i<nrows; ++i)
-        for(size_t j=0; j<ncols; ++j)
-            convert(to_mat[i][j], from_mat[i][j]);
-}
-
-//---------------------------------------------------------------------------
-
 
 template<typename Integer>
 void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
@@ -2892,5 +2881,6 @@ template Matrix<long>  readMatrix(const string project);
 #endif // NMZ_MIC_OFFLOAD
 template Matrix<long long>  readMatrix(const string project);
 template Matrix<mpz_class>  readMatrix(const string project);
+
 
 }  // namespace

@@ -2026,7 +2026,7 @@ void Full_Cone<Integer>::build_cone() {
             for (;l!=Facets.end();++l){
                 if (l->is_positive_on_all_original_gens) continue;
                 for (current_gen=0;current_gen<nr_original_gen;++current_gen){
-                    if (!v_scalar_product_nonnegative(l->Hyp,OriginalGenerators[current_gen])) {
+                    if (!(v_scalar_product(l->Hyp,OriginalGenerators[current_gen])>=0)) {
                         l->is_negative_on_some_original_gen=true;
                         check_original_gens=false;
                         break;
@@ -3308,6 +3308,26 @@ void Full_Cone<Integer>::compute() {
     end_message();
 }
 
+// compute the degree vector of a hsop
+template<typename Integer>
+vector<Integer> degrees_hsop(const vector<Integer> gen_degrees,const vector<size_t> heights){
+    vector<Integer> hsop(heights.back());
+    hsop[0]=gen_degrees[0];
+    size_t k=1;
+    while (k<heights.size() && heights[k]>heights[k-1]){
+        hsop[k]=gen_degrees[k];
+        k++;
+    }
+    size_t j=k;
+    for (size_t i=k;i<heights.size();i++){
+            if (heights[i]>heights[i-1]){
+                hsop[j]=v_lcm_to(gen_degrees,k,i);
+                j++;
+            }
+    }
+    return hsop;
+}
+
 template<typename Integer>
 void Full_Cone<Integer>::compute_hsop(){
         vector<long> hsop_deg(dim,1);
@@ -4104,7 +4124,7 @@ void Full_Cone<Integer>::sort_gens_by_degree(bool triangulate) {
     
     vector<key_t> perm=Generators.perm_by_weights(Weights,absolute);
     Generators.order_rows_by_perm(perm);
-    order_by_perm(Extreme_Rays_Ind,perm);
+    order_by_perm_bool(Extreme_Rays_Ind,perm);
     if(isComputed(ConeProperty::Grading))
         order_by_perm(gen_degrees,perm);
     if(inhomogeneous && gen_levels.size()==nr_gen)
@@ -5623,5 +5643,11 @@ void Full_Cone<Integer>::print()const{
     verboseOutput()<<"\nHilbert Series  is:\n";
     verboseOutput()<<Hilbert_Series;
 }
+
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Full_Cone<long>;
+#endif
+template class Full_Cone<long long>;
+template class Full_Cone<mpz_class>;
 
 } //end namespace
