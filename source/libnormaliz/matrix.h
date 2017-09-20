@@ -256,7 +256,7 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     Matrix multiplication(const Matrix& A) const;          // returns this*A
     Matrix multiplication(const Matrix& A, long m) const;// returns this*A (mod m)
     bool equal(const Matrix& A) const;             // returns this==A
-    bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
+    // bool equal(const Matrix& A, long m) const;     // returns this==A (mod m)
     Matrix transpose() const;                     // returns the transpose of this
     
     bool is_diagonal() const;

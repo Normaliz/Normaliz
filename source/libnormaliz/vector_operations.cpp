@@ -225,214 +225,6 @@ mpq_class v_scalar_product(const vector<mpq_class>& av,const vector<mpq_class>& 
 }
 
 //---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_scalar_product_nonnegative(const vector<Integer>& av,const vector<Integer>& bv){
-    //loop stretching ; brings some small speed improvement
-
-    Integer ans = 0;
-    size_t i,n=av.size();
-
-
-#if 0 // #ifdef __MIC__   // not for newer compiler versions
-    // this version seems to be better vectorizable on the mic
-    for (i=0; i<n; ++i)
-        ans += av[i]*bv[i];
-
-#else // __MIC__
-    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
-
-    if( n >= 16 )
-    {
-        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
-            ans += a[4] * b[4];
-            ans += a[5] * b[5];
-            ans += a[6] * b[6];
-            ans += a[7] * b[7];
-            ans += a[8] * b[8];
-            ans += a[9] * b[9];
-            ans += a[10] * b[10];
-            ans += a[11] * b[11];
-            ans += a[12] * b[12];
-            ans += a[13] * b[13];
-            ans += a[14] * b[14];
-            ans += a[15] * b[15];
-        }
-
-        n -= i<<4;
-    }
-
-    if( n >= 8)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-        ans += a[2] * b[2];
-        ans += a[3] * b[3];
-        ans += a[4] * b[4];
-        ans += a[5] * b[5];
-        ans += a[6] * b[6];
-        ans += a[7] * b[7];
-
-        n -= 8;
-        a += 8;
-        b += 8;
-    }
-
-    if( n >= 4)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-        ans += a[2] * b[2];
-        ans += a[3] * b[3];
-
-        n -= 4;
-        a += 4;
-        b += 4;
-    }
-
-    if( n >= 2)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-
-        n -= 2;
-        a += 2;
-        b += 2;
-    }
-
-    if(n>0)
-        ans += a[0]*b[0];
-#endif // __MIC__
-        
-    if(!check_range(ans)){
-		#pragma omp atomic
-		GMP_scal_prod++;
-    
-        // cout << "av " << av;
-        // cout << "bv " << bv;   
-        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
-        convert(mpz_a, av);
-        convert(mpz_b, bv);
-        v_scalar_product(mpz_a,mpz_b);
-    }
-        
-    return (ans>=0);
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_scalar_product_positive(const vector<Integer>& av,const vector<Integer>& bv){
-    //loop stretching ; brings some small speed improvement
-
-    Integer ans = 0;
-    size_t i,n=av.size();
-
-
-#if 0 // #ifdef __MIC__   // not for newer compiler versions
-    // this version seems to be better vectorizable on the mic
-    for (i=0; i<n; ++i)
-        ans += av[i]*bv[i];
-
-#else // __MIC__
-    typename vector<Integer>::const_iterator a=av.begin(), b=bv.begin();
-
-    if( n >= 16 )
-    {
-        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b +=16 ){
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
-            ans += a[4] * b[4];
-            ans += a[5] * b[5];
-            ans += a[6] * b[6];
-            ans += a[7] * b[7];
-            ans += a[8] * b[8];
-            ans += a[9] * b[9];
-            ans += a[10] * b[10];
-            ans += a[11] * b[11];
-            ans += a[12] * b[12];
-            ans += a[13] * b[13];
-            ans += a[14] * b[14];
-            ans += a[15] * b[15];
-        }
-
-        n -= i<<4;
-    }
-
-    if( n >= 8)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-        ans += a[2] * b[2];
-        ans += a[3] * b[3];
-        ans += a[4] * b[4];
-        ans += a[5] * b[5];
-        ans += a[6] * b[6];
-        ans += a[7] * b[7];
-
-        n -= 8;
-        a += 8;
-        b += 8;
-    }
-
-    if( n >= 4)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-        ans += a[2] * b[2];
-        ans += a[3] * b[3];
-
-        n -= 4;
-        a += 4;
-        b += 4;
-    }
-
-    if( n >= 2)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-
-        n -= 2;
-        a += 2;
-        b += 2;
-    }
-
-    if(n>0)
-        ans += a[0]*b[0];
-#endif // __MIC__
-        
-    if(!check_range(ans)){
-		#pragma omp atomic
-		GMP_scal_prod++;
-    
-        // cout << "av " << av;
-        // cout << "bv " << bv;   
-        vector<mpz_class> mpz_a(av.size()), mpz_b(bv.size());
-        convert(mpz_a, av);
-        convert(mpz_b, bv);
-        v_scalar_product(mpz_a,mpz_b);
-    }
-        
-    return (ans>0);
-}
-
-template<typename Integer>
-Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
-    size_t n=min(a.size(),b.size());
-    vector<Integer> trunc_a=a;
-    vector<Integer> trunc_b=b;
-    trunc_a.resize(n);
-    trunc_b.resize(n);
-    return v_scalar_product(trunc_a,trunc_b); 
-}
-
-//---------------------------------------------------------------------------
 /*
 template<typename Integer>
 Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
@@ -602,16 +394,6 @@ vector<T> v_cut_front(const vector<T>& v, size_t size){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-bool v_is_zero(const vector<Integer>& v) {
-    for (size_t i = 0; i < v.size(); ++i) {
-        if (v[i] != 0) return false;
-    }
-    return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
 bool v_is_symmetric(const vector<Integer>& v) {
     for (size_t i = 0; i < v.size()/2; ++i) {
         if (v[i] != v[v.size()-1-i]) return false;
@@ -708,78 +490,7 @@ void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
 
 //---------------------------------------------------------------
 
-// computes approximating lattice simplex using the A_n dissection of the unit cube
-// q is a rational vector with the denominator in the FIRST component q[0]
 
-
-template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
-	
-	//cout << "approximate the point " << q;
-    long dim=q.size();
-    long l = approx_level;
-    //if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
-    // TODO in this case, skip the rest and just approximate on q[0]
-    Matrix<Integer> quot =  Matrix<Integer>(l,dim);
-    Matrix<Integer> remain=Matrix<Integer>(l,dim);
-    for(long j=0;j<approx_level;j++){
-	    for(long i=0;i<dim;++i){
-	        quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
-	        //quot[j][0] = 1;
-	        remain[j][i]=(q[i]*(j+1))%q[0];  // with 0 <= remain < q[0]
-	        if(remain[j][i]<0){
-	            remain[j][i]+=q[0];
-	            quot[j][i]--;
-	        }
-	          
-	    }
-	    v_make_prime(quot[j]);
-	    remain[j][0]=q[0];  // helps to avoid special treatment of i=0
-	}
-	// choose best level
-	//cout << "this is the qout matrix" << endl;
-	//quot.pretty_print(cout);
-	//cout << "this is the remain matrix" << endl;
-	//remain.pretty_print(cout);
-	long best_level=l-1;
-	vector<long> nr_zeros(l);
-	for(long j=l-1;j>=0;j--){
-		for(long i=0;i<dim;++i){
-			if(remain[j][i]==0) nr_zeros[j]++;
-		}
-		if (nr_zeros[j]>nr_zeros[best_level]) best_level=j;
-	}
-	//cout << "the best level is " << (best_level+1) << endl;
-	//now we proceed as before
-	vector<pair<Integer,size_t>> best_remain(dim);
-	for(long i=0;i<dim;i++){
-		best_remain[i].first = remain[best_level][i];
-		best_remain[i].second = i; // after sorting we must lnow where elements come from
-	}
-
-    sort(best_remain.begin(),best_remain.end()); 
-    reverse(best_remain.begin(),best_remain.end()); // we sort remain into descending order
-    
-    /*for(long i=0;i<dim;++i){
-        cout << remain[i].first << " " << remain[i].second << endl;
-    } */
-    
-    for(long i=1;i<dim;++i){
-        if(best_remain[i].first<best_remain[i-1].first)
-        {
-            approx.push_back(quot[best_level]);
-            //cout << "add the point " << quot[best_level];
-            // cout << i << " + " << remain[i].first << " + " << quot << endl;
-        }
-        quot[best_level][best_remain[i].second]++;    
-    }
-    if(best_remain[dim-1].first > 0){
-        // cout << "E " << quot << endl;
-        approx.push_back(quot[best_level]);
-        //cout << "add the point " << quot[best_level];
-    }
-
-}
 
 vector<key_t> identity_key(size_t n){
     vector<key_t> key(n);
@@ -804,6 +515,31 @@ void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix){
     }
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void v_scalar_division(vector<Integer>& v, const Integer scalar){
+    size_t i,size=v.size();
+    assert(scalar!=0);
+    for (i = 0; i <size; i++) {
+        assert(v[i]%scalar == 0);
+        v[i] /= scalar;
+    }
+}
+
+template<>
+void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar){
+    size_t i,size=v.size();
+    assert(scalar!=0);
+    for (i = 0; i <size; i++) {
+        v[i] /= scalar;
+    }
+}
+
+template void v_scalar_division(vector<long>& v, const long scalar);
+template void v_scalar_division(vector<long long>& v, const long long scalar);
+template void v_scalar_division(vector<mpz_class>& v, const mpz_class scalar);
+template void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar);
 
 template bool v_is_nonnegative<long>(const vector<long>&);
 template bool v_is_nonnegative<long long>(const vector<long long>&);
@@ -829,6 +565,7 @@ template long v_scalar_product(const vector<long>& a,const vector<long>& b);
 template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
 template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
 template mpq_class v_scalar_product(const vector<mpq_class>& a,const vector<mpq_class>& b);
+template nmz_float v_scalar_product(const vector<nmz_float>& a,const vector<nmz_float>& b);
 
 
 } // end namespace libnormaliz

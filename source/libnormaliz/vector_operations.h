@@ -32,6 +32,7 @@
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
+#include <libnormaliz/matrix.h>
 
 namespace libnormaliz {
 using std::vector;
@@ -55,15 +56,18 @@ std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
 template<typename Integer>
 Integer v_scalar_product(const vector<Integer>& a,const vector<Integer>& b);
 
-template<typename Integer>
-bool v_scalar_product_nonnegative(const vector<Integer>& a,const vector<Integer>& b);
-
-template<typename Integer>
-bool v_scalar_product_positive(const vector<Integer>& a,const vector<Integer>& b);
-
 //returns the scalar product of the truncations of vectors a and b to minimum of lengths
+// template<typename Integer>
+// Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b);
 template<typename Integer>
-Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b);
+Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
+    size_t n=min(a.size(),b.size());
+    vector<Integer> trunc_a=a;
+    vector<Integer> trunc_b=b;
+    trunc_a.resize(n);
+    trunc_b.resize(n);
+    return v_scalar_product(trunc_a,trunc_b); 
+}
 
 //returns the addition a + b, vectors must be of equal size
 template<typename Integer>
@@ -110,6 +114,9 @@ nmz_float l1norm(vector<nmz_float>& v);
 template<>
 nmz_float v_make_prime<>(vector<nmz_float>& v);
 
+template<typename Integer>
+void v_scalar_division(vector<Integer>& v, const Integer scalar);
+
 //---------------------------------------------------------------------------
 //							Scalar operations
 //---------------------------------------------------------------------------
@@ -120,17 +127,6 @@ void v_scalar_multiplication(vector<Integer>& v, const Integer scalar){
     size_t i,size=v.size();
     for (i = 0; i <size; i++) {
         v[i] *= scalar;
-    }
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void v_scalar_division(vector<Integer>& v, const Integer scalar){
-    size_t i,size=v.size();
-    for (i = 0; i <size; i++) {
-        assert(v[i]%scalar == 0);
-        v[i] /= scalar;
     }
 }
 
@@ -234,9 +230,78 @@ void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j);
 //							  Special
 //---------------------------------------------------------------------------
 
-// computes integral simplex containing a rational vector
+// computes approximating lattice simplex using the A_n dissection of the unit cube
+// q is a rational vector with the denominator in the FIRST component q[0]
+
+
 template<typename Integer>
-void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx,const long k);
+void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
+	
+	//cout << "approximate the point " << q;
+    long dim=q.size();
+    long l = approx_level;
+    //if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do
+    // TODO in this case, skip the rest and just approximate on q[0]
+    Matrix<Integer> quot =  Matrix<Integer>(l,dim);
+    Matrix<Integer> remain=Matrix<Integer>(l,dim);
+    for(long j=0;j<approx_level;j++){
+	    for(long i=0;i<dim;++i){
+	        quot[j][i]=(q[i]*(j+1))/q[0];          // write q[i]=quot*q[0]+remain
+	        //quot[j][0] = 1;
+	        remain[j][i]=(q[i]*(j+1))%q[0];  // with 0 <= remain < q[0]
+	        if(remain[j][i]<0){
+	            remain[j][i]+=q[0];
+	            quot[j][i]--;
+	        }
+	          
+	    }
+	    v_make_prime(quot[j]);
+	    remain[j][0]=q[0];  // helps to avoid special treatment of i=0
+	}
+	// choose best level
+	//cout << "this is the qout matrix" << endl;
+	//quot.pretty_print(cout);
+	//cout << "this is the remain matrix" << endl;
+	//remain.pretty_print(cout);
+	long best_level=l-1;
+	vector<long> nr_zeros(l);
+	for(long j=l-1;j>=0;j--){
+		for(long i=0;i<dim;++i){
+			if(remain[j][i]==0) nr_zeros[j]++;
+		}
+		if (nr_zeros[j]>nr_zeros[best_level]) best_level=j;
+	}
+	//cout << "the best level is " << (best_level+1) << endl;
+	//now we proceed as before
+	vector<pair<Integer,size_t>> best_remain(dim);
+	for(long i=0;i<dim;i++){
+		best_remain[i].first = remain[best_level][i];
+		best_remain[i].second = i; // after sorting we must lnow where elements come from
+	}
+
+    sort(best_remain.begin(),best_remain.end()); 
+    reverse(best_remain.begin(),best_remain.end()); // we sort remain into descending order
+    
+    /*for(long i=0;i<dim;++i){
+        cout << remain[i].first << " " << remain[i].second << endl;
+    } */
+    
+    for(long i=1;i<dim;++i){
+        if(best_remain[i].first<best_remain[i-1].first)
+        {
+            approx.push_back(quot[best_level]);
+            //cout << "add the point " << quot[best_level];
+            // cout << i << " + " << remain[i].first << " + " << quot << endl;
+        }
+        quot[best_level][best_remain[i].second]++;    
+    }
+    if(best_remain[dim-1].first > 0){
+        // cout << "E " << quot << endl;
+        approx.push_back(quot[best_level]);
+        //cout << "add the point " << quot[best_level];
+    }
+
+}
 
 vector<key_t> identity_key(size_t n);
 
@@ -463,6 +528,16 @@ vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, cons
         }
     }
     return a;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_is_zero(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        if (v[i] != 0) return false;
+    }
+    return true;
 }
 
 

@@ -207,6 +207,12 @@ void Matrix<Integer>::pretty_print(ostream& out, bool with_row_nr) const{
 
 //---------------------------------------------------------------------------
 
+template<>
+void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr) const{
+    assert(false);
+}
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 size_t Matrix<Integer>::nr_of_rows () const{
     return nr;
@@ -612,6 +618,12 @@ Matrix<Integer> Matrix<Integer>::multiplication(const Matrix<Integer>& A, long m
     return B;
 }
 
+template<>
+Matrix<nmz_float> Matrix<nmz_float>::multiplication(const Matrix<nmz_float>& A, long m) const{
+    assert(false);
+    return A;
+}
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -629,7 +641,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A) const{
 }
 
 //---------------------------------------------------------------------------
-
+/*
 template<typename Integer>
 bool Matrix<Integer>::equal(const Matrix<Integer>& A, long m) const{
     if ((nr!=A.nr)||(nc!=A.nc)){  return false; }
@@ -643,7 +655,7 @@ bool Matrix<Integer>::equal(const Matrix<Integer>& A, long m) const{
     }
     return true;
 }
-
+*/
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -686,6 +698,19 @@ void Matrix<Integer>::scalar_division(const Integer& scalar){
 
 //---------------------------------------------------------------------------
 
+template<>
+void Matrix<nmz_float>::scalar_division(const nmz_float& scalar){
+    size_t i,j;
+    assert(scalar != 0);
+    for(i=0; i<nr;i++){
+        for(j=0; j<nc; j++){
+            elem[i][j] /= scalar;
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
 template<typename Integer>
 void Matrix<Integer>::reduction_modulo(const Integer& modulo){
     size_t i,j;
@@ -697,6 +722,11 @@ void Matrix<Integer>::reduction_modulo(const Integer& modulo){
             }
         }
     }
+}
+
+template<>
+void Matrix<nmz_float>::reduction_modulo(const nmz_float& modulo){
+    assert(false);
 }
 
 //---------------------------------------------------------------------------
@@ -822,6 +852,11 @@ vector<Integer> Matrix<Integer>::VxM_div(const vector<Integer>& v, const Integer
         v_scalar_division(w,divisor);  
         
     return w;
+}
+
+template<>
+vector<nmz_float> Matrix<nmz_float>::VxM_div(const vector<nmz_float>& v, const nmz_float& divisor, bool& success) const{
+    assert(false);
 }
 
 //---------------------------------------------------------------------------
@@ -981,6 +1016,12 @@ bool Matrix<Integer>::reduce_rows_upwards () {
     return true;
 }
 
+template<>
+bool Matrix<nmz_float>::reduce_rows_upwards () {
+    assert(false); // for the time being
+    return true;
+}
+
 //---------------------------------------------------------------------------
  
 template<typename Integer>
@@ -1018,6 +1059,12 @@ bool Matrix<Integer>::gcd_reduce_column (size_t corner, Matrix<Integer>& Right){
        if(!Right.linear_comb_columns(corner,j,u,w,v,z))
            return false;  
     }   
+    return true;
+}
+
+template<>
+bool Matrix<nmz_float>::gcd_reduce_column (size_t corner, Matrix<nmz_float>& Right){
+    assert(false);
     return true;
 }
 
@@ -1467,7 +1514,7 @@ bool Matrix<Integer>::solve_destructive_inner(bool ZZinvertible,Integer& denom) 
 
     assert(nc>=nr);
     size_t dim=nr;
-    bool success;
+    bool success=true; // to make gcc happy
     
     size_t rk;
     
@@ -1541,6 +1588,15 @@ void Matrix<Integer>::customize_solution(size_t dim, Integer& denom, size_t red_
       
     if(make_sol_prime) // make columns of solution coprime if wanted
         make_cols_prime(dim,nc-1);
+}
+
+//---------------------------------------------------------------------------
+
+template<>
+void Matrix<nmz_float>::customize_solution(size_t dim, nmz_float& denom, size_t red_col, 
+                     size_t sign_col, bool make_sol_prime) {
+                         
+    assert(false);
 }
 
 //---------------------------------------------------------------------------
@@ -2051,6 +2107,12 @@ bool Matrix<Integer>::SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right){
     return true;
 }
 
+template<>
+bool Matrix<nmz_float>::SmithNormalForm_inner(size_t& rk, Matrix<nmz_float>& Right){
+    
+    assert(false);    
+}
+
 // Converts "this" into Smith normal form, returns column transformation matrix
 template<typename Integer>
 Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
@@ -2072,6 +2134,12 @@ Matrix<Integer> Matrix<Integer>::SmithNormalForm(size_t& rk){
     mat_to_Int(mpz_this,*this);
     mat_to_Int(mpz_Transf,Transf);
     return Transf;
+}
+
+template<>
+Matrix<nmz_float> Matrix<nmz_float>::SmithNormalForm(size_t& rk){
+    assert(false);
+    return *this;    
 }
 
 //---------------------------------------------------------------------------
@@ -2881,6 +2949,11 @@ template Matrix<long>  readMatrix(const string project);
 #endif // NMZ_MIC_OFFLOAD
 template Matrix<long long>  readMatrix(const string project);
 template Matrix<mpz_class>  readMatrix(const string project);
+
+template class Matrix<long>;
+template class Matrix<long long>;
+template class Matrix<mpz_class>;
+template class Matrix<nmz_float>;
 
 
 }  // namespace

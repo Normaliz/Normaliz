@@ -103,8 +103,18 @@ bool try_convert(mpz_class& ret, const nmz_float& val);
 template<typename Type>
 inline bool try_convert(Type& ret, const Type& val) {ret = val; return true;}
 
+inline bool try_convert(nmz_float& ret, const nmz_float& val) {ret = val; return true;}
+
 
 bool fits_long_range(long long a);
+
+template<typename ToType>
+bool try_convert(ToType& ret, const nmz_float& val){
+    mpz_class bridge;
+    if(!try_convert(bridge,val))
+        return false;
+    return try_convert(ret,bridge);
+}
 
 template<typename Integer>
 inline bool using_GMP() {
@@ -203,6 +213,80 @@ bool int_quotient(long long& Quot, const long& Num, const long& Den);
 bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den);
 template<typename IntegerRet>
 bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den);
+
+//---------------------------------------------------------------------------
+ template<typename Integer>
+void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
+
+    quot=a/b;
+    rem=a-quot*b;
+    if(rem==0)
+        return;
+    if(2*Iabs(rem)>Iabs(b)){
+        if((rem<0 && b>0) || (rem >0 && b<0)){                
+            rem+=b;
+            quot--;
+        }
+        else{
+            rem-=b;
+            quot++;                
+        }
+    }
+}
+
+template <typename Integer>
+void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v){
+    if(d<0){
+        d=-d;
+        u=-u;
+        v=-v;    
+    }
+    // cout << u << " " << v << endl;
+    if(b==0)
+        return;
+        
+    Integer sign=1;
+    if(a<0)
+        sign=-1;
+    Integer u1= (sign*u) % (Iabs(b)/d);
+    if(u1==0)
+        u1+=Iabs(b)/d;
+    u=sign*u1;
+    v=(d-a*u)/b;
+}
+
+template <typename Integer>
+Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v){
+
+    u=1;
+    v=0;
+    Integer d=a;
+    if (b==0) {
+        sign_adjust_and_minimize(a,b,d,u,v);
+        return(d);
+    }
+    Integer v1=0;
+    Integer v3=b;
+    Integer q,t1,t3;
+    while(v3!=0){
+        q=d/v3;
+        t3=d-q*v3;
+        t1=u-q*v1;
+        u=v1;
+        d=v3;
+        v1=t1;
+        v3=t3;
+    }
+    sign_adjust_and_minimize(a,b,d,u,v);
+    return(d);
+}
+
+template <typename Integer>
+size_t decimal_length(Integer a){
+    ostringstream test;
+    test << a;
+    return test.str().size();
+}
 
 } // end libnormaliz
 

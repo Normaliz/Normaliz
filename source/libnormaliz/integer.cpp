@@ -101,14 +101,6 @@ bool try_convert(nmz_float& ret, const mpz_class& val){
     return true;
 }
 
-template<typename ToType>
-bool try_convert(ToType& ret, const nmz_float& val){
-    mpz_class bridge;
-    if(!try_convert(bridge,val))
-        return false;
-    return try_convert(ret,bridge);
-}
-
 bool try_convert(mpz_class& ret, const nmz_float& val){    
     ret=mpz_class(val);
     return true;
@@ -135,62 +127,17 @@ Integer gcd(const Integer& a, const Integer& b){
     return q1;
 }
 
+template <>
+nmz_float gcd(const nmz_float& a, const nmz_float& b){
+    if (a==0 and b==0)
+        return 0;
+    return 1.0;
+}
+
 template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_gcd (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
-}
-
-template void sign_adjust_and_minimize<long long>(const long long& a, const long long& b, long long& d, long long& u, long long&v);
-template long long ext_gcd<long long>(const long long& a, const long long& b, long long& u, long long&v);
-
-
-template <typename Integer>
-void sign_adjust_and_minimize(const Integer& a, const Integer& b, Integer& d, Integer& u, Integer&v){
-    if(d<0){
-        d=-d;
-        u=-u;
-        v=-v;    
-    }
-    // cout << u << " " << v << endl;
-    if(b==0)
-        return;
-        
-    Integer sign=1;
-    if(a<0)
-        sign=-1;
-    Integer u1= (sign*u) % (Iabs(b)/d);
-    if(u1==0)
-        u1+=Iabs(b)/d;
-    u=sign*u1;
-    v=(d-a*u)/b;
-}
-
-
-template <typename Integer>
-Integer ext_gcd(const Integer& a, const Integer& b, Integer& u, Integer&v){
-
-    u=1;
-    v=0;
-    Integer d=a;
-    if (b==0) {
-        sign_adjust_and_minimize(a,b,d,u,v);
-        return(d);
-    }
-    Integer v1=0;
-    Integer v3=b;
-    Integer q,t1,t3;
-    while(v3!=0){
-        q=d/v3;
-        t3=d-q*v3;
-        t1=u-q*v1;
-        u=v1;
-        d=v3;
-        v1=t1;
-        v3=t3;
-    }
-    sign_adjust_and_minimize(a,b,d,u,v);
-    return(d);
 }
 
 //---------------------------------------------------------------------------
@@ -208,15 +155,6 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
     mpz_class g;
     mpz_lcm (g.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
     return g;
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-size_t decimal_length(Integer a){
-    ostringstream test;
-    test << a;
-    return test.str().size();
 }
 
 //---------------------------------------------------------------------------
@@ -333,26 +271,6 @@ void check_range_list(const std::list<Candidate<Integer> >& ll){
     }
     
 
-}
-
-//---------------------------------------------------------------------------
- template<typename Integer>
-void minimal_remainder(const Integer& a, const Integer&b, Integer& quot, Integer& rem) {
-
-    quot=a/b;
-    rem=a-quot*b;
-    if(rem==0)
-        return;
-    if(2*Iabs(rem)>Iabs(b)){
-        if((rem<0 && b>0) || (rem >0 && b<0)){                
-            rem+=b;
-            quot--;
-        }
-        else{
-            rem-=b;
-            quot++;                
-        }
-    }
 }
 
 //---------------------------------------------------------------------------

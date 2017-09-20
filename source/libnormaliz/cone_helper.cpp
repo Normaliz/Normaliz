@@ -883,6 +883,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerR
 }
 //---------------------------------------------------------------------------
 
+template class ProjectAndLift<mpz_class,mpz_class>;
+template class ProjectAndLift<long long ,long long>;
+template class ProjectAndLift<nmz_float,mpz_class>;
+template class ProjectAndLift<nmz_float,long long>;
+template class ProjectAndLift<nmz_float, nmz_float>;
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class ProjectAndLift<long ,long>;
+template class ProjectAndLift<nmz_float,long>;
+#endif
+
 #ifdef NMZ_MIC_OFFLOAD
 #pragma offload_attribute (pop)
 #endif
