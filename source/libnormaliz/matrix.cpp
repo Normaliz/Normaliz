@@ -34,7 +34,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/normaliz_exception.h"
 #include "libnormaliz/sublattice_representation.h"
-#include "libnormaliz/cone_helper.h"
+#include "libnormaliz/project_and_lift.h"
 
 //---------------------------------------------------------------------------
 
@@ -2954,6 +2954,47 @@ template class Matrix<long>;
 template class Matrix<long long>;
 template class Matrix<mpz_class>;
 template class Matrix<nmz_float>;
+
+// determines the maximal subsets in a vector of subsets given by their indicator vectors
+// result returned in is_max_subset -- must be initialized outside
+// only set to false in this routine
+// if a set occurs more than once, only the last instance is recognized as maximal
+void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset) {
+
+    if(ind.size()==0)
+        return;
+
+    size_t nr_sets=ind.size();
+    size_t card=ind[0].size();
+    vector<key_t> elem(card);
+
+    for (size_t i = 0; i <nr_sets; i++) {
+        if(!is_max_subset[i])  // already known to be non-maximal
+            continue;
+
+        size_t k=0; // counts the number of elements in set with index i
+        for (size_t j = 0; j <card; j++) {
+            if (ind[i][j]) {
+                elem[k]=j;
+                k++;
+            }
+        }
+
+        for (size_t j = 0; j <nr_sets; j++) {
+            if (i==j || !is_max_subset[j] ) // don't compare with itself or something known not to be maximal
+                continue;
+            size_t t;
+            for (t = 0; t<k; t++) {
+                if (!ind[j][elem[t]])
+                    break; // not a superset
+            }
+            if (t==k) { // found a superset
+                is_max_subset[i]=false;
+                break; // the loop over j
+            }
+        }
+    }
+}
 
 
 }  // namespace

@@ -509,6 +509,15 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat){
             convert(to_mat[i][j], from_mat[i][j]);
 }
 
+//---------------------------------------------------------------------------
+//                  Matrix relateed functions
+//---------------------------------------------------------------------------
+// determines the maximal subsets in a vector of subsets given by their indicator vectors
+// result returned in is_max_subset -- must be initialized outside
+// only set to false in this routine
+// if a set occurs more than once, only the last instance is recognized as maximal
+void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
+
 } // namespace
 
 //---------------------------------------------------------------------------

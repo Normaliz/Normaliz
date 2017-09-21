@@ -34,12 +34,6 @@
 namespace libnormaliz {
 using std::vector;
 
-// determines the maximal subsets in a vector of subsets given by their indicator vectors
-// result returned in is_max_subset -- must be initialized outside
-// only set to false in this routine
-// if a set occurs more than once, only the last instance is recognized as maximal
-void maximal_subsets(const vector<vector<bool> >& ind, vector<bool>& is_max_subset);
-
 // the project-and-lift algorithm for lattice points in a polytope
 
 template<typename IntegerPL, typename IntegerRet> 

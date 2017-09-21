@@ -29,7 +29,7 @@
 #include "libnormaliz/cone_property.cpp"
 #include "libnormaliz/integer.cpp"
 // #include "libnormaliz/vector_operations.cpp"
-#include "libnormaliz/cone_helper.cpp"
+// #include "libnormaliz/cone_helper.cpp"
 // #include "libnormaliz/matrix.cpp"
 // #include "libnormaliz/simplex.cpp"
 #include "libnormaliz/list_operations.cpp"
@@ -77,6 +77,7 @@ template mpz_class permutations<mpz_class>(const size_t& a, const size_t& b);
 template ostream& operator<< <long>(ostream& out, const vector<long>& v);
 template ostream& operator<< <long long>(ostream& out, const vector<long long>& v);
 template ostream& operator<< <mpz_class>(ostream& out, const vector<mpz_class>& v);
+template ostream& operator<< <nmz_float>(ostream& out, const vector<nmz_float>& v);
 
 }
 

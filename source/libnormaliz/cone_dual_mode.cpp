@@ -35,7 +35,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/full_cone.h"
-#include "libnormaliz/cone_helper.h"
+// #include "libnormaliz/cone_helper.h"
 #include "libnormaliz/my_omp.h"
 
 //---------------------------------------------------------------------------

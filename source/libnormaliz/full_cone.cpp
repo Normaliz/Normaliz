@@ -33,7 +33,7 @@
 #include <deque>
 
 #include "libnormaliz/full_cone.h"
-#include "libnormaliz/cone_helper.h"
+#include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_operations.h"
 #include "libnormaliz/map_operations.h"

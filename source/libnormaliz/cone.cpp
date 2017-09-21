@@ -27,6 +27,7 @@
 #include <sys/types.h>
 
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/convert.h"
 #include "libnormaliz/cone.h"

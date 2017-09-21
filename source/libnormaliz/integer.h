@@ -88,13 +88,12 @@ bool try_convert(long long& ret, const mpz_class& val);
 inline bool try_convert(mpz_class& ret, const long& val) {ret = val; return true;}
 bool try_convert(mpz_class& ret, const long long& val);
 
-template<typename FromType>
-bool try_convert(nmz_float& ret, const FromType& val);
-//bool try_convert(nmz_float& ret, const long& val);
+bool try_convert(nmz_float& ret, const long& val);
+bool try_convert(nmz_float& ret, const long long& val);
 bool try_convert(nmz_float& ret, const mpz_class& val);
-template<typename ToType>
-bool try_convert(ToType& ret, const nmz_float& val);
-// bool try_convert(long& ret, const nmz_float& val);
+
+bool try_convert(long& ret, const nmz_float& val);
+bool try_convert(long long& ret, const nmz_float& val);
 bool try_convert(mpz_class& ret, const nmz_float& val);
 
 
@@ -108,13 +107,6 @@ inline bool try_convert(nmz_float& ret, const nmz_float& val) {ret = val; return
 
 bool fits_long_range(long long a);
 
-template<typename ToType>
-bool try_convert(ToType& ret, const nmz_float& val){
-    mpz_class bridge;
-    if(!try_convert(bridge,val))
-        return false;
-    return try_convert(ret,bridge);
-}
 
 template<typename Integer>
 inline bool using_GMP() {
@@ -287,6 +279,7 @@ size_t decimal_length(Integer a){
     test << a;
     return test.str().size();
 }
+
 
 } // end libnormaliz
 

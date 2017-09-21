@@ -90,8 +90,7 @@ bool fits_long_range(long long a) {
     return sizeof(long long) == sizeof(long) || (a <= LONG_MAX && a >= LONG_MIN);
 }
 
-template<typename FromType>
-bool try_convert(nmz_float& ret, const FromType& val){
+bool try_convert(nmz_float& ret, const long& val){
     ret= (nmz_float) val;
     return true;
 }
@@ -106,6 +105,24 @@ bool try_convert(mpz_class& ret, const nmz_float& val){
     return true;
 }
 
+bool try_convert(nmz_float& ret, const long long& val){
+    ret= (nmz_float) val;
+    return true;
+}
+
+bool try_convert(long& ret, const nmz_float& val){
+    mpz_class bridge;
+    if(!try_convert(bridge,val))
+        return false;
+    return try_convert(ret,bridge);
+}
+
+bool try_convert(long long& ret, const nmz_float& val){
+    mpz_class bridge;
+    if(!try_convert(bridge,val))
+        return false;
+    return try_convert(ret,bridge);
+}
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -388,6 +405,11 @@ bool int_quotient(IntegerRet& Quot, const nmz_float& Num, const nmz_float& Den){
     Quot=convertTo<IntegerRet>(IntQuot);     // cout << "QQ " <<  Quot << endl;
     return FloatQuot-IntQuot > nmz_epsilon;    
 }
+
+template bool int_quotient<long>(long& , const nmz_float&, const nmz_float&);
+template bool int_quotient<long long>(long long& , const nmz_float&, const nmz_float&);
+template bool int_quotient<mpz_class>(mpz_class& , const nmz_float&, const nmz_float&);
+template bool int_quotient<double>(double& , const nmz_float&, const nmz_float&);
 
 //----------------------------------------------------------------------
 

@@ -7,7 +7,7 @@ INSTALLHDRS = cone.h cone_property.h convert.h general.h HilbertSeries.h integer
 
 LIBSOURCES = $(wildcard *.cpp)
 LIBHEADERS = $(wildcard *.h)
-NMZINTSOURCES = nmz_integrate.h nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
+#NMZINTSOURCES = nmz_integrate.h nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp
 
 ## -I .. necessary since we include files libnormaliz/*.h and *.cpp
 CXXFLAGS += -I .. 
@@ -28,28 +28,28 @@ offload_handler.o: $(LIBHEADERS) offload_handler.cpp
 #cone_helper.o: $(LIBHEADERS) cone_helper.cpp
 #	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_helper.cpp -o $@
 
-hilbert_series.o: $(LIBHEADERS) HilbertSeries.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c HilbertSeries.cpp -o $@
+enumeration.o: $(LIBHEADERS) enumeration.cpp nmz_polynomial.cpp nmz_integrate.cpp nmz_integral.cpp HilbertSeries.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c enumeration.cpp -o $@
 	
-cone_dual_mode.o: $(LIBHEADERS) cone_dual_mode.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_dual_mode.cpp -o $@
+other_algorithms.o.o: $(LIBHEADERS) other_algorithms.cpp cone_dual_mode.cpp reduction.cpp project_and_lift.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c other_algorithms.cpp -o $@
 	
-reduction.o: $(LIBHEADERS) reduction.cpp
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c reduction.cpp -o $@
+#reduction.o: $(LIBHEADERS) reduction.cpp
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c reduction.cpp -o $@
 	
 linear_algebra.o: $(LIBHEADERS) sublattice_representation.cpp vector_operations.cpp matrix.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c linear_algebra.cpp -o $@
 
-cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp integer.cpp libnormaliz.cpp cone_helper.cpp list_operations.cpp
+cone_and_control.o: $(LIBHEADERS) cone_and_control.cpp cone.cpp cone_property.cpp integer.cpp libnormaliz.cpp  list_operations.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c cone_and_control.cpp -o $@
 		
-nmz_integrate.o:  $(NMZINTSOURCES)
-	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integrate.cpp -o $@
+#nmz_integrate.o:  $(NMZINTSOURCES)
+#	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_integrate.cpp -o $@
 	
 primal.o:  $(LIBHEADERS) primal.cpp full_cone.cpp simplex.cpp bottom.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c primal.cpp -o $@
 
-libnormaliz.a: hilbert_series.o offload_handler.o  nmz_integrate.o cone_dual_mode.o  reduction.o linear_algebra.o primal.o cone_and_control.o
+libnormaliz.a: enumeration.o offload_handler.o  nmz_integrate.o other_algorithms.o  reduction.o linear_algebra.o primal.o cone_and_control.o
 	ar -cr $@ $^
 
 .PHONY : install
