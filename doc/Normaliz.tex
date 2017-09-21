@@ -3138,7 +3138,7 @@ The computation goals in this section require a grading. They include \verb|Supp
 	\itemtt[Multiplicity, -v] restricts the computation to the multiplicity.
 
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert series.
-	\itemtt[NoPerodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
+	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
 \end{itemize}
 
 \subsubsection{Combined computation goals}
@@ -5975,7 +5975,7 @@ In an alternative configuration  you have to include \verb|libnormaliz-all.cpp|.
 bool libnormaliz::try_convert(TypeA, TypeB); 
             // converts TypeB to TypeA, returns false if not possible
 \end{Verbatim}
-where one type is your type and the other is \verb|long|, \verb|long long| or \verb|mpz_class|.
+where one type is your type and the other is \verb|long|, \verb|long long|, \verb|mpz_class| and \verb|nmmz_float|.
 Additionally, if your type uses infinite precision (for example, it is some wrapper for GMP), you must also implement
 \begin{Verbatim}
 template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
