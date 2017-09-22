@@ -2160,6 +2160,10 @@ void mat_to_mpz(const Matrix<Integer>& mat, Matrix<mpz_class>& mpz_mat){
 	GMP_mat++;
 }
 
+template void mat_to_mpz<long>(const Matrix<long>&, Matrix<mpz_class>&);
+template void mat_to_mpz<long long>(const Matrix<long long>&, Matrix<mpz_class>&);
+template void mat_to_mpz<mpz_class>(const Matrix<mpz_class>&, Matrix<mpz_class>&);
+
 //---------------------------------------------------------------------------
 
 template<typename Integer>
@@ -2172,6 +2176,10 @@ void mat_to_Int(const Matrix<mpz_class>& mpz_mat, Matrix<Integer>& mat){
         for(size_t j=0; j<ncols; ++j)
             convert(mat[i][j], mpz_mat[i][j]);
 }
+
+template void mat_to_Int<long>(const Matrix<mpz_class>&, Matrix<long>&);
+template void mat_to_Int<long long>(const Matrix<mpz_class>&, Matrix<long long>&);
+template void mat_to_Int<mpz_class>(const Matrix<mpz_class>&, Matrix<mpz_class>&);
 
 //---------------------------------------------------------------------------
 
@@ -2728,7 +2736,7 @@ Matrix<nmz_float> Matrix<nmz_float>::LLL() const{
 }
 
 // We would like to avoid the class less functions below
-// problems with round and perhaps other comversions
+// Look superfluous now
 
 void LLL_float(const Matrix<nmz_float>& L, Matrix<nmz_float>& Lred){    
 

@@ -71,13 +71,16 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
     initialize(M,take_saturation,success);
     if(!success){
         Matrix<mpz_class> mpz_M(M.nr,M.nc);
-        mat_to_mpz(M,mpz_M);
+        // mat_to_mpz(M,mpz_M);
+        convert(mpz_M,M);
         Sublattice_Representation<mpz_class> mpz_SLR;
         mpz_SLR.initialize(mpz_M,take_saturation,success);
         A=Matrix<Integer>(mpz_SLR.A.nr,mpz_SLR.A.nc);
         B=Matrix<Integer>(mpz_SLR.B.nr,mpz_SLR.B.nc);
-        mat_to_Int(mpz_SLR.A,A);
-        mat_to_Int(mpz_SLR.B,B);
+        // mat_to_Int(mpz_SLR.A,A);
+        convert(A,mpz_SLR.A);
+        // mat_to_Int(mpz_SLR.B,B);
+        convert(B,mpz_SLR.B);
         convert(c, mpz_SLR.c);
         rank=mpz_SLR.rank;        
     }
