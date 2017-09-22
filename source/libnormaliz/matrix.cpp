@@ -2634,114 +2634,6 @@ vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
     }
 }
 
-/* No LLL
-
-// version with a single point, only top of the search polytope
-// After 2 attempts without improvement, g raised to opt_value-1
-template<typename Integer>
-vector<Integer> Matrix<Integer>::optimal_subdivision_point_inner() const{
-// returns empty vector if simplex cannot be subdivided with smaller detsum
-      
-    // cout << "==================" << endl;
-  
-    assert(nr>0);
-    assert(nr==nc);
-      
-    vector<Integer> opt_point;
-  
-    vector<Integer> N = find_linear_form();
-    assert(N.size()==nr);
-    Integer G=v_scalar_product(N,elem[0]);
-    if(G<=1)
-        return opt_point;
-    Matrix<Integer> Supp;
-    Integer V;
-    vector<key_t> dummy(nr);
-    for(size_t i=0;i<nr;++i)
-        dummy[i]=i;
-    simplex_data(dummy, Supp,V,true);
-    Integer MinusOne=-1;
-    vector<Integer> MinusN(N);
-    v_scalar_multiplication(MinusN,MinusOne);
-    Supp.append(MinusN);
-    Supp.resize_columns(nr+1);
-    Supp.exchange_columns(0,nc); // grading to the front!
-      
-    Integer opt_value=G;
-    Integer empty_value=0;
-    Integer g=G-1;
-      
-    Integer den=2;
-      
-    vector<Integer> Zero(nr+1); // the excluded vector
-    Zero[0]=1;
-
-    // Incidence matrix for projectand lift    
-    vector<boost::dynamic_bitset<> > Ind(nr+1);
-    for(size_t i=0;i<nr+1;++i){
-        Ind[i].resize(nc+1);
-        for(size_t j=0;j<nc+1;++j)
-            Ind[i][j]=true;
-        Ind[i][i]=false;
-    }
-    
-    // cout << "==============================" << endl;
-    
-    size_t nothing_found=0;
-    while(true){
-        vector<Integer> SubDiv;
-        // cout << "Opt " << opt_value << " test " << g << " empty " << empty_value << " nothing "  << nothing_found << endl;
-        Supp[nr][0]=g;  // the degree at which we cut the simplex1;
-        ProjectAndLift<Integer,Integer> PL(Supp,Ind,nr+1);
-        PL.set_excluded_point(Zero);
-        PL.set_verbose(false);
-        PL.compute(false); // only a single point
-        PL.put_single_point_into(SubDiv);
-        if(SubDiv.size()==0){ // no point found
-            nothing_found++;
-            if(g==opt_value-1)
-                return opt_point; // optimal point found (or nothing found)
-            empty_value=g;
-            if(nothing_found<1) // can't be true if "1" is not raised to a higher value
-                g=empty_value+1+(den-1)*(opt_value-empty_value-2)/den;
-            else
-                g=opt_value-1;
-            den*=2;    // not used in the present setting (see above)      
-        }
-        else{ // point found
-            nothing_found=0;
-            den=2; // back to start value
-            opt_point=SubDiv;
-            std::swap(opt_point[0],opt_point[nc]);
-            opt_point.resize(nc);
-            if(opt_value==empty_value+1)
-                return opt_point;
-            opt_value=v_scalar_product(opt_point,N);
-            g=empty_value+1+(opt_value-empty_value-2)/2;
-        }
-    }
-}*/
-
-/*
- * void GramSchmidt(const Matrix<mpz_class>& L, vector<vector<mpq_class> >& B, vector<vector<mpq_class> >& M, int from){
-
-    size_t dim=L.nr_of_columns();
-    size_t n=L.nr_of_rows();
-    for(size_t i=from;i<n;++i){
-        for(size_t k=0;k<dim;++k)
-            B[i][k]=L[i][k];
-        for(size_t j=0;j<i;++j){
-            mpq_class sp=0;
-            for(size_t k=0;k<dim;++k)
-                sp+=L[i][k]*B[j][k];
-            M[i][j]=sp/v_scalar_product(B[j],B[j]);
-            for(size_t k=0;k<dim;++k)
-                B[i][k]-=M[i][j]*B[j][k];        
-        }
-    }
-}
-*/
-
 // incremental Gram-Schmidt on rows r, from <= r < to (ATTENTION <)
 template<typename number>
 void GramSchmidt(const Matrix<number>& L, vector<vector<double> >& B, vector<vector<double> >& M, int from, int to){
@@ -2749,12 +2641,16 @@ void GramSchmidt(const Matrix<number>& L, vector<vector<double> >& B, vector<vec
     assert(to <= (int) L.nr_of_rows());
     size_t dim=L.nr_of_columns();
     for(int i=from;i<to;++i){
-        for(size_t k=0;k<dim;++k)
-            convert(B[i][k],L[i][k]);
+        /* for(size_t k=0;k<dim;++k)
+            convert(B[i][k],L[i][k]); */
+        convert(B[i],L[i]);
         for(int j=0;j<i;++j){
             double sp=0;
-            for(size_t k=0;k<dim;++k)
-                sp+=L[i][k].get_d()*B[j][k];
+            for(size_t k=0;k<dim;++k){
+                double fact;
+                convert(fact,L[i][k]);
+                sp+=fact*B[j][k];// L[i][k].get_d()*B[j][k];
+            }
             M[i][j]=sp/v_scalar_product(B[j],B[j]);
             for(size_t k=0;k<dim;++k)
                 B[i][k]-=M[i][j]*B[j][k];        
@@ -2781,7 +2677,8 @@ void LLL_red(const Matrix<number>& L, Matrix<number>& Lred){
     while(true){
         
         for(int j=i-1;j>=0;--j){
-            number fact=round(M[i][j]);
+            number fact; // =round(M[i][j]);
+            convert(fact,round(M[i][j]));
             for(size_t k=0;k<dim;++k)
                 Lred[i][k]-=fact*Lred[j][k];
             GramSchmidt(Lred,G,M,i,i+1);                       
@@ -2822,84 +2719,26 @@ Matrix<Integer> Matrix<Integer>::LLL() const{
     return Lred;
 }
 
-/*template<>
+template<>
 Matrix<nmz_float> Matrix<nmz_float>::LLL() const{
 
     Matrix<nmz_float> Lred;
     LLL_red(*this,Lred);
     return Lred;
-}*/
-
-
-void GramSchmidt_float(const Matrix<nmz_float>& L, vector<vector<double> >& B, vector<vector<double> >& M, int from, int to){
-
-    assert(to <= (int) L.nr_of_rows());
-    size_t dim=L.nr_of_columns();
-    for(int i=from;i<to;++i){
-        for(size_t k=0;k<dim;++k)
-            B[i][k]=L[i][k];
-        for(int j=0;j<i;++j){
-            double sp=0;
-            for(size_t k=0;k<dim;++k)
-                sp+=L[i][k]*B[j][k];
-            M[i][j]=sp/v_scalar_product(B[j],B[j]);
-            for(size_t k=0;k<dim;++k)
-                B[i][k]-=M[i][j]*B[j][k];        
-        }
-    }
 }
 
 // We would like to avoid the class less functions below
 // problems with round and perhaps other comversions
 
-void LLL_float(const Matrix<nmz_float>& L, Matrix<nmz_float>& Lred){
-    
-    Lred=L;
-    size_t dim=L.nr_of_columns();
-    int n=L.nr_of_rows();
-    assert((int) L.rank()==n);
-    if(n<=1)
-        return;
-    
-    vector<vector<double> > G(n,vector<double>(dim));
-    vector<vector<double> > M(n,vector<double>(n));
-    
-    GramSchmidt_float(Lred,G,M,0,1);
-    
-    int i=1;
-    while(true){
-        
-        for(int j=i-1;j>=0;--j){
-            double fact; 
-                convert(fact,round(M[i][j]));
-            for(size_t k=0;k<dim;++k)
-                Lred[i][k]-=fact*Lred[j][k];
-            GramSchmidt_float(Lred,G,M,i,i+1);                       
-        }
-        if(i==0){
-            i=1;
-            continue;
-        }
-        nmz_float t1=v_scalar_product(Lred[i-1],Lred[i-1]);
-        nmz_float t2=v_scalar_product(Lred[i],Lred[i]);
-        if(t1*t1> 2*t2*t2){
-            swap(Lred[i],Lred[i-1]);
-            GramSchmidt_float(Lred,G,M,i-1,i);
-            i--;
-        }
-        else{
-            i++;
-            if(i>=n)
-                break;
-            GramSchmidt_float(Lred,G,M,i,i+1);
-        }
-    }
+void LLL_float(const Matrix<nmz_float>& L, Matrix<nmz_float>& Lred){    
+
+    LLL_red(L,Lred);
 }
 
 void LLL_float(const vector<vector<nmz_float> >& L, vector<vector<nmz_float> >& Lred){
 
     Matrix<nmz_float>M(L), Mred;
-    LLL_float(M,Mred);
+    LLL_red(M,Mred);
     Lred=Mred.get_elements();
 }
 
@@ -2907,7 +2746,7 @@ void LLL_float_trans(const vector<vector<nmz_float> >& L, vector<vector<nmz_floa
 
     Matrix<nmz_float>M(L), Mred;
     M=M.transpose();
-    LLL_float(M,Mred);
+    LLL_red(M,Mred);
     Lred=Mred.transpose().get_elements();
 }
 
