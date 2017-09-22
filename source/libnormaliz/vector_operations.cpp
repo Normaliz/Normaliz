@@ -567,5 +567,12 @@ template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_
 template mpq_class v_scalar_product(const vector<mpq_class>& a,const vector<mpq_class>& b);
 template nmz_float v_scalar_product(const vector<nmz_float>& a,const vector<nmz_float>& b);
 
+/*
+template ostream& operator<< <long>(ostream& out, const vector<long>& v);
+template ostream& operator<< <long long>(ostream& out, const vector<long long>& v);
+template ostream& operator<< <mpz_class>(ostream& out, const vector<mpz_class>& v);
+template ostream& operator<< <nmz_float>(ostream& out, const vector<nmz_float>& v);
+*/
+
 
 } // end namespace libnormaliz

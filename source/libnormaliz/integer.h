@@ -280,6 +280,30 @@ size_t decimal_length(Integer a){
     return test.str().size();
 }
 
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+Integer permutations(const size_t& a, const size_t& b){
+    unsigned long i;
+    Integer P=1;
+    for (i = a+1; i <= b; i++) {
+        P*=i;
+    }
+    return P;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer> 
+Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
+    unsigned long i;
+    Integer P=1;
+    for (i = a+1; i <= b; i++) {
+        P*=i; P%=m;
+    }
+    return P;
+}
+
 
 } // end libnormaliz
 

@@ -157,6 +157,10 @@ template<> mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b) {
     return g;
 }
 
+template long gcd<long>(const long& a, const long& b);
+template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
+template long long gcd<long long>(const long long& a, const long long& b);
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -174,29 +178,10 @@ template<> mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b) {
     return g;
 }
 
-//---------------------------------------------------------------------------
+template long lcm<long>(const long& a, const long& b);
+template long long lcm<long long>(const long long& a, const long long& b);
 
-template <typename Integer>
-Integer permutations(const size_t& a, const size_t& b){
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i;
-    }
-    return P;
-}
 
-//---------------------------------------------------------------------------
-
-template<typename Integer> 
-Integer permutations_modulo(const size_t& a, const size_t& b, long m) {
-    unsigned long i;
-    Integer P=1;
-    for (i = a+1; i <= b; i++) {
-        P*=i; P%=m;
-    }
-    return P;
-}
 //---------------------------------------------------------------------------
 
 template<typename Integer>

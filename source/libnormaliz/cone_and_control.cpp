@@ -28,58 +28,8 @@
 #include "libnormaliz/libnormaliz.cpp"
 #include "libnormaliz/cone_property.cpp"
 #include "libnormaliz/integer.cpp"
-// #include "libnormaliz/vector_operations.cpp"
-// #include "libnormaliz/cone_helper.cpp"
-// #include "libnormaliz/matrix.cpp"
-// #include "libnormaliz/simplex.cpp"
 #include "libnormaliz/list_operations.cpp"
-// #include "libnormaliz/sublattice_representation.cpp"
-// #include "libnormaliz/reduction.cpp"
-// #include "libnormaliz/full_cone.cpp"
-// #include "libnormaliz/cone_dual_mode.cpp"
 #include "libnormaliz/cone.cpp"
-
-namespace libnormaliz {
-
-#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
-template class Cone<long>;
-// template class Matrix<long>;
-// template class Sublattice_Representation<long>;
-// template class Full_Cone<long>;
-#endif
-// template class Matrix<long>;
-
-template class Cone<long long>;
-// template class Matrix<long long>;
-// template class Sublattice_Representation<long long>;
-// template class Full_Cone<long long>;
-
-template class Cone<mpz_class>;
-// template class Matrix<mpz_class>;
-// template class Sublattice_Representation<mpz_class>;
-// template class Full_Cone<mpz_class>;
-
-template size_t decimal_length<long>(long);
-template size_t decimal_length<long long int>(long long int);
-template size_t decimal_length<mpz_class>(mpz_class);
-
-template long gcd<long>(const long& a, const long& b);
-template nmz_float gcd<nmz_float>(const nmz_float& a, const nmz_float& b);
-template long lcm<long>(const long& a, const long& b);
-template long permutations<long>(const size_t& a, const size_t& b);
-template long long gcd<long long>(const long long& a, const long long& b);
-template long long lcm<long long>(const long long& a, const long long& b);
-template long long permutations<long long>(const size_t& a, const size_t& b);
-//template mpz_class gcd<mpz_class>(const mpz_class& a, const mpz_class& b);
-//template mpz_class lcm<mpz_class>(const mpz_class& a, const mpz_class& b);
-template mpz_class permutations<mpz_class>(const size_t& a, const size_t& b);
-
-template ostream& operator<< <long>(ostream& out, const vector<long>& v);
-template ostream& operator<< <long long>(ostream& out, const vector<long long>& v);
-template ostream& operator<< <mpz_class>(ostream& out, const vector<mpz_class>& v);
-template ostream& operator<< <nmz_float>(ostream& out, const vector<nmz_float>& v);
-
-}
 
 #ifdef NMZ_MIC_OFFLOAD
 #pragma offload_attribute (pop)

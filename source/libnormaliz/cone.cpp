@@ -4202,6 +4202,10 @@ bool Cone<Integer>::check_parallelotope(){
     return true;    
 }
 
-
+#ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
+template class Cone<long>;
+#endif
+template class Cone<long long>;
+template class Cone<mpz_class>;
 
 } // end namespace libnormaliz
