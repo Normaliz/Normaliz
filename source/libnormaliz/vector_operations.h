@@ -81,6 +81,10 @@ void v_add_result(vector<Integer>& result, const size_t length, const vector<Int
 template<typename Integer>
 vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m);
 
+// elementary transformation: bv -> bv+F*av from column start on
+template<typename Integer>
+void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t start);
+
 //---------------------------------------------------------------------------
 //							abs, gcd and lcm
 //---------------------------------------------------------------------------

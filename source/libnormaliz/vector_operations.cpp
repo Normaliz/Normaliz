@@ -414,7 +414,7 @@ bool v_is_nonnegative(const vector<Integer>& v) {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t& start){
+void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t start){
 
     size_t i,n=av.size();
 
@@ -465,6 +465,10 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
 
     if(n>0)
         b[0] += F*a[0];
+    
+    for(size_t i=0;i<bv.size();++i)
+        if(!check_range(bv[i]))
+            throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");  
 }
 
 //---------------------------------------------------------------

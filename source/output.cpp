@@ -689,18 +689,6 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const{
 }
 
 //---------------------------------------------------------------------------
-template<typename Integer>
-void Output<Integer>::write_float(ofstream& out, const Matrix<nmz_float>& mat, size_t nr, size_t nc) const{
-
-    for(size_t i=0;i<nr;++i){
-        for(size_t j=0; j< nc;++j){
-            out << std::setw(10) << mat[i][j];
-        }
-        out << endl;
-    }
-}
-
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 void Output<Integer>::write_files() const {
@@ -1089,7 +1077,7 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::VerticesOfPolyhedron)  && !no_ext_rays_output) {
             out << Result->getNrVerticesOfPolyhedron() <<" vertices of polyhedron:" << endl;
             if(Result->isComputed(ConeProperty::VerticesFloat))
-                write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
+                Result->getVerticesFloatMatrix().pretty_print(out); // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim);
             else
                 Result->getVerticesOfPolyhedronMatrix().pretty_print(out);
             out << endl;
@@ -1097,7 +1085,7 @@ void Output<Integer>::write_files() const {
         if (Result->isComputed(ConeProperty::ExtremeRays) && !no_ext_rays_output) {
             out << Result->getNrExtremeRays() << " extreme rays" << of_cone << ":" << endl;
             if(homogeneous && Result->isComputed(ConeProperty::VerticesFloat))
-                write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim); 
+                Result->getVerticesFloatMatrix().pretty_print(out); // write_float(out,Result->getVerticesFloatMatrix(),Result->getNrVerticesFloat(),dim); 
             else
                 Result->getExtremeRaysMatrix().pretty_print(out);
             out << endl;

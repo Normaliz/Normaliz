@@ -2819,7 +2819,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Gens.pretty_print(cout);
     cout << "-------------" << endl;*/
     Matrix<Integer> Gred,T,Tinv;
-    Gens.LLL_transform_transpose(Gred,T,Tinv);
+    Gred=Gens.LLL_red_transpose(T,Tinv);
     /*Gens.multiplication(T).pretty_print(cout);
     cout << "-------------" << endl;
     Tinv.multiplication(T).pretty_print(cout);*/

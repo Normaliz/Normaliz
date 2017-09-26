@@ -116,7 +116,17 @@ inline bool using_GMP() {
 template<>
 inline bool using_GMP<mpz_class>() {
   return true;
-} 
+}
+
+template<typename Integer>
+inline bool using_float() {
+  return false;
+}
+
+template<>
+inline bool using_float<nmz_float>() {
+  return true;
+}
 
 template<typename Integer>
 Integer int_max_value_dual();
