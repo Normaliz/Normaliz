@@ -3761,8 +3761,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }
     }
     
-    // cout << "PPPPP " << is_parallelotope << endl;
-    
     if(!inhomogeneous && !isComputed(ConeProperty::Grading))
         return;
     
@@ -3851,6 +3849,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         }
     }
     
+    // data prepared, bow nthe computation
+    
     Matrix<Integer> Raw(0,GradGen.nr_of_columns()); // result is returned in this matrix
         
     if(ToCompute.test(ConeProperty::Approximate)){
@@ -3894,6 +3894,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);
         project_and_lift(Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
     }
+    
+    // computation done. It remains to restore the old coordinates
     
     HilbertBasis=Matrix<Integer>(0,dim);
     Deg1Elements=Matrix<Integer>(0,dim);
@@ -3943,7 +3945,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
     else
         Deg1Elements.sort_by_weights(WeightsGrad,GradAbs);
 
-    if(inhomogeneous){
+    if(inhomogeneous){ // as in convert_polyhedron_to polytope of full_cone.cpp
         is_Computed.set(ConeProperty::HilbertBasis);
         is_Computed.set(ConeProperty::ModuleGenerators);
         module_rank= ModuleGenerators.nr_of_rows();
@@ -4020,6 +4022,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
             PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
+        PL.set_LLL(true);
         PL.compute();
         PL.put_eg1Points_into(Deg1);
     }
@@ -4041,6 +4044,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Pair,ParaInPair,rank);
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
+                PL.set_LLL(true);
                 PL.compute();
                 PL.put_eg1Points_into(Deg1MI);
             } catch(const ArithmeticException& e) {
@@ -4065,6 +4069,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
+            PL.set_LLL(true);
             PL.compute();
             PL.put_eg1Points_into(Deg1);
         }        
@@ -4176,23 +4181,13 @@ bool Cone<Integer>::check_parallelotope(){
         v_scalar_multiplication(v1[0],MinusOne);
     if(v_scalar_product(v2[0],Grad)<0)
         v_scalar_multiplication(v2[0],MinusOne);
-    
-    /* cout << Supp_1;
-    cout << Supp_2;
-    v1.pretty_print(cout);
-    v2.pretty_print(cout);
-    cout << "==============" << endl;
-    Supps.pretty_print(cout);
-    cout << "==============" << endl;*/
     if(v1.nr_of_rows()!=1 || v2.nr_of_rows()!=1)
         return false;
     for(size_t i=0;i<Supp_1.size();++i){
-        // cout << "i " << i << " " << v_scalar_product(Supps[Supp_1[i]],v2[0]) << endl;
         if(!(v_scalar_product(Supps[Supp_1[i]],v2[0])>0))
             return false;
     }
     for(size_t i=0;i<Supp_2.size();++i){
-        // cout << "i " << i << " " << v_scalar_product(Supps[Supp_2[i]],v1[0]) << endl;
         if(!(v_scalar_product(Supps[Supp_2[i]],v1[0])>0))
             return false;
     }

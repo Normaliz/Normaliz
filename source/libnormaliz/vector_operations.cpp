@@ -225,44 +225,6 @@ mpq_class v_scalar_product(const vector<mpq_class>& av,const vector<mpq_class>& 
 }
 
 //---------------------------------------------------------------------------
-/*
-template<typename Integer>
-Integer v_scalar_product_unequal_vectors_end(const vector<Integer>& a,const vector<Integer>& b){
-    Integer ans = 0;
-    size_t i,n=a.size(),m=b.size();
-    for (i = 1; i <= n; i++) {
-        ans+=a[n-i]*b[m-i];
-    }
-    return ans;
-}
-*/
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
-   assert(a.size() == b.size());
-    size_t i,s=a.size();
-    vector<Integer> d(s);
-    for (i = 0; i <s; i++) {
-        d[i]=a[i]+b[i];
-    }
-    return d;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void v_add_result(vector<Integer>& result, const size_t s, const vector<Integer>& a,const vector<Integer>& b){
-   assert(a.size() == b.size() && a.size() == result.size());
-    size_t i;
-    // vector<Integer> d(s);
-    for (i = 0; i <s; i++) {
-        result[i]=a[i]+b[i];
-    }
-    // return d;
-}
-
-//---------------------------------------------------------------------------
 
 nmz_float l1norm(vector<nmz_float>& v){
     size_t i, size=v.size();
@@ -276,8 +238,20 @@ nmz_float l1norm(vector<nmz_float>& v){
     return g;    
 }
 
+template<typename Integer>
+Integer v_make_prime(vector<Integer>& v){
+    size_t i, size=v.size();
+    Integer g=v_gcd(v);
+    if (g!=0) {
+        for (i = 0; i < size; i++) {
+            v[i] /= g;
+        }
+    }
+    return g;
+}
+
 template<>
-nmz_float v_make_prime<>(vector<nmz_float>& v){
+nmz_float v_make_prime(vector<nmz_float>& v){
     size_t i, size=v.size();
     nmz_float g=l1norm(v);
     if (g!=0) {
@@ -288,201 +262,6 @@ nmz_float v_make_prime<>(vector<nmz_float>& v){
     return g;
 }
 
-
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_test_scalar_product(const vector<Integer>& av,const vector<Integer>& bv, const Integer& result, const long& m){
-    Integer ans = 0;
-    size_t i,n=av.size();
-    typename vector<Integer>::const_iterator a=av.begin(),b=bv.begin();
-
-    if( n >= 16 )
-    {
-        for( i = 0; i < ( n >> 4 ); ++i, a += 16, b += 16 ){
-            ans += a[0] * b[0];
-            ans += a[1] * b[1];
-            ans += a[2] * b[2];
-            ans += a[3] * b[3];
-            ans %= m;
-            ans += a[4] * b[4];
-            ans += a[5] * b[5];
-            ans += a[6] * b[6];
-            ans += a[7] * b[7];
-            ans %= m;
-            ans += a[8] * b[8];
-            ans += a[9] * b[9];
-            ans += a[10] * b[10];
-            ans += a[11] * b[11];
-            ans %= m;
-            ans += a[12] * b[12];
-            ans += a[13] * b[13];
-            ans += a[14] * b[14];
-            ans += a[15] * b[15];
-            ans %= m;
-        }
-        n -= i << 4;
-    }
-
-    if( n >= 8)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-        ans += a[2] * b[2];
-        ans += a[3] * b[3];
-        ans %= m;
-        ans += a[4] * b[4];
-        ans += a[5] * b[5];
-        ans += a[6] * b[6];
-        ans += a[7] * b[7];
-        ans %= m;
-
-        n -= 8;
-        a += 8;
-        b += 8;
-    }
-
-    if( n >= 4)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-        ans += a[2] * b[2];
-        ans += a[3] * b[3];
-        ans %= m;
-
-        n -= 4;
-        a += 4;
-        b += 4;
-    }
-
-    if( n >= 2)
-    {
-        ans += a[0] * b[0];
-        ans += a[1] * b[1];
-
-        n -= 2;
-        a += 2;
-        b += 2;
-    }
-
-    if(n>0)
-        ans += a[0]*b[0];
-        
-    ans %= m;
-
-    if (((result-ans) % m)!=0) {
-        return false;
-    }
-    return true;
-}
-
-
-//---------------------------------------------------------------------------
-
-template<typename T>
-vector<T> v_cut_front(const vector<T>& v, size_t size){
-    size_t s,k;
-    vector<T> tmp(size);
-    s=v.size()-size;
-    for (k = 0; k < size; k++) {
-        tmp[k]=v[s+k];
-    }
-    return tmp;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_is_symmetric(const vector<Integer>& v) {
-    for (size_t i = 0; i < v.size()/2; ++i) {
-        if (v[i] != v[v.size()-1-i]) return false;
-    }
-    return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_is_nonnegative(const vector<Integer>& v) {
-    for (size_t i = 0; i < v.size(); ++i) {
-        if (v[i] <0) return false;
-    }
-    return true;
-}
-
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t start){
-
-    size_t i,n=av.size();
-
-    typename vector<Integer>::const_iterator a=av.begin();
-    typename vector<Integer>::iterator b=bv.begin();
-
-    a += start;
-    b += start;
-    n -= start;
-
-
-    if( n >= 8 )
-    {
-        for( i = 0; i < ( n >> 3 ); ++i, a += 8, b += 8 ){
-            b[0] += F*a[0];
-            b[1] += F*a[1];
-            b[2] += F*a[2];
-            b[3] += F*a[3];
-            b[4] += F*a[4];
-            b[5] += F*a[5];
-            b[6] += F*a[6];
-            b[7] += F*a[7];
-        }
-        n -= i << 3;
-    }
-
-    if( n >= 4)
-    {
-        b[0] += F*a[0];
-        b[1] += F*a[1];
-        b[2] += F*a[2];
-        b[3] += F*a[3];
-
-        n -=4;
-        a +=4;
-        b +=4;
-    }
-
-    if( n >= 2)
-    {
-        b[0] += F*a[0];
-        b[1] += F*a[1];
-
-        n -=2;
-        a +=2;
-        b +=2;
-    }
-
-    if(n>0)
-        b[0] += F*a[0];
-    
-    for(size_t i=0;i<bv.size();++i)
-        if(!check_range(bv[i]))
-            throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");  
-}
-
-//---------------------------------------------------------------
-
-vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b) {
-    assert(a.size() == b.size());
-    vector<bool> result(a);
-    for (size_t i=0; i<b.size(); ++i) {
-        if (b[i])
-            result[i]=false;
-    }
-    return result;
-}
-
 // swaps entry i and j of the vector<bool> v
 void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
     if (v[i] != v[j]) {
@@ -491,10 +270,7 @@ void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j) {
     }
 }
 
-
 //---------------------------------------------------------------
-
-
 
 vector<key_t> identity_key(size_t n){
     vector<key_t> key(n);
@@ -545,38 +321,15 @@ template void v_scalar_division(vector<long long>& v, const long long scalar);
 template void v_scalar_division(vector<mpz_class>& v, const mpz_class scalar);
 template void v_scalar_division(vector<nmz_float>& v, const nmz_float scalar);
 
-template bool v_is_nonnegative<long>(const vector<long>&);
-template bool v_is_nonnegative<long long>(const vector<long long>&);
-template bool v_is_nonnegative<mpz_class>(const vector<mpz_class>&);
-
-template bool v_is_symmetric<long>(const vector<long>&);
-template bool v_is_symmetric<long long>(const vector<long long>&);
-template bool v_is_symmetric<mpz_class>(const vector<mpz_class>&);
-
 template long      v_make_prime(vector<long     >&);
 template long long v_make_prime(vector<long long>&);
 template mpz_class v_make_prime(vector<mpz_class>&);
-
-template vector<long> v_add(const vector<long>&,const vector<long>&);
-template vector<long long> v_add(const vector<long long>&,const vector<long long>&);
-template vector<mpz_class> v_add(const vector<mpz_class>&,const vector<mpz_class>&);
-
-template void v_add_result<long     >(vector<long     >&, size_t, const vector<long     >&, const vector<long     >&);
-template void v_add_result<long long>(vector<long long>&, size_t, const vector<long long>&, const vector<long long>&);
-template void v_add_result<mpz_class>(vector<mpz_class>&, size_t, const vector<mpz_class>&, const vector<mpz_class>&);
 
 template long v_scalar_product(const vector<long>& a,const vector<long>& b);
 template long long v_scalar_product(const vector<long long>& a,const vector<long long>& b);
 template mpz_class v_scalar_product(const vector<mpz_class>& a,const vector<mpz_class>& b);
 template mpq_class v_scalar_product(const vector<mpq_class>& a,const vector<mpq_class>& b);
 template nmz_float v_scalar_product(const vector<nmz_float>& a,const vector<nmz_float>& b);
-
-/*
-template ostream& operator<< <long>(ostream& out, const vector<long>& v);
-template ostream& operator<< <long long>(ostream& out, const vector<long long>& v);
-template ostream& operator<< <mpz_class>(ostream& out, const vector<mpz_class>& v);
-template ostream& operator<< <nmz_float>(ostream& out, const vector<nmz_float>& v);
-*/
 
 
 } // end namespace libnormaliz

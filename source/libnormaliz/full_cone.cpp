@@ -39,7 +39,7 @@
 #include "libnormaliz/map_operations.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/integer.h"
-// #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
 
 //---------------------------------------------------------------------------
@@ -2039,7 +2039,7 @@ void Full_Cone<Integer>::build_cone() {
                 }
             } 
             if(verbose)   
-                verboseOutput() << " done." << endl;
+                verboseOutput() << " done." << endl; 
             // now we need to stop
             if (l==Facets.end()){
                 if(verbose)
@@ -2803,40 +2803,25 @@ void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
 
 template<typename Integer>
 void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const vector<key_t>& key){
-
-    /* Full_Cone<Integer> SimplCone(Generators.submatrix(key));
-    SimplCone.verbose=false; // verbose;
-    SimplCone.Grading=Grading;
-    SimplCone.is_Computed.set(ConeProperty::Grading);
-    SimplCone.do_deg1_elements=true;
-    SimplCone.do_approximation=true;
-    
-    SimplCone.compute();*/
     
     Matrix<Integer> Gens=Generators.submatrix(key);
-
-    /* cout << "Original generators" << endl;
-    Gens.pretty_print(cout);
-    cout << "-------------" << endl;*/
-    Matrix<Integer> Gred,T,Tinv;
-    Gred=Gens.LLL_red_transpose(T,Tinv);
-    /*Gens.multiplication(T).pretty_print(cout);
-    cout << "-------------" << endl;
-    Tinv.multiplication(T).pretty_print(cout);*/
-    // %%%%%%%%%%%%%%%%%%%%%%%
-    /* cout << "Transformed generators" << endl;
-    Gred.pretty_print(cout);
-    cout << "----------" << endl;*/
-    vector<Integer> GradT=Tinv.MxV(Grading);
+    Sublattice_Representation<Integer>  NewCoordinates=LLL_coordinates<Integer,Integer>(Gens);
+    Matrix<Integer> Gred=NewCoordinates.to_sublattice(Gens);
+    vector<Integer> GradT=NewCoordinates.to_sublattice_dual(Grading);
     
     Matrix<Integer> GradMat(0,dim);
     GradMat.append(GradT);
     Cone<Integer> ProjCone(Type::cone,Gred,Type::grading, GradMat);
     ProjCone.compute(ConeProperty::Projection);
     Matrix<Integer> Deg1=ProjCone.getDeg1ElementsMatrix();
-    Deg1=Deg1.multiplication(Tinv);    
+    Deg1=NewCoordinates.from_sublattice(Deg1);   
     
-    Matrix<Integer> Supp=ProjCone.getSupportHyperplanesMatrix();;
+    Matrix<Integer> Supp=ProjCone.getSupportHyperplanesMatrix();
+    Supp=NewCoordinates.from_sublattice_dual(Supp);
+    
+    /*for(size_t i=0;i<dim;++i)
+        for(size_t j=0;j<dim;++j)
+            assert(v_scalar_product(Supp[i],Gens[j])>=0);*/           
     
     vector<bool> Excluded(dim,false); // we want to discard duplicates
     for(size_t i=0;i<dim;++i){

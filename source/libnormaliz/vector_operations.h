@@ -38,7 +38,7 @@ namespace libnormaliz {
 using std::vector;
 
 //---------------------------------------------------------------------------
-//							Data access
+//				Output
 //---------------------------------------------------------------------------
 
 template <typename T>
@@ -51,65 +51,13 @@ std::ostream& operator<< (std::ostream& out, const vector<T>& vec) {
 }
 
 //---------------------------------------------------------------------------
-//					    	Vector operations
+//          Prototypes for vector_operations.cpp
 //---------------------------------------------------------------------------
+
 template<typename Integer>
 Integer v_scalar_product(const vector<Integer>& a,const vector<Integer>& b);
 
-//returns the scalar product of the truncations of vectors a and b to minimum of lengths
-// template<typename Integer>
-// Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b);
-template<typename Integer>
-Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
-    size_t n=min(a.size(),b.size());
-    vector<Integer> trunc_a=a;
-    vector<Integer> trunc_b=b;
-    trunc_a.resize(n);
-    trunc_b.resize(n);
-    return v_scalar_product(trunc_a,trunc_b); 
-}
 
-//returns the addition a + b, vectors must be of equal size
-template<typename Integer>
-vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b);
-template<typename Integer>
-vector<Integer> v_add_overflow_check(const vector<Integer>& a,const vector<Integer>& b);
-template<typename Integer>
-void v_add_result(vector<Integer>& result, const size_t length, const vector<Integer>& a,const vector<Integer>& b);
-
-//adds b to a reduces the result modulo m, a and b must be reduced modulo m!
-template<typename Integer>
-vector<Integer>& v_add_to_mod(vector<Integer>& a, const vector<Integer>& b, const Integer& m);
-
-// elementary transformation: bv -> bv+F*av from column start on
-template<typename Integer>
-void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t start);
-
-//---------------------------------------------------------------------------
-//							abs, gcd and lcm
-//---------------------------------------------------------------------------
-
-// takes the absolute value of the elements and returns a reference to the changed vector
-template<typename Integer>
-vector<Integer>& v_abs(vector<Integer>& v);
-
-// returns the vector of absolute values, does not change the argument
-template<typename Integer>
-vector<Integer> v_abs_value(vector<Integer>& v);
-
-//returns gcd of the elements of v
-template<typename Integer>
-Integer v_gcd(const vector<Integer>& v);
-
-//returns lcm of the elements of v
-template<typename Integer>
-Integer v_lcm(const vector<Integer>& v);
-
-//returns lcm of the elements of v from index k up to index j
-template<typename Integer>
-Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j);
-
-//divides the elements by their gcd and returns the gcd
 template<typename Integer>
 Integer v_make_prime(vector<Integer>& v);
 
@@ -121,9 +69,23 @@ nmz_float v_make_prime<>(vector<nmz_float>& v);
 template<typename Integer>
 void v_scalar_division(vector<Integer>& v, const Integer scalar);
 
+void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix);
+
 //---------------------------------------------------------------------------
-//							Scalar operations
+//         Templated functions
 //---------------------------------------------------------------------------
+
+//returns the scalar product of the truncations of vectors a and b to minimum of lengths
+// template<typename Integer>
+template<typename Integer>
+Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a,const vector<Integer>& b){
+    size_t n=min(a.size(),b.size());
+    vector<Integer> trunc_a=a;
+    vector<Integer> trunc_b=b;
+    trunc_a.resize(n);
+    trunc_b.resize(n);
+    return v_scalar_product(trunc_a,trunc_b); 
+}
 
 //v = v * scalar
 template<typename Integer>
@@ -143,101 +105,18 @@ vector<Integer> v_random(size_t n, long m){
     return result;    
 }
 
-//returns v * scalar mod modulus
-template<typename Integer>
-vector<Integer> v_scalar_mult_mod(const vector<Integer>& v, const Integer& scalar, const Integer& modulus, bool& success);
-
-template<typename Integer>
-void v_reduction_modulo(vector<Integer>& v, const Integer& modulo);
-//v = v mod modulo
-
-//---------------------------------------------------------------------------
-//								Test
-//---------------------------------------------------------------------------
-
-template<typename Integer>
-bool v_test_scalar_product(const vector<Integer>& a,const vector<Integer>& b, const Integer& result, const long& m);
-// test the main computation for arithmetic overflow
-// uses multiplication mod m
-
-//---------------------------------------------------------------------------
-//							   General vector operations
-//---------------------------------------------------------------------------
-
-//returns a new vector with the content of a extended by b
-template<typename T>
-vector<T> v_merge(const vector<T>& a, const T& b);
-
-//returns a new vector with the content of a and b
-template<typename T>
-vector<T> v_merge(const vector<T>& a, const vector<T>& b);
-
-//returns a new vector with the last size entries of v
-template<typename T>
-vector<T> v_cut_front(const vector<T>& v, size_t size);
-
-//the input vectors must be ordered of equal size
-//if u is different from v by just one element, it returns that element
-//else returns 0 (the elements of u and v are >0)
-//int v_difference_ordered_fast(const vector<size_t>& u,const vector<size_t>& v);
-
-
 template<typename Integer>
 bool compare_last (const vector<Integer>& a, const vector<Integer>& b)
 {
     return a.back() < b.back();
 }
 
-//returns a key vector containing the positions of non-zero entrys of v
-template<typename Integer>
-vector<key_t> v_non_zero_pos(const vector<Integer>& v);
-
-// counts the number of positive entries
-template<typename Integer>
-size_t v_nr_positive(const vector<Integer>& v);
-
-template<typename Integer>
-size_t v_nr_negative(const vector<Integer>& v);
-
-template<typename Integer>
-bool v_non_negative(const vector<Integer>& v);
-
-// check whether the vector only contains 0
-template<typename Integer>
-bool v_is_zero(const vector<Integer>& v);
-
-template<typename Integer>
-bool v_is_symmetric(const vector<Integer>& v);
-
-template<typename Integer>
-bool v_is_nonnegative(const vector<Integer>& v);
-
-template<typename Integer>
-Integer v_max_abs(const vector<Integer>& v){
-	Integer tmp = 0;
-	for (size_t i=0; i<v.size(); i++){
-		if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
-	}
-	return tmp;
-}
-
-//---------------------------------------------------------------------------
-//							   bool vector operations
-//---------------------------------------------------------------------------
-
-vector<bool> v_bool_andnot(const vector<bool>& a, const vector<bool>& b);
-
 // swaps entry i and j of the vector<bool> v
 void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j);
 
-//---------------------------------------------------------------------------
-//							  Special
-//---------------------------------------------------------------------------
 
 // computes approximating lattice simplex using the A_n dissection of the unit cube
 // q is a rational vector with the denominator in the FIRST component q[0]
-
-
 template<typename Integer>
 void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level){
 	
@@ -309,10 +188,6 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 
 vector<key_t> identity_key(size_t n);
 
-//---------------------------------------------------------------------------
-//                            Sorting
-//---------------------------------------------------------------------------
-
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
     
@@ -327,10 +202,6 @@ void order_by_perm(vector<T>& v, const vector<key_t>& permfix){
         swap(inv[i],inv[j]);                
     }
 }
-
-//---------------------------------------------------------------------------
-// to make it available everywhere
-//---------------------------------------------------------------------------
 
 template<typename Integer>
 bool v_scalar_mult_mod_inner(vector<Integer>& w, const vector<Integer>& v, const Integer& scalar, const Integer& modulus){
@@ -385,7 +256,7 @@ bool v_non_negative(const vector<Integer>& v) {
 }
 
 //---------------------------------------------------------------------------
-
+//returns a key vector containing the positions of non-zero entrys of v
 template<typename Integer>
 vector<key_t> v_non_zero_pos(const vector<Integer>& v){
     vector<key_t> key;
@@ -400,7 +271,7 @@ vector<key_t> v_non_zero_pos(const vector<Integer>& v){
 }
 
 //---------------------------------------------------------------------------
-
+// returns the vector of absolute values, does not change the argument
 template<typename Integer>
 vector<Integer> v_abs_value(vector<Integer>& v){
     size_t i, size=v.size();
@@ -412,7 +283,7 @@ vector<Integer> v_abs_value(vector<Integer>& v){
 }
 
 //---------------------------------------------------------------------------
-
+//returns gcd of the elements of v
 template<typename Integer>
 Integer v_gcd(const vector<Integer>& v){
     size_t i, size=v.size();
@@ -427,7 +298,7 @@ Integer v_gcd(const vector<Integer>& v){
 }
 
 //---------------------------------------------------------------------------
-
+//returns lcm of the elements of v
 template<typename Integer>
 Integer v_lcm(const vector<Integer>& v){
     size_t i,size=v.size();
@@ -441,6 +312,7 @@ Integer v_lcm(const vector<Integer>& v){
     return g;
 }
 
+//returns lcm of the elements of v from index k up to index j
 template<typename Integer>
 Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j){
     assert(k <= j);
@@ -458,18 +330,6 @@ Integer v_lcm_to(const vector<Integer>& v,const size_t k, const size_t j){
 //---------------------------------------------------------------------------
 
 template<typename Integer>
-Integer v_make_prime(vector<Integer>& v){
-    size_t i, size=v.size();
-    Integer g=v_gcd(v);
-    if (g!=0) {
-        for (i = 0; i < size; i++) {
-            v[i] /= g;
-        }
-    }
-    return g;
-}
-
-template<typename Integer>
 vector<Integer>& v_abs(vector<Integer>& v){
     size_t i, size=v.size();
     for (i = 0; i < size; i++) {
@@ -479,7 +339,7 @@ vector<Integer>& v_abs(vector<Integer>& v){
 }
 
 //---------------------------------------------------------------------------
-
+//returns a new vector with the content of a extended by b
 template<typename T>
 vector<T> v_merge(const vector<T>& a, const T& b) {
     size_t s=a.size();
@@ -544,9 +404,114 @@ bool v_is_zero(const vector<Integer>& v) {
     return true;
 }
 
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+vector<Integer> v_add(const vector<Integer>& a,const vector<Integer>& b){
+   assert(a.size() == b.size());
+    size_t i,s=a.size();
+    vector<Integer> d(s);
+    for (i = 0; i <s; i++) {
+        d[i]=a[i]+b[i];
+    }
+    return d;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void v_add_result(vector<Integer>& result, const size_t s, const vector<Integer>& a,const vector<Integer>& b){
+   assert(a.size() == b.size() && a.size() == result.size());
+    size_t i;
+    // vector<Integer> d(s);
+    for (i = 0; i <s; i++) {
+        result[i]=a[i]+b[i];
+    }
+    // return d;
+}
+
+//---------------------------------------------------------------------------
+//returns a new vector with the last size entries of v
+template<typename T>
+vector<T> v_cut_front(const vector<T>& v, size_t size){
+    size_t s,k;
+    vector<T> tmp(size);
+    s=v.size()-size;
+    for (k = 0; k < size; k++) {
+        tmp[k]=v[s+k];
+    }
+    return tmp;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+bool v_is_symmetric(const vector<Integer>& v) {
+    for (size_t i = 0; i < v.size()/2; ++i) {
+        if (v[i] != v[v.size()-1-i]) return false;
+    }
+    return true;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
+void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F, const size_t start){
+
+    size_t i,n=av.size();
+
+    typename vector<Integer>::const_iterator a=av.begin();
+    typename vector<Integer>::iterator b=bv.begin();
+
+    a += start;
+    b += start;
+    n -= start;
 
 
-void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix);
+    if( n >= 8 )
+    {
+        for( i = 0; i < ( n >> 3 ); ++i, a += 8, b += 8 ){
+            b[0] += F*a[0];
+            b[1] += F*a[1];
+            b[2] += F*a[2];
+            b[3] += F*a[3];
+            b[4] += F*a[4];
+            b[5] += F*a[5];
+            b[6] += F*a[6];
+            b[7] += F*a[7];
+        }
+        n -= i << 3;
+    }
+
+    if( n >= 4)
+    {
+        b[0] += F*a[0];
+        b[1] += F*a[1];
+        b[2] += F*a[2];
+        b[3] += F*a[3];
+
+        n -=4;
+        a +=4;
+        b +=4;
+    }
+
+    if( n >= 2)
+    {
+        b[0] += F*a[0];
+        b[1] += F*a[1];
+
+        n -=2;
+        a +=2;
+        b +=2;
+    }
+
+    if(n>0)
+        b[0] += F*a[0];
+    
+    for(size_t i=0;i<bv.size();++i)
+        if(!check_range(bv[i]))
+            throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");  
+}
 
 
 } // namespace

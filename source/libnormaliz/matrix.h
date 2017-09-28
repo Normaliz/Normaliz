@@ -35,6 +35,7 @@
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
+#include <libnormaliz/sublattice_representation.h>
 
 //---------------------------------------------------------------------------
 

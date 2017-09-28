@@ -86,6 +86,35 @@ Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integ
     }
 }
 
+/* Creates a representation from given maps and the factor c
+ * 
+ */
+
+template<typename Integer>
+Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& GivenA, 
+                                                              const Matrix<Integer>& GivenB, Integer GivenC) {
+    dim = A.nr;
+    rank=A.nc;
+    assert(B.nr==dim);
+    assert(B.nc==rank);
+    Matrix<Integer> Test(rank);
+    Test.scalar_multiplication(GivenC);
+    Matrix<Integer> Test1=A.multiplication(B);
+    assert(Test1.equal(Test));
+    
+    external_index = 1; // to have a value, will be computed if asked for
+    A = GivenA;
+    B = GivenB;
+    c = GivenC;
+    Equations_computed=false;
+    Congruences_computed=false;
+    is_identity=false;
+    Test1=Matrix<Integer>(rank);
+    if(A.equal(Test1) && c==1){
+        is_identity=true; 
+    }
+}
+
 
 template<typename Integer>
 void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bool take_saturation, bool& success) {
@@ -260,7 +289,7 @@ void Sublattice_Representation<Integer>::compose_dual(const Sublattice_Represent
         c /= g;
         B.scalar_division(g);
     }
-    is_identity&=SR.is_identity;
+    is_identity&=SR.is_identity; 
 }
 
 //---------------------------------------------------------------------------

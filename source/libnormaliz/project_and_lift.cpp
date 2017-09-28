@@ -21,13 +21,10 @@
  * terms of service.
  */
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (push, target(mic))
-#endif
-
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/my_omp.h"
+#include "libnormaliz/sublattice_representation.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -753,6 +750,38 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     verbose=true;
     is_parallelotope=false;
     no_crunch=true;
+    use_LLL=false;
+    
+    LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
+}
+
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
+    
+    if(!use_LLL)
+        return;
+    Matrix<IntegerPL> SuppTransp(AllSupps[EmbDim].nr_of_rows(),EmbDim-1);
+    for(size_t i=0;i<AllSupps[EmbDim].nr_of_rows();++i) // without first column
+        for(size_t j=1;j<EmbDim;++j)
+            SuppTransp[i][j-1]=AllSupps[EmbDim][i][j];
+    if(SuppTransp.rank()<EmbDim-1)
+        return;
+    Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,IntegerPL>(SuppTransp);
+    
+    //Insert into EmbDim-1 last coordinates of LLL_Coord
+    for(size_t i=0;i<EmbDim-1;++i)
+        for(size_t j=0;j<EmbDim-1;++j){
+            LLL_Coordinates.A[i+1][j+1]=HelpCoord.A[i][j];
+            LLL_Coordinates.B[i+1][j+1]=HelpCoord.B[i][j];
+        }
+    LLL_Coordinates.is_identity=HelpCoord.is_identity;
+    LLL_Coordinates.c=HelpCoord.c;
+        
+    
+    Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly since the integer types may not match
+    convert(Aconv,LLL_Coordinates.A);
+    AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
+    
 }
 
 //---------------------------------------------------------------------------
@@ -791,6 +820,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_verbose(bool on_off){
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_LLL(bool on_off){
+        use_LLL=on_off;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_grading_denom(const IntegerRet GradingDenom){
         GD=GradingDenom;
 }
@@ -810,6 +845,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 // a grading denominator 1=1 can be accomodated.
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
+    
+    if(use_LLL)
+        make_LLL_coordinates();
 
     if(verbose)
         verboseOutput() << "Projection" << endl;
@@ -830,17 +868,40 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints){
 
+    /* Matrix<IntegerRet> Test=Matrix<IntegerRet>(Deg1Points);
+    cout << "LLL " << use_LLL << " "  << LLL_Coordinates.is_identity << endl;
+    cout << "****************" << endl;
+    Test.pretty_print(cout);
+    cout << "****************" << endl;
+    LLL_Coordinates.A.pretty_print(cout);
+    cout << "++++++++++++++" << endl;
+    LLL_Coordinates.B.pretty_print(cout);
+    cout << "++++++++++++++" << endl;*/
+    
     while(!Deg1Points.empty()){
-        LattPoints.append(Deg1Points.front());
+        if(use_LLL){
+            /* cout << "ori  " << Deg1Points.front();
+            cout << "tra  " << LLL_Coordinates.from_sublattice(Deg1Points.front());
+            cout << "tra1 " << LLL_Coordinates.A.VxM(Deg1Points.front());*/
+            LattPoints.append(LLL_Coordinates.from_sublattice(Deg1Points.front()));
+        }
+        else
+            LattPoints.append(Deg1Points.front());
         Deg1Points.pop_front();
     }
-}
+    /* cout << "=================" << endl;
+    LattPoints.pretty_print(cout);
+    cout << "=================" << endl; */
+} 
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_single_point_into(vector<IntegerRet>& LattPoint){
 
-    LattPoint=SingleDeg1Point;
+     if(use_LLL)
+         LattPoint=LLL_Coordinates.from_sublattice(SingleDeg1Point);
+     else    
+        LattPoint=SingleDeg1Point;
 }
 //---------------------------------------------------------------------------
 
@@ -848,14 +909,11 @@ template class ProjectAndLift<mpz_class,mpz_class>;
 template class ProjectAndLift<long long ,long long>;
 template class ProjectAndLift<nmz_float,mpz_class>;
 template class ProjectAndLift<nmz_float,long long>;
-template class ProjectAndLift<nmz_float, nmz_float>;
+// template class ProjectAndLift<nmz_float, nmz_float>;
 #ifndef NMZ_MIC_OFFLOAD  //offload with long is not supported
 template class ProjectAndLift<long ,long>;
 template class ProjectAndLift<nmz_float,long>;
 #endif
 
-#ifdef NMZ_MIC_OFFLOAD
-#pragma offload_attribute (pop)
-#endif
 
 } //end namespace libnormaliz

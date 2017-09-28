@@ -30,6 +30,7 @@
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
+#include "libnormaliz/sublattice_representation.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -43,6 +44,8 @@ class ProjectAndLift {
     
     vector<Matrix<IntegerPL> > AllSupps;
     vector<vector<size_t> > AllOrders;
+    
+    Sublattice_Representation<IntegerRet> LLL_Coordinates;
     
     vector<boost::dynamic_bitset<> > StartInd;
     vector<boost::dynamic_bitset<> > StartPair;
@@ -61,6 +64,7 @@ class ProjectAndLift {
     bool is_parallelotope;
     bool no_crunch; // indicates that the projection vector is nevere parallel to a facet of
                     // the parallelotope (in all dimensions)
+    bool use_LLL;
     
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
@@ -78,6 +82,8 @@ class ProjectAndLift {
                              vector< boost::dynamic_bitset<> >& ParaInPair,size_t rank);
     
     void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
+    
+    void make_LLL_coordinates();
         
     public:
  
@@ -89,6 +95,7 @@ class ProjectAndLift {
     void set_excluded_point(const vector<IntegerRet>& excl_point);
     void set_grading_denom(const IntegerRet GradingDenom);
     void set_verbose(bool on_off);
+    void set_LLL(bool on_off);
     
     void compute(bool do_all_points=true);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);

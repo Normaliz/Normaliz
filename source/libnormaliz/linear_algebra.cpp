@@ -25,9 +25,9 @@
 #pragma offload_attribute (push, target(mic))
 #endif
 
-#include "libnormaliz/sublattice_representation.cpp"
 #include "libnormaliz/vector_operations.cpp"
 #include "libnormaliz/matrix.cpp"
+#include "libnormaliz/sublattice_representation.cpp"
 
 #ifdef NMZ_MIC_OFFLOAD
 #pragma offload_attribute (pop)

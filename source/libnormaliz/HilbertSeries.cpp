@@ -554,7 +554,7 @@ const map<long, denom_t>& HilbertSeries::getHSOPDenom() const {
 
 const vector<mpz_class>& HilbertSeries::getHSOPNum() const {
     simplify();
-    assert(v_is_nonnegative(hsop_num));
+    assert(v_non_negative(hsop_num));
     return hsop_num;
 }
 
