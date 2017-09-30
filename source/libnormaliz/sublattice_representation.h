@@ -276,6 +276,10 @@ Sublattice_Representation<Integer> LLL_coordinates(const Matrix<number>& G){
     return Sublattice_Representation<Integer>(IntTinv,IntT,1); 
 }
 
+vector<key_t> reverse_key(size_t n);
+vector<key_t> identity_key(size_t n);
+
+
 template<typename Integer, typename number>
 Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G){
 // direction from given coorfinates to LLL_coordinates is "to"
@@ -284,9 +288,30 @@ Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G)
     G.LLL_red_transpose(T,Tinv);  // T <---> A^tr, Tinv <--> B^tr
     Matrix<Integer> IntT,IntTinv;
     convert(IntT,T);
+    convert(IntTinv,Tinv); // but we reverse the order of the coordinates
+    vector<key_t> reverse=reverse_key(T.nr_of_columns());
+    
+    IntT=IntT.transpose();
+    IntT=IntT.submatrix(reverse); // rows of A reversed
+    
+    IntTinv=IntTinv.submatrix(reverse); // adter transposition below, columns are reversed
+    
+    return Sublattice_Representation<Integer>(IntT,IntTinv.transpose(),1);
+}
+
+/*
+template<typename Integer, typename number>
+Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G){
+// direction from given coorfinates to LLL_coordinates is "to"
+     
+    Matrix<number> T,Tinv;
+    G.LLL_red_transpose(T,Tinv);  // T <---> A^tr, Tinv <--> B^tr
+    Matrix<Integer> IntT,IntTinv;
+    convert(IntT,T);
     convert(IntTinv,Tinv);
     return Sublattice_Representation<Integer>(IntT.transpose(),IntTinv.transpose(),1);
 }
+*/
 
 } // namespace
 

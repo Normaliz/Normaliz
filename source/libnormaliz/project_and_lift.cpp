@@ -25,6 +25,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/my_omp.h"
 #include "libnormaliz/sublattice_representation.h"
+#include "libnormaliz/cone.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -758,15 +759,37 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
     
+    /* AllSupps[EmbDim].pretty_print(cout);
+    cout << "================" << endl; */
+    
     if(!use_LLL)
         return;
-    Matrix<IntegerPL> SuppTransp(AllSupps[EmbDim].nr_of_rows(),EmbDim-1);
+    Matrix<IntegerPL> SuppHelp(AllSupps[EmbDim].nr_of_rows(),EmbDim-1);
     for(size_t i=0;i<AllSupps[EmbDim].nr_of_rows();++i) // without first column
         for(size_t j=1;j<EmbDim;++j)
-            SuppTransp[i][j-1]=AllSupps[EmbDim][i][j];
-    if(SuppTransp.rank()<EmbDim-1)
+            SuppHelp[i][j-1]=AllSupps[EmbDim][i][j];
+    if(SuppHelp.rank()<EmbDim-1)
         return;
-    Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,IntegerPL>(SuppTransp);
+    Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,IntegerPL>(SuppHelp);
+    
+    /* Matrix<IntegerRet> STest;
+    convert(STest,SuppHelp);
+    cout << "****************" << endl;
+    STest.pretty_print(cout);
+    Matrix<IntegerRet> Dummy1,Dummy2;
+    Matrix<IntegerRet> LLL1=STest.LLL_red_transpose(Dummy1,Dummy2);
+    cout << "****************" << endl;
+    LLL1.pretty_print(cout);
+    cout << "****************" << endl;
+    STest.multiplication(Dummy1).pretty_print(cout);
+    cout << "////////////////////" << endl;
+    cout << "Dummy1" << endl;
+    Dummy1.pretty_print(cout);
+    cout << "////////////////////" << endl;
+    cout << "HelpCoord.A.transpose" << endl;
+    HelpCoord.A.transpose().pretty_print(cout);
+    cout << "////////////////////" << endl; */
+    
     
     //Insert into EmbDim-1 last coordinates of LLL_Coord
     for(size_t i=0;i<EmbDim-1;++i)
@@ -780,7 +803,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
     
     Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly since the integer types may not match
     convert(Aconv,LLL_Coordinates.A);
+    // Aconv.transpose().pretty_print(cout);
     AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
+    
+    /*AllSupps[EmbDim].pretty_print(cout);
+    cout << "================" << endl;*/
+    /* Cone<IntegerRet> TestCone(Type::inequalities,AllSupps[EmbDim]);
+    TestCone.compute(ConeProperty::SupportHyperplanes);
+    TestCone.getExtremeRaysMatrix().pretty_print(cout);
+    cout << "================" << endl; */
     
 }
 

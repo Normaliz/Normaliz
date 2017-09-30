@@ -187,6 +187,7 @@ void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& appro
 }
 
 vector<key_t> identity_key(size_t n);
+vector<key_t> reverse_key(size_t n);
 
 template <typename T>
 void order_by_perm(vector<T>& v, const vector<key_t>& permfix){

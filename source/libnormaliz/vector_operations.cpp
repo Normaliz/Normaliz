@@ -279,6 +279,13 @@ vector<key_t> identity_key(size_t n){
     return key;
 }
 
+vector<key_t> reverse_key(size_t n){
+    vector<key_t> key(n);
+    for(size_t k=0;k<n;++k)
+        key[k]=(n-1)-k;
+    return key;
+}
+
 // vector<bool> is special
 void order_by_perm_bool(vector<bool>& v, const vector<key_t>& permfix){
     

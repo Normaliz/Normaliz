@@ -214,7 +214,7 @@ void Matrix<nmz_float>::pretty_print(ostream& out, bool with_row_nr) const{
         if(with_row_nr)
             out << std::setw(7) << i << ": ";
         for(size_t j=0; j< nc;++j){
-            out << std::setw(10) << elem[i][j];
+            out << std::setw(10) << elem[i][j]<< " ";
         }
         out << endl;
     }
