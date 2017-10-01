@@ -514,6 +514,15 @@ void v_el_trans(const vector<Integer>& av,vector<Integer>& bv, const Integer& F,
             throw ArithmeticException("Vector entry out of range. Imminent danger of arithmetic overflow.");  
 }
 
+template<typename Integer>
+Integer v_max_abs(const vector<Integer>& v){
+	Integer tmp = 0;
+	for (size_t i=0; i<v.size(); i++){
+		if (Iabs(v[i])>tmp) tmp=Iabs(v[i]);
+	}
+	return tmp;
+}
+
 
 } // namespace
 
