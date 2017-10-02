@@ -764,13 +764,32 @@ void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
     
     if(!use_LLL)
         return;
-    Matrix<IntegerPL> SuppHelp(AllSupps[EmbDim].nr_of_rows(),EmbDim-1);
+    Matrix<nmz_float> SuppHelp(AllSupps[EmbDim].nr_of_rows(),EmbDim-1);
     for(size_t i=0;i<AllSupps[EmbDim].nr_of_rows();++i) // without first column
         for(size_t j=1;j<EmbDim;++j)
-            SuppHelp[i][j-1]=AllSupps[EmbDim][i][j];
+            convert(SuppHelp[i][j-1],AllSupps[EmbDim][i][j]);
     if(SuppHelp.rank()<EmbDim-1)
         return;
-    Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,IntegerPL>(SuppHelp);
+
+    // We scale the inequalities for LLL so that right hand side has absolute value 1
+    // If RHS is zero, we divide by L1 norm of first inequality
+    nmz_float aux_denom=1.0; // for inequalities with 0 in 0-th component
+    vector<nmz_float> v;
+    convert(v,AllSupps[EmbDim][0]);
+    nmz_float l1=l1norm(v);
+    if(l1!=0)
+        aux_denom=l1;
+    for(size_t i=0;i<SuppHelp.nr_of_rows();++i){
+        if(AllSupps[EmbDim][i][0]!=0){
+            nmz_float denom;
+            convert(denom,AllSupps[EmbDim][i][0]);
+            denom=Iabs(denom);
+            v_scalar_division(SuppHelp[i],denom);
+        }
+        else
+            v_scalar_division(SuppHelp[i],aux_denom); 
+    }    
+    Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,nmz_float>(SuppHelp);
     
     /* Matrix<IntegerRet> STest;
     convert(STest,SuppHelp);
