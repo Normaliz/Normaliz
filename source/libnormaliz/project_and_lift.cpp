@@ -756,6 +756,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
 
+
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
     
@@ -764,74 +765,42 @@ void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
     
     if(!use_LLL)
         return;
-    Matrix<nmz_float> SuppHelp(AllSupps[EmbDim].nr_of_rows(),EmbDim-1);
-    for(size_t i=0;i<AllSupps[EmbDim].nr_of_rows();++i) // without first column
-        for(size_t j=1;j<EmbDim;++j)
-            convert(SuppHelp[i][j-1],AllSupps[EmbDim][i][j]);
-    if(SuppHelp.rank()<EmbDim-1)
-        return;
+    
+    Matrix<IntegerRet> HelpA, HelpB;
+    IntegerRet HelpC;
+    bool HelpIsId;
+    
+    if(Vertices.nr_of_rows()==0 || Vertices.rank()<EmbDim-1){ // use Supps for LLL coordinates    
+        Matrix<nmz_float> SuppHelp=AllSupps[EmbDim].nmz_float_without_first_column();
+        if(SuppHelp.rank()<EmbDim-1)
+            return;
+        Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,nmz_float>(SuppHelp);
+        convert(HelpA,HelpCoord.A); convert(HelpB,HelpCoord.B); convert(HelpC,HelpCoord.c); HelpIsId=HelpCoord.is_identity;
+        if(verbose)
+            verboseOutput() << "LLL based on support hyperplanes" << endl;
+    }
+    else{ // use Vertices for LLL coordinates
+        Matrix<nmz_float> VertHelp=Vertices.nmz_float_without_first_column();
+        Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates<IntegerRet,nmz_float>(VertHelp);
+        convert(HelpA,HelpCoord.A); convert(HelpB,HelpCoord.B); convert(HelpC,HelpCoord.c); HelpIsId=HelpCoord.is_identity;
+        if(verbose)
+            verboseOutput() << "LLL based on vertices" << endl;
+    }
 
-    // We scale the inequalities for LLL so that right hand side has absolute value 1
-    // If RHS is zero, we divide by L1 norm of first inequality
-    nmz_float aux_denom=1.0; // for inequalities with 0 in 0-th component
-    vector<nmz_float> v;
-    convert(v,AllSupps[EmbDim][0]);
-    nmz_float l1=l1norm(v);
-    if(l1!=0)
-        aux_denom=l1;
-    for(size_t i=0;i<SuppHelp.nr_of_rows();++i){
-        if(AllSupps[EmbDim][i][0]!=0){
-            nmz_float denom;
-            convert(denom,AllSupps[EmbDim][i][0]);
-            denom=Iabs(denom);
-            v_scalar_division(SuppHelp[i],denom);
-        }
-        else
-            v_scalar_division(SuppHelp[i],aux_denom); 
-    }    
-    Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,nmz_float>(SuppHelp);
-    
-    /* Matrix<IntegerRet> STest;
-    convert(STest,SuppHelp);
-    cout << "****************" << endl;
-    STest.pretty_print(cout);
-    Matrix<IntegerRet> Dummy1,Dummy2;
-    Matrix<IntegerRet> LLL1=STest.LLL_red_transpose(Dummy1,Dummy2);
-    cout << "****************" << endl;
-    LLL1.pretty_print(cout);
-    cout << "****************" << endl;
-    STest.multiplication(Dummy1).pretty_print(cout);
-    cout << "////////////////////" << endl;
-    cout << "Dummy1" << endl;
-    Dummy1.pretty_print(cout);
-    cout << "////////////////////" << endl;
-    cout << "HelpCoord.A.transpose" << endl;
-    HelpCoord.A.transpose().pretty_print(cout);
-    cout << "////////////////////" << endl; */
-    
-    
     //Insert into EmbDim-1 last coordinates of LLL_Coord
     for(size_t i=0;i<EmbDim-1;++i)
         for(size_t j=0;j<EmbDim-1;++j){
-            LLL_Coordinates.A[i+1][j+1]=HelpCoord.A[i][j];
-            LLL_Coordinates.B[i+1][j+1]=HelpCoord.B[i][j];
+            LLL_Coordinates.A[i+1][j+1]=HelpA[i][j];
+            LLL_Coordinates.B[i+1][j+1]=HelpB[i][j];
         }
-    LLL_Coordinates.is_identity=HelpCoord.is_identity;
-    LLL_Coordinates.c=HelpCoord.c;
+    LLL_Coordinates.is_identity=HelpIsId;
+    LLL_Coordinates.c=HelpC;
         
     
     Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly since the integer types may not match
     convert(Aconv,LLL_Coordinates.A);
     // Aconv.transpose().pretty_print(cout);
     AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
-    
-    /*AllSupps[EmbDim].pretty_print(cout);
-    cout << "================" << endl;*/
-    /* Cone<IntegerRet> TestCone(Type::inequalities,AllSupps[EmbDim]);
-    TestCone.compute(ConeProperty::SupportHyperplanes);
-    TestCone.getExtremeRaysMatrix().pretty_print(cout);
-    cout << "================" << endl; */
-    
 }
 
 //---------------------------------------------------------------------------
@@ -884,6 +853,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_grading_denom(const IntegerRet Gr
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_excluded_point(const vector<IntegerRet>& excl_point){
         excluded_point=excl_point;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerRet>& Verts){
+        convert(Vertices,Verts);
 }
 
 //---------------------------------------------------------------------------

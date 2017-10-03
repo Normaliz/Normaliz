@@ -45,6 +45,8 @@ class ProjectAndLift {
     vector<Matrix<IntegerPL> > AllSupps;
     vector<vector<size_t> > AllOrders;
     
+    Matrix<IntegerPL> Vertices;
+    
     Sublattice_Representation<IntegerRet> LLL_Coordinates;
     
     vector<boost::dynamic_bitset<> > StartInd;
@@ -96,6 +98,7 @@ class ProjectAndLift {
     void set_grading_denom(const IntegerRet GradingDenom);
     void set_verbose(bool on_off);
     void set_LLL(bool on_off);
+    void set_vertices(const Matrix<IntegerRet>& Verts);
     
     void compute(bool do_all_points=true);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);

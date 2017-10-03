@@ -250,6 +250,11 @@ size_t row_echelon_inner_bareiss(bool& success, Integer& det);
     void set_nr(size_t rows){
         nc=rows;
     }
+    
+    //  convert the remaining matrix to nmz_float
+    Matrix<nmz_float> nmz_float_without_first_column() const;
+    
+    
 
 //---------------------------------------------------------------------------
 //                  Basic matrices operations

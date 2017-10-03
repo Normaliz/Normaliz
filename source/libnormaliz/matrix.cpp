@@ -368,6 +368,36 @@ Matrix<Integer>& Matrix<Integer>::remove_zero_rows() {
 //---------------------------------------------------------------------------
 
 template<typename Integer>
+Matrix<nmz_float> Matrix<Integer>::nmz_float_without_first_column() const{
+    
+        Matrix<nmz_float> Ret(nr,nc-1);
+        for(size_t i=0;i<nr;++i) // without first column
+            for(size_t j=1;j<nc;++j)
+                convert(Ret[i][j-1],elem[i][j]);
+            
+            
+        // We scale the inequalities for LLL so that right hand side has absolute value 1
+        // If RHS is zero, we divide by the L1 norm of first inequality
+        nmz_float aux_denom=1.0; // for inequalities with 0 in 0-th component
+        vector<nmz_float> v=Ret[0];
+        nmz_float l1=l1norm(v);
+        if(l1!=0)
+            aux_denom=l1;
+        for(size_t i=0;i<nr;++i){
+            if(Ret[i][0]!=0){
+                nmz_float denom=Ret[i][0];
+                denom=Iabs(denom);
+                v_scalar_division(Ret[i],denom);
+            }
+            else
+                v_scalar_division(Ret[i],aux_denom); 
+        }    
+        return Ret;
+}
+
+//---------------------------------------------------------------------------
+
+template<typename Integer>
 void Matrix<Integer>::swap(Matrix<Integer>& x) {
     size_t tmp = nr; nr = x.nr; x.nr = tmp;
     tmp = nc; nc = x.nc; x.nc = tmp;

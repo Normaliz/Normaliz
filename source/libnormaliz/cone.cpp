@@ -4008,6 +4008,13 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         
     size_t rank=BasisChangePointed.getRank();
     
+    Matrix<Integer> Verts;
+    if(isComputed(ConeProperty::Generators)){
+        vector<key_t> choice=identity_key(Gens.nr_of_rows());   //Gens.max_rank_submatrix_lex();
+        if(choice.size()>=dim)
+            Verts=Gens.submatrix(choice);        
+    }
+    
     if(float_projection){
         // Matrix<nmz_float> GensFloat;
         // convert(GensFloat,Gens);
@@ -4023,6 +4030,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
         PL.set_LLL(true);
+        PL.set_vertices(Verts);
         PL.compute();
         PL.put_eg1Points_into(Deg1);
     }
@@ -4045,6 +4053,9 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
                 PL.set_LLL(true);
+                Matrix<MachineInteger> VertsMI;
+                convert(VertsMI,Verts);
+                PL.set_vertices(VertsMI);
                 PL.compute();
                 PL.put_eg1Points_into(Deg1MI);
             } catch(const ArithmeticException& e) {
@@ -4070,6 +4081,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
             PL.set_LLL(true);
+            PL.set_vertices(Verts);
             PL.compute();
             PL.put_eg1Points_into(Deg1);
         }        
