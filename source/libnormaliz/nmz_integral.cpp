@@ -460,9 +460,9 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
     
     long mapsize=faceClasses.size();
     if(verbose_INT){    
-        verboseOutput() << "--------------------------------------------" << endl;
+        // verboseOutput() << "--------------------------------------------" << endl;
         verboseOutput() << "Evaluating " << mapsize <<" face classes" << endl;
-        verboseOutput() << "--------------------------------------------" << endl;
+        // verboseOutput() << "--------------------------------------------" << endl;
     }
     #pragma omp parallel
     {
@@ -479,7 +479,7 @@ CyclRatFunct evaluateFaceClasses(const vector<vector<CyclRatFunct> >& GFP,
         
         h = genFunct(GFP,den->second,den->first);
         h.simplifyCRF();
-        if(verbose_INT){
+        if(false){  // verbose_INT
             #pragma omp critical(VERBOSE)
             {
             verboseOutput() << "Class ";
@@ -549,7 +549,7 @@ void transferFacePolys(deque<pair<vector<long>,RingElem> >& facePolysThread,
         }
         else{
             faceClasses.insert(facePolysThread[i]);
-            if(verbose_INT){
+            if(false){ // verbose_INT
                 #pragma omp critical(VERBOSE)
                 {
                     verboseOutput() << "New face class " << faceClasses.size() <<    " degrees ";
@@ -848,11 +848,11 @@ try{
   for(int j=0;j<omp_get_max_threads();++j)
     ZeroVectRingElem.push_back(zero(RZZ));
   
-  map<vector<long>,RingElem> faceClasses; // denominator classes for the faces
+  vector<map<vector<long>,RingElem> > faceClasses(omp_get_max_threads()); // denominator classes for the faces
                  // contrary to denomClasses these cannot be sorted beforehand
                  
   vector<deque<pair<vector<long>,RingElem> > > facePolys(omp_get_max_threads()); // intermediate storage
-  bool evaluationActive=false;
+                // contribution of faces first collected here, then transferred to faceClasses
 
   // we now make class 0 to get started
   S=StanleyDec.begin();
@@ -1000,13 +1000,17 @@ try{
         
     }
     
-    if(!evaluationActive && facePolys[tn].size() >= 20){
-        #pragma omp critical(FACEPOLYS)
-        {
-            evaluationActive=true;
-            transferFacePolys(facePolys[tn],faceClasses);
-            evaluationActive=false;
-        }
+    // different strategy for faces, classes cllected by threads
+    
+    if(facePolys[tn].size() >= 20){
+            transferFacePolys(facePolys[tn],faceClasses[tn]);
+            if(faceClasses[tn].size()>20){
+                HClass=evaluateFaceClasses(GFP,faceClasses[tn]);
+                #pragma omp critical(ACCUMULATE)
+                {
+                    H.addCRF(HClass);
+                }
+            }
      }
     
     #pragma omp critical(PROGRESS) // a little bit of progress report
@@ -1034,11 +1038,11 @@ try{
   
   // collect the contribution of proper fases from inclusion/exclusion as far as not done yet
   
-    for(int i=0;i<omp_get_max_threads();++i)
-        transferFacePolys(facePolys[i],faceClasses);
-  
-  if(!faceClasses.empty())
-    H.addCRF(evaluateFaceClasses(GFP,faceClasses));
+    for(int i=0;i<omp_get_max_threads();++i){
+        transferFacePolys(facePolys[i],faceClasses[i]);
+        if(!faceClasses[i].empty())
+            H.addCRF(evaluateFaceClasses(GFP,faceClasses[i]));
+    }
     
     // now we must return to rational coefficients 
  
