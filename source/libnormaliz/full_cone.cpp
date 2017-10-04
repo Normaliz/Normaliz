@@ -2810,6 +2810,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Gens.pretty_print(cout);
     cout << "=================" << endl;
     Gred.pretty_print(cout);
+    cout << "***************" << endl;
     vector<Integer> GradT=NewCoordinates.to_sublattice_dual(Grading);
     
     Matrix<Integer> GradMat(0,dim);

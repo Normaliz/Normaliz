@@ -2717,6 +2717,8 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
     T=Tinv=Matrix<Integer>(nr);
     
     Matrix<Integer> Lred=*this;
+    Lred.pretty_print(cout);
+    cout << "================" << endl;
     size_t dim=nr_of_columns();
     int n=nr_of_rows();
     // pretty_print(cout);
@@ -2772,6 +2774,9 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
         Test=T.multiplication(*this);
         assert(Test.equal(Lred));
     } */
+    
+    Lred.pretty_print(cout);
+    cout << "*****************" << endl;
     
     return Lred;
 }
