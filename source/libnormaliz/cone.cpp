@@ -3892,7 +3892,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        project_and_lift(Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
+        project_and_lift(ToCompute, Raw, GradGen,Supps,ToCompute.test(ConeProperty::ProjectionFloat));        
     }
     
     // computation done. It remains to restore the old coordinates
@@ -3987,7 +3987,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template<typename Integer>
-void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
+void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>& Deg1, const Matrix<Integer>& Gens, Matrix<Integer>& Supps, bool float_projection){
     
     // if(verbose)
     //    verboseOutput() << "Starting projection" << endl;
@@ -4029,7 +4029,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
             PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
-        PL.set_LLL(true);
+        PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_vertices(Verts);
         PL.compute();
         PL.put_eg1Points_into(Deg1);
@@ -4052,7 +4052,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                     PL=ProjectAndLift<MachineInteger,MachineInteger>(SuppsMI,Pair,ParaInPair,rank);
                 PL.set_grading_denom(GDMI);
                 PL.set_verbose(verbose);
-                PL.set_LLL(true);
+                PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
                 Matrix<MachineInteger> VertsMI;
                 convert(VertsMI,Verts);
                 PL.set_vertices(VertsMI);
@@ -4080,7 +4080,7 @@ void Cone<Integer>::project_and_lift(Matrix<Integer>& Deg1, const Matrix<Integer
                 PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
             PL.set_grading_denom(GradingDenom);
             PL.set_verbose(verbose);
-            PL.set_LLL(true);
+            PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
             PL.compute();
             PL.put_eg1Points_into(Deg1);

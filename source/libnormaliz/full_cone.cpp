@@ -2807,6 +2807,9 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Matrix<Integer> Gens=Generators.submatrix(key);
     Sublattice_Representation<Integer>  NewCoordinates=LLL_coordinates<Integer,Integer>(Gens);
     Matrix<Integer> Gred=NewCoordinates.to_sublattice(Gens);
+    Gens.pretty_print(cout);
+    cout << "=================" << endl;
+    Gred.pretty_print(cout);
     vector<Integer> GradT=NewCoordinates.to_sublattice_dual(Grading);
     
     Matrix<Integer> GradMat(0,dim);
@@ -2821,7 +2824,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     
     /*for(size_t i=0;i<dim;++i)
         for(size_t j=0;j<dim;++j)
-            assert(v_scalar_product(Supp[i],Gens[j])>=0);*/           
+            assert(v_scalar_product(Supp[i],Gens[j])>=0); */         
     
     vector<bool> Excluded(dim,false); // we want to discard duplicates
     for(size_t i=0;i<dim;++i){
@@ -2860,7 +2863,7 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     }
     Results[0].transfer_candidates();
 }
-    
+   
 
 //---------------------------------------------------------------------------
 
