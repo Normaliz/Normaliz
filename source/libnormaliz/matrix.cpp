@@ -2742,6 +2742,8 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
             v_el_trans<Integer>(Tinv[i],Tinv[j],fact,0);
             Lred.GramSchmidt(G,M,i,i+1);                       
         }
+        cout << "iiiiiiiiiii " << i << endl;
+        Lred.pretty_print(cout);
         if(i==0){
             i=1;
             continue;
