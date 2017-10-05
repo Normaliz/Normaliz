@@ -2717,8 +2717,6 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
     T=Tinv=Matrix<Integer>(nr);
     
     Matrix<Integer> Lred=*this;
-    Lred.pretty_print(cout);
-    cout << "================" << endl;
     size_t dim=nr_of_columns();
     int n=nr_of_rows();
     // pretty_print(cout);
@@ -2742,15 +2740,13 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
             v_el_trans<Integer>(Tinv[i],Tinv[j],fact,0);
             Lred.GramSchmidt(G,M,i,i+1);                       
         }
-        cout << "iiiiiiiiiii " << i << endl;
-        Lred.pretty_print(cout);
         if(i==0){
             i=1;
             continue;
         }
         Integer t1=v_scalar_product(Lred[i-1],Lred[i-1]);
         Integer t2=v_scalar_product(Lred[i],Lred[i]);
-        if(t1*t1> 2*t2*t2){
+        if(t1> 2*t2){
             std::swap(Lred[i],Lred[i-1]);
             std::swap(T[i],T[i-1]);
             std::swap(Tinv[i],Tinv[i-1]);
@@ -2776,9 +2772,6 @@ Matrix<Integer> Matrix<Integer>::LLL_red(Matrix<Integer>& T, Matrix<Integer>& Ti
         Test=T.multiplication(*this);
         assert(Test.equal(Lred));
     } */
-    
-    Lred.pretty_print(cout);
-    cout << "*****************" << endl;
     
     return Lred;
 }

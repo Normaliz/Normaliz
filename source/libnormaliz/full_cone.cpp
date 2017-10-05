@@ -2807,16 +2807,12 @@ void Full_Cone<Integer>::compute_deg1_elements_via_projection_simplicial(const v
     Matrix<Integer> Gens=Generators.submatrix(key);
     Sublattice_Representation<Integer>  NewCoordinates=LLL_coordinates<Integer,Integer>(Gens);
     Matrix<Integer> Gred=NewCoordinates.to_sublattice(Gens);
-    Gens.pretty_print(cout);
-    cout << "=================" << endl;
-    Gred.pretty_print(cout);
-    cout << "***************" << endl;
     vector<Integer> GradT=NewCoordinates.to_sublattice_dual(Grading);
     
     Matrix<Integer> GradMat(0,dim);
     GradMat.append(GradT);
     Cone<Integer> ProjCone(Type::cone,Gred,Type::grading, GradMat);
-    ProjCone.compute(ConeProperty::Projection);
+    ProjCone.compute(ConeProperty::Projection,ConeProperty::NoLLL);
     Matrix<Integer> Deg1=ProjCone.getDeg1ElementsMatrix();
     Deg1=NewCoordinates.from_sublattice(Deg1);   
     
