@@ -75,15 +75,24 @@ vector<size_t>  ProjectAndLift<IntegerPL,IntegerRet>::order_supps(const Matrix<I
     assert(Supps.nr_of_rows()>0);
     size_t dim=Supps.nr_of_columns();
 
-    vector<pair<IntegerPL,size_t> > NewPos,NewNeg; // to record the order of the support haperplanes
+    vector<pair<nmz_float,size_t> > NewPos,NewNeg, NewNeutr; // to record the order of the support haperplanes
     for(size_t i=0;i<Supps.nr_of_rows();++i){
-        if(Supps[i][dim-1] >= 0)
-            NewPos.push_back(make_pair(-Supps[i][dim-1],i));
+        if(Supps[i][dim-1] == 0){
+            NewNeutr.push_back(make_pair(0.0,i));
+            continue;
+        }
+        nmz_float num,den;
+        convert(num,Supps[i][0]);
+        convert(den,Supps[i][dim-1]);
+        nmz_float quot=num/den; 
+        if(Supps[i][dim-1] > 0)
+            NewPos.push_back(make_pair(Iabs(quot),i));
         else
-            NewNeg.push_back(make_pair(Supps[i][dim-1],i));
+            NewNeg.push_back(make_pair(Iabs(quot),i));
     }
     sort(NewPos.begin(),NewPos.end());
     sort(NewNeg.begin(),NewNeg.end());
+    NewPos.insert(NewPos.end(),NewNeutr.begin(),NewNeutr.end());
     
     size_t min_length=NewNeg.size();
     if(NewPos.size()<min_length)
@@ -687,6 +696,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation(){
 
 ///---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::lift_points_by_generation_float(){
+    
+    ProjectAndLift<nmz_float,IntegerRet> FloatLift(*this);
+    FloatLift.lift_points_by_generation();
+    Deg1Points.swap(FloatLift.Deg1Points);
+
+}
+
+///---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::lift_point_recursively(vector<IntegerRet>& final_latt_point,
                                                                   const vector<IntegerRet>& latt_point_proj){
  
@@ -819,7 +838,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_vertices(const Matrix<IntegerRet>
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
+void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points, bool lifting_float){
 
 // Project-and-lift for lattice points in a polytope. 
 // The first coordinate is homogenizing. Its value for polytope points ism set by GD so that
@@ -827,6 +846,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
     
+    assert(all_points || !lifting_float); // only all points allowed with float
+
     if(use_LLL){
         make_LLL_coordinates(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
         Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly (not even with convert) since the integer types may not match
@@ -841,7 +862,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
     if(all_points){
         if(verbose)
             verboseOutput() << "Lifting" << endl;
-        lift_points_by_generation();
+        if(!lifting_float || (lifting_float && using_float<IntegerPL>()))
+            lift_points_by_generation();
+        else
+            lift_points_by_generation_float(); // with intermediate conversion to float            
     }
     else{
         if(verbose)

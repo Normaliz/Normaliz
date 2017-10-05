@@ -4021,17 +4021,19 @@ void Cone<Integer>::project_and_lift(ConeProperties& ToCompute, Matrix<Integer>&
         Matrix<nmz_float> SuppsFloat;
         convert(SuppsFloat,Supps);
         vector<Integer> Dummy;
-        // project_and_lift_inner<nmz_float,Integer>(Deg1, SuppsFloat,Ind, GradingDenom,rank,verbose,true,Dummy);
-        ProjectAndLift<nmz_float,Integer> PL;
+        // ProjectAndLift<nmz_float,Integer> PL;
+        ProjectAndLift<Integer,Integer> PL;
         if(!is_parallelotope)
-            PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Ind,rank);
+            // PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Ind,rank);
+            PL=ProjectAndLift<Integer,Integer>(Supps,Ind,rank);
         else
-            PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
+            // PL=ProjectAndLift<nmz_float,Integer>(SuppsFloat,Pair,ParaInPair,rank);
+            PL=ProjectAndLift<Integer,Integer>(Supps,Pair,ParaInPair,rank);
         PL.set_grading_denom(GradingDenom);
         PL.set_verbose(verbose);
         PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
         PL.set_vertices(Verts);
-        PL.compute();
+        PL.compute(true,true);  // the first true for all_points, the second for float
         PL.put_eg1Points_into(Deg1);
     }
     else{

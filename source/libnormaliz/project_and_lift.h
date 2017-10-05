@@ -78,6 +78,7 @@ class ProjectAndLift {
     
     void find_single_point();
     void lift_points_by_generation();
+    void lift_points_by_generation_float(); // with conversion to float
     
     void compute_projections(size_t dim, vector< boost::dynamic_bitset<> >& Ind, 
                              vector< boost::dynamic_bitset<> >& Pair,
@@ -93,6 +94,8 @@ class ProjectAndLift {
     ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Ind,size_t rank);
     ProjectAndLift(const Matrix<IntegerPL>& Supps,const vector<boost::dynamic_bitset<> >& Pair,
                    const vector<boost::dynamic_bitset<> >& ParaInPair,size_t rank);
+    template<typename IntegerPLOri, typename IntegerRetOri>
+    ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original);
     
     void set_excluded_point(const vector<IntegerRet>& excl_point);
     void set_grading_denom(const IntegerRet GradingDenom);
@@ -100,16 +103,28 @@ class ProjectAndLift {
     void set_LLL(bool on_off);
     void set_vertices(const Matrix<IntegerRet>& Verts);
     
-    void compute(bool do_all_points=true);    
+    void compute(bool do_all_points=true, bool lifting_float=false);    
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
     void put_single_point_into(vector<IntegerRet>& LattPoint);   
-};    
+};
+
+// constructor by conversion
+
+template<typename IntegerPL, typename IntegerRet>
+template<typename IntegerPLOri, typename IntegerRetOri>
+ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<IntegerPLOri,IntegerRetOri>& Original){
     
-/* template<typename IntegerPL, typename IntegerRet>
-void project_and_lift_inner(Matrix<IntegerRet>& Deg1, const Matrix<IntegerPL>& Supps, 
-                            vector<boost::dynamic_bitset<> >& Ind, const IntegerRet& GD, size_t rank,
-                            bool verbose, bool all_points, const vector<IntegerRet>& excluded_point);
-*/
+    // The constructed PL is only good for lifting!!
+    
+    EmbDim=Original.EmbDim;
+    AllOrders=Original.AllOrders;
+    verbose=Original.verbose;
+    convert(GD,Original.GD);   
+    AllSupps.resize(EmbDim+1);
+    for(size_t i=0;i<AllSupps.size();++i)
+        convert(AllSupps[i],Original.AllSupps[i]);
+
+}
 
 // computes c1*v1-c2*v2
 template<typename Integer>
