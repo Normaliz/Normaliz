@@ -85,7 +85,7 @@ class ProjectAndLift {
     
     void initialize(const Matrix<IntegerPL>& Supps,size_t rank);
     
-    void make_LLL_coordinates();
+    // void make_LLL_coordinates();
         
     public:
  

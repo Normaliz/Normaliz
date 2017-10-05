@@ -299,6 +299,48 @@ Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G)
     return Sublattice_Representation<Integer>(IntT,IntTinv.transpose(),1);
 }
 
+template<typename Integer,typename number>
+void make_LLL_coordinates(Sublattice_Representation<Integer>& LLL_Coordinates, const Matrix<number> Supps, const Matrix<number> Vertices, bool verbose){
+    
+    /* Supps.pretty_print(cout);
+    cout << "================" << endl; */
+    
+    Matrix<Integer> HelpA, HelpB;
+    Integer HelpC;
+    
+    assert(Supps.nr_of_rows()>0);
+    size_t EmbDim=Supps.nr_of_columns();
+    
+    if(Vertices.nr_of_rows()==0 || Vertices.rank()<EmbDim-1){ // use Supps for LLL coordinates    
+        Matrix<nmz_float> SuppHelp=Supps.nmz_float_without_first_column();
+        if(SuppHelp.rank()<EmbDim-1)
+            return;
+        Sublattice_Representation<Integer> HelpCoord=LLL_coordinates_dual<Integer,nmz_float>(SuppHelp);
+        convert(HelpA,HelpCoord.getEmbeddingMatrix()); convert(HelpB,HelpCoord.getProjectionMatrix()); convert(HelpC,HelpCoord.getAnnihilator());
+        if(verbose)
+            verboseOutput() << "LLL based on support hyperplanes" << endl;
+    }
+    else{ // use Vertices for LLL coordinates
+        Matrix<nmz_float> VertHelp=Vertices.nmz_float_without_first_column();
+        Sublattice_Representation<Integer> HelpCoord=LLL_coordinates<Integer,nmz_float>(VertHelp);
+        convert(HelpA,HelpCoord.getEmbeddingMatrix()); convert(HelpB,HelpCoord.getProjectionMatrix()); convert(HelpC,HelpCoord.getAnnihilator());
+        if(verbose)
+            verboseOutput() << "LLL based on vertices" << endl;
+    }
+    
+    Matrix<Integer> A(EmbDim), B(EmbDim);
+
+    //Insert into EmbDim-1 last coordinates of LLL_Coord
+    for(size_t i=0;i<EmbDim-1;++i)
+        for(size_t j=0;j<EmbDim-1;++j){
+            A[i+1][j+1]=HelpA[i][j];
+            B[i+1][j+1]=HelpB[i][j];
+        }
+    
+    LLL_Coordinates=Sublattice_Representation<Integer>(A,B,HelpC);
+
+}
+
 /*
 template<typename Integer, typename number>
 Sublattice_Representation<Integer> LLL_coordinates_dual(const Matrix<number>& G){

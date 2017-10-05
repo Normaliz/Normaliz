@@ -757,51 +757,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
 }
 
 
-template<typename IntegerPL,typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::make_LLL_coordinates(){
-    
-    /* AllSupps[EmbDim].pretty_print(cout);
-    cout << "================" << endl; */
-    
-    if(!use_LLL)
-        return;
-    
-    Matrix<IntegerRet> HelpA, HelpB;
-    IntegerRet HelpC;
-    bool HelpIsId;
-    
-    if(Vertices.nr_of_rows()==0 || Vertices.rank()<EmbDim-1){ // use Supps for LLL coordinates    
-        Matrix<nmz_float> SuppHelp=AllSupps[EmbDim].nmz_float_without_first_column();
-        if(SuppHelp.rank()<EmbDim-1)
-            return;
-        Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates_dual<IntegerRet,nmz_float>(SuppHelp);
-        convert(HelpA,HelpCoord.A); convert(HelpB,HelpCoord.B); convert(HelpC,HelpCoord.c); HelpIsId=HelpCoord.is_identity;
-        if(verbose)
-            verboseOutput() << "LLL based on support hyperplanes" << endl;
-    }
-    else{ // use Vertices for LLL coordinates
-        Matrix<nmz_float> VertHelp=Vertices.nmz_float_without_first_column();
-        Sublattice_Representation<IntegerRet> HelpCoord=LLL_coordinates<IntegerRet,nmz_float>(VertHelp);
-        convert(HelpA,HelpCoord.A); convert(HelpB,HelpCoord.B); convert(HelpC,HelpCoord.c); HelpIsId=HelpCoord.is_identity;
-        if(verbose)
-            verboseOutput() << "LLL based on vertices" << endl;
-    }
 
-    //Insert into EmbDim-1 last coordinates of LLL_Coord
-    for(size_t i=0;i<EmbDim-1;++i)
-        for(size_t j=0;j<EmbDim-1;++j){
-            LLL_Coordinates.A[i+1][j+1]=HelpA[i][j];
-            LLL_Coordinates.B[i+1][j+1]=HelpB[i][j];
-        }
-    LLL_Coordinates.is_identity=HelpIsId;
-    LLL_Coordinates.c=HelpC;
-        
-    
-    Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly since the integer types may not match
-    convert(Aconv,LLL_Coordinates.A);
-    // Aconv.transpose().pretty_print(cout);
-    AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
-}
 
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
@@ -871,8 +827,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 // We need only the support hyperplanes Supps and the facet-vertex incidence matrix Ind.
 // Its rows correspond to facets.
     
-    if(use_LLL)
-        make_LLL_coordinates();
+    if(use_LLL){
+        make_LLL_coordinates(LLL_Coordinates,AllSupps[EmbDim],Vertices,verbose);    
+        Matrix<IntegerPL> Aconv; // we cannot use to_sublattice_dual directly (not even with convert) since the integer types may not match
+        convert(Aconv,LLL_Coordinates.getEmbeddingMatrix());
+        // Aconv.transpose().pretty_print(cout);
+        AllSupps[EmbDim] = AllSupps[EmbDim].multiplication(Aconv.transpose());
+    }
 
     if(verbose)
         verboseOutput() << "Projection" << endl;
@@ -892,16 +853,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute(bool all_points){
 //---------------------------------------------------------------------------
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints){
-
-    /* Matrix<IntegerRet> Test=Matrix<IntegerRet>(Deg1Points);
-    cout << "LLL " << use_LLL << " "  << LLL_Coordinates.is_identity << endl;
-    cout << "****************" << endl;
-    Test.pretty_print(cout);
-    cout << "****************" << endl;
-    LLL_Coordinates.A.pretty_print(cout);
-    cout << "++++++++++++++" << endl;
-    LLL_Coordinates.B.pretty_print(cout);
-    cout << "++++++++++++++" << endl;*/
     
     while(!Deg1Points.empty()){
         if(use_LLL){
@@ -914,9 +865,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>
             LattPoints.append(Deg1Points.front());
         Deg1Points.pop_front();
     }
-    /* cout << "=================" << endl;
-    LattPoints.pretty_print(cout);
-    cout << "=================" << endl; */
 } 
 
 //---------------------------------------------------------------------------

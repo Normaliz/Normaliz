@@ -35,7 +35,7 @@
 #include <libnormaliz/libnormaliz.h>
 #include <libnormaliz/integer.h>
 #include <libnormaliz/convert.h>
-#include <libnormaliz/sublattice_representation.h>
+// #include <libnormaliz/sublattice_representation.h>
 
 //---------------------------------------------------------------------------
 
@@ -43,6 +43,8 @@ namespace libnormaliz {
 using std::list;
 using std::vector;
 using std::string;
+
+template<typename Integer> class Sublattice_Representation;
 
 template<typename Integer> class Matrix {
 
