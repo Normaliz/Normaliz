@@ -541,7 +541,7 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::fiber_interval(IntegerRet& MinInterva
         convert(LiftedGen,base_point);
         // cout << LiftedGen;
         size_t check_supps=Supps.nr_of_rows();
-        if(check_supps>1000 && dim<EmbDim)
+        if(check_supps>1000 && dim<EmbDim && !no_relax)
             check_supps=1000;
         for(size_t j=0;j<check_supps;++j){
             
@@ -771,6 +771,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::initialize(const Matrix<IntegerPL>& S
     is_parallelotope=false;
     no_crunch=true;
     use_LLL=false;
+    no_relax=false;
     
     LLL_Coordinates=Sublattice_Representation<IntegerRet>(EmbDim); // identity
 }
@@ -816,6 +817,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_verbose(bool on_off){
 template<typename IntegerPL,typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::set_LLL(bool on_off){
         use_LLL=on_off;
+}
+
+//---------------------------------------------------------------------------
+template<typename IntegerPL,typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_no_relax(bool on_off){
+        no_relax=on_off;
 }
 
 //---------------------------------------------------------------------------

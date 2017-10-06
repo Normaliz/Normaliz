@@ -122,6 +122,7 @@ namespace ConeProperty {
         NoPeriodBound,
         SCIP,
         NoLLL,
+        NoRelax,
         //
         // checking properties of already computed data
         // (cannot be used as a computation goal)

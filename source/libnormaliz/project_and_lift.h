@@ -67,6 +67,7 @@ class ProjectAndLift {
     bool no_crunch; // indicates that the projection vector is nevere parallel to a facet of
                     // the parallelotope (in all dimensions)
     bool use_LLL;
+    bool no_relax;
     
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);   
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval,
@@ -101,6 +102,7 @@ class ProjectAndLift {
     void set_grading_denom(const IntegerRet GradingDenom);
     void set_verbose(bool on_off);
     void set_LLL(bool on_off);
+    void set_no_relax(bool on_off);
     void set_vertices(const Matrix<IntegerRet>& Verts);
     
     void compute(bool do_all_points=true, bool lifting_float=false);    
@@ -119,6 +121,7 @@ ProjectAndLift<IntegerPL,IntegerRet>::ProjectAndLift(const ProjectAndLift<Intege
     EmbDim=Original.EmbDim;
     AllOrders=Original.AllOrders;
     verbose=Original.verbose;
+    no_relax=Original.no_relax;
     convert(GD,Original.GD);   
     AllSupps.resize(EmbDim+1);
     for(size_t i=0;i<AllSupps.size();++i)
